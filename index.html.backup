@@ -1316,6 +1316,361 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr>
+                                <td>9–11am</td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available jc-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">JC</span>
+                                        <span class="slot-time">Sat 9-11am</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/3</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available jc-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">JC</span>
+                                        <span class="slot-time">Sun 9-11am</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/3</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>11am–1pm</td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td>
+                                    <span class="slot slot-full">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Sat 11am-1pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                            </div>
+                                            <span class="dot-count">4/4</span>
+                                        </div>
+                                        <span class="availability-text availability-full">full</span>
+                                        
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available sec-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Sun 11am-1pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/4</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>1–3pm</td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td>
+                                    <span class="slot slot-full">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Sat 1-3pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                            </div>
+                                            <span class="dot-count">4/4</span>
+                                        </div>
+                                        <span class="availability-text availability-full">full</span>
+                                        
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="slot slot-full">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Sun 1-3pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                            </div>
+                                            <span class="dot-count">4/4</span>
+                                        </div>
+                                        <span class="availability-text availability-full">full</span>
+                                        
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3–5pm</td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available sec-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Mon 3-5pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/4</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available sec-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Tue 3-5pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/4</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available sec-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Fri 3-5pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/4</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="slot slot-full">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Sat 3-5pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                            </div>
+                                            <span class="dot-count">4/4</span>
+                                        </div>
+                                        <span class="availability-text availability-full">full</span>
+                                        
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="slot slot-full">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Sun 3-5pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                            </div>
+                                            <span class="dot-count">4/4</span>
+                                        </div>
+                                        <span class="availability-text availability-full">full</span>
+                                        
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>5–7pm</td>
+                                <td>
+                                    <span class="slot slot-full">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Mon 5-7pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                            </div>
+                                            <span class="dot-count">4/4</span>
+                                        </div>
+                                        <span class="availability-text availability-full">full</span>
+                                        
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="slot slot-full">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Tue 5-7pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                            </div>
+                                            <span class="dot-count">4/4</span>
+                                        </div>
+                                        <span class="availability-text availability-full">full</span>
+                                        
+                                    </span>
+                                </td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td>
+                                    <span class="slot slot-full">
+                                        <span class="slot-label">Sec</span>
+                                        <span class="slot-time">Wed 5-7pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                                <span class="dot filled"></span>
+                                            </div>
+                                            <span class="dot-count">4/4</span>
+                                        </div>
+                                        <span class="availability-text availability-full">full</span>
+                                        
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available jc-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">JC</span>
+                                        <span class="slot-time">Thu 5-7pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/3</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available jc-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">JC</span>
+                                        <span class="slot-time">Fri 5-7pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/3</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>7–9pm</td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available jc-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">JC</span>
+                                        <span class="slot-time">Mon 7-9pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/3</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available jc-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">JC</span>
+                                        <span class="slot-time">Tue 7-9pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/3</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td>
+                                    <a href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson" class="slot slot-available jc-available" target="_blank" rel="noopener noreferrer">
+                                        <span class="slot-label">JC</span>
+                                        <span class="slot-time">Thu 7-9pm</span>
+                                        <div class="dot-indicator">
+                                            <div class="dots">
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                                <span class="dot"></span>
+                                            </div>
+                                            <span class="dot-count">0/3</span>
+                                        </div>
+                                        <span class="availability-text availability-available">available</span>
+                                        
+                                    </a>
+                                </td>
+                                <td><span class="empty-cell">—</span></td>
+                                <td><span class="empty-cell">—</span></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -1755,111 +2110,6 @@
                 item.classList.add('active');
             }
         }
-    </script>
-
-    <script>
-        async function renderSchedule() {
-            try {
-                const response = await fetch('schedule.json');
-                const scheduleData = await response.json();
-                
-                const scheduleTable = document.querySelector('.schedule-table tbody');
-                if (!scheduleTable) return;
-                
-                scheduleTable.innerHTML = '';
-                
-                const timeSlots = {};
-                scheduleData.slots.forEach(slot => {
-                    if (!timeSlots[slot.time]) {
-                        timeSlots[slot.time] = {};
-                    }
-                    timeSlots[slot.time][slot.day] = slot;
-                });
-                
-                const timeOrder = ['9-11am', '11am-1pm', '1-3pm', '3-5pm', '5-7pm', '7-9pm'];
-                const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                
-                timeOrder.forEach(time => {
-                    if (timeSlots[time]) {
-                        const row = document.createElement('tr');
-                        
-                        const timeCell = document.createElement('td');
-                        timeCell.textContent = time;
-                        row.appendChild(timeCell);
-                        
-                        dayOrder.forEach(day => {
-                            const dayCell = document.createElement('td');
-                            
-                            if (timeSlots[time][day]) {
-                                const slot = timeSlots[time][day];
-                                const isAvailable = slot.filled < slot.capacity;
-                                
-                                if (isAvailable) {
-                                    const link = document.createElement('a');
-                                    link.href = 'https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson';
-                                    link.className = `slot slot-available ${slot.type.toLowerCase()}-available`;
-                                    link.target = '_blank';
-                                    link.rel = 'noopener noreferrer';
-                                    
-                                    link.innerHTML = `
-                                        <span class="slot-label">${slot.type}</span>
-                                        <span class="slot-time">${day} ${slot.time}</span>
-                                        <div class="dot-indicator">
-                                            <div class="dots">
-                                                ${generateDots(slot.filled, slot.capacity)}
-                                            </div>
-                                            <span class="dot-count">${slot.filled}/${slot.capacity}</span>
-                                        </div>
-                                        <span class="availability-text availability-available">available</span>
-                                    `;
-                                    
-                                    dayCell.appendChild(link);
-                                } else {
-                                    const slotDiv = document.createElement('span');
-                                    slotDiv.className = 'slot slot-full';
-                                    
-                                    slotDiv.innerHTML = `
-                                        <span class="slot-label">${slot.type}</span>
-                                        <span class="slot-time">${day} ${slot.time}</span>
-                                        <div class="dot-indicator">
-                                            <div class="dots">
-                                                ${generateDots(slot.filled, slot.capacity)}
-                                            </div>
-                                            <span class="dot-count">${slot.filled}/${slot.capacity}</span>
-                                        </div>
-                                        <span class="availability-text availability-full">full</span>
-                                    `;
-                                    
-                                    dayCell.appendChild(slotDiv);
-                                }
-                            } else {
-                                dayCell.innerHTML = '<span class="empty-cell">—</span>';
-                            }
-                            
-                            row.appendChild(dayCell);
-                        });
-                        
-                        scheduleTable.appendChild(row);
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading schedule:', error);
-            }
-        }
-        
-        function generateDots(filled, capacity) {
-            let dots = '';
-            for (let i = 0; i < capacity; i++) {
-                if (i < filled) {
-                    dots += '<span class="dot filled"></span>';
-                } else {
-                    dots += '<span class="dot"></span>';
-                }
-            }
-            return dots;
-        }
-        
-        document.addEventListener('DOMContentLoaded', renderSchedule);
     </script>
 </body>
 </html>

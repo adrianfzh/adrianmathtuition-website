@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Admin - Adrian's Math Tuition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-edit {
+            background: #f59e0b;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        
+        .btn-edit:hover {
+            background: #d97706;
+        }
+        
+        .slot-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .slot-item {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .slot-item.available {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .slot-item.full {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .slot-info {
+            flex: 1;
+        }
+        
+        .slot-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .slot-details {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .slot-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Schedule Admin Panel</h1>
+            <p class="subtitle">Manage your tuition schedule easily</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="card">
+                <h2 id="form-title">➕ Add New Slot</h2>
+                <div id="message" class="message"></div>
+                
+                <form id="slot-form">
+                    <input type="hidden" id="edit-index" value="">
+                    
+                    <div class="form-group">
+                        <label for="day">Day</label>
+                        <select id="day" required>
+                            <option value="">Select Day</option>
+                            <option value="Mon">Monday</option>
+                            <option value="Tue">Tuesday</option>
+                            <option value="Wed">Wednesday</option>
+                            <option value="Thu">Thursday</option>
+                            <option value="Fri">Friday</option>
+                            <option value="Sat">Saturday</option>
+                            <option value="Sun">Sunday</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="time">Time</label>
+                        <select id="time" required>
+                            <option value="">Select Time</option>
+                            <option value="9-11am">9-11am</option>
+                            <option value="11am-1pm">11am-1pm</option>
+                            <option value="1-3pm">1-3pm</option>
+                            <option value="3-5pm">3-5pm</option>
+                            <option value="5-7pm">5-7pm</option>
+                            <option value="7-9pm">7-9pm</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="type">Class Type</label>
+                        <select id="type" required>
+                            <option value="">Select Type</option>
+                            <option value="JC">JC</option>
+                            <option value="Sec">Sec</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="filled">Filled Slots</label>
+                        <input type="number" id="filled" min="0" max="4" value="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="capacity">Total Capacity</label>
+                        <select id="capacity" required>
+                            <option value="">Select Capacity</option>
+                            <option value="3">3 students (JC)</option>
+                            <option value="4">4 students (Sec)</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Add Slot</button>
+                    <button type="button" class="btn btn-primary" id="cancel-btn" style="display:none; background:#6b7280; margin-top:10px;">Cancel Edit</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2>📋 Current Schedule</h2>
+                <div id="slot-list" class="slot-list">
+                    <p style="color: #999; text-align: center; padding: 20px;">Loading schedule...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let scheduleData = { slots: [] };
+        
+        async function loadSchedule() {
+            try {
+                const response = await fetch('schedule.json');
+                scheduleData = await response.json();
+                renderSlotList();
+            } catch (error) {
+                showMessage('Error loading schedule: ' + error.message, 'error');
+            }
+        }
+        
+        function renderSlotList() {
+            const listEl = document.getElementById('slot-list');
+            
+            if (scheduleData.slots.length === 0) {
+                listEl.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No slots yet. Add your first slot!</p>';
+                return;
+            }
+            
+            const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const timeOrder = ['9-11am', '11am-1pm', '1-3pm', '3-5pm', '5-7pm', '7-9pm'];
+            
+            // Create array with original indices
+            const slotsWithIndex = scheduleData.slots.map((slot, index) => ({ ...slot, originalIndex: index }));
+            
+            const sortedSlots = slotsWithIndex.sort((a, b) => {
+                const dayDiff = dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
+                if (dayDiff !== 0) return dayDiff;
+                return timeOrder.indexOf(a.time) - timeOrder.indexOf(b.time);
+            });
+            
+            listEl.innerHTML = sortedSlots.map((slot) => {
+                const isAvailable = slot.filled < slot.capacity;
+                const status = isAvailable ? 'available' : 'full';
+                const statusText = isAvailable ? '✓ Available' : '✗ Full';
+                
+                return `
+                    <div class="slot-item ${status}">
+                        <div class="slot-info">
+                            <div class="slot-title">${slot.day} ${slot.time} - ${slot.type}</div>
+                            <div class="slot-details">${slot.filled}/${slot.capacity} slots filled • ${statusText}</div>
+                        </div>
+                        <div class="slot-actions">
+                            <button class="btn btn-edit" onclick="editSlot(${slot.originalIndex})">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteSlot(${slot.originalIndex})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function showMessage(text, type) {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = text;
+            msgEl.className = `message ${type} show`;
+            setTimeout(() => {
+                msgEl.classList.remove('show');
+            }, 3000);
+        }
+        
+        async function saveSchedule() {
+            try {
+                const blob = new Blob([JSON.stringify(scheduleData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'schedule.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showMessage('✓ Schedule updated! Download the new schedule.json file and replace the old one.', 'success');
+            } catch (error) {
+                showMessage('Error saving schedule: ' + error.message, 'error');
+            }
+        }
+        
+        document.getElementById('slot-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const slot = {
+                day: document.getElementById('day').value,
+                time: document.getElementById('time').value,
+                type: document.getElementById('type').value,
+                filled: parseInt(document.getElementById('filled').value),
+                capacity: parseInt(document.getElementById('capacity').value)
+            };
+            
+            const editIndex = document.getElementById('edit-index').value;
+            
+            if (editIndex !== '') {
+                scheduleData.slots[parseInt(editIndex)] = slot;
+                showMessage('✓ Slot updated successfully!', 'success');
+                cancelEdit();
+            } else {
+                scheduleData.slots.push(slot);
+                showMessage('✓ Slot added successfully!', 'success');
+            }
+            
+            renderSlotList();
+            saveSchedule();
+            this.reset();
+        });
+        
+        function editSlot(index) {
+            const slot = scheduleData.slots[index];
+            
+            document.getElementById('day').value = slot.day;
+            document.getElementById('time').value = slot.time;
+            document.getElementById('type').value = slot.type;
+            document.getElementById('filled').value = slot.filled;
+            document.getElementById('capacity').value = slot.capacity;
+            document.getElementById('edit-index').value = index;
+            
+            document.getElementById('form-title').textContent = '✏️ Edit Slot';
+            document.getElementById('submit-btn').textContent = 'Update Slot';
+            document.getElementById('cancel-btn').style.display = 'block';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function cancelEdit() {
+            document.getElementById('slot-form').reset();
+            document.getElementById('edit-index').value = '';
+            document.getElementById('form-title').textContent = '➕ Add New Slot';
+            document.getElementById('submit-btn').textContent = 'Add Slot';
+            document.getElementById('cancel-btn').style.display = 'none';
+        }
+        
+        document.getElementById('cancel-btn').addEventListener('click', cancelEdit);
+        
+        function deleteSlot(index) {
+            if (confirm('Are you sure you want to delete this slot?')) {
+                scheduleData.slots.splice(index, 1);
+                renderSlotList();
+                saveSchedule();
+                showMessage('✓ Slot deleted successfully!', 'success');
+            }
+        }
+        
+        loadSchedule();
+    </script>
+</body>
+</html>
