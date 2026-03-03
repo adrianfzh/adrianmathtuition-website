@@ -1,23 +1,130 @@
 {
   "slots": [
-    {"day": "Sat", "time": "9-11am", "type": "JC", "filled": 0, "capacity": 3},
-    {"day": "Sun", "time": "9-11am", "type": "JC", "filled": 0, "capacity": 3},
-    {"day": "Sat", "time": "11am-1pm", "type": "Sec", "filled": 4, "capacity": 4},
-    {"day": "Sun", "time": "11am-1pm", "type": "Sec", "filled": 0, "capacity": 4},
-    {"day": "Sat", "time": "1-3pm", "type": "Sec", "filled": 4, "capacity": 4},
-    {"day": "Sun", "time": "1-3pm", "type": "Sec", "filled": 4, "capacity": 4},
-    {"day": "Mon", "time": "3-5pm", "type": "Sec", "filled": 0, "capacity": 4},
-    {"day": "Tue", "time": "3-5pm", "type": "Sec", "filled": 0, "capacity": 4},
-    {"day": "Fri", "time": "3-5pm", "type": "Sec", "filled": 0, "capacity": 4},
-    {"day": "Sat", "time": "3-5pm", "type": "Sec", "filled": 4, "capacity": 4},
-    {"day": "Sun", "time": "3-5pm", "type": "Sec", "filled": 4, "capacity": 4},
-    {"day": "Mon", "time": "5-7pm", "type": "Sec", "filled": 4, "capacity": 4},
-    {"day": "Tue", "time": "5-7pm", "type": "Sec", "filled": 4, "capacity": 4},
-    {"day": "Wed", "time": "5-7pm", "type": "Sec", "filled": 4, "capacity": 4},
-    {"day": "Thu", "time": "5-7pm", "type": "JC", "filled": 0, "capacity": 3},
-    {"day": "Fri", "time": "5-7pm", "type": "JC", "filled": 0, "capacity": 3},
-    {"day": "Mon", "time": "7-9pm", "type": "JC", "filled": 0, "capacity": 3},
-    {"day": "Tue", "time": "7-9pm", "type": "JC", "filled": 0, "capacity": 3},
-    {"day": "Thu", "time": "7-9pm", "type": "JC", "filled": 0, "capacity": 3}
+    {
+      "day": "Sat",
+      "time": "9-11am",
+      "type": "JC",
+      "filled": 3,
+      "capacity": 3
+    },
+    {
+      "day": "Sun",
+      "time": "9-11am",
+      "type": "JC",
+      "filled": 2,
+      "capacity": 3
+    },
+    {
+      "day": "Sat",
+      "time": "11am-1pm",
+      "type": "Sec",
+      "filled": 4,
+      "capacity": 4
+    },
+    {
+      "day": "Sun",
+      "time": "11am-1pm",
+      "type": "Sec",
+      "filled": 4,
+      "capacity": 4
+    },
+    {
+      "day": "Sat",
+      "time": "1-3pm",
+      "type": "Sec",
+      "filled": 4,
+      "capacity": 4
+    },
+    {
+      "day": "Sun",
+      "time": "1-3pm",
+      "type": "Sec",
+      "filled": 3,
+      "capacity": 4
+    },
+    {
+      "day": "Mon",
+      "time": "3-5pm",
+      "type": "Sec",
+      "filled": 1,
+      "capacity": 4
+    },
+    {
+      "day": "Tue",
+      "time": "3-5pm",
+      "type": "Sec",
+      "filled": 4,
+      "capacity": 4
+    },
+    {
+      "day": "Fri",
+      "time": "3-5pm",
+      "type": "Sec",
+      "filled": 0,
+      "capacity": 4
+    },
+    {
+      "day": "Sat",
+      "time": "3-5pm",
+      "type": "Sec",
+      "filled": 3,
+      "capacity": 4
+    },
+    {
+      "day": "Sun",
+      "time": "3-5pm",
+      "type": "Sec",
+      "filled": 3,
+      "capacity": 4
+    },
+    {
+      "day": "Mon",
+      "time": "5-7pm",
+      "type": "Sec",
+      "filled": 4,
+      "capacity": 4
+    },
+    {
+      "day": "Tue",
+      "time": "5-7pm",
+      "type": "Sec",
+      "filled": 4,
+      "capacity": 4
+    },
+    {
+      "day": "Mon",
+      "time": "7-9pm",
+      "type": "JC",
+      "filled": 0,
+      "capacity": 3
+    },
+    {
+      "day": "Tue",
+      "time": "7-9pm",
+      "type": "JC",
+      "filled": 0,
+      "capacity": 3
+    },
+    {
+      "day": "Fri",
+      "time": "5-7pm",
+      "type": "Sec",
+      "filled": 4,
+      "capacity": 4
+    },
+    {
+      "day": "Sat",
+      "time": "5-7pm",
+      "type": "JC",
+      "filled": 2,
+      "capacity": 3
+    },
+    {
+      "day": "Sun",
+      "time": "5-7pm",
+      "type": "JC",
+      "filled": 2,
+      "capacity": 3
+    }
   ]
 }
