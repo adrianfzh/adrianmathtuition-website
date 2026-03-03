@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
@@ -44,6 +44,11 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .preview-section {
+            grid-column: 1 / -1;
         }
         
         .card {
@@ -196,6 +201,115 @@
             display: block;
         }
         
+        .schedule-preview {
+            overflow-x: auto;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .preview-table th {
+            background: #f3f4f6;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .preview-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            min-width: 100px;
+        }
+        
+        .preview-table td:first-child {
+            font-weight: 600;
+            background: #f9fafb;
+            color: #374151;
+        }
+        
+        .preview-slot {
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .preview-slot:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .preview-slot.available {
+            border: 2px solid #10b981;
+            color: #065f46;
+        }
+        
+        .preview-slot.full {
+            border: 2px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .preview-slot.jc.available {
+            background: hsl(45, 85%, 82%);
+            border: 2px solid #10b981;
+        }
+        
+        .preview-slot.sec.available {
+            background: hsl(350, 65%, 85%);
+            border: 2px solid #10b981;
+        }
+        
+        .preview-slot.jc.full {
+            background: hsl(45, 85%, 82%);
+            border: 2px solid #ef4444;
+        }
+        
+        .preview-slot.sec.full {
+            background: hsl(350, 65%, 85%);
+            border: 2px solid #ef4444;
+        }
+        
+        .preview-slot-type {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        .preview-slot-capacity {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        .preview-slot-status {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+            display: block;
+        }
+        
+        .preview-empty {
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 8px;
+            transition: all 0.2s;
+        }
+        
+        .preview-empty:hover {
+            background: #f3f4f6;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -208,6 +322,31 @@
         <div class="header">
             <h1>📅 Schedule Admin Panel</h1>
             <p class="subtitle">Manage your tuition schedule easily</p>
+        </div>
+        
+        <div class="preview-section">
+            <div class="card">
+                <h2>📊 Schedule Preview</h2>
+                <div class="schedule-preview">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Mon</th>
+                                <th>Tue</th>
+                                <th>Wed</th>
+                                <th>Thu</th>
+                                <th>Fri</th>
+                                <th>Sat</th>
+                                <th>Sun</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-tbody">
+                            <tr><td colspan="8" style="text-align: center; padding: 20px; color: #999;">Loading preview...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         
         <div class="main-content">
@@ -290,9 +429,52 @@
                 const response = await fetch('schedule.json');
                 scheduleData = await response.json();
                 renderSlotList();
+                renderPreview();
             } catch (error) {
                 showMessage('Error loading schedule: ' + error.message, 'error');
             }
+        }
+        
+        function renderPreview() {
+            const tbody = document.getElementById('preview-tbody');
+            const timeOrder = ['9-11am', '11am-1pm', '1-3pm', '3-5pm', '5-7pm', '7-9pm'];
+            const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            const timeSlots = {};
+            scheduleData.slots.forEach((slot, index) => {
+                if (!timeSlots[slot.time]) {
+                    timeSlots[slot.time] = {};
+                }
+                timeSlots[slot.time][slot.day] = { ...slot, originalIndex: index };
+            });
+            
+            let html = '';
+            timeOrder.forEach(time => {
+                html += `<tr><td>${time}</td>`;
+                dayOrder.forEach(day => {
+                    const slot = timeSlots[time] && timeSlots[time][day];
+                    if (slot) {
+                        const isAvailable = slot.filled < slot.capacity;
+                        const statusClass = isAvailable ? 'available' : 'full';
+                        const typeClass = slot.type.toLowerCase();
+                        const statusText = isAvailable ? 'available' : 'full';
+                        html += `
+                            <td>
+                                <div class="preview-slot ${statusClass} ${typeClass}" onclick="editSlotFromPreview(${slot.originalIndex})" title="Click to edit">
+                                    <span class="preview-slot-type">${slot.type}</span>
+                                    <span class="preview-slot-capacity">${slot.filled}/${slot.capacity}</span>
+                                    <span class="preview-slot-status">${statusText}</span>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        html += `<td><span class="preview-empty" onclick="addSlotFromPreview('${day}', '${time}')" title="Click to add slot">+ Add</span></td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+            
+            tbody.innerHTML = html;
         }
         
         function renderSlotList() {
@@ -383,6 +565,7 @@
             }
             
             renderSlotList();
+            renderPreview();
             saveSchedule();
             this.reset();
         });
@@ -404,6 +587,19 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
+        function editSlotFromPreview(index) {
+            editSlot(index);
+        }
+        
+        function addSlotFromPreview(day, time) {
+            cancelEdit();
+            document.getElementById('day').value = day;
+            document.getElementById('time').value = time;
+            document.getElementById('form-title').textContent = '➕ Add New Slot';
+            window.scrollTo({ top: document.querySelector('.main-content').offsetTop - 20, behavior: 'smooth' });
+            document.getElementById('type').focus();
+        }
+        
         function cancelEdit() {
             document.getElementById('slot-form').reset();
             document.getElementById('edit-index').value = '';
@@ -418,6 +614,7 @@
             if (confirm('Are you sure you want to delete this slot?')) {
                 scheduleData.slots.splice(index, 1);
                 renderSlotList();
+                renderPreview();
                 saveSchedule();
                 showMessage('✓ Slot deleted successfully!', 'success');
             }
