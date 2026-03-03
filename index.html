@@ -1796,7 +1796,9 @@
                                 
                                 if (isAvailable) {
                                     const link = document.createElement('a');
-                                    link.href = 'https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson';
+                                    const dayName = day === 'Mon' ? 'Monday' : day === 'Tue' ? 'Tuesday' : day === 'Wed' ? 'Wednesday' : day === 'Thu' ? 'Thursday' : day === 'Fri' ? 'Friday' : day === 'Sat' ? 'Saturday' : 'Sunday';
+                                    const message = `Hi Adrian, I'd like to book a free trial lesson for ${dayName} at ${time}`;
+                                    link.href = `https://wa.me/6591397985?text=${encodeURIComponent(message)}`;
                                     link.className = `slot slot-available ${slot.type.toLowerCase()}-available`;
                                     link.target = '_blank';
                                     link.rel = 'noopener noreferrer';
