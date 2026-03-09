@@ -107,7 +107,7 @@ module.exports = async function handler(req, res) {
         const existingInvoicesData = await at('Invoices', `?${invoiceCheckParams.toString()}`);
 
         const [studentsData, slotsData, rateHistoryData] = await Promise.all([
-            studentIds.length ? at('Students', `?filterByFormula=OR(${studentIds.map(id => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Level&fields[]=Status&fields[]=Parent Email&fields[]=Parent Name`) : { records: [] },
+            studentIds.length ? at('Students', `?filterByFormula=OR(${studentIds.map(id => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Level&fields[]=Status&fields[]=Parent Email&fields[]=Parent Name&fields[]=Subject Level&fields[]=Subjects`) : { records: [] },
             slotIds.length ? at('Slots', `?filterByFormula=OR(${slotIds.map(id => `RECORD_ID()='${id}'`).join(',')})`) : { records: [] },
             at('Rate History', ''),
         ]);
@@ -211,13 +211,23 @@ module.exports = async function handler(req, res) {
                 const lessonCount = allLineItems.length;
                 const baseAmount = lessonCount * ratePerLesson;
 
+                // Build description string
+                const subjects = Array.isArray(student.fields['Subjects']) ? student.fields['Subjects'].join(' & ') : '';
+                const description = `${student.fields['Level'] || ''} ${subjects} — ${invoiceMonth.label}`;
+
+                // Add description to each line item
+                const lineItemsWithDescription = allLineItems.map(item => ({
+                    ...item,
+                    description
+                }));
+
                 // 6. Create Draft invoice
                 const invoiceFields = {
                     'Student': [studentId],
                     'Month': invoiceMonth.label,
                     'Lessons Count': lessonCount,
                     'Rate Per Lesson': ratePerLesson,
-                    'Line Items': JSON.stringify(allLineItems),
+                    'Line Items': JSON.stringify(lineItemsWithDescription),
                     'Invoice Type': 'Regular',
                     'Status': 'Draft',
                     'Issue Date': formatDate(new Date()),
