@@ -1761,7 +1761,7 @@
     <script>
         async function renderSchedule() {
             try {
-                const response = await fetch('schedule.json');
+                const response = await fetch('/api/schedule');
                 const scheduleData = await response.json();
                 
                 const scheduleTable = document.querySelector('.schedule-table tbody');
