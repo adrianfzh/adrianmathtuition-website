@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — Adrian's Math Tuition</title>
+    <meta name="robots" content="noindex">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --background: hsl(210, 20%, 98%);
+            --foreground: hsl(220, 40%, 13%);
+            --card: hsl(0, 0%, 100%);
+            --primary: hsl(220, 60%, 20%);
+            --primary-foreground: hsl(45, 100%, 96%);
+            --secondary: hsl(45, 90%, 55%);
+            --secondary-foreground: hsl(220, 60%, 15%);
+            --muted: hsl(220, 15%, 93%);
+            --muted-foreground: hsl(220, 10%, 46%);
+            --border: hsl(220, 15%, 88%);
+            --amber: hsl(45, 90%, 55%);
+            --amber-light: hsl(45, 90%, 92%);
+            --radius: 0.75rem;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 { font-family: 'DM Serif Display', serif; }
+
+        /* Navbar */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            background: hsla(0, 0%, 100%, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-container {
+            max-width: 1152px; margin: 0 auto; padding: 0 24px;
+            height: 64px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo-container { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .logo-bold { font-family: 'DM Serif Display', serif; font-weight: 700; font-size: 18px; letter-spacing: -0.02em; color: var(--primary); }
+        .logo-light { color: var(--muted-foreground); font-size: 14px; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--muted-foreground); font-size: 14px; font-weight: 500;
+            text-decoration: none; transition: color 0.15s;
+        }
+        .back-link:hover { color: var(--primary); }
+
+        /* Page */
+        .page-content { padding-top: 80px; min-height: 100vh; padding-bottom: 64px; }
+        .form-wrapper { max-width: 600px; margin: 0 auto; padding: 48px 24px; }
+
+        /* Loading state */
+        .loading-state {
+            text-align: center; padding: 80px 24px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid var(--border); border-top-color: var(--primary);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+        .loading-text { color: var(--muted-foreground); font-size: 15px; }
+
+        /* Error state */
+        .error-state { display: none; text-align: center; padding: 80px 24px; }
+        .error-card {
+            background: var(--card); border-radius: var(--radius);
+            padding: 48px 40px; max-width: 480px; margin: 0 auto;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        }
+        .error-icon { font-size: 48px; margin-bottom: 16px; }
+        .error-title { font-size: 1.5rem; color: var(--primary); margin-bottom: 12px; }
+        .error-message { color: var(--muted-foreground); margin-bottom: 28px; line-height: 1.6; }
+        .whatsapp-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #25D366; color: white;
+            padding: 12px 24px; border-radius: 9999px;
+            text-decoration: none; font-weight: 600; font-size: 15px;
+            transition: opacity 0.2s;
+        }
+        .whatsapp-btn:hover { opacity: 0.9; }
+
+        /* Form container */
+        .form-container { display: none; }
+
+        .form-header { margin-bottom: 32px; }
+        .form-title { font-size: 2rem; color: var(--primary); margin-bottom: 8px; }
+        .form-subtitle { color: var(--muted-foreground); font-size: 15px; }
+
+        /* Summary card */
+        .summary-card {
+            background: var(--amber-light);
+            border: 1.5px solid var(--amber);
+            border-radius: var(--radius);
+            padding: 20px 24px; margin-bottom: 32px;
+        }
+        .summary-heading {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: hsl(40, 80%, 35%);
+            margin-bottom: 12px;
+        }
+        .summary-row {
+            display: flex; align-items: baseline; gap: 10px;
+            margin-bottom: 6px; font-size: 14px;
+        }
+        .summary-row:last-child { margin-bottom: 0; }
+        .summary-label { color: hsl(40, 60%, 40%); min-width: 72px; font-size: 13px; }
+        .summary-value { font-weight: 600; color: hsl(220, 60%, 20%); }
+
+        /* Form sections */
+        .form-section { margin-bottom: 28px; }
+        .section-title {
+            font-size: 13px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.06em; color: var(--muted-foreground);
+            margin-bottom: 16px; padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .form-group { margin-bottom: 18px; }
+        .form-label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 14px; font-weight: 500; color: var(--foreground);
+            margin-bottom: 6px;
+        }
+        .prefilled-badge {
+            font-size: 10px; font-weight: 700; color: var(--muted-foreground);
+            background: var(--muted); padding: 2px 6px; border-radius: 4px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .required-star { color: hsl(0, 70%, 55%); margin-left: 2px; }
+
+        .form-input {
+            width: 100%; padding: 10px 14px;
+            border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: 15px;
+            color: var(--foreground); background: white;
+            transition: border-color 0.15s; outline: none;
+            -webkit-appearance: none; appearance: none;
+        }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px hsl(220, 60%, 20%, 0.08); }
+        .form-input.prefilled {
+            background: var(--muted); color: var(--muted-foreground);
+            cursor: default; border-color: transparent;
+        }
+        .form-input::placeholder { color: var(--muted-foreground); opacity: 0.6; }
+
+        .form-hint { font-size: 12px; color: var(--muted-foreground); margin-top: 5px; }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* Terms */
+        .terms-group {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 16px; background: var(--card);
+            border: 1.5px solid var(--border); border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .terms-group input[type="checkbox"] {
+            width: 18px; height: 18px; margin-top: 1px;
+            accent-color: var(--primary); flex-shrink: 0; cursor: pointer;
+        }
+        .terms-text { font-size: 14px; color: var(--muted-foreground); line-height: 1.5; }
+        .terms-text a { color: var(--primary); font-weight: 500; text-decoration: none; }
+        .terms-text a:hover { text-decoration: underline; }
+
+        /* Submit button */
+        .submit-btn {
+            width: 100%; padding: 14px 24px;
+            background: var(--primary); color: var(--primary-foreground);
+            border: none; border-radius: 9999px;
+            font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .submit-btn:hover:not(:disabled) { opacity: 0.9; }
+        .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+        .submit-btn.loading { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-spinner {
+            width: 18px; height: 18px;
+            border: 2px solid hsla(45, 100%, 96%, 0.4); border-top-color: var(--primary-foreground);
+            border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;
+        }
+
+        /* Form error */
+        .form-error {
+            display: none;
+            background: hsl(0, 80%, 97%); border: 1px solid hsl(0, 70%, 85%);
+            color: hsl(0, 55%, 38%); padding: 12px 16px;
+            border-radius: 8px; font-size: 14px; margin-bottom: 16px; line-height: 1.5;
+        }
+
+        /* Footer */
+        footer { background: var(--primary); color: var(--primary-foreground); padding: 48px 24px; }
+        .footer-container { max-width: 896px; margin: 0 auto; text-align: center; }
+        .footer-copyright { color: hsla(45, 100%, 96%, 0.4); font-size: 14px; }
+
+        @media (max-width: 480px) {
+            .form-wrapper { padding: 32px 16px; }
+            .form-title { font-size: 1.6rem; }
+            .two-col { grid-template-columns: 1fr; }
+            .error-card { padding: 36px 24px; }
+        }
+
+        /* Flatpickr overrides to match form design */
+        .flatpickr-calendar {
+            font-family: 'DM Sans', sans-serif;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .flatpickr-months {
+            background: var(--primary);
+            border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0;
+        }
+        .flatpickr-months .flatpickr-month { background: var(--primary); color: var(--primary-foreground); }
+        .flatpickr-months .flatpickr-prev-month,
+        .flatpickr-months .flatpickr-next-month { fill: var(--primary-foreground); }
+        .flatpickr-months .flatpickr-prev-month:hover svg,
+        .flatpickr-months .flatpickr-next-month:hover svg { fill: var(--amber); }
+        .flatpickr-current-month .flatpickr-monthDropdown-months { background: var(--primary); color: var(--primary-foreground); }
+        .flatpickr-current-month input.cur-year { color: var(--primary-foreground); }
+        .flatpickr-weekdays { background: var(--muted); }
+        .flatpickr-weekday { color: var(--muted-foreground); font-weight: 600; font-size: 12px; background: var(--muted); }
+        .flatpickr-day { border-radius: 6px; font-size: 14px; }
+        .flatpickr-day:hover:not(.disabled):not(.selected) { background: var(--muted); border-color: var(--border); }
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+        .flatpickr-day.today { border-color: var(--amber); }
+        .flatpickr-day.today:not(.selected):hover { background: var(--amber-light); }
+        .flatpickr-day.disabled,
+        .flatpickr-day.disabled:hover {
+            color: var(--border) !important;
+            background: transparent !important;
+            text-decoration: line-through;
+            cursor: not-allowed;
+        }
+        .flatpickr-input[readonly] { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-container">
+        <a href="/" class="logo-container">
+            <span class="logo-bold">ADRIAN'S</span>
+            <span class="logo-light">math tuition</span>
+        </a>
+        <a href="/" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Back to website
+        </a>
+    </div>
+</nav>
+
+<main class="page-content">
+    <div class="form-wrapper">
+
+        <!-- Loading state -->
+        <div class="loading-state" id="loading-state">
+            <div class="spinner"></div>
+            <p class="loading-text">Validating your registration link…</p>
+        </div>
+
+        <!-- Error state -->
+        <div class="error-state" id="error-state">
+            <div class="error-card">
+                <div class="error-icon">🔗</div>
+                <h2 class="error-title">Link Unavailable</h2>
+                <p class="error-message" id="error-message">This registration link is invalid. Please contact Adrian for a new link.</p>
+                <a href="https://wa.me/6591397985" class="whatsapp-btn" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    WhatsApp Adrian
+                </a>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="form-container" id="form-container">
+
+            <div class="form-header">
+                <h1 class="form-title">Complete Registration</h1>
+                <p class="form-subtitle">Fill in your details below to confirm your slot.</p>
+            </div>
+
+            <!-- Summary card -->
+            <div class="summary-card">
+                <div class="summary-heading">You are registering for</div>
+                <div class="summary-row">
+                    <span class="summary-label">Level</span>
+                    <span class="summary-value" id="summary-level">—</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Subject(s)</span>
+                    <span class="summary-value" id="summary-subjects">—</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Slot</span>
+                    <span class="summary-value" id="summary-slot">—</span>
+                </div>
+            </div>
+
+            <form id="signup-form" novalidate>
+                <input type="hidden" id="signup-token" name="token">
+
+                <!-- Pre-filled info -->
+                <div class="form-section">
+                    <div class="section-title">Lesson Details (Pre-filled)</div>
+                    <div class="two-col">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Level
+                                <span class="prefilled-badge">Pre-filled</span>
+                            </label>
+                            <input type="text" id="field-level" class="form-input prefilled" readonly tabindex="-1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                Subject(s)
+                                <span class="prefilled-badge">Pre-filled</span>
+                            </label>
+                            <input type="text" id="field-subjects" class="form-input prefilled" readonly tabindex="-1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            Weekly Slot
+                            <span class="prefilled-badge">Pre-filled</span>
+                        </label>
+                        <input type="text" id="field-slot" class="form-input prefilled" readonly tabindex="-1">
+                    </div>
+                </div>
+
+                <!-- Student details -->
+                <div class="form-section">
+                    <div class="section-title">Student Details</div>
+                    <div class="two-col">
+                        <div class="form-group">
+                            <label for="student-name" class="form-label">
+                                Student Name <span class="required-star">*</span>
+                            </label>
+                            <input type="text" id="student-name" name="studentName"
+                                class="form-input" placeholder="e.g. Ahmad Bin Ismail"
+                                required autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="school" class="form-label">School</label>
+                            <input type="text" id="school" name="school"
+                                class="form-input" placeholder="e.g. Raffles Institution"
+                                autocomplete="organization">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parent details -->
+                <div class="form-section">
+                    <div class="section-title">Parent / Guardian Details</div>
+                    <div class="form-group">
+                        <label for="parent-name" class="form-label">
+                            Parent Name <span class="required-star">*</span>
+                        </label>
+                        <input type="text" id="parent-name" name="parentName"
+                            class="form-input" placeholder="e.g. Ahmad's Parent"
+                            required autocomplete="off">
+                    </div>
+                    <div class="two-col">
+                        <div class="form-group">
+                            <label for="parent-contact" class="form-label">
+                                WhatsApp Number <span class="required-star">*</span>
+                            </label>
+                            <input type="tel" id="parent-contact" name="parentContact"
+                                class="form-input" placeholder="e.g. 91234567"
+                                required autocomplete="tel">
+                            <p class="form-hint">Singapore number, without +65</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="parent-email" class="form-label">
+                                Email Address <span class="required-star">*</span>
+                            </label>
+                            <input type="email" id="parent-email" name="parentEmail"
+                                class="form-input" placeholder="e.g. parent@email.com"
+                                required autocomplete="email">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Start date & referral -->
+                <div class="form-section">
+                    <div class="section-title">A Few More Details</div>
+                    <div class="form-group">
+                        <label for="start-date" class="form-label">
+                            Preferred Start Date <span class="required-star">*</span>
+                        </label>
+                        <input type="text" id="start-date" name="startDate"
+                            class="form-input" placeholder="Select a date…"
+                            required readonly autocomplete="off">
+                        <p class="form-hint">When would you like your first lesson to be?</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="how-heard" class="form-label">
+                            How did you hear about us? <span class="required-star">*</span>
+                        </label>
+                        <select id="how-heard" name="howHeard" class="form-input" required>
+                            <option value="" disabled selected>Select one…</option>
+                            <option value="Referral">Referral</option>
+                            <option value="Google Search">Google Search</option>
+                            <option value="Social Media">Social Media</option>
+                            <option value="Walked Past">Walked Past</option>
+                            <option value="School Friend">School Friend</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="referral-group" style="display:none">
+                        <label for="referred-by" class="form-label">
+                            Referred by (name) <span class="required-star">*</span>
+                        </label>
+                        <input type="text" id="referred-by" name="referredBy"
+                            class="form-input" placeholder="Who referred you?">
+                    </div>
+                </div>
+
+                <!-- Terms -->
+                <div class="terms-group">
+                    <input type="checkbox" id="terms-check" required>
+                    <label for="terms-check" class="terms-text">
+                        I have read and agree to <a href="/terms.html" target="_blank">How Things Work</a> — Adrian's lesson policies on fees, replacements, and more.
+                    </label>
+                </div>
+
+                <!-- Form-level error -->
+                <div class="form-error" id="form-error"></div>
+
+                <button type="submit" class="submit-btn" id="submit-btn">
+                    Complete Registration
+                </button>
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    <div class="footer-container">
+        <p class="footer-copyright">© 2026 Adrian's Math Tuition. All rights reserved.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    (function () {
+        const loadingEl = document.getElementById('loading-state');
+        const errorEl   = document.getElementById('error-state');
+        const formEl    = document.getElementById('form-container');
+        const errorMsg  = document.getElementById('error-message');
+
+        function showError(msg) {
+            loadingEl.style.display = 'none';
+            errorEl.style.display   = 'block';
+            errorMsg.textContent    = msg;
+        }
+
+        function showForm() {
+            loadingEl.style.display = 'none';
+            formEl.style.display    = 'block';
+        }
+
+        var DAY_INDICES = {
+            Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+            Thursday: 4, Friday: 5, Saturday: 6
+        };
+
+        function getNextOccurrence(dayIndex) {
+            var d = new Date();
+            d.setHours(0, 0, 0, 0);
+            var daysUntil = (dayIndex - d.getDay() + 7) % 7;
+            // If today is the slot day, pick NEXT week's occurrence
+            if (daysUntil === 0) daysUntil = 7;
+            d.setDate(d.getDate() + daysUntil);
+            return d;
+        }
+
+        var fpInstance = null;
+        var savedSlotTime = '';
+
+        function populateForm(data) {
+            document.getElementById('field-level').value    = data.level;
+            document.getElementById('field-subjects').value = data.subjects.join(', ');
+            document.getElementById('field-slot').value     = data.slotName;
+
+            document.getElementById('summary-level').textContent    = data.level    || '—';
+            document.getElementById('summary-subjects').textContent = data.subjects.join(', ') || '—';
+            document.getElementById('summary-slot').textContent     = data.slotName || '—';
+
+            // Initialise flatpickr with slot-day restriction
+            var today   = new Date();
+            today.setHours(0, 0, 0, 0);
+            var maxDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+            var dayName  = (data.slotDay || '').replace(/^\d+\s*/, '');
+            var dayIndex = DAY_INDICES[dayName];
+
+            var fpConfig = {
+                dateFormat:    'Y-m-d',
+                minDate:       today,
+                maxDate:       maxDate,
+                allowInput:    false,
+                disableMobile: true,
+                showMonths:    2,
+            };
+
+            if (dayIndex !== undefined) {
+                // Disable every day whose day-of-week doesn't match the slot.
+                // All matching days within minDate–maxDate remain selectable.
+                fpConfig.disable = [function (date) {
+                    return date.getDay() !== dayIndex;
+                }];
+                var defaultDate = getNextOccurrence(dayIndex);
+                if (defaultDate <= maxDate) {
+                    fpConfig.defaultDate = defaultDate;
+                }
+                // Update hint text to show which day is expected
+                var hintEl = document.querySelector('#start-date + .form-hint');
+                if (hintEl) {
+                    hintEl.textContent = 'Only ' + dayName + 's are available for your slot (next 4 weeks).';
+                }
+                // Save slotTime for redirect later (strip only leading number and single space)
+                savedSlotTime = (data.slotTime || '').replace(/^\d+\s/, '').trim();
+            }
+
+            if (fpInstance) fpInstance.destroy();
+            fpInstance = flatpickr('#start-date', fpConfig);
+        }
+
+        // Load and validate token
+        const params = new URLSearchParams(window.location.search);
+        const signupToken = params.get('token');
+
+        if (!signupToken) {
+            showError('This registration link is invalid. Please contact Adrian for a new link.');
+            return;
+        }
+
+        document.getElementById('signup-token').value = signupToken;
+
+        fetch('/api/signup-data?token=' + encodeURIComponent(signupToken))
+            .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+            .then(function (result) {
+                if (!result.ok) {
+                    const knownExpired = result.data.error && (
+                        result.data.error.includes('used') || result.data.error.includes('expired')
+                    );
+                    showError(knownExpired
+                        ? 'This registration link has expired or has already been used. Please contact Adrian for a new link.'
+                        : 'This registration link is invalid. Please contact Adrian for a new link.'
+                    );
+                    return;
+                }
+                populateForm(result.data);
+                showForm();
+            })
+            .catch(function () {
+                showError('Something went wrong loading your registration link. Please contact Adrian directly via WhatsApp.');
+            });
+
+        // Dynamic parent name placeholder
+        document.getElementById('student-name').addEventListener('input', function () {
+            const name = this.value.trim();
+            document.getElementById('parent-name').placeholder = name ? name + "'s Parent" : "e.g. Ahmad's Parent";
+        });
+
+        // Show/hide referral field
+        document.getElementById('how-heard').addEventListener('change', function () {
+            const group = document.getElementById('referral-group');
+            const input = document.getElementById('referred-by');
+            const show  = this.value === 'Referral';
+            group.style.display = show ? 'block' : 'none';
+            input.required      = show;
+            if (!show) input.value = '';
+        });
+
+        // Form submission
+        document.getElementById('signup-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitBtn  = document.getElementById('submit-btn');
+            const formErrEl  = document.getElementById('form-error');
+
+            // Basic HTML5 validation
+            if (!this.checkValidity()) {
+                this.reportValidity();
+                return;
+            }
+
+            submitBtn.disabled   = true;
+            submitBtn.innerHTML  = '<span class="btn-spinner"></span> Submitting…';
+            formErrEl.style.display = 'none';
+
+            const payload = {
+                token:         document.getElementById('signup-token').value,
+                studentName:   document.getElementById('student-name').value.trim(),
+                school:        document.getElementById('school').value.trim(),
+                parentName:    document.getElementById('parent-name').value.trim(),
+                parentContact: document.getElementById('parent-contact').value.trim(),
+                parentEmail:   document.getElementById('parent-email').value.trim(),
+                startDate:     document.getElementById('start-date').value,
+                howHeard:      document.getElementById('how-heard').value,
+                referredBy:    document.getElementById('referred-by').value.trim(),
+            };
+
+            fetch('/api/signup', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(payload),
+            })
+            .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
+            .then(function (result) {
+                if (result.ok && result.data.success) {
+                    window.location.href = '/thankyou.html?name=' + encodeURIComponent(result.data.studentName)
+                        + '&date=' + encodeURIComponent(result.data.startDate || '')
+                        + '&time=' + encodeURIComponent(savedSlotTime);
+                } else {
+                    formErrEl.textContent    = result.data.error || 'Something went wrong. Please try again or contact Adrian directly via WhatsApp.';
+                    formErrEl.style.display  = 'block';
+                    submitBtn.disabled       = false;
+                    submitBtn.textContent    = 'Complete Registration';
+                    formErrEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            })
+            .catch(function () {
+                formErrEl.textContent   = 'Something went wrong. Please try again or contact Adrian directly via WhatsApp.';
+                formErrEl.style.display = 'block';
+                submitBtn.disabled      = false;
+                submitBtn.textContent   = 'Complete Registration';
+            });
+        });
+    })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome! — Adrian's Math Tuition</title>
+    <meta name="robots" content="noindex">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --background: hsl(210, 20%, 98%);
+            --foreground: hsl(220, 40%, 13%);
+            --card: hsl(0, 0%, 100%);
+            --primary: hsl(220, 60%, 20%);
+            --primary-foreground: hsl(45, 100%, 96%);
+            --secondary: hsl(45, 90%, 55%);
+            --secondary-foreground: hsl(220, 60%, 15%);
+            --muted: hsl(220, 15%, 93%);
+            --muted-foreground: hsl(220, 10%, 46%);
+            --border: hsl(220, 15%, 88%);
+            --amber: hsl(45, 90%, 55%);
+            --amber-light: hsl(45, 90%, 92%);
+            --radius: 0.75rem;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3 { font-family: 'DM Serif Display', serif; }
+
+        /* Navbar */
+        nav {
+            background: hsla(0, 0%, 100%, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-container {
+            max-width: 1152px; margin: 0 auto; padding: 0 24px;
+            height: 64px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo-container { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .logo-bold { font-family: 'DM Serif Display', serif; font-weight: 700; font-size: 18px; letter-spacing: -0.02em; color: var(--primary); }
+        .logo-light { color: var(--muted-foreground); font-size: 14px; }
+
+        /* Main */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 64px 24px;
+        }
+
+        .thank-you-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 56px 48px;
+            max-width: 560px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        }
+
+        .confetti { font-size: 56px; margin-bottom: 24px; display: block; }
+
+        .welcome-title {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            color: var(--muted-foreground);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .next-steps {
+            background: var(--amber-light);
+            border: 1.5px solid var(--amber);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            text-align: left;
+            margin-bottom: 32px;
+        }
+
+        .next-steps-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: hsl(40, 80%, 35%);
+            margin-bottom: 12px;
+        }
+
+        .next-steps ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .next-steps li {
+            font-size: 14px;
+            color: hsl(220, 50%, 20%);
+            padding: 4px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .next-steps li::before {
+            content: '✓';
+            color: var(--amber);
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            background: var(--primary); color: var(--primary-foreground);
+            padding: 12px 28px; border-radius: 9999px;
+            text-decoration: none; font-weight: 600; font-size: 15px;
+            transition: opacity 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+
+        .btn-secondary {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            background: transparent; color: var(--muted-foreground);
+            padding: 10px 24px; border-radius: 9999px;
+            border: 1.5px solid var(--border);
+            text-decoration: none; font-weight: 500; font-size: 14px;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Footer */
+        footer { background: var(--primary); color: var(--primary-foreground); padding: 32px 24px; }
+        .footer-container { max-width: 896px; margin: 0 auto; text-align: center; }
+        .footer-copyright { color: hsla(45, 100%, 96%, 0.4); font-size: 14px; }
+
+        @media (max-width: 480px) {
+            .thank-you-card { padding: 40px 24px; }
+            .welcome-title { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-container">
+        <a href="/" class="logo-container">
+            <span class="logo-bold">ADRIAN'S</span>
+            <span class="logo-light">math tuition</span>
+        </a>
+    </div>
+</nav>
+
+<main>
+    <div class="thank-you-card">
+        <span class="confetti">🎉</span>
+        <h1 class="welcome-title" id="welcome-title">You're officially enrolled!</h1>
+        <p class="welcome-subtitle" id="welcome-subtitle">
+            Welcome to the family! We're so excited to have you.
+        </p>
+
+        <div class="next-steps">
+            <div class="next-steps-title">What happens next</div>
+            <ul>
+                <li id="next-date">Your start date is confirmed — see you then! 📅</li>
+                <li>Your first invoice will be sent to your email shortly. Subsequent invoices are sent on the 15th of each month for the following month. 💳</li>
+                <li>If you have any questions before your first lesson, just drop Adrian a WhatsApp. 💬</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <a href="https://wa.me/6591397985" class="btn-primary" target="_blank" rel="noopener noreferrer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                WhatsApp Adrian
+            </a>
+            <a href="/" class="btn-secondary">
+                Back to website
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="footer-container">
+        <p class="footer-copyright">© 2026 Adrian's Math Tuition. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    (function () {
+        const params    = new URLSearchParams(window.location.search);
+        const name      = params.get('name');
+        const dateParam = params.get('date');
+        const timeParam = params.get('time');
+
+        function friendlyDate(iso) {
+            if (!iso) return '';
+            const d = new Date(iso + 'T00:00:00');
+            if (isNaN(d.getTime())) return iso;
+            return d.toLocaleDateString('en-SG', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            });
+        }
+
+        const firstName = name ? name.split(' ')[0] : '';
+        const dateStr   = friendlyDate(dateParam);
+
+        if (firstName) {
+            document.getElementById('welcome-title').textContent =
+                'You\u2019re officially enrolled, ' + firstName + '! \uD83C\uDF89';
+            document.title = 'Enrolled! \u2014 Adrian\u2019s Math Tuition';
+        }
+
+        if (dateStr) {
+            var text = 'Your start date on ' + dateStr;
+            if (timeParam) {
+                // Use en-dash instead of hyphen for time range (first hyphen only)
+                var timeRange = timeParam.replace('-', '–');
+                text += ', ' + timeRange;
+            }
+            text += ' is confirmed — see you then! 📅';
+            document.getElementById('next-date').textContent = text;
+        }
+    })();
+</script>
+
+</body>
+</html>
