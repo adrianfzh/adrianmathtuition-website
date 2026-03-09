@@ -5,7 +5,8 @@
     { "src": "api/signup-data.js",  "use": "@vercel/node" },
     { "src": "api/signup.js",       "use": "@vercel/node" },
     { "src": "*.html",              "use": "@vercel/static" },
-    { "src": "favicon.svg",         "use": "@vercel/static" }
+    { "src": "favicon.svg",         "use": "@vercel/static" },
+    { "src": "api/generate-invoices.js", "use": "@vercel/node" }
   ],
   "routes": [
     { "src": "/api/schedule",     "dest": "/api/schedule.js"    },
@@ -16,6 +17,7 @@
     { "src": "/terms",            "dest": "/terms.html"         },
     { "src": "/admin",            "dest": "/admin.html"         },
     { "src": "/",                 "dest": "/index.html"         },
+    { "src": "/api/generate-invoices", "dest": "/api/generate-invoices.js" },
     { "src": "/(.*)",             "dest": "/$1"                 }
   ]
 }
