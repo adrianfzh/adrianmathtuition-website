@@ -4,6 +4,8 @@ const CNY_DATES = [
 ];
 const NO_LESSON_DATES = [...CNY_DATES, '2026-12-25', '2027-12-25'];
 
+const { generateInvoicePDF, closeBrowser } = require('./generate-pdf');
+
 async function airtableRequest(baseId, airtableToken, tableName, path, options = {}) {
     const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}${path}`;
     const res = await fetch(url, {
@@ -237,10 +239,69 @@ module.exports = async function handler(req, res) {
 
                 console.log('[generate-invoices] Sending invoiceFields:', JSON.stringify(invoiceFields, null, 2));
                 console.log('[generate-invoices] Creating invoice for student', student.fields['Student Name'], '—', lessonCount, 'lessons across', studentEnrollments.length, 'slots');
-                await at('Invoices', '', {
+                
+                const createdRecord = await at('Invoices', '', {
                     method: 'POST',
                     body: JSON.stringify({ fields: invoiceFields }),
                 });
+
+                console.log('[generate-invoices] Created record:', 
+                  JSON.stringify(createdRecord, null, 2));
+                console.log('[generate-invoices] Created record ID:', 
+                  createdRecord?.id);
+                
+                // Only generate and upload PDFs in production (Vercel)
+                // Local Mac cannot access content.airtableapi.com
+                if (process.env.VERCEL === '1') {
+                  try {
+                    console.log('[generate-invoices] Generating PDF for invoice', createdRecord.id);
+                    
+                    const invoiceData = {
+                        studentName: student.fields['Student Name'],
+                        month: invoiceMonth.label,
+                        invoiceId: createdRecord.id,
+                        issueDate: formatDate(new Date()),
+                        dueDate: formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
+                        lessonsCount: lessonCount,
+                        ratePerLesson: ratePerLesson,
+                        baseAmount: lessonCount * ratePerLesson,
+                        finalAmount: lessonCount * ratePerLesson,
+                        status: 'Pending',
+                        makeupCredits: 0,
+                        notes: notes || '',
+                        lineItems: lineItemsWithDescription
+                    };
+                    
+                    const pdfBuffer = await generateInvoicePDF(invoiceData);
+                    
+                    // Upload PDF directly to Airtable attachment API
+                    const uploadRes = await fetch(
+                      `https://content.airtableapi.com/v0/${baseId}/Invoices/${createdRecord.id}/uploadAttachment`,
+                      {
+                        method: 'POST',
+                        headers: {
+                          'Authorization': `Bearer ${airtableToken}`,
+                          'Content-Type': 'application/octet-stream',
+                          'X-Airtable-Attachment-Filename': `Invoice-${student.fields['Student Name']}-${invoiceMonth.label}.pdf`,
+                          'X-Airtable-Field-Name': 'Invoice PDF',
+                        },
+                        body: pdfBuffer
+                      }
+                    );
+
+                    if (!uploadRes.ok) {
+                      const errText = await uploadRes.text();
+                      throw new Error('Airtable upload failed: ' + errText);
+                    }
+
+                    console.log('[generate-invoices] PDF uploaded for invoice', createdRecord.id);
+                  } catch (pdfError) {
+                    console.error('[generate-invoices] PDF error:', pdfError.message);
+                  }
+                } else {
+                  console.log('[generate-invoices] Skipping PDF upload in local dev mode');
+                }
+                
                 generated++;
                 console.log('[generate-invoices] Invoice created for student', student.fields['Student Name']);
             } catch (err) {
@@ -250,6 +311,9 @@ module.exports = async function handler(req, res) {
             }
         }
 
+        // Clean up browser instance
+        await closeBrowser();
+        
         console.log('[generate-invoices] Done. Generated:', generated, 'Skipped:', skipped, 'Errors:', errors.length);
         return res.json({ generated, skipped, errors });
     } catch (error) {

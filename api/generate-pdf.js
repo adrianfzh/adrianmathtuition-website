@@ -2,8 +2,38 @@ const fs = require('fs').promises;
 const path = require('path');
 const puppeteer = require('puppeteer-core');
 
+let browserInstance = null;
+
+async function getBrowser() {
+  if (browserInstance) return browserInstance;
+  
+  const isProd = process.env.VERCEL === '1';
+  if (isProd) {
+    const chromium = require('@sparticuz/chromium');
+    browserInstance = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+  } else {
+    browserInstance = await puppeteer.launch({
+      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+  }
+  return browserInstance;
+}
+
+async function closeBrowser() {
+  if (browserInstance) {
+    await browserInstance.close();
+    browserInstance = null;
+  }
+}
+
 async function generateInvoicePDF(invoiceData) {
-    let browser;
     try {
         // 1. Read invoice template
         const templatePath = path.join(__dirname, '..', 'invoice-final.html');
@@ -90,27 +120,8 @@ async function generateInvoicePDF(invoiceData) {
             html = html.replace(/\{\{NOTES\}\}/g, invoiceData.notes);
         }
 
-        // 3. Launch puppeteer with environment-specific config
-        const isProd = process.env.VERCEL === '1';
-        
-        if (isProd) {
-            // Vercel: use @sparticuz/chromium
-            const chromium = require('@sparticuz/chromium');
-            browser = await puppeteer.launch({
-                args: chromium.args,
-                defaultViewport: chromium.defaultViewport,
-                executablePath: await chromium.executablePath(),
-                headless: chromium.headless,
-            });
-        } else {
-            // Local: use puppeteer-core with local Chrome on Mac
-            browser = await puppeteer.launch({
-                executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            });
-        }
-
+        // 3. Get browser instance
+        const browser = await getBrowser();
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
 
@@ -132,11 +143,7 @@ async function generateInvoicePDF(invoiceData) {
     } catch (error) {
         console.error('Error generating PDF:', error);
         throw error;
-    } finally {
-        if (browser) {
-            await browser.close();
-        }
     }
 }
 
-module.exports = { generateInvoicePDF };
+module.exports = { generateInvoicePDF, closeBrowser };

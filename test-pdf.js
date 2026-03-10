@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { generateInvoicePDF } = require('./api/generate-pdf.js');
+const { generateInvoicePDF, closeBrowser } = require('./api/generate-pdf.js');
 
 const testInvoice = {
   studentName: 'Chloe Zhang',
@@ -25,14 +25,23 @@ const testInvoice = {
 
 async function testPDFGeneration() {
   try {
-    console.log('Generating test PDF...');
-    const pdfBuffer = await generateInvoicePDF(testInvoice);
+    console.time('Total');
     
-    // Save to file
-    const outputPath = path.join(__dirname, 'test-invoice.pdf');
-    fs.writeFileSync(outputPath, pdfBuffer);
+    for (let i = 0; i < 3; i++) {
+      console.time(`PDF ${i+1}`);
+      const pdfBuffer = await generateInvoicePDF(testInvoice);
+      
+      // Save each PDF with a different name
+      const outputPath = path.join(__dirname, `test-invoice-${i+1}.pdf`);
+      fs.writeFileSync(outputPath, pdfBuffer);
+      
+      console.timeEnd(`PDF ${i+1}`);
+      console.log(`PDF ${i+1} generated successfully: test-invoice-${i+1}.pdf`);
+    }
     
-    console.log('PDF generated successfully: test-invoice.pdf');
+    await closeBrowser();
+    console.timeEnd('Total');
+    console.log('All PDFs generated and browser closed.');
   } catch (error) {
     console.error('Error generating PDF:', error);
   }
