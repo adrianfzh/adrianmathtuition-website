@@ -72,8 +72,21 @@ function formatDate(date) {
 }
 
 module.exports = async function handler(req, res) {
-    if (req.method !== 'POST') {
+    if (req.method !== 'POST' && req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // Security check for cron jobs
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = req.headers['authorization'];
+
+    // Allow if: valid cron secret OR request is from Vercel cron
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+        // Also allow Vercel's own cron requests
+        const isVercelCron = req.headers['x-vercel-cron'] === '1';
+        if (!isVercelCron) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
     }
 
     const airtableToken = process.env.AIRTABLE_TOKEN;
