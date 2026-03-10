@@ -1,4 +1,6 @@
 
+const { sendTelegram } = require('./telegram');
+
 async function airtableRequest(baseId, airtableToken, tableName, path, options = {}) {
     const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}${path}`;
     const res = await fetch(url, {
@@ -222,6 +224,31 @@ module.exports = async function handler(req, res) {
 
         // STEP 6 — Return summary
         console.log(`[send-invoices] Done. Sent: ${sentCount}, Failed: ${failedCount}, Errors: ${errors.length}`);
+        
+        // Check for remaining Draft invoices
+        const draftParams = new URLSearchParams();
+        draftParams.set('filterByFormula', `{Status}='Draft'`);
+        const draftData = await at('Invoices', 
+          `?${draftParams.toString()}&fields[]=Month`);
+        
+        // Get current month from first sent invoice or use current date
+        const currentMonth = emails.length > 0 && emails[0].subject 
+          ? emails[0].subject.match(/for (\w+ \d{4})/)?.[1] 
+          : new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        
+        const draftThisMonth = draftData.records.filter(
+          r => r.fields['Month'] === currentMonth
+        ).length;
+        
+        // Send Telegram notification
+        await sendTelegram(
+          `✅ <b>Invoices Sent</b>\n\n` +
+          `${sentCount} invoices sent for ${currentMonth}.\n` +
+          (draftThisMonth > 0 
+            ? `⚠️ ${draftThisMonth} invoices still in Draft — please review!` 
+            : `All invoices processed.`)
+        );
+        
         return res.json({ 
             sent: sentCount, 
             failed: failedCount, 

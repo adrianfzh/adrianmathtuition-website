@@ -5,6 +5,7 @@ const CNY_DATES = [
 const NO_LESSON_DATES = [...CNY_DATES, '2026-12-25', '2027-12-25'];
 
 const { generateInvoicePDF, closeBrowser } = require('./generate-pdf');
+const { sendTelegram } = require('./telegram');
 
 async function airtableRequest(baseId, airtableToken, tableName, path, options = {}) {
     const url = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}${path}`;
@@ -328,6 +329,15 @@ module.exports = async function handler(req, res) {
         await closeBrowser();
         
         console.log('[generate-invoices] Done. Generated:', generated, 'Skipped:', skipped, 'Errors:', errors.length);
+        
+        // Send Telegram notification
+        await sendTelegram(
+          `📋 <b>Invoices Generated</b>\n\n` +
+          `${generated} invoices created for ${invoiceMonth.label}.\n` +
+          `Please review and approve in Airtable by tomorrow 9am.\n\n` +
+          `Skipped: ${skipped} | Errors: ${errors.length}` 
+        );
+        
         return res.json({ generated, skipped, errors });
     } catch (error) {
         console.error('[generate-invoices] Unhandled error:', error);
