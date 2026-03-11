@@ -44,6 +44,7 @@ module.exports = async function handler(req, res) {
         parentEmail,
         startDate,
         howHeard,
+        referralType,
         referredBy,
     } = req.body || {};
 
@@ -106,6 +107,7 @@ module.exports = async function handler(req, res) {
         };
         if (school) studentFields['School'] = sanitize(school);
         if (studentContact) studentFields['Student Contact'] = sanitize(studentContact);
+        if (referralType) studentFields['Referral Type'] = sanitize(referralType);
         if (referredBy) studentFields['Referred By Name'] = sanitize(referredBy);
 
         console.log('[signup] Step 2: Sending fields:', JSON.stringify(studentFields));
@@ -150,9 +152,9 @@ module.exports = async function handler(req, res) {
             if (rateData.records && rateData.records.length > 0) {
                 const rateRecord = rateData.records[0];
                 rateId = rateRecord.id;
-                ratePerLesson = rateRecord.fields['Rate Per Lesson'] ?? null;
-                rateType = rateRecord.fields['Rate Type'] || null;
-                console.log('[signup] Step 3: Found Rate record, id:', rateId, '| Rate Per Lesson:', ratePerLesson, '| Rate Type:', rateType);
+                ratePerLesson = rateRecord.fields['Amount'] ?? null;
+                rateType = rateRecord.fields['Rate Name'] || null;
+                console.log('[signup] Step 3: Found Rate record, id:', rateId, '| fields:', JSON.stringify(rateRecord.fields));
             } else {
                 console.warn('[signup] Step 3: No Rate record found for level:', rateLevel);
             }
