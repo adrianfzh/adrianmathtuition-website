@@ -76,17 +76,62 @@
         .welcome-title {
             font-size: 2rem;
             color: var(--primary);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             line-height: 1.2;
         }
 
         .welcome-subtitle {
             font-size: 16px;
             color: var(--muted-foreground);
-            margin-bottom: 32px;
+            margin-bottom: 28px;
             line-height: 1.6;
         }
 
+        /* Lesson hero card */
+        .lesson-card {
+            background: var(--primary);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .lesson-card-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--amber);
+            margin-bottom: 12px;
+        }
+
+        .lesson-card-weekday {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.75rem;
+            color: var(--primary-foreground);
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .lesson-card-date {
+            font-size: 1rem;
+            font-weight: 600;
+            color: hsla(45, 100%, 96%, 0.75);
+            margin-bottom: 10px;
+        }
+
+        .lesson-card-time {
+            display: inline-block;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--amber);
+            background: hsla(45, 90%, 55%, 0.12);
+            padding: 4px 16px;
+            border-radius: 9999px;
+            border: 1px solid hsla(45, 90%, 55%, 0.3);
+        }
+
+        /* What happens next */
         .next-steps {
             background: var(--amber-light);
             border: 1.5px solid var(--amber);
@@ -102,31 +147,39 @@
             text-transform: uppercase;
             letter-spacing: 0.07em;
             color: hsl(40, 80%, 35%);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .next-steps ul {
             list-style: none;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
 
         .next-steps li {
             font-size: 14px;
             color: hsl(220, 50%, 20%);
-            padding: 4px 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
+            line-height: 1.55;
         }
 
-        .next-steps li::before {
-            content: '✓';
-            color: var(--amber);
+        /* Token code block */
+        .token-block {
+            display: block;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
             font-weight: 700;
-            flex-shrink: 0;
-            margin-top: 1px;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            padding: 7px 12px;
+            border-radius: 6px;
+            letter-spacing: 0.05em;
+            margin: 8px 0 6px;
+            word-break: break-all;
         }
 
+        /* Action buttons */
         .action-buttons {
             display: flex;
             flex-direction: column;
@@ -157,22 +210,11 @@
         .footer-container { max-width: 896px; margin: 0 auto; text-align: center; }
         .footer-copyright { color: hsla(45, 100%, 96%, 0.4); font-size: 14px; }
 
-        .token-code {
-            display: inline-block;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
-            font-weight: 700;
-            background: var(--primary);
-            color: var(--primary-foreground);
-            padding: 2px 8px;
-            border-radius: 5px;
-            letter-spacing: 0.04em;
-            vertical-align: baseline;
-        }
-
         @media (max-width: 480px) {
             .thank-you-card { padding: 40px 24px; }
             .welcome-title { font-size: 1.6rem; }
+            .lesson-card { padding: 24px 20px; }
+            .lesson-card-weekday { font-size: 1.5rem; }
         }
     </style>
 
@@ -201,17 +243,26 @@
     <div class="thank-you-card">
         <span class="confetti">🎉</span>
         <h1 class="welcome-title" id="welcome-title">You're officially enrolled!</h1>
-        <p class="welcome-subtitle" id="welcome-subtitle">
+        <p class="welcome-subtitle">
             Welcome to the family! We're so excited to have you.
         </p>
 
+        <!-- Lesson hero card -->
+        <div class="lesson-card" id="lesson-card">
+            <div class="lesson-card-label">📅 Your first lesson</div>
+            <div class="lesson-card-weekday" id="lesson-weekday">—</div>
+            <div class="lesson-card-date" id="lesson-date"></div>
+            <div class="lesson-card-time" id="lesson-time" style="display:none"></div>
+        </div>
+
+        <!-- What happens next -->
         <div class="next-steps">
             <div class="next-steps-title">What happens next</div>
             <ul>
-                <li id="next-date">Your start date is confirmed — see you then! 📅</li>
-                <li>Your first invoice will be sent to your email shortly. Subsequent invoices are sent on the 15th of each month for the following month. 💳</li>
-                <li id="telegram-item">💬 Ask math questions anytime — your student can message @AdrianMathBot on Telegram 24/7 for step-by-step math help. <span id="telegram-register"></span></li>
-                <li>If you have any questions before your first lesson, just drop Adrian a WhatsApp. 💬</li>
+                <li>💳 Your first invoice will be sent to your email shortly. Subsequent invoices are sent on the 15th of each month for the following month.</li>
+                <li>💬 Ask math questions anytime — your student can message @AdrianMathBot on Telegram 24/7 for step-by-step math help. No registration needed, just start asking!</li>
+                <li id="telegram-item" style="display:none">📲 To reschedule lessons or change timings, register on Telegram using your registration code. Open @AdrianMathBot and type /register followed by your code:<span class="token-block" id="token-display"></span>Both student and parent can register using the same code. Code expires in 7 days.</li>
+                <li>❓ Any questions before your first lesson? Drop Adrian a WhatsApp anytime.</li>
             </ul>
         </div>
 
@@ -241,42 +292,41 @@
         const timeParam = params.get('time');
         const token     = params.get('token');
 
-        function friendlyDate(iso) {
-            if (!iso) return '';
+        function parseDate(iso) {
+            if (!iso) return null;
             const d = new Date(iso + 'T00:00:00');
-            if (isNaN(d.getTime())) return iso;
-            return d.toLocaleDateString('en-SG', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-            });
+            return isNaN(d.getTime()) ? null : d;
         }
 
+        // Name personalisation
         const firstName = name ? name.split(' ')[0] : '';
-        const dateStr   = friendlyDate(dateParam);
-
         if (firstName) {
             document.getElementById('welcome-title').textContent =
                 'You\u2019re officially enrolled, ' + firstName + '! \uD83C\uDF89';
             document.title = 'Enrolled! \u2014 Adrian\u2019s Math Tuition';
         }
 
-        if (token) {
-            const codeEl = document.createElement('span');
-            codeEl.className = 'token-code';
-            codeEl.textContent = token;
-            const registerEl = document.getElementById('telegram-register');
-            registerEl.innerHTML = '📅 To reschedule lessons or change timings — register on Telegram using your registration code. Open @AdrianMathBot and type /register ';
-            registerEl.appendChild(codeEl);
-            registerEl.appendChild(document.createTextNode('. Both the student and parent can register using the same code. Code expires in 7 days.'));
+        // Lesson hero card
+        const d = parseDate(dateParam);
+        if (d) {
+            document.getElementById('lesson-weekday').textContent =
+                d.toLocaleDateString('en-SG', { weekday: 'long' });
+            document.getElementById('lesson-date').textContent =
+                d.toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
+        } else {
+            document.getElementById('lesson-card').style.display = 'none';
         }
 
-        if (dateStr) {
-            var text = 'Your start date ' + dateStr;
-            if (timeParam) {
-                var timeRange = timeParam.replace('-', '–');
-                text += ', ' + timeRange;
-            }
-            text += ' — see you then! 📅';
-            document.getElementById('next-date').textContent = text;
+        if (timeParam) {
+            const timeEl = document.getElementById('lesson-time');
+            timeEl.textContent = timeParam.replace('-', '\u2013');
+            timeEl.style.display = 'inline-block';
+        }
+
+        // Telegram registration item
+        if (token) {
+            document.getElementById('token-display').textContent = token;
+            document.getElementById('telegram-item').style.display = 'block';
         }
     })();
 </script>
