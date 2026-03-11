@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
         const record = tokenData.records[0];
         const f = record.fields;
 
-        if (f['Status'] !== 'Unused') {
+        if (f['Status'] !== 'Pending') {
             return res.status(400).json({ error: 'Token already used' });
         }
 
