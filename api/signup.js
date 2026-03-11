@@ -114,6 +114,24 @@ module.exports = async function handler(req, res) {
         const studentId = studentRecord.id;
         console.log('[signup] Step 2: Student created, id:', studentId);
 
+        // Step 2b: Link student to token and extend expiry to 7 days (non-fatal)
+        console.log('[signup] Step 2b: Linking student to token and extending expiry...');
+        try {
+            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+            await at('Tokens', `/${tokenRecord.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    fields: {
+                        'Student': [studentId],
+                        'Expires At': expiresAt,
+                    },
+                }),
+            });
+            console.log('[signup] Step 2b: Token updated — student linked, expires:', expiresAt);
+        } catch (err) {
+            console.error('[signup] Step 2b FAILED (non-fatal). Token:', tokenRecord.id, '| Error:', err.message);
+        }
+
         // Step 3: Create Enrollment record
         console.log('[signup] Step 3: Creating Enrollment record...');
         let enrollmentId = null;
