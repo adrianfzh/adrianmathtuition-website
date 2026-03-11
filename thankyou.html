@@ -270,13 +270,12 @@
         }
 
         if (dateStr) {
-            var text = 'Your start date on ' + dateStr;
+            var text = 'Your start date ' + dateStr;
             if (timeParam) {
-                // Use en-dash instead of hyphen for time range (first hyphen only)
                 var timeRange = timeParam.replace('-', '–');
                 text += ', ' + timeRange;
             }
-            text += ' is confirmed — see you then! 📅';
+            text += ' — see you then! 📅';
             document.getElementById('next-date').textContent = text;
         }
     })();
