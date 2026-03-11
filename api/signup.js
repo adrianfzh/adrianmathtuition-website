@@ -154,7 +154,7 @@ module.exports = async function handler(req, res) {
                 const rateRecord = rateData.records[0];
                 rateId = rateRecord.id;
                 ratePerLesson = rateRecord.fields['Amount'] ?? null;
-                rateType = rateRecord.fields['Rate Name'] || null;
+                rateType = 'Standard';
                 console.log('[signup] Step 3: Found Rate record, id:', rateId, '| fields:', JSON.stringify(rateRecord.fields));
             } else {
                 console.warn('[signup] Step 3: No Rate record found for level:', rateLevel);
