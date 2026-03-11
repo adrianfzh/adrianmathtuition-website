@@ -271,6 +271,9 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                 WhatsApp Adrian
             </a>
+            <a id="telegram-btn" href="https://t.me/AdrianMathBot?start=register" class="btn-secondary" target="_blank" rel="noopener noreferrer" style="display:none">
+                Register on Telegram
+            </a>
             <a href="/" class="btn-secondary">
                 Back to website
             </a>
@@ -323,10 +326,11 @@
             timeEl.style.display = 'inline-block';
         }
 
-        // Telegram registration item
+        // Telegram registration item + button (both hidden when no token)
         if (token) {
             document.getElementById('token-display').textContent = token;
             document.getElementById('telegram-item').style.display = 'block';
+            document.getElementById('telegram-btn').style.display = 'inline-flex';
         }
     })();
 </script>

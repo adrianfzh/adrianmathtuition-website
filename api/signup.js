@@ -81,24 +81,26 @@ module.exports = async function handler(req, res) {
 
         const rawLevel = tf['Level'] || '';
         const level = LEVEL_MAP[rawLevel] || rawLevel;
+        const subjectLevel = tf['Subject Level'] || '';
         const subjectsRaw = tf['Subjects'] || '';
         const subjects = Array.isArray(subjectsRaw)
             ? subjectsRaw
             : String(subjectsRaw).split(',').map(s => s.trim()).filter(Boolean);
         const slotIds = tf['Slot'] || [];
         const slotId = slotIds[0] || '';
-        console.log('[signup] Step 1: Extracted — rawLevel:', rawLevel, '→ level:', level, '| subjects:', subjects, '| slotId:', slotId);
+        console.log('[signup] Step 1: Extracted — rawLevel:', rawLevel, '→ level:', level, '| subjectLevel:', subjectLevel, '| subjects:', subjects, '| slotId:', slotId);
 
         // Step 2: Create Student record
         console.log('[signup] Step 2: Creating Student record...');
         const studentFields = {
             'Student Name': sanitize(studentName),
             'Level': level,
+            'Subject Level': subjectLevel,
             'Subjects': subjects,
             'Parent Name': sanitize(parentName),
             'Parent Contact': sanitize(parentContact),
             'Parent Email': sanitize(parentEmail),
-            'Status': 'Trial',
+            'Status': 'Active',
             'Join Date': startDate,
             'How Heard': sanitize(howHeard),
         };
