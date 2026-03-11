@@ -135,8 +135,33 @@ module.exports = async function handler(req, res) {
             console.error('[signup] Step 2b FAILED (non-fatal). Token:', tokenRecord.id, '| Error:', err.message);
         }
 
-        // Step 3: Create Enrollment record
-        console.log('[signup] Step 3: Creating Enrollment record...');
+        // Step 3: Find Rate record (needed for Enrollment fields)
+        console.log('[signup] Step 3: Looking up Rate...');
+        let rateId = null;
+        let ratePerLesson = null;
+        let rateType = null;
+        try {
+            const rateLevel = level.startsWith('JC') ? 'JC' : 'Secondary';
+            const rateParams = new URLSearchParams();
+            rateParams.set('filterByFormula', `AND({Level}='${rateLevel}', FIND('Standard', {Rate Name}))`);
+            rateParams.set('maxRecords', '1');
+            console.log('[signup] Step 3: rateLevel:', rateLevel, '| filter:', rateParams.get('filterByFormula'));
+            const rateData = await at('Rates', `?${rateParams.toString()}`);
+            if (rateData.records && rateData.records.length > 0) {
+                const rateRecord = rateData.records[0];
+                rateId = rateRecord.id;
+                ratePerLesson = rateRecord.fields['Rate Per Lesson'] ?? null;
+                rateType = rateRecord.fields['Rate Type'] || null;
+                console.log('[signup] Step 3: Found Rate record, id:', rateId, '| Rate Per Lesson:', ratePerLesson, '| Rate Type:', rateType);
+            } else {
+                console.warn('[signup] Step 3: No Rate record found for level:', rateLevel);
+            }
+        } catch (err) {
+            console.error('[signup] Step 3 FAILED (non-fatal):', err.message);
+        }
+
+        // Step 4: Create Enrollment record
+        console.log('[signup] Step 4: Creating Enrollment record...');
         let enrollmentId = null;
         try {
             const enrollmentFields = {
@@ -146,40 +171,22 @@ module.exports = async function handler(req, res) {
                 'Status': 'Active',
             };
             if (slotId) enrollmentFields['Slot'] = [slotId];
+            if (ratePerLesson !== null) enrollmentFields['Rate Per Lesson'] = ratePerLesson;
+            if (rateType) enrollmentFields['Rate Type'] = rateType;
 
-            console.log('[signup] Step 3: Sending fields:', JSON.stringify(enrollmentFields));
+            console.log('[signup] Step 4: Sending fields:', JSON.stringify(enrollmentFields));
             const enrollmentRecord = await at('Enrollments', '', {
                 method: 'POST',
                 body: JSON.stringify({ fields: enrollmentFields }),
             });
             enrollmentId = enrollmentRecord.id;
-            console.log('[signup] Step 3: Enrollment created, id:', enrollmentId);
+            console.log('[signup] Step 4: Enrollment created, id:', enrollmentId);
         } catch (err) {
-            console.error('[signup] Step 3 FAILED. Student ID:', studentId, '| Error:', err.message);
+            console.error('[signup] Step 4 FAILED. Student ID:', studentId, '| Error:', err.message);
             return res.status(500).json({
                 error: `Registration partially completed. Please contact Adrian directly via WhatsApp. (Ref: Student ${studentId})`,
                 partialSuccess: true,
             });
-        }
-
-        // Step 4: Find Rate record
-        console.log('[signup] Step 4: Looking up Rate...');
-        let rateId = null;
-        try {
-            const rateLevel = level.startsWith('JC') ? 'JC' : 'Secondary';
-            const rateParams = new URLSearchParams();
-            rateParams.set('filterByFormula', `AND({Level}='${rateLevel}', FIND('Standard', {Rate Name}))`);
-            rateParams.set('maxRecords', '1');
-            console.log('[signup] Step 4: rateLevel:', rateLevel, '| filter:', rateParams.get('filterByFormula'));
-            const rateData = await at('Rates', `?${rateParams.toString()}`);
-            if (rateData.records && rateData.records.length > 0) {
-                rateId = rateData.records[0].id;
-                console.log('[signup] Step 4: Found Rate record, id:', rateId);
-            } else {
-                console.warn('[signup] Step 4: No Rate record found for level:', rateLevel);
-            }
-        } catch (err) {
-            console.error('[signup] Step 4 FAILED (non-fatal):', err.message);
         }
 
         // Step 5: Create Rate History record
