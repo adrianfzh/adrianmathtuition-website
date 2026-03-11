@@ -71,7 +71,8 @@ module.exports = async function handler(req, res) {
 
         const tokenRecord = tokenData.records[0];
         const tf = tokenRecord.fields;
-        console.log('[signup] Step 1: Token fields — Status:', tf['Status'], '| Expires At:', tf['Expires At']);
+        console.log('[signup] Step 1: Token record id:', tokenRecord.id);
+        console.log('[signup] Step 1: Token fields (full):', JSON.stringify(tf));
 
         if (tf['Status'] !== 'Pending') {
             return res.status(400).json({ error: 'This registration link has already been used.' });
@@ -184,7 +185,7 @@ module.exports = async function handler(req, res) {
             enrollmentId = enrollmentRecord.id;
             console.log('[signup] Step 4: Enrollment created, id:', enrollmentId);
         } catch (err) {
-            console.error('[signup] Step 4 FAILED. Student ID:', studentId, '| Error:', err.message);
+            console.error('[signup] Step 4 FAILED. Student ID:', studentId, '| Error:', err.message, '| Full:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
             return res.status(500).json({
                 error: `Registration partially completed. Please contact Adrian directly via WhatsApp. (Ref: Student ${studentId})`,
                 partialSuccess: true,
@@ -195,18 +196,19 @@ module.exports = async function handler(req, res) {
         console.log('[signup] Step 5: rateId is', rateId, '— will', rateId ? 'create' : 'SKIP (no rate found)');
         if (rateId) {
             try {
+                const rateHistoryFields = {
+                    'Student': [studentId],
+                    'Rate': [rateId],
+                    'Effective From': startDate,
+                };
+                console.log('[signup] Step 5: Sending fields:', JSON.stringify(rateHistoryFields));
                 await at('Rate History', '', {
                     method: 'POST',
-                    body: JSON.stringify({
-                        fields: {
-                            'Student': [studentId],
-                            'Rate': [rateId],
-                            'Effective From': startDate,
-                        },
-                    }),
+                    body: JSON.stringify({ fields: rateHistoryFields }),
                 });
+                console.log('[signup] Step 5: Rate History created for student:', studentId);
             } catch (err) {
-                console.error('[signup] Step 5 FAILED. Student:', studentId, '| Enrollment:', enrollmentId, '| Error:', err.message);
+                console.error('[signup] Step 5 FAILED. Student:', studentId, '| Enrollment:', enrollmentId, '| Error:', err.message, '| Full:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
                 return res.status(500).json({
                     error: `Registration partially completed. Please contact Adrian directly via WhatsApp. (Ref: Student ${studentId}, Enrollment ${enrollmentId})`,
                     partialSuccess: true,
