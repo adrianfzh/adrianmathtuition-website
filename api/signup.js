@@ -72,7 +72,7 @@ module.exports = async function handler(req, res) {
         const tf = tokenRecord.fields;
         console.log('[signup] Step 1: Token fields — Status:', tf['Status'], '| Expires At:', tf['Expires At']);
 
-        if (tf['Status'] !== 'Unused') {
+        if (tf['Status'] !== 'Pending') {
             return res.status(400).json({ error: 'This registration link has already been used.' });
         }
         if (tf['Expires At'] && new Date(tf['Expires At']) < new Date()) {
@@ -124,6 +124,7 @@ module.exports = async function handler(req, res) {
                     fields: {
                         'Student': [studentId],
                         'Expires At': expiresAt,
+                        'Status': 'Active',
                     },
                 }),
             });
@@ -208,7 +209,7 @@ module.exports = async function handler(req, res) {
             await at('Tokens', `/${tokenRecord.id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
-                    fields: { 'Status': 'Used', 'Student': [studentId] },
+                    fields: { 'Status': 'Active', 'Student': [studentId] },
                 }),
             });
         } catch (err) {
