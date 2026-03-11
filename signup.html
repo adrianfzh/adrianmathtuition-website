@@ -370,6 +370,13 @@
                                 autocomplete="organization">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="student-contact" class="form-label">Student WhatsApp Number</label>
+                        <input type="tel" id="student-contact" name="studentContact"
+                            class="form-input" placeholder="e.g. 81234567"
+                            autocomplete="tel">
+                        <p class="form-hint">Singapore number, without +65. Leave blank if student uses parent's number.</p>
+                    </div>
                 </div>
 
                 <!-- Parent details -->
@@ -615,15 +622,16 @@
             formErrEl.style.display = 'none';
 
             const payload = {
-                token:         document.getElementById('signup-token').value,
-                studentName:   document.getElementById('student-name').value.trim(),
-                school:        document.getElementById('school').value.trim(),
-                parentName:    document.getElementById('parent-name').value.trim(),
-                parentContact: document.getElementById('parent-contact').value.trim(),
-                parentEmail:   document.getElementById('parent-email').value.trim(),
-                startDate:     document.getElementById('start-date').value,
-                howHeard:      document.getElementById('how-heard').value,
-                referredBy:    document.getElementById('referred-by').value.trim(),
+                token:          document.getElementById('signup-token').value,
+                studentName:    document.getElementById('student-name').value.trim(),
+                school:         document.getElementById('school').value.trim(),
+                studentContact: document.getElementById('student-contact').value.trim(),
+                parentName:     document.getElementById('parent-name').value.trim(),
+                parentContact:  document.getElementById('parent-contact').value.trim(),
+                parentEmail:    document.getElementById('parent-email').value.trim(),
+                startDate:      document.getElementById('start-date').value,
+                howHeard:       document.getElementById('how-heard').value,
+                referredBy:     document.getElementById('referred-by').value.trim(),
             };
 
             fetch('/api/signup', {
@@ -636,7 +644,8 @@
                 if (result.ok && result.data.success) {
                     window.location.href = '/thankyou.html?name=' + encodeURIComponent(result.data.studentName)
                         + '&date=' + encodeURIComponent(result.data.startDate || '')
-                        + '&time=' + encodeURIComponent(savedSlotTime);
+                        + '&time=' + encodeURIComponent(savedSlotTime)
+                        + '&token=' + encodeURIComponent(signupToken);
                 } else {
                     formErrEl.textContent    = result.data.error || 'Something went wrong. Please try again or contact Adrian directly via WhatsApp.';
                     formErrEl.style.display  = 'block';

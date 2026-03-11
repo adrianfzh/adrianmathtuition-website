@@ -38,6 +38,7 @@ module.exports = async function handler(req, res) {
         token: signupToken,
         studentName,
         school,
+        studentContact,
         parentName,
         parentContact,
         parentEmail,
@@ -102,6 +103,7 @@ module.exports = async function handler(req, res) {
             'How Heard': sanitize(howHeard),
         };
         if (school) studentFields['School'] = sanitize(school);
+        if (studentContact) studentFields['Student Contact'] = sanitize(studentContact);
         if (referredBy) studentFields['Referred By Name'] = sanitize(referredBy);
 
         console.log('[signup] Step 2: Sending fields:', JSON.stringify(studentFields));

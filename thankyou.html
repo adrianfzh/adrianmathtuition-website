@@ -157,6 +157,19 @@
         .footer-container { max-width: 896px; margin: 0 auto; text-align: center; }
         .footer-copyright { color: hsla(45, 100%, 96%, 0.4); font-size: 14px; }
 
+        .token-code {
+            display: inline-block;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            font-weight: 700;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            padding: 2px 8px;
+            border-radius: 5px;
+            letter-spacing: 0.04em;
+            vertical-align: baseline;
+        }
+
         @media (max-width: 480px) {
             .thank-you-card { padding: 40px 24px; }
             .welcome-title { font-size: 1.6rem; }
@@ -197,6 +210,7 @@
             <ul>
                 <li id="next-date">Your start date is confirmed — see you then! 📅</li>
                 <li>Your first invoice will be sent to your email shortly. Subsequent invoices are sent on the 15th of each month for the following month. 💳</li>
+                <li id="telegram-item">💬 Ask math questions anytime — your student can message @AdrianMathBot on Telegram 24/7 for step-by-step math help. <span id="telegram-register"></span></li>
                 <li>If you have any questions before your first lesson, just drop Adrian a WhatsApp. 💬</li>
             </ul>
         </div>
@@ -225,6 +239,7 @@
         const name      = params.get('name');
         const dateParam = params.get('date');
         const timeParam = params.get('time');
+        const token     = params.get('token');
 
         function friendlyDate(iso) {
             if (!iso) return '';
@@ -242,6 +257,16 @@
             document.getElementById('welcome-title').textContent =
                 'You\u2019re officially enrolled, ' + firstName + '! \uD83C\uDF89';
             document.title = 'Enrolled! \u2014 Adrian\u2019s Math Tuition';
+        }
+
+        if (token) {
+            const codeEl = document.createElement('span');
+            codeEl.className = 'token-code';
+            codeEl.textContent = token;
+            const registerEl = document.getElementById('telegram-register');
+            registerEl.innerHTML = '📅 To reschedule lessons or change timings — register on Telegram using your registration code. Open @AdrianMathBot and type /register ';
+            registerEl.appendChild(codeEl);
+            registerEl.appendChild(document.createTextNode('. Both the student and parent can register using the same code. Code expires in 7 days.'));
         }
 
         if (dateStr) {
