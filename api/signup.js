@@ -153,7 +153,7 @@ module.exports = async function handler(req, res) {
             if (rateData.records && rateData.records.length > 0) {
                 const rateRecord = rateData.records[0];
                 rateId = rateRecord.id;
-                ratePerLesson = rateRecord.fields['Amount'] ?? null;
+                ratePerLesson = rateRecord.fields['Amount'] ? rateRecord.fields['Amount'] / 4 : null;
                 rateType = 'Standard';
                 console.log('[signup] Step 3: Found Rate record, id:', rateId, '| fields:', JSON.stringify(rateRecord.fields));
             } else {
