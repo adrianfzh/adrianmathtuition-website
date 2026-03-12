@@ -189,23 +189,10 @@ module.exports = async function handler(req, res) {
         invoiceCheckParams.set('filterByFormula', `{Month}='${invoiceMonth.label}'`);
         const existingInvoicesData = await at('Invoices', `?${invoiceCheckParams.toString()}`);
 
-        const [studentsData, slotsData, rateHistoryData] = await Promise.all([
+        const [studentsData, slotsData] = await Promise.all([
             studentIds.length ? at('Students', `?filterByFormula=OR(${studentIds.map(id => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Level&fields[]=Status&fields[]=Parent Email&fields[]=Parent Name&fields[]=Subject Level&fields[]=Subjects`) : { records: [] },
             slotIds.length ? at('Slots', `?filterByFormula=OR(${slotIds.map(id => `RECORD_ID()='${id}'`).join(',')})`) : { records: [] },
-            at('Rate History', ''),
         ]);
-
-        // Fetch Rate records to get Amount values
-        const rateIds = [...new Set(rateHistoryData.records.map(r => r.fields['Rate']?.[0]).filter(Boolean))];
-        const ratesData = rateIds.length ? await at('Rates', `?filterByFormula=OR(${rateIds.map(id => `RECORD_ID()='${id}'`).join(',')})`) : { records: [] };
-        const ratesById = Object.fromEntries(ratesData.records.map(r => [r.id, r.fields['Amount']]));
-        const rateHistoryByStudent = Object.fromEntries(
-            rateHistoryData.records.map(r => [
-                r.fields['Student']?.[0],
-                ratesById[r.fields['Rate']?.[0]] || 0
-            ])
-        );
-        console.log('[rate-debug] rateHistoryByStudent:', JSON.stringify(rateHistoryByStudent, null, 2));
 
         const studentsById = Object.fromEntries(studentsData.records.map(r => [r.id, r]));
         const slotsById = Object.fromEntries(slotsData.records.map(r => [r.id, r]));
@@ -241,12 +228,11 @@ module.exports = async function handler(req, res) {
                     continue;
                 }
 
-                // 3d. Get Monthly Rate from Rate History
-                const monthlyRate = rateHistoryByStudent[studentId] || 0;
-                const ratePerLesson = monthlyRate > 0 ? monthlyRate / 4 : 0;
-                if (ratePerLesson <= 0) {
-                    console.warn('[generate-invoices] No valid monthly rate for student', student.fields['Student Name']);
-                    errors.push({ student: student.fields['Student Name'], error: 'Missing or invalid monthly rate' });
+                // Read rate directly from Enrollment — already a per-lesson amount
+                const ratePerLesson = studentEnrollments[0].fields['Rate Per Lesson'] || 0;
+                if (!ratePerLesson) {
+                    console.warn(`[generate-invoices] WARNING: No Rate Per Lesson set for student ${student.fields['Student Name']} — skipping`);
+                    skipped++;
                     continue;
                 }
 

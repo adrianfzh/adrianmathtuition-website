@@ -146,7 +146,7 @@ module.exports = async function handler(req, res) {
         try {
             const rateLevel = level.startsWith('JC') ? 'JC' : 'Secondary';
             const rateParams = new URLSearchParams();
-            rateParams.set('filterByFormula', `AND({Level}='${rateLevel}', FIND('Standard', {Rate Name}))`);
+            rateParams.set('filterByFormula', `AND({Level}='${rateLevel}', {Is Current}=1)`);
             rateParams.set('maxRecords', '1');
             console.log('[signup] Step 3: rateLevel:', rateLevel, '| filter:', rateParams.get('filterByFormula'));
             const rateData = await at('Rates', `?${rateParams.toString()}`);
@@ -154,7 +154,7 @@ module.exports = async function handler(req, res) {
                 const rateRecord = rateData.records[0];
                 rateId = rateRecord.id;
                 ratePerLesson = rateRecord.fields['Amount'] ? rateRecord.fields['Amount'] / 4 : null;
-                rateType = 'Standard';
+                rateType = 'Current';
                 console.log('[signup] Step 3: Found Rate record, id:', rateId, '| fields:', JSON.stringify(rateRecord.fields));
             } else {
                 console.warn('[signup] Step 3: No Rate record found for level:', rateLevel);
