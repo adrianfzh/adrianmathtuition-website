@@ -75,7 +75,7 @@ function formatDate(date) {
     return date.toISOString().split('T')[0];
 }
 
-function buildAutoNotes(studentFields, invoiceMonth, regularLessons, makeupLessons, additionalLessons, outstandingMakeups, isLastMonth) {
+function buildAutoNotes(studentFields, invoiceMonth, regularLessons, additionalLessons, isLastMonth) {
   const isProrated = isProratedMonth(invoiceMonth.month);
   const level = studentFields['Level'] || '';
   const subjectLevel = studentFields['Subject Level'] || '';
@@ -87,32 +87,21 @@ function buildAutoNotes(studentFields, invoiceMonth, regularLessons, makeupLesso
   let notes = '';
 
   if (isProrated) {
+    // Proration months: regularLessons are Airtable records with fields['Date']
     const dates = regularLessons.map(r => fmtDate(r.fields['Date'])).join(', ');
     const count = regularLessons.length;
     notes = `Lessons attended: ${dates} (${count} lesson${count !== 1 ? 's' : ''})`;
   } else {
-    const dates = regularLessons.map(r => fmtDate(r.date)).join(', ');
+    // Non-proration months: regularLessons are plain objects {date, day, type}
+    // Invoice is forward-looking — just state the count, no future dates
     const count = regularLessons.length;
-    notes = `Lessons: ${dates} (${count} lesson${count !== 1 ? 's' : ''})`;
-
-    if (makeupLessons.length) {
-      makeupLessons.forEach(r => {
-        const makeupDate = fmtDate(r.fields['Date']);
-        notes += `\nMakeup: ${makeupDate} — making up for missed lesson`;
-      });
-    }
+    notes = `${count} lesson${count !== 1 ? 's' : ''} in ${invoiceMonth.label}`;
 
     if (additionalLessons.length) {
-      const addDates = additionalLessons.map(r => {
-        const slotName = r.fields['Slot Name'] || '';
-        return `${fmtDate(r.fields['Date'])}${slotName ? ` (${slotName})` : ''}`;
-      }).join(', ');
-      notes += `\nAdditional lessons: ${addDates}`;
-    }
-
-    if (outstandingMakeups.length) {
-      const muDates = outstandingMakeups.map(r => fmtDate(r.fields['Date'])).join(', ');
-      notes += `\nOutstanding makeups: ${outstandingMakeups.length} (missed ${muDates})`;
+      // additionalLessons are Airtable records with fields['Date']
+      const addDates = additionalLessons.map(r => fmtDate(r.fields['Date'])).join(', ');
+      const addCount = additionalLessons.length;
+      notes += `\n${addCount} Additional Lesson${addCount !== 1 ? 's' : ''} attended: ${addDates}`;
     }
   }
 
@@ -271,29 +260,20 @@ module.exports = async function handler(req, res) {
                     }
                 }
 
-                // Query makeup lessons completed this month
-                const monthStart = formatDate(invoiceMonth.firstDay);
-                const monthEnd = formatDate(invoiceMonth.lastDay);
+                // Query Additional lessons completed since previous invoice was sent
+                // Window: 15th of two months ago → 14th of current month (today)
+                // e.g. running on 14 Mar for April invoice → window is 15 Feb to 14 Mar
+                const today = new Date();
+                const addWindowEnd = formatDate(today); // 14th of current month
+                const prevInvoiceDate = new Date(today.getFullYear(), today.getMonth() - 1, 15);
+                const addWindowStart = formatDate(prevInvoiceDate); // 15th of previous month
 
-                const makeupFormula = encodeURIComponent(
-                    `AND({Student}='${studentId}',{Type}='Makeup',{Status}='Completed',{Date}>='${monthStart}',{Date}<='${monthEnd}')`
-                );
                 const additionalFormula = encodeURIComponent(
-                    `AND({Student}='${studentId}',{Type}='Additional',{Status}='Completed',{Date}>='${monthStart}',{Date}<='${monthEnd}')`
-                );
-                const outstandingFormula = encodeURIComponent(
-                    `AND({Student}='${studentId}',{Status}='Absent')`
+                    `AND({Student}='${studentId}',{Type}='Additional',{Status}='Completed',{Date}>='${addWindowStart}',{Date}<='${addWindowEnd}')`
                 );
 
-                const [makeupData, additionalData, outstandingData] = await Promise.all([
-                    at('Lessons', `?filterByFormula=${makeupFormula}&sort[0][field]=Date&sort[0][direction]=asc`),
-                    at('Lessons', `?filterByFormula=${additionalFormula}&sort[0][field]=Date&sort[0][direction]=asc`),
-                    at('Lessons', `?filterByFormula=${outstandingFormula}&sort[0][field]=Date&sort[0][direction]=asc`)
-                ]);
-
-                const makeupLessons = makeupData.records || [];
+                const additionalData = await at('Lessons', `?filterByFormula=${additionalFormula}&sort[0][field]=Date&sort[0][direction]=asc`);
                 const additionalLessons = additionalData.records || [];
-                const outstandingMakeups = outstandingData.records || [];
 
                 // Compute lesson count and base amount
                 const regularLessonRecords = isProrated ? proratedLessonRecords : allLineItems;
@@ -330,9 +310,7 @@ module.exports = async function handler(req, res) {
                     student.fields,
                     invoiceMonth,
                     regularLessonRecords,
-                    makeupLessons,
                     additionalLessons,
-                    outstandingMakeups,
                     isLastMonth
                 );
 
