@@ -4,6 +4,9 @@ const CNY_DATES = [
 ];
 const NO_LESSON_DATES = [...CNY_DATES, '2026-12-25', '2027-12-25'];
 
+const PRORATION_MONTHS = [10, 11, 12]; // Oct, Nov, Dec (1-indexed)
+function isProratedMonth(monthNum) { return PRORATION_MONTHS.includes(monthNum); }
+
 const { generateInvoicePDF, closeBrowser } = require('./generate-pdf');
 const { sendTelegram } = require('./telegram');
 
@@ -70,6 +73,70 @@ function countOccurrencesInMonth(dayName, invoiceMonth, endDate = null) {
 
 function formatDate(date) {
     return date.toISOString().split('T')[0];
+}
+
+function buildAutoNotes(studentFields, invoiceMonth, regularLessons, makeupLessons, additionalLessons, outstandingMakeups, isLastMonth) {
+  const isProrated = isProratedMonth(invoiceMonth.month);
+  const level = studentFields['Level'] || '';
+  const subjectLevel = studentFields['Subject Level'] || '';
+
+  function fmtDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  }
+
+  let notes = '';
+
+  if (isProrated) {
+    const dates = regularLessons.map(r => fmtDate(r.fields['Date'])).join(', ');
+    const count = regularLessons.length;
+    notes = `Lessons attended: ${dates} (${count} lesson${count !== 1 ? 's' : ''})`;
+  } else {
+    const dates = regularLessons.map(r => fmtDate(r.date)).join(', ');
+    const count = regularLessons.length;
+    notes = `Lessons: ${dates} (${count} lesson${count !== 1 ? 's' : ''})`;
+
+    if (makeupLessons.length) {
+      makeupLessons.forEach(r => {
+        const makeupDate = fmtDate(r.fields['Date']);
+        notes += `\nMakeup: ${makeupDate} — making up for missed lesson`;
+      });
+    }
+
+    if (additionalLessons.length) {
+      const addDates = additionalLessons.map(r => {
+        const slotName = r.fields['Slot Name'] || '';
+        return `${fmtDate(r.fields['Date'])}${slotName ? ` (${slotName})` : ''}`;
+      }).join(', ');
+      notes += `\nAdditional lessons: ${addDates}`;
+    }
+
+    if (outstandingMakeups.length) {
+      const muDates = outstandingMakeups.map(r => fmtDate(r.fields['Date'])).join(', ');
+      notes += `\nOutstanding makeups: ${outstandingMakeups.length} (missed ${muDates})`;
+    }
+  }
+
+  if (isLastMonth) {
+    const isJC2 = level === 'JC2';
+    const isSec5 = level === 'Sec 5';
+    const isSec4G3 = level === 'Sec 4' && subjectLevel === 'G3';
+    const isSec4G2 = level === 'Sec 4' && subjectLevel === 'G2';
+    const isIP = subjectLevel === 'IP';
+
+    if (isIP) {
+      notes += `\nIt's been a pleasure teaching you. We hope the lessons have been helpful — all the best in your studies ahead! 🌟`;
+    } else if (isJC2) {
+      notes += `\nWishing you all the best for your A-Levels! Work hard and trust your preparation. 💪`;
+    } else if (isSec4G3 || isSec5) {
+      notes += `\nWishing you all the best for your O-Levels! Work hard and trust your preparation. 💪`;
+    } else if (isSec4G2) {
+      notes += `\nWishing you all the best for your N-Levels! Work hard and trust your preparation. 💪`;
+    } else {
+      notes += `\nIt's been a pleasure teaching you. We hope the lessons have been helpful — all the best in your studies ahead! 🌟`;
+    }
+  }
+
+  return notes;
 }
 
 module.exports = async function handler(req, res) {
@@ -154,6 +221,7 @@ module.exports = async function handler(req, res) {
         }
 
         let generated = 0;
+        const generatedList = [];
         let skipped = 0;
         const errors = [];
 
@@ -182,60 +250,133 @@ module.exports = async function handler(req, res) {
                     continue;
                 }
 
-                // Combine all slots for this student
-                const allLineItems = [];
-                let notes = '';
+                // Determine if this is a proration month
+                const isProrated = isProratedMonth(invoiceMonth.month);
+
+                // For proration months: query Completed Regular lessons from Lessons table
+                // For fixed months: keep existing countOccurrencesInMonth logic
+                let allLineItems = [];
+                let proratedLessonRecords = [];
                 let hasLessons = false;
 
-                for (const enrollment of studentEnrollments) {
-                    const slotId = enrollment.fields['Slot']?.[0];
-                    const slot = slotsById[slotId];
-                    if (!slot) {
-                        console.warn('[generate-invoices] Missing slot for enrollment', enrollment.id);
-                        continue;
-                    }
-
-                    // 3a. Get slot day
-                    const dayRaw = slot.fields['Day'] || '';
-                    const dayName = dayRaw.replace(/^\d+\s+/, '').trim();
-                    console.log('[generate-invoices] Processing student', student.fields['Student Name'], '- slot day:', dayName);
-
-                    // 3b. Count occurrences in month (respect End Date if any)
-                    const endDateStr = enrollment.fields['End Date'];
-                    const endDate = endDateStr ? new Date(endDateStr + 'T00:00:00') : null;
-                    const lineItems = countOccurrencesInMonth(dayName, invoiceMonth, endDate);
-                    if (lineItems.length > 0) hasLessons = true;
-                    allLineItems.push(...lineItems);
-
-                    // 5. Handle End Date note (collect earliest end date if any)
-                    if (endDate && endDate <= invoiceMonth.lastDay) {
-                        if (!notes) notes = `Prorated — last lesson on ${formatDate(endDate)}`;
-                        else if (new Date(notes.match(/\d{4}-\d{2}-\d{2}/)[0]) > endDate) {
-                            notes = `Prorated — last lesson on ${formatDate(endDate)}`;
-                        }
+                if (isProrated) {
+                    // Query completed Regular lessons this month for this student
+                    const monthStart = formatDate(invoiceMonth.firstDay);
+                    const monthEnd = formatDate(invoiceMonth.lastDay);
+                    const lessonFormula = encodeURIComponent(
+                        `AND({Student}='${studentId}',{Type}='Regular',{Status}='Completed',{Date}>='${monthStart}',{Date}<='${monthEnd}')`
+                    );
+                    const lessonData = await at('Lessons', `?filterByFormula=${lessonFormula}&sort[0][field]=Date&sort[0][direction]=asc`);
+                    proratedLessonRecords = lessonData.records || [];
+                    if (proratedLessonRecords.length > 0) hasLessons = true;
+                } else {
+                    // Fixed months: existing slot-day counting logic
+                    for (const enrollment of studentEnrollments) {
+                        const slotId = enrollment.fields['Slot']?.[0];
+                        const slot = slotsById[slotId];
+                        if (!slot) continue;
+                        const dayRaw = slot.fields['Day'] || '';
+                        const dayName = dayRaw.replace(/^\d+\s+/, '').trim();
+                        const endDateStr = enrollment.fields['End Date'];
+                        const endDate = endDateStr ? new Date(endDateStr + 'T00:00:00') : null;
+                        const lineItems = countOccurrencesInMonth(dayName, invoiceMonth, endDate);
+                        if (lineItems.length > 0) hasLessons = true;
+                        allLineItems.push(...lineItems);
                     }
                 }
 
-                if (!hasLessons) {
+                // Query makeup lessons completed this month
+                const monthStart = formatDate(invoiceMonth.firstDay);
+                const monthEnd = formatDate(invoiceMonth.lastDay);
+
+                const makeupFormula = encodeURIComponent(
+                    `AND({Student}='${studentId}',{Type}='Makeup',{Status}='Completed',{Date}>='${monthStart}',{Date}<='${monthEnd}')`
+                );
+                const additionalFormula = encodeURIComponent(
+                    `AND({Student}='${studentId}',{Type}='Additional',{Status}='Completed',{Date}>='${monthStart}',{Date}<='${monthEnd}')`
+                );
+                const outstandingFormula = encodeURIComponent(
+                    `AND({Student}='${studentId}',{Status}='Absent')`
+                );
+
+                const [makeupData, additionalData, outstandingData] = await Promise.all([
+                    at('Lessons', `?filterByFormula=${makeupFormula}&sort[0][field]=Date&sort[0][direction]=asc`),
+                    at('Lessons', `?filterByFormula=${additionalFormula}&sort[0][field]=Date&sort[0][direction]=asc`),
+                    at('Lessons', `?filterByFormula=${outstandingFormula}&sort[0][field]=Date&sort[0][direction]=asc`)
+                ]);
+
+                const makeupLessons = makeupData.records || [];
+                const additionalLessons = additionalData.records || [];
+                const outstandingMakeups = outstandingData.records || [];
+
+                // Compute lesson count and base amount
+                const regularLessonRecords = isProrated ? proratedLessonRecords : allLineItems;
+                const lessonCount = isProrated ? proratedLessonRecords.length : allLineItems.length;
+                const additionalCount = additionalLessons.length;
+
+                if (!hasLessons && !isProrated) {
                     console.log('[generate-invoices] No lessons in month for student', student.fields['Student Name']);
                     skipped += studentEnrollments.length;
                     continue;
                 }
+                if (isProrated && lessonCount === 0 && additionalCount === 0) {
+                    console.log('[generate-invoices] No completed lessons in proration month for student', student.fields['Student Name']);
+                    skipped += studentEnrollments.length;
+                    continue;
+                }
 
-                // Sort line items by date
-                allLineItems.sort((a, b) => a.date.localeCompare(b.date));
-                const lessonCount = allLineItems.length;
+                // Sort fixed-month line items by date
+                if (!isProrated) allLineItems.sort((a, b) => a.date.localeCompare(b.date));
+
                 const baseAmount = lessonCount * ratePerLesson;
+                const additionalAmount = additionalCount * ratePerLesson;
+                const finalAmount = baseAmount + additionalAmount;
 
-                // Build description string
+                // Check if this is the student's last month (end date falls within invoice month)
+                const allEndDates = studentEnrollments.map(e => e.fields['End Date']).filter(Boolean);
+                const isLastMonth = allEndDates.some(d => {
+                    const endDt = new Date(d + 'T00:00:00');
+                    return endDt >= invoiceMonth.firstDay && endDt <= invoiceMonth.lastDay;
+                });
+
+                // Build AUTO_NOTES
+                const autoNotes = buildAutoNotes(
+                    student.fields,
+                    invoiceMonth,
+                    regularLessonRecords,
+                    makeupLessons,
+                    additionalLessons,
+                    outstandingMakeups,
+                    isLastMonth
+                );
+
+                // Build description
                 const subjects = Array.isArray(student.fields['Subjects']) ? student.fields['Subjects'].join(' & ') : '';
                 const description = `${student.fields['Level'] || ''} ${subjects} — ${invoiceMonth.label}`;
 
-                // Add description to each line item
-                const lineItemsWithDescription = allLineItems.map(item => ({
-                    ...item,
-                    description
-                }));
+                // Build line items array
+                const lineItemsForInvoice = [];
+
+                if (isProrated) {
+                    // Proration month: one line item per completed lesson
+                    proratedLessonRecords.forEach(r => {
+                        lineItemsForInvoice.push({ date: r.fields['Date'], day: '', type: 'Regular', description });
+                    });
+                } else {
+                    allLineItems.forEach(item => lineItemsForInvoice.push({ ...item, description }));
+                }
+
+                // Additional lessons as separate line items
+                if (additionalCount > 0) {
+                    additionalLessons.forEach(r => {
+                        lineItemsForInvoice.push({
+                            date: r.fields['Date'],
+                            day: '',
+                            type: 'Additional',
+                            description: `Additional Lesson — ${invoiceMonth.label}`
+                        });
+                    });
+                }
 
                 // 6. Create Draft invoice
                 const invoiceFields = {
@@ -243,13 +384,19 @@ module.exports = async function handler(req, res) {
                     'Month': invoiceMonth.label,
                     'Lessons Count': lessonCount,
                     'Rate Per Lesson': ratePerLesson,
-                    'Line Items': JSON.stringify(lineItemsWithDescription),
+                    'Base Amount': baseAmount,
+                    'Adjustment Amount': additionalAmount > 0 ? additionalAmount : undefined,
+                    'Adjustment Notes': additionalAmount > 0 ? `Additional lessons: ${additionalCount} × ${ratePerLesson}` : undefined,
+                    'Final Amount': finalAmount,
+                    'Line Items': JSON.stringify(lineItemsForInvoice),
                     'Invoice Type': 'Regular',
                     'Status': 'Draft',
                     'Issue Date': formatDate(new Date()),
                     'Due Date': formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
+                    'Auto Notes': autoNotes,
                 };
-                if (notes) invoiceFields['Notes'] = notes;
+                // Remove undefined fields
+                Object.keys(invoiceFields).forEach(k => invoiceFields[k] === undefined && delete invoiceFields[k]);
 
                 console.log('[generate-invoices] Sending invoiceFields:', JSON.stringify(invoiceFields, null, 2));
                 console.log('[generate-invoices] Creating invoice for student', student.fields['Student Name'], '—', lessonCount, 'lessons across', studentEnrollments.length, 'slots');
@@ -278,12 +425,13 @@ module.exports = async function handler(req, res) {
                         dueDate: formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
                         lessonsCount: lessonCount,
                         ratePerLesson: ratePerLesson,
-                        baseAmount: lessonCount * ratePerLesson,
-                        finalAmount: lessonCount * ratePerLesson,
+                        baseAmount: baseAmount,
+                        additionalAmount: additionalAmount,
+                        finalAmount: finalAmount,
                         status: 'Pending',
                         makeupCredits: 0,
-                        notes: notes || '',
-                        lineItems: lineItemsWithDescription
+                        notes: autoNotes,
+                        lineItems: lineItemsForInvoice
                     };
                     
                     const pdfBuffer = await generateInvoicePDF(invoiceData);
@@ -316,6 +464,7 @@ module.exports = async function handler(req, res) {
                   console.log('[generate-invoices] Skipping PDF upload in local dev mode');
                 }
                 
+                generatedList.push({ name: student.fields['Student Name'], amount: finalAmount, count: lessonCount });
                 generated++;
                 console.log('[generate-invoices] Invoice created for student', student.fields['Student Name']);
             } catch (err) {
@@ -331,11 +480,14 @@ module.exports = async function handler(req, res) {
         console.log('[generate-invoices] Done. Generated:', generated, 'Skipped:', skipped, 'Errors:', errors.length);
         
         // Send Telegram notification
+        const summaryLines = generatedList.map(g => `${g.name} — ${g.amount.toFixed(2)} (${g.count} lesson${g.count !== 1 ? 's' : ''})`).join('\n');
+        const totalAmount = generatedList.reduce((sum, g) => sum + g.amount, 0);
         await sendTelegram(
-          `📋 <b>Invoices Generated</b>\n\n` +
-          `${generated} invoices created for ${invoiceMonth.label}.\n` +
-          `Please review and approve in Airtable by tomorrow 9am.\n\n` +
-          `Skipped: ${skipped} | Errors: ${errors.length}` 
+          `📋 <b>Draft invoices ready — ${invoiceMonth.label}</b>\n\n` +
+          `${summaryLines}\n\n` +
+          `Total: ${generated} invoices · ${totalAmount.toFixed(2)}\n\n` +
+          `Review and hold any before 15th via /amend [name].\n` +
+          `Invoices send automatically at 8am tomorrow.`
         );
         
         return res.json({ generated, skipped, errors });
