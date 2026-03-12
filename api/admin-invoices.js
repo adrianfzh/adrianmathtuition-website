@@ -16,6 +16,20 @@ async function airtableRequest(baseId, airtableToken, tableName, path, options =
 }
 
 module.exports = async function handler(req, res) {
+    // Auth check — always runs first
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (adminPassword) {
+        const authHeader = req.headers['authorization'];
+        if (!authHeader || authHeader !== `Bearer ${adminPassword}`) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+    }
+
+    // Auth-only ping (used by login form to verify password)
+    if (req.method === 'GET' && req.query?.auth === 'check') {
+        return res.status(200).json({ ok: true });
+    }
+
     const airtableToken = process.env.AIRTABLE_TOKEN;
     const baseId = process.env.AIRTABLE_BASE_ID;
     if (!airtableToken || !baseId) {

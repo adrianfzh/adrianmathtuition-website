@@ -14,6 +14,91 @@
             min-height: 100vh;
         }
 
+        /* Login overlay */
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+
+        .login-card h1 {
+            font-size: 22px;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .login-card p {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 28px;
+        }
+
+        #pw-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 12px;
+            font-family: inherit;
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+
+        #pw-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+
+        #pw-error {
+            font-size: 13px;
+            color: #dc2626;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        #pw-btn {
+            width: 100%;
+            padding: 11px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+
+        #pw-btn:hover:not(:disabled) { background: #5568d3; }
+        #pw-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-8px); }
+            40%       { transform: translateX(8px); }
+            60%       { transform: translateX(-6px); }
+            80%       { transform: translateX(6px); }
+        }
+
+        .shake { animation: shake 0.4s ease; }
+
         /* Header */
         .header {
             background: white;
@@ -343,6 +428,18 @@
 </head>
 <body>
 
+<!-- Login overlay -->
+<div id="login-overlay">
+    <div class="login-card">
+        <h1>📋 Invoice Review</h1>
+        <p>Enter the admin password to continue</p>
+        <input type="password" id="pw-input" placeholder="Password"
+            onkeydown="if(event.key==='Enter') submitPassword()">
+        <div id="pw-error"></div>
+        <button id="pw-btn" onclick="submitPassword()">Submit</button>
+    </div>
+</div>
+
 <div class="header">
     <div class="header-left">
         <h1>📋 Invoice Review</h1>
@@ -363,7 +460,65 @@
 </div>
 
 <script>
+    let adminPassword = sessionStorage.getItem('adminPassword') || '';
     let invoices = [];
+
+    function authHeaders(extra = {}) {
+        return { 'Authorization': `Bearer ${adminPassword}`, ...extra };
+    }
+
+    // --- Auth ---
+
+    function init() {
+        if (sessionStorage.getItem('adminAuthed') === '1' && adminPassword) {
+            document.getElementById('login-overlay').style.display = 'none';
+            loadInvoices();
+        } else {
+            document.getElementById('login-overlay').style.display = 'flex';
+            document.getElementById('pw-input').focus();
+        }
+    }
+
+    async function submitPassword() {
+        const input = document.getElementById('pw-input');
+        const errorEl = document.getElementById('pw-error');
+        const btn = document.getElementById('pw-btn');
+        const pw = input.value;
+
+        btn.disabled = true;
+        btn.textContent = 'Checking…';
+        errorEl.style.display = 'none';
+
+        try {
+            const res = await fetch('/api/admin-invoices?auth=check', {
+                headers: { 'Authorization': `Bearer ${pw}` },
+            });
+
+            if (res.ok) {
+                adminPassword = pw;
+                sessionStorage.setItem('adminAuthed', '1');
+                sessionStorage.setItem('adminPassword', pw);
+                document.getElementById('login-overlay').style.display = 'none';
+                loadInvoices();
+            } else {
+                input.classList.remove('shake');
+                void input.offsetWidth; // reflow to restart animation
+                input.classList.add('shake');
+                errorEl.textContent = 'Incorrect password';
+                errorEl.style.display = 'block';
+                input.value = '';
+                input.focus();
+            }
+        } catch (err) {
+            errorEl.textContent = 'Connection error. Try again.';
+            errorEl.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Submit';
+        }
+    }
+
+    // --- Data ---
 
     async function loadInvoices() {
         document.getElementById('error-banner').style.display = 'none';
@@ -371,7 +526,9 @@
             '<p style="color:#94a3b8;text-align:center;padding:48px 0;font-size:14px;">Loading...</p>';
 
         try {
-            const res = await fetch('/api/admin-invoices');
+            const res = await fetch('/api/admin-invoices', {
+                headers: authHeaders(),
+            });
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
             invoices = await res.json();
             renderAll();
@@ -381,6 +538,8 @@
             document.getElementById('invoices-container').innerHTML = '';
         }
     }
+
+    // --- Render ---
 
     function renderAll() {
         updateSummary();
@@ -422,7 +581,6 @@
         const badgeClass = isDraft ? 'badge-draft' : 'badge-approved';
         const badgeLabel = isDraft ? 'Draft' : 'Approved';
 
-        // Amounts
         const baseLine = `${inv.lessonsCount} lesson${inv.lessonsCount !== 1 ? 's' : ''} × $${inv.ratePerLesson.toFixed(2)} = $${inv.baseAmount.toFixed(2)}`;
 
         let adjLine = '';
@@ -495,7 +653,7 @@
                     <textarea id="a-notes-${inv.id}" rows="3">${escHtml(inv.autoNotes || '')}</textarea>
                 </div>
             </div>
-            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.id, inv.lessonsCount, inv.ratePerLesson, inv.adjustmentAmount || 0)}</div>
+            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.lessonsCount, inv.ratePerLesson, inv.adjustmentAmount || 0)}</div>
             <div class="form-actions">
                 <button class="btn btn-save" onclick="saveAmend('${inv.id}', ${inv.ratePerLesson})">💾 Save Changes</button>
                 <button class="btn btn-cancel" onclick="toggleAmend('${inv.id}')">Cancel</button>
@@ -503,7 +661,7 @@
         </div>`;
     }
 
-    function calcDisplay(id, lessons, rate, adj) {
+    function calcDisplay(lessons, rate, adj) {
         const base = lessons * rate;
         const final = base + (adj || 0);
         const adjStr = (adj && adj !== 0)
@@ -518,7 +676,7 @@
         const lessons = parseFloat(document.getElementById(`a-lessons-${id}`)?.value) || 0;
         const adj = parseFloat(document.getElementById(`a-adj-${id}`)?.value) || 0;
         const el = document.getElementById(`calc-${id}`);
-        if (el) el.innerHTML = calcDisplay(id, lessons, inv.ratePerLesson, adj);
+        if (el) el.innerHTML = calcDisplay(lessons, inv.ratePerLesson, adj);
     }
 
     function toggleAmend(id) {
@@ -538,30 +696,25 @@
         const actionsEl = document.getElementById(`actions-${id}`);
         if (!actionsEl) return;
 
-        // Disable buttons while working
         actionsEl.querySelectorAll('button').forEach(b => b.disabled = true);
 
         try {
             const res = await fetch('/api/admin-invoices', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ recordId: id, fields: { 'Status': 'Approved' } }),
             });
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-            // Update local state
             const inv = invoices.find(i => i.id === id);
             if (inv) inv.status = 'Approved';
 
-            // Show inline confirm briefly then re-render
             actionsEl.innerHTML = '<span class="inline-confirm">✅ Approved</span>';
             updateSummary();
 
             setTimeout(() => {
                 const card = document.getElementById(`card-${id}`);
-                if (card && inv) {
-                    card.outerHTML = renderCard(inv);
-                }
+                if (card && inv) card.outerHTML = renderCard(inv);
             }, 1200);
 
         } catch (err) {
@@ -571,15 +724,10 @@
     }
 
     async function saveAmend(id, ratePerLesson) {
-        const lessonsInput = document.getElementById(`a-lessons-${id}`);
-        const adjInput = document.getElementById(`a-adj-${id}`);
-        const adjNotesInput = document.getElementById(`a-adjnotes-${id}`);
-        const notesInput = document.getElementById(`a-notes-${id}`);
-
-        const lessonsCount = parseInt(lessonsInput.value) || 0;
-        const adjustmentAmount = parseFloat(adjInput.value) || 0;
-        const adjustmentNotes = adjNotesInput.value.trim();
-        const autoNotes = notesInput.value;
+        const lessonsCount = parseInt(document.getElementById(`a-lessons-${id}`).value) || 0;
+        const adjustmentAmount = parseFloat(document.getElementById(`a-adj-${id}`).value) || 0;
+        const adjustmentNotes = document.getElementById(`a-adjnotes-${id}`).value.trim();
+        const autoNotes = document.getElementById(`a-notes-${id}`).value;
         const baseAmount = lessonsCount * ratePerLesson;
         const finalAmount = baseAmount + adjustmentAmount;
 
@@ -600,12 +748,11 @@
         try {
             const res = await fetch('/api/admin-invoices', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ recordId: id, fields }),
             });
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-            // Update local state
             const inv = invoices.find(i => i.id === id);
             if (inv) {
                 inv.lessonsCount = lessonsCount;
@@ -616,7 +763,6 @@
                 inv.autoNotes = autoNotes;
             }
 
-            // Re-render card
             const card = document.getElementById(`card-${id}`);
             if (card && inv) card.outerHTML = renderCard(inv);
             updateSummary();
@@ -639,7 +785,7 @@
         return String(str).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
     }
 
-    loadInvoices();
+    init();
 </script>
 </body>
 </html>
