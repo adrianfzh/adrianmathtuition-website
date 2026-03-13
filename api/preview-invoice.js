@@ -48,14 +48,16 @@ module.exports = async function handler(req, res) {
     const invoiceRecord = await at('Invoices', `/${recordId}`);
     const f = invoiceRecord.fields;
 
-    // 2. Fetch linked student
+    // 2. Fetch linked student via direct record lookup
     const studentId = f['Student']?.[0];
     let studentName = '';
     let parentEmail = '';
     if (studentId) {
-        const studentRecord = await at('Students',
-            `/${studentId}?fields[]=Student Name&fields[]=Parent Email`
+        const studentRes = await fetch(
+            `https://api.airtable.com/v0/${baseId}/Students/${studentId}`,
+            { headers: { Authorization: `Bearer ${airtableToken}` } }
         );
+        const studentRecord = await studentRes.json();
         studentName = studentRecord.fields['Student Name'] || '';
         parentEmail = studentRecord.fields['Parent Email'] || '';
     }
