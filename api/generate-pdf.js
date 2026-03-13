@@ -87,29 +87,7 @@ async function generateInvoicePDF(invoiceData) {
         }
         html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
 
-        // Generate auto notes with lesson dates and makeup credits
-        let autoNotes = '';
-        if (invoiceData.lineItems && Array.isArray(invoiceData.lineItems)) {
-            // Extract month name from invoiceData.month (e.g. "April 2026" → "April")
-            const monthName = (invoiceData.month || '').split(' ')[0] || '';
-            
-            const dates = invoiceData.lineItems
-                .map(item => new Date(item.date + 'T00:00:00'))
-                .sort((a, b) => a - b)
-                .map(date => {
-                    const day = date.getDate();
-                    const month = date.toLocaleDateString('en-SG', { month: 'short' });
-                    return `${day} ${month}`;
-                })
-                .join(', ');
-            
-            autoNotes = `Lessons attended in ${monthName}: ${dates}`;
-            
-            if (invoiceData.makeupCredits && invoiceData.makeupCredits > 0) {
-                autoNotes += `<br>Makeup credits remaining: ${invoiceData.makeupCredits}`;
-            }
-        }
-        html = html.replace(/\{\{AUTO_NOTES\}\}/g, autoNotes);
+        html = html.replace(/\{\{AUTO_NOTES\}\}/g, invoiceData.notes || '');
 
         // Handle notes section (remove if empty)
         if (!invoiceData.notes) {

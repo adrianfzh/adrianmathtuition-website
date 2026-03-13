@@ -340,6 +340,101 @@
 
         .btn-cancel:hover { background: #f1f5f9; }
 
+        .btn-unapprove {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+            color: #64748b;
+        }
+
+        .btn-unapprove:hover:not(:disabled) { background: #f1f5f9; }
+
+        /* Line items editor */
+        .line-items-section { margin-bottom: 14px; }
+
+        .line-items-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .line-items-header label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-add-item {
+            font-size: 13px;
+            color: #1e40af;
+            background: none;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-add-item:hover { background: #eff6ff; }
+
+        .line-item-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .line-item-row .li-desc {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #0f172a;
+            background: white;
+        }
+
+        .line-item-row .li-amount {
+            width: 110px;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #0f172a;
+            background: white;
+        }
+
+        .line-item-row .li-desc:focus,
+        .line-item-row .li-amount:focus {
+            outline: none;
+            border-color: #94a3b8;
+            box-shadow: 0 0 0 3px rgba(148,163,184,0.15);
+        }
+
+        .btn-remove-item {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+
+        .btn-remove-item:hover { color: #ef4444; background: #fef2f2; }
+
+        .no-items {
+            font-size: 13px;
+            color: #94a3b8;
+            font-style: italic;
+            padding: 4px 0;
+        }
+
         .inline-confirm {
             font-size: 14px;
             color: #15803d;
@@ -603,7 +698,10 @@
                 <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">👁 Preview PDF</button>
                 <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">✏️ Amend</button>
                 <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">✅ Approve</button>
-            </div>` : '';
+            </div>` : `
+            <div class="card-actions" id="actions-${inv.id}">
+                <button class="btn btn-unapprove" onclick="unapproveInvoice('${inv.id}')">↩️ Unapprove</button>
+            </div>`;
 
         const amendForm = isDraft ? renderAmendForm(inv) : '';
 
@@ -627,7 +725,19 @@
         </div>`;
     }
 
+    function renderLineItemRowsHtml(items, id) {
+        if (!items || !items.length) return '<p class="no-items">No extra line items</p>';
+        return items.map(item => `
+            <div class="line-item-row">
+                <input type="text" class="li-desc" placeholder="Description" value="${escAttr(item.description || '')}">
+                <input type="number" class="li-amount" placeholder="0.00" step="0.01" value="${item.amount != null ? item.amount : ''}" oninput="updateCalc('${id}')">
+                <button class="btn-remove-item" onclick="removeLineItem(this, '${id}')">✕</button>
+            </div>
+        `).join('');
+    }
+
     function renderAmendForm(inv) {
+        const lineItemsHtml = renderLineItemRowsHtml(inv.lineItemsExtra || [], inv.id);
         return `
         <div class="amend-form" id="amend-${inv.id}">
             <h3>✏️ Amend Invoice</h3>
@@ -641,22 +751,19 @@
                     <label>Rate Per Lesson</label>
                     <input type="text" value="$${inv.ratePerLesson.toFixed(2)}" readonly>
                 </div>
-                <div class="form-group">
-                    <label>Adjustment Amount</label>
-                    <input type="number" id="a-adj-${inv.id}" value="${inv.adjustmentAmount || ''}"
-                        placeholder="0" step="0.01" oninput="updateCalc('${inv.id}')">
-                </div>
-                <div class="form-group">
-                    <label>Adjustment Notes</label>
-                    <input type="text" id="a-adjnotes-${inv.id}" value="${escAttr(inv.adjustmentNotes || '')}"
-                        placeholder="e.g. Additional lesson, discount">
-                </div>
                 <div class="form-group full-width">
                     <label>Auto Notes</label>
                     <textarea id="a-notes-${inv.id}" rows="3">${escHtml(inv.autoNotes || '')}</textarea>
                 </div>
             </div>
-            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.lessonsCount, inv.ratePerLesson, inv.adjustmentAmount || 0)}</div>
+            <div class="line-items-section">
+                <div class="line-items-header">
+                    <label>Extra Line Items</label>
+                    <button class="btn-add-item" onclick="addLineItem('${inv.id}')">+ Add Line Item</button>
+                </div>
+                <div id="line-items-${inv.id}">${lineItemsHtml}</div>
+            </div>
+            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.lessonsCount, inv.ratePerLesson, inv.lineItemsExtra || [])}</div>
             <div class="form-actions">
                 <button class="btn btn-save" onclick="saveAmend('${inv.id}', ${inv.ratePerLesson})">💾 Save Changes</button>
                 <button class="btn btn-cancel" onclick="toggleAmend('${inv.id}')">Cancel</button>
@@ -664,22 +771,62 @@
         </div>`;
     }
 
-    function calcDisplay(lessons, rate, adj) {
+    function calcDisplay(lessons, rate, lineItems) {
         const base = lessons * rate;
-        const final = base + (adj || 0);
-        const adjStr = (adj && adj !== 0)
-            ? ` ${adj > 0 ? '+' : '−'} $${Math.abs(adj).toFixed(2)}`
-            : '';
-        return `(${lessons} × $${rate.toFixed(2)})${adjStr} = <strong>$${final.toFixed(2)}</strong>`;
+        const extraSum = (lineItems || []).reduce((s, i) => s + (i.amount || 0), 0);
+        const final = base + extraSum;
+        let str = `${lessons} × $${rate.toFixed(2)} = $${base.toFixed(2)}`;
+        if (extraSum !== 0) {
+            const sign = extraSum > 0 ? '+' : '−';
+            str += ` ${sign} $${Math.abs(extraSum).toFixed(2)} (extras)`;
+        }
+        str += ` = <strong>$${final.toFixed(2)}</strong>`;
+        return str;
+    }
+
+    function getLineItems(id) {
+        const rows = document.querySelectorAll(`#line-items-${id} .line-item-row`);
+        const items = [];
+        rows.forEach(row => {
+            const desc = row.querySelector('.li-desc').value.trim();
+            const amount = parseFloat(row.querySelector('.li-amount').value) || 0;
+            if (desc || amount) items.push({ description: desc, amount });
+        });
+        return items;
+    }
+
+    function addLineItem(id) {
+        const container = document.getElementById(`line-items-${id}`);
+        const noItems = container.querySelector('.no-items');
+        if (noItems) noItems.remove();
+        const row = document.createElement('div');
+        row.className = 'line-item-row';
+        row.innerHTML = `
+            <input type="text" class="li-desc" placeholder="Description" value="">
+            <input type="number" class="li-amount" placeholder="0.00" step="0.01" value="" oninput="updateCalc('${id}')">
+            <button class="btn-remove-item" onclick="removeLineItem(this, '${id}')">✕</button>
+        `;
+        container.appendChild(row);
+        row.querySelector('.li-desc').focus();
+        updateCalc(id);
+    }
+
+    function removeLineItem(btn, id) {
+        btn.closest('.line-item-row').remove();
+        const container = document.getElementById(`line-items-${id}`);
+        if (!container.querySelector('.line-item-row')) {
+            container.innerHTML = '<p class="no-items">No extra line items</p>';
+        }
+        updateCalc(id);
     }
 
     function updateCalc(id) {
         const inv = invoices.find(i => i.id === id);
         if (!inv) return;
         const lessons = parseFloat(document.getElementById(`a-lessons-${id}`)?.value) || 0;
-        const adj = parseFloat(document.getElementById(`a-adj-${id}`)?.value) || 0;
+        const lineItems = getLineItems(id);
         const el = document.getElementById(`calc-${id}`);
-        if (el) el.innerHTML = calcDisplay(lessons, inv.ratePerLesson, adj);
+        if (el) el.innerHTML = calcDisplay(lessons, inv.ratePerLesson, lineItems);
     }
 
     function toggleAmend(id) {
@@ -738,22 +885,17 @@
 
     async function saveAmend(id, ratePerLesson) {
         const lessonsCount = parseInt(document.getElementById(`a-lessons-${id}`).value) || 0;
-        const adjustmentAmount = parseFloat(document.getElementById(`a-adj-${id}`).value) || 0;
-        const adjustmentNotes = document.getElementById(`a-adjnotes-${id}`).value.trim();
         const autoNotes = document.getElementById(`a-notes-${id}`).value;
+        const lineItemsExtra = getLineItems(id);
         const baseAmount = lessonsCount * ratePerLesson;
-        const finalAmount = baseAmount + adjustmentAmount;
+        const extraSum = lineItemsExtra.reduce((s, i) => s + (i.amount || 0), 0);
+        const finalAmount = baseAmount + extraSum;
 
         const fields = {
             'Lessons Count': lessonsCount,
-            'Base Amount': baseAmount,
-            'Final Amount': finalAmount,
             'Auto Notes': autoNotes,
+            'Line Items Extra': JSON.stringify(lineItemsExtra),
         };
-        if (adjustmentAmount !== 0) {
-            fields['Adjustment Amount'] = adjustmentAmount;
-            if (adjustmentNotes) fields['Adjustment Notes'] = adjustmentNotes;
-        }
 
         const saveBtn = document.querySelector(`#amend-${id} .btn-save`);
         if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
@@ -770,10 +912,9 @@
             if (inv) {
                 inv.lessonsCount = lessonsCount;
                 inv.baseAmount = baseAmount;
-                inv.adjustmentAmount = adjustmentAmount || null;
-                inv.adjustmentNotes = adjustmentNotes || null;
                 inv.finalAmount = finalAmount;
                 inv.autoNotes = autoNotes;
+                inv.lineItemsExtra = lineItemsExtra;
             }
 
             const card = document.getElementById(`card-${id}`);
@@ -783,6 +924,37 @@
         } catch (err) {
             if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save Changes'; }
             alert('Failed to save: ' + err.message);
+        }
+    }
+
+    async function unapproveInvoice(id) {
+        const actionsEl = document.getElementById(`actions-${id}`);
+        if (!actionsEl) return;
+
+        actionsEl.querySelectorAll('button').forEach(b => b.disabled = true);
+
+        try {
+            const res = await fetch('/api/admin-invoices', {
+                method: 'PATCH',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ recordId: id, fields: { 'Status': 'Draft' } }),
+            });
+            if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+            const inv = invoices.find(i => i.id === id);
+            if (inv) inv.status = 'Draft';
+
+            actionsEl.innerHTML = '<span class="inline-confirm">↩️ Moved to Draft</span>';
+            updateSummary();
+
+            setTimeout(() => {
+                const card = document.getElementById(`card-${id}`);
+                if (card && inv) card.outerHTML = renderCard(inv);
+            }, 1200);
+
+        } catch (err) {
+            actionsEl.querySelectorAll('button').forEach(b => b.disabled = false);
+            alert('Failed to unapprove: ' + err.message);
         }
     }
 
