@@ -600,7 +600,7 @@
 
         const actionsHtml = isDraft ? `
             <div class="card-actions" id="actions-${inv.id}">
-                <button class="btn btn-preview" onclick="previewPdf('${inv.id}', '${escAttr(inv.pdfUrl || '')}')">👁 Preview PDF</button>
+                <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">👁 Preview PDF</button>
                 <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">✏️ Amend</button>
                 <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">✅ Approve</button>
             </div>` : '';
@@ -687,12 +687,22 @@
         if (form) form.classList.toggle('open');
     }
 
-    function previewPdf(id, pdfUrl) {
-        if (!pdfUrl) {
-            alert('PDF not yet generated for this invoice.');
-            return;
+    async function previewPdf(id) {
+        const btn = document.querySelector(`#actions-${id} .btn-preview`);
+        if (btn) { btn.disabled = true; btn.textContent = '⏳ Loading…'; }
+        try {
+            const res = await fetch(`/api/preview-invoice?id=${encodeURIComponent(id)}`, {
+                headers: authHeaders(),
+            });
+            if (!res.ok) throw new Error(`Server error: ${res.status}`);
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        } catch (err) {
+            alert('Failed to load PDF: ' + err.message);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '👁 Preview PDF'; }
         }
-        window.open(pdfUrl, '_blank');
     }
 
     async function approveInvoice(id) {
