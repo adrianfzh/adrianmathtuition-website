@@ -493,11 +493,57 @@
             background: white;
         }
 
+        .line-item-row .li-slot {
+            width: 130px;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #0f172a;
+            background: white;
+        }
+
+        .line-item-row .li-lessons {
+            width: 80px;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #0f172a;
+            background: white;
+        }
+
         .line-item-row .li-desc:focus,
-        .line-item-row .li-amount:focus {
+        .line-item-row .li-amount:focus,
+        .line-item-row .li-slot:focus,
+        .line-item-row .li-lessons:focus {
             outline: none;
             border-color: #94a3b8;
             box-shadow: 0 0 0 3px rgba(148,163,184,0.15);
+        }
+
+        .main-item-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .main-item-row input {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #0f172a;
+            background: white;
+        }
+
+        .main-item-row .li-amount[readonly] {
+            background: #f8fafc;
+            color: #64748b;
         }
 
         .btn-remove-item {
@@ -873,24 +919,43 @@
         if (!items || !items.length) return '<p class="no-items">No extra line items</p>';
         return items.map(item => `
             <div class="line-item-row">
-                <input type="text" class="li-desc" placeholder="Description" value="${escAttr(item.description || '')}">
+                <input type="text" class="li-desc" placeholder="Description" style="flex:2" value="${escAttr(item.description || '')}">
+                <input type="text" class="li-slot" placeholder="e.g. Saturday" value="${escAttr(item.slot || '')}">
+                <input type="number" class="li-lessons" placeholder="e.g. 4" min="0" value="${item.lessons != null && item.lessons !== '' ? item.lessons : ''}">
                 <input type="number" class="li-amount" placeholder="0.00" step="0.01" value="${item.amount != null ? item.amount : ''}" oninput="updateCalc('${id}')">
                 <button class="btn-remove-item" onclick="removeLineItem(this, '${id}')">✕</button>
             </div>
         `).join('');
     }
 
+    function renderMainLineItemsHtml(lineItems, rate, id) {
+        if (!lineItems || !lineItems.length) return '<p class="no-items">No main line items</p>';
+        const grouped = {};
+        lineItems.forEach(item => {
+            const day = item.day || 'Unknown';
+            if (!grouped[day]) grouped[day] = { day, description: item.description || '', count: 0 };
+            grouped[day].count++;
+        });
+        return Object.values(grouped).map(group => {
+            const amount = (group.count * rate).toFixed(2);
+            return `
+            <div class="main-item-row">
+                <input type="text" class="li-desc" placeholder="Description" style="flex:2" value="${escAttr(group.description)}">
+                <input type="text" class="li-slot" placeholder="Slot" value="${escAttr(group.day)}">
+                <input type="number" class="li-lessons" placeholder="Lessons" min="0" value="${group.count}" oninput="updateCalc('${id}')">
+                <input type="number" class="li-amount" value="${amount}" readonly>
+            </div>`;
+        }).join('');
+    }
+
     function renderAmendForm(inv) {
+        const mainItemsHtml = renderMainLineItemsHtml(inv.lineItems || [], inv.ratePerLesson, inv.id);
         const lineItemsHtml = renderLineItemRowsHtml(inv.lineItemsExtra || [], inv.id);
+        const initialExtraTotal = (inv.lineItemsExtra || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
         return `
         <div class="amend-form" id="amend-${inv.id}">
             <h3>✏️ Amend Invoice</h3>
             <div class="form-grid">
-                <div class="form-group">
-                    <label>Lessons Count</label>
-                    <input type="number" id="a-lessons-${inv.id}" value="${inv.lessonsCount}" min="0"
-                        oninput="updateCalc('${inv.id}')">
-                </div>
                 <div class="form-group">
                     <label>Rate Per Lesson</label>
                     <input type="text" value="$${inv.ratePerLesson.toFixed(2)}" readonly>
@@ -902,12 +967,18 @@
             </div>
             <div class="line-items-section">
                 <div class="line-items-header">
+                    <label>Main Line Items</label>
+                </div>
+                <div id="main-items-${inv.id}">${mainItemsHtml}</div>
+            </div>
+            <div class="line-items-section">
+                <div class="line-items-header">
                     <label>Extra Line Items</label>
                     <button class="btn-add-item" onclick="addLineItem('${inv.id}')">+ Add Line Item</button>
                 </div>
                 <div id="line-items-${inv.id}">${lineItemsHtml}</div>
             </div>
-            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.lessonsCount, inv.ratePerLesson, inv.adjustmentAmount || 0, (inv.lineItemsExtra || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0))}</div>
+            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.baseAmount || 0, inv.adjustmentAmount || 0, initialExtraTotal)}</div>
             <div class="form-actions">
                 <button class="btn btn-save" onclick="saveAmend('${inv.id}', ${inv.ratePerLesson})">💾 Save Changes</button>
                 <button class="btn btn-cancel" onclick="toggleAmend('${inv.id}')">Cancel</button>
@@ -915,12 +986,11 @@
         </div>`;
     }
 
-    function calcDisplay(lessons, rate, adj, extraTotal) {
-        const base = lessons * rate;
-        const final = base + (adj || 0) + (extraTotal || 0);
-        let str = `(${lessons} × $${rate.toFixed(2)})`;
+    function calcDisplay(baseAmount, adj, extraTotal) {
+        const final = (baseAmount || 0) + (adj || 0) + (extraTotal || 0);
+        let str = `Base: $${(baseAmount || 0).toFixed(2)}`;
         if (adj) str += ` + $${adj.toFixed(2)} adj`;
-        if (extraTotal) str += ` + $${extraTotal.toFixed(2)} extras`;
+        if (extraTotal) str += ` + $${(extraTotal).toFixed(2)} extras`;
         str += ` = <strong>$${final.toFixed(2)}</strong>`;
         return str;
     }
@@ -943,8 +1013,10 @@
         const row = document.createElement('div');
         row.className = 'line-item-row';
         row.innerHTML = `
-            <input type="text" class="li-desc" placeholder="Description" value="">
-            <input type="number" class="li-amount" placeholder="0.00" step="0.01" value="" oninput="updateCalc('${id}')">
+            <input type="text" class="li-desc" placeholder="Description" style="flex:2">
+            <input type="text" class="li-slot" placeholder="e.g. Saturday">
+            <input type="number" class="li-lessons" placeholder="e.g. 4" min="0">
+            <input type="number" class="li-amount" placeholder="0.00" step="0.01" oninput="updateCalc('${id}')">
             <button class="btn-remove-item" onclick="removeLineItem(this, '${id}')">✕</button>
         `;
         container.appendChild(row);
@@ -964,14 +1036,26 @@
     function updateCalc(id) {
         const inv = invoices.find(i => i.id === id);
         if (!inv) return;
-        const lessons = parseFloat(document.getElementById(`a-lessons-${id}`)?.value) || 0;
+        const rate = inv.ratePerLesson;
         const adj = inv.adjustmentAmount || 0;
+
+        // Recalculate readonly amount fields in main items and sum base
+        let mainBase = 0;
+        document.querySelectorAll(`#main-items-${id} .main-item-row`).forEach(row => {
+            const lessons = parseInt(row.querySelector('.li-lessons')?.value) || 0;
+            const rowAmount = lessons * rate;
+            mainBase += rowAmount;
+            const amtInput = row.querySelector('.li-amount');
+            if (amtInput) amtInput.value = rowAmount.toFixed(2);
+        });
+
         let extraTotal = 0;
         document.querySelectorAll(`#amend-${id} .line-item-row`).forEach(row => {
             extraTotal += parseFloat(row.querySelector('.li-amount')?.value) || 0;
         });
+
         const el = document.getElementById(`calc-${id}`);
-        if (el) el.innerHTML = calcDisplay(lessons, inv.ratePerLesson, adj, extraTotal);
+        if (el) el.innerHTML = calcDisplay(mainBase, adj, extraTotal);
     }
 
     function toggleAmend(id) {
@@ -1029,27 +1113,45 @@
     }
 
     async function saveAmend(id, ratePerLesson) {
-        const lessonsCount = parseInt(document.getElementById(`a-lessons-${id}`).value) || 0;
         const autoNotes = document.getElementById(`a-notes-${id}`).value;
         const invRef = invoices.find(i => i.id === id);
         const adjustmentAmount = invRef?.adjustmentAmount || 0;
+
+        // Read main line items and reconstruct flat Line Items array
+        const mainLineItems = [];
+        const reconstructedLineItems = [];
+        document.querySelectorAll(`#main-items-${id} .main-item-row`).forEach(row => {
+            const desc = row.querySelector('.li-desc')?.value || '';
+            const slot = row.querySelector('.li-slot')?.value || '';
+            const lessons = parseInt(row.querySelector('.li-lessons')?.value) || 0;
+            mainLineItems.push({ description: desc, slot, lessons });
+            for (let i = 0; i < lessons; i++) {
+                reconstructedLineItems.push({ day: slot, description: desc });
+            }
+        });
 
         const currentLineItems = [];
         document.querySelectorAll(`#amend-${id} .line-item-row`).forEach(row => {
             const desc = row.querySelector('.li-desc')?.value || '';
             const amt = parseFloat(row.querySelector('.li-amount')?.value) || 0;
-            if (desc || amt) currentLineItems.push({ description: desc, amount: amt });
+            if (desc || amt) currentLineItems.push({
+                description: desc,
+                amount: amt,
+                slot: row.querySelector('.li-slot')?.value || '',
+                lessons: row.querySelector('.li-lessons')?.value || '',
+            });
         });
 
-        const baseAmount = lessonsCount * ratePerLesson;
-        const extraLineItemsTotal = (currentLineItems || [])
-            .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        const baseAmount = mainLineItems.reduce((sum, item) => sum + item.lessons * ratePerLesson, 0);
+        const lessonsCount = mainLineItems.reduce((sum, item) => sum + item.lessons, 0);
+        const extraLineItemsTotal = currentLineItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
         const finalAmount = baseAmount + adjustmentAmount + extraLineItemsTotal;
 
         const fields = {
             'Lessons Count': lessonsCount,
             'Auto Notes': autoNotes,
             'Final Amount': finalAmount,
+            'Line Items': JSON.stringify(reconstructedLineItems),
             'Line Items Extra': JSON.stringify(currentLineItems),
         };
 
@@ -1070,6 +1172,7 @@
                 inv.baseAmount = baseAmount;
                 inv.finalAmount = finalAmount;
                 inv.autoNotes = autoNotes;
+                inv.lineItems = reconstructedLineItems;
                 inv.lineItemsExtra = currentLineItems;
             }
 

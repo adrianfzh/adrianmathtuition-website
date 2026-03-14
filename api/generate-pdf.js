@@ -115,13 +115,19 @@ async function generateInvoicePDF(invoiceData) {
             extraLineItemsRows = invoiceData.lineItemsExtra.map(item => {
                 const amount = parseFloat(item.amount) || 0;
                 const sign = amount >= 0 ? '' : '-';
+                const slotCell = item.slot
+                    ? `<span class="slot-pill">${item.slot}</span>`
+                    : '';
+                const lessonsCell = item.lessons
+                    ? `<span class="lessons-badge">${item.lessons}</span>`
+                    : '';
                 return `
                     <tr>
                         <td>
                             <div class="desc-main">${item.description || 'Additional Item'}</div>
                         </td>
-                        <td></td>
-                        <td></td>
+                        <td>${slotCell}</td>
+                        <td>${lessonsCell}</td>
                         <td>${sign}$${Math.abs(amount).toFixed(2)}</td>
                     </tr>
                 `;
