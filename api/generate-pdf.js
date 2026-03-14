@@ -131,21 +131,15 @@ async function generateInvoicePDF(invoiceData) {
 
         html = html.replace(/\{\{AUTO_NOTES\}\}/g, invoiceData.notes || '');
 
+        // Write full HTML to temp file so file:// image URLs resolve correctly
+        const htmlTempPath = path.join(os.tmpdir(), `invoice-${crypto.randomBytes(6).toString('hex')}.html`);
+        await fs.writeFile(htmlTempPath, html, 'utf8');
+
         // 3. Get browser instance
         const browser = await getBrowser();
         const page = await browser.newPage();
 
-        await page.setRequestInterception(true);
-        page.on('request', (req) => {
-            const url = req.url();
-            if (url.startsWith('https://fonts.googleapis.com') || url.startsWith('https://fonts.gstatic.com')) {
-                req.abort();
-            } else {
-                req.continue();
-            }
-        });
-
-        await page.setContent(html, { waitUntil: ['domcontentloaded', 'load'], timeout: 15000 });
+        await page.goto(`file://${htmlTempPath}`, { waitUntil: ['domcontentloaded', 'load'], timeout: 15000 });
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // 4. Generate PDF
@@ -162,6 +156,7 @@ async function generateInvoicePDF(invoiceData) {
         });
 
         await page.close();
+        await fs.unlink(htmlTempPath).catch(() => {});
         if (paynowTempPath) {
             await fs.unlink(paynowTempPath).catch(() => {});
         }
