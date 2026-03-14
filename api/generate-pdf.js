@@ -55,7 +55,7 @@ async function generateInvoicePDF(invoiceData) {
         html = html.replace(/\{\{LESSONS_COUNT\}\}/g, invoiceData.lessonsCount || '0');
         html = html.replace(/\{\{RATE_PER_LESSON\}\}/g, invoiceData.ratePerLesson || '0');
         html = html.replace(/\{\{BASE_AMOUNT\}\}/g, invoiceData.baseAmount || '0');
-        html = html.replace(/\{\{FINAL_AMOUNT\}\}/g, invoiceData.finalAmount || '0');
+        html = html.replace(/\{\{FINAL_AMOUNT\}\}/g, parseFloat(invoiceData.finalAmount || 0).toFixed(2));
         html = html.replace(/\{\{STATUS\}\}/g, invoiceData.status || 'Pending');
         
         // Payment reference: STUDENT NAME – MONTH
