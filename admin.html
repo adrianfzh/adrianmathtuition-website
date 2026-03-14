@@ -623,6 +623,7 @@
         <span id="summary"></span>
         <button class="btn-generate" id="btn-generate-missing" onclick="generateMissingPDFs()">⚡ Generate Missing PDFs</button>
         <button class="btn-generate" id="btn-regenerate-all" onclick="regenerateAllPDFs()">🔄 Regenerate All PDFs</button>
+        <button class="btn-generate" id="btn-download-all" onclick="downloadAllPDFs()">⬇️ Download All PDFs</button>
         <button class="btn-refresh" onclick="loadInvoices()">🔄 Refresh</button>
     </div>
 </div>
@@ -1103,6 +1104,46 @@
 
     function regenerateAllPDFs() {
         return runBulkGenerate('btn-regenerate-all', '🔄 Regenerate All PDFs', { force: true });
+    }
+
+    async function downloadBlob(url, filename) {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+    }
+
+    async function downloadAllPDFs() {
+        const btn = document.getElementById('btn-download-all');
+        const withPdf = invoices.filter(inv => inv.pdfUrl);
+        const missing = invoices.length - withPdf.length;
+
+        if (withPdf.length === 0) {
+            btn.textContent = '⚠️ No PDFs to download — generate them first';
+            setTimeout(() => { btn.textContent = '⬇️ Download All PDFs'; }, 4000);
+            return;
+        }
+
+        btn.disabled = true;
+        let downloaded = 0;
+        for (const inv of withPdf) {
+            btn.textContent = `⬇️ Downloading ${downloaded + 1}/${withPdf.length}…`;
+            const filename = `Invoice-${inv.studentName}-${inv.month}.pdf`;
+            await downloadBlob(inv.pdfUrl, filename);
+            downloaded++;
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        let doneMsg = `✅ Downloaded ${downloaded} PDF${downloaded !== 1 ? 's' : ''}`;
+        if (missing > 0) doneMsg += ` — ⚠️ ${missing} invoice${missing !== 1 ? 's' : ''} had no PDF`;
+        btn.textContent = doneMsg;
+        btn.disabled = false;
+        setTimeout(() => { btn.textContent = '⬇️ Download All PDFs'; }, 6000);
     }
 
     async function generateCardPDF(id) {
