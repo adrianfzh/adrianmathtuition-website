@@ -630,7 +630,7 @@
 <script>
     let adminPassword = sessionStorage.getItem('adminPassword') || '';
     let invoices = [];
-    let totalVisible = true;
+    let totalVisible = false;
 
     function authHeaders(extra = {}) {
         return { 'Authorization': `Bearer ${adminPassword}`, ...extra };

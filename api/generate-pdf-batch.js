@@ -107,6 +107,7 @@ module.exports = async function handler(req, res) {
             const blob = await put(`invoices/${id}.pdf`, pdfBuffer, {
                 access: 'public',
                 contentType: 'application/pdf',
+                allowOverwrite: true,
             });
 
             // Store blob URL in Airtable
