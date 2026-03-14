@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
 
     const at = (table, path, options) => airtableRequest(baseId, airtableToken, table, path, options);
 
-    const { recordId: singleRecordId } = req.body || {};
+    const { recordId: singleRecordId, force } = req.body || {};
 
     // Fetch invoices — single or all Draft
     let invoices;
@@ -54,6 +54,7 @@ module.exports = async function handler(req, res) {
     }
 
     let generated = 0;
+    let skipped = 0;
     const errors = [];
 
     console.log('[generate-pdf-batch] Processing', invoices.length, 'invoices sequentially');
@@ -61,10 +62,16 @@ module.exports = async function handler(req, res) {
     for (const record of invoices) {
         const id = record.id;
         const f = record.fields;
+        let studentName = '';
         try {
+            // Skip invoices that already have a PDF URL unless force is set
+            if (!force && f['PDF URL']) {
+                skipped++;
+                continue;
+            }
+
             // Resolve student name
             const studentId = f['Student']?.[0];
-            let studentName = '';
             if (studentId) {
                 const studentRes = await fetch(
                     `https://api.airtable.com/v0/${baseId}/Students/${studentId}`,
@@ -111,9 +118,9 @@ module.exports = async function handler(req, res) {
             console.log('[generate-pdf-batch] Done:', studentName);
         } catch (err) {
             console.error(`[generate-pdf-batch] Error for ${id}:`, err.message);
-            errors.push({ id, error: err.message });
+            errors.push({ studentName, error: err.message });
         }
     }
 
-    return res.json({ generated, errors });
+    return res.json({ generated, skipped, errors });
 };

@@ -169,6 +169,56 @@
         .btn-generate:hover:not(:disabled) { background: #1d3fa3; }
         .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
 
+        /* Result banner */
+        .result-banner {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .result-banner.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+        .result-banner.warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+        .result-banner.error   { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
+        .result-banner.info    { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
+
+        .btn-dismiss {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.5;
+            padding: 0 2px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .btn-dismiss:hover { opacity: 1; }
+
+        /* Per-card generate PDF button */
+        .btn-gen-pdf {
+            background: #f0f9ff;
+            border-color: #bae6fd;
+            color: #0369a1;
+        }
+
+        .btn-gen-pdf:hover:not(:disabled) { background: #e0f2fe; }
+        .btn-gen-pdf.success { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+        .btn-gen-pdf.error   { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+
+        .gen-error-msg {
+            font-size: 12px;
+            color: #b91c1c;
+            margin-top: 6px;
+            width: 100%;
+        }
+
         /* Content */
         .content {
             max-width: 1000px;
@@ -561,7 +611,8 @@
     </div>
     <div class="header-right">
         <span id="summary"></span>
-        <button class="btn-generate" id="btn-generate-all" onclick="generateAllPDFs()">⚡ Generate All PDFs</button>
+        <button class="btn-generate" id="btn-generate-missing" onclick="generateMissingPDFs()">⚡ Generate Missing PDFs</button>
+        <button class="btn-generate" id="btn-regenerate-all" onclick="regenerateAllPDFs()">🔄 Regenerate All PDFs</button>
         <button class="btn-refresh" onclick="loadInvoices()">🔄 Refresh</button>
     </div>
 </div>
@@ -571,6 +622,7 @@
         <span id="error-msg"></span>
         <button class="btn-retry" onclick="loadInvoices()">Retry</button>
     </div>
+    <div id="result-banner" style="display:none;"></div>
     <div id="invoices-container"></div>
 </div>
 
@@ -713,6 +765,7 @@
         const actionsHtml = isDraft ? `
             <div class="card-actions" id="actions-${inv.id}">
                 <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">👁 Preview PDF</button>
+                <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">⚡ Generate PDF</button>
                 <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">✏️ Amend</button>
                 <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">✅ Approve</button>
             </div>` : `
@@ -940,7 +993,7 @@
                 const pdfRes = await fetch('/api/generate-pdf-batch', {
                     method: 'POST',
                     headers: authHeaders({ 'Content-Type': 'application/json' }),
-                    body: JSON.stringify({ recordId: id }),
+                    body: JSON.stringify({ recordId: id, force: true }),
                 });
                 if (pdfRes.ok) {
                     const pdfData = await pdfRes.json();
@@ -958,26 +1011,111 @@
         }
     }
 
-    async function generateAllPDFs() {
-        const btn = document.getElementById('btn-generate-all');
+    function showResultBanner(data) {
+        const banner = document.getElementById('result-banner');
+        const { generated, skipped, errors } = data;
+        let type, msg;
+
+        if (generated === 0 && errors.length === 0) {
+            type = 'info';
+            msg = 'ℹ️ All PDFs already exist — nothing to generate.';
+        } else if (generated > 0 && errors.length === 0) {
+            type = 'success';
+            msg = `✅ ${generated} PDF${generated !== 1 ? 's' : ''} generated successfully.`;
+            if (skipped > 0) msg += ` (${skipped} already existed, skipped)`;
+        } else if (generated > 0 && errors.length > 0) {
+            type = 'warning';
+            const names = errors.map(e => escHtml(e.studentName || e.id)).join(', ');
+            msg = `✅ ${generated} generated · ⚠️ ${errors.length} failed: ${names}`;
+        } else {
+            type = 'error';
+            const names = errors.map(e => escHtml(e.studentName || e.id)).join(', ');
+            msg = `❌ All ${errors.length} failed: ${names}`;
+        }
+
+        banner.className = `result-banner ${type}`;
+        banner.style.display = 'flex';
+        banner.innerHTML = `<span>${msg}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+    }
+
+    async function runBulkGenerate(btnId, label, body) {
+        const btn = document.getElementById(btnId);
         btn.disabled = true;
-        btn.textContent = '⏳ Generating PDFs… (1–2 min)';
+        btn.textContent = '⏳ Generating… (1–2 min)';
+        document.getElementById('result-banner').style.display = 'none';
         try {
             const res = await fetch('/api/generate-pdf-batch', {
                 method: 'POST',
                 headers: authHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({}),
+                body: JSON.stringify(body),
             });
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
             const data = await res.json();
-            btn.textContent = `✅ ${data.generated} PDF${data.generated !== 1 ? 's' : ''} generated`;
+            showResultBanner(data);
             await loadInvoices();
         } catch (err) {
-            btn.textContent = '⚡ Generate All PDFs';
-            alert('Failed to generate PDFs: ' + err.message);
+            const banner = document.getElementById('result-banner');
+            banner.className = 'result-banner error';
+            banner.style.display = 'flex';
+            banner.innerHTML = `<span>❌ ${escHtml(err.message)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
         } finally {
             btn.disabled = false;
-            setTimeout(() => { btn.textContent = '⚡ Generate All PDFs'; }, 4000);
+            btn.textContent = label;
+        }
+    }
+
+    function generateMissingPDFs() {
+        return runBulkGenerate('btn-generate-missing', '⚡ Generate Missing PDFs', {});
+    }
+
+    function regenerateAllPDFs() {
+        return runBulkGenerate('btn-regenerate-all', '🔄 Regenerate All PDFs', { force: true });
+    }
+
+    async function generateCardPDF(id) {
+        const btn = document.getElementById(`gen-btn-${id}`);
+        if (!btn) return;
+        btn.disabled = true;
+        btn.textContent = '⏳ Generating…';
+        btn.classList.remove('success', 'error');
+
+        const existingErr = document.getElementById(`gen-err-${id}`);
+        if (existingErr) existingErr.remove();
+
+        try {
+            const res = await fetch('/api/generate-pdf-batch', {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ recordId: id, force: true }),
+            });
+            if (!res.ok) throw new Error(`Server error: ${res.status}`);
+            const data = await res.json();
+            if (data.errors && data.errors.length > 0) throw new Error(data.errors[0].error);
+
+            btn.textContent = '✅ Done';
+            btn.classList.add('success');
+            btn.disabled = false;
+
+            const inv = invoices.find(i => i.id === id);
+            if (inv) inv.pdfUrl = 'generated'; // mark as having a PDF
+
+            setTimeout(() => {
+                const card = document.getElementById(`card-${id}`);
+                if (card && inv) card.outerHTML = renderCard(inv);
+            }, 2000);
+        } catch (err) {
+            btn.textContent = '❌ Failed';
+            btn.classList.add('error');
+            btn.disabled = false;
+
+            const actionsEl = document.getElementById(`actions-${id}`);
+            if (actionsEl) {
+                const errEl = document.createElement('div');
+                errEl.id = `gen-err-${id}`;
+                errEl.className = 'gen-error-msg';
+                errEl.textContent = err.message;
+                actionsEl.appendChild(errEl);
+            }
         }
     }
 
