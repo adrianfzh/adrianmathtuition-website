@@ -907,7 +907,7 @@
                 </div>
                 <div id="line-items-${inv.id}">${lineItemsHtml}</div>
             </div>
-            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.lessonsCount, inv.ratePerLesson, inv.lineItemsExtra || [])}</div>
+            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.lessonsCount, inv.ratePerLesson, inv.adjustmentAmount || 0, (inv.lineItemsExtra || []).reduce((s, i) => s + (parseFloat(i.amount) || 0), 0))}</div>
             <div class="form-actions">
                 <button class="btn btn-save" onclick="saveAmend('${inv.id}', ${inv.ratePerLesson})">💾 Save Changes</button>
                 <button class="btn btn-cancel" onclick="toggleAmend('${inv.id}')">Cancel</button>
@@ -915,15 +915,12 @@
         </div>`;
     }
 
-    function calcDisplay(lessons, rate, lineItems) {
+    function calcDisplay(lessons, rate, adj, extraTotal) {
         const base = lessons * rate;
-        const extraSum = (lineItems || []).reduce((s, i) => s + (i.amount || 0), 0);
-        const final = base + extraSum;
-        let str = `${lessons} × $${rate.toFixed(2)} = $${base.toFixed(2)}`;
-        if (extraSum !== 0) {
-            const sign = extraSum > 0 ? '+' : '−';
-            str += ` ${sign} $${Math.abs(extraSum).toFixed(2)} (extras)`;
-        }
+        const final = base + (adj || 0) + (extraTotal || 0);
+        let str = `(${lessons} × $${rate.toFixed(2)})`;
+        if (adj) str += ` + $${adj.toFixed(2)} adj`;
+        if (extraTotal) str += ` + $${extraTotal.toFixed(2)} extras`;
         str += ` = <strong>$${final.toFixed(2)}</strong>`;
         return str;
     }
@@ -968,9 +965,13 @@
         const inv = invoices.find(i => i.id === id);
         if (!inv) return;
         const lessons = parseFloat(document.getElementById(`a-lessons-${id}`)?.value) || 0;
-        const lineItems = getLineItems(id);
+        const adj = inv.adjustmentAmount || 0;
+        let extraTotal = 0;
+        document.querySelectorAll(`#amend-${id} .line-item-row`).forEach(row => {
+            extraTotal += parseFloat(row.querySelector('.li-amount')?.value) || 0;
+        });
         const el = document.getElementById(`calc-${id}`);
-        if (el) el.innerHTML = calcDisplay(lessons, inv.ratePerLesson, lineItems);
+        if (el) el.innerHTML = calcDisplay(lessons, inv.ratePerLesson, adj, extraTotal);
     }
 
     function toggleAmend(id) {
@@ -1030,15 +1031,26 @@
     async function saveAmend(id, ratePerLesson) {
         const lessonsCount = parseInt(document.getElementById(`a-lessons-${id}`).value) || 0;
         const autoNotes = document.getElementById(`a-notes-${id}`).value;
-        const lineItemsExtra = getLineItems(id);
+        const invRef = invoices.find(i => i.id === id);
+        const adjustmentAmount = invRef?.adjustmentAmount || 0;
+
+        const currentLineItems = [];
+        document.querySelectorAll(`#amend-${id} .line-item-row`).forEach(row => {
+            const desc = row.querySelector('.li-desc')?.value || '';
+            const amt = parseFloat(row.querySelector('.li-amount')?.value) || 0;
+            if (desc || amt) currentLineItems.push({ description: desc, amount: amt });
+        });
+
         const baseAmount = lessonsCount * ratePerLesson;
-        const extraSum = lineItemsExtra.reduce((s, i) => s + (i.amount || 0), 0);
-        const finalAmount = baseAmount + extraSum;
+        const extraLineItemsTotal = (currentLineItems || [])
+            .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        const finalAmount = baseAmount + adjustmentAmount + extraLineItemsTotal;
 
         const fields = {
             'Lessons Count': lessonsCount,
             'Auto Notes': autoNotes,
-            'Line Items Extra': JSON.stringify(lineItemsExtra),
+            'Final Amount': finalAmount,
+            'Line Items Extra': JSON.stringify(currentLineItems),
         };
 
         const saveBtn = document.querySelector(`#amend-${id} .btn-save`);
@@ -1058,7 +1070,7 @@
                 inv.baseAmount = baseAmount;
                 inv.finalAmount = finalAmount;
                 inv.autoNotes = autoNotes;
-                inv.lineItemsExtra = lineItemsExtra;
+                inv.lineItemsExtra = currentLineItems;
             }
 
             // Regenerate PDF after amend
