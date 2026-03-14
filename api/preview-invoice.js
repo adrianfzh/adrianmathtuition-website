@@ -48,6 +48,11 @@ module.exports = async function handler(req, res) {
     const invoiceRecord = await at('Invoices', `/${recordId}`);
     const f = invoiceRecord.fields;
 
+    // If a pre-generated blob URL exists, redirect to it directly
+    if (f['PDF URL']) {
+        return res.redirect(f['PDF URL']);
+    }
+
     // 2. Fetch linked student via direct record lookup
     const studentId = f['Student']?.[0];
     let studentName = '';

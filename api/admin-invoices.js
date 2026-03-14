@@ -58,10 +58,7 @@ module.exports = async function handler(req, res) {
             const f = r.fields;
             const studentId = f['Student']?.[0];
             const studentFields = studentsById[studentId] || {};
-            const pdfAttachments = f['Invoice PDF'];
-            const pdfUrl = Array.isArray(pdfAttachments) && pdfAttachments.length > 0
-                ? pdfAttachments[0].url
-                : null;
+            const pdfUrl = f['PDF URL'] || null;
             return {
                 id: r.id,
                 studentName: studentFields['Student Name'] || '',

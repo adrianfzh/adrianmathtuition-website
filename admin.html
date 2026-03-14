@@ -153,6 +153,22 @@
 
         .btn-refresh:hover { background: #f1f5f9; }
 
+        .btn-generate {
+            background: #1e40af;
+            border: 1px solid #1e40af;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .btn-generate:hover:not(:disabled) { background: #1d3fa3; }
+        .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+
         /* Content */
         .content {
             max-width: 1000px;
@@ -545,6 +561,7 @@
     </div>
     <div class="header-right">
         <span id="summary"></span>
+        <button class="btn-generate" id="btn-generate-all" onclick="generateAllPDFs()">⚡ Generate All PDFs</button>
         <button class="btn-refresh" onclick="loadInvoices()">🔄 Refresh</button>
     </div>
 </div>
@@ -917,6 +934,20 @@
                 inv.lineItemsExtra = lineItemsExtra;
             }
 
+            // Regenerate PDF for this invoice
+            if (saveBtn) saveBtn.textContent = 'Regenerating PDF…';
+            try {
+                const pdfRes = await fetch('/api/generate-pdf-batch', {
+                    method: 'POST',
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({ recordId: id }),
+                });
+                if (pdfRes.ok) {
+                    const pdfData = await pdfRes.json();
+                    // Update cached pdfUrl if returned (reload will pick it up)
+                }
+            } catch (_) { /* non-fatal */ }
+
             const card = document.getElementById(`card-${id}`);
             if (card && inv) card.outerHTML = renderCard(inv);
             updateSummary();
@@ -924,6 +955,29 @@
         } catch (err) {
             if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save Changes'; }
             alert('Failed to save: ' + err.message);
+        }
+    }
+
+    async function generateAllPDFs() {
+        const btn = document.getElementById('btn-generate-all');
+        btn.disabled = true;
+        btn.textContent = '⏳ Generating PDFs… (1–2 min)';
+        try {
+            const res = await fetch('/api/generate-pdf-batch', {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({}),
+            });
+            if (!res.ok) throw new Error(`Server error: ${res.status}`);
+            const data = await res.json();
+            btn.textContent = `✅ ${data.generated} PDF${data.generated !== 1 ? 's' : ''} generated`;
+            await loadInvoices();
+        } catch (err) {
+            btn.textContent = '⚡ Generate All PDFs';
+            alert('Failed to generate PDFs: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = '⚡ Generate All PDFs'; }, 4000);
         }
     }
 

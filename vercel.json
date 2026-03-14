@@ -9,7 +9,8 @@
     { "src": "api/generate-invoices.js", "use": "@vercel/node" },
     { "src": "api/send-invoices.js", "use": "@vercel/node" },
     { "src": "api/admin-invoices.js", "use": "@vercel/node" },
-    { "src": "api/preview-invoice.js", "use": "@vercel/node" }
+    { "src": "api/preview-invoice.js", "use": "@vercel/node" },
+    { "src": "api/generate-pdf-batch.js", "use": "@vercel/node" }
   ],
   "routes": [
     { "src": "/api/schedule",     "dest": "/api/schedule.js"    },
@@ -24,6 +25,7 @@
     { "src": "/api/send-invoices", "dest": "/api/send-invoices.js" },
     { "src": "/api/admin-invoices", "dest": "/api/admin-invoices.js" },
     { "src": "/api/preview-invoice", "dest": "/api/preview-invoice.js" },
+    { "src": "/api/generate-pdf-batch", "dest": "/api/generate-pdf-batch.js" },
     { "src": "/(.*)",             "dest": "/$1"                 }
   ],
   "crons": [
