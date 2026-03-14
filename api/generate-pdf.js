@@ -89,15 +89,6 @@ async function generateInvoicePDF(invoiceData) {
 
         html = html.replace(/\{\{AUTO_NOTES\}\}/g, invoiceData.notes || '');
 
-        // Handle notes section (remove if empty)
-        if (!invoiceData.notes) {
-            html = html.replace(/\{\{#if NOTES\}\}[\s\S]*?\{\{\/if\}\}/g, '');
-        } else {
-            html = html.replace(/\{\{#if NOTES\}\}/g, '');
-            html = html.replace(/\{\{\/if\}\}/g, '');
-            html = html.replace(/\{\{NOTES\}\}/g, invoiceData.notes);
-        }
-
         // 3. Get browser instance
         const browser = await getBrowser();
         const page = await browser.newPage();
