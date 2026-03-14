@@ -1073,6 +1073,15 @@
                 inv.lineItemsExtra = currentLineItems;
             }
 
+            // Clear old PDF URL before regenerating
+            try {
+                await fetch('/api/admin-invoices', {
+                    method: 'PATCH',
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({ recordId: id, fields: { 'PDF URL': '' } }),
+                });
+            } catch (_) { /* non-fatal */ }
+
             // Regenerate PDF after amend
             if (saveBtn) saveBtn.textContent = 'Regenerating PDF…';
             try {
