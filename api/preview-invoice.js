@@ -86,6 +86,9 @@ module.exports = async function handler(req, res) {
         makeupCredits: 0,
         notes: f['Auto Notes'] || '',
         lineItems,
+        lineItemsExtra: (() => {
+            try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; }
+        })(),
     };
 
     const pdfBuffer = await generateInvoicePDF(invoiceData);

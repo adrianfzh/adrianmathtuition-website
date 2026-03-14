@@ -43,8 +43,15 @@ async function generateInvoicePDF(invoiceData) {
         html = html.replace(/\{\{STUDENT_NAME\}\}/g, invoiceData.studentName || '');
         html = html.replace(/\{\{MONTH\}\}/g, invoiceData.month || '');
         html = html.replace(/\{\{INVOICE_ID\}\}/g, invoiceData.invoiceId || '');
-        html = html.replace(/\{\{ISSUE_DATE\}\}/g, invoiceData.issueDate || '');
-        html = html.replace(/\{\{DUE_DATE\}\}/g, invoiceData.dueDate || '');
+        const issueDateFormatted = invoiceData.issueDate
+            ? new Date(invoiceData.issueDate).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+            : '';
+        html = html.replace(/\{\{ISSUE_DATE\}\}/g, issueDateFormatted);
+
+        const dueDateFormatted = invoiceData.dueDate
+            ? new Date(invoiceData.dueDate).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+            : '';
+        html = html.replace(/\{\{DUE_DATE\}\}/g, dueDateFormatted);
         html = html.replace(/\{\{LESSONS_COUNT\}\}/g, invoiceData.lessonsCount || '0');
         html = html.replace(/\{\{RATE_PER_LESSON\}\}/g, invoiceData.ratePerLesson || '0');
         html = html.replace(/\{\{BASE_AMOUNT\}\}/g, invoiceData.baseAmount || '0');
@@ -87,12 +94,44 @@ async function generateInvoicePDF(invoiceData) {
         }
         html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
 
+        // Extra (manually added) line items
+        let extraLineItemsRows = '';
+        if (invoiceData.lineItemsExtra && Array.isArray(invoiceData.lineItemsExtra) && invoiceData.lineItemsExtra.length > 0) {
+            extraLineItemsRows = invoiceData.lineItemsExtra.map(item => {
+                const amount = parseFloat(item.amount) || 0;
+                const sign = amount >= 0 ? '' : '-';
+                return `
+                    <tr>
+                        <td>
+                            <div class="desc-main">${item.description || 'Additional Item'}</div>
+                        </td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>${sign}$${Math.abs(amount).toFixed(2)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        html = html.replace(/\{\{EXTRA_LINE_ITEMS_ROWS\}\}/g, extraLineItemsRows);
+
         html = html.replace(/\{\{AUTO_NOTES\}\}/g, invoiceData.notes || '');
 
         // 3. Get browser instance
         const browser = await getBrowser();
         const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: 'networkidle0' });
+
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            const url = req.url();
+            if (url.startsWith('https://fonts.googleapis.com') || url.startsWith('https://fonts.gstatic.com')) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+
+        await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 10000 });
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // 4. Generate PDF
         const pdfBuffer = await page.pdf({

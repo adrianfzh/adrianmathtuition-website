@@ -1061,17 +1061,23 @@
                 inv.lineItemsExtra = lineItemsExtra;
             }
 
-            // Regenerate PDF for this invoice
+            // Regenerate PDF after amend
             if (saveBtn) saveBtn.textContent = 'Regenerating PDF…';
             try {
-                const pdfRes = await fetch('/api/generate-pdf-batch', {
+                await fetch('/api/generate-pdf-batch', {
                     method: 'POST',
                     headers: authHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify({ recordId: id, force: true }),
                 });
-                if (pdfRes.ok) {
-                    const pdfData = await pdfRes.json();
-                    // Update cached pdfUrl if returned (reload will pick it up)
+            } catch (_) { /* non-fatal */ }
+
+            // Refresh pdfUrl for this invoice from server
+            try {
+                const freshRes = await fetch('/api/admin-invoices', { headers: authHeaders() });
+                if (freshRes.ok) {
+                    const freshList = await freshRes.json();
+                    const freshInv = freshList.find(i => i.id === id);
+                    if (freshInv && inv) inv.pdfUrl = freshInv.pdfUrl;
                 }
             } catch (_) { /* non-fatal */ }
 

@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Invoice – Adrian's Math Tuition</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -27,7 +26,7 @@
   }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: var(--bg);
     min-height: 100vh;
     display: flex;
@@ -98,7 +97,7 @@
     color: var(--white);
     border: none;
     border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -178,7 +177,7 @@
   }
 
   .brand-name {
-    font-family: 'DM Serif Display', serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 22px;
     color: var(--white);
     line-height: 1.2;
@@ -219,7 +218,7 @@
   }
 
   .invoice-word {
-    font-family: 'DM Serif Display', serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 52px;
     color: rgba(255,255,255,0.15);
     line-height: 1;
@@ -237,7 +236,7 @@
   }
 
   .invoice-month {
-    font-family: 'DM Serif Display', serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 22px;
     color: var(--white);
     letter-spacing: -0.3px;
@@ -310,7 +309,7 @@
   }
 
   .student-name {
-    font-family: 'DM Serif Display', serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 28px;
     color: var(--text);
     letter-spacing: -0.3px;
@@ -418,7 +417,7 @@
   }
 
   .total-amount {
-    font-family: 'DM Serif Display', serif;
+    font-family: Georgia, 'Times New Roman', serif;
     font-size: 32px;
     color: var(--text);
     letter-spacing: -0.5px;
@@ -488,7 +487,7 @@
     background: var(--white);
     border: 1px solid var(--border);
     border-radius: 6px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 12px;
     font-weight: 600;
     color: var(--text);
@@ -637,14 +636,14 @@
       <div class="meta-label">Date of Issue</div>
       <div class="meta-value">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        15 Feb 2026
+        {{ISSUE_DATE}}
       </div>
     </div>
     <div class="meta-item">
       <div class="meta-label">Due By</div>
       <div class="meta-value">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        15 Mar 2026
+        {{DUE_DATE}}
       </div>
     </div>
     <div class="meta-item">
@@ -671,6 +670,7 @@
       </thead>
       <tbody>
         {{LINE_ITEMS_ROWS}}
+        {{EXTRA_LINE_ITEMS_ROWS}}
       </tbody>
     </table>
 
@@ -688,7 +688,7 @@
       <div style="
         font-size: 12.5px;
         color: #475569;
-        font-family: 'DM Sans', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         line-height: 1.8;
         flex: 1;
       ">{{AUTO_NOTES}}</div>
