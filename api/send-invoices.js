@@ -51,17 +51,15 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Security check for cron jobs
+    // Security check — allow cron secret, admin password, or Vercel cron header
     const cronSecret = process.env.CRON_SECRET;
+    const adminPassword = process.env.ADMIN_PASSWORD;
     const authHeader = req.headers['authorization'];
-
-    // Allow if: valid cron secret OR request is from Vercel cron
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-        // Also allow Vercel's own cron requests
-        const isVercelCron = req.headers['x-vercel-cron'] === '1';
-        if (!isVercelCron) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+    const isVercelCron = req.headers['x-vercel-cron'] === '1';
+    const validCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+    const validAdmin = adminPassword && authHeader === `Bearer ${adminPassword}`;
+    if (!isVercelCron && !validCron && !validAdmin) {
+        return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const airtableToken = process.env.AIRTABLE_TOKEN;
@@ -74,24 +72,35 @@ module.exports = async function handler(req, res) {
 
     const at = (table, path, options) => airtableRequest(baseId, airtableToken, table, path, options);
 
+    const { recordId: singleRecordId } = req.body || {};
+
     try {
-        console.log('[send-invoices] Starting batch invoice sending...');
-        
-        // STEP 1 — Fetch all Approved invoices
-        console.log('[send-invoices] Fetching Approved invoices...');
-        const invoiceParams = new URLSearchParams();
-        invoiceParams.set('filterByFormula', `{Status}='Approved'`);
-        const invoicesData = await at('Invoices', `?${invoiceParams.toString()}`);
-        
-        if (!invoicesData.records || invoicesData.records.length === 0) {
-            console.log('[send-invoices] No Approved invoices found');
+        console.log('[send-invoices] Starting invoice sending...');
+
+        // STEP 1 — Fetch invoice(s)
+        let invoiceRecords;
+        if (singleRecordId) {
+            console.log('[send-invoices] Fetching single invoice:', singleRecordId);
+            const record = await at('Invoices', `/${singleRecordId}`);
+            invoiceRecords = [record];
+        } else {
+            console.log('[send-invoices] Fetching Approved invoices...');
+            const invoiceParams = new URLSearchParams();
+            invoiceParams.set('filterByFormula', `{Status}='Approved'`);
+            const invoicesData = await at('Invoices', `?${invoiceParams.toString()}`);
+            invoiceRecords = invoicesData.records || [];
+        }
+
+        if (invoiceRecords.length === 0) {
+            console.log('[send-invoices] No invoices found');
             return res.json({ sent: 0, failed: 0, errors: [] });
         }
 
-        console.log(`[send-invoices] Found ${invoicesData.records.length} Approved invoices`);
+        // Wrap single-record fetch into the same shape as list fetch
+        console.log(`[send-invoices] Found ${invoiceRecords.length} invoice(s)`);
 
         // Fetch linked Student records
-        const studentIds = [...new Set(invoicesData.records.map(r => r.fields['Student']?.[0]).filter(Boolean))];
+        const studentIds = [...new Set(invoiceRecords.map(r => r.fields['Student']?.[0]).filter(Boolean))];
         const studentsData = studentIds.length ? await at('Students', `?filterByFormula=OR(${studentIds.map(id => `RECORD_ID()='${id}'`).join(',')})`) : { records: [] };
         const studentsById = Object.fromEntries(studentsData.records.map(r => [r.id, r.fields]));
 
@@ -99,7 +108,7 @@ module.exports = async function handler(req, res) {
         const emails = [];
         const invoiceMap = new Map(); // Map invoice ID to record for updating later
 
-        for (const invoiceRecord of invoicesData.records) {
+        for (const invoiceRecord of invoiceRecords) {
             const studentId = invoiceRecord.fields['Student']?.[0];
             const student = studentsById[studentId];
             
@@ -119,19 +128,19 @@ module.exports = async function handler(req, res) {
                 paymentRef: `${(student['Student Name'] || '').toUpperCase()} – ${(invoiceRecord.fields['Month'] || '').toUpperCase()}`
             };
 
-            // STEP 2 — Fetch PDF attachment
-            const pdfAttachments = invoiceRecord.fields['Invoice PDF'] || [];
+            // STEP 2 — Fetch PDF from Vercel Blob URL
+            const pdfUrl = invoiceRecord.fields['PDF URL'] || null;
             let pdfBuffer = null;
-            
-            if (pdfAttachments.length > 0) {
-                pdfBuffer = await downloadPdf(pdfAttachments[0].url);
+
+            if (pdfUrl) {
+                pdfBuffer = await downloadPdf(pdfUrl);
                 if (pdfBuffer) {
                     console.log(`[send-invoices] Downloaded PDF for invoice ${invoiceRecord.id}`);
                 } else {
                     console.warn(`[send-invoices] Failed to download PDF for invoice ${invoiceRecord.id}`);
                 }
             } else {
-                console.warn(`[send-invoices] No PDF attachment found for invoice ${invoiceRecord.id}`);
+                console.warn(`[send-invoices] No PDF URL found for invoice ${invoiceRecord.id}`);
             }
 
             // STEP 3 — Build email object

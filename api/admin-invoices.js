@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
     const at = (table, path, options) => airtableRequest(baseId, airtableToken, table, path, options);
 
     if (req.method === 'GET') {
-        const formula = encodeURIComponent(`OR({Status}='Draft',{Status}='Approved')`);
+        const formula = encodeURIComponent(`OR({Status}='Draft',{Status}='Approved',{Status}='Sent')`);
         const invoicesData = await at('Invoices', `?filterByFormula=${formula}&sort[0][field]=Student&sort[0][direction]=asc`);
         const invoices = invoicesData.records || [];
 
@@ -75,6 +75,7 @@ module.exports = async function handler(req, res) {
                 status: f['Status'] || '',
                 issueDate: f['Issue Date'] || '',
                 dueDate: f['Due Date'] || '',
+                sentAt: f['Sent At'] || null,
                 pdfUrl,
                 lineItemsExtra: f['Line Items Extra'] ? JSON.parse(f['Line Items Extra']) : [],
             };

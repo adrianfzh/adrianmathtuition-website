@@ -320,6 +320,8 @@
 
         .badge-draft { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
         .badge-approved { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-sent { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .sent-at { font-size: 13px; color: #94a3b8; margin-top: 4px; }
 
         /* Amounts */
         .amounts { margin-bottom: 12px; }
@@ -398,6 +400,14 @@
         }
 
         .btn-approve:hover:not(:disabled) { background: #dcfce7; }
+
+        .btn-send {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .btn-send:hover:not(:disabled) { background: #dbeafe; }
 
         .btn-save {
             background: #1e40af;
@@ -624,6 +634,7 @@
         <button class="btn-generate" id="btn-generate-missing" onclick="generateMissingPDFs()">⚡ Generate Missing PDFs</button>
         <button class="btn-generate" id="btn-regenerate-all" onclick="regenerateAllPDFs()">🔄 Regenerate All PDFs</button>
         <button class="btn-generate" id="btn-download-all" onclick="downloadAllPDFs()">⬇️ Download All PDFs</button>
+        <button class="btn-generate" id="btn-send-all" onclick="sendAllApproved()">📤 Send All Approved</button>
         <button class="btn-refresh" onclick="loadInvoices()">🔄 Refresh</button>
     </div>
 </div>
@@ -752,13 +763,14 @@
     function updateSummary() {
         const drafts = invoices.filter(i => i.status === 'Draft');
         const approved = invoices.filter(i => i.status === 'Approved');
+        const sent = invoices.filter(i => i.status === 'Sent');
         const total = drafts.reduce((s, i) => s + (i.finalAmount || 0), 0);
 
         // Approval counter
         const counterEl = document.getElementById('approval-counter');
         if (counterEl) {
             if (invoices.length > 0) {
-                counterEl.innerHTML = `✅ <strong>${approved.length}</strong> / ${invoices.length} approved`;
+                counterEl.innerHTML = `✅ <strong>${approved.length}</strong> approved · 📤 <strong>${sent.length}</strong> sent / ${invoices.length} total`;
             } else {
                 counterEl.innerHTML = '';
             }
@@ -777,10 +789,23 @@
         }
     }
 
+    function formatSentAt(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
     function renderCard(inv) {
         const isDraft = inv.status === 'Draft';
-        const badgeClass = isDraft ? 'badge-draft' : 'badge-approved';
-        const badgeLabel = isDraft ? 'Draft' : 'Approved';
+        const isApproved = inv.status === 'Approved';
+        const isSent = inv.status === 'Sent';
+
+        const badgeClass = isDraft ? 'badge-draft' : isApproved ? 'badge-approved' : 'badge-sent';
+        const badgeLabel = isDraft ? 'Draft' : isApproved ? 'Approved' : 'Sent';
+
+        const sentAtHtml = isSent && inv.sentAt
+            ? `<div class="sent-at">Sent on ${formatSentAt(inv.sentAt)}</div>`
+            : '';
 
         const baseLine = `${inv.lessonsCount} lesson${inv.lessonsCount !== 1 ? 's' : ''} × $${inv.ratePerLesson.toFixed(2)} = $${inv.baseAmount.toFixed(2)}`;
 
@@ -796,26 +821,41 @@
             ? `<div class="auto-notes">${escHtml(inv.autoNotes)}</div>`
             : '';
 
-        const actionsHtml = isDraft ? `
+        let actionsHtml;
+        if (isDraft) {
+            actionsHtml = `
             <div class="card-actions" id="actions-${inv.id}">
                 <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">👁 Preview PDF</button>
                 <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">⚡ Generate PDF</button>
                 <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">✏️ Amend</button>
                 <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">✅ Approve</button>
-            </div>` : `
+            </div>`;
+        } else if (isApproved) {
+            actionsHtml = `
             <div class="card-actions" id="actions-${inv.id}">
+                <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">👁 Preview PDF</button>
+                <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">📤 Send</button>
                 <button class="btn btn-unapprove" onclick="unapproveInvoice('${inv.id}')">↩️ Unapprove</button>
             </div>`;
+        } else {
+            actionsHtml = `
+            <div class="card-actions" id="actions-${inv.id}">
+                <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">👁 Preview PDF</button>
+                <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">📤 Send</button>
+            </div>`;
+        }
 
         const amendForm = isDraft ? renderAmendForm(inv) : '';
+        const cardClass = isDraft ? '' : isApproved ? ' approved' : ' sent';
 
         return `
-        <div class="invoice-card${isDraft ? '' : ' approved'}" id="card-${inv.id}">
+        <div class="invoice-card${cardClass}" id="card-${inv.id}">
             <div class="card-body">
                 <div class="card-top">
                     <span class="student-name">${escHtml(inv.studentName)}</span>
                     <span class="invoice-month">${escHtml(inv.month)}</span>
                     <span class="badge ${badgeClass}">${badgeLabel}</span>
+                    ${sentAtHtml}
                 </div>
                 <div class="amounts">
                     <div class="amount-line">${baseLine}</div>
@@ -1221,6 +1261,109 @@
         } catch (err) {
             actionsEl.querySelectorAll('button').forEach(b => b.disabled = false);
             alert('Failed to unapprove: ' + err.message);
+        }
+    }
+
+    async function sendInvoice(id) {
+        const inv = invoices.find(i => i.id === id);
+        if (!inv) return;
+
+        const actionsEl = document.getElementById(`actions-${id}`);
+        if (!actionsEl) return;
+
+        let confirmMsg;
+        if (inv.status === 'Sent' && inv.sentAt) {
+            confirmMsg = `This invoice was already sent on ${formatSentAt(inv.sentAt)}. Send again?`;
+        } else {
+            confirmMsg = `Send invoice to ${inv.parentEmail || inv.studentName}?`;
+        }
+        if (!confirm(confirmMsg)) return;
+
+        actionsEl.querySelectorAll('button').forEach(b => b.disabled = true);
+        const sendBtn = actionsEl.querySelector('.btn-send');
+        if (sendBtn) sendBtn.textContent = '⏳ Sending…';
+
+        try {
+            const res = await fetch('/api/send-invoices', {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ recordId: id }),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || `Server error: ${res.status}`);
+            }
+            const data = await res.json();
+            if (data.failed > 0 && data.sent === 0) throw new Error(data.errors?.[0]?.error || 'Send failed');
+
+            inv.status = 'Sent';
+            inv.sentAt = new Date().toISOString();
+            updateSummary();
+            actionsEl.innerHTML = '<span class="inline-confirm">✅ Sent</span>';
+
+            setTimeout(() => {
+                const card = document.getElementById(`card-${id}`);
+                if (card && inv) card.outerHTML = renderCard(inv);
+            }, 1500);
+
+        } catch (err) {
+            actionsEl.querySelectorAll('button').forEach(b => b.disabled = false);
+            if (sendBtn) sendBtn.textContent = '📤 Send';
+            const errEl = document.createElement('div');
+            errEl.className = 'gen-error-msg';
+            errEl.textContent = err.message;
+            actionsEl.appendChild(errEl);
+            setTimeout(() => errEl.remove(), 5000);
+        }
+    }
+
+    async function sendAllApproved() {
+        const approvedCount = invoices.filter(i => i.status === 'Approved').length;
+        if (approvedCount === 0) {
+            alert('No approved invoices to send.');
+            return;
+        }
+        if (!confirm(`Send invoices to all ${approvedCount} approved student${approvedCount !== 1 ? 's' : ''}? This will email their parents immediately.`)) return;
+
+        const btn = document.getElementById('btn-send-all');
+        btn.disabled = true;
+        btn.textContent = '📤 Sending…';
+        document.getElementById('result-banner').style.display = 'none';
+
+        try {
+            const res = await fetch('/api/send-invoices', {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({}),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || `Server error: ${res.status}`);
+            }
+            const data = await res.json();
+
+            const banner = document.getElementById('result-banner');
+            if (data.sent > 0 && data.failed === 0) {
+                banner.className = 'result-banner success';
+                banner.innerHTML = `<span>✅ ${data.sent} invoice${data.sent !== 1 ? 's' : ''} sent successfully.</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+            } else if (data.sent > 0 && data.failed > 0) {
+                banner.className = 'result-banner warning';
+                banner.innerHTML = `<span>✅ ${data.sent} sent · ⚠️ ${data.failed} failed</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+            } else {
+                banner.className = 'result-banner error';
+                const errMsg = data.errors?.[0]?.error || 'All sends failed';
+                banner.innerHTML = `<span>❌ ${escHtml(errMsg)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+            }
+            banner.style.display = 'flex';
+            await loadInvoices();
+        } catch (err) {
+            const banner = document.getElementById('result-banner');
+            banner.className = 'result-banner error';
+            banner.style.display = 'flex';
+            banner.innerHTML = `<span>❌ ${escHtml(err.message)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '📤 Send All Approved';
         }
     }
 
