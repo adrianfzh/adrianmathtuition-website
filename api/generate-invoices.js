@@ -137,14 +137,13 @@ module.exports = async function handler(req, res) {
     const cronSecret = process.env.CRON_SECRET;
     const authHeader = req.headers['authorization'];
 
-    // Allow if: valid cron secret OR request is from Vercel cron
-    // if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    //     // Also allow Vercel's own cron requests
-    //     const isVercelCron = req.headers['x-vercel-cron'] === '1';
-    //     if (!isVercelCron) {
-    //         return res.status(401).json({ error: 'Unauthorized' });
-    //     }
-    // }
+    const isValidAdmin = authHeader === `Bearer ${process.env.ADMIN_PASSWORD}`;
+    const isValidCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
+    const isVercelCron = req.headers['x-vercel-cron'] === '1';
+
+    if (!isValidAdmin && !isValidCron && !isVercelCron) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     const airtableToken = process.env.AIRTABLE_TOKEN;
     const baseId = process.env.AIRTABLE_BASE_ID;

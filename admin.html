@@ -677,6 +677,7 @@
     <div class="header-right">
         <span id="approval-counter"></span>
         <span id="summary"></span>
+        <button class="btn-generate" id="btn-generate-invoices" onclick="generateInvoices()">📝 Generate Invoices</button>
         <button class="btn-generate" id="btn-generate-missing" onclick="generateMissingPDFs()">⚡ Generate Missing PDFs</button>
         <button class="btn-generate" id="btn-regenerate-all" onclick="regenerateAllPDFs()">🔄 Regenerate All PDFs</button>
         <button class="btn-generate" id="btn-download-all" onclick="downloadAllPDFs()">⬇️ Download All PDFs</button>
@@ -1265,6 +1266,40 @@
         } finally {
             btn.disabled = false;
             btn.textContent = label;
+        }
+    }
+
+    async function generateInvoices() {
+        if (!confirm('Generate invoices for the current invoice month?\nExisting invoices will be skipped automatically.')) return;
+
+        const btn = document.getElementById('btn-generate-invoices');
+        btn.disabled = true;
+        btn.textContent = '📝 Generating…';
+        document.getElementById('result-banner').style.display = 'none';
+
+        try {
+            const res = await fetch('/api/generate-invoices', {
+                method: 'POST',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.error || `Server error: ${res.status}`);
+            }
+            const data = await res.json();
+            const banner = document.getElementById('result-banner');
+            banner.className = 'result-banner success';
+            banner.style.display = 'flex';
+            banner.innerHTML = `<span>✅ ${data.generated} invoice${data.generated !== 1 ? 's' : ''} generated, ${data.skipped} skipped.</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+            await loadInvoices();
+        } catch (err) {
+            const banner = document.getElementById('result-banner');
+            banner.className = 'result-banner error';
+            banner.style.display = 'flex';
+            banner.innerHTML = `<span>❌ ${escHtml(err.message)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '📝 Generate Invoices';
         }
     }
 
