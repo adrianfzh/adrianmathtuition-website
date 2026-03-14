@@ -18,16 +18,6 @@ async function airtableRequest(baseId, airtableToken, tableName, path, options =
     return res.json();
 }
 
-async function processBatch(items, fn, batchSize = 5) {
-    const results = [];
-    for (let i = 0; i < items.length; i += batchSize) {
-        const batch = items.slice(i, i + batchSize);
-        const batchResults = await Promise.all(batch.map(fn));
-        results.push(...batchResults);
-    }
-    return results;
-}
-
 module.exports = async function handler(req, res) {
     // Auth check
     const adminPassword = process.env.ADMIN_PASSWORD;
@@ -66,7 +56,9 @@ module.exports = async function handler(req, res) {
     let generated = 0;
     const errors = [];
 
-    await processBatch(invoices, async (record) => {
+    console.log('[generate-pdf-batch] Processing', invoices.length, 'invoices sequentially');
+
+    for (const record of invoices) {
         const id = record.id;
         const f = record.fields;
         try {
@@ -116,11 +108,12 @@ module.exports = async function handler(req, res) {
             });
 
             generated++;
+            console.log('[generate-pdf-batch] Done:', studentName);
         } catch (err) {
             console.error(`[generate-pdf-batch] Error for ${id}:`, err.message);
             errors.push({ id, error: err.message });
         }
-    });
+    }
 
     return res.json({ generated, errors });
 };
