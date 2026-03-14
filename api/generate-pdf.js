@@ -120,8 +120,8 @@ async function generateInvoicePDF(invoiceData) {
                         <td>
                             <div class="desc-main">${item.description || 'Additional Item'}</div>
                         </td>
-                        <td>—</td>
-                        <td>—</td>
+                        <td></td>
+                        <td></td>
                         <td>${sign}$${Math.abs(amount).toFixed(2)}</td>
                     </tr>
                 `;
