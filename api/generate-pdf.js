@@ -1,5 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
+const os = require('os');
+const crypto = require('crypto');
 const puppeteer = require('puppeteer-core');
 
 let browserInstance = null;
@@ -38,6 +40,19 @@ async function generateInvoicePDF(invoiceData) {
         // 1. Read invoice template
         const templatePath = path.join(__dirname, '..', 'invoice-final.html');
         let html = await fs.readFile(templatePath, 'utf8');
+
+        // Write PayNow logo to temp file for Puppeteer to load
+        const paynowMatch = html.match(/src="data:image\/png;base64,([^"]+)"/);
+        let paynowTempPath = null;
+        if (paynowMatch) {
+            const paynowBuffer = Buffer.from(paynowMatch[1], 'base64');
+            paynowTempPath = path.join(os.tmpdir(), `paynow-${crypto.randomBytes(6).toString('hex')}.png`);
+            await fs.writeFile(paynowTempPath, paynowBuffer);
+            html = html.replace(
+                /src="data:image\/png;base64,[^"]+"/,
+                `src="file://${paynowTempPath}"`
+            );
+        }
 
         // 2. Replace placeholders
         html = html.replace(/\{\{STUDENT_NAME\}\}/g, invoiceData.studentName || '');
@@ -130,7 +145,7 @@ async function generateInvoicePDF(invoiceData) {
             }
         });
 
-        await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 10000 });
+        await page.setContent(html, { waitUntil: ['domcontentloaded', 'load'], timeout: 15000 });
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // 4. Generate PDF
@@ -147,6 +162,9 @@ async function generateInvoicePDF(invoiceData) {
         });
 
         await page.close();
+        if (paynowTempPath) {
+            await fs.unlink(paynowTempPath).catch(() => {});
+        }
         return Buffer.from(pdfBuffer);  // convert Uint8Array to Buffer
     } catch (error) {
         console.error('Error generating PDF:', error);
