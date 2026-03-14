@@ -154,7 +154,7 @@ module.exports = async function handler(req, res) {
             // Add attachment if PDF was downloaded
             if (pdfBuffer) {
                 emailData.attachments = [{
-                    filename: `Invoice-${invoice.studentName}-${invoice.month}.pdf`,
+                    filename: `AdriansMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/\s+/g, '-')}.pdf`,
                     content: pdfBuffer.toString('base64'),
                     type: 'application/pdf',
                     disposition: 'attachment'

@@ -94,7 +94,7 @@ module.exports = async function handler(req, res) {
     const pdfBuffer = await generateInvoicePDF(invoiceData);
 
     // 4. Return PDF
-    const filename = `Invoice-${studentName}-${f['Month'] || recordId}.pdf`;
+    const filename = `AdriansMathTuition-Invoice-${(studentName || '').replace(/\s+/g, '-')}-${(f['Month'] || recordId).replace(/\s+/g, '-')}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
     res.setHeader('Content-Length', pdfBuffer.length);
