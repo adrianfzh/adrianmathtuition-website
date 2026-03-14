@@ -64,8 +64,9 @@ module.exports = async function handler(req, res) {
         const f = record.fields;
         let studentName = '';
         try {
-            // Skip invoices that already have a PDF URL unless force is set
-            if (!force && f['PDF URL']) {
+            // Skip invoices that already have a PDF URL unless force is set.
+            // Single-invoice path always regenerates (singleRecordId implies force).
+            if (!force && !singleRecordId && f['PDF URL']) {
                 skipped++;
                 continue;
             }

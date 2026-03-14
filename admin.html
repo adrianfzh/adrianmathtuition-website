@@ -115,13 +115,13 @@
         }
 
         .header-left h1 {
-            font-size: 20px;
+            font-size: 32px;
             font-weight: 700;
             color: #0f172a;
         }
 
         .header-left p {
-            font-size: 13px;
+            font-size: 16px;
             color: #64748b;
             margin-top: 2px;
         }
@@ -610,6 +610,7 @@
         <p>Review and approve draft invoices before sending</p>
     </div>
     <div class="header-right">
+        <span id="approval-counter" style="font-size:15px;color:#475569;"></span>
         <span id="summary"></span>
         <button class="btn-generate" id="btn-generate-missing" onclick="generateMissingPDFs()">⚡ Generate Missing PDFs</button>
         <button class="btn-generate" id="btn-regenerate-all" onclick="regenerateAllPDFs()">🔄 Regenerate All PDFs</button>
@@ -629,6 +630,7 @@
 <script>
     let adminPassword = sessionStorage.getItem('adminPassword') || '';
     let invoices = [];
+    let totalVisible = true;
 
     function authHeaders(extra = {}) {
         return { 'Authorization': `Bearer ${adminPassword}`, ...extra };
@@ -732,14 +734,36 @@
         container.innerHTML = sorted.map(inv => renderCard(inv)).join('');
     }
 
+    function toggleTotal() {
+        totalVisible = !totalVisible;
+        updateSummary();
+    }
+
     function updateSummary() {
         const drafts = invoices.filter(i => i.status === 'Draft');
+        const approved = invoices.filter(i => i.status === 'Approved');
         const total = drafts.reduce((s, i) => s + (i.finalAmount || 0), 0);
+
+        // Approval counter
+        const counterEl = document.getElementById('approval-counter');
+        if (counterEl) {
+            if (invoices.length > 0) {
+                counterEl.innerHTML = `✅ <strong>${approved.length}</strong> / ${invoices.length} approved`;
+            } else {
+                counterEl.innerHTML = '';
+            }
+        }
+
+        // Summary with toggle
         const el = document.getElementById('summary');
         if (drafts.length === 0) {
             el.innerHTML = 'No draft invoices';
         } else {
-            el.innerHTML = `<strong>${drafts.length}</strong> draft invoice${drafts.length !== 1 ? 's' : ''} · Total: <strong>$${total.toFixed(2)}</strong>`;
+            const amountHtml = totalVisible
+                ? `<strong>$${total.toFixed(2)}</strong>`
+                : `<strong style="letter-spacing:0.1em;">••••••</strong>`;
+            const eyeIcon = totalVisible ? '👁' : '🙈';
+            el.innerHTML = `<strong>${drafts.length}</strong> draft invoice${drafts.length !== 1 ? 's' : ''} · Total: ${amountHtml} <button onclick="toggleTotal()" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 2px;vertical-align:middle;" title="Show/hide total">${eyeIcon}</button>`;
         }
     }
 
