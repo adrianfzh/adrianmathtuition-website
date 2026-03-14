@@ -129,11 +129,20 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
+        #approval-counter {
+            font-size: 16px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        #approval-counter strong { color: #0f172a; }
+
         #summary {
-            font-size: 17px;
+            font-size: 16px;
             color: #475569;
         }
 
@@ -143,9 +152,9 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             color: #475569;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             transition: background 0.15s;
@@ -157,9 +166,9 @@
             background: #1e40af;
             border: 1px solid #1e40af;
             color: white;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             transition: background 0.15s;
@@ -610,7 +619,7 @@
         <p>Review and approve draft invoices before sending</p>
     </div>
     <div class="header-right">
-        <span id="approval-counter" style="font-size:15px;color:#475569;"></span>
+        <span id="approval-counter"></span>
         <span id="summary"></span>
         <button class="btn-generate" id="btn-generate-missing" onclick="generateMissingPDFs()">⚡ Generate Missing PDFs</button>
         <button class="btn-generate" id="btn-regenerate-all" onclick="regenerateAllPDFs()">🔄 Regenerate All PDFs</button>
@@ -763,7 +772,7 @@
                 ? `<strong>$${total.toFixed(2)}</strong>`
                 : `<strong style="letter-spacing:0.1em;">••••••</strong>`;
             const eyeIcon = totalVisible ? '👁' : '🙈';
-            el.innerHTML = `<strong>${drafts.length}</strong> draft invoice${drafts.length !== 1 ? 's' : ''} · Total: ${amountHtml} <button onclick="toggleTotal()" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 2px;vertical-align:middle;" title="Show/hide total">${eyeIcon}</button>`;
+            el.innerHTML = `<strong>${drafts.length}</strong> draft invoice${drafts.length !== 1 ? 's' : ''} · Total: ${amountHtml} <button onclick="toggleTotal()" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;vertical-align:middle;" title="Show/hide total">${eyeIcon}</button>`;
         }
     }
 
