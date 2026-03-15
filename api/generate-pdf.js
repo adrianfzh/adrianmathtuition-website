@@ -39,19 +39,6 @@ async function generateInvoicePDF(invoiceData) {
         const templatePath = path.join(__dirname, '..', 'invoice-final.html');
         let html = await fs.readFile(templatePath, 'utf8');
 
-        // Replace PayNow img tag with a div using inline CSS background-image
-        const paynowSrcMatch = html.match(/src="(data:image\/png;base64,[^"]+)"/);
-        const paynowDataUri = paynowSrcMatch ? paynowSrcMatch[1] : null;
-        console.log('[generate-pdf] paynowDataUri found:', !!paynowDataUri);
-        console.log('[generate-pdf] paynowDataUri length:', paynowDataUri?.length || 0);
-        console.log('[generate-pdf] html contains paynow-badge div:', html.includes('paynow-badge'));
-        if (paynowDataUri) {
-            html = html.replace(
-                /<img[^>]+class="paynow-badge"[^>]*>/,
-                `<div class="paynow-badge" style="background-image:url('${paynowDataUri}');background-size:contain;background-repeat:no-repeat;background-position:center;"></div>`
-            );
-        }
-
         // 2. Replace placeholders
         html = html.replace(/\{\{STUDENT_NAME\}\}/g, invoiceData.studentName || '');
         html = html.replace(/\{\{MONTH\}\}/g, invoiceData.month || '');
@@ -151,7 +138,22 @@ async function generateInvoicePDF(invoiceData) {
         });
 
         await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Force inject PayNow logo via DOM manipulation
+        const paynowSrcMatch = html.match(/src="(data:image\/png;base64,[^"]+)"/);
+        if (paynowSrcMatch) {
+            await page.evaluate((src) => {
+                const img = document.querySelector('.paynow-badge');
+                if (img) {
+                    img.src = src;
+                    img.style.display = 'block';
+                    img.style.width = '60px';
+                    img.style.height = '60px';
+                }
+            }, paynowSrcMatch[1]);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 800));
 
         // 4. Generate PDF
         const pdfBuffer = await page.pdf({
