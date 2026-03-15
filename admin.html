@@ -882,6 +882,8 @@
             actionsHtml = `
             <div class="card-actions" id="actions-${inv.id}">
                 <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">👁 Preview PDF</button>
+                <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">⚡ Generate PDF</button>
+                <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">✏️ Amend</button>
                 <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">📤 Send</button>
                 <button class="btn btn-unapprove" onclick="unapproveInvoice('${inv.id}')">↩️ Unapprove</button>
             </div>`;
@@ -889,11 +891,13 @@
             actionsHtml = `
             <div class="card-actions" id="actions-${inv.id}">
                 <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">👁 Preview PDF</button>
+                <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">⚡ Generate PDF</button>
+                <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">✏️ Amend</button>
                 <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">📤 Send</button>
             </div>`;
         }
 
-        const amendForm = isDraft ? renderAmendForm(inv) : '';
+        const amendForm = renderAmendForm(inv);
         const cardClass = isDraft ? '' : isApproved ? ' approved' : ' sent';
 
         return `
@@ -1210,6 +1214,10 @@
             const card = document.getElementById(`card-${id}`);
             if (card && inv) card.outerHTML = renderCard(inv);
             updateSummary();
+
+            if (inv && inv.status === 'Sent') {
+                alert('⚠️ Invoice already sent. Generate a new PDF and resend to update the parent.');
+            }
 
         } catch (err) {
             if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save Changes'; }

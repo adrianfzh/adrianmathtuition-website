@@ -128,10 +128,13 @@ module.exports = async function handler(req, res) {
                 paymentRef: `${(student['Student Name'] || '').toUpperCase()} – ${(invoiceRecord.fields['Month'] || '').toUpperCase()}`
             };
 
+            console.log('[send-invoices] Invoice status:', invoiceRecord.fields['Status']);
+
             // STEP 2 — Fetch PDF from Vercel Blob URL
             const pdfUrl = invoiceRecord.fields['PDF URL'] || null;
             let pdfBuffer = null;
 
+            console.log('[send-invoices] PDF URL:', pdfUrl);
             if (pdfUrl) {
                 pdfBuffer = await downloadPdf(pdfUrl);
                 console.log('[send-invoices] PDF buffer size:', pdfBuffer?.length || 0);
