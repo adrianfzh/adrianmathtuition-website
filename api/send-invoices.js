@@ -134,13 +134,9 @@ module.exports = async function handler(req, res) {
 
             if (pdfUrl) {
                 pdfBuffer = await downloadPdf(pdfUrl);
-                if (pdfBuffer) {
-                    console.log(`[send-invoices] Downloaded PDF for invoice ${invoiceRecord.id}`);
-                } else {
-                    console.warn(`[send-invoices] Failed to download PDF for invoice ${invoiceRecord.id}`);
-                }
+                console.log('[send-invoices] PDF buffer size:', pdfBuffer?.length || 0);
             } else {
-                console.warn(`[send-invoices] No PDF URL found for invoice ${invoiceRecord.id}`);
+                console.warn('[send-invoices] No PDF URL for invoice', invoiceRecord.id);
             }
 
             // STEP 3 — Build email object
