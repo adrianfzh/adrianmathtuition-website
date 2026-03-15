@@ -42,6 +42,9 @@ async function generateInvoicePDF(invoiceData) {
         // Replace PayNow img tag with a div using inline CSS background-image
         const paynowSrcMatch = html.match(/src="(data:image\/png;base64,[^"]+)"/);
         const paynowDataUri = paynowSrcMatch ? paynowSrcMatch[1] : null;
+        console.log('[generate-pdf] paynowDataUri found:', !!paynowDataUri);
+        console.log('[generate-pdf] paynowDataUri length:', paynowDataUri?.length || 0);
+        console.log('[generate-pdf] html contains paynow-badge div:', html.includes('paynow-badge'));
         if (paynowDataUri) {
             html = html.replace(
                 /<img[^>]+class="paynow-badge"[^>]*>/,
