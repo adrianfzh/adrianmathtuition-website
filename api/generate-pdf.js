@@ -11,7 +11,7 @@ async function getBrowser() {
   if (isProd) {
     const chromium = require('@sparticuz/chromium');
     browserInstance = await puppeteer.launch({
-      args: [...chromium.args, '--disable-web-security', '--allow-file-access-from-files'],
+      args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
@@ -136,7 +136,18 @@ async function generateInvoicePDF(invoiceData) {
         const browser = await getBrowser();
         const page = await browser.newPage();
 
-        await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            const url = req.url();
+            if (url.startsWith('https://fonts.googleapis.com') ||
+                url.startsWith('https://fonts.gstatic.com')) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+
+        await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 15000 });
 
         await new Promise(resolve => setTimeout(resolve, 800));
 
