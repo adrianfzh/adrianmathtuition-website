@@ -113,10 +113,13 @@ module.exports = async function handler(req, res) {
                 allowOverwrite: true,
             });
 
-            // Store blob URL in Airtable
+            // Store blob URL and update Issue Date in Airtable
+            const issueDate = new Date();
+            issueDate.setDate(15);
+            const issueDateStr = issueDate.toISOString().split('T')[0];
             await at('Invoices', `/${id}`, {
                 method: 'PATCH',
-                body: JSON.stringify({ fields: { 'PDF URL': blob.url } }),
+                body: JSON.stringify({ fields: { 'PDF URL': blob.url, 'Issue Date': issueDateStr } }),
             });
 
             generated++;

@@ -353,7 +353,7 @@ module.exports = async function handler(req, res) {
                     'Line Items': JSON.stringify(lineItemsForInvoice),
                     'Invoice Type': 'Regular',
                     'Status': 'Draft',
-                    'Issue Date': formatDate(new Date()),
+                    'Issue Date': (() => { const d = new Date(); d.setDate(15); return formatDate(d); })(),
                     'Due Date': formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
                     'Auto Notes': autoNotes,
                 };
@@ -383,7 +383,7 @@ module.exports = async function handler(req, res) {
                         studentName: student.fields['Student Name'],
                         month: invoiceMonth.label,
                         invoiceId: createdRecord.id,
-                        issueDate: formatDate(new Date()),
+                        issueDate: (() => { const d = new Date(); d.setDate(15); return formatDate(d); })(),
                         dueDate: formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
                         lessonsCount: lessonCount,
                         ratePerLesson: ratePerLesson,
