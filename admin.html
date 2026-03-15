@@ -876,6 +876,7 @@
                 <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">⚡ Generate PDF</button>
                 <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">✏️ Amend</button>
                 <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">✅ Approve</button>
+                <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">📤 Send</button>
             </div>`;
         } else if (isApproved) {
             actionsHtml = `
@@ -1438,9 +1439,11 @@
 
         let confirmMsg;
         if (inv.status === 'Sent' && inv.sentAt) {
-            confirmMsg = `This invoice was already sent on ${formatSentAt(inv.sentAt)}. Send again?`;
+            confirmMsg = `This invoice was already sent on ${formatSentAt(inv.sentAt)}. Send again to ${inv.parentEmail}?`;
+        } else if (inv.status === 'Draft') {
+            confirmMsg = `This invoice is still a Draft. Send anyway to ${inv.parentEmail}?`;
         } else {
-            confirmMsg = `Send invoice to ${inv.parentEmail || inv.studentName}?`;
+            confirmMsg = `Send invoice to ${inv.parentEmail}?`;
         }
         if (!confirm(confirmMsg)) return;
 
