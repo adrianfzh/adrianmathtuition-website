@@ -166,64 +166,51 @@ module.exports = async function handler(req, res) {
             return res.json({ sent: 0, failed: 0, errors: [] });
         }
 
-        // STEP 4 — Send via Resend batch
-        console.log(`[send-invoices] Sending ${emails.length} emails via Resend batch...`);
-        
-        const batchRes = await fetch('https://api.resend.com/emails/batch', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(emails)
-        });
+        // STEP 4 — Send individually via Resend
+        console.log(`[send-invoices] Sending ${emails.length} emails individually via Resend...`);
 
-        if (!batchRes.ok) {
-          const errText = await batchRes.text();
-          throw new Error('Resend batch failed: ' + errText);
-        }
-
-        const result = await batchRes.json();
-
-        console.log('[send-invoices] Resend batch result:', JSON.stringify(result, null, 2));
-
-        // STEP 5 — Update sent invoices in Airtable
-        const updates = [];
-        const errors = [];
         let sentCount = 0;
         let failedCount = 0;
+        const errors = [];
 
-        if (result.data && Array.isArray(result.data)) {
-            for (let i = 0; i < result.data.length; i++) {
-                const emailResult = result.data[i];
-                const invoiceId = Array.from(invoiceMap.keys())[i];
-                const invoiceRecord = invoiceMap.get(invoiceId);
+        for (const [invoiceId, invoiceRecord] of invoiceMap.entries()) {
+            const emailData = emails[Array.from(invoiceMap.keys()).indexOf(invoiceId)];
 
-                if (emailResult.id) {
-                    // Successfully sent
-                    try {
-                        await at('Invoices', `/${invoiceId}`, {
-                            method: 'PATCH',
-                            body: JSON.stringify({
-                                fields: {
-                                    'Status': 'Sent',
-                                    'Sent At': new Date().toISOString()
-                                }
-                            })
-                        });
-                        sentCount++;
-                        console.log(`[send-invoices] Updated invoice ${invoiceId} to Sent`);
-                    } catch (updateError) {
-                        console.error(`[send-invoices] Failed to update invoice ${invoiceId}:`, updateError.message);
-                        errors.push({ invoiceId, error: 'Update failed: ' + updateError.message });
-                    }
-                } else {
-                    // Failed to send
-                    failedCount++;
-                    const errorMsg = emailResult.error?.message || 'Unknown error';
-                    console.error(`[send-invoices] Failed to send invoice ${invoiceId}:`, errorMsg);
-                    errors.push({ invoiceId, error: errorMsg });
+            try {
+                const sendRes = await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${resendApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(emailData)
+                });
+
+                if (!sendRes.ok) {
+                    const errText = await sendRes.text();
+                    throw new Error('Resend send failed: ' + errText);
                 }
+
+                const sendResult = await sendRes.json();
+                console.log(`[send-invoices] Sent invoice ${invoiceId}:`, sendResult.id);
+
+                // Update Airtable status
+                await at('Invoices', `/${invoiceId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        fields: {
+                            'Status': 'Sent',
+                            'Sent At': new Date().toISOString()
+                        }
+                    })
+                });
+                sentCount++;
+                console.log(`[send-invoices] Updated invoice ${invoiceId} to Sent`);
+
+            } catch (err) {
+                failedCount++;
+                console.error(`[send-invoices] Failed for invoice ${invoiceId}:`, err.message);
+                errors.push({ invoiceId, error: err.message });
             }
         }
 
