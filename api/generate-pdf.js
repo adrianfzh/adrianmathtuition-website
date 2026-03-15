@@ -39,13 +39,15 @@ async function generateInvoicePDF(invoiceData) {
         const templatePath = path.join(__dirname, '..', 'invoice-final.html');
         let html = await fs.readFile(templatePath, 'utf8');
 
-        // Extract PayNow base64 before replacing src with placeholder URL
-        const paynowMatch = html.match(/data:image\/png;base64,([^"]+)/);
-        const paynowBase64 = paynowMatch ? paynowMatch[1] : null;
-        html = html.replace(
-            /src="data:image\/png;base64,[^"]+"/,
-            'src="https://local-assets/paynow.png"'
-        );
+        // Replace PayNow img tag with a div using inline CSS background-image
+        const paynowSrcMatch = html.match(/src="(data:image\/png;base64,[^"]+)"/);
+        const paynowDataUri = paynowSrcMatch ? paynowSrcMatch[1] : null;
+        if (paynowDataUri) {
+            html = html.replace(
+                /<img[^>]+class="paynow-badge"[^>]*>/,
+                `<div class="paynow-badge" style="background-image:url('${paynowDataUri}');background-size:contain;background-repeat:no-repeat;background-position:center;"></div>`
+            );
+        }
 
         // 2. Replace placeholders
         html = html.replace(/\{\{STUDENT_NAME\}\}/g, invoiceData.studentName || '');
@@ -137,21 +139,15 @@ async function generateInvoicePDF(invoiceData) {
         await page.setRequestInterception(true);
         page.on('request', (req) => {
             const url = req.url();
-            if (url.includes('local-assets/paynow.png') && paynowBase64) {
-                req.respond({
-                    status: 200,
-                    contentType: 'image/png',
-                    body: Buffer.from(paynowBase64, 'base64'),
-                });
-            } else if (url.startsWith('https://fonts.googleapis.com') ||
-                       url.startsWith('https://fonts.gstatic.com')) {
+            if (url.startsWith('https://fonts.googleapis.com') ||
+                url.startsWith('https://fonts.gstatic.com')) {
                 req.abort();
             } else {
                 req.continue();
             }
         });
 
-        await page.setContent(html, { waitUntil: ['domcontentloaded', 'load'], timeout: 15000 });
+        await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 15000 });
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // 4. Generate PDF
