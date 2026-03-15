@@ -76,6 +76,7 @@ module.exports = async function handler(req, res) {
                 issueDate: f['Issue Date'] || '',
                 dueDate: f['Due Date'] || '',
                 sentAt: f['Sent At'] || null,
+                isPaid: f['Is Paid'] || false,
                 pdfUrl,
                 lineItems: f['Line Items'] ? JSON.parse(f['Line Items']) : [],
                 lineItemsExtra: f['Line Items Extra'] ? JSON.parse(f['Line Items Extra']) : [],

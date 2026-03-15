@@ -92,16 +92,14 @@ function buildAutoNotes(studentFields, invoiceMonth, regularLessons, additionalL
     const count = regularLessons.length;
     notes = `Lessons attended: ${dates} (${count} lesson${count !== 1 ? 's' : ''})`;
   } else {
-    // Non-proration months: regularLessons are plain objects {date, day, type}
-    // Invoice is forward-looking — just state the count, no future dates
-    const count = regularLessons.length;
-    notes = `${count} lesson${count !== 1 ? 's' : ''} in ${invoiceMonth.label}`;
+    // Non-proration months: empty by default
+    notes = '';
 
     if (additionalLessons.length) {
       // additionalLessons are Airtable records with fields['Date']
       const addDates = additionalLessons.map(r => fmtDate(r.fields['Date'])).join(', ');
       const addCount = additionalLessons.length;
-      notes += `\n${addCount} Additional Lesson${addCount !== 1 ? 's' : ''} attended: ${addDates}`;
+      notes = `${addCount} Additional Lesson${addCount !== 1 ? 's' : ''} attended: ${addDates}`;
     }
   }
 
@@ -341,6 +339,39 @@ module.exports = async function handler(req, res) {
                     });
                 }
 
+                // Check for unpaid previous invoice
+                const prevMonth = new Date(invoiceMonth.firstDay);
+                prevMonth.setMonth(prevMonth.getMonth() - 1);
+                const prevMonthNames = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+                const prevMonthLabel = `${prevMonthNames[prevMonth.getMonth()]} ${prevMonth.getFullYear()}`;
+
+                const unpaidFormula = encodeURIComponent(
+                    `AND({Student}='${studentId}',{Month}='${prevMonthLabel}',{Is Paid}=FALSE(),{Status}='Sent')`
+                );
+                const unpaidData = await at('Invoices', `?filterByFormula=${unpaidFormula}&fields[]=Final Amount&fields[]=Month`);
+                const unpaidRecords = unpaidData.records || [];
+
+                let extraLineItems = [];
+                let outstandingTotal = 0;
+
+                for (const unpaid of unpaidRecords) {
+                    const amount = unpaid.fields['Final Amount'] || 0;
+                    const month = unpaid.fields['Month'] || prevMonthLabel;
+                    if (amount > 0) {
+                        extraLineItems.push({ description: `Outstanding balance — ${month}`, amount });
+                        outstandingTotal += amount;
+                    }
+                }
+
+                let finalAutoNotes = autoNotes;
+                if (outstandingTotal > 0) {
+                    const outstandingNote = unpaidRecords.map(r =>
+                        `Outstanding balance from ${r.fields['Month']}: $${(r.fields['Final Amount'] || 0).toFixed(2)}`
+                    ).join('\n');
+                    finalAutoNotes = finalAutoNotes ? `${finalAutoNotes}\n${outstandingNote}` : outstandingNote;
+                }
+
                 // 6. Create Draft invoice
                 const invoiceFields = {
                     'Student': [studentId],
@@ -349,13 +380,14 @@ module.exports = async function handler(req, res) {
                     'Rate Per Lesson': ratePerLesson,
                     'Adjustment Amount': additionalAmount,
                     'Adjustment Notes': additionalAmount > 0 ? `Additional lessons: ${additionalCount} × ${ratePerLesson}` : undefined,
-                    'Final Amount': finalAmount,
+                    'Final Amount': finalAmount + outstandingTotal,
                     'Line Items': JSON.stringify(lineItemsForInvoice),
+                    'Line Items Extra': extraLineItems.length > 0 ? JSON.stringify(extraLineItems) : '',
                     'Invoice Type': 'Regular',
                     'Status': 'Draft',
                     'Issue Date': (() => { const d = new Date(); d.setDate(15); return formatDate(d); })(),
                     'Due Date': formatDate(new Date(invoiceMonth.year, invoiceMonth.month - 1, 15)),
-                    'Auto Notes': autoNotes,
+                    'Auto Notes': finalAutoNotes,
                 };
                 // Remove undefined fields
                 Object.keys(invoiceFields).forEach(k => invoiceFields[k] === undefined && delete invoiceFields[k]);
@@ -389,11 +421,12 @@ module.exports = async function handler(req, res) {
                         ratePerLesson: ratePerLesson,
                         baseAmount: baseAmount,
                         additionalAmount: additionalAmount,
-                        finalAmount: finalAmount,
+                        finalAmount: finalAmount + outstandingTotal,
                         status: 'Pending',
                         makeupCredits: 0,
-                        notes: autoNotes,
-                        lineItems: lineItemsForInvoice
+                        notes: finalAutoNotes,
+                        lineItems: lineItemsForInvoice,
+                        lineItemsExtra: extraLineItems
                     };
                     
                     const pdfBuffer = await generateInvoicePDF(invoiceData);
