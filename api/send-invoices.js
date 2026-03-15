@@ -104,14 +104,28 @@ module.exports = async function handler(req, res) {
         const studentsData = studentIds.length ? await at('Students', `?filterByFormula=OR(${studentIds.map(id => `RECORD_ID()='${id}'`).join(',')})`) : { records: [] };
         const studentsById = Object.fromEntries(studentsData.records.map(r => [r.id, r.fields]));
 
-        // Process invoices and build email data
+        // STEP 2 — Download all PDFs in parallel
+        console.log('[send-invoices] Downloading PDFs in parallel...');
+        const pdfBuffers = await Promise.all(
+            invoiceRecords.map(async (record) => {
+                const pdfUrl = record.fields['PDF URL'] || null;
+                console.log('[send-invoices] PDF URL:', pdfUrl, 'for invoice', record.id);
+                if (!pdfUrl) return null;
+                const buf = await downloadPdf(pdfUrl);
+                console.log('[send-invoices] PDF buffer size:', buf?.length || 0, 'for invoice', record.id);
+                return buf;
+            })
+        );
+
+        // STEP 3 — Build email data
         const emails = [];
         const invoiceMap = new Map(); // Map invoice ID to record for updating later
 
-        for (const invoiceRecord of invoiceRecords) {
+        for (let i = 0; i < invoiceRecords.length; i++) {
+            const invoiceRecord = invoiceRecords[i];
             const studentId = invoiceRecord.fields['Student']?.[0];
             const student = studentsById[studentId];
-            
+
             if (!student) {
                 console.warn('[send-invoices] Missing student for invoice', invoiceRecord.id);
                 continue;
@@ -130,19 +144,8 @@ module.exports = async function handler(req, res) {
 
             console.log('[send-invoices] Invoice status:', invoiceRecord.fields['Status']);
 
-            // STEP 2 — Fetch PDF from Vercel Blob URL
-            const pdfUrl = invoiceRecord.fields['PDF URL'] || null;
-            let pdfBuffer = null;
+            const pdfBuffer = pdfBuffers[i];
 
-            console.log('[send-invoices] PDF URL:', pdfUrl);
-            if (pdfUrl) {
-                pdfBuffer = await downloadPdf(pdfUrl);
-                console.log('[send-invoices] PDF buffer size:', pdfBuffer?.length || 0);
-            } else {
-                console.warn('[send-invoices] No PDF URL for invoice', invoiceRecord.id);
-            }
-
-            // STEP 3 — Build email object
             const emailData = {
                 from: "Adrian's Math Tuition <invoices@adrianmathtuition.com>",
                 to: invoice.parentEmail,
@@ -150,7 +153,6 @@ module.exports = async function handler(req, res) {
                 html: buildEmailHtml(invoice)
             };
 
-            // Add attachment if PDF was downloaded
             if (pdfBuffer) {
                 emailData.attachments = [{
                     filename: `AdriansMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/\s+/g, '-')}.pdf`,
