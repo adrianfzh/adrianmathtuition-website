@@ -19,6 +19,7 @@ async function airtableRequest(baseId, airtableToken, tableName, path, options =
 }
 
 module.exports = async function handler(req, res) {
+    console.log('[generate-pdf-batch] generate-pdf.js version check:', require('./generate-pdf').toString().substring(0, 100));
     // Auth check
     const adminPassword = process.env.ADMIN_PASSWORD;
     if (adminPassword) {
