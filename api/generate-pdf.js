@@ -6,12 +6,12 @@ let browserInstance = null;
 
 async function getBrowser() {
   if (browserInstance) return browserInstance;
-  
+
   const isProd = process.env.VERCEL === '1';
   if (isProd) {
     const chromium = require('@sparticuz/chromium');
     browserInstance = await puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, '--disable-web-security', '--allow-file-access-from-files'],
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
@@ -39,6 +39,16 @@ async function generateInvoicePDF(invoiceData) {
         const templatePath = path.join(__dirname, '..', 'invoice-final.html');
         let html = await fs.readFile(templatePath, 'utf8');
 
+        // Read PayNow logo from local file and embed as base64
+        const paynowLogoPath = path.join(__dirname, '..', 'public', 'paynow.png');
+        const paynowBuffer = await fs.readFile(paynowLogoPath);
+        const paynowBase64 = paynowBuffer.toString('base64');
+
+        html = html.replace(
+            /src="data:image\/png;base64,[^"]+"/,
+            `src="data:image/png;base64,${paynowBase64}"`
+        );
+
         // 2. Replace placeholders
         html = html.replace(/\{\{STUDENT_NAME\}\}/g, invoiceData.studentName || '');
         html = html.replace(/\{\{MONTH\}\}/g, invoiceData.month || '');
@@ -57,7 +67,7 @@ async function generateInvoicePDF(invoiceData) {
         html = html.replace(/\{\{BASE_AMOUNT\}\}/g, invoiceData.baseAmount || '0');
         html = html.replace(/\{\{FINAL_AMOUNT\}\}/g, parseFloat(invoiceData.finalAmount || 0).toFixed(2));
         html = html.replace(/\{\{STATUS\}\}/g, invoiceData.status || 'Pending');
-        
+
         // Payment reference: STUDENT NAME – MONTH
         const paymentRef = `${(invoiceData.studentName || '').toUpperCase()} – ${(invoiceData.month || '').toUpperCase()}`;
         html = html.replace(/\{\{PAYMENT_REFERENCE\}\}/g, paymentRef);
@@ -74,7 +84,7 @@ async function generateInvoicePDF(invoiceData) {
                 }
                 groupedByDay[day].push(item);
             });
-            
+
             // Create one row per day
             lineItemsRows = Object.entries(groupedByDay).map(([day, items]) => {
                 const count = items.length;
@@ -126,32 +136,7 @@ async function generateInvoicePDF(invoiceData) {
         const browser = await getBrowser();
         const page = await browser.newPage();
 
-        await page.setRequestInterception(true);
-        page.on('request', (req) => {
-            const url = req.url();
-            if (url.startsWith('https://fonts.googleapis.com') ||
-                url.startsWith('https://fonts.gstatic.com')) {
-                req.abort();
-            } else {
-                req.continue();
-            }
-        });
-
-        await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 15000 });
-
-        // Force inject PayNow logo via DOM manipulation
-        const paynowSrcMatch = html.match(/src="(data:image\/png;base64,[^"]+)"/);
-        if (paynowSrcMatch) {
-            await page.evaluate((src) => {
-                const img = document.querySelector('.paynow-badge');
-                if (img) {
-                    img.src = src;
-                    img.style.display = 'block';
-                    img.style.width = '60px';
-                    img.style.height = '60px';
-                }
-            }, paynowSrcMatch[1]);
-        }
+        await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
 
         await new Promise(resolve => setTimeout(resolve, 800));
 
