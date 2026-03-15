@@ -1,7 +1,5 @@
 const fs = require('fs').promises;
 const path = require('path');
-const os = require('os');
-const crypto = require('crypto');
 const puppeteer = require('puppeteer-core');
 
 let browserInstance = null;
@@ -41,18 +39,13 @@ async function generateInvoicePDF(invoiceData) {
         const templatePath = path.join(__dirname, '..', 'invoice-final.html');
         let html = await fs.readFile(templatePath, 'utf8');
 
-        // Write PayNow logo to temp file for Puppeteer to load
-        const paynowMatch = html.match(/src="data:image\/png;base64,([^"]+)"/);
-        let paynowTempPath = null;
-        if (paynowMatch) {
-            const paynowBuffer = Buffer.from(paynowMatch[1], 'base64');
-            paynowTempPath = path.join(os.tmpdir(), `paynow-${crypto.randomBytes(6).toString('hex')}.png`);
-            await fs.writeFile(paynowTempPath, paynowBuffer);
-            html = html.replace(
-                /src="data:image\/png;base64,[^"]+"/,
-                `src="file://${paynowTempPath}"`
-            );
-        }
+        // Extract PayNow base64 before replacing src with placeholder URL
+        const paynowMatch = html.match(/data:image\/png;base64,([^"]+)/);
+        const paynowBase64 = paynowMatch ? paynowMatch[1] : null;
+        html = html.replace(
+            /src="data:image\/png;base64,[^"]+"/,
+            'src="https://local-assets/paynow.png"'
+        );
 
         // 2. Replace placeholders
         html = html.replace(/\{\{STUDENT_NAME\}\}/g, invoiceData.studentName || '');
@@ -137,15 +130,28 @@ async function generateInvoicePDF(invoiceData) {
 
         html = html.replace(/\{\{AUTO_NOTES\}\}/g, invoiceData.notes || '');
 
-        // Write full HTML to temp file so file:// image URLs resolve correctly
-        const htmlTempPath = path.join(os.tmpdir(), `invoice-${crypto.randomBytes(6).toString('hex')}.html`);
-        await fs.writeFile(htmlTempPath, html, 'utf8');
-
         // 3. Get browser instance
         const browser = await getBrowser();
         const page = await browser.newPage();
 
-        await page.goto(`file://${htmlTempPath}`, { waitUntil: ['domcontentloaded', 'load'], timeout: 15000 });
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            const url = req.url();
+            if (url.includes('local-assets/paynow.png') && paynowBase64) {
+                req.respond({
+                    status: 200,
+                    contentType: 'image/png',
+                    body: Buffer.from(paynowBase64, 'base64'),
+                });
+            } else if (url.startsWith('https://fonts.googleapis.com') ||
+                       url.startsWith('https://fonts.gstatic.com')) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+
+        await page.setContent(html, { waitUntil: ['domcontentloaded', 'load'], timeout: 15000 });
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // 4. Generate PDF
@@ -162,10 +168,6 @@ async function generateInvoicePDF(invoiceData) {
         });
 
         await page.close();
-        await fs.unlink(htmlTempPath).catch(() => {});
-        if (paynowTempPath) {
-            await fs.unlink(paynowTempPath).catch(() => {});
-        }
         return Buffer.from(pdfBuffer);  // convert Uint8Array to Buffer
     } catch (error) {
         console.error('Error generating PDF:', error);
