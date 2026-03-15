@@ -1494,40 +1494,56 @@
     }
 
     async function sendAllApproved() {
-        const approvedCount = invoices.filter(i => i.status === 'Approved').length;
-        if (approvedCount === 0) {
+        const approvedInvoices = invoices.filter(i => i.status === 'Approved');
+        if (approvedInvoices.length === 0) {
             alert('No approved invoices to send.');
             return;
         }
-        if (!confirm(`Send invoices to all ${approvedCount} approved student${approvedCount !== 1 ? 's' : ''}? This will email their parents immediately.`)) return;
+        if (!confirm(`Send invoices to all ${approvedInvoices.length} approved student${approvedInvoices.length !== 1 ? 's' : ''}? This will email their parents immediately.`)) return;
 
         const btn = document.getElementById('btn-send-all');
         btn.disabled = true;
-        btn.textContent = '📤 Sending…';
         document.getElementById('result-banner').style.display = 'none';
 
+        const ids = approvedInvoices.map(i => i.id);
+        const batchSize = 3;
+        const batches = [];
+        for (let i = 0; i < ids.length; i += batchSize) {
+            batches.push(ids.slice(i, i + batchSize));
+        }
+
+        let totalSent = 0;
+        let totalFailed = 0;
+        const allErrors = [];
+
         try {
-            const res = await fetch('/api/send-invoices', {
-                method: 'POST',
-                headers: authHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({}),
-            });
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                throw new Error(data.error || `Server error: ${res.status}`);
+            for (let b = 0; b < batches.length; b++) {
+                btn.textContent = `📤 Sending batch ${b + 1}/${batches.length}…`;
+                const res = await fetch('/api/send-invoices', {
+                    method: 'POST',
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({ recordIds: batches[b] }),
+                });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || `Server error: ${res.status}`);
+                }
+                const data = await res.json();
+                totalSent += data.sent || 0;
+                totalFailed += data.failed || 0;
+                if (data.errors) allErrors.push(...data.errors);
             }
-            const data = await res.json();
 
             const banner = document.getElementById('result-banner');
-            if (data.sent > 0 && data.failed === 0) {
+            if (totalSent > 0 && totalFailed === 0) {
                 banner.className = 'result-banner success';
-                banner.innerHTML = `<span>✅ ${data.sent} invoice${data.sent !== 1 ? 's' : ''} sent successfully.</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
-            } else if (data.sent > 0 && data.failed > 0) {
+                banner.innerHTML = `<span>✅ ${totalSent} invoice${totalSent !== 1 ? 's' : ''} sent successfully.</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+            } else if (totalSent > 0 && totalFailed > 0) {
                 banner.className = 'result-banner warning';
-                banner.innerHTML = `<span>✅ ${data.sent} sent · ⚠️ ${data.failed} failed</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
+                banner.innerHTML = `<span>✅ ${totalSent} sent · ⚠️ ${totalFailed} failed</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
             } else {
                 banner.className = 'result-banner error';
-                const errMsg = data.errors?.[0]?.error || 'All sends failed';
+                const errMsg = allErrors[0]?.error || 'All sends failed';
                 banner.innerHTML = `<span>❌ ${escHtml(errMsg)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">✕</button>`;
             }
             banner.style.display = 'flex';

@@ -72,14 +72,18 @@ module.exports = async function handler(req, res) {
 
     const at = (table, path, options) => airtableRequest(baseId, airtableToken, table, path, options);
 
-    const { recordId: singleRecordId } = req.body || {};
+    const { recordId: singleRecordId, recordIds } = req.body || {};
 
     try {
         console.log('[send-invoices] Starting invoice sending...');
 
         // STEP 1 — Fetch invoice(s)
         let invoiceRecords;
-        if (singleRecordId) {
+        if (recordIds && Array.isArray(recordIds)) {
+            console.log('[send-invoices] Fetching batch of invoices:', recordIds);
+            const records = await Promise.all(recordIds.map(id => at('Invoices', `/${id}`)));
+            invoiceRecords = records;
+        } else if (singleRecordId) {
             console.log('[send-invoices] Fetching single invoice:', singleRecordId);
             const record = await at('Invoices', `/${singleRecordId}`);
             invoiceRecords = [record];
@@ -217,6 +221,8 @@ module.exports = async function handler(req, res) {
                 console.error(`[send-invoices] Failed for invoice ${invoiceId}:`, err.message);
                 errors.push({ invoiceId, error: err.message });
             }
+
+            await new Promise(resolve => setTimeout(resolve, 600));
         }
 
         // STEP 6 — Return summary

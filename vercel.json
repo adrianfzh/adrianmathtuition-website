@@ -28,11 +28,6 @@
     { "src": "/api/generate-pdf-batch", "dest": "/api/generate-pdf-batch.js" },
     { "src": "/(.*)",             "dest": "/$1"                 }
   ],
-  "functions": {
-    "api/send-invoices.js": { "maxDuration": 300 },
-    "api/generate-pdf-batch.js": { "maxDuration": 300 },
-    "api/generate-invoices.js": { "maxDuration": 300 }
-  },
   "crons": [
     {
       "path": "/api/generate-invoices",
