@@ -130,7 +130,7 @@ async function generateInvoicePDF(invoiceData) {
         }
         html = html.replace(/\{\{EXTRA_LINE_ITEMS_ROWS\}\}/g, extraLineItemsRows);
 
-        html = html.replace(/\{\{AUTO_NOTES\}\}/g, invoiceData.notes || '');
+        html = html.replace(/\{\{AUTO_NOTES\}\}/g, (invoiceData.notes || '').replace(/\n/g, '<br>'));
 
         // 3. Get browser instance
         const browser = await getBrowser();
