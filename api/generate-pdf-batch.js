@@ -107,7 +107,7 @@ module.exports = async function handler(req, res) {
             const pdfBuffer = await generateInvoicePDF(invoiceData);
 
             // Upload to Vercel Blob
-            const blob = await put(`invoices/${id}.pdf`, pdfBuffer, {
+            const blob = await put(`invoices/AdriansMathTuition-Invoice-${studentName.replace(/\s+/g, '-')}-${(f['Month'] || '').replace(/\s+/g, '-')}.pdf`, pdfBuffer, {
                 access: 'public',
                 contentType: 'application/pdf',
                 allowOverwrite: true,
