@@ -323,37 +323,51 @@ module.exports = async function handler(req, res) {
                     });
                 }
 
-                // Check for unpaid previous invoices for this student
-                const unpaidFormula = encodeURIComponent(
-                    `AND({Student}='${studentId}',{Is Paid}=FALSE())`
+                // Check previous month's invoice for outstanding balance
+                const prevMonth = new Date(invoiceMonth.firstDay);
+                prevMonth.setMonth(prevMonth.getMonth() - 1);
+                const prevMonthNames = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+                const prevMonthLabel = `${prevMonthNames[prevMonth.getMonth()]} ${prevMonth.getFullYear()}`;
+
+                const prevInvoiceFormula = encodeURIComponent(
+                    `AND({Student}='${studentId}',{Month}='${prevMonthLabel}')`
                 );
-                const unpaidData = await at('Invoices',
-                    `?filterByFormula=${unpaidFormula}&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Month&fields[]=Base Amount&sort[0][field]=Month&sort[0][direction]=asc`
+                const prevInvoiceData = await at('Invoices',
+                    `?filterByFormula=${prevInvoiceFormula}&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid`
                 );
-                const unpaidRecords = (unpaidData.records || []).filter(r =>
-                    r.fields['Month'] !== invoiceMonth.label
-                );
+                const prevInvoice = (prevInvoiceData.records || [])[0] || null;
 
                 // Build carry-over line items and auto notes
                 const carryOverLineItems = [];
                 let carryOverNotes = '';
 
-                for (const unpaid of unpaidRecords) {
-                    const finalAmt = unpaid.fields['Final Amount'] || 0;
-                    const amountPaid = unpaid.fields['Amount Paid'] || 0;
-                    const outstanding = finalAmt - amountPaid;
-                    const month = unpaid.fields['Month'] || '';
+                if (prevInvoice) {
+                    const isPaid = prevInvoice.fields['Is Paid'] || false;
+                    const finalAmt = prevInvoice.fields['Final Amount'] || 0;
+                    const amountPaid = prevInvoice.fields['Amount Paid'] || 0;
+
+                    let outstanding = 0;
+
+                    if (!isPaid) {
+                        // No payment at all
+                        outstanding = finalAmt;
+                    } else if (isPaid && amountPaid > 0) {
+                        // Partial payment
+                        outstanding = finalAmt - amountPaid;
+                    }
+                    // isPaid = true, amountPaid = blank → full payment → outstanding = 0
 
                     if (outstanding > 0) {
                         carryOverLineItems.push({
-                            description: `Outstanding balance — ${month}`,
+                            description: `Outstanding balance — ${prevMonthLabel}`,
                             amount: parseFloat(outstanding.toFixed(2))
                         });
 
-                        carryOverNotes += `${month} invoice breakdown:\n` +
-                            `  Lessons: ${finalAmt.toFixed(2)}\n` +
-                            `  Amount paid: ${amountPaid.toFixed(2)}\n` +
-                            `  Outstanding: ${outstanding.toFixed(2)}\n\n`;
+                        carryOverNotes = `${prevMonthLabel} invoice breakdown:\n` +
+                            `  Invoice amount: ${finalAmt.toFixed(2)}\n` +
+                            `  Amount paid: ${amountPaid > 0 ? amountPaid.toFixed(2) : finalAmt.toFixed(2)}\n` +
+                            `  Outstanding: ${outstanding.toFixed(2)}`;
                     }
                 }
 
