@@ -10,7 +10,8 @@
     { "src": "api/send-invoices.js", "use": "@vercel/node" },
     { "src": "api/admin-invoices.js", "use": "@vercel/node" },
     { "src": "api/preview-invoice.js", "use": "@vercel/node" },
-    { "src": "api/generate-pdf-batch.js", "use": "@vercel/node" }
+    { "src": "api/generate-pdf-batch.js", "use": "@vercel/node" },
+    { "src": "api/payment-reminder.js", "use": "@vercel/node" }
   ],
   "routes": [
     { "src": "/api/schedule",     "dest": "/api/schedule.js"    },
@@ -26,16 +27,12 @@
     { "src": "/api/admin-invoices", "dest": "/api/admin-invoices.js" },
     { "src": "/api/preview-invoice", "dest": "/api/preview-invoice.js" },
     { "src": "/api/generate-pdf-batch", "dest": "/api/generate-pdf-batch.js" },
+    { "src": "/api/payment-reminder", "dest": "/api/payment-reminder.js" },
     { "src": "/(.*)",             "dest": "/$1"                 }
   ],
   "crons": [
-    {
-      "path": "/api/generate-invoices",
-      "schedule": "0 1 14 * *"
-    },
-    {
-      "path": "/api/send-invoices",
-      "schedule": "0 1 15 * *"
-    }
+    { "path": "/api/payment-reminder", "schedule": "0 0 14 * *" },
+    { "path": "/api/generate-invoices", "schedule": "0 23 14 * *" },
+    { "path": "/api/send-invoices", "schedule": "0 2 15 * *" }
   ]
 }

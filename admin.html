@@ -325,6 +325,14 @@
         .badge-paid { font-size: 13px; color: #15803d; font-weight: 600; margin-top: 4px; }
         .btn-mark-paid { background: none; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 10px; font-size: 13px; color: #475569; cursor: pointer; margin-top: 4px; }
         .btn-mark-paid:hover { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+        .payment-status { font-size: 13px; font-weight: 600; margin-top: 4px; }
+        .payment-status.paid { color: #16a34a; }
+        .payment-status.partial { color: #d97706; }
+        .payment-status.unpaid { color: #94a3b8; }
+        .btn-record-payment { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+        .btn-record-payment:hover { background: #dcfce7; }
+        .record-payment-form { display: none; padding: 12px 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+        .record-payment-form.open { display: block; }
 
         /* Amounts */
         .amounts { margin-bottom: 12px; }
@@ -857,11 +865,17 @@
             ? `<div class="sent-at">Sent on ${formatSentAt(inv.sentAt)}</div>`
             : '';
 
-        const paidHtml = isSent
-            ? inv.isPaid
-                ? `<span class="badge-paid">✅ Paid</span>`
-                : `<button class="btn btn-mark-paid" onclick="markAsPaid('${inv.id}')">☐ Mark as Paid</button>`
-            : '';
+        let paymentStatusHtml = '';
+        if (isSent) {
+            if (inv.isPaid) {
+                paymentStatusHtml = `<div class="payment-status paid">✅ Paid</div>`;
+            } else if (inv.amountPaid > 0) {
+                const outstanding = (inv.finalAmount - inv.amountPaid).toFixed(2);
+                paymentStatusHtml = `<div class="payment-status partial">⚠️ Partial: $${inv.amountPaid.toFixed(2)} paid, $${outstanding} outstanding</div>`;
+            } else {
+                paymentStatusHtml = `<div class="payment-status unpaid">⏳ Unpaid</div>`;
+            }
+        }
 
         const baseLine = `${inv.lessonsCount} lesson${inv.lessonsCount !== 1 ? 's' : ''} × $${inv.ratePerLesson.toFixed(2)} = $${inv.baseAmount.toFixed(2)}`;
 
@@ -903,6 +917,18 @@
                 <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">⚡ Generate PDF</button>
                 <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">✏️ Amend</button>
                 <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">📤 Send</button>
+                <button class="btn btn-record-payment" onclick="toggleRecordPayment('${inv.id}')">💰 Record Payment</button>
+            </div>
+            <div class="record-payment-form" id="payment-form-${inv.id}">
+                <div class="form-group" style="flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <label style="margin:0;">Amount Paid</label>
+                    <input type="number" id="pay-amount-${inv.id}" value="${inv.amountPaid || inv.finalAmount.toFixed(2)}" step="0.01" min="0" style="width:120px;">
+                    <label style="margin:0;display:flex;align-items:center;gap:6px;">
+                        <input type="checkbox" id="pay-ispaid-${inv.id}" ${inv.isPaid ? 'checked' : ''}> Is Paid
+                    </label>
+                    <button class="btn btn-save" onclick="savePayment('${inv.id}')">💾 Save Payment</button>
+                    <button class="btn btn-cancel" onclick="toggleRecordPayment('${inv.id}')">Cancel</button>
+                </div>
             </div>`;
         }
 
@@ -917,12 +943,12 @@
                     <span class="invoice-month">${escHtml(inv.month)}</span>
                     <span class="badge ${badgeClass}">${badgeLabel}</span>
                     ${sentAtHtml}
-                    ${paidHtml}
                 </div>
                 <div class="amounts">
                     <div class="amount-line">${baseLine}</div>
                     ${adjLine}
                     <div class="final-amount">$${inv.finalAmount.toFixed(2)}</div>
+                    ${paymentStatusHtml}
                 </div>
                 ${notesHtml}
                 ${actionsHtml}
@@ -976,6 +1002,14 @@
                     <label>Rate Per Lesson</label>
                     <input type="text" value="$${inv.ratePerLesson.toFixed(2)}" readonly>
                 </div>
+                <div class="form-group">
+                    <label>Adjustment Amount</label>
+                    <input type="number" id="a-adjustment-${inv.id}" value="${inv.adjustmentAmount || ''}" placeholder="0" step="0.01" oninput="updateCalc('${inv.id}')">
+                </div>
+                <div class="form-group">
+                    <label>Adjustment Notes</label>
+                    <input type="text" id="a-adjnotes-${inv.id}" value="${escAttr(inv.adjustmentNotes || '')}" placeholder="e.g. Additional lesson, discount">
+                </div>
                 <div class="form-group full-width">
                     <label>Auto Notes</label>
                     <textarea id="a-notes-${inv.id}" rows="3" style="white-space: pre-wrap;">${escHtml(inv.autoNotes || '')}</textarea>
@@ -994,7 +1028,7 @@
                 </div>
                 <div id="line-items-${inv.id}">${lineItemsHtml}</div>
             </div>
-            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.baseAmount || 0, inv.adjustmentAmount || 0, initialExtraTotal)}</div>
+            <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.baseAmount || 0, inv.adjustmentAmount || 0, initialExtraTotal, inv.lessonsCount || 0, inv.ratePerLesson || 0)}</div>
             <div class="form-actions">
                 <button class="btn btn-save" onclick="saveAmend('${inv.id}', ${inv.ratePerLesson})">💾 Save Changes</button>
                 <button class="btn btn-cancel" onclick="toggleAmend('${inv.id}')">Cancel</button>
@@ -1002,11 +1036,13 @@
         </div>`;
     }
 
-    function calcDisplay(baseAmount, adj, extraTotal) {
+    function calcDisplay(baseAmount, adj, extraTotal, lessonsCount, rate) {
         const final = (baseAmount || 0) + (adj || 0) + (extraTotal || 0);
-        let str = `Base: $${(baseAmount || 0).toFixed(2)}`;
-        if (adj) str += ` + $${adj.toFixed(2)} adj`;
-        if (extraTotal) str += ` + $${(extraTotal).toFixed(2)} extras`;
+        let str = lessonsCount != null && rate != null
+            ? `(${lessonsCount} × $${rate.toFixed(2)})`
+            : `$${(baseAmount || 0).toFixed(2)}`;
+        if (adj !== 0) str += ` + $${adj.toFixed(2)} adj`;
+        if (extraTotal !== 0) str += ` + $${(extraTotal).toFixed(2)} extras`;
         str += ` = <strong>$${final.toFixed(2)}</strong>`;
         return str;
     }
@@ -1053,14 +1089,17 @@
         const inv = invoices.find(i => i.id === id);
         if (!inv) return;
         const rate = inv.ratePerLesson;
-        const adj = inv.adjustmentAmount || 0;
+        const adjInput = document.getElementById(`a-adjustment-${id}`);
+        const adj = parseFloat(adjInput?.value) || 0;
 
         // Recalculate readonly amount fields in main items and sum base
         let mainBase = 0;
+        let totalLessons = 0;
         document.querySelectorAll(`#main-items-${id} .main-item-row`).forEach(row => {
             const lessons = parseInt(row.querySelector('.li-lessons')?.value) || 0;
             const rowAmount = lessons * rate;
             mainBase += rowAmount;
+            totalLessons += lessons;
             const amtInput = row.querySelector('.li-amount');
             if (amtInput) amtInput.value = rowAmount.toFixed(2);
         });
@@ -1071,7 +1110,7 @@
         });
 
         const el = document.getElementById(`calc-${id}`);
-        if (el) el.innerHTML = calcDisplay(mainBase, adj, extraTotal);
+        if (el) el.innerHTML = calcDisplay(mainBase, adj, extraTotal, totalLessons, rate);
     }
 
     function toggleAmend(id) {
@@ -1130,8 +1169,8 @@
 
     async function saveAmend(id, ratePerLesson) {
         const autoNotes = document.getElementById(`a-notes-${id}`).value;
-        const invRef = invoices.find(i => i.id === id);
-        const adjustmentAmount = invRef?.adjustmentAmount || 0;
+        const adjustmentAmount = parseFloat(document.getElementById(`a-adjustment-${id}`)?.value) || 0;
+        const adjustmentNotes = document.getElementById(`a-adjnotes-${id}`)?.value || '';
 
         // Read main line items and reconstruct flat Line Items array
         const mainLineItems = [];
@@ -1169,6 +1208,8 @@
             'Final Amount': finalAmount,
             'Line Items': JSON.stringify(reconstructedLineItems),
             'Line Items Extra': JSON.stringify(currentLineItems),
+            'Adjustment Amount': adjustmentAmount,
+            'Adjustment Notes': adjustmentNotes,
         };
 
         const saveBtn = document.querySelector(`#amend-${id} .btn-save`);
@@ -1190,6 +1231,8 @@
                 inv.autoNotes = autoNotes;
                 inv.lineItems = reconstructedLineItems;
                 inv.lineItemsExtra = currentLineItems;
+                inv.adjustmentAmount = adjustmentAmount;
+                inv.adjustmentNotes = adjustmentNotes;
             }
 
             // Clear old PDF URL before regenerating
@@ -1414,6 +1457,34 @@
                 errEl.textContent = err.message;
                 actionsEl.appendChild(errEl);
             }
+        }
+    }
+
+    function toggleRecordPayment(id) {
+        const form = document.getElementById(`payment-form-${id}`);
+        if (form) form.classList.toggle('open');
+    }
+
+    async function savePayment(id) {
+        const inv = invoices.find(i => i.id === id);
+        if (!inv) return;
+        const amountPaid = parseFloat(document.getElementById(`pay-amount-${id}`)?.value) || 0;
+        const isPaid = document.getElementById(`pay-ispaid-${id}`)?.checked || false;
+
+        try {
+            const res = await fetch('/api/admin-invoices', {
+                method: 'PATCH',
+                headers: authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': amountPaid, 'Is Paid': isPaid } }),
+            });
+            if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+            inv.amountPaid = amountPaid;
+            inv.isPaid = isPaid;
+            const card = document.getElementById(`card-${id}`);
+            if (card) card.outerHTML = renderCard(inv);
+        } catch (err) {
+            alert('Failed to save payment: ' + err.message);
         }
     }
 

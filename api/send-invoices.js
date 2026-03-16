@@ -32,6 +32,17 @@ function buildEmailHtml(invoice) {
     `;
 }
 
+function buildAmendedEmailHtml(invoice) {
+    return `
+        <p>Dear Parent/Student,</p>
+        <p>Please find attached the <strong>amended invoice</strong> for ${invoice.studentName} for ${invoice.month} — <strong>${invoice.finalAmount.toFixed(2)}</strong>, due by <strong>${invoice.dueDate}</strong>.</p>
+        <p>This replaces the previously sent invoice. Please disregard the earlier email.</p>
+        <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
+        <p>Please feel free to reach out if you have any questions.</p>
+        <p>Best regards,<br>Adrian</p>
+    `;
+}
+
 async function downloadPdf(url) {
     if (!url) return null;
     try {
@@ -150,11 +161,17 @@ module.exports = async function handler(req, res) {
 
             const pdfBuffer = pdfBuffers[i];
 
+            const isAmended = !!invoiceRecord.fields['Sent At'];
+            const subject = isAmended
+                ? `AMENDED Invoice for ${invoice.month} – ${invoice.studentName}`
+                : `Invoice for ${invoice.month} – ${invoice.studentName}`;
+            const html = isAmended ? buildAmendedEmailHtml(invoice) : buildEmailHtml(invoice);
+
             const emailData = {
                 from: "Adrian's Math Tuition <invoices@adrianmathtuition.com>",
                 to: invoice.parentEmail,
-                subject: `Invoice for ${invoice.month} – ${invoice.studentName}`,
-                html: buildEmailHtml(invoice)
+                subject,
+                html
             };
 
             if (pdfBuffer) {
