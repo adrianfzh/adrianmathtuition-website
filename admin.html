@@ -920,15 +920,16 @@
             ? `<div class="sent-at">Sent on ${formatSentAt(inv.sentAt)}</div>`
             : '';
 
-        let paymentStatusHtml = '';
+        const outstanding = inv.finalAmount - (inv.amountPaid || 0);
+
+        let paymentBadge = '';
         if (isSent) {
-            if (inv.isPaid) {
-                paymentStatusHtml = `<div class="payment-status paid">✅ Paid</div>`;
-            } else if (inv.amountPaid > 0) {
-                const outstanding = (inv.finalAmount - inv.amountPaid).toFixed(2);
-                paymentStatusHtml = `<div class="payment-status partial">⚠️ Partial: $${inv.amountPaid.toFixed(2)} paid, $${outstanding} outstanding</div>`;
-            } else {
-                paymentStatusHtml = `<div class="payment-status unpaid">⏳ Unpaid</div>`;
+            if (inv.isPaid && (!inv.amountPaid || outstanding <= 0)) {
+                paymentBadge = '<span class="payment-status paid">✅ Paid</span>';
+            } else if (inv.amountPaid > 0 && outstanding > 0) {
+                paymentBadge = `<span class="payment-status partial">⚠️ Partial: ${inv.amountPaid.toFixed(2)} paid, ${outstanding.toFixed(2)} outstanding</span>`;
+            } else if (!inv.isPaid && !inv.amountPaid) {
+                paymentBadge = '<span class="payment-status unpaid">⏳ Unpaid</span>';
             }
         }
 
@@ -1003,7 +1004,7 @@
                     <div class="amount-line">${baseLine}</div>
                     ${adjLine}
                     <div class="final-amount">$${inv.finalAmount.toFixed(2)}</div>
-                    ${paymentStatusHtml}
+                    ${paymentBadge}
                 </div>
                 ${notesHtml}
                 ${actionsHtml}
