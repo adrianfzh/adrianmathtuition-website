@@ -147,6 +147,19 @@
 
         #summary strong { color: #0f172a; }
 
+        #month-filter {
+            font-size: 15px;
+            font-weight: 500;
+            color: #0f172a;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            outline: none;
+        }
+        #month-filter:hover { background: #f1f5f9; }
+
         .btn-refresh {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -686,6 +699,7 @@
         <p>Review and approve draft invoices before sending</p>
     </div>
     <div class="header-right">
+        <select id="month-filter" onchange="onMonthFilter(this.value)"></select>
         <span id="approval-counter"></span>
         <span id="summary"></span>
         <button class="btn-generate" id="btn-generate-invoices" onclick="generateInvoices()">📝 Generate Invoices</button>
@@ -710,6 +724,7 @@
     let adminPassword = sessionStorage.getItem('adminPassword') || '';
     let invoices = [];
     let totalVisible = false;
+    let selectedMonth = '';
 
     function authHeaders(extra = {}) {
         return { 'Authorization': `Bearer ${adminPassword}`, ...extra };
@@ -779,6 +794,7 @@
             });
             if (!res.ok) throw new Error(`Server error: ${res.status}`);
             invoices = await res.json();
+            populateMonthFilter();
             renderAll();
         } catch (err) {
             document.getElementById('error-msg').textContent = err.message;
@@ -787,14 +803,52 @@
         }
     }
 
+    // --- Month filter ---
+
+    function populateMonthFilter() {
+        const monthOrder = ['January','February','March','April','May','June',
+            'July','August','September','October','November','December'];
+
+        const months = [...new Set(invoices.map(i => i.month).filter(Boolean))];
+        months.sort((a, b) => {
+            const [aM, aY] = [monthOrder.indexOf(a.split(' ')[0]), parseInt(a.split(' ')[1])];
+            const [bM, bY] = [monthOrder.indexOf(b.split(' ')[0]), parseInt(b.split(' ')[1])];
+            return bY !== aY ? bY - aY : bM - aM;
+        });
+
+        const sel = document.getElementById('month-filter');
+        const prev = sel.value;
+        sel.innerHTML = '<option value="">All Months</option>' +
+            months.map(m => `<option value="${escAttr(m)}">${escHtml(m)}</option>`).join('');
+
+        // Keep previous selection if still valid, else default to most recent
+        if (prev && months.includes(prev)) {
+            sel.value = prev;
+            selectedMonth = prev;
+        } else {
+            sel.value = months[0] || '';
+            selectedMonth = months[0] || '';
+        }
+    }
+
+    function onMonthFilter(val) {
+        selectedMonth = val;
+        renderAll();
+    }
+
+    function filteredInvoices() {
+        return selectedMonth ? invoices.filter(i => i.month === selectedMonth) : invoices;
+    }
+
     // --- Render ---
 
     function renderAll() {
         updateSummary();
 
         const container = document.getElementById('invoices-container');
+        const visible = filteredInvoices();
 
-        if (invoices.length === 0) {
+        if (visible.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="emoji">📭</div>
@@ -805,7 +859,7 @@
         }
 
         // Drafts first, then Approved; within each group sort by studentName
-        const sorted = [...invoices].sort((a, b) => {
+        const sorted = [...visible].sort((a, b) => {
             if (a.status === b.status) return a.studentName.localeCompare(b.studentName);
             return a.status === 'Draft' ? -1 : 1;
         });
@@ -819,16 +873,17 @@
     }
 
     function updateSummary() {
-        const drafts = invoices.filter(i => i.status === 'Draft');
-        const approved = invoices.filter(i => i.status === 'Approved');
-        const sent = invoices.filter(i => i.status === 'Sent');
+        const vis = filteredInvoices();
+        const drafts = vis.filter(i => i.status === 'Draft');
+        const approved = vis.filter(i => i.status === 'Approved');
+        const sent = vis.filter(i => i.status === 'Sent');
         const total = drafts.reduce((s, i) => s + (i.finalAmount || 0), 0);
 
         // Approval counter
         const counterEl = document.getElementById('approval-counter');
         if (counterEl) {
-            if (invoices.length > 0) {
-                counterEl.innerHTML = `✅ <strong>${approved.length}</strong> approved · 📤 <strong>${sent.length}</strong> sent / ${invoices.length} total`;
+            if (vis.length > 0) {
+                counterEl.innerHTML = `✅ <strong>${approved.length}</strong> approved · 📤 <strong>${sent.length}</strong> sent / ${vis.length} total`;
             } else {
                 counterEl.innerHTML = '';
             }
