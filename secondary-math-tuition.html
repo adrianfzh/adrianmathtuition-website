@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secondary 1 &amp; 2 Mathematics Tuition Singapore | Adrian's Math Tuition</title>
+    <meta name="description" content="Build a strong math foundation in Secondary 1 and 2. Small group E Math tuition in Kovan, Singapore. Early start, better results.">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --background: hsl(210, 20%, 98%);
+            --foreground: hsl(220, 40%, 13%);
+            --card: hsl(0, 0%, 100%);
+            --primary: hsl(220, 60%, 20%);
+            --primary-foreground: hsl(45, 100%, 96%);
+            --secondary: hsl(45, 90%, 55%);
+            --muted: hsl(220, 15%, 93%);
+            --muted-foreground: hsl(220, 10%, 46%);
+            --border: hsl(220, 15%, 88%);
+            --amber: hsl(45, 90%, 55%);
+            --amber-light: hsl(45, 90%, 92%);
+            --radius: 0.75rem;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--background); color: var(--foreground); line-height: 1.6; }
+        h1, h2, h3 { font-family: 'DM Serif Display', serif; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: hsla(0,0%,100%,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+        .nav-container { max-width: 1152px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .logo-container { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .logo-bold { font-family: 'DM Serif Display', serif; font-weight: 700; font-size: 18px; letter-spacing: -0.02em; color: var(--primary); }
+        .logo-light { color: var(--muted-foreground); font-size: 14px; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted-foreground); font-size: 14px; font-weight: 500; text-decoration: none; }
+        .back-link:hover { color: var(--primary); }
+        main { padding-top: 80px; }
+        .hero { background: var(--primary); color: var(--primary-foreground); padding: 64px 24px; text-align: center; }
+        .hero h1 { font-size: 2.75rem; margin-bottom: 16px; line-height: 1.2; }
+        .hero p { font-size: 18px; opacity: 0.85; max-width: 600px; margin: 0 auto 32px; }
+        .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: white; padding: 14px 28px; border-radius: 9999px; text-decoration: none; font-weight: 700; font-size: 16px; transition: opacity 0.2s; }
+        .cta-btn:hover { opacity: 0.9; }
+        .content { max-width: 800px; margin: 0 auto; padding: 56px 24px; }
+        .section { margin-bottom: 48px; }
+        .section h2 { font-size: 1.75rem; color: var(--primary); margin-bottom: 16px; }
+        .section p { color: var(--muted-foreground); font-size: 16px; margin-bottom: 12px; line-height: 1.8; }
+        .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
+        .topic-chip { background: var(--amber-light); border: 1px solid var(--amber); border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 500; color: hsl(220,60%,20%); }
+        .highlight-box { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 16px; }
+        .highlight-box h3 { color: var(--primary); margin-bottom: 8px; font-size: 1.1rem; }
+        .highlight-box p { font-size: 15px; color: var(--muted-foreground); }
+        .callout { background: var(--amber-light); border: 1.5px solid var(--amber); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 32px; }
+        .callout p { color: hsl(220,60%,20%); font-size: 16px; font-weight: 500; margin: 0; }
+        .faq-item { border-bottom: 1px solid var(--border); padding: 20px 0; }
+        .faq-item h3 { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; color: var(--foreground); margin-bottom: 8px; }
+        .faq-item p { font-size: 15px; color: var(--muted-foreground); line-height: 1.7; }
+        .footer-cta { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: white; padding: 12px 24px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 15px; margin-bottom: 16px; }
+        .footer-copyright { color: hsla(45,100%,96%,0.4); font-size: 14px; }
+        @media (max-width: 600px) { .hero h1 { font-size: 2rem; } }
+    </style>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "Is tuition necessary for Sec 1 and Sec 2 students?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Starting tuition early in Sec 1 or Sec 2 allows students to build a strong foundation before the syllabus becomes more demanding. Students who start early consistently perform better at O-Levels compared to those who start in Sec 3 or 4."
+        }
+      },{
+        "@type": "Question",
+        "name": "What topics are covered for Sec 1 and 2?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We cover the full MOE E Math syllabus including algebra, geometry, statistics, and number theory — building the exact foundation needed for Sec 3 A Math and O-Level success."
+        }
+      },{
+        "@type": "Question",
+        "name": "How small are the classes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Classes are kept at 2-4 students so every student gets personal attention and can ask questions freely."
+        }
+      },{
+        "@type": "Question",
+        "name": "My child is struggling in school — is it too late to start?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "It is never too late. Many students who join in Sec 2 after struggling in Sec 1 make significant improvements within a few months with the right support."
+        }
+      }]
+    }
+    </script>
+</head>
+<body>
+
+<nav>
+    <div class="nav-container">
+        <a href="/" class="logo-container">
+            <span class="logo-bold">ADRIAN'S</span>
+            <span class="logo-light">math tuition</span>
+        </a>
+        <a href="/" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Back to home
+        </a>
+    </div>
+</nav>
+
+<main>
+    <div class="hero">
+        <h1>Secondary 1 &amp; 2 Mathematics Tuition</h1>
+        <p>Build a strong foundation early. Small group E Math tuition in Kovan, Singapore — because the earlier you start, the better your O-Level results.</p>
+        <a href="https://wa.me/6591397985" class="cta-btn" target="_blank" rel="noopener noreferrer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Start early, finish strong. Enquire via WhatsApp
+        </a>
+    </div>
+
+    <div class="content">
+
+        <div class="callout">
+            <p>📈 Students who start tuition in Sec 1 or Sec 2 consistently outperform those who only begin in Sec 3 or 4. The foundation built early makes everything that follows significantly easier.</p>
+        </div>
+
+        <div class="section">
+            <h2>Why start in Secondary 1 or 2?</h2>
+            <p>The transition from primary school maths to secondary school maths is bigger than most students expect. Algebra, geometry, and number theory arrive all at once — and gaps formed in Sec 1 compound into bigger problems by the time O-Levels come around.</p>
+            <p>Students who get the right support early don't just do better in Sec 1 and 2 — they arrive at Sec 3 with the confidence and foundation to tackle A Math with ease, giving them a decisive advantage over their peers.</p>
+            <p>The earlier a student builds a strong relationship with their tutor, the more personalised and effective the guidance becomes over time. We understand how each student thinks, where they get stuck, and how to explain things in a way that clicks for them.</p>
+        </div>
+
+        <div class="section">
+            <h2>What topics are covered?</h2>
+            <p>We follow the full MOE E Math syllabus for Sec 1 and 2:</p>
+            <div class="topic-grid">
+                <div class="topic-chip">Algebra &amp; Equations</div>
+                <div class="topic-chip">Indices &amp; Surds</div>
+                <div class="topic-chip">Number Theory</div>
+                <div class="topic-chip">Geometry &amp; Mensuration</div>
+                <div class="topic-chip">Coordinate Geometry</div>
+                <div class="topic-chip">Trigonometry Basics</div>
+                <div class="topic-chip">Statistics &amp; Probability</div>
+                <div class="topic-chip">Graphs &amp; Functions</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>What makes these classes different?</h2>
+            <div class="highlight-box">
+                <h3>Very small groups</h3>
+                <p>Classes are capped at 2–4 students. Every student can ask questions freely — no hiding, no getting left behind.</p>
+            </div>
+            <div class="highlight-box">
+                <h3>Long-term relationship with your tutor</h3>
+                <p>Students who start in Sec 1 benefit from years of consistent support from the same tutor who knows exactly how they learn. This continuity is invaluable as the syllabus grows more challenging.</p>
+            </div>
+            <div class="highlight-box">
+                <h3>WhatsApp support between lessons</h3>
+                <p>Stuck on homework? Send it over. Adrian replies personally — usually within the same evening.</p>
+            </div>
+            <div class="highlight-box">
+                <h3>All materials included</h3>
+                <p>Notes, worksheets, and practice papers are provided at no extra cost.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Location</h2>
+            <p>Classes are held in the <strong>Kovan / Hougang area</strong> of Singapore, conveniently accessible by MRT (Kovan station, NE Line).</p>
+        </div>
+
+        <div class="section">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <h3>Is tuition necessary for Sec 1 and Sec 2 students?</h3>
+                <p>Starting tuition early in Sec 1 or Sec 2 allows students to build a strong foundation before the syllabus becomes more demanding. Students who start early consistently perform better at O-Levels compared to those who start in Sec 3 or 4.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What topics are covered for Sec 1 and 2?</h3>
+                <p>We cover the full MOE E Math syllabus including algebra, geometry, statistics, and number theory — building the exact foundation needed for Sec 3 A Math and O-Level success.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How small are the classes?</h3>
+                <p>Classes are kept at 2–4 students so every student gets personal attention and can ask questions freely.</p>
+            </div>
+            <div class="faq-item">
+                <h3>My child is struggling in school — is it too late to start?</h3>
+                <p>It is never too late. Many students who join in Sec 2 after struggling in Sec 1 make significant improvements within a few months with the right support.</p>
+            </div>
+        </div>
+
+        <div style="text-align:center;padding:24px 0 8px;">
+            <a href="https://wa.me/6591397985" class="cta-btn" target="_blank" rel="noopener noreferrer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                Start early, finish strong. Enquire via WhatsApp
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<footer style="background:hsl(220,60%,20%);color:hsl(45,100%,96%);padding:48px 24px;text-align:center;">
+    <a href="https://wa.me/6591397985" class="footer-cta" target="_blank" rel="noopener noreferrer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        Start early, finish strong. Enquire via WhatsApp
+    </a>
+    <p class="footer-copyright">© <span id="yr"></span> Adrian's Math Tuition. All rights reserved.</p>
+</footer>
+<footer style="background:#111827;color:#9ca3af;font-size:0.8rem;padding:1.5rem;text-align:center;line-height:1.8;">
+    <p style="margin:0 0 0.3rem;">© <span id="yr2"></span> Adrian's Math Tuition · Singapore</p>
+    <p style="margin:0;font-size:0.75rem;">Questions about your data? <a href="mailto:adrian@adrianmathtuition.com" style="color:#818cf8;text-decoration:none;">adrian@adrianmathtuition.com</a></p>
+</footer>
+<script>document.getElementById('yr').textContent=new Date().getFullYear();document.getElementById('yr2').textContent=new Date().getFullYear();</script>
+
+</body>
+</html>

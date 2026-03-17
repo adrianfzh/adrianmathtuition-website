@@ -11,7 +11,11 @@
     { "src": "api/admin-invoices.js", "use": "@vercel/node" },
     { "src": "api/preview-invoice.js", "use": "@vercel/node" },
     { "src": "api/generate-pdf-batch.js", "use": "@vercel/node" },
-    { "src": "api/payment-reminder.js", "use": "@vercel/node" }
+    { "src": "api/payment-reminder.js", "use": "@vercel/node" },
+    { "src": "o-level-a-math-tuition.html", "use": "@vercel/static" },
+    { "src": "jc-h2-math-tuition.html", "use": "@vercel/static" },
+    { "src": "secondary-math-tuition.html", "use": "@vercel/static" },
+    { "src": "llms.txt", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/schedule",     "dest": "/api/schedule.js"    },
@@ -28,6 +32,10 @@
     { "src": "/api/preview-invoice", "dest": "/api/preview-invoice.js" },
     { "src": "/api/generate-pdf-batch", "dest": "/api/generate-pdf-batch.js" },
     { "src": "/api/payment-reminder", "dest": "/api/payment-reminder.js" },
+    { "src": "/o-level-a-math-tuition", "dest": "/o-level-a-math-tuition.html" },
+    { "src": "/jc-h2-math-tuition", "dest": "/jc-h2-math-tuition.html" },
+    { "src": "/secondary-math-tuition", "dest": "/secondary-math-tuition.html" },
+    { "src": "/llms.txt", "dest": "/llms.txt" },
     { "src": "/(.*)",             "dest": "/$1"                 }
   ],
   "crons": [
