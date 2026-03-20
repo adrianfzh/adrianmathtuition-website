@@ -266,6 +266,20 @@
             </ul>
         </div>
 
+        <div id="register-section" style="margin-top:24px; padding:20px 24px;
+    background:#f0f7ff; border:1.5px solid #c0d8f0; border-radius:12px;">
+            <p style="font-weight:600; margin-bottom:8px;">📱 Last step — link your Telegram:</p>
+            <p style="font-size:14px; color:#555; margin-bottom:12px;">
+                Open Telegram, search for <strong>@AdrianMathBot</strong>, press Start, then send:
+            </p>
+            <code id="register-command" style="display:block; font-size:1.1em;
+      background:#fff; padding:10px 14px; border-radius:8px; border:1px solid #ddd;
+      letter-spacing:0.05em;"></code>
+            <p style="font-size:12px; color:#888; margin-top:8px;">
+                This code expires in 7 days. Both student and parent can use it to register.
+            </p>
+        </div>
+
         <div class="action-buttons">
             <a href="https://wa.me/6591397985" class="btn-primary" target="_blank" rel="noopener noreferrer">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
@@ -336,6 +350,9 @@
             document.getElementById('token-display').textContent = token;
             document.getElementById('telegram-item').style.display = 'block';
             document.getElementById('telegram-btn').style.display = 'inline-flex';
+            document.getElementById('register-command').textContent = '/register ' + token;
+        } else {
+            document.getElementById('register-section').style.display = 'none';
         }
     })();
 </script>
