@@ -321,7 +321,12 @@
             </div>
 
             <form id="signup-form" novalidate>
-                <input type="hidden" id="signup-token" name="token">
+                <input type="hidden" id="field-slotId" name="slotId">
+                <input type="hidden" id="field-expires" name="expires">
+                <input type="hidden" id="field-sig" name="sig">
+                <input type="hidden" id="field-level-raw" name="level">
+                <input type="hidden" id="field-subjects-raw" name="subjects">
+                <input type="hidden" id="field-subjectLevel-raw" name="subjectLevel">
 
                 <!-- Pre-filled info -->
                 <div class="form-section">
@@ -580,16 +585,28 @@
 
         // Load and validate token
         const params = new URLSearchParams(window.location.search);
-        const signupToken = params.get('token');
+        const slotId       = params.get('slotId');
+        const level        = params.get('level');
+        const subjects     = params.get('subjects');
+        const subjectLevel = params.get('subjectLevel') || '';
+        const expires      = params.get('expires');
+        const sig          = params.get('sig');
 
-        if (!signupToken) {
+        if (!slotId || !level || !expires || !sig) {
             showError('This registration link is invalid. Please contact Adrian for a new link.');
             return;
         }
 
-        document.getElementById('signup-token').value = signupToken;
+        document.getElementById('field-slotId').value           = slotId;
+        document.getElementById('field-expires').value          = expires;
+        document.getElementById('field-sig').value              = sig;
+        document.getElementById('field-level-raw').value        = level;
+        document.getElementById('field-subjects-raw').value     = subjects || '';
+        document.getElementById('field-subjectLevel-raw').value = subjectLevel;
 
-        fetch('/api/signup-data?token=' + encodeURIComponent(signupToken))
+        fetch('/api/signup-data?' + new URLSearchParams({
+            slotId, level, subjects: subjects || '', subjectLevel, expires, sig
+        }).toString())
             .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, data: d }; }); })
             .then(function (result) {
                 if (!result.ok) {
@@ -645,7 +662,12 @@
             formErrEl.style.display = 'none';
 
             const payload = {
-                token:          document.getElementById('signup-token').value,
+                slotId:        document.getElementById('field-slotId').value,
+                expires:       document.getElementById('field-expires').value,
+                sig:           document.getElementById('field-sig').value,
+                level:         document.getElementById('field-level-raw').value,
+                subjects:      document.getElementById('field-subjects-raw').value,
+                subjectLevel:  document.getElementById('field-subjectLevel-raw').value,
                 studentName:    document.getElementById('student-name').value.trim(),
                 school:         document.getElementById('school').value.trim(),
                 studentContact: document.getElementById('student-contact').value.trim(),
@@ -669,7 +691,7 @@
                     window.location.href = '/thankyou.html?name=' + encodeURIComponent(result.data.studentName)
                         + '&date=' + encodeURIComponent(result.data.startDate || '')
                         + '&time=' + encodeURIComponent(savedSlotTime)
-                        + '&token=' + encodeURIComponent(signupToken);
+                        + '&token=' + encodeURIComponent(result.data.registrationToken || '');
                 } else {
                     formErrEl.textContent    = result.data.error || 'Something went wrong. Please try again or contact Adrian directly via WhatsApp.';
                     formErrEl.style.display  = 'block';
