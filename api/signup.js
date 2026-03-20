@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const sanitize = (str) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
 const LEVEL_MAP = {
@@ -35,7 +37,12 @@ module.exports = async function handler(req, res) {
     console.log('[signup] req.body:', JSON.stringify(req.body));
 
     const {
-        token: signupToken,
+        slotId,
+        level: rawLevel,
+        subjects: subjectsParam,
+        subjectLevel: subjectLevelParam,
+        expires,
+        sig,
         studentName,
         school,
         studentContact,
@@ -48,8 +55,8 @@ module.exports = async function handler(req, res) {
         referredBy,
     } = req.body || {};
 
-    if (!signupToken || !studentName || !parentName || !parentContact || !parentEmail || !startDate || !howHeard) {
-        const missing = { signupToken: !!signupToken, studentName: !!studentName, parentName: !!parentName, parentContact: !!parentContact, parentEmail: !!parentEmail, startDate: !!startDate, howHeard: !!howHeard };
+    if (!slotId || !expires || !sig || !studentName || !parentName || !parentContact || !parentEmail || !startDate || !howHeard) {
+        const missing = { slotId: !!slotId, expires: !!expires, sig: !!sig, studentName: !!studentName, parentName: !!parentName, parentContact: !!parentContact, parentEmail: !!parentEmail, startDate: !!startDate, howHeard: !!howHeard };
         console.error('[signup] Missing required fields:', missing);
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -57,39 +64,27 @@ module.exports = async function handler(req, res) {
     const at = (table, path, options) => airtableRequest(baseId, airtableToken, table, path, options);
 
     try {
-        // Step 1: Re-validate token
-        console.log('[signup] Step 1: Looking up token:', signupToken);
-        const tokenParams = new URLSearchParams();
-        tokenParams.set('filterByFormula', `{Token}='${signupToken}'`);
-        tokenParams.set('maxRecords', '1');
-        const tokenData = await at('Tokens', `?${tokenParams.toString()}`);
-        console.log('[signup] Step 1: Token lookup returned', tokenData.records?.length ?? 0, 'records');
-
-        if (!tokenData.records || tokenData.records.length === 0) {
-            return res.status(400).json({ error: 'Invalid or expired registration link.' });
+        // Step 1: Validate HMAC signature
+        console.log('[signup] Step 1: Validating HMAC signature...');
+        const check = new URLSearchParams();
+        check.set('slotId', slotId || '');
+        check.set('level', rawLevel || '');
+        check.set('subjects', subjectsParam || '');
+        if (subjectLevelParam) check.set('subjectLevel', subjectLevelParam);
+        check.set('expires', expires || '');
+        const expectedSig = crypto
+            .createHmac('sha256', process.env.SIGNUP_SECRET || 'fallback-secret')
+            .update(check.toString()).digest('hex').slice(0, 16);
+        if (sig !== expectedSig || Date.now() > parseInt(expires)) {
+            console.error('[signup] Step 1: Invalid or expired sig. sig:', sig, '| expected:', expectedSig, '| expires:', expires);
+            return res.status(400).json({ error: 'Invalid or expired signup link.' });
         }
+        console.log('[signup] Step 1: Signature valid.');
 
-        const tokenRecord = tokenData.records[0];
-        const tf = tokenRecord.fields;
-        console.log('[signup] Step 1: Token record id:', tokenRecord.id);
-        console.log('[signup] Step 1: Token fields (full):', JSON.stringify(tf));
-
-        if (tf['Status'] !== 'Pending') {
-            return res.status(400).json({ error: 'This registration link has already been used.' });
-        }
-        if (tf['Expires At'] && new Date(tf['Expires At']) < new Date()) {
-            return res.status(400).json({ error: 'This registration link has expired.' });
-        }
-
-        const rawLevel = tf['Level'] || '';
         const level = LEVEL_MAP[rawLevel] || rawLevel;
-        const subjectLevel = tf['Subject Level'] || '';
-        const subjectsRaw = tf['Subjects'] || '';
-        const subjects = Array.isArray(subjectsRaw)
-            ? subjectsRaw
-            : String(subjectsRaw).split(',').map(s => s.trim()).filter(Boolean);
-        const slotIds = tf['Slot'] || [];
-        const slotId = slotIds[0] || '';
+        const subjectLevel = subjectLevelParam || '';
+        const subjects = subjectsParam ? subjectsParam.split(',').map(s => s.trim()).filter(Boolean) : [];
+        const slotIds = slotId ? [slotId] : [];
         console.log('[signup] Step 1: Extracted — rawLevel:', rawLevel, '→ level:', level, '| subjectLevel:', subjectLevel, '| subjects:', subjects, '| slotId:', slotId);
 
         // Step 2: Create Student record
@@ -119,23 +114,27 @@ module.exports = async function handler(req, res) {
         const studentId = studentRecord.id;
         console.log('[signup] Step 2: Student created, id:', studentId);
 
-        // Step 2b: Link student to token and extend expiry to 7 days (non-fatal)
-        console.log('[signup] Step 2b: Linking student to token and extending expiry...');
+        // Step 2b: Create registration token
+        let registrationToken = null;
+        console.log('[signup] Step 2b: Creating registration token...');
         try {
-            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-            await at('Tokens', `/${tokenRecord.id}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    fields: {
-                        'Student': [studentId],
-                        'Expires At': expiresAt,
-                        'Status': 'Active',
-                    },
-                }),
+            const tokenValue = Array.from({length: 8}, () =>
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 62)]
+            ).join('');
+            await at('Tokens', '', {
+                method: 'POST',
+                body: JSON.stringify({ fields: {
+                    Token:        tokenValue,
+                    Student:      [studentId],
+                    'Expires At': new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    Status:       'Active',
+                    'Created At': new Date().toISOString()
+                }}),
             });
-            console.log('[signup] Step 2b: Token updated — student linked, expires:', expiresAt);
+            registrationToken = tokenValue;
+            console.log('[signup] Step 2b: Token created:', tokenValue);
         } catch (err) {
-            console.error('[signup] Step 2b FAILED (non-fatal). Token:', tokenRecord.id, '| Error:', err.message);
+            console.error('[signup] Step 2b FAILED (non-fatal):', err.message);
         }
 
         // Step 3: Find Rate record (needed for Enrollment fields)
@@ -216,25 +215,13 @@ module.exports = async function handler(req, res) {
             }
         }
 
-        // Step 6: Mark token as Used
-        console.log('[signup] Step 6: Marking token as Used, record id:', tokenRecord.id);
-        try {
-            await at('Tokens', `/${tokenRecord.id}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                    fields: { 'Status': 'Active', 'Student': [studentId] },
-                }),
-            });
-        } catch (err) {
-            console.error('[signup] Step 6 FAILED (non-fatal). Token:', tokenRecord.id, '| Error:', err.message);
-        }
-
-        // Step 7: Success
-        console.log('[signup] Step 7: All done. Returning success for student:', sanitize(studentName));
+        // Step 6: Success
+        console.log('[signup] Step 6: All done. Returning success for student:', sanitize(studentName));
         return res.status(200).json({
             success: true,
             studentName: sanitize(studentName),
             startDate,
+            registrationToken,
         });
     } catch (error) {
         console.error('[signup] OUTER CATCH — unhandled error:', error.message);
