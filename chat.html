@@ -742,65 +742,49 @@
         return text;
     }
 
-    function renderStreaming(el, text) {
-        text = text.replace(/\n*CONFIDENCE[:\s]*(HIGH|LOW)[^\n]*/gi, '').trimEnd();
-        // Convert backticks to $ only if the pair is complete
+    let renderTimer = null;
+    let pendingRenderEl = null;
+    let pendingRenderText = '';
+
+    function scheduleRender(el, text) {
+        pendingRenderEl = el;
+        pendingRenderText = text;
+        if (!renderTimer) {
+            renderTimer = requestAnimationFrame(() => {
+                renderTimer = null;
+                if (pendingRenderEl) renderToElement(pendingRenderEl, pendingRenderText);
+            });
+        }
+    }
+
+    function renderToElement(el, text) {
+        text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
+        // Convert backtick expressions to $...$ for KaTeX
         text = text.replace(/`([^`\n]+)`/g, '$$1$');
 
-        let result = '';
-        let i = 0;
+        // Apply bold BEFORE newline conversion but KEEP newlines for KaTeX
+        let html = text
+            .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>')
+            .replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
+                '<span class="part-label">$1</span>');
 
-        while (i < text.length) {
-            // Display math $$...$$
-            if (text[i] === '$' && text[i+1] === '$') {
-                const closeIdx = text.indexOf('$$', i + 2);
-                if (closeIdx !== -1) {
-                    // Complete — render it
-                    const math = text.slice(i + 2, closeIdx);
-                    try {
-                        result += katex.renderToString(math, { displayMode: true, throwOnError: false });
-                    } catch(e) {
-                        result += text.slice(i, closeIdx + 2);
-                    }
-                    i = closeIdx + 2;
-                } else {
-                    // Incomplete $$... — hide everything from here to end
-                    break;
-                }
-                continue;
-            }
-
-            // Inline math $...$
-            if (text[i] === '$' && text[i+1] !== '$') {
-                const closeIdx = text.indexOf('$', i + 1);
-                if (closeIdx !== -1 && closeIdx !== i + 1) {
-                    const math = text.slice(i + 1, closeIdx);
-                    if (math.length > 0 && math.length < 300 && !math.includes('\n')) {
-                        try {
-                            result += katex.renderToString(math, { displayMode: false, throwOnError: false });
-                            i = closeIdx + 1;
-                            continue;
-                        } catch(e) {}
-                    }
-                } else {
-                    // Incomplete $... — hide from here to end
-                    break;
-                }
-            }
-
-            result += text[i];
-            i++;
+        // Run KaTeX BEFORE converting \n to <br>
+        if (typeof katex !== 'undefined') {
+            html = html.replace(/\$\$([^$]+?)\$\$/g, (_, math) => {
+                try { return katex.renderToString(math, { displayMode: true, throwOnError: false }); }
+                catch(e) { return `$$${math}$$`; }
+            });
+            html = html.replace(/(?<!\$)\$([^$\n]{1,200}?)\$(?!\$)/g, (_, math) => {
+                try { return katex.renderToString(math, { displayMode: false, throwOnError: false }); }
+                catch(e) { return `$${math}$`; }
+            });
         }
 
-        // Apply markdown formatting to the non-math parts
-        result = result
-            .replace(/\*\*([^*\n<]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*([^*\n<]+)\*/g, '<strong>$1</strong>')
-            .replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
-                '<span class="part-label">$1</span>')
-            .replace(/\n/g, '<br>');
+        // Convert newlines to <br> AFTER KaTeX is done
+        html = html.replace(/\n/g, '<br>');
 
-        el.innerHTML = result;
+        el.innerHTML = html;
     }
 
     // ── ADD MESSAGE ──
@@ -959,11 +943,12 @@
                         }
                         if (parsed.chunk) {
                             fullText += parsed.chunk;
-                            renderStreaming(streamDiv, fullText);
+                            scheduleRender(streamDiv, fullText);
                             scrollToBottom();
                         }
                         if (parsed.done) {
-                            renderStreaming(streamDiv, fullText);
+                            if (renderTimer) { cancelAnimationFrame(renderTimer); renderTimer = null; }
+                            renderToElement(streamDiv, fullText);
                             scrollToBottom();
                         }
                     } catch(e) {}
