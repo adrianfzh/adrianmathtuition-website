@@ -640,6 +640,13 @@
         document.getElementById('previewImgFixed').src = '';
     }
 
+    // ── ESC TO CANCEL IMAGE ──
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && selectedFile) {
+            removeImage();
+        }
+    });
+
     // ── PASTE IMAGE (Ctrl+V) ──
     document.addEventListener('paste', e => {
         const items = e.clipboardData?.items;
@@ -759,6 +766,20 @@
         scrollToBottom();
     }
 
+    function addStreamingMessage() {
+        const inner = document.getElementById('messagesInner');
+        const group = document.createElement('div');
+        group.className = 'message-group bot';
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        const textDiv = document.createElement('div');
+        bubble.appendChild(textDiv);
+        group.appendChild(bubble);
+        inner.appendChild(group);
+        scrollToBottom();
+        return { textDiv };
+    }
+
     function removeTyping() {
         const t = document.getElementById('typingGroup');
         if (t) t.remove();
@@ -773,21 +794,6 @@
         isLoading = loading;
         document.getElementById('sendBtnWelcome').disabled = loading;
         document.getElementById('sendBtnFixed').disabled = loading;
-    }
-
-    // ── ADD STREAMING MESSAGE ──
-    function addStreamingMessage() {
-        const inner = document.getElementById('messagesInner');
-        const group = document.createElement('div');
-        group.className = 'message-group bot';
-        const bubble = document.createElement('div');
-        bubble.className = 'message-bubble';
-        const textDiv = document.createElement('div');
-        bubble.appendChild(textDiv);
-        group.appendChild(bubble);
-        inner.appendChild(group);
-        scrollToBottom();
-        return { bubble, textDiv };
     }
 
     // ── SEND ──
@@ -823,7 +829,7 @@
                 body.message = text;
             }
 
-            const res = await fetch('/api/chat', {
+            const res = await fetch('https://adrianmath-telegram-math-bot.fly.dev/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
@@ -835,9 +841,9 @@
                 return;
             }
 
-            // Create streaming bubble
+            // Switch from typing indicator to streaming bubble
             removeTyping();
-            const { bubble: streamBubble, textDiv: streamDiv } = addStreamingMessage();
+            const { textDiv: streamDiv } = addStreamingMessage();
             let fullText = '';
 
             const reader = res.body.getReader();
