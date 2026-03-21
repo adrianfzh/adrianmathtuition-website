@@ -775,6 +775,21 @@
         document.getElementById('sendBtnFixed').disabled = loading;
     }
 
+    // ── ADD STREAMING MESSAGE ──
+    function addStreamingMessage() {
+        const inner = document.getElementById('messagesInner');
+        const group = document.createElement('div');
+        group.className = 'message-group bot';
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        const textDiv = document.createElement('div');
+        bubble.appendChild(textDiv);
+        group.appendChild(bubble);
+        inner.appendChild(group);
+        scrollToBottom();
+        return { bubble, textDiv };
+    }
+
     // ── SEND ──
     async function sendMessage() {
         if (isLoading) return;
@@ -814,18 +829,52 @@
                 body: JSON.stringify(body)
             });
 
-            const data = await res.json();
-            removeTyping();
-
-            if (!res.ok || data.error) {
-                showError(data.error || 'Something went wrong. Please try again.');
+            if (!res.ok) {
+                removeTyping();
+                showError('Something went wrong. Please try again.');
                 return;
             }
 
-            addMessage('bot', data.response || '');
+            // Create streaming bubble
+            removeTyping();
+            const { bubble: streamBubble, textDiv: streamDiv } = addStreamingMessage();
+            let fullText = '';
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    try {
+                        const parsed = JSON.parse(line.slice(6));
+                        if (parsed.error) {
+                            showError(parsed.error);
+                            return;
+                        }
+                        if (parsed.chunk) {
+                            fullText += parsed.chunk;
+                            streamDiv.innerHTML = formatMessage(fullText);
+                            scrollToBottom();
+                        }
+                        if (parsed.done) {
+                            // Final render with KaTeX
+                            streamDiv.innerHTML = formatMessage(fullText);
+                            requestAnimationFrame(() => renderMath(streamDiv));
+                            scrollToBottom();
+                        }
+                    } catch(e) {}
+                }
+            }
 
             conversationHistory.push({ role: 'user', content: text || '[image]' });
-            conversationHistory.push({ role: 'assistant', content: data.response || '' });
+            conversationHistory.push({ role: 'assistant', content: fullText });
             if (conversationHistory.length > 12) conversationHistory = conversationHistory.slice(-12);
 
         } catch(err) {
