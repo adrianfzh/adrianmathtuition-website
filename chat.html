@@ -740,7 +740,7 @@
         text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
         text = text.replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
             '<span class="part-label">$1</span>');
-        text = text.replace(/`([^`\n]+)`/g, '$$$1$$');
+        text = text.replace(/`([^`\n]+)`/g, '\\($1\\)');
         text = text.replace(/\n/g, '<br>');
         return text;
     }
@@ -763,7 +763,7 @@
     function renderToElement(el, text) {
         text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
         // Convert backtick expressions to $...$ for KaTeX
-        text = text.replace(/`([^`\n]+)`/g, '$$1$');
+        text = text.replace(/`([^`\n]+)`/g, '\\($1\\)');
 
         // Apply bold BEFORE newline conversion but KEEP newlines for KaTeX
         let html = text
