@@ -721,6 +721,7 @@
 
     // ── FORMAT MESSAGE ──
     function formatMessage(text) {
+        text = text.replace(/\n*CONFIDENCE:(HIGH|LOW)\s*$/i, '').trimEnd();
         text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
         text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
         text = text.replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
@@ -730,48 +731,48 @@
         return text;
     }
 
-    function formatAndRenderStreaming(el, text) {
-        // Only render complete math expressions — leave incomplete ones as plain text
-        let result = '';
-        let i = 0;
-        while (i < text.length) {
-            // Check for display math $$...$$
-            if (text[i] === '$' && text[i+1] === '$') {
-                const end = text.indexOf('$$', i + 2);
-                if (end !== -1) {
-                    const math = text.slice(i + 2, end);
-                    try {
-                        result += katex.renderToString(math, { displayMode: true, throwOnError: false });
-                    } catch(e) {
-                        result += text.slice(i, end + 2);
-                    }
-                    i = end + 2;
-                    continue;
-                }
-            }
-            // Check for inline math $...$
-            if (text[i] === '$' && text[i+1] !== '$') {
-                const end = text.indexOf('$', i + 1);
-                if (end !== -1 && end !== i + 1) {
-                    const math = text.slice(i + 1, end);
-                    // Avoid rendering lone $ signs (e.g. currency)
-                    if (math.length > 0 && math.length < 200 && !math.includes('\n')) {
-                        try {
-                            result += katex.renderToString(math, { displayMode: false, throwOnError: false });
-                            i = end + 1;
-                            continue;
-                        } catch(e) {}
-                    }
-                }
-            }
-            result += text[i];
-            i++;
+    // Throttled render — only update DOM at most every 50ms for smooth streaming
+    let renderTimer = null;
+    let pendingText = '';
+    let pendingEl = null;
+
+    function scheduleRender(el, text) {
+        pendingEl = el;
+        pendingText = text;
+        if (!renderTimer) {
+            renderTimer = setTimeout(() => {
+                renderTimer = null;
+                if (pendingEl) renderToElement(pendingEl, pendingText);
+            }, 50);
         }
-        el.innerHTML = result
+    }
+
+    function renderToElement(el, text) {
+        // Strip CONFIDENCE line
+        text = text.replace(/\n*CONFIDENCE:(HIGH|LOW)\s*$/i, '').trimEnd();
+
+        // Apply markdown formatting first
+        let html = text
             .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
             .replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>')
             .replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g, '<span class="part-label">$1</span>')
             .replace(/\n/g, '<br>');
+
+        // Render complete math expressions inline using KaTeX
+        if (typeof katex !== 'undefined') {
+            // Display math $$...$$
+            html = html.replace(/\$\$([^$]+?)\$\$/g, (_, math) => {
+                try { return katex.renderToString(math, { displayMode: true, throwOnError: false }); }
+                catch(e) { return `$$${math}$$`; }
+            });
+            // Inline math $...$ (not preceded/followed by $)
+            html = html.replace(/\$([^$\n]{1,200}?)\$/g, (_, math) => {
+                try { return katex.renderToString(math, { displayMode: false, throwOnError: false }); }
+                catch(e) { return `$${math}$`; }
+            });
+        }
+
+        el.innerHTML = html;
     }
 
     // ── ADD MESSAGE ──
@@ -929,20 +930,13 @@
                         }
                         if (parsed.chunk) {
                             fullText += parsed.chunk;
-                            if (typeof katex !== 'undefined') {
-                                formatAndRenderStreaming(streamDiv, fullText);
-                            } else {
-                                streamDiv.innerHTML = formatMessage(fullText);
-                            }
+                            scheduleRender(streamDiv, fullText);
                             scrollToBottom();
                         }
                         if (parsed.done) {
-                            if (typeof katex !== 'undefined') {
-                                formatAndRenderStreaming(streamDiv, fullText);
-                            } else {
-                                streamDiv.innerHTML = formatMessage(fullText);
-                                requestAnimationFrame(() => renderMath(streamDiv));
-                            }
+                            // Clear any pending throttled render and do final render immediately
+                            if (renderTimer) { clearTimeout(renderTimer); renderTimer = null; }
+                            renderToElement(streamDiv, fullText);
                             scrollToBottom();
                         }
                     } catch(e) {}
