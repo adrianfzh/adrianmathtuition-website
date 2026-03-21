@@ -19,7 +19,6 @@
             --card: hsl(0, 0%, 100%);
             --primary: hsl(220, 60%, 20%);
             --primary-foreground: hsl(45, 100%, 96%);
-            --secondary: hsl(45, 90%, 55%);
             --muted: hsl(220, 15%, 93%);
             --muted-foreground: hsl(220, 10%, 46%);
             --border: hsl(220, 15%, 88%);
@@ -41,7 +40,7 @@
             overflow: hidden;
         }
 
-        /* ── NAV — matches site exactly ── */
+        /* ── NAV ── */
         nav {
             position: relative;
             z-index: 50;
@@ -68,11 +67,7 @@
             text-decoration: none;
         }
 
-        .logo-img {
-            width: 32px;
-            height: 32px;
-            border-radius: 7px;
-        }
+        .logo-img { width: 32px; height: 32px; border-radius: 7px; }
 
         .logo-bold {
             font-family: var(--font-display);
@@ -82,10 +77,7 @@
             color: var(--primary);
         }
 
-        .logo-light {
-            color: var(--muted-foreground);
-            font-size: 14px;
-        }
+        .logo-light { color: var(--muted-foreground); font-size: 14px; }
 
         .back-link {
             display: inline-flex;
@@ -100,30 +92,28 @@
 
         .back-link:hover { color: var(--primary); }
 
-        /* ── MESSAGES AREA ── */
-        .chat-messages {
+        /* ── MAIN SCROLL AREA ── */
+        .chat-scroll {
             flex: 1;
             overflow-y: auto;
-            padding: 32px 24px;
             scroll-behavior: smooth;
             scrollbar-width: thin;
             scrollbar-color: var(--border) transparent;
         }
 
-        .messages-inner {
+        .chat-inner {
             max-width: 720px;
             margin: 0 auto;
+            padding: 0 24px;
         }
 
         /* ── WELCOME STATE ── */
         .welcome-state {
+            padding: 56px 0 32px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: calc(100dvh - 220px);
             text-align: center;
-            padding: 40px 0;
         }
 
         .welcome-icon-wrap {
@@ -151,9 +141,20 @@
             color: var(--muted-foreground);
             max-width: 420px;
             line-height: 1.65;
+            margin-bottom: 32px;
+        }
+
+        /* ── INLINE INPUT (welcome state) ── */
+        .welcome-input-wrap {
+            width: 100%;
+            max-width: 580px;
         }
 
         /* ── MESSAGES ── */
+        .messages-area {
+            padding: 32px 0 16px;
+        }
+
         .message-group {
             margin-bottom: 20px;
             animation: fadeUp 0.2s ease;
@@ -200,7 +201,6 @@
         /* KaTeX */
         .message-bubble .katex { font-size: 1.05em; }
         .message-bubble .katex-display { margin: 12px 0; overflow-x: auto; }
-
         .message-bubble strong { font-weight: 600; }
 
         .part-label {
@@ -244,19 +244,7 @@
             30% { transform: translateY(-5px); opacity: 1; }
         }
 
-        /* ── INPUT AREA ── */
-        .input-area {
-            border-top: 1px solid var(--border);
-            padding: 16px 24px 20px;
-            background: hsla(0, 0%, 100%, 0.95);
-            flex-shrink: 0;
-        }
-
-        .input-wrapper {
-            max-width: 720px;
-            margin: 0 auto;
-        }
-
+        /* ── INPUT BOX (shared styles) ── */
         .error-banner {
             display: none;
             background: hsl(0, 90%, 97%);
@@ -318,7 +306,7 @@
             border-radius: var(--radius);
             padding: 10px 10px 10px 16px;
             transition: border-color 0.15s, box-shadow 0.15s;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         }
 
         .input-box:focus-within {
@@ -383,10 +371,36 @@
             justify-content: center;
             cursor: pointer;
             transition: opacity 0.15s;
+            flex-shrink: 0;
         }
 
         .send-btn:hover { opacity: 0.88; }
         .send-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .input-hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--muted-foreground);
+            opacity: 0.6;
+            text-align: center;
+        }
+
+        /* ── FIXED BOTTOM INPUT (shown after chat starts) ── */
+        .fixed-input-area {
+            display: none;
+            border-top: 1px solid var(--border);
+            padding: 14px 24px 18px;
+            background: hsla(0, 0%, 100%, 0.95);
+            backdrop-filter: blur(8px);
+            flex-shrink: 0;
+        }
+
+        .fixed-input-area.visible { display: block; }
+
+        .fixed-input-wrapper {
+            max-width: 720px;
+            margin: 0 auto;
+        }
 
         /* ── DRAG OVERLAY ── */
         .drag-overlay {
@@ -415,8 +429,10 @@
 
         /* ── RESPONSIVE ── */
         @media (max-width: 600px) {
-            .chat-messages { padding: 20px 16px; }
-            .input-area { padding: 12px 16px 16px; }
+            .chat-inner { padding: 0 16px; }
+            .fixed-input-area { padding: 10px 16px 14px; }
+            .welcome-state { padding: 40px 0 24px; }
+            .welcome-title { font-size: 1.75rem; }
             .message-group.user .message-bubble { max-width: 90%; }
             .logo-light { display: none; }
         }
@@ -439,58 +455,91 @@
             <span class="logo-light">math tuition</span>
         </a>
         <a href="/" class="back-link">
-            ← Back to website
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Back to website
         </a>
     </div>
 </nav>
 
-<!-- MESSAGES -->
-<div class="chat-messages" id="chatMessages">
-    <div class="messages-inner" id="messagesInner">
+<!-- SCROLLABLE AREA -->
+<div class="chat-scroll" id="chatScroll">
+    <div class="chat-inner">
+
+        <!-- WELCOME -->
         <div class="welcome-state" id="welcomeState">
             <div class="welcome-icon-wrap">
-                <!-- Custom SVG: integral sign in navy with amber accent -->
                 <svg width="44" height="52" viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Integral sign -->
                     <path d="M26 4 C32 4, 38 8, 38 14 C38 18, 35 21, 31 22"
                           stroke="hsl(220,60%,20%)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
                     <path d="M31 22 C24 24, 20 28, 20 34 C20 40, 22 44, 22 48"
                           stroke="hsl(220,60%,20%)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
                     <path d="M22 48 C16 48, 6 44, 6 38 C6 34, 9 31, 13 30"
                           stroke="hsl(220,60%,20%)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-                    <!-- Sigma symbol (smaller, amber, top right) -->
                     <text x="26" y="20" font-family="serif" font-size="18" font-weight="700"
                           fill="hsl(45,90%,50%)" opacity="0.9">Σ</text>
-                    <!-- Small dot accent -->
                     <circle cx="8" cy="12" r="3" fill="hsl(45,90%,55%)"/>
                 </svg>
             </div>
             <h1 class="welcome-title">Have a math question?</h1>
             <p class="welcome-sub">Type it out or drop a photo — get a clear, step-by-step solution instantly. Secondary and JC math covered.</p>
+
+            <!-- INLINE INPUT -->
+            <div class="welcome-input-wrap">
+                <div class="error-banner" id="errorBannerWelcome"></div>
+                <div class="image-preview" id="imagePreviewWelcome">
+                    <img id="previewImgWelcome" src="" alt="">
+                    <div class="remove-image" onclick="removeImage()">✕</div>
+                </div>
+                <div class="input-box" id="inputBoxWelcome">
+                    <textarea
+                        id="chatInputWelcome"
+                        placeholder="Type a question, or paste / drop a photo…"
+                        rows="1"
+                        onkeydown="handleKey(event, 'welcome')"
+                        oninput="autoResize(this)"
+                    ></textarea>
+                    <div class="input-actions">
+                        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)">
+                        <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Upload image">📎</button>
+                        <button class="send-btn" id="sendBtnWelcome" onclick="sendMessage()" title="Send">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <p class="input-hint">Enter to send · Shift+Enter for new line · Paste or drag images</p>
+            </div>
         </div>
+
+        <!-- MESSAGES -->
+        <div class="messages-area" id="messagesArea" style="display:none;">
+            <div id="messagesInner"></div>
+        </div>
+
     </div>
 </div>
 
-<!-- INPUT -->
-<div class="input-area">
-    <div class="input-wrapper">
-        <div class="error-banner" id="errorBanner"></div>
-        <div class="image-preview" id="imagePreview">
-            <img id="previewImg" src="" alt="">
+<!-- FIXED BOTTOM INPUT (shown after chat starts) -->
+<div class="fixed-input-area" id="fixedInputArea">
+    <div class="fixed-input-wrapper">
+        <div class="error-banner" id="errorBannerFixed"></div>
+        <div class="image-preview" id="imagePreviewFixed">
+            <img id="previewImgFixed" src="" alt="">
             <div class="remove-image" onclick="removeImage()">✕</div>
         </div>
-        <div class="input-box" id="inputBox">
+        <div class="input-box" id="inputBoxFixed">
             <textarea
-                id="chatInput"
-                placeholder="Type a question, or drop a photo here…"
+                id="chatInputFixed"
+                placeholder="Ask a follow-up question, or drop a photo…"
                 rows="1"
-                onkeydown="handleKey(event)"
+                onkeydown="handleKey(event, 'fixed')"
                 oninput="autoResize(this)"
             ></textarea>
             <div class="input-actions">
-                <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)">
                 <button class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Upload image">📎</button>
-                <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send">
+                <button class="send-btn" id="sendBtnFixed" onclick="sendMessage()" title="Send">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -502,17 +551,70 @@
 </div>
 
 <script>
-    let selectedFile = null, isLoading = false, conversationHistory = [];
+    let selectedFile = null;
+    let isLoading = false;
+    let conversationStarted = false;
+    let conversationHistory = [];
 
+    // ── ACTIVE INPUT HELPERS ──
+    function getActiveInput() {
+        return conversationStarted
+            ? document.getElementById('chatInputFixed')
+            : document.getElementById('chatInputWelcome');
+    }
+
+    function getActivePreviewImg() {
+        return conversationStarted
+            ? document.getElementById('previewImgFixed')
+            : document.getElementById('previewImgWelcome');
+    }
+
+    function getActiveImagePreview() {
+        return conversationStarted
+            ? document.getElementById('imagePreviewFixed')
+            : document.getElementById('imagePreviewWelcome');
+    }
+
+    function getActiveErrorBanner() {
+        return conversationStarted
+            ? document.getElementById('errorBannerFixed')
+            : document.getElementById('errorBannerWelcome');
+    }
+
+    // ── TRANSITION TO CHAT MODE ──
+    function startChat() {
+        if (conversationStarted) return;
+        conversationStarted = true;
+        document.getElementById('welcomeState').style.display = 'none';
+        document.getElementById('messagesArea').style.display = 'block';
+        document.getElementById('fixedInputArea').classList.add('visible');
+        // Move any typed text to fixed input
+        const welcomeText = document.getElementById('chatInputWelcome').value;
+        if (welcomeText) {
+            document.getElementById('chatInputFixed').value = welcomeText;
+            autoResize(document.getElementById('chatInputFixed'));
+        }
+        // Move image preview if any
+        if (selectedFile) {
+            const src = document.getElementById('previewImgWelcome').src;
+            document.getElementById('previewImgFixed').src = src;
+            document.getElementById('imagePreviewFixed').classList.add('visible');
+            document.getElementById('imagePreviewWelcome').classList.remove('visible');
+        }
+        setTimeout(() => document.getElementById('chatInputFixed').focus(), 50);
+    }
+
+    // ── AUTO RESIZE ──
     function autoResize(el) {
         el.style.height = 'auto';
         el.style.height = Math.min(el.scrollHeight, 140) + 'px';
     }
 
-    function handleKey(e) {
+    function handleKey(e, mode) {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     }
 
+    // ── FILE HANDLING ──
     function handleFile(e) {
         const f = e.target.files[0];
         if (f) setImage(f);
@@ -524,47 +626,71 @@
         selectedFile = file;
         const reader = new FileReader();
         reader.onload = ev => {
-            document.getElementById('previewImg').src = ev.target.result;
-            document.getElementById('imagePreview').classList.add('visible');
+            getActivePreviewImg().src = ev.target.result;
+            getActiveImagePreview().classList.add('visible');
         };
         reader.readAsDataURL(file);
     }
 
     function removeImage() {
         selectedFile = null;
-        document.getElementById('imagePreview').classList.remove('visible');
-        document.getElementById('previewImg').src = '';
+        document.getElementById('imagePreviewWelcome').classList.remove('visible');
+        document.getElementById('imagePreviewFixed').classList.remove('visible');
+        document.getElementById('previewImgWelcome').src = '';
+        document.getElementById('previewImgFixed').src = '';
     }
 
-    // Drag & drop
+    // ── PASTE IMAGE (Ctrl+V) ──
+    document.addEventListener('paste', e => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (file) setImage(file);
+                return;
+            }
+        }
+    });
+
+    // ── DRAG & DROP ──
     document.body.addEventListener('dragenter', e => {
         if (e.dataTransfer.types.includes('Files')) {
             document.getElementById('dragOverlay').classList.add('active');
-            document.getElementById('inputBox').classList.add('drag-over');
+            const box = conversationStarted ? 'inputBoxFixed' : 'inputBoxWelcome';
+            document.getElementById(box).classList.add('drag-over');
         }
     });
+
     document.body.addEventListener('dragleave', e => {
         if (!e.relatedTarget || e.relatedTarget === document.documentElement) {
             document.getElementById('dragOverlay').classList.remove('active');
-            document.getElementById('inputBox').classList.remove('drag-over');
+            document.getElementById('inputBoxWelcome').classList.remove('drag-over');
+            document.getElementById('inputBoxFixed').classList.remove('drag-over');
         }
     });
+
     document.body.addEventListener('dragover', e => e.preventDefault());
+
     document.body.addEventListener('drop', e => {
         e.preventDefault();
         document.getElementById('dragOverlay').classList.remove('active');
-        document.getElementById('inputBox').classList.remove('drag-over');
+        document.getElementById('inputBoxWelcome').classList.remove('drag-over');
+        document.getElementById('inputBoxFixed').classList.remove('drag-over');
         const file = e.dataTransfer.files[0];
         if (file) setImage(file);
     });
 
+    // ── ERROR ──
     function showError(msg) {
-        const el = document.getElementById('errorBanner');
+        const el = getActiveErrorBanner();
         el.textContent = msg;
         el.classList.add('visible');
         setTimeout(() => el.classList.remove('visible'), 4000);
     }
 
+    // ── RENDER MATH ──
     function renderMath(el) {
         if (typeof renderMathInElement === 'undefined') return;
         try {
@@ -580,25 +706,19 @@
         } catch(e) {}
     }
 
+    // ── FORMAT MESSAGE ──
     function formatMessage(text) {
         text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
         text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
-        // Part labels in amber
         text = text.replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
             '<span class="part-label">$1</span>');
-        // Backtick → KaTeX inline
         text = text.replace(/`([^`\n]+)`/g, '$$$1$$');
         text = text.replace(/\n/g, '<br>');
         return text;
     }
 
-    function hideWelcome() {
-        const ws = document.getElementById('welcomeState');
-        if (ws) ws.remove();
-    }
-
+    // ── ADD MESSAGE ──
     function addMessage(role, content, imageDataUrl) {
-        hideWelcome();
         const inner = document.getElementById('messagesInner');
         const group = document.createElement('div');
         group.className = `message-group ${role}`;
@@ -622,11 +742,10 @@
 
         group.appendChild(bubble);
         inner.appendChild(group);
-        document.getElementById('chatMessages').scrollTop = 99999;
+        scrollToBottom();
     }
 
     function addTyping() {
-        hideWelcome();
         const inner = document.getElementById('messagesInner');
         const group = document.createElement('div');
         group.className = 'message-group bot';
@@ -637,7 +756,7 @@
             <div class="typing-dot"></div>
         </div>`;
         inner.appendChild(group);
-        document.getElementById('chatMessages').scrollTop = 99999;
+        scrollToBottom();
     }
 
     function removeTyping() {
@@ -645,20 +764,38 @@
         if (t) t.remove();
     }
 
+    function scrollToBottom() {
+        const scroll = document.getElementById('chatScroll');
+        scroll.scrollTop = scroll.scrollHeight;
+    }
+
+    function setLoading(loading) {
+        isLoading = loading;
+        document.getElementById('sendBtnWelcome').disabled = loading;
+        document.getElementById('sendBtnFixed').disabled = loading;
+    }
+
+    // ── SEND ──
     async function sendMessage() {
         if (isLoading) return;
-        const input = document.getElementById('chatInput');
+
+        const input = getActiveInput();
         const text = input.value.trim();
+        const imageDataUrl = selectedFile ? getActivePreviewImg().src : null;
+
         if (!text && !selectedFile) return;
 
-        const imageDataUrl = selectedFile ? document.getElementById('previewImg').src : null;
+        // Transition to chat mode if first message
+        startChat();
+
+        // After startChat, fixed input is active
+        const fixedInput = document.getElementById('chatInputFixed');
         addMessage('user', text || null, imageDataUrl);
-        input.value = ''; autoResize(input);
+        fixedInput.value = ''; autoResize(fixedInput);
         const fileToSend = selectedFile;
         removeImage();
 
-        isLoading = true;
-        document.getElementById('sendBtn').disabled = true;
+        setLoading(true);
         addTyping();
 
         try {
@@ -695,8 +832,8 @@
             removeTyping();
             showError('Network error. Please check your connection.');
         } finally {
-            isLoading = false;
-            document.getElementById('sendBtn').disabled = false;
+            setLoading(false);
+            document.getElementById('chatInputFixed').focus();
         }
     }
 </script>
