@@ -721,7 +721,7 @@
 
     // ── FORMAT MESSAGE ──
     function formatMessage(text) {
-        text = text.replace(/\n*CONFIDENCE:(HIGH|LOW)\s*$/i, '').trimEnd();
+        text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
         text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
         text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
         text = text.replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
@@ -731,47 +731,38 @@
         return text;
     }
 
-    // Throttled render — only update DOM at most every 50ms for smooth streaming
     let renderTimer = null;
-    let pendingText = '';
-    let pendingEl = null;
+    let pendingRenderEl = null;
+    let pendingRenderText = '';
 
     function scheduleRender(el, text) {
-        pendingEl = el;
-        pendingText = text;
+        pendingRenderEl = el;
+        pendingRenderText = text;
         if (!renderTimer) {
-            renderTimer = setTimeout(() => {
+            renderTimer = requestAnimationFrame(() => {
                 renderTimer = null;
-                if (pendingEl) renderToElement(pendingEl, pendingText);
-            }, 50);
+                if (pendingRenderEl) renderToElement(pendingRenderEl, pendingRenderText);
+            });
         }
     }
 
     function renderToElement(el, text) {
-        // Strip CONFIDENCE line
-        text = text.replace(/\n*CONFIDENCE:(HIGH|LOW)\s*$/i, '').trimEnd();
-
-        // Apply markdown formatting first
+        text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
         let html = text
             .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
             .replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>')
             .replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g, '<span class="part-label">$1</span>')
             .replace(/\n/g, '<br>');
-
-        // Render complete math expressions inline using KaTeX
         if (typeof katex !== 'undefined') {
-            // Display math $$...$$
             html = html.replace(/\$\$([^$]+?)\$\$/g, (_, math) => {
                 try { return katex.renderToString(math, { displayMode: true, throwOnError: false }); }
                 catch(e) { return `$$${math}$$`; }
             });
-            // Inline math $...$ (not preceded/followed by $)
-            html = html.replace(/\$([^$\n]{1,200}?)\$/g, (_, math) => {
+            html = html.replace(/(?<!\$)\$([^$\n]{1,200}?)\$(?!\$)/g, (_, math) => {
                 try { return katex.renderToString(math, { displayMode: false, throwOnError: false }); }
                 catch(e) { return `$${math}$`; }
             });
         }
-
         el.innerHTML = html;
     }
 
@@ -934,8 +925,7 @@
                             scrollToBottom();
                         }
                         if (parsed.done) {
-                            // Clear any pending throttled render and do final render immediately
-                            if (renderTimer) { clearTimeout(renderTimer); renderTimer = null; }
+                            if (renderTimer) { cancelAnimationFrame(renderTimer); renderTimer = null; }
                             renderToElement(streamDiv, fullText);
                             scrollToBottom();
                         }
