@@ -730,6 +730,50 @@
         return text;
     }
 
+    function formatAndRenderStreaming(el, text) {
+        // Only render complete math expressions — leave incomplete ones as plain text
+        let result = '';
+        let i = 0;
+        while (i < text.length) {
+            // Check for display math $$...$$
+            if (text[i] === '$' && text[i+1] === '$') {
+                const end = text.indexOf('$$', i + 2);
+                if (end !== -1) {
+                    const math = text.slice(i + 2, end);
+                    try {
+                        result += katex.renderToString(math, { displayMode: true, throwOnError: false });
+                    } catch(e) {
+                        result += text.slice(i, end + 2);
+                    }
+                    i = end + 2;
+                    continue;
+                }
+            }
+            // Check for inline math $...$
+            if (text[i] === '$' && text[i+1] !== '$') {
+                const end = text.indexOf('$', i + 1);
+                if (end !== -1 && end !== i + 1) {
+                    const math = text.slice(i + 1, end);
+                    // Avoid rendering lone $ signs (e.g. currency)
+                    if (math.length > 0 && math.length < 200 && !math.includes('\n')) {
+                        try {
+                            result += katex.renderToString(math, { displayMode: false, throwOnError: false });
+                            i = end + 1;
+                            continue;
+                        } catch(e) {}
+                    }
+                }
+            }
+            result += text[i];
+            i++;
+        }
+        el.innerHTML = result
+            .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>')
+            .replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g, '<span class="part-label">$1</span>')
+            .replace(/\n/g, '<br>');
+    }
+
     // ── ADD MESSAGE ──
     function addMessage(role, content, imageDataUrl) {
         const inner = document.getElementById('messagesInner');
@@ -885,13 +929,20 @@
                         }
                         if (parsed.chunk) {
                             fullText += parsed.chunk;
-                            streamDiv.innerHTML = formatMessage(fullText);
+                            if (typeof katex !== 'undefined') {
+                                formatAndRenderStreaming(streamDiv, fullText);
+                            } else {
+                                streamDiv.innerHTML = formatMessage(fullText);
+                            }
                             scrollToBottom();
                         }
                         if (parsed.done) {
-                            // Final render with KaTeX
-                            streamDiv.innerHTML = formatMessage(fullText);
-                            requestAnimationFrame(() => renderMath(streamDiv));
+                            if (typeof katex !== 'undefined') {
+                                formatAndRenderStreaming(streamDiv, fullText);
+                            } else {
+                                streamDiv.innerHTML = formatMessage(fullText);
+                                requestAnimationFrame(() => renderMath(streamDiv));
+                            }
                             scrollToBottom();
                         }
                     } catch(e) {}
