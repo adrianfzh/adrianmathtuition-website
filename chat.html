@@ -759,13 +759,17 @@
 
     function renderToElement(el, text) {
         text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
-        // Convert backtick expressions to $...$ for KaTeX before rendering
+        // Convert backtick expressions to $...$ for KaTeX
         text = text.replace(/`([^`\n]+)`/g, '$$1$');
+
+        // Apply bold BEFORE newline conversion but KEEP newlines for KaTeX
         let html = text
             .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
             .replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>')
-            .replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g, '<span class="part-label">$1</span>')
-            .replace(/\n/g, '<br>');
+            .replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
+                '<span class="part-label">$1</span>');
+
+        // Run KaTeX BEFORE converting \n to <br>
         if (typeof katex !== 'undefined') {
             html = html.replace(/\$\$([^$]+?)\$\$/g, (_, math) => {
                 try { return katex.renderToString(math, { displayMode: true, throwOnError: false }); }
@@ -776,6 +780,10 @@
                 catch(e) { return `$${math}$`; }
             });
         }
+
+        // Convert newlines to <br> AFTER KaTeX is done
+        html = html.replace(/\n/g, '<br>');
+
         el.innerHTML = html;
     }
 
