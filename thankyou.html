@@ -253,6 +253,7 @@
             <div class="lesson-card-weekday" id="lesson-weekday">—</div>
             <div class="lesson-card-date" id="lesson-date"></div>
             <div class="lesson-card-time" id="lesson-time" style="display:none"></div>
+            <div class="lesson-card-subjects" id="lesson-subjects" style="display:none; margin-top:10px; font-size:13px; color:hsla(45,100%,96%,0.7); font-weight:500;"></div>
         </div>
 
         <!-- What happens next -->
@@ -343,6 +344,13 @@
             const timeEl = document.getElementById('lesson-time');
             timeEl.textContent = timeParam.replace('-', '\u2013');
             timeEl.style.display = 'inline-block';
+        }
+
+        const subjectsParam = params.get('subjects');
+        if (subjectsParam) {
+            const subjectsEl = document.getElementById('lesson-subjects');
+            subjectsEl.textContent = decodeURIComponent(subjectsParam);
+            subjectsEl.style.display = 'block';
         }
 
         // Telegram registration item + button (both hidden when no token)

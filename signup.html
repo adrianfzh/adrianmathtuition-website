@@ -691,7 +691,8 @@
                     window.location.href = '/thankyou.html?name=' + encodeURIComponent(result.data.studentName)
                         + '&date=' + encodeURIComponent(result.data.startDate || '')
                         + '&time=' + encodeURIComponent(savedSlotTime)
-                        + '&token=' + encodeURIComponent(result.data.registrationToken || '');
+                        + '&token=' + encodeURIComponent(result.data.registrationToken || '')
+                        + '&subjects=' + encodeURIComponent(document.getElementById('field-subjects').value || '');
                 } else {
                     formErrEl.textContent    = result.data.error || 'Something went wrong. Please try again or contact Adrian directly via WhatsApp.';
                     formErrEl.style.display  = 'block';
