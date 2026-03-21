@@ -644,6 +644,12 @@
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape' && selectedFile) {
             removeImage();
+            return;
+        }
+        // Enter sends message even if textarea not focused (e.g. after dropping image)
+        if (e.key === 'Enter' && !e.shiftKey && selectedFile && !isLoading) {
+            e.preventDefault();
+            sendMessage();
         }
     });
 
@@ -802,12 +808,14 @@
 
         const input = getActiveInput();
         const text = input.value.trim();
-        const imageDataUrl = selectedFile ? getActivePreviewImg().src : null;
 
         if (!text && !selectedFile) return;
 
-        // Transition to chat mode if first message
+        // Transition to chat mode FIRST so preview img is moved
         startChat();
+
+        // Now capture imageDataUrl from the correct (fixed) preview element
+        const imageDataUrl = selectedFile ? document.getElementById('previewImgFixed').src : null;
 
         // After startChat, fixed input is active
         const fixedInput = document.getElementById('chatInputFixed');
