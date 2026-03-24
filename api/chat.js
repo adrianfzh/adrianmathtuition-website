@@ -96,22 +96,38 @@ module.exports = async function handler(req, res) {
             messages.push({ role: 'user', content: message });
         }
 
-        const response = await client.messages.create({
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+
+        let fullText = '';
+
+        const stream = client.messages.stream({
             model: 'claude-sonnet-4-6',
             max_tokens: 2000,
             system: SYSTEM_PROMPT,
             messages
         });
 
-        const text = response.content
-            .filter(b => b.type === 'text')
-            .map(b => b.text)
-            .join('');
+        for await (const event of stream) {
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+                fullText += event.delta.text;
+                res.write(`data: ${JSON.stringify({ chunk: event.delta.text })}\n\n`);
+            }
+        }
 
-        return res.status(200).json({ response: text });
+        fullText = fullText.replace(/^CONFIDENCE:.*$/m, '').trimEnd();
+
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+        res.end();
 
     } catch (err) {
         console.error('[chat] error:', err.message);
-        return res.status(500).json({ error: 'Failed to get a response. Please try again.' });
+        if (!res.headersSent) {
+            return res.status(500).json({ error: 'Failed to get a response. Please try again.' });
+        }
+        res.write(`data: ${JSON.stringify({ done: true, error: true })}\n\n`);
+        res.end();
     }
 };
