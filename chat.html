@@ -955,6 +955,15 @@
                             scheduleRender(streamDiv, fullText);
                             scrollToBottom();
                         }
+                        if (parsed.graph) {
+                            const img = document.createElement('img');
+                            img.src = parsed.graph;
+                            img.alt = 'Graph';
+                            img.style.cssText = 'max-width:100%;margin-top:12px;border-radius:8px;display:block;';
+                            streamDiv.appendChild(img);
+                            scrollToBottom();
+                            continue;
+                        }
                         if (parsed.done) {
                             if (renderTimer) { cancelAnimationFrame(renderTimer); renderTimer = null; }
                             renderToElement(streamDiv, fullText);
