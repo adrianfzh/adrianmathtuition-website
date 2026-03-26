@@ -955,6 +955,26 @@
                             scheduleRender(streamDiv, fullText);
                             scrollToBottom();
                         }
+                        if (parsed.graphLoading === true) {
+                            const loader = document.createElement('div');
+                            loader.id = 'graphLoader';
+                            loader.style.cssText = 'margin-top:12px;padding:12px;background:rgba(0,0,0,0.03);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:0.9em;color:#666;';
+                            loader.innerHTML = '<span class="graph-spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #ccc;border-top-color:#333;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Generating graph...';
+                            streamDiv.parentElement.appendChild(loader);
+                            if (!document.getElementById('graphSpinnerStyle')) {
+                                const style = document.createElement('style');
+                                style.id = 'graphSpinnerStyle';
+                                style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+                                document.head.appendChild(style);
+                            }
+                            scrollToBottom();
+                            continue;
+                        }
+                        if (parsed.graphLoading === false) {
+                            const loader = document.getElementById('graphLoader');
+                            if (loader) loader.remove();
+                            continue;
+                        }
                         if (parsed.graph) {
                             const img = document.createElement('img');
                             img.src = parsed.graph;
