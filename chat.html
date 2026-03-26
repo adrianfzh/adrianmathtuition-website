@@ -944,6 +944,12 @@
                             showError(parsed.error);
                             return;
                         }
+                        if (parsed.verify) {
+                            fullText = '';
+                            streamDiv.innerHTML = '<em>🔄 Verifying answer...</em>';
+                            scrollToBottom();
+                            continue;
+                        }
                         if (parsed.chunk) {
                             fullText += parsed.chunk;
                             scheduleRender(streamDiv, fullText);
