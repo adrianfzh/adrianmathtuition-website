@@ -889,7 +889,8 @@
         addTyping();
 
         try {
-            const body = { history: conversationHistory };
+            const isTelegramWebview = /Telegram/i.test(navigator.userAgent);
+            const body = { history: conversationHistory, source: isTelegramWebview ? 'telegram-webview' : 'website' };
             if (fileToSend) {
                 body.image = imageDataUrl.split(',')[1];
                 body.mediaType = fileToSend.type;

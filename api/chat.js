@@ -58,7 +58,7 @@ module.exports = async function handler(req, res) {
         return res.status(500).json({ error: 'Service not configured.' });
     }
 
-    const { message, image, mediaType, caption, history = [] } = req.body || {};
+    const { message, image, mediaType, caption, history = [], source = 'website' } = req.body || {};
 
     if (!message && !image) {
         return res.status(400).json({ error: 'No message or image provided.' });
