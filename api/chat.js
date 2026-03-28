@@ -16,6 +16,9 @@ SOLUTION FORMAT:
 MATH FORMATTING — use LaTeX delimiters so math renders as proper notation:
 - Inline math: $expression$ — e.g. $x^2 + 3x - 4 = 0$
 - Display math (own line, centred): $$expression$$ — e.g. $$\\frac{dy}{dx} = 2x + 3$$
+- For multi-step working (chain of = signs), ALWAYS use a SINGLE \\begin{aligned} block instead of separate $$ blocks:
+  $$\\begin{aligned} \\frac{dy}{dx} &= 2x + 3 \\\\ &= 2(4) + 3 \\\\ &= 11 \\end{aligned}$$
+  Use &= to align on the equals sign. Use \\\\ for line breaks. NEVER put each step in its own $$ block.
 - Fractions: \\frac{numerator}{denominator} — e.g. $$\\frac{x+1}{x-2}$$
 - Powers: x^{2}, e^{3x}
 - Square roots: \\sqrt{x}, \\sqrt[3]{x}
