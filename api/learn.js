@@ -7,7 +7,6 @@ module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     return res.status(200).end();
   }
-
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { subject, topic, action, studentAnswer, conversationHistory = [] } = req.body;
@@ -16,8 +15,9 @@ module.exports = async function handler(req, res) {
 
   const client = new Anthropic({ apiKey });
 
-  // Fetch Adrian's notes from Airtable if available
+  // Fetch Adrian's notes AND pre-built visuals from Airtable
   let adrianNotes = '';
+  let visuals = [];
   try {
     const slug = `${topic.toLowerCase().replace(/\s+/g, '-')}-${subject === 'JC' ? 'jc' : 'sec'}`;
     const airtableToken = process.env.AIRTABLE_TOKEN;
@@ -25,17 +25,23 @@ module.exports = async function handler(req, res) {
     if (airtableToken && baseId) {
       const formula = encodeURIComponent(`{Slug}='${slug}'`);
       const resp = await fetch(
-        `https://api.airtable.com/v0/${baseId}/Notes?filterByFormula=${formula}&fields[]=Content`,
+        `https://api.airtable.com/v0/${baseId}/Notes?filterByFormula=${formula}&fields[]=Content&fields[]=Visuals`,
         { headers: { Authorization: `Bearer ${airtableToken}` } }
       );
       const data = await resp.json();
-      adrianNotes = data.records?.[0]?.fields?.Content || '';
+      const record = data.records?.[0]?.fields;
+      adrianNotes = record?.Content || '';
+      try { visuals = JSON.parse(record?.Visuals || '[]'); } catch(e) { visuals = []; }
     }
-  } catch (e) { /* proceed without notes */ }
+  } catch (e) { /* proceed without */ }
 
   const notesContext = adrianNotes
-    ? `\n\nAdrian's teaching notes for this topic (use these as your PRIMARY reference for teaching style, explanations, and approach. Generate similar examples with different numbers):\n${adrianNotes.substring(0, 5000)}`
+    ? `\nAdrian's teaching notes:\n${adrianNotes.substring(0, 5000)}`
     : '';
+
+  const visualRef = visuals.length
+    ? `\nPRE-BUILT VISUALS AVAILABLE (embed by ID):\n${visuals.map(v => `[${v.id}] ${v.type}: "${v.title}" (concept ${v.concept})`).join('\n')}\n\nTo embed a visual, write on its own line: [VISUAL:id]\nExample: [VISUAL:v1] inserts the Desmos graph or SVG stored for that ID.\nAlways embed at least one visual per concept when available.`
+    : '\nNo pre-built visuals available. Use [STEPS] blocks for worked examples.';
 
   const subjectLabel = subject === 'AM' ? 'O-Level Additional Mathematics'
     : subject === 'EM' ? 'O-Level Elementary Mathematics'
@@ -51,39 +57,49 @@ TEACHING STYLE:
 - For multi-step working, use $$\\begin{aligned} ... \\end{aligned}$$
 - Be warm and encouraging. Praise correct answers. When wrong, explain gently.
 
+VISUAL ELEMENTS:
+Embed pre-built visuals using [VISUAL:id] on its own line.
+If no pre-built visual fits, create a [STEPS] block:
+[STEPS]
+Step: description
+$$math$$
+---
+Step: description
+$$math$$
+[/STEPS]
+
+${visualRef}
+
 ACTION RESPONSES:
-- "start": Briefly introduce the topic (1-2 sentences), then teach the first concept. End with a check question.
-- "answer": Evaluate the student's answer. If correct, praise and move to the next concept + new check question. If wrong, explain the mistake kindly, show the correct approach, then move on.
-- "next": Student wants to skip. Move to the next concept + check question.
-- "hint": Give a helpful hint for the current check question without giving the answer.
-- "example": Show a fully worked example for the current concept.
-- "practice": Give a practice question (just the question and answer, no full solution). The student can ask for hints or the solution separately.
-- "solution": Show the full solution for the most recent practice question.
-- "more": Give another similar practice question.
+- "start": Introduce topic briefly, teach first concept with visuals, end with check question.
+- "answer": Evaluate. Correct → praise + next concept. Wrong → explain gently, move on.
+- "next": Skip to next concept + check question.
+- "hint": Helpful hint without giving the answer.
+- "example": Worked example using [VISUAL:id] or [STEPS].
+- "practice": Practice question (answer only, no full solution).
+- "solution": Full solution for last practice question using [STEPS].
+- "more": Another similar practice question.
 
 RULES:
-- Do NOT number steps like "Step 1 of 5" or "Concept 2/4". Let it flow naturally.
-- Singapore syllabus methods only. No methods outside the syllabus.
-- Keep each response focused — one concept at a time, don't overwhelm.
-- When there are no more concepts to teach, offer practice questions instead of ending.
+- Do NOT number steps like "Step 1 of 5". Let it flow naturally.
+- Singapore syllabus methods only.
+- One concept at a time.
+- When no more concepts, offer practice.
 
-At the very end of EVERY response, on its own line, output exactly:
+End EVERY response with exactly this line:
 |||STATUS:{"hasMore":true/false,"questionActive":true/false}|||
-- hasMore: true if there are more concepts to teach
-- questionActive: true if you asked a question and are waiting for an answer
-This line will be parsed by the frontend and hidden from the student.
 ${notesContext}`;
 
   const messages = [...conversationHistory];
   const actionMessages = {
     'start': 'Start the lesson. Teach me the first concept.',
     'answer': studentAnswer || '',
-    'next': 'Skip this question. Teach me the next concept.',
-    'hint': 'Give me a hint for this question.',
-    'example': 'Show me a worked example for this concept.',
-    'practice': 'Give me a practice question. Just the question and answer, not the full solution.',
-    'solution': 'Show me the full solution for that practice question.',
-    'more': 'Give me another similar practice question.'
+    'next': 'Skip. Teach me the next concept.',
+    'hint': 'Give me a hint.',
+    'example': 'Show me a worked example.',
+    'practice': 'Give me a practice question.',
+    'solution': 'Show me the full solution.',
+    'more': 'Give me another similar question.'
   };
   messages.push({ role: 'user', content: actionMessages[action] || action });
 
@@ -91,10 +107,11 @@ ${notesContext}`;
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   try {
+    // Send visuals data as first SSE event so frontend can resolve [VISUAL:id] references
+    res.write(`data: ${JSON.stringify({ visuals })}\n\n`);
+
     const stream = client.messages.stream({
       model: 'claude-sonnet-4-6',
       max_tokens: 1500,
