@@ -37,24 +37,22 @@
 <body>
     <div class="header">
         <h1>O-Level A-Math Formula Sheet</h1>
-        <a href="https://www.seab.gov.sg/docs/default-source/national-examinations/syllabus/olevel/2025syllabus/4049_y25_sy.pdf" target="_blank">⬇ Download</a>
+        <a href="/pdfs/amath-syllabus.pdf" target="_blank">⬇ Download</a>
     </div>
     <div class="pdf-container">
-        <iframe src="https://www.seab.gov.sg/docs/default-source/national-examinations/syllabus/olevel/2025syllabus/4049_y25_sy.pdf" id="pdfFrame"></iframe>
+        <iframe src="/pdfs/amath-syllabus.pdf" id="pdfFrame"></iframe>
         <div class="fallback" id="fallback">
             <p>PDF viewer not available in this browser.</p>
-            <p style="margin-top: 4px; font-size: 13px; color: #888;">Tip: the formula list is at the end of the PDF.</p>
-            <a href="https://www.seab.gov.sg/docs/default-source/national-examinations/syllabus/olevel/2025syllabus/4049_y25_sy.pdf">Open Formula Sheet PDF</a>
+            <a href="/pdfs/amath-syllabus.pdf">Open Formula Sheet PDF</a>
         </div>
     </div>
     <script>
+        if (/iPhone|iPad|Android/i.test(navigator.userAgent)) {
+            window.location.href = '/pdfs/amath-syllabus.pdf';
+        }
         const frame = document.getElementById('pdfFrame');
         const fallback = document.getElementById('fallback');
         frame.onerror = () => { frame.style.display = 'none'; fallback.style.display = 'flex'; };
-        if (/iPhone|iPad|Android/i.test(navigator.userAgent)) {
-            frame.style.display = 'none';
-            fallback.style.display = 'flex';
-        }
     </script>
 </body>
 </html>
