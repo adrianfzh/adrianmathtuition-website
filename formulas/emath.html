@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O-Level E-Math Formula Sheet — Adrian's Math Tuition</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100dvh; display: flex; flex-direction: column; }
+        .header {
+            padding: 10px 16px;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .header h1 { font-size: 15px; font-weight: 600; }
+        .header a { color: #ffd700; font-size: 13px; text-decoration: none; }
+        .pdf-container { flex: 1; position: relative; }
+        .pdf-container iframe { width: 100%; height: 100%; border: none; }
+        .fallback {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: none; justify-content: center; align-items: center;
+            flex-direction: column; gap: 16px; padding: 24px; text-align: center;
+        }
+        .fallback p { color: #555; font-size: 15px; }
+        .fallback a {
+            display: inline-block; padding: 14px 28px;
+            background: #1a1a2e; color: #ffd700;
+            border-radius: 8px; text-decoration: none;
+            font-size: 16px; font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>O-Level E-Math Formula Sheet</h1>
+        <a href="https://www.seab.gov.sg/docs/default-source/national-examinations/syllabus/olevel/2025syllabus/4048_y25_sy.pdf" target="_blank">⬇ Download</a>
+    </div>
+    <div class="pdf-container">
+        <iframe src="https://www.seab.gov.sg/docs/default-source/national-examinations/syllabus/olevel/2025syllabus/4048_y25_sy.pdf" id="pdfFrame"></iframe>
+        <div class="fallback" id="fallback">
+            <p>PDF viewer not available in this browser.</p>
+            <p style="margin-top: 4px; font-size: 13px; color: #888;">Tip: the formula list is at the end of the PDF.</p>
+            <a href="https://www.seab.gov.sg/docs/default-source/national-examinations/syllabus/olevel/2025syllabus/4048_y25_sy.pdf">Open Formula Sheet PDF</a>
+        </div>
+    </div>
+    <script>
+        const frame = document.getElementById('pdfFrame');
+        const fallback = document.getElementById('fallback');
+        frame.onerror = () => { frame.style.display = 'none'; fallback.style.display = 'flex'; };
+        if (/iPhone|iPad|Android/i.test(navigator.userAgent)) {
+            frame.style.display = 'none';
+            fallback.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

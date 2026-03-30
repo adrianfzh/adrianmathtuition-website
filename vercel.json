@@ -16,7 +16,10 @@
     { "src": "o-level-a-math-tuition.html", "use": "@vercel/static" },
     { "src": "jc-h2-math-tuition.html", "use": "@vercel/static" },
     { "src": "secondary-math-tuition.html", "use": "@vercel/static" },
-    { "src": "llms.txt", "use": "@vercel/static" }
+    { "src": "llms.txt", "use": "@vercel/static" },
+    { "src": "formulas/mf27.html", "use": "@vercel/static" },
+    { "src": "formulas/amath.html", "use": "@vercel/static" },
+    { "src": "formulas/emath.html", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/schedule",     "dest": "/api/schedule.js"    },
@@ -39,6 +42,9 @@
     { "src": "/jc-h2-math-tuition", "dest": "/jc-h2-math-tuition.html" },
     { "src": "/secondary-math-tuition", "dest": "/secondary-math-tuition.html" },
     { "src": "/llms.txt", "dest": "/llms.txt" },
+    { "src": "/formulas/mf27", "dest": "/formulas/mf27.html" },
+    { "src": "/formulas/amath", "dest": "/formulas/amath.html" },
+    { "src": "/formulas/emath", "dest": "/formulas/emath.html" },
     { "src": "/(.*)",             "dest": "/$1"                 }
   ],
   "headers": [
