@@ -298,6 +298,19 @@
 
         .btn-secondary:disabled { opacity: 0.35; cursor: not-allowed; }
 
+        /* ── NAV ROW (back/forward between sections) ── */
+        .nav-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-row .btn-secondary {
+            flex: 1;
+            justify-content: center;
+            padding: 10px 14px;
+            font-size: 15px;
+        }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 600px) {
             .lesson-inner { padding: 16px 16px 8px; }
@@ -347,6 +360,32 @@
     let isLoading = false;
     let lessonStatus = { hasMore: true, questionActive: false };
     let practiceMode = false;
+
+    // ── SECTION HISTORY ──
+    // Each section: { html: string (innerHTML snapshot), status, practiceMode }
+    const lessonSections = [];
+    let currentSectionIndex = -1;
+
+    function saveSection() {
+        const html = document.getElementById('messagesInner').innerHTML;
+        lessonSections.push({ html, status: { ...lessonStatus }, practiceMode });
+        currentSectionIndex = lessonSections.length - 1;
+    }
+
+    function goToSection(index) {
+        if (index < 0 || index >= lessonSections.length) return;
+        currentSectionIndex = index;
+        const section = lessonSections[index];
+        document.getElementById('messagesInner').innerHTML = section.html;
+        lessonStatus = { ...section.status };
+        practiceMode = section.practiceMode;
+        scrollToBottom();
+        updateActionButtons();
+    }
+
+    function isAtLatestSection() {
+        return currentSectionIndex === lessonSections.length - 1;
+    }
 
     // ── RENDER MATH ──
     function renderToElement(el, text) {
@@ -478,7 +517,6 @@
                         const parsed = JSON.parse(line.slice(6));
                         if (parsed.chunk) {
                             fullText += parsed.chunk;
-                            // Live render during streaming (throttled)
                             if (!renderTimer) {
                                 renderTimer = requestAnimationFrame(() => {
                                     renderTimer = null;
@@ -491,14 +529,14 @@
                 }
             }
 
-            // Final render after streaming completes
+            // Final render
             const status = extractStatus(fullText);
             if (status) lessonStatus = status;
             const cleanText = stripStatus(fullText);
             renderToElement(streamDiv, cleanText);
             scrollToBottom();
 
-            // Determine action message for history
+            // Update conversation history
             const actionMessages = {
                 'start': 'Start the lesson. Teach me the first concept.',
                 'next': 'Skip this question. Teach me the next concept.',
@@ -509,15 +547,14 @@
                 'more': 'Give me another similar practice question.'
             };
             const userContent = action === 'answer' ? (studentAnswer || '') : (actionMessages[action] || action);
-
             conversationHistory.push({ role: 'user', content: userContent });
             conversationHistory.push({ role: 'assistant', content: cleanText });
-
-            // Trim to max 20 messages
             if (conversationHistory.length > 20) {
                 conversationHistory = conversationHistory.slice(conversationHistory.length - 20);
             }
 
+            // Save this as a new section
+            saveSection();
             updateActionButtons();
 
         } catch(err) {
@@ -549,28 +586,45 @@
         const wrapper = document.getElementById('actionWrapper');
         wrapper.innerHTML = '';
 
+        const hasPrev = currentSectionIndex > 0;
+        const hasNext = currentSectionIndex < lessonSections.length - 1;
+
+        // If browsing a previously-visited section, show prev/next nav only
+        if (!isAtLatestSection()) {
+            const row = document.createElement('div');
+            row.className = 'nav-row';
+            if (hasPrev) {
+                row.appendChild(buildSecondaryBtn('← Previous', () => goToSection(currentSectionIndex - 1)));
+            }
+            if (hasNext) {
+                row.appendChild(buildSecondaryBtn('Next →', () => goToSection(currentSectionIndex + 1)));
+            }
+            wrapper.appendChild(row);
+            return;
+        }
+
+        // At the latest section — show normal action buttons
         if (lessonStatus.questionActive && !practiceMode) {
-            // Waiting for answer to a check question
             wrapper.appendChild(buildAnswerRow('Your answer…', 'answer'));
             const secondary = document.createElement('div');
             secondary.className = 'secondary-btns';
+            if (hasPrev) secondary.appendChild(buildSecondaryBtn('← Previous', () => goToSection(currentSectionIndex - 1)));
             secondary.appendChild(buildSecondaryBtn('💡 Hint', () => callLearn({ action: 'hint', userLabel: 'Give me a hint' })));
             secondary.appendChild(buildSecondaryBtn('⏭ Skip', () => callLearn({ action: 'next', userLabel: 'Skip — show me the next concept' })));
             secondary.appendChild(buildSecondaryBtn('📖 Example', () => callLearn({ action: 'example', userLabel: 'Show me an example' })));
             wrapper.appendChild(secondary);
 
         } else if (practiceMode) {
-            // Practice mode
             wrapper.appendChild(buildAnswerRow('Your answer…', 'answer'));
             const secondary = document.createElement('div');
             secondary.className = 'secondary-btns';
+            if (hasPrev) secondary.appendChild(buildSecondaryBtn('← Previous', () => goToSection(currentSectionIndex - 1)));
             secondary.appendChild(buildSecondaryBtn('💡 Hint', () => callLearn({ action: 'hint', userLabel: 'Give me a hint' })));
             secondary.appendChild(buildSecondaryBtn('✅ Full Solution', () => callLearn({ action: 'solution', userLabel: 'Show full solution' })));
             secondary.appendChild(buildSecondaryBtn('🔁 Another', () => callLearn({ action: 'more', userLabel: 'Give me another question' })));
             wrapper.appendChild(secondary);
 
         } else if (lessonStatus.hasMore) {
-            // Mid-lesson, no active question
             const btn = document.createElement('button');
             btn.className = 'btn-primary full-width';
             btn.innerHTML = 'Continue →';
@@ -578,12 +632,12 @@
             wrapper.appendChild(btn);
             const secondary = document.createElement('div');
             secondary.className = 'secondary-btns';
+            if (hasPrev) secondary.appendChild(buildSecondaryBtn('← Previous', () => goToSection(currentSectionIndex - 1)));
             secondary.appendChild(buildSecondaryBtn('🏋️ Practice', () => { practiceMode = true; callLearn({ action: 'practice', userLabel: 'Give me a practice question' }); }));
             secondary.appendChild(buildSecondaryBtn('📖 Example', () => callLearn({ action: 'example', userLabel: 'Show me an example' })));
             wrapper.appendChild(secondary);
 
         } else {
-            // Lesson complete — practice mode
             const btn = document.createElement('button');
             btn.className = 'btn-primary full-width';
             btn.innerHTML = '🏋️ Practice Question';
@@ -591,10 +645,13 @@
             wrapper.appendChild(btn);
             const secondary = document.createElement('div');
             secondary.className = 'secondary-btns';
+            if (hasPrev) secondary.appendChild(buildSecondaryBtn('← Previous', () => goToSection(currentSectionIndex - 1)));
             secondary.appendChild(buildSecondaryBtn('🔄 Start Over', () => {
                 conversationHistory = [];
                 lessonStatus = { hasMore: true, questionActive: false };
                 practiceMode = false;
+                lessonSections.length = 0;
+                currentSectionIndex = -1;
                 document.getElementById('messagesInner').innerHTML = '';
                 callLearn({ action: 'start' });
             }));
@@ -623,13 +680,12 @@
 
         const btn = document.createElement('button');
         btn.className = 'btn-primary';
-        btn.innerHTML = action === 'answer' ? 'Submit' : 'Send';
+        btn.innerHTML = 'Submit';
         btn.onclick = () => submitAnswer(ta, action);
 
         row.appendChild(ta);
         row.appendChild(btn);
 
-        // Focus after render
         requestAnimationFrame(() => ta.focus());
         return row;
     }
