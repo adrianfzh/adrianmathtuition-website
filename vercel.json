@@ -20,7 +20,9 @@
     { "src": "formulas/mf27.html", "use": "@vercel/static" },
     { "src": "formulas/amath.html", "use": "@vercel/static" },
     { "src": "formulas/emath.html", "use": "@vercel/static" },
-    { "src": "pdfs/(.*)", "use": "@vercel/static" }
+    { "src": "pdfs/mf27.pdf", "use": "@vercel/static" },
+    { "src": "pdfs/amath-syllabus.pdf", "use": "@vercel/static" },
+    { "src": "pdfs/emath-syllabus.pdf", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/schedule",     "dest": "/api/schedule.js"    },
