@@ -19,7 +19,8 @@
     { "src": "llms.txt", "use": "@vercel/static" },
     { "src": "formulas/mf27.html", "use": "@vercel/static" },
     { "src": "formulas/amath.html", "use": "@vercel/static" },
-    { "src": "formulas/emath.html", "use": "@vercel/static" }
+    { "src": "formulas/emath.html", "use": "@vercel/static" },
+    { "src": "pdfs/(.*)", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/schedule",     "dest": "/api/schedule.js"    },
@@ -45,6 +46,7 @@
     { "src": "/formulas/mf27", "dest": "/formulas/mf27.html" },
     { "src": "/formulas/amath", "dest": "/formulas/amath.html" },
     { "src": "/formulas/emath", "dest": "/formulas/emath.html" },
+    { "src": "/pdfs/(.*)", "dest": "/pdfs/$1" },
     { "src": "/(.*)",             "dest": "/$1"                 }
   ],
   "headers": [

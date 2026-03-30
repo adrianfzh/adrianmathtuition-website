@@ -37,23 +37,22 @@
 <body>
     <div class="header">
         <h1>A-Level Formula Sheet (MF27)</h1>
-        <a href="https://www.seab.gov.sg/files/A%20Level%20Syllabus%20Sch%20Cddts/2025/SEAB_Mathematics_MF27__2025__.pdf" target="_blank">⬇ Download</a>
+        <a href="/pdfs/mf27.pdf" target="_blank">⬇ Download</a>
     </div>
     <div class="pdf-container">
-        <iframe src="https://www.seab.gov.sg/files/A%20Level%20Syllabus%20Sch%20Cddts/2025/SEAB_Mathematics_MF27__2025__.pdf" id="pdfFrame"></iframe>
+        <iframe src="/pdfs/mf27.pdf" id="pdfFrame"></iframe>
         <div class="fallback" id="fallback">
             <p>PDF viewer not available in this browser.</p>
-            <a href="https://www.seab.gov.sg/files/A%20Level%20Syllabus%20Sch%20Cddts/2025/SEAB_Mathematics_MF27__2025__.pdf">Open Formula Sheet PDF</a>
+            <a href="/pdfs/mf27.pdf">Open Formula Sheet PDF</a>
         </div>
     </div>
     <script>
+        if (/iPhone|iPad|Android/i.test(navigator.userAgent)) {
+            window.location.href = '/pdfs/mf27.pdf';
+        }
         const frame = document.getElementById('pdfFrame');
         const fallback = document.getElementById('fallback');
         frame.onerror = () => { frame.style.display = 'none'; fallback.style.display = 'flex'; };
-        if (/iPhone|iPad|Android/i.test(navigator.userAgent)) {
-            frame.style.display = 'none';
-            fallback.style.display = 'flex';
-        }
     </script>
 </body>
 </html>
