@@ -63,7 +63,7 @@ module.exports = async function handler(req, res) {
         try { subtopics = JSON.parse(record.Subtopics || '[]'); } catch(e) {}
         try { visuals = JSON.parse(record.Visuals || '[]'); } catch(e) {}
 
-        res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60');
+        res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=10');
         return res.json({
           content: record.Content || '',
           generatedContent: record['Generated Content'] || '',
