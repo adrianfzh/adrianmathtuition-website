@@ -80,6 +80,8 @@ module.exports = async function handler(req, res) {
 
   // POST: admin save (password-protected)
   if (req.method === 'POST') {
+    console.log('[notes POST] query:', JSON.stringify(req.query));
+    console.log('[notes POST] body keys:', Object.keys(body));
     if (password !== (process.env.ADMIN_PASSWORD || '').trim()) return res.status(401).json({ error: 'Unauthorized' });
     // slug/topic/level come from query params; content from body (may be large)
     const slug    = req.query.slug  || body.slug;
@@ -87,7 +89,8 @@ module.exports = async function handler(req, res) {
     const level   = req.query.level || body.level;
     const content = body.content ?? req.query.content ?? '';
     const subtopics = body.subtopics;
-    if (!slug || !topic || !level) return res.status(400).json({ error: 'slug, topic, level required' });
+    console.log('[notes POST] slug:', slug, 'topic:', topic, 'level:', level);
+    if (!slug || !topic || !level) return res.status(400).json({ error: 'slug, topic, level required', received: { slug, topic, level, queryKeys: Object.keys(req.query) } });
 
     const formula = encodeURIComponent(`{Slug}='${slug}'`);
     const existing = await airtableFetch(`?filterByFormula=${formula}`);
