@@ -387,6 +387,43 @@
 
         .btn-start:hover { opacity: 0.88; }
 
+        /* ── SUBTOPIC PICKER ── */
+        .subtopic-picker {
+            display: none;
+            text-align: center;
+            padding: 0 0 4px;
+        }
+
+        .subtopic-picker h2 {
+            font-family: var(--font-display);
+            font-size: 18px;
+            color: var(--foreground);
+            margin-bottom: 12px;
+        }
+
+        .subtopic-select {
+            width: 100%;
+            max-width: 400px;
+            padding: 11px 40px 11px 14px;
+            font-size: 15px;
+            font-family: var(--font);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            background: var(--card);
+            color: var(--foreground);
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23666' stroke-width='1.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            outline: none;
+            transition: border-color 0.15s;
+            display: block;
+            margin: 0 auto 12px;
+        }
+
+        .subtopic-select:focus { border-color: var(--primary); }
+
         @media (max-width: 600px) {
             .lesson-inner { padding: 16px 16px 8px; }
             .action-area { padding: 10px 16px 14px; }
@@ -419,8 +456,14 @@
                 <div class="start-topic" id="startTopic"></div>
                 <div class="start-subject" id="startSubject"></div>
             </div>
-            <button class="btn-start" id="startBtn" onclick="startLesson()">
-                Start Lesson →
+            <div class="subtopic-picker" id="subtopicPicker">
+                <h2>What would you like to learn?</h2>
+                <select class="subtopic-select" id="subtopicSelect">
+                    <option value="">Start from the beginning</option>
+                </select>
+            </div>
+            <button class="btn-start" id="startBtn" onclick="startLesson()" disabled>
+                Loading…
             </button>
         </div>
         <div id="messagesInner"></div>
@@ -444,17 +487,53 @@
     document.getElementById('startTopic').textContent = topic;
     document.getElementById('startSubject').textContent = subjectLabel;
 
+    // Load subtopics and visuals metadata before showing Start button
+    (async function loadMeta() {
+        try {
+            const resp = await fetch('/api/learn', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject, topic, action: 'init' })
+            });
+            if (resp.ok) {
+                const meta = await resp.json();
+                // Pre-load visuals map
+                (meta.visuals || []).forEach(v => { visualsMap[v.id] = v; });
+                // Build subtopic dropdown if subtopics exist
+                const subtopics = meta.subtopics || [];
+                if (subtopics.length > 0) {
+                    const select = document.getElementById('subtopicSelect');
+                    subtopics.forEach(st => {
+                        const opt = document.createElement('option');
+                        opt.value = st;
+                        opt.textContent = st;
+                        select.appendChild(opt);
+                    });
+                    document.getElementById('subtopicPicker').style.display = 'block';
+                }
+            }
+        } catch(e) { /* proceed without metadata */ }
+        // Enable start button regardless
+        const btn = document.getElementById('startBtn');
+        btn.textContent = 'Start Lesson →';
+        btn.disabled = false;
+    })();
+
     function startLesson() {
+        const subtopic = document.getElementById('subtopicSelect').value;
         document.getElementById('startScreen').style.display = 'none';
         document.getElementById('actionArea').style.display = '';
-        callLearn({ action: 'start' });
+        const startMessage = subtopic
+            ? `Start the lesson focusing on: ${subtopic}. Skip other sub-topics.`
+            : 'Start the lesson. Teach me the first concept.';
+        callLearn({ action: 'start', _startMessage: startMessage });
     }
 
     let conversationHistory = [];
     let isLoading = false;
     let lessonStatus = { hasMore: true, questionActive: false };
     let practiceMode = false;
-    let visualsMap = {}; // id → visual object, populated from first SSE event
+    let visualsMap = {}; // id → visual object, pre-loaded by init or first SSE event
 
     // ── SECTION HISTORY ──
     // Each entry: { userLabel, aiText, status, practiceMode }
@@ -722,7 +801,7 @@
     }
 
     // ── CALL API ──
-    async function callLearn({ action, studentAnswer, userLabel }) {
+    async function callLearn({ action, studentAnswer, userLabel, _startMessage }) {
         if (isLoading) return;
         isLoading = true;
         setActionsDisabled(true);
@@ -736,7 +815,7 @@
             const res = await fetch('/api/learn', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subject, topic, action, studentAnswer, conversationHistory })
+                body: JSON.stringify({ subject, topic, action, studentAnswer, conversationHistory, _startMessage })
             });
 
             if (!res.ok) {
@@ -750,7 +829,6 @@
             const reader = res.body.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
-            let visualsReceived = false;
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -762,11 +840,11 @@
                     if (!line.startsWith('data: ')) continue;
                     try {
                         const parsed = JSON.parse(line.slice(6));
-                        if (!visualsReceived && parsed.visuals) {
-                            // First event: load visuals map
-                            visualsReceived = true;
+                        // Load visuals/subtopics from metadata event (non-exclusive with chunk)
+                        if (parsed.visuals) {
                             parsed.visuals.forEach(v => { visualsMap[v.id] = v; });
-                        } else if (parsed.chunk) {
+                        }
+                        if (parsed.chunk) {
                             fullText += parsed.chunk;
                         }
                     } catch(e) {}
@@ -803,10 +881,11 @@
 
         // Update history
         const actionMessages = {
-            'start': 'Start the lesson. Teach me the first concept.',
+            'start': _startMessage || 'Start the lesson. Teach me the first concept.',
             'next': 'Skip. Teach me the next concept.',
             'hint': 'Give me a hint.',
             'example': 'Show me a worked example.',
+            'explain': 'Explain this concept in more depth. Why does it work? What is the theory behind it?',
             'practice': 'Give me a practice question.',
             'solution': 'Show me the full solution.',
             'more': 'Give me another similar question.'
