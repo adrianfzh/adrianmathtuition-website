@@ -1030,10 +1030,10 @@ async function saveNotes() {
     btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0"/></svg> Saving…`;
 
     try {
-        const result = await apiFetch(`/api/notes?password=${encodeURIComponent(password)}`, {
-            method: 'POST',
-            body: { password, slug, topic, level, content }
-        });
+        const result = await apiFetch(
+            `/api/notes?password=${encodeURIComponent(password)}&slug=${encodeURIComponent(slug)}&topic=${encodeURIComponent(topic)}&level=${encodeURIComponent(level)}`,
+            { method: 'POST', body: { content } }
+        );
 
         // Update slug display
         document.getElementById('metaSlug').textContent = slug;

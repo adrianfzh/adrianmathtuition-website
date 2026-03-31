@@ -81,7 +81,12 @@ module.exports = async function handler(req, res) {
   // POST: admin save (password-protected)
   if (req.method === 'POST') {
     if (password !== (process.env.ADMIN_PASSWORD || '').trim()) return res.status(401).json({ error: 'Unauthorized' });
-    const { slug, topic, level, content, subtopics } = body;
+    // slug/topic/level come from query params; content from body (may be large)
+    const slug    = req.query.slug  || body.slug;
+    const topic   = req.query.topic || body.topic;
+    const level   = req.query.level || body.level;
+    const content = body.content ?? req.query.content ?? '';
+    const subtopics = body.subtopics;
     if (!slug || !topic || !level) return res.status(400).json({ error: 'slug, topic, level required' });
 
     const formula = encodeURIComponent(`{Slug}='${slug}'`);
