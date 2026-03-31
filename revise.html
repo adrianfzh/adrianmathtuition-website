@@ -24,18 +24,21 @@
             --amber: hsl(45, 90%, 55%);
             --amber-light: hsl(45, 90%, 92%);
             --amber-dark: hsl(40, 80%, 42%);
+            --example-bg: hsl(220, 40%, 97%);
+            --example-border: hsl(220, 60%, 20%);
+            --step-blue: #2563eb;
             --radius: 0.75rem;
             --font: 'DM Sans', sans-serif;
             --font-display: 'DM Serif Display', serif;
         }
 
         html, body {
-            height: 100%;
             font-family: var(--font);
             background: var(--background);
             color: var(--foreground);
             font-size: 17px;
             line-height: 1.75;
+            height: 100%;
         }
 
         /* ── TOP NAV ── */
@@ -43,14 +46,16 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: hsla(0, 0%, 100%, 0.9);
+            background: hsla(0, 0%, 100%, 0.92);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
-            height: 52px;
+            height: 56px;
             display: flex;
             align-items: center;
-            padding: 0 16px;
-            gap: 10px;
+            padding: 0 20px;
+            gap: 12px;
+            flex-shrink: 0;
         }
 
         .back-link {
@@ -60,25 +65,29 @@
             text-decoration: none;
             flex-shrink: 0;
             transition: color 0.15s;
+            padding: 4px;
+            margin: -4px;
+            border-radius: 6px;
         }
-
         .back-link:hover { color: var(--primary); }
 
         .nav-topic {
             font-family: var(--font-display);
-            font-size: 16px;
+            font-size: 17px;
             color: var(--primary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             flex: 1;
+            min-width: 0;
         }
 
-        .nav-subject {
+        .nav-badge {
             font-size: 12px;
+            font-weight: 500;
             color: var(--muted-foreground);
             background: var(--muted);
-            padding: 2px 8px;
+            padding: 3px 9px;
             border-radius: 20px;
             white-space: nowrap;
             flex-shrink: 0;
@@ -86,6 +95,9 @@
 
         /* ── MOBILE: TAB BAR ── */
         .tab-bar {
+            position: sticky;
+            top: 56px;
+            z-index: 90;
             display: flex;
             overflow-x: auto;
             gap: 8px;
@@ -94,13 +106,13 @@
             background: var(--card);
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
+            flex-shrink: 0;
         }
-
         .tab-bar::-webkit-scrollbar { display: none; }
 
-        .tab-item {
+        .tab-pill {
             flex-shrink: 0;
-            padding: 7px 14px;
+            padding: 7px 15px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
@@ -110,30 +122,28 @@
             white-space: nowrap;
             transition: all 0.12s;
             color: var(--foreground);
+            font-family: var(--font);
         }
-
-        .tab-item:hover { border-color: var(--primary); color: var(--primary); }
-
-        .tab-item.active {
+        .tab-pill:hover { border-color: var(--primary); color: var(--primary); }
+        .tab-pill.active {
             background: var(--primary);
             color: var(--primary-foreground);
             border-color: var(--primary);
         }
+        .tab-pill.practice-tab { border-color: var(--amber); color: var(--amber-dark); }
+        .tab-pill.practice-tab.active { background: var(--amber-dark); border-color: var(--amber-dark); color: white; }
+        .tab-pill.syllabus-tab { opacity: 0.75; }
 
-        /* ── MAIN CONTENT ── */
-        .content-area {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 28px 16px 60px;
-        }
-
-        /* ── DESKTOP: SIDEBAR ── */
-        .sidebar { display: none; }
-
+        /* ── DESKTOP: SIDEBAR + MAIN ── */
         @media (min-width: 768px) {
-            .tab-bar { display: none; }
+            html, body { height: 100dvh; overflow: hidden; }
 
-            body { display: flex; flex-direction: column; height: 100dvh; }
+            body {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .tab-bar { display: none; }
 
             .page-body {
                 display: flex;
@@ -142,41 +152,50 @@
             }
 
             .sidebar {
-                display: flex;
-                flex-direction: column;
-                width: 256px;
+                width: 280px;
                 flex-shrink: 0;
                 border-right: 1px solid var(--border);
                 background: var(--card);
+                display: flex;
+                flex-direction: column;
                 overflow-y: auto;
-                padding: 24px 16px;
-                gap: 4px;
+                scrollbar-width: thin;
+                scrollbar-color: var(--border) transparent;
             }
 
             .sidebar-header {
-                margin-bottom: 16px;
-                padding-bottom: 16px;
+                padding: 24px 20px 20px;
                 border-bottom: 1px solid var(--border);
+                flex-shrink: 0;
             }
 
             .sidebar-topic {
                 font-family: var(--font-display);
-                font-size: 18px;
+                font-size: 19px;
                 color: var(--primary);
                 line-height: 1.3;
-                margin-bottom: 6px;
+                margin-bottom: 8px;
             }
 
-            .sidebar-subject {
+            .sidebar-badge {
                 font-size: 12px;
+                font-weight: 500;
                 color: var(--muted-foreground);
                 background: var(--muted);
-                padding: 2px 8px;
+                padding: 3px 9px;
                 border-radius: 20px;
                 display: inline-block;
             }
 
-            .section-item {
+            .sidebar-nav {
+                padding: 12px 12px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                flex: 1;
+            }
+
+            .sidebar-item {
                 padding: 9px 12px;
                 border-radius: 8px;
                 cursor: pointer;
@@ -185,16 +204,21 @@
                 color: var(--foreground);
                 transition: all 0.12s;
                 line-height: 1.4;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
+            .sidebar-item:hover:not(.active) { background: var(--muted); color: var(--primary); }
+            .sidebar-item.active { background: var(--primary); color: var(--primary-foreground); }
+            .sidebar-item.practice-item { color: var(--amber-dark); }
+            .sidebar-item.practice-item:hover:not(.active) { background: var(--amber-light); }
+            .sidebar-item.practice-item.active { background: var(--amber-dark); color: white; }
+            .sidebar-item.syllabus-item { opacity: 0.7; font-size: 13px; }
 
-            .section-item:hover:not(.active) {
-                background: var(--muted);
-                color: var(--primary);
-            }
-
-            .section-item.active {
-                background: var(--primary);
-                color: var(--primary-foreground);
+            .sidebar-divider {
+                height: 1px;
+                background: var(--border);
+                margin: 8px 12px;
             }
 
             .content-scroll {
@@ -203,413 +227,591 @@
                 scrollbar-width: thin;
                 scrollbar-color: var(--border) transparent;
             }
+        }
 
+        /* ── CONTENT AREA ── */
+        .content-area {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 32px 24px 72px;
+        }
+
+        @media (min-width: 768px) {
             .content-area {
-                padding: 32px 40px 60px;
-                max-width: 760px;
+                padding: 36px 48px 80px;
             }
         }
 
-        /* ── CONTENT TYPOGRAPHY ── */
-        .content-area h1 {
+        /* ── TYPOGRAPHY ── */
+        .content-area .section-title {
             font-family: var(--font-display);
-            font-size: 1.75rem;
+            font-size: 1.9rem;
             color: var(--primary);
-            margin-bottom: 20px;
-            line-height: 1.25;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .content-area .section-subtitle {
+            font-size: 14px;
+            color: var(--muted-foreground);
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
         }
 
         .content-area h2 {
             font-family: var(--font-display);
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             color: var(--primary);
-            margin: 28px 0 12px;
+            margin: 32px 0 12px;
         }
 
         .content-area h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--foreground);
-            margin: 20px 0 8px;
+            font-size: 13px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-size: 12px;
+            letter-spacing: 0.07em;
             color: var(--amber-dark);
+            margin: 24px 0 10px;
         }
 
         .content-area p {
             margin-bottom: 14px;
+            line-height: 1.8;
         }
 
         .content-area ul, .content-area ol {
-            margin: 0 0 14px 20px;
+            margin: 0 0 16px 22px;
         }
-
-        .content-area li { margin-bottom: 6px; }
+        .content-area li { margin-bottom: 6px; line-height: 1.75; }
 
         .content-area strong { font-weight: 600; }
+        .content-area em { font-style: italic; }
 
-        /* KaTeX */
+        .content-area hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 28px 0;
+        }
+
         .content-area .katex { font-size: 1.05em; }
-        .content-area .katex-display { margin: 16px 0; overflow-x: auto; }
+        .content-area .katex-display { margin: 18px 0; overflow-x: auto; }
 
-        /* Example cards */
+        /* ── EXAMPLE CARDS ── */
         .example-card {
-            background: hsl(220, 40%, 98%);
-            border-left: 3px solid var(--primary);
-            border-radius: 0 8px 8px 0;
-            padding: 14px 16px;
-            margin: 16px 0;
-        }
-
-        .example-label {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-
-        /* Practice callout */
-        .practice-card {
-            background: var(--amber-light);
-            border: 1.5px solid var(--amber);
-            border-radius: 10px;
-            padding: 14px 16px;
+            background: var(--example-bg);
+            border-left: 3px solid var(--example-border);
+            border-radius: 0 10px 10px 0;
+            padding: 16px 18px;
             margin: 20px 0;
         }
 
-        .practice-label {
-            font-size: 12px;
+        .example-card-label {
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--amber-dark);
-            margin-bottom: 8px;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+            margin-bottom: 10px;
+            opacity: 0.7;
         }
 
-        /* Answer spoiler */
+        .example-card p:last-child { margin-bottom: 0; }
+
+        /* ── PRACTICE CALLOUT ── */
+        .practice-callout {
+            background: var(--amber-light);
+            border: 1.5px solid var(--amber);
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin: 20px 0;
+        }
+
+        .practice-callout-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--amber-dark);
+            margin-bottom: 10px;
+        }
+
+        .practice-callout p:last-child { margin-bottom: 0; }
+
+        /* ── ANSWER SPOILER (blur reveal) ── */
         .answer-spoiler {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
+            display: inline-block;
             cursor: pointer;
+            padding: 5px 14px;
+            background: var(--background);
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .answer-spoiler .answer-text {
+            filter: blur(5px);
+            transition: filter 0.3s;
             user-select: none;
         }
 
-        .spoiler-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary);
-            background: var(--muted);
-            padding: 4px 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
+        .answer-spoiler.revealed .answer-text {
+            filter: none;
+            user-select: auto;
         }
 
-        .spoiler-content {
-            filter: blur(5px);
-            transition: filter 0.3s;
-            font-size: 15px;
+        .answer-spoiler .reveal-label {
+            font-size: 12px;
+            color: var(--muted-foreground);
+            display: block;
+            margin-bottom: 2px;
         }
 
-        .answer-spoiler.revealed .spoiler-content { filter: none; }
-        .answer-spoiler.revealed .spoiler-label { display: none; }
+        .answer-spoiler.revealed .reveal-label { display: none; }
 
-        /* Note/tip boxes */
+        /* ── NOTE BOX ── */
         .note-box {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 12px 16px;
+            padding: 13px 16px;
             margin: 16px 0;
             font-size: 15px;
         }
 
-        /* Loading / error states */
+        /* ── SECTION SOURCE TAG (in Practice tab) ── */
+        .from-section {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted-foreground);
+            margin: 24px 0 8px;
+        }
+        .from-section:first-child { margin-top: 0; }
+
+        /* ── TABLE ── */
+        .content-area table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 15px;
+        }
+        .content-area th {
+            background: var(--muted);
+            font-weight: 600;
+            padding: 10px 14px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+        .content-area td {
+            padding: 9px 14px;
+            border: 1px solid var(--border);
+        }
+        .content-area tr:nth-child(even) td { background: hsl(210, 20%, 99%); }
+
+        /* ── LOADING SKELETON ── */
+        .skeleton {
+            animation: shimmer 1.4s infinite;
+            background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
+            background-size: 200% 100%;
+            border-radius: 6px;
+            height: 1em;
+            margin-bottom: 12px;
+        }
+        .skeleton.title { height: 2rem; width: 60%; margin-bottom: 20px; }
+        .skeleton.w80 { width: 80%; }
+        .skeleton.w60 { width: 60%; }
+        .skeleton.w40 { width: 40%; }
+
+        @keyframes shimmer {
+            0%   { background-position: -200% 0; }
+            100% { background-position:  200% 0; }
+        }
+
+        /* ── ERROR/EMPTY STATE ── */
         .state-message {
-            padding: 48px 24px;
+            padding: 56px 0;
             text-align: center;
             color: var(--muted-foreground);
         }
-
-        .state-message h2 {
+        .state-message .state-title {
             font-family: var(--font-display);
+            font-size: 1.5rem;
             color: var(--primary);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
-
-        /* Horizontal rule between sections */
-        hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
     </style>
 </head>
 <body>
 
-<!-- TOP NAV (mobile + desktop) -->
+<!-- TOP NAV -->
 <div class="top-nav">
-    <a href="javascript:history.back()" class="back-link">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <a href="javascript:history.back()" class="back-link" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </a>
     <span class="nav-topic" id="navTopic">Loading…</span>
-    <span class="nav-subject" id="navSubject"></span>
+    <span class="nav-badge" id="navBadge"></span>
 </div>
 
-<!-- MOBILE: TAB BAR -->
+<!-- MOBILE: PILL TAB BAR (hidden on desktop) -->
 <div class="tab-bar" id="tabBar"></div>
 
-<!-- PAGE BODY (desktop: sidebar + scrollable content) -->
+<!-- PAGE BODY -->
 <div class="page-body">
 
     <!-- DESKTOP SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" style="display:none">
         <div class="sidebar-header">
             <div class="sidebar-topic" id="sidebarTopic"></div>
-            <span class="sidebar-subject" id="sidebarSubject"></span>
+            <span class="sidebar-badge" id="sidebarBadge"></span>
         </div>
-        <div id="sectionList"></div>
-    </nav>
+        <nav class="sidebar-nav" id="sidebarNav"></nav>
+    </aside>
 
-    <!-- SCROLLABLE CONTENT -->
+    <!-- CONTENT SCROLL -->
     <div class="content-scroll" id="contentScroll">
         <div class="content-area" id="contentArea">
-            <div class="state-message">
-                <p>Loading…</p>
-            </div>
+            <!-- Loading skeleton -->
+            <div class="skeleton title"></div>
+            <div class="skeleton w80"></div>
+            <div class="skeleton w60"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton w80"></div>
+            <div class="skeleton w40"></div>
         </div>
     </div>
 
 </div>
 
 <script>
-    const params = new URLSearchParams(location.search);
-    const subject = params.get('subject') || 'AM';
-    const topic   = params.get('topic')   || '';
+const params   = new URLSearchParams(location.search);
+const subject  = params.get('subject') || 'AM';
+const topic    = params.get('topic')   || '';
 
-    const subjectLabels = { AM: 'A-Math', EM: 'E-Math', JC: 'H2 Math' };
-    const subjectLabel = subjectLabels[subject] || subject;
+const subjectLabels = { AM: 'A-Math (O-Level)', EM: 'E-Math (O-Level)', JC: 'H2 Math (A-Level)' };
+const subjectLabel  = subjectLabels[subject] || subject;
 
-    document.title = topic ? `${topic} — Adrian's Math Tuition` : 'Revise — Adrian\'s Math Tuition';
-    document.getElementById('navTopic').textContent = topic || 'Revise';
-    document.getElementById('navSubject').textContent = subjectLabel;
-    document.getElementById('sidebarTopic').textContent = topic;
-    document.getElementById('sidebarSubject').textContent = subjectLabel;
+document.title = topic ? `${topic} — Revise` : 'Revise — Adrian\'s Math Tuition';
+document.getElementById('navTopic').textContent   = topic || 'Revise';
+document.getElementById('navBadge').textContent   = subjectLabel;
+document.getElementById('sidebarTopic').textContent = topic;
+document.getElementById('sidebarBadge').textContent = subjectLabel;
 
-    let sections = [];
-    let currentIndex = 0;
+let sections     = [];
+let currentIndex = 0;
+const isDesktop  = () => window.innerWidth >= 768;
 
-    // ── CONTENT PARSING ──
-    function parseContentIntoSections(content, subtopics) {
-        if (!content.trim()) return [];
+// ── SECTION PARSING ──────────────────────────────────────────────
+function parseSections(content) {
+    if (!content.trim()) return [];
+    const result = [];
 
-        const sections = [];
+    // Split on bold numbered headings: **1. Title** or **1: Title**
+    const parts = content.split(/(?=\*\*\d+[\.:]\s)/);
 
-        // Split on bold numbered headings (**1. Title**) or markdown headings (## Title)
-        const parts = content.split(/(?=^\*\*\d+[\.:]\s|^##\s)/m);
+    for (const part of parts) {
+        if (!part.trim()) continue;
+        const titleMatch = part.match(/^\*\*(?:\d+[\.:]\s*)?(.+?)\*\*/);
+        if (titleMatch) {
+            // Strip the heading line from the section body
+            const body = part.replace(/^\*\*[^*\n]+\*\*\s*\n?/, '').trim();
+            result.push({ title: titleMatch[1].trim(), content: body });
+        } else if (result.length === 0 && part.trim()) {
+            result.push({ title: 'Overview', content: part.trim() });
+        }
+    }
 
-        for (const part of parts) {
-            if (!part.trim()) continue;
-            const titleMatch = part.match(/^\*\*(?:\d+[\.:]\s*)?(.+?)\*\*/) || part.match(/^##\s*(.+)/m);
-            if (titleMatch) {
-                sections.push({ title: titleMatch[1].trim(), content: part.trim() });
-            } else if (sections.length === 0) {
-                sections.push({ title: 'Overview', content: part.trim() });
-            }
+    if (result.length === 0) {
+        return [{ title: topic || 'Notes', content: content.trim() }];
+    }
+
+    // Synthesise Practice tab by collecting [Try:...] / [Practice:...] blocks
+    const practiceItems = [];
+    result.forEach(sec => {
+        const re = /\[(?:Try|Practice):\s*([\s\S]*?)\]/g;
+        let m;
+        while ((m = re.exec(sec.content)) !== null) {
+            practiceItems.push({ source: sec.title, block: m[0] });
+        }
+    });
+
+    // Check if a Practice section already exists in content
+    const existingPractice = result.findIndex(s => /^practice$/i.test(s.title.trim()));
+    if (existingPractice === -1 && practiceItems.length > 0) {
+        const practiceContent = practiceItems.map(p =>
+            `[FROM:${p.source}]\n${p.block}`
+        ).join('\n\n');
+        // Insert Practice before Syllabus (or at end minus syllabus)
+        const syllIdx = result.findIndex(s => /syllabus/i.test(s.title));
+        const insertAt = syllIdx > -1 ? syllIdx : result.length;
+        result.splice(insertAt, 0, { title: 'Practice', content: practiceContent, isPractice: true });
+    } else if (existingPractice > -1) {
+        result[existingPractice].isPractice = true;
+    }
+
+    // Move Syllabus section to end
+    const syllabusIdx = result.findIndex(s => /syllabus/i.test(s.title));
+    if (syllabusIdx > -1 && syllabusIdx < result.length - 1) {
+        const [syl] = result.splice(syllabusIdx, 1);
+        syl.isSyllabus = true;
+        result.push(syl);
+    } else if (syllabusIdx > -1) {
+        result[syllabusIdx].isSyllabus = true;
+    }
+
+    return result;
+}
+
+// ── MARKDOWN → HTML ──────────────────────────────────────────────
+function renderMarkdown(text) {
+    // 1. Protect LaTeX
+    const blocks  = [];
+    const inlines = [];
+    text = text.replace(/\$\$([^$]+?)\$\$/gs, (_, m) => { blocks.push(m);  return `%%B${blocks.length-1}%%`; });
+    text = text.replace(/\$([^$\n]{1,300}?)\$/g, (_, m) => { inlines.push(m); return `%%I${inlines.length-1}%%`; });
+
+    // 2. Section-from-source markers (Practice tab)
+    text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
+
+    // 3. Example blocks: **Example N:** or **Example:** → card wrapper
+    //    Match: "**Example...:**" line + everything until next heading or end
+    text = text.replace(
+        /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*|\n##|$)/g,
+        (_, firstLine, rest) => {
+            const inner = (firstLine.trim() + '\n' + rest).trim();
+            return `\n<div class="example-card"><div class="example-card-label">Worked Example</div>${inner}\n</div>\n`;
+        }
+    );
+
+    // 4. Practice callouts: [Try: ...] [Practice: ...]
+    text = text.replace(/\[(?:Try|Practice):\s*([\s\S]*?)\]/g, (_, q) =>
+        `<div class="practice-callout"><div class="practice-callout-label">Try this</div>${q.trim()}</div>`
+    );
+
+    // 5. Answer spoilers: [Ans: ...] [Answer: ...]
+    text = text.replace(/\[Ans(?:wer)?:\s*([\s\S]*?)\]/g, (_, ans) =>
+        `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal answer</span><span class="answer-text">${ans.trim()}</span></div>`
+    );
+
+    // 6. Note boxes: **Note:** text
+    text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g,
+        '<div class="note-box"><strong>Note:</strong> $1</div>');
+
+    // 7. Tables: | col | col |
+    text = text.replace(/((?:^\|.+\|\s*\n)+)/gm, tableBlock => {
+        const rows = tableBlock.trim().split('\n').filter(r => r.trim());
+        let html = '<table>';
+        rows.forEach((row, i) => {
+            if (/^\|[-| :]+\|/.test(row)) return; // separator row
+            const cells = row.split('|').filter((_, ci) => ci > 0 && ci < row.split('|').length - 1);
+            const tag = i === 0 ? 'th' : 'td';
+            html += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+        });
+        html += '</table>';
+        return html;
+    });
+
+    // 8. Headings
+    text = text.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+    text = text.replace(/^##\s+(.+)$/gm,  '<h2>$1</h2>');
+
+    // 9. Horizontal rules
+    text = text.replace(/^---+$/gm, '<hr>');
+
+    // 10. Bold & italic
+    text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+
+    // 11. Bullet lists
+    text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+    text = text.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+
+    // 12. Numbered lists
+    text = text.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+    text = text.replace(/(?:^<li>[\s\S]*?<\/li>\n?)+/gm, m => {
+        if (m.includes('<ul>')) return m;
+        return `<ol>${m}</ol>`;
+    });
+
+    // 13. Paragraphs
+    text = text.replace(/\n{2,}/g, '</p><p>');
+    text = '<p>' + text + '</p>';
+
+    // Clean up empty paragraphs and block elements wrapped in <p>
+    text = text.replace(/<p>\s*<\/p>/g, '');
+    text = text.replace(/<p>(<(?:h[1-6]|ul|ol|hr|div|table)[^>]*>)/g, '$1');
+    text = text.replace(/(<\/(?:h[1-6]|ul|ol|div|table)>)<\/p>/g, '$1');
+
+    // Single newline → <br> within paragraphs
+    text = text.replace(/([^>])\n([^<])/g, '$1<br>$2');
+
+    // 14. Restore LaTeX
+    text = text.replace(/%%B(\d+)%%/g,  (_, i) => `$$${blocks[i]}$$`);
+    text = text.replace(/%%I(\d+)%%/g,  (_, i) => `$${inlines[i]}$`);
+
+    return text;
+}
+
+// ── MATH RENDER ──────────────────────────────────────────────────
+function renderMath(el) {
+    if (typeof renderMathInElement === 'undefined') {
+        setTimeout(() => renderMath(el), 80);
+        return;
+    }
+    try {
+        renderMathInElement(el, {
+            delimiters: [
+                { left: '$$', right: '$$', display: true  },
+                { left: '$',  right: '$',  display: false }
+            ],
+            throwOnError: false
+        });
+    } catch(e) { console.warn('[KaTeX]', e); }
+}
+
+// ── SHOW SECTION ─────────────────────────────────────────────────
+function showSection(index) {
+    if (index < 0 || index >= sections.length) return;
+    currentIndex = index;
+    const section = sections[index];
+
+    // Update active states
+    document.querySelectorAll('.tab-pill').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+        if (i === index) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+    document.querySelectorAll('.sidebar-item').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+    });
+
+    // Build subtitle
+    let subtitle = '';
+    if (section.isPractice)  subtitle = 'Questions from all sections — tap answers to reveal';
+    else if (section.isSyllabus) subtitle = 'Syllabus coverage for this topic';
+
+    // Render
+    const area = document.getElementById('contentArea');
+    area.innerHTML =
+        `<div class="section-title">${escapeHtml(section.title)}</div>` +
+        (subtitle ? `<div class="section-subtitle">${escapeHtml(subtitle)}</div>` : '') +
+        renderMarkdown(section.content);
+
+    renderMath(area);
+
+    // Scroll to top
+    const scroll = document.getElementById('contentScroll');
+    if (scroll) scroll.scrollTop = 0; else window.scrollTo(0, 0);
+}
+
+// ── BUILD NAV ────────────────────────────────────────────────────
+function buildNav() {
+    const tabBar    = document.getElementById('tabBar');
+    const sidebarNav = document.getElementById('sidebarNav');
+    tabBar.innerHTML    = '';
+    sidebarNav.innerHTML = '';
+
+    let hasDivider = false;
+
+    sections.forEach((sec, i) => {
+        const isSpecial = sec.isPractice || sec.isSyllabus;
+
+        // Insert divider before Practice tab in sidebar
+        if (isSpecial && !hasDivider) {
+            const div = document.createElement('div');
+            div.className = 'sidebar-divider';
+            sidebarNav.appendChild(div);
+            hasDivider = true;
         }
 
-        // If we only got one section (or none), try splitting by subtopics
-        if (sections.length <= 1 && subtopics.length > 0 && content.trim()) {
-            return [{ title: topic || 'Notes', content: content.trim() }];
-        }
+        // Mobile pill
+        const pill = document.createElement('button');
+        pill.className = 'tab-pill' +
+            (sec.isPractice  ? ' practice-tab'  : '') +
+            (sec.isSyllabus  ? ' syllabus-tab'  : '') +
+            (i === 0         ? ' active'         : '');
+        pill.textContent = sec.title;
+        pill.onclick = () => showSection(i);
+        tabBar.appendChild(pill);
 
-        return sections.length > 0 ? sections : [{ title: topic || 'Notes', content: content.trim() }];
+        // Desktop sidebar
+        const item = document.createElement('div');
+        item.className = 'sidebar-item' +
+            (sec.isPractice  ? ' practice-item'  : '') +
+            (sec.isSyllabus  ? ' syllabus-item'  : '') +
+            (i === 0         ? ' active'          : '');
+        item.textContent = sec.title;
+        item.onclick = () => showSection(i);
+        sidebarNav.appendChild(item);
+    });
+}
+
+// ── DESKTOP SIDEBAR VISIBILITY ───────────────────────────────────
+function updateLayout() {
+    const sidebar = document.getElementById('sidebar');
+    if (isDesktop()) {
+        sidebar.style.display = 'flex';
+    } else {
+        sidebar.style.display = 'none';
+    }
+}
+
+window.addEventListener('resize', updateLayout);
+updateLayout();
+
+function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ── LOAD ─────────────────────────────────────────────────────────
+async function loadRevision() {
+    if (!topic) {
+        document.getElementById('contentArea').innerHTML = `
+            <div class="state-message">
+                <div class="state-title">No topic specified</div>
+                <p>Add <code>?topic=Binomial+Expansion</code> to the URL.</p>
+            </div>`;
+        return;
     }
 
-    // ── MARKDOWN → HTML ──
-    function renderMarkdown(text) {
-        // Protect LaTeX from markdown processing
-        const latexBlocks = [];
-        const latexInline = [];
+    try {
+        const resp = await fetch(`/api/revise?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}`);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
 
-        text = text.replace(/\$\$([^$]+?)\$\$/gs, (_, math) => {
-            latexBlocks.push(math);
-            return `%%BLOCK${latexBlocks.length - 1}%%`;
-        });
-        text = text.replace(/\$([^$\n]{1,200}?)\$/g, (_, math) => {
-            latexInline.push(math);
-            return `%%INLINE${latexInline.length - 1}%%`;
-        });
+        const rawContent = data.generatedContent || data.content || '';
 
-        // Practice questions: [Try:...] or [Practice:...] → callout
-        text = text.replace(/\[(?:Try|Practice):\s*([\s\S]*?)\]/g, (_, q) => {
-            return `<div class="practice-card"><div class="practice-label">Practice</div>${q.trim()}</div>`;
-        });
-
-        // Answers: [Ans: ...] or [Answer: ...] → spoiler
-        text = text.replace(/\[Ans(?:wer)?:\s*([\s\S]*?)\]/g, (_, ans) => {
-            return `<div class="answer-spoiler" onclick="this.classList.add('revealed')"><span class="spoiler-label">Tap to reveal answer</span><span class="spoiler-content">${ans.trim()}</span></div>`;
-        });
-
-        // Example headings: **Example N:** or **Example:**
-        text = text.replace(/\*\*Example(?:\s+\d+)?[:\.]?\*\*/gi, '<div class="example-label">Example</div>');
-
-        // Note boxes: **Note:** ... until double newline
-        text = text.replace(/\*\*Note:\*\*([^\n]+)/g, '<div class="note-box"><strong>Note:</strong>$1</div>');
-
-        // Bold
-        text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
-        text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-
-        // Headings (##)
-        text = text.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
-        text = text.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
-
-        // Bullet lists
-        text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-        text = text.replace(/(<li>.*<\/li>(\n)?)+/gs, '<ul>$&</ul>');
-
-        // Numbered lists
-        text = text.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
-
-        // Horizontal rules
-        text = text.replace(/^---+$/gm, '<hr>');
-
-        // Paragraphs: double newline → paragraph break
-        text = text.replace(/\n{2,}/g, '</p><p>');
-        text = '<p>' + text + '</p>';
-
-        // Clean up empty paragraphs
-        text = text.replace(/<p>\s*<\/p>/g, '');
-        text = text.replace(/<p>(<(?:h[1-6]|ul|ol|hr|div)[^>]*>)/g, '$1');
-        text = text.replace(/(<\/(?:h[1-6]|ul|ol|div)>)<\/p>/g, '$1');
-
-        // Single newlines within paragraphs → <br>
-        text = text.replace(/([^>])\n([^<])/g, '$1<br>$2');
-
-        // Restore LaTeX
-        text = text.replace(/%%BLOCK(\d+)%%/g, (_, i) => `$$${latexBlocks[i]}$$`);
-        text = text.replace(/%%INLINE(\d+)%%/g, (_, i) => `$${latexInline[i]}$`);
-
-        return text;
-    }
-
-    // ── RENDER MATH ──
-    function renderMath(el) {
-        if (typeof renderMathInElement === 'undefined') {
-            setTimeout(() => renderMath(el), 100);
-            return;
-        }
-        try {
-            renderMathInElement(el, {
-                delimiters: [
-                    { left: '$$', right: '$$', display: true },
-                    { left: '$',  right: '$',  display: false }
-                ],
-                throwOnError: false
-            });
-        } catch(e) {}
-    }
-
-    // ── SHOW SECTION ──
-    function showSection(index) {
-        if (index < 0 || index >= sections.length) return;
-        currentIndex = index;
-
-        // Update active state
-        document.querySelectorAll('.section-item').forEach((el, i) => {
-            el.classList.toggle('active', i === index);
-        });
-        document.querySelectorAll('.tab-item').forEach((el, i) => {
-            el.classList.toggle('active', i === index);
-            if (i === index) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        });
-
-        // Render content
-        const section = sections[index];
-        const area = document.getElementById('contentArea');
-        area.innerHTML = `<h1>${escapeHtml(section.title)}</h1>` + renderMarkdown(section.content);
-        renderMath(area);
-
-        // Scroll to top
-        const scroll = document.getElementById('contentScroll');
-        if (scroll) scroll.scrollTop = 0;
-        else window.scrollTo(0, 0);
-    }
-
-    function escapeHtml(s) {
-        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    // ── BUILD NAV ──
-    function buildNav() {
-        const tabBar = document.getElementById('tabBar');
-        const sectionList = document.getElementById('sectionList');
-        tabBar.innerHTML = '';
-        sectionList.innerHTML = '';
-
-        sections.forEach((sec, i) => {
-            // Mobile tab
-            const tab = document.createElement('button');
-            tab.className = 'tab-item' + (i === 0 ? ' active' : '');
-            tab.textContent = sec.title;
-            tab.onclick = () => showSection(i);
-            tabBar.appendChild(tab);
-
-            // Desktop sidebar item
-            const item = document.createElement('div');
-            item.className = 'section-item' + (i === 0 ? ' active' : '');
-            item.textContent = sec.title;
-            item.onclick = () => showSection(i);
-            sectionList.appendChild(item);
-        });
-    }
-
-    // ── LOAD ──
-    async function loadRevision() {
-        if (!topic) {
-            document.getElementById('contentArea').innerHTML = '<div class="state-message"><h2>No topic specified</h2><p>Add ?topic=... to the URL.</p></div>';
-            return;
-        }
-
-        try {
-            const resp = await fetch(`/api/revise?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}`);
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            const data = await resp.json();
-
-            // Prefer Generated Content, fall back to Content
-            const rawContent = data.generatedContent || data.content || '';
-
-            if (!rawContent.trim()) {
-                document.getElementById('contentArea').innerHTML = `
-                    <div class="state-message">
-                        <h2>${escapeHtml(topic)}</h2>
-                        <p>No notes available for this topic yet.</p>
-                    </div>`;
-                return;
-            }
-
-            sections = parseContentIntoSections(rawContent, data.subtopics || []);
-
-            if (sections.length === 0) {
-                document.getElementById('contentArea').innerHTML = '<div class="state-message"><p>Could not parse content.</p></div>';
-                return;
-            }
-
-            buildNav();
-            showSection(0);
-
-        } catch(err) {
-            console.error(err);
+        if (!rawContent.trim()) {
             document.getElementById('contentArea').innerHTML = `
                 <div class="state-message">
-                    <h2>Failed to load</h2>
-                    <p>Could not load notes. Please try again.</p>
+                    <div class="state-title">${escapeHtml(topic)}</div>
+                    <p>No notes available for this topic yet.</p>
                 </div>`;
+            return;
         }
-    }
 
-    loadRevision();
+        sections = parseSections(rawContent);
+
+        if (sections.length === 0) {
+            document.getElementById('contentArea').innerHTML =
+                '<div class="state-message"><p>Could not parse content.</p></div>';
+            return;
+        }
+
+        buildNav();
+        showSection(0);
+
+    } catch(err) {
+        console.error('[revise]', err);
+        document.getElementById('contentArea').innerHTML = `
+            <div class="state-message">
+                <div class="state-title">Failed to load</div>
+                <p>Could not load notes. Please try again.</p>
+            </div>`;
+    }
+}
+
+loadRevision();
 </script>
 </body>
 </html>
