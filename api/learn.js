@@ -9,15 +9,12 @@ module.exports = async function handler(req, res) {
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { subject, topic, action, studentAnswer, conversationHistory = [] } = req.body;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'Not configured' });
+  const { subject, topic, action, studentAnswer, conversationHistory = [], _startMessage } = req.body;
 
-  const client = new Anthropic({ apiKey });
-
-  // Fetch Adrian's notes AND pre-built visuals from Airtable
+  // Fetch Adrian's notes AND pre-built visuals/subtopics from Airtable
   let adrianNotes = '';
   let visuals = [];
+  let subtopics = [];
   try {
     const slug = `${topic.toLowerCase().replace(/\s+/g, '-')}-${subject === 'JC' ? 'jc' : 'sec'}`;
     const airtableToken = process.env.AIRTABLE_TOKEN;
@@ -25,15 +22,28 @@ module.exports = async function handler(req, res) {
     if (airtableToken && baseId) {
       const formula = encodeURIComponent(`{Slug}='${slug}'`);
       const resp = await fetch(
-        `https://api.airtable.com/v0/${baseId}/Notes?filterByFormula=${formula}&fields[]=Content&fields[]=Visuals`,
+        `https://api.airtable.com/v0/${baseId}/Notes?filterByFormula=${formula}&fields[]=Content&fields[]=Visuals&fields[]=Subtopics`,
         { headers: { Authorization: `Bearer ${airtableToken}` } }
       );
       const data = await resp.json();
       const record = data.records?.[0]?.fields;
       adrianNotes = record?.Content || '';
       try { visuals = JSON.parse(record?.Visuals || '[]'); } catch(e) { visuals = []; }
+      try { subtopics = JSON.parse(record?.Subtopics || '[]'); } catch(e) { subtopics = []; }
     }
   } catch (e) { /* proceed without */ }
+
+  // 'init' action — return metadata only, no AI call
+  if (action === 'init') {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.json({ subtopics, visuals, hasNotes: !!adrianNotes });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'Not configured' });
+
+  const client = new Anthropic({ apiKey });
 
   const notesContext = adrianNotes
     ? `\nAdrian's teaching notes:\n${adrianNotes.substring(0, 5000)}`
@@ -110,7 +120,7 @@ ${notesContext}`;
 
   const messages = [...conversationHistory];
   const actionMessages = {
-    'start': 'Start the lesson. Teach me the first concept.',
+    'start': _startMessage || 'Start the lesson. Teach me the first concept.',
     'answer': studentAnswer || '',
     'next': 'Skip. Teach me the next concept.',
     'hint': 'Give me a hint.',
@@ -128,8 +138,8 @@ ${notesContext}`;
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   try {
-    // Send visuals data as first SSE event so frontend can resolve [VISUAL:id] references
-    res.write(`data: ${JSON.stringify({ visuals })}\n\n`);
+    // Send metadata as first SSE event so frontend can resolve [VISUAL:id] references
+    res.write(`data: ${JSON.stringify({ visuals, subtopics })}\n\n`);
 
     const stream = client.messages.stream({
       model: 'claude-sonnet-4-6',
