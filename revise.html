@@ -775,7 +775,7 @@ async function loadRevision() {
     }
 
     try {
-        const resp = await fetch(`/api/revise?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}`);
+        const resp = await fetch(`/api/notes?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}`);
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         const data = await resp.json();
 
