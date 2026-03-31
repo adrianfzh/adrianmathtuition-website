@@ -25,12 +25,17 @@ module.exports = async function handler(req, res) {
     if (airtableToken && baseId) {
       const formula = encodeURIComponent(`{Slug}='${slug}'`);
       const resp = await fetch(
-        `https://api.airtable.com/v0/${baseId}/Notes?filterByFormula=${formula}&fields[]=Content&fields[]=Visuals`,
+        `https://api.airtable.com/v0/${baseId}/Notes?filterByFormula=${formula}&fields[]=Content&fields[]=Generated%20Content&fields[]=Visuals`,
         { headers: { Authorization: `Bearer ${airtableToken}` } }
       );
       const data = await resp.json();
       const record = data.records?.[0]?.fields;
-      adrianNotes = record?.Content || '';
+      const originalNotes = record?.Content || '';
+      const generatedNotes = record?.['Generated Content'] || '';
+      // Combine: original notes take priority; generated summary is supplementary
+      adrianNotes = originalNotes
+        ? originalNotes + (generatedNotes ? '\n\n--- Generated Summary ---\n' + generatedNotes : '')
+        : generatedNotes;
       try { visuals = JSON.parse(record?.Visuals || '[]'); } catch(e) { visuals = []; }
     }
   } catch (e) { /* proceed without */ }
