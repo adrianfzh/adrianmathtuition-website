@@ -182,7 +182,7 @@
         .btn-primary:disabled { opacity: 0.5; cursor: default; }
 
         /* ── EDITOR LAYOUT ── */
-        #appShell { display: flex; flex: 1; overflow: hidden; }
+        #appShell { flex: 1; overflow: hidden; }
 
         /* ── SIDEBAR ── */
         .topic-sidebar {
@@ -614,7 +614,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- APP SHELL (hidden until authed) -->
-<div id="appShell" style="display:none; flex:1; overflow:hidden;">
+<div id="appShell" style="display:none">
 
     <!-- SIDEBAR: TOPIC LIST -->
     <aside class="topic-sidebar">
@@ -702,10 +702,9 @@
 
 <script>
 // ── STATE ─────────────────────────────────────────────────────────
-let password    = '';
-let allTopics   = [];
-let currentSlug = null;
-let saveTimer   = null;
+let password     = '';
+let allTopics    = [];
+let currentSlug  = null;
 let previewTimer = null;
 
 // ── PASSWORD GATE ─────────────────────────────────────────────────
@@ -713,62 +712,72 @@ const passwordGate   = document.getElementById('passwordGate');
 const passwordInput  = document.getElementById('passwordInput');
 const passwordSubmit = document.getElementById('passwordSubmit');
 
-function tryPassword() {
+function setGate(visible) {
+    passwordGate.style.display = visible ? 'flex' : 'none';
+    document.getElementById('appShell').style.display = visible ? 'none' : 'flex';
+}
+
+async function tryPassword() {
     const val = passwordInput.value.trim();
     if (!val) return;
     passwordSubmit.disabled = true;
+    passwordSubmit.textContent = 'Checking…';
     password = val;
-    sessionStorage.setItem('editNotesPass', val);
-    loadApp();
+    await loadApp();
 }
 
 passwordSubmit.addEventListener('click', tryPassword);
 passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryPassword(); });
 
-// Restore from session
+// Restore from session — try silently, restore gate if it fails
 const savedPass = sessionStorage.getItem('editNotesPass');
 if (savedPass) {
     password = savedPass;
-    passwordGate.style.display = 'none';
+    setGate(false); // optimistic: hide gate while verifying
     loadApp();
 }
 
 async function loadApp() {
     try {
-        const topics = await apiFetch(`/api/notes?list=all&password=${encodeURIComponent(password)}`);
-        allTopics = topics;
-        renderTopicList(topics);
-        document.getElementById('appShell').style.display = 'flex';
-        passwordGate.style.display = 'none';
-        document.getElementById('navStatus').textContent = `${topics.length} topics`;
+        // Use plain fetch (no Authorization header) — password via query param only
+        const resp = await fetch(`/api/notes?list=all&password=${encodeURIComponent(password)}`);
+        if (resp.status === 401) { const e = new Error('Unauthorized'); e.status = 401; throw e; }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+
+        sessionStorage.setItem('editNotesPass', password);
+        allTopics = Array.isArray(data) ? data : [];
+        renderTopicList(allTopics);
+        setGate(false);
+        document.getElementById('navStatus').textContent = `${allTopics.length} topics`;
         passwordSubmit.disabled = false;
+        passwordSubmit.textContent = 'Continue';
     } catch (err) {
+        passwordSubmit.disabled = false;
+        passwordSubmit.textContent = 'Continue';
+        setGate(true);
         if (err.status === 401) {
-            // Wrong password
             sessionStorage.removeItem('editNotesPass');
             password = '';
             passwordInput.classList.add('shake');
             setTimeout(() => passwordInput.classList.remove('shake'), 400);
             passwordInput.value = '';
-            passwordInput.focus();
-            passwordSubmit.disabled = false;
-            passwordGate.style.display = 'flex';
         } else {
-            showToast('Failed to load topics', 'error');
-            passwordSubmit.disabled = false;
+            showToast('Connection failed — check your network', 'error');
         }
+        passwordInput.focus();
     }
 }
 
 // ── API HELPER ────────────────────────────────────────────────────
 async function apiFetch(url, options = {}) {
     const opts = {
-        headers: { 'Content-Type': 'application/json', Authorization: password },
+        headers: { 'Content-Type': 'application/json' },
         ...options
     };
     if (opts.body && typeof opts.body === 'object') opts.body = JSON.stringify(opts.body);
     const resp = await fetch(url, opts);
-    if (resp.status === 401) { const err = new Error('Unauthorized'); err.status = 401; throw err; }
+    if (resp.status === 401) { const e = new Error('Unauthorized'); e.status = 401; throw e; }
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     return resp.json();
 }
