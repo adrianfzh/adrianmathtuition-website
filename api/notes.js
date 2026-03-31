@@ -4,16 +4,19 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Parse body — Vercel sometimes auto-parses (req.body set), sometimes doesn't
+  // Parse body — Vercel auto-parses JSON when Content-Type is application/json
+  // If req.body is missing/empty, fall back to reading the stream manually
   let body = req.body;
-  if (req.method === 'POST' && (!body || !body.slug)) {
-    // Either body wasn't parsed, or was parsed as empty — try reading the stream
-    try {
-      const chunks = [];
-      for await (const chunk of req) chunks.push(chunk);
-      const raw = Buffer.concat(chunks).toString();
-      if (raw) body = JSON.parse(raw);
-    } catch(e) { /* leave body as-is */ }
+  if (req.method === 'POST') {
+    const hasBody = body && typeof body === 'object' && Object.keys(body).length > 0;
+    if (!hasBody) {
+      try {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const raw = Buffer.concat(chunks).toString();
+        if (raw) body = JSON.parse(raw);
+      } catch(e) { /* leave body as req.body */ }
+    }
   }
   body = body || {};
 
@@ -89,7 +92,7 @@ module.exports = async function handler(req, res) {
     const level   = req.query.level || body.level;
     const content = body.content ?? req.query.content ?? '';
     const subtopics = body.subtopics;
-    console.log('[notes POST] slug:', slug, 'topic:', topic, 'level:', level);
+    console.log('[notes POST] slug:', slug, 'topic:', topic, 'level:', level, 'contentLen:', (content || '').length);
     if (!slug || !topic || !level) return res.status(400).json({ error: 'slug, topic, level required', received: { slug, topic, level, queryKeys: Object.keys(req.query) } });
 
     const formula = encodeURIComponent(`{Slug}='${slug}'`);
@@ -100,10 +103,14 @@ module.exports = async function handler(req, res) {
     if (subtopics !== undefined) fields.Subtopics = Array.isArray(subtopics) ? JSON.stringify(subtopics) : subtopics;
 
     if (existingRecord) {
-      await airtableFetch(`/${existingRecord.id}`, { method: 'PATCH', body: JSON.stringify({ fields }) });
+      const atResult = await airtableFetch(`/${existingRecord.id}`, { method: 'PATCH', body: JSON.stringify({ fields }) });
+      console.log('[notes POST] airtable PATCH result:', JSON.stringify(atResult).slice(0, 200));
+      if (atResult.error) return res.status(500).json({ error: 'Airtable error: ' + atResult.error });
       return res.json({ success: true, action: 'updated', id: existingRecord.id });
     } else {
       const result = await airtableFetch('', { method: 'POST', body: JSON.stringify({ fields }) });
+      console.log('[notes POST] airtable POST result:', JSON.stringify(result).slice(0, 200));
+      if (result.error) return res.status(500).json({ error: 'Airtable error: ' + result.error });
       return res.json({ success: true, action: 'created', id: result.id });
     }
   }
