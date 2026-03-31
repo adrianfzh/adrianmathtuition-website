@@ -334,12 +334,66 @@
             font-size: 15px;
         }
 
+        /* ── START SCREEN ── */
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 56px 24px 32px;
+            gap: 20px;
+        }
+
+        .start-icon {
+            width: 72px; height: 72px;
+            background: var(--amber-light, hsl(45,90%,92%));
+            border: 2px solid var(--amber, hsl(45,90%,55%));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .start-topic {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .start-subject {
+            font-size: 15px;
+            color: var(--muted-foreground);
+        }
+
+        .btn-start {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border: none;
+            border-radius: var(--radius);
+            font-family: var(--font);
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            margin-top: 8px;
+        }
+
+        .btn-start:hover { opacity: 0.88; }
+
         @media (max-width: 600px) {
             .lesson-inner { padding: 16px 16px 8px; }
             .action-area { padding: 10px 16px 14px; }
             .message-group.user .message-bubble { max-width: 90%; }
             .nav-container { padding: 0 16px; }
             .desmos-container { height: 200px; }
+            .start-topic { font-size: 1.6rem; }
         }
     </style>
 </head>
@@ -359,11 +413,21 @@
 
 <div class="lesson-scroll" id="lessonScroll">
     <div class="lesson-inner">
+        <div id="startScreen" class="start-screen">
+            <div class="start-icon">📐</div>
+            <div>
+                <div class="start-topic" id="startTopic"></div>
+                <div class="start-subject" id="startSubject"></div>
+            </div>
+            <button class="btn-start" id="startBtn" onclick="startLesson()">
+                Start Lesson →
+            </button>
+        </div>
         <div id="messagesInner"></div>
     </div>
 </div>
 
-<div class="action-area">
+<div class="action-area" id="actionArea" style="display:none;">
     <div class="action-wrapper" id="actionWrapper"></div>
 </div>
 
@@ -373,9 +437,18 @@
     const topic   = params.get('topic')   || 'Differentiation';
 
     const subjectLabels = { AM: 'A-Math', EM: 'E-Math', JC: 'H2 Math' };
+    const subjectLabel = subjectLabels[subject] || subject;
     document.title = `${topic} — Adrian's Math Tuition`;
     document.getElementById('navTopic').textContent = topic;
-    document.getElementById('navSubject').textContent = subjectLabels[subject] || subject;
+    document.getElementById('navSubject').textContent = subjectLabel;
+    document.getElementById('startTopic').textContent = topic;
+    document.getElementById('startSubject').textContent = subjectLabel;
+
+    function startLesson() {
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('actionArea').style.display = '';
+        callLearn({ action: 'start' });
+    }
 
     let conversationHistory = [];
     let isLoading = false;
@@ -792,6 +865,7 @@
             secondary.appendChild(buildSecondaryBtn('💡 Hint', () => callLearn({ action: 'hint', userLabel: 'Give me a hint' })));
             secondary.appendChild(buildSecondaryBtn('⏭ Skip', () => callLearn({ action: 'next', userLabel: 'Skip — show me the next concept' })));
             secondary.appendChild(buildSecondaryBtn('📖 Example', () => callLearn({ action: 'example', userLabel: 'Show me an example' })));
+            secondary.appendChild(buildSecondaryBtn('🔍 Explain more', () => callLearn({ action: 'explain', userLabel: 'Explain more' })));
             wrapper.appendChild(secondary);
 
         } else if (practiceMode) {
@@ -814,6 +888,7 @@
             secondary.className = 'secondary-btns';
             if (hasPrev) secondary.appendChild(buildSecondaryBtn('← Previous', () => displaySection(currentSectionIndex - 1)));
             secondary.appendChild(buildSecondaryBtn('🏋️ Practice', () => { practiceMode = true; callLearn({ action: 'practice', userLabel: 'Give me a practice question' }); }));
+            secondary.appendChild(buildSecondaryBtn('🔍 Explain more', () => callLearn({ action: 'explain', userLabel: 'Explain more' })));
             secondary.appendChild(buildSecondaryBtn('📖 Example', () => callLearn({ action: 'example', userLabel: 'Show me an example' })));
             wrapper.appendChild(secondary);
 
@@ -880,9 +955,8 @@
         return btn;
     }
 
-    // ── INIT ──
-    updateActionButtons();
-    callLearn({ action: 'start' });
+    // ── INIT ── Show start screen; API called only when student clicks Start Lesson
+    // (action area hidden until startLesson() is called)
 </script>
 </body>
 </html>
