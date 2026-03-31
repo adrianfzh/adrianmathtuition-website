@@ -4,14 +4,16 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Parse body explicitly — Vercel doesn't always auto-parse JSON bodies
+  // Parse body — Vercel sometimes auto-parses (req.body set), sometimes doesn't
   let body = req.body;
-  if (req.method === 'POST' && !body) {
+  if (req.method === 'POST' && (!body || !body.slug)) {
+    // Either body wasn't parsed, or was parsed as empty — try reading the stream
     try {
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);
-      body = JSON.parse(Buffer.concat(chunks).toString());
-    } catch(e) { body = {}; }
+      const raw = Buffer.concat(chunks).toString();
+      if (raw) body = JSON.parse(raw);
+    } catch(e) { /* leave body as-is */ }
   }
   body = body || {};
 
