@@ -831,6 +831,7 @@ async function loadTopic(slug) {
         if (!record) { showToast('Topic not found', 'error'); return; }
 
         const f = record.fields;
+        console.log('[loadTopic] f.Level:', JSON.stringify(f.Level));
         document.getElementById('metaTopic').value = f.Topic || '';
         document.getElementById('metaLevel').value = f.Level || 'AM';
         document.getElementById('metaSlug').textContent = f.Slug || slug;
@@ -1021,8 +1022,9 @@ document.getElementById('btnSave').addEventListener('click', saveNotes);
 
 async function saveNotes() {
     const topic = document.getElementById('metaTopic').value.trim();
-    const level = document.getElementById('metaLevel').value;
+    const level = document.getElementById('metaLevel').value || 'AM';  // fallback if Airtable Level doesn't match option values
     const content = editor.value;
+    console.log('[save] topic:', topic, 'level:', level, 'slug:', currentSlug);
 
     if (!topic) { showToast('Topic name is required', 'error'); document.getElementById('metaTopic').focus(); return; }
 
