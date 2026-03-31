@@ -103,7 +103,11 @@ module.exports = async function handler(req, res) {
     if (subtopics !== undefined) fields.Subtopics = Array.isArray(subtopics) ? JSON.stringify(subtopics) : subtopics;
 
     if (existingRecord) {
-      const atResult = await airtableFetch(`/${existingRecord.id}`, { method: 'PATCH', body: JSON.stringify({ fields }) });
+      // Don't update Level on existing records — it's a Single Select in Airtable and
+      // the value used in the UI ("AM"/"EM") may not match the stored option name.
+      const patchFields = { ...fields };
+      delete patchFields.Level;
+      const atResult = await airtableFetch(`/${existingRecord.id}`, { method: 'PATCH', body: JSON.stringify({ fields: patchFields }) });
       console.log('[notes POST] airtable PATCH result:', JSON.stringify(atResult).slice(0, 200));
       if (atResult.error) return res.status(500).json({ error: 'Airtable error: ' + atResult.error });
       return res.json({ success: true, action: 'updated', id: existingRecord.id });
