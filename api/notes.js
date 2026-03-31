@@ -4,7 +4,18 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const password = req.headers?.authorization || req.query?.password || req.body?.password || '';
+  // Parse body explicitly — Vercel doesn't always auto-parse JSON bodies
+  let body = req.body;
+  if (req.method === 'POST' && !body) {
+    try {
+      const chunks = [];
+      for await (const chunk of req) chunks.push(chunk);
+      body = JSON.parse(Buffer.concat(chunks).toString());
+    } catch(e) { body = {}; }
+  }
+  body = body || {};
+
+  const password = (req.headers?.authorization || req.query?.password || body.password || '').trim();
 
   const airtableToken = process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID;
@@ -24,14 +35,14 @@ module.exports = async function handler(req, res) {
 
     // Admin: list all notes
     if (list === 'all') {
-      if (password !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+      if (password !== (process.env.ADMIN_PASSWORD || '').trim()) return res.status(401).json({ error: 'Unauthorized' });
       const data = await airtableFetch('?fields[]=Topic&fields[]=Level&fields[]=Slug&sort[0][field]=Topic&sort[0][direction]=asc');
       return res.json(data.records || []);
     }
 
     // Admin: fetch one by slug (with password)
     if (slug && password) {
-      if (password !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+      if (password !== (process.env.ADMIN_PASSWORD || '').trim()) return res.status(401).json({ error: 'Unauthorized' });
       const formula = encodeURIComponent(`{Slug}='${slug}'`);
       const data = await airtableFetch(`?filterByFormula=${formula}`);
       return res.json(data.records?.[0] || null);
@@ -67,8 +78,8 @@ module.exports = async function handler(req, res) {
 
   // POST: admin save (password-protected)
   if (req.method === 'POST') {
-    const { slug, topic, level, content, subtopics } = req.body;
-    if (password !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+    if (password !== (process.env.ADMIN_PASSWORD || '').trim()) return res.status(401).json({ error: 'Unauthorized' });
+    const { slug, topic, level, content, subtopics } = body;
     if (!slug || !topic || !level) return res.status(400).json({ error: 'slug, topic, level required' });
 
     const formula = encodeURIComponent(`{Slug}='${slug}'`);
