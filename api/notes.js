@@ -4,8 +4,6 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const password = req.headers?.authorization || req.query?.password || req.body?.password || '';
-
   const airtableToken = process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID;
   if (!airtableToken || !baseId) return res.status(500).json({ error: 'Not configured' });
@@ -20,7 +18,7 @@ module.exports = async function handler(req, res) {
 
   // GET: public (for revise.html) or admin (for edit-notes.html)
   if (req.method === 'GET') {
-    const { subject, topic, slug, list } = req.query;
+    const { subject, topic, slug, password, list } = req.query;
 
     // Admin: list all notes
     if (list === 'all') {
@@ -67,8 +65,11 @@ module.exports = async function handler(req, res) {
 
   // POST: admin save (password-protected)
   if (req.method === 'POST') {
-    const { slug, topic, level, content, subtopics } = req.body;
+    // Read password from ALL possible sources
+    const password = req.body?.password || req.headers?.authorization || req.query?.password || '';
     if (password !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { slug, topic, level, content, subtopics } = req.body;
     if (!slug || !topic || !level) return res.status(400).json({ error: 'slug, topic, level required' });
 
     const formula = encodeURIComponent(`{Slug}='${slug}'`);
