@@ -777,8 +777,13 @@ async function apiFetch(url, options = {}) {
     };
     if (opts.body && typeof opts.body === 'object') opts.body = JSON.stringify(opts.body);
     const resp = await fetch(url, opts);
-    if (resp.status === 401) { const e = new Error('Unauthorized'); e.status = 401; throw e; }
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    if (!resp.ok) {
+        let detail = '';
+        try { const j = await resp.json(); detail = j.error || JSON.stringify(j); } catch(e) {}
+        const e = new Error(`HTTP ${resp.status}${detail ? ': ' + detail : ''}`);
+        e.status = resp.status;
+        throw e;
+    }
     return resp.json();
 }
 
