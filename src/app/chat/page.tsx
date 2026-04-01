@@ -89,8 +89,9 @@ function autoResize(el: HTMLTextAreaElement | null) {
   el.style.height = Math.min(el.scrollHeight, 140) + 'px';
 }
 
-/* ── User scroll intent flag (module-level, survives re-renders) ── */
+/* ── User scroll intent flags (module-level, survives re-renders) ── */
 let userHasScrolledUp = false;
+let isProgrammaticScroll = false;
 
 export default function ChatPage() {
   const [conversationStarted, setConversationStarted] = useState(false);
@@ -114,12 +115,14 @@ export default function ChatPage() {
     const el = chatScrollRef.current;
     if (!el) return;
     userHasScrolledUp = false;
+    isProgrammaticScroll = true;
     el.scrollTop = el.scrollHeight;
   };
 
   const scrollToBottomIfNear = () => {
     const el = chatScrollRef.current;
     if (!el || userHasScrolledUp) return;
+    isProgrammaticScroll = true;
     el.scrollTop = el.scrollHeight;
   };
 
@@ -128,6 +131,10 @@ export default function ChatPage() {
     const el = chatScrollRef.current;
     if (!el) return;
     const onScroll = () => {
+      if (isProgrammaticScroll) {
+        isProgrammaticScroll = false;
+        return; // ignore scroll events we triggered ourselves
+      }
       const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
       userHasScrolledUp = !isNearBottom;
     };
@@ -632,7 +639,7 @@ export default function ChatPage() {
       {/* Scrollable chat area */}
       <div
         ref={chatScrollRef}
-        style={{ flex: 1, overflowY: 'auto', scrollBehavior: 'smooth', scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,15%,88%) transparent' }}
+        style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,15%,88%) transparent' }}
       >
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
 

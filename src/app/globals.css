@@ -620,7 +620,6 @@ body {
 .lrn-scroll {
   flex: 1;
   overflow-y: auto;
-  scroll-behavior: smooth;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }

@@ -245,8 +245,9 @@ function renderContent(
   }
 }
 
-/* ── User scroll intent flag (module-level, survives re-renders) ── */
+/* ── User scroll intent flags (module-level, survives re-renders) ── */
 let lrnUserHasScrolledUp = false;
+let lrnIsProgrammaticScroll = false;
 
 // ── Main component (inner) ────────────────────────────────────────────────
 
@@ -306,12 +307,14 @@ function LearnInner() {
     const el = scrollRef.current;
     if (!el) return;
     lrnUserHasScrolledUp = false;
+    lrnIsProgrammaticScroll = true;
     el.scrollTop = el.scrollHeight;
   }, []);
 
   const scrollToBottomIfNear = useCallback(() => {
     const el = scrollRef.current;
     if (!el || lrnUserHasScrolledUp) return;
+    lrnIsProgrammaticScroll = true;
     el.scrollTop = el.scrollHeight;
   }, []);
 
@@ -320,6 +323,10 @@ function LearnInner() {
     const el = scrollRef.current;
     if (!el) return;
     const onScroll = () => {
+      if (lrnIsProgrammaticScroll) {
+        lrnIsProgrammaticScroll = false;
+        return; // ignore scroll events we triggered ourselves
+      }
       const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
       lrnUserHasScrolledUp = !isNearBottom;
     };
