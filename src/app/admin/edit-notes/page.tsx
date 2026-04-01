@@ -8,6 +8,13 @@ interface AirtableTopic {
   fields: { Topic?: string; Level?: string; Slug?: string };
 }
 
+interface Section {
+  title: string;
+  content: string;
+  isPractice?: boolean;
+  isSyllabus?: boolean;
+}
+
 type SaveState = 'idle' | 'saving' | 'saved';
 type ToastType = 'success' | 'error';
 
@@ -26,6 +33,8 @@ function renderMarkdown(text: string): string {
   text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { blocks.push(m); return `%%B${blocks.length - 1}%%`; });
   text = text.replace(/\$([^$\n]{1,300}?)\$/g, (_, m) => { inlines.push(m); return `%%I${inlines.length - 1}%%`; });
 
+  text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
+
   text = text.replace(
     /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*|\n##|$)/g,
     (_, firstLine, rest) => {
@@ -37,10 +46,11 @@ function renderMarkdown(text: string): string {
     `<div class="practice-callout"><div class="practice-callout-label">Try this</div>${q.trim()}</div>`
   );
   text = text.replace(/\[Ans(?:wer)?:\s*([\s\S]*?)\]/g, (_, ans) =>
-    `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal</span><span class="answer-text">${ans.trim()}</span></div>`
+    `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal answer</span><span class="answer-text">${ans.trim()}</span></div>`
   );
-  text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g,
-    '<div style="background:var(--color-card);border:1px solid var(--color-border);border-radius:6px;padding:10px 14px;margin:12px 0;font-size:14px"><strong>Note:</strong> $1</div>');
+  text = text.replace(/\*\*Solution:\*\*/g, '<div class="solution-header">Solution:</div>');
+  text = text.replace(/Step (\d+):\s*/g, '<div class="step-marker">Step $1</div>');
+  text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g, '<div class="note-box"><strong>Note:</strong> $1</div>');
   text = text.replace(/((?:^\|.+\|\s*\n)+)/gm, tableBlock => {
     const rows = tableBlock.trim().split('\n').filter(r => r.trim());
     let html = '<table>';
@@ -60,6 +70,10 @@ function renderMarkdown(text: string): string {
   text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
   text = text.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
   text = text.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(?:^<li>[\s\S]*?<\/li>\n?)+/gm, m => {
+    if (m.includes('<ul>')) return m;
+    return `<ol>${m}</ol>`;
+  });
   text = text.replace(/\n{2,}/g, '</p><p>');
   text = '<p>' + text + '</p>';
   text = text.replace(/<p>\s*<\/p>/g, '');
@@ -69,6 +83,59 @@ function renderMarkdown(text: string): string {
   text = text.replace(/%%B(\d+)%%/g, (_, i) => `$$${blocks[Number(i)]}$$`);
   text = text.replace(/%%I(\d+)%%/g, (_, i) => `$${inlines[Number(i)]}$`);
   return text;
+}
+
+function parseSections(content: string, topic: string): Section[] {
+  if (!content.trim()) return [];
+  const result: Section[] = [];
+
+  const parts = content.split(/(?=\*\*\d+[\.:]\s)/);
+  for (const part of parts) {
+    if (!part.trim()) continue;
+    const titleMatch = part.match(/^\*\*(?:\d+[\.:]\s*)?(.+?)\*\*/);
+    if (titleMatch) {
+      const body = part.replace(/^\*\*[^*\n]+\*\*\s*\n?/, '').trim();
+      result.push({ title: titleMatch[1].trim(), content: body });
+    } else if (result.length === 0 && part.trim()) {
+      result.push({ title: 'Overview', content: part.trim() });
+    }
+  }
+
+  if (result.length === 0) {
+    return [{ title: topic || 'Notes', content: content.trim() }];
+  }
+
+  // Synthesise Practice tab from [Try:...] / [Practice:...] blocks
+  const practiceItems: { source: string; block: string }[] = [];
+  result.forEach(sec => {
+    const re = /\[(?:Try|Practice):\s*([\s\S]*?)\]/g;
+    let m;
+    while ((m = re.exec(sec.content)) !== null) {
+      practiceItems.push({ source: sec.title, block: m[0] });
+    }
+  });
+
+  const existingPractice = result.findIndex(s => /^practice$/i.test(s.title.trim()));
+  if (existingPractice === -1 && practiceItems.length > 0) {
+    const practiceContent = practiceItems.map(p => `[FROM:${p.source}]\n${p.block}`).join('\n\n');
+    const syllIdx = result.findIndex(s => /syllabus/i.test(s.title));
+    const insertAt = syllIdx > -1 ? syllIdx : result.length;
+    result.splice(insertAt, 0, { title: 'Practice', content: practiceContent, isPractice: true });
+  } else if (existingPractice > -1) {
+    result[existingPractice].isPractice = true;
+  }
+
+  // Move Syllabus to end
+  const syllabusIdx = result.findIndex(s => /syllabus/i.test(s.title));
+  if (syllabusIdx > -1 && syllabusIdx < result.length - 1) {
+    const [syl] = result.splice(syllabusIdx, 1);
+    syl.isSyllabus = true;
+    result.push(syl);
+  } else if (syllabusIdx > -1) {
+    result[syllabusIdx].isSyllabus = true;
+  }
+
+  return result;
 }
 
 export default function EditNotesPage() {
@@ -119,7 +186,12 @@ export default function EditNotesPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumsRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const previewTabsRef = useRef<HTMLDivElement>(null);
   const panesRef = useRef<HTMLDivElement>(null);
+
+  // Preview section state (imperative, avoids re-renders on tab click)
+  const previewSectionsRef = useRef<Section[]>([]);
+  const activeSectionRef = useRef(0);
 
   // Resizable split
   const [editorHeightPx, setEditorHeightPx] = useState<number | null>(null);
@@ -286,16 +358,49 @@ export default function EditNotesPage() {
     } catch (e) { console.warn('[KaTeX]', e); }
   }
 
-  function updatePreview(contentOverride?: string) {
+  function renderPreviewTabs() {
+    const tabs = previewTabsRef.current;
+    if (!tabs) return;
+    const sections = previewSectionsRef.current;
+    const active = activeSectionRef.current;
+    tabs.innerHTML = sections.map((sec, i) => {
+      const cls = ['en-preview-pill',
+        sec.isPractice ? 'practice' : '',
+        sec.isSyllabus ? 'syllabus' : '',
+        i === active ? 'active' : '',
+      ].filter(Boolean).join(' ');
+      return `<button class="${cls}" data-idx="${i}">${escapeHtml(sec.title)}</button>`;
+    }).join('');
+  }
+
+  function renderPreviewSection() {
     if (!previewRef.current) return;
-    const text = contentOverride !== undefined ? contentOverride : (textareaRef.current?.value ?? '');
-    if (!text.trim()) { previewRef.current.innerHTML = ''; return; }
-    const firstHeading = text.match(/\*\*(?:\d+[\.:]\s*)?(.+?)\*\*/);
-    const title = firstHeading ? firstHeading[1].trim() : '';
+    const sections = previewSectionsRef.current;
+    const sec = sections[activeSectionRef.current];
+    if (!sec) { previewRef.current.innerHTML = ''; return; }
+    let subtitle = '';
+    if (sec.isPractice) subtitle = 'Questions from all sections — tap answers to reveal';
+    if (sec.isSyllabus) subtitle = 'Syllabus coverage for this topic';
     previewRef.current.innerHTML =
-      (title ? `<div class="section-title">${escapeHtml(title)}</div>` : '') +
-      renderMarkdown(text.replace(/^\*\*[^*]+\*\*\s*\n?/, ''));
+      `<div class="section-title">${escapeHtml(sec.title)}</div>` +
+      (subtitle ? `<div class="section-subtitle">${escapeHtml(subtitle)}</div>` : '') +
+      renderMarkdown(sec.content);
     renderMath(previewRef.current);
+  }
+
+  function updatePreview(contentOverride?: string) {
+    const text = contentOverride !== undefined ? contentOverride : (textareaRef.current?.value ?? '');
+    if (!text.trim()) {
+      if (previewTabsRef.current) previewTabsRef.current.innerHTML = '';
+      if (previewRef.current) previewRef.current.innerHTML = '';
+      previewSectionsRef.current = [];
+      return;
+    }
+    const sections = parseSections(text, metaTopicRef.current || 'Notes');
+    previewSectionsRef.current = sections;
+    if (activeSectionRef.current >= sections.length) activeSectionRef.current = 0;
+    renderPreviewTabs();
+    renderPreviewSection();
   }
 
   function schedulePreview() {
@@ -310,6 +415,37 @@ export default function EditNotesPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [katexLoaded]);
+
+  // Tab-click delegation on preview tab bar
+  useEffect(() => {
+    const tabs = previewTabsRef.current;
+    if (!tabs) return;
+    const onClick = (e: MouseEvent) => {
+      const btn = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
+      if (!btn) return;
+      const idx = parseInt(btn.dataset.idx ?? '0', 10);
+      if (isNaN(idx)) return;
+      activeSectionRef.current = idx;
+      // Update active class without full re-render
+      tabs.querySelectorAll('[data-idx]').forEach((p, i) => {
+        p.classList.toggle('active', i === idx);
+      });
+      // Render the selected section
+      const sec = previewSectionsRef.current[idx];
+      if (!sec || !previewRef.current) return;
+      let subtitle = '';
+      if (sec.isPractice) subtitle = 'Questions from all sections — tap answers to reveal';
+      if (sec.isSyllabus) subtitle = 'Syllabus coverage for this topic';
+      previewRef.current.innerHTML =
+        `<div class="section-title">${escapeHtml(sec.title)}</div>` +
+        (subtitle ? `<div class="section-subtitle">${escapeHtml(subtitle)}</div>` : '') +
+        renderMarkdown(sec.content);
+      renderMath(previewRef.current);
+    };
+    tabs.addEventListener('click', onClick);
+    return () => tabs.removeEventListener('click', onClick);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function loadTopic(slug: string) {
     setCurrentSlug(slug);
@@ -803,6 +939,7 @@ export default function EditNotesPage() {
                         <span className="en-pane-label">Preview</span>
                         <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }}>Live • KaTeX rendered</span>
                       </div>
+                      <div className="en-preview-tabs" ref={previewTabsRef} />
                       <div className="en-preview-wrap">
                         <div className="en-preview" ref={previewRef} />
                       </div>
