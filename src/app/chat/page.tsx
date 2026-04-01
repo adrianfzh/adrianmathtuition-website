@@ -91,6 +91,7 @@ function autoResize(el: HTMLTextAreaElement | null) {
 
 /* ── User scroll intent flag (module-level, survives re-renders) ── */
 let userHasScrolledUp = false;
+let isProgrammaticScroll = false;
 
 export default function ChatPage() {
   const [conversationStarted, setConversationStarted] = useState(false);
@@ -114,7 +115,9 @@ export default function ChatPage() {
     const el = chatScrollRef.current;
     if (!el) return;
     userHasScrolledUp = false;
+    isProgrammaticScroll = true;
     el.scrollTop = el.scrollHeight;
+    requestAnimationFrame(() => { isProgrammaticScroll = false; });
   };
 
   /* ── Track user scroll intent ── */
@@ -122,7 +125,13 @@ export default function ChatPage() {
     const el = chatScrollRef.current;
     if (!el) return;
     const onScroll = () => {
-      userHasScrolledUp = el.scrollHeight - el.scrollTop - el.clientHeight > 150;
+      if (isProgrammaticScroll) return;
+      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+      if (!isNearBottom) {
+        userHasScrolledUp = true;
+      } else {
+        userHasScrolledUp = false;
+      }
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
@@ -135,7 +144,9 @@ export default function ChatPage() {
     if (!scroll || !inner) return;
     const observer = new ResizeObserver(() => {
       if (!userHasScrolledUp) {
+        isProgrammaticScroll = true;
         scroll.scrollTop = scroll.scrollHeight;
+        requestAnimationFrame(() => { isProgrammaticScroll = false; });
       }
     });
     observer.observe(inner);
@@ -389,6 +400,7 @@ export default function ChatPage() {
             if (parsed.done) {
               if (renderTimerRef.current) { cancelAnimationFrame(renderTimerRef.current); renderTimerRef.current = null; }
               renderToElement(streamDiv, fullText);
+              userHasScrolledUp = false;
             }
           } catch { /* ignore parse errors */ }
         }
