@@ -107,6 +107,14 @@ export default function EditNotesPage() {
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // AI assistant
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiInstruction, setAiInstruction] = useState('');
+  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const aiInstructionRef = useRef('');
+  const aiDraftRef = useRef('');
+  const aiPreviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // DOM refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumsRef = useRef<HTMLDivElement>(null);
@@ -122,6 +130,13 @@ export default function EditNotesPage() {
   useEffect(() => { metaLevelRef.current = metaLevel; }, [metaLevel]);
   useEffect(() => { slugDisplayRef.current = slugDisplay; }, [slugDisplay]);
   useEffect(() => { currentSlugRef.current = currentSlug; }, [currentSlug]);
+  useEffect(() => { aiInstructionRef.current = aiInstruction; }, [aiInstruction]);
+
+  // Restore last AI instruction from sessionStorage
+  useEffect(() => {
+    const saved = sessionStorage.getItem('editNotesAiInstruction');
+    if (saved) setAiInstruction(saved);
+  }, []);
 
   // Restore split ratio from sessionStorage once panes are mounted
   useEffect(() => {
@@ -271,9 +286,9 @@ export default function EditNotesPage() {
     } catch (e) { console.warn('[KaTeX]', e); }
   }
 
-  function updatePreview() {
-    if (!textareaRef.current || !previewRef.current) return;
-    const text = textareaRef.current.value;
+  function updatePreview(contentOverride?: string) {
+    if (!previewRef.current) return;
+    const text = contentOverride !== undefined ? contentOverride : (textareaRef.current?.value ?? '');
     if (!text.trim()) { previewRef.current.innerHTML = ''; return; }
     const firstHeading = text.match(/\*\*(?:\d+[\.:]\s*)?(.+?)\*\*/);
     const title = firstHeading ? firstHeading[1].trim() : '';
@@ -387,6 +402,83 @@ export default function EditNotesPage() {
       showToast(`Save failed: ${(err as Error).message}`, 'error');
     }
   }
+
+  // ── AI assistant ────────────────────────────────────────────────
+  async function callAI() {
+    const instruction = aiInstructionRef.current.trim();
+    if (!instruction) return;
+    sessionStorage.setItem('editNotesAiInstruction', instruction);
+    setAiStatus('loading');
+    aiDraftRef.current = '';
+
+    try {
+      const resp = await fetch('/api/edit-notes-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instruction,
+          currentContent: textareaRef.current?.value ?? '',
+          topic: metaTopicRef.current,
+          subject: metaLevelRef.current,
+          password: passwordRef.current,
+        }),
+      });
+      if (!resp.ok) {
+        let msg = `HTTP ${resp.status}`;
+        try { const j = await resp.json(); msg = j.error || msg; } catch { /**/ }
+        throw new Error(msg);
+      }
+
+      const reader = resp.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          let data: Record<string, unknown>;
+          try { data = JSON.parse(line.slice(6)); } catch { continue; }
+          if (data.chunk) {
+            aiDraftRef.current += data.chunk as string;
+            if (aiPreviewTimerRef.current) clearTimeout(aiPreviewTimerRef.current);
+            aiPreviewTimerRef.current = setTimeout(() => updatePreview(aiDraftRef.current), 50);
+          }
+          if (data.done) {
+            if (aiPreviewTimerRef.current) clearTimeout(aiPreviewTimerRef.current);
+            updatePreview(aiDraftRef.current);
+            setAiStatus('done');
+          }
+          if (data.error) throw new Error(data.error as string);
+        }
+      }
+    } catch (err) {
+      setAiStatus('error');
+      showToast(`AI error: ${(err as Error).message}`, 'error');
+      updatePreview(); // restore preview to editor content
+    }
+  }
+
+  function acceptAI() {
+    if (!textareaRef.current) return;
+    textareaRef.current.value = aiDraftRef.current;
+    aiDraftRef.current = '';
+    updateLineNumbers();
+    updatePreview();
+    setAiStatus('idle');
+    setAiOpen(false);
+  }
+
+  function rejectAI() {
+    aiDraftRef.current = '';
+    setAiStatus('idle');
+    updatePreview(); // restore preview to editor content
+  }
+  // ────────────────────────────────────────────────────────────────
 
   const filteredTopics = topicSearch
     ? topics.filter(t => t.fields.Topic?.toLowerCase().includes(topicSearch.toLowerCase()))
@@ -546,6 +638,14 @@ export default function EditNotesPage() {
                       ↗ View Live
                     </button>
                     <button
+                      className={`en-ai-btn${aiOpen ? ' active' : ''}`}
+                      disabled={!currentSlug || currentSlug === '__new__'}
+                      onClick={() => setAiOpen(o => !o)}
+                      title="AI assistant — edit notes with natural language"
+                    >
+                      ✨ AI
+                    </button>
+                    <button
                       className={`en-btn-save${saveState === 'saved' ? ' saved' : ''}`}
                       onClick={saveNotes}
                       disabled={saveState === 'saving'}
@@ -569,6 +669,83 @@ export default function EditNotesPage() {
                       )}
                     </button>
                   </div>
+
+                  {/* AI Panel */}
+                  {aiOpen && (
+                    <div className="en-ai-panel">
+                      <div className="en-ai-chips">
+                        {[
+                          '+ Worked example',
+                          '+ Practice questions',
+                          '+ Summary table',
+                          'Simplify language',
+                          'Add step markers',
+                        ].map(chip => (
+                          <button
+                            key={chip}
+                            className="en-ai-chip"
+                            disabled={aiStatus === 'loading'}
+                            onClick={() => setAiInstruction(chip)}
+                          >
+                            {chip}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="en-ai-row">
+                        <textarea
+                          className="en-ai-textarea"
+                          placeholder="e.g. Add a worked example for completing the square"
+                          value={aiInstruction}
+                          rows={2}
+                          disabled={aiStatus === 'loading'}
+                          onChange={e => {
+                            setAiInstruction(e.target.value);
+                            sessionStorage.setItem('editNotesAiInstruction', e.target.value);
+                          }}
+                          onKeyDown={e => {
+                            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                              e.preventDefault();
+                              if (aiStatus !== 'loading' && aiInstruction.trim()) callAI();
+                            }
+                          }}
+                        />
+                        <div className="en-ai-actions">
+                          {aiStatus === 'done' ? (
+                            <>
+                              <button className="en-ai-accept" onClick={acceptAI}>✓ Accept</button>
+                              <button className="en-ai-reject" onClick={rejectAI}>✕ Reject</button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                className="en-ai-apply"
+                                onClick={callAI}
+                                disabled={aiStatus === 'loading' || !aiInstruction.trim()}
+                              >
+                                {aiStatus === 'loading' ? 'Generating…' : 'Apply'}
+                              </button>
+                              <button
+                                className="en-ai-cancel"
+                                onClick={() => { rejectAI(); setAiOpen(false); }}
+                                disabled={aiStatus === 'loading'}
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {aiStatus === 'loading' && (
+                        <div className="en-ai-status">⏳ Generating — preview updates live…</div>
+                      )}
+                      {aiStatus === 'error' && (
+                        <div className="en-ai-status error">⚠️ Generation failed. Try again.</div>
+                      )}
+                      {aiStatus === 'done' && (
+                        <div className="en-ai-status done">✓ Done — accept to apply changes, or reject to discard.</div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Panes */}
                   <div className="en-panes" ref={panesRef}>

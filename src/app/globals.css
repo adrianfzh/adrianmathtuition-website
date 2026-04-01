@@ -475,6 +475,34 @@ body {
 .en-btn-view-live { padding: 7px 14px; background: var(--color-background); color: var(--color-navy); border: 1.5px solid var(--color-border); border-radius: 7px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.15s, background 0.15s; white-space: nowrap; flex-shrink: 0; }
 .en-btn-view-live:hover:not(:disabled) { border-color: var(--color-navy); background: var(--color-muted); }
 .en-btn-view-live:disabled { opacity: 0.4; cursor: default; }
+/* AI assistant */
+.en-ai-btn { padding: 7px 14px; background: hsl(38,90%,92%); color: hsl(38,80%,32%); border: 1.5px solid hsl(38,70%,75%); border-radius: 7px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
+.en-ai-btn:hover:not(:disabled) { background: hsl(38,90%,84%); border-color: hsl(38,70%,60%); }
+.en-ai-btn.active { background: hsl(38,85%,78%); border-color: hsl(38,70%,55%); }
+.en-ai-btn:disabled { opacity: 0.4; cursor: default; }
+.en-ai-panel { padding: 10px 16px 12px; background: hsl(42,80%,97%); border-bottom: 1.5px solid hsl(38,65%,82%); flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
+.en-ai-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.en-ai-chip { padding: 3px 10px; background: white; border: 1px solid hsl(38,60%,76%); border-radius: 20px; font-family: var(--font-sans); font-size: 12px; color: hsl(38,75%,30%); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+.en-ai-chip:hover:not(:disabled) { background: hsl(38,90%,88%); border-color: hsl(38,65%,60%); }
+.en-ai-chip:disabled { opacity: 0.5; cursor: default; }
+.en-ai-row { display: flex; gap: 8px; align-items: flex-start; }
+.en-ai-textarea { flex: 1; padding: 8px 10px; border: 1.5px solid hsl(38,60%,76%); border-radius: 7px; font-family: var(--font-sans); font-size: 13px; background: white; color: var(--color-foreground); outline: none; resize: none; transition: border-color 0.15s; line-height: 1.5; }
+.en-ai-textarea:focus { border-color: hsl(38,70%,55%); }
+.en-ai-textarea:disabled { opacity: 0.6; }
+.en-ai-actions { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+.en-ai-apply { padding: 7px 16px; background: hsl(38,85%,58%); color: hsl(30,60%,14%); border: none; border-radius: 6px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
+.en-ai-apply:hover:not(:disabled) { opacity: 0.85; }
+.en-ai-apply:disabled { opacity: 0.45; cursor: default; }
+.en-ai-cancel { padding: 7px 16px; background: transparent; color: var(--color-muted-foreground); border: 1px solid var(--color-border); border-radius: 6px; font-family: var(--font-sans); font-size: 13px; cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+.en-ai-cancel:hover:not(:disabled) { background: var(--color-muted); }
+.en-ai-cancel:disabled { opacity: 0.4; cursor: default; }
+.en-ai-accept { padding: 7px 16px; background: hsl(142,55%,40%); color: white; border: none; border-radius: 6px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
+.en-ai-accept:hover { opacity: 0.85; }
+.en-ai-reject { padding: 7px 16px; background: transparent; color: hsl(0,65%,48%); border: 1.5px solid hsl(0,65%,76%); border-radius: 6px; font-family: var(--font-sans); font-size: 13px; cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+.en-ai-reject:hover { background: hsl(0,65%,97%); }
+.en-ai-status { font-size: 12px; color: hsl(38,70%,38%); padding: 0 2px; }
+.en-ai-status.error { color: hsl(0,65%,48%); }
+.en-ai-status.done { color: hsl(142,55%,33%); }
 .en-pane-header { padding: 6px 16px; background: var(--color-muted); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-shrink: 0; }
 .en-pane-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-muted-foreground); }
 .en-line-count { font-family: 'Fira Code', monospace; font-size: 11px; color: var(--color-muted-foreground); }
