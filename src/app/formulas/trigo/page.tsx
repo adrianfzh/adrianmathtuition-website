@@ -28,7 +28,7 @@ export default function TrigoFormulasPage() {
 
       {/* Pythagorean Identities */}
       <FormulaSection title="Pythagorean Identities">
-        <FormulaRow latex="\sin^2\theta + \cos^2\theta = 1 \implies \sin^2\theta = 1 - \cos^2\theta" />
+        <FormulaRow latex="\sin^2\theta + \cos^2\theta = 1" />
         <FormulaRow latex="1 + \tan^2\theta = \sec^2\theta" />
         <FormulaRow latex="1 + \cot^2\theta = \csc^2\theta" />
         <FormulaRow latex="\cos^2\theta = 1 - \sin^2\theta" />
@@ -43,15 +43,10 @@ export default function TrigoFormulasPage() {
         <FormulaRow latex="\tan 2A = \dfrac{2\tan A}{1 - \tan^2 A}" />
       </FormulaSection>
 
-      {/* Using the Double Angle Formula */}
-      <FormulaSection
-        title="Using the Double Angle Formula"
-        subtitle="The formula applies whenever one angle is exactly double another."
-      >
-        <FormulaRow
-          latex="\sin 4\theta = 2\sin 2\theta\,\cos 2\theta"
-          annotation="← 4θ = 2 × (2θ), angle is doubled"
-        />
+      {/* Other Ways To Use Double Angle Formula */}
+      <FormulaSection title="Other Ways To Use Double Angle Formula">
+        <FormulaRow latex="\sin 4\theta = 2\sin 2\theta\,\cos 2\theta" />
+        <FormulaNoteBox html="<div style='text-align:center'>$4\theta = 2 \times (2\theta)$, angle is doubled</div>" />
       </FormulaSection>
 
       {/* Half-Angle Formulae */}

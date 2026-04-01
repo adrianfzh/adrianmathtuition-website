@@ -5,142 +5,133 @@ import FormulaPageLayout, {
   FormulaNoteBox,
 } from '@/components/FormulaPageLayout';
 
-/* ── Shared SVG helpers ─────────────────────────────────────────────────── */
-
-/** Axes with arrowhead polygons */
-function Axes({ ox, oy }: { ox: number; oy: number }) {
+/* ── Shared axis component ─────────────────────────────────────────────── */
+function Axes({ ox, oy, w = 320, h = 240 }: { ox: number; oy: number; w?: number; h?: number }) {
   return (
     <>
-      <line x1={10} y1={oy} x2={350} y2={oy} stroke="#334466" strokeWidth="1.5" />
-      <polygon points={`350,${oy} 343,${oy - 4} 343,${oy + 4}`} fill="#334466" />
-      <line x1={ox} y1={225} x2={ox} y2={10} stroke="#334466" strokeWidth="1.5" />
-      <polygon points={`${ox},10 ${ox - 4},17 ${ox + 4},17`} fill="#334466" />
-      <text x={354} y={oy + 4} fontSize={13} fill="#334466" fontFamily="serif" fontStyle="italic">x</text>
-      <text x={ox + 4} y={8} fontSize={13} fill="#334466" fontFamily="serif" fontStyle="italic">y</text>
+      {/* x-axis */}
+      <line x1={12} y1={oy} x2={w - 8} y2={oy} stroke="#222" strokeWidth="1.8" />
+      <polygon points={`${w - 8},${oy} ${w - 16},${oy - 5} ${w - 16},${oy + 5}`} fill="#222" />
+      {/* y-axis */}
+      <line x1={ox} y1={h - 10} x2={ox} y2={12} stroke="#222" strokeWidth="1.8" />
+      <polygon points={`${ox},12 ${ox - 5},20 ${ox + 5},20`} fill="#222" />
+      {/* labels */}
+      <text x={w - 6} y={oy + 14} fontSize={14} fill="#222" fontFamily="serif" fontStyle="italic">x</text>
+      <text x={ox + 6} y={10} fontSize={14} fill="#222" fontFamily="serif" fontStyle="italic">y</text>
     </>
   );
 }
 
-/* ── Exponential graph ──────────────────────────────────────────────────── */
+/* ── Exponential graph ─────────────────────────────────────────────────── */
+// Matches reference: solid=eˣ, dashed=e⁻ˣ and −eˣ, dash-dot=−e⁻ˣ
+// All black. ViewBox 320×240, origin (130,120), scale 34px/unit.
 function ExpGraph() {
-  // ViewBox 360×230, origin (150, 115), scale 35px/unit
-  const navy = '#1b2a4a';
-  const blue = '#5b7bb3';
+  const DASH = '8,5';
+  const DASHDOT = '8,4,2,4';
 
   return (
     <svg
-      viewBox="0 0 360 230"
+      viewBox="0 0 320 240"
       width="100%"
-      style={{ maxWidth: 420, display: 'block', margin: '12px auto' }}
-      aria-label="Exponential graphs showing y=eˣ, y=e⁻ˣ, y=-eˣ, y=-e⁻ˣ"
+      style={{ maxWidth: 400, display: 'block', margin: '8px auto' }}
+      aria-label="Exponential graphs"
     >
-      <Axes ox={150} oy={115} />
+      <Axes ox={130} oy={120} w={320} h={240} />
 
-      {/* y = eˣ — navy solid, rises steeply upper-right */}
+      {/* y = eˣ — solid, rises steeply upper-right, passes through (0,1)=(130,86) */}
       <path
-        d="M 10,114 C 70,113 115,105 150,80 C 165,63 179,27 183,12"
-        fill="none" stroke={navy} strokeWidth="2.2"
+        d="M 12,119 C 55,118 95,112 130,86 C 150,70 162,36 166,14"
+        fill="none" stroke="#222" strokeWidth="2"
       />
 
-      {/* y = e⁻ˣ — blue dashed, mirror across y-axis */}
+      {/* y = e⁻ˣ — dashed, falls from upper-left, mirror of eˣ */}
       <path
-        d="M 290,114 C 230,113 185,105 150,80 C 135,63 121,27 117,12"
-        fill="none" stroke={blue} strokeWidth="2.2" strokeDasharray="7,4"
+        d="M 248,119 C 205,118 165,112 130,86 C 110,70 98,36 94,14"
+        fill="none" stroke="#222" strokeWidth="2" strokeDasharray={DASH}
       />
 
-      {/* y = −eˣ — navy solid, mirror below x-axis */}
+      {/* y = −eˣ — dashed, mirror of eˣ below x-axis */}
       <path
-        d="M 10,116 C 70,117 115,125 150,150 C 165,167 179,203 183,218"
-        fill="none" stroke={navy} strokeWidth="2.2"
+        d="M 12,121 C 55,122 95,128 130,154 C 150,170 162,204 166,226"
+        fill="none" stroke="#222" strokeWidth="2" strokeDasharray={DASH}
       />
 
-      {/* y = −e⁻ˣ — blue dashed */}
+      {/* y = −e⁻ˣ — dash-dot, lower-left */}
       <path
-        d="M 290,116 C 230,117 185,125 150,150 C 135,167 121,203 117,218"
-        fill="none" stroke={blue} strokeWidth="2.2" strokeDasharray="7,4"
+        d="M 248,121 C 205,122 165,128 130,154 C 110,170 98,204 94,226"
+        fill="none" stroke="#222" strokeWidth="2" strokeDasharray={DASHDOT}
       />
 
-      {/* y-intercept dots at (0,1) and (0,−1) */}
-      <circle cx={150} cy={80} r={2.5} fill="#334466" />
-      <circle cx={150} cy={150} r={2.5} fill="#334466" />
-      <text x={142} y={83} fontSize={10} fill="#334466" textAnchor="end">1</text>
-      <text x={142} y={153} fontSize={10} fill="#334466" textAnchor="end">−1</text>
+      {/* (0,1) and (0,−1) dots */}
+      <circle cx={130} cy={86} r={2.5} fill="#222" />
+      <circle cx={130} cy={154} r={2.5} fill="#222" />
 
-      {/* Curve labels — top-right: y=eˣ */}
-      <text x={186} y={14} fontSize={11} fill={navy} fontFamily="Georgia,serif">
-        {'y = e'}<tspan dy={-4} fontSize={9}>x</tspan>
+      {/* Curve labels */}
+      <text x={93} y={13} fontSize={11} fill="#222" fontFamily="serif" textAnchor="end">
+        y = e<tspan dy={-4} fontSize={9}>{'−x'}</tspan>
       </text>
-      {/* top-left: y=e⁻ˣ */}
-      <text x={114} y={14} fontSize={11} fill={blue} fontFamily="Georgia,serif" textAnchor="end">
-        {'y = e'}<tspan dy={-4} fontSize={9}>{'−x'}</tspan>
+      <text x={169} y={13} fontSize={11} fill="#222" fontFamily="serif">
+        y = e<tspan dy={-4} fontSize={9}>x</tspan>
       </text>
-      {/* bottom-right: y=−eˣ */}
-      <text x={186} y={226} fontSize={11} fill={navy} fontFamily="Georgia,serif">
-        {'y = −e'}<tspan dy={-4} fontSize={9}>x</tspan>
+      <text x={93} y={229} fontSize={11} fill="#222" fontFamily="serif" textAnchor="end">
+        y = −e<tspan dy={-4} fontSize={9}>{'−x'}</tspan>
       </text>
-      {/* bottom-left: y=−e⁻ˣ */}
-      <text x={114} y={226} fontSize={11} fill={blue} fontFamily="Georgia,serif" textAnchor="end">
-        {'y = −e'}<tspan dy={-4} fontSize={9}>{'−x'}</tspan>
+      <text x={169} y={229} fontSize={11} fill="#222" fontFamily="serif">
+        y = −e<tspan dy={-4} fontSize={9}>x</tspan>
       </text>
     </svg>
   );
 }
 
-/* ── Logarithmic graph ──────────────────────────────────────────────────── */
+/* ── Logarithmic graph ─────────────────────────────────────────────────── */
+// Matches reference: solid=lnx, dashed=ln(-x) and −lnx, dash-dot=−ln(-x)
+// ViewBox 320×240, origin (130,120), scale 34px/unit.
 function LogGraph() {
-  // Same coordinate system: origin (150, 115), scale 35px/unit
-  const navy = '#1b2a4a';
-  const blue = '#5b7bb3';
+  const DASH = '8,5';
+  const DASHDOT = '8,4,2,4';
 
   return (
     <svg
-      viewBox="0 0 360 230"
+      viewBox="0 0 320 240"
       width="100%"
-      style={{ maxWidth: 420, display: 'block', margin: '12px auto' }}
-      aria-label="Logarithmic graphs showing y=ln x, y=ln(-x), y=-ln x, y=-ln(-x)"
+      style={{ maxWidth: 400, display: 'block', margin: '8px auto' }}
+      aria-label="Logarithmic graphs"
     >
-      <Axes ox={150} oy={115} />
+      <Axes ox={130} oy={120} w={320} h={240} />
 
-      {/* y = ln(x) — navy solid: starts near x=0⁺ bottom, crosses (1,0), rises slowly right */}
-      {/* At x=0.07→SVG(152,216); x=1→SVG(185,115); x=5.5→SVG(342,58) */}
+      {/* y = ln x — solid. At x=1→SVG(164,120); rises slowly right, falls steeply near x=0 */}
       <path
-        d="M 152,216 C 153,192 158,167 170,138 C 179,120 184,116 185,115 C 215,98 270,74 342,56"
-        fill="none" stroke={navy} strokeWidth="2.2"
+        d="M 132,228 C 133,200 138,172 150,144 C 158,126 163,121 164,120 C 192,104 248,80 308,62"
+        fill="none" stroke="#222" strokeWidth="2"
       />
 
-      {/* y = ln(−x) — blue dashed: mirror across y-axis */}
+      {/* y = ln(−x) — dashed. Mirror of lnx across y-axis */}
       <path
-        d="M 148,216 C 147,192 142,167 130,138 C 121,120 116,116 115,115 C 85,98 30,74 18,56"
-        fill="none" stroke={blue} strokeWidth="2.2" strokeDasharray="7,4"
+        d="M 128,228 C 127,200 122,172 110,144 C 102,126 97,121 96,120 C 68,104 22,80 12,74"
+        fill="none" stroke="#222" strokeWidth="2" strokeDasharray={DASH}
       />
 
-      {/* y = −ln(x) — navy solid: mirror across x-axis */}
+      {/* y = −ln x — dashed. Mirror of lnx across x-axis */}
       <path
-        d="M 152,14 C 153,38 158,63 170,92 C 179,110 184,114 185,115 C 215,132 270,156 342,174"
-        fill="none" stroke={navy} strokeWidth="2.2"
+        d="M 132,12 C 133,40 138,68 150,96 C 158,114 163,119 164,120 C 192,136 248,160 308,178"
+        fill="none" stroke="#222" strokeWidth="2" strokeDasharray={DASH}
       />
 
-      {/* y = −ln(−x) — blue dashed */}
+      {/* y = −ln(−x) — dash-dot. Mirror across both axes */}
       <path
-        d="M 148,14 C 147,38 142,63 130,92 C 121,110 116,114 115,115 C 85,132 30,156 18,174"
-        fill="none" stroke={blue} strokeWidth="2.2" strokeDasharray="7,4"
+        d="M 128,12 C 127,40 122,68 110,96 C 102,114 97,119 96,120 C 68,136 22,160 12,166"
+        fill="none" stroke="#222" strokeWidth="2" strokeDasharray={DASHDOT}
       />
 
-      {/* x-intercept dots at (1,0) and (−1,0) */}
-      <circle cx={185} cy={115} r={2.5} fill="#334466" />
-      <circle cx={115} cy={115} r={2.5} fill="#334466" />
-      <text x={185} y={127} fontSize={10} fill="#334466" textAnchor="middle">1</text>
-      <text x={115} y={127} fontSize={10} fill="#334466" textAnchor="middle">−1</text>
+      {/* x-intercept dots at (1,0)=(164,120) and (−1,0)=(96,120) */}
+      <circle cx={164} cy={120} r={2.5} fill="#222" />
+      <circle cx={96} cy={120} r={2.5} fill="#222" />
 
       {/* Curve labels */}
-      {/* top-right: y = ln x */}
-      <text x={345} y={54} fontSize={11} fill={navy} fontFamily="Georgia,serif">y = ln x</text>
-      {/* top-left: y = ln(−x) */}
-      <text x={15} y={54} fontSize={11} fill={blue} fontFamily="Georgia,serif" textAnchor="end">{'y = ln(−x)'}</text>
-      {/* bottom-right: y = −ln x */}
-      <text x={345} y={176} fontSize={11} fill={navy} fontFamily="Georgia,serif">{'y = −ln x'}</text>
-      {/* bottom-left: y = −ln(−x) */}
-      <text x={15} y={176} fontSize={11} fill={blue} fontFamily="Georgia,serif" textAnchor="end">{'y = −ln(−x)'}</text>
+      <text x={16} y={70} fontSize={11} fill="#222" fontFamily="serif">y = ln(−x)</text>
+      <text x={270} y={60} fontSize={11} fill="#222" fontFamily="serif">y = ln x</text>
+      <text x={16} y={169} fontSize={11} fill="#222" fontFamily="serif">y = −ln(−x)</text>
+      <text x={262} y={182} fontSize={11} fill="#222" fontFamily="serif">y = −ln x</text>
     </svg>
   );
 }
@@ -153,12 +144,10 @@ export default function ExpLogGraphsPage() {
       subtitle="O-Level A Math"
       contentId="exp-log-content"
     >
-      {/* Exponential graphs */}
       <FormulaSection title="Exponential Graphs" subtitle="4 basic shapes:">
         <ExpGraph />
       </FormulaSection>
 
-      {/* Logarithmic graphs */}
       <FormulaSection title="Logarithmic Graphs" subtitle="4 basic shapes:">
         <LogGraph />
         <FormulaNoteBox html="<strong>Asymptote of $y = \ln(ax - b)$:</strong><br>Set argument to zero: $ax - b = 0 \implies x = \dfrac{b}{a}$" />

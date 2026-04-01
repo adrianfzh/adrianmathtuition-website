@@ -32,20 +32,25 @@ const PF_ROWS: [string, string, string][] = [
 
 export default function PartialFractionsPage() {
   const tableHtml = `
-    <table class="formula-table" style="min-width:100%;table-layout:auto">
+    <table class="formula-table" style="min-width:580px;font-size:88%;table-layout:fixed;width:100%">
+      <colgroup>
+        <col style="width:38px"/>
+        <col style="width:50%"/>
+        <col style="width:50%"/>
+      </colgroup>
       <thead>
         <tr>
-          <th style="width:44px;text-align:center">#</th>
-          <th style="text-align:center">Expression</th>
-          <th style="text-align:center">Partial Fraction Form</th>
+          <th style="text-align:center;padding:10px 6px">#</th>
+          <th style="text-align:center;padding:10px 16px">Expression</th>
+          <th style="text-align:center;padding:10px 16px">Partial Fraction Form</th>
         </tr>
       </thead>
       <tbody>
         ${PF_ROWS.map(([num, expr, pf]) => `
           <tr>
-            <td style="text-align:center;padding:14px 10px">${num}</td>
-            <td style="padding:14px 20px;text-align:center">$${expr}$</td>
-            <td style="padding:14px 20px;text-align:center">$${pf}$</td>
+            <td style="text-align:center;padding:16px 6px">${num}</td>
+            <td style="padding:16px 20px;text-align:center">$${expr}$</td>
+            <td style="padding:16px 20px;text-align:center">$${pf}$</td>
           </tr>
         `).join('')}
       </tbody>

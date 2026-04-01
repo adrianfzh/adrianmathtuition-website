@@ -42,7 +42,7 @@ export default function CoordinateGeometryPage() {
       <FormulaSection title="Circles">
         <FormulaRow latex="(x - a)^2 + (y - b)^2 = r^2" />
         <FormulaRow latex="x^2 + y^2 - 2ax - 2by + c = 0" />
-        <FormulaNoteBox html="where centre $= (a, b)$ and radius $= r$<br>$r = \sqrt{a^2 + b^2 - c}$" />
+        <FormulaNoteBox html="<div style='text-align:center'>where centre $= (a, b)$ and radius $= r$<br>$r = \sqrt{a^2 + b^2 - c}$</div>" />
       </FormulaSection>
     </FormulaPageLayout>
   );
