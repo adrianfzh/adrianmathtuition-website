@@ -77,6 +77,18 @@ const MathIcon = () => (
   </svg>
 );
 
+/* ── Coordinate axes icon SVG ── */
+const CoordAxesIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="hsl(220,40%,32%)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    {/* y-axis */}
+    <line x1="5" y1="15" x2="5" y2="2" />
+    <polyline points="3.2,4.2 5,1.8 6.8,4.2" />
+    {/* x-axis */}
+    <line x1="3" y1="11" x2="16" y2="11" />
+    <polyline points="13.8,9.2 16.2,11 13.8,12.8" />
+  </svg>
+);
+
 /* ── renderToElement (KaTeX inline render) ── */
 function renderToElement(el: HTMLDivElement, text: string) {
   text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
@@ -213,10 +225,10 @@ function SidebarContent({
               { id: 'indices',             emoji: 'aⁿ', title: 'Indices',                  subtitle: 'Laws of Exponents' },
               { id: 'logarithms',          emoji: '㏒', title: 'Logarithms',               subtitle: 'Laws of Logarithms' },
               { id: 'exp-log-graphs',      emoji: '📈', title: 'Exp & Log Graphs',        subtitle: 'Graph shapes & asymptotes' },
-              { id: 'coord-geom',          emoji: 'xy',    title: 'Coordinate Geometry',      subtitle: 'Geometry & Circles' },
+              { id: 'coord-geom',          emoji: 'xy',    icon: <CoordAxesIcon />, title: 'Coordinate Geometry',      subtitle: 'Geometry & Circles' },
               { id: 'trigo',               emoji: '📐',   title: 'Trigonometry',             subtitle: 'Trigonometric identities' },
               { id: 'differentiation',     emoji: 'dy/dx', title: 'Differentiation',          subtitle: 'Derivatives & rules' },
-            ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
+            ] as { id: FormulaSheetId; emoji: string; icon?: React.ReactNode; title: string; subtitle: string }[]).map((item, idx, arr) => (
               <button
                 key={item.id}
                 className="menu-formula-btn"
@@ -228,7 +240,7 @@ function SidebarContent({
                   cursor: 'pointer', transition: 'background 0.12s',
                 }}
               >
-                <span style={{ fontSize: 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-block' }}>{item.emoji}</span>
+                <span style={{ fontSize: 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon ?? item.emoji}</span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
                   <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
@@ -279,7 +291,7 @@ function SidebarContent({
               { id: 'em-indices',               emoji: 'aⁿ', title: 'Indices',                   subtitle: 'Laws of Exponents' },
               { id: 'em-standard-form',         emoji: '×10',title: 'Standard Form',             subtitle: 'SI prefixes' },
               { id: 'em-interest',              emoji: '%',  title: 'Interest',                   subtitle: 'Simple & compound' },
-              { id: 'em-coordinate-geometry',   emoji: 'xy', title: 'Coordinate Geometry',        subtitle: 'Linear and quadratic graphs' },
+              { id: 'em-coordinate-geometry',   emoji: 'xy', icon: <CoordAxesIcon />, title: 'Coordinate Geometry',        subtitle: 'Linear and quadratic graphs' },
               { id: 'em-congruency-similarity', emoji: '≅',  title: 'Congruency & Similarity',    subtitle: 'Triangles & ratios' },
               { id: 'em-trigonometry',          emoji: '📐', title: 'Trigonometry',               subtitle: 'Sin/cos rules & area' },
               { id: 'em-mensuration',           emoji: '📦', title: 'Mensuration',                subtitle: 'Area & volume' },
@@ -287,7 +299,7 @@ function SidebarContent({
               { id: 'em-circular-measure',      emoji: '⭕', title: 'Circular Measure',           subtitle: 'Arc length & sector area' },
               { id: 'em-polygons',              emoji: '⬡',  title: 'Polygons',                   subtitle: 'Interior & exterior angles', emojiSize: 22 },
               { id: 'em-sets',                  emoji: '{}', title: 'Sets',                       subtitle: 'Set notation & definitions' },
-            ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string; emojiSize?: number }[]).map((item, idx, arr) => (
+            ] as { id: FormulaSheetId; emoji: string; icon?: React.ReactNode; title: string; subtitle: string; emojiSize?: number }[]).map((item, idx, arr) => (
               <button
                 key={item.id}
                 className="menu-formula-btn"
@@ -299,7 +311,7 @@ function SidebarContent({
                   cursor: 'pointer', transition: 'background 0.12s',
                 }}
               >
-                <span style={{ fontSize: item.emojiSize ?? 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-block' }}>{item.emoji}</span>
+                <span style={{ fontSize: item.emojiSize ?? 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon ?? item.emoji}</span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
                   <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
