@@ -89,9 +89,6 @@ function autoResize(el: HTMLTextAreaElement | null) {
   el.style.height = Math.min(el.scrollHeight, 140) + 'px';
 }
 
-/* ── User scroll intent flag (module-level, survives re-renders) ── */
-let userHasScrolledUp = false;
-let isProgrammaticScroll = false;
 
 export default function ChatPage() {
   const [conversationStarted, setConversationStarted] = useState(false);
@@ -110,48 +107,12 @@ export default function ChatPage() {
   const pendingRenderRef = useRef<Slot | null>(null);
   const dragCounterRef = useRef(0);
 
-  /* ── scrollToBottom: always scroll + reset flag (user just sent a message) ── */
+  /* ── scrollToBottom ── */
   const scrollToBottom = () => {
     const el = chatScrollRef.current;
     if (!el) return;
-    userHasScrolledUp = false;
-    isProgrammaticScroll = true;
     el.scrollTop = el.scrollHeight;
-    requestAnimationFrame(() => { isProgrammaticScroll = false; });
   };
-
-  /* ── Track user scroll intent ── */
-  useEffect(() => {
-    const el = chatScrollRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      if (isProgrammaticScroll) return;
-      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-      if (!isNearBottom) {
-        userHasScrolledUp = true;
-      } else {
-        userHasScrolledUp = false;
-      }
-    };
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, []);
-
-  /* ── ResizeObserver: auto-scroll when messages grow, unless user scrolled up ── */
-  useEffect(() => {
-    const scroll = chatScrollRef.current;
-    const inner = messagesInnerRef.current;
-    if (!scroll || !inner) return;
-    const observer = new ResizeObserver(() => {
-      if (!userHasScrolledUp) {
-        isProgrammaticScroll = true;
-        scroll.scrollTop = scroll.scrollHeight;
-        requestAnimationFrame(() => { isProgrammaticScroll = false; });
-      }
-    });
-    observer.observe(inner);
-    return () => observer.disconnect();
-  }, []);
 
   /* ── Error banner ── */
   const showError = useCallback((msg: string) => {
@@ -243,6 +204,7 @@ export default function ChatPage() {
       <span class="tdot" style="width:7px;height:7px;border-radius:50%;background:hsl(220,10%,46%);display:inline-block;animation:tdot 1.2s 0.4s infinite;opacity:0.4;"></span>
     </div>`;
     inner.appendChild(group);
+    scrollToBottom();
   }, []);
 
   const removeTypingFromDOM = useCallback(() => {
@@ -400,7 +362,6 @@ export default function ChatPage() {
             if (parsed.done) {
               if (renderTimerRef.current) { cancelAnimationFrame(renderTimerRef.current); renderTimerRef.current = null; }
               renderToElement(streamDiv, fullText);
-              userHasScrolledUp = false;
             }
           } catch { /* ignore parse errors */ }
         }
@@ -411,6 +372,7 @@ export default function ChatPage() {
       if (conversationHistoryRef.current.length > 12) {
         conversationHistoryRef.current = conversationHistoryRef.current.slice(-12);
       }
+      scrollToBottom();
 
     } catch {
       removeTypingFromDOM();
