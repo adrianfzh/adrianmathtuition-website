@@ -525,6 +525,10 @@ body {
 .en-preview-sitem.practice.active { background: var(--color-amber-dark); color: white; }
 .en-preview-sitem.syllabus { opacity: 0.65; }
 .en-preview-sitem.syllabus.active { background: var(--color-navy); color: white; opacity: 1; }
+.en-sidebar-divider { flex: none; width: 6px; background: var(--color-border); cursor: col-resize; display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
+.en-sidebar-divider:hover { background: hsl(220,15%,78%); }
+.en-sidebar-grip { width: 2px; height: 24px; border-radius: 2px; background: hsl(220,10%,65%); box-shadow: -3px 0 0 0 hsl(220,10%,65%), 3px 0 0 0 hsl(220,10%,65%); }
+.en-sidebar-divider:hover .en-sidebar-grip { background: hsl(220,20%,50%); box-shadow: -3px 0 0 0 hsl(220,20%,50%), 3px 0 0 0 hsl(220,20%,50%); }
 .en-preview-wrap { flex: 1; overflow-y: auto; background: var(--color-background); scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
 .en-preview { max-width: 680px; padding: 20px 24px 40px; font-size: 15px; line-height: 1.8; }
 .en-preview .section-title { font-family: var(--font-display); font-size: 1.5rem; color: var(--color-navy); margin-bottom: 16px; line-height: 1.2; }

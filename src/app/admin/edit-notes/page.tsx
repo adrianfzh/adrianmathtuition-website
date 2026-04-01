@@ -193,9 +193,14 @@ export default function EditNotesPage() {
   const previewSectionsRef = useRef<Section[]>([]);
   const activeSectionRef = useRef(0);
 
-  // Resizable split
+  // Resizable vertical split (editor/preview)
   const [editorHeightPx, setEditorHeightPx] = useState<number | null>(null);
   const editorHeightRef = useRef<number | null>(null);
+
+  // Resizable horizontal split (preview sidebar width)
+  const [sidebarWidthPx, setSidebarWidthPx] = useState<number | null>(null);
+  const sidebarWidthRef = useRef<number | null>(null);
+  const previewBodyRef = useRef<HTMLDivElement>(null);
 
   // Sync refs to state
   useEffect(() => { metaTopicRef.current = metaTopic; }, [metaTopic]);
@@ -210,7 +215,7 @@ export default function EditNotesPage() {
     if (saved) setAiInstruction(saved);
   }, []);
 
-  // Restore split ratio from sessionStorage once panes are mounted
+  // Restore split ratio + sidebar width from sessionStorage once panes are mounted
   useEffect(() => {
     if (!editorShown) return;
     requestAnimationFrame(() => {
@@ -222,6 +227,11 @@ export default function EditNotesPage() {
         const h = Math.round(panes.offsetHeight * ratio);
         setEditorHeightPx(h);
         editorHeightRef.current = h;
+      }
+      const savedSw = sessionStorage.getItem('editNotesSidebarWidth');
+      if (savedSw) {
+        const w = parseInt(savedSw, 10);
+        if (!isNaN(w)) { setSidebarWidthPx(w); sidebarWidthRef.current = w; }
       }
     });
   }, [editorShown]);
@@ -272,6 +282,52 @@ export default function EditNotesPage() {
       if (panesRef.current && editorHeightRef.current !== null) {
         sessionStorage.setItem('editNotesSplitRatio',
           String(editorHeightRef.current / panesRef.current.offsetHeight));
+      }
+    };
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  }
+
+  function onSidebarDividerMouseDown(e: React.MouseEvent) {
+    e.preventDefault();
+    const body = previewBodyRef.current;
+    if (!body) return;
+    const startX = e.clientX;
+    const startW = sidebarWidthRef.current ?? 148;
+    const onMove = (ev: MouseEvent) => {
+      const newW = Math.max(80, Math.min(280, startW + ev.clientX - startX));
+      setSidebarWidthPx(newW);
+      sidebarWidthRef.current = newW;
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      if (sidebarWidthRef.current !== null) {
+        sessionStorage.setItem('editNotesSidebarWidth', String(sidebarWidthRef.current));
+      }
+    };
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  function onSidebarDividerTouchStart(e: React.TouchEvent) {
+    const startX = e.touches[0].clientX;
+    const startW = sidebarWidthRef.current ?? 148;
+    const onMove = (ev: TouchEvent) => {
+      ev.preventDefault();
+      const newW = Math.max(80, Math.min(280, startW + ev.touches[0].clientX - startX));
+      setSidebarWidthPx(newW);
+      sidebarWidthRef.current = newW;
+    };
+    const onEnd = () => {
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      if (sidebarWidthRef.current !== null) {
+        sessionStorage.setItem('editNotesSidebarWidth', String(sidebarWidthRef.current));
       }
     };
     document.addEventListener('touchmove', onMove, { passive: false });
@@ -938,8 +994,19 @@ export default function EditNotesPage() {
                         <span className="en-pane-label">Preview</span>
                         <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }}>Live • KaTeX rendered</span>
                       </div>
-                      <div className="en-preview-body">
-                        <nav className="en-preview-sidebar" ref={previewTabsRef} />
+                      <div className="en-preview-body" ref={previewBodyRef}>
+                        <nav
+                          className="en-preview-sidebar"
+                          ref={previewTabsRef}
+                          style={sidebarWidthPx ? { width: sidebarWidthPx, flex: 'none' } : undefined}
+                        />
+                        <div
+                          className="en-sidebar-divider"
+                          onMouseDown={onSidebarDividerMouseDown}
+                          onTouchStart={onSidebarDividerTouchStart}
+                        >
+                          <div className="en-sidebar-grip" />
+                        </div>
                         <div className="en-preview-wrap">
                           <div className="en-preview" ref={previewRef} />
                         </div>
