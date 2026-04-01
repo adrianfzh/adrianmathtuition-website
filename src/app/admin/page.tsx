@@ -1,0 +1,1311 @@
+'use client';
+
+import { useEffect } from 'react';
+
+const CSS = `
+html { font-size: 18px; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 18px;
+  background: #f1f5f9;
+  color: #1e293b;
+  min-height: 100vh;
+}
+#login-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.login-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  text-align: center;
+}
+.login-card h1 { font-size: 22px; color: #0f172a; margin-bottom: 6px; }
+.login-card p { font-size: 14px; color: #64748b; margin-bottom: 28px; }
+#pw-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 15px;
+  margin-bottom: 12px;
+  font-family: inherit;
+  text-align: center;
+  letter-spacing: 0.1em;
+}
+#pw-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.2); }
+#pw-error { font-size: 13px; color: #dc2626; margin-bottom: 12px; display: none; }
+#pw-btn {
+  width: 100%;
+  padding: 11px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+#pw-btn:hover:not(:disabled) { background: #5568d3; }
+#pw-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-6px); }
+  80%       { transform: translateX(6px); }
+}
+.shake { animation: shake 0.4s ease; }
+.header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.header-left h1 { font-size: 36px; font-weight: 700; color: #0f172a; }
+.header-left p { font-size: 17px; color: #64748b; margin-top: 2px; }
+.header-right { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+#approval-counter { font-size: 16px; font-weight: 600; color: #475569; }
+#approval-counter strong { color: #0f172a; }
+#summary { font-size: 17px; color: #475569; }
+#summary strong { color: #0f172a; }
+#month-filter {
+  font-size: 15px;
+  font-weight: 500;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  outline: none;
+}
+#month-filter:hover { background: #f1f5f9; }
+.btn-refresh {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-refresh:hover { background: #f1f5f9; }
+.btn-generate {
+  background: #1e40af;
+  border: 1px solid #1e40af;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.btn-generate:hover:not(:disabled) { background: #1d3fa3; }
+.btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+.result-banner {
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.result-banner.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+.result-banner.warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+.result-banner.error   { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
+.result-banner.info    { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
+.btn-dismiss {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.5;
+  padding: 0 2px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.btn-dismiss:hover { opacity: 1; }
+.btn-gen-pdf { background: #f0f9ff; border-color: #bae6fd; color: #0369a1; }
+.btn-gen-pdf:hover:not(:disabled) { background: #e0f2fe; }
+.btn-gen-pdf.success { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.btn-gen-pdf.error   { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+.gen-error-msg { font-size: 12px; color: #b91c1c; margin-top: 6px; width: 100%; }
+.content { max-width: 1000px; margin: 32px auto; padding: 0 20px; }
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  font-size: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.btn-retry {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.empty-state { text-align: center; padding: 80px 24px; color: #64748b; }
+.empty-state .emoji { font-size: 64px; margin-bottom: 16px; }
+.empty-state h2 { font-size: 26px; color: #334155; margin-bottom: 8px; }
+.empty-state p { font-size: 18px; line-height: 1.6; }
+.invoice-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+.invoice-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+.invoice-card.approved { opacity: 0.7; }
+.card-body { padding: 36px; }
+.card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.student-name { font-size: 26px; font-weight: 700; color: #0f172a; }
+.invoice-month { font-size: 20px; color: #64748b; flex: 1; }
+.badge { display: inline-block; padding: 6px 16px; border-radius: 9999px; font-size: 16px; font-weight: 600; letter-spacing: 0.02em; }
+.badge-draft    { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.badge-approved { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-sent     { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.sent-at { font-size: 15px; color: #94a3b8; margin-top: 4px; }
+.payment-status { font-size: 16px; font-weight: 600; margin-top: 4px; }
+.payment-status.paid    { color: #16a34a; }
+.payment-status.partial { color: #d97706; }
+.payment-status.unpaid  { color: #94a3b8; }
+.amounts { margin-bottom: 12px; }
+.amount-line { font-size: 20px; color: #475569; margin-bottom: 4px; }
+.amount-adjustment { font-size: 14px; color: #64748b; }
+.final-amount { font-size: 30px; font-weight: 700; color: #0f172a; margin-top: 6px; }
+.auto-notes {
+  background: #f8fafc;
+  border-left: 3px solid #cbd5e1;
+  border-radius: 0 6px 6px 0;
+  padding: 10px 14px;
+  font-size: 17px;
+  color: #475569;
+  font-style: italic;
+  white-space: pre-wrap;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, opacity 0.15s;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-preview  { background: #f8fafc; border-color: #e2e8f0; color: #475569; }
+.btn-preview:hover:not(:disabled) { background: #f1f5f9; }
+.btn-amend    { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+.btn-amend:hover:not(:disabled) { background: #fef3c7; }
+.btn-approve  { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.btn-approve:hover:not(:disabled) { background: #dcfce7; }
+.btn-send     { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.btn-send:hover:not(:disabled) { background: #dbeafe; }
+.btn-save     { background: #1e40af; color: white; border-color: #1e40af; }
+.btn-save:hover:not(:disabled) { background: #1d3fa3; }
+.btn-cancel   { background: #f8fafc; border-color: #e2e8f0; color: #64748b; }
+.btn-cancel:hover { background: #f1f5f9; }
+.btn-unapprove { background: #f8fafc; border-color: #e2e8f0; color: #64748b; }
+.btn-unapprove:hover:not(:disabled) { background: #f1f5f9; }
+.btn-record-payment { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.btn-record-payment:hover { background: #dcfce7; }
+.record-payment-form { display: none; padding: 12px 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+.record-payment-form.open { display: block; }
+.line-items-section { margin-bottom: 14px; }
+.line-items-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.line-items-header label { font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+.btn-add-item { font-size: 13px; color: #1e40af; background: none; border: 1px solid #bfdbfe; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: inherit; }
+.btn-add-item:hover { background: #eff6ff; }
+.line-item-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.line-item-row .li-desc { flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #0f172a; background: white; }
+.line-item-row .li-amount { width: 110px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #0f172a; background: white; }
+.line-item-row .li-slot { width: 130px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #0f172a; background: white; }
+.line-item-row .li-lessons { width: 80px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #0f172a; background: white; }
+.line-item-row .li-desc:focus, .line-item-row .li-amount:focus, .line-item-row .li-slot:focus, .line-item-row .li-lessons:focus {
+  outline: none; border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.15);
+}
+.main-item-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.main-item-row input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #0f172a; background: white; }
+.main-item-row .li-amount[readonly] { background: #f8fafc; color: #64748b; }
+.btn-remove-item { background: none; border: none; color: #94a3b8; font-size: 16px; cursor: pointer; padding: 4px 6px; border-radius: 4px; line-height: 1; }
+.btn-remove-item:hover { color: #ef4444; background: #fef2f2; }
+.no-items { font-size: 13px; color: #94a3b8; font-style: italic; padding: 4px 0; }
+.inline-confirm { font-size: 16px; color: #15803d; font-weight: 500; padding: 8px 0; }
+.amend-form { border-top: 1px solid #f1f5f9; padding: 24px 30px; background: #fafbfc; display: none; }
+.amend-form.open { display: block; }
+.amend-form h3 { font-size: 18px; font-weight: 600; color: #334155; margin-bottom: 16px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-group label { display: block; font-size: 14px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.form-group input, .form-group textarea { width: 100%; padding: 10px 13px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; color: #0f172a; background: white; font-family: inherit; }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.15); }
+.form-group input[readonly] { background: #f8fafc; color: #64748b; }
+.form-group.full-width { grid-column: 1 / -1; }
+.live-calc { font-size: 16px; color: #334155; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-weight: 500; }
+.form-actions { display: flex; gap: 8px; }
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .card-top { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
+`;
+
+export default function AdminPage() {
+  useEffect(() => {
+    let adminPassword = sessionStorage.getItem('adminPassword') || '';
+    let invoices: any[] = [];
+    let totalVisible = false;
+    let selectedMonth = '';
+
+    function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+      return { Authorization: `Bearer ${adminPassword}`, ...extra };
+    }
+
+    function escHtml(str: unknown): string {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escAttr(str: unknown): string {
+      return String(str).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+    }
+
+    function init() {
+      if (sessionStorage.getItem('adminAuthed') === '1' && adminPassword) {
+        const overlay = document.getElementById('login-overlay');
+        if (overlay) overlay.style.display = 'none';
+        loadInvoices();
+      } else {
+        const overlay = document.getElementById('login-overlay');
+        if (overlay) overlay.style.display = 'flex';
+        const input = document.getElementById('pw-input') as HTMLInputElement;
+        if (input) input.focus();
+      }
+    }
+
+    async function submitPassword() {
+      const input = document.getElementById('pw-input') as HTMLInputElement;
+      const errorEl = document.getElementById('pw-error') as HTMLElement;
+      const btn = document.getElementById('pw-btn') as HTMLButtonElement;
+      const pw = input.value;
+
+      btn.disabled = true;
+      btn.textContent = 'Checking\u2026';
+      errorEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/admin-invoices?auth=check', {
+          headers: { Authorization: `Bearer ${pw}` },
+        });
+        if (res.ok) {
+          adminPassword = pw;
+          sessionStorage.setItem('adminAuthed', '1');
+          sessionStorage.setItem('adminPassword', pw);
+          const overlay = document.getElementById('login-overlay');
+          if (overlay) overlay.style.display = 'none';
+          loadInvoices();
+        } else {
+          input.classList.remove('shake');
+          void input.offsetWidth;
+          input.classList.add('shake');
+          errorEl.textContent = 'Incorrect password';
+          errorEl.style.display = 'block';
+          input.value = '';
+          input.focus();
+        }
+      } catch {
+        errorEl.textContent = 'Connection error. Try again.';
+        errorEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+      }
+    }
+
+    async function loadInvoices() {
+      const errorBanner = document.getElementById('error-banner') as HTMLElement;
+      const container = document.getElementById('invoices-container') as HTMLElement;
+      errorBanner.style.display = 'none';
+      container.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:48px 0;font-size:14px;">Loading...</p>';
+
+      try {
+        const res = await fetch('/api/admin-invoices', { headers: authHeaders() });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        invoices = await res.json();
+        populateMonthFilter();
+        renderAll();
+      } catch (err: any) {
+        const errorMsg = document.getElementById('error-msg') as HTMLElement;
+        errorMsg.textContent = err.message;
+        errorBanner.style.display = 'flex';
+        container.innerHTML = '';
+      }
+    }
+
+    function populateMonthFilter() {
+      const monthOrder = ['January','February','March','April','May','June',
+        'July','August','September','October','November','December'];
+      const months = [...new Set(invoices.map((i: any) => i.month).filter(Boolean))] as string[];
+      months.sort((a, b) => {
+        const [aM, aY] = [monthOrder.indexOf(a.split(' ')[0]), parseInt(a.split(' ')[1])];
+        const [bM, bY] = [monthOrder.indexOf(b.split(' ')[0]), parseInt(b.split(' ')[1])];
+        return bY !== aY ? bY - aY : bM - aM;
+      });
+
+      const sel = document.getElementById('month-filter') as HTMLSelectElement;
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">All Months</option>' +
+        months.map(m => `<option value="${escAttr(m)}">${escHtml(m)}</option>`).join('');
+
+      if (prev && months.includes(prev)) {
+        sel.value = prev;
+        selectedMonth = prev;
+      } else {
+        sel.value = months[0] || '';
+        selectedMonth = months[0] || '';
+      }
+    }
+
+    function onMonthFilter(val: string) {
+      selectedMonth = val;
+      renderAll();
+    }
+
+    function filteredInvoices() {
+      return selectedMonth ? invoices.filter((i: any) => i.month === selectedMonth) : invoices;
+    }
+
+    function renderAll() {
+      updateSummary();
+      const container = document.getElementById('invoices-container') as HTMLElement;
+      const visible = filteredInvoices();
+
+      if (visible.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="emoji">\uD83D\uDCED</div>
+            <h2>No invoices found</h2>
+            <p>No draft or approved invoices at the moment.<br>The cron runs on the 14th at 9am SGT to generate them.</p>
+          </div>`;
+        return;
+      }
+
+      const sorted = [...visible].sort((a: any, b: any) => {
+        if (a.status === b.status) return a.studentName.localeCompare(b.studentName);
+        return a.status === 'Draft' ? -1 : 1;
+      });
+
+      container.innerHTML = sorted.map((inv: any) => renderCard(inv)).join('');
+    }
+
+    function toggleTotal() {
+      totalVisible = !totalVisible;
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const vis = filteredInvoices();
+      const drafts = vis.filter((i: any) => i.status === 'Draft');
+      const approved = vis.filter((i: any) => i.status === 'Approved');
+      const sent = vis.filter((i: any) => i.status === 'Sent');
+      const total = drafts.reduce((s: number, i: any) => s + (i.finalAmount || 0), 0);
+
+      const counterEl = document.getElementById('approval-counter');
+      if (counterEl) {
+        if (vis.length > 0) {
+          counterEl.innerHTML = `\u2705 <strong>${approved.length}</strong> approved \u00B7 \uD83D\uDCE4 <strong>${sent.length}</strong> sent / ${vis.length} total`;
+        } else {
+          counterEl.innerHTML = '';
+        }
+      }
+
+      const el = document.getElementById('summary');
+      if (!el) return;
+      if (drafts.length === 0) {
+        el.innerHTML = 'No draft invoices';
+      } else {
+        const amountHtml = totalVisible
+          ? `<strong>$${total.toFixed(2)}</strong>`
+          : `<strong style="letter-spacing:0.1em;">\u2022\u2022\u2022\u2022\u2022\u2022</strong>`;
+        const eyeIcon = totalVisible ? '\uD83D\uDC41' : '\uD83D\uDE48';
+        el.innerHTML = `<strong>${drafts.length}</strong> draft invoice${drafts.length !== 1 ? 's' : ''} \u00B7 Total: ${amountHtml} <button onclick="toggleTotal()" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;vertical-align:middle;" title="Show/hide total">${eyeIcon}</button>`;
+      }
+    }
+
+    function formatSentAt(iso: string): string {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function renderCard(inv: any): string {
+      const isDraft = inv.status === 'Draft';
+      const isApproved = inv.status === 'Approved';
+      const isSent = inv.status === 'Sent';
+
+      const badgeClass = isDraft ? 'badge-draft' : isApproved ? 'badge-approved' : 'badge-sent';
+      const badgeLabel = isDraft ? 'Draft' : isApproved ? 'Approved' : 'Sent';
+
+      const sentAtHtml = isSent && inv.sentAt
+        ? `<div class="sent-at">Sent on ${formatSentAt(inv.sentAt)}</div>`
+        : '';
+
+      const outstanding = inv.finalAmount - (inv.amountPaid || 0);
+      let paymentBadge = '';
+      if (isSent) {
+        if (inv.isPaid && (!inv.amountPaid || outstanding <= 0)) {
+          paymentBadge = '<span class="payment-status paid">\u2705 Paid</span>';
+        } else if (inv.amountPaid > 0 && outstanding > 0) {
+          paymentBadge = `<span class="payment-status partial">\u26A0\uFE0F Partial: ${inv.amountPaid.toFixed(2)} paid, ${outstanding.toFixed(2)} outstanding</span>`;
+        } else if (!inv.isPaid && !inv.amountPaid) {
+          paymentBadge = '<span class="payment-status unpaid">\u23F3 Unpaid</span>';
+        }
+      }
+
+      const baseLine = `${inv.lessonsCount} lesson${inv.lessonsCount !== 1 ? 's' : ''} \u00D7 $${inv.ratePerLesson.toFixed(2)} = $${inv.baseAmount.toFixed(2)}`;
+
+      let adjLine = '';
+      if (inv.adjustmentAmount !== null && inv.adjustmentAmount !== 0) {
+        const sign = inv.adjustmentAmount > 0 ? '+' : '\u2212';
+        const absAmt = Math.abs(inv.adjustmentAmount).toFixed(2);
+        const reason = inv.adjustmentNotes ? ` (${inv.adjustmentNotes})` : '';
+        adjLine = `<div class="amount-adjustment">${sign} $${absAmt}${escHtml(reason)}</div>`;
+      }
+
+      const notesHtml = inv.autoNotes
+        ? `<div class="auto-notes">${escHtml(inv.autoNotes)}</div>`
+        : '';
+
+      let actionsHtml: string;
+      if (isDraft) {
+        actionsHtml = `
+          <div class="card-actions" id="actions-${inv.id}">
+            <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
+            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
+            <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
+            <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">\u2705 Approve</button>
+            <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
+          </div>`;
+      } else if (isApproved) {
+        actionsHtml = `
+          <div class="card-actions" id="actions-${inv.id}">
+            <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
+            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
+            <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
+            <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
+            <button class="btn btn-unapprove" onclick="unapproveInvoice('${inv.id}')">\u21A9\uFE0F Unapprove</button>
+          </div>`;
+      } else {
+        actionsHtml = `
+          <div class="card-actions" id="actions-${inv.id}">
+            <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
+            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
+            <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
+            <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
+            <button class="btn btn-record-payment" onclick="toggleRecordPayment('${inv.id}')">\uD83D\uDCB0 Record Payment</button>
+          </div>
+          <div class="record-payment-form" id="payment-form-${inv.id}">
+            <div class="form-group" style="flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;">
+              <label style="margin:0;">Amount Paid</label>
+              <input type="number" id="pay-amount-${inv.id}" value="${inv.amountPaid || inv.finalAmount.toFixed(2)}" step="0.01" min="0" style="width:140px;font-size:16px;padding:10px;">
+              <label style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:17px;font-weight:500;">
+                <input type="checkbox" id="rp-ispaid-${inv.id}" style="width:24px;height:24px;cursor:pointer;accent-color:#15803d;" ${inv.isPaid ? 'checked' : ''}>
+                Is Paid
+              </label>
+              <button class="btn btn-save" onclick="savePayment('${inv.id}')">\uD83D\uDCBE Save Payment</button>
+              <button class="btn btn-cancel" onclick="toggleRecordPayment('${inv.id}')">Cancel</button>
+            </div>
+          </div>`;
+      }
+
+      const amendForm = renderAmendForm(inv);
+      const cardClass = isDraft ? '' : isApproved ? ' approved' : ' sent';
+
+      return `
+        <div class="invoice-card${cardClass}" id="card-${inv.id}">
+          <div class="card-body">
+            <div class="card-top">
+              <span class="student-name">${escHtml(inv.studentName)}</span>
+              <span class="invoice-month">${escHtml(inv.month)}</span>
+              <span class="badge ${badgeClass}">${badgeLabel}</span>
+              ${sentAtHtml}
+            </div>
+            <div class="amounts">
+              <div class="amount-line">${baseLine}</div>
+              ${adjLine}
+              <div class="final-amount">$${inv.finalAmount.toFixed(2)}</div>
+              ${paymentBadge}
+            </div>
+            ${notesHtml}
+            ${actionsHtml}
+          </div>
+          ${amendForm}
+        </div>`;
+    }
+
+    function renderLineItemRowsHtml(items: any[], id: string): string {
+      if (!items || !items.length) return '<p class="no-items">No extra line items</p>';
+      return items.map(item => `
+        <div class="line-item-row">
+          <input type="text" class="li-desc" placeholder="Description" style="flex:2" value="${escAttr(item.description || '')}">
+          <input type="text" class="li-slot" placeholder="e.g. Saturday" value="${escAttr(item.slot || '')}">
+          <input type="number" class="li-lessons" placeholder="e.g. 4" min="0" value="${item.lessons != null && item.lessons !== '' ? item.lessons : ''}">
+          <input type="number" class="li-amount" placeholder="0.00" step="0.01" value="${item.amount != null ? item.amount : ''}" oninput="updateCalc('${id}')">
+          <button class="btn-remove-item" onclick="removeLineItem(this, '${id}')">\u2715</button>
+        </div>
+      `).join('');
+    }
+
+    function renderMainLineItemsHtml(lineItems: any[], rate: number, id: string): string {
+      if (!lineItems || !lineItems.length) return '<p class="no-items">No main line items</p>';
+      const grouped: Record<string, { day: string; description: string; count: number }> = {};
+      lineItems.forEach(item => {
+        const day = item.day || 'Unknown';
+        if (!grouped[day]) grouped[day] = { day, description: item.description || '', count: 0 };
+        grouped[day].count++;
+      });
+      return Object.values(grouped).map(group => {
+        const amount = (group.count * rate).toFixed(2);
+        return `
+          <div class="main-item-row">
+            <input type="text" class="li-desc" placeholder="Description" style="flex:2" value="${escAttr(group.description)}">
+            <input type="text" class="li-slot" placeholder="Slot" value="${escAttr(group.day)}">
+            <input type="number" class="li-lessons" placeholder="Lessons" min="0" value="${group.count}" oninput="updateCalc('${id}')">
+            <input type="number" class="li-amount" value="${amount}" readonly>
+          </div>`;
+      }).join('');
+    }
+
+    function renderAmendForm(inv: any): string {
+      const mainItemsHtml = renderMainLineItemsHtml(inv.lineItems || [], inv.ratePerLesson, inv.id);
+      const lineItemsHtml = renderLineItemRowsHtml(inv.lineItemsExtra || [], inv.id);
+      const initialExtraTotal = (inv.lineItemsExtra || []).reduce((s: number, i: any) => s + (parseFloat(i.amount) || 0), 0);
+      return `
+        <div class="amend-form" id="amend-${inv.id}">
+          <h3>\u270F\uFE0F Amend Invoice</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Rate Per Lesson</label>
+              <input type="text" value="$${inv.ratePerLesson.toFixed(2)}" readonly>
+            </div>
+            <div class="form-group">
+              <label>Adjustment Amount</label>
+              <input type="number" id="a-adjustment-${inv.id}" value="${inv.adjustmentAmount || ''}" placeholder="0" step="0.01" oninput="updateCalc('${inv.id}')">
+            </div>
+            <div class="form-group">
+              <label>Adjustment Notes</label>
+              <input type="text" id="a-adjnotes-${inv.id}" value="${escAttr(inv.adjustmentNotes || '')}" placeholder="e.g. Additional lesson, discount">
+            </div>
+            <div class="form-group full-width">
+              <label>Auto Notes</label>
+              <textarea id="a-notes-${inv.id}" rows="3" style="white-space:pre-wrap;">${escHtml(inv.autoNotes || '')}</textarea>
+            </div>
+          </div>
+          <div class="line-items-section">
+            <div class="line-items-header"><label>Main Line Items</label></div>
+            <div id="main-items-${inv.id}">${mainItemsHtml}</div>
+          </div>
+          <div class="line-items-section">
+            <div class="line-items-header">
+              <label>Extra Line Items</label>
+              <button class="btn-add-item" onclick="addLineItem('${inv.id}')">+ Add Line Item</button>
+            </div>
+            <div id="line-items-${inv.id}">${lineItemsHtml}</div>
+          </div>
+          <div class="live-calc" id="calc-${inv.id}">${calcDisplay(inv.baseAmount || 0, inv.adjustmentAmount || 0, initialExtraTotal, inv.lessonsCount || 0, inv.ratePerLesson || 0)}</div>
+          <div class="form-actions">
+            <button class="btn btn-save" onclick="saveAmend('${inv.id}', ${inv.ratePerLesson})">\uD83D\uDCBE Save Changes</button>
+            <button class="btn btn-cancel" onclick="toggleAmend('${inv.id}')">Cancel</button>
+          </div>
+        </div>`;
+    }
+
+    function calcDisplay(baseAmount: number, adj: number, extraTotal: number, lessonsCount: number, rate: number): string {
+      const final = (baseAmount || 0) + (adj || 0) + (extraTotal || 0);
+      let str = lessonsCount != null && rate != null
+        ? `(${lessonsCount} \u00D7 $${rate.toFixed(2)})`
+        : `$${(baseAmount || 0).toFixed(2)}`;
+      if (adj !== 0) str += ` + $${adj.toFixed(2)} adj`;
+      if (extraTotal !== 0) str += ` + $${extraTotal.toFixed(2)} extras`;
+      str += ` = <strong>$${final.toFixed(2)}</strong>`;
+      return str;
+    }
+
+    function updateCalc(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const rate = inv.ratePerLesson;
+      const adjInput = document.getElementById(`a-adjustment-${id}`) as HTMLInputElement;
+      const adj = parseFloat(adjInput?.value) || 0;
+
+      let mainBase = 0;
+      let totalLessons = 0;
+      document.querySelectorAll(`#main-items-${id} .main-item-row`).forEach(row => {
+        const lessons = parseInt((row.querySelector('.li-lessons') as HTMLInputElement)?.value) || 0;
+        const rowAmount = lessons * rate;
+        mainBase += rowAmount;
+        totalLessons += lessons;
+        const amtInput = row.querySelector('.li-amount') as HTMLInputElement;
+        if (amtInput) amtInput.value = rowAmount.toFixed(2);
+      });
+
+      let extraTotal = 0;
+      document.querySelectorAll(`#amend-${id} .line-item-row`).forEach(row => {
+        extraTotal += parseFloat((row.querySelector('.li-amount') as HTMLInputElement)?.value) || 0;
+      });
+
+      const el = document.getElementById(`calc-${id}`);
+      if (el) el.innerHTML = calcDisplay(mainBase, adj, extraTotal, totalLessons, rate);
+    }
+
+    function addLineItem(id: string) {
+      const container = document.getElementById(`line-items-${id}`) as HTMLElement;
+      const noItems = container.querySelector('.no-items');
+      if (noItems) noItems.remove();
+      const row = document.createElement('div');
+      row.className = 'line-item-row';
+      row.innerHTML = `
+        <input type="text" class="li-desc" placeholder="Description" style="flex:2">
+        <input type="text" class="li-slot" placeholder="e.g. Saturday">
+        <input type="number" class="li-lessons" placeholder="e.g. 4" min="0">
+        <input type="number" class="li-amount" placeholder="0.00" step="0.01" oninput="updateCalc('${id}')">
+        <button class="btn-remove-item" onclick="removeLineItem(this, '${id}')">\u2715</button>
+      `;
+      container.appendChild(row);
+      (row.querySelector('.li-desc') as HTMLInputElement).focus();
+      updateCalc(id);
+    }
+
+    function removeLineItem(btn: HTMLElement, id: string) {
+      btn.closest('.line-item-row')?.remove();
+      const container = document.getElementById(`line-items-${id}`) as HTMLElement;
+      if (!container.querySelector('.line-item-row')) {
+        container.innerHTML = '<p class="no-items">No extra line items</p>';
+      }
+      updateCalc(id);
+    }
+
+    function toggleAmend(id: string) {
+      const form = document.getElementById(`amend-${id}`);
+      if (form) form.classList.toggle('open');
+    }
+
+    function toggleRecordPayment(id: string) {
+      const form = document.getElementById(`payment-form-${id}`);
+      if (form) form.classList.toggle('open');
+    }
+
+    async function previewPdf(id: string) {
+      const btn = document.querySelector(`#actions-${id} .btn-preview`) as HTMLButtonElement;
+      if (btn) { btn.disabled = true; btn.textContent = '\u23F3 Loading\u2026'; }
+      try {
+        const res = await fetch(`/api/preview-invoice?id=${encodeURIComponent(id)}`, {
+          headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (err: any) {
+        alert('Failed to load PDF: ' + err.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDC41 Preview PDF'; }
+      }
+    }
+
+    async function approveInvoice(id: string) {
+      const actionsEl = document.getElementById(`actions-${id}`);
+      if (!actionsEl) return;
+      actionsEl.querySelectorAll('button').forEach((b: any) => b.disabled = true);
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, fields: { Status: 'Approved' } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const inv = invoices.find((i: any) => i.id === id);
+        if (inv) inv.status = 'Approved';
+        actionsEl.innerHTML = '<span class="inline-confirm">\u2705 Approved</span>';
+        updateSummary();
+        setTimeout(() => {
+          const card = document.getElementById(`card-${id}`);
+          if (card && inv) card.outerHTML = renderCard(inv);
+        }, 1200);
+      } catch (err: any) {
+        actionsEl.querySelectorAll('button').forEach((b: any) => b.disabled = false);
+        alert('Failed to approve: ' + err.message);
+      }
+    }
+
+    async function unapproveInvoice(id: string) {
+      const actionsEl = document.getElementById(`actions-${id}`);
+      if (!actionsEl) return;
+      actionsEl.querySelectorAll('button').forEach((b: any) => b.disabled = true);
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, fields: { Status: 'Draft' } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const inv = invoices.find((i: any) => i.id === id);
+        if (inv) inv.status = 'Draft';
+        actionsEl.innerHTML = '<span class="inline-confirm">\u21A9\uFE0F Moved to Draft</span>';
+        updateSummary();
+        setTimeout(() => {
+          const card = document.getElementById(`card-${id}`);
+          if (card && inv) card.outerHTML = renderCard(inv);
+        }, 1200);
+      } catch (err: any) {
+        actionsEl.querySelectorAll('button').forEach((b: any) => b.disabled = false);
+        alert('Failed to unapprove: ' + err.message);
+      }
+    }
+
+    async function saveAmend(id: string, ratePerLesson: number) {
+      const autoNotes = (document.getElementById(`a-notes-${id}`) as HTMLTextAreaElement).value;
+      const adjustmentAmount = parseFloat((document.getElementById(`a-adjustment-${id}`) as HTMLInputElement)?.value) || 0;
+      const adjustmentNotes = (document.getElementById(`a-adjnotes-${id}`) as HTMLInputElement)?.value || '';
+
+      const mainLineItems: any[] = [];
+      const reconstructedLineItems: any[] = [];
+      document.querySelectorAll(`#main-items-${id} .main-item-row`).forEach(row => {
+        const desc = (row.querySelector('.li-desc') as HTMLInputElement)?.value || '';
+        const slot = (row.querySelector('.li-slot') as HTMLInputElement)?.value || '';
+        const lessons = parseInt((row.querySelector('.li-lessons') as HTMLInputElement)?.value) || 0;
+        mainLineItems.push({ description: desc, slot, lessons });
+        for (let i = 0; i < lessons; i++) {
+          reconstructedLineItems.push({ day: slot, description: desc });
+        }
+      });
+
+      const currentLineItems: any[] = [];
+      document.querySelectorAll(`#amend-${id} .line-item-row`).forEach(row => {
+        const desc = (row.querySelector('.li-desc') as HTMLInputElement)?.value || '';
+        const amt = parseFloat((row.querySelector('.li-amount') as HTMLInputElement)?.value) || 0;
+        if (desc || amt) currentLineItems.push({
+          description: desc,
+          amount: amt,
+          slot: (row.querySelector('.li-slot') as HTMLInputElement)?.value || '',
+          lessons: (row.querySelector('.li-lessons') as HTMLInputElement)?.value || '',
+        });
+      });
+
+      const baseAmount = mainLineItems.reduce((sum, item) => sum + item.lessons * ratePerLesson, 0);
+      const lessonsCount = mainLineItems.reduce((sum, item) => sum + item.lessons, 0);
+      const extraLineItemsTotal = currentLineItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+      const finalAmount = baseAmount + adjustmentAmount + extraLineItemsTotal;
+
+      const fields = {
+        'Lessons Count': lessonsCount,
+        'Auto Notes': autoNotes,
+        'Final Amount': finalAmount,
+        'Line Items': JSON.stringify(reconstructedLineItems),
+        'Line Items Extra': JSON.stringify(currentLineItems),
+        'Adjustment Amount': adjustmentAmount,
+        'Adjustment Notes': adjustmentNotes,
+      };
+
+      const saveBtn = document.querySelector(`#amend-${id} .btn-save`) as HTMLButtonElement;
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, fields }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+        const inv = invoices.find((i: any) => i.id === id);
+        if (inv) {
+          inv.lessonsCount = lessonsCount;
+          inv.baseAmount = baseAmount;
+          inv.finalAmount = finalAmount;
+          inv.autoNotes = autoNotes;
+          inv.lineItems = reconstructedLineItems;
+          inv.lineItemsExtra = currentLineItems;
+          inv.adjustmentAmount = adjustmentAmount;
+          inv.adjustmentNotes = adjustmentNotes;
+        }
+
+        try {
+          await fetch('/api/admin-invoices', {
+            method: 'PATCH',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ recordId: id, fields: { 'PDF URL': '' } }),
+          });
+        } catch { /* non-fatal */ }
+
+        if (saveBtn) saveBtn.textContent = 'Regenerating PDF\u2026';
+        try {
+          await fetch('/api/generate-pdf-batch', {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ recordId: id, force: true }),
+          });
+        } catch { /* non-fatal */ }
+
+        try {
+          const freshRes = await fetch('/api/admin-invoices', { headers: authHeaders() });
+          if (freshRes.ok) {
+            const freshList = await freshRes.json();
+            const freshInv = freshList.find((i: any) => i.id === id);
+            if (freshInv && inv) inv.pdfUrl = freshInv.pdfUrl;
+          }
+        } catch { /* non-fatal */ }
+
+        const card = document.getElementById(`card-${id}`);
+        if (card && inv) card.outerHTML = renderCard(inv);
+        updateSummary();
+
+        const inv2 = invoices.find((i: any) => i.id === id);
+        if (inv2 && inv2.status === 'Sent') {
+          alert('\u26A0\uFE0F Invoice already sent. Generate a new PDF and resend to update the parent.');
+        }
+      } catch (err: any) {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\uD83D\uDCBE Save Changes'; }
+        alert('Failed to save: ' + err.message);
+      }
+    }
+
+    async function savePayment(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const amountPaid = parseFloat((document.getElementById(`pay-amount-${id}`) as HTMLInputElement)?.value) || 0;
+      const isPaid = (document.getElementById(`rp-ispaid-${id}`) as HTMLInputElement)?.checked || false;
+
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': amountPaid, 'Is Paid': isPaid } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        inv.amountPaid = amountPaid;
+        inv.isPaid = isPaid;
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.outerHTML = renderCard(inv);
+      } catch (err: any) {
+        alert('Failed to save payment: ' + err.message);
+      }
+    }
+
+    async function sendInvoice(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const actionsEl = document.getElementById(`actions-${id}`);
+      if (!actionsEl) return;
+
+      let confirmMsg: string;
+      if (inv.status === 'Sent' && inv.sentAt) {
+        confirmMsg = `This invoice was already sent on ${formatSentAt(inv.sentAt)}. Send again to ${inv.parentEmail}?`;
+      } else if (inv.status === 'Draft') {
+        confirmMsg = `This invoice is still a Draft. Send anyway to ${inv.parentEmail}?`;
+      } else {
+        confirmMsg = `Send invoice to ${inv.parentEmail}?`;
+      }
+      if (!confirm(confirmMsg)) return;
+
+      actionsEl.querySelectorAll('button').forEach((b: any) => b.disabled = true);
+      const sendBtn = actionsEl.querySelector('.btn-send') as HTMLButtonElement;
+      if (sendBtn) sendBtn.textContent = '\u23F3 Sending\u2026';
+
+      try {
+        const res = await fetch('/api/send-invoices', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Server error: ${res.status}`);
+        }
+        const data = await res.json();
+        if (data.failed > 0 && data.sent === 0) throw new Error(data.errors?.[0]?.error || 'Send failed');
+
+        inv.status = 'Sent';
+        inv.sentAt = new Date().toISOString();
+        updateSummary();
+        actionsEl.innerHTML = '<span class="inline-confirm">\u2705 Sent</span>';
+        setTimeout(() => {
+          const card = document.getElementById(`card-${id}`);
+          if (card && inv) card.outerHTML = renderCard(inv);
+        }, 1500);
+      } catch (err: any) {
+        actionsEl.querySelectorAll('button').forEach((b: any) => b.disabled = false);
+        if (sendBtn) sendBtn.textContent = '\uD83D\uDCE4 Send';
+        const errEl = document.createElement('div');
+        errEl.className = 'gen-error-msg';
+        errEl.textContent = err.message;
+        actionsEl.appendChild(errEl);
+        setTimeout(() => errEl.remove(), 5000);
+      }
+    }
+
+    async function sendAllApproved() {
+      const approvedInvoices = invoices.filter((i: any) => i.status === 'Approved');
+      if (approvedInvoices.length === 0) { alert('No approved invoices to send.'); return; }
+      if (!confirm(`Send invoices to all ${approvedInvoices.length} approved student${approvedInvoices.length !== 1 ? 's' : ''}? This will email their parents immediately.`)) return;
+
+      const btn = document.getElementById('btn-send-all') as HTMLButtonElement;
+      btn.disabled = true;
+      const resultBanner = document.getElementById('result-banner') as HTMLElement;
+      resultBanner.style.display = 'none';
+
+      const ids = approvedInvoices.map((i: any) => i.id);
+      const batchSize = 3;
+      const batches: string[][] = [];
+      for (let i = 0; i < ids.length; i += batchSize) batches.push(ids.slice(i, i + batchSize));
+
+      let totalSent = 0;
+      let totalFailed = 0;
+      const allErrors: any[] = [];
+
+      try {
+        for (let b = 0; b < batches.length; b++) {
+          btn.textContent = `\uD83D\uDCE4 Sending batch ${b + 1}/${batches.length}\u2026`;
+          const res = await fetch('/api/send-invoices', {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ recordIds: batches[b] }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || `Server error: ${res.status}`);
+          }
+          const data = await res.json();
+          totalSent += data.sent || 0;
+          totalFailed += data.failed || 0;
+          if (data.errors) allErrors.push(...data.errors);
+        }
+
+        if (totalSent > 0 && totalFailed === 0) {
+          resultBanner.className = 'result-banner success';
+          resultBanner.innerHTML = `<span>\u2705 ${totalSent} invoice${totalSent !== 1 ? 's' : ''} sent successfully.</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+        } else if (totalSent > 0 && totalFailed > 0) {
+          resultBanner.className = 'result-banner warning';
+          resultBanner.innerHTML = `<span>\u2705 ${totalSent} sent \u00B7 \u26A0\uFE0F ${totalFailed} failed</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+        } else {
+          resultBanner.className = 'result-banner error';
+          const errMsg = allErrors[0]?.error || 'All sends failed';
+          resultBanner.innerHTML = `<span>\u274C ${escHtml(errMsg)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+        }
+        resultBanner.style.display = 'flex';
+        await loadInvoices();
+      } catch (err: any) {
+        resultBanner.className = 'result-banner error';
+        resultBanner.style.display = 'flex';
+        resultBanner.innerHTML = `<span>\u274C ${escHtml(err.message)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '\uD83D\uDCE4 Send All Approved';
+      }
+    }
+
+    function showResultBanner(data: { generated: number; skipped: number; errors: any[] }) {
+      const banner = document.getElementById('result-banner') as HTMLElement;
+      const { generated, skipped, errors } = data;
+      let type: string, msg: string;
+
+      if (generated === 0 && errors.length === 0) {
+        type = 'info';
+        msg = '\u2139\uFE0F All PDFs already exist \u2014 nothing to generate.';
+      } else if (generated > 0 && errors.length === 0) {
+        type = 'success';
+        msg = `\u2705 ${generated} PDF${generated !== 1 ? 's' : ''} generated successfully.`;
+        if (skipped > 0) msg += ` (${skipped} already existed, skipped)`;
+      } else if (generated > 0 && errors.length > 0) {
+        type = 'warning';
+        const names = errors.map(e => escHtml(e.studentName || e.id)).join(', ');
+        msg = `\u2705 ${generated} generated \u00B7 \u26A0\uFE0F ${errors.length} failed: ${names}`;
+      } else {
+        type = 'error';
+        const names = errors.map(e => escHtml(e.studentName || e.id)).join(', ');
+        msg = `\u274C All ${errors.length} failed: ${names}`;
+      }
+
+      banner.className = `result-banner ${type}`;
+      banner.style.display = 'flex';
+      banner.innerHTML = `<span>${msg}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+    }
+
+    async function runBulkGenerate(btnId: string, label: string, body: object) {
+      const btn = document.getElementById(btnId) as HTMLButtonElement;
+      btn.disabled = true;
+      btn.textContent = '\u23F3 Generating\u2026 (1\u20132 min)';
+      const resultBanner = document.getElementById('result-banner') as HTMLElement;
+      resultBanner.style.display = 'none';
+      try {
+        const res = await fetch('/api/generate-pdf-batch', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+        showResultBanner(data);
+        await loadInvoices();
+      } catch (err: any) {
+        resultBanner.className = 'result-banner error';
+        resultBanner.style.display = 'flex';
+        resultBanner.innerHTML = `<span>\u274C ${escHtml(err.message)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = label;
+      }
+    }
+
+    async function generateInvoices() {
+      if (!confirm('Generate invoices for the current invoice month?\nExisting invoices will be skipped automatically.')) return;
+      const btn = document.getElementById('btn-generate-invoices') as HTMLButtonElement;
+      btn.disabled = true;
+      btn.textContent = '\uD83D\uDCDD Generating\u2026';
+      const resultBanner = document.getElementById('result-banner') as HTMLElement;
+      resultBanner.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/generate-invoices', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Server error: ${res.status}`);
+        }
+        const data = await res.json();
+        resultBanner.className = 'result-banner success';
+        resultBanner.style.display = 'flex';
+        resultBanner.innerHTML = `<span>\u2705 ${data.generated} invoice${data.generated !== 1 ? 's' : ''} generated, ${data.skipped} skipped.</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+        await loadInvoices();
+      } catch (err: any) {
+        resultBanner.className = 'result-banner error';
+        resultBanner.style.display = 'flex';
+        resultBanner.innerHTML = `<span>\u274C ${escHtml(err.message)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '\uD83D\uDCDD Generate Invoices';
+      }
+    }
+
+    function generateMissingPDFs() {
+      return runBulkGenerate('btn-generate-missing', '\u26A1 Generate Missing PDFs', {});
+    }
+
+    function regenerateAllPDFs() {
+      return runBulkGenerate('btn-regenerate-all', '\uD83D\uDD04 Regenerate All PDFs', { force: true });
+    }
+
+    async function downloadBlob(url: string, filename: string) {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }
+
+    async function downloadAllPDFs() {
+      const btn = document.getElementById('btn-download-all') as HTMLButtonElement;
+      const withPdf = invoices.filter((inv: any) => inv.pdfUrl);
+      const missing = invoices.length - withPdf.length;
+
+      if (withPdf.length === 0) {
+        btn.textContent = '\u26A0\uFE0F No PDFs to download \u2014 generate them first';
+        setTimeout(() => { btn.textContent = '\u2B07\uFE0F Download All PDFs'; }, 4000);
+        return;
+      }
+
+      btn.disabled = true;
+      let downloaded = 0;
+      for (const inv of withPdf) {
+        btn.textContent = `\u2B07\uFE0F Downloading ${downloaded + 1}/${withPdf.length}\u2026`;
+        await downloadBlob(inv.pdfUrl, `Invoice-${inv.studentName}-${inv.month}.pdf`);
+        downloaded++;
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      let doneMsg = `\u2705 Downloaded ${downloaded} PDF${downloaded !== 1 ? 's' : ''}`;
+      if (missing > 0) doneMsg += ` \u2014 \u26A0\uFE0F ${missing} invoice${missing !== 1 ? 's' : ''} had no PDF`;
+      btn.textContent = doneMsg;
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = '\u2B07\uFE0F Download All PDFs'; }, 6000);
+    }
+
+    async function generateCardPDF(id: string) {
+      const btn = document.getElementById(`gen-btn-${id}`) as HTMLButtonElement;
+      if (!btn) return;
+      btn.disabled = true;
+      btn.textContent = '\u23F3 Generating\u2026';
+      btn.classList.remove('success', 'error');
+
+      const existingErr = document.getElementById(`gen-err-${id}`);
+      if (existingErr) existingErr.remove();
+
+      try {
+        const res = await fetch('/api/generate-pdf-batch', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, force: true }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+        if (data.errors && data.errors.length > 0) throw new Error(data.errors[0].error);
+
+        btn.textContent = '\u2705 Done';
+        btn.classList.add('success');
+        btn.disabled = false;
+
+        const inv = invoices.find((i: any) => i.id === id);
+        if (inv) inv.pdfUrl = 'generated';
+
+        setTimeout(() => {
+          const card = document.getElementById(`card-${id}`);
+          if (card && inv) card.outerHTML = renderCard(inv);
+        }, 2000);
+      } catch (err: any) {
+        btn.textContent = '\u274C Failed';
+        btn.classList.add('error');
+        btn.disabled = false;
+
+        const actionsEl = document.getElementById(`actions-${id}`);
+        if (actionsEl) {
+          const errEl = document.createElement('div');
+          errEl.id = `gen-err-${id}`;
+          errEl.className = 'gen-error-msg';
+          errEl.textContent = err.message;
+          actionsEl.appendChild(errEl);
+        }
+      }
+    }
+
+    // Expose to window for inline onclick handlers
+    const w = window as any;
+    w.submitPassword = submitPassword;
+    w.loadInvoices = loadInvoices;
+    w.onMonthFilter = onMonthFilter;
+    w.toggleTotal = toggleTotal;
+    w.previewPdf = previewPdf;
+    w.approveInvoice = approveInvoice;
+    w.unapproveInvoice = unapproveInvoice;
+    w.saveAmend = saveAmend;
+    w.toggleAmend = toggleAmend;
+    w.addLineItem = addLineItem;
+    w.removeLineItem = removeLineItem;
+    w.updateCalc = updateCalc;
+    w.generateInvoices = generateInvoices;
+    w.generateMissingPDFs = generateMissingPDFs;
+    w.regenerateAllPDFs = regenerateAllPDFs;
+    w.downloadAllPDFs = downloadAllPDFs;
+    w.generateCardPDF = generateCardPDF;
+    w.sendInvoice = sendInvoice;
+    w.sendAllApproved = sendAllApproved;
+    w.toggleRecordPayment = toggleRecordPayment;
+    w.savePayment = savePayment;
+
+    init();
+
+    return () => {
+      ['submitPassword','loadInvoices','onMonthFilter','toggleTotal','previewPdf',
+        'approveInvoice','unapproveInvoice','saveAmend','toggleAmend','addLineItem',
+        'removeLineItem','updateCalc','generateInvoices','generateMissingPDFs',
+        'regenerateAllPDFs','downloadAllPDFs','generateCardPDF','sendInvoice',
+        'sendAllApproved','toggleRecordPayment','savePayment',
+      ].forEach(fn => delete (window as any)[fn]);
+    };
+  }, []);
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+
+      <div id="login-overlay">
+        <div className="login-card">
+          <h1>📋 Invoice Review</h1>
+          <p>Enter the admin password to continue</p>
+          <input
+            type="password"
+            id="pw-input"
+            placeholder="Password"
+            onKeyDown={(e) => { if (e.key === 'Enter') (window as any).submitPassword(); }}
+          />
+          <div id="pw-error"></div>
+          <button id="pw-btn" onClick={() => (window as any).submitPassword()}>Submit</button>
+        </div>
+      </div>
+
+      <div className="header">
+        <div className="header-left">
+          <h1>📋 Invoice Review</h1>
+          <p>Review and approve draft invoices before sending</p>
+        </div>
+        <div className="header-right">
+          <select id="month-filter" onChange={(e) => (window as any).onMonthFilter(e.target.value)}></select>
+          <span id="approval-counter"></span>
+          <span id="summary"></span>
+          <button className="btn-generate" id="btn-generate-invoices" onClick={() => (window as any).generateInvoices()}>📝 Generate Invoices</button>
+          <button className="btn-generate" id="btn-generate-missing" onClick={() => (window as any).generateMissingPDFs()}>⚡ Generate Missing PDFs</button>
+          <button className="btn-generate" id="btn-regenerate-all" onClick={() => (window as any).regenerateAllPDFs()}>🔄 Regenerate All PDFs</button>
+          <button className="btn-generate" id="btn-download-all" onClick={() => (window as any).downloadAllPDFs()}>⬇️ Download All PDFs</button>
+          <button className="btn-generate" id="btn-send-all" onClick={() => (window as any).sendAllApproved()}>📤 Send All Approved</button>
+          <button className="btn-refresh" onClick={() => (window as any).loadInvoices()}>🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div className="content">
+        <div id="error-banner" className="error-banner" style={{ display: 'none' }}>
+          <span id="error-msg"></span>
+          <button className="btn-retry" onClick={() => (window as any).loadInvoices()}>Retry</button>
+        </div>
+        <div id="result-banner" style={{ display: 'none' }}></div>
+        <div id="invoices-container"></div>
+      </div>
+    </>
+  );
+}
