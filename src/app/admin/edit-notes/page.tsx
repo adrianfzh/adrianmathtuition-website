@@ -179,6 +179,13 @@ function replaceSectionBody(fullContent: string, sectionTitle: string, newBody: 
   const trimmedBody = newBody.trimEnd();
   return before + trimmedBody + (trimmedBody ? '\n' : '') + after;
 }
+function renameSectionInContent(content: string, oldTitle: string, newTitle: string): string {
+  if (oldTitle === 'Overview' || !newTitle.trim()) return content;
+  const escaped = oldTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Matches **1. OldTitle** or **OldTitle** (with or without number prefix)
+  const re = new RegExp(`(\\*\\*(?:\\d+[.:]\\s*)?)${escaped}(\\*\\*)`);
+  return content.replace(re, `$1${newTitle.trim()}$2`);
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function EditNotesPage() {
@@ -467,7 +474,9 @@ export default function EditNotesPage() {
         sec.isSyllabus ? 'syllabus' : '',
         i === active ? 'active' : '',
       ].filter(Boolean).join(' ');
-      return `<div class="${cls}" data-idx="${i}">${escapeHtml(sec.title)}</div>`;
+      const renamable = !sec.isPractice && !sec.isSyllabus && sec.title !== 'Overview';
+      const titleAttr = renamable ? ' title="Double-click to rename"' : '';
+      return `<div class="${cls}" data-idx="${i}"${titleAttr}>${escapeHtml(sec.title)}</div>`;
     }).join('');
   }
 
@@ -546,6 +555,60 @@ export default function EditNotesPage() {
     };
     tabs.addEventListener('click', onClick);
     return () => tabs.removeEventListener('click', onClick);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorShown]);
+
+  // Double-click to rename section tab
+  useEffect(() => {
+    if (!editorShown) return;
+    const tabs = previewTabsRef.current;
+    if (!tabs) return;
+    const onDblClick = (e: MouseEvent) => {
+      const item = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
+      if (!item) return;
+      const idx = parseInt(item.dataset.idx ?? '0', 10);
+      const sec = previewSectionsRef.current[idx];
+      if (!sec || sec.isPractice || sec.isSyllabus || sec.title === 'Overview') return;
+
+      // Replace tab text with an inline input
+      item.innerHTML = '';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = sec.title;
+      Object.assign(input.style, {
+        width: '100%', font: 'inherit', background: 'transparent',
+        border: 'none', outline: '1.5px solid rgba(255,255,255,0.6)',
+        borderRadius: '3px', padding: '0 2px', color: 'inherit',
+        minWidth: '60px',
+      });
+      item.appendChild(input);
+      input.focus();
+      input.select();
+
+      const commit = () => {
+        const newTitle = input.value.trim();
+        if (newTitle && newTitle !== sec.title) {
+          fullContentRef.current = renameSectionInContent(fullContentRef.current, sec.title, newTitle);
+          // Update textarea if this section is currently being edited
+          if (activeSectionRef.current === idx && textareaRef.current) {
+            const newBody = extractSectionBody(fullContentRef.current, newTitle, false);
+            textareaRef.current.value = newBody;
+            updateLineNumbers();
+          }
+          updatePreview();
+        } else {
+          renderPreviewTabs();
+        }
+      };
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', (ev: KeyboardEvent) => {
+        if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+        if (ev.key === 'Escape') { input.value = sec.title; input.blur(); }
+      });
+      e.stopPropagation();
+    };
+    tabs.addEventListener('dblclick', onDblClick);
+    return () => tabs.removeEventListener('dblclick', onDblClick);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorShown]);
 
