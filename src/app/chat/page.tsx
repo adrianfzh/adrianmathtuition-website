@@ -106,11 +106,18 @@ export default function ChatPage() {
   const pendingRenderRef = useRef<Slot | null>(null);
   const dragCounterRef = useRef(0);
 
-  /* ── Scroll to bottom ── */
+  /* ── Scroll helpers ── */
   const scrollToBottom = () => {
     if (chatScrollRef.current) {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
+  };
+
+  const scrollToBottomIfNear = () => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+    if (isNearBottom) el.scrollTop = el.scrollHeight;
   };
 
   /* ── Error banner ── */
@@ -203,7 +210,7 @@ export default function ChatPage() {
       <span class="tdot" style="width:7px;height:7px;border-radius:50%;background:hsl(220,10%,46%);display:inline-block;animation:tdot 1.2s 0.4s infinite;opacity:0.4;"></span>
     </div>`;
     inner.appendChild(group);
-    scrollToBottom();
+    scrollToBottomIfNear();
   }, []);
 
   const removeTypingFromDOM = useCallback(() => {
@@ -222,7 +229,7 @@ export default function ChatPage() {
     bubble.appendChild(textDiv);
     group.appendChild(bubble);
     inner.appendChild(group);
-    scrollToBottom();
+    scrollToBottomIfNear();
     return textDiv;
   }, []);
 
@@ -328,14 +335,14 @@ export default function ChatPage() {
             if (parsed.verify) {
               fullText = '';
               streamDiv.innerHTML = '<em>🔄 Verifying answer...</em>';
-              scrollToBottom();
+              scrollToBottomIfNear();
               continue;
             }
 
             if (parsed.chunk) {
               fullText += parsed.chunk;
               scheduleRender(streamDiv, fullText);
-              scrollToBottom();
+              scrollToBottomIfNear();
             }
 
             if (parsed.graphLoading === true) {
@@ -344,7 +351,7 @@ export default function ChatPage() {
               loader.style.cssText = 'margin-top:12px;padding:12px;background:rgba(0,0,0,0.03);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:0.9em;color:#666;';
               loader.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #ccc;border-top-color:#333;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Generating graph...';
               streamDiv.parentElement?.appendChild(loader);
-              scrollToBottom();
+              scrollToBottomIfNear();
               continue;
             }
 
@@ -359,14 +366,14 @@ export default function ChatPage() {
               img.alt = 'Graph';
               img.style.cssText = 'max-width:100%;margin-top:12px;border-radius:8px;display:block;';
               streamDiv.parentElement?.appendChild(img);
-              scrollToBottom();
+              scrollToBottomIfNear();
               continue;
             }
 
             if (parsed.done) {
               if (renderTimerRef.current) { cancelAnimationFrame(renderTimerRef.current); renderTimerRef.current = null; }
               renderToElement(streamDiv, fullText);
-              scrollToBottom();
+              scrollToBottomIfNear();
             }
           } catch { /* ignore parse errors */ }
         }

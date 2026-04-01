@@ -298,9 +298,16 @@ function LearnInner() {
     })();
   }, [subject, topic]);
 
-  // ── Scroll to bottom ──
+  // ── Scroll helpers ──
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, []);
+
+  const scrollToBottomIfNear = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+    if (isNearBottom) el.scrollTop = el.scrollHeight;
   }, []);
 
   // ── Render a section into messagesRef ──
@@ -417,7 +424,7 @@ function LearnInner() {
         g.className = 'lrn-msg-group lrn-bot';
         g.innerHTML = `<div class="lrn-bubble lrn-bubble-bot" style="color:hsl(0,60%,45%);font-size:15px;">Something went wrong. Please try again.</div>`;
         messagesRef.current.appendChild(g);
-        scrollToBottom();
+        scrollToBottomIfNear();
       }
       isLoadingRef.current = false;
       setIsLoading(false);
@@ -442,7 +449,7 @@ function LearnInner() {
       botGroup.appendChild(bubble);
       messagesRef.current.appendChild(botGroup);
       renderContent(cleanText, contentDiv, visualsMapRef.current);
-      scrollToBottom();
+      scrollToBottomIfNear();
     }
 
     // Update conversation history (keep last 20)
@@ -466,7 +473,7 @@ function LearnInner() {
     isLoadingRef.current = false;
     setIsLoading(false);
     setActionTick((t) => t + 1);
-  }, [subject, topic, scrollToBottom]);
+  }, [subject, topic, scrollToBottom, scrollToBottomIfNear]);
 
   // ── Start lesson ──
   const startLesson = useCallback(() => {
