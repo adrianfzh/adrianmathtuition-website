@@ -89,6 +89,9 @@ export default function ScheduleTable() {
                     const msg = encodeURIComponent(`Hi Adrian, I'd like to book a free trial lesson for ${DAY_FULL[day]} at ${time}`);
                     const baseSlotClass = "flex flex-col items-center justify-center min-h-[110px] min-w-[75px] md:min-w-[100px] p-1.5 rounded-lg font-semibold transition-all duration-200";
 
+                    const bg = isJC ? 'bg-amber-light' : 'bg-[hsl(350,65%,85%)]';
+                    const hoverBg = isJC ? 'hover:bg-amber' : 'hover:bg-[hsl(350,75%,75%)]';
+
                     if (isAvailable) {
                       return (
                         <td key={day} className="py-1 border-t border-border text-center">
@@ -96,19 +99,19 @@ export default function ScheduleTable() {
                             href={`https://wa.me/6591397985?text=${msg}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`${baseSlotClass} ${isJC ? 'bg-amber-light hover:bg-amber' : 'bg-[hsl(350,65%,85%)] hover:bg-[hsl(350,75%,75%)]'} text-[hsl(220,60%,15%)] hover:-translate-y-px`}
+                            className={`${baseSlotClass} ${bg} ${hoverBg} text-[hsl(220,60%,15%)] hover:-translate-y-px`}
                           >
                             <span className="block text-[15px] font-bold mb-0.5">{slot.type}</span>
                             <span className="block text-[13px] font-medium mb-0.5 opacity-90">{day} {slot.time}</span>
                             <Dots filled={slot.filled} capacity={slot.capacity} />
-                            <span className="text-[12px] font-bold text-green-700 mt-0.5 tracking-wide">available</span>
+                            <span className="text-[12px] font-bold text-green-500 mt-0.5 tracking-wide">available</span>
                           </a>
                         </td>
                       );
                     } else {
                       return (
                         <td key={day} className="py-1 border-t border-border text-center">
-                          <span className={`${baseSlotClass} bg-[hsl(350,65%,85%)] text-[hsl(220,60%,15%)] cursor-default`}>
+                          <span className={`${baseSlotClass} ${bg} text-[hsl(220,60%,15%)] cursor-default`}>
                             <span className="block text-[15px] font-bold mb-0.5">{slot.type}</span>
                             <span className="block text-[13px] font-medium mb-0.5 opacity-90">{day} {slot.time}</span>
                             <Dots filled={slot.filled} capacity={slot.capacity} />
@@ -125,23 +128,6 @@ export default function ScheduleTable() {
         </table>
       </div>
 
-      <div className="flex items-center justify-center gap-6 mt-6 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm bg-amber-light border border-amber/30 inline-block" />
-          Available
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm bg-[hsl(350,65%,85%)] inline-block" />
-          Full
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="flex gap-0.5">
-            <span className="w-2 h-2 rounded-full bg-muted-foreground/60 inline-block" />
-            <span className="w-2 h-2 rounded-full bg-muted-foreground/20 inline-block" />
-          </span>
-          Spots filled
-        </span>
-      </div>
     </div>
   );
 }
