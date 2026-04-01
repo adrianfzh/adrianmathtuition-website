@@ -101,6 +101,76 @@ function autoResize(el: HTMLTextAreaElement | null) {
 let userHasScrolledUp = false;
 let isProgrammaticScroll = false;
 
+/* ── Shared sidebar content (formula sheets + nav links) ── */
+function SidebarContent({
+  onSheetClick,
+  onAskQuestion,
+}: {
+  onSheetClick: (id: FormulaSheetId) => void;
+  onAskQuestion?: () => void;
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div style={{ padding: '20px 16px 0' }}>
+        <div style={{
+          fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.08em', color: 'hsl(220,10%,56%)', marginBottom: 10, padding: '0 4px',
+        }}>
+          📐 Formula Sheets
+        </div>
+        {FORMULA_SHEETS.map(sheet => (
+          <button
+            key={sheet.id}
+            className="menu-formula-btn"
+            onClick={() => onSheetClick(sheet.id)}
+            style={{
+              width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
+              padding: '11px 12px', marginBottom: 8, minHeight: 52,
+              background: 'hsl(220,30%,98%)', border: '1px solid hsl(220,15%,90%)',
+              borderRadius: 10, cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
+            }}
+          >
+            <span style={{ fontSize: 22, flexShrink: 0 }}>{sheet.emoji}</span>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{sheet.title}</div>
+              <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>{sheet.subtitle}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+      <div style={{ margin: '16px 16px 8px', borderBottom: '1px solid hsl(220,15%,92%)' }} />
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column' }}>
+        {onAskQuestion && (
+          <button
+            className="menu-link-btn"
+            onClick={onAskQuestion}
+            style={{
+              textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
+              padding: '11px 4px', fontSize: 14, color: 'hsl(220,40%,15%)',
+              display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.12s',
+            }}
+          >
+            💬 Ask a question
+          </button>
+        )}
+        <Link
+          href="/"
+          className="menu-link-btn"
+          style={{
+            padding: '11px 4px', fontSize: 14, color: 'hsl(220,10%,46%)',
+            textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.12s',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back to website
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function ChatPage() {
   const [conversationStarted, setConversationStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -628,10 +698,11 @@ export default function ChatPage() {
           maxWidth: 1152, margin: '0 auto', padding: '0 16px',
           height: 64, display: 'flex', alignItems: 'center', gap: 12,
         }}>
-          {/* Hamburger */}
+          {/* Hamburger — mobile only */}
           <button
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
+            className="md:hidden"
             style={{
               background: 'none', border: 'none', padding: '8px 6px',
               cursor: 'pointer', display: 'flex', flexDirection: 'column',
@@ -706,73 +777,15 @@ export default function ChatPage() {
           </button>
         </div>
 
-        {/* Formula sheets section */}
-        <div style={{ padding: '20px 16px 0' }}>
-          <div style={{
-            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.08em', color: 'hsl(220,10%,56%)', marginBottom: 10,
-            padding: '0 4px',
-          }}>
-            📐 Formula Sheets
-          </div>
-          {FORMULA_SHEETS.map(sheet => (
-            <button
-              key={sheet.id}
-              className="menu-formula-btn"
-              onClick={() => { setMenuOpen(false); setFormulaSheet(sheet.id); }}
-              style={{
-                width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
-                padding: '11px 12px', marginBottom: 8, minHeight: 52,
-                background: 'hsl(220,30%,98%)', border: '1px solid hsl(220,15%,90%)',
-                borderRadius: 10, cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
-              }}
-            >
-              <span style={{ fontSize: 22, flexShrink: 0 }}>{sheet.emoji}</span>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{sheet.title}</div>
-                <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>{sheet.subtitle}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Divider */}
-        <div style={{ margin: '16px 16px 8px', borderBottom: '1px solid hsl(220,15%,92%)' }} />
-
-        {/* Extra links */}
-        <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column' }}>
-          <button
-            className="menu-link-btn"
-            onClick={() => {
-              setMenuOpen(false);
-              setTimeout(() => {
-                (conversationStarted ? fixedInputRef.current : welcomeInputRef.current)?.focus();
-              }, 50);
-            }}
-            style={{
-              textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
-              padding: '11px 4px', fontSize: 14, color: 'hsl(220,40%,15%)',
-              display: 'flex', alignItems: 'center', gap: 8,
-              transition: 'color 0.12s',
-            }}
-          >
-            💬 Ask a question
-          </button>
-          <Link
-            href="/"
-            className="menu-link-btn"
-            style={{
-              padding: '11px 4px', fontSize: 14, color: 'hsl(220,10%,46%)',
-              textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8,
-              transition: 'color 0.12s',
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-            Back to website
-          </Link>
-        </div>
+        <SidebarContent
+          onSheetClick={(id) => { setMenuOpen(false); setFormulaSheet(id); }}
+          onAskQuestion={() => {
+            setMenuOpen(false);
+            setTimeout(() => {
+              (conversationStarted ? fixedInputRef.current : welcomeInputRef.current)?.focus();
+            }, 50);
+          }}
+        />
       </div>
 
       {/* Full-screen PDF overlay */}
@@ -862,35 +875,93 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* Scrollable chat area */}
-      <div
-        ref={chatScrollRef}
-        style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,15%,88%) transparent', overflowAnchor: 'none', overscrollBehavior: 'contain' }}
-      >
-        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
+      {/* Below-nav flex row: permanent sidebar + chat column */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-          {/* Welcome state */}
-          {!conversationStarted && (
-            <div style={{ padding: '56px 0 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <div style={{
-                width: 80, height: 80,
-                background: 'hsl(45,90%,92%)',
-                border: '2px solid hsl(45,90%,55%)',
-                borderRadius: 24,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: 24,
-              }}>
-                <MathIcon />
+        {/* Permanent sidebar — desktop only (hidden via CSS on mobile) */}
+        <aside className="chat-sidebar-permanent">
+          <SidebarContent onSheetClick={(id) => setFormulaSheet(id)} />
+        </aside>
+
+        {/* Chat column */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+
+          {/* Scrollable chat area */}
+          <div
+            ref={chatScrollRef}
+            style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,15%,88%) transparent', overflowAnchor: 'none', overscrollBehavior: 'contain' }}
+          >
+            <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
+
+              {/* Welcome state */}
+              {!conversationStarted && (
+                <div style={{ padding: '56px 0 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                  <div style={{
+                    width: 80, height: 80,
+                    background: 'hsl(45,90%,92%)',
+                    border: '2px solid hsl(45,90%,55%)',
+                    borderRadius: 24,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginBottom: 24,
+                  }}>
+                    <MathIcon />
+                  </div>
+                  <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.75rem', color: 'hsl(220,60%,20%)', marginBottom: 12, lineHeight: 1.15 }}>
+                    Have a math question?
+                  </h1>
+                  <p style={{ fontSize: 18, color: 'hsl(220,10%,46%)', maxWidth: 420, lineHeight: 1.65, marginBottom: 32 }}>
+                    Type it out or drop a photo — get a clear, step-by-step solution instantly. Secondary and JC math covered.
+                  </p>
+
+                  {/* Welcome input */}
+                  <div style={{ width: '100%', maxWidth: 580 }}>
+                    {errorMsg && (
+                      <div style={{
+                        background: 'hsl(0,90%,97%)', border: '1px solid hsl(0,70%,85%)',
+                        borderRadius: 8, padding: '9px 14px', fontSize: 13, color: 'hsl(0,60%,45%)', marginBottom: 10,
+                      }}>
+                        {errorMsg}
+                      </div>
+                    )}
+                    {previewSrc && (
+                      <div style={{ marginBottom: 10, position: 'relative', width: 'fit-content' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={previewSrc} alt="preview" style={{ height: 160, maxWidth: 280, objectFit: 'cover', borderRadius: 10, border: '1px solid hsl(220,15%,88%)', display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
+                        <button onClick={removeImage} style={{
+                          position: 'absolute', top: -7, right: -7,
+                          width: 22, height: 22,
+                          background: 'white', border: '1px solid hsl(220,15%,88%)', borderRadius: '50%',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer', fontSize: 11, color: 'hsl(220,10%,46%)',
+                        }}>✕</button>
+                      </div>
+                    )}
+                    {renderInputBox(welcomeInputRef, 'Type a question, or paste / drop a photo…', 'inputBoxWelcome')}
+                    <p style={{ marginTop: 8, fontSize: 12, color: 'hsl(220,10%,46%)', opacity: 0.6, textAlign: 'center' }}>
+                      Enter to send · Shift+Enter for new line · Paste or drag images
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Messages area */}
+              <div style={{ padding: conversationStarted ? '32px 0 24px' : '0', display: conversationStarted ? 'block' : 'none' }}>
+                <div ref={messagesInnerRef} />
               </div>
-              <h1 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '2.75rem', color: 'hsl(220,60%,20%)', marginBottom: 12, lineHeight: 1.15 }}>
-                Have a math question?
-              </h1>
-              <p style={{ fontSize: 18, color: 'hsl(220,10%,46%)', maxWidth: 420, lineHeight: 1.65, marginBottom: 32 }}>
-                Type it out or drop a photo — get a clear, step-by-step solution instantly. Secondary and JC math covered.
-              </p>
 
-              {/* Welcome input */}
-              <div style={{ width: '100%', maxWidth: 580 }}>
+            </div>
+          </div>
+
+          {/* Fixed bottom input (shown after conversation starts) */}
+          {conversationStarted && (
+            <div style={{
+              borderTop: '1px solid hsl(220,15%,88%)',
+              padding: '14px 24px 18px',
+              background: 'hsla(0,0%,100%,0.95)',
+              backdropFilter: 'blur(8px)',
+              flexShrink: 0,
+            }}>
+              <div style={{ maxWidth: 720, margin: '0 auto' }}>
                 {errorMsg && (
                   <div style={{
                     background: 'hsl(0,90%,97%)', border: '1px solid hsl(0,70%,85%)',
@@ -912,57 +983,13 @@ export default function ChatPage() {
                     }}>✕</button>
                   </div>
                 )}
-                {renderInputBox(welcomeInputRef, 'Type a question, or paste / drop a photo…', 'inputBoxWelcome')}
-                <p style={{ marginTop: 8, fontSize: 12, color: 'hsl(220,10%,46%)', opacity: 0.6, textAlign: 'center' }}>
-                  Enter to send · Shift+Enter for new line · Paste or drag images
-                </p>
+                {renderInputBox(fixedInputRef, 'Ask a follow-up question, or drop a photo…', 'inputBoxFixed')}
               </div>
             </div>
           )}
 
-          {/* Messages area */}
-          <div style={{ padding: conversationStarted ? '32px 0 24px' : '0', display: conversationStarted ? 'block' : 'none' }}>
-            <div ref={messagesInnerRef} />
-          </div>
-
-        </div>
-      </div>
-
-      {/* Fixed bottom input (shown after conversation starts) */}
-      {conversationStarted && (
-        <div style={{
-          borderTop: '1px solid hsl(220,15%,88%)',
-          padding: '14px 24px 18px',
-          background: 'hsla(0,0%,100%,0.95)',
-          backdropFilter: 'blur(8px)',
-          flexShrink: 0,
-        }}>
-          <div style={{ maxWidth: 720, margin: '0 auto' }}>
-            {errorMsg && (
-              <div style={{
-                background: 'hsl(0,90%,97%)', border: '1px solid hsl(0,70%,85%)',
-                borderRadius: 8, padding: '9px 14px', fontSize: 13, color: 'hsl(0,60%,45%)', marginBottom: 10,
-              }}>
-                {errorMsg}
-              </div>
-            )}
-            {previewSrc && (
-              <div style={{ marginBottom: 10, position: 'relative', width: 'fit-content' }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={previewSrc} alt="preview" style={{ height: 160, maxWidth: 280, objectFit: 'cover', borderRadius: 10, border: '1px solid hsl(220,15%,88%)', display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
-                <button onClick={removeImage} style={{
-                  position: 'absolute', top: -7, right: -7,
-                  width: 22, height: 22,
-                  background: 'white', border: '1px solid hsl(220,15%,88%)', borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', fontSize: 11, color: 'hsl(220,10%,46%)',
-                }}>✕</button>
-              </div>
-            )}
-            {renderInputBox(fixedInputRef, 'Ask a follow-up question, or drop a photo…', 'inputBoxFixed')}
-          </div>
-        </div>
-      )}
+        </div>{/* end chat column */}
+      </div>{/* end below-nav row */}
     </div>
   );
 }
