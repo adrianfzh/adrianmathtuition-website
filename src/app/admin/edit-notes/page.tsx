@@ -111,12 +111,85 @@ export default function EditNotesPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumsRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const panesRef = useRef<HTMLDivElement>(null);
+
+  // Resizable split
+  const [editorHeightPx, setEditorHeightPx] = useState<number | null>(null);
+  const editorHeightRef = useRef<number | null>(null);
 
   // Sync refs to state
   useEffect(() => { metaTopicRef.current = metaTopic; }, [metaTopic]);
   useEffect(() => { metaLevelRef.current = metaLevel; }, [metaLevel]);
   useEffect(() => { slugDisplayRef.current = slugDisplay; }, [slugDisplay]);
   useEffect(() => { currentSlugRef.current = currentSlug; }, [currentSlug]);
+
+  // Restore split ratio from sessionStorage once panes are mounted
+  useEffect(() => {
+    if (!editorShown) return;
+    requestAnimationFrame(() => {
+      const panes = panesRef.current;
+      if (!panes) return;
+      const saved = sessionStorage.getItem('editNotesSplitRatio');
+      const ratio = saved ? parseFloat(saved) : 0.55;
+      if (!isNaN(ratio)) {
+        const h = Math.round(panes.offsetHeight * ratio);
+        setEditorHeightPx(h);
+        editorHeightRef.current = h;
+      }
+    });
+  }, [editorShown]);
+
+  function onDividerMouseDown(e: React.MouseEvent) {
+    e.preventDefault();
+    const panes = panesRef.current;
+    if (!panes) return;
+    const startY = e.clientY;
+    const startH = editorHeightRef.current ?? panes.offsetHeight * 0.55;
+    const onMove = (ev: MouseEvent) => {
+      const totalH = panes.offsetHeight;
+      const newH = Math.max(100, Math.min(totalH - 106, startH + ev.clientY - startY));
+      setEditorHeightPx(newH);
+      editorHeightRef.current = newH;
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      if (panesRef.current && editorHeightRef.current !== null) {
+        sessionStorage.setItem('editNotesSplitRatio',
+          String(editorHeightRef.current / panesRef.current.offsetHeight));
+      }
+    };
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  function onDividerTouchStart(e: React.TouchEvent) {
+    const panes = panesRef.current;
+    if (!panes) return;
+    const startY = e.touches[0].clientY;
+    const startH = editorHeightRef.current ?? panes.offsetHeight * 0.55;
+    const onMove = (ev: TouchEvent) => {
+      ev.preventDefault();
+      const totalH = panes.offsetHeight;
+      const newH = Math.max(100, Math.min(totalH - 106, startH + ev.touches[0].clientY - startY));
+      setEditorHeightPx(newH);
+      editorHeightRef.current = newH;
+    };
+    const onEnd = () => {
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      if (panesRef.current && editorHeightRef.current !== null) {
+        sessionStorage.setItem('editNotesSplitRatio',
+          String(editorHeightRef.current / panesRef.current.offsetHeight));
+      }
+    };
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  }
 
   function showToast(msg: string, type: ToastType = 'success') {
     setToastMsg(msg);
@@ -462,6 +535,17 @@ export default function EditNotesPage() {
                     </div>
                     <div style={{ flex: 1 }} />
                     <button
+                      className="en-btn-view-live"
+                      disabled={!currentSlug || currentSlug === '__new__'}
+                      onClick={() => {
+                        const url = `/revise?subject=${encodeURIComponent(metaLevel)}&topic=${encodeURIComponent(metaTopic)}`;
+                        window.open(url, '_blank');
+                      }}
+                      title="Open live revision page in new tab"
+                    >
+                      ↗ View Live
+                    </button>
+                    <button
                       className={`en-btn-save${saveState === 'saved' ? ' saved' : ''}`}
                       onClick={saveNotes}
                       disabled={saveState === 'saving'}
@@ -487,9 +571,12 @@ export default function EditNotesPage() {
                   </div>
 
                   {/* Panes */}
-                  <div className="en-panes">
+                  <div className="en-panes" ref={panesRef}>
                     {/* Editor pane */}
-                    <div className="en-pane en-pane-editor">
+                    <div
+                      className="en-pane en-pane-editor"
+                      style={editorHeightPx ? { flex: 'none', height: editorHeightPx } : undefined}
+                    >
                       <div className="en-pane-header">
                         <span className="en-pane-label">Editor</span>
                         <span className="en-line-count">{lineCount} line{lineCount !== 1 ? 's' : ''}</span>
@@ -522,6 +609,15 @@ export default function EditNotesPage() {
                           }}
                         />
                       </div>
+                    </div>
+
+                    {/* Drag divider */}
+                    <div
+                      className="en-divider"
+                      onMouseDown={onDividerMouseDown}
+                      onTouchStart={onDividerTouchStart}
+                    >
+                      <div className="en-divider-grip" />
                     </div>
 
                     {/* Preview pane */}
