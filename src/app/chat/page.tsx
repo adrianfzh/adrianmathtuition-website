@@ -26,12 +26,16 @@ declare global {
 }
 
 /* ── Formula sheets config ── */
-type FormulaSheetId = 'mf27' | 'amath' | 'emath' | 'trigo';
+type FormulaSheetId = 'mf27' | 'amath' | 'emath' | 'trigo' | 'indices' | 'logarithms' | 'coord-geom' | 'differentiation';
 const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtitle: string; url: string }[] = [
-  { id: 'mf27',  emoji: '📘', title: 'A-Level MF27',          subtitle: 'H2 Math formula list',     url: '/formulas/mf27.pdf' },
-  { id: 'amath', emoji: '📗', title: 'O-Level A Math',         subtitle: 'Additional Mathematics',   url: '/formulas/amath.pdf' },
-  { id: 'emath', emoji: '📙', title: 'O-Level E Math',         subtitle: 'Elementary Mathematics',   url: '/formulas/emath.pdf' },
-  { id: 'trigo', emoji: '📐', title: 'A Math Trigo Formulas',  subtitle: 'Trigonometric identities', url: '/formulas/trigo' },
+  { id: 'mf27',            emoji: '📘', title: 'A-Level MF27',                    subtitle: 'H2 Math formula list',        url: '/formulas/mf27.pdf' },
+  { id: 'amath',           emoji: '📗', title: 'O-Level A Math',                  subtitle: 'Additional Mathematics',      url: '/formulas/amath.pdf' },
+  { id: 'emath',           emoji: '📙', title: 'O-Level E Math',                  subtitle: 'Elementary Mathematics',      url: '/formulas/emath.pdf' },
+  { id: 'trigo',           emoji: '📐', title: 'Trigo Formulae',                  subtitle: 'Trigonometric identities',    url: '/formulas/trigo' },
+  { id: 'indices',         emoji: '🔢', title: 'Indices',                          subtitle: 'Laws of Exponents',           url: '/formulas/indices' },
+  { id: 'logarithms',      emoji: '📊', title: 'Logarithms',                       subtitle: 'Log laws & change of base',   url: '/formulas/logarithms' },
+  { id: 'coord-geom',      emoji: '📍', title: 'Coordinate Geometry & Circles',    subtitle: 'Lines, gradients & circles',  url: '/formulas/coordinate-geometry' },
+  { id: 'differentiation', emoji: '∂',  title: 'Differentiation',                  subtitle: 'Derivatives & rules',         url: '/formulas/differentiation' },
 ];
 
 /* ── Send icon SVG ── */
@@ -181,37 +185,32 @@ function SidebarContent({
             background: 'hsl(220,35%,97%)',
             overflow: 'hidden',
           }}>
-            <button
-              className="menu-formula-btn"
-              onClick={() => onSheetClick('amath')}
-              style={{
-                width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px 10px 16px', background: 'none', border: 'none',
-                borderBottom: '1px solid hsl(220,30%,90%)',
-                cursor: 'pointer', transition: 'background 0.12s',
-              }}
-            >
-              <span style={{ fontSize: 16, flexShrink: 0 }}>📄</span>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>O Level AM Formula Sheet</div>
-                <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>Official syllabus document</div>
-              </div>
-            </button>
-            <button
-              className="menu-formula-btn"
-              onClick={() => onSheetClick('trigo')}
-              style={{
-                width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px 10px 16px', background: 'none', border: 'none',
-                cursor: 'pointer', transition: 'background 0.12s',
-              }}
-            >
-              <span style={{ fontSize: 16, flexShrink: 0 }}>📐</span>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>Trigo Formulae</div>
-                <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>Trigonometric identities</div>
-              </div>
-            </button>
+            {([
+              { id: 'amath',           emoji: '📄', title: 'O Level AM Formula Sheet', subtitle: 'Official syllabus document' },
+              { id: 'trigo',           emoji: '📐', title: 'Trigo Formulae',            subtitle: 'Trigonometric identities' },
+              { id: 'indices',         emoji: '🔢', title: 'Indices',                   subtitle: 'Laws of Exponents' },
+              { id: 'logarithms',      emoji: '📊', title: 'Logarithms',                subtitle: 'Log laws & change of base' },
+              { id: 'coord-geom',      emoji: '📍', title: 'Coordinate Geometry',        subtitle: 'Geometry & Circles' },
+              { id: 'differentiation', emoji: '∂',  title: 'Differentiation',            subtitle: 'Derivatives & rules' },
+            ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
+              <button
+                key={item.id}
+                className="menu-formula-btn"
+                onClick={() => onSheetClick(item.id)}
+                style={{
+                  width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px 10px 16px', background: 'none', border: 'none',
+                  borderBottom: idx < arr.length - 1 ? '1px solid hsl(220,30%,90%)' : 'none',
+                  cursor: 'pointer', transition: 'background 0.12s',
+                }}
+              >
+                <span style={{ fontSize: 16, flexShrink: 0 }}>{item.emoji}</span>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
+                  <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
+                </div>
+              </button>
+            ))}
           </div>
         )}
 
