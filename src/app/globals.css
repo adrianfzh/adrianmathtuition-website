@@ -530,6 +530,9 @@ body {
 .en-btn-view-live { padding: 7px 14px; background: var(--color-background); color: var(--color-navy); border: 1.5px solid var(--color-border); border-radius: 7px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.15s, background 0.15s; white-space: nowrap; flex-shrink: 0; }
 .en-btn-view-live:hover:not(:disabled) { border-color: var(--color-navy); background: var(--color-muted); }
 .en-btn-view-live:disabled { opacity: 0.4; cursor: default; }
+.en-btn-undo { padding: 7px 14px; background: var(--color-background); color: var(--color-foreground); border: 1.5px solid var(--color-border); border-radius: 7px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.15s, background 0.15s; white-space: nowrap; flex-shrink: 0; }
+.en-btn-undo:hover:not(:disabled) { border-color: var(--color-navy); background: var(--color-muted); }
+.en-btn-undo:disabled { opacity: 0.35; cursor: default; }
 /* AI assistant */
 .en-ai-btn { padding: 7px 14px; background: hsl(38,90%,92%); color: hsl(38,80%,32%); border: 1.5px solid hsl(38,70%,75%); border-radius: 7px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
 .en-ai-btn:hover:not(:disabled) { background: hsl(38,90%,84%); border-color: hsl(38,70%,60%); }

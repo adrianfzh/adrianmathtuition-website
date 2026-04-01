@@ -200,10 +200,28 @@ function replaceSectionBody(fullContent: string, sectionTitle: string, newBody: 
 }
 function renameSectionInContent(content: string, oldTitle: string, newTitle: string): string {
   if (!newTitle.trim()) return content;
+  const nt = newTitle.trim();
+  // Use getRawSections to find the exact section number, then do a precise string replacement
+  const rawSections = getRawSections(content);
+  const secIdx = rawSections.findIndex(s => s.title === oldTitle);
+  if (secIdx === -1) {
+    console.warn(`[rename] Section "${oldTitle}" not found — content unchanged`);
+    return content;
+  }
+  const n = secIdx + 1;
+  // Try dot-separator first, then colon-separator
+  const dotForm = `**${n}. ${oldTitle}**`;
+  const colonForm = `**${n}: ${oldTitle}**`;
+  if (content.includes(dotForm)) return content.replace(dotForm, `**${n}. ${nt}**`);
+  if (content.includes(colonForm)) return content.replace(colonForm, `**${n}: ${nt}**`);
+  // Fallback: regex limited to the heading line only
   const escaped = oldTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  // Matches **1. OldTitle** or **OldTitle** (with or without number prefix)
-  const re = new RegExp(`(\\*\\*(?:\\d+[.:]\\s*)?)${escaped}(\\*\\*)`);
-  return content.replace(re, `$1${newTitle.trim()}$2`);
+  const re = new RegExp(`\\*\\*${n}[.:] ${escaped}\\*\\*`);
+  if (!re.test(content)) {
+    console.warn(`[rename] Could not locate heading for "${oldTitle}" — content unchanged`);
+    return content;
+  }
+  return content.replace(re, `**${n}. ${nt}**`);
 }
 // ── Raw-section helpers (operate on raw editor text, no auto-generated sections) ──
 function getRawSections(content: string): { title: string; body: string }[] {
@@ -266,6 +284,10 @@ export default function EditNotesPage() {
   const metaTopicRef = useRef('');
   const metaLevelRef = useRef('AM');
   const slugDisplayRef = useRef('—');
+
+  // Undo stack
+  const undoStackRef = useRef<string[]>([]);
+  const [undoCount, setUndoCount] = useState(0);
 
   // UI state
   const [editorShown, setEditorShown] = useState(false);
@@ -688,6 +710,7 @@ export default function EditNotesPage() {
       const commit = () => {
         const newTitle = input.value.trim();
         if (newTitle && newTitle !== sec.title) {
+          pushUndo();
           fullContentRef.current = renameSectionInContent(fullContentRef.current, sec.title, newTitle);
           // Update textarea if this section is currently being edited
           if (activeSectionRef.current === idx && textareaRef.current) {
@@ -712,6 +735,21 @@ export default function EditNotesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorShown]);
 
+  // Cmd+Z / Ctrl+Z undo — only when editor textarea is NOT focused
+  useEffect(() => {
+    if (!editorShown) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        if (document.activeElement === textareaRef.current) return; // let browser handle natively
+        e.preventDefault();
+        performUndo();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorShown]);
+
   function handleEditorChange() {
     const activeSec = previewSectionsRef.current[activeSectionRef.current];
     const newBody = textareaRef.current?.value ?? '';
@@ -722,6 +760,31 @@ export default function EditNotesPage() {
     }
     updateLineNumbers();
     schedulePreview();
+  }
+
+  function pushUndo() {
+    undoStackRef.current.push(fullContentRef.current);
+    if (undoStackRef.current.length > 50) undoStackRef.current.shift();
+    setUndoCount(undoStackRef.current.length);
+  }
+
+  function performUndo() {
+    if (undoStackRef.current.length === 0) return;
+    const previous = undoStackRef.current.pop()!;
+    setUndoCount(undoStackRef.current.length);
+    fullContentRef.current = previous;
+    const newSections = parseSections(previous, metaTopicRef.current || 'Notes');
+    const currentTitle = previewSectionsRef.current[activeSectionRef.current]?.title;
+    const newIdx = currentTitle ? newSections.findIndex(s => s.title === currentTitle) : 0;
+    activeSectionRef.current = newIdx >= 0 ? newIdx : 0;
+    updatePreview();
+    const activeSec = previewSectionsRef.current[activeSectionRef.current];
+    if (textareaRef.current) {
+      textareaRef.current.value = activeSec && !activeSec.isPractice
+        ? extractSectionBody(fullContentRef.current, activeSec.title, false)
+        : previous;
+      updateLineNumbers();
+    }
   }
 
   function applySectionReorder(newContent: string, preserveTitle: string) {
@@ -746,6 +809,7 @@ export default function EditNotesPage() {
     if (rawIdx === -1) return;
     const targetRawIdx = direction === 'up' ? rawIdx - 1 : rawIdx + 1;
     if (targetRawIdx < 0 || targetRawIdx >= rawSections.length) return;
+    pushUndo();
     const preserveTitle = sections[activeSectionRef.current]?.title ?? sec.title;
     applySectionReorder(reorderSectionsInContent(fullContentRef.current, rawIdx, targetRawIdx), preserveTitle);
   }
@@ -759,6 +823,7 @@ export default function EditNotesPage() {
     const rawIdx = rawSections.findIndex(s => s.title === sec.title);
     if (rawIdx === -1) return;
     if (!confirm(`Delete section "${sec.title}" and all its content?`)) return;
+    pushUndo();
     const activeTitle = sections[activeSectionRef.current]?.title ?? '';
     const preserveTitle = activeTitle === sec.title
       ? (rawSections[rawIdx + 1] ?? rawSections[rawIdx - 1])?.title ?? ''
@@ -785,6 +850,7 @@ export default function EditNotesPage() {
   function insertSection() {
     const ta = textareaRef.current;
     if (!ta) return;
+    pushUndo();
     const n = getNextSectionNumber();
     const prefix = `\n\n**${n}. `;
     const name = 'New Section';
@@ -800,6 +866,7 @@ export default function EditNotesPage() {
   function insertExample() {
     const ta = textareaRef.current;
     if (!ta) return;
+    pushUndo();
     insertAtCursor(ta, '\n\n**Example:**\nDescription here.\n\n');
     handleEditorChange();
   }
@@ -807,6 +874,7 @@ export default function EditNotesPage() {
   function insertPractice() {
     const ta = textareaRef.current;
     if (!ta) return;
+    pushUndo();
     insertAtCursor(ta, '\n\n[Try: Your question here]\n[Ans: The answer]\n\n');
     handleEditorChange();
   }
@@ -814,6 +882,7 @@ export default function EditNotesPage() {
   function insertList() {
     const ta = textareaRef.current;
     if (!ta) return;
+    pushUndo();
     const text = '\n- Item 1\n- Item 2\n- Item 3\n';
     const insertPos = ta.selectionStart;
     insertAtCursor(ta, text);
@@ -828,6 +897,7 @@ export default function EditNotesPage() {
   function insertSolution() {
     const ta = textareaRef.current;
     if (!ta) return;
+    pushUndo();
     insertAtCursor(ta, '\n\n**Solution:**\n**Step 1:** \n\n**Step 2:** \n\n**Step 3:** \n\n');
     handleEditorChange();
   }
@@ -1020,6 +1090,7 @@ export default function EditNotesPage() {
   }
 
   function acceptAI() {
+    pushUndo();
     const sec = previewSectionsRef.current[activeSectionRef.current];
     if (sec && !sec.isPractice) {
       fullContentRef.current = replaceSectionBody(fullContentRef.current, sec.title, aiDraftRef.current);
@@ -1203,6 +1274,14 @@ export default function EditNotesPage() {
                       title="Open live revision page in new tab"
                     >
                       ↗ View Live
+                    </button>
+                    <button
+                      className="en-btn-undo"
+                      onClick={performUndo}
+                      disabled={undoCount === 0}
+                      title="Undo last operation (Cmd+Z / Ctrl+Z when editor is not focused)"
+                    >
+                      ↩ Undo{undoCount > 0 ? ` (${undoCount})` : ''}
                     </button>
                     <button
                       className={`en-ai-btn${aiOpen ? ' active' : ''}`}
