@@ -26,19 +26,37 @@ declare global {
 }
 
 /* ── Formula sheets config ── */
-type FormulaSheetId = 'mf27' | 'amath' | 'emath' | 'trigo' | 'indices' | 'logarithms' | 'coord-geom' | 'differentiation' | 'factorization-cubics' | 'partial-fractions' | 'exp-log-graphs';
+type FormulaSheetId =
+  | 'mf27' | 'amath' | 'emath' | 'trigo' | 'indices' | 'logarithms' | 'coord-geom'
+  | 'differentiation' | 'factorization-cubics' | 'partial-fractions' | 'exp-log-graphs'
+  | 'em-indices' | 'em-standard-form' | 'em-interest' | 'em-coordinate-geometry'
+  | 'em-congruency-similarity' | 'em-trigonometry' | 'em-mensuration' | 'em-statistics'
+  | 'em-vectors' | 'em-circular-measure' | 'em-polygons' | 'em-sets';
+
 const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtitle: string; url: string }[] = [
-  { id: 'mf27',                emoji: '📘', title: 'A-Level MF27',                      subtitle: 'H2 Math formula list',         url: '/formulas/mf27.pdf' },
-  { id: 'amath',               emoji: '📗', title: 'O-Level A Math',                    subtitle: 'Additional Mathematics',       url: '/formulas/amath.pdf' },
-  { id: 'emath',               emoji: '📙', title: 'O-Level E Math',                    subtitle: 'Elementary Mathematics',       url: '/formulas/emath.pdf' },
-  { id: 'trigo',               emoji: '📐', title: 'Trigonometry',                       subtitle: 'Trigonometric identities',     url: '/formulas/trigo' },
-  { id: 'indices',             emoji: 'ⁿ',  title: 'Indices',                            subtitle: 'Laws of Exponents',            url: '/formulas/indices' },
-  { id: 'logarithms',          emoji: '㏒', title: 'Logarithms',                         subtitle: 'Laws of Logarithms',           url: '/formulas/logarithms' },
-  { id: 'coord-geom',          emoji: '📍', title: 'Coordinate Geometry & Circles',      subtitle: 'Lines, gradients & circles',   url: '/formulas/coordinate-geometry' },
-  { id: 'differentiation',     emoji: '∂',  title: 'Differentiation',                    subtitle: 'Derivatives & rules',          url: '/formulas/differentiation' },
-  { id: 'factorization-cubics',emoji: '∛',  title: 'Factorization of Cubics',            subtitle: 'Sum/difference of cubes',      url: '/formulas/factorization-cubics' },
-  { id: 'partial-fractions',   emoji: '½',  title: 'Partial Fractions',                  subtitle: 'Decomposition types',          url: '/formulas/partial-fractions' },
-  { id: 'exp-log-graphs',      emoji: '📈', title: 'Exp & Log Graphs',                  subtitle: 'Graph shapes & asymptotes',    url: '/formulas/exponential-log-graphs' },
+  { id: 'mf27',                    emoji: '📘', title: 'A-Level MF27',                   subtitle: 'H2 Math formula list',         url: '/formulas/mf27.pdf' },
+  { id: 'amath',                   emoji: '📗', title: 'O-Level A Math',                 subtitle: 'Additional Mathematics',       url: '/formulas/amath.pdf' },
+  { id: 'emath',                   emoji: '📙', title: 'O-Level E Math',                 subtitle: 'Elementary Mathematics',       url: '/formulas/emath.pdf' },
+  { id: 'trigo',                   emoji: '📐', title: 'Trigonometry',                   subtitle: 'Trigonometric identities',     url: '/formulas/trigo' },
+  { id: 'indices',                 emoji: 'ⁿ',  title: 'Indices',                        subtitle: 'Laws of Exponents',            url: '/formulas/indices' },
+  { id: 'logarithms',              emoji: '㏒', title: 'Logarithms',                     subtitle: 'Laws of Logarithms',           url: '/formulas/logarithms' },
+  { id: 'coord-geom',              emoji: '📍', title: 'Coordinate Geometry & Circles',  subtitle: 'Lines, gradients & circles',   url: '/formulas/coordinate-geometry' },
+  { id: 'differentiation',         emoji: '∂',  title: 'Differentiation',                subtitle: 'Derivatives & rules',          url: '/formulas/differentiation' },
+  { id: 'factorization-cubics',    emoji: '∛',  title: 'Factorization of Cubics',        subtitle: 'Sum/difference of cubes',      url: '/formulas/factorization-cubics' },
+  { id: 'partial-fractions',       emoji: '½',  title: 'Partial Fractions',              subtitle: 'Decomposition types',          url: '/formulas/partial-fractions' },
+  { id: 'exp-log-graphs',          emoji: '📈', title: 'Exp & Log Graphs',               subtitle: 'Graph shapes & asymptotes',    url: '/formulas/exponential-log-graphs' },
+  { id: 'em-indices',              emoji: 'ⁿ',  title: 'Indices',                        subtitle: 'Laws of Exponents',            url: '/formulas/em-indices' },
+  { id: 'em-standard-form',        emoji: '×10',title: 'Standard Form',                  subtitle: 'SI prefixes',                  url: '/formulas/em-standard-form' },
+  { id: 'em-interest',             emoji: '%',  title: 'Simple & Compound Interest',      subtitle: 'Interest formulae',            url: '/formulas/em-interest' },
+  { id: 'em-coordinate-geometry',  emoji: '📍', title: 'Coordinate Geometry',            subtitle: 'Lines & quadratics',           url: '/formulas/em-coordinate-geometry' },
+  { id: 'em-congruency-similarity',emoji: '≅',  title: 'Congruency & Similarity',        subtitle: 'Triangles & ratios',           url: '/formulas/em-congruency-similarity' },
+  { id: 'em-trigonometry',         emoji: '📐', title: 'Trigonometry',                   subtitle: 'Sin/cos rules & area',         url: '/formulas/em-trigonometry' },
+  { id: 'em-mensuration',          emoji: '📦', title: 'Mensuration',                    subtitle: 'Area & volume',                url: '/formulas/em-mensuration' },
+  { id: 'em-statistics',           emoji: '📊', title: 'Statistics',                     subtitle: 'Mean & std deviation',         url: '/formulas/em-statistics' },
+  { id: 'em-vectors',              emoji: '→',  title: 'Vectors',                        subtitle: 'Vector operations',            url: '/formulas/em-vectors' },
+  { id: 'em-circular-measure',     emoji: '⭕', title: 'Circular Measure',               subtitle: 'Coming soon',                  url: '/formulas/em-circular-measure' },
+  { id: 'em-polygons',             emoji: '⬡',  title: 'Polygons',                       subtitle: 'Coming soon',                  url: '/formulas/em-polygons' },
+  { id: 'em-sets',                 emoji: '∪',  title: 'Sets',                           subtitle: 'Coming soon',                  url: '/formulas/em-sets' },
 ];
 
 /* ── Send icon SVG ── */
@@ -118,6 +136,7 @@ function SidebarContent({
   onAskQuestion?: () => void;
 }) {
   const [amathOpen, setAmathOpen] = useState(false);
+  const [emathOpen, setEmathOpen] = useState(false);
 
   const sheetBtn = (id: FormulaSheetId, emoji: string, title: string, subtitle: string) => (
     <button
@@ -220,8 +239,77 @@ function SidebarContent({
           </div>
         )}
 
-        {/* O-Level E Math */}
-        {sheetBtn('emath', '📙', 'O-Level E Math', 'Elementary Mathematics')}
+        {/* O-Level E Math folder */}
+        <button
+          className="menu-formula-btn"
+          onClick={() => setEmathOpen(o => !o)}
+          style={{
+            width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
+            padding: '11px 12px', marginBottom: emathOpen ? 4 : 8, minHeight: 52,
+            background: emathOpen ? 'hsl(35,50%,94%)' : 'hsl(220,30%,98%)',
+            border: `1px solid ${emathOpen ? 'hsl(35,50%,78%)' : 'hsl(220,15%,90%)'}`,
+            borderRadius: emathOpen ? '10px 10px 0 0' : 10,
+            cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
+          }}
+        >
+          <span style={{ fontSize: 22, flexShrink: 0 }}>📙</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>O-Level E Math</div>
+            <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>Elementary Mathematics</div>
+          </div>
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(220,10%,56%)"
+            strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ flexShrink: 0, transform: emathOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        {/* O-Level E Math sub-items */}
+        {emathOpen && (
+          <div style={{
+            marginBottom: 8,
+            border: '1px solid hsl(35,50%,78%)', borderTop: 'none',
+            borderRadius: '0 0 10px 10px',
+            background: 'hsl(35,40%,97%)',
+            overflow: 'hidden',
+          }}>
+            {([
+              { id: 'emath',                    emoji: '📄', title: 'O Level EM Formula Sheet',  subtitle: 'Official syllabus document' },
+              { id: 'em-indices',               emoji: 'ⁿ',  title: 'Indices',                   subtitle: 'Laws of Exponents' },
+              { id: 'em-standard-form',         emoji: '×10',title: 'Standard Form',             subtitle: 'SI prefixes' },
+              { id: 'em-interest',              emoji: '%',  title: 'Interest',                   subtitle: 'Simple & compound' },
+              { id: 'em-coordinate-geometry',   emoji: '📍', title: 'Coordinate Geometry',        subtitle: 'Lines & quadratics' },
+              { id: 'em-congruency-similarity', emoji: '≅',  title: 'Congruency & Similarity',    subtitle: 'Triangles & ratios' },
+              { id: 'em-trigonometry',          emoji: '📐', title: 'Trigonometry',               subtitle: 'Sin/cos rules & area' },
+              { id: 'em-mensuration',           emoji: '📦', title: 'Mensuration',                subtitle: 'Area & volume' },
+              { id: 'em-statistics',            emoji: '📊', title: 'Statistics',                 subtitle: 'Mean & std deviation' },
+              { id: 'em-vectors',               emoji: '→',  title: 'Vectors',                    subtitle: 'Vector operations' },
+              { id: 'em-circular-measure',      emoji: '⭕', title: 'Circular Measure',           subtitle: 'Coming soon' },
+              { id: 'em-polygons',              emoji: '⬡',  title: 'Polygons',                   subtitle: 'Coming soon' },
+              { id: 'em-sets',                  emoji: '∪',  title: 'Sets',                       subtitle: 'Coming soon' },
+            ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
+              <button
+                key={item.id}
+                className="menu-formula-btn"
+                onClick={() => onSheetClick(item.id)}
+                style={{
+                  width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px 10px 16px', background: 'none', border: 'none',
+                  borderBottom: idx < arr.length - 1 ? '1px solid hsl(35,30%,90%)' : 'none',
+                  cursor: 'pointer', transition: 'background 0.12s',
+                }}
+              >
+                <span style={{ fontSize: 16, flexShrink: 0 }}>{item.emoji}</span>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
+                  <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div style={{ margin: '16px 16px 8px', borderBottom: '1px solid hsl(220,15%,92%)' }} />
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column' }}>
