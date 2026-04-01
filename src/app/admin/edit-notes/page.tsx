@@ -1,7 +1,546 @@
+'use client';
+
+import Script from 'next/script';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+interface AirtableTopic {
+  id: string;
+  fields: { Topic?: string; Level?: string; Slug?: string };
+}
+
+type SaveState = 'idle' | 'saving' | 'saved';
+type ToastType = 'success' | 'error';
+
+function escapeHtml(s: string) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function generateSlug(topic: string, level: string) {
+  return topic.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') +
+    '-' + (level === 'JC' ? 'jc' : 'sec');
+}
+
+function renderMarkdown(text: string): string {
+  const blocks: string[] = [];
+  const inlines: string[] = [];
+  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { blocks.push(m); return `%%B${blocks.length - 1}%%`; });
+  text = text.replace(/\$([^$\n]{1,300}?)\$/g, (_, m) => { inlines.push(m); return `%%I${inlines.length - 1}%%`; });
+
+  text = text.replace(
+    /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*|\n##|$)/g,
+    (_, firstLine, rest) => {
+      const inner = (firstLine.trim() + '\n' + rest).trim();
+      return `\n<div class="example-card"><div class="example-card-label">Worked Example</div>${inner}\n</div>\n`;
+    }
+  );
+  text = text.replace(/\[(?:Try|Practice):\s*([\s\S]*?)\]/g, (_, q) =>
+    `<div class="practice-callout"><div class="practice-callout-label">Try this</div>${q.trim()}</div>`
+  );
+  text = text.replace(/\[Ans(?:wer)?:\s*([\s\S]*?)\]/g, (_, ans) =>
+    `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal</span><span class="answer-text">${ans.trim()}</span></div>`
+  );
+  text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g,
+    '<div style="background:var(--color-card);border:1px solid var(--color-border);border-radius:6px;padding:10px 14px;margin:12px 0;font-size:14px"><strong>Note:</strong> $1</div>');
+  text = text.replace(/((?:^\|.+\|\s*\n)+)/gm, tableBlock => {
+    const rows = tableBlock.trim().split('\n').filter(r => r.trim());
+    let html = '<table>';
+    rows.forEach((row, i) => {
+      if (/^\|[-| :]+\|/.test(row)) return;
+      const cells = row.split('|').filter((_, ci) => ci > 0 && ci < row.split('|').length - 1);
+      const tag = i === 0 ? 'th' : 'td';
+      html += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    });
+    return html + '</table>';
+  });
+  text = text.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+  text = text.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+  text = text.replace(/^---+$/gm, '<hr>');
+  text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+  text = text.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+  text = text.replace(/\n{2,}/g, '</p><p>');
+  text = '<p>' + text + '</p>';
+  text = text.replace(/<p>\s*<\/p>/g, '');
+  text = text.replace(/<p>(<(?:h[1-6]|ul|ol|hr|div|table)[^>]*>)/g, '$1');
+  text = text.replace(/(<\/(?:h[1-6]|ul|ol|div|table)>)<\/p>/g, '$1');
+  text = text.replace(/([^>])\n([^<])/g, '$1<br>$2');
+  text = text.replace(/%%B(\d+)%%/g, (_, i) => `$$${blocks[Number(i)]}$$`);
+  text = text.replace(/%%I(\d+)%%/g, (_, i) => `$${inlines[Number(i)]}$`);
+  return text;
+}
+
 export default function EditNotesPage() {
+  // Auth
+  const [pwInput, setPwInput] = useState('');
+  const [pwShake, setPwShake] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [authed, setAuthed] = useState(false);
+  const passwordRef = useRef('');
+
+  // Topics
+  const [topics, setTopics] = useState<AirtableTopic[]>([]);
+  const [topicSearch, setTopicSearch] = useState('');
+  const [currentSlug, setCurrentSlug] = useState<string | null>(null);
+  const currentSlugRef = useRef<string | null>(null);
+
+  // Editor meta
+  const [metaTopic, setMetaTopic] = useState('');
+  const [metaLevel, setMetaLevel] = useState('AM');
+  const [slugDisplay, setSlugDisplay] = useState('—');
+  const metaTopicRef = useRef('');
+  const metaLevelRef = useRef('AM');
+  const slugDisplayRef = useRef('—');
+
+  // UI state
+  const [editorShown, setEditorShown] = useState(false);
+  const [lineCount, setLineCount] = useState(0);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [katexLoaded, setKatexLoaded] = useState(false);
+
+  // Toast
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastType, setToastType] = useState<ToastType>('success');
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // DOM refs
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lineNumsRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Sync refs to state
+  useEffect(() => { metaTopicRef.current = metaTopic; }, [metaTopic]);
+  useEffect(() => { metaLevelRef.current = metaLevel; }, [metaLevel]);
+  useEffect(() => { slugDisplayRef.current = slugDisplay; }, [slugDisplay]);
+  useEffect(() => { currentSlugRef.current = currentSlug; }, [currentSlug]);
+
+  function showToast(msg: string, type: ToastType = 'success') {
+    setToastMsg(msg);
+    setToastType(type);
+    setToastVisible(true);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
+  }
+
+  const loadApp = useCallback(async (pw: string) => {
+    try {
+      const resp = await fetch(`/api/notes?list=all&password=${encodeURIComponent(pw)}`);
+      if (resp.status === 401) {
+        const err = Object.assign(new Error('Unauthorized'), { status: 401 });
+        throw err;
+      }
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      sessionStorage.setItem('editNotesPass', pw);
+      passwordRef.current = pw;
+      setTopics(Array.isArray(data) ? data : []);
+      setAuthed(true);
+    } catch (err) {
+      setPwLoading(false);
+      setAuthed(false);
+      if ((err as { status?: number }).status === 401) {
+        sessionStorage.removeItem('editNotesPass');
+        passwordRef.current = '';
+        setPwShake(true);
+        setTimeout(() => setPwShake(false), 400);
+        setPwInput('');
+      } else {
+        showToast('Connection failed — check your network', 'error');
+      }
+    }
+  }, []);
+
+  // On mount: check sessionStorage
+  useEffect(() => {
+    const saved = sessionStorage.getItem('editNotesPass');
+    if (saved) {
+      passwordRef.current = saved;
+      setAuthed(true); // optimistic
+      loadApp(saved);
+    }
+  }, [loadApp]);
+
+  async function tryPassword() {
+    const val = pwInput.trim();
+    if (!val) return;
+    setPwLoading(true);
+    await loadApp(val);
+    setPwLoading(false);
+  }
+
+  // Line numbers
+  function updateLineNumbers() {
+    if (!textareaRef.current || !lineNumsRef.current) return;
+    const lines = textareaRef.current.value.split('\n');
+    setLineCount(lines.length);
+    lineNumsRef.current.innerHTML = lines.map((_, i) => `<span>${i + 1}</span>`).join('');
+  }
+
+  function syncLineNumbers() {
+    if (!textareaRef.current || !lineNumsRef.current) return;
+    lineNumsRef.current.style.transform = `translateY(-${textareaRef.current.scrollTop}px)`;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function renderMath(el: HTMLElement) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rme = (window as any).renderMathInElement;
+    if (!rme) { setTimeout(() => renderMath(el), 80); return; }
+    try {
+      rme(el, {
+        delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+        throwOnError: false,
+      });
+    } catch (e) { console.warn('[KaTeX]', e); }
+  }
+
+  function updatePreview() {
+    if (!textareaRef.current || !previewRef.current) return;
+    const text = textareaRef.current.value;
+    if (!text.trim()) { previewRef.current.innerHTML = ''; return; }
+    const firstHeading = text.match(/\*\*(?:\d+[\.:]\s*)?(.+?)\*\*/);
+    const title = firstHeading ? firstHeading[1].trim() : '';
+    previewRef.current.innerHTML =
+      (title ? `<div class="section-title">${escapeHtml(title)}</div>` : '') +
+      renderMarkdown(text.replace(/^\*\*[^*]+\*\*\s*\n?/, ''));
+    renderMath(previewRef.current);
+  }
+
+  function schedulePreview() {
+    if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
+    previewTimerRef.current = setTimeout(updatePreview, 300);
+  }
+
+  // Re-render math when KaTeX loads
+  useEffect(() => {
+    if (katexLoaded && previewRef.current && previewRef.current.innerHTML) {
+      renderMath(previewRef.current);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [katexLoaded]);
+
+  async function loadTopic(slug: string) {
+    setCurrentSlug(slug);
+    currentSlugRef.current = slug;
+    setEditorShown(true);
+    if (textareaRef.current) textareaRef.current.value = '';
+    if (previewRef.current) previewRef.current.innerHTML = '<p style="color:var(--color-muted-foreground);padding:20px">Loading…</p>';
+    try {
+      const resp = await fetch(`/api/notes?slug=${encodeURIComponent(slug)}&password=${encodeURIComponent(passwordRef.current)}`);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const record = await resp.json();
+      if (!record) { showToast('Topic not found', 'error'); return; }
+      const f = record.fields;
+      setMetaTopic(f.Topic || '');
+      setMetaLevel(f.Level || 'AM');
+      setSlugDisplay(f.Slug || slug);
+      if (textareaRef.current) textareaRef.current.value = f.Content || '';
+      updateLineNumbers();
+      updatePreview();
+    } catch {
+      showToast('Failed to load topic', 'error');
+    }
+  }
+
+  function newTopic() {
+    setCurrentSlug('__new__');
+    currentSlugRef.current = '__new__';
+    setMetaTopic('');
+    setMetaLevel('AM');
+    setSlugDisplay('—');
+    if (textareaRef.current) textareaRef.current.value = '';
+    if (previewRef.current) previewRef.current.innerHTML = '';
+    updateLineNumbers();
+    setEditorShown(true);
+  }
+
+  function handleTopicInput(val: string) {
+    setMetaTopic(val);
+    if (currentSlugRef.current === '__new__' && val) {
+      setSlugDisplay(generateSlug(val, metaLevelRef.current));
+    }
+  }
+
+  function handleLevelChange(val: string) {
+    setMetaLevel(val);
+    if (currentSlugRef.current === '__new__' && metaTopicRef.current) {
+      setSlugDisplay(generateSlug(metaTopicRef.current, val));
+    }
+  }
+
+  async function saveNotes() {
+    const topic = metaTopicRef.current.trim();
+    const level = metaLevelRef.current || 'AM';
+    const content = textareaRef.current?.value ?? '';
+    if (!topic) { showToast('Topic name is required', 'error'); return; }
+
+    const slug = currentSlugRef.current === '__new__'
+      ? generateSlug(topic, level)
+      : (slugDisplayRef.current !== '—' ? slugDisplayRef.current : generateSlug(topic, level));
+
+    setSaveState('saving');
+    try {
+      const resp = await fetch(
+        `/api/notes?password=${encodeURIComponent(passwordRef.current)}&slug=${encodeURIComponent(slug)}&topic=${encodeURIComponent(topic)}&level=${encodeURIComponent(level)}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) }
+      );
+      if (!resp.ok) {
+        let detail = '';
+        try { const j = await resp.json(); detail = j.error || ''; } catch { /**/ }
+        throw new Error(`HTTP ${resp.status}${detail ? ': ' + detail : ''}`);
+      }
+      const result = await resp.json();
+
+      setSlugDisplay(slug);
+      setCurrentSlug(slug);
+      currentSlugRef.current = slug;
+
+      const topicsResp = await fetch(`/api/notes?list=all&password=${encodeURIComponent(passwordRef.current)}`);
+      if (topicsResp.ok) {
+        const tList = await topicsResp.json();
+        setTopics(Array.isArray(tList) ? tList : []);
+      }
+
+      setSaveState('saved');
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => setSaveState('idle'), 3000);
+      showToast(result.action === 'created' ? 'Topic created' : 'Saved', 'success');
+    } catch (err) {
+      setSaveState('idle');
+      showToast(`Save failed: ${(err as Error).message}`, 'error');
+    }
+  }
+
+  const filteredTopics = topicSearch
+    ? topics.filter(t => t.fields.Topic?.toLowerCase().includes(topicSearch.toLowerCase()))
+    : topics;
+
+  const FloppyIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/>
+      <polyline points="7 3 7 8 15 8"/>
+    </svg>
+  );
+
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <h1 className="font-display text-4xl text-navy">Coming Soon</h1>
-    </main>
+    <>
+      <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" strategy="afterInteractive" />
+      <Script
+        src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        strategy="afterInteractive"
+        onLoad={() => setKatexLoaded(true)}
+      />
+
+      <div className="en-layout">
+        {/* Password gate */}
+        {!authed && (
+          <div className="en-gate">
+            <div className="en-gate-card">
+              <h1>Edit Notes</h1>
+              <p>Enter your admin password to continue.</p>
+              <input
+                type="password"
+                className={`en-pw-input${pwShake ? ' shake' : ''}`}
+                value={pwInput}
+                onChange={e => setPwInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && tryPassword()}
+                placeholder="Password"
+                autoComplete="current-password"
+                autoFocus
+              />
+              <button className="en-pw-btn" onClick={tryPassword} disabled={pwLoading}>
+                {pwLoading ? 'Checking…' : 'Continue'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Top nav */}
+        <nav className="en-nav">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="javascript:history.back()" className="en-back" aria-label="Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </a>
+          <span className="en-nav-title">Edit Notes</span>
+          <span className="en-nav-badge">
+            {authed ? `${topics.length} topics` : 'Loading…'}
+          </span>
+        </nav>
+
+        {/* Toast */}
+        <div className={`en-toast ${toastType}${toastVisible ? ' show' : ''}`}>
+          {toastMsg}
+        </div>
+
+        {/* App shell */}
+        {authed && (
+          <div className="en-shell">
+            {/* Sidebar */}
+            <aside className="en-sidebar">
+              <div className="en-sidebar-search">
+                <input
+                  type="search"
+                  placeholder="Search topics…"
+                  autoComplete="off"
+                  value={topicSearch}
+                  onChange={e => setTopicSearch(e.target.value)}
+                />
+              </div>
+              <div className="en-topic-list">
+                {filteredTopics.length === 0 ? (
+                  <div className="en-topic-empty">
+                    {topics.length === 0 ? 'Loading…' : 'No topics found'}
+                  </div>
+                ) : filteredTopics.map(t => (
+                  <div
+                    key={t.id || t.fields.Slug}
+                    className={`en-topic-item${currentSlug === t.fields.Slug ? ' active' : ''}`}
+                    onClick={() => t.fields.Slug && loadTopic(t.fields.Slug)}
+                  >
+                    <span>{t.fields.Topic || 'Untitled'}</span>
+                    <span className="en-level-tag">{t.fields.Level || ''}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="en-sidebar-footer">
+                <button className="en-btn-new" onClick={newTopic}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  New Topic
+                </button>
+              </div>
+            </aside>
+
+            {/* Editor main */}
+            <div className="en-main">
+              {!editorShown ? (
+                <div className="en-empty">
+                  <div>
+                    <div className="en-empty-icon">📝</div>
+                    <p>Select a topic from the list,<br />or create a new one.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="en-editor-shell">
+                  {/* Meta bar */}
+                  <div className="en-meta-bar">
+                    <div className="en-meta-field">
+                      <span className="en-meta-label">Topic</span>
+                      <input
+                        type="text"
+                        className="en-meta-input"
+                        placeholder="e.g. Binomial Expansion"
+                        value={metaTopic}
+                        onChange={e => handleTopicInput(e.target.value)}
+                        style={{ minWidth: 180 }}
+                      />
+                    </div>
+                    <div className="en-meta-field">
+                      <span className="en-meta-label">Level</span>
+                      <select
+                        className="en-meta-select"
+                        value={metaLevel}
+                        onChange={e => handleLevelChange(e.target.value)}
+                      >
+                        <option value="AM">A-Math (Sec)</option>
+                        <option value="EM">E-Math (Sec)</option>
+                        <option value="JC">H2 Math (JC)</option>
+                      </select>
+                    </div>
+                    <div className="en-meta-field">
+                      <span className="en-meta-label">Slug</span>
+                      <span className="en-slug-display">{slugDisplay}</span>
+                    </div>
+                    <div style={{ flex: 1 }} />
+                    <button
+                      className={`en-btn-save${saveState === 'saved' ? ' saved' : ''}`}
+                      onClick={saveNotes}
+                      disabled={saveState === 'saving'}
+                    >
+                      {saveState === 'saving' ? (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'en-spin 1s linear infinite' }}>
+                            <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0" />
+                          </svg>
+                          Saving…
+                        </>
+                      ) : saveState === 'saved' ? (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          Saved
+                        </>
+                      ) : (
+                        <><FloppyIcon /> Save</>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Panes */}
+                  <div className="en-panes">
+                    {/* Editor pane */}
+                    <div className="en-pane en-pane-editor">
+                      <div className="en-pane-header">
+                        <span className="en-pane-label">Editor</span>
+                        <span className="en-line-count">{lineCount} line{lineCount !== 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="en-editor-wrap">
+                        <div className="en-line-numbers" ref={lineNumsRef} />
+                        <textarea
+                          ref={textareaRef}
+                          className="en-textarea"
+                          spellCheck={false}
+                          autoCorrect="off"
+                          autoCapitalize="off"
+                          placeholder={"Start writing content here…\n\nUse **bold headings** for sections:\n\n**1. Binomial Expansion**\nThe binomial theorem states...\n\n**Example 1:**\nExpand $(1+x)^4$\n\n[Try: Expand $(2+x)^3$]\n[Ans: $8 + 12x + 6x^2 + x^3$]"}
+                          onChange={() => { updateLineNumbers(); schedulePreview(); }}
+                          onScroll={syncLineNumbers}
+                          onKeyDown={e => {
+                            if (e.key === 'Tab') {
+                              e.preventDefault();
+                              const el = textareaRef.current!;
+                              const start = el.selectionStart;
+                              const end = el.selectionEnd;
+                              el.value = el.value.substring(0, start) + '    ' + el.value.substring(end);
+                              el.selectionStart = el.selectionEnd = start + 4;
+                              updateLineNumbers();
+                            }
+                            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                              e.preventDefault();
+                              saveNotes();
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Preview pane */}
+                    <div className="en-pane en-pane-preview">
+                      <div className="en-pane-header">
+                        <span className="en-pane-label">Preview</span>
+                        <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }}>Live • KaTeX rendered</span>
+                      </div>
+                      <div className="en-preview-wrap">
+                        <div className="en-preview" ref={previewRef} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
