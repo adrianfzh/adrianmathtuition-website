@@ -40,22 +40,22 @@ const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtit
   { id: 'trigo',                   emoji: '📐', title: 'Trigonometry',                   subtitle: 'Trigonometric identities',     url: '/formulas/trigo' },
   { id: 'indices',                 emoji: 'aⁿ', title: 'Indices',                        subtitle: 'Laws of Exponents',            url: '/formulas/indices' },
   { id: 'logarithms',              emoji: '㏒', title: 'Logarithms',                     subtitle: 'Laws of Logarithms',           url: '/formulas/logarithms' },
-  { id: 'coord-geom',              emoji: '📍', title: 'Coordinate Geometry & Circles',  subtitle: 'Lines, gradients & circles',   url: '/formulas/coordinate-geometry' },
-  { id: 'differentiation',         emoji: '∂',  title: 'Differentiation',                subtitle: 'Derivatives & rules',          url: '/formulas/differentiation' },
+  { id: 'coord-geom',              emoji: 'xy', title: 'Coordinate Geometry & Circles',  subtitle: 'Lines, gradients & circles',   url: '/formulas/coordinate-geometry' },
+  { id: 'differentiation',         emoji: 'dy/dx', title: 'Differentiation',             subtitle: 'Derivatives & rules',          url: '/formulas/differentiation' },
   { id: 'factorization-cubics',    emoji: '∛',  title: 'Factorization of Cubics',        subtitle: 'Sum/difference of cubes',      url: '/formulas/factorization-cubics' },
   { id: 'partial-fractions',       emoji: '½',  title: 'Partial Fractions',              subtitle: 'Forms of Partial Fractions',   url: '/formulas/partial-fractions' },
   { id: 'exp-log-graphs',          emoji: '📈', title: 'Exp & Log Graphs',               subtitle: 'Graph shapes & asymptotes',    url: '/formulas/exponential-log-graphs' },
   { id: 'em-indices',              emoji: 'aⁿ', title: 'Indices',                        subtitle: 'Laws of Exponents',            url: '/formulas/em-indices' },
   { id: 'em-standard-form',        emoji: '×10',title: 'Standard Form',                  subtitle: 'SI prefixes',                  url: '/formulas/em-standard-form' },
   { id: 'em-interest',             emoji: '%',  title: 'Simple & Compound Interest',      subtitle: 'Interest formulae',            url: '/formulas/em-interest' },
-  { id: 'em-coordinate-geometry',  emoji: '📍', title: 'Coordinate Geometry',            subtitle: 'Lines & quadratics',           url: '/formulas/em-coordinate-geometry' },
+  { id: 'em-coordinate-geometry',  emoji: 'xy', title: 'Coordinate Geometry',            subtitle: 'Linear and quadratic graphs',  url: '/formulas/em-coordinate-geometry' },
   { id: 'em-congruency-similarity',emoji: '≅',  title: 'Congruency & Similarity',        subtitle: 'Triangles & ratios',           url: '/formulas/em-congruency-similarity' },
   { id: 'em-trigonometry',         emoji: '📐', title: 'Trigonometry',                   subtitle: 'Sin/cos rules & area',         url: '/formulas/em-trigonometry' },
   { id: 'em-mensuration',          emoji: '📦', title: 'Mensuration',                    subtitle: 'Area & volume',                url: '/formulas/em-mensuration' },
   { id: 'em-statistics',           emoji: '📊', title: 'Statistics',                     subtitle: 'Mean & std deviation',         url: '/formulas/em-statistics' },
-  { id: 'em-circular-measure',     emoji: '⭕', title: 'Circular Measure',               subtitle: 'Arc length & area',            url: '/formulas/em-circular-measure' },
+  { id: 'em-circular-measure',     emoji: '⭕', title: 'Circular Measure',               subtitle: 'Arc length & sector area',     url: '/formulas/em-circular-measure' },
   { id: 'em-polygons',             emoji: '⬡',  title: 'Polygons',                       subtitle: 'Interior & exterior angles',   url: '/formulas/em-polygons' },
-  { id: 'em-sets',                 emoji: '∪',  title: 'Sets',                           subtitle: 'Set notation & definitions',   url: '/formulas/em-sets' },
+  { id: 'em-sets',                 emoji: '{}', title: 'Sets',                           subtitle: 'Set notation & definitions',   url: '/formulas/em-sets' },
 ];
 
 /* ── Send icon SVG ── */
@@ -213,9 +213,9 @@ function SidebarContent({
               { id: 'indices',             emoji: 'aⁿ', title: 'Indices',                  subtitle: 'Laws of Exponents' },
               { id: 'logarithms',          emoji: '㏒', title: 'Logarithms',               subtitle: 'Laws of Logarithms' },
               { id: 'exp-log-graphs',      emoji: '📈', title: 'Exp & Log Graphs',        subtitle: 'Graph shapes & asymptotes' },
-              { id: 'coord-geom',          emoji: '📍', title: 'Coordinate Geometry',      subtitle: 'Geometry & Circles' },
-              { id: 'trigo',               emoji: '📐', title: 'Trigonometry',             subtitle: 'Trigonometric identities' },
-              { id: 'differentiation',     emoji: '∂',  title: 'Differentiation',          subtitle: 'Derivatives & rules' },
+              { id: 'coord-geom',          emoji: 'xy',    title: 'Coordinate Geometry',      subtitle: 'Geometry & Circles' },
+              { id: 'trigo',               emoji: '📐',   title: 'Trigonometry',             subtitle: 'Trigonometric identities' },
+              { id: 'differentiation',     emoji: 'dy/dx', title: 'Differentiation',          subtitle: 'Derivatives & rules' },
             ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
               <button
                 key={item.id}
@@ -275,19 +275,19 @@ function SidebarContent({
             overflow: 'hidden',
           }}>
             {([
-              { id: 'emath',                    emoji: '📄', title: 'O Level EM Formula Sheet',  subtitle: 'Official syllabus document' },
+              { id: 'emath',                    emoji: '📄',  title: 'O Level EM Formula Sheet',  subtitle: 'Official syllabus document' },
               { id: 'em-indices',               emoji: 'aⁿ', title: 'Indices',                   subtitle: 'Laws of Exponents' },
               { id: 'em-standard-form',         emoji: '×10',title: 'Standard Form',             subtitle: 'SI prefixes' },
               { id: 'em-interest',              emoji: '%',  title: 'Interest',                   subtitle: 'Simple & compound' },
-              { id: 'em-coordinate-geometry',   emoji: '📍', title: 'Coordinate Geometry',        subtitle: 'Lines & quadratics' },
+              { id: 'em-coordinate-geometry',   emoji: 'xy', title: 'Coordinate Geometry',        subtitle: 'Linear and quadratic graphs' },
               { id: 'em-congruency-similarity', emoji: '≅',  title: 'Congruency & Similarity',    subtitle: 'Triangles & ratios' },
               { id: 'em-trigonometry',          emoji: '📐', title: 'Trigonometry',               subtitle: 'Sin/cos rules & area' },
               { id: 'em-mensuration',           emoji: '📦', title: 'Mensuration',                subtitle: 'Area & volume' },
               { id: 'em-statistics',            emoji: '📊', title: 'Statistics',                 subtitle: 'Mean & std deviation' },
-              { id: 'em-circular-measure',      emoji: '⭕', title: 'Circular Measure',           subtitle: 'Arc length & area' },
-              { id: 'em-polygons',              emoji: '⬡',  title: 'Polygons',                   subtitle: 'Interior & exterior angles' },
-              { id: 'em-sets',                  emoji: '∪',  title: 'Sets',                       subtitle: 'Set notation & definitions' },
-            ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
+              { id: 'em-circular-measure',      emoji: '⭕', title: 'Circular Measure',           subtitle: 'Arc length & sector area' },
+              { id: 'em-polygons',              emoji: '⬡',  title: 'Polygons',                   subtitle: 'Interior & exterior angles', emojiSize: 22 },
+              { id: 'em-sets',                  emoji: '{}', title: 'Sets',                       subtitle: 'Set notation & definitions' },
+            ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string; emojiSize?: number }[]).map((item, idx, arr) => (
               <button
                 key={item.id}
                 className="menu-formula-btn"
@@ -299,7 +299,7 @@ function SidebarContent({
                   cursor: 'pointer', transition: 'background 0.12s',
                 }}
               >
-                <span style={{ fontSize: 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-block' }}>{item.emoji}</span>
+                <span style={{ fontSize: item.emojiSize ?? 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-block' }}>{item.emoji}</span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
                   <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
