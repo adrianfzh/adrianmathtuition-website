@@ -10,10 +10,19 @@ export default function EmTrigonometryPage() {
       contentId="em-trigo-content"
       footerNote="Formulas for the Singapore O-Level Elementary Mathematics syllabus"
     >
-      <FormulaSection title="Trigonometry Formulae">
-        <FormulaRow latex="a^2 = b^2 + c^2" annotation="Pythagoras' Theorem" />
-        <FormulaRow latex="\dfrac{\sin A}{a} = \dfrac{\sin B}{b}" annotation="Sine Rule" />
-        <FormulaRow latex="a^2 = b^2 + c^2 - 2bc\cos A" annotation="Cosine Rule" />
+      <FormulaSection title="Pythagoras' Theorem">
+        <FormulaRow latex="a^2 = b^2 + c^2" />
+      </FormulaSection>
+
+      <FormulaSection title="Sine Rule">
+        <FormulaRow latex="\dfrac{\sin A}{a} = \dfrac{\sin B}{b}" />
+      </FormulaSection>
+
+      <FormulaSection title="Cosine Rule">
+        <FormulaRow latex="a^2 = b^2 + c^2 - 2bc\cos A" />
+      </FormulaSection>
+
+      <FormulaSection title="Area of Triangle">
         <FormulaRow latex="\text{Area} = \dfrac{1}{2}ab\sin C" />
       </FormulaSection>
     </FormulaPageLayout>

@@ -1,6 +1,6 @@
 'use client';
 
-import FormulaPageLayout, { FormulaSection, FormulaRow, FormulaNoteBox } from '@/components/FormulaPageLayout';
+import FormulaPageLayout, { FormulaSection, FormulaRow } from '@/components/FormulaPageLayout';
 
 export default function EmPolygonsPage() {
   return (
@@ -18,7 +18,6 @@ export default function EmPolygonsPage() {
       <FormulaSection title="For Regular Polygons">
         <FormulaRow latex="1 \text{ interior angle} = \dfrac{(n-2) \times 180^\circ}{n}" />
         <FormulaRow latex="1 \text{ exterior angle} = \dfrac{360^\circ}{n}" />
-        <FormulaNoteBox html="<em>Does not work for irregular polygons</em>" />
       </FormulaSection>
     </FormulaPageLayout>
   );

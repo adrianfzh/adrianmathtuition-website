@@ -31,7 +31,7 @@ type FormulaSheetId =
   | 'differentiation' | 'factorization-cubics' | 'partial-fractions' | 'exp-log-graphs'
   | 'em-indices' | 'em-standard-form' | 'em-interest' | 'em-coordinate-geometry'
   | 'em-congruency-similarity' | 'em-trigonometry' | 'em-mensuration' | 'em-statistics'
-  | 'em-vectors' | 'em-circular-measure' | 'em-polygons' | 'em-sets';
+  | 'em-circular-measure' | 'em-polygons' | 'em-sets';
 
 const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtitle: string; url: string }[] = [
   { id: 'mf27',                    emoji: '📘', title: 'A-Level MF27',                   subtitle: 'H2 Math formula list',         url: '/formulas/mf27.pdf' },
@@ -53,7 +53,6 @@ const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtit
   { id: 'em-trigonometry',         emoji: '📐', title: 'Trigonometry',                   subtitle: 'Sin/cos rules & area',         url: '/formulas/em-trigonometry' },
   { id: 'em-mensuration',          emoji: '📦', title: 'Mensuration',                    subtitle: 'Area & volume',                url: '/formulas/em-mensuration' },
   { id: 'em-statistics',           emoji: '📊', title: 'Statistics',                     subtitle: 'Mean & std deviation',         url: '/formulas/em-statistics' },
-  { id: 'em-vectors',              emoji: '→',  title: 'Vectors',                        subtitle: 'Vector operations',            url: '/formulas/em-vectors' },
   { id: 'em-circular-measure',     emoji: '⭕', title: 'Circular Measure',               subtitle: 'Arc length & area',            url: '/formulas/em-circular-measure' },
   { id: 'em-polygons',             emoji: '⬡',  title: 'Polygons',                       subtitle: 'Interior & exterior angles',   url: '/formulas/em-polygons' },
   { id: 'em-sets',                 emoji: '∪',  title: 'Sets',                           subtitle: 'Set notation & definitions',   url: '/formulas/em-sets' },
@@ -285,7 +284,6 @@ function SidebarContent({
               { id: 'em-trigonometry',          emoji: '📐', title: 'Trigonometry',               subtitle: 'Sin/cos rules & area' },
               { id: 'em-mensuration',           emoji: '📦', title: 'Mensuration',                subtitle: 'Area & volume' },
               { id: 'em-statistics',            emoji: '📊', title: 'Statistics',                 subtitle: 'Mean & std deviation' },
-              { id: 'em-vectors',               emoji: '→',  title: 'Vectors',                    subtitle: 'Vector operations' },
               { id: 'em-circular-measure',      emoji: '⭕', title: 'Circular Measure',           subtitle: 'Arc length & area' },
               { id: 'em-polygons',              emoji: '⬡',  title: 'Polygons',                   subtitle: 'Interior & exterior angles' },
               { id: 'em-sets',                  emoji: '∪',  title: 'Sets',                       subtitle: 'Set notation & definitions' },
