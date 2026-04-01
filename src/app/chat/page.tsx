@@ -32,13 +32,13 @@ const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtit
   { id: 'amath',               emoji: '📗', title: 'O-Level A Math',                    subtitle: 'Additional Mathematics',       url: '/formulas/amath.pdf' },
   { id: 'emath',               emoji: '📙', title: 'O-Level E Math',                    subtitle: 'Elementary Mathematics',       url: '/formulas/emath.pdf' },
   { id: 'trigo',               emoji: '📐', title: 'Trigonometry',                       subtitle: 'Trigonometric identities',     url: '/formulas/trigo' },
-  { id: 'indices',             emoji: '⚡', title: 'Indices',                            subtitle: 'Laws of Exponents',            url: '/formulas/indices' },
-  { id: 'logarithms',          emoji: '📈', title: 'Logarithms',                         subtitle: 'Laws of Logarithms',           url: '/formulas/logarithms' },
-  { id: 'coord-geom',          emoji: '🧭', title: 'Coordinate Geometry & Circles',      subtitle: 'Lines, gradients & circles',   url: '/formulas/coordinate-geometry' },
+  { id: 'indices',             emoji: 'ⁿ',  title: 'Indices',                            subtitle: 'Laws of Exponents',            url: '/formulas/indices' },
+  { id: 'logarithms',          emoji: '㏒', title: 'Logarithms',                         subtitle: 'Laws of Logarithms',           url: '/formulas/logarithms' },
+  { id: 'coord-geom',          emoji: '📍', title: 'Coordinate Geometry & Circles',      subtitle: 'Lines, gradients & circles',   url: '/formulas/coordinate-geometry' },
   { id: 'differentiation',     emoji: '∂',  title: 'Differentiation',                    subtitle: 'Derivatives & rules',          url: '/formulas/differentiation' },
   { id: 'factorization-cubics',emoji: '∛',  title: 'Factorization of Cubics',            subtitle: 'Sum/difference of cubes',      url: '/formulas/factorization-cubics' },
   { id: 'partial-fractions',   emoji: '½',  title: 'Partial Fractions',                  subtitle: 'Decomposition types',          url: '/formulas/partial-fractions' },
-  { id: 'exp-log-graphs',      emoji: '〰️', title: 'Exp & Log Graphs',                  subtitle: 'Graph shapes & asymptotes',    url: '/formulas/exponential-log-graphs' },
+  { id: 'exp-log-graphs',      emoji: '📈', title: 'Exp & Log Graphs',                  subtitle: 'Graph shapes & asymptotes',    url: '/formulas/exponential-log-graphs' },
 ];
 
 /* ── Send icon SVG ── */
@@ -192,10 +192,10 @@ function SidebarContent({
               { id: 'amath',               emoji: '📄', title: 'O Level AM Formula Sheet', subtitle: 'Official syllabus document' },
               { id: 'partial-fractions',   emoji: '½',  title: 'Partial Fractions',        subtitle: 'Decomposition types' },
               { id: 'factorization-cubics',emoji: '∛',  title: 'Factorization of Cubics',  subtitle: 'Sum/difference of cubes' },
-              { id: 'indices',             emoji: '⚡', title: 'Indices',                  subtitle: 'Laws of Exponents' },
-              { id: 'logarithms',          emoji: '📈', title: 'Logarithms',               subtitle: 'Laws of Logarithms' },
-              { id: 'exp-log-graphs',      emoji: '〰️', title: 'Exp & Log Graphs',        subtitle: 'Graph shapes & asymptotes' },
-              { id: 'coord-geom',          emoji: '🧭', title: 'Coordinate Geometry',      subtitle: 'Geometry & Circles' },
+              { id: 'indices',             emoji: 'ⁿ',  title: 'Indices',                  subtitle: 'Laws of Exponents' },
+              { id: 'logarithms',          emoji: '㏒', title: 'Logarithms',               subtitle: 'Laws of Logarithms' },
+              { id: 'exp-log-graphs',      emoji: '📈', title: 'Exp & Log Graphs',        subtitle: 'Graph shapes & asymptotes' },
+              { id: 'coord-geom',          emoji: '📍', title: 'Coordinate Geometry',      subtitle: 'Geometry & Circles' },
               { id: 'trigo',               emoji: '📐', title: 'Trigonometry',             subtitle: 'Trigonometric identities' },
               { id: 'differentiation',     emoji: '∂',  title: 'Differentiation',          subtitle: 'Derivatives & rules' },
             ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
