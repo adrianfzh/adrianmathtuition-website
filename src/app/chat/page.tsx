@@ -605,7 +605,7 @@ export default function ChatPage() {
       {/* Scrollable chat area */}
       <div
         ref={chatScrollRef}
-        style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,15%,88%) transparent' }}
+        style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,15%,88%) transparent', overflowAnchor: 'none' }}
       >
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
 
