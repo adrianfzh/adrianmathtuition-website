@@ -364,12 +364,12 @@ export default function EditNotesPage() {
     const sections = previewSectionsRef.current;
     const active = activeSectionRef.current;
     tabs.innerHTML = sections.map((sec, i) => {
-      const cls = ['en-preview-pill',
+      const cls = ['en-preview-sitem',
         sec.isPractice ? 'practice' : '',
         sec.isSyllabus ? 'syllabus' : '',
         i === active ? 'active' : '',
       ].filter(Boolean).join(' ');
-      return `<button class="${cls}" data-idx="${i}">${escapeHtml(sec.title)}</button>`;
+      return `<div class="${cls}" data-idx="${i}">${escapeHtml(sec.title)}</div>`;
     }).join('');
   }
 
@@ -416,21 +416,20 @@ export default function EditNotesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [katexLoaded]);
 
-  // Tab-click delegation on preview tab bar
+  // Section-click delegation on preview sidebar
   useEffect(() => {
+    if (!editorShown) return;
     const tabs = previewTabsRef.current;
     if (!tabs) return;
     const onClick = (e: MouseEvent) => {
-      const btn = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
-      if (!btn) return;
-      const idx = parseInt(btn.dataset.idx ?? '0', 10);
+      const item = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
+      if (!item) return;
+      const idx = parseInt(item.dataset.idx ?? '0', 10);
       if (isNaN(idx)) return;
       activeSectionRef.current = idx;
-      // Update active class without full re-render
       tabs.querySelectorAll('[data-idx]').forEach((p, i) => {
         p.classList.toggle('active', i === idx);
       });
-      // Render the selected section
       const sec = previewSectionsRef.current[idx];
       if (!sec || !previewRef.current) return;
       let subtitle = '';
@@ -445,7 +444,7 @@ export default function EditNotesPage() {
     tabs.addEventListener('click', onClick);
     return () => tabs.removeEventListener('click', onClick);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [editorShown]);
 
   async function loadTopic(slug: string) {
     setCurrentSlug(slug);
@@ -939,9 +938,11 @@ export default function EditNotesPage() {
                         <span className="en-pane-label">Preview</span>
                         <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }}>Live • KaTeX rendered</span>
                       </div>
-                      <div className="en-preview-tabs" ref={previewTabsRef} />
-                      <div className="en-preview-wrap">
-                        <div className="en-preview" ref={previewRef} />
+                      <div className="en-preview-body">
+                        <nav className="en-preview-sidebar" ref={previewTabsRef} />
+                        <div className="en-preview-wrap">
+                          <div className="en-preview" ref={previewRef} />
+                        </div>
                       </div>
                     </div>
                   </div>

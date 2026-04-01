@@ -515,16 +515,16 @@ body {
 .en-textarea::placeholder { color: hsl(220,15%,45%); }
 
 /* Preview */
-.en-preview-tabs { display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto; border-bottom: 1px solid var(--color-border); background: var(--color-card); scrollbar-width: none; flex-shrink: 0; min-height: 0; }
-.en-preview-tabs:empty { display: none; }
-.en-preview-tabs::-webkit-scrollbar { display: none; }
-.en-preview-pill { padding: 5px 12px; border-radius: 20px; font-family: var(--font-sans); font-size: 12px; font-weight: 500; border: 1.5px solid var(--color-border); background: transparent; color: var(--color-foreground); cursor: pointer; white-space: nowrap; transition: all 0.12s; flex-shrink: 0; }
-.en-preview-pill:hover { background: var(--color-muted); }
-.en-preview-pill.active { background: var(--color-navy); color: white; border-color: var(--color-navy); }
-.en-preview-pill.practice { border-color: var(--color-amber); color: var(--color-amber-dark); }
-.en-preview-pill.practice.active { background: var(--color-amber-dark); border-color: var(--color-amber-dark); color: white; }
-.en-preview-pill.syllabus { opacity: 0.65; }
-.en-preview-pill.syllabus.active { background: var(--color-navy); color: white; border-color: var(--color-navy); opacity: 1; }
+.en-preview-body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+.en-preview-sidebar { width: 148px; flex-shrink: 0; border-right: 1px solid var(--color-border); background: var(--color-card); overflow-y: auto; padding: 8px 6px; display: flex; flex-direction: column; gap: 2px; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
+.en-preview-sidebar:empty { display: none; }
+.en-preview-sitem { padding: 7px 10px; border-radius: 6px; font-family: var(--font-sans); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.1s; color: var(--color-foreground); line-height: 1.3; }
+.en-preview-sitem:hover { background: var(--color-muted); }
+.en-preview-sitem.active { background: var(--color-navy); color: white; }
+.en-preview-sitem.practice { color: var(--color-amber-dark); }
+.en-preview-sitem.practice.active { background: var(--color-amber-dark); color: white; }
+.en-preview-sitem.syllabus { opacity: 0.65; }
+.en-preview-sitem.syllabus.active { background: var(--color-navy); color: white; opacity: 1; }
 .en-preview-wrap { flex: 1; overflow-y: auto; background: var(--color-background); scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
 .en-preview { max-width: 680px; padding: 20px 24px 40px; font-size: 15px; line-height: 1.8; }
 .en-preview .section-title { font-family: var(--font-display); font-size: 1.5rem; color: var(--color-navy); margin-bottom: 16px; line-height: 1.2; }
