@@ -104,7 +104,7 @@ export default function ScheduleTable() {
                             <span className="block text-[15px] font-bold mb-0.5">{slot.type}</span>
                             <span className="block text-[13px] font-medium mb-0.5 opacity-90">{day} {slot.time}</span>
                             <Dots filled={slot.filled} capacity={slot.capacity} />
-                            <span className="text-[12px] font-bold text-green-500 mt-0.5 tracking-wide">available</span>
+                            <span className="text-[12px] font-bold text-green-600 mt-0.5 tracking-wide">available</span>
                           </a>
                         </td>
                       );
