@@ -30,8 +30,10 @@ function generateSlug(topic: string, level: string) {
 function renderMarkdown(text: string): string {
   const blocks: string[] = [];
   const inlines: string[] = [];
-  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { blocks.push(m); return `%%B${blocks.length - 1}%%`; });
-  text = text.replace(/\$([^$\n]{1,300}?)\$/g, (_, m) => { inlines.push(m); return `%%I${inlines.length - 1}%%`; });
+  // Placeholders start with < and end with > so the later [^>]\n[^<]→<br>
+  // replacement never matches across their boundaries (> and < are excluded).
+  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { blocks.push(m); return `<KBMATH_${blocks.length - 1}>`; });
+  text = text.replace(/\$([^$\n]{1,300}?)\$/g, (_, m) => { inlines.push(m); return `<KIMATH_${inlines.length - 1}>`; });
 
   text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
 
@@ -80,8 +82,8 @@ function renderMarkdown(text: string): string {
   text = text.replace(/<p>(<(?:h[1-6]|ul|ol|hr|div|table)[^>]*>)/g, '$1');
   text = text.replace(/(<\/(?:h[1-6]|ul|ol|div|table)>)<\/p>/g, '$1');
   text = text.replace(/([^>])\n([^<])/g, '$1<br>$2');
-  text = text.replace(/%%B(\d+)%%/g, (_, i) => `$$${blocks[Number(i)]}$$`);
-  text = text.replace(/%%I(\d+)%%/g, (_, i) => `$${inlines[Number(i)]}$`);
+  text = text.replace(/<KBMATH_(\d+)>/g, (_, i) => `$$${blocks[Number(i)]}$$`);
+  text = text.replace(/<KIMATH_(\d+)>/g, (_, i) => `$${inlines[Number(i)]}$`);
   return text;
 }
 
