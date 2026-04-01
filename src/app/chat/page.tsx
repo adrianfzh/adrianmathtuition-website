@@ -26,11 +26,12 @@ declare global {
 }
 
 /* ── Formula sheets config ── */
-type FormulaSheetId = 'mf27' | 'amath' | 'emath';
-const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[] = [
-  { id: 'mf27',   emoji: '📘', title: 'A-Level MF27',   subtitle: 'H2 Math formula list' },
-  { id: 'amath',  emoji: '📗', title: 'O-Level A Math',  subtitle: 'Additional Mathematics' },
-  { id: 'emath',  emoji: '📙', title: 'O-Level E Math',  subtitle: 'Elementary Mathematics' },
+type FormulaSheetId = 'mf27' | 'amath' | 'emath' | 'trigo';
+const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtitle: string; url: string }[] = [
+  { id: 'mf27',  emoji: '📘', title: 'A-Level MF27',          subtitle: 'H2 Math formula list',     url: '/formulas/mf27.pdf' },
+  { id: 'amath', emoji: '📗', title: 'O-Level A Math',         subtitle: 'Additional Mathematics',   url: '/formulas/amath.pdf' },
+  { id: 'emath', emoji: '📙', title: 'O-Level E Math',         subtitle: 'Elementary Mathematics',   url: '/formulas/emath.pdf' },
+  { id: 'trigo', emoji: '📐', title: 'A Math Trigo Formulas',  subtitle: 'Trigonometric identities', url: '/formulas/trigo' },
 ];
 
 /* ── Send icon SVG ── */
@@ -825,53 +826,68 @@ export default function ChatPage() {
             }}>
               {FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title}
             </span>
-            <a
-              href={`/formulas/${formulaSheet}.pdf`}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
-                textDecoration: 'none', padding: '8px 6px', flexShrink: 0,
-                display: 'flex', alignItems: 'center', gap: 4,
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Open
-            </a>
+            {(() => {
+              const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
+              const sheetUrl = activeSheet?.url ?? '';
+              return (
+                <a
+                  href={sheetUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
+                    textDecoration: 'none', padding: '8px 6px', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Open
+                </a>
+              );
+            })()}
           </div>
 
-          {/* PDF embed */}
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-            <iframe
-              src={`/formulas/${formulaSheet}.pdf`}
-              style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-              title={FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title}
-            />
-            {/* Fallback shown below iframe on mobile if PDF doesn't render */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0,
-              padding: '10px 16px',
-              background: 'hsla(0,0%,100%,0.95)',
-              borderTop: '1px solid hsl(220,15%,90%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              fontSize: 13, color: 'hsl(220,10%,46%)',
-              pointerEvents: 'none',
-            }}>
-              Can&apos;t see the PDF?{' '}
-              <a
-                href={`/formulas/${formulaSheet}.pdf`}
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: 'hsl(220,60%,40%)', fontWeight: 600, pointerEvents: 'auto' }}
-              >
-                Tap to open directly ↗
-              </a>
-            </div>
-          </div>
+          {/* Embed */}
+          {(() => {
+            const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
+            const sheetUrl = activeSheet?.url ?? '';
+            const isPdf = sheetUrl.endsWith('.pdf');
+            return (
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                <iframe
+                  src={sheetUrl}
+                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+                  title={activeSheet?.title}
+                />
+                {/* Fallback shown below iframe on mobile if PDF doesn't render */}
+                {isPdf && (
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    padding: '10px 16px',
+                    background: 'hsla(0,0%,100%,0.95)',
+                    borderTop: '1px solid hsl(220,15%,90%)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    fontSize: 13, color: 'hsl(220,10%,46%)',
+                    pointerEvents: 'none',
+                  }}>
+                    Can&apos;t see the PDF?{' '}
+                    <a
+                      href={sheetUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: 'hsl(220,60%,40%)', fontWeight: 600, pointerEvents: 'auto' }}
+                    >
+                      Tap to open directly ↗
+                    </a>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
 
