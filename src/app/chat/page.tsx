@@ -77,6 +77,13 @@ const MathIcon = () => (
   </svg>
 );
 
+/* ── Triangle icon SVG ── */
+const TriangleIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="hsl(220,40%,32%)" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
+    <polygon points="9,2 16.5,15.5 1.5,15.5" />
+  </svg>
+);
+
 /* ── Coordinate axes icon SVG ── */
 const CoordAxesIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="hsl(220,40%,32%)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -292,7 +299,7 @@ function SidebarContent({
               { id: 'em-standard-form',         emoji: '×10',title: 'Standard Form',             subtitle: 'SI prefixes' },
               { id: 'em-interest',              emoji: '%',  title: 'Interest',                   subtitle: 'Simple & compound' },
               { id: 'em-coordinate-geometry',   emoji: 'xy', icon: <CoordAxesIcon />, title: 'Coordinate Geometry',        subtitle: 'Linear and quadratic graphs' },
-              { id: 'em-congruency-similarity', emoji: '≅',  title: 'Congruency & Similarity',    subtitle: 'Triangles & ratios' },
+              { id: 'em-congruency-similarity', emoji: '≅',  icon: <TriangleIcon />, title: 'Congruency & Similarity',    subtitle: 'Triangles & ratios' },
               { id: 'em-trigonometry',          emoji: '📐', title: 'Trigonometry',               subtitle: 'Sin/cos rules & area' },
               { id: 'em-mensuration',           emoji: '📦', title: 'Mensuration',                subtitle: 'Area & volume' },
               { id: 'em-statistics',            emoji: '📊', title: 'Statistics',                 subtitle: 'Mean & std deviation' },
