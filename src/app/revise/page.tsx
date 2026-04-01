@@ -142,6 +142,28 @@ function renderMarkdown(text: string): string {
   return text;
 }
 
+function renderMath(el: HTMLElement) {
+  if (typeof window === 'undefined') return;
+  const tryRender = (attempts: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rme = (window as any).renderMathInElement;
+    if (rme) {
+      try {
+        rme(el, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$',  right: '$',  display: false },
+          ],
+          throwOnError: false,
+        });
+      } catch (e) { console.warn('[KaTeX]', e); }
+    } else if (attempts < 30) {
+      setTimeout(() => tryRender(attempts + 1), 100);
+    }
+  };
+  tryRender(0);
+}
+
 function ReviseContent() {
   const searchParams = useSearchParams();
   const subject = searchParams.get('subject') || 'AM';
@@ -153,7 +175,6 @@ function ReviseContent() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading]         = useState(true);
   const [fetchError, setFetchError]   = useState(false);
-  const [katexReady, setKatexReady]   = useState(false);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const tabBarRef  = useRef<HTMLDivElement>(null);
@@ -185,31 +206,19 @@ function ReviseContent() {
       (subtitle ? `<div class="section-subtitle">${escapeHtml(subtitle)}</div>` : '') +
       renderMarkdown(sec.content);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rme = typeof window !== 'undefined' ? (window as any).renderMathInElement : null;
-    if (rme && contentRef.current) {
-      try {
-        rme(contentRef.current, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$',  right: '$',  display: false },
-          ],
-          throwOnError: false,
-        });
-      } catch (e) { console.warn('[KaTeX]', e); }
-    }
+    renderMath(contentRef.current);
 
     // Scroll content to top
     const scroll = contentRef.current.closest('.content-scroll') as HTMLElement | null;
     if (scroll) scroll.scrollTop = 0; else window.scrollTo(0, 0);
   }, []);
 
-  // Re-render when section changes or KaTeX loads
+  // Re-render when section changes
   useEffect(() => {
     if (!loading && sections.length > 0) {
       renderSection(currentIndex, sections);
     }
-  }, [currentIndex, sections, katexReady, loading, renderSection]);
+  }, [currentIndex, sections, loading, renderSection]);
 
   // Scroll active tab into view
   useEffect(() => {
@@ -314,7 +323,6 @@ function ReviseContent() {
       <Script
         src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
         strategy="afterInteractive"
-        onLoad={() => setKatexReady(true)}
       />
       <div className="revise-layout">
         <TopNav topic={topic} badge={subjectLabel} />
