@@ -1,6 +1,6 @@
 'use client';
 
-import FormulaPageLayout, { FormulaSection } from '@/components/FormulaPageLayout';
+import FormulaPageLayout, { FormulaSection, FormulaRow, FormulaNoteBox } from '@/components/FormulaPageLayout';
 
 export default function EmPolygonsPage() {
   return (
@@ -10,10 +10,15 @@ export default function EmPolygonsPage() {
       contentId="em-polygons-content"
       footerNote="Formulas for the Singapore O-Level Elementary Mathematics syllabus"
     >
-      <FormulaSection title="Polygons">
-        <p style={{ textAlign: 'center', color: 'hsl(220,10%,56%)', fontStyle: 'italic', padding: '32px 0' }}>
-          Content coming soon.
-        </p>
+      <FormulaSection title="For All Polygons">
+        <FormulaRow latex="\text{Sum of interior angles} = (n-2) \times 180^\circ" />
+        <FormulaRow latex="\text{Sum of exterior angles} = 360^\circ" />
+      </FormulaSection>
+
+      <FormulaSection title="For Regular Polygons">
+        <FormulaRow latex="1 \text{ interior angle} = \dfrac{(n-2) \times 180^\circ}{n}" />
+        <FormulaRow latex="1 \text{ exterior angle} = \dfrac{360^\circ}{n}" />
+        <FormulaNoteBox html="<em>Does not work for irregular polygons</em>" />
       </FormulaSection>
     </FormulaPageLayout>
   );

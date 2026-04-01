@@ -54,9 +54,9 @@ const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtit
   { id: 'em-mensuration',          emoji: '📦', title: 'Mensuration',                    subtitle: 'Area & volume',                url: '/formulas/em-mensuration' },
   { id: 'em-statistics',           emoji: '📊', title: 'Statistics',                     subtitle: 'Mean & std deviation',         url: '/formulas/em-statistics' },
   { id: 'em-vectors',              emoji: '→',  title: 'Vectors',                        subtitle: 'Vector operations',            url: '/formulas/em-vectors' },
-  { id: 'em-circular-measure',     emoji: '⭕', title: 'Circular Measure',               subtitle: 'Coming soon',                  url: '/formulas/em-circular-measure' },
-  { id: 'em-polygons',             emoji: '⬡',  title: 'Polygons',                       subtitle: 'Coming soon',                  url: '/formulas/em-polygons' },
-  { id: 'em-sets',                 emoji: '∪',  title: 'Sets',                           subtitle: 'Coming soon',                  url: '/formulas/em-sets' },
+  { id: 'em-circular-measure',     emoji: '⭕', title: 'Circular Measure',               subtitle: 'Arc length & area',            url: '/formulas/em-circular-measure' },
+  { id: 'em-polygons',             emoji: '⬡',  title: 'Polygons',                       subtitle: 'Interior & exterior angles',   url: '/formulas/em-polygons' },
+  { id: 'em-sets',                 emoji: '∪',  title: 'Sets',                           subtitle: 'Set notation & definitions',   url: '/formulas/em-sets' },
 ];
 
 /* ── Send icon SVG ── */
@@ -286,9 +286,9 @@ function SidebarContent({
               { id: 'em-mensuration',           emoji: '📦', title: 'Mensuration',                subtitle: 'Area & volume' },
               { id: 'em-statistics',            emoji: '📊', title: 'Statistics',                 subtitle: 'Mean & std deviation' },
               { id: 'em-vectors',               emoji: '→',  title: 'Vectors',                    subtitle: 'Vector operations' },
-              { id: 'em-circular-measure',      emoji: '⭕', title: 'Circular Measure',           subtitle: 'Coming soon' },
-              { id: 'em-polygons',              emoji: '⬡',  title: 'Polygons',                   subtitle: 'Coming soon' },
-              { id: 'em-sets',                  emoji: '∪',  title: 'Sets',                       subtitle: 'Coming soon' },
+              { id: 'em-circular-measure',      emoji: '⭕', title: 'Circular Measure',           subtitle: 'Arc length & area' },
+              { id: 'em-polygons',              emoji: '⬡',  title: 'Polygons',                   subtitle: 'Interior & exterior angles' },
+              { id: 'em-sets',                  emoji: '∪',  title: 'Sets',                       subtitle: 'Set notation & definitions' },
             ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
               <button
                 key={item.id}
