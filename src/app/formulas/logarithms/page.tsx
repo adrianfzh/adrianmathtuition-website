@@ -22,10 +22,7 @@ export default function LogarithmsPage() {
       </FormulaSection>
 
       <FormulaSection title="Change of Base">
-        <FormulaRow
-          latex="\log_a b = \dfrac{\log_c b}{\log_c a}"
-          annotation="← change base from a to any base c"
-        />
+        <FormulaRow latex="\log_a b = \dfrac{\log_c b}{\log_c a}" />
         <FormulaRow latex="\log_a b = \dfrac{1}{\log_b a}" />
         <FormulaNoteBox html="Common special cases: $\log_{10}$ (common log) and $\ln = \log_e$ (natural log)" />
       </FormulaSection>

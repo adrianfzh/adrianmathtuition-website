@@ -134,7 +134,7 @@ export default function FormulaPageLayout({
   useEffect(() => {
     if (katexReady) renderMath();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [katexReady]);
+  }, [katexReady, inIframe]);
 
   return (
     <>

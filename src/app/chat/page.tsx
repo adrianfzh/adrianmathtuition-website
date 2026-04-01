@@ -31,10 +31,10 @@ const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtit
   { id: 'mf27',            emoji: '📘', title: 'A-Level MF27',                    subtitle: 'H2 Math formula list',        url: '/formulas/mf27.pdf' },
   { id: 'amath',           emoji: '📗', title: 'O-Level A Math',                  subtitle: 'Additional Mathematics',      url: '/formulas/amath.pdf' },
   { id: 'emath',           emoji: '📙', title: 'O-Level E Math',                  subtitle: 'Elementary Mathematics',      url: '/formulas/emath.pdf' },
-  { id: 'trigo',           emoji: '📐', title: 'Trigo Formulae',                  subtitle: 'Trigonometric identities',    url: '/formulas/trigo' },
-  { id: 'indices',         emoji: '🔢', title: 'Indices',                          subtitle: 'Laws of Exponents',           url: '/formulas/indices' },
-  { id: 'logarithms',      emoji: '📊', title: 'Logarithms',                       subtitle: 'Log laws & change of base',   url: '/formulas/logarithms' },
-  { id: 'coord-geom',      emoji: '📍', title: 'Coordinate Geometry & Circles',    subtitle: 'Lines, gradients & circles',  url: '/formulas/coordinate-geometry' },
+  { id: 'trigo',           emoji: '📐', title: 'Trigonometry',                     subtitle: 'Trigonometric identities',    url: '/formulas/trigo' },
+  { id: 'indices',         emoji: '⚡', title: 'Indices',                          subtitle: 'Laws of Exponents',           url: '/formulas/indices' },
+  { id: 'logarithms',      emoji: '📈', title: 'Logarithms',                       subtitle: 'Laws of Logarithms',          url: '/formulas/logarithms' },
+  { id: 'coord-geom',      emoji: '🧭', title: 'Coordinate Geometry & Circles',    subtitle: 'Lines, gradients & circles',  url: '/formulas/coordinate-geometry' },
   { id: 'differentiation', emoji: '∂',  title: 'Differentiation',                  subtitle: 'Derivatives & rules',         url: '/formulas/differentiation' },
 ];
 
@@ -187,11 +187,11 @@ function SidebarContent({
           }}>
             {([
               { id: 'amath',           emoji: '📄', title: 'O Level AM Formula Sheet', subtitle: 'Official syllabus document' },
-              { id: 'trigo',           emoji: '📐', title: 'Trigo Formulae',            subtitle: 'Trigonometric identities' },
-              { id: 'indices',         emoji: '🔢', title: 'Indices',                   subtitle: 'Laws of Exponents' },
-              { id: 'logarithms',      emoji: '📊', title: 'Logarithms',                subtitle: 'Log laws & change of base' },
-              { id: 'coord-geom',      emoji: '📍', title: 'Coordinate Geometry',        subtitle: 'Geometry & Circles' },
-              { id: 'differentiation', emoji: '∂',  title: 'Differentiation',            subtitle: 'Derivatives & rules' },
+              { id: 'indices',         emoji: '⚡', title: 'Indices',                  subtitle: 'Laws of Exponents' },
+              { id: 'logarithms',      emoji: '📈', title: 'Logarithms',               subtitle: 'Laws of Logarithms' },
+              { id: 'coord-geom',      emoji: '🧭', title: 'Coordinate Geometry',      subtitle: 'Geometry & Circles' },
+              { id: 'trigo',           emoji: '📐', title: 'Trigonometry',             subtitle: 'Trigonometric identities' },
+              { id: 'differentiation', emoji: '∂',  title: 'Differentiation',          subtitle: 'Derivatives & rules' },
             ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
               <button
                 key={item.id}

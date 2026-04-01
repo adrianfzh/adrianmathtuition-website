@@ -40,15 +40,9 @@ export default function CoordinateGeometryPage() {
 
       {/* Circles */}
       <FormulaSection title="Circles">
-        <FormulaRow
-          latex="(x - a)^2 + (y - b)^2 = r^2"
-          annotation="← centre (a, b), radius r"
-        />
-        <FormulaRow
-          latex="x^2 + y^2 - 2ax - 2by + c = 0"
-          annotation="← general form (expand and rearrange)"
-        />
-        <FormulaNoteBox html="Centre $= (a, b)$, radius $r = \\sqrt{a^2 + b^2 - c}$" />
+        <FormulaRow latex="(x - a)^2 + (y - b)^2 = r^2" />
+        <FormulaRow latex="x^2 + y^2 - 2ax - 2by + c = 0" />
+        <FormulaNoteBox html="where centre $= (a, b)$ and radius $= r$<br>$r = \sqrt{a^2 + b^2 - c}$" />
       </FormulaSection>
     </FormulaPageLayout>
   );
