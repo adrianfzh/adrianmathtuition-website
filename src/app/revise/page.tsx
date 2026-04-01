@@ -83,25 +83,45 @@ function renderMarkdown(text: string): string {
 
   text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
 
+  // Example card — stops at next Example/Solution card or section heading
   text = text.replace(
-    /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*|\n##|$)/g,
+    /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*(?:Example|Solution|\d+[\.:])|\n##|$)/g,
     (_, firstLine, rest) => {
       const inner = (firstLine.trim() + '\n' + rest).trim();
       return `\n<div class="example-card"><div class="example-card-label">Worked Example</div>${inner}\n</div>\n`;
     }
   );
 
-  text = text.replace(/\[(?:Try|Practice):\s*([\s\S]*?)\]/g, (_, q) =>
-    `<div class="practice-callout"><div class="practice-callout-label">Try this</div>${q.trim()}</div>`
+  // Solution card (green styling)
+  text = text.replace(
+    /\*\*Solution(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*(?:Example|Solution|\d+[\.:])|\n##|$)/g,
+    (_, firstLine, rest) => {
+      const inner = (firstLine.trim() + '\n' + rest).trim();
+      return `\n<div class="solution-card"><div class="solution-card-label">Solution</div>${inner}\n</div>\n`;
+    }
+  );
+
+  // Try/Practice with optional trailing [N marks]
+  text = text.replace(/\[(?:Try|Practice):\s*([\s\S]*?)\](?:\s*\[(\d+)\s*marks?\])?/g,
+    (_, q, marks) => {
+      const marksHtml = marks ? `<span class="marks-badge">[${marks} mark${marks === '1' ? '' : 's'}]</span>` : '';
+      return `<div class="practice-callout">${marksHtml}<div class="practice-callout-label">Try this</div>${q.trim()}</div>`;
+    }
   );
 
   text = text.replace(/\[Ans(?:wer)?:\s*([\s\S]*?)\]/g, (_, ans) =>
     `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal answer</span><span class="answer-text">${ans.trim()}</span></div>`
   );
 
-  text = text.replace(/\*\*Solution:\*\*/g, '<div class="solution-header">Solution:</div>');
-  text = text.replace(/Step (\d+):\s*/g, '<div class="step-marker">Step $1</div>');
+  // Standalone marks badge (for [N marks] not consumed by [Try:] pattern above)
+  text = text.replace(/\[(\d+)\s*marks?\]/g,
+    (_, n) => `<span class="marks-badge">[${n} mark${n === '1' ? '' : 's'}]</span>`);
+
   text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g, '<div class="note-box"><strong>Note:</strong> $1</div>');
+
+  // Step blocks — process before **bold** to handle **Step N:** syntax
+  text = text.replace(/^(?:\*\*)?Step\s+(\d+):(?:\*\*)?\s*(.*)$/gm,
+    (_, n, content) => `<div class="step-block"><span class="step-label">Step ${n}:</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
 
   text = text.replace(/((?:^\|.+\|\s*\n)+)/gm, tableBlock => {
     const rows = tableBlock.trim().split('\n').filter(r => r.trim());

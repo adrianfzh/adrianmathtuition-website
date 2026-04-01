@@ -37,22 +37,44 @@ function renderMarkdown(text: string): string {
 
   text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
 
+  // Example card — stops at next Example/Solution card or section heading
   text = text.replace(
-    /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*|\n##|$)/g,
+    /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*(?:Example|Solution|\d+[\.:])|\n##|$)/g,
     (_, firstLine, rest) => {
       const inner = (firstLine.trim() + '\n' + rest).trim();
       return `\n<div class="example-card"><div class="example-card-label">Worked Example</div>${inner}\n</div>\n`;
     }
   );
-  text = text.replace(/\[(?:Try|Practice):\s*([\s\S]*?)\]/g, (_, q) =>
-    `<div class="practice-callout"><div class="practice-callout-label">Try this</div>${q.trim()}</div>`
+
+  // Solution card (green styling)
+  text = text.replace(
+    /\*\*Solution(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*(?:Example|Solution|\d+[\.:])|\n##|$)/g,
+    (_, firstLine, rest) => {
+      const inner = (firstLine.trim() + '\n' + rest).trim();
+      return `\n<div class="solution-card"><div class="solution-card-label">Solution</div>${inner}\n</div>\n`;
+    }
+  );
+
+  // Try/Practice with optional trailing [N marks]
+  text = text.replace(/\[(?:Try|Practice):\s*([\s\S]*?)\](?:\s*\[(\d+)\s*marks?\])?/g,
+    (_, q, marks) => {
+      const marksHtml = marks ? `<span class="marks-badge">[${marks} mark${marks === '1' ? '' : 's'}]</span>` : '';
+      return `<div class="practice-callout">${marksHtml}<div class="practice-callout-label">Try this</div>${q.trim()}</div>`;
+    }
   );
   text = text.replace(/\[Ans(?:wer)?:\s*([\s\S]*?)\]/g, (_, ans) =>
     `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal answer</span><span class="answer-text">${ans.trim()}</span></div>`
   );
-  text = text.replace(/\*\*Solution:\*\*/g, '<div class="solution-header">Solution:</div>');
-  text = text.replace(/Step (\d+):\s*/g, '<div class="step-marker">Step $1</div>');
+
+  // Standalone marks badge (for [N marks] not consumed by [Try:] pattern above)
+  text = text.replace(/\[(\d+)\s*marks?\]/g,
+    (_, n) => `<span class="marks-badge">[${n} mark${n === '1' ? '' : 's'}]</span>`);
+
   text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g, '<div class="note-box"><strong>Note:</strong> $1</div>');
+
+  // Step blocks — process before **bold** to handle **Step N:** syntax
+  text = text.replace(/^(?:\*\*)?Step\s+(\d+):(?:\*\*)?\s*(.*)$/gm,
+    (_, n, content) => `<div class="step-block"><span class="step-label">Step ${n}:</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
   text = text.replace(/((?:^\|.+\|\s*\n)+)/gm, tableBlock => {
     const rows = tableBlock.trim().split('\n').filter(r => r.trim());
     let html = '<table>';
@@ -803,6 +825,13 @@ export default function EditNotesPage() {
     handleEditorChange();
   }
 
+  function insertSolution() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    insertAtCursor(ta, '\n\n**Solution:**\n**Step 1:** \n\n**Step 2:** \n\n**Step 3:** \n\n');
+    handleEditorChange();
+  }
+
   async function loadTopic(slug: string) {
     setCurrentSlug(slug);
     currentSlugRef.current = slug;
@@ -1335,6 +1364,7 @@ export default function EditNotesPage() {
                         <div className="en-editor-toolbar">
                           <button className="en-tool-btn" onClick={insertSection} title="Insert new section heading">+ Section</button>
                           <button className="en-tool-btn" onClick={insertExample} title="Insert worked example">+ Example</button>
+                          <button className="en-tool-btn" onClick={insertSolution} title="Insert solution card with steps">+ Solution</button>
                           <button className="en-tool-btn" onClick={insertPractice} title="Insert practice question">+ Practice</button>
                           <button className="en-tool-btn" onClick={insertList} title="Insert bullet list">+ List</button>
                           <button
@@ -1389,6 +1419,10 @@ export default function EditNotesPage() {
                             <tbody>
                               <tr><td><code>**1. Section Name**</code></td><td>Creates a section tab</td></tr>
                               <tr><td><code>**Example:**</code></td><td>Worked example card</td></tr>
+                              <tr><td><code>**Solution:**</code></td><td>Solution card (green)</td></tr>
+                              <tr><td><code>**Step 1:** text</code></td><td>Numbered step with spacing</td></tr>
+                              <tr><td><code>[4 marks]</code></td><td>Right-aligned marks badge</td></tr>
+                              <tr><td><code>$$\begin&#123;aligned&#125; a &amp;= b \\ c &amp;= d \end&#123;aligned&#125;$$</code></td><td>Aligned equations</td></tr>
                               <tr><td><code>[Try: question]</code></td><td>Practice callout</td></tr>
                               <tr><td><code>[Ans: answer]</code></td><td>Click-to-reveal answer</td></tr>
                               <tr><td><code>**Note:** text</code></td><td>Note box</td></tr>

@@ -283,12 +283,32 @@ body {
   margin: 24px 0;
 }
 .example-card-label {
-  font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--color-navy);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .example-card p:last-child { margin-bottom: 0; }
+
+/* Solution card */
+.solution-card {
+  background: none;
+  border-left: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 24px 0;
+}
+.solution-card-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #065f46;
+  margin-bottom: 8px;
+}
+.solution-card p:last-child { margin-bottom: 0; }
 
 /* Practice callout */
 .practice-callout {
@@ -352,6 +372,15 @@ body {
   border-radius: 12px;
   margin: 16px 0 8px;
 }
+.step-block {
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+.step-label {
+  font-weight: 700;
+  color: #1b2a4a;
+  font-size: 14px;
+}
 
 /* Note box */
 .note-box {
@@ -373,6 +402,18 @@ body {
   margin: 24px 0 8px;
 }
 .from-section:first-child { margin-top: 0; }
+
+/* Marks badge */
+.marks-badge {
+  float: right;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
 
 /* Table */
 .content-area table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 15px; }
@@ -586,7 +627,11 @@ body {
 .en-preview th { background: var(--color-muted); font-weight: 600; padding: 8px 12px; border: 1px solid var(--color-border); text-align: left; }
 .en-preview td { padding: 7px 12px; border: 1px solid var(--color-border); }
 .en-preview .example-card { background: none; border-left: none; border-radius: 0; padding: 0; margin: 16px 0; }
-.en-preview .example-card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-navy); margin-bottom: 8px; opacity: 0.7; }
+.en-preview .example-card-label { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-navy); margin-bottom: 8px; }
+.en-preview .solution-card { background: none; border-left: none; border-radius: 0; padding: 0; margin: 16px 0; }
+.en-preview .solution-card-label { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #065f46; margin-bottom: 8px; }
+.en-preview .step-block { margin-top: 12px; margin-bottom: 3px; }
+.en-preview .step-label { font-weight: 700; color: #1b2a4a; font-size: 13px; }
 .en-preview .practice-callout { background: var(--color-amber-light); border: 1.5px solid var(--color-amber); border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
 .en-preview .practice-callout-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-amber-dark); margin-bottom: 8px; }
 .en-preview .answer-spoiler { display: inline-block; cursor: pointer; padding: 4px 12px; background: var(--color-background); border: 1px dashed var(--color-border); border-radius: 6px; margin-top: 6px; }
