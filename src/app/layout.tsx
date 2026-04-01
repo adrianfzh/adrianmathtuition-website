@@ -15,6 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+        />
+      </head>
       <body>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-26NZSXLE6S"

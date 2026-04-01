@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+.chat-layout {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 body {
   font-family: 'DM Sans', sans-serif;
   background: hsl(210, 20%, 98%);
