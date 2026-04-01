@@ -138,6 +138,49 @@ function parseSections(content: string, topic: string): Section[] {
   return result;
 }
 
+// ── Section content helpers ──────────────────────────────────────────────────
+function getSectionBounds(fullContent: string, sectionTitle: string): [number, number] | null {
+  if (sectionTitle === 'Overview') {
+    const m = /\*\*\d+[\.:]\s/.exec(fullContent);
+    const end = m ? m.index : fullContent.length;
+    return [0, end];
+  }
+  const escaped = sectionTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const headingRe = new RegExp(`\\*\\*(?:\\d+[.:]\\s*)?${escaped}\\*\\*`);
+  const headingMatch = headingRe.exec(fullContent);
+  if (!headingMatch) return null;
+  const headingEnd = headingMatch.index + headingMatch[0].length;
+  const bodyStart = fullContent[headingEnd] === '\n' ? headingEnd + 1 : headingEnd;
+  const nextHeadingRe = /\*\*\d+[\.:]\s/g;
+  nextHeadingRe.lastIndex = headingMatch.index + 1;
+  const nextMatch = nextHeadingRe.exec(fullContent);
+  const bodyEnd = nextMatch ? nextMatch.index : fullContent.length;
+  return [bodyStart, bodyEnd];
+}
+
+function extractSectionBody(fullContent: string, sectionTitle: string, isPractice: boolean): string {
+  if (isPractice) return '';
+  const bounds = getSectionBounds(fullContent, sectionTitle);
+  if (!bounds) return '';
+  return fullContent.slice(bounds[0], bounds[1]).trimEnd();
+}
+
+function replaceSectionBody(fullContent: string, sectionTitle: string, newBody: string): string {
+  if (sectionTitle === 'Overview') {
+    const m = /\*\*\d+[\.:]\s/.exec(fullContent);
+    const afterOverview = m ? fullContent.slice(m.index) : '';
+    const trimmedBody = newBody.trimEnd();
+    return trimmedBody + (trimmedBody && afterOverview ? '\n\n' : '') + afterOverview;
+  }
+  const bounds = getSectionBounds(fullContent, sectionTitle);
+  if (!bounds) return fullContent;
+  const before = fullContent.slice(0, bounds[0]);
+  const after = fullContent.slice(bounds[1]);
+  const trimmedBody = newBody.trimEnd();
+  return before + trimmedBody + (trimmedBody ? '\n' : '') + after;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function EditNotesPage() {
   // Auth
   const [pwInput, setPwInput] = useState('');
@@ -193,9 +236,12 @@ export default function EditNotesPage() {
   const previewSectionsRef = useRef<Section[]>([]);
   const activeSectionRef = useRef(0);
 
-  // Resizable vertical split (editor/preview)
-  const [editorHeightPx, setEditorHeightPx] = useState<number | null>(null);
-  const editorHeightRef = useRef<number | null>(null);
+  // Full content ground truth (all sections combined)
+  const fullContentRef = useRef('');
+
+  // Resizable horizontal split (preview width / editor gets remainder)
+  const [previewWidthPx, setPreviewWidthPx] = useState<number | null>(null);
+  const previewWidthRef = useRef<number | null>(null);
 
   // Resizable horizontal split (preview sidebar width)
   const [sidebarWidthPx, setSidebarWidthPx] = useState<number | null>(null);
@@ -215,23 +261,23 @@ export default function EditNotesPage() {
     if (saved) setAiInstruction(saved);
   }, []);
 
-  // Restore split ratio + sidebar width from sessionStorage once panes are mounted
+  // Restore preview width + sidebar width from sessionStorage once panes are mounted
   useEffect(() => {
     if (!editorShown) return;
     requestAnimationFrame(() => {
       const panes = panesRef.current;
       if (!panes) return;
-      const saved = sessionStorage.getItem('editNotesSplitRatio');
-      const ratio = saved ? parseFloat(saved) : 0.55;
-      if (!isNaN(ratio)) {
-        const h = Math.round(panes.offsetHeight * ratio);
-        setEditorHeightPx(h);
-        editorHeightRef.current = h;
+      const saved = sessionStorage.getItem('editNotesPreviewWidth');
+      const defaultW = Math.round(panes.offsetWidth * 0.5);
+      const w = saved ? parseInt(saved, 10) : defaultW;
+      if (!isNaN(w)) {
+        setPreviewWidthPx(w);
+        previewWidthRef.current = w;
       }
       const savedSw = sessionStorage.getItem('editNotesSidebarWidth');
       if (savedSw) {
-        const w = parseInt(savedSw, 10);
-        if (!isNaN(w)) { setSidebarWidthPx(w); sidebarWidthRef.current = w; }
+        const sw = parseInt(savedSw, 10);
+        if (!isNaN(sw)) { setSidebarWidthPx(sw); sidebarWidthRef.current = sw; }
       }
     });
   }, [editorShown]);
@@ -240,25 +286,23 @@ export default function EditNotesPage() {
     e.preventDefault();
     const panes = panesRef.current;
     if (!panes) return;
-    const startY = e.clientY;
-    const startH = editorHeightRef.current ?? panes.offsetHeight * 0.55;
+    const startX = e.clientX;
+    const startW = previewWidthRef.current ?? Math.round(panes.offsetWidth * 0.5);
     const onMove = (ev: MouseEvent) => {
-      const totalH = panes.offsetHeight;
-      const newH = Math.max(100, Math.min(totalH - 106, startH + ev.clientY - startY));
-      setEditorHeightPx(newH);
-      editorHeightRef.current = newH;
+      const newW = Math.max(200, Math.min(panes.offsetWidth - 200, startW + ev.clientX - startX));
+      setPreviewWidthPx(newW);
+      previewWidthRef.current = newW;
     };
     const onUp = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      if (panesRef.current && editorHeightRef.current !== null) {
-        sessionStorage.setItem('editNotesSplitRatio',
-          String(editorHeightRef.current / panesRef.current.offsetHeight));
+      if (previewWidthRef.current !== null) {
+        sessionStorage.setItem('editNotesPreviewWidth', String(previewWidthRef.current));
       }
     };
-    document.body.style.cursor = 'row-resize';
+    document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
@@ -267,21 +311,19 @@ export default function EditNotesPage() {
   function onDividerTouchStart(e: React.TouchEvent) {
     const panes = panesRef.current;
     if (!panes) return;
-    const startY = e.touches[0].clientY;
-    const startH = editorHeightRef.current ?? panes.offsetHeight * 0.55;
+    const startX = e.touches[0].clientX;
+    const startW = previewWidthRef.current ?? Math.round(panes.offsetWidth * 0.5);
     const onMove = (ev: TouchEvent) => {
       ev.preventDefault();
-      const totalH = panes.offsetHeight;
-      const newH = Math.max(100, Math.min(totalH - 106, startH + ev.touches[0].clientY - startY));
-      setEditorHeightPx(newH);
-      editorHeightRef.current = newH;
+      const newW = Math.max(200, Math.min(panes.offsetWidth - 200, startW + ev.touches[0].clientX - startX));
+      setPreviewWidthPx(newW);
+      previewWidthRef.current = newW;
     };
     const onEnd = () => {
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onEnd);
-      if (panesRef.current && editorHeightRef.current !== null) {
-        sessionStorage.setItem('editNotesSplitRatio',
-          String(editorHeightRef.current / panesRef.current.offsetHeight));
+      if (previewWidthRef.current !== null) {
+        sessionStorage.setItem('editNotesPreviewWidth', String(previewWidthRef.current));
       }
     };
     document.addEventListener('touchmove', onMove, { passive: false });
@@ -445,7 +487,7 @@ export default function EditNotesPage() {
   }
 
   function updatePreview(contentOverride?: string) {
-    const text = contentOverride !== undefined ? contentOverride : (textareaRef.current?.value ?? '');
+    const text = contentOverride !== undefined ? contentOverride : fullContentRef.current;
     if (!text.trim()) {
       if (previewTabsRef.current) previewTabsRef.current.innerHTML = '';
       if (previewRef.current) previewRef.current.innerHTML = '';
@@ -461,7 +503,7 @@ export default function EditNotesPage() {
 
   function schedulePreview() {
     if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
-    previewTimerRef.current = setTimeout(updatePreview, 300);
+    previewTimerRef.current = setTimeout(() => updatePreview(), 300);
   }
 
   // Re-render math when KaTeX loads
@@ -496,6 +538,11 @@ export default function EditNotesPage() {
         (subtitle ? `<div class="section-subtitle">${escapeHtml(subtitle)}</div>` : '') +
         renderMarkdown(sec.content);
       renderMath(previewRef.current);
+      // Update editor textarea to show this section's body
+      if (textareaRef.current) {
+        textareaRef.current.value = extractSectionBody(fullContentRef.current, sec.title, sec.isPractice ?? false);
+        updateLineNumbers();
+      }
     };
     tabs.addEventListener('click', onClick);
     return () => tabs.removeEventListener('click', onClick);
@@ -517,7 +564,19 @@ export default function EditNotesPage() {
       setMetaTopic(f.Topic || '');
       setMetaLevel(f.Level || 'AM');
       setSlugDisplay(f.Slug || slug);
-      if (textareaRef.current) textareaRef.current.value = f.Content || '';
+      const content = f.Content || '';
+      fullContentRef.current = content;
+      activeSectionRef.current = 0;
+      // Show first section body in textarea
+      const secs = parseSections(content, f.Topic || 'Notes');
+      if (secs.length > 0) {
+        const firstSec = secs[0];
+        if (textareaRef.current) {
+          textareaRef.current.value = extractSectionBody(content, firstSec.title, firstSec.isPractice ?? false);
+        }
+      } else if (textareaRef.current) {
+        textareaRef.current.value = content;
+      }
       updateLineNumbers();
       updatePreview();
     } catch {
@@ -531,8 +590,12 @@ export default function EditNotesPage() {
     setMetaTopic('');
     setMetaLevel('AM');
     setSlugDisplay('—');
+    fullContentRef.current = '';
+    activeSectionRef.current = 0;
     if (textareaRef.current) textareaRef.current.value = '';
     if (previewRef.current) previewRef.current.innerHTML = '';
+    if (previewTabsRef.current) previewTabsRef.current.innerHTML = '';
+    previewSectionsRef.current = [];
     updateLineNumbers();
     setEditorShown(true);
   }
@@ -554,7 +617,7 @@ export default function EditNotesPage() {
   async function saveNotes() {
     const topic = metaTopicRef.current.trim();
     const level = metaLevelRef.current || 'AM';
-    const content = textareaRef.current?.value ?? '';
+    const content = fullContentRef.current;
     if (!topic) { showToast('Topic name is required', 'error'); return; }
 
     const slug = currentSlugRef.current === '__new__'
@@ -602,13 +665,19 @@ export default function EditNotesPage() {
     setAiStatus('loading');
     aiDraftRef.current = '';
 
+    // Send only the active section's content to the AI
+    const activeSec = previewSectionsRef.current[activeSectionRef.current];
+    const currentSectionContent = activeSec && !(activeSec.isPractice)
+      ? extractSectionBody(fullContentRef.current, activeSec.title, false)
+      : fullContentRef.current;
+
     try {
       const resp = await fetch('/api/edit-notes-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           instruction,
-          currentContent: textareaRef.current?.value ?? '',
+          currentContent: currentSectionContent,
           topic: metaTopicRef.current,
           subject: metaLevelRef.current,
           password: passwordRef.current,
@@ -637,11 +706,24 @@ export default function EditNotesPage() {
           if (data.chunk) {
             aiDraftRef.current += data.chunk as string;
             if (aiPreviewTimerRef.current) clearTimeout(aiPreviewTimerRef.current);
-            aiPreviewTimerRef.current = setTimeout(() => updatePreview(aiDraftRef.current), 50);
+            aiPreviewTimerRef.current = setTimeout(() => {
+              const sec = previewSectionsRef.current[activeSectionRef.current];
+              if (sec && !sec.isPractice) {
+                const draftContent = replaceSectionBody(fullContentRef.current, sec.title, aiDraftRef.current);
+                updatePreview(draftContent);
+              } else {
+                updatePreview(aiDraftRef.current);
+              }
+            }, 50);
           }
           if (data.done) {
             if (aiPreviewTimerRef.current) clearTimeout(aiPreviewTimerRef.current);
-            updatePreview(aiDraftRef.current);
+            const sec = previewSectionsRef.current[activeSectionRef.current];
+            if (sec && !sec.isPractice) {
+              updatePreview(replaceSectionBody(fullContentRef.current, sec.title, aiDraftRef.current));
+            } else {
+              updatePreview(aiDraftRef.current);
+            }
             setAiStatus('done');
           }
           if (data.error) throw new Error(data.error as string);
@@ -650,15 +732,26 @@ export default function EditNotesPage() {
     } catch (err) {
       setAiStatus('error');
       showToast(`AI error: ${(err as Error).message}`, 'error');
-      updatePreview(); // restore preview to editor content
+      updatePreview();
     }
   }
 
   function acceptAI() {
-    if (!textareaRef.current) return;
-    textareaRef.current.value = aiDraftRef.current;
+    const sec = previewSectionsRef.current[activeSectionRef.current];
+    if (sec && !sec.isPractice) {
+      fullContentRef.current = replaceSectionBody(fullContentRef.current, sec.title, aiDraftRef.current);
+      if (textareaRef.current) {
+        textareaRef.current.value = aiDraftRef.current;
+        updateLineNumbers();
+      }
+    } else {
+      fullContentRef.current = aiDraftRef.current;
+      if (textareaRef.current) {
+        textareaRef.current.value = aiDraftRef.current;
+        updateLineNumbers();
+      }
+    }
     aiDraftRef.current = '';
-    updateLineNumbers();
     updatePreview();
     setAiStatus('idle');
     setAiOpen(false);
@@ -667,7 +760,7 @@ export default function EditNotesPage() {
   function rejectAI() {
     aiDraftRef.current = '';
     setAiStatus('idle');
-    updatePreview(); // restore preview to editor content
+    updatePreview();
   }
   // ────────────────────────────────────────────────────────────────
 
@@ -940,56 +1033,11 @@ export default function EditNotesPage() {
 
                   {/* Panes */}
                   <div className="en-panes" ref={panesRef}>
-                    {/* Editor pane */}
+                    {/* Preview pane — LEFT */}
                     <div
-                      className="en-pane en-pane-editor"
-                      style={editorHeightPx ? { flex: 'none', height: editorHeightPx } : undefined}
+                      className="en-pane en-pane-preview"
+                      style={previewWidthPx ? { flex: 'none', width: previewWidthPx } : undefined}
                     >
-                      <div className="en-pane-header">
-                        <span className="en-pane-label">Editor</span>
-                        <span className="en-line-count">{lineCount} line{lineCount !== 1 ? 's' : ''}</span>
-                      </div>
-                      <div className="en-editor-wrap">
-                        <div className="en-line-numbers" ref={lineNumsRef} />
-                        <textarea
-                          ref={textareaRef}
-                          className="en-textarea"
-                          spellCheck={false}
-                          autoCorrect="off"
-                          autoCapitalize="off"
-                          placeholder={"Start writing content here…\n\nUse **bold headings** for sections:\n\n**1. Binomial Expansion**\nThe binomial theorem states...\n\n**Example 1:**\nExpand $(1+x)^4$\n\n[Try: Expand $(2+x)^3$]\n[Ans: $8 + 12x + 6x^2 + x^3$]"}
-                          onChange={() => { updateLineNumbers(); schedulePreview(); }}
-                          onScroll={syncLineNumbers}
-                          onKeyDown={e => {
-                            if (e.key === 'Tab') {
-                              e.preventDefault();
-                              const el = textareaRef.current!;
-                              const start = el.selectionStart;
-                              const end = el.selectionEnd;
-                              el.value = el.value.substring(0, start) + '    ' + el.value.substring(end);
-                              el.selectionStart = el.selectionEnd = start + 4;
-                              updateLineNumbers();
-                            }
-                            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                              e.preventDefault();
-                              saveNotes();
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Drag divider */}
-                    <div
-                      className="en-divider"
-                      onMouseDown={onDividerMouseDown}
-                      onTouchStart={onDividerTouchStart}
-                    >
-                      <div className="en-divider-grip" />
-                    </div>
-
-                    {/* Preview pane */}
-                    <div className="en-pane en-pane-preview">
                       <div className="en-pane-header">
                         <span className="en-pane-label">Preview</span>
                         <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }} title="Rendered exactly as it appears on the live /revise page">Matches live /revise page</span>
@@ -1010,6 +1058,65 @@ export default function EditNotesPage() {
                         <div className="en-preview-wrap">
                           <div className="en-preview" ref={previewRef} />
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Drag divider */}
+                    <div
+                      className="en-divider"
+                      onMouseDown={onDividerMouseDown}
+                      onTouchStart={onDividerTouchStart}
+                    >
+                      <div className="en-divider-grip" />
+                    </div>
+
+                    {/* Editor pane — RIGHT */}
+                    <div className="en-pane en-pane-editor">
+                      <div className="en-pane-header">
+                        <span className="en-pane-label">
+                          {previewSectionsRef.current[activeSectionRef.current]
+                            ? `Editing: ${previewSectionsRef.current[activeSectionRef.current].title}`
+                            : 'Editor'}
+                        </span>
+                        <span className="en-line-count">{lineCount} line{lineCount !== 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="en-editor-wrap">
+                        <div className="en-line-numbers" ref={lineNumsRef} />
+                        <textarea
+                          ref={textareaRef}
+                          className="en-textarea"
+                          spellCheck={false}
+                          autoCorrect="off"
+                          autoCapitalize="off"
+                          placeholder={"Start writing content here…\n\nUse **bold headings** for sections:\n\n**1. Binomial Expansion**\nThe binomial theorem states...\n\n**Example 1:**\nExpand $(1+x)^4$\n\n[Try: Expand $(2+x)^3$]\n[Ans: $8 + 12x + 6x^2 + x^3$]"}
+                          onChange={() => {
+                            const activeSec = previewSectionsRef.current[activeSectionRef.current];
+                            const newBody = textareaRef.current?.value ?? '';
+                            if (activeSec && !activeSec.isPractice) {
+                              fullContentRef.current = replaceSectionBody(fullContentRef.current, activeSec.title, newBody);
+                            } else if (!activeSec || previewSectionsRef.current.length === 0) {
+                              fullContentRef.current = newBody;
+                            }
+                            updateLineNumbers();
+                            schedulePreview();
+                          }}
+                          onScroll={syncLineNumbers}
+                          onKeyDown={e => {
+                            if (e.key === 'Tab') {
+                              e.preventDefault();
+                              const el = textareaRef.current!;
+                              const start = el.selectionStart;
+                              const end = el.selectionEnd;
+                              el.value = el.value.substring(0, start) + '    ' + el.value.substring(end);
+                              el.selectionStart = el.selectionEnd = start + 4;
+                              updateLineNumbers();
+                            }
+                            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                              e.preventDefault();
+                              saveNotes();
+                            }
+                          }}
+                        />
                       </div>
                     </div>
                   </div>

@@ -460,16 +460,16 @@ body {
 .en-btn-save.saved { background: hsl(142,55%,40%); }
 
 /* Panes */
-.en-panes { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.en-panes { flex: 1; display: flex; flex-direction: row; overflow: hidden; }
 .en-pane { display: flex; flex-direction: column; overflow: hidden; }
-.en-pane-editor { flex: 1.2; min-height: 100px; }
-.en-pane-preview { flex: 1; min-height: 100px; }
+.en-pane-editor { flex: 1; min-width: 200px; min-height: 0; }
+.en-pane-preview { flex: 0 0 auto; min-width: 200px; min-height: 0; }
 
 /* Resizable divider */
-.en-divider { flex: none; height: 6px; background: var(--color-border); cursor: row-resize; display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
+.en-divider { flex: none; width: 6px; height: auto; background: var(--color-border); cursor: col-resize; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
 .en-divider:hover { background: hsl(220,15%,78%); }
-.en-divider-grip { width: 32px; height: 2px; border-radius: 2px; background: hsl(220,10%,65%); box-shadow: 0 -3px 0 0 hsl(220,10%,65%), 0 3px 0 0 hsl(220,10%,65%); }
-.en-divider:hover .en-divider-grip { background: hsl(220,20%,50%); box-shadow: 0 -3px 0 0 hsl(220,20%,50%), 0 3px 0 0 hsl(220,20%,50%); }
+.en-divider-grip { height: 32px; width: 2px; border-radius: 2px; background: hsl(220,10%,65%); box-shadow: -3px 0 0 0 hsl(220,10%,65%), 3px 0 0 0 hsl(220,10%,65%); }
+.en-divider:hover .en-divider-grip { background: hsl(220,20%,50%); box-shadow: -3px 0 0 0 hsl(220,20%,50%), 3px 0 0 0 hsl(220,20%,50%); }
 
 /* View Live button */
 .en-btn-view-live { padding: 7px 14px; background: var(--color-background); color: var(--color-navy); border: 1.5px solid var(--color-border); border-radius: 7px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.15s, background 0.15s; white-space: nowrap; flex-shrink: 0; }
@@ -561,9 +561,10 @@ body {
   .en-shell { flex-direction: column; height: auto; overflow: visible; }
   .en-sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--color-border); }
   .en-topic-list { max-height: 160px; }
-  .en-panes { height: auto; }
-  .en-pane-editor { min-height: 300px; }
-  .en-pane-preview { min-height: 200px; }
+  .en-panes { flex-direction: column; height: auto; }
+  .en-pane-editor { min-height: 300px; min-width: 0; }
+  .en-pane-preview { min-height: 200px; min-width: 0; width: auto !important; }
+  .en-divider { width: auto; height: 6px; cursor: row-resize; flex-direction: row; }
   .en-textarea { white-space: pre-wrap; overflow-x: hidden; }
 }
 
