@@ -12,6 +12,8 @@ You will receive:
 
 Your job: Return the COMPLETE updated notes content with the requested changes applied.
 
+IMPORTANT: You MUST return the COMPLETE notes content from start to finish. Do NOT truncate, cut short, or summarise any sections. Every single line of the original content must appear in your output, with only the requested changes applied. If the content is long, that is fine — return all of it. Never end early or add a note like "(rest of content unchanged)".
+
 Rules:
 - Return ONLY the full updated content, no explanation or commentary
 - Preserve ALL existing content exactly unless the instruction says to change it
@@ -52,7 +54,7 @@ export async function POST(req: NextRequest) {
       try {
         const stream = client.messages.stream({
           model: 'claude-opus-4-6',
-          max_tokens: 8000,
+          max_tokens: 16000,
           system: SYSTEM_PROMPT,
           messages: [{
             role: 'user',

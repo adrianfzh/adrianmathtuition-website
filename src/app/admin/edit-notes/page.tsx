@@ -992,7 +992,7 @@ export default function EditNotesPage() {
                     <div className="en-pane en-pane-preview">
                       <div className="en-pane-header">
                         <span className="en-pane-label">Preview</span>
-                        <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }}>Live • KaTeX rendered</span>
+                        <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }} title="Rendered exactly as it appears on the live /revise page">Matches live /revise page</span>
                       </div>
                       <div className="en-preview-body" ref={previewBodyRef}>
                         <nav

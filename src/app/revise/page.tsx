@@ -136,8 +136,22 @@ function renderMarkdown(text: string): string {
   text = text.replace(/(<\/(?:h[1-6]|ul|ol|div|table)>)<\/p>/g, '$1');
   text = text.replace(/([^>])\n([^<])/g, '$1<br>$2');
 
-  text = text.replace(/%%B(\d+)%%/g, (_, i) => `$$${blocks[Number(i)]}$$`);
-  text = text.replace(/%%I(\d+)%%/g, (_, i) => `$${inlines[Number(i)]}$`);
+  // Render KaTeX directly if available, otherwise restore delimiters for post-processing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const katex = typeof window !== 'undefined' ? (window as any).katex : null;
+  if (katex) {
+    text = text.replace(/%%B(\d+)%%/g, (_, i) => {
+      try { return katex.renderToString(blocks[Number(i)], { displayMode: true, throwOnError: false }); }
+      catch { return `$$${blocks[Number(i)]}$$`; }
+    });
+    text = text.replace(/%%I(\d+)%%/g, (_, i) => {
+      try { return katex.renderToString(inlines[Number(i)], { displayMode: false, throwOnError: false }); }
+      catch { return `$${inlines[Number(i)]}$`; }
+    });
+  } else {
+    text = text.replace(/%%B(\d+)%%/g, (_, i) => `$$${blocks[Number(i)]}$$`);
+    text = text.replace(/%%I(\d+)%%/g, (_, i) => `$${inlines[Number(i)]}$`);
+  }
 
   return text;
 }
@@ -179,17 +193,31 @@ function ReviseContent() {
   const contentRef = useRef<HTMLDivElement>(null);
   const tabBarRef  = useRef<HTMLDivElement>(null);
 
-  // Load notes
+  // Load notes — wait for KaTeX before setting sections so renderMarkdown can render inline
   useEffect(() => {
     if (!topic) { setLoading(false); return; }
-    fetch(`/api/notes?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}`)
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(data => {
+    (async () => {
+      try {
+        // Wait for window.katex (up to 5s) so renderMarkdown can call renderToString directly
+        await new Promise<void>((resolve) => {
+          const check = (n: number) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((typeof window !== 'undefined' && (window as any).katex) || n > 50) resolve();
+            else setTimeout(() => check(n + 1), 100);
+          };
+          check(0);
+        });
+        const r = await fetch(`/api/notes?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}`);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const data = await r.json();
         const raw = data.content || data.generatedContent || '';
         setSections(raw.trim() ? parseSections(raw, topic) : []);
-      })
-      .catch(() => setFetchError(true))
-      .finally(() => setLoading(false));
+      } catch {
+        setFetchError(true);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [subject, topic]);
 
   // Render section content + KaTeX
