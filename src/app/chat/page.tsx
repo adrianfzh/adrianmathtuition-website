@@ -90,6 +90,9 @@ function autoResize(el: HTMLTextAreaElement | null) {
 }
 
 
+let userHasScrolledUp = false;
+let isProgrammaticScroll = false;
+
 export default function ChatPage() {
   const [conversationStarted, setConversationStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -111,8 +114,23 @@ export default function ChatPage() {
   const scrollToBottom = () => {
     const el = chatScrollRef.current;
     if (!el) return;
+    userHasScrolledUp = false;
+    isProgrammaticScroll = true;
     el.scrollTop = el.scrollHeight;
+    requestAnimationFrame(() => { isProgrammaticScroll = false; });
   };
+
+  /* ── Track whether user has scrolled up ── */
+  useEffect(() => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      if (isProgrammaticScroll) return;
+      userHasScrolledUp = el.scrollHeight - el.scrollTop - el.clientHeight > 80;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   /* ── Error banner ── */
   const showError = useCallback((msg: string) => {
@@ -142,6 +160,15 @@ export default function ChatPage() {
         renderTimerRef.current = null;
         if (pendingRenderRef.current) {
           renderToElement(pendingRenderRef.current.el, pendingRenderRef.current.text);
+          pendingRenderRef.current = null;
+        }
+        if (!userHasScrolledUp) {
+          const scroll = chatScrollRef.current;
+          if (scroll) {
+            isProgrammaticScroll = true;
+            scroll.scrollTop = scroll.scrollHeight;
+            requestAnimationFrame(() => { isProgrammaticScroll = false; });
+          }
         }
       });
     }
@@ -605,7 +632,7 @@ export default function ChatPage() {
       {/* Scrollable chat area */}
       <div
         ref={chatScrollRef}
-        style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,15%,88%) transparent', overflowAnchor: 'none' }}
+        style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: 'hsl(220,15%,88%) transparent', overflowAnchor: 'none', overscrollBehavior: 'contain' }}
       >
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
 
@@ -661,7 +688,7 @@ export default function ChatPage() {
           )}
 
           {/* Messages area */}
-          <div style={{ padding: conversationStarted ? '32px 0 16px' : '0', display: conversationStarted ? 'block' : 'none' }}>
+          <div style={{ padding: conversationStarted ? '32px 0 24px' : '0', display: conversationStarted ? 'block' : 'none' }}>
             <div ref={messagesInnerRef} />
           </div>
 
