@@ -32,15 +32,6 @@ const SECTIONS: {
     ],
   },
   {
-    title: 'Addition Formulae',
-    items: [
-      { latex: '\\sin(A \\pm B) = \\sin A \\cos B \\pm \\cos A \\sin B' },
-      { latex: '\\cos(A \\pm B) = \\cos A \\cos B \\mp \\sin A \\sin B' },
-      { latex: '\\tan(A \\pm B) = \\dfrac{\\tan A \\pm \\tan B}{1 \\mp \\tan A \\tan B}' },
-      { note: 'Can be applied to find e.g. $\\sin 3x = \\sin(2x + x)$' },
-    ],
-  },
-  {
     title: 'Double Angle Formulae',
     items: [
       { latex: '\\sin 2A = 2\\sin A \\cos A' },
@@ -69,6 +60,15 @@ const SECTIONS: {
           '\\begin{aligned} \\cos A &= \\cos^2\\!\\dfrac{A}{2} - \\sin^2\\!\\dfrac{A}{2} \\\\[6pt] &= 2\\cos^2\\!\\dfrac{A}{2} - 1 \\\\[6pt] &= 1 - 2\\sin^2\\!\\dfrac{A}{2} \\end{aligned}',
       },
       { latex: '\\tan A = \\dfrac{2\\tan\\dfrac{A}{2}}{1 - \\tan^2\\dfrac{A}{2}}' },
+    ],
+  },
+  {
+    title: 'Addition Formulae',
+    items: [
+      { latex: '\\sin(A \\pm B) = \\sin A \\cos B \\pm \\cos A \\sin B' },
+      { latex: '\\cos(A \\pm B) = \\cos A \\cos B \\mp \\sin A \\sin B' },
+      { latex: '\\tan(A \\pm B) = \\dfrac{\\tan A \\pm \\tan B}{1 \\mp \\tan A \\tan B}' },
+      { note: 'Can be applied to find e.g. $\\sin 3x = \\sin(2x + x)$' },
     ],
   },
   {

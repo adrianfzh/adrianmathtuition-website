@@ -110,6 +110,28 @@ function SidebarContent({
   onSheetClick: (id: FormulaSheetId) => void;
   onAskQuestion?: () => void;
 }) {
+  const [amathOpen, setAmathOpen] = useState(false);
+
+  const sheetBtn = (id: FormulaSheetId, emoji: string, title: string, subtitle: string) => (
+    <button
+      key={id}
+      className="menu-formula-btn"
+      onClick={() => onSheetClick(id)}
+      style={{
+        width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
+        padding: '11px 12px', marginBottom: 8, minHeight: 52,
+        background: 'hsl(220,30%,98%)', border: '1px solid hsl(220,15%,90%)',
+        borderRadius: 10, cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
+      }}
+    >
+      <span style={{ fontSize: 22, flexShrink: 0 }}>{emoji}</span>
+      <div>
+        <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{title}</div>
+        <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>{subtitle}</div>
+      </div>
+    </button>
+  );
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
       <div style={{ padding: '20px 16px 0' }}>
@@ -119,25 +141,82 @@ function SidebarContent({
         }}>
           📐 Formula Sheets
         </div>
-        {FORMULA_SHEETS.map(sheet => (
-          <button
-            key={sheet.id}
-            className="menu-formula-btn"
-            onClick={() => onSheetClick(sheet.id)}
-            style={{
-              width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
-              padding: '11px 12px', marginBottom: 8, minHeight: 52,
-              background: 'hsl(220,30%,98%)', border: '1px solid hsl(220,15%,90%)',
-              borderRadius: 10, cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
-            }}
+
+        {/* A-Level MF27 */}
+        {sheetBtn('mf27', '📘', 'A-Level MF27', 'H2 Math formula list')}
+
+        {/* O-Level A Math folder */}
+        <button
+          className="menu-formula-btn"
+          onClick={() => setAmathOpen(o => !o)}
+          style={{
+            width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
+            padding: '11px 12px', marginBottom: amathOpen ? 4 : 8, minHeight: 52,
+            background: amathOpen ? 'hsl(220,40%,95%)' : 'hsl(220,30%,98%)',
+            border: `1px solid ${amathOpen ? 'hsl(220,40%,80%)' : 'hsl(220,15%,90%)'}`,
+            borderRadius: amathOpen ? '10px 10px 0 0' : 10,
+            cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
+          }}
+        >
+          <span style={{ fontSize: 22, flexShrink: 0 }}>📗</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>O-Level A Math</div>
+            <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>Additional Mathematics</div>
+          </div>
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(220,10%,56%)"
+            strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ flexShrink: 0, transform: amathOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
           >
-            <span style={{ fontSize: 22, flexShrink: 0 }}>{sheet.emoji}</span>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{sheet.title}</div>
-              <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>{sheet.subtitle}</div>
-            </div>
-          </button>
-        ))}
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        {/* O-Level A Math sub-items */}
+        {amathOpen && (
+          <div style={{
+            marginBottom: 8,
+            border: '1px solid hsl(220,40%,80%)', borderTop: 'none',
+            borderRadius: '0 0 10px 10px',
+            background: 'hsl(220,35%,97%)',
+            overflow: 'hidden',
+          }}>
+            <button
+              className="menu-formula-btn"
+              onClick={() => onSheetClick('amath')}
+              style={{
+                width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px 10px 16px', background: 'none', border: 'none',
+                borderBottom: '1px solid hsl(220,30%,90%)',
+                cursor: 'pointer', transition: 'background 0.12s',
+              }}
+            >
+              <span style={{ fontSize: 16, flexShrink: 0 }}>📄</span>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>O Level AM Formula Sheet</div>
+                <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>Official syllabus document</div>
+              </div>
+            </button>
+            <button
+              className="menu-formula-btn"
+              onClick={() => onSheetClick('trigo')}
+              style={{
+                width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px 10px 16px', background: 'none', border: 'none',
+                cursor: 'pointer', transition: 'background 0.12s',
+              }}
+            >
+              <span style={{ fontSize: 16, flexShrink: 0 }}>📐</span>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>Trigo Formulae</div>
+                <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>Trigonometric identities</div>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* O-Level E Math */}
+        {sheetBtn('emath', '📙', 'O-Level E Math', 'Elementary Mathematics')}
       </div>
       <div style={{ margin: '16px 16px 8px', borderBottom: '1px solid hsl(220,15%,92%)' }} />
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column' }}>
