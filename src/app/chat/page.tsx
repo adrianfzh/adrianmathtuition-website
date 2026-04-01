@@ -89,9 +89,8 @@ function autoResize(el: HTMLTextAreaElement | null) {
   el.style.height = Math.min(el.scrollHeight, 140) + 'px';
 }
 
-/* ── User scroll intent flags (module-level, survives re-renders) ── */
+/* ── User scroll intent flag (module-level, survives re-renders) ── */
 let userHasScrolledUp = false;
-let isProgrammaticScroll = false;
 
 export default function ChatPage() {
   const [conversationStarted, setConversationStarted] = useState(false);
@@ -110,36 +109,37 @@ export default function ChatPage() {
   const pendingRenderRef = useRef<Slot | null>(null);
   const dragCounterRef = useRef(0);
 
-  /* ── Scroll helpers ── */
+  /* ── scrollToBottom: always scroll + reset flag (user just sent a message) ── */
   const scrollToBottom = () => {
     const el = chatScrollRef.current;
     if (!el) return;
     userHasScrolledUp = false;
-    isProgrammaticScroll = true;
     el.scrollTop = el.scrollHeight;
   };
 
-  const scrollToBottomIfNear = () => {
-    const el = chatScrollRef.current;
-    if (!el || userHasScrolledUp) return;
-    isProgrammaticScroll = true;
-    el.scrollTop = el.scrollHeight;
-  };
-
-  /* ── Scroll intent listener ── */
+  /* ── Track user scroll intent ── */
   useEffect(() => {
     const el = chatScrollRef.current;
     if (!el) return;
     const onScroll = () => {
-      if (isProgrammaticScroll) {
-        isProgrammaticScroll = false;
-        return; // ignore scroll events we triggered ourselves
-      }
-      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-      userHasScrolledUp = !isNearBottom;
+      userHasScrolledUp = el.scrollHeight - el.scrollTop - el.clientHeight > 150;
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  /* ── ResizeObserver: auto-scroll when messages grow, unless user scrolled up ── */
+  useEffect(() => {
+    const scroll = chatScrollRef.current;
+    const inner = messagesInnerRef.current;
+    if (!scroll || !inner) return;
+    const observer = new ResizeObserver(() => {
+      if (!userHasScrolledUp) {
+        scroll.scrollTop = scroll.scrollHeight;
+      }
+    });
+    observer.observe(inner);
+    return () => observer.disconnect();
   }, []);
 
   /* ── Error banner ── */
@@ -232,7 +232,6 @@ export default function ChatPage() {
       <span class="tdot" style="width:7px;height:7px;border-radius:50%;background:hsl(220,10%,46%);display:inline-block;animation:tdot 1.2s 0.4s infinite;opacity:0.4;"></span>
     </div>`;
     inner.appendChild(group);
-    scrollToBottomIfNear();
   }, []);
 
   const removeTypingFromDOM = useCallback(() => {
@@ -251,7 +250,6 @@ export default function ChatPage() {
     bubble.appendChild(textDiv);
     group.appendChild(bubble);
     inner.appendChild(group);
-    scrollToBottomIfNear();
     return textDiv;
   }, []);
 
@@ -357,14 +355,12 @@ export default function ChatPage() {
             if (parsed.verify) {
               fullText = '';
               streamDiv.innerHTML = '<em>🔄 Verifying answer...</em>';
-              scrollToBottomIfNear();
               continue;
             }
 
             if (parsed.chunk) {
               fullText += parsed.chunk;
               scheduleRender(streamDiv, fullText);
-              scrollToBottomIfNear();
             }
 
             if (parsed.graphLoading === true) {
@@ -373,7 +369,6 @@ export default function ChatPage() {
               loader.style.cssText = 'margin-top:12px;padding:12px;background:rgba(0,0,0,0.03);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:0.9em;color:#666;';
               loader.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #ccc;border-top-color:#333;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Generating graph...';
               streamDiv.parentElement?.appendChild(loader);
-              scrollToBottomIfNear();
               continue;
             }
 
@@ -388,15 +383,12 @@ export default function ChatPage() {
               img.alt = 'Graph';
               img.style.cssText = 'max-width:100%;margin-top:12px;border-radius:8px;display:block;';
               streamDiv.parentElement?.appendChild(img);
-              scrollToBottomIfNear();
               continue;
             }
 
             if (parsed.done) {
               if (renderTimerRef.current) { cancelAnimationFrame(renderTimerRef.current); renderTimerRef.current = null; }
               renderToElement(streamDiv, fullText);
-              userHasScrolledUp = false;
-              scrollToBottomIfNear();
             }
           } catch { /* ignore parse errors */ }
         }
