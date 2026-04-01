@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice – Adrian's Math Tuition</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1a2340;
+    --navy-mid: #243058;
+    --gold: #f5c842;
+    --gold-light: #fef9e7;
+    --gold-border: #f5c84244;
+    --white: #ffffff;
+    --bg: #f1f3f8;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --card: #ffffff;
+    --green: #10b981;
+    --green-bg: #d1fae5;
+    --amber: #d97706;
+    --amber-bg: #fef3c7;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* Top bar */
+  .top-bar {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .invoice-ref {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .top-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .status-badge.pending {
+    background: var(--amber-bg);
+    color: var(--amber);
+  }
+
+  .status-badge.paid {
+    background: var(--green-bg);
+    color: var(--green);
+  }
+
+  .status-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-decoration: none;
+  }
+
+  .save-btn:hover { background: var(--navy-mid); }
+
+  .save-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Card */
+  .card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--card);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(26,35,64,0.10), 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    padding: 40px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-math {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .brand {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .brand-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(245,200,66,0.4);
+  }
+
+  .brand-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .brand-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px;
+    color: var(--white);
+    line-height: 1.2;
+  }
+
+  .contact-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .contact-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 400;
+  }
+
+  .contact-list li svg {
+    width: 13px;
+    height: 13px;
+    stroke: rgba(255,255,255,0.45);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .header-right {
+    position: relative;
+    z-index: 1;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .invoice-word {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 52px;
+    color: rgba(255,255,255,0.15);
+    line-height: 1;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+
+  .invoice-month-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .invoice-month {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px;
+    color: var(--white);
+    letter-spacing: -0.3px;
+  }
+
+  /* Meta strip */
+  .meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  .meta-item {
+    padding: 20px 28px;
+  }
+
+  .meta-item:not(:last-child) {
+    border-right: 1px solid var(--border);
+  }
+
+  .meta-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .meta-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .meta-value svg {
+    width: 13px;
+    height: 13px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .meta-value.amount {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.4px;
+  }
+
+  /* Body */
+  .body {
+    padding: 36px 48px;
+  }
+
+  .bill-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .student-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 28px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+
+  .month-for {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .month-for strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th:nth-child(2) { text-align: center; }
+  thead th:nth-child(3) { text-align: center; }
+  thead th:last-child { text-align: right; }
+
+  tbody tr { border-bottom: 1px solid #f1f5f9; }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td {
+    padding: 18px 0;
+    font-size: 14px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody td:nth-child(2) { text-align: center; }
+  tbody td:nth-child(3) { text-align: center; }
+  tbody td:last-child { text-align: right; font-weight: 700; font-size: 15px; }
+
+  .desc-main {
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .desc-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .slot-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .lessons-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* Total */
+  .total-section {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 0 32px;
+    border-top: 2px solid var(--text);
+    margin-top: 8px;
+  }
+
+  .total-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  .total-amount {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 32px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  /* Payment */
+  .payment-box {
+    background: var(--gold-light);
+    border: 1px solid var(--gold-border);
+    border-radius: 14px;
+    padding: 22px 26px;
+  }
+
+  .payment-header {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .payment-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .paynow-badge {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+
+  .payment-info-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .payment-number-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .payment-number {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .payment-number strong {
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { background: #f8fafc; }
+  .copy-btn.copied { color: var(--green); border-color: var(--green-bg); background: var(--green-bg); }
+
+  .copy-btn svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .payment-ref {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    padding-top: 12px;
+    border-top: 1px solid var(--gold-border);
+  }
+
+  .payment-ref strong {
+    font-weight: 700;
+    color: var(--text);
+    background: var(--white);
+    padding: 1px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 18px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background: #fafbfc;
+  }
+
+  .footer-left {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .footer-thanks {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* Bottom note */
+  .bottom-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  /* Print styles */
+  @media print {
+    @page { margin: 0.5cm; size: A4; }
+    body {
+      background: white;
+      padding: 0;
+    }
+    .top-bar { display: none !important; }
+    .bottom-note { display: none !important; }
+    .card {
+      box-shadow: none;
+      border-radius: 0;
+      max-width: 100%;
+    }
+    .save-btn { display: none !important; }
+    .copy-btn { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <span class="invoice-ref">{{INVOICE_ID}}</span>
+  <div class="top-right">
+    <span class="status-badge {{STATUS_CLASS}}">{{STATUS}}</span>
+    <button class="save-btn" onclick="window.print()">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Save as PDF
+    </button>
+  </div>
+</div>
+
+<!-- Invoice Card -->
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-row">
+        <div class="brand-icon">
+          <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="13" y="19" text-anchor="middle" font-family="Georgia, serif" font-size="19" font-weight="700" fill="#1a2340">A</text>
+          </svg>
+        </div>
+        <div class="brand-name">Adrian's Math Tuition</div>
+      </div>
+      <ul class="contact-list">
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          203 Hougang Street 21, #03-51, Singapore 530203
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.5 1.18 2 2 0 012.48 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          9139 7985
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          adrianmathtuition@gmail.com
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          adrianmathtuition.com
+        </li>
+      </ul>
+    </div>
+    <div class="header-right">
+      <div class="invoice-word">Invoice</div>
+      <div class="invoice-month-label">For the month of</div>
+      <div class="invoice-month">{{MONTH}}</div>
+    </div>
+  </div>
+
+  <!-- Meta strip -->
+  <div class="meta">
+    <div class="meta-item">
+      <div class="meta-label">Date of Issue</div>
+      <div class="meta-value">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        {{ISSUE_DATE}}
+      </div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Due By</div>
+      <div class="meta-value">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        {{DUE_DATE}}
+      </div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Amount Due</div>
+      <div class="meta-value amount">${{FINAL_AMOUNT}}</div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+    <div class="bill-label">Billed to</div>
+    <div class="student-name">{{STUDENT_NAME}}</div>
+    <div class="month-for">Tuition fees for <strong>{{MONTH}}</strong></div>
+
+    <!-- Line items -->
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Slot</th>
+          <th>Lessons</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{LINE_ITEMS_ROWS}}
+        {{EXTRA_LINE_ITEMS_ROWS}}
+      </tbody>
+    </table>
+
+    <!-- Total -->
+    <div class="total-section" style="
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 20px 0 28px;
+      border-top: 2px solid var(--text);
+      margin-top: 8px;
+      gap: 24px;
+    ">
+      <!-- Left: AUTO_NOTES -->
+      <div style="
+        font-size: 12.5px;
+        color: #475569;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        line-height: 1.8;
+        flex: 1;
+      ">{{AUTO_NOTES}}</div>
+
+      <!-- Right: Total Due -->
+      <div style="text-align: right; flex-shrink: 0;">
+        <div class="total-label">Total Due</div>
+        <div class="total-amount">${{FINAL_AMOUNT}}</div>
+      </div>
+    </div>
+
+    <!-- Payment -->
+    <div class="payment-box" style="margin-top: 32px;">
+      <div class="payment-header">Payment Instructions</div>
+      <div class="payment-main">
+        <img class="paynow-badge" src="data:image/png;base64,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" alt="PayNow">
+        <div>
+          <div class="payment-info-title">PayNow Transfer</div>
+          <div class="payment-number-row">
+            <span class="payment-number">Transfer to <strong>91397985</strong></span>
+            <button class="copy-btn" id="copyBtn" onclick="copyPayNow()">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="payment-ref">
+        Please include your name and month in the payment reference e.g. <strong>{{PAYMENT_REFERENCE}}</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      203 Hougang Street 21, #03-51, Singapore 530203<br>
+      adrianmathtuition@gmail.com &nbsp;·&nbsp; 9139 7985
+    </div>
+    <div class="footer-thanks">Thank you! 🙏</div>
+  </div>
+
+</div>
+
+</div>
+
+<p class="bottom-note">Thank you for choosing Adrian's Math Tuition</p>
+
+<script>
+  function copyPayNow() {
+    navigator.clipboard.writeText('91397985').then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.classList.add('copied');
+      btn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = `<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy`;
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
