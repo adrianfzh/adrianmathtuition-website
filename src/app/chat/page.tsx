@@ -89,6 +89,9 @@ function autoResize(el: HTMLTextAreaElement | null) {
   el.style.height = Math.min(el.scrollHeight, 140) + 'px';
 }
 
+/* ── User scroll intent flag (module-level, survives re-renders) ── */
+let userHasScrolledUp = false;
+
 export default function ChatPage() {
   const [conversationStarted, setConversationStarted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -108,17 +111,29 @@ export default function ChatPage() {
 
   /* ── Scroll helpers ── */
   const scrollToBottom = () => {
-    if (chatScrollRef.current) {
-      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-    }
+    const el = chatScrollRef.current;
+    if (!el) return;
+    userHasScrolledUp = false;
+    el.scrollTop = el.scrollHeight;
   };
 
   const scrollToBottomIfNear = () => {
     const el = chatScrollRef.current;
-    if (!el) return;
-    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-    if (isNearBottom) el.scrollTop = el.scrollHeight;
+    if (!el || userHasScrolledUp) return;
+    el.scrollTop = el.scrollHeight;
   };
+
+  /* ── Scroll intent listener ── */
+  useEffect(() => {
+    const el = chatScrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+      userHasScrolledUp = !isNearBottom;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   /* ── Error banner ── */
   const showError = useCallback((msg: string) => {
@@ -373,6 +388,7 @@ export default function ChatPage() {
             if (parsed.done) {
               if (renderTimerRef.current) { cancelAnimationFrame(renderTimerRef.current); renderTimerRef.current = null; }
               renderToElement(streamDiv, fullText);
+              userHasScrolledUp = false;
               scrollToBottomIfNear();
             }
           } catch { /* ignore parse errors */ }

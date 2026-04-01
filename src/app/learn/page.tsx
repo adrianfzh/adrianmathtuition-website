@@ -245,6 +245,9 @@ function renderContent(
   }
 }
 
+/* ── User scroll intent flag (module-level, survives re-renders) ── */
+let lrnUserHasScrolledUp = false;
+
 // ── Main component (inner) ────────────────────────────────────────────────
 
 function LearnInner() {
@@ -300,14 +303,28 @@ function LearnInner() {
 
   // ── Scroll helpers ──
   const scrollToBottom = useCallback(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const el = scrollRef.current;
+    if (!el) return;
+    lrnUserHasScrolledUp = false;
+    el.scrollTop = el.scrollHeight;
   }, []);
 
   const scrollToBottomIfNear = useCallback(() => {
     const el = scrollRef.current;
+    if (!el || lrnUserHasScrolledUp) return;
+    el.scrollTop = el.scrollHeight;
+  }, []);
+
+  // ── Scroll intent listener ──
+  useEffect(() => {
+    const el = scrollRef.current;
     if (!el) return;
-    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-    if (isNearBottom) el.scrollTop = el.scrollHeight;
+    const onScroll = () => {
+      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+      lrnUserHasScrolledUp = !isNearBottom;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
   // ── Render a section into messagesRef ──
@@ -449,6 +466,7 @@ function LearnInner() {
       botGroup.appendChild(bubble);
       messagesRef.current.appendChild(botGroup);
       renderContent(cleanText, contentDiv, visualsMapRef.current);
+      lrnUserHasScrolledUp = false;
       scrollToBottomIfNear();
     }
 
