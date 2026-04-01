@@ -36,7 +36,7 @@ function TrigGraphSVG({
     <svg
       viewBox="0 0 300 175"
       width="100%"
-      style={{ maxWidth: 380, display: 'block', margin: '4px auto 10px' }}
+      style={{ maxWidth: 304, display: 'block', margin: '4px auto 10px' }}
     >
       {/* ── Axes ── */}
       <line x1="25" y1="90" x2="290" y2="90" stroke="#333" strokeWidth="1.2" />

@@ -20,7 +20,7 @@ export default function ExpLogGraphsPage() {
           alt="Exponential graphs: y = eˣ, y = e⁻ˣ, y = −eˣ, y = −e⁻ˣ"
           width={420}
           height={420}
-          style={{ display: 'block', margin: '8px auto', maxWidth: '80%', height: 'auto' }}
+          style={{ display: 'block', margin: '8px auto', maxWidth: '72%', height: 'auto' }}
         />
       </FormulaSection>
 
@@ -30,7 +30,7 @@ export default function ExpLogGraphsPage() {
           alt="Logarithmic graphs: y = ln x, y = ln(−x), y = −ln x, y = −ln(−x)"
           width={420}
           height={420}
-          style={{ display: 'block', margin: '8px auto', maxWidth: '80%', height: 'auto' }}
+          style={{ display: 'block', margin: '8px auto', maxWidth: '72%', height: 'auto' }}
         />
         <FormulaNoteBox html="<strong>Asymptote of $y = \ln(ax - b)$:</strong><br>Set argument to zero: $ax - b = 0 \implies x = \dfrac{b}{a}$" />
       </FormulaSection>
