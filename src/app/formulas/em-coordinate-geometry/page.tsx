@@ -2,6 +2,24 @@
 
 import FormulaPageLayout, { FormulaSection, FormulaRow, FormulaNoteBox } from '@/components/FormulaPageLayout';
 
+const labelStyle: React.CSSProperties = {
+  fontSize: 12,
+  color: 'hsl(220,10%,56%)',
+  fontStyle: 'italic',
+  marginBottom: 2,
+  display: 'block',
+  textAlign: 'left',
+};
+
+function LabelledFormula({ label, latex }: { label: string; latex: string }) {
+  return (
+    <div>
+      <span style={labelStyle}>{label}</span>
+      <FormulaRow latex={latex} />
+    </div>
+  );
+}
+
 export default function EmCoordinateGeometryPage() {
   return (
     <FormulaPageLayout
@@ -11,15 +29,15 @@ export default function EmCoordinateGeometryPage() {
       footerNote="Formulas for the Singapore O-Level Elementary Mathematics syllabus"
     >
       <FormulaSection title="Linear Graphs">
-        <FormulaRow latex="y = mx + c" annotation="Equation of slanted lines" />
-        <FormulaRow latex="x = a" annotation="Equation of vertical lines" />
-        <FormulaRow latex="y = a" annotation="Equation of horizontal lines" />
+        <LabelledFormula label="Equation of slanted lines" latex="y = mx + c" />
+        <LabelledFormula label="Equation of vertical lines" latex="x = a" />
+        <LabelledFormula label="Equation of horizontal lines" latex="y = a" />
       </FormulaSection>
 
       <FormulaSection title="Quadratic Graphs">
-        <FormulaRow latex="y = ax^2 + bx + c" annotation="Standard form" />
-        <FormulaRow latex="y = a(x - \alpha)(x - \beta) \quad \Rightarrow \quad x\text{-intercepts: } \alpha,\; \beta" annotation="Factorized form" />
-        <FormulaRow latex="y = a(x - h)^2 + k \quad \Rightarrow \quad \text{turning point } (h,\; k)" annotation="Completed square form" />
+        <LabelledFormula label="Standard form" latex="y = ax^2 + bx + c" />
+        <LabelledFormula label="Factorized form" latex="y = a(x - \alpha)(x - \beta) \quad \Rightarrow \quad x\text{-intercepts: } \alpha,\; \beta" />
+        <LabelledFormula label="Completed square form" latex="y = a(x - h)^2 + k \quad \Rightarrow \quad \text{turning point } (h,\; k)" />
       </FormulaSection>
 
       <FormulaSection title="Coordinate Geometry Formulae">
