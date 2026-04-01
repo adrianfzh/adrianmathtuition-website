@@ -90,6 +90,7 @@ function renderMarkdown(text: string): string {
 function parseSections(content: string, topic: string): Section[] {
   if (!content.trim()) return [];
   const result: Section[] = [];
+  let preHeadingContent = '';
 
   const parts = content.split(/(?=\*\*\d+[\.:]\s)/);
   for (const part of parts) {
@@ -99,8 +100,13 @@ function parseSections(content: string, topic: string): Section[] {
       const body = part.replace(/^\*\*[^*\n]+\*\*\s*\n?/, '').trim();
       result.push({ title: titleMatch[1].trim(), content: body });
     } else if (result.length === 0 && part.trim()) {
-      result.push({ title: 'Overview', content: part.trim() });
+      preHeadingContent = part.trim();
     }
+  }
+
+  // Prepend any content that appeared before the first numbered heading
+  if (preHeadingContent && result.length > 0) {
+    result[0] = { ...result[0], content: (preHeadingContent + '\n\n' + result[0].content).trim() };
   }
 
   if (result.length === 0) {
@@ -142,11 +148,6 @@ function parseSections(content: string, topic: string): Section[] {
 
 // ── Section content helpers ──────────────────────────────────────────────────
 function getSectionBounds(fullContent: string, sectionTitle: string): [number, number] | null {
-  if (sectionTitle === 'Overview') {
-    const m = /\*\*\d+[\.:]\s/.exec(fullContent);
-    const end = m ? m.index : fullContent.length;
-    return [0, end];
-  }
   const escaped = sectionTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const headingRe = new RegExp(`\\*\\*(?:\\d+[.:]\\s*)?${escaped}\\*\\*`);
   const headingMatch = headingRe.exec(fullContent);
@@ -168,12 +169,6 @@ function extractSectionBody(fullContent: string, sectionTitle: string, isPractic
 }
 
 function replaceSectionBody(fullContent: string, sectionTitle: string, newBody: string): string {
-  if (sectionTitle === 'Overview') {
-    const m = /\*\*\d+[\.:]\s/.exec(fullContent);
-    const afterOverview = m ? fullContent.slice(m.index) : '';
-    const trimmedBody = newBody.trimEnd();
-    return trimmedBody + (trimmedBody && afterOverview ? '\n\n' : '') + afterOverview;
-  }
   const bounds = getSectionBounds(fullContent, sectionTitle);
   if (!bounds) return fullContent;
   const before = fullContent.slice(0, bounds[0]);
@@ -182,11 +177,49 @@ function replaceSectionBody(fullContent: string, sectionTitle: string, newBody: 
   return before + trimmedBody + (trimmedBody ? '\n' : '') + after;
 }
 function renameSectionInContent(content: string, oldTitle: string, newTitle: string): string {
-  if (oldTitle === 'Overview' || !newTitle.trim()) return content;
+  if (!newTitle.trim()) return content;
   const escaped = oldTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   // Matches **1. OldTitle** or **OldTitle** (with or without number prefix)
   const re = new RegExp(`(\\*\\*(?:\\d+[.:]\\s*)?)${escaped}(\\*\\*)`);
   return content.replace(re, `$1${newTitle.trim()}$2`);
+}
+// ── Raw-section helpers (operate on raw editor text, no auto-generated sections) ──
+function getRawSections(content: string): { title: string; body: string }[] {
+  const parts = content.split(/(?=\*\*\d+[\.:]\s)/);
+  const result: { title: string; body: string }[] = [];
+  for (const part of parts) {
+    if (!part.trim()) continue;
+    const m = part.match(/^\*\*(?:\d+[\.:]\s*)?(.+?)\*\*/);
+    if (m) {
+      const body = part.replace(/^\*\*[^*\n]+\*\*\s*\n?/, '');
+      result.push({ title: m[1].trim(), body });
+    }
+  }
+  return result;
+}
+
+function getContentPreamble(content: string): string {
+  const m = content.match(/\*\*\d+[\.:]\s/);
+  return m?.index !== undefined ? content.slice(0, m.index) : '';
+}
+
+function reorderSectionsInContent(content: string, fromIdx: number, toIdx: number): string {
+  const preamble = getContentPreamble(content);
+  const sections = getRawSections(content);
+  if (fromIdx < 0 || fromIdx >= sections.length || toIdx < 0 || toIdx >= sections.length) return content;
+  const reordered = [...sections];
+  [reordered[fromIdx], reordered[toIdx]] = [reordered[toIdx], reordered[fromIdx]];
+  const body = reordered.map((s, i) => `**${i + 1}. ${s.title}**\n${s.body.trimEnd()}`).join('\n\n');
+  return preamble + body;
+}
+
+function deleteSectionFromContent(content: string, rawIdx: number): string {
+  const preamble = getContentPreamble(content);
+  const sections = getRawSections(content);
+  if (rawIdx < 0 || rawIdx >= sections.length || sections.length <= 1) return content;
+  sections.splice(rawIdx, 1);
+  const body = sections.map((s, i) => `**${i + 1}. ${s.title}**\n${s.body.trimEnd()}`).join('\n\n');
+  return preamble + body;
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -228,6 +261,7 @@ export default function EditNotesPage() {
 
   // AI assistant
   const [aiOpen, setAiOpen] = useState(false);
+  const [syntaxOpen, setSyntaxOpen] = useState(false);
   const [aiInstruction, setAiInstruction] = useState('');
   const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const aiInstructionRef = useRef('');
@@ -470,6 +504,8 @@ export default function EditNotesPage() {
     if (!tabs) return;
     const sections = previewSectionsRef.current;
     const active = activeSectionRef.current;
+    const rawSections = getRawSections(fullContentRef.current);
+    const rawCount = rawSections.length;
     tabs.innerHTML = sections.map((sec, i) => {
       const cls = ['en-preview-sitem',
         sec.isPractice ? 'practice' : '',
@@ -478,7 +514,20 @@ export default function EditNotesPage() {
       ].filter(Boolean).join(' ');
       const renamable = !sec.isPractice && !sec.isSyllabus && sec.title !== 'Overview';
       const titleAttr = renamable ? ' title="Double-click to rename"' : '';
-      return `<div class="${cls}" data-idx="${i}"${titleAttr}>${escapeHtml(sec.title)}</div>`;
+
+      // Reorder / delete controls — only for real (numbered) sections
+      const rawIdx = rawSections.findIndex(s => s.title === sec.title);
+      const isReal = rawIdx !== -1 && !sec.isPractice && !sec.isSyllabus;
+      const controls = isReal ? `
+        <span class="en-sitem-arrows">
+          <button class="en-sitem-btn" data-move-up="${i}" title="Move section up"${rawIdx === 0 ? ' style="visibility:hidden"' : ''}>▲</button>
+          <button class="en-sitem-btn" data-move-down="${i}" title="Move section down"${rawIdx === rawCount - 1 ? ' style="visibility:hidden"' : ''}>▼</button>
+        </span>
+        <span class="en-sitem-label">${escapeHtml(sec.title)}</span>
+        <button class="en-sitem-btn en-sitem-delete" data-delete-idx="${i}" title="Delete section">×</button>
+      ` : `<span class="en-sitem-label">${escapeHtml(sec.title)}</span>`;
+
+      return `<div class="${cls}" data-idx="${i}"${titleAttr}>${controls}</div>`;
     }).join('');
   }
 
@@ -531,7 +580,31 @@ export default function EditNotesPage() {
     const tabs = previewTabsRef.current;
     if (!tabs) return;
     const onClick = (e: MouseEvent) => {
-      const item = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
+      const target = e.target as HTMLElement;
+
+      // ── Move-up button ──
+      const upBtn = target.closest('[data-move-up]') as HTMLElement | null;
+      if (upBtn) {
+        moveSection(parseInt(upBtn.dataset.moveUp!, 10), 'up');
+        return;
+      }
+
+      // ── Move-down button ──
+      const downBtn = target.closest('[data-move-down]') as HTMLElement | null;
+      if (downBtn) {
+        moveSection(parseInt(downBtn.dataset.moveDown!, 10), 'down');
+        return;
+      }
+
+      // ── Delete button ──
+      const delBtn = target.closest('[data-delete-idx]') as HTMLElement | null;
+      if (delBtn) {
+        deleteSection(parseInt(delBtn.dataset.deleteIdx!, 10));
+        return;
+      }
+
+      // ── Regular tab click ──
+      const item = target.closest('[data-idx]') as HTMLElement | null;
       if (!item) return;
       const idx = parseInt(item.dataset.idx ?? '0', 10);
       if (isNaN(idx)) return;
@@ -566,7 +639,10 @@ export default function EditNotesPage() {
     const tabs = previewTabsRef.current;
     if (!tabs) return;
     const onDblClick = (e: MouseEvent) => {
-      const item = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
+      const target = e.target as HTMLElement;
+      // Ignore double-clicks on control buttons
+      if (target.closest('[data-move-up],[data-move-down],[data-delete-idx]')) return;
+      const item = target.closest('[data-idx]') as HTMLElement | null;
       if (!item) return;
       const idx = parseInt(item.dataset.idx ?? '0', 10);
       const sec = previewSectionsRef.current[idx];
@@ -613,6 +689,119 @@ export default function EditNotesPage() {
     return () => tabs.removeEventListener('dblclick', onDblClick);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorShown]);
+
+  function handleEditorChange() {
+    const activeSec = previewSectionsRef.current[activeSectionRef.current];
+    const newBody = textareaRef.current?.value ?? '';
+    if (activeSec && !activeSec.isPractice) {
+      fullContentRef.current = replaceSectionBody(fullContentRef.current, activeSec.title, newBody);
+    } else if (!activeSec || previewSectionsRef.current.length === 0) {
+      fullContentRef.current = newBody;
+    }
+    updateLineNumbers();
+    schedulePreview();
+  }
+
+  function applySectionReorder(newContent: string, preserveTitle: string) {
+    fullContentRef.current = newContent;
+    const newSections = parseSections(newContent, metaTopicRef.current || 'Notes');
+    const newIdx = newSections.findIndex(s => s.title === preserveTitle);
+    activeSectionRef.current = newIdx >= 0 ? newIdx : 0;
+    updatePreview();
+    const activeSecNew = previewSectionsRef.current[activeSectionRef.current];
+    if (textareaRef.current && activeSecNew && !activeSecNew.isPractice) {
+      textareaRef.current.value = extractSectionBody(fullContentRef.current, activeSecNew.title, false);
+      updateLineNumbers();
+    }
+  }
+
+  function moveSection(displayIdx: number, direction: 'up' | 'down') {
+    const sections = previewSectionsRef.current;
+    const rawSections = getRawSections(fullContentRef.current);
+    const sec = sections[displayIdx];
+    if (!sec || sec.isPractice || sec.isSyllabus) return;
+    const rawIdx = rawSections.findIndex(s => s.title === sec.title);
+    if (rawIdx === -1) return;
+    const targetRawIdx = direction === 'up' ? rawIdx - 1 : rawIdx + 1;
+    if (targetRawIdx < 0 || targetRawIdx >= rawSections.length) return;
+    const preserveTitle = sections[activeSectionRef.current]?.title ?? sec.title;
+    applySectionReorder(reorderSectionsInContent(fullContentRef.current, rawIdx, targetRawIdx), preserveTitle);
+  }
+
+  function deleteSection(displayIdx: number) {
+    const sections = previewSectionsRef.current;
+    const rawSections = getRawSections(fullContentRef.current);
+    if (rawSections.length <= 1) { showToast("Can't delete the last section", 'error'); return; }
+    const sec = sections[displayIdx];
+    if (!sec) return;
+    const rawIdx = rawSections.findIndex(s => s.title === sec.title);
+    if (rawIdx === -1) return;
+    if (!confirm(`Delete section "${sec.title}" and all its content?`)) return;
+    const activeTitle = sections[activeSectionRef.current]?.title ?? '';
+    const preserveTitle = activeTitle === sec.title
+      ? (rawSections[rawIdx + 1] ?? rawSections[rawIdx - 1])?.title ?? ''
+      : activeTitle;
+    applySectionReorder(deleteSectionFromContent(fullContentRef.current, rawIdx), preserveTitle);
+  }
+
+  function insertAtCursor(textarea: HTMLTextAreaElement, text: string) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    textarea.value = before + text + after;
+    textarea.selectionStart = textarea.selectionEnd = start + text.length;
+    textarea.focus();
+  }
+
+  function getNextSectionNumber(): number {
+    const matches = [...fullContentRef.current.matchAll(/\*\*(\d+)[.:]/g)];
+    const nums = matches.map(m => parseInt(m[1], 10));
+    return nums.length > 0 ? Math.max(...nums) + 1 : 1;
+  }
+
+  function insertSection() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const n = getNextSectionNumber();
+    const prefix = `\n\n**${n}. `;
+    const name = 'New Section';
+    const suffix = `**\n\n`;
+    const insertPos = ta.selectionStart;
+    insertAtCursor(ta, prefix + name + suffix);
+    // Select "New Section" so user can type the name immediately
+    ta.selectionStart = insertPos + prefix.length;
+    ta.selectionEnd = insertPos + prefix.length + name.length;
+    handleEditorChange();
+  }
+
+  function insertExample() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    insertAtCursor(ta, '\n\n**Example:**\nDescription here.\n\n');
+    handleEditorChange();
+  }
+
+  function insertPractice() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    insertAtCursor(ta, '\n\n[Try: Your question here]\n[Ans: The answer]\n\n');
+    handleEditorChange();
+  }
+
+  function insertList() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const text = '\n- Item 1\n- Item 2\n- Item 3\n';
+    const insertPos = ta.selectionStart;
+    insertAtCursor(ta, text);
+    // Place cursor at start of "Item 1" so user can edit immediately
+    const item1Start = insertPos + '\n- '.length;
+    ta.selectionStart = item1Start;
+    ta.selectionEnd = item1Start + 'Item 1'.length;
+    ta.focus();
+    handleEditorChange();
+  }
 
   async function loadTopic(slug: string) {
     setCurrentSlug(slug);
@@ -1143,6 +1332,17 @@ export default function EditNotesPage() {
                             ? `Editing: ${previewSectionsRef.current[activeSectionRef.current].title}`
                             : 'Editor'}
                         </span>
+                        <div className="en-editor-toolbar">
+                          <button className="en-tool-btn" onClick={insertSection} title="Insert new section heading">+ Section</button>
+                          <button className="en-tool-btn" onClick={insertExample} title="Insert worked example">+ Example</button>
+                          <button className="en-tool-btn" onClick={insertPractice} title="Insert practice question">+ Practice</button>
+                          <button className="en-tool-btn" onClick={insertList} title="Insert bullet list">+ List</button>
+                          <button
+                            className={`en-tool-btn en-tool-btn--help${syntaxOpen ? ' active' : ''}`}
+                            onClick={() => setSyntaxOpen(o => !o)}
+                            title="Syntax guide"
+                          >?</button>
+                        </div>
                         <span className="en-line-count">{lineCount} line{lineCount !== 1 ? 's' : ''}</span>
                       </div>
                       <div className="en-editor-wrap">
@@ -1154,17 +1354,7 @@ export default function EditNotesPage() {
                           autoCorrect="off"
                           autoCapitalize="off"
                           placeholder={"Start writing content here…\n\nUse **bold headings** for sections:\n\n**1. Binomial Expansion**\nThe binomial theorem states...\n\n**Example 1:**\nExpand $(1+x)^4$\n\n[Try: Expand $(2+x)^3$]\n[Ans: $8 + 12x + 6x^2 + x^3$]"}
-                          onChange={() => {
-                            const activeSec = previewSectionsRef.current[activeSectionRef.current];
-                            const newBody = textareaRef.current?.value ?? '';
-                            if (activeSec && !activeSec.isPractice) {
-                              fullContentRef.current = replaceSectionBody(fullContentRef.current, activeSec.title, newBody);
-                            } else if (!activeSec || previewSectionsRef.current.length === 0) {
-                              fullContentRef.current = newBody;
-                            }
-                            updateLineNumbers();
-                            schedulePreview();
-                          }}
+                          onChange={handleEditorChange}
                           onScroll={syncLineNumbers}
                           onKeyDown={e => {
                             if (e.key === 'Tab') {
@@ -1185,6 +1375,39 @@ export default function EditNotesPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Syntax guide overlay */}
+                  {syntaxOpen && (
+                    <div className="en-syntax-overlay" onClick={() => setSyntaxOpen(false)}>
+                      <div className="en-syntax-panel" onClick={e => e.stopPropagation()}>
+                        <div className="en-syntax-header">
+                          <span>Syntax Guide</span>
+                          <button className="en-syntax-close" onClick={() => setSyntaxOpen(false)}>✕</button>
+                        </div>
+                        <div className="en-syntax-body">
+                          <table className="en-syntax-table">
+                            <tbody>
+                              <tr><td><code>**1. Section Name**</code></td><td>Creates a section tab</td></tr>
+                              <tr><td><code>**Example:**</code></td><td>Worked example card</td></tr>
+                              <tr><td><code>[Try: question]</code></td><td>Practice callout</td></tr>
+                              <tr><td><code>[Ans: answer]</code></td><td>Click-to-reveal answer</td></tr>
+                              <tr><td><code>**Note:** text</code></td><td>Note box</td></tr>
+                              <tr><td><code>$math$</code></td><td>Inline math (KaTeX)</td></tr>
+                              <tr><td><code>$$math$$</code></td><td>Display math</td></tr>
+                              <tr><td><code>## Heading</code></td><td>Sub-heading</td></tr>
+                              <tr><td><code>- item</code></td><td>Bullet list</td></tr>
+                              <tr><td><code>1. item</code></td><td>Numbered list</td></tr>
+                              <tr><td><code>**bold**</code></td><td>Bold text</td></tr>
+                              <tr><td><code>*italic*</code></td><td>Italic text</td></tr>
+                              <tr><td><code>---</code></td><td>Horizontal rule</td></tr>
+                              <tr><td>Single newline</td><td>Line break</td></tr>
+                              <tr><td>Double newline</td><td>New paragraph</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
