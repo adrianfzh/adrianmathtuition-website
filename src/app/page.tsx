@@ -348,8 +348,23 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-16 items-center">
               <div className="relative">
-                <div className="w-full aspect-[3/4] bg-muted rounded-2xl flex items-center justify-center text-muted-foreground text-sm shadow-lg">
-                  Photo
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/adrian.jpg"
+                  alt="Adrian, Math Tutor"
+                  className="w-full rounded-2xl shadow-lg object-cover"
+                  onError={(e) => {
+                    const t = e.currentTarget;
+                    t.style.display = 'none';
+                    if (t.nextElementSibling) (t.nextElementSibling as HTMLElement).style.display = 'flex';
+                  }}
+                />
+                <div className="w-full aspect-[3/4] bg-gradient-to-br from-navy to-navy-light rounded-2xl items-center justify-center shadow-lg hidden" aria-hidden>
+                  <div className="text-center text-[hsl(45,100%,96%)]">
+                    <div className="text-6xl mb-4">👨‍🏫</div>
+                    <p className="font-display text-xl">Adrian</p>
+                    <p className="text-sm opacity-70">Math Tutor</p>
+                  </div>
                 </div>
               </div>
               <div>

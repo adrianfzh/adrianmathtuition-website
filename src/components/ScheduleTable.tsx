@@ -61,7 +61,7 @@ export default function ScheduleTable() {
 
       <div className="overflow-x-auto">
         <p className="text-center text-xs text-muted-foreground mb-2 animate-pulse md:hidden">&larr; Swipe to see all days &rarr;</p>
-        <table className="w-full text-sm min-w-[540px]">
+        <table className="w-full text-sm min-w-[540px] border-separate border-spacing-x-1">
           <thead>
             <tr>
               <th className="text-left text-muted-foreground font-medium pb-2 w-24">Time</th>

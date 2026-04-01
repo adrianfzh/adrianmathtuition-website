@@ -19,7 +19,7 @@ export default function Footer() {
             WhatsApp Us
           </a>
           <p className="text-[hsl(45,100%,96%)] opacity-40 text-sm mt-12">
-            &copy; {new Date().getFullYear()} Adrian&apos;s Math Tuition. All rights reserved.
+            &copy; {new Date().getFullYear()}{' '}Adrian&apos;s Math Tuition. All rights reserved.
           </p>
         </div>
       </footer>
