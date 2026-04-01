@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Serif+Display&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: hsl(210, 20%, 98%);
+  color: hsl(220, 40%, 13%);
+  font-size: 17px;
+  line-height: 1.75;
+}
