@@ -25,6 +25,14 @@ declare global {
   }
 }
 
+/* ── Formula sheets config ── */
+type FormulaSheetId = 'mf27' | 'amath' | 'emath';
+const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[] = [
+  { id: 'mf27',   emoji: '📘', title: 'A-Level MF27',   subtitle: 'H2 Math formula list' },
+  { id: 'amath',  emoji: '📗', title: 'O-Level A Math',  subtitle: 'Additional Mathematics' },
+  { id: 'emath',  emoji: '📙', title: 'O-Level E Math',  subtitle: 'Elementary Mathematics' },
+];
+
 /* ── Send icon SVG ── */
 const SendIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -100,6 +108,8 @@ export default function ChatPage() {
   const [previewSrc, setPreviewSrc] = useState('');
   const [showDragOverlay, setShowDragOverlay] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [formulaSheet, setFormulaSheet] = useState<FormulaSheetId | null>(null);
 
   const welcomeInputRef = useRef<HTMLTextAreaElement>(null);
   const fixedInputRef = useRef<HTMLTextAreaElement>(null);
@@ -413,7 +423,11 @@ export default function ChatPage() {
   /* ── Keyboard listeners ── */
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && selectedFile) { removeImage(); return; }
+      if (e.key === 'Escape') {
+        if (formulaSheet) { setFormulaSheet(null); return; }
+        if (menuOpen) { setMenuOpen(false); return; }
+        if (selectedFile) { removeImage(); return; }
+      }
       if (e.key === 'Enter' && !e.shiftKey && selectedFile && !isLoading) {
         const focused = document.activeElement?.tagName;
         if (focused !== 'TEXTAREA') { e.preventDefault(); sendMessage(); }
@@ -421,7 +435,7 @@ export default function ChatPage() {
     };
     document.addEventListener('keydown', handleKeydown);
     return () => document.removeEventListener('keydown', handleKeydown);
-  }, [selectedFile, isLoading, removeImage, sendMessage]);
+  }, [formulaSheet, menuOpen, selectedFile, isLoading, removeImage, sendMessage]);
 
   /* ── Paste image ── */
   useEffect(() => {
@@ -576,9 +590,12 @@ export default function ChatPage() {
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
         @keyframes tdot { 0%,60%,100% { transform:translateY(0); opacity:0.4; } 30% { transform:translateY(-5px); opacity:1; } }
         @keyframes spin { to { transform:rotate(360deg); } }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         .message-bubble .katex { font-size:1.05em; }
         .message-bubble .katex-display { margin:12px 0; overflow-x:auto; }
         .message-bubble strong { font-weight:600; }
+        .menu-formula-btn:hover { background: hsl(220,40%,95%) !important; border-color: hsl(220,30%,82%) !important; }
+        .menu-link-btn:hover { color: hsl(220,60%,20%) !important; }
       `}</style>
 
       {/* Drag Overlay */}
@@ -608,26 +625,242 @@ export default function ChatPage() {
         flexShrink: 0,
       }}>
         <div style={{
-          maxWidth: 1152, margin: '0 auto', padding: '0 24px',
-          height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          maxWidth: 1152, margin: '0 auto', padding: '0 16px',
+          height: 64, display: 'flex', alignItems: 'center', gap: 12,
         }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          {/* Hamburger */}
+          <button
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            style={{
+              background: 'none', border: 'none', padding: '8px 6px',
+              cursor: 'pointer', display: 'flex', flexDirection: 'column',
+              gap: 5, color: 'hsl(220,10%,46%)', flexShrink: 0,
+            }}
+          >
+            <span style={{ display: 'block', width: 22, height: 2, borderRadius: 2, background: 'currentColor' }} />
+            <span style={{ display: 'block', width: 22, height: 2, borderRadius: 2, background: 'currentColor' }} />
+            <span style={{ display: 'block', width: 22, height: 2, borderRadius: 2, background: 'currentColor' }} />
+          </button>
+
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flex: 1 }}>
             <span style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'hsl(220,60%,20%)' }}>
               ADRIAN&apos;S
             </span>
             <span style={{ color: 'hsl(220,10%,46%)', fontSize: 14 }} className="hidden sm:inline">math tuition</span>
           </Link>
+
           <Link href="/" style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            color: 'hsl(220,10%,46%)', fontSize: 14, fontWeight: 500, textDecoration: 'none',
+            color: 'hsl(220,10%,46%)', fontSize: 14, fontWeight: 500, textDecoration: 'none', flexShrink: 0,
           }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            <span className="hidden sm:inline">Back to website</span>
+          </Link>
+        </div>
+      </nav>
+
+      {/* Slide-out menu backdrop */}
+      {menuOpen && (
+        <div
+          onClick={() => setMenuOpen(false)}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.3)',
+            zIndex: 59,
+            animation: 'fadeIn 0.2s ease',
+          }}
+        />
+      )}
+
+      {/* Slide-out menu panel (always rendered for smooth animation) */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, bottom: 0,
+        width: 'min(280px, 85vw)',
+        background: 'white',
+        boxShadow: '4px 0 24px rgba(0,0,0,0.12)',
+        zIndex: 60,
+        display: 'flex', flexDirection: 'column',
+        transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.25s ease-out',
+        pointerEvents: menuOpen ? 'auto' : 'none',
+        overflowY: 'auto',
+      }}>
+        {/* Panel header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 20px', height: 64, flexShrink: 0,
+          borderBottom: '1px solid hsl(220,15%,92%)',
+        }}>
+          <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 18, color: 'hsl(220,60%,20%)' }}>
+            Menu
+          </span>
+          <button
+            onClick={() => setMenuOpen(false)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, color: 'hsl(220,10%,56%)', fontSize: 18, lineHeight: 1, display: 'flex', alignItems: 'center' }}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Formula sheets section */}
+        <div style={{ padding: '20px 16px 0' }}>
+          <div style={{
+            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.08em', color: 'hsl(220,10%,56%)', marginBottom: 10,
+            padding: '0 4px',
+          }}>
+            📐 Formula Sheets
+          </div>
+          {FORMULA_SHEETS.map(sheet => (
+            <button
+              key={sheet.id}
+              className="menu-formula-btn"
+              onClick={() => { setMenuOpen(false); setFormulaSheet(sheet.id); }}
+              style={{
+                width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
+                padding: '11px 12px', marginBottom: 8, minHeight: 52,
+                background: 'hsl(220,30%,98%)', border: '1px solid hsl(220,15%,90%)',
+                borderRadius: 10, cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
+              }}
+            >
+              <span style={{ fontSize: 22, flexShrink: 0 }}>{sheet.emoji}</span>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{sheet.title}</div>
+                <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>{sheet.subtitle}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Divider */}
+        <div style={{ margin: '16px 16px 8px', borderBottom: '1px solid hsl(220,15%,92%)' }} />
+
+        {/* Extra links */}
+        <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column' }}>
+          <button
+            className="menu-link-btn"
+            onClick={() => {
+              setMenuOpen(false);
+              setTimeout(() => {
+                (conversationStarted ? fixedInputRef.current : welcomeInputRef.current)?.focus();
+              }, 50);
+            }}
+            style={{
+              textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
+              padding: '11px 4px', fontSize: 14, color: 'hsl(220,40%,15%)',
+              display: 'flex', alignItems: 'center', gap: 8,
+              transition: 'color 0.12s',
+            }}
+          >
+            💬 Ask a question
+          </button>
+          <Link
+            href="/"
+            className="menu-link-btn"
+            style={{
+              padding: '11px 4px', fontSize: 14, color: 'hsl(220,10%,46%)',
+              textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8,
+              transition: 'color 0.12s',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
             Back to website
           </Link>
         </div>
-      </nav>
+      </div>
+
+      {/* Full-screen PDF overlay */}
+      {formulaSheet && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: 'white',
+          zIndex: 70,
+          display: 'flex', flexDirection: 'column',
+          animation: 'fadeIn 0.15s ease',
+        }}>
+          {/* PDF overlay top bar */}
+          <div style={{
+            flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+            padding: '0 12px 0 4px', height: 52,
+            background: 'hsl(220,60%,20%)',
+            borderBottom: '1px solid hsl(220,50%,15%)',
+          }}>
+            <button
+              onClick={() => setFormulaSheet(null)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'hsl(45,90%,80%)', fontSize: 14, fontWeight: 500,
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '8px 10px', flexShrink: 0,
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Back
+            </button>
+            <span style={{
+              flex: 1, textAlign: 'center',
+              fontFamily: "'DM Serif Display', serif", fontSize: 15,
+              color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title}
+            </span>
+            <a
+              href={`/formulas/${formulaSheet}.pdf`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
+                textDecoration: 'none', padding: '8px 6px', flexShrink: 0,
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Open
+            </a>
+          </div>
+
+          {/* PDF embed */}
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <iframe
+              src={`/formulas/${formulaSheet}.pdf`}
+              style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+              title={FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title}
+            />
+            {/* Fallback shown below iframe on mobile if PDF doesn't render */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              padding: '10px 16px',
+              background: 'hsla(0,0%,100%,0.95)',
+              borderTop: '1px solid hsl(220,15%,90%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              fontSize: 13, color: 'hsl(220,10%,46%)',
+              pointerEvents: 'none',
+            }}>
+              Can&apos;t see the PDF?{' '}
+              <a
+                href={`/formulas/${formulaSheet}.pdf`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: 'hsl(220,60%,40%)', fontWeight: 600, pointerEvents: 'auto' }}
+              >
+                Tap to open directly ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Scrollable chat area */}
       <div
