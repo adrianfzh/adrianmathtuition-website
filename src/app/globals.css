@@ -1,20 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Serif+Display&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  /* Colors */
+  --color-navy: hsl(220, 60%, 20%);
+  --color-navy-light: hsl(220, 40%, 30%);
+  --color-amber: hsl(45, 90%, 55%);
+  --color-amber-light: hsl(45, 90%, 92%);
+  --color-amber-dark: hsl(40, 80%, 42%);
+  --color-background: hsl(210, 20%, 98%);
+  --color-foreground: hsl(220, 40%, 13%);
+  --color-card: hsl(0, 0%, 100%);
+  --color-muted: hsl(220, 15%, 93%);
+  --color-muted-foreground: hsl(220, 10%, 46%);
+  --color-border: hsl(220, 15%, 88%);
+
+  /* Fonts */
+  --font-sans: 'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-size: 17px;
+  line-height: 1.75;
+}
 
 .chat-layout {
   height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: hsl(210, 20%, 98%);
-  color: hsl(220, 40%, 13%);
-  font-size: 17px;
-  line-height: 1.75;
 }
