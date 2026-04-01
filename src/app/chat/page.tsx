@@ -38,14 +38,14 @@ const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtit
   { id: 'amath',                   emoji: '📗', title: 'O-Level A Math',                 subtitle: 'Additional Mathematics',       url: '/formulas/amath.pdf' },
   { id: 'emath',                   emoji: '📙', title: 'O-Level E Math',                 subtitle: 'Elementary Mathematics',       url: '/formulas/emath.pdf' },
   { id: 'trigo',                   emoji: '📐', title: 'Trigonometry',                   subtitle: 'Trigonometric identities',     url: '/formulas/trigo' },
-  { id: 'indices',                 emoji: 'ⁿ',  title: 'Indices',                        subtitle: 'Laws of Exponents',            url: '/formulas/indices' },
+  { id: 'indices',                 emoji: 'aⁿ', title: 'Indices',                        subtitle: 'Laws of Exponents',            url: '/formulas/indices' },
   { id: 'logarithms',              emoji: '㏒', title: 'Logarithms',                     subtitle: 'Laws of Logarithms',           url: '/formulas/logarithms' },
   { id: 'coord-geom',              emoji: '📍', title: 'Coordinate Geometry & Circles',  subtitle: 'Lines, gradients & circles',   url: '/formulas/coordinate-geometry' },
   { id: 'differentiation',         emoji: '∂',  title: 'Differentiation',                subtitle: 'Derivatives & rules',          url: '/formulas/differentiation' },
   { id: 'factorization-cubics',    emoji: '∛',  title: 'Factorization of Cubics',        subtitle: 'Sum/difference of cubes',      url: '/formulas/factorization-cubics' },
-  { id: 'partial-fractions',       emoji: '½',  title: 'Partial Fractions',              subtitle: 'Decomposition types',          url: '/formulas/partial-fractions' },
+  { id: 'partial-fractions',       emoji: '½',  title: 'Partial Fractions',              subtitle: 'Forms of Partial Fractions',   url: '/formulas/partial-fractions' },
   { id: 'exp-log-graphs',          emoji: '📈', title: 'Exp & Log Graphs',               subtitle: 'Graph shapes & asymptotes',    url: '/formulas/exponential-log-graphs' },
-  { id: 'em-indices',              emoji: 'ⁿ',  title: 'Indices',                        subtitle: 'Laws of Exponents',            url: '/formulas/em-indices' },
+  { id: 'em-indices',              emoji: 'aⁿ', title: 'Indices',                        subtitle: 'Laws of Exponents',            url: '/formulas/em-indices' },
   { id: 'em-standard-form',        emoji: '×10',title: 'Standard Form',                  subtitle: 'SI prefixes',                  url: '/formulas/em-standard-form' },
   { id: 'em-interest',             emoji: '%',  title: 'Simple & Compound Interest',      subtitle: 'Interest formulae',            url: '/formulas/em-interest' },
   { id: 'em-coordinate-geometry',  emoji: '📍', title: 'Coordinate Geometry',            subtitle: 'Lines & quadratics',           url: '/formulas/em-coordinate-geometry' },
@@ -209,9 +209,9 @@ function SidebarContent({
           }}>
             {([
               { id: 'amath',               emoji: '📄', title: 'O Level AM Formula Sheet', subtitle: 'Official syllabus document' },
-              { id: 'partial-fractions',   emoji: '½',  title: 'Partial Fractions',        subtitle: 'Decomposition types' },
+              { id: 'partial-fractions',   emoji: '½',  title: 'Partial Fractions',        subtitle: 'Forms of Partial Fractions' },
               { id: 'factorization-cubics',emoji: '∛',  title: 'Factorization of Cubics',  subtitle: 'Sum/difference of cubes' },
-              { id: 'indices',             emoji: 'ⁿ',  title: 'Indices',                  subtitle: 'Laws of Exponents' },
+              { id: 'indices',             emoji: 'aⁿ', title: 'Indices',                  subtitle: 'Laws of Exponents' },
               { id: 'logarithms',          emoji: '㏒', title: 'Logarithms',               subtitle: 'Laws of Logarithms' },
               { id: 'exp-log-graphs',      emoji: '📈', title: 'Exp & Log Graphs',        subtitle: 'Graph shapes & asymptotes' },
               { id: 'coord-geom',          emoji: '📍', title: 'Coordinate Geometry',      subtitle: 'Geometry & Circles' },
@@ -229,7 +229,7 @@ function SidebarContent({
                   cursor: 'pointer', transition: 'background 0.12s',
                 }}
               >
-                <span style={{ fontSize: 16, flexShrink: 0 }}>{item.emoji}</span>
+                <span style={{ fontSize: 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-block' }}>{item.emoji}</span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
                   <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
@@ -277,7 +277,7 @@ function SidebarContent({
           }}>
             {([
               { id: 'emath',                    emoji: '📄', title: 'O Level EM Formula Sheet',  subtitle: 'Official syllabus document' },
-              { id: 'em-indices',               emoji: 'ⁿ',  title: 'Indices',                   subtitle: 'Laws of Exponents' },
+              { id: 'em-indices',               emoji: 'aⁿ', title: 'Indices',                   subtitle: 'Laws of Exponents' },
               { id: 'em-standard-form',         emoji: '×10',title: 'Standard Form',             subtitle: 'SI prefixes' },
               { id: 'em-interest',              emoji: '%',  title: 'Interest',                   subtitle: 'Simple & compound' },
               { id: 'em-coordinate-geometry',   emoji: '📍', title: 'Coordinate Geometry',        subtitle: 'Lines & quadratics' },
@@ -301,7 +301,7 @@ function SidebarContent({
                   cursor: 'pointer', transition: 'background 0.12s',
                 }}
               >
-                <span style={{ fontSize: 16, flexShrink: 0 }}>{item.emoji}</span>
+                <span style={{ fontSize: 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-block' }}>{item.emoji}</span>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
                   <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
