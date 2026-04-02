@@ -67,37 +67,49 @@ function renderMarkdown(text: string): string {
   text = text.replace(/^(?:\*\*)?Step\s*(\d+):(?:\*\*)?\s*(.*)$/gm,
     (_, n, content) => `<div class="step-block"><span class="step-pill">Step ${n}</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
 
-  // Example & Solution card wrapping via line-split.
-  // Terminates ONLY at: next **Example / **Solution card, **N. section heading, ## heading.
-  // Does NOT stop at **Part, **Step, **Note, or any other **bold** text.
+  // Card wrapping: Solution cards nested inside Example cards via state machine.
+  // Example opens an example-card div; Solution opens a solution-card div INSIDE it.
+  // Section headings (##, **N.) close both. A new Example closes any open cards first.
   {
-    const cardBoundary = /^\*\*(?:Example|Solution)(?:\s+\d+)?[:\.]?\*\*/;
-    const sectBoundary = /^\*\*\d+[\.:]+\s|^##\s/;
     const lines = text.split('\n');
-    const segs: string[] = [];
-    let cur: string[] = [];
+    const output: string[] = [];
+    let inExample = false;
+    let inSolution = false;
+
     for (const line of lines) {
-      if ((cardBoundary.test(line) || sectBoundary.test(line)) && cur.length > 0) {
-        segs.push(cur.join('\n'));
-        cur = [line];
+      const isExampleStart = /^\*\*(Example)(?:\s+\d+)?[:\.]?(?:\s+[^*]*)?\*\*/.test(line);
+      const isSolutionStart = /^\*\*(Solution)(?:\s+\d+)?[:\.]?\*\*/.test(line);
+      const isSectionStart = /^\*\*\d+[\.:]+\s/.test(line) || /^##\s/.test(line);
+
+      if (isSectionStart) {
+        if (inSolution) { output.push('</div>'); inSolution = false; }
+        if (inExample) { output.push('</div>'); inExample = false; }
+        output.push(line);
+      } else if (isExampleStart) {
+        if (inSolution) { output.push('</div>'); inSolution = false; }
+        if (inExample) { output.push('</div>'); inExample = false; }
+        const titleMatch = line.match(/^\*\*Example(?:\s+\d+)?[:\.]?(?:\s+([^*]*))?\*\*(.*)$/);
+        const title = titleMatch?.[1]?.trim() || '';
+        const rest = titleMatch?.[2]?.trim() || '';
+        const titleHtml = title ? `<div style="font-weight:600;font-size:16px;color:#1b2a4a;margin-bottom:8px;">${title}</div>` : '';
+        output.push(`<div class="example-card"><div class="example-card-label">Example</div>${titleHtml}`);
+        if (rest) output.push(rest);
+        inExample = true;
+      } else if (isSolutionStart) {
+        if (inSolution) { output.push('</div>'); inSolution = false; }
+        const rest = line.replace(/^\*\*Solution(?:\s+\d+)?[:\.]?\*\*\s*/, '').trim();
+        output.push(`<div class="solution-card"><div class="solution-card-label">Solution</div>`);
+        if (rest) output.push(rest);
+        inSolution = true;
       } else {
-        cur.push(line);
+        output.push(line);
       }
     }
-    if (cur.length > 0) segs.push(cur.join('\n'));
-    text = segs.map(seg => {
-      const solM = seg.match(/^\*\*Solution(?:\s+\d+)?[:\.]?\*\*([^\n]*)\n?([\s\S]*)$/);
-      if (solM) {
-        const inner = ((solM[1] || '').trim() + '\n' + (solM[2] || '')).trim();
-        return `\n<div class="solution-card"><div class="solution-card-label">Solution</div>${inner}\n</div>`;
-      }
-      const exM = seg.match(/^\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)\n?([\s\S]*)$/);
-      if (exM) {
-        const inner = ((exM[1] || '').trim() + '\n' + (exM[2] || '')).trim();
-        return `\n<div class="example-card"><div class="example-card-label">Example</div>${inner}\n</div>`;
-      }
-      return seg;
-    }).join('\n');
+
+    if (inSolution) output.push('</div>');
+    if (inExample) output.push('</div>');
+
+    text = output.join('\n');
   }
 
   // Try/Practice with optional trailing [N marks]
