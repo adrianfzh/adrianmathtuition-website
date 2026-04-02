@@ -205,9 +205,10 @@ function renderMarkdown(text: string): string {
     }).join('');
   }
 
-  // Wrap practice question blocks so sub-content is indented under each Q
+  // Wrap practice question blocks so sub-content is indented under each Q.
+  // Only split at marks-line wrapping a practice-q element (NOT part-header-row inside part-blocks).
   if (text.includes('practice-q')) {
-    const segments = text.split(/(?=<div class="(?:marks-line|practice-q(?:-with-part)?)">)/);
+    const segments = text.split(/(?=<div class="marks-line"><div class="practice-q)|(?=<div class="practice-q(?:-with-part)?">)/);
     text = segments.map(seg => {
       if (seg.startsWith('<div class="practice-q') || seg.startsWith('<div class="marks-line"><div class="practice-q')) {
         return `<div class="practice-q-block">${seg}</div>`;
