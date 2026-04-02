@@ -718,6 +718,14 @@ body {
 .en-preview-sitem.active .en-sitem-delete:hover { color: hsl(0,80%,80%); background: rgba(255,255,255,0.15) !important; }
 .add-section-btn { display: block; width: 100%; padding: 8px 10px; margin-top: 6px; background: transparent; border: 1.5px dashed #cbd5e1; border-radius: 8px; color: #64748b; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
 .add-section-btn:hover { border-color: #1b2a4a; color: #1b2a4a; background: #f8fafc; }
+.drag-handle { cursor: grab; color: #cbd5e1; flex-shrink: 0; opacity: 0.6; transition: opacity 0.1s; }
+.drag-handle:active { cursor: grabbing; }
+.en-preview-sitem:hover .drag-handle { opacity: 1; color: #94a3b8; }
+.en-preview-sitem.active .drag-handle { color: rgba(255,255,255,0.5); }
+.en-preview-sitem.active:hover .drag-handle { color: rgba(255,255,255,0.8); }
+.en-preview-sitem.dragging { opacity: 0.35; }
+.en-preview-sitem.drag-over-top { border-top: 2px solid #2563eb; }
+.en-preview-sitem.drag-over-bottom { border-bottom: 2px solid #2563eb; }
 .en-preview-sitem.practice { color: var(--color-amber-dark); }
 .en-preview-sitem.practice.active { background: var(--color-amber-dark); color: white; }
 .en-preview-sitem.syllabus { opacity: 0.65; }

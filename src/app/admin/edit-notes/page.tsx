@@ -368,6 +368,18 @@ function reorderSectionsInContent(content: string, fromIdx: number, toIdx: numbe
   return preamble + body;
 }
 
+// Move a section via splice+insert (supports non-adjacent moves, unlike swap-based reorder)
+function moveSectionInContent(content: string, fromRawIdx: number, toRawIdx: number): string {
+  const preamble = getContentPreamble(content);
+  const sections = getRawSections(content);
+  if (fromRawIdx < 0 || fromRawIdx >= sections.length || toRawIdx < 0 || toRawIdx > sections.length || fromRawIdx === toRawIdx) return content;
+  const reordered = [...sections];
+  const [moved] = reordered.splice(fromRawIdx, 1);
+  reordered.splice(toRawIdx, 0, moved);
+  const body = reordered.map((s, i) => `**${i + 1}. ${s.title}**\n${s.body.trimEnd()}`).join('\n\n');
+  return preamble + body;
+}
+
 function deleteSectionFromContent(content: string, rawIdx: number): string {
   const preamble = getContentPreamble(content);
   const sections = getRawSections(content);
@@ -402,7 +414,9 @@ export default function EditNotesPage() {
 
   // Undo stack
   const undoStackRef = useRef<string[]>([]);
+  const redoStackRef = useRef<string[]>([]);
   const [undoCount, setUndoCount] = useState(0);
+  const [redoCount, setRedoCount] = useState(0);
 
   // UI state
   const [editorShown, setEditorShown] = useState(false);
@@ -674,19 +688,18 @@ export default function EditNotesPage() {
       const renamable = !sec.isPractice && !sec.isSyllabus && sec.title !== 'Overview';
       const titleAttr = renamable ? ' title="Double-click to rename"' : '';
 
-      // Reorder / delete controls — only for real (numbered) sections
+      // Drag handle + delete — only for real (numbered) sections
       const rawIdx = rawSections.findIndex(s => s.title === sec.title);
       const isReal = rawIdx !== -1 && !sec.isPractice && !sec.isSyllabus;
+      const dragAttr = isReal ? ' draggable="true"' : '';
+      const gripSvg = `<svg class="drag-handle" width="10" height="14" viewBox="0 0 10 14" fill="currentColor" title="Drag to reorder"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="3" cy="11" r="1.3"/><circle cx="7" cy="11" r="1.3"/></svg>`;
       const controls = isReal ? `
-        <span class="en-sitem-arrows">
-          <button class="en-sitem-btn" data-move-up="${i}" title="Move section up"${rawIdx === 0 ? ' style="visibility:hidden"' : ''}>▲</button>
-          <button class="en-sitem-btn" data-move-down="${i}" title="Move section down"${rawIdx === rawCount - 1 ? ' style="visibility:hidden"' : ''}>▼</button>
-        </span>
+        ${gripSvg}
         <span class="en-sitem-label">${escapeHtml(sec.title)}</span>
         <button class="en-sitem-btn en-sitem-delete" data-delete-idx="${i}" title="Delete section">×</button>
       ` : `<span class="en-sitem-label">${escapeHtml(sec.title)}</span>`;
 
-      return `<div class="${cls}" data-idx="${i}"${titleAttr}>${controls}</div>`;
+      return `<div class="${cls}" data-idx="${i}"${titleAttr}${dragAttr}>${controls}</div>`;
     }).join('') + '<button class="add-section-btn" data-add-section="1">+ Add Section</button>';
   }
 
@@ -748,20 +761,6 @@ export default function EditNotesPage() {
         return;
       }
 
-      // ── Move-up button ──
-      const upBtn = target.closest('[data-move-up]') as HTMLElement | null;
-      if (upBtn) {
-        moveSection(parseInt(upBtn.dataset.moveUp!, 10), 'up');
-        return;
-      }
-
-      // ── Move-down button ──
-      const downBtn = target.closest('[data-move-down]') as HTMLElement | null;
-      if (downBtn) {
-        moveSection(parseInt(downBtn.dataset.moveDown!, 10), 'down');
-        return;
-      }
-
       // ── Delete button ──
       const delBtn = target.closest('[data-delete-idx]') as HTMLElement | null;
       if (delBtn) {
@@ -807,7 +806,7 @@ export default function EditNotesPage() {
     const onDblClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       // Ignore double-clicks on control buttons
-      if (target.closest('[data-move-up],[data-move-down],[data-delete-idx]')) return;
+      if (target.closest('[data-delete-idx]')) return;
       const item = target.closest('[data-idx]') as HTMLElement | null;
       if (!item) return;
       const idx = parseInt(item.dataset.idx ?? '0', 10);
@@ -857,12 +856,86 @@ export default function EditNotesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorShown]);
 
-  // Cmd+Z / Ctrl+Z undo — only when editor textarea is NOT focused
+  // Drag-and-drop reordering for preview sidebar sections
+  useEffect(() => {
+    if (!editorShown) return;
+    const tabs = previewTabsRef.current;
+    if (!tabs) return;
+    let dragFromIdx: number | null = null;
+
+    function clearIndicators() {
+      tabs!.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
+        el.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+    }
+
+    const onDragStart = (e: DragEvent) => {
+      const item = (e.target as HTMLElement).closest('[draggable="true"][data-idx]') as HTMLElement | null;
+      if (!item) return;
+      dragFromIdx = parseInt(item.dataset.idx!, 10);
+      e.dataTransfer!.effectAllowed = 'move';
+      // Defer adding class so the drag ghost captures the un-dimmed state
+      setTimeout(() => item.classList.add('dragging'), 0);
+    };
+
+    const onDragEnd = (e: DragEvent) => {
+      const item = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
+      item?.classList.remove('dragging');
+      clearIndicators();
+      dragFromIdx = null;
+    };
+
+    const onDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer!.dropEffect = 'move';
+      const item = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
+      if (!item) return;
+      clearIndicators();
+      const rect = item.getBoundingClientRect();
+      item.classList.add(e.clientY < rect.top + rect.height / 2 ? 'drag-over-top' : 'drag-over-bottom');
+    };
+
+    const onDragLeave = (e: DragEvent) => {
+      if (!tabs.contains(e.relatedTarget as Node)) clearIndicators();
+    };
+
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      const item = (e.target as HTMLElement).closest('[data-idx]') as HTMLElement | null;
+      clearIndicators();
+      if (!item || dragFromIdx === null) return;
+      const toIdx = parseInt(item.dataset.idx!, 10);
+      if (isNaN(toIdx) || toIdx === dragFromIdx) { dragFromIdx = null; return; }
+      const rect = item.getBoundingClientRect();
+      const insertBefore = e.clientY < rect.top + rect.height / 2;
+      moveSectionByDrag(dragFromIdx, toIdx, insertBefore);
+      dragFromIdx = null;
+    };
+
+    tabs.addEventListener('dragstart', onDragStart);
+    tabs.addEventListener('dragend', onDragEnd);
+    tabs.addEventListener('dragover', onDragOver);
+    tabs.addEventListener('dragleave', onDragLeave);
+    tabs.addEventListener('drop', onDrop);
+    return () => {
+      tabs.removeEventListener('dragstart', onDragStart);
+      tabs.removeEventListener('dragend', onDragEnd);
+      tabs.removeEventListener('dragover', onDragOver);
+      tabs.removeEventListener('dragleave', onDragLeave);
+      tabs.removeEventListener('drop', onDrop);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editorShown]);
+
+  // Cmd+Z / Ctrl+Z undo, Cmd+Shift+Z / Ctrl+Shift+Z redo — only when editor textarea is NOT focused
   useEffect(() => {
     if (!editorShown) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
-        if (document.activeElement === textareaRef.current) return; // let browser handle natively
+      if (document.activeElement === textareaRef.current) return; // let browser handle natively in textarea
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        performRedo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         performUndo();
       }
@@ -890,14 +963,14 @@ export default function EditNotesPage() {
     undoStackRef.current.push(fullContentRef.current);
     if (undoStackRef.current.length > 50) undoStackRef.current.shift();
     setUndoCount(undoStackRef.current.length);
+    // Clear redo stack on any new action
+    redoStackRef.current = [];
+    setRedoCount(0);
   }
 
-  function performUndo() {
-    if (undoStackRef.current.length === 0) return;
-    const previous = undoStackRef.current.pop()!;
-    setUndoCount(undoStackRef.current.length);
-    fullContentRef.current = previous;
-    const newSections = parseSections(previous, metaTopicRef.current || 'Notes');
+  function restoreContent(snapshot: string) {
+    fullContentRef.current = snapshot;
+    const newSections = parseSections(snapshot, metaTopicRef.current || 'Notes');
     const currentTitle = previewSectionsRef.current[activeSectionRef.current]?.title;
     const newIdx = currentTitle ? newSections.findIndex(s => s.title === currentTitle) : 0;
     activeSectionRef.current = newIdx >= 0 ? newIdx : 0;
@@ -906,9 +979,27 @@ export default function EditNotesPage() {
     if (textareaRef.current) {
       textareaRef.current.value = activeSec
         ? extractSectionBody(fullContentRef.current, activeSec.title, activeSec.isPractice ?? false, activeSec.rawTitle)
-        : previous;
+        : snapshot;
       updateLineNumbers();
     }
+  }
+
+  function performUndo() {
+    if (undoStackRef.current.length === 0) return;
+    redoStackRef.current.push(fullContentRef.current);
+    setRedoCount(redoStackRef.current.length);
+    const previous = undoStackRef.current.pop()!;
+    setUndoCount(undoStackRef.current.length);
+    restoreContent(previous);
+  }
+
+  function performRedo() {
+    if (redoStackRef.current.length === 0) return;
+    undoStackRef.current.push(fullContentRef.current);
+    setUndoCount(undoStackRef.current.length);
+    const next = redoStackRef.current.pop()!;
+    setRedoCount(redoStackRef.current.length);
+    restoreContent(next);
   }
 
   function applySectionReorder(newContent: string, preserveTitle: string) {
@@ -936,6 +1027,24 @@ export default function EditNotesPage() {
     pushUndo();
     const preserveTitle = sections[activeSectionRef.current]?.title ?? sec.title;
     applySectionReorder(reorderSectionsInContent(fullContentRef.current, rawIdx, targetRawIdx), preserveTitle);
+  }
+
+  function moveSectionByDrag(fromDisplayIdx: number, toDisplayIdx: number, insertBefore: boolean) {
+    const sections = previewSectionsRef.current;
+    const rawSections = getRawSections(fullContentRef.current);
+    const fromSec = sections[fromDisplayIdx];
+    const toSec = sections[toDisplayIdx];
+    if (!fromSec || !toSec || fromSec.isPractice || fromSec.isSyllabus) return;
+    const fromRaw = rawSections.findIndex(s => s.title === fromSec.title);
+    const toRaw = rawSections.findIndex(s => s.title === toSec.title);
+    if (fromRaw === -1 || toRaw === -1) return;
+    // Compute splice-insert target index (into the array AFTER fromRaw is removed)
+    let targetRaw = insertBefore ? toRaw : toRaw + 1;
+    if (fromRaw < targetRaw) targetRaw--;
+    if (targetRaw === fromRaw) return;
+    pushUndo();
+    const preserveTitle = sections[activeSectionRef.current]?.title ?? fromSec.title;
+    applySectionReorder(moveSectionInContent(fullContentRef.current, fromRaw, targetRaw), preserveTitle);
   }
 
   function deleteSection(displayIdx: number) {
@@ -1422,9 +1531,17 @@ export default function EditNotesPage() {
                       className="en-btn-undo"
                       onClick={performUndo}
                       disabled={undoCount === 0}
-                      title="Undo last operation (Cmd+Z / Ctrl+Z when editor is not focused)"
+                      title="Undo (Cmd+Z / Ctrl+Z when editor is not focused)"
                     >
                       ↩ Undo{undoCount > 0 ? ` (${undoCount})` : ''}
+                    </button>
+                    <button
+                      className="en-btn-undo"
+                      onClick={performRedo}
+                      disabled={redoCount === 0}
+                      title="Redo (Cmd+Shift+Z / Ctrl+Shift+Z when editor is not focused)"
+                    >
+                      ↪ Redo{redoCount > 0 ? ` (${redoCount})` : ''}
                     </button>
                     <button
                       className={`en-ai-btn${aiOpen ? ' active' : ''}`}
