@@ -322,35 +322,6 @@ body {
 }
 .solution-card p:last-child { margin-bottom: 0; }
 
-/* Part labels (a), (b), (c) */
-.part-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-  margin-bottom: 8px;
-}
-.part-circle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #1b2a4a;
-  color: white;
-  font-size: 13px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.part-text {
-  font-weight: 600;
-  font-size: 15px;
-  color: #1b2a4a;
-  flex: 1;
-}
-.part-label .marks-badge { float: none; margin-left: 0; flex-shrink: 0; }
-
 /* Practice callout */
 .practice-callout {
   background: hsl(220, 40%, 97%);
@@ -455,14 +426,6 @@ body {
   border-radius: 4px;
   margin-left: 8px;
 }
-.marks-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-.marks-line .marks-badge { float: none; margin-left: 0; flex-shrink: 0; }
-
 /* Table */
 .content-area table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 15px; }
 .content-area th { background: var(--color-muted); font-weight: 600; padding: 10px 14px; text-align: left; border: 1px solid var(--color-border); }
