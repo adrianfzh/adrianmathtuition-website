@@ -31,7 +31,9 @@ type FormulaSheetId =
   | 'differentiation' | 'factorization-cubics' | 'partial-fractions' | 'exp-log-graphs'
   | 'em-indices' | 'em-standard-form' | 'em-interest' | 'em-coordinate-geometry'
   | 'em-congruency-similarity' | 'em-trigonometry' | 'em-mensuration' | 'em-statistics'
-  | 'em-circular-measure' | 'em-polygons' | 'em-sets';
+  | 'em-circular-measure' | 'em-polygons' | 'em-sets'
+  | 'jc-graphing' | 'jc-functions' | 'jc-sequences' | 'jc-differentiation'
+  | 'jc-integration' | 'jc-vectors' | 'jc-complex';
 
 const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtitle: string; url: string }[] = [
   { id: 'mf27',                    emoji: '📘', title: 'A-Level MF27',                   subtitle: 'H2 Math formula list',         url: '/formulas/mf27.pdf' },
@@ -56,6 +58,13 @@ const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtit
   { id: 'em-circular-measure',     emoji: '⭕', title: 'Circular Measure',               subtitle: 'Arc length & sector area',     url: '/formulas/em-circular-measure' },
   { id: 'em-polygons',             emoji: '⬡',  title: 'Polygons',                       subtitle: 'Interior & exterior angles',   url: '/formulas/em-polygons' },
   { id: 'em-sets',                 emoji: '{}', title: 'Sets',                           subtitle: 'Set notation & definitions',   url: '/formulas/em-sets' },
+  { id: 'jc-graphing',            emoji: '📉', title: 'Graphing Techniques',             subtitle: 'Conics, asymptotes, transforms', url: '/formulas/jc-graphing' },
+  { id: 'jc-functions',          emoji: 'f⁻¹', title: 'Functions',                       subtitle: 'Inverse, composite, odd/even',  url: '/formulas/jc-functions' },
+  { id: 'jc-sequences',          emoji: 'Σ',   title: 'Series & Sequences',              subtitle: 'AP, GP, standard results',      url: '/formulas/jc-sequences' },
+  { id: 'jc-differentiation',   emoji: "d/dx", title: 'Differentiation',                 subtitle: 'Inv trig, exp/log, concavity',  url: '/formulas/jc-differentiation' },
+  { id: 'jc-integration',       emoji: '∫',   title: 'Integration',                     subtitle: 'Standard forms, by parts',      url: '/formulas/jc-integration' },
+  { id: 'jc-vectors',           emoji: '→',   title: 'Vectors',                         subtitle: 'Dot/cross product, planes',     url: '/formulas/jc-vectors' },
+  { id: 'jc-complex',           emoji: 'ℂ',   title: 'Complex Numbers',                 subtitle: 'Modulus, argument, conjugates', url: '/formulas/jc-complex' },
 ];
 
 /* ── Send icon SVG ── */
@@ -153,6 +162,7 @@ function SidebarContent({
   onSheetClick: (id: FormulaSheetId) => void;
   onAskQuestion?: () => void;
 }) {
+  const [jcmathOpen, setJcmathOpen] = useState(false);
   const [amathOpen, setAmathOpen] = useState(false);
   const [emathOpen, setEmathOpen] = useState(false);
 
@@ -186,8 +196,72 @@ function SidebarContent({
           📐 Formula Sheets
         </div>
 
-        {/* A-Level MF27 */}
-        {sheetBtn('mf27', '📘', 'A-Level MF27', 'H2 Math formula list')}
+        {/* A-Level H2 Math folder */}
+        <button
+          className="menu-formula-btn"
+          onClick={() => setJcmathOpen(o => !o)}
+          style={{
+            width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
+            padding: '11px 12px', marginBottom: jcmathOpen ? 4 : 8, minHeight: 52,
+            background: jcmathOpen ? 'hsl(260,40%,95%)' : 'hsl(220,30%,98%)',
+            border: `1px solid ${jcmathOpen ? 'hsl(260,40%,80%)' : 'hsl(220,15%,90%)'}`,
+            borderRadius: jcmathOpen ? '10px 10px 0 0' : 10,
+            cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
+          }}
+        >
+          <span style={{ fontSize: 22, flexShrink: 0 }}>📘</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>A-Level H2 Math</div>
+            <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>JC Mathematics</div>
+          </div>
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(220,10%,56%)"
+            strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ flexShrink: 0, transform: jcmathOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        {/* A-Level H2 Math sub-items */}
+        {jcmathOpen && (
+          <div style={{
+            marginBottom: 8,
+            border: '1px solid hsl(260,40%,80%)', borderTop: 'none',
+            borderRadius: '0 0 10px 10px',
+            background: 'hsl(260,35%,97%)',
+            overflow: 'hidden',
+          }}>
+            {([
+              { id: 'mf27',               emoji: '📄',  title: 'A-Level MF27',          subtitle: 'H2 Math formula list' },
+              { id: 'jc-graphing',        emoji: '📉',  title: 'Graphing Techniques',   subtitle: 'Conics, asymptotes, transforms' },
+              { id: 'jc-functions',      emoji: 'f⁻¹', title: 'Functions',              subtitle: 'Inverse, composite, odd/even' },
+              { id: 'jc-sequences',      emoji: 'Σ',   title: 'Series & Sequences',    subtitle: 'AP, GP, standard results' },
+              { id: 'jc-differentiation',emoji: 'd/dx', title: 'Differentiation',       subtitle: 'Inv trig, exp/log, concavity' },
+              { id: 'jc-integration',    emoji: '∫',   title: 'Integration',           subtitle: 'Standard forms, by parts' },
+              { id: 'jc-vectors',        emoji: '→',   title: 'Vectors',               subtitle: 'Dot/cross product, planes' },
+              { id: 'jc-complex',        emoji: 'ℂ',   title: 'Complex Numbers',       subtitle: 'Modulus, argument, conjugates' },
+            ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
+              <button
+                key={item.id}
+                className="menu-formula-btn"
+                onClick={() => onSheetClick(item.id)}
+                style={{
+                  width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px 10px 16px', background: 'none', border: 'none',
+                  borderBottom: idx < arr.length - 1 ? '1px solid hsl(260,30%,90%)' : 'none',
+                  cursor: 'pointer', transition: 'background 0.12s',
+                }}
+              >
+                <span style={{ fontSize: 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.emoji}</span>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
+                  <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* O-Level A Math folder */}
         <button
