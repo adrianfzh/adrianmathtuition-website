@@ -89,6 +89,7 @@ function renderMarkdown(text: string): string {
   });
   text = text.replace(/\$([^$\n]{1,300}?)\$/g, (_, m) => { inlines.push(m); return `%%I${inlines.length - 1}%%`; });
 
+  text = text.replace(/^```[^\n]*$/gm, '');
   text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
 
   // Part labels — run BEFORE card wrapping so parts stay inside Example/Solution cards
