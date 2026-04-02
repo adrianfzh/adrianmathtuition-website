@@ -404,12 +404,14 @@ body {
 .part-block {
   margin-top: 20px;
   margin-bottom: 8px;
+  width: 100%;
 }
 .part-block .part-header-row {
   display: flex;
   gap: 0;
   align-items: flex-start;
   margin: 0 0 6px 0;
+  width: 100%;
 }
 .part-block .part-label {
   flex-shrink: 0;
@@ -417,11 +419,26 @@ body {
   font-weight: 700;
   color: #1b2a4a;
 }
+.part-block .part-first-line {
+  flex: 1;
+  min-width: 0;
+}
 .part-block > *:not(.part-header-row) {
   margin-left: 40px;
 }
 .part-block .katex-display {
   margin-left: 40px;
+}
+
+/* Marks-aligned flex row for standalone question lines */
+.marks-row {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+.marks-row-content {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Note box */
@@ -456,9 +473,9 @@ body {
   border-radius: 4px;
   margin-left: 8px;
 }
-/* Inline float-right marks badge (e.g. [3], [5 marks]) */
+/* Marks badge for Part rows and standalone question lines (flex item, no float needed) */
 .marks-badge-inline {
-  float: right;
+  flex-shrink: 0;
   font-size: 12px;
   color: #64748b;
   font-weight: 600;
@@ -466,6 +483,7 @@ body {
   padding: 2px 8px;
   border-radius: 4px;
   margin-left: 12px;
+  white-space: nowrap;
 }
 
 /* Table */

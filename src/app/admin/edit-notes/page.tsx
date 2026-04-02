@@ -48,10 +48,15 @@ function renderMarkdown(text: string): string {
 
   // Part labels: (a), (b), (c) etc. at start of line
   // Matches: **Part (a):** / Part (a): / **(a)** / bare (a)
+  // Trailing [N] or [N marks] is extracted as a 3rd flex item for right-edge alignment
   text = text.replace(
     /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*|\(([a-z])\))\s*(.*)$/gm,
     (_, a1, a2, a3, a4, rest) => {
       const letter = a1 || a2 || a3 || a4;
+      const marksMatch = rest.trim().match(/^([\s\S]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
+      if (marksMatch) {
+        return `<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${marksMatch[1].trim()}</span><span class="marks-badge-inline">[${marksMatch[2]}]</span></div>`;
+      }
       return `<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${rest.trim()}</span></div>`;
     }
   );
@@ -113,6 +118,16 @@ function renderMarkdown(text: string): string {
     if (m.includes('<ul>')) return m;
     return `<ol>${m}</ol>`;
   });
+  // Standalone text lines with trailing [N] marks: wrap in flex row for right-edge badge alignment
+  // Must run before paragraph processing while lines are still individually addressable
+  text = text.replace(
+    /^([^<\n][^\n]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/gm,
+    (match, content, n) => {
+      if (content.includes('marks-badge')) return match;
+      return `<div class="marks-row"><span class="marks-row-content">${content.trim()}</span><span class="marks-badge-inline">[${n}]</span></div>`;
+    }
+  );
+
   // Collapse blank lines between consecutive display math blocks to prevent double-spacing
   text = text.replace(/(<KBMATH_\d+>)\s*\n\s*\n+\s*(<KBMATH_\d+>)/g, '$1\n$2');
   text = text.replace(/\n{2,}/g, '</p><p>');
@@ -138,8 +153,6 @@ function renderMarkdown(text: string): string {
     }).join('');
   }
 
-  // Float-right marks badges: [N] or [N marks] anywhere in rendered text
-  text = text.replace(/\[(\d{1,2})(?:\s*marks?)?\]/g, '<span class="marks-badge-inline">[$1]</span>');
   return text;
 }
 
