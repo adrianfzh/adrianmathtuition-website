@@ -46,13 +46,14 @@ function renderMarkdown(text: string): string {
   text = text.replace(/^```[^\n]*$/gm, '');
   text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
 
-  // Part labels: (a), (b), (c) etc. at start of line
-  // Matches: **Part (a):** / Part (a): / **(a)** / bare (a)
-  // Trailing [N] or [N marks] is extracted as a 3rd flex item for right-edge alignment
+  // Part labels: (a), (b), (c), (i), (ii), (iii) etc. at start of line
+  // Trailing [N] or [N marks] extracted as 3rd flex item for right-edge alignment
   text = text.replace(
-    /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*|\(([a-z])\))\s*(.*)$/gm,
-    (_, a1, a2, a3, a4, rest) => {
+    /^(?:\*\*Part\s*\(([a-z]+)\)[:\.]?\*\*|Part\s*\(([a-z]+)\)[:\.]?|\*\*\(([a-z]+)\)\*\*|\(([a-z]+)\))\s*(.*)?$/gm,
+    (whole, a1, a2, a3, a4, rest = '') => {
       const letter = a1 || a2 || a3 || a4;
+      const validRoman = /^(i{1,3}|iv|vi{0,3}|ix|x)$/;
+      if (!/^[a-z]$/.test(letter) && !validRoman.test(letter)) return whole;
       const marksMatch = rest.trim().match(/^([\s\S]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
       if (marksMatch) {
         return `<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${marksMatch[1].trim()}</span><span class="marks-badge-inline">[${marksMatch[2]}]</span></div>`;
@@ -61,9 +62,9 @@ function renderMarkdown(text: string): string {
     }
   );
 
-  // Example card — stops at next Example/Solution card or section heading
+  // Example card — stops at next card or numbered section heading (requires space after N. to avoid matching **1.**bold)
   text = text.replace(
-    /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*(?:Example|Solution|\d+[\.:])|\n##|$)/g,
+    /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*Example|\n\*\*Solution|\n\*\*\d+[\.:]\s|\n##|$)/g,
     (_, firstLine, rest) => {
       const inner = (firstLine.trim() + '\n' + rest).trim();
       return `\n<div class="example-card"><div class="example-card-label">Example</div>${inner}\n</div>\n`;
@@ -72,7 +73,7 @@ function renderMarkdown(text: string): string {
 
   // Solution card (green styling)
   text = text.replace(
-    /\*\*Solution(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*(?:Example|Solution|\d+[\.:])|\n##|$)/g,
+    /\*\*Solution(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*Example|\n\*\*Solution|\n\*\*\d+[\.:]\s|\n##|$)/g,
     (_, firstLine, rest) => {
       const inner = (firstLine.trim() + '\n' + rest).trim();
       return `\n<div class="solution-card"><div class="solution-card-label">Solution</div>${inner}\n</div>\n`;
@@ -118,15 +119,9 @@ function renderMarkdown(text: string): string {
     if (m.includes('<ul>')) return m;
     return `<ol>${m}</ol>`;
   });
-  // Standalone text lines with trailing [N] marks: wrap in flex row for right-edge badge alignment
-  // Must run before paragraph processing while lines are still individually addressable
-  text = text.replace(
-    /^([^<\n][^\n]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/gm,
-    (match, content, n) => {
-      if (content.includes('marks-badge')) return match;
-      return `<div class="marks-row"><span class="marks-row-content">${content.trim()}</span><span class="marks-badge-inline">[${n}]</span></div>`;
-    }
-  );
+  // General marks badges: [N] or [N marks] anywhere not already inside a badge span.
+  // (?<!>) prevents re-wrapping badges already emitted by the Part regex (which end with >[N]<)
+  text = text.replace(/(?<!>)\[(\d{1,2})(?:\s*marks?)?\]/g, '<span class="marks-badge-float">[$1]</span>');
 
   // Collapse blank lines between consecutive display math blocks to prevent double-spacing
   text = text.replace(/(<KBMATH_\d+>)\s*\n\s*\n+\s*(<KBMATH_\d+>)/g, '$1\n$2');

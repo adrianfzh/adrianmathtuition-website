@@ -430,15 +430,18 @@ body {
   margin-left: 40px;
 }
 
-/* Marks-aligned flex row for standalone question lines */
-.marks-row {
-  display: flex;
-  align-items: flex-start;
-  width: 100%;
-}
-.marks-row-content {
-  flex: 1;
-  min-width: 0;
+/* Float-right marks badge for non-Part question lines */
+.marks-badge-float {
+  float: right;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 12px;
+  margin-top: 2px;
+  white-space: nowrap;
 }
 
 /* Note box */
