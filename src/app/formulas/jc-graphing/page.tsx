@@ -3,7 +3,6 @@
 import FormulaPageLayout, {
   FormulaSection,
   FormulaRow,
-  FormulaNoteBox,
 } from '@/components/FormulaPageLayout';
 
 export default function JCGraphingPage() {
@@ -19,18 +18,20 @@ export default function JCGraphingPage() {
         <FormulaRow latex="\text{Circle: } (x-a)^2 + (y-b)^2 = r^2" />
         <FormulaRow latex="\text{Ellipse: } \dfrac{(x-h)^2}{a^2} + \dfrac{(y-k)^2}{b^2} = 1" />
         <FormulaRow latex="\text{Hyperbola: } \dfrac{(x-h)^2}{a^2} - \dfrac{(y-k)^2}{b^2} = 1" />
-        <FormulaRow latex="\text{Asymptote: } y - k = \pm\dfrac{b}{a}(x-h)" />
+        <div style={{ fontSize: 12 }}>
+          <div className="formula-row" dangerouslySetInnerHTML={{ __html: '$\\text{Oblique asymptotes for hyperbolas: } y - k = \\pm\\dfrac{b}{a}(x-h)$' }} />
+        </div>
       </FormulaSection>
 
-      {/* Rational Graphs & Asymptotes */}
-      <FormulaSection title="Rational Graphs & Asymptotes">
+      {/* Rational Graphs */}
+      <FormulaSection title="Rational Graphs">
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+          <table style={{ borderCollapse: 'collapse', fontSize: 13, minWidth: 560 }}>
             <thead>
               <tr style={{ background: 'hsl(220,40%,96%)' }}>
-                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: 'hsl(220,40%,20%)' }}>Form</th>
-                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: 'hsl(220,40%,20%)' }}>Vertical Asymptote</th>
-                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: 'hsl(220,40%,20%)' }}>Horizontal / Oblique</th>
+                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: 'hsl(220,40%,20%)', minWidth: 160 }}>Form</th>
+                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: 'hsl(220,40%,20%)', minWidth: 140 }}>Vertical Asymptote</th>
+                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center', fontWeight: 600, color: 'hsl(220,40%,20%)', minWidth: 260 }}>Horizontal / Oblique</th>
               </tr>
             </thead>
             <tbody>
@@ -42,7 +43,7 @@ export default function JCGraphingPage() {
               <tr style={{ background: 'hsl(220,20%,99%)' }}>
                 <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: '$y = \\dfrac{ax^2+bx+c}{dx+e}$' }} />
                 <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: '$x = -\\dfrac{e}{d}$' }} />
-                <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: 'Oblique: $y = \\dfrac{a}{d}x + f$' }} />
+                <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'left', fontSize: 12 }} dangerouslySetInnerHTML={{ __html: 'Oblique: $y = \\dfrac{a}{d}x + f + \\dfrac{\\text{remainder}}{dx+e}$<br/><span style="color:hsl(220,10%,56%)">(perform long division)</span>' }} />
               </tr>
             </tbody>
           </table>
@@ -50,7 +51,7 @@ export default function JCGraphingPage() {
       </FormulaSection>
 
       {/* Translation */}
-      <FormulaSection title="Transformation of Graphs — Translation">
+      <FormulaSection title="Translation">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
           {[
             { sub: 'y \\to y + a', desc: 'Translate in <strong>negative</strong> $y$-direction by $a$ units' },
@@ -74,6 +75,19 @@ export default function JCGraphingPage() {
             { sub: 'y \\to \\dfrac{1}{a}y', desc: 'Scale along $y$-axis by factor $a$' },
             { sub: 'x \\to ax', desc: 'Scale along $x$-axis by factor $\\dfrac{1}{a}$' },
             { sub: 'x \\to \\dfrac{1}{a}x', desc: 'Scale along $x$-axis by factor $a$' },
+          ].map((item, i) => (
+            <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid hsl(220,15%,93%)' }}>
+              <div className="formula-row" dangerouslySetInnerHTML={{ __html: `$${item.sub}$` }} style={{ fontWeight: 600, marginBottom: 2 }} />
+              <div style={{ fontSize: 13, color: 'hsl(220,20%,40%)' }} dangerouslySetInnerHTML={{ __html: item.desc }} />
+            </div>
+          ))}
+        </div>
+      </FormulaSection>
+
+      {/* Reflection */}
+      <FormulaSection title="Reflection">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
+          {[
             { sub: 'y \\to -y', desc: 'Reflect about $x$-axis' },
             { sub: 'x \\to -x', desc: 'Reflect about $y$-axis' },
           ].map((item, i) => (

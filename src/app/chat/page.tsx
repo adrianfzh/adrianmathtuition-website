@@ -235,7 +235,6 @@ function SidebarContent({
             {([
               { id: 'mf27',               emoji: '📄',  title: 'A-Level MF27',          subtitle: 'H2 Math formula list' },
               { id: 'jc-graphing',        emoji: '📉',  title: 'Graphing Techniques',   subtitle: 'Conics, asymptotes, transforms' },
-              { id: 'jc-functions',      emoji: 'f⁻¹', title: 'Functions',              subtitle: 'Inverse, composite, odd/even' },
               { id: 'jc-sequences',      emoji: 'Σ',   title: 'Series & Sequences',    subtitle: 'AP, GP, standard results' },
               { id: 'jc-differentiation',emoji: 'd/dx', title: 'Differentiation',       subtitle: 'Inv trig, exp/log, concavity' },
               { id: 'jc-integration',    emoji: '∫',   title: 'Integration',           subtitle: 'Standard forms, by parts' },

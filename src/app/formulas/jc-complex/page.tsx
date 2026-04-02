@@ -3,7 +3,6 @@
 import FormulaPageLayout, {
   FormulaSection,
   FormulaRow,
-  FormulaNoteBox,
 } from '@/components/FormulaPageLayout';
 
 export default function JCComplexPage() {
@@ -15,16 +14,15 @@ export default function JCComplexPage() {
       footerNote="Formulas for the Singapore A-Level H2 Mathematics syllabus"
     >
       {/* Basics */}
-      <FormulaSection title="Forms of a Complex Number">
-        <FormulaRow latex="z = a + bi = r(\cos\theta + i\sin\theta) = re^{i\theta}" />
-        <FormulaRow latex="z^n = r^n(\cos n\theta + i\sin n\theta) = r^n e^{in\theta}" annotation="De Moivre's Theorem" />
+      <FormulaSection title="Basics">
+        <FormulaRow latex="z = a + bi" />
         <FormulaRow latex="|z| = r = \sqrt{a^2 + b^2}" annotation="Modulus" />
-        <FormulaNoteBox html="Argument $\\arg(z) = \\theta \\in (-\\pi, \\pi]$ (principal argument)" />
+        <FormulaRow latex="\arg(z) = \theta \in (-\pi,\, \pi]" annotation="Principal argument" />
       </FormulaSection>
 
       {/* Argument by Quadrant */}
       <FormulaSection title="Argument by Quadrant">
-        <div style={{ overflowX: 'auto', marginBottom: 10 }}>
+        <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: 'hsl(220,40%,96%)' }}>
@@ -40,24 +38,12 @@ export default function JCComplexPage() {
                 <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 12px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: '$-\\!\\left[\\pi - \\tan^{-1}\\!\\left|\\dfrac{b}{a}\\right|\\right]$' }} />
                 <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 12px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: '$-\\tan^{-1}\\!\\left|\\dfrac{b}{a}\\right|$' }} />
               </tr>
+              <tr style={{ background: 'hsl(220,20%,99%)', fontSize: 12 }}>
+                <td colSpan={2} style={{ border: '1px solid hsl(220,15%,88%)', padding: '8px 12px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: 'Purely real: $k\\pi,\\; k \\in \\mathbb{Z}$' }} />
+                <td colSpan={2} style={{ border: '1px solid hsl(220,15%,88%)', padding: '8px 12px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: 'Purely imaginary: $\\dfrac{(2k+1)\\pi}{2},\\; k \\in \\mathbb{Z}$' }} />
+              </tr>
             </tbody>
           </table>
-        </div>
-        <FormulaNoteBox html="Purely real: arg is a multiple of $\\pi$, i.e. $k\\pi,\\; k \\in \\mathbb{Z}$" />
-        <FormulaNoteBox html="Purely imaginary: arg is an odd multiple of $\\dfrac{\\pi}{2}$, i.e. $\\dfrac{(2k+1)\\pi}{2},\\; k \\in \\mathbb{Z}$" />
-      </FormulaSection>
-
-      {/* Properties of Modulus & Argument */}
-      <FormulaSection title="Properties of Modulus & Argument">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px' }}>
-          <FormulaRow latex="|z_1 z_2| = |z_1||z_2|" />
-          <FormulaRow latex="\arg(z_1 z_2) = \arg z_1 + \arg z_2" />
-          <FormulaRow latex="\left|\dfrac{z_1}{z_2}\right| = \dfrac{|z_1|}{|z_2|}" />
-          <FormulaRow latex="\arg\!\left(\dfrac{z_1}{z_2}\right) = \arg z_1 - \arg z_2" />
-          <FormulaRow latex="|z^n| = |z|^n" />
-          <FormulaRow latex="\arg(z^n) = n\arg z" />
-          <FormulaRow latex="|z^*| = |z|" />
-          <FormulaRow latex="\arg(z^*) = -\arg(z)" />
         </div>
       </FormulaSection>
 
@@ -76,17 +62,9 @@ export default function JCComplexPage() {
         <div style={{ marginTop: 10 }}>
           <FormulaRow latex="z = z^* \iff z \text{ is real}" />
           <FormulaRow latex="|z| = 1 \implies z^* = \dfrac{1}{z}" />
-        </div>
-        <div style={{
-          background: 'hsl(220,40%,97%)', border: '1px solid hsl(220,30%,88%)',
-          borderRadius: 8, padding: '12px 14px', marginTop: 10,
-        }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'hsl(220,40%,25%)', marginBottom: 6 }}>
-            For $z = \cos\theta + i\sin\theta$ (i.e. $|z| = 1$):
-          </div>
-          <FormulaRow latex="z^n + (z^n)^* = 2\cos n\theta" />
-          <FormulaRow latex="z^n - (z^n)^* = 2i\sin n\theta" />
-          <FormulaRow latex="z + \dfrac{1}{z} = 2\cos\theta \qquad z - \dfrac{1}{z} = 2i\sin\theta" />
+          <FormulaRow latex="z^n + (z^n)^* = 2\cos n\theta \quad \text{(for } |z|=1\text{)}" />
+          <FormulaRow latex="z^n - (z^n)^* = 2i\sin n\theta \quad \text{(for } |z|=1\text{)}" />
+          <FormulaRow latex="z + \dfrac{1}{z} = 2\cos\theta \qquad z - \dfrac{1}{z} = 2i\sin\theta \quad \text{(for } |z|=1\text{)}" />
         </div>
       </FormulaSection>
 
@@ -111,10 +89,17 @@ export default function JCComplexPage() {
         </div>
       </FormulaSection>
 
-      {/* Fundamental Theorem & Conjugate Root Theorem */}
-      <FormulaSection title="Fundamental & Conjugate Root Theorems">
-        <FormulaNoteBox html="A polynomial equation of degree $n$ has exactly <strong>$n$ roots</strong> (real or non-real, counting multiplicity)" />
-        <FormulaNoteBox html="<strong>Conjugate Root Theorem:</strong> Non-real roots of a polynomial with <em>real</em> coefficients occur in <strong>conjugate pairs</strong> $z$ and $z^*$" />
+      {/* Fundamental Theorem of Algebra */}
+      <FormulaSection title="Fundamental Theorem of Algebra">
+        <FormulaRow latex="\text{A polynomial of degree } n \text{ has exactly } n \text{ roots (real or non-real)}" />
+      </FormulaSection>
+
+      {/* Conjugate Root Theorem */}
+      <FormulaSection title="Conjugate Root Theorem">
+        <FormulaRow latex="\text{If } p(z) = 0 \text{ and } p \text{ has real coefficients, then } p(z^*) = 0" />
+        <div style={{ fontSize: 13, color: 'hsl(220,20%,40%)', marginTop: 6 }}>
+          Non-real roots occur in conjugate pairs $z$ and $z^*$.
+        </div>
       </FormulaSection>
     </FormulaPageLayout>
   );
