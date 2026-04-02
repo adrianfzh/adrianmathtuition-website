@@ -418,6 +418,13 @@ body {
   border-radius: 4px;
   margin-left: 8px;
 }
+.marks-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.marks-line .marks-badge { float: none; margin-left: 0; flex-shrink: 0; }
 
 /* Table */
 .content-area table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 15px; }

@@ -121,9 +121,9 @@ function renderMarkdown(text: string): string {
     `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal answer</span><span class="answer-text">${ans.trim()}</span></div>`
   );
 
-  // Standalone marks badge (for [N marks] not consumed by [Try:] pattern above)
-  text = text.replace(/\[(\d+)\s*marks?\]/g,
-    (_, n) => `<span class="marks-badge">[${n} mark${n === '1' ? '' : 's'}]</span>`);
+  // Marks badge — [5], [5 marks] at end of line → flex row with right-aligned badge
+  text = text.replace(/^(.+?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/gm,
+    (_, content, n) => `<div class="marks-line"><span>${content}</span><span class="marks-badge">[${n}]</span></div>`);
 
   text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g, '<div class="note-box"><strong>Note:</strong> $1</div>');
 

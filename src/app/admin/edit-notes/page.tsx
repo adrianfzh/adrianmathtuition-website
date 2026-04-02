@@ -74,9 +74,9 @@ function renderMarkdown(text: string): string {
     `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal answer</span><span class="answer-text">${ans.trim()}</span></div>`
   );
 
-  // Standalone marks badge (for [N marks] not consumed by [Try:] pattern above)
-  text = text.replace(/\[(\d+)\s*marks?\]/g,
-    (_, n) => `<span class="marks-badge">[${n} mark${n === '1' ? '' : 's'}]</span>`);
+  // Marks badge — [5], [5 marks] at end of line → flex row with right-aligned badge
+  text = text.replace(/^(.+?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/gm,
+    (_, content, n) => `<div class="marks-line"><span>${content}</span><span class="marks-badge">[${n}]</span></div>`);
 
   text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g, '<div class="note-box"><strong>Note:</strong> $1</div>');
 
@@ -914,6 +914,14 @@ export default function EditNotesPage() {
     handleEditorChange();
   }
 
+  function insertAligned() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    pushUndo();
+    insertAtCursor(ta, '\n\n$$\\begin{aligned}\n  &=  \\\\\n  &= \n\\end{aligned}$$\n\n');
+    handleEditorChange();
+  }
+
   async function loadTopic(slug: string) {
     setCurrentSlug(slug);
     currentSlugRef.current = slug;
@@ -1458,6 +1466,7 @@ export default function EditNotesPage() {
                           <button className="en-tool-btn" onClick={insertSolution} title="Insert solution card with steps">+ Solution</button>
                           <button className="en-tool-btn" onClick={insertPractice} title="Insert practice question">+ Practice</button>
                           <button className="en-tool-btn" onClick={insertList} title="Insert bullet list">+ List</button>
+                          <button className="en-tool-btn" onClick={insertAligned} title="Insert aligned equations block">+ Aligned</button>
                           <button
                             className={`en-tool-btn en-tool-btn--help${syntaxOpen ? ' active' : ''}`}
                             onClick={() => setSyntaxOpen(o => !o)}
@@ -1512,8 +1521,8 @@ export default function EditNotesPage() {
                               <tr><td><code>**Example:**</code></td><td>Worked example card</td></tr>
                               <tr><td><code>**Solution:**</code></td><td>Solution card (green)</td></tr>
                               <tr><td><code>**Step 1:** text</code></td><td>Numbered step with spacing</td></tr>
-                              <tr><td><code>[4 marks]</code></td><td>Right-aligned marks badge</td></tr>
-                              <tr><td><code>$$\begin&#123;aligned&#125; a &amp;= b \\ c &amp;= d \end&#123;aligned&#125;$$</code></td><td>Aligned equations</td></tr>
+                              <tr><td><code>[5]</code> or <code>[5 marks]</code></td><td>Right-aligned marks badge (end of line)</td></tr>
+                              <tr><td><code>$$\begin&#123;aligned&#125; x+2 &amp;= 5 \\ x &amp;= 3 \end&#123;aligned&#125;$$</code></td><td>Aligned equations (align on =)</td></tr>
                               <tr><td><code>[Try: question]</code></td><td>Practice callout</td></tr>
                               <tr><td><code>[Ans: answer]</code></td><td>Click-to-reveal answer</td></tr>
                               <tr><td><code>**Note:** text</code></td><td>Note box</td></tr>
