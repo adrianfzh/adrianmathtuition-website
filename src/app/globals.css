@@ -267,12 +267,16 @@ body {
 }
 .content-area p { margin-bottom: 14px; line-height: 1.8; }
 .content-area ul, .content-area ol { margin: 0 0 16px 22px; }
+.content-area ul { list-style-type: disc; }
+.content-area ol { list-style-type: decimal; }
 .content-area li { margin-bottom: 6px; line-height: 1.75; }
 .content-area strong { font-weight: 600; }
 .content-area em { font-style: italic; }
 .content-area hr { border: none; border-top: 1px solid var(--color-border); margin: 28px 0; }
 .content-area .katex { font-size: 1.05em; }
 .content-area .katex-display { margin: 20px 0; overflow-x: auto; padding: 4px 0; }
+.katex-display-left { text-align: left; padding-left: 24px; margin: 10px 0; }
+.katex-display-left .katex-display { text-align: left; margin: 4px 0; }
 
 /* Example cards */
 .example-card {
@@ -620,6 +624,8 @@ body {
 .en-preview h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-amber-dark); margin: 20px 0 8px; }
 .en-preview p { margin-bottom: 12px; }
 .en-preview ul, .en-preview ol { margin: 0 0 12px 20px; }
+.en-preview ul { list-style-type: disc; }
+.en-preview ol { list-style-type: decimal; }
 .en-preview li { margin-bottom: 4px; }
 .en-preview strong { font-weight: 600; }
 .en-preview em { font-style: italic; }

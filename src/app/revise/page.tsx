@@ -77,8 +77,16 @@ function parseSections(content: string, topic: string): Section[] {
 
 function renderMarkdown(text: string): string {
   const blocks: string[] = [];
+  const leftBlocks = new Set<number>();
   const inlines: string[] = [];
-  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => { blocks.push(m); return `%%B${blocks.length - 1}%%`; });
+  text = text.replace(/\$\$([\s\S]+?)\$\$/g, (_, m) => {
+    const isLeft = m.startsWith('left ');
+    const formula = isLeft ? m.slice(5) : m;
+    const idx = blocks.length;
+    blocks.push(formula);
+    if (isLeft) leftBlocks.add(idx);
+    return `%%B${idx}%%`;
+  });
   text = text.replace(/\$([^$\n]{1,300}?)\$/g, (_, m) => { inlines.push(m); return `%%I${inlines.length - 1}%%`; });
 
   text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
@@ -161,8 +169,12 @@ function renderMarkdown(text: string): string {
   const katex = typeof window !== 'undefined' ? (window as any).katex : null;
   if (katex) {
     text = text.replace(/%%B(\d+)%%/g, (_, i) => {
-      try { return katex.renderToString(blocks[Number(i)], { displayMode: true, throwOnError: false }); }
-      catch { return `$$${blocks[Number(i)]}$$`; }
+      const idx = Number(i);
+      try {
+        const rendered = katex.renderToString(blocks[idx], { displayMode: true, throwOnError: false });
+        return leftBlocks.has(idx) ? `<div class="katex-display-left">${rendered}</div>` : rendered;
+      }
+      catch { return `$$${blocks[idx]}$$`; }
     });
     text = text.replace(/%%I(\d+)%%/g, (_, i) => {
       try { return katex.renderToString(inlines[Number(i)], { displayMode: false, throwOnError: false }); }
