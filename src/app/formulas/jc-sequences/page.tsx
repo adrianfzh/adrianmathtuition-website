@@ -2,9 +2,15 @@
 
 import FormulaPageLayout, {
   FormulaSection,
-  FormulaRow,
   FormulaNoteBox,
 } from '@/components/FormulaPageLayout';
+
+const fml = (latex: string) => (
+  <div style={{ fontSize: 12, padding: '3px 0', textAlign: 'left' }}
+    className="formula-row"
+    dangerouslySetInnerHTML={{ __html: `$${latex}$` }}
+  />
+);
 
 export default function JCSequencesPage() {
   return (
@@ -16,26 +22,26 @@ export default function JCSequencesPage() {
     >
       {/* Arithmetic Progression */}
       <FormulaSection title="Arithmetic Progression (AP)">
-        <FormulaRow latex="T_n = a + (n-1)d" />
-        <FormulaRow latex="S_n = \dfrac{n}{2}(2a + (n-1)d) = \dfrac{n}{2}(a+l)" />
+        {fml('T_n = a + (n-1)d')}
+        {fml('S_n = \\dfrac{n}{2}(2a + (n-1)d) = \\dfrac{n}{2}(a+l)')}
         <FormulaNoteBox html="Show sequence is AP: $T_{n+1} - T_n = d$ (constant)" />
       </FormulaSection>
 
       {/* Geometric Progression */}
       <FormulaSection title="Geometric Progression (GP)">
-        <FormulaRow latex="T_n = ar^{n-1}" />
-        <FormulaRow latex="S_n = \dfrac{a(1-r^n)}{1-r} = \dfrac{a(r^n - 1)}{r-1}" />
-        <FormulaRow latex="S_\infty = \dfrac{a}{1-r} \quad (|r| < 1)" />
+        {fml('T_n = ar^{n-1}')}
+        {fml('S_n = \\dfrac{a(1-r^n)}{1-r} = \\dfrac{a(r^n - 1)}{r-1}')}
+        {fml('S_\\infty = \\dfrac{a}{1-r} \\quad (|r| < 1)')}
         <FormulaNoteBox html="Show sequence is GP: $\dfrac{T_{n+1}}{T_n} = r$ (constant)" />
       </FormulaSection>
 
       {/* Finding nth term */}
       <FormulaSection title="Finding the nth Term from Sum">
-        <FormulaRow latex="T_n = S_n - S_{n-1}" />
+        {fml('T_n = S_n - S_{n-1}')}
         <FormulaNoteBox html="Valid for $n \geq 2$. For $n = 1$: $T_1 = S_1$" />
       </FormulaSection>
 
-      {/* Standard Results — annotation above formula */}
+      {/* Standard Results — label above formula */}
       <FormulaSection title="Standard Summation Results">
         {[
           { label: 'Sum of constant', latex: '\\sum_{r=1}^{n} a = an' },
@@ -45,12 +51,12 @@ export default function JCSequencesPage() {
         ].map((item, i) => (
           <div key={i} style={{ marginBottom: 8 }}>
             <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 1 }}>{item.label}</div>
-            <div className="formula-row" dangerouslySetInnerHTML={{ __html: `$$${item.latex}$$` }} />
+            {fml(item.latex)}
           </div>
         ))}
         <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid hsl(220,15%,92%)' }}>
           <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 1 }}>GP sum example</div>
-          <div className="formula-row" dangerouslySetInnerHTML={{ __html: '$$\\sum_{r=1}^{n} 3^r = \\dfrac{3(3^n-1)}{3-1} = \\dfrac{3}{2}(3^n - 1)$$' }} />
+          {fml('\\sum_{r=1}^{n} 3^r = \\dfrac{3(3^n-1)}{3-1} = \\dfrac{3}{2}(3^n - 1)')}
         </div>
       </FormulaSection>
 

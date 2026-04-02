@@ -25,8 +25,8 @@ export default function JCIntegrationPage() {
       {/* Trigonometry */}
       <FormulaSection title="Trigonometric Integrals">
         {fml('\\int \\tan x\\, dx = \\ln|\\sec x| + C')}
-        {fml('\\int \\sec x\\, dx = \\ln|\\sec x + \\tan x| + C', 'Given in MF26')}
-        {fml('\\int \\csc x\\, dx = -\\ln|\\csc x + \\cot x| + C', 'Given in MF26')}
+        {fml('\\int \\sec x\\, dx = \\ln|\\sec x + \\tan x| + C')}
+        {fml('\\int \\csc x\\, dx = -\\ln|\\csc x + \\cot x| + C')}
         {fml('\\int \\cot x\\, dx = \\ln|\\sin x| + C')}
         <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid hsl(220,15%,92%)' }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: 'hsl(220,40%,25%)', marginBottom: 4 }}>Half-angle identities</div>
@@ -40,6 +40,7 @@ export default function JCIntegrationPage() {
           {fml('\\int \\sec^2 x\\, dx = \\tan x + C')}
           {fml('\\int \\csc^2 x\\, dx = -\\cot x + C')}
         </div>
+        <div style={{ textAlign: 'right', fontSize: 11, fontStyle: 'italic', color: 'hsl(220,10%,56%)', marginTop: 10 }}>Given in MF27</div>
       </FormulaSection>
 
       {/* Standard Form I */}

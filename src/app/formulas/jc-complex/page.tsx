@@ -5,6 +5,13 @@ import FormulaPageLayout, {
   FormulaRow,
 } from '@/components/FormulaPageLayout';
 
+const fmlInline = (latex: string, annotation?: string) => (
+  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '3px 0' }}>
+    <div className="formula-row" style={{ fontSize: 13 }} dangerouslySetInnerHTML={{ __html: `$${latex}$` }} />
+    {annotation && <span style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', whiteSpace: 'nowrap' }}>{annotation}</span>}
+  </div>
+);
+
 export default function JCComplexPage() {
   return (
     <FormulaPageLayout
@@ -15,9 +22,9 @@ export default function JCComplexPage() {
     >
       {/* Basics */}
       <FormulaSection title="Basics">
-        <FormulaRow latex="z = a + bi" />
-        <FormulaRow latex="|z| = r = \sqrt{a^2 + b^2}" annotation="Modulus" />
-        <FormulaRow latex="\arg(z) = \theta \in (-\pi,\, \pi]" annotation="Principal argument" />
+        {fmlInline('z = a + bi')}
+        {fmlInline('|z| = r = \\sqrt{a^2 + b^2}', 'Modulus')}
+        {fmlInline('\\arg(z) = \\theta \\in (-\\pi,\\, \\pi]', 'Principal argument')}
       </FormulaSection>
 
       {/* Argument by Quadrant */}
@@ -49,22 +56,30 @@ export default function JCComplexPage() {
 
       {/* Properties of Conjugates */}
       <FormulaSection title="Properties of Conjugates">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px' }}>
-          <FormulaRow latex="(z^*)^* = z" />
-          <FormulaRow latex="(z \pm w)^* = z^* \pm w^*" />
-          <FormulaRow latex="z + z^* = 2\operatorname{Re}(z)" />
-          <FormulaRow latex="(zw)^* = z^* w^*" />
-          <FormulaRow latex="z - z^* = 2i\operatorname{Im}(z)" />
-          <FormulaRow latex="\left(\dfrac{z}{w}\right)^* = \dfrac{z^*}{w^*}" />
-          <FormulaRow latex="zz^* = |z|^2" />
-          <FormulaRow latex="(z^n)^* = (z^*)^n" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 16px', fontSize: 11 }}>
+          {[
+            '(z^*)^* = z',
+            '(z \\pm w)^* = z^* \\pm w^*',
+            'z + z^* = 2\\operatorname{Re}(z)',
+            '(zw)^* = z^* w^*',
+            'z - z^* = 2i\\operatorname{Im}(z)',
+            '\\left(\\dfrac{z}{w}\\right)^* = \\dfrac{z^*}{w^*}',
+            'zz^* = |z|^2',
+            '(z^n)^* = (z^*)^n',
+          ].map((f, i) => (
+            <div key={i} className="formula-row" style={{ fontSize: 11, padding: '2px 0' }} dangerouslySetInnerHTML={{ __html: `$${f}$` }} />
+          ))}
         </div>
-        <div style={{ marginTop: 10 }}>
-          <FormulaRow latex="z = z^* \iff z \text{ is real}" />
-          <FormulaRow latex="|z| = 1 \implies z^* = \dfrac{1}{z}" />
-          <FormulaRow latex="z^n + (z^n)^* = 2\cos n\theta \quad \text{(for } |z|=1\text{)}" />
-          <FormulaRow latex="z^n - (z^n)^* = 2i\sin n\theta \quad \text{(for } |z|=1\text{)}" />
-          <FormulaRow latex="z + \dfrac{1}{z} = 2\cos\theta \qquad z - \dfrac{1}{z} = 2i\sin\theta \quad \text{(for } |z|=1\text{)}" />
+        <div style={{ marginTop: 8, borderTop: '1px solid hsl(220,15%,92%)', paddingTop: 8 }}>
+          {[
+            'z = z^* \\iff z \\text{ is real}',
+            '|z| = 1 \\implies z^* = \\dfrac{1}{z}',
+            'z^n + (z^n)^* = 2\\cos n\\theta \\quad \\text{(for } |z|=1\\text{)}',
+            'z^n - (z^n)^* = 2i\\sin n\\theta \\quad \\text{(for } |z|=1\\text{)}',
+            'z + \\dfrac{1}{z} = 2\\cos\\theta \\qquad z - \\dfrac{1}{z} = 2i\\sin\\theta \\quad \\text{(for } |z|=1\\text{)}',
+          ].map((f, i) => (
+            <div key={i} className="formula-row" style={{ fontSize: 11, padding: '2px 0' }} dangerouslySetInnerHTML={{ __html: `$${f}$` }} />
+          ))}
         </div>
       </FormulaSection>
 

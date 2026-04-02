@@ -15,10 +15,10 @@ export default function JCGraphingPage() {
     >
       {/* Conics */}
       <FormulaSection title="Conics">
-        <FormulaRow latex="\text{Circle: } (x-a)^2 + (y-b)^2 = r^2" />
-        <FormulaRow latex="\text{Ellipse: } \dfrac{(x-h)^2}{a^2} + \dfrac{(y-k)^2}{b^2} = 1" />
-        <FormulaRow latex="\text{Hyperbola: } \dfrac{(x-h)^2}{a^2} - \dfrac{(y-k)^2}{b^2} = 1" />
         <div style={{ fontSize: 12 }}>
+          <div className="formula-row" dangerouslySetInnerHTML={{ __html: '$\\text{Circle: } (x-a)^2 + (y-b)^2 = r^2$' }} />
+          <div className="formula-row" dangerouslySetInnerHTML={{ __html: '$\\text{Ellipse: } \\dfrac{(x-h)^2}{a^2} + \\dfrac{(y-k)^2}{b^2} = 1$' }} />
+          <div className="formula-row" dangerouslySetInnerHTML={{ __html: '$\\text{Hyperbola: } \\dfrac{(x-h)^2}{a^2} - \\dfrac{(y-k)^2}{b^2} = 1$' }} />
           <div className="formula-row" dangerouslySetInnerHTML={{ __html: '$\\text{Oblique asymptotes for hyperbolas: } y - k = \\pm\\dfrac{b}{a}(x-h)$' }} />
         </div>
       </FormulaSection>

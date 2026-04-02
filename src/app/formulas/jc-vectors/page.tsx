@@ -43,7 +43,7 @@ export default function JCVectorsPage() {
 
       {/* Dot & Cross Product */}
       <FormulaSection title="Dot Product & Cross Product">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{
             background: 'hsl(220,40%,97%)', border: '1px solid hsl(220,30%,88%)',
             borderRadius: 8, padding: '12px 14px',
@@ -79,7 +79,7 @@ export default function JCVectorsPage() {
 
       {/* Lines & Planes */}
       <FormulaSection title="Lines & Planes">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{
             background: 'hsl(220,40%,97%)', border: '1px solid hsl(220,30%,88%)',
             borderRadius: 8, padding: '12px 14px',
@@ -102,37 +102,54 @@ export default function JCVectorsPage() {
 
       {/* Projections & Distances */}
       <FormulaSection title="Projections & Distances">
-        <div style={{ marginBottom: 4 }}>
-          <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 2 }}>Length of projection of PQ onto line (direction d)</div>
-          {fml('\\dfrac{|\\overrightarrow{PQ} \\cdot \\mathbf{d}|}{|\\mathbf{d}|}')}
-        </div>
-        <div style={{ marginBottom: 4 }}>
-          <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 2 }}>Length of projection of PQ onto plane (normal n)</div>
-          {fml('\\dfrac{|\\overrightarrow{PQ} \\times \\mathbf{n}|}{|\\mathbf{n}|}')}
-        </div>
-        <div style={{ marginBottom: 4 }}>
-          <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 2 }}>Distance from point to plane (normal n)</div>
-          {fml('\\dfrac{|\\overrightarrow{PQ} \\cdot \\mathbf{n}|}{|\\mathbf{n}|}')}
-        </div>
-        <div>
-          <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 2 }}>Distance between two parallel planes</div>
-          {fml('\\dfrac{|d_1 - d_2|}{|\\mathbf{n}|}')}
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <thead>
+              <tr style={{ background: 'hsl(220,40%,96%)' }}>
+                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '8px 14px', textAlign: 'left', fontWeight: 600, color: 'hsl(220,40%,20%)', minWidth: 220 }}>Description</th>
+                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '8px 14px', textAlign: 'center', fontWeight: 600, color: 'hsl(220,40%,20%)', minWidth: 160 }}>Formula</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { desc: 'Projection of $\\overrightarrow{PQ}$ onto line (direction $\\mathbf{d}$)', formula: '\\dfrac{|\\overrightarrow{PQ} \\cdot \\mathbf{d}|}{|\\mathbf{d}|}' },
+                { desc: 'Projection of $\\overrightarrow{PQ}$ onto plane (normal $\\mathbf{n}$)', formula: '\\dfrac{|\\overrightarrow{PQ} \\times \\mathbf{n}|}{|\\mathbf{n}|}' },
+                { desc: 'Distance from point to plane (normal $\\mathbf{n}$)', formula: '\\dfrac{|\\overrightarrow{PQ} \\cdot \\mathbf{n}|}{|\\mathbf{n}|}' },
+                { desc: 'Distance between two parallel planes', formula: '\\dfrac{|d_1 - d_2|}{|\\mathbf{n}|}' },
+              ].map((row, i) => (
+                <tr key={i} style={{ background: i % 2 === 1 ? 'hsl(220,20%,99%)' : 'white' }}>
+                  <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', fontSize: 11, color: 'hsl(220,20%,35%)' }} dangerouslySetInnerHTML={{ __html: row.desc }} />
+                  <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: `$${row.formula}$` }} />
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </FormulaSection>
 
       {/* Angles */}
       <FormulaSection title="Angles">
-        <div style={{ marginBottom: 4 }}>
-          <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 2 }}>Between two lines</div>
-          {fml('\\cos\\theta = \\dfrac{|\\mathbf{d}_1 \\cdot \\mathbf{d}_2|}{|\\mathbf{d}_1||\\mathbf{d}_2|}')}
-        </div>
-        <div style={{ marginBottom: 4 }}>
-          <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 2 }}>Between line and plane</div>
-          {fml('\\sin\\theta = \\dfrac{|\\mathbf{d} \\cdot \\mathbf{n}|}{|\\mathbf{d}||\\mathbf{n}|}')}
-        </div>
-        <div>
-          <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', fontStyle: 'italic', marginBottom: 2 }}>Between two planes</div>
-          {fml('\\cos\\theta = \\dfrac{|\\mathbf{n}_1 \\cdot \\mathbf{n}_2|}{|\\mathbf{n}_1||\\mathbf{n}_2|}')}
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <thead>
+              <tr style={{ background: 'hsl(220,40%,96%)' }}>
+                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '8px 14px', textAlign: 'left', fontWeight: 600, color: 'hsl(220,40%,20%)', minWidth: 180 }}>Between</th>
+                <th style={{ border: '1px solid hsl(220,15%,88%)', padding: '8px 14px', textAlign: 'center', fontWeight: 600, color: 'hsl(220,40%,20%)', minWidth: 200 }}>Formula</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { between: 'Two lines', formula: '\\cos\\theta = \\dfrac{|\\mathbf{d}_1 \\cdot \\mathbf{d}_2|}{|\\mathbf{d}_1||\\mathbf{d}_2|}' },
+                { between: 'Line and plane', formula: '\\sin\\theta = \\dfrac{|\\mathbf{d} \\cdot \\mathbf{n}|}{|\\mathbf{d}||\\mathbf{n}|}' },
+                { between: 'Two planes', formula: '\\cos\\theta = \\dfrac{|\\mathbf{n}_1 \\cdot \\mathbf{n}_2|}{|\\mathbf{n}_1||\\mathbf{n}_2|}' },
+              ].map((row, i) => (
+                <tr key={i} style={{ background: i % 2 === 1 ? 'hsl(220,20%,99%)' : 'white' }}>
+                  <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', fontSize: 11, color: 'hsl(220,20%,35%)' }}>{row.between}</td>
+                  <td style={{ border: '1px solid hsl(220,15%,88%)', padding: '10px 14px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: `$${row.formula}$` }} />
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </FormulaSection>
     </FormulaPageLayout>
