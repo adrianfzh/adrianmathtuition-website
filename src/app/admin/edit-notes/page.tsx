@@ -50,7 +50,7 @@ function renderMarkdown(text: string): string {
     /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*(?:Example|Solution|\d+[\.:])|\n##|$)/g,
     (_, firstLine, rest) => {
       const inner = (firstLine.trim() + '\n' + rest).trim();
-      return `\n<div class="example-card"><div class="example-card-label">Worked Example</div>${inner}\n</div>\n`;
+      return `\n<div class="example-card"><div class="example-card-label">Example</div>${inner}\n</div>\n`;
     }
   );
 
@@ -72,6 +72,20 @@ function renderMarkdown(text: string): string {
   );
   text = text.replace(/\[Ans(?:wer)?:\s*([\s\S]*?)\]/g, (_, ans) =>
     `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal answer</span><span class="answer-text">${ans.trim()}</span></div>`
+  );
+
+  // Part labels — Part (a):, **Part (a):**, **(a)** at start of line
+  text = text.replace(
+    /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*)\s*(.*)$/gm,
+    (_, a1, a2, a3, rest) => {
+      const letter = a1 || a2 || a3;
+      const marksMatch = rest.match(/^(.*?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/);
+      const content = marksMatch ? marksMatch[1].trim() : rest.trim();
+      const marksNum = marksMatch ? marksMatch[2] : null;
+      const marksHtml = marksNum ? `<span class="marks-badge">[${marksNum}]</span>` : '';
+      const contentHtml = content ? `<span class="part-text">${content}</span>` : '';
+      return `<div class="part-label"><span class="part-circle">(${letter})</span>${contentHtml}${marksHtml}</div>`;
+    }
   );
 
   // Marks badge — [5], [5 marks] at end of line → flex row with right-aligned badge
@@ -1518,8 +1532,9 @@ export default function EditNotesPage() {
                           <table className="en-syntax-table">
                             <tbody>
                               <tr><td><code>**1. Section Name**</code></td><td>Creates a section tab</td></tr>
-                              <tr><td><code>**Example:**</code></td><td>Worked example card</td></tr>
-                              <tr><td><code>**Solution:**</code></td><td>Solution card (green)</td></tr>
+                              <tr><td><code>**Example:**</code></td><td>Example card (navy top bar)</td></tr>
+                              <tr><td><code>**Solution:**</code></td><td>Solution card (green top bar)</td></tr>
+                              <tr><td><code>**Part (a):**</code> or <code>**(a)**</code></td><td>Part label with circle badge</td></tr>
                               <tr><td><code>**Step 1:** text</code></td><td>Numbered step with spacing</td></tr>
                               <tr><td><code>[5]</code> or <code>[5 marks]</code></td><td>Right-aligned marks badge (end of line)</td></tr>
                               <tr><td><code>$$\begin&#123;aligned&#125; x+2 &amp;= 5 \\ x &amp;= 3 \end&#123;aligned&#125;$$</code></td><td>Aligned equations (align on =)</td></tr>

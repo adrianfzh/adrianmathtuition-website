@@ -96,7 +96,7 @@ function renderMarkdown(text: string): string {
     /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*(?:Example|Solution|\d+[\.:])|\n##|$)/g,
     (_, firstLine, rest) => {
       const inner = (firstLine.trim() + '\n' + rest).trim();
-      return `\n<div class="example-card"><div class="example-card-label">Worked Example</div>${inner}\n</div>\n`;
+      return `\n<div class="example-card"><div class="example-card-label">Example</div>${inner}\n</div>\n`;
     }
   );
 
@@ -119,6 +119,20 @@ function renderMarkdown(text: string): string {
 
   text = text.replace(/\[Ans(?:wer)?:\s*([\s\S]*?)\]/g, (_, ans) =>
     `<div class="answer-spoiler" onclick="this.classList.toggle('revealed')" title="Click to reveal"><span class="reveal-label">Tap to reveal answer</span><span class="answer-text">${ans.trim()}</span></div>`
+  );
+
+  // Part labels — Part (a):, **Part (a):**, **(a)** at start of line
+  text = text.replace(
+    /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*)\s*(.*)$/gm,
+    (_, a1, a2, a3, rest) => {
+      const letter = a1 || a2 || a3;
+      const marksMatch = rest.match(/^(.*?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/);
+      const content = marksMatch ? marksMatch[1].trim() : rest.trim();
+      const marksNum = marksMatch ? marksMatch[2] : null;
+      const marksHtml = marksNum ? `<span class="marks-badge">[${marksNum}]</span>` : '';
+      const contentHtml = content ? `<span class="part-text">${content}</span>` : '';
+      return `<div class="part-label"><span class="part-circle">(${letter})</span>${contentHtml}${marksHtml}</div>`;
+    }
   );
 
   // Marks badge — [5], [5 marks] at end of line → flex row with right-aligned badge
