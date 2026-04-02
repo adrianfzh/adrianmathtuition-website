@@ -142,7 +142,22 @@ function renderMarkdown(text: string): string {
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
   // Practice question numbers: Q1. Q2. Q3. etc.
+  // If content starts with a part label like (i) or (a), split into Q div + part-header-row
+  // so the Part block wrapping can pick it up correctly.
   text = text.replace(/^Q(\d+)[\.:]+\s*(.*)?$/gm, (_, n, content = '') => {
+    const validRoman = /^(i{1,3}|iv|vi{0,3}|ix|x)$/;
+    const partMatch = content.match(/^\(([a-z]+)\)\s+([\s\S]*)$/);
+    if (partMatch) {
+      const letter = partMatch[1];
+      if (/^[a-z]$/.test(letter) || validRoman.test(letter)) {
+        const rest = partMatch[2].trim();
+        const mMatch = rest.match(/^([\s\S]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
+        const pContent = mMatch ? mMatch[1].trim() : rest;
+        const mNum = mMatch ? mMatch[2] : null;
+        const mSpan = mNum ? `<span class="marks-badge-inline">[${mNum}]</span>` : '';
+        return `<div class="practice-q"><span class="practice-q-num">Q${n}</span></div>\n<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${pContent}</span>${mSpan}</div>`;
+      }
+    }
     const marksMatch = content.match(/^(.*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
     const qContent = marksMatch ? marksMatch[1].trim() : content.trim();
     const marksNum = marksMatch ? marksMatch[2] : null;

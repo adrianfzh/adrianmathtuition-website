@@ -357,7 +357,7 @@ body {
 }
 .answer-spoiler:hover { background: #f0fdf4; border-color: #bbf7d0; border-left-color: #059669; }
 .answer-spoiler .reveal-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #059669;
   display: flex;
@@ -373,8 +373,8 @@ body {
   color: #1b2a4a;
   font-size: 15px;
 }
-.part-block .answer-spoiler,
-.practice-q-block .answer-spoiler { margin-left: 0; }
+.part-block .answer-spoiler { margin-left: 0; }
+.practice-q-block .answer-spoiler { margin-left: 44px; }
 
 /* Solution header & steps */
 .solution-header {
