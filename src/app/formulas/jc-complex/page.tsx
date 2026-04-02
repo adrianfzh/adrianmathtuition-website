@@ -106,13 +106,13 @@ export default function JCComplexPage() {
 
       {/* Fundamental Theorem of Algebra */}
       <FormulaSection title="Fundamental Theorem of Algebra">
-        <FormulaRow latex="\text{A polynomial of degree } n \text{ has exactly } n \text{ roots (real or non-real)}" />
+        <div className="formula-row" style={{ fontSize: 12 }} dangerouslySetInnerHTML={{ __html: '$\\text{A polynomial of degree } n \\text{ has exactly } n \\text{ roots (real or non-real)}$' }} />
       </FormulaSection>
 
       {/* Conjugate Root Theorem */}
       <FormulaSection title="Conjugate Root Theorem">
-        <FormulaRow latex="\text{If } p(z) = 0 \text{ and } p \text{ has real coefficients, then } p(z^*) = 0" />
-        <div style={{ fontSize: 13, color: 'hsl(220,20%,40%)', marginTop: 6 }}>
+        <div className="formula-row" style={{ fontSize: 12 }} dangerouslySetInnerHTML={{ __html: '$\\text{If } p(z) = 0 \\text{ and } p \\text{ has real coefficients, then } p(z^*) = 0$' }} />
+        <div style={{ fontSize: 11, color: 'hsl(220,20%,40%)', marginTop: 6 }}>
           Non-real roots occur in conjugate pairs $z$ and $z^*$.
         </div>
       </FormulaSection>

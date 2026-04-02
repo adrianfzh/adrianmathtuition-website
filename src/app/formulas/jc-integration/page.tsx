@@ -94,7 +94,7 @@ export default function JCIntegrationPage() {
       {/* By Parts */}
       <FormulaSection title="Integration by Parts">
         <div style={{ marginBottom: 8 }}>
-          <div className="formula-row" dangerouslySetInnerHTML={{ __html: '$$\\int u\\, dv = uv - \\int v\\, du$$' }} />
+          <div className="formula-row" style={{ fontSize: 13 }} dangerouslySetInnerHTML={{ __html: '$\\int u\\, dv = uv - \\int v\\, du$' }} />
         </div>
         <div style={{
           background: 'hsl(45,90%,96%)', border: '1px solid hsl(45,80%,80%)',
