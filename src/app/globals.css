@@ -374,7 +374,8 @@ body {
   font-size: 15px;
 }
 .part-block .answer-spoiler { margin-left: 0; }
-.practice-q-block .answer-spoiler { margin-left: 44px; }
+.practice-q-block .answer-spoiler { margin-left: 84px; } /* 44px Q num + 40px part label */
+.practice-q-block > .answer-spoiler { margin-left: 44px; } /* direct child (no parts) stays at Q indent */
 
 /* Solution header & steps */
 .solution-header {
@@ -467,6 +468,7 @@ body {
   margin-bottom: 6px;
 }
 .practice-q-with-part .practice-q-num {
+  position: static; /* override the absolute from .practice-q-num so it stays in flex flow */
   flex-shrink: 0;
   width: 44px;
   font-weight: 700;
