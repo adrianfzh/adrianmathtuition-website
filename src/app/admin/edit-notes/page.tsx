@@ -13,6 +13,7 @@ interface Section {
   content: string;
   isPractice?: boolean;
   isSyllabus?: boolean;
+  rawTitle?: string; // original heading title before any rename (used for editor lookups)
 }
 
 type SaveState = 'idle' | 'saving' | 'saved';
@@ -62,6 +63,10 @@ function renderMarkdown(text: string): string {
     }
   );
 
+  // Step blocks processed BEFORE card split so they don't confuse boundary detection
+  text = text.replace(/^(?:\*\*)?Step\s*(\d+):(?:\*\*)?\s*(.*)$/gm,
+    (_, n, content) => `<div class="step-block"><span class="step-pill">Step ${n}</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
+
   // Example & Solution card wrapping via line-split.
   // Terminates ONLY at: next **Example / **Solution card, **N. section heading, ## heading.
   // Does NOT stop at **Part, **Step, **Note, or any other **bold** text.
@@ -108,9 +113,6 @@ function renderMarkdown(text: string): string {
 
   text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g, '<div class="note-box"><strong>Note:</strong> $1</div>');
 
-  // Step blocks — process before **bold** to handle **Step N:** syntax
-  text = text.replace(/^(?:\*\*)?Step\s+(\d+):(?:\*\*)?\s*(.*)$/gm,
-    (_, n, content) => `<div class="step-block"><span class="step-pill">Step ${n}</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
   text = text.replace(/((?:^\|.+\|\s*\n)+)/gm, tableBlock => {
     const rows = tableBlock.trim().split('\n').filter(r => r.trim());
     let html = '<table>';
@@ -226,6 +228,7 @@ function parseSections(content: string, topic: string): Section[] {
   if (practiceIdx > -1) {
     // Explicit Practice/Practice Questions section — make it the orange Practice tab
     result[practiceIdx].isPractice = true;
+    result[practiceIdx].rawTitle = result[practiceIdx].title; // preserve for getSectionBounds lookup
     result[practiceIdx].title = 'Practice';
     // Append [Try:] blocks from other sections
     const tryItems = practiceItems.filter((_, i) => result[i]?.title !== result[practiceIdx].title);
@@ -275,9 +278,12 @@ function getSectionBounds(fullContent: string, sectionTitle: string): [number, n
   return [bodyStart, bodyEnd];
 }
 
-function extractSectionBody(fullContent: string, sectionTitle: string, isPractice: boolean): string {
-  if (isPractice) return '';
-  const bounds = getSectionBounds(fullContent, sectionTitle);
+function extractSectionBody(fullContent: string, sectionTitle: string, isPractice: boolean, rawTitle?: string): string {
+  // Auto-generated practice (no raw section) → not editable
+  if (isPractice && !rawTitle) return '';
+  // Use rawTitle (original heading) for lookup when present
+  const lookupTitle = rawTitle ?? sectionTitle;
+  const bounds = getSectionBounds(fullContent, lookupTitle);
   if (!bounds) return '';
   return fullContent.slice(bounds[0], bounds[1]).trimEnd();
 }
@@ -760,7 +766,7 @@ export default function EditNotesPage() {
       renderMath(previewRef.current);
       // Update editor textarea to show this section's body
       if (textareaRef.current) {
-        textareaRef.current.value = extractSectionBody(fullContentRef.current, sec.title, sec.isPractice ?? false);
+        textareaRef.current.value = extractSectionBody(fullContentRef.current, sec.title, sec.isPractice ?? false, sec.rawTitle);
         updateLineNumbers();
       }
     };
@@ -846,8 +852,9 @@ export default function EditNotesPage() {
   function handleEditorChange() {
     const activeSec = previewSectionsRef.current[activeSectionRef.current];
     const newBody = textareaRef.current?.value ?? '';
-    if (activeSec && !activeSec.isPractice) {
-      fullContentRef.current = replaceSectionBody(fullContentRef.current, activeSec.title, newBody);
+    if (activeSec && (!activeSec.isPractice || activeSec.rawTitle)) {
+      const lookupTitle = activeSec.rawTitle ?? activeSec.title;
+      fullContentRef.current = replaceSectionBody(fullContentRef.current, lookupTitle, newBody);
     } else if (!activeSec || previewSectionsRef.current.length === 0) {
       fullContentRef.current = newBody;
     }
@@ -873,8 +880,8 @@ export default function EditNotesPage() {
     updatePreview();
     const activeSec = previewSectionsRef.current[activeSectionRef.current];
     if (textareaRef.current) {
-      textareaRef.current.value = activeSec && !activeSec.isPractice
-        ? extractSectionBody(fullContentRef.current, activeSec.title, false)
+      textareaRef.current.value = activeSec
+        ? extractSectionBody(fullContentRef.current, activeSec.title, activeSec.isPractice ?? false, activeSec.rawTitle)
         : previous;
       updateLineNumbers();
     }
@@ -944,16 +951,27 @@ export default function EditNotesPage() {
     const ta = textareaRef.current;
     if (!ta) return;
     pushUndo();
+    // Save current section body before modifying full content
+    const activeSec = previewSectionsRef.current[activeSectionRef.current];
+    if (activeSec && (!activeSec.isPractice || activeSec.rawTitle)) {
+      const lookupTitle = activeSec.rawTitle ?? activeSec.title;
+      fullContentRef.current = replaceSectionBody(fullContentRef.current, lookupTitle, ta.value);
+    }
     const n = getNextSectionNumber();
-    const prefix = `\n\n**${n}. `;
     const name = 'New Section';
-    const suffix = `**\n\n`;
-    const insertPos = ta.selectionStart;
-    insertAtCursor(ta, prefix + name + suffix);
-    // Select "New Section" so user can type the name immediately
-    ta.selectionStart = insertPos + prefix.length;
-    ta.selectionEnd = insertPos + prefix.length + name.length;
-    handleEditorChange();
+    // Append new section to full content so parseSections can find it
+    fullContentRef.current = fullContentRef.current.trimEnd() + `\n\n**${n}. ${name}**\n\n`;
+    // Re-parse and navigate to the new section immediately
+    updatePreview();
+    const newIdx = previewSectionsRef.current.findIndex(s => s.title === name);
+    if (newIdx >= 0) {
+      activeSectionRef.current = newIdx;
+      ta.value = '';
+      updateLineNumbers();
+      renderPreviewTabs();
+      renderPreviewSection();
+      ta.focus();
+    }
   }
 
   function insertExample() {

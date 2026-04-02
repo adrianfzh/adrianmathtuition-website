@@ -129,6 +129,10 @@ function renderMarkdown(text: string): string {
     }
   );
 
+  // Step blocks processed BEFORE card split so they don't confuse boundary detection
+  text = text.replace(/^(?:\*\*)?Step\s*(\d+):(?:\*\*)?\s*(.*)$/gm,
+    (_, n, content) => `<div class="step-block"><span class="step-pill">Step ${n}</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
+
   // Example & Solution card wrapping via line-split.
   // Terminates ONLY at: next **Example / **Solution card, **N. section heading, ## heading.
   // Does NOT stop at **Part, **Step, **Note, or any other **bold** text.
@@ -175,10 +179,6 @@ function renderMarkdown(text: string): string {
   );
 
   text = text.replace(/\*\*Note:\*\*\s*([^\n]+)/g, '<div class="note-box"><strong>Note:</strong> $1</div>');
-
-  // Step blocks — process before **bold** to handle **Step N:** syntax
-  text = text.replace(/^(?:\*\*)?Step\s+(\d+):(?:\*\*)?\s*(.*)$/gm,
-    (_, n, content) => `<div class="step-block"><span class="step-pill">Step ${n}</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
 
   text = text.replace(/((?:^\|.+\|\s*\n)+)/gm, tableBlock => {
     const rows = tableBlock.trim().split('\n').filter(r => r.trim());
