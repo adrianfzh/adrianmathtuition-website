@@ -1270,10 +1270,10 @@ export default function EditNotesPage() {
     setAiStatus('loading');
     aiDraftRef.current = '';
 
-    // Send only the active section's content to the AI
+    // Send only the active section's body to the AI (never the full document)
     const activeSec = previewSectionsRef.current[activeSectionRef.current];
-    const currentSectionContent = activeSec && !(activeSec.isPractice)
-      ? extractSectionBody(fullContentRef.current, activeSec.title, false)
+    const currentSectionContent = activeSec
+      ? extractSectionBody(fullContentRef.current, activeSec.title, activeSec.isPractice ?? false, activeSec.rawTitle)
       : fullContentRef.current;
 
     try {
@@ -1313,9 +1313,9 @@ export default function EditNotesPage() {
             if (aiPreviewTimerRef.current) clearTimeout(aiPreviewTimerRef.current);
             aiPreviewTimerRef.current = setTimeout(() => {
               const sec = previewSectionsRef.current[activeSectionRef.current];
-              if (sec && !sec.isPractice) {
-                const draftContent = replaceSectionBody(fullContentRef.current, sec.title, aiDraftRef.current);
-                updatePreview(draftContent);
+              if (sec) {
+                const lookupTitle = sec.rawTitle ?? sec.title;
+                updatePreview(replaceSectionBody(fullContentRef.current, lookupTitle, aiDraftRef.current));
               } else {
                 updatePreview(aiDraftRef.current);
               }
@@ -1324,8 +1324,9 @@ export default function EditNotesPage() {
           if (data.done) {
             if (aiPreviewTimerRef.current) clearTimeout(aiPreviewTimerRef.current);
             const sec = previewSectionsRef.current[activeSectionRef.current];
-            if (sec && !sec.isPractice) {
-              updatePreview(replaceSectionBody(fullContentRef.current, sec.title, aiDraftRef.current));
+            if (sec) {
+              const lookupTitle = sec.rawTitle ?? sec.title;
+              updatePreview(replaceSectionBody(fullContentRef.current, lookupTitle, aiDraftRef.current));
             } else {
               updatePreview(aiDraftRef.current);
             }
@@ -1344,18 +1345,15 @@ export default function EditNotesPage() {
   function acceptAI() {
     pushUndo();
     const sec = previewSectionsRef.current[activeSectionRef.current];
-    if (sec && !sec.isPractice) {
-      fullContentRef.current = replaceSectionBody(fullContentRef.current, sec.title, aiDraftRef.current);
-      if (textareaRef.current) {
-        textareaRef.current.value = aiDraftRef.current;
-        updateLineNumbers();
-      }
+    if (sec) {
+      const lookupTitle = sec.rawTitle ?? sec.title;
+      fullContentRef.current = replaceSectionBody(fullContentRef.current, lookupTitle, aiDraftRef.current);
     } else {
       fullContentRef.current = aiDraftRef.current;
-      if (textareaRef.current) {
-        textareaRef.current.value = aiDraftRef.current;
-        updateLineNumbers();
-      }
+    }
+    if (textareaRef.current) {
+      textareaRef.current.value = aiDraftRef.current;
+      updateLineNumbers();
     }
     aiDraftRef.current = '';
     updatePreview();

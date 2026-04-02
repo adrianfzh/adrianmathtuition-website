@@ -346,27 +346,35 @@ body {
 /* Answer spoiler */
 .answer-spoiler {
   display: block;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #059669;
+  border-radius: 0 8px 8px 0;
   padding: 10px 14px;
   margin: 12px 0;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: all 0.2s;
 }
-.answer-spoiler:hover { background: #dcfce7; border-color: #86efac; }
+.answer-spoiler:hover { background: #f0fdf4; border-color: #bbf7d0; border-left-color: #059669; }
 .answer-spoiler .reveal-label {
   font-size: 13px;
   font-weight: 600;
-  color: #15803d;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
+.answer-spoiler .reveal-label::before { content: '▶'; font-size: 10px; }
 .answer-spoiler .answer-text { display: none; }
-.answer-spoiler.revealed { background: #f0fdf4; border-color: #86efac; cursor: default; }
+.answer-spoiler.revealed { background: #f0fdf4; border-left-color: #059669; cursor: default; }
 .answer-spoiler.revealed .reveal-label { display: none; }
 .answer-spoiler.revealed .answer-text {
   display: block;
   color: #1b2a4a;
+  font-size: 15px;
 }
+.part-block .answer-spoiler,
+.practice-q-block .answer-spoiler { margin-left: 0; }
 
 /* Solution header & steps */
 .solution-header {
