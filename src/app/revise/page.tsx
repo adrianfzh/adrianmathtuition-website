@@ -100,12 +100,13 @@ function renderMarkdown(text: string): string {
 
   const BADGE = (n: string) => `<span style="flex-shrink:0;width:40px;text-align:right;font-size:12px;color:#64748b;font-weight:600;background:#f1f5f9;padding:2px 8px;border-radius:4px;margin-left:12px;white-space:nowrap;">[${n}]</span>`;
 
-  // Part labels — run BEFORE card wrapping so parts stay inside Example/Solution cards
+  // Part labels: (a), (b), (c) etc. at start of line
+  // Matches: **Part (a):** / Part (a): / **(a)** / bare (a)
   text = text.replace(
-    /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*)\s*(.*)$/gm,
-    (_, a1, a2, a3, rest) => {
-      const letter = a1 || a2 || a3;
-      const marksMatch = rest.match(/^(.*?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/);
+    /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*|\(([a-z])\))\s*(.*)$/gm,
+    (_, a1, a2, a3, a4, rest) => {
+      const letter = a1 || a2 || a3 || a4;
+      const marksMatch = rest.match(/^(.*)\s*\[(\d+)(?:\s*marks?)?\]\s*$/);
       const content = marksMatch ? marksMatch[1].trim() : rest.trim();
       const marksNum = marksMatch ? marksMatch[2] : null;
       const contentSpan = `<span style="flex:1;min-width:0;">${content}</span>`;
@@ -114,8 +115,8 @@ function renderMarkdown(text: string): string {
     }
   );
 
-  // Marks badge — [5], [5 marks] at end of line → flex row with fixed-width right badge
-  text = text.replace(/^(.+?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/gm,
+  // Marks badge [N] at end of line — skip lines already processed by Part regex
+  text = text.replace(/^((?!<div style="display:flex).+?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/gm,
     (_, content, n) =>
       `<div style="display:flex;gap:0;align-items:flex-start;"><span style="flex:1;min-width:0;">${content.trim()}</span>${BADGE(n)}</div>`
   );
