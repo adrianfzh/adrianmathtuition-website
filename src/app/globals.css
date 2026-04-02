@@ -415,23 +415,23 @@ body {
 .part-block {
   margin-top: 20px;
   margin-bottom: 8px;
-  width: 100%;
 }
 .part-block .part-header-row {
+  display: flex;
   margin: 0 0 6px 0;
-  overflow: hidden; /* clear float */
 }
 .part-block .part-label {
-  display: inline-block;
+  flex-shrink: 0;
   width: 40px;
   font-weight: 700;
   color: #1b2a4a;
-  vertical-align: top;
 }
 .part-block .part-first-line {
-  display: inline;
+  flex: 1;
+  min-width: 0;
 }
-.part-block > *:not(.part-header-row) {
+.part-block > .marks-line { margin-left: 0; } /* override *:not indent for marks-line wrappers */
+.part-block > *:not(.part-header-row):not(.marks-line) {
   margin-left: 40px;
 }
 .part-block .katex-display {
@@ -450,7 +450,7 @@ body {
   border-bottom: none;
   padding-bottom: 0;
 }
-.practice-q-block > *:not(.practice-q):not(.practice-q-with-part) {
+.practice-q-block > *:not(.practice-q):not(.practice-q-with-part):not(.marks-line) {
   margin-left: 44px;
 }
 .practice-q-block .part-block {
@@ -459,28 +459,26 @@ body {
 
 /* Q1 + (i) on same line */
 .practice-q-with-part {
-  width: 100%;
+  display: flex;
   margin-bottom: 6px;
-  overflow: hidden; /* clear float */
 }
 .practice-q-with-part .practice-q-num {
   position: static; /* override the absolute from .practice-q-num */
-  display: inline-block;
+  flex-shrink: 0;
   width: 44px;
   font-weight: 700;
   font-size: 15px;
   color: #1b2a4a;
-  vertical-align: top;
 }
 .practice-q-with-part .part-label {
-  display: inline-block;
+  flex-shrink: 0;
   width: 40px;
   font-weight: 700;
   color: #1b2a4a;
-  vertical-align: top;
 }
 .practice-q-with-part .part-first-line {
-  display: inline;
+  flex: 1;
+  min-width: 0;
 }
 
 .practice-q {
@@ -497,6 +495,37 @@ body {
   font-size: 15px;
   color: #1b2a4a;
   width: 40px;
+}
+
+/* marks-line: outer flex row pairing a question/part row with its marks badge */
+.marks-line {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.marks-line > .part-header-row,
+.marks-line > .practice-q-with-part {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+.marks-line > .practice-q {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+.marks-badge {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 12px;
+  white-space: nowrap;
+  align-self: flex-start;
 }
 
 /* Float-right marks badge — all marks use this */

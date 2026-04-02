@@ -57,7 +57,7 @@ function renderMarkdown(text: string): string {
       if (!/^[a-z]$/.test(letter) && !validRoman.test(letter)) return whole;
       const marksMatch = rest.trim().match(/^([\s\S]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
       if (marksMatch) {
-        return `<div class="part-header-row"><span class="marks-badge-float">[${marksMatch[2]}]</span><span class="part-label">(${letter})</span><span class="part-first-line">${marksMatch[1].trim()}</span></div>`;
+        return `<div class="marks-line"><div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${marksMatch[1].trim()}</span></div><span class="marks-badge">[${marksMatch[2]}]</span></div>`;
       }
       return `<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${rest.trim()}</span></div>`;
     }
@@ -153,15 +153,19 @@ function renderMarkdown(text: string): string {
         const mMatch = rest.match(/^([\s\S]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
         const pContent = mMatch ? mMatch[1].trim() : rest;
         const mNum = mMatch ? mMatch[2] : null;
-        const mSpan = mNum ? `<span class="marks-badge-float">[${mNum}]</span>` : '';
-        return `<div class="practice-q-with-part">${mSpan}<span class="practice-q-num">Q${n}</span><span class="part-label">(${letter})</span><span class="part-first-line">${pContent}</span></div>`;
+        if (mNum) {
+          return `<div class="marks-line"><div class="practice-q-with-part"><span class="practice-q-num">Q${n}</span><span class="part-label">(${letter})</span><span class="part-first-line">${pContent}</span></div><span class="marks-badge">[${mNum}]</span></div>`;
+        }
+        return `<div class="practice-q-with-part"><span class="practice-q-num">Q${n}</span><span class="part-label">(${letter})</span><span class="part-first-line">${pContent}</span></div>`;
       }
     }
     const marksMatch = content.match(/^(.*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
     const qContent = marksMatch ? marksMatch[1].trim() : content.trim();
     const marksNum = marksMatch ? marksMatch[2] : null;
-    const marksSpan = marksNum ? `<span class="marks-badge-float">[${marksNum}]</span>` : '';
-    return `<div class="practice-q">${marksSpan}<span class="practice-q-num">Q${n}</span>${qContent}</div>`;
+    if (marksNum) {
+      return `<div class="marks-line"><div class="practice-q"><span class="practice-q-num">Q${n}</span>${qContent}</div><span class="marks-badge">[${marksNum}]</span></div>`;
+    }
+    return `<div class="practice-q"><span class="practice-q-num">Q${n}</span>${qContent}</div>`;
   });
 
   text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
@@ -192,9 +196,9 @@ function renderMarkdown(text: string): string {
   // Wrap each part's content in a part-block so all child elements get 40px left indent.
   // Also split on practice-q / practice-q-with-part so Q-numbered questions break out.
   {
-    const segments = text.split(/(?=<div class="(?:part-header-row|practice-q(?:-with-part)?)">)/);
+    const segments = text.split(/(?=<div class="(?:marks-line|part-header-row|practice-q(?:-with-part)?)">)/);
     text = segments.map(seg => {
-      if (seg.startsWith('<div class="part-header-row">')) {
+      if (seg.startsWith('<div class="part-header-row">') || seg.startsWith('<div class="marks-line"><div class="part-header-row">')) {
         return `<div class="part-block">${seg}</div>`;
       }
       return seg;
@@ -203,9 +207,9 @@ function renderMarkdown(text: string): string {
 
   // Wrap practice question blocks so sub-content is indented under each Q
   if (text.includes('practice-q')) {
-    const segments = text.split(/(?=<div class="practice-q(?:-with-part)?">)/);
+    const segments = text.split(/(?=<div class="(?:marks-line|practice-q(?:-with-part)?)">)/);
     text = segments.map(seg => {
-      if (seg.startsWith('<div class="practice-q')) {
+      if (seg.startsWith('<div class="practice-q') || seg.startsWith('<div class="marks-line"><div class="practice-q')) {
         return `<div class="practice-q-block">${seg}</div>`;
       }
       return seg;
