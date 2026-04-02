@@ -125,6 +125,8 @@ function renderMarkdown(text: string): string {
     if (m.includes('<ul>')) return m;
     return `<ol>${m}</ol>`;
   });
+  // Collapse blank lines between consecutive display math blocks to prevent double-spacing
+  text = text.replace(/(<KBMATH_\d+>)\s*\n\s*\n+\s*(<KBMATH_\d+>)/g, '$1\n$2');
   text = text.replace(/\n{2,}/g, '</p><p>');
   text = '<p>' + text + '</p>';
   text = text.replace(/<p>\s*<\/p>/g, '');

@@ -274,7 +274,7 @@ body {
 .content-area em { font-style: italic; }
 .content-area hr { border: none; border-top: 1px solid var(--color-border); margin: 28px 0; }
 .content-area .katex { font-size: 1.05em; }
-.content-area .katex-display { margin: 20px 0; overflow-x: auto; padding: 4px 0; }
+.content-area .katex-display { margin: 8px 0; overflow-x: auto; padding: 4px 0; }
 .katex-display-left { text-align: left; padding-left: 24px; margin: 10px 0; }
 .katex-display-left .katex-display { text-align: left; margin: 4px 0; }
 
@@ -638,7 +638,7 @@ body {
 .en-preview em { font-style: italic; }
 .en-preview hr { border: none; border-top: 1px solid var(--color-border); margin: 20px 0; }
 .en-preview .katex { font-size: 1.05em; }
-.en-preview .katex-display { margin: 14px 0; overflow-x: auto; }
+.en-preview .katex-display { margin: 6px 0; overflow-x: auto; }
 .en-preview table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
 .en-preview th { background: var(--color-muted); font-weight: 600; padding: 8px 12px; border: 1px solid var(--color-border); text-align: left; }
 .en-preview td { padding: 7px 12px; border: 1px solid var(--color-border); }

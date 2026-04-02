@@ -25,6 +25,7 @@ function escapeHtml(s: string) {
 function parseSections(content: string, topic: string): Section[] {
   if (!content.trim()) return [];
   const result: Section[] = [];
+  let preHeadingContent = '';
 
   const parts = content.split(/(?=\*\*\d+[\.:]\s)/);
   for (const part of parts) {
@@ -34,8 +35,13 @@ function parseSections(content: string, topic: string): Section[] {
       const body = part.replace(/^\*\*[^*\n]+\*\*\s*\n?/, '').trim();
       result.push({ title: titleMatch[1].trim(), content: body });
     } else if (result.length === 0 && part.trim()) {
-      result.push({ title: 'Overview', content: part.trim() });
+      preHeadingContent = part.trim();
     }
+  }
+
+  // Prepend any content that appeared before the first numbered heading
+  if (preHeadingContent && result.length > 0) {
+    result[0] = { ...result[0], content: (preHeadingContent + '\n\n' + result[0].content).trim() };
   }
 
   if (result.length === 0) {
@@ -176,6 +182,8 @@ function renderMarkdown(text: string): string {
     return `<ol>${m}</ol>`;
   });
 
+  // Collapse blank lines between consecutive display math blocks to prevent double-spacing
+  text = text.replace(/(%%B\d+%%)\s*\n\s*\n+\s*(%%B\d+%%)/g, '$1\n$2');
   text = text.replace(/\n{2,}/g, '</p><p>');
   text = '<p>' + text + '</p>';
   text = text.replace(/<p>\s*<\/p>/g, '');
