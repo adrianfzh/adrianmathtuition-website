@@ -175,9 +175,10 @@ function renderMarkdown(text: string): string {
     return leftBlocks.has(idx) ? `<div class="katex-display-left">${delimited}</div>` : delimited;
   });
   text = text.replace(/<KIMATH_(\d+)>/g, (_, i) => `$${inlines[Number(i)]}$`);
-  // Wrap each part's content in a part-block so all child elements get 40px left indent
+  // Wrap each part's content in a part-block so all child elements get 40px left indent.
+  // Also split on practice-q so Q-numbered questions break out of part-blocks.
   {
-    const segments = text.split(/(?=<div class="part-header-row">)/);
+    const segments = text.split(/(?=<div class="(?:part-header-row|practice-q)">)/);
     text = segments.map(seg => {
       if (seg.startsWith('<div class="part-header-row">')) {
         return `<div class="part-block">${seg}</div>`;
@@ -242,10 +243,14 @@ function parseSections(content: string, topic: string): Section[] {
     result[practiceIdx].isPractice = true;
     result[practiceIdx].rawTitle = result[practiceIdx].title; // preserve for getSectionBounds lookup
     result[practiceIdx].title = 'Practice';
-    // Append [Try:] blocks from other sections
-    const tryItems = practiceItems.filter((_, i) => result[i]?.title !== result[practiceIdx].title);
-    if (tryItems.length > 0) {
-      result[practiceIdx].content = (result[practiceIdx].content + '\n\n' + tryItems.map(p => `[FROM:${p.source}]\n${p.block}`).join('\n\n')).trim();
+    // Append [Try:] blocks from other sections only if the Practice section
+    // doesn't already have Q-numbered questions (to avoid ghost Try boxes).
+    const hasQContent = /Q\d+[.:]/m.test(result[practiceIdx].content);
+    if (!hasQContent) {
+      const tryItems = practiceItems.filter((_, i) => result[i]?.title !== result[practiceIdx].title);
+      if (tryItems.length > 0) {
+        result[practiceIdx].content = (result[practiceIdx].content + '\n\n' + tryItems.map(p => `[FROM:${p.source}]\n${p.block}`).join('\n\n')).trim();
+      }
     }
     // Move to just before Syllabus (or end)
     const syllIdx = result.findIndex(s => /syllabus/i.test(s.title));
@@ -682,7 +687,7 @@ export default function EditNotesPage() {
       ` : `<span class="en-sitem-label">${escapeHtml(sec.title)}</span>`;
 
       return `<div class="${cls}" data-idx="${i}"${titleAttr}>${controls}</div>`;
-    }).join('');
+    }).join('') + '<button class="add-section-btn" data-add-section="1">+ Add Section</button>';
   }
 
   function renderPreviewSection() {
@@ -735,6 +740,13 @@ export default function EditNotesPage() {
     if (!tabs) return;
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+
+      // ── Add section button ──
+      const addBtn = target.closest('[data-add-section]') as HTMLElement | null;
+      if (addBtn) {
+        insertSection();
+        return;
+      }
 
       // ── Move-up button ──
       const upBtn = target.closest('[data-move-up]') as HTMLElement | null;

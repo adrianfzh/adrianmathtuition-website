@@ -261,9 +261,10 @@ function renderMarkdown(text: string): string {
     text = text.replace(/%%I(\d+)%%/g, (_, i) => `$${inlines[Number(i)]}$`);
   }
 
-  // Wrap each part's content in a part-block so all child elements get 40px left indent
+  // Wrap each part's content in a part-block so all child elements get 40px left indent.
+  // Also split on practice-q so Q-numbered questions break out of part-blocks.
   {
-    const segments = text.split(/(?=<div class="part-header-row">)/);
+    const segments = text.split(/(?=<div class="(?:part-header-row|practice-q)">)/);
     text = segments.map(seg => {
       if (seg.startsWith('<div class="part-header-row">')) {
         return `<div class="part-block">${seg}</div>`;

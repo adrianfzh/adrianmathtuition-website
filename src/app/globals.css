@@ -716,6 +716,8 @@ body {
 .en-sitem-delete { font-size: 13px; opacity: 0.3; width: 16px; height: 22px; }
 .en-sitem-delete:hover { opacity: 1; color: hsl(0,70%,55%); background: rgba(200,0,0,0.08) !important; }
 .en-preview-sitem.active .en-sitem-delete:hover { color: hsl(0,80%,80%); background: rgba(255,255,255,0.15) !important; }
+.add-section-btn { display: block; width: 100%; padding: 8px 10px; margin-top: 6px; background: transparent; border: 1.5px dashed #cbd5e1; border-radius: 8px; color: #64748b; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+.add-section-btn:hover { border-color: #1b2a4a; color: #1b2a4a; background: #f8fafc; }
 .en-preview-sitem.practice { color: var(--color-amber-dark); }
 .en-preview-sitem.practice.active { background: var(--color-amber-dark); color: white; }
 .en-preview-sitem.syllabus { opacity: 0.65; }
