@@ -373,11 +373,7 @@ body {
   color: #1b2a4a;
   font-size: 15px;
 }
-.part-block .answer-spoiler { margin-left: 0; }
-.practice-q-block .answer-spoiler { margin-left: 84px; } /* 44px Q num + 40px part label */
 .practice-q-block > .answer-spoiler { margin-left: 44px; } /* direct child (no parts) stays at Q indent */
-.practice-q-block .part-block .answer-spoiler { margin-left: 40px; } /* part-block already offset 44px; spoiler aligns with part content */
-.part-block .part-header-row .marks-badge-inline { margin-left: auto; } /* right-align marks in part rows */
 
 /* Solution header & steps */
 .solution-header {
@@ -444,6 +440,8 @@ body {
 .part-block .katex-display {
   margin-left: 40px;
 }
+/* Override the *:not indent for answer spoilers — align with part labels (i)/(a), not content */
+.part-block > .answer-spoiler { margin-left: 0; }
 
 /* Practice question numbering: Q1. Q2. Q3. */
 .practice-q-block {
@@ -467,6 +465,7 @@ body {
   display: flex;
   gap: 0;
   align-items: flex-start;
+  width: 100%;
   margin-bottom: 6px;
 }
 .practice-q-with-part .practice-q-num {
@@ -487,10 +486,7 @@ body {
   flex: 1;
   min-width: 0;
 }
-.practice-q-with-part .marks-badge-inline {
-  flex-shrink: 0;
-  margin-left: auto;
-}
+
 .practice-q {
   position: relative;
   padding-left: 44px;
@@ -562,7 +558,7 @@ body {
   background: #f1f5f9;
   padding: 2px 8px;
   border-radius: 4px;
-  margin-left: 12px;
+  margin-left: auto;  /* push to right edge of flex container */
   white-space: nowrap;
 }
 
