@@ -60,10 +60,10 @@ const FORMULA_SHEETS: { id: FormulaSheetId; emoji: string; title: string; subtit
   { id: 'em-sets',                 emoji: '{}', title: 'Sets',                           subtitle: 'Set notation & definitions',   url: '/formulas/em-sets' },
   { id: 'jc-graphing',            emoji: '📉', title: 'Graphing Techniques',             subtitle: 'Conics, asymptotes, transforms', url: '/formulas/jc-graphing' },
   { id: 'jc-functions',          emoji: 'f⁻¹', title: 'Functions',                       subtitle: 'Inverse, composite, odd/even',  url: '/formulas/jc-functions' },
-  { id: 'jc-sequences',          emoji: 'Σ',   title: 'Series & Sequences',              subtitle: 'AP, GP, standard results',      url: '/formulas/jc-sequences' },
-  { id: 'jc-differentiation',   emoji: "d/dx", title: 'Differentiation',                 subtitle: 'Inv trig, exp/log, concavity',  url: '/formulas/jc-differentiation' },
-  { id: 'jc-integration',       emoji: '∫',   title: 'Integration',                     subtitle: 'Standard forms, by parts',      url: '/formulas/jc-integration' },
-  { id: 'jc-vectors',           emoji: '→',   title: 'Vectors',                         subtitle: 'Dot/cross product, planes',     url: '/formulas/jc-vectors' },
+  { id: 'jc-sequences',          emoji: 'Σ',   title: 'Series & Sequences',              subtitle: 'Summation and APGP',            url: '/formulas/jc-sequences' },
+  { id: 'jc-differentiation',   emoji: "d/dx", title: 'Differentiation Techniques',      subtitle: 'Inverse trigo, exp/log',        url: '/formulas/jc-differentiation' },
+  { id: 'jc-integration',       emoji: '∫',   title: 'Integration Techniques',          subtitle: 'Standard forms, by parts',      url: '/formulas/jc-integration' },
+  { id: 'jc-vectors',           emoji: '→',   title: 'Vectors',                         subtitle: 'Dot/cross product, lines & planes', url: '/formulas/jc-vectors' },
   { id: 'jc-complex',           emoji: 'ℂ',   title: 'Complex Numbers',                 subtitle: 'Modulus, argument, conjugates', url: '/formulas/jc-complex' },
 ];
 
@@ -235,10 +235,10 @@ function SidebarContent({
             {([
               { id: 'mf27',               emoji: '📄',  title: 'A-Level MF27',          subtitle: 'H2 Math formula list' },
               { id: 'jc-graphing',        emoji: '📉',  title: 'Graphing Techniques',   subtitle: 'Conics, asymptotes, transforms' },
-              { id: 'jc-sequences',      emoji: 'Σ',   title: 'Series & Sequences',    subtitle: 'AP, GP, standard results' },
-              { id: 'jc-differentiation',emoji: 'd/dx', title: 'Differentiation',       subtitle: 'Inv trig, exp/log, concavity' },
-              { id: 'jc-integration',    emoji: '∫',   title: 'Integration',           subtitle: 'Standard forms, by parts' },
-              { id: 'jc-vectors',        emoji: '→',   title: 'Vectors',               subtitle: 'Dot/cross product, planes' },
+              { id: 'jc-sequences',      emoji: 'Σ',   title: 'Series & Sequences',          subtitle: 'Summation and APGP' },
+              { id: 'jc-differentiation',emoji: 'd/dx', title: 'Differentiation Techniques', subtitle: 'Inverse trigo, exp/log' },
+              { id: 'jc-integration',    emoji: '∫',   title: 'Integration Techniques',      subtitle: 'Standard forms, by parts' },
+              { id: 'jc-vectors',        emoji: '→',   title: 'Vectors',                     subtitle: 'Dot/cross product, lines & planes' },
               { id: 'jc-complex',        emoji: 'ℂ',   title: 'Complex Numbers',       subtitle: 'Modulus, argument, conjugates' },
             ] as { id: FormulaSheetId; emoji: string; title: string; subtitle: string }[]).map((item, idx, arr) => (
               <button
@@ -299,7 +299,7 @@ function SidebarContent({
             overflow: 'hidden',
           }}>
             {([
-              { id: 'amath',               emoji: '📄', title: 'O Level AM Formula Sheet', subtitle: 'Official syllabus document' },
+              { id: 'amath',               emoji: '📄', title: 'O Level AM Formula Sheet', subtitle: 'Exam Formula Sheet' },
               { id: 'partial-fractions',   emoji: '½',  title: 'Partial Fractions',        subtitle: 'Forms of Partial Fractions' },
               { id: 'factorization-cubics',emoji: '∛',  title: 'Factorization of Cubics',  subtitle: 'Sum/difference of cubes' },
               { id: 'indices',             emoji: 'aⁿ', title: 'Indices',                  subtitle: 'Laws of Exponents' },
@@ -367,7 +367,7 @@ function SidebarContent({
             overflow: 'hidden',
           }}>
             {([
-              { id: 'emath',                    emoji: '📄',  title: 'O Level EM Formula Sheet',  subtitle: 'Official syllabus document' },
+              { id: 'emath',                    emoji: '📄',  title: 'O Level EM Formula Sheet',  subtitle: 'Exam Formula Sheet' },
               { id: 'em-indices',               emoji: 'aⁿ', title: 'Indices',                   subtitle: 'Laws of Exponents' },
               { id: 'em-standard-form',         emoji: '×10',title: 'Standard Form',             subtitle: 'SI prefixes' },
               { id: 'em-interest',              emoji: '%',  title: 'Interest',                   subtitle: 'Simple & compound' },
