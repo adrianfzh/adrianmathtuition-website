@@ -52,7 +52,7 @@ function renderMarkdown(text: string): string {
     /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*|\(([a-z])\))\s*(.*)$/gm,
     (_, a1, a2, a3, a4, rest) => {
       const letter = a1 || a2 || a3 || a4;
-      return `<div style="display:flex;gap:0;align-items:flex-start;margin-top:16px;margin-bottom:6px;"><span style="flex-shrink:0;width:36px;font-weight:700;font-size:inherit;color:#1b2a4a;">(${letter})</span><span style="flex:1;min-width:0;">${rest.trim()}</span></div>`;
+      return `<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${rest.trim()}</span></div>`;
     }
   );
 
@@ -89,7 +89,7 @@ function renderMarkdown(text: string): string {
 
   // Step blocks — process before **bold** to handle **Step N:** syntax
   text = text.replace(/^(?:\*\*)?Step\s+(\d+):(?:\*\*)?\s*(.*)$/gm,
-    (_, n, content) => `<div class="step-block"><span class="step-label">Step ${n}:</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
+    (_, n, content) => `<div class="step-block"><span class="step-pill">Step ${n}</span>${content.trim() ? ' ' + content.trim() : ''}</div>`);
   text = text.replace(/((?:^\|.+\|\s*\n)+)/gm, tableBlock => {
     const rows = tableBlock.trim().split('\n').filter(r => r.trim());
     let html = '<table>';
@@ -127,6 +127,17 @@ function renderMarkdown(text: string): string {
     return leftBlocks.has(idx) ? `<div class="katex-display-left">${delimited}</div>` : delimited;
   });
   text = text.replace(/<KIMATH_(\d+)>/g, (_, i) => `$${inlines[Number(i)]}$`);
+  // Wrap each part's content in a part-block so all child elements get 40px left indent
+  {
+    const segments = text.split(/(?=<div class="part-header-row">)/);
+    text = segments.map(seg => {
+      if (seg.startsWith('<div class="part-header-row">')) {
+        return `<div class="part-block">${seg}</div>`;
+      }
+      return seg;
+    }).join('');
+  }
+
   // Float-right marks badges: [N] or [N marks] anywhere in rendered text
   text = text.replace(/\[(\d{1,2})(?:\s*marks?)?\]/g, '<span class="marks-badge-inline">[$1]</span>');
   return text;
