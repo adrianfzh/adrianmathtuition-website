@@ -46,6 +46,8 @@ function renderMarkdown(text: string): string {
   text = text.replace(/^```[^\n]*$/gm, '');
   text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
 
+  const BADGE = (n: string) => `<span style="flex-shrink:0;width:40px;text-align:right;font-size:12px;color:#64748b;font-weight:600;background:#f1f5f9;padding:2px 8px;border-radius:4px;margin-left:12px;white-space:nowrap;">[${n}]</span>`;
+
   // Part labels — run BEFORE card wrapping so parts stay inside Example/Solution cards
   text = text.replace(
     /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*)\s*(.*)$/gm,
@@ -54,21 +56,16 @@ function renderMarkdown(text: string): string {
       const marksMatch = rest.match(/^(.*?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/);
       const content = marksMatch ? marksMatch[1].trim() : rest.trim();
       const marksNum = marksMatch ? marksMatch[2] : null;
-      const wrapStyle = marksNum
-        ? 'position:relative;padding-right:60px;margin-top:22px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e5e7eb;'
-        : 'margin-top:22px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e5e7eb;';
-      const contentSpan = content ? `<span style="font-weight:500;">${content}</span>` : '';
-      const marksSpan = marksNum
-        ? `<span style="position:absolute;bottom:0;right:0;font-size:12px;color:#64748b;font-weight:600;background:#f1f5f9;padding:2px 10px;border-radius:4px;white-space:nowrap;">[${marksNum}]</span>`
-        : '';
-      return `<div style="${wrapStyle}"><span style="font-weight:700;font-size:15px;color:#1b2a4a;letter-spacing:0.01em;margin-right:16px;">(${letter})</span>${contentSpan}${marksSpan}</div>`;
+      const contentSpan = `<span style="flex:1;min-width:0;">${content}</span>`;
+      const marksSpan = marksNum ? BADGE(marksNum) : '';
+      return `<div style="display:flex;gap:0;align-items:flex-start;margin-top:16px;margin-bottom:6px;"><span style="flex-shrink:0;width:36px;font-weight:700;font-size:15px;color:#1b2a4a;">(${letter})</span>${contentSpan}${marksSpan}</div>`;
     }
   );
 
-  // Marks badge — [5], [5 marks] at end of line → position:absolute badge top-right
+  // Marks badge — [5], [5 marks] at end of line → flex row with fixed-width right badge
   text = text.replace(/^(.+?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/gm,
     (_, content, n) =>
-      `<div style="position:relative;padding-right:60px;">${content.trim()}<span style="position:absolute;bottom:0;right:0;font-size:12px;color:#64748b;font-weight:600;background:#f1f5f9;padding:2px 10px;border-radius:4px;white-space:nowrap;">[${n}]</span></div>`
+      `<div style="display:flex;gap:0;align-items:flex-start;"><span style="flex:1;min-width:0;">${content.trim()}</span>${BADGE(n)}</div>`
   );
 
   // Example card — stops at next Example/Solution card or section heading
