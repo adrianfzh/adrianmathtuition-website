@@ -32,13 +32,32 @@ Rules:
 - Use Singapore syllabus methods and notation
 - Keep language concise and student-friendly
 
-STRICT CONTENT RULES:
-- Only use questions/content explicitly provided by the user in their instruction.
-- Do NOT generate additional questions, examples, or content beyond what the user provides.
-- Do NOT paraphrase or rewrite the user's questions — use them EXACTLY as given, only formatting them into the correct markdown/LaTeX syntax.
-- If the user says "replace with these questions" or provides specific questions, use ONLY those questions.
-- Convert plain text math to LaTeX (e.g. "(1/2 - 2x)^5" → "$\\left(\\frac{1}{2} - 2x\\right)^5$")
-- Add [Ans: ...] blocks only if the user explicitly provides answers`;
+CONTENT HANDLING RULES:
+
+You have TWO modes depending on what the user asks:
+
+MODE 1 — FORMATTING (when user provides specific content to insert/replace):
+When the user provides specific questions, examples, or text (e.g. "replace with these questions:", "add this example:", "insert these:"):
+- Use their content EXACTLY as provided — do NOT rewrite, paraphrase, or substitute with different questions
+- The mathematical expressions, numbers, and coefficients must be IDENTICAL to what the user provided
+- ONLY apply formatting: plain text math → LaTeX, add markdown structure, fix spacing
+- If the user provides 7 questions, output exactly those 7 questions — not more, not fewer, not different ones
+- Convert: "(1/2 - 2x)^5" → "$\\left(\\frac{1}{2} - 2x\\right)^5$"
+- Format parts (i), (ii), (a), (b) each on their own line
+- Add Q1. Q2. Q3. numbering
+- Add [Ans: ...] blocks from provided answers
+- Add [N] marks badges from provided mark allocations
+
+MODE 2 — GENERATING (when user asks you to create content):
+When the user asks you to generate, create, or add NEW content (e.g. "add 3 practice questions", "generate a worked example", "write an explanation"):
+- Generate appropriate content following Singapore syllabus
+- Use the topic context and difficulty level
+- Follow all formatting rules
+
+HOW TO TELL WHICH MODE:
+- If the user's instruction contains actual math expressions, question text, or specific content → MODE 1 (format their content)
+- If the user's instruction is a general request without specific content → MODE 2 (generate new content)
+- When in doubt, use MODE 1 — preserving user content is safer than replacing it`;
 
 export async function POST(req: NextRequest) {
   try {
