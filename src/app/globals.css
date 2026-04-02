@@ -418,21 +418,18 @@ body {
   width: 100%;
 }
 .part-block .part-header-row {
-  display: flex;
-  gap: 0;
-  align-items: flex-start;
   margin: 0 0 6px 0;
-  width: 100%;
+  overflow: hidden; /* clear float */
 }
 .part-block .part-label {
-  flex-shrink: 0;
+  display: inline-block;
   width: 40px;
   font-weight: 700;
   color: #1b2a4a;
+  vertical-align: top;
 }
 .part-block .part-first-line {
-  flex: 1;
-  min-width: 0;
+  display: inline;
 }
 .part-block > *:not(.part-header-row) {
   margin-left: 40px;
@@ -462,29 +459,28 @@ body {
 
 /* Q1 + (i) on same line */
 .practice-q-with-part {
-  display: flex;
-  gap: 0;
-  align-items: flex-start;
   width: 100%;
   margin-bottom: 6px;
+  overflow: hidden; /* clear float */
 }
 .practice-q-with-part .practice-q-num {
-  position: static; /* override the absolute from .practice-q-num so it stays in flex flow */
-  flex-shrink: 0;
+  position: static; /* override the absolute from .practice-q-num */
+  display: inline-block;
   width: 44px;
   font-weight: 700;
   font-size: 15px;
   color: #1b2a4a;
+  vertical-align: top;
 }
 .practice-q-with-part .part-label {
-  flex-shrink: 0;
+  display: inline-block;
   width: 40px;
   font-weight: 700;
   color: #1b2a4a;
+  vertical-align: top;
 }
 .practice-q-with-part .part-first-line {
-  flex: 1;
-  min-width: 0;
+  display: inline;
 }
 
 .practice-q {
@@ -503,7 +499,7 @@ body {
   width: 40px;
 }
 
-/* Float-right marks badge for non-Part question lines */
+/* Float-right marks badge — all marks use this */
 .marks-badge-float {
   float: right;
   font-size: 12px;
@@ -514,6 +510,7 @@ body {
   border-radius: 4px;
   margin-left: 12px;
   margin-top: 2px;
+  margin-bottom: 4px;
   white-space: nowrap;
 }
 

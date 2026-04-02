@@ -57,7 +57,7 @@ function renderMarkdown(text: string): string {
       if (!/^[a-z]$/.test(letter) && !validRoman.test(letter)) return whole;
       const marksMatch = rest.trim().match(/^([\s\S]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
       if (marksMatch) {
-        return `<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${marksMatch[1].trim()}</span><span class="marks-badge-inline">[${marksMatch[2]}]</span></div>`;
+        return `<div class="part-header-row"><span class="marks-badge-float">[${marksMatch[2]}]</span><span class="part-label">(${letter})</span><span class="part-first-line">${marksMatch[1].trim()}</span></div>`;
       }
       return `<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${rest.trim()}</span></div>`;
     }
@@ -153,8 +153,8 @@ function renderMarkdown(text: string): string {
         const mMatch = rest.match(/^([\s\S]*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
         const pContent = mMatch ? mMatch[1].trim() : rest;
         const mNum = mMatch ? mMatch[2] : null;
-        const mSpan = mNum ? `<span class="marks-badge-inline">[${mNum}]</span>` : '';
-        return `<div class="practice-q-with-part"><span class="practice-q-num">Q${n}</span><span class="part-label">(${letter})</span><span class="part-first-line">${pContent}</span>${mSpan}</div>`;
+        const mSpan = mNum ? `<span class="marks-badge-float">[${mNum}]</span>` : '';
+        return `<div class="practice-q-with-part">${mSpan}<span class="practice-q-num">Q${n}</span><span class="part-label">(${letter})</span><span class="part-first-line">${pContent}</span></div>`;
       }
     }
     const marksMatch = content.match(/^(.*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
