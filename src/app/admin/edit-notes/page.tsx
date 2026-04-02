@@ -46,27 +46,14 @@ function renderMarkdown(text: string): string {
   text = text.replace(/^```[^\n]*$/gm, '');
   text = text.replace(/\[FROM:([^\]]+)\]/g, '<div class="from-section">$1</div>');
 
-  const BADGE = (n: string) => `<span style="flex-shrink:0;width:40px;text-align:right;font-size:12px;color:#64748b;font-weight:600;background:#f1f5f9;padding:2px 8px;border-radius:4px;margin-left:12px;white-space:nowrap;">[${n}]</span>`;
-
   // Part labels: (a), (b), (c) etc. at start of line
   // Matches: **Part (a):** / Part (a): / **(a)** / bare (a)
   text = text.replace(
     /^(?:\*\*Part\s*\(([a-z])\)[:\.]?\*\*|Part\s*\(([a-z])\)[:\.]?|\*\*\(([a-z])\)\*\*|\(([a-z])\))\s*(.*)$/gm,
     (_, a1, a2, a3, a4, rest) => {
       const letter = a1 || a2 || a3 || a4;
-      const marksMatch = rest.match(/^(.*)\s*\[(\d+)(?:\s*marks?)?\]\s*$/);
-      const content = marksMatch ? marksMatch[1].trim() : rest.trim();
-      const marksNum = marksMatch ? marksMatch[2] : null;
-      const contentSpan = `<span style="flex:1;min-width:0;">${content}</span>`;
-      const marksSpan = marksNum ? BADGE(marksNum) : '';
-      return `<div style="display:flex;gap:0;align-items:flex-start;margin-top:16px;margin-bottom:6px;"><span style="flex-shrink:0;width:36px;font-weight:700;font-size:15px;color:#1b2a4a;">(${letter})</span>${contentSpan}${marksSpan}</div>`;
+      return `<div style="display:flex;gap:0;align-items:flex-start;margin-top:16px;margin-bottom:6px;"><span style="flex-shrink:0;width:36px;font-weight:700;font-size:inherit;color:#1b2a4a;">(${letter})</span><span style="flex:1;min-width:0;">${rest.trim()}</span></div>`;
     }
-  );
-
-  // Marks badge [N] at end of line — skip lines already processed by Part regex
-  text = text.replace(/^((?!<div style="display:flex).+?)\s*\[(\d+)(?:\s*marks?)?\]\s*$/gm,
-    (_, content, n) =>
-      `<div style="display:flex;gap:0;align-items:flex-start;"><span style="flex:1;min-width:0;">${content.trim()}</span>${BADGE(n)}</div>`
   );
 
   // Example card — stops at next Example/Solution card or section heading
@@ -121,7 +108,7 @@ function renderMarkdown(text: string): string {
   text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
   text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
   text = text.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
-  text = text.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+  text = text.replace(/^(?!Q)\d+\.\s+(.+)$/gm, '<li>$1</li>');
   text = text.replace(/(?:^<li>[\s\S]*?<\/li>\n?)+/gm, m => {
     if (m.includes('<ul>')) return m;
     return `<ol>${m}</ol>`;
@@ -140,6 +127,8 @@ function renderMarkdown(text: string): string {
     return leftBlocks.has(idx) ? `<div class="katex-display-left">${delimited}</div>` : delimited;
   });
   text = text.replace(/<KIMATH_(\d+)>/g, (_, i) => `$${inlines[Number(i)]}$`);
+  // Float-right marks badges: [N] or [N marks] anywhere in rendered text
+  text = text.replace(/\[(\d{1,2})(?:\s*marks?)?\]/g, '<span class="marks-badge-inline">[$1]</span>');
   return text;
 }
 
@@ -179,14 +168,29 @@ function parseSections(content: string, topic: string): Section[] {
     }
   });
 
-  const existingPractice = result.findIndex(s => /^practice$/i.test(s.title.trim()));
-  if (existingPractice === -1 && practiceItems.length > 0) {
+  const practiceIdx = result.findIndex(s => /^practice\s*(questions)?$/i.test(s.title.trim()));
+  if (practiceIdx > -1) {
+    // Explicit Practice/Practice Questions section — make it the orange Practice tab
+    result[practiceIdx].isPractice = true;
+    result[practiceIdx].title = 'Practice';
+    // Append [Try:] blocks from other sections
+    const tryItems = practiceItems.filter((_, i) => result[i]?.title !== result[practiceIdx].title);
+    if (tryItems.length > 0) {
+      result[practiceIdx].content = (result[practiceIdx].content + '\n\n' + tryItems.map(p => `[FROM:${p.source}]\n${p.block}`).join('\n\n')).trim();
+    }
+    // Move to just before Syllabus (or end)
+    const syllIdx = result.findIndex(s => /syllabus/i.test(s.title));
+    if (syllIdx > -1 && practiceIdx !== syllIdx - 1) {
+      const [prac] = result.splice(practiceIdx, 1);
+      const newSyllIdx = result.findIndex(s => /syllabus/i.test(s.title));
+      result.splice(newSyllIdx > -1 ? newSyllIdx : result.length, 0, prac);
+    }
+  } else if (practiceItems.length > 0) {
+    // No explicit section — auto-generate from [Try:] blocks
     const practiceContent = practiceItems.map(p => `[FROM:${p.source}]\n${p.block}`).join('\n\n');
     const syllIdx = result.findIndex(s => /syllabus/i.test(s.title));
     const insertAt = syllIdx > -1 ? syllIdx : result.length;
     result.splice(insertAt, 0, { title: 'Practice', content: practiceContent, isPractice: true });
-  } else if (existingPractice > -1) {
-    result[existingPractice].isPractice = true;
   }
 
   // Move Syllabus to end
