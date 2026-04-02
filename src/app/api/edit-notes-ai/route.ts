@@ -30,7 +30,15 @@ Rules:
 - For parts (a), (b), (i), (ii) etc. — put EACH part on its OWN line
 - For worked examples, show clear step-by-step solutions
 - Use Singapore syllabus methods and notation
-- Keep language concise and student-friendly`;
+- Keep language concise and student-friendly
+
+STRICT CONTENT RULES:
+- Only use questions/content explicitly provided by the user in their instruction.
+- Do NOT generate additional questions, examples, or content beyond what the user provides.
+- Do NOT paraphrase or rewrite the user's questions — use them EXACTLY as given, only formatting them into the correct markdown/LaTeX syntax.
+- If the user says "replace with these questions" or provides specific questions, use ONLY those questions.
+- Convert plain text math to LaTeX (e.g. "(1/2 - 2x)^5" → "$\\left(\\frac{1}{2} - 2x\\right)^5$")
+- Add [Ans: ...] blocks only if the user explicitly provides answers`;
 
 export async function POST(req: NextRequest) {
   try {

@@ -452,11 +452,39 @@ body {
   border-bottom: none;
   padding-bottom: 0;
 }
-.practice-q-block > *:not(.practice-q) {
+.practice-q-block > *:not(.practice-q):not(.practice-q-with-part) {
   margin-left: 44px;
 }
 .practice-q-block .part-block {
   margin-left: 44px;
+}
+
+/* Q1 + (i) on same line */
+.practice-q-with-part {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.practice-q-with-part .practice-q-num {
+  flex-shrink: 0;
+  width: 44px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #1b2a4a;
+}
+.practice-q-with-part .part-label {
+  flex-shrink: 0;
+  width: 40px;
+  font-weight: 700;
+  color: #1b2a4a;
+}
+.practice-q-with-part .part-first-line {
+  flex: 1;
+  min-width: 0;
+}
+.practice-q-with-part .marks-badge-inline {
+  flex-shrink: 0;
 }
 .practice-q {
   position: relative;

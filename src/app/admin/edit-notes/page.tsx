@@ -142,8 +142,7 @@ function renderMarkdown(text: string): string {
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
   // Practice question numbers: Q1. Q2. Q3. etc.
-  // If content starts with a part label like (i) or (a), split into Q div + part-header-row
-  // so the Part block wrapping can pick it up correctly.
+  // If content starts with a part label like (i) or (a), render Q number and part on same line.
   text = text.replace(/^Q(\d+)[\.:]+\s*(.*)?$/gm, (_, n, content = '') => {
     const validRoman = /^(i{1,3}|iv|vi{0,3}|ix|x)$/;
     const partMatch = content.match(/^\(([a-z]+)\)\s+([\s\S]*)$/);
@@ -155,7 +154,7 @@ function renderMarkdown(text: string): string {
         const pContent = mMatch ? mMatch[1].trim() : rest;
         const mNum = mMatch ? mMatch[2] : null;
         const mSpan = mNum ? `<span class="marks-badge-inline">[${mNum}]</span>` : '';
-        return `<div class="practice-q"><span class="practice-q-num">Q${n}</span></div>\n<div class="part-header-row"><span class="part-label">(${letter})</span><span class="part-first-line">${pContent}</span>${mSpan}</div>`;
+        return `<div class="practice-q-with-part"><span class="practice-q-num">Q${n}</span><span class="part-label">(${letter})</span><span class="part-first-line">${pContent}</span>${mSpan}</div>`;
       }
     }
     const marksMatch = content.match(/^(.*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
@@ -191,9 +190,9 @@ function renderMarkdown(text: string): string {
   });
   text = text.replace(/<KIMATH_(\d+)>/g, (_, i) => `$${inlines[Number(i)]}$`);
   // Wrap each part's content in a part-block so all child elements get 40px left indent.
-  // Also split on practice-q so Q-numbered questions break out of part-blocks.
+  // Also split on practice-q / practice-q-with-part so Q-numbered questions break out.
   {
-    const segments = text.split(/(?=<div class="(?:part-header-row|practice-q)">)/);
+    const segments = text.split(/(?=<div class="(?:part-header-row|practice-q(?:-with-part)?)">)/);
     text = segments.map(seg => {
       if (seg.startsWith('<div class="part-header-row">')) {
         return `<div class="part-block">${seg}</div>`;
@@ -204,9 +203,9 @@ function renderMarkdown(text: string): string {
 
   // Wrap practice question blocks so sub-content is indented under each Q
   if (text.includes('practice-q')) {
-    const segments = text.split(/(?=<div class="practice-q">)/);
+    const segments = text.split(/(?=<div class="practice-q(?:-with-part)?">)/);
     text = segments.map(seg => {
-      if (seg.startsWith('<div class="practice-q">')) {
+      if (seg.startsWith('<div class="practice-q')) {
         return `<div class="practice-q-block">${seg}</div>`;
       }
       return seg;
