@@ -62,23 +62,38 @@ function renderMarkdown(text: string): string {
     }
   );
 
-  // Example card — stops at next card or numbered section heading (requires space after N. to avoid matching **1.**bold)
-  text = text.replace(
-    /\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*Example|\n\*\*Solution|\n\*\*\d+[\.:]\s|\n##|$)/g,
-    (_, firstLine, rest) => {
-      const inner = (firstLine.trim() + '\n' + rest).trim();
-      return `\n<div class="example-card"><div class="example-card-label">Example</div>${inner}\n</div>\n`;
+  // Example & Solution card wrapping via line-split.
+  // Terminates ONLY at: next **Example / **Solution card, **N. section heading, ## heading.
+  // Does NOT stop at **Part, **Step, **Note, or any other **bold** text.
+  {
+    const cardBoundary = /^\*\*(?:Example|Solution)(?:\s+\d+)?[:\.]?\*\*/;
+    const sectBoundary = /^\*\*\d+[\.:]+\s|^##\s/;
+    const lines = text.split('\n');
+    const segs: string[] = [];
+    let cur: string[] = [];
+    for (const line of lines) {
+      if ((cardBoundary.test(line) || sectBoundary.test(line)) && cur.length > 0) {
+        segs.push(cur.join('\n'));
+        cur = [line];
+      } else {
+        cur.push(line);
+      }
     }
-  );
-
-  // Solution card (green styling)
-  text = text.replace(
-    /\*\*Solution(?:\s+\d+)?[:\.]?\*\*([^\n]*)([\s\S]*?)(?=\n\*\*Example|\n\*\*Solution|\n\*\*\d+[\.:]\s|\n##|$)/g,
-    (_, firstLine, rest) => {
-      const inner = (firstLine.trim() + '\n' + rest).trim();
-      return `\n<div class="solution-card"><div class="solution-card-label">Solution</div>${inner}\n</div>\n`;
-    }
-  );
+    if (cur.length > 0) segs.push(cur.join('\n'));
+    text = segs.map(seg => {
+      const solM = seg.match(/^\*\*Solution(?:\s+\d+)?[:\.]?\*\*([^\n]*)\n?([\s\S]*)$/);
+      if (solM) {
+        const inner = ((solM[1] || '').trim() + '\n' + (solM[2] || '')).trim();
+        return `\n<div class="solution-card"><div class="solution-card-label">Solution</div>${inner}\n</div>`;
+      }
+      const exM = seg.match(/^\*\*Example(?:\s+\d+)?[:\.]?\*\*([^\n]*)\n?([\s\S]*)$/);
+      if (exM) {
+        const inner = ((exM[1] || '').trim() + '\n' + (exM[2] || '')).trim();
+        return `\n<div class="example-card"><div class="example-card-label">Example</div>${inner}\n</div>`;
+      }
+      return seg;
+    }).join('\n');
+  }
 
   // Try/Practice with optional trailing [N marks]
   text = text.replace(/\[(?:Try|Practice):\s*([\s\S]*?)\](?:\s*\[(\d+)\s*marks?\])?/g,
