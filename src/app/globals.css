@@ -300,10 +300,9 @@ body {
 }
 .example-card p:last-child { margin-bottom: 0; }
 
-/* Solution card — transparent body, green label pill only */
+/* Solution card — transparent body, full-width green bar label */
 .solution-card {
   margin-top: 20px;
-  margin-bottom: 0;
   padding: 0;
   background: transparent;
   border: none;
@@ -311,16 +310,19 @@ body {
   overflow: auto; /* clearfix: contain floated marks badges */
 }
 .solution-card-label {
-  display: inline-block;
+  display: block;
+  width: calc(100% + 48px);
+  margin-left: -24px;
+  margin-right: -24px;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #059669;
   background: #f0fdf4;
-  border: 1px solid #d1fae5;
-  border-radius: 6px;
-  padding: 4px 14px;
+  border-top: 1px solid #d1fae5;
+  border-bottom: 1px solid #d1fae5;
+  padding: 10px 24px;
   margin-bottom: 16px;
 }
 .solution-card p:last-child { margin-bottom: 0; }
