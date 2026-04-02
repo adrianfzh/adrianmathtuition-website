@@ -112,6 +112,15 @@ function renderMarkdown(text: string): string {
   text = text.replace(/^---+$/gm, '<hr>');
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  // Practice question numbers: Q1. Q2. Q3. etc.
+  text = text.replace(/^Q(\d+)[\.:]+\s*(.*)?$/gm, (_, n, content = '') => {
+    const marksMatch = content.match(/^(.*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
+    const qContent = marksMatch ? marksMatch[1].trim() : content.trim();
+    const marksNum = marksMatch ? marksMatch[2] : null;
+    const marksSpan = marksNum ? `<span class="marks-badge-float">[${marksNum}]</span>` : '';
+    return `<div class="practice-q">${marksSpan}<span class="practice-q-num">Q${n}</span>${qContent}</div>`;
+  });
+
   text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
   text = text.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
   text = text.replace(/^(?!Q)\d+\.\s+(.+)$/gm, '<li>$1</li>');
@@ -143,6 +152,17 @@ function renderMarkdown(text: string): string {
     text = segments.map(seg => {
       if (seg.startsWith('<div class="part-header-row">')) {
         return `<div class="part-block">${seg}</div>`;
+      }
+      return seg;
+    }).join('');
+  }
+
+  // Wrap practice question blocks so sub-content is indented under each Q
+  if (text.includes('practice-q')) {
+    const segments = text.split(/(?=<div class="practice-q">)/);
+    text = segments.map(seg => {
+      if (seg.startsWith('<div class="practice-q">')) {
+        return `<div class="practice-q-block">${seg}</div>`;
       }
       return seg;
     }).join('');
@@ -801,6 +821,7 @@ export default function EditNotesPage() {
         e.preventDefault();
         performUndo();
       }
+      if (e.key === 'Escape') setSyntaxOpen(false);
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
@@ -1562,27 +1583,52 @@ export default function EditNotesPage() {
                         <div className="en-syntax-body">
                           <table className="en-syntax-table">
                             <tbody>
-                              <tr><td><code>**1. Section Name**</code></td><td>Creates a section tab</td></tr>
-                              <tr><td><code>**Example:**</code></td><td>Example card (navy top bar)</td></tr>
-                              <tr><td><code>**Solution:**</code></td><td>Solution card (green top bar)</td></tr>
-                              <tr><td><code>**Part (a):**</code> or <code>**(a)**</code></td><td>Part label with circle badge</td></tr>
-                              <tr><td><code>**Step 1:** text</code></td><td>Numbered step with spacing</td></tr>
-                              <tr><td><code>[5]</code> or <code>[5 marks]</code></td><td>Right-aligned marks badge (end of line)</td></tr>
-                              <tr><td><code>$$\begin&#123;aligned&#125; x+2 &amp;= 5 \\ x &amp;= 3 \end&#123;aligned&#125;$$</code></td><td>Aligned equations (align on =)</td></tr>
-                              <tr><td><code>[Try: question]</code></td><td>Practice callout</td></tr>
-                              <tr><td><code>[Ans: answer]</code></td><td>Click-to-reveal answer</td></tr>
-                              <tr><td><code>**Note:** text</code></td><td>Note box</td></tr>
-                              <tr><td><code>$math$</code></td><td>Inline math (KaTeX)</td></tr>
-                              <tr><td><code>$$math$$</code></td><td>Display math (centered)</td></tr>
-                              <tr><td><code>$$left math$$</code></td><td>Display math (left-aligned)</td></tr>
-                              <tr><td><code>## Heading</code></td><td>Sub-heading</td></tr>
-                              <tr><td><code>- item</code></td><td>Bullet list</td></tr>
-                              <tr><td><code>1. item</code></td><td>Numbered list</td></tr>
+                              <tr><td colSpan={2} className="en-syntax-section-header">SECTIONS &amp; STRUCTURE</td></tr>
+                              <tr><td><code>**1. Section Name**</code></td><td>Creates a tab (auto-numbered)</td></tr>
+                              <tr><td><code>**N. Practice Questions**</code></td><td>Amber Practice tab</td></tr>
+                              <tr><td><code>**N. Syllabus**</code></td><td>Muted tab, moved to end</td></tr>
+
+                              <tr><td colSpan={2} className="en-syntax-section-header">EXAMPLES &amp; SOLUTIONS</td></tr>
+                              <tr><td><code>**Example:**</code></td><td>Example card (navy top border)</td></tr>
+                              <tr><td><code>**Example: Title**</code></td><td>Example card with title</td></tr>
+                              <tr><td><code>**Solution:**</code></td><td>Solution card (green top border)</td></tr>
+
+                              <tr><td colSpan={2} className="en-syntax-section-header">STEPS</td></tr>
+                              <tr><td><code>Step 1: description</code></td><td>Step pill with indigo badge</td></tr>
+                              <tr><td><code>**Step 1:** description</code></td><td>Same (bold optional)</td></tr>
+
+                              <tr><td colSpan={2} className="en-syntax-section-header">PARTS</td></tr>
+                              <tr><td><code>(a) question text [3]</code></td><td>Part with hanging indent + marks</td></tr>
+                              <tr><td><code>(i) (ii) (iii)</code></td><td>Roman numerals also supported</td></tr>
+                              <tr><td><code>**Part (a):** text</code></td><td>Explicit Part syntax</td></tr>
+
+                              <tr><td colSpan={2} className="en-syntax-section-header">PRACTICE QUESTIONS</td></tr>
+                              <tr><td><code>Q1. question text [3]</code></td><td>Numbered question with marks</td></tr>
+                              <tr><td><code>Q2. (a) sub-part [2]</code></td><td>Question with sub-parts</td></tr>
+                              <tr><td><code>[Try: question]</code></td><td>Orange &ldquo;Try this&rdquo; callout</td></tr>
+                              <tr><td><code>[Ans: answer text]</code></td><td>Click-to-reveal answer</td></tr>
+
+                              <tr><td colSpan={2} className="en-syntax-section-header">MATH (LaTeX / KaTeX)</td></tr>
+                              <tr><td><code>$formula$</code></td><td>Inline math</td></tr>
+                              <tr><td><code>$$formula$$</code></td><td>Display math (centered)</td></tr>
+                              <tr><td><code>$$left formula$$</code></td><td>Display math (left-aligned)</td></tr>
+                              <tr><td><code>$$\begin&#123;aligned&#125; a &amp;= b \\ c &amp;= d \end&#123;aligned&#125;$$</code></td><td>Aligned equations (align on &amp;)</td></tr>
+
+                              <tr><td colSpan={2} className="en-syntax-section-header">FORMATTING</td></tr>
                               <tr><td><code>**bold**</code></td><td>Bold text</td></tr>
                               <tr><td><code>*italic*</code></td><td>Italic text</td></tr>
+                              <tr><td><code>## Heading</code></td><td>Sub-heading (h2)</td></tr>
+                              <tr><td><code>### Heading</code></td><td>Sub-heading (h3)</td></tr>
+                              <tr><td><code>- item</code></td><td>Bullet list</td></tr>
+                              <tr><td><code>1. item</code></td><td>Numbered list</td></tr>
+                              <tr><td><code>**Note:** text</code></td><td>Note box (amber left border)</td></tr>
+                              <tr><td><code>[5]</code> or <code>[5 marks]</code></td><td>Right-aligned marks badge</td></tr>
+                              <tr><td><code>| a | b | c |</code></td><td>Table (pipe syntax)</td></tr>
                               <tr><td><code>---</code></td><td>Horizontal rule</td></tr>
-                              <tr><td>Single newline</td><td>Line break</td></tr>
-                              <tr><td>Double newline</td><td>New paragraph</td></tr>
+
+                              <tr><td colSpan={2} className="en-syntax-section-header">SPACING</td></tr>
+                              <tr><td>Single newline</td><td>Line break (&lt;br&gt;)</td></tr>
+                              <tr><td>Blank line</td><td>New paragraph</td></tr>
                             </tbody>
                           </table>
                         </div>

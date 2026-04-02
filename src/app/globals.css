@@ -339,30 +339,29 @@ body {
 .practice-callout p:last-child { margin-bottom: 0; }
 
 /* Answer spoiler */
-.answer-spoiler { display: inline-block; cursor: pointer; margin-top: 8px; }
-.answer-spoiler .answer-text { display: none; }
+.answer-spoiler {
+  display: block;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.answer-spoiler:hover { background: #dcfce7; border-color: #86efac; }
 .answer-spoiler .reveal-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: var(--color-navy);
-  color: white;
-  border-radius: 6px;
   font-size: 13px;
-  font-weight: 500;
-  transition: background 0.2s;
+  font-weight: 600;
+  color: #15803d;
 }
-.answer-spoiler .reveal-label:hover { background: hsl(220, 60%, 30%); }
-.answer-spoiler.revealed .answer-text {
-  display: inline;
-  padding: 6px 12px;
-  background: hsl(142, 55%, 94%);
-  border-radius: 6px;
-  font-weight: 500;
-  color: hsl(142, 55%, 25%);
-}
+.answer-spoiler .answer-text { display: none; }
+.answer-spoiler.revealed { background: #f0fdf4; border-color: #86efac; cursor: default; }
 .answer-spoiler.revealed .reveal-label { display: none; }
+.answer-spoiler.revealed .answer-text {
+  display: block;
+  color: #1b2a4a;
+}
 
 /* Solution header & steps */
 .solution-header {
@@ -428,6 +427,38 @@ body {
 }
 .part-block .katex-display {
   margin-left: 40px;
+}
+
+/* Practice question numbering: Q1. Q2. Q3. */
+.practice-q-block {
+  margin-top: 24px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.practice-q-block:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.practice-q-block > *:not(.practice-q) {
+  margin-left: 44px;
+}
+.practice-q-block .part-block {
+  margin-left: 44px;
+}
+.practice-q {
+  position: relative;
+  padding-left: 44px;
+  margin-bottom: 4px;
+  min-height: 24px;
+}
+.practice-q-num {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 700;
+  font-size: 15px;
+  color: #1b2a4a;
+  width: 40px;
 }
 
 /* Float-right marks badge for non-Part question lines */
@@ -643,8 +674,8 @@ body {
 .en-tool-btn:hover { background: var(--color-background); color: var(--color-navy); border-color: hsl(220,20%,70%); }
 .en-tool-btn--help { min-width: 24px; font-size: 12px; font-weight: 700; }
 .en-tool-btn--help.active { background: var(--color-navy); color: hsl(45,100%,96%); border-color: var(--color-navy); }
-.en-syntax-overlay { position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.25); display: flex; align-items: flex-start; justify-content: flex-end; padding: 60px 16px 16px; }
-.en-syntax-panel { background: var(--color-card); border: 1px solid var(--color-border); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.14); width: 380px; max-height: 80vh; display: flex; flex-direction: column; overflow: hidden; }
+.en-syntax-overlay { position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.en-syntax-panel { background: var(--color-card); border: 1px solid var(--color-border); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); width: 640px; max-width: 90vw; max-height: 82vh; display: flex; flex-direction: column; overflow: hidden; }
 .en-syntax-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--color-border); font-size: 13px; font-weight: 700; color: var(--color-navy); flex-shrink: 0; }
 .en-syntax-close { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--color-muted-foreground); line-height: 1; padding: 0 2px; transition: color 0.12s; }
 .en-syntax-close:hover { color: var(--color-foreground); }
@@ -653,7 +684,8 @@ body {
 .en-syntax-table tr { border-bottom: 1px solid var(--color-border); }
 .en-syntax-table tr:last-child { border-bottom: none; }
 .en-syntax-table td { padding: 7px 16px; vertical-align: top; line-height: 1.4; }
-.en-syntax-table td:first-child { width: 55%; }
+.en-syntax-table td:first-child { width: 58%; }
+.en-syntax-section-header { padding: 10px 16px 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; background: #f8fafc; border-bottom: 1px solid var(--color-border); }
 .en-syntax-table code { font-family: 'Fira Code', monospace; font-size: 11.5px; background: var(--color-muted); padding: 1px 5px; border-radius: 3px; color: var(--color-navy); }
 .en-syntax-table td:last-child { color: var(--color-muted-foreground); }
 

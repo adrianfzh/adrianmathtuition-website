@@ -183,6 +183,15 @@ function renderMarkdown(text: string): string {
   text = text.replace(/^---+$/gm, '<hr>');
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  // Practice question numbers: Q1. Q2. Q3. etc.
+  text = text.replace(/^Q(\d+)[\.:]+\s*(.*)?$/gm, (_, n, content = '') => {
+    const marksMatch = content.match(/^(.*?)\s*\[(\d{1,2})(?:\s*marks?)?\]\s*$/);
+    const qContent = marksMatch ? marksMatch[1].trim() : content.trim();
+    const marksNum = marksMatch ? marksMatch[2] : null;
+    const marksSpan = marksNum ? `<span class="marks-badge-float">[${marksNum}]</span>` : '';
+    return `<div class="practice-q">${marksSpan}<span class="practice-q-num">Q${n}</span>${qContent}</div>`;
+  });
+
   text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
   text = text.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
   text = text.replace(/^(?!Q)\d+\.\s+(.+)$/gm, '<li>$1</li>');
@@ -231,6 +240,17 @@ function renderMarkdown(text: string): string {
     text = segments.map(seg => {
       if (seg.startsWith('<div class="part-header-row">')) {
         return `<div class="part-block">${seg}</div>`;
+      }
+      return seg;
+    }).join('');
+  }
+
+  // Wrap practice question blocks so sub-content is indented under each Q
+  if (text.includes('practice-q')) {
+    const segments = text.split(/(?=<div class="practice-q">)/);
+    text = segments.map(seg => {
+      if (seg.startsWith('<div class="practice-q">')) {
+        return `<div class="practice-q-block">${seg}</div>`;
       }
       return seg;
     }).join('');
