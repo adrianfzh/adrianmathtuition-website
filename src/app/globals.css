@@ -376,6 +376,8 @@ body {
 .part-block .answer-spoiler { margin-left: 0; }
 .practice-q-block .answer-spoiler { margin-left: 84px; } /* 44px Q num + 40px part label */
 .practice-q-block > .answer-spoiler { margin-left: 44px; } /* direct child (no parts) stays at Q indent */
+.practice-q-block .part-block .answer-spoiler { margin-left: 40px; } /* part-block already offset 44px; spoiler aligns with part content */
+.part-block .part-header-row .marks-badge-inline { margin-left: auto; } /* right-align marks in part rows */
 
 /* Solution header & steps */
 .solution-header {
@@ -487,6 +489,7 @@ body {
 }
 .practice-q-with-part .marks-badge-inline {
   flex-shrink: 0;
+  margin-left: auto;
 }
 .practice-q {
   position: relative;
