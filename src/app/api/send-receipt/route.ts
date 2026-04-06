@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   let body: any = {};
   try { body = await req.json(); } catch { /* no body */ }
 
-  const { invoiceId, password, preview } = body;
+  const { invoiceId, password, preview, paymentDate } = body;
 
   if (!invoiceId || !password) {
     return NextResponse.json({ error: 'Missing invoiceId or password' }, { status: 400 });
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     parentEmail,
     month: f['Month'] || '',
     receiptId: invoiceId,
-    paymentDate: f['Paid At'] || '',
+    paymentDate: paymentDate || f['Paid At'] || '',
     finalAmount: f['Final Amount'] || 0,
     notes: f['Auto Notes'] || '',
     lineItems,
