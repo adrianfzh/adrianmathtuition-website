@@ -9,10 +9,13 @@ async function getBrowser() {
 
   const isProd = process.env.VERCEL === '1';
   if (isProd) {
-    const chromium = await import('@sparticuz/chromium');
+    const chromium = await import('@sparticuz/chromium-min');
+    const executablePath = await chromium.default.executablePath(
+      'https://github.com/Sparticuz/chromium/releases/download/v143.0.0/chromium-v143.0.0-pack.tar'
+    );
     browserInstance = await puppeteer.launch({
       args: chromium.default.args,
-      executablePath: await chromium.default.executablePath(),
+      executablePath,
       headless: true,
     });
   } else {
