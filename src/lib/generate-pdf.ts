@@ -32,6 +32,34 @@ export async function closeBrowser() {
   }
 }
 
+async function renderPDF(html: string): Promise<Buffer> {
+  const browser = await getBrowser();
+  const page = await browser.newPage();
+
+  await page.setRequestInterception(true);
+  page.on('request', (req) => {
+    const url = req.url();
+    if (url.startsWith('https://fonts.googleapis.com') || url.startsWith('https://fonts.gstatic.com')) {
+      req.abort();
+    } else {
+      req.continue();
+    }
+  });
+
+  await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 15000 });
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+    margin: { top: '0', bottom: '0', left: '0', right: '0' },
+    preferCSSPageSize: true,
+  });
+
+  await page.close();
+  return Buffer.from(pdfBuffer);
+}
+
 export interface InvoiceData {
   studentName: string;
   parentEmail?: string;
@@ -137,29 +165,66 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
   html = html.replace(/\{\{EXTRA_LINE_ITEMS_ROWS\}\}/g, extraLineItemsRows);
   html = html.replace(/\{\{AUTO_NOTES\}\}/g, (invoiceData.notes || '').replace(/\n/g, '<br>'));
 
-  const browser = await getBrowser();
-  const page = await browser.newPage();
+  return renderPDF(html);
+}
 
-  await page.setRequestInterception(true);
-  page.on('request', (req) => {
-    const url = req.url();
-    if (url.startsWith('https://fonts.googleapis.com') || url.startsWith('https://fonts.gstatic.com')) {
-      req.abort();
-    } else {
-      req.continue();
-    }
-  });
+export interface ReceiptData {
+  studentName: string;
+  parentEmail?: string;
+  month: string;
+  receiptId: string;
+  paymentDate: string;
+  finalAmount: number;
+  notes: string;
+  lineItems: LineItem[];
+  lineItemsExtra: ExtraLineItem[];
+  ratePerLesson: number;
+}
 
-  await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 15000 });
-  await new Promise((resolve) => setTimeout(resolve, 800));
+export async function generateReceiptPDF(receiptData: ReceiptData): Promise<Buffer> {
+  const templatePath = path.join(process.cwd(), 'public', 'receipt-final.html');
+  let html = await fs.readFile(templatePath, 'utf8');
 
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: { top: '0', bottom: '0', left: '0', right: '0' },
-    preferCSSPageSize: true,
-  });
+  const receiptNumber = `R-${receiptData.receiptId.replace(/^rec/i, '').toUpperCase()}`;
+  html = html.replace(/\{\{RECEIPT_ID\}\}/g, receiptNumber);
+  html = html.replace(/\{\{STUDENT_NAME\}\}/g, receiptData.studentName || '');
+  html = html.replace(/\{\{MONTH\}\}/g, receiptData.month || '');
 
-  await page.close();
-  return Buffer.from(pdfBuffer);
+  const paymentDateFormatted = receiptData.paymentDate
+    ? new Date(receiptData.paymentDate).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+    : '—';
+  html = html.replace(/\{\{PAYMENT_DATE\}\}/g, paymentDateFormatted);
+  html = html.replace(/\{\{FINAL_AMOUNT\}\}/g, parseFloat(String(receiptData.finalAmount || 0)).toFixed(2));
+
+  let lineItemsRows = '';
+  if (receiptData.lineItems?.length) {
+    const groupedByDay: Record<string, LineItem[]> = {};
+    receiptData.lineItems.forEach((item) => {
+      const day = item.day || 'Unknown';
+      if (!groupedByDay[day]) groupedByDay[day] = [];
+      groupedByDay[day].push(item);
+    });
+    lineItemsRows = Object.entries(groupedByDay).map(([day, items]) => {
+      const count = items.length;
+      const amount = (count * (receiptData.ratePerLesson || 0)).toFixed(2);
+      const description = items[0].description || `Tuition \u2014 ${receiptData.month || ''}`;
+      return `<tr><td><div class="desc-main">${description}</div></td><td><span class="slot-pill">${day}</span></td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
+    }).join('');
+  }
+  html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
+
+  let extraLineItemsRows = '';
+  if (receiptData.lineItemsExtra?.length) {
+    extraLineItemsRows = receiptData.lineItemsExtra.map((item) => {
+      const amount = parseFloat(String(item.amount)) || 0;
+      const sign = amount >= 0 ? '' : '-';
+      const slotCell = item.slot ? `<span class="slot-pill">${item.slot}</span>` : '';
+      const lessonsCell = item.lessons ? `<span class="lessons-badge">${item.lessons}</span>` : '';
+      return `<tr><td><div class="desc-main">${item.description || 'Additional Item'}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>${sign}$${Math.abs(amount).toFixed(2)}</td></tr>`;
+    }).join('');
+  }
+  html = html.replace(/\{\{EXTRA_LINE_ITEMS_ROWS\}\}/g, extraLineItemsRows);
+  html = html.replace(/\{\{AUTO_NOTES\}\}/g, (receiptData.notes || '').replace(/\n/g, '<br>'));
+
+  return renderPDF(html);
 }

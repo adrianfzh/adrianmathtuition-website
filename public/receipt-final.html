@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Receipt – Adrian's Math Tuition</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1a2340;
+    --navy-mid: #243058;
+    --gold: #f5c842;
+    --gold-light: #fef9e7;
+    --gold-border: #f5c84244;
+    --white: #ffffff;
+    --bg: #f1f3f8;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --card: #ffffff;
+    --green: #10b981;
+    --green-bg: #d1fae5;
+    --green-dark: #065f46;
+    --amber: #d97706;
+    --amber-bg: #fef3c7;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  .top-bar {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .receipt-ref {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .save-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-decoration: none;
+  }
+
+  .save-btn:hover { background: var(--navy-mid); }
+
+  .save-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--card);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(26,35,64,0.10), 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    padding: 40px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .brand {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .brand-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(245,200,66,0.4);
+  }
+
+  .brand-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .brand-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px;
+    color: var(--white);
+    line-height: 1.2;
+  }
+
+  .contact-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .contact-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 400;
+  }
+
+  .contact-list li svg {
+    width: 13px;
+    height: 13px;
+    stroke: rgba(255,255,255,0.45);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .header-right {
+    position: relative;
+    z-index: 1;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .receipt-word {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 10px;
+  }
+
+  .paid-badge {
+    display: inline-block;
+    background: var(--green);
+    color: var(--white);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    padding: 10px 24px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(16,185,129,0.45);
+    margin-bottom: 14px;
+  }
+
+  .receipt-month-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .receipt-month {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px;
+    color: var(--white);
+    letter-spacing: -0.3px;
+  }
+
+  .meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+    background: #fafbfc;
+  }
+
+  .meta-item {
+    padding: 20px 28px;
+  }
+
+  .meta-item:not(:last-child) {
+    border-right: 1px solid var(--border);
+  }
+
+  .meta-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .meta-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .meta-value svg {
+    width: 13px;
+    height: 13px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .meta-value.amount {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: -0.4px;
+  }
+
+  .body {
+    padding: 36px 48px;
+  }
+
+  .bill-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .student-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 28px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+
+  .month-for {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .month-for strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 0 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th:nth-child(2) { text-align: center; }
+  thead th:nth-child(3) { text-align: center; }
+  thead th:last-child { text-align: right; }
+
+  tbody tr { border-bottom: 1px solid #f1f5f9; }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td {
+    padding: 18px 0;
+    font-size: 14px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody td:nth-child(2) { text-align: center; }
+  tbody td:nth-child(3) { text-align: center; }
+  tbody td:last-child { text-align: right; font-weight: 700; font-size: 15px; }
+
+  .desc-main {
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .slot-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .lessons-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .total-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 0 28px;
+    border-top: 2px solid var(--text);
+    margin-top: 8px;
+    gap: 24px;
+  }
+
+  .total-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  .total-amount {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 32px;
+    color: var(--green);
+    letter-spacing: -0.5px;
+  }
+
+  .confirmed-box {
+    background: var(--green-bg);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .confirmed-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .confirmed-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: white;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .confirmed-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green-dark);
+  }
+
+  .confirmed-sub {
+    font-size: 12.5px;
+    color: var(--green);
+    margin-top: 2px;
+  }
+
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 18px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background: #fafbfc;
+  }
+
+  .footer-left {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .footer-thanks {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+    max-width: 220px;
+    line-height: 1.5;
+  }
+
+  .bottom-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  @media print {
+    @page { margin: 0.5cm; size: A4; }
+    body {
+      background: white;
+      padding: 0;
+    }
+    .top-bar { display: none !important; }
+    .bottom-note { display: none !important; }
+    .card {
+      box-shadow: none;
+      border-radius: 0;
+      max-width: 100%;
+    }
+    .save-btn { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <span class="receipt-ref">{{RECEIPT_ID}}</span>
+  <button class="save-btn" onclick="window.print()">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Save as PDF
+  </button>
+</div>
+
+<div class="card">
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-row">
+        <div class="brand-icon">
+          <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="13" y="19" text-anchor="middle" font-family="Georgia, serif" font-size="19" font-weight="700" fill="#1a2340">A</text>
+          </svg>
+        </div>
+        <div class="brand-name">Adrian's Math Tuition</div>
+      </div>
+      <ul class="contact-list">
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          203 Hougang Street 21, #03-51, Singapore 530203
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.5 1.18 2 2 0 012.48 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          9139 7985
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          adrianmathtuition@gmail.com
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          adrianmathtuition.com
+        </li>
+      </ul>
+    </div>
+    <div class="header-right">
+      <div class="receipt-word">Payment Receipt</div>
+      <div class="paid-badge">PAID</div>
+      <div class="receipt-month-label">For the month of</div>
+      <div class="receipt-month">{{MONTH}}</div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="meta-item">
+      <div class="meta-label">Receipt #</div>
+      <div class="meta-value">{{RECEIPT_ID}}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Payment Date</div>
+      <div class="meta-value">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        {{PAYMENT_DATE}}
+      </div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Amount Paid</div>
+      <div class="meta-value amount">${{FINAL_AMOUNT}}</div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="bill-label">Receipt of payment from</div>
+    <div class="student-name">{{STUDENT_NAME}}</div>
+    <div class="month-for">Tuition fees for <strong>{{MONTH}}</strong></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Slot</th>
+          <th>Lessons</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{LINE_ITEMS_ROWS}}
+        {{EXTRA_LINE_ITEMS_ROWS}}
+      </tbody>
+    </table>
+
+    <div class="total-section">
+      <div style="font-size: 12.5px; color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.8; flex: 1;">{{AUTO_NOTES}}</div>
+      <div style="text-align: right; flex-shrink: 0;">
+        <div class="total-label">Total Paid</div>
+        <div class="total-amount">${{FINAL_AMOUNT}}</div>
+      </div>
+    </div>
+
+    <div class="confirmed-box">
+      <div class="confirmed-icon">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div>
+        <div class="confirmed-text">Payment Confirmed</div>
+        <div class="confirmed-sub">Full payment of ${{FINAL_AMOUNT}} has been received. Thank you!</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">
+      203 Hougang Street 21, #03-51, Singapore 530203<br>
+      adrianmathtuition@gmail.com &nbsp;·&nbsp; 9139 7985
+    </div>
+    <div class="footer-thanks">This receipt confirms payment has been received. Thank you for your support.</div>
+  </div>
+
+</div>
+
+<p class="bottom-note">Thank you for choosing Adrian's Math Tuition</p>
+
+</body>
+</html>
