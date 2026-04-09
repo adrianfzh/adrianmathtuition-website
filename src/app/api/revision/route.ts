@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     if (password !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: CORS });
     }
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('lesson_content')
       .select('*')
       .eq('slug', slug)
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Public access: only published
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('lesson_content')
     .select('lesson_data, topic, subtopic, level, title')
     .eq('slug', slug)
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: CORS });
   }
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('lesson_content')
     .upsert(
       { slug, level, topic, subtopic, title, lesson_data, status: status || 'draft' },
