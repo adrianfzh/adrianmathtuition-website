@@ -28,7 +28,6 @@ interface Student {
   name: string;
   parentName: string;
   parentEmail: string;
-  parentPhone: string;
 }
 
 interface ScheduleData {
@@ -465,12 +464,6 @@ export default function SchedulePage() {
                 <div className="modal-row">
                   <span className="modal-label">Email</span>
                   <a href={`mailto:${modal.student.parentEmail}`}>{modal.student.parentEmail}</a>
-                </div>
-              )}
-              {modal.student.parentPhone && (
-                <div className="modal-row">
-                  <span className="modal-label">Phone</span>
-                  <a href={`tel:${modal.student.parentPhone}`}>{modal.student.parentPhone}</a>
                 </div>
               )}
             </div>
