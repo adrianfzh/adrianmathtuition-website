@@ -11,7 +11,7 @@ function checkAuth(req: NextRequest): boolean {
 
 function getMondayOfWeek(dateStr: string): Date {
   const d = new Date(dateStr + 'T00:00:00Z');
-  const day = d.getUTCDay(); // 0=Sun
+  const day = d.getUTCDay();
   const diff = day === 0 ? -6 : 1 - day;
   d.setUTCDate(d.getUTCDate() + diff);
   return d;
@@ -27,7 +27,6 @@ function isoDate(d: Date): string {
   return d.toISOString().split('T')[0];
 }
 
-// Fetch all pages from Airtable (handles 100-record limit)
 async function fetchAll(table: string, query: string): Promise<any[]> {
   const records: any[] = [];
   let offset: string | undefined;
@@ -57,24 +56,22 @@ export async function GET(req: NextRequest) {
   const weekStart = isoDate(monday);
   const weekEnd = isoDate(sunday);
 
-  const at = (table: string, path: string) => airtableRequest(table, path);
-
-  // Fetch active slots and lessons in parallel
-  const [slotsData, lessonsData] = await Promise.all([
+  // Fetch slots, enrollments, and lessons in parallel
+  const [slotsData, enrollmentsData, lessonsData] = await Promise.all([
     fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`{Is Active}=1`)}`),
+    fetchAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot`),
     fetchAll(
       'Lessons',
       `?filterByFormula=${encodeURIComponent(`AND({Date}>='${weekStart}',{Date}<='${weekEnd}')`)}&sort[0][field]=Date&sort[0][direction]=asc`
     ),
   ]);
 
-  // Collect unique student IDs from lessons
+  // Collect all unique student IDs (from both enrollments and lessons)
   const studentIds = [
-    ...new Set(
-      lessonsData
-        .map((r: any) => r.fields['Student']?.[0])
-        .filter(Boolean)
-    ),
+    ...new Set([
+      ...enrollmentsData.map((r: any) => r.fields['Student']?.[0]),
+      ...lessonsData.map((r: any) => r.fields['Student']?.[0]),
+    ].filter(Boolean)),
   ] as string[];
 
   let studentsById: Record<string, any> = {};
@@ -96,7 +93,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Parse day number out of "1 Monday" → { dayNum: 1, dayName: "Monday" }
+  // Parse slots
   const slots = slotsData.map((r: any) => {
     const dayRaw: string = r.fields['Day'] || '';
     const match = dayRaw.match(/^(\d+)\s+(.+)/);
@@ -114,6 +111,16 @@ export async function GET(req: NextRequest) {
     };
   });
 
+  // enrollmentsBySlot: slotId → studentId[]
+  const enrollmentsBySlot: Record<string, string[]> = {};
+  for (const r of enrollmentsData) {
+    const slotId = r.fields['Slot']?.[0];
+    const studentId = r.fields['Student']?.[0];
+    if (!slotId || !studentId) continue;
+    if (!enrollmentsBySlot[slotId]) enrollmentsBySlot[slotId] = [];
+    enrollmentsBySlot[slotId].push(studentId);
+  }
+
   const lessons = lessonsData.map((r: any) => ({
     id: r.id,
     date: r.fields['Date'] || '',
@@ -128,6 +135,7 @@ export async function GET(req: NextRequest) {
     weekStart,
     weekEnd,
     slots,
+    enrollmentsBySlot,
     lessons,
     students: studentsById,
   });

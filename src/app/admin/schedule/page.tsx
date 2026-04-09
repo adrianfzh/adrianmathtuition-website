@@ -34,6 +34,7 @@ interface ScheduleData {
   weekStart: string;
   weekEnd: string;
   slots: Slot[];
+  enrollmentsBySlot: Record<string, string[]>;
   lessons: Lesson[];
   students: Record<string, Student>;
 }
@@ -255,14 +256,8 @@ export default function SchedulePage() {
     }
   }
 
-  function getLessons(date: Date, slotId: string): Lesson[] {
+  function getLessonsForSlot(date: Date, slotId: string): Lesson[] {
     return lessonMap[`${isoDate(date)}__${slotId}`] || [];
-  }
-
-  function countPresent(date: Date, slotId: string): number {
-    return getLessons(date, slotId).filter(
-      l => l.status !== 'Absent' && l.status !== 'Cancelled'
-    ).length;
   }
 
   // ── Render day column ────────────────────────────────────────────────────────
@@ -277,9 +272,30 @@ export default function SchedulePage() {
     }
 
     return slots.map(slot => {
-      const lessons = getLessons(date, slot.id);
-      const present = countPresent(date, slot.id);
-      const hasLessons = lessons.length > 0;
+      const lessons = getLessonsForSlot(date, slot.id);
+      const enrolledIds: string[] = data?.enrollmentsBySlot?.[slot.id] || [];
+
+      // Build merged student list:
+      // Start with enrolled students as Regular, then overlay any lesson records
+      const lessonByStudent: Record<string, Lesson> = {};
+      const extraLessons: Lesson[] = []; // trial/additional with no enrollment
+      for (const l of lessons) {
+        if (l.studentId && enrolledIds.includes(l.studentId)) {
+          lessonByStudent[l.studentId] = l;
+        } else {
+          extraLessons.push(l);
+        }
+      }
+
+      // Count present: enrolled not absent + extra not absent
+      const absentIds = new Set(
+        Object.entries(lessonByStudent)
+          .filter(([, l]) => l.status === 'Absent' || l.status === 'Cancelled')
+          .map(([id]) => id)
+      );
+      const present = (enrolledIds.length - absentIds.size) +
+        extraLessons.filter(l => l.status !== 'Absent' && l.status !== 'Cancelled').length;
+      const total = slot.capacity;
 
       return (
         <div key={slot.id} className={`slot-card ${isToday ? 'today' : ''}`}>
@@ -288,63 +304,62 @@ export default function SchedulePage() {
               <span className="slot-time">⏰ {slot.time}</span>
               <span className={`slot-level level-${slot.level.toLowerCase()}`}>{slot.level}</span>
             </div>
-            {hasLessons ? (
-              <span className={`capacity ${present >= slot.capacity ? 'full' : ''}`}>
-                {present}/{slot.capacity}
-              </span>
-            ) : (
-              <span className="capacity dim">{slot.enrolledCount}/{slot.capacity}</span>
-            )}
+            <span className={`capacity ${present >= total ? 'full' : ''}`}>
+              {present}/{total}
+            </span>
           </div>
 
-          {hasLessons ? (
-            <div className="lesson-list">
-              {lessons.map(lesson => renderLesson(lesson, data!))}
-            </div>
-          ) : (
-            <div className="lesson-list empty-enrolled">
-              <span className="enrolled-hint">{slot.enrolledCount} enrolled</span>
-            </div>
-          )}
+          <div className="lesson-list">
+            {/* Enrolled students (with lesson override if exists) */}
+            {enrolledIds.map(studentId => {
+              const student = data?.students[studentId];
+              const lesson = lessonByStudent[studentId];
+              const isAbsent = lesson && (lesson.status === 'Absent' || lesson.status === 'Cancelled');
+              const type = lesson?.type || 'Regular';
+              const style = getTypeStyle(type, lesson?.status || '');
+              return (
+                <div
+                  key={studentId}
+                  className={`lesson-chip ${isAbsent ? 'absent' : ''}`}
+                  style={{ background: style.bg, color: style.text, borderColor: style.border }}
+                  onClick={student ? () => setModal({ student, lessonType: type }) : undefined}
+                  role={student ? 'button' : undefined}
+                >
+                  <span className={isAbsent ? 'absent-name' : ''}>{student?.name || studentId}</span>
+                  {type !== 'Regular' && !isAbsent && <span className="type-tag">{type}</span>}
+                  {isAbsent && <span className="type-tag absent-tag">{lesson?.status}</span>}
+                </div>
+              );
+            })}
+            {/* Extra lessons: trial, makeup, additional not in enrollments */}
+            {extraLessons.map(lesson => {
+              const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
+              const style = getTypeStyle(lesson.type, lesson.status);
+              const isTrial = lesson.type === 'Trial';
+              const student = lesson.studentId ? data?.students[lesson.studentId] : null;
+              const displayName = student?.name || (isTrial ? getTrialName(lesson.notes) : 'Unknown');
+              return (
+                <div
+                  key={lesson.id}
+                  className={`lesson-chip ${isAbsent ? 'absent' : ''}`}
+                  style={{ background: style.bg, color: style.text, borderColor: style.border }}
+                  onClick={student ? () => setModal({ student, lessonType: lesson.type }) : undefined}
+                  role={student ? 'button' : undefined}
+                >
+                  {isTrial && <span className="trial-badge">🆕</span>}
+                  <span className={isAbsent ? 'absent-name' : ''}>{displayName}</span>
+                  {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
+                  {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
+                </div>
+              );
+            })}
+            {enrolledIds.length === 0 && extraLessons.length === 0 && (
+              <span className="enrolled-hint">No students enrolled</span>
+            )}
+          </div>
         </div>
       );
     });
-  }
-
-  function renderLesson(lesson: Lesson, d: ScheduleData) {
-    const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
-    const style = getTypeStyle(lesson.type, lesson.status);
-    const isTrial = lesson.type === 'Trial';
-
-    let displayName: string;
-    let student: Student | null = null;
-    if (lesson.studentId && d.students[lesson.studentId]) {
-      student = d.students[lesson.studentId];
-      displayName = student.name;
-    } else if (isTrial) {
-      displayName = getTrialName(lesson.notes);
-    } else {
-      displayName = 'Unknown';
-    }
-
-    const clickable = student || isTrial;
-
-    return (
-      <div
-        key={lesson.id}
-        className={`lesson-chip ${isAbsent ? 'absent' : ''}`}
-        style={{ background: style.bg, color: style.text, borderColor: style.border }}
-        onClick={clickable && student ? () => setModal({ student, lessonType: lesson.type }) : undefined}
-        role={clickable && student ? 'button' : undefined}
-      >
-        {isTrial && <span className="trial-badge">🆕</span>}
-        <span className={isAbsent ? 'absent-name' : ''}>{displayName}</span>
-        {lesson.type !== 'Regular' && !isAbsent && (
-          <span className="type-tag">{lesson.type}</span>
-        )}
-        {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
-      </div>
-    );
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -371,7 +386,10 @@ export default function SchedulePage() {
           const date = weekDates[i];
           const isToday = isoDate(date) === isoDate(new Date());
           const slots = slotsByDay[day] || [];
-          const hasActivity = data && slots.some(s => getLessons(date, s.id).length > 0);
+          const hasActivity = data && slots.some(s =>
+            (data.enrollmentsBySlot?.[s.id]?.length || 0) > 0 ||
+            getLessonsForSlot(date, s.id).length > 0
+          );
           return (
             <button
               key={day}
