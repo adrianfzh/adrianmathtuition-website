@@ -34,18 +34,13 @@ body {
   overflow: hidden;
 }
 
-/* Chat page — permanent desktop sidebar */
+/* Chat page — permanent desktop sidebar wrapper */
 .chat-sidebar-permanent {
-  width: 240px;
   flex-shrink: 0;
-  background: white;
-  border-right: 1px solid hsl(220,15%,88%);
   display: none;
-  flex-direction: column;
-  overflow: hidden;
 }
 @media (min-width: 768px) {
-  .chat-sidebar-permanent { display: flex; }
+  .chat-sidebar-permanent { display: block; }
 }
 
 /* ── REVISE PAGE ─────────────────────────────────────────────────── */

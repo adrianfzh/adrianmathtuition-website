@@ -996,6 +996,7 @@ export default function ChatPage() {
         @keyframes tdot { 0%,60%,100% { transform:translateY(0); opacity:0.4; } 30% { transform:translateY(-5px); opacity:1; } }
         @keyframes spin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes flyoutIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
         .message-bubble .katex { font-size:1.05em; }
         .message-bubble .katex-display { margin:12px 0; overflow-x:auto; }
         .message-bubble strong { font-weight:600; }
@@ -1218,71 +1219,87 @@ export default function ChatPage() {
       {/* Below-nav flex row: permanent sidebar + formula panel + chat column */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-        {/* Permanent sidebar — desktop only, with drill-down formula view */}
-        <aside className="chat-sidebar-permanent" style={{ overflow: 'hidden' }}>
+        {/* Sidebar wrapper — permanent topic list + flyout formula panel */}
+        <div className="chat-sidebar-permanent" style={{ position: 'relative' }}>
+          {/* Permanent sidebar — always shows topic list */}
           <div style={{
-            display: 'flex', width: '200%', height: '100%',
-            transform: formulaSheet && !formulaFromMenu ? 'translateX(-50%)' : 'translateX(0)',
-            transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
+            width: 240, height: '100%',
+            background: 'white', borderRight: '1px solid hsl(220,15%,88%)',
+            display: 'flex', flexDirection: 'column', overflowY: 'auto',
           }}>
-            {/* Screen 1 — topic list */}
-            <div style={{ width: '50%', overflowY: 'auto', flexShrink: 0 }}>
-              <SidebarContent
-                key={`desktop-${JSON.stringify(restoreFolder)}`}
-                onSheetClick={(id) => { setFormulaSheet(id); setFormulaFromMenu(false); }}
-                defaultAmathOpen={restoreFolder.amath}
-                defaultEmathOpen={restoreFolder.emath}
-                defaultJcmathOpen={restoreFolder.jcmath}
-              />
-            </div>
-            {/* Screen 2 — formula content */}
-            <div style={{ width: '50%', flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              {/* Back bar */}
-              <div style={{
-                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
-                padding: '0 8px 0 2px', height: 44,
-                background: 'hsl(220,60%,20%)',
-                borderBottom: '1px solid hsl(220,50%,15%)',
-              }}>
-                <button
-                  onClick={backFromFormula}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
-                    display: 'flex', alignItems: 'center', gap: 3,
-                    padding: '6px 8px', flexShrink: 0,
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                  Back
-                </button>
-                <span style={{
-                  flex: 1, textAlign: 'center',
-                  fontFamily: "'DM Serif Display', serif", fontSize: 12,
-                  color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>
-                  {FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title ?? ''}
-                </span>
-              </div>
-              {/* Formula iframe */}
-              {formulaSheet && !formulaFromMenu && (() => {
-                const url = FORMULA_SHEETS.find(s => s.id === formulaSheet)?.url ?? '';
-                return (
-                  <iframe
-                    src={url}
-                    style={{ flex: 1, border: 'none', display: 'block', width: '100%' }}
-                    title={FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title}
-                  />
-                );
-              })()}
-            </div>
+            <SidebarContent
+              key={`desktop-${JSON.stringify(restoreFolder)}`}
+              onSheetClick={(id) => { setFormulaSheet(id); setFormulaFromMenu(false); }}
+              defaultAmathOpen={restoreFolder.amath}
+              defaultEmathOpen={restoreFolder.emath}
+              defaultJcmathOpen={restoreFolder.jcmath}
+            />
           </div>
-        </aside>
+
+          {/* Flyout formula panel — absolutely positioned to the right of sidebar */}
+          {formulaSheet && !formulaFromMenu && (() => {
+            const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
+            const sheetUrl = activeSheet?.url ?? '';
+            return (
+              <div style={{
+                position: 'fixed', top: 64, left: 240, bottom: 0, width: 400,
+                background: 'white',
+                boxShadow: '4px 0 16px rgba(0,0,0,0.08)',
+                borderRight: '1px solid hsl(220,15%,88%)',
+                zIndex: 40,
+                display: 'flex', flexDirection: 'column',
+                animation: 'flyoutIn 0.18s ease-out',
+              }}>
+                {/* Header */}
+                <div style={{
+                  flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '0 12px 0 4px', height: 48,
+                  background: 'hsl(220,60%,20%)',
+                  borderBottom: '1px solid hsl(220,50%,15%)',
+                }}>
+                  <button
+                    onClick={backFromFormula}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'hsl(45,90%,80%)',
+                      display: 'flex', alignItems: 'center',
+                      padding: '8px 10px', flexShrink: 0,
+                    }}
+                    title="Close"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                  <span style={{
+                    flex: 1,
+                    fontFamily: "'DM Serif Display', serif", fontSize: 15,
+                    color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {activeSheet?.title}
+                  </span>
+                </div>
+                {/* Content iframe */}
+                <iframe
+                  src={sheetUrl}
+                  style={{ flex: 1, border: 'none', display: 'block', width: '100%' }}
+                  title={activeSheet?.title}
+                />
+              </div>
+            );
+          })()}
+        </div>
 
         {/* Chat column */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        <div
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}
+          onClick={() => {
+            if (formulaSheet && !formulaFromMenu) {
+              setFormulaSheet(null);
+              setFormulaFromMenu(false);
+            }
+          }}
+        >
 
           {/* Scrollable chat area */}
           <div
