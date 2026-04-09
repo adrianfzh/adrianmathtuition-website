@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
     const formula = `OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`;
     const studentsData = await fetchAll(
       'Students',
-      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name&fields[]=Parent Name&fields[]=Parent Email&fields[]=Parent Phone&fields[]=Phone`
+      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name&fields[]=Parent Name&fields[]=Parent Email&fields[]=Phone`
     );
     studentsById = Object.fromEntries(
       studentsData.map((r: any) => [
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
           name: r.fields['Student Name'] || '',
           parentName: r.fields['Parent Name'] || '',
           parentEmail: r.fields['Parent Email'] || '',
-          parentPhone: r.fields['Parent Phone'] || r.fields['Phone'] || '',
+          parentPhone: r.fields['Phone'] || '',
         },
       ])
     );
