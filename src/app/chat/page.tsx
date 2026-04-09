@@ -158,13 +158,19 @@ let isProgrammaticScroll = false;
 function SidebarContent({
   onSheetClick,
   onAskQuestion,
+  defaultAmathOpen,
+  defaultEmathOpen,
+  defaultJcmathOpen,
 }: {
   onSheetClick: (id: FormulaSheetId) => void;
   onAskQuestion?: () => void;
+  defaultAmathOpen?: boolean;
+  defaultEmathOpen?: boolean;
+  defaultJcmathOpen?: boolean;
 }) {
-  const [jcmathOpen, setJcmathOpen] = useState(false);
-  const [amathOpen, setAmathOpen] = useState(false);
-  const [emathOpen, setEmathOpen] = useState(false);
+  const [jcmathOpen, setJcmathOpen] = useState(defaultJcmathOpen ?? false);
+  const [amathOpen, setAmathOpen] = useState(defaultAmathOpen ?? false);
+  const [emathOpen, setEmathOpen] = useState(defaultEmathOpen ?? false);
 
   const sheetBtn = (id: FormulaSheetId, emoji: string, title: string, subtitle: string) => (
     <button
@@ -443,6 +449,35 @@ export default function ChatPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [formulaSheet, setFormulaSheet] = useState<FormulaSheetId | null>(null);
+  const [formulaFromMenu, setFormulaFromMenu] = useState(false);
+
+  function folderForSheet(id: FormulaSheetId): { amath?: boolean; emath?: boolean; jcmath?: boolean } {
+    if (id === 'emath' || id.startsWith('em-')) return { emath: true };
+    if (id === 'mf27' || id.startsWith('jc-')) return { jcmath: true };
+    return { amath: true };
+  }
+
+  function openFormulaFromMenu(id: FormulaSheetId) {
+    setMenuOpen(false);
+    setFormulaSheet(id);
+    setFormulaFromMenu(true);
+  }
+
+  function backFromFormula() {
+    if (formulaFromMenu && formulaSheet) {
+      const folder = folderForSheet(formulaSheet);
+      setFormulaSheet(null);
+      setFormulaFromMenu(false);
+      setMenuOpen(true);
+      // Store which folder to reopen — passed via key/defaultOpen to SidebarContent
+      setRestoreFolder(folder);
+    } else {
+      setFormulaSheet(null);
+      setFormulaFromMenu(false);
+    }
+  }
+
+  const [restoreFolder, setRestoreFolder] = useState<{ amath?: boolean; emath?: boolean; jcmath?: boolean }>({});
 
   const welcomeInputRef = useRef<HTMLTextAreaElement>(null);
   const fixedInputRef = useRef<HTMLTextAreaElement>(null);
@@ -1041,57 +1076,67 @@ export default function ChatPage() {
         </div>
 
         <SidebarContent
-          onSheetClick={(id) => { setMenuOpen(false); setFormulaSheet(id); }}
+          key={`menu-${menuOpen}-${JSON.stringify(restoreFolder)}`}
+          onSheetClick={openFormulaFromMenu}
           onAskQuestion={() => {
             setMenuOpen(false);
+            setRestoreFolder({});
             setTimeout(() => {
               (conversationStarted ? fixedInputRef.current : welcomeInputRef.current)?.focus();
             }, 50);
           }}
+          defaultAmathOpen={restoreFolder.amath}
+          defaultEmathOpen={restoreFolder.emath}
+          defaultJcmathOpen={restoreFolder.jcmath}
         />
       </div>
 
-      {/* Full-screen PDF overlay */}
-      {formulaSheet && (
-        <div style={{
-          position: 'fixed', inset: 0,
-          background: 'white',
-          zIndex: 70,
-          display: 'flex', flexDirection: 'column',
-          animation: 'fadeIn 0.15s ease',
-        }}>
-          {/* PDF overlay top bar */}
-          <div style={{
-            flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
-            padding: '0 12px 0 4px', height: 52,
-            background: 'hsl(220,60%,20%)',
-            borderBottom: '1px solid hsl(220,50%,15%)',
-          }}>
-            <button
-              onClick={() => setFormulaSheet(null)}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'hsl(45,90%,80%)', fontSize: 14, fontWeight: 500,
-                display: 'flex', alignItems: 'center', gap: 4,
-                padding: '8px 10px', flexShrink: 0,
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-              Back
-            </button>
-            <span style={{
-              flex: 1, textAlign: 'center',
-              fontFamily: "'DM Serif Display', serif", fontSize: 15,
-              color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      {/* Below-nav flex row: permanent sidebar + chat column / formula panel */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+        {/* Permanent sidebar — desktop only (hidden via CSS on mobile) */}
+        <aside className="chat-sidebar-permanent">
+          <SidebarContent onSheetClick={(id) => { setFormulaSheet(id); setFormulaFromMenu(false); }} />
+        </aside>
+
+        {/* Formula panel — replaces chat column when a sheet is selected */}
+        {formulaSheet && (() => {
+          const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
+          const sheetUrl = activeSheet?.url ?? '';
+          const isPdf = sheetUrl.endsWith('.pdf');
+          return (
+            <div style={{
+              flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0,
+              animation: 'fadeIn 0.15s ease',
             }}>
-              {FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title}
-            </span>
-            {(() => {
-              const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
-              const sheetUrl = activeSheet?.url ?? '';
-              return (
+              {/* Top bar */}
+              <div style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+                padding: '0 12px 0 4px', height: 52,
+                background: 'hsl(220,60%,20%)',
+                borderBottom: '1px solid hsl(220,50%,15%)',
+              }}>
+                <button
+                  onClick={backFromFormula}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'hsl(45,90%,80%)', fontSize: 14, fontWeight: 500,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    padding: '8px 10px', flexShrink: 0,
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                  Back
+                </button>
+                <span style={{
+                  flex: 1, textAlign: 'center',
+                  fontFamily: "'DM Serif Display', serif", fontSize: 15,
+                  color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {activeSheet?.title}
+                </span>
                 <a
                   href={sheetUrl}
                   target="_blank"
@@ -1109,23 +1154,14 @@ export default function ChatPage() {
                   </svg>
                   Open
                 </a>
-              );
-            })()}
-          </div>
-
-          {/* Embed */}
-          {(() => {
-            const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
-            const sheetUrl = activeSheet?.url ?? '';
-            const isPdf = sheetUrl.endsWith('.pdf');
-            return (
+              </div>
+              {/* Embed */}
               <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                 <iframe
                   src={sheetUrl}
                   style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                   title={activeSheet?.title}
                 />
-                {/* Fallback shown below iframe on mobile if PDF doesn't render */}
                 {isPdf && (
                   <div style={{
                     position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -1148,21 +1184,12 @@ export default function ChatPage() {
                   </div>
                 )}
               </div>
-            );
-          })()}
-        </div>
-      )}
+            </div>
+          );
+        })()}
 
-      {/* Below-nav flex row: permanent sidebar + chat column */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-
-        {/* Permanent sidebar — desktop only (hidden via CSS on mobile) */}
-        <aside className="chat-sidebar-permanent">
-          <SidebarContent onSheetClick={(id) => setFormulaSheet(id)} />
-        </aside>
-
-        {/* Chat column */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        {/* Chat column — hidden when formula panel is open */}
+        <div style={{ flex: 1, display: formulaSheet ? 'none' : 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
 
           {/* Scrollable chat area */}
           <div
