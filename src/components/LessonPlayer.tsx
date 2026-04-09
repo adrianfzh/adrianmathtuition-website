@@ -19,14 +19,15 @@ interface Rule {
 }
 
 interface Slide {
-  type: 'title' | 'concept' | 'worked' | 'try' | 'summary';
+  type: 'title' | 'concept' | 'concept_text' | 'worked' | 'try' | 'summary';
   narration?: string;
   // title slide
-  // concept
+  // concept / concept_text
   title?: string;
   subtitle?: string;
   rules?: [string, string][];
   note?: string;
+  body?: string;  // concept_text prose
   // worked
   method?: string;
   question?: string;
@@ -138,6 +139,23 @@ function ConceptSlide({ slide }: { slide: Slide }) {
               </div>
             ))}
           </div>
+        )}
+        {slide.note && (
+          <div className="lp-note-box" dangerouslySetInnerHTML={{ __html: renderMixed(slide.note) }} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ConceptTextSlide({ slide }: { slide: Slide }) {
+  return (
+    <div className="lp-slide lp-concept-slide">
+      <div className="lp-card">
+        {slide.title && <h2 className="lp-card-title">{slide.title}</h2>}
+        {slide.body && (
+          <div className="lp-concept-body"
+            dangerouslySetInnerHTML={{ __html: renderMixed(slide.body) }} />
         )}
         {slide.note && (
           <div className="lp-note-box" dangerouslySetInnerHTML={{ __html: renderMixed(slide.note) }} />
@@ -277,8 +295,9 @@ function SummarySlide({ slide }: { slide: Slide }) {
 function renderSlide(slide: Slide, lessonData: LessonData) {
   switch (slide.type) {
     case 'title':   return <TitleSlide slide={slide} lessonData={lessonData} />;
-    case 'concept': return <ConceptSlide slide={slide} />;
-    case 'worked':  return <WorkedSlide slide={slide} />;
+    case 'concept':      return <ConceptSlide slide={slide} />;
+    case 'concept_text': return <ConceptTextSlide slide={slide} />;
+    case 'worked':       return <WorkedSlide slide={slide} />;
     case 'try':     return <TrySlide slide={slide} />;
     case 'summary': return <SummarySlide slide={slide} />;
     default:        return <ConceptSlide slide={slide} />;
@@ -658,6 +677,12 @@ const CSS = `
   font-size: 15px;
   color: var(--color-muted-foreground);
   line-height: 1.65;
+}
+.lp-concept-body {
+  font-size: 15px;
+  color: var(--color-foreground);
+  line-height: 1.75;
+  white-space: pre-wrap;
 }
 
 /* ── Concept: warning variant ── */

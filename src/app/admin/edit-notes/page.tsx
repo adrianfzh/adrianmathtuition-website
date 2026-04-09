@@ -455,6 +455,16 @@ export default function EditNotesPage() {
   const aiDraftRef = useRef('');
   const aiPreviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Lesson mode
+  const [mode, setMode] = useState<'notes' | 'lesson'>('notes');
+  const [lessonJson, setLessonJson] = useState('');
+  const [lessonSlug, setLessonSlug] = useState('');
+  const [lessonStatus, setLessonStatus] = useState<'draft' | 'published'>('draft');
+  const [lessonGenerating, setLessonGenerating] = useState(false);
+  const [lessonSaving, setLessonSaving] = useState(false);
+  const lessonJsonRef = useRef('');
+  const lessonSlugRef = useRef('');
+
   // DOM refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumsRef = useRef<HTMLDivElement>(null);
@@ -484,6 +494,8 @@ export default function EditNotesPage() {
   useEffect(() => { slugDisplayRef.current = slugDisplay; }, [slugDisplay]);
   useEffect(() => { currentSlugRef.current = currentSlug; }, [currentSlug]);
   useEffect(() => { aiInstructionRef.current = aiInstruction; }, [aiInstruction]);
+  useEffect(() => { lessonJsonRef.current = lessonJson; }, [lessonJson]);
+  useEffect(() => { lessonSlugRef.current = lessonSlug; }, [lessonSlug]);
 
   // Restore last AI instruction from sessionStorage
   useEffect(() => {
@@ -1233,6 +1245,97 @@ export default function EditNotesPage() {
     }
   }
 
+  async function loadLessonForSlug(slug: string) {
+    if (!slug) return;
+    try {
+      const r = await fetch(`/api/revision?slug=${encodeURIComponent(slug)}&admin=1&password=${encodeURIComponent(passwordRef.current)}`);
+      const d = await r.json();
+      if (d.lessonData) {
+        const j = JSON.stringify(d.lessonData, null, 2);
+        setLessonJson(j);
+        lessonJsonRef.current = j;
+        setLessonStatus(d.status || 'draft');
+      } else {
+        setLessonJson('');
+        lessonJsonRef.current = '';
+        setLessonStatus('draft');
+      }
+    } catch {
+      setLessonJson('');
+      lessonJsonRef.current = '';
+    }
+  }
+
+  async function generateLesson() {
+    setLessonGenerating(true);
+    try {
+      const r = await fetch('/api/generate-lesson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: metaTopicRef.current,
+          subtopic: lessonSlugRef.current.split('/')[2] || '',
+          level: metaLevelRef.current.toLowerCase(),
+          notes: fullContentRef.current,
+          password: passwordRef.current,
+        }),
+      });
+      const d = await r.json();
+      if (d.lessonData) {
+        const j = JSON.stringify(d.lessonData, null, 2);
+        setLessonJson(j);
+        lessonJsonRef.current = j;
+        showToast('Lesson generated!');
+      } else {
+        showToast(d.error || 'Generation failed', 'error');
+      }
+    } catch {
+      showToast('Generation failed', 'error');
+    } finally {
+      setLessonGenerating(false);
+    }
+  }
+
+  async function saveLesson() {
+    const slug = lessonSlugRef.current.trim();
+    if (!slug) { showToast('Lesson slug is required', 'error'); return; }
+    let parsedData;
+    try {
+      parsedData = JSON.parse(lessonJsonRef.current);
+    } catch {
+      showToast('Invalid JSON — fix before saving', 'error');
+      return;
+    }
+    setLessonSaving(true);
+    try {
+      const parts = slug.split('/');
+      const r = await fetch('/api/revision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          level: parts[0] || metaLevelRef.current.toLowerCase(),
+          topic: parts[1] || '',
+          subtopic: parts[2] || '',
+          title: metaTopicRef.current || slug,
+          lesson_data: parsedData,
+          status: lessonStatus,
+          password: passwordRef.current,
+        }),
+      });
+      const d = await r.json();
+      if (d.success) {
+        showToast('Lesson saved!');
+      } else {
+        showToast(d.error || 'Save failed', 'error');
+      }
+    } catch {
+      showToast('Save failed', 'error');
+    } finally {
+      setLessonSaving(false);
+    }
+  }
+
   async function saveNotes() {
     const topic = metaTopicRef.current.trim();
     const level = metaLevelRef.current || 'AM';
@@ -1564,11 +1667,31 @@ export default function EditNotesPage() {
                       ✨ AI
                     </button>
                     <button
-                      className={`en-btn-save${saveState === 'saved' ? ' saved' : ''}`}
-                      onClick={saveNotes}
-                      disabled={saveState === 'saving'}
+                      className={`en-btn-mode${mode === 'lesson' ? ' active' : ''}`}
+                      onClick={() => {
+                        const next = mode === 'notes' ? 'lesson' : 'notes';
+                        setMode(next);
+                        if (next === 'lesson' && !lessonSlugRef.current && metaTopicRef.current) {
+                          const topicSlug = metaTopicRef.current.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                          const lvl = metaLevelRef.current.toLowerCase() === 'jc' ? 'jc' : metaLevelRef.current.toLowerCase() === 'am' ? 'am' : 'em';
+                          const newSlug = `${lvl}/notes/${topicSlug}`;
+                          setLessonSlug(newSlug);
+                          lessonSlugRef.current = newSlug;
+                          loadLessonForSlug(newSlug);
+                        }
+                      }}
+                      title="Switch between Notes editor and Revision Lesson editor"
                     >
-                      {saveState === 'saving' ? (
+                      {mode === 'lesson' ? '📝 Notes' : '📖 Lesson'}
+                    </button>
+                    <button
+                      className={`en-btn-save${saveState === 'saved' ? ' saved' : ''}`}
+                      onClick={mode === 'lesson' ? saveLesson : saveNotes}
+                      disabled={mode === 'lesson' ? lessonSaving : saveState === 'saving'}
+                    >
+                      {mode === 'lesson' ? (
+                        lessonSaving ? 'Saving…' : <><FloppyIcon /> Save Lesson</>
+                      ) : saveState === 'saving' ? (
                         <>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'en-spin 1s linear infinite' }}>
                             <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0" />
@@ -1677,21 +1800,51 @@ export default function EditNotesPage() {
                         <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }} title="Rendered exactly as it appears on the live /revise page">Matches live /revise page</span>
                       </div>
                       <div className="en-preview-body" ref={previewBodyRef}>
-                        <nav
-                          className="en-preview-sidebar"
-                          ref={previewTabsRef}
-                          style={sidebarWidthPx ? { width: sidebarWidthPx, flex: 'none' } : undefined}
-                        />
-                        <div
-                          className="en-sidebar-divider"
-                          onMouseDown={onSidebarDividerMouseDown}
-                          onTouchStart={onSidebarDividerTouchStart}
-                        >
-                          <div className="en-sidebar-grip" />
-                        </div>
-                        <div className="en-preview-wrap">
-                          <div className="en-preview" ref={previewRef} />
-                        </div>
+                        {mode === 'lesson' ? (
+                          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14, color: 'var(--color-muted-foreground)' }}>
+                            <p style={{ margin: 0, fontWeight: 600, color: 'var(--color-navy)' }}>Revision Lesson Mode</p>
+                            <p style={{ margin: 0 }}>Generate and save a structured lesson for the live /revise page.</p>
+                            {lessonSlug && (
+                              <a
+                                href={`/revise/${lessonSlug}/lesson`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: 'var(--color-amber)', fontWeight: 600 }}
+                              >
+                                ↗ View lesson: /revise/{lessonSlug}/lesson
+                              </a>
+                            )}
+                            {lessonJson && (() => {
+                              try {
+                                const d = JSON.parse(lessonJson);
+                                return (
+                                  <div style={{ marginTop: 8, background: 'var(--color-card)', borderRadius: 8, padding: 16, border: '1px solid var(--color-border)' }}>
+                                    <p style={{ margin: '0 0 8px', fontWeight: 600, color: 'var(--color-navy)' }}>{d.topic} — {d.subtopic}</p>
+                                    <p style={{ margin: 0 }}>{(d.slides || []).length} slides: {(d.slides || []).map((s: { type: string }) => s.type).join(', ')}</p>
+                                  </div>
+                                );
+                              } catch { return null; }
+                            })()}
+                          </div>
+                        ) : (
+                          <>
+                            <nav
+                              className="en-preview-sidebar"
+                              ref={previewTabsRef}
+                              style={sidebarWidthPx ? { width: sidebarWidthPx, flex: 'none' } : undefined}
+                            />
+                            <div
+                              className="en-sidebar-divider"
+                              onMouseDown={onSidebarDividerMouseDown}
+                              onTouchStart={onSidebarDividerTouchStart}
+                            >
+                              <div className="en-sidebar-grip" />
+                            </div>
+                            <div className="en-preview-wrap">
+                              <div className="en-preview" ref={previewRef} />
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -1708,53 +1861,104 @@ export default function EditNotesPage() {
                     <div className="en-pane en-pane-editor">
                       <div className="en-pane-header">
                         <span className="en-pane-label">
-                          {previewSectionsRef.current[activeSectionRef.current]
+                          {mode === 'lesson' ? 'Lesson JSON' : (previewSectionsRef.current[activeSectionRef.current]
                             ? `Editing: ${previewSectionsRef.current[activeSectionRef.current].title}`
-                            : 'Editor'}
+                            : 'Editor')}
                         </span>
-                        <div className="en-editor-toolbar">
-                          <button className="en-tool-btn" onClick={insertSection} title="Insert new section heading">+ Section</button>
-                          <button className="en-tool-btn" onClick={insertExample} title="Insert worked example">+ Example</button>
-                          <button className="en-tool-btn" onClick={insertSolution} title="Insert solution card with steps">+ Solution</button>
-                          <button className="en-tool-btn" onClick={insertPractice} title="Insert practice question">+ Practice</button>
-                          <button className="en-tool-btn" onClick={insertList} title="Insert bullet list">+ List</button>
-                          <button className="en-tool-btn" onClick={insertAligned} title="Insert aligned equations block">+ Aligned</button>
-                          <button
-                            className={`en-tool-btn en-tool-btn--help${syntaxOpen ? ' active' : ''}`}
-                            onClick={() => setSyntaxOpen(o => !o)}
-                            title="Syntax guide"
-                          >?</button>
-                        </div>
+                        {mode === 'lesson' ? (
+                          <div className="en-editor-toolbar">
+                            <input
+                              className="en-lesson-slug-input"
+                              placeholder="slug: e.g. em/algebra/subject-of-formula"
+                              value={lessonSlug}
+                              onChange={e => { setLessonSlug(e.target.value); lessonSlugRef.current = e.target.value; }}
+                              onBlur={() => { if (lessonSlugRef.current) loadLessonForSlug(lessonSlugRef.current); }}
+                              title="3-part slug: {level}/{topic}/{subtopic}"
+                            />
+                            <select
+                              className="en-meta-select"
+                              value={lessonStatus}
+                              onChange={e => setLessonStatus(e.target.value as 'draft' | 'published')}
+                              style={{ fontSize: 12 }}
+                            >
+                              <option value="draft">Draft</option>
+                              <option value="published">Published</option>
+                            </select>
+                            <button
+                              className="en-tool-btn"
+                              onClick={generateLesson}
+                              disabled={lessonGenerating}
+                              title="Generate lesson from current notes using Claude"
+                            >
+                              {lessonGenerating ? '⏳ Generating…' : '✨ Generate'}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="en-editor-toolbar">
+                            <button className="en-tool-btn" onClick={insertSection} title="Insert new section heading">+ Section</button>
+                            <button className="en-tool-btn" onClick={insertExample} title="Insert worked example">+ Example</button>
+                            <button className="en-tool-btn" onClick={insertSolution} title="Insert solution card with steps">+ Solution</button>
+                            <button className="en-tool-btn" onClick={insertPractice} title="Insert practice question">+ Practice</button>
+                            <button className="en-tool-btn" onClick={insertList} title="Insert bullet list">+ List</button>
+                            <button className="en-tool-btn" onClick={insertAligned} title="Insert aligned equations block">+ Aligned</button>
+                            <button
+                              className={`en-tool-btn en-tool-btn--help${syntaxOpen ? ' active' : ''}`}
+                              onClick={() => setSyntaxOpen(o => !o)}
+                              title="Syntax guide"
+                            >?</button>
+                          </div>
+                        )}
                         <span className="en-line-count">{lineCount} line{lineCount !== 1 ? 's' : ''}</span>
                       </div>
-                      <div className="en-editor-wrap">
-                        <div className="en-line-numbers" ref={lineNumsRef} />
-                        <textarea
-                          ref={textareaRef}
-                          className="en-textarea"
-                          spellCheck={false}
-                          autoCorrect="off"
-                          autoCapitalize="off"
-                          placeholder={"Start writing content here…\n\nUse **bold headings** for sections:\n\n**1. Binomial Expansion**\nThe binomial theorem states...\n\n**Example 1:**\nExpand $(1+x)^4$\n\n[Try: Expand $(2+x)^3$]\n[Ans: $8 + 12x + 6x^2 + x^3$]"}
-                          onChange={handleEditorChange}
-                          onScroll={syncLineNumbers}
-                          onKeyDown={e => {
-                            if (e.key === 'Tab') {
-                              e.preventDefault();
-                              const el = textareaRef.current!;
-                              const start = el.selectionStart;
-                              const end = el.selectionEnd;
-                              el.value = el.value.substring(0, start) + '    ' + el.value.substring(end);
-                              el.selectionStart = el.selectionEnd = start + 4;
-                              updateLineNumbers();
-                            }
-                            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                              e.preventDefault();
-                              saveNotes();
-                            }
-                          }}
-                        />
-                      </div>
+                      {mode === 'lesson' ? (
+                        <div className="en-editor-wrap">
+                          <textarea
+                            className="en-textarea"
+                            spellCheck={false}
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            value={lessonJson}
+                            placeholder={'Lesson JSON will appear here after generation.\n\nOr paste existing JSON directly.'}
+                            onChange={e => { setLessonJson(e.target.value); lessonJsonRef.current = e.target.value; }}
+                            onKeyDown={e => {
+                              if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                                e.preventDefault();
+                                saveLesson();
+                              }
+                            }}
+                            style={{ fontFamily: 'monospace', fontSize: 12 }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="en-editor-wrap">
+                          <div className="en-line-numbers" ref={lineNumsRef} />
+                          <textarea
+                            ref={textareaRef}
+                            className="en-textarea"
+                            spellCheck={false}
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            placeholder={"Start writing content here…\n\nUse **bold headings** for sections:\n\n**1. Binomial Expansion**\nThe binomial theorem states...\n\n**Example 1:**\nExpand $(1+x)^4$\n\n[Try: Expand $(2+x)^3$]\n[Ans: $8 + 12x + 6x^2 + x^3$]"}
+                            onChange={handleEditorChange}
+                            onScroll={syncLineNumbers}
+                            onKeyDown={e => {
+                              if (e.key === 'Tab') {
+                                e.preventDefault();
+                                const el = textareaRef.current!;
+                                const start = el.selectionStart;
+                                const end = el.selectionEnd;
+                                el.value = el.value.substring(0, start) + '    ' + el.value.substring(end);
+                                el.selectionStart = el.selectionEnd = start + 4;
+                                updateLineNumbers();
+                              }
+                              if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                                e.preventDefault();
+                                saveNotes();
+                              }
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
