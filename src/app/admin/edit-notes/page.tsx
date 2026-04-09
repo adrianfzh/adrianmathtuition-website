@@ -465,6 +465,13 @@ export default function EditNotesPage() {
   const lessonJsonRef = useRef('');
   const lessonSlugRef = useRef('');
 
+  // TTS state
+  const [ttsProvider, setTtsProvider] = useState<'openai-tts-1' | 'openai-tts-1-hd' | 'elevenlabs'>('openai-tts-1');
+  const [ttsVoice, setTtsVoice] = useState('nova');
+  const [ttsGenerating, setTtsGenerating] = useState(false);
+  const [ttsStatus, setTtsStatus] = useState<string>('');
+  const [ttsGenerated, setTtsGenerated] = useState<number | null>(null);
+
   // DOM refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumsRef = useRef<HTMLDivElement>(null);
@@ -1245,6 +1252,18 @@ export default function EditNotesPage() {
     }
   }
 
+  function switchMode(next: 'notes' | 'lesson') {
+    setMode(next);
+    if (next === 'lesson' && !lessonSlugRef.current && metaTopicRef.current) {
+      const topicSlug = metaTopicRef.current.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const lvl = metaLevelRef.current.toLowerCase() === 'jc' ? 'jc' : metaLevelRef.current.toLowerCase() === 'am' ? 'am' : 'em';
+      const newSlug = `${lvl}/notes/${topicSlug}`;
+      setLessonSlug(newSlug);
+      lessonSlugRef.current = newSlug;
+      loadLessonForSlug(newSlug);
+    }
+  }
+
   async function loadLessonForSlug(slug: string) {
     if (!slug) return;
     try {
@@ -1333,6 +1352,63 @@ export default function EditNotesPage() {
       showToast('Save failed', 'error');
     } finally {
       setLessonSaving(false);
+    }
+  }
+
+  function ttsEstimate(provider: string, json: string): string {
+    let parsed: { slides?: { narration?: string }[] };
+    try { parsed = JSON.parse(json); } catch { return '$0.000'; }
+    const chars = (parsed.slides || []).reduce((s: number, sl: { narration?: string }) => s + (sl.narration?.length || 0), 0);
+    const rate = provider === 'elevenlabs' ? 0.18 : provider === 'openai-tts-1-hd' ? 0.030 : 0.015;
+    return `$${((chars / 1000) * rate).toFixed(3)}`;
+  }
+
+  function ttsSlideCount(json: string): number {
+    try {
+      const p = JSON.parse(json);
+      return (p.slides || []).filter((s: { narration?: string }) => s.narration?.trim()).length;
+    } catch { return 0; }
+  }
+
+  async function generateTTS() {
+    if (!lessonSlugRef.current) { showToast('Save the lesson first (slug required)', 'error'); return; }
+    if (!lessonJsonRef.current) { showToast('No lesson JSON to generate audio for', 'error'); return; }
+    let parsedLesson;
+    try { parsedLesson = JSON.parse(lessonJsonRef.current); } catch { showToast('Invalid lesson JSON', 'error'); return; }
+    const slideCount = ttsSlideCount(lessonJsonRef.current);
+    setTtsGenerating(true);
+    setTtsStatus(`Generating audio for ${slideCount} slides…`);
+    try {
+      const r = await fetch('/api/generate-tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: lessonSlugRef.current,
+          lessonData: parsedLesson,
+          provider: ttsProvider,
+          voice: ttsVoice,
+          password: passwordRef.current,
+        }),
+      });
+      const d = await r.json();
+      if (d.audioUrls) {
+        setTtsGenerated(d.generatedSlides);
+        setTtsStatus('');
+        // Update the in-memory lesson JSON with audio_urls
+        const updated = { ...parsedLesson, audio_urls: d.audioUrls };
+        const j = JSON.stringify(updated, null, 2);
+        setLessonJson(j);
+        lessonJsonRef.current = j;
+        showToast(`Audio generated for ${d.generatedSlides}/${d.totalSlides} slides (${d.cost})`);
+      } else {
+        showToast(d.error || 'TTS generation failed', 'error');
+        setTtsStatus('');
+      }
+    } catch {
+      showToast('TTS generation failed', 'error');
+      setTtsStatus('');
+    } finally {
+      setTtsGenerating(false);
     }
   }
 
@@ -1601,6 +1677,22 @@ export default function EditNotesPage() {
                 </div>
               ) : (
                 <div className="en-editor-shell">
+                  {/* Mode segmented control */}
+                  <div className="en-mode-control">
+                    <button
+                      className={`en-mode-seg${mode === 'notes' ? ' active' : ''}`}
+                      onClick={() => switchMode('notes')}
+                    >
+                      📝 Notes
+                    </button>
+                    <button
+                      className={`en-mode-seg${mode === 'lesson' ? ' active' : ''}`}
+                      onClick={() => switchMode('lesson')}
+                    >
+                      🎬 Revision Lesson
+                    </button>
+                  </div>
+
                   {/* Meta bar */}
                   <div className="en-meta-bar">
                     <div className="en-meta-field">
@@ -1665,24 +1757,6 @@ export default function EditNotesPage() {
                       title="AI assistant — edit notes with natural language"
                     >
                       ✨ AI
-                    </button>
-                    <button
-                      className={`en-btn-mode${mode === 'lesson' ? ' active' : ''}`}
-                      onClick={() => {
-                        const next = mode === 'notes' ? 'lesson' : 'notes';
-                        setMode(next);
-                        if (next === 'lesson' && !lessonSlugRef.current && metaTopicRef.current) {
-                          const topicSlug = metaTopicRef.current.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                          const lvl = metaLevelRef.current.toLowerCase() === 'jc' ? 'jc' : metaLevelRef.current.toLowerCase() === 'am' ? 'am' : 'em';
-                          const newSlug = `${lvl}/notes/${topicSlug}`;
-                          setLessonSlug(newSlug);
-                          lessonSlugRef.current = newSlug;
-                          loadLessonForSlug(newSlug);
-                        }
-                      }}
-                      title="Switch between Notes editor and Revision Lesson editor"
-                    >
-                      {mode === 'lesson' ? '📝 Notes' : '📖 Lesson'}
                     </button>
                     <button
                       className={`en-btn-save${saveState === 'saved' ? ' saved' : ''}`}
@@ -1911,24 +1985,92 @@ export default function EditNotesPage() {
                         <span className="en-line-count">{lineCount} line{lineCount !== 1 ? 's' : ''}</span>
                       </div>
                       {mode === 'lesson' ? (
-                        <div className="en-editor-wrap">
-                          <textarea
-                            className="en-textarea"
-                            spellCheck={false}
-                            autoCorrect="off"
-                            autoCapitalize="off"
-                            value={lessonJson}
-                            placeholder={'Lesson JSON will appear here after generation.\n\nOr paste existing JSON directly.'}
-                            onChange={e => { setLessonJson(e.target.value); lessonJsonRef.current = e.target.value; }}
-                            onKeyDown={e => {
-                              if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                                e.preventDefault();
-                                saveLesson();
-                              }
-                            }}
-                            style={{ fontFamily: 'monospace', fontSize: 12 }}
-                          />
-                        </div>
+                        <>
+                          <div className="en-editor-wrap">
+                            <textarea
+                              className="en-textarea"
+                              spellCheck={false}
+                              autoCorrect="off"
+                              autoCapitalize="off"
+                              value={lessonJson}
+                              placeholder={'Lesson JSON will appear here after generation.\n\nOr paste existing JSON directly.'}
+                              onChange={e => { setLessonJson(e.target.value); lessonJsonRef.current = e.target.value; }}
+                              onKeyDown={e => {
+                                if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                                  e.preventDefault();
+                                  saveLesson();
+                                }
+                              }}
+                              style={{ fontFamily: 'monospace', fontSize: 12 }}
+                            />
+                          </div>
+                          {lessonJson && (
+                            <div className="en-tts-panel">
+                              <div className="en-tts-header">🔊 Audio Narration</div>
+                              <div className="en-tts-row">
+                                <label className="en-tts-label">Provider</label>
+                                <select
+                                  className="en-meta-select"
+                                  value={ttsProvider}
+                                  onChange={e => {
+                                    const p = e.target.value as typeof ttsProvider;
+                                    setTtsProvider(p);
+                                    setTtsVoice(p === 'elevenlabs' ? 'EXAVITQu4vr4xnSDxMaL' : 'nova');
+                                  }}
+                                >
+                                  <option value="openai-tts-1">OpenAI tts-1 (fast, ~$0.015/1K chars)</option>
+                                  <option value="openai-tts-1-hd">OpenAI tts-1-hd (better, ~$0.030/1K chars)</option>
+                                  <option value="elevenlabs" disabled={!process.env.NEXT_PUBLIC_ELEVENLABS_ENABLED}>
+                                    ElevenLabs (best, ~$0.18/1K chars)
+                                  </option>
+                                </select>
+                              </div>
+                              <div className="en-tts-row">
+                                <label className="en-tts-label">Voice</label>
+                                {ttsProvider === 'elevenlabs' ? (
+                                  <input
+                                    className="en-lesson-slug-input"
+                                    placeholder="ElevenLabs voice_id"
+                                    value={ttsVoice}
+                                    onChange={e => setTtsVoice(e.target.value)}
+                                    style={{ minWidth: 200 }}
+                                  />
+                                ) : (
+                                  <select
+                                    className="en-meta-select"
+                                    value={ttsVoice}
+                                    onChange={e => setTtsVoice(e.target.value)}
+                                  >
+                                    {['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'].map(v => (
+                                      <option key={v} value={v}>{v}</option>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
+                              <div className="en-tts-row" style={{ gap: 12, alignItems: 'center' }}>
+                                <button
+                                  className="en-btn-save"
+                                  onClick={generateTTS}
+                                  disabled={ttsGenerating}
+                                  style={{ flex: 'none' }}
+                                >
+                                  {ttsGenerating ? '⏳ Generating…' : '🔊 Generate Audio'}
+                                </button>
+                                <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>
+                                  {ttsSlideCount(lessonJson)} slides · est. {ttsEstimate(ttsProvider, lessonJson)}
+                                </span>
+                                {ttsGenerating && ttsStatus && (
+                                  <span style={{ fontSize: 12, color: 'var(--color-navy)' }}>{ttsStatus}</span>
+                                )}
+                                {!ttsGenerating && ttsGenerated !== null && (
+                                  <span style={{ fontSize: 12, color: 'hsl(142,55%,38%)', fontWeight: 600 }}>
+                                    ✅ {ttsGenerated} slides generated
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <div className="en-editor-wrap">
                           <div className="en-line-numbers" ref={lineNumsRef} />

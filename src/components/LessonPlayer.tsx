@@ -45,6 +45,7 @@ interface LessonData {
   subtopic: string;
   level: string;
   slides: Slide[];
+  audio_urls?: (string | null)[];
 }
 
 interface Props {
@@ -316,6 +317,7 @@ export default function LessonPlayer({ lessonData }: Props) {
   const [slideKey, setSlideKey] = useState(0); // forces slide remount on navigate
 
   const slideRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const touchStartY = useRef(0);
   const touchStartX = useRef(0);
   const scrollTopOnTouchStart = useRef(0);
@@ -381,12 +383,33 @@ export default function LessonPlayer({ lessonData }: Props) {
 
   // ── TTS ───────────────────────────────────────────────────────────────────────
   function stopSpeaking() {
+    // Stop pre-generated audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    // Stop browser TTS
     window.speechSynthesis?.cancel();
     setSpeaking(false);
   }
 
   function toggleSpeak() {
     if (speaking) { stopSpeaking(); return; }
+
+    const pregenUrl = lessonData.audio_urls?.[current];
+    if (pregenUrl) {
+      // Use pre-generated MP3
+      const audio = new Audio(pregenUrl);
+      audioRef.current = audio;
+      audio.onended = () => { audioRef.current = null; setSpeaking(false); };
+      audio.onerror = () => { audioRef.current = null; setSpeaking(false); };
+      audio.play();
+      setSpeaking(true);
+      return;
+    }
+
+    // Fallback: browser speechSynthesis
     const text = slides[current]?.narration;
     if (!text) return;
     const utt = new SpeechSynthesisUtterance(text);
@@ -398,7 +421,16 @@ export default function LessonPlayer({ lessonData }: Props) {
     setSpeaking(true);
   }
 
-  useEffect(() => { return () => window.speechSynthesis?.cancel(); }, []);
+  // Stop audio when navigating slides
+  useEffect(() => { stopSpeaking(); }, [current]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
 
   const progress = total > 1 ? (current / (total - 1)) * 100 : 100;
 
@@ -422,13 +454,13 @@ export default function LessonPlayer({ lessonData }: Props) {
           </div>
           <div className="lp-topbar-right">
             <span className="lp-slide-counter">{current + 1} / {total}</span>
-            {slides[current]?.narration && (
+            {(slides[current]?.narration || lessonData.audio_urls?.[current]) && (
               <button
                 className={`lp-speak-btn ${speaking ? 'speaking' : ''}`}
                 onClick={toggleSpeak}
-                aria-label={speaking ? 'Stop narration' : 'Play narration'}
+                aria-label={speaking ? 'Pause narration' : 'Play narration'}
               >
-                🔊
+                {speaking ? '⏸' : '🔊'}
               </button>
             )}
           </div>
