@@ -13,6 +13,7 @@ export default function CoordinateGeometryPage() {
       subtitle="O-Level A Math"
       contentId="coord-content"
     >
+      <div style={{ fontSize: '0.85em' }}>
       {/* Coordinate Geometry */}
       <FormulaSection title="Coordinate Geometry">
         <FormulaRow
@@ -44,6 +45,7 @@ export default function CoordinateGeometryPage() {
         <FormulaRow latex="x^2 + y^2 - 2ax - 2by + c = 0" />
         <FormulaNoteBox html="<div style='text-align:center'>where centre $= (a, b)$ and radius $= r$<br>$r = \sqrt{a^2 + b^2 - c}$</div>" />
       </FormulaSection>
+      </div>
     </FormulaPageLayout>
   );
 }
