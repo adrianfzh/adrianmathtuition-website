@@ -450,6 +450,49 @@ export default function ChatPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [formulaSheet, setFormulaSheet] = useState<FormulaSheetId | null>(null);
   const [formulaFromMenu, setFormulaFromMenu] = useState(false);
+  const [menuWidth, setMenuWidth] = useState(300);
+  const menuWidthRef = useRef(300);
+  const menuPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { menuWidthRef.current = menuWidth; }, [menuWidth]);
+
+  useEffect(() => {
+    const panel = menuPanelRef.current;
+    if (!panel) return;
+
+    let dragging = false;
+    let startX = 0;
+    let startWidth = 0;
+
+    const onTouchStart = (e: TouchEvent) => {
+      const rect = panel.getBoundingClientRect();
+      const touchX = e.touches[0].clientX;
+      // Only activate drag when touch starts within the right handle strip (16px)
+      if (touchX >= rect.right - 16) {
+        dragging = true;
+        startX = touchX;
+        startWidth = menuWidthRef.current;
+      }
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!dragging) return;
+      e.preventDefault();
+      const dx = e.touches[0].clientX - startX;
+      const newWidth = Math.max(200, Math.min(420, startWidth + dx));
+      setMenuWidth(newWidth);
+      menuWidthRef.current = newWidth;
+    };
+    const onTouchEnd = () => { dragging = false; };
+
+    panel.addEventListener('touchstart', onTouchStart, { passive: true });
+    panel.addEventListener('touchmove', onTouchMove, { passive: false });
+    panel.addEventListener('touchend', onTouchEnd);
+    return () => {
+      panel.removeEventListener('touchstart', onTouchStart);
+      panel.removeEventListener('touchmove', onTouchMove);
+      panel.removeEventListener('touchend', onTouchEnd);
+    };
+  }, []);
 
   function folderForSheet(id: FormulaSheetId): { amath?: boolean; emath?: boolean; jcmath?: boolean } {
     if (id === 'emath' || id.startsWith('em-')) return { emath: true };
@@ -465,9 +508,10 @@ export default function ChatPage() {
   }
 
   function backFromFormula() {
-    // Desktop back: close formula panel
+    const folder = formulaSheet ? folderForSheet(formulaSheet) : {};
     setFormulaSheet(null);
     setFormulaFromMenu(false);
+    setRestoreFolder(folder);
   }
 
   const [restoreFolder, setRestoreFolder] = useState<{ amath?: boolean; emath?: boolean; jcmath?: boolean }>({});
@@ -1046,18 +1090,21 @@ export default function ChatPage() {
       )}
 
       {/* Slide-out menu panel (always rendered for smooth animation) */}
-      <div style={{
-        position: 'fixed', top: 0, left: 0, bottom: 0,
-        width: 'min(320px, 92vw)',
-        background: 'white',
-        boxShadow: '4px 0 24px rgba(0,0,0,0.12)',
-        zIndex: 60,
-        display: 'flex', flexDirection: 'column',
-        transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
-        pointerEvents: menuOpen ? 'auto' : 'none',
-        overflow: 'hidden',
-      }}>
+      <div
+        ref={menuPanelRef}
+        style={{
+          position: 'fixed', top: 0, left: 0, bottom: 0,
+          width: `min(${menuWidth}px, 92vw)`,
+          background: 'white',
+          boxShadow: '4px 0 24px rgba(0,0,0,0.12)',
+          zIndex: 60,
+          display: 'flex', flexDirection: 'column',
+          transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
+          pointerEvents: menuOpen ? 'auto' : 'none',
+          overflow: 'hidden',
+        }}
+      >
         {/* Panel header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -1137,23 +1184,6 @@ export default function ChatPage() {
               }}>
                 {FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title ?? ''}
               </span>
-              {formulaSheet && (() => {
-                const url = FORMULA_SHEETS.find(s => s.id === formulaSheet)?.url ?? '';
-                return (
-                  <a href={url} target="_blank" rel="noreferrer" style={{
-                    color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
-                    textDecoration: 'none', padding: '8px 6px', flexShrink: 0,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                    Open
-                  </a>
-                );
-              })()}
             </div>
             {/* Formula iframe */}
             {formulaSheet && (() => {
@@ -1168,17 +1198,90 @@ export default function ChatPage() {
             })()}
           </div>
         </div>
+
+        {/* Drag handle — visible strip on right edge */}
+        <div style={{
+          position: 'absolute', right: 0, top: 0, bottom: 0, width: 16,
+          background: 'hsl(220,15%,93%)',
+          borderLeft: '1px solid hsl(220,15%,88%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          touchAction: 'none', cursor: 'col-resize', zIndex: 2,
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, opacity: 0.45 }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'hsl(220,10%,50%)' }} />
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Below-nav flex row: permanent sidebar + chat column / formula panel */}
+      {/* Below-nav flex row: permanent sidebar + formula panel + chat column */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-        {/* Permanent sidebar — desktop only (hidden via CSS on mobile) */}
-        <aside className="chat-sidebar-permanent">
-          <SidebarContent onSheetClick={(id) => { setFormulaSheet(id); setFormulaFromMenu(false); }} />
+        {/* Permanent sidebar — desktop only, with drill-down formula view */}
+        <aside className="chat-sidebar-permanent" style={{ overflow: 'hidden' }}>
+          <div style={{
+            display: 'flex', width: '200%', height: '100%',
+            transform: formulaSheet && !formulaFromMenu ? 'translateX(-50%)' : 'translateX(0)',
+            transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
+          }}>
+            {/* Screen 1 — topic list */}
+            <div style={{ width: '50%', overflowY: 'auto', flexShrink: 0 }}>
+              <SidebarContent
+                key={`desktop-${JSON.stringify(restoreFolder)}`}
+                onSheetClick={(id) => { setFormulaSheet(id); setFormulaFromMenu(false); }}
+                defaultAmathOpen={restoreFolder.amath}
+                defaultEmathOpen={restoreFolder.emath}
+                defaultJcmathOpen={restoreFolder.jcmath}
+              />
+            </div>
+            {/* Screen 2 — formula content */}
+            <div style={{ width: '50%', flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              {/* Back bar */}
+              <div style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
+                padding: '0 8px 0 2px', height: 44,
+                background: 'hsl(220,60%,20%)',
+                borderBottom: '1px solid hsl(220,50%,15%)',
+              }}>
+                <button
+                  onClick={backFromFormula}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
+                    display: 'flex', alignItems: 'center', gap: 3,
+                    padding: '6px 8px', flexShrink: 0,
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                  Back
+                </button>
+                <span style={{
+                  flex: 1, textAlign: 'center',
+                  fontFamily: "'DM Serif Display', serif", fontSize: 12,
+                  color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title ?? ''}
+                </span>
+              </div>
+              {/* Formula iframe */}
+              {formulaSheet && !formulaFromMenu && (() => {
+                const url = FORMULA_SHEETS.find(s => s.id === formulaSheet)?.url ?? '';
+                return (
+                  <iframe
+                    src={url}
+                    style={{ flex: 1, border: 'none', display: 'block', width: '100%' }}
+                    title={FORMULA_SHEETS.find(s => s.id === formulaSheet)?.title}
+                  />
+                );
+              })()}
+            </div>
+          </div>
         </aside>
 
-        {/* Chat column — always visible, formula drawer overlays it */}
+        {/* Chat column */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
 
           {/* Scrollable chat area */}
@@ -1286,103 +1389,6 @@ export default function ChatPage() {
         </div>{/* end chat column */}
       </div>{/* end below-nav row */}
 
-      {/* Desktop formula drawer — right-side panel, only when NOT from mobile menu */}
-      {formulaSheet && !formulaFromMenu && (() => {
-        const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
-        const sheetUrl = activeSheet?.url ?? '';
-        const isPdf = sheetUrl.endsWith('.pdf');
-        return (
-          <>
-            {/* Backdrop */}
-            <div
-              onClick={backFromFormula}
-              style={{
-                position: 'fixed', inset: 0, zIndex: 48,
-                background: 'rgba(0,0,0,0.18)',
-                animation: 'fadeIn 0.2s ease',
-              }}
-            />
-            {/* Drawer */}
-            <div style={{
-              position: 'fixed', top: 64, right: 0, bottom: 0,
-              width: 'min(480px, 60vw)',
-              background: 'white',
-              boxShadow: '-4px 0 32px rgba(0,0,0,0.12)',
-              zIndex: 49,
-              display: 'flex', flexDirection: 'column',
-              animation: 'slideInRight 0.22s cubic-bezier(0.4,0,0.2,1)',
-            }}>
-              {/* Header */}
-              <div style={{
-                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
-                padding: '0 12px 0 4px', height: 48,
-                background: 'hsl(220,60%,20%)',
-              }}>
-                <button
-                  onClick={backFromFormula}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'hsl(45,90%,80%)', fontSize: 14, fontWeight: 500,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    padding: '8px 10px', flexShrink: 0,
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-                <span style={{
-                  flex: 1,
-                  fontFamily: "'DM Serif Display', serif", fontSize: 15,
-                  color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>
-                  {activeSheet?.title}
-                </span>
-                <a
-                  href={sheetUrl} target="_blank" rel="noreferrer"
-                  style={{
-                    color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
-                    textDecoration: 'none', padding: '8px 6px', flexShrink: 0,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                  }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                  Open
-                </a>
-              </div>
-              {/* Content */}
-              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-                <iframe
-                  src={sheetUrl}
-                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                  title={activeSheet?.title}
-                />
-                {isPdf && (
-                  <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0,
-                    padding: '10px 16px',
-                    background: 'hsla(0,0%,100%,0.95)',
-                    borderTop: '1px solid hsl(220,15%,90%)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    fontSize: 13, color: 'hsl(220,10%,46%)',
-                    pointerEvents: 'none',
-                  }}>
-                    Can&apos;t see the PDF?{' '}
-                    <a href={sheetUrl} target="_blank" rel="noreferrer"
-                      style={{ color: 'hsl(220,60%,40%)', fontWeight: 600, pointerEvents: 'auto' }}>
-                      Tap to open ↗
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        );
-      })()}
     </div>
   );
 }

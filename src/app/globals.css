@@ -42,7 +42,7 @@ body {
   border-right: 1px solid hsl(220,15%,88%);
   display: none;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
 }
 @media (min-width: 768px) {
   .chat-sidebar-permanent { display: flex; }
@@ -597,6 +597,18 @@ body {
 @keyframes slideInRight {
   from { opacity: 0; transform: translateX(24px); }
   to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes formulaPanelIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.chat-formula-panel {
+  display: none;
+}
+@media (min-width: 768px) {
+  .chat-formula-panel {
+    display: flex;
+  }
 }
 @keyframes fadeIn {
   from { opacity: 0; }
