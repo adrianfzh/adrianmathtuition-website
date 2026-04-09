@@ -1,0 +1,17 @@
+{
+  "name": "Adrian Math Schedule",
+  "short_name": "Schedule",
+  "description": "Weekly lesson schedule for Adrian's Math Tuition",
+  "start_url": "/admin/schedule",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#1a365d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
