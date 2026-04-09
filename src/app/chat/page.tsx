@@ -1178,97 +1178,8 @@ export default function ChatPage() {
           <SidebarContent onSheetClick={(id) => { setFormulaSheet(id); setFormulaFromMenu(false); }} />
         </aside>
 
-        {/* Formula panel — replaces chat column when a sheet is selected */}
-        {formulaSheet && (() => {
-          const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
-          const sheetUrl = activeSheet?.url ?? '';
-          const isPdf = sheetUrl.endsWith('.pdf');
-          return (
-            <div style={{
-              flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0,
-              animation: 'slideInRight 0.22s cubic-bezier(0.4,0,0.2,1)',
-            }}>
-              {/* Top bar */}
-              <div style={{
-                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
-                padding: '0 12px 0 4px', height: 52,
-                background: 'hsl(220,60%,20%)',
-                borderBottom: '1px solid hsl(220,50%,15%)',
-              }}>
-                <button
-                  onClick={backFromFormula}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'hsl(45,90%,80%)', fontSize: 14, fontWeight: 500,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    padding: '8px 10px', flexShrink: 0,
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                  Back
-                </button>
-                <span style={{
-                  flex: 1, textAlign: 'center',
-                  fontFamily: "'DM Serif Display', serif", fontSize: 15,
-                  color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>
-                  {activeSheet?.title}
-                </span>
-                <a
-                  href={sheetUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
-                    textDecoration: 'none', padding: '8px 6px', flexShrink: 0,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                  }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="7 10 12 15 17 10"/>
-                    <line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                  Open
-                </a>
-              </div>
-              {/* Embed */}
-              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-                <iframe
-                  src={sheetUrl}
-                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                  title={activeSheet?.title}
-                />
-                {isPdf && (
-                  <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0,
-                    padding: '10px 16px',
-                    background: 'hsla(0,0%,100%,0.95)',
-                    borderTop: '1px solid hsl(220,15%,90%)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    fontSize: 13, color: 'hsl(220,10%,46%)',
-                    pointerEvents: 'none',
-                  }}>
-                    Can&apos;t see the PDF?{' '}
-                    <a
-                      href={sheetUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ color: 'hsl(220,60%,40%)', fontWeight: 600, pointerEvents: 'auto' }}
-                    >
-                      Tap to open directly ↗
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Chat column — hidden (but kept mounted) when formula panel is open */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, visibility: formulaSheet ? 'hidden' : 'visible', position: formulaSheet ? 'absolute' : 'relative', pointerEvents: formulaSheet ? 'none' : 'auto' }}>
+        {/* Chat column — always visible, formula drawer overlays it */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
 
           {/* Scrollable chat area */}
           <div
@@ -1374,6 +1285,104 @@ export default function ChatPage() {
 
         </div>{/* end chat column */}
       </div>{/* end below-nav row */}
+
+      {/* Desktop formula drawer — right-side panel, only when NOT from mobile menu */}
+      {formulaSheet && !formulaFromMenu && (() => {
+        const activeSheet = FORMULA_SHEETS.find(s => s.id === formulaSheet);
+        const sheetUrl = activeSheet?.url ?? '';
+        const isPdf = sheetUrl.endsWith('.pdf');
+        return (
+          <>
+            {/* Backdrop */}
+            <div
+              onClick={backFromFormula}
+              style={{
+                position: 'fixed', inset: 0, zIndex: 48,
+                background: 'rgba(0,0,0,0.18)',
+                animation: 'fadeIn 0.2s ease',
+              }}
+            />
+            {/* Drawer */}
+            <div style={{
+              position: 'fixed', top: 64, right: 0, bottom: 0,
+              width: 'min(480px, 60vw)',
+              background: 'white',
+              boxShadow: '-4px 0 32px rgba(0,0,0,0.12)',
+              zIndex: 49,
+              display: 'flex', flexDirection: 'column',
+              animation: 'slideInRight 0.22s cubic-bezier(0.4,0,0.2,1)',
+            }}>
+              {/* Header */}
+              <div style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+                padding: '0 12px 0 4px', height: 48,
+                background: 'hsl(220,60%,20%)',
+              }}>
+                <button
+                  onClick={backFromFormula}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'hsl(45,90%,80%)', fontSize: 14, fontWeight: 500,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    padding: '8px 10px', flexShrink: 0,
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+                <span style={{
+                  flex: 1,
+                  fontFamily: "'DM Serif Display', serif", fontSize: 15,
+                  color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {activeSheet?.title}
+                </span>
+                <a
+                  href={sheetUrl} target="_blank" rel="noreferrer"
+                  style={{
+                    color: 'hsl(45,90%,80%)', fontSize: 13, fontWeight: 500,
+                    textDecoration: 'none', padding: '8px 6px', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Open
+                </a>
+              </div>
+              {/* Content */}
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                <iframe
+                  src={sheetUrl}
+                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+                  title={activeSheet?.title}
+                />
+                {isPdf && (
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    padding: '10px 16px',
+                    background: 'hsla(0,0%,100%,0.95)',
+                    borderTop: '1px solid hsl(220,15%,90%)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    fontSize: 13, color: 'hsl(220,10%,46%)',
+                    pointerEvents: 'none',
+                  }}>
+                    Can&apos;t see the PDF?{' '}
+                    <a href={sheetUrl} target="_blank" rel="noreferrer"
+                      style={{ color: 'hsl(220,60%,40%)', fontWeight: 600, pointerEvents: 'auto' }}>
+                      Tap to open ↗
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }
