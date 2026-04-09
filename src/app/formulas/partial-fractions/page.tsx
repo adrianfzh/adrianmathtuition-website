@@ -15,16 +15,21 @@ const PF_ROWS: [string, string, string][] = [
   ],
   [
     '3.',
+    '\\dfrac{px+q}{x^2}',
+    '\\dfrac{A}{x}+\\dfrac{B}{x^2}',
+  ],
+  [
+    '4.',
     '\\dfrac{px^2+qx+r}{(x-a)(x-b)(x-c)}',
     '\\dfrac{A}{x-a}+\\dfrac{B}{x-b}+\\dfrac{C}{x-c}',
   ],
   [
-    '4.',
+    '5.',
     '\\dfrac{px^2+qx+r}{(x-a)^2(x-b)}',
     '\\dfrac{A}{x-a}+\\dfrac{B}{(x-a)^2}+\\dfrac{C}{x-b}',
   ],
   [
-    '5.',
+    '6.',
     '\\dfrac{px^2+qx+r}{(x-a)(x^2+bx+c)}',
     '\\dfrac{A}{x-a}+\\dfrac{Bx+C}{x^2+bx+c}',
   ],
