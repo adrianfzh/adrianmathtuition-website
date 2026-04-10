@@ -22,6 +22,7 @@ declare global {
       renderToString: (math: string, opts: { displayMode: boolean; throwOnError: boolean }) => string;
     };
     renderMathInElement: (el: HTMLElement, opts: object) => void;
+    Telegram?: { WebApp: { expand: () => void; ready: () => void } };
   }
 }
 
@@ -553,6 +554,27 @@ export default function ChatPage() {
     setTimeout(() => setErrorMsg(''), 4000);
   }, []);
 
+  /* ── visualViewport: keep layout pinned when keyboard opens (iOS / Telegram Mini App) ── */
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    if (window.Telegram?.WebApp) window.Telegram.WebApp.expand();
+    const handleResize = () => {
+      const vv = window.visualViewport!;
+      const container = document.getElementById('chatLayout');
+      if (container) {
+        container.style.height = `${vv.height}px`;
+        container.style.transform = `translateY(${vv.offsetTop}px)`;
+      }
+    };
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
+    handleResize();
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
+    };
+  }, []);
+
   /* ── Image handling ── */
   const setImage = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) { showError('Please upload an image file.'); return; }
@@ -560,7 +582,11 @@ export default function ChatPage() {
     const reader = new FileReader();
     reader.onload = ev => setPreviewSrc(ev.target?.result as string);
     reader.readAsDataURL(file);
-  }, [showError]);
+    // Focus the active input so keyboard stays open and user can type caption
+    setTimeout(() => {
+      (fixedInputRef.current ?? welcomeInputRef.current)?.focus();
+    }, 50);
+  }, [showError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const removeImage = useCallback(() => {
     setSelectedFile(null);
@@ -902,85 +928,109 @@ export default function ChatPage() {
       id={inputId}
       style={{
         display: 'flex',
-        alignItems: 'center',
+        flexDirection: 'column',
         gap: 8,
         border: `1.5px solid ${showDragOverlay ? 'hsl(45,90%,55%)' : 'hsl(220,15%,88%)'}`,
         borderRadius: 12,
-        padding: '10px 10px 10px 16px',
+        padding: '10px 10px 10px 12px',
         boxShadow: showDragOverlay ? '0 0 0 3px hsla(45,90%,55%,0.15)' : '0 1px 4px rgba(0,0,0,0.06)',
         background: showDragOverlay ? 'hsl(45,90%,92%)' : 'hsl(0,0%,100%)',
         transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
     >
-      <textarea
-        ref={textareaRef}
-        placeholder={placeholder}
-        rows={1}
-        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-        onChange={e => autoResize(e.currentTarget)}
-        style={{
-          flex: 1,
-          background: 'none',
-          border: 'none',
-          outline: 'none',
-          color: 'hsl(220,40%,13%)',
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: 17,
-          lineHeight: 1.5,
-          resize: 'none',
-          maxHeight: 140,
-          minHeight: 24,
-          scrollbarWidth: 'none',
-        }}
-      />
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        <input
-          type="file"
-          id="fileInput"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={e => { const f = e.target.files?.[0]; if (f) setImage(f); e.target.value = ''; }}
-        />
-        <button
-          type="button"
-          onClick={() => document.getElementById('fileInput')?.click()}
-          title="Upload image"
-          style={{
-            width: 36, height: 36, borderRadius: 8,
-            border: '1.5px solid hsl(220,15%,88%)',
-            background: 'hsl(210,20%,98%)',
-            color: 'hsl(220,10%,46%)',
+      {/* Compact image preview — inside the input box */}
+      {previewSrc && (
+        <div style={{ position: 'relative', alignSelf: 'flex-start' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={previewSrc} alt="preview" style={{
+            height: 60, maxWidth: 90, objectFit: 'cover',
+            borderRadius: 7, display: 'block',
+            border: '1px solid hsl(220,15%,88%)',
+          }} />
+          <button onClick={removeImage} style={{
+            position: 'absolute', top: -6, right: -6,
+            width: 18, height: 18,
+            background: 'hsl(220,30%,25%)', border: 'none', borderRadius: '50%',
+            color: 'white', fontSize: 9, lineHeight: 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 17,
-          }}
-        >
-          📎
-        </button>
-        <button
-          type="button"
-          onClick={sendMessage}
-          disabled={isLoading}
-          title="Send"
+            cursor: 'pointer',
+          }}>✕</button>
+        </div>
+      )}
+      {/* Textarea + buttons row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <textarea
+          ref={textareaRef}
+          placeholder={placeholder}
+          rows={1}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+          onChange={e => autoResize(e.currentTarget)}
           style={{
-            width: 36, height: 36, borderRadius: 8,
+            flex: 1,
+            background: 'none',
             border: 'none',
-            background: 'hsl(220,60%,20%)',
-            color: 'hsl(45,100%,96%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            opacity: isLoading ? 0.35 : 1,
-            transition: 'opacity 0.15s',
-            flexShrink: 0,
+            outline: 'none',
+            color: 'hsl(220,40%,13%)',
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 17,
+            lineHeight: 1.5,
+            resize: 'none',
+            maxHeight: 140,
+            minHeight: 24,
+            scrollbarWidth: 'none',
           }}
-        >
-          <SendIcon />
-        </button>
+        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <input
+            type="file"
+            id="fileInput"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) setImage(f); e.target.value = ''; }}
+          />
+          <button
+            type="button"
+            onClick={() => document.getElementById('fileInput')?.click()}
+            title="Upload image"
+            style={{
+              width: 36, height: 36, borderRadius: 8,
+              border: '1.5px solid hsl(220,15%,88%)',
+              background: 'hsl(210,20%,98%)',
+              color: 'hsl(220,10%,46%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: 17,
+            }}
+          >
+            📎
+          </button>
+          <button
+            type="button"
+            onClick={sendMessage}
+            disabled={isLoading}
+            title="Send"
+            style={{
+              width: 36, height: 36, borderRadius: 8,
+              border: 'none',
+              background: 'hsl(220,60%,20%)',
+              color: 'hsl(45,100%,96%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.35 : 1,
+              transition: 'opacity 0.15s',
+              flexShrink: 0,
+            }}
+          >
+            <SendIcon />
+          </button>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="chat-layout">
+    <div id="chatLayout" className="chat-layout">
+      {/* Telegram Mini App SDK */}
+      <Script src="https://telegram.org/js/telegram-web-app.js" strategy="afterInteractive" />
       {/* KaTeX scripts */}
       <Script
         src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
@@ -1338,19 +1388,6 @@ export default function ChatPage() {
                         {errorMsg}
                       </div>
                     )}
-                    {previewSrc && (
-                      <div style={{ marginBottom: 10, position: 'relative', width: 'fit-content' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={previewSrc} alt="preview" style={{ height: 160, maxWidth: 280, objectFit: 'cover', borderRadius: 10, border: '1px solid hsl(220,15%,88%)', display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
-                        <button onClick={removeImage} style={{
-                          position: 'absolute', top: -7, right: -7,
-                          width: 22, height: 22,
-                          background: 'white', border: '1px solid hsl(220,15%,88%)', borderRadius: '50%',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer', fontSize: 11, color: 'hsl(220,10%,46%)',
-                        }}>✕</button>
-                      </div>
-                    )}
                     {renderInputBox(welcomeInputRef, 'Type a question, or paste / drop a photo…', 'inputBoxWelcome')}
                     <p style={{ marginTop: 8, fontSize: 12, color: 'hsl(220,10%,46%)', opacity: 0.6, textAlign: 'center' }}>
                       Enter to send · Shift+Enter for new line · Paste or drag images
@@ -1383,19 +1420,6 @@ export default function ChatPage() {
                     borderRadius: 8, padding: '9px 14px', fontSize: 13, color: 'hsl(0,60%,45%)', marginBottom: 10,
                   }}>
                     {errorMsg}
-                  </div>
-                )}
-                {previewSrc && (
-                  <div style={{ marginBottom: 10, position: 'relative', width: 'fit-content' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={previewSrc} alt="preview" style={{ height: 160, maxWidth: 280, objectFit: 'cover', borderRadius: 10, border: '1px solid hsl(220,15%,88%)', display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
-                    <button onClick={removeImage} style={{
-                      position: 'absolute', top: -7, right: -7,
-                      width: 22, height: 22,
-                      background: 'white', border: '1px solid hsl(220,15%,88%)', borderRadius: '50%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', fontSize: 11, color: 'hsl(220,10%,46%)',
-                    }}>✕</button>
                   </div>
                 )}
                 {renderInputBox(fixedInputRef, 'Ask a follow-up question, or drop a photo…', 'inputBoxFixed')}
