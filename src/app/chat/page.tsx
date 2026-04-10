@@ -111,6 +111,13 @@ function renderToElement(el: HTMLDivElement, text: string) {
   text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
 
+  // Fix 1: bare \begin{matrix} has no brackets in KaTeX — upgrade to \begin{pmatrix}
+  text = text.replace(/\\begin\{matrix\}/g, '\\begin{pmatrix}');
+  text = text.replace(/\\end\{matrix\}/g, '\\end{pmatrix}');
+
+  // Fix 3: escaped dollar signs (\$123) → plain dollar ($123) so currency renders correctly
+  text = text.replace(/\\\$(\d)/g, '$$$1');
+
   let html = text
     .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
     .replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>')
