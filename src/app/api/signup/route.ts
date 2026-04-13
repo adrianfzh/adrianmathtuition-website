@@ -250,6 +250,11 @@ export async function POST(request: NextRequest) {
         if (lessonCount > 0) {
           const baseAmount = lessonCount * ratePerLesson;
           const todayStr = new Date().toISOString().split('T')[0];
+          const firstLessonDate = lineItems[0].date;
+          const formatDateLong = (iso: string) =>
+            new Date(iso + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+          const startDateFormatted = formatDateLong(String(startDate));
+          const firstLessonFormatted = formatDateLong(firstLessonDate);
 
           const invoiceFields: Record<string, unknown> = {
             'Student': [studentId],
@@ -261,8 +266,8 @@ export async function POST(request: NextRequest) {
             'Invoice Type': 'Regular',
             'Status': 'Draft',
             'Issue Date': todayStr,
-            'Due Date': todayStr,
-            'Auto Notes': `First invoice — prorated from ${startDate} (${lessonCount} lessons)`,
+            'Due Date': firstLessonDate,
+            'Auto Notes': `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})\nTrial lesson: ${startDateFormatted} | First lesson: ${firstLessonFormatted}`,
           };
 
           const createdInvoice = await at('Invoices', '', {
@@ -281,14 +286,14 @@ export async function POST(request: NextRequest) {
                 month: invoiceMonthLabel,
                 invoiceId: createdInvoice.id,
                 issueDate: todayStr,
-                dueDate: todayStr,
+                dueDate: firstLessonDate,
                 lessonsCount: lessonCount,
                 ratePerLesson,
                 baseAmount,
                 finalAmount: baseAmount,
                 status: 'Pending',
                 makeupCredits: 0,
-                notes: `First invoice — prorated from ${startDate} (${lessonCount} lessons)`,
+                notes: `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})\nTrial lesson: ${startDateFormatted} | First lesson: ${firstLessonFormatted}`,
                 lineItems,
                 lineItemsExtra: [],
               };
