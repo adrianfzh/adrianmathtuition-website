@@ -1109,9 +1109,9 @@ export default function ChatPage() {
 
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flex: 1 }}>
             <span style={{ fontFamily: "'DM Serif Display', serif", fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'hsl(220,60%,20%)' }}>
-              ADRIAN&apos;S
+              ADRIAN&apos;S MATH
             </span>
-            <span style={{ color: 'hsl(220,10%,46%)', fontSize: 14 }} className="hidden sm:inline">math tuition</span>
+            <span style={{ color: 'hsl(220,10%,46%)', fontSize: 14 }} className="hidden sm:inline">tuition</span>
           </Link>
 
           <Link href="/" style={{
