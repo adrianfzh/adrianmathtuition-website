@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
 
   const {
     slotId, level: rawLevel, subjects: subjectsParam, subjectLevel: subjectLevelParam,
+    trialLessonId,
     expires, sig, studentName, school, studentContact,
     parentName, parentContact, parentEmail, startDate, howHeard, referralType, referredBy,
   } = body;
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
     check.set('level', String(rawLevel || ''));
     check.set('subjects', String(subjectsParam || ''));
     if (subjectLevelParam) check.set('subjectLevel', String(subjectLevelParam));
+    if (trialLessonId) check.set('trialLessonId', String(trialLessonId));
     check.set('expires', String(expires || ''));
     const expectedSig = createHmac('sha256', process.env.SIGNUP_SECRET || 'fallback-secret')
       .update(check.toString()).digest('hex').slice(0, 16);
@@ -119,7 +121,22 @@ export async function POST(request: NextRequest) {
     });
     const studentId = studentRecord.id;
 
-    // Step 2b: Create registration token (non-fatal)
+    // Step 2b: Link trial lesson to new student (non-fatal)
+    if (trialLessonId) {
+      try {
+        await at('Lessons', `/${String(trialLessonId)}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ fields: {
+            Student: [studentId],
+            Notes: `Trial student: ${sanitize(studentName)}`,
+          }}),
+        });
+      } catch (err) {
+        console.error('[signup] Failed to link trial lesson:', (err as Error).message);
+      }
+    }
+
+    // Step 2d: Create registration token (non-fatal)
     let registrationToken: string | null = null;
     try {
       const tokenValue = Array.from({ length: 8 }, () =>

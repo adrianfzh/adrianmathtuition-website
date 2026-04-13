@@ -39,12 +39,13 @@ function SignupContent() {
   const params = useSearchParams();
   const router = useRouter();
 
-  const slotId       = params.get('slotId')       || '';
-  const level        = params.get('level')        || '';
-  const subjects     = params.get('subjects')     || '';
-  const subjectLevel = params.get('subjectLevel') || '';
-  const expires      = params.get('expires')      || '';
-  const sig          = params.get('sig')          || '';
+  const slotId        = params.get('slotId')        || '';
+  const level         = params.get('level')         || '';
+  const subjects      = params.get('subjects')      || '';
+  const subjectLevel  = params.get('subjectLevel')  || '';
+  const trialLessonId = params.get('trialLessonId') || '';
+  const expires       = params.get('expires')       || '';
+  const sig           = params.get('sig')           || '';
 
   const [pageState, setPageState] = useState<'loading' | 'error' | 'form'>('loading');
   const [errorMsg, setErrorMsg]   = useState('');
@@ -78,6 +79,7 @@ function SignupContent() {
       return;
     }
     const qs = new URLSearchParams({ slotId, level, subjects, subjectLevel, expires, sig });
+    if (trialLessonId) qs.set('trialLessonId', trialLessonId);
     fetch('/api/signup-data?' + qs.toString())
       .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
       .then(({ ok, data }) => {
@@ -172,8 +174,9 @@ function SignupContent() {
     setFormError('');
 
     const fd = new FormData(form);
-    const payload = {
+    const payload: Record<string, unknown> = {
       slotId, expires, sig, level, subjects, subjectLevel,
+      ...(trialLessonId && { trialLessonId }),
       studentName:    fd.get('studentName'),
       school:         fd.get('school'),
       studentContact: fd.get('studentContact'),

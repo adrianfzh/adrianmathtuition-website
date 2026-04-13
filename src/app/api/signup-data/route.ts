@@ -3,12 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
-  const slotId       = sp.get('slotId')       || '';
-  const level        = sp.get('level')        || '';
-  const subjectsRaw  = sp.get('subjects')     || '';
-  const subjectLevel = sp.get('subjectLevel') || '';
-  const expires      = sp.get('expires')      || '';
-  const sig          = sp.get('sig')          || '';
+  const slotId        = sp.get('slotId')        || '';
+  const level         = sp.get('level')         || '';
+  const subjectsRaw   = sp.get('subjects')      || '';
+  const subjectLevel  = sp.get('subjectLevel')  || '';
+  const trialLessonId = sp.get('trialLessonId') || '';
+  const expires       = sp.get('expires')       || '';
+  const sig           = sp.get('sig')           || '';
 
   if (!slotId || !level || !expires || !sig) {
     return NextResponse.json({ error: 'Invalid signup link.' }, { status: 400 });
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
   check.set('level', level);
   check.set('subjects', subjectsRaw);
   if (subjectLevel) check.set('subjectLevel', subjectLevel);
+  if (trialLessonId) check.set('trialLessonId', trialLessonId);
   check.set('expires', expires);
   const expectedSig = createHmac('sha256', process.env.SIGNUP_SECRET || 'fallback-secret')
     .update(check.toString()).digest('hex').slice(0, 16);
@@ -50,7 +52,7 @@ export async function GET(request: NextRequest) {
     const slotTime = sf['Time'] || '';
     const subjects = subjectsRaw ? subjectsRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
 
-    return NextResponse.json({ level, subjects, subjectLevel, slotId, slotName, slotDay: dayRaw, slotTime });
+    return NextResponse.json({ level, subjects, subjectLevel, slotId, slotName, slotDay: dayRaw, slotTime, trialLessonId: trialLessonId || null });
   } catch (err) {
     console.error('signup-data error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
