@@ -192,10 +192,10 @@ function SidebarContent({
         borderRadius: 10, cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
       }}
     >
-      <span style={{ fontSize: 22, flexShrink: 0 }}>{emoji}</span>
+      <span style={{ fontSize: 18, flexShrink: 0 }}>{emoji}</span>
       <div>
-        <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{title}</div>
-        <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>{subtitle}</div>
+        <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{title}</div>
+        <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 2 }}>{subtitle}</div>
       </div>
     </button>
   );
@@ -216,17 +216,17 @@ function SidebarContent({
           onClick={() => setJcmathOpen(o => !o)}
           style={{
             width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
-            padding: '11px 12px', marginBottom: jcmathOpen ? 4 : 8, minHeight: 52,
+            padding: '9px 12px', marginBottom: jcmathOpen ? 4 : 8, minHeight: 44,
             background: jcmathOpen ? 'hsl(260,40%,95%)' : 'hsl(220,30%,98%)',
             border: `1px solid ${jcmathOpen ? 'hsl(260,40%,80%)' : 'hsl(220,15%,90%)'}`,
             borderRadius: jcmathOpen ? '10px 10px 0 0' : 10,
             cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
           }}
         >
-          <span style={{ fontSize: 22, flexShrink: 0 }}>📘</span>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>📘</span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>A-Level H2 Math</div>
-            <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>JC Mathematics</div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>A-Level H2 Math</div>
+            <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 2 }}>JC Mathematics</div>
           </div>
           <svg
             width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(220,10%,56%)"
@@ -266,10 +266,10 @@ function SidebarContent({
                   cursor: 'pointer', transition: 'background 0.12s',
                 }}
               >
-                <span style={{ fontSize: 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.emoji}</span>
+                <span style={{ fontSize: 13, flexShrink: 0, width: 24, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.emoji}</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
-                  <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
+                  <div style={{ fontWeight: 600, fontSize: 12, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
+                  <div style={{ fontSize: 10, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
                 </div>
               </button>
             ))}
@@ -282,17 +282,17 @@ function SidebarContent({
           onClick={() => setAmathOpen(o => !o)}
           style={{
             width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
-            padding: '11px 12px', marginBottom: amathOpen ? 4 : 8, minHeight: 52,
+            padding: '9px 12px', marginBottom: amathOpen ? 4 : 8, minHeight: 44,
             background: amathOpen ? 'hsl(220,40%,95%)' : 'hsl(220,30%,98%)',
             border: `1px solid ${amathOpen ? 'hsl(220,40%,80%)' : 'hsl(220,15%,90%)'}`,
             borderRadius: amathOpen ? '10px 10px 0 0' : 10,
             cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
           }}
         >
-          <span style={{ fontSize: 22, flexShrink: 0 }}>📗</span>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>📗</span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>O-Level A Math</div>
-            <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>Additional Mathematics</div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>O-Level A Math</div>
+            <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 2 }}>Additional Mathematics</div>
           </div>
           <svg
             width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(220,10%,56%)"
@@ -334,10 +334,10 @@ function SidebarContent({
                   cursor: 'pointer', transition: 'background 0.12s',
                 }}
               >
-                <span style={{ fontSize: 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon ?? item.emoji}</span>
+                <span style={{ fontSize: 13, flexShrink: 0, width: 24, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon ?? item.emoji}</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
-                  <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
+                  <div style={{ fontWeight: 600, fontSize: 12, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
+                  <div style={{ fontSize: 10, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
                 </div>
               </button>
             ))}
@@ -350,17 +350,17 @@ function SidebarContent({
           onClick={() => setEmathOpen(o => !o)}
           style={{
             width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,
-            padding: '11px 12px', marginBottom: emathOpen ? 4 : 8, minHeight: 52,
+            padding: '9px 12px', marginBottom: emathOpen ? 4 : 8, minHeight: 44,
             background: emathOpen ? 'hsl(35,50%,94%)' : 'hsl(220,30%,98%)',
             border: `1px solid ${emathOpen ? 'hsl(35,50%,78%)' : 'hsl(220,15%,90%)'}`,
             borderRadius: emathOpen ? '10px 10px 0 0' : 10,
             cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s',
           }}
         >
-          <span style={{ fontSize: 22, flexShrink: 0 }}>📙</span>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>📙</span>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 14, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>O-Level E Math</div>
-            <div style={{ fontSize: 12, color: 'hsl(220,10%,56%)', marginTop: 2 }}>Elementary Mathematics</div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>O-Level E Math</div>
+            <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 2 }}>Elementary Mathematics</div>
           </div>
           <svg
             width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(220,10%,56%)"
@@ -405,10 +405,10 @@ function SidebarContent({
                   cursor: 'pointer', transition: 'background 0.12s',
                 }}
               >
-                <span style={{ fontSize: item.emojiSize ?? 15, flexShrink: 0, width: 26, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon ?? item.emoji}</span>
+                <span style={{ fontSize: item.emojiSize ? item.emojiSize - 4 : 13, flexShrink: 0, width: 24, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{item.icon ?? item.emoji}</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
-                  <div style={{ fontSize: 11, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
+                  <div style={{ fontWeight: 600, fontSize: 12, color: 'hsl(220,40%,15%)', lineHeight: 1.3 }}>{item.title}</div>
+                  <div style={{ fontSize: 10, color: 'hsl(220,10%,56%)', marginTop: 1 }}>{item.subtitle}</div>
                 </div>
               </button>
             ))}
@@ -423,7 +423,7 @@ function SidebarContent({
             onClick={onAskQuestion}
             style={{
               textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
-              padding: '11px 4px', fontSize: 14, color: 'hsl(220,40%,15%)',
+              padding: '10px 4px', fontSize: 13, color: 'hsl(220,40%,15%)',
               display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.12s',
             }}
           >
@@ -434,7 +434,7 @@ function SidebarContent({
           href="/"
           className="menu-link-btn"
           style={{
-            padding: '11px 4px', fontSize: 14, color: 'hsl(220,10%,46%)',
+            padding: '10px 4px', fontSize: 13, color: 'hsl(220,10%,46%)',
             textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.12s',
           }}
         >
