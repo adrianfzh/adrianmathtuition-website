@@ -1,7 +1,17 @@
 import { createHmac } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
+import { sendTelegram } from '@/lib/telegram';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
+
+const CNY_DATES = [
+  '2026-02-17', '2026-02-18',
+  '2027-02-06', '2027-02-07',
+];
+const NO_LESSON_DATES = [...CNY_DATES, '2026-12-25', '2027-12-25'];
+
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 const LEVEL_MAP: Record<string, string> = {
   Sec1: 'Sec 1', Sec2: 'Sec 2', Sec3: 'Sec 3',
@@ -175,11 +185,137 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Step 6: Auto-generate prorated first invoice (non-fatal)
+    let invoiceGenerated = false;
+    let invoiceAmount: number | null = null;
+    try {
+      const start = new Date(String(startDate) + 'T00:00:00');
+      const today = new Date();
+      const startInCurrentMonth = start.getFullYear() === today.getFullYear() && start.getMonth() === today.getMonth();
+
+      if (startInCurrentMonth && ratePerLesson && slotIds.length > 0) {
+        const invoiceMonthLabel = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
+        const lastDayOfMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+
+        // Fetch slot to get day name
+        const slotRecord = await at('Slots', `/${slotIds[0]}`);
+        const dayRaw = slotRecord.fields?.['Day'] || '';
+        const dayName = dayRaw.replace(/^\d+\s+/, '').trim();
+
+        // Count lesson dates from start date to end of month
+        const dayIndices: Record<string, number> = {
+          Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+          Thursday: 4, Friday: 5, Saturday: 6,
+        };
+        const targetDay = dayIndices[dayName];
+        const lineItems: { date: string; day: string; type: string; description: string }[] = [];
+
+        if (targetDay !== undefined) {
+          const subjectsStr = subjects.join(' & ');
+          const description = `${level} ${subjectsStr} — ${invoiceMonthLabel}`;
+          const current = new Date(start);
+          // Advance to first occurrence of target day on or after start date
+          while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
+          while (current <= lastDayOfMonth) {
+            const iso = current.toISOString().split('T')[0];
+            if (!NO_LESSON_DATES.includes(iso)) {
+              lineItems.push({ date: iso, day: dayName, type: 'Regular', description });
+            }
+            current.setDate(current.getDate() + 7);
+          }
+        }
+
+        const lessonCount = lineItems.length;
+        if (lessonCount > 0) {
+          const baseAmount = lessonCount * ratePerLesson;
+          const todayStr = new Date().toISOString().split('T')[0];
+
+          const invoiceFields: Record<string, unknown> = {
+            'Student': [studentId],
+            'Month': invoiceMonthLabel,
+            'Lessons Count': lessonCount,
+            'Rate Per Lesson': ratePerLesson,
+            'Final Amount': baseAmount,
+            'Line Items': JSON.stringify(lineItems),
+            'Invoice Type': 'Regular',
+            'Status': 'Draft',
+            'Issue Date': todayStr,
+            'Due Date': todayStr,
+            'Auto Notes': `First invoice — prorated from ${startDate} (${lessonCount} lessons)`,
+          };
+
+          const createdInvoice = await at('Invoices', '', {
+            method: 'POST',
+            body: JSON.stringify({ fields: invoiceFields }),
+          });
+
+          invoiceGenerated = true;
+          invoiceAmount = baseAmount;
+
+          // Generate PDF (non-fatal)
+          if (process.env.VERCEL === '1') {
+            try {
+              const invoiceData = {
+                studentName: sanitize(studentName) as string,
+                month: invoiceMonthLabel,
+                invoiceId: createdInvoice.id,
+                issueDate: todayStr,
+                dueDate: todayStr,
+                lessonsCount: lessonCount,
+                ratePerLesson,
+                baseAmount,
+                finalAmount: baseAmount,
+                status: 'Pending',
+                makeupCredits: 0,
+                notes: `First invoice — prorated from ${startDate} (${lessonCount} lessons)`,
+                lineItems,
+                lineItemsExtra: [],
+              };
+              const pdfBuffer = await generateInvoicePDF(invoiceData);
+              const uploadRes = await fetch(
+                `https://content.airtableapi.com/v0/${baseId}/Invoices/${createdInvoice.id}/uploadAttachment`,
+                {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${airtableToken}`,
+                    'Content-Type': 'application/octet-stream',
+                    'X-Airtable-Attachment-Filename': `Invoice-${sanitize(studentName)}-${invoiceMonthLabel}.pdf`,
+                    'X-Airtable-Field-Name': 'Invoice PDF',
+                  },
+                  body: pdfBuffer as unknown as BodyInit,
+                }
+              );
+              if (!uploadRes.ok) throw new Error('Airtable upload failed: ' + await uploadRes.text());
+              await closeBrowser();
+            } catch (pdfError) {
+              console.error('[signup] PDF generation failed (non-fatal):', (pdfError as Error).message);
+              try { await closeBrowser(); } catch { /**/ }
+            }
+          }
+
+          // Telegram notification (non-fatal)
+          try {
+            await sendTelegram(
+              `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
+              `First invoice generated: $${baseAmount.toFixed(2)} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}, ${invoiceMonthLabel})\n` +
+              `Status: Draft — review in admin dashboard.`
+            );
+          } catch (tgError) {
+            console.error('[signup] Telegram notification failed (non-fatal):', (tgError as Error).message);
+          }
+        }
+      }
+    } catch (invoiceError) {
+      console.error('[signup] Invoice generation failed (non-fatal):', (invoiceError as Error).message);
+    }
+
     return NextResponse.json({
       success: true,
       studentName: sanitize(studentName),
       startDate,
       registrationToken,
+      invoiceGenerated,
+      invoiceAmount,
     });
   } catch (error) {
     console.error('[signup] Unhandled error:', error);
