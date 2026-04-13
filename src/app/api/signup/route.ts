@@ -74,6 +74,27 @@ export async function POST(request: NextRequest) {
       : [];
     const slotIds = slotId ? [String(slotId)] : [];
 
+    // Step 1b: Validate start date falls on correct day of week
+    if (slotIds.length > 0 && startDate) {
+      try {
+        const slotCheck = await at('Slots', `/${slotIds[0]}`);
+        const slotDayRaw = (slotCheck.fields?.['Day'] || '').replace(/^\d+\s+/, '').trim();
+        const dayMap: Record<string, number> = {
+          Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+          Thursday: 4, Friday: 5, Saturday: 6,
+        };
+        const expectedDay = dayMap[slotDayRaw];
+        const pickedDate = new Date(String(startDate) + 'T00:00:00');
+        if (expectedDay !== undefined && pickedDate.getDay() !== expectedDay) {
+          return NextResponse.json({
+            error: `Start date ${startDate} is not a ${slotDayRaw}. Please go back and select a valid date.`,
+          }, { status: 400 });
+        }
+      } catch (err) {
+        console.error('[signup] Slot validation failed (non-fatal, continuing):', (err as Error).message);
+      }
+    }
+
     // Step 2: Create Student
     const studentFields: Record<string, unknown> = {
       'Student Name': sanitize(studentName),
@@ -191,9 +212,9 @@ export async function POST(request: NextRequest) {
     try {
       const start = new Date(String(startDate) + 'T00:00:00');
       const today = new Date();
-      const startInCurrentMonth = start.getFullYear() === today.getFullYear() && start.getMonth() === today.getMonth();
 
-      if (startInCurrentMonth && ratePerLesson && slotIds.length > 0) {
+      // Generate invoice if start date is in the current month OR a future month
+      if (ratePerLesson && slotIds.length > 0) {
         const invoiceMonthLabel = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
         const lastDayOfMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0);
 
@@ -307,6 +328,70 @@ export async function POST(request: NextRequest) {
       }
     } catch (invoiceError) {
       console.error('[signup] Invoice generation failed (non-fatal):', (invoiceError as Error).message);
+    }
+
+    // Step 7: Auto-generate lesson records (non-fatal)
+    let lessonsCreated = 0;
+    try {
+      if (slotIds.length > 0 && enrollmentId) {
+        const slotRecord = await at('Slots', `/${slotIds[0]}`);
+        const dayRaw = (slotRecord.fields?.['Day'] || '').replace(/^\d+\s+/, '').trim();
+        const dayIndicesForLessons: Record<string, number> = {
+          Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+          Thursday: 4, Friday: 5, Saturday: 6,
+        };
+        const targetDay = dayIndicesForLessons[dayRaw];
+
+        if (targetDay !== undefined) {
+          const WEEKS_AHEAD = 9;
+          const lessonStart = new Date(String(startDate) + 'T00:00:00');
+          const lessonEnd = new Date(lessonStart);
+          lessonEnd.setDate(lessonEnd.getDate() + WEEKS_AHEAD * 7);
+
+          // Advance to first occurrence of target day on or after start date
+          const current = new Date(lessonStart);
+          while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
+
+          while (current <= lessonEnd) {
+            const iso = current.toISOString().split('T')[0];
+            const isHoliday = NO_LESSON_DATES.includes(iso);
+            try {
+              await at('Lessons', '', {
+                method: 'POST',
+                body: JSON.stringify({ fields: {
+                  Type: 'Regular',
+                  Student: [studentId],
+                  Slot: slotIds,
+                  Date: iso,
+                  Status: isHoliday ? 'Cancelled' : 'Scheduled',
+                  ...(isHoliday && { Notes: 'Public Holiday' }),
+                }}),
+              });
+              lessonsCreated++;
+            } catch (lessonErr) {
+              console.error(`[signup] Lesson creation failed for ${iso}:`, (lessonErr as Error).message);
+            }
+            current.setDate(current.getDate() + 7);
+          }
+          console.log(`[signup] Generated ${lessonsCreated} lessons for student ${studentId}`);
+        }
+      }
+    } catch (lessonGenError) {
+      console.error('[signup] Lesson generation failed (non-fatal):', (lessonGenError as Error).message);
+    }
+
+    // Send Telegram notification if no invoice was generated (invoice block sends its own)
+    if (!invoiceGenerated) {
+      try {
+        await sendTelegram(
+          `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
+          `Start date: ${startDate}\n` +
+          `Lessons created: ${lessonsCreated}\n` +
+          `No invoice generated (start date may be in a future month).`
+        );
+      } catch (tgError) {
+        console.error('[signup] Telegram notification failed (non-fatal):', (tgError as Error).message);
+      }
     }
 
     return NextResponse.json({

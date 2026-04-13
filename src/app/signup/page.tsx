@@ -155,6 +155,19 @@ function SignupContent() {
       return;
     }
 
+    // Validate the selected date falls on the correct day of the week
+    if (slotData) {
+      const dayName = (slotData.slotDay || '').replace(/^\d+\s*/, '');
+      const expectedDay = DAY_INDICES[dayName];
+      if (expectedDay !== undefined) {
+        const picked = new Date(datePick + 'T00:00:00');
+        if (picked.getDay() !== expectedDay) {
+          setFormError(`The start date must be a ${dayName}. Please select a valid date.`);
+          return;
+        }
+      }
+    }
+
     setSubmitting(true);
     setFormError('');
 
