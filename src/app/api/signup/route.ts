@@ -218,10 +218,12 @@ export async function POST(request: NextRequest) {
         const invoiceMonthLabel = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
         const lastDayOfMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0);
 
-        // Fetch slot to get day name
+        // Fetch slot to get day name and time
         const slotRecord = await at('Slots', `/${slotIds[0]}`);
         const dayRaw = slotRecord.fields?.['Day'] || '';
         const dayName = dayRaw.replace(/^\d+\s+/, '').trim();
+        const slotTime = (slotRecord.fields?.['Time'] || '').trim();
+        const dayLabel = slotTime ? `${dayName} ${slotTime}` : dayName;
 
         // Count lesson dates from start date to end of month
         const dayIndices: Record<string, number> = {
@@ -240,7 +242,7 @@ export async function POST(request: NextRequest) {
           while (current <= lastDayOfMonth) {
             const iso = current.toISOString().split('T')[0];
             if (!NO_LESSON_DATES.includes(iso)) {
-              lineItems.push({ date: iso, day: dayName, type: 'Regular', description });
+              lineItems.push({ date: iso, day: dayLabel, type: 'Regular', description });
             }
             current.setDate(current.getDate() + 7);
           }
