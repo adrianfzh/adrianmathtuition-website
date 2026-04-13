@@ -255,8 +255,23 @@ export async function POST(request: NextRequest) {
           const firstLessonDate = lineItems[0].date;
           const formatDateLong = (iso: string) =>
             new Date(iso + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-          const startDateFormatted = formatDateLong(String(startDate));
           const firstLessonFormatted = formatDateLong(firstLessonDate);
+
+          // Look up trial lesson date from Lessons table
+          let trialLessonFormatted: string | null = null;
+          try {
+            const trialRes = await at('Lessons', `?filterByFormula=AND(SEARCH('${studentId}',ARRAYJOIN({Student})),{Type}='Trial')&maxRecords=1`);
+            const trialRecord = trialRes.records?.[0];
+            if (trialRecord?.fields?.['Date']) {
+              trialLessonFormatted = formatDateLong(trialRecord.fields['Date'] as string);
+            }
+          } catch { /* non-fatal */ }
+
+          const autoNotes = [
+            `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})`,
+            trialLessonFormatted ? `Trial lesson: ${trialLessonFormatted}` : null,
+            `First lesson: ${firstLessonFormatted}`,
+          ].filter(Boolean).join('\n');
 
           const invoiceFields: Record<string, unknown> = {
             'Student': [studentId],
@@ -269,7 +284,7 @@ export async function POST(request: NextRequest) {
             'Status': 'Draft',
             'Issue Date': todayStr,
             'Due Date': firstLessonDate,
-            'Auto Notes': `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})\nTrial lesson: ${firstLessonFormatted}\nFirst lesson: ${firstLessonFormatted}`,
+            'Auto Notes': autoNotes,
           };
 
           const createdInvoice = await at('Invoices', '', {
@@ -295,7 +310,7 @@ export async function POST(request: NextRequest) {
                 finalAmount: baseAmount,
                 status: 'Pending',
                 makeupCredits: 0,
-                notes: `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})\nTrial lesson: ${firstLessonFormatted}\nFirst lesson: ${firstLessonFormatted}`,
+                notes: autoNotes,
                 lineItems,
                 lineItemsExtra: [],
               };
