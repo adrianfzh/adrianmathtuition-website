@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
             'Status': 'Draft',
             'Issue Date': todayStr,
             'Due Date': firstLessonDate,
-            'Auto Notes': `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})\nTrial lesson: ${startDateFormatted} | First lesson: ${firstLessonFormatted}`,
+            'Auto Notes': `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})\nTrial lesson: ${firstLessonFormatted}\nFirst lesson: ${firstLessonFormatted}`,
           };
 
           const createdInvoice = await at('Invoices', '', {
@@ -295,7 +295,7 @@ export async function POST(request: NextRequest) {
                 finalAmount: baseAmount,
                 status: 'Pending',
                 makeupCredits: 0,
-                notes: `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})\nTrial lesson: ${startDateFormatted} | First lesson: ${firstLessonFormatted}`,
+                notes: `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})\nTrial lesson: ${firstLessonFormatted}\nFirst lesson: ${firstLessonFormatted}`,
                 lineItems,
                 lineItemsExtra: [],
               };
