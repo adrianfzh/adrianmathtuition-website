@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
           } catch { /* non-fatal */ }
 
           const autoNotes = [
-            `First invoice — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})`,
+            `<b>First invoice</b> — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})`,
             trialLessonFormatted ? `Trial lesson: ${trialLessonFormatted}` : null,
             `First lesson: ${firstLessonFormatted}`,
           ].filter(Boolean).join('\n');
