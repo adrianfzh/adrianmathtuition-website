@@ -123,6 +123,40 @@ body {
 }
 .btn-generate:hover:not(:disabled) { background: #1d3fa3; }
 .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-danger {
+  background: #fff;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.btn-danger:hover:not(:disabled) { background: #fef2f2; border-color: #f87171; }
+.btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-danger-solid {
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.btn-danger-solid:hover:not(:disabled) { background: #b91c1c; }
+.btn-danger-solid:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn.btn-del {
+  background: #fff;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+.btn.btn-del:hover:not(:disabled) { background: #fef2f2; border-color: #f87171; }
 .result-banner {
   padding: 14px 18px;
   border-radius: 10px;
@@ -545,6 +579,8 @@ export default function AdminPage() {
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">\u2705 Approve</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
+            <button class="btn btn-del" onclick="deleteInvoicePdf('${inv.id}')" title="Delete the PDF only (keep invoice data)">\uD83E\uDDF9 Delete PDF</button>
+            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')" title="Delete this invoice + its PDF">\uD83D\uDDD1\uFE0F Delete Invoice</button>
           </div>`;
       } else if (isApproved) {
         actionsHtml = `
@@ -554,6 +590,8 @@ export default function AdminPage() {
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
             <button class="btn btn-unapprove" onclick="unapproveInvoice('${inv.id}')">\u21A9\uFE0F Unapprove</button>
+            <button class="btn btn-del" onclick="deleteInvoicePdf('${inv.id}')" title="Delete the PDF only (keep invoice data)">\uD83E\uDDF9 Delete PDF</button>
+            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')" title="Delete this invoice + its PDF">\uD83D\uDDD1\uFE0F Delete Invoice</button>
           </div>`;
       } else {
         actionsHtml = `
@@ -563,6 +601,8 @@ export default function AdminPage() {
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
             <button class="btn btn-record-payment" onclick="toggleRecordPayment('${inv.id}')">\uD83D\uDCB0 Record Payment</button>
+            <button class="btn btn-del" onclick="deleteInvoicePdf('${inv.id}')" title="Delete the PDF only (keep invoice data)">\uD83E\uDDF9 Delete PDF</button>
+            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')" title="Delete this invoice + its PDF">\uD83D\uDDD1\uFE0F Delete Invoice</button>
           </div>
           <div class="record-payment-form" id="payment-form-${inv.id}">
             <div class="form-group" style="flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -1290,6 +1330,141 @@ export default function AdminPage() {
       }
     }
 
+    // ---------- Delete handlers ----------
+    function studentLabel(id: string): string {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return id;
+      return `${inv.studentName || 'Unknown'} (${inv.month || 'no month'})`;
+    }
+
+    async function deleteInvoice(id: string) {
+      const label = studentLabel(id);
+      if (!confirm(`\u26A0\uFE0F Delete this invoice and its PDF?\n\n${label}\n\nThis permanently removes the Airtable record and the PDF file. This cannot be undone.`)) return;
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'DELETE',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, scope: 'invoice' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.remove();
+        invoices = invoices.filter((i: any) => i.id !== id);
+        showDeleteBanner(`\u2705 Deleted invoice for ${escHtml(label)} (PDFs removed: ${data.deletedPdfs || 0}).`, 'success');
+      } catch (err: any) {
+        alert('Failed to delete invoice: ' + err.message);
+      }
+    }
+
+    async function deleteInvoicePdf(id: string) {
+      const label = studentLabel(id);
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv?.pdfUrl) {
+        alert(`No PDF on file for ${label}.`);
+        return;
+      }
+      if (!confirm(`\u26A0\uFE0F Delete the PDF for this invoice?\n\n${label}\n\nThe invoice data stays in Airtable. The PDF file will be removed and the PDF URL cleared.`)) return;
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'DELETE',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, scope: 'pdf' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
+        inv.pdfUrl = null;
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.outerHTML = renderCard(inv);
+        showDeleteBanner(`\u2705 Deleted PDF for ${escHtml(label)}.`, 'success');
+      } catch (err: any) {
+        alert('Failed to delete PDF: ' + err.message);
+      }
+    }
+
+    function bulkTargetDescription(): { month: string; scopeSuffix: string } {
+      const month = selectedMonth;
+      return {
+        month,
+        scopeSuffix: month ? ` for ${month}` : ' across ALL months',
+      };
+    }
+
+    async function deleteAllPDFs() {
+      const { month, scopeSuffix } = bulkTargetDescription();
+      const visible = filteredInvoices();
+      const pdfCount = visible.filter((i: any) => !!i.pdfUrl).length;
+      if (!pdfCount) {
+        alert(`No PDFs to delete${scopeSuffix}.`);
+        return;
+      }
+      if (!confirm(`\u26A0\uFE0F Delete ${pdfCount} PDF file${pdfCount !== 1 ? 's' : ''}${scopeSuffix}?\n\nInvoice data stays in Airtable. Only the PDF files are removed.\n\nThis cannot be undone.`)) return;
+      const btn = document.getElementById('btn-delete-pdfs') as HTMLButtonElement;
+      if (btn) { btn.disabled = true; btn.textContent = 'Deleting...'; }
+      try {
+        const body: any = { scope: 'pdf' };
+        if (month) body.month = month; else body.confirmAll = true;
+        const res = await fetch('/api/admin-invoices', {
+          method: 'DELETE',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
+        showDeleteBanner(`\u2705 Deleted ${data.deletedPdfs} PDF${data.deletedPdfs !== 1 ? 's' : ''}${scopeSuffix}.${data.errors?.length ? ` (${data.errors.length} error${data.errors.length !== 1 ? 's' : ''})` : ''}`, data.errors?.length ? 'partial' : 'success');
+        await loadInvoices();
+      } catch (err: any) {
+        showDeleteBanner(`\u274C ${escHtml(err.message)}`, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '\uD83E\uDDF9 Delete All PDFs'; }
+      }
+    }
+
+    async function deleteAllInvoices() {
+      const { month, scopeSuffix } = bulkTargetDescription();
+      const visible = filteredInvoices();
+      const invCount = visible.length;
+      if (!invCount) {
+        alert(`No invoices to delete${scopeSuffix}.`);
+        return;
+      }
+      const first = `\u26A0\uFE0F DELETE ${invCount} invoice${invCount !== 1 ? 's' : ''}${scopeSuffix}?\n\nThis permanently removes the Airtable records AND their PDFs. This cannot be undone.`;
+      if (!confirm(first)) return;
+      const expect = month || 'DELETE ALL';
+      const typed = prompt(`Type "${expect}" to confirm deletion of ${invCount} invoice${invCount !== 1 ? 's' : ''}:`);
+      if (typed !== expect) {
+        alert('Deletion cancelled — confirmation text did not match.');
+        return;
+      }
+      const btn = document.getElementById('btn-delete-invoices') as HTMLButtonElement;
+      if (btn) { btn.disabled = true; btn.textContent = 'Deleting...'; }
+      try {
+        const body: any = { scope: 'invoice' };
+        if (month) body.month = month; else body.confirmAll = true;
+        const res = await fetch('/api/admin-invoices', {
+          method: 'DELETE',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
+        showDeleteBanner(`\u2705 Deleted ${data.deletedInvoices} invoice${data.deletedInvoices !== 1 ? 's' : ''} and ${data.deletedPdfs} PDF${data.deletedPdfs !== 1 ? 's' : ''}${scopeSuffix}.${data.errors?.length ? ` (${data.errors.length} error${data.errors.length !== 1 ? 's' : ''})` : ''}`, data.errors?.length ? 'partial' : 'success');
+        await loadInvoices();
+      } catch (err: any) {
+        showDeleteBanner(`\u274C ${escHtml(err.message)}`, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDDD1\uFE0F Delete All Invoices'; }
+      }
+    }
+
+    function showDeleteBanner(html: string, _kind: 'success' | 'partial' | 'error' = 'success') {
+      const banner = document.getElementById('result-banner');
+      if (!banner) return;
+      banner.style.display = 'block';
+      banner.className = 'result-banner';
+      banner.innerHTML = `<span>${html}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
+    }
+
     // Expose to window for inline onclick handlers
     const w = window as any;
     w.submitPassword = submitPassword;
@@ -1316,6 +1491,10 @@ export default function AdminPage() {
     w.editAlias = editAlias;
     w.cancelAlias = cancelAlias;
     w.saveAlias = saveAlias;
+    w.deleteInvoice = deleteInvoice;
+    w.deleteInvoicePdf = deleteInvoicePdf;
+    w.deleteAllPDFs = deleteAllPDFs;
+    w.deleteAllInvoices = deleteAllInvoices;
 
     init();
 
@@ -1326,6 +1505,7 @@ export default function AdminPage() {
         'regenerateAllPDFs','downloadAllPDFs','generateCardPDF','sendInvoice',
         'sendAllApproved','toggleRecordPayment','savePayment',
         'editAlias','cancelAlias','saveAlias',
+        'deleteInvoice','deleteInvoicePdf','deleteAllPDFs','deleteAllInvoices',
       ].forEach(fn => delete (window as any)[fn]);
     };
   }, []);
@@ -1363,6 +1543,8 @@ export default function AdminPage() {
           <button className="btn-generate" id="btn-regenerate-all" onClick={() => (window as any).regenerateAllPDFs()}>🔄 Regenerate All PDFs</button>
           <button className="btn-generate" id="btn-download-all" onClick={() => (window as any).downloadAllPDFs()}>⬇️ Download All PDFs</button>
           <button className="btn-generate" id="btn-send-all" onClick={() => (window as any).sendAllApproved()}>📤 Send All Approved</button>
+          <button className="btn-danger" id="btn-delete-pdfs" onClick={() => (window as any).deleteAllPDFs()}>🧹 Delete All PDFs</button>
+          <button className="btn-danger-solid" id="btn-delete-invoices" onClick={() => (window as any).deleteAllInvoices()}>🗑️ Delete All Invoices</button>
           <button className="btn-refresh" onClick={() => (window as any).loadInvoices()}>🔄 Refresh</button>
         </div>
       </div>

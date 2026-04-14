@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { del } from '@vercel/blob';
 import { airtableRequest } from '@/lib/airtable';
 
 export const runtime = 'nodejs';
+export const maxDuration = 300;
 
 function checkAuth(req: NextRequest): boolean {
   const adminPassword = process.env.ADMIN_PASSWORD;
@@ -117,4 +119,123 @@ export async function PATCH(req: NextRequest) {
   });
 
   return NextResponse.json(updated);
+}
+
+// DELETE /api/admin-invoices
+//
+// Body shapes:
+//   Individual:   { recordId: 'recXXX', scope: 'invoice' | 'pdf' }
+//   Bulk:         { month?: string, status?: string, scope: 'invoice' | 'pdf' }
+//
+// scope='invoice' deletes the Airtable row AND its PDF blob (if any).
+// scope='pdf'     deletes only the PDF blob and clears the PDF URL field.
+//
+// Bulk mode REQUIRES the caller to pass `confirmAll: true` when no `month`
+// is supplied, to guard against accidental wipe of every invoice ever.
+export async function DELETE(req: NextRequest) {
+  if (!checkAuth(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (!process.env.AIRTABLE_TOKEN || !process.env.AIRTABLE_BASE_ID) {
+    return NextResponse.json({ error: 'Missing environment variables' }, { status: 500 });
+  }
+
+  let body: any = {};
+  try { body = await req.json(); } catch { /* no body */ }
+  const scope: 'invoice' | 'pdf' = body.scope === 'pdf' ? 'pdf' : 'invoice';
+
+  // Resolve the target record list.
+  let records: any[] = [];
+  if (body.recordId) {
+    try {
+      const rec = await airtableRequest('Invoices', `/${body.recordId}`);
+      records = [rec];
+    } catch (err: any) {
+      return NextResponse.json({ error: `Invoice not found: ${err.message}` }, { status: 404 });
+    }
+  } else {
+    if (!body.month && !body.confirmAll) {
+      return NextResponse.json(
+        { error: 'Bulk delete without a month filter requires confirmAll:true' },
+        { status: 400 }
+      );
+    }
+    const clauses: string[] = [];
+    if (body.month) clauses.push(`{Month}='${String(body.month).replace(/'/g, "\\'")}'`);
+    if (body.status) clauses.push(`{Status}='${String(body.status).replace(/'/g, "\\'")}'`);
+    // For PDF-only scope, no point touching rows without a PDF URL.
+    if (scope === 'pdf') clauses.push(`{PDF URL}!=''`);
+    const formula = clauses.length
+      ? `?filterByFormula=${encodeURIComponent(clauses.length === 1 ? clauses[0] : `AND(${clauses.join(',')})`)}`
+      : '';
+    // Paginate through all matching records (Airtable caps at 100/page).
+    let offset: string | undefined;
+    do {
+      const sep = formula ? '&' : '?';
+      const path = `${formula}${offset ? `${sep}offset=${offset}` : ''}`;
+      const page = await airtableRequest('Invoices', path);
+      records = records.concat(page.records || []);
+      offset = page.offset;
+    } while (offset);
+  }
+
+  if (!records.length) {
+    return NextResponse.json({ deletedInvoices: 0, deletedPdfs: 0, errors: [] });
+  }
+
+  const errors: { id: string; error: string }[] = [];
+  let deletedPdfs = 0;
+  let deletedInvoices = 0;
+
+  // 1) Delete PDF blobs from Vercel Blob storage wherever present.
+  //    (Safe to call `del` on a URL that doesn't exist — it no-ops.)
+  const blobDeletes = records
+    .map((r) => ({ id: r.id, url: r.fields?.['PDF URL'] as string | undefined }))
+    .filter((x) => !!x.url);
+
+  await Promise.all(
+    blobDeletes.map(async ({ id, url }) => {
+      try {
+        await del(url!);
+        deletedPdfs++;
+      } catch (err: any) {
+        // Missing-blob errors are fine; surface anything else.
+        const msg = String(err?.message || err);
+        if (!/not found|404/i.test(msg)) errors.push({ id, error: `blob: ${msg}` });
+      }
+    })
+  );
+
+  if (scope === 'pdf') {
+    // Clear the PDF URL + Issue Date on the Airtable rows we just nuked blobs for.
+    // Airtable batch PATCH supports 10 records per request.
+    const toPatch = blobDeletes.map(({ id }) => ({ id, fields: { 'PDF URL': '' } }));
+    for (let i = 0; i < toPatch.length; i += 10) {
+      const chunk = toPatch.slice(i, i + 10);
+      try {
+        await airtableRequest('Invoices', '', {
+          method: 'PATCH',
+          body: JSON.stringify({ records: chunk }),
+        });
+      } catch (err: any) {
+        chunk.forEach((c) => errors.push({ id: c.id, error: `airtable: ${err.message}` }));
+      }
+    }
+    return NextResponse.json({ deletedInvoices: 0, deletedPdfs, errors });
+  }
+
+  // 2) scope='invoice' — delete the Airtable rows themselves (batch of 10 via query params).
+  const ids = records.map((r) => r.id);
+  for (let i = 0; i < ids.length; i += 10) {
+    const chunk = ids.slice(i, i + 10);
+    const qs = chunk.map((id) => `records[]=${encodeURIComponent(id)}`).join('&');
+    try {
+      await airtableRequest('Invoices', `?${qs}`, { method: 'DELETE' });
+      deletedInvoices += chunk.length;
+    } catch (err: any) {
+      chunk.forEach((id) => errors.push({ id, error: `airtable: ${err.message}` }));
+    }
+  }
+
+  return NextResponse.json({ deletedInvoices, deletedPdfs, errors });
 }
