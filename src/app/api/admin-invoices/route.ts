@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     const studentsData = await at(
       'Students',
       `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})` +
-        `&fields[]=Student Name&fields[]=Parent Email`
+        `&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Payment Alias`
     );
     studentsById = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r.fields]));
   }
@@ -56,8 +56,11 @@ export async function GET(req: NextRequest) {
     const studentFields = studentsById[studentId] || {};
     return {
       id: r.id,
+      studentId: studentId || '',
       studentName: studentFields['Student Name'] || '',
       parentEmail: studentFields['Parent Email'] || '',
+      parentName: studentFields['Parent Name'] || '',
+      paymentAlias: studentFields['Payment Alias'] || '',
       month: f['Month'] || '',
       lessonsCount: f['Lessons Count'] || 0,
       ratePerLesson: f['Rate Per Lesson'] || 0,
@@ -91,7 +94,19 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Missing environment variables' }, { status: 500 });
   }
 
-  const { recordId, fields } = await req.json();
+  const body = await req.json();
+
+  // Save payment alias to Students table
+  if (body.studentId && body.paymentAlias !== undefined) {
+    const updated = await airtableRequest('Students', `/${body.studentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ fields: { 'Payment Alias': body.paymentAlias } }),
+    });
+    return NextResponse.json({ ok: true, updated });
+  }
+
+  // Standard invoice PATCH
+  const { recordId, fields } = body;
   if (!recordId || !fields) {
     return NextResponse.json({ error: 'Missing recordId or fields' }, { status: 400 });
   }
