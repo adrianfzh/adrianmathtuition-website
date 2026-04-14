@@ -471,7 +471,7 @@ export default function AdminPage() {
       if (counterEl) {
         if (vis.length > 0) {
           const paymentHtml = sent.length > 0
-            ? ` \u00B7 \uD83D\uDCB0 <strong>${paid.length + partiallyPaid.length}</strong>/${sent.length} paid`
+            ? ` \u00B7 \u2705 <strong>${paid.length}</strong> paid \u00B7 \u26A0\uFE0F <strong>${partiallyPaid.length}</strong> partial \u00B7 \u23F3 <strong>${sent.length - paid.length - partiallyPaid.length}</strong> unpaid`
             : '';
           counterEl.innerHTML = `\u2705 <strong>${approved.length}</strong> approved \u00B7 \uD83D\uDCE4 <strong>${sent.length}</strong> sent / ${vis.length} total${paymentHtml}`;
         } else {
