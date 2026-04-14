@@ -27,6 +27,17 @@ function buildEmailHtml(invoice: {
     <p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — <strong>$${invoice.finalAmount}</strong>, due by <strong>${invoice.dueDate}</strong>.</p>
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
     <p>Please feel free to reach out if you have any questions.</p>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 AdrianMath Telegram Bot</strong></p>
+    <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly.</p>
+    <p style="font-size: 14px; color: #6b7280;">Parents and students can also use the bot to:</p>
+    <ul style="font-size: 14px; color: #6b7280; padding-left: 20px;">
+      <li>Reschedule upcoming lessons</li>
+      <li>Book makeup lessons for missed classes</li>
+      <li>Switch to a different regular timeslot</li>
+      <li>Book additional lessons</li>
+    </ul>
+    <p style="font-size: 14px; color: #6b7280;">Search <strong>@AdrianMathBot</strong> on Telegram to get started. If you haven't registered yet, ask Adrian for your registration code.</p>
     <p>Best regards,<br>Adrian</p>
   `;
 }
@@ -44,6 +55,17 @@ function buildAmendedEmailHtml(invoice: {
     <p>This replaces the previously sent invoice. Please disregard the earlier email.</p>
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
     <p>Please feel free to reach out if you have any questions.</p>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 AdrianMath Telegram Bot</strong></p>
+    <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly.</p>
+    <p style="font-size: 14px; color: #6b7280;">Parents and students can also use the bot to:</p>
+    <ul style="font-size: 14px; color: #6b7280; padding-left: 20px;">
+      <li>Reschedule upcoming lessons</li>
+      <li>Book makeup lessons for missed classes</li>
+      <li>Switch to a different regular timeslot</li>
+      <li>Book additional lessons</li>
+    </ul>
+    <p style="font-size: 14px; color: #6b7280;">Search <strong>@AdrianMathBot</strong> on Telegram to get started. If you haven't registered yet, ask Adrian for your registration code.</p>
     <p>Best regards,<br>Adrian</p>
   `;
 }
