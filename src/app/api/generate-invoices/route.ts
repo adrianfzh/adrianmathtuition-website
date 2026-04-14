@@ -340,7 +340,7 @@ export async function POST(req: NextRequest) {
         `${summaryLines}\n\n` +
         `Total: ${generated} invoices \u00b7 ${totalAmount.toFixed(2)}\n\n` +
         `Review and hold any before 15th via /amend [name].\n` +
-        `Invoices send automatically at 8am tomorrow.`
+        `Invoices send automatically at 10am tomorrow.`
     );
 
     return NextResponse.json({ generated, skipped, errors });

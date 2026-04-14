@@ -1,6 +1,10 @@
 {
   "framework": "nextjs",
   "crons": [
-    { "path": "/api/bot-health", "schedule": "*/5 * * * *" }
+    { "path": "/api/bot-health",            "schedule": "*/5 * * * *"  },
+    { "path": "/api/pre-invoice-reminder",  "schedule": "0 1 13 * *"   },
+    { "path": "/api/generate-invoices",     "schedule": "0 23 13 * *"  },
+    { "path": "/api/payment-reminder",      "schedule": "0 12 14 * *"  },
+    { "path": "/api/send-invoices",         "schedule": "0 2 15 * *"   }
   ]
 }
