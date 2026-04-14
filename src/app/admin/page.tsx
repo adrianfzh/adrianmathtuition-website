@@ -464,10 +464,16 @@ export default function AdminPage() {
       const sent = vis.filter((i: any) => i.status === 'Sent');
       const total = drafts.reduce((s: number, i: any) => s + (i.finalAmount || 0), 0);
 
+      const paid = sent.filter((i: any) => i.isPaid);
+      const partiallyPaid = sent.filter((i: any) => !i.isPaid && i.amountPaid > 0);
+
       const counterEl = document.getElementById('approval-counter');
       if (counterEl) {
         if (vis.length > 0) {
-          counterEl.innerHTML = `\u2705 <strong>${approved.length}</strong> approved \u00B7 \uD83D\uDCE4 <strong>${sent.length}</strong> sent / ${vis.length} total`;
+          const paymentHtml = sent.length > 0
+            ? ` \u00B7 \uD83D\uDCB0 <strong>${paid.length + partiallyPaid.length}</strong>/${sent.length} paid`
+            : '';
+          counterEl.innerHTML = `\u2705 <strong>${approved.length}</strong> approved \u00B7 \uD83D\uDCE4 <strong>${sent.length}</strong> sent / ${vis.length} total${paymentHtml}`;
         } else {
           counterEl.innerHTML = '';
         }
