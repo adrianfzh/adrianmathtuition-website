@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
+import { buildRegisterUrl } from '@/lib/invoice-register-url';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -57,9 +58,12 @@ export async function GET(req: NextRequest) {
     finalAmount: f['Final Amount'] || 0,
     status: f['Status'] || 'Draft',
     makeupCredits: 0,
-    notes: f['Auto Notes'] || '',
+    // Carry-over breakdown kept in Airtable Auto Notes for admin reference;
+    // suppressed from the parent-facing PDF to avoid bot-section overflow.
+    notes: '',
     lineItems,
     lineItemsExtra: (() => { try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; } })(),
+    registerUrl: buildRegisterUrl(studentId),
   };
 
   const pdfBuffer = await generateInvoicePDF(invoiceData);

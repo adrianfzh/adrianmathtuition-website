@@ -39,18 +39,11 @@ async function renderPDF(html: string): Promise<Buffer> {
   const browser = await getBrowser();
   const page = await browser.newPage();
 
-  await page.setRequestInterception(true);
-  page.on('request', (req) => {
-    const url = req.url();
-    if (url.startsWith('https://fonts.googleapis.com') || url.startsWith('https://fonts.gstatic.com')) {
-      req.abort();
-    } else {
-      req.continue();
-    }
-  });
-
-  await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 15000 });
-  await new Promise((resolve) => setTimeout(resolve, 800));
+  // Allow Google Fonts so the template renders in Open Sans (not DejaVu fallback).
+  // Without the actual font, headings render wider and the bot section overflows page 1.
+  await page.setContent(html, { waitUntil: 'networkidle0', timeout: 20000 });
+  // Belt-and-braces: explicitly wait for the fontset to finish loading.
+  await page.evaluate(() => (document as any).fonts?.ready);
 
   const pdfBuffer = await page.pdf({
     format: 'A4',
@@ -81,6 +74,7 @@ export interface InvoiceData {
   notes: string;
   lineItems: LineItem[];
   lineItemsExtra: ExtraLineItem[];
+  registerUrl?: string;
 }
 
 interface LineItem {
@@ -167,6 +161,13 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
   }
   html = html.replace(/\{\{EXTRA_LINE_ITEMS_ROWS\}\}/g, extraLineItemsRows);
   html = html.replace(/\{\{AUTO_NOTES\}\}/g, (invoiceData.notes || '').replace(/\n/g, '<br>'));
+
+  // Register URL (one per invoice; URL valid 30 days, token minted on click valid 7 days)
+  const registerUrl = invoiceData.registerUrl || '';
+  const registerHtml = registerUrl
+    ? `<span class="bot-register-line">To register, visit <a href="${registerUrl}">${registerUrl.replace(/^https?:\/\//, '')}</a> for your registration code <span class="bot-register-expiry">(link expires in 1 month)</span>.</span>`
+    : 'Ask Adrian for your registration code.';
+  html = html.replace(/\{\{REGISTER_URL_HTML\}\}/g, registerHtml);
 
   return renderPDF(html);
 }

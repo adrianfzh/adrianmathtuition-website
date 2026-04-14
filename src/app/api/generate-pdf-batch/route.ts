@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { airtableRequest } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
+import { buildRegisterUrl } from '@/lib/invoice-register-url';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -69,9 +70,13 @@ export async function POST(req: NextRequest) {
         finalAmount: f['Final Amount'] || 0,
         status: f['Status'] || 'Draft',
         makeupCredits: 0,
-        notes: f['Auto Notes'] || '',
+        // Carry-over breakdown lives in Airtable Auto Notes for admin reference only —
+        // suppressed from the parent-facing PDF (same as the cron flow) so the bot
+        // section doesn't overflow to page 2.
+        notes: '',
         lineItems,
         lineItemsExtra: (() => { try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; } })(),
+        registerUrl: buildRegisterUrl(studentId),
       };
 
       const pdfBuffer = await generateInvoicePDF(invoiceData);

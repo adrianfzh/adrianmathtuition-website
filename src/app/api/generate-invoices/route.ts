@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram } from '@/lib/telegram';
+import { buildRegisterUrl } from '@/lib/invoice-register-url';
+
+const DAY_ABBREV: Record<string, string> = {
+  Sunday: 'Sun', Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
+  Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat',
+};
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -107,7 +113,13 @@ export async function POST(req: NextRequest) {
       enrollmentsData.records.map((r: any) => r.fields['Slot']?.[0]).filter(Boolean)
     )] as string[];
 
-    const [studentsData, slotsData, existingInvoicesData] = await Promise.all([
+    // Previous month label (used to fetch carry-over invoices)
+    const prevMonthDate = new Date(invoiceMonth.firstDay);
+    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+    const prevMonthNamesArr = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const prevMonthLabel = `${prevMonthNamesArr[prevMonthDate.getMonth()]} ${prevMonthDate.getFullYear()}`;
+
+    const [studentsData, slotsData, existingInvoicesData, prevMonthInvoicesData] = await Promise.all([
       studentIds.length
         ? at('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Level&fields[]=Status&fields[]=Parent Email&fields[]=Parent Name&fields[]=Subject Level&fields[]=Subjects`)
         : { records: [] },
@@ -115,6 +127,7 @@ export async function POST(req: NextRequest) {
         ? at('Slots', `?filterByFormula=OR(${slotIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)
         : { records: [] },
       at('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${invoiceMonth.label}'`)}`),
+      at('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${prevMonthLabel}'`)}&fields[]=Student&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid`),
     ]);
 
     const studentsById: Record<string, any> = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r]));
@@ -122,6 +135,12 @@ export async function POST(req: NextRequest) {
     const existingStudentIds = new Set(
       existingInvoicesData.records.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)
     );
+    // Index previous-month invoices by student record ID (filter in JS — Airtable can't filter linked records by ID in formulas)
+    const prevInvoiceByStudent: Record<string, any> = {};
+    for (const r of prevMonthInvoicesData.records || []) {
+      const sid = r.fields['Student']?.[0];
+      if (sid) prevInvoiceByStudent[sid] = r;
+    }
 
     // Group enrollments by student
     const enrollmentsByStudent: Record<string, any[]> = {};
@@ -169,9 +188,13 @@ export async function POST(req: NextRequest) {
             if (!slot) continue;
             const dayRaw = slot.fields['Day'] || '';
             const dayName = dayRaw.replace(/^\d+\s+/, '').trim();
+            const dayAbbrev = DAY_ABBREV[dayName] || dayName;
+            const slotTime = (slot.fields['Time'] || '').trim();
+            const dayLabel = slotTime ? `${dayAbbrev} ${slotTime}` : dayAbbrev;
             const endDateStr = enrollment.fields['End Date'];
             const endDate = endDateStr ? new Date(endDateStr + 'T00:00:00') : null;
-            const lineItems = countOccurrencesInMonth(dayName, invoiceMonth, endDate);
+            const lineItems = countOccurrencesInMonth(dayName, invoiceMonth, endDate)
+              .map((li) => ({ ...li, day: dayLabel }));
             if (lineItems.length > 0) hasLessons = true;
             allLineItems.push(...lineItems);
           }
@@ -219,30 +242,17 @@ export async function POST(req: NextRequest) {
           });
         });
 
-        // Carry-over balance from previous month
-        const prevMonth = new Date(invoiceMonth.firstDay);
-        prevMonth.setMonth(prevMonth.getMonth() - 1);
-        const prevMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-        const prevMonthLabel = `${prevMonthNames[prevMonth.getMonth()]} ${prevMonth.getFullYear()}`;
-        const prevInvoiceFormula = encodeURIComponent(`AND({Student}='${studentId}',{Month}='${prevMonthLabel}')`);
-        const prevInvoiceData = await at(
-          'Invoices',
-          `?filterByFormula=${prevInvoiceFormula}&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid`
-        );
-        const prevInvoice = (prevInvoiceData.records || [])[0] || null;
+        // Carry-over balance from previous month — batch-fetched above, looked up by student ID in JS
+        // (Airtable can't filter linked record fields by ID in formulas; see CLAUDE.md)
+        const prevInvoice = prevInvoiceByStudent[studentId] || null;
 
         const carryOverLineItems: any[] = [];
         let carryOverNotes = '';
         if (prevInvoice) {
-          const isPaid = prevInvoice.fields['Is Paid'] || false;
           const finalAmt = prevInvoice.fields['Final Amount'] || 0;
           const amountPaid = prevInvoice.fields['Amount Paid'] || 0;
-          let outstanding = 0;
-          if (!isPaid) {
-            outstanding = finalAmt;
-          } else if (isPaid && amountPaid > 0) {
-            outstanding = finalAmt - amountPaid;
-          }
+          // Always compute from (final - paid). Handles: unpaid (0 paid), partial, full.
+          const outstanding = Math.max(0, finalAmt - amountPaid);
           if (outstanding > 0) {
             carryOverLineItems.push({
               description: `Outstanding balance \u2014 ${prevMonthLabel}`,
@@ -251,7 +261,7 @@ export async function POST(req: NextRequest) {
             carryOverNotes =
               `${prevMonthLabel} invoice breakdown:\n` +
               `  Invoice amount: ${finalAmt.toFixed(2)}\n` +
-              `  Amount paid: ${amountPaid > 0 ? amountPaid.toFixed(2) : finalAmt.toFixed(2)}\n` +
+              `  Amount paid: ${amountPaid.toFixed(2)}\n` +
               `  Outstanding: ${outstanding.toFixed(2)}`;
           }
         }
@@ -297,9 +307,12 @@ export async function POST(req: NextRequest) {
               finalAmount: totalFinalAmount,
               status: 'Pending',
               makeupCredits: 0,
-              notes: autoNotes,
+              // Carry-over breakdown is stored in Airtable Auto Notes for admin reference,
+              // but suppressed from the parent-facing PDF — they can view the prior invoice if needed.
+              notes: '',
               lineItems: lineItemsForInvoice,
               lineItemsExtra: carryOverLineItems,
+              registerUrl: buildRegisterUrl(studentId),
             };
             const pdfBuffer = await generateInvoicePDF(invoiceData);
             const uploadRes = await fetch(
