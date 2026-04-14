@@ -155,18 +155,18 @@ body {
 .btn-gen-pdf.success { background: #f0fdf4; border-color: #86efac; color: #15803d; }
 .btn-gen-pdf.error   { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
 .gen-error-msg { font-size: 12px; color: #b91c1c; margin-top: 6px; width: 100%; }
-.payment-alias { font-size: 14px; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.alias-label { font-size: 12px; color: #94a3b8; flex-shrink: 0; }
-.alias-value { font-weight: 600; color: #334155; }
-.alias-edit-btn { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 12px; padding: 0 2px; line-height: 1; }
-.alias-edit-btn:hover { color: #475569; }
-.alias-input-row { display: none; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+.payment-alias { margin: 8px 0 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.alias-label { font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+.alias-value { font-size: 17px; font-weight: 700; color: #0f172a; }
+.alias-edit-btn { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 7px; cursor: pointer; color: #475569; font-size: 14px; font-weight: 500; padding: 5px 12px; line-height: 1.4; transition: background 0.12s; }
+.alias-edit-btn:hover { background: #e2e8f0; color: #0f172a; }
+.alias-input-row { display: none; align-items: center; gap: 8px; margin: 8px 0 14px; flex-wrap: wrap; }
 .alias-input-row.open { display: flex; }
-.alias-input { padding: 5px 9px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; font-family: inherit; color: #0f172a; width: 220px; }
+.alias-input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; font-family: inherit; color: #0f172a; width: 260px; }
 .alias-input:focus { outline: none; border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.15); }
-.btn-alias-save { background: #1e40af; color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 500; }
+.btn-alias-save { background: #1e40af; color: white; border: none; border-radius: 8px; padding: 8px 18px; font-size: 15px; cursor: pointer; font-family: inherit; font-weight: 600; }
 .btn-alias-save:hover { background: #1d3fa3; }
-.btn-alias-cancel { background: none; border: 1px solid #e2e8f0; color: #64748b; border-radius: 6px; padding: 5px 10px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.btn-alias-cancel { background: none; border: 1px solid #e2e8f0; color: #64748b; border-radius: 8px; padding: 8px 14px; font-size: 15px; cursor: pointer; font-family: inherit; }
 .content { max-width: 1000px; margin: 32px auto; padding: 0 20px; }
 .error-banner {
   background: #fef2f2;
@@ -576,8 +576,8 @@ export default function AdminPage() {
       const cardClass = isDraft ? '' : isApproved ? ' approved' : ' sent';
 
       const aliasDisplayHtml = inv.paymentAlias
-        ? `<span class="alias-label">Pays as:</span><span class="alias-value">${escHtml(inv.paymentAlias)}</span><button class="alias-edit-btn" onclick="editAlias('${inv.id}')">✏️</button>`
-        : `<span class="alias-label">Pays as:</span><span style="color:#94a3b8;font-style:italic;font-size:13px;">not set</span><button class="alias-edit-btn" onclick="editAlias('${inv.id}')">+ Add</button>`;
+        ? `<span class="alias-label">Pays as:</span><span class="alias-value">${escHtml(inv.paymentAlias)}</span><button class="alias-edit-btn" onclick="editAlias('${inv.id}')">✏️ Edit</button>`
+        : `<span class="alias-label">Pays as:</span><button class="alias-edit-btn" onclick="editAlias('${inv.id}')" style="color:#1e40af;border-color:#bfdbfe;background:#eff6ff;">+ Set payee name</button>`;
 
       return `
         <div class="invoice-card${cardClass}" id="card-${inv.id}">
