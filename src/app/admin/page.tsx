@@ -1162,6 +1162,58 @@ export default function AdminPage() {
       }
     }
 
+    async function unapproveAllApproved() {
+      const month = selectedMonth;
+      const scopeSuffix = month ? ` for ${month}` : ' across ALL months';
+      const approved = filteredInvoices().filter((i: any) => i.status === 'Approved');
+      if (!approved.length) {
+        alert(`No approved invoices to unapprove${scopeSuffix}.`);
+        return;
+      }
+      if (!confirm(`Move ${approved.length} approved invoice${approved.length !== 1 ? 's' : ''} back to Draft${scopeSuffix}?`)) return;
+
+      const btn = document.getElementById('btn-unapprove-all') as HTMLButtonElement;
+      const origText = btn?.textContent || '↩️ Unapprove All';
+      if (btn) btn.disabled = true;
+
+      const errors: { id: string; error: string }[] = [];
+      let done = 0;
+      const concurrency = 5;
+      const queue = [...approved];
+
+      async function worker() {
+        while (queue.length) {
+          const inv = queue.shift();
+          if (!inv) break;
+          try {
+            const res = await fetch('/api/admin-invoices', {
+              method: 'PATCH',
+              headers: authHeaders({ 'Content-Type': 'application/json' }),
+              body: JSON.stringify({ recordId: inv.id, fields: { Status: 'Draft' } }),
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          } catch (err: any) {
+            errors.push({ id: inv.id, error: err.message });
+          } finally {
+            done++;
+            if (btn) btn.textContent = `Unapproving ${done}/${approved.length}\u2026`;
+          }
+        }
+      }
+
+      try {
+        await Promise.all(Array.from({ length: concurrency }, worker));
+        const ok = approved.length - errors.length;
+        showDeleteBanner(
+          `↩️ Moved ${ok} invoice${ok !== 1 ? 's' : ''} back to Draft${scopeSuffix}.${errors.length ? ` (${errors.length} failed)` : ''}`,
+          errors.length ? 'partial' : 'success'
+        );
+        await loadInvoices();
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
+      }
+    }
+
     async function sendAllApproved() {
       const approvedInvoices = invoices.filter((i: any) => i.status === 'Approved');
       if (approvedInvoices.length === 0) { alert('No approved invoices to send.'); return; }
@@ -1594,6 +1646,7 @@ export default function AdminPage() {
     w.generateCardPDF = generateCardPDF;
     w.sendInvoice = sendInvoice;
     w.approveAllDrafts = approveAllDrafts;
+    w.unapproveAllApproved = unapproveAllApproved;
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
     w.markFullPaid = markFullPaid;
@@ -1618,7 +1671,7 @@ export default function AdminPage() {
         'sendAllApproved','toggleRecordPayment',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
-        'approveAllDrafts',
+        'approveAllDrafts','unapproveAllApproved',
         'deleteInvoice','deleteInvoicePdf','deleteAllPDFs','deleteAllInvoices',
       ].forEach(fn => delete (window as any)[fn]);
     };
@@ -1657,6 +1710,7 @@ export default function AdminPage() {
           <button className="btn-generate" id="btn-regenerate-all" onClick={() => (window as any).regenerateAllPDFs()}>🔄 Regenerate All PDFs</button>
           <button className="btn-generate" id="btn-download-all" onClick={() => (window as any).downloadAllPDFs()}>⬇️ Download All PDFs</button>
           <button className="btn-generate" id="btn-approve-all" onClick={() => (window as any).approveAllDrafts()}>✅ Approve All Drafts</button>
+          <button className="btn-generate" id="btn-unapprove-all" onClick={() => (window as any).unapproveAllApproved()}>↩️ Unapprove All</button>
           <button className="btn-generate" id="btn-send-all" onClick={() => (window as any).sendAllApproved()}>📤 Send All Approved</button>
           <button className="btn-danger" id="btn-delete-pdfs" onClick={() => (window as any).deleteAllPDFs()}>🧹 Delete All PDFs</button>
           <button className="btn-danger-solid" id="btn-delete-invoices" onClick={() => (window as any).deleteAllInvoices()}>🗑️ Delete All Invoices</button>
