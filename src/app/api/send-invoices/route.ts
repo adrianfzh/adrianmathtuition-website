@@ -158,6 +158,7 @@ export async function POST(req: NextRequest) {
 
       const emailData: any = {
         from: "Adrian's Math Tuition <invoices@adrianmathtuition.com>",
+        reply_to: "adrianmathtuition@gmail.com",
         to: invoice.parentEmail,
         subject,
         html,
