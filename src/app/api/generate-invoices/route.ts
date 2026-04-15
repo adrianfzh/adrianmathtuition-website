@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { airtableRequest } from '@/lib/airtable';
+import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram } from '@/lib/telegram';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
@@ -98,10 +98,14 @@ export async function POST(req: NextRequest) {
   try {
     const invoiceMonth = getInvoiceMonth();
 
-    const enrollmentsData = await at(
+    // IMPORTANT: paginate! A plain airtableRequest() silently caps at 100
+    // rows, which previously hid enrollments (and therefore students) past
+    // the first page. See src/lib/airtable.ts > airtableRequestAll.
+    const enrollmentsData = await airtableRequestAll(
       'Enrollments',
       `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}`
     );
+    console.log(`[generate-invoices] Active enrollments fetched: ${enrollmentsData.records.length}`);
     if (!enrollmentsData.records?.length) {
       return NextResponse.json({ generated: 0, skipped: 0, errors: [] });
     }
@@ -121,14 +125,15 @@ export async function POST(req: NextRequest) {
 
     const [studentsData, slotsData, existingInvoicesData, prevMonthInvoicesData] = await Promise.all([
       studentIds.length
-        ? at('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Level&fields[]=Status&fields[]=Parent Email&fields[]=Parent Name&fields[]=Subject Level&fields[]=Subjects`)
-        : { records: [] },
+        ? airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Level&fields[]=Status&fields[]=Parent Email&fields[]=Parent Name&fields[]=Subject Level&fields[]=Subjects`)
+        : Promise.resolve({ records: [] }),
       slotIds.length
-        ? at('Slots', `?filterByFormula=OR(${slotIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)
-        : { records: [] },
-      at('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${invoiceMonth.label}'`)}`),
-      at('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${prevMonthLabel}'`)}&fields[]=Student&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid`),
+        ? airtableRequestAll('Slots', `?filterByFormula=OR(${slotIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)
+        : Promise.resolve({ records: [] }),
+      airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${invoiceMonth.label}'`)}`),
+      airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${prevMonthLabel}'`)}&fields[]=Student&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid`),
     ]);
+    console.log(`[generate-invoices] Students: ${studentsData.records.length}, Slots: ${slotsData.records.length}, Existing ${invoiceMonth.label}: ${existingInvoicesData.records.length}, Previous ${prevMonthLabel}: ${prevMonthInvoicesData.records.length}`);
 
     const studentsById: Record<string, any> = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r]));
     const slotsById: Record<string, any> = Object.fromEntries(slotsData.records.map((r: any) => [r.id, r]));
@@ -155,17 +160,38 @@ export async function POST(req: NextRequest) {
     let skipped = 0;
     const errors: any[] = [];
     const generatedList: { name: string; amount: number; count: number }[] = [];
+    // Structured skip log: shows up in Fly/Vercel logs AND in the Telegram
+    // summary so missing students can be triaged without opening the DB.
+    const skipReasons: { name: string; reason: string }[] = [];
+    const recordSkip = (id: string, reason: string) => {
+      const name = studentsById[id]?.fields?.['Student Name'] || id;
+      skipReasons.push({ name, reason });
+      console.warn(`[generate-invoices] SKIP ${name}: ${reason}`);
+    };
 
     for (const studentId in enrollmentsByStudent) {
       const studentEnrollments = enrollmentsByStudent[studentId];
       const student = studentsById[studentId];
-      if (!student) { skipped += studentEnrollments.length; continue; }
+      if (!student) {
+        skipped += studentEnrollments.length;
+        recordSkip(studentId, 'student record not found (broken linked record)');
+        continue;
+      }
 
       try {
-        if (existingStudentIds.has(studentId)) { skipped += studentEnrollments.length; continue; }
+        if (existingStudentIds.has(studentId)) {
+          skipped += studentEnrollments.length;
+          // Not surfaced in skipReasons — this is the normal "already has
+          // an invoice for this month" case and is expected.
+          continue;
+        }
 
         const ratePerLesson = studentEnrollments[0].fields['Rate Per Lesson'] || 0;
-        if (!ratePerLesson) { skipped++; continue; }
+        if (!ratePerLesson) {
+          skipped++;
+          recordSkip(studentId, 'Rate Per Lesson is 0 or blank on enrollment');
+          continue;
+        }
 
         const isProrated = isProratedMonth(invoiceMonth.month);
         let allLineItems: { date: string; day: string; type: string }[] = [];
@@ -213,8 +239,30 @@ export async function POST(req: NextRequest) {
         const lessonCount = isProrated ? proratedLessonRecords.length : allLineItems.length;
         const additionalCount = additionalLessons.length;
 
-        if (!isProrated && !hasLessons) { skipped += studentEnrollments.length; continue; }
-        if (isProrated && lessonCount === 0 && additionalCount === 0) { skipped += studentEnrollments.length; continue; }
+        if (!isProrated && !hasLessons) {
+          skipped += studentEnrollments.length;
+          // Enumerate why: usually a stale Slot link or blank Slot.Day.
+          const slotDiagnostics = studentEnrollments.map((enr) => {
+            const slotId = enr.fields['Slot']?.[0];
+            const slot = slotId ? slotsById[slotId] : null;
+            if (!slotId) return 'no Slot link on enrollment';
+            if (!slot) return `Slot ${slotId} not in fetched Slots set (deleted or past pagination)`;
+            const day = (slot.fields['Day'] || '').toString().replace(/^\d+\s+/, '').trim();
+            if (!day) return `Slot ${slotId} has blank Day`;
+            const endDate = enr.fields['End Date'];
+            if (endDate && new Date(endDate) < invoiceMonth.firstDay) {
+              return `enrollment End Date ${endDate} is before ${invoiceMonth.label}`;
+            }
+            return `Slot ${slotId} Day='${day}' yielded 0 occurrences`;
+          });
+          recordSkip(studentId, `no lessons in ${invoiceMonth.label} — ${slotDiagnostics.join('; ')}`);
+          continue;
+        }
+        if (isProrated && lessonCount === 0 && additionalCount === 0) {
+          skipped += studentEnrollments.length;
+          recordSkip(studentId, `prorated month ${invoiceMonth.label} has 0 Completed lessons and 0 Additional lessons`);
+          continue;
+        }
 
         if (!isProrated) allLineItems.sort((a, b) => a.date.localeCompare(b.date));
 
@@ -348,15 +396,24 @@ export async function POST(req: NextRequest) {
       .map((g) => `${g.name} \u2014 ${g.amount.toFixed(2)} (${g.count} lesson${g.count !== 1 ? 's' : ''})`)
       .join('\n');
     const totalAmount = generatedList.reduce((sum, g) => sum + g.amount, 0);
+
+    // Surface skip reasons so Zane/Xavier-style "missing invoice" issues are
+    // visible in the Telegram summary, not just the server logs.
+    const skipSection = skipReasons.length
+      ? `\n\n\u26A0\uFE0F <b>Skipped with a flag (${skipReasons.length}):</b>\n` +
+          skipReasons.map((s) => `\u2022 ${s.name} \u2014 ${s.reason}`).join('\n')
+      : '';
+
     await sendTelegram(
       `\ud83d\udccb <b>Draft invoices ready \u2014 ${invoiceMonth.label}</b>\n\n` +
         `${summaryLines}\n\n` +
-        `Total: ${generated} invoices \u00b7 ${totalAmount.toFixed(2)}\n\n` +
-        `Review and hold any before 15th via /amend [name].\n` +
+        `Total: ${generated} invoices \u00b7 ${totalAmount.toFixed(2)}` +
+        skipSection +
+        `\n\nReview and hold any before 15th via /amend [name].\n` +
         `Invoices send automatically at 10am tomorrow.`
     );
 
-    return NextResponse.json({ generated, skipped, errors });
+    return NextResponse.json({ generated, skipped, errors, skipReasons });
   } catch (err: any) {
     console.error('[generate-invoices] Unhandled error:', err);
     return NextResponse.json({ error: 'Internal server error', details: err.message }, { status: 500 });

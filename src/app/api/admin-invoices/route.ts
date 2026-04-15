@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { del } from '@vercel/blob';
-import { airtableRequest } from '@/lib/airtable';
+import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -28,11 +28,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing environment variables' }, { status: 500 });
   }
 
-  const at = (table: string, path: string, options?: RequestInit) =>
-    airtableRequest(table, path, options);
-
+  // Paginate — Airtable caps each page at 100, so without this the admin
+  // view silently omits invoices past the first 100 (same bug that hid
+  // Zane/Xavier/Lucas from generate-invoices).
   const formula = encodeURIComponent(`OR({Status}='Draft',{Status}='Approved',{Status}='Sent')`);
-  const invoicesData = await at(
+  const invoicesData = await airtableRequestAll(
     'Invoices',
     `?filterByFormula=${formula}&sort[0][field]=Student&sort[0][direction]=asc`
   );
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 
   let studentsById: Record<string, any> = {};
   if (studentIds.length) {
-    const studentsData = await at(
+    const studentsData = await airtableRequestAll(
       'Students',
       `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})` +
         `&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Payment Alias`

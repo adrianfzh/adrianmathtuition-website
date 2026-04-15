@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { airtableRequest } from '@/lib/airtable';
+import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     } else if (singleRecordId) {
       invoiceRecords = [await at('Invoices', `/${singleRecordId}`)];
     } else {
-      const data = await at('Invoices', `?filterByFormula=${encodeURIComponent(`{Status}='Approved'`)}`);
+      const data = await airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Status}='Approved'`)}`);
       invoiceRecords = data.records || [];
     }
 
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       ...new Set(invoiceRecords.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)),
     ] as string[];
     const studentsData = studentIds.length
-      ? await at('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)
+      ? await airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)
       : { records: [] };
     const studentsById: Record<string, any> = Object.fromEntries(
       studentsData.records.map((r: any) => [r.id, r.fields])
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
       };
       if (pdfBuffer) {
         emailData.attachments = [{
-          filename: `AdriansMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/\s+/g, '-')}.pdf`,
+          filename: `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/\s+/g, '-')}.pdf`,
           content: pdfBuffer.toString('base64'),
           type: 'application/pdf',
           disposition: 'attachment',

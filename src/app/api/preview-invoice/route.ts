@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
   };
 
   const pdfBuffer = await generateInvoicePDF(invoiceData);
-  const filename = `AdriansMathTuition-Invoice-${(studentName || '').replace(/\s+/g, '-')}-${(f['Month'] || recordId).replace(/\s+/g, '-')}.pdf`;
+  const filename = `AdrianMathTuition-Invoice-${(studentName || '').replace(/\s+/g, '-')}-${(f['Month'] || recordId).replace(/\s+/g, '-')}.pdf`;
 
   return new Response(pdfBuffer as unknown as BodyInit, {
     headers: {

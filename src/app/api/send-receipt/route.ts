@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   const safeName = studentName.replace(/\s+/g, '-');
   const safeMonth = (f['Month'] || '').replace(/\s+/g, '-');
   const blob = await put(
-    `receipts/AdriansMathTuition-Receipt-${safeName}-${safeMonth}.pdf`,
+    `receipts/AdrianMathTuition-Receipt-${safeName}-${safeMonth}.pdf`,
     pdfBuffer,
     { access: 'public', contentType: 'application/pdf', allowOverwrite: true }
   );
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         subject: `Payment Receipt for ${f['Month'] || ''} \u2013 ${studentName}`,
         html: emailHtml,
         attachments: [{
-          filename: `AdriansMathTuition-Receipt-${safeName}-${safeMonth}.pdf`,
+          filename: `AdrianMathTuition-Receipt-${safeName}-${safeMonth}.pdf`,
           content: pdfBuffer.toString('base64'),
           type: 'application/pdf',
           disposition: 'attachment',

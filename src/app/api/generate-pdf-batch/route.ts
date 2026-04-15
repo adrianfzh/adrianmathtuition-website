@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
-import { airtableRequest } from '@/lib/airtable';
+import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 
@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
   if (singleRecordId) {
     invoices = [await at('Invoices', `/${singleRecordId}`)];
   } else {
-    const data = await at('Invoices', `?filterByFormula=${encodeURIComponent(`{Status}='Draft'`)}`);
+    // Paginate (Airtable caps at 100/page) — otherwise drafts past page 1
+    // silently get no PDF.
+    const data = await airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Status}='Draft'`)}`);
     invoices = data.records || [];
   }
 
@@ -82,7 +84,7 @@ export async function POST(req: NextRequest) {
       const pdfBuffer = await generateInvoicePDF(invoiceData);
 
       const blob = await put(
-        `invoices/AdriansMathTuition-Invoice-${studentName.replace(/\s+/g, '-')}-${(f['Month'] || '').replace(/\s+/g, '-')}.pdf`,
+        `invoices/AdrianMathTuition-Invoice-${studentName.replace(/\s+/g, '-')}-${(f['Month'] || '').replace(/\s+/g, '-')}.pdf`,
         pdfBuffer,
         { access: 'public', contentType: 'application/pdf', allowOverwrite: true }
       );
