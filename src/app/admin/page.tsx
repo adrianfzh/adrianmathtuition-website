@@ -1566,7 +1566,7 @@ export default function AdminPage() {
       let downloaded = 0;
       for (const inv of withPdf) {
         btn.textContent = `\u2B07\uFE0F Downloading ${downloaded + 1}/${withPdf.length}\u2026`;
-        await downloadBlob(inv.pdfUrl, `Invoice-${inv.studentName}-${inv.month}.pdf`);
+        await downloadBlob(inv.pdfUrl, `AdrianMathTuition-Invoice-${inv.studentName}-${inv.month}.pdf`);
         downloaded++;
         await new Promise(r => setTimeout(r, 500));
       }
