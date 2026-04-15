@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
+import { getInvoiceMonth } from '@/lib/invoice-month';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -105,7 +106,11 @@ export async function POST(req: NextRequest) {
     } else if (singleRecordId) {
       invoiceRecords = [await at('Invoices', `/${singleRecordId}`)];
     } else {
-      const data = await airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Status}='Approved'`)}`);
+      // Cron path — scope to current invoice month only so stale Approved
+      // rows from previous cycles don't get re-sent automatically.
+      const invoiceMonth = getInvoiceMonth();
+      const formula = `AND({Status}='Approved',{Month}='${invoiceMonth.label}')`;
+      const data = await airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(formula)}`);
       invoiceRecords = data.records || [];
     }
 
@@ -207,7 +212,7 @@ export async function POST(req: NextRequest) {
       await new Promise((resolve) => setTimeout(resolve, 600));
     }
 
-    const currentMonth = emails[0]?.subject?.match(/for (.+) \u2013/)?.[1] ?? '';
+    const currentMonth = emails[0]?.subject?.match(/for (.+) \u2013/)?.[1] ?? getInvoiceMonth().label;
     await sendTelegram(
       `\u2705 <b>Invoices Sent \u2014 ${currentMonth}</b>\n\n` +
         `Sent: ${sentCount}\nFailed: ${failedCount}\n` +

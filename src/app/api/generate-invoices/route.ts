@@ -3,6 +3,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram } from '@/lib/telegram';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
+import { getInvoiceMonth } from '@/lib/invoice-month';
 
 const DAY_ABBREV: Record<string, string> = {
   Sunday: 'Sun', Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
@@ -23,17 +24,7 @@ function isProratedMonth(monthNum: number) {
   return PRORATION_MONTHS.includes(monthNum);
 }
 
-function getInvoiceMonth(today = new Date()) {
-  const invoiceMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  return {
-    label: `${monthNames[invoiceMonth.getMonth()]} ${invoiceMonth.getFullYear()}`,
-    year: invoiceMonth.getFullYear(),
-    month: invoiceMonth.getMonth() + 1,
-    firstDay: new Date(invoiceMonth.getFullYear(), invoiceMonth.getMonth(), 1),
-    lastDay: new Date(invoiceMonth.getFullYear(), invoiceMonth.getMonth() + 1, 0),
-  };
-}
+// getInvoiceMonth imported from @/lib/invoice-month
 
 function formatDate(date: Date) {
   return date.toISOString().split('T')[0];
