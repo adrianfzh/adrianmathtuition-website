@@ -407,7 +407,20 @@ body {
 
 export default function AdminPage() {
   useEffect(() => {
-    let adminPassword = sessionStorage.getItem('adminPassword') || '';
+    // Cookie helpers — persistent login across PWA sessions
+    function getCookie(name: string): string {
+      const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+      return m ? decodeURIComponent(m[1]) : '';
+    }
+    function setCookie(name: string, value: string, days: number) {
+      const expires = new Date(Date.now() + days * 864e5).toUTCString();
+      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
+    }
+    function deleteCookie(name: string) {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Strict`;
+    }
+
+    let adminPassword = getCookie('admin_pw') || sessionStorage.getItem('adminPassword') || '';
     let invoices: any[] = [];
     let totalVisible = false;
     let selectedMonth = '';
@@ -429,17 +442,40 @@ export default function AdminPage() {
       return String(str).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
     }
 
-    function init() {
-      if (sessionStorage.getItem('adminAuthed') === '1' && adminPassword) {
-        const overlay = document.getElementById('login-overlay');
-        if (overlay) overlay.style.display = 'none';
-        loadInvoices();
-      } else {
-        const overlay = document.getElementById('login-overlay');
-        if (overlay) overlay.style.display = 'flex';
-        const input = document.getElementById('pw-input') as HTMLInputElement;
-        if (input) input.focus();
+    async function verifyAndLogin(pw: string): Promise<boolean> {
+      try {
+        const res = await fetch('/api/admin-invoices?auth=check', {
+          headers: { Authorization: `Bearer ${pw}` },
+        });
+        return res.ok;
+      } catch {
+        return false;
       }
+    }
+
+    async function init() {
+      const overlay = document.getElementById('login-overlay');
+      // If we have a saved password (cookie or sessionStorage), verify silently
+      if (adminPassword) {
+        const ok = await verifyAndLogin(adminPassword);
+        if (ok) {
+          // Refresh the 30-day cookie so it rolls forward while active
+          setCookie('admin_pw', adminPassword, 30);
+          sessionStorage.setItem('adminAuthed', '1');
+          sessionStorage.setItem('adminPassword', adminPassword);
+          if (overlay) overlay.style.display = 'none';
+          loadInvoices();
+          return;
+        }
+        // Saved password is invalid — clear it
+        adminPassword = '';
+        deleteCookie('admin_pw');
+        sessionStorage.removeItem('adminAuthed');
+        sessionStorage.removeItem('adminPassword');
+      }
+      if (overlay) overlay.style.display = 'flex';
+      const input = document.getElementById('pw-input') as HTMLInputElement;
+      if (input) input.focus();
     }
 
     async function submitPassword() {
@@ -453,11 +489,10 @@ export default function AdminPage() {
       errorEl.style.display = 'none';
 
       try {
-        const res = await fetch('/api/admin-invoices?auth=check', {
-          headers: { Authorization: `Bearer ${pw}` },
-        });
-        if (res.ok) {
+        const ok = await verifyAndLogin(pw);
+        if (ok) {
           adminPassword = pw;
+          setCookie('admin_pw', pw, 30);
           sessionStorage.setItem('adminAuthed', '1');
           sessionStorage.setItem('adminPassword', pw);
           const overlay = document.getElementById('login-overlay');
@@ -479,6 +514,15 @@ export default function AdminPage() {
         btn.disabled = false;
         btn.textContent = 'Submit';
       }
+    }
+
+    function logout() {
+      if (!confirm('Log out of the admin dashboard?')) return;
+      adminPassword = '';
+      deleteCookie('admin_pw');
+      sessionStorage.removeItem('adminAuthed');
+      sessionStorage.removeItem('adminPassword');
+      location.reload();
     }
 
     async function loadInvoices() {
@@ -1727,6 +1771,7 @@ export default function AdminPage() {
     // Expose to window for inline onclick handlers
     const w = window as any;
     w.submitPassword = submitPassword;
+    w.logout = logout;
     w.loadInvoices = loadInvoices;
     w.onMonthFilter = onMonthFilter;
     w.onSearchChange = onSearchChange;
@@ -1765,7 +1810,7 @@ export default function AdminPage() {
     init();
 
     return () => {
-      ['submitPassword','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
+      ['submitPassword','logout','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
         'approveInvoice','unapproveInvoice','saveAmend','toggleAmend','addLineItem',
         'removeLineItem','updateCalc','generateInvoices','generateMissingPDFs',
         'regenerateAllPDFs','downloadAllPDFs','generateCardPDF','sendInvoice',
@@ -1783,18 +1828,36 @@ export default function AdminPage() {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       <div id="login-overlay">
-        <div className="login-card">
+        <form
+          className="login-card"
+          onSubmit={(e) => { e.preventDefault(); (window as any).submitPassword(); }}
+          action="#"
+          method="post"
+        >
           <h1>📋 Invoice Review</h1>
           <p>Enter the admin password to continue</p>
+          {/* Hidden username field helps iOS Keychain associate the saved password */}
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            defaultValue="admin"
+            style={{ display: 'none' }}
+            readOnly
+          />
           <input
             type="password"
             id="pw-input"
+            name="password"
             placeholder="Password"
-            onKeyDown={(e) => { if (e.key === 'Enter') (window as any).submitPassword(); }}
+            autoComplete="current-password"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
           />
           <div id="pw-error"></div>
-          <button id="pw-btn" onClick={() => (window as any).submitPassword()}>Submit</button>
-        </div>
+          <button id="pw-btn" type="submit">Submit</button>
+        </form>
       </div>
 
       <div className="header">
@@ -1816,6 +1879,7 @@ export default function AdminPage() {
           <button className="btn-danger" id="btn-delete-pdfs" onClick={() => (window as any).deleteAllPDFs()}>🧹 Delete All PDFs</button>
           <button className="btn-danger-solid" id="btn-delete-invoices" onClick={() => (window as any).deleteAllInvoices()}>🗑️ Delete All Invoices</button>
           <button className="btn-refresh" onClick={() => (window as any).loadInvoices()}>🔄 Refresh</button>
+          <button className="btn-refresh" onClick={() => (window as any).logout()}>🚪 Log out</button>
         </div>
       </div>
 
