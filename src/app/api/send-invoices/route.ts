@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
         }];
       }
       emails.push(emailData);
-      invoiceMap.set(invoice.id, invoiceRecord);
+      invoiceMap.set(invoice.id, { record: invoiceRecord, studentName: invoice.studentName });
     }
 
     if (!emails.length) {
@@ -207,17 +207,20 @@ export async function POST(req: NextRequest) {
         sentCount++;
       } catch (err: any) {
         failedCount++;
-        errors.push({ invoiceId, error: err.message });
+        const studentName = invoiceMap.get(invoiceId)?.studentName ?? invoiceId;
+        console.error(`[send-invoices] Failed to send invoice for ${studentName} (${invoiceId}):`, err.message);
+        errors.push({ invoiceId, studentName, error: err.message });
       }
       await new Promise((resolve) => setTimeout(resolve, 600));
     }
 
     const currentMonth = emails[0]?.subject?.match(/for (.+) \u2013/)?.[1] ?? getInvoiceMonth().label;
+    const failedLines = errors.map((e) => `• ${e.studentName ?? e.invoiceId}: ${e.error}`).join('\n');
     await sendTelegram(
       `\u2705 <b>Invoices Sent \u2014 ${currentMonth}</b>\n\n` +
         `Sent: ${sentCount}\nFailed: ${failedCount}\n` +
         (failedCount > 0
-          ? `\u26a0\ufe0f ${failedCount} invoice${failedCount !== 1 ? 's' : ''} failed to send. Please check the admin panel.`
+          ? `\u26a0\ufe0f ${failedCount} invoice${failedCount !== 1 ? 's' : ''} failed to send:\n${failedLines}`
           : `All invoices processed successfully.`)
     );
 
