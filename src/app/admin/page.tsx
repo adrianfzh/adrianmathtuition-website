@@ -537,6 +537,7 @@ export default function AdminPage() {
         invoices = await res.json();
         populateMonthFilter();
         renderAll();
+        updateBulkButtonLabels();
       } catch (err: any) {
         const errorMsg = document.getElementById('error-msg') as HTMLElement;
         errorMsg.textContent = err.message;
@@ -572,6 +573,7 @@ export default function AdminPage() {
     function onMonthFilter(val: string) {
       selectedMonth = val;
       renderAll();
+      updateBulkButtonLabels();
     }
 
     function filteredInvoices() {
@@ -1358,9 +1360,10 @@ export default function AdminPage() {
     }
 
     async function sendAllApproved() {
-      const approvedInvoices = invoices.filter((i: any) => i.status === 'Approved');
-      if (approvedInvoices.length === 0) { alert('No approved invoices to send.'); return; }
-      if (!confirm(`Send invoices to all ${approvedInvoices.length} approved student${approvedInvoices.length !== 1 ? 's' : ''}? This will email their parents immediately.`)) return;
+      const { scopeSuffix } = bulkTargetDescription();
+      const approvedInvoices = filteredInvoices().filter((i: any) => i.status === 'Approved');
+      if (approvedInvoices.length === 0) { alert(`No approved invoices to send${scopeSuffix}.`); return; }
+      if (!confirm(`Send ${approvedInvoices.length} approved invoice${approvedInvoices.length !== 1 ? 's' : ''}${scopeSuffix}? This will email their parents immediately.`)) return;
 
       const btn = document.getElementById('btn-send-all') as HTMLButtonElement;
       btn.disabled = true;
@@ -1414,6 +1417,25 @@ export default function AdminPage() {
       } finally {
         btn.disabled = false;
         btn.textContent = '\uD83D\uDCE4 Send All Approved';
+      }
+    }
+
+    function updateBulkButtonLabels() {
+      const month = selectedMonth;
+      const suffix = month ? ` (${month})` : '';
+      const map: Record<string, string> = {
+        'btn-generate-missing': `\u26A1 Generate Missing PDFs${suffix}`,
+        'btn-regenerate-all':   `\uD83D\uDD04 Regenerate All PDFs${suffix}`,
+        'btn-download-all':     `\u2B07\uFE0F Download All PDFs${suffix}`,
+        'btn-approve-all':      `\u2705 Approve All Drafts${suffix}`,
+        'btn-unapprove-all':    `\u21A9\uFE0F Unapprove All${suffix}`,
+        'btn-send-all':         `\uD83D\uDCE4 Send All Approved${suffix}`,
+        'btn-delete-pdfs':      `\uD83E\uDDF9 Delete All PDFs${suffix}`,
+        'btn-delete-invoices':  `\uD83D\uDDD1\uFE0F Delete All Invoices${suffix}`,
+      };
+      for (const [id, label] of Object.entries(map)) {
+        const el = document.getElementById(id) as HTMLButtonElement | null;
+        if (el && !el.disabled) el.textContent = label;
       }
     }
 
@@ -1503,11 +1525,17 @@ export default function AdminPage() {
     }
 
     function generateMissingPDFs() {
-      return runBulkGenerate('btn-generate-missing', '\u26A1 Generate Missing PDFs', {});
+      const { scopeSuffix } = bulkTargetDescription();
+      const ids = filteredInvoices().filter((i: any) => !i.pdfUrl).map((i: any) => i.id);
+      if (!ids.length) { alert(`No invoices missing PDFs${scopeSuffix}.`); return; }
+      return runBulkGenerate('btn-generate-missing', '\u26A1 Generate Missing PDFs', { recordIds: ids });
     }
 
     function regenerateAllPDFs() {
-      return runBulkGenerate('btn-regenerate-all', '\uD83D\uDD04 Regenerate All PDFs', { force: true });
+      const { scopeSuffix } = bulkTargetDescription();
+      const ids = filteredInvoices().map((i: any) => i.id);
+      if (!ids.length) { alert(`No invoices to regenerate${scopeSuffix}.`); return; }
+      return runBulkGenerate('btn-regenerate-all', '\uD83D\uDD04 Regenerate All PDFs', { recordIds: ids, force: true });
     }
 
     async function downloadBlob(url: string, filename: string) {
@@ -1524,8 +1552,9 @@ export default function AdminPage() {
 
     async function downloadAllPDFs() {
       const btn = document.getElementById('btn-download-all') as HTMLButtonElement;
-      const withPdf = invoices.filter((inv: any) => inv.pdfUrl);
-      const missing = invoices.length - withPdf.length;
+      const visible = filteredInvoices();
+      const withPdf = visible.filter((inv: any) => inv.pdfUrl);
+      const missing = visible.length - withPdf.length;
 
       if (withPdf.length === 0) {
         btn.textContent = '\u26A0\uFE0F No PDFs to download \u2014 generate them first';
@@ -1791,6 +1820,7 @@ export default function AdminPage() {
     w.downloadAllPDFs = downloadAllPDFs;
     w.generateCardPDF = generateCardPDF;
     w.sendInvoice = sendInvoice;
+    w.updateBulkButtonLabels = updateBulkButtonLabels;
     w.approveAllDrafts = approveAllDrafts;
     w.unapproveAllApproved = unapproveAllApproved;
     w.sendAllApproved = sendAllApproved;
@@ -1817,7 +1847,7 @@ export default function AdminPage() {
         'sendAllApproved','toggleRecordPayment',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
-        'approveAllDrafts','unapproveAllApproved',
+        'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
         'deleteInvoice','deleteInvoicePdf','deleteAllPDFs','deleteAllInvoices',
       ].forEach(fn => delete (window as any)[fn]);
     };

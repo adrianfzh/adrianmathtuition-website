@@ -27,11 +27,14 @@ export async function POST(req: NextRequest) {
 
   let body: any = {};
   try { body = await req.json(); } catch { /* no body */ }
-  const { recordId: singleRecordId, force } = body;
+  const { recordId: singleRecordId, recordIds, force } = body;
 
   let invoices: any[];
   if (singleRecordId) {
     invoices = [await at('Invoices', `/${singleRecordId}`)];
+  } else if (recordIds?.length) {
+    // Explicit list of IDs (e.g. month-filtered bulk generate from admin panel)
+    invoices = await Promise.all((recordIds as string[]).map((id: string) => at('Invoices', `/${id}`)));
   } else {
     // Paginate (Airtable caps at 100/page) — otherwise drafts past page 1
     // silently get no PDF.
