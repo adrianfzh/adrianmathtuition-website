@@ -333,9 +333,75 @@ body {
 .form-group.full-width { grid-column: 1 / -1; }
 .live-calc { font-size: 16px; color: #334155; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-weight: 500; }
 .form-actions { display: flex; gap: 8px; }
+.search-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #f1f5f9;
+  padding: 12px 0 14px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.search-input-wrap { position: relative; }
+#search-input {
+  width: 100%;
+  padding: 13px 44px 13px 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  color: #0f172a;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+#search-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.18); }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 18px; pointer-events: none; }
+.search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: #f1f5f9; border: none; width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer; color: #64748b; font-size: 16px;
+  display: none; align-items: center; justify-content: center; line-height: 1;
+}
+.search-clear:hover { background: #e2e8f0; color: #0f172a; }
+.search-clear.visible { display: flex; }
+.search-count { font-size: 13px; color: #64748b; margin-top: 8px; padding: 0 4px; }
 @media (max-width: 600px) {
+  html { font-size: 16px; }
   .form-grid { grid-template-columns: 1fr; }
   .card-top { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .header { padding: 14px 14px; gap: 10px; }
+  .header-left h1 { font-size: 22px; }
+  .header-left p { font-size: 13px; }
+  .header-right { width: 100%; gap: 8px; }
+  .header-right .btn-generate,
+  .header-right .btn-danger,
+  .header-right .btn-danger-solid,
+  .header-right .btn-refresh { font-size: 13px; padding: 8px 12px; }
+  #month-filter { flex: 1 1 auto; font-size: 14px; padding: 8px 10px; }
+  #approval-counter, #summary { font-size: 13px; width: 100%; }
+  .content { margin: 12px auto; padding: 0 12px; }
+  .card-body { padding: 18px 16px; }
+  .student-name { font-size: 20px; }
+  .invoice-month { font-size: 16px; }
+  .badge { font-size: 13px; padding: 4px 10px; }
+  .amount-line { font-size: 16px; }
+  .final-amount { font-size: 24px; }
+  .auto-notes { font-size: 14px; padding: 8px 12px; }
+  .card-actions { gap: 6px; }
+  .card-actions .btn { flex: 1 1 auto; font-size: 13px; padding: 10px 12px; min-height: 42px; }
+  .payment-alias { gap: 6px; }
+  .alias-label { font-size: 11px; }
+  .alias-value { font-size: 15px; }
+  .alias-input { width: 100%; }
+  .amend-form { padding: 16px 14px; }
+  .line-item-row, .main-item-row { flex-wrap: wrap; }
+  .line-item-row .li-desc, .main-item-row .li-desc { flex: 1 1 100%; }
+  .line-item-row .li-slot, .main-item-row .li-slot,
+  .line-item-row .li-lessons, .main-item-row .li-lessons,
+  .line-item-row .li-amount, .main-item-row .li-amount { width: auto; flex: 1 1 0; min-width: 0; }
+  .record-payment-form { padding: 12px; }
+  .search-bar { padding: 10px 0 12px; }
+  #search-input { font-size: 16px; padding: 12px 40px 12px 40px; }
 }
 `;
 
@@ -345,6 +411,7 @@ export default function AdminPage() {
     let invoices: any[] = [];
     let totalVisible = false;
     let selectedMonth = '';
+    let searchQuery = '';
 
     function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
       return { Authorization: `Bearer ${adminPassword}`, ...extra };
@@ -464,7 +531,30 @@ export default function AdminPage() {
     }
 
     function filteredInvoices() {
-      return selectedMonth ? invoices.filter((i: any) => i.month === selectedMonth) : invoices;
+      let out = selectedMonth ? invoices.filter((i: any) => i.month === selectedMonth) : invoices;
+      if (searchQuery) {
+        const q = searchQuery;
+        out = out.filter((i: any) => {
+          const name = String(i.studentName || '').toLowerCase();
+          const alias = String(i.paymentAlias || '').toLowerCase();
+          return name.includes(q) || alias.includes(q);
+        });
+      }
+      return out;
+    }
+
+    function onSearchChange(val: string) {
+      searchQuery = val.toLowerCase().trim();
+      const clearBtn = document.getElementById('search-clear');
+      if (clearBtn) clearBtn.classList.toggle('visible', searchQuery.length > 0);
+      renderAll();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('search-input') as HTMLInputElement;
+      if (input) input.value = '';
+      onSearchChange('');
+      input?.focus();
     }
 
     function renderAll() {
@@ -473,12 +563,21 @@ export default function AdminPage() {
       const visible = filteredInvoices();
 
       if (visible.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <div class="emoji">\uD83D\uDCED</div>
-            <h2>No invoices found</h2>
-            <p>No draft or approved invoices at the moment.<br>The cron runs on the 14th at 9am SGT to generate them.</p>
-          </div>`;
+        if (searchQuery) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="emoji">\uD83D\uDD0D</div>
+              <h2>No matches</h2>
+              <p>No invoices match "<strong>${escHtml(searchQuery)}</strong>"${selectedMonth ? ` in ${escHtml(selectedMonth)}` : ''}.</p>
+            </div>`;
+        } else {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="emoji">\uD83D\uDCED</div>
+              <h2>No invoices found</h2>
+              <p>No draft or approved invoices at the moment.<br>The cron runs on the 14th at 9am SGT to generate them.</p>
+            </div>`;
+        }
         return;
       }
 
@@ -1630,6 +1729,8 @@ export default function AdminPage() {
     w.submitPassword = submitPassword;
     w.loadInvoices = loadInvoices;
     w.onMonthFilter = onMonthFilter;
+    w.onSearchChange = onSearchChange;
+    w.clearSearch = clearSearch;
     w.toggleTotal = toggleTotal;
     w.previewPdf = previewPdf;
     w.approveInvoice = approveInvoice;
@@ -1664,7 +1765,7 @@ export default function AdminPage() {
     init();
 
     return () => {
-      ['submitPassword','loadInvoices','onMonthFilter','toggleTotal','previewPdf',
+      ['submitPassword','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
         'approveInvoice','unapproveInvoice','saveAmend','toggleAmend','addLineItem',
         'removeLineItem','updateCalc','generateInvoices','generateMissingPDFs',
         'regenerateAllPDFs','downloadAllPDFs','generateCardPDF','sendInvoice',
@@ -1719,6 +1820,26 @@ export default function AdminPage() {
       </div>
 
       <div className="content">
+        <div className="search-bar">
+          <div className="search-input-wrap">
+            <span className="search-icon">🔍</span>
+            <input
+              type="search"
+              id="search-input"
+              placeholder="Search student name..."
+              autoComplete="off"
+              onChange={(e) => (window as any).onSearchChange(e.target.value)}
+              onInput={(e) => (window as any).onSearchChange((e.target as HTMLInputElement).value)}
+            />
+            <button
+              type="button"
+              id="search-clear"
+              className="search-clear"
+              aria-label="Clear search"
+              onClick={() => (window as any).clearSearch()}
+            >✕</button>
+          </div>
+        </div>
         <div id="error-banner" className="error-banner" style={{ display: 'none' }}>
           <span id="error-msg"></span>
           <button className="btn-retry" onClick={() => (window as any).loadInvoices()}>Retry</button>
