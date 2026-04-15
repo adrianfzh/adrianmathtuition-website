@@ -296,6 +296,10 @@ body {
 .btn-unapprove:hover:not(:disabled) { background: #f1f5f9; }
 .btn-record-payment { background: #f0fdf4; border-color: #86efac; color: #15803d; }
 .btn-record-payment:hover { background: #dcfce7; }
+.btn-full-paid { background: #f0fdf4; border-color: #86efac; color: #15803d; font-weight: 600; }
+.btn-full-paid:hover { background: #dcfce7; }
+.btn-partial { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+.btn-partial:hover { background: #fef3c7; }
 .record-payment-form { display: none; padding: 12px 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
 .record-payment-form.open { display: block; }
 .line-items-section { margin-bottom: 14px; }
@@ -605,15 +609,24 @@ export default function AdminPage() {
             <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')" title="Delete this invoice + its PDF">\uD83D\uDDD1\uFE0F Delete Invoice</button>
           </div>
           <div class="record-payment-form" id="payment-form-${inv.id}">
-            <div class="form-group" style="flex-direction:row;align-items:center;gap:12px;flex-wrap:wrap;">
-              <label style="margin:0;">Amount Paid</label>
-              <input type="number" id="pay-amount-${inv.id}" value="${inv.amountPaid || inv.finalAmount.toFixed(2)}" step="0.01" min="0" style="width:140px;font-size:16px;padding:10px;">
-              <label style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:17px;font-weight:500;">
-                <input type="checkbox" id="rp-ispaid-${inv.id}" style="width:24px;height:24px;cursor:pointer;accent-color:#15803d;" ${inv.isPaid ? 'checked' : ''}>
-                Is Paid
-              </label>
-              <button class="btn btn-save" onclick="savePayment('${inv.id}')">\uD83D\uDCBE Save Payment</button>
+            <div style="font-size:13px;color:#64748b;margin-bottom:12px;">
+              Invoice total: <strong>$${inv.finalAmount.toFixed(2)}</strong>
+              ${inv.amountPaid > 0 ? ` &middot; Previously recorded: <strong>$${inv.amountPaid.toFixed(2)}</strong>` : ''}
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+              <button class="btn btn-full-paid" onclick="markFullPaid('${inv.id}')">\u2705 Full Payment ($${inv.finalAmount.toFixed(2)})</button>
+              <button class="btn btn-partial" onclick="showPartialInput('${inv.id}')">\uD83D\uDCB0 Partial Payment</button>
               <button class="btn btn-cancel" onclick="toggleRecordPayment('${inv.id}')">Cancel</button>
+            </div>
+            <div id="partial-input-${inv.id}" style="display:none;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+                <label style="font-size:14px;font-weight:500;color:#475569;">Amount received:</label>
+                <input type="number" id="pay-amount-${inv.id}" step="0.01" min="0" placeholder="0.00" style="width:140px;font-size:16px;padding:10px;" oninput="updatePaymentPreview('${inv.id}')">
+              </div>
+              <div id="payment-preview-${inv.id}" style="font-size:13px;color:#64748b;margin-bottom:10px;"></div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-save" onclick="savePartialPayment('${inv.id}')">\uD83D\uDCBE Save</button>
+              </div>
             </div>
           </div>`;
       }
@@ -980,23 +993,66 @@ export default function AdminPage() {
       }
     }
 
-    async function savePayment(id: string) {
+    async function markFullPaid(id: string) {
       const inv = invoices.find((i: any) => i.id === id);
       if (!inv) return;
-      const amountPaid = parseFloat((document.getElementById(`pay-amount-${id}`) as HTMLInputElement)?.value) || 0;
-      const isPaid = (document.getElementById(`rp-ispaid-${id}`) as HTMLInputElement)?.checked || false;
-
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
           headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': amountPaid, 'Is Paid': isPaid } }),
+          body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': inv.finalAmount, 'Is Paid': true } }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        inv.amountPaid = amountPaid;
+        inv.amountPaid = inv.finalAmount;
+        inv.isPaid = true;
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.outerHTML = renderCard(inv);
+        updateSummary();
+      } catch (err: any) {
+        alert('Failed to save payment: ' + err.message);
+      }
+    }
+
+    function showPartialInput(id: string) {
+      const el = document.getElementById(`partial-input-${id}`);
+      if (el) el.style.display = 'block';
+      (document.getElementById(`pay-amount-${id}`) as HTMLInputElement)?.focus();
+    }
+
+    function updatePaymentPreview(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const amount = parseFloat((document.getElementById(`pay-amount-${id}`) as HTMLInputElement)?.value) || 0;
+      const preview = document.getElementById(`payment-preview-${id}`);
+      if (!preview) return;
+      if (amount <= 0) {
+        preview.innerHTML = '';
+      } else if (amount >= inv.finalAmount) {
+        preview.innerHTML = '\u2705 <span style="color:#15803d;">Full payment \u2014 will mark as Paid</span>';
+      } else {
+        const outstanding = (inv.finalAmount - amount).toFixed(2);
+        preview.innerHTML = `\u26A0\uFE0F <span style="color:#b45309;">Partial \u2014 $${outstanding} will remain outstanding</span>`;
+      }
+    }
+
+    async function savePartialPayment(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const amount = parseFloat((document.getElementById(`pay-amount-${id}`) as HTMLInputElement)?.value) || 0;
+      if (amount <= 0) { alert('Please enter an amount.'); return; }
+      const isPaid = amount >= inv.finalAmount;
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': amount, 'Is Paid': isPaid } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        inv.amountPaid = amount;
         inv.isPaid = isPaid;
         const card = document.getElementById(`card-${id}`);
         if (card) card.outerHTML = renderCard(inv);
+        updateSummary();
       } catch (err: any) {
         alert('Failed to save payment: ' + err.message);
       }
@@ -1487,7 +1543,10 @@ export default function AdminPage() {
     w.sendInvoice = sendInvoice;
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
-    w.savePayment = savePayment;
+    w.markFullPaid = markFullPaid;
+    w.showPartialInput = showPartialInput;
+    w.updatePaymentPreview = updatePaymentPreview;
+    w.savePartialPayment = savePartialPayment;
     w.editAlias = editAlias;
     w.cancelAlias = cancelAlias;
     w.saveAlias = saveAlias;
@@ -1503,7 +1562,8 @@ export default function AdminPage() {
         'approveInvoice','unapproveInvoice','saveAmend','toggleAmend','addLineItem',
         'removeLineItem','updateCalc','generateInvoices','generateMissingPDFs',
         'regenerateAllPDFs','downloadAllPDFs','generateCardPDF','sendInvoice',
-        'sendAllApproved','toggleRecordPayment','savePayment',
+        'sendAllApproved','toggleRecordPayment',
+        'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
         'deleteInvoice','deleteInvoicePdf','deleteAllPDFs','deleteAllInvoices',
       ].forEach(fn => delete (window as any)[fn]);
