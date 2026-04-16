@@ -1,104 +1,172 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
 import { airtableRequest } from '@/lib/airtable';
-import { generateReceiptPDF } from '@/lib/generate-pdf';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 30;
+
+function checkAuth(req: NextRequest): boolean {
+  const token = process.env.RECEIPT_API_TOKEN;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const auth = req.headers.get('authorization');
+  if (token && auth === `Bearer ${token}`) return true;
+  if (adminPassword && auth === `Bearer ${adminPassword}`) return true;
+  return false;
+}
+
+function buildReceiptHtml(opts: {
+  studentName: string;
+  parentName?: string;
+  month: string;
+  paymentAmount: number;
+  paymentDate: string;
+  paymentMethod: string;
+  isFullPayment: boolean;
+  isOverpayment: boolean;
+  remainingBalance: number;
+  finalAmount: number;
+}) {
+  const greeting = opts.parentName ? `Dear ${opts.parentName},` : 'Dear Parent/Student,';
+  const dateFormatted = new Date(opts.paymentDate + 'T00:00:00').toLocaleDateString('en-SG', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+  let statusLine: string;
+  if (opts.isOverpayment) {
+    const credit = (opts.paymentAmount - opts.finalAmount).toFixed(2);
+    statusLine = `<p>Your ${opts.month} invoice is now <strong>fully paid</strong>. The excess amount of <strong>$${credit}</strong> will be applied as a credit on your next invoice.</p>`;
+  } else if (opts.isFullPayment) {
+    statusLine = `<p>Your ${opts.month} invoice is now <strong>fully paid</strong>. Thank you!</p>`;
+  } else {
+    statusLine = `<p>An outstanding balance of <strong>$${opts.remainingBalance.toFixed(2)}</strong> remains for your ${opts.month} invoice. Please settle this when convenient.</p>`;
+  }
+
+  return `
+    <p>${greeting}</p>
+    <p>This is to confirm receipt of your ${opts.paymentMethod} payment of <strong>$${opts.paymentAmount.toFixed(2)}</strong> for ${opts.studentName}'s tuition fees, received on ${dateFormatted}.</p>
+    ${statusLine}
+    <p>Thank you for your prompt payment.</p>
+    <p>Best regards,<br>Adrian</p>
+  `;
+}
+
+function buildCorrectionHtml(opts: { studentName: string; month: string }) {
+  return `
+    <p>Dear Parent/Student,</p>
+    <p>Please disregard our earlier payment confirmation email regarding ${opts.studentName}'s ${opts.month} invoice.</p>
+    <p>The payment has been reverted in our system. We apologise for any confusion. We will follow up if there are any concerns.</p>
+    <p>Best regards,<br>Adrian</p>
+  `;
+}
 
 export async function POST(req: NextRequest) {
-  const { ADMIN_PASSWORD, AIRTABLE_TOKEN, AIRTABLE_BASE_ID, RESEND_API_KEY } = process.env;
+  if (!checkAuth(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { RESEND_API_KEY } = process.env;
+  if (!RESEND_API_KEY) return NextResponse.json({ error: 'Missing RESEND_API_KEY' }, { status: 500 });
 
   let body: any = {};
   try { body = await req.json(); } catch { /* no body */ }
 
-  const { invoiceId, password, preview, paymentDate } = body;
+  const { invoiceId, paymentAmount, paymentDate, isFullPayment, isOverpayment, remainingBalance, paymentMethod, correction } = body;
+  if (!invoiceId) return NextResponse.json({ error: 'Missing invoiceId' }, { status: 400 });
 
-  if (!invoiceId || !password) {
-    return NextResponse.json({ error: 'Missing invoiceId or password' }, { status: 400 });
+  // Fetch invoice + student
+  const invoice = await airtableRequest('Invoices', `/${invoiceId}`);
+  const studentId = invoice.fields['Student']?.[0];
+  if (!studentId) return NextResponse.json({ error: 'No student linked' }, { status: 400 });
+
+  const student = await airtableRequest('Students', `/${studentId}`);
+  const parentEmail = student.fields['Parent Email'] as string;
+  const parentName = (student.fields['Parent Name'] || '') as string;
+  const studentName = (student.fields['Student Name'] || '') as string;
+  const month = (invoice.fields['Month'] || '') as string;
+  const finalAmount = (invoice.fields['Final Amount'] as number) || 0;
+
+  if (!parentEmail) return NextResponse.json({ error: 'No parent email' }, { status: 400 });
+
+  // Build email
+  let subject: string;
+  let html: string;
+  let type: string;
+
+  if (correction) {
+    subject = `Payment Correction \u2014 ${studentName} (${month})`;
+    html = buildCorrectionHtml({ studentName, month });
+    type = 'correction';
+  } else {
+    if (isOverpayment) {
+      subject = `Payment Received (with Credit) \u2014 ${studentName} (${month})`;
+      type = 'overpayment_receipt';
+    } else if (isFullPayment) {
+      subject = `Payment Received \u2014 ${studentName} (${month})`;
+      type = 'receipt';
+    } else {
+      subject = `Partial Payment Received \u2014 ${studentName} (${month})`;
+      type = 'partial_receipt';
+    }
+    html = buildReceiptHtml({
+      studentName, parentName, month,
+      paymentAmount: paymentAmount || 0,
+      paymentDate: paymentDate || new Date().toISOString().split('T')[0],
+      paymentMethod: paymentMethod || 'PayNow',
+      isFullPayment: !!isFullPayment,
+      isOverpayment: !!isOverpayment,
+      remainingBalance: remainingBalance || 0,
+      finalAmount,
+    });
   }
 
-  if (ADMIN_PASSWORD && password !== ADMIN_PASSWORD) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID) {
-    return NextResponse.json({ error: 'Missing environment variables' }, { status: 500 });
-  }
-
-  const at = (table: string, path: string, options?: RequestInit) =>
-    airtableRequest(table, path, options);
-
-  const invoiceRecord = await at('Invoices', `/${invoiceId}`);
-  const f = invoiceRecord.fields;
-
-  const studentId = f['Student']?.[0];
-  let studentName = '';
-  let parentEmail = '';
-  if (studentId) {
-    const studentRecord = await at('Students', `/${studentId}`);
-    studentName = studentRecord.fields['Student Name'] || '';
-    parentEmail = studentRecord.fields['Parent Email'] || '';
-  }
-
-  const lineItems = f['Line Items'] ? JSON.parse(f['Line Items']) : [];
-  const lineItemsExtra = (() => {
-    try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; }
-  })();
-
-  const receiptData = {
-    studentName,
-    parentEmail,
-    month: f['Month'] || '',
-    receiptId: invoiceId,
-    paymentDate: paymentDate || f['Paid At'] || '',
-    finalAmount: f['Final Amount'] || 0,
-    notes: f['Auto Notes'] || '',
-    lineItems,
-    lineItemsExtra,
-    ratePerLesson: f['Rate Per Lesson'] || 0,
-  };
-
-  const pdfBuffer = await generateReceiptPDF(receiptData);
-
-  const safeName = studentName.replace(/\s+/g, '-');
-  const safeMonth = (f['Month'] || '').replace(/\s+/g, '-');
-  const blob = await put(
-    `receipts/AdrianMathTuition-Receipt-${safeName}-${safeMonth}.pdf`,
-    pdfBuffer,
-    { access: 'public', contentType: 'application/pdf', allowOverwrite: true }
-  );
-
-  if (!preview && parentEmail && RESEND_API_KEY) {
-    const finalAmount = parseFloat(String(f['Final Amount'] || 0)).toFixed(2);
-    const emailHtml = `
-      <p>Dear Parent/Student,</p>
-      <p>Please find attached the payment receipt for ${studentName} for ${f['Month'] || ''} — <strong>$${finalAmount}</strong>.</p>
-      <p>This receipt confirms that payment has been received. Thank you for your support!</p>
-      <p>Best regards,<br>Adrian</p>
-    `;
-
+  // Send via Resend
+  let resendId = '';
+  let status = 'sent';
+  let errorMsg = '';
+  try {
     const sendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         from: "Adrian's Math Tuition <invoices@adrianmathtuition.com>",
         to: parentEmail,
-        subject: `Payment Receipt for ${f['Month'] || ''} \u2013 ${studentName}`,
-        html: emailHtml,
-        attachments: [{
-          filename: `AdrianMathTuition-Receipt-${safeName}-${safeMonth}.pdf`,
-          content: pdfBuffer.toString('base64'),
-          type: 'application/pdf',
-          disposition: 'attachment',
-        }],
+        reply_to: 'adrianmathtuition@gmail.com',
+        subject,
+        html,
       }),
     });
-
-    if (!sendRes.ok) {
-      throw new Error('Resend send failed: ' + await sendRes.text());
-    }
+    if (!sendRes.ok) throw new Error('Resend failed: ' + await sendRes.text());
+    const sendData = await sendRes.json();
+    resendId = sendData.id || '';
+  } catch (err: any) {
+    status = 'failed';
+    errorMsg = err.message;
   }
 
-  return NextResponse.json({ success: true, receiptUrl: blob.url, parentEmail, studentName });
+  // Log to EmailLog (non-fatal)
+  try {
+    await airtableRequest('EmailLog', '', {
+      method: 'POST',
+      body: JSON.stringify({
+        fields: {
+          'Email ID': `${type}-${invoiceId}-${Date.now()}`,
+          'Sent At': new Date().toISOString(),
+          'Type': type,
+          'To Email': parentEmail,
+          'Subject': subject,
+          'Body HTML': html,
+          'Related Invoice': [invoiceId],
+          'Status': status,
+          ...(errorMsg ? { 'Error': errorMsg } : {}),
+          ...(resendId ? { 'Resend ID': resendId } : {}),
+        },
+      }),
+    });
+  } catch (logErr: any) {
+    console.error('[send-receipt] EmailLog failed:', logErr.message);
+  }
+
+  if (status === 'failed') {
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
+  }
+  return NextResponse.json({ success: true, resendId });
 }

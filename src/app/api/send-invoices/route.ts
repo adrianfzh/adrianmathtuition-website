@@ -205,17 +205,50 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify(emailData),
         });
         if (!sendRes.ok) throw new Error('Resend send failed: ' + await sendRes.text());
+        const sendData = await sendRes.json().catch(() => ({}));
+        const resendId = (sendData as any).id || '';
 
         await at('Invoices', `/${invoiceId}`, {
           method: 'PATCH',
           body: JSON.stringify({ fields: { 'Status': 'Sent', 'Sent At': new Date().toISOString() } }),
         });
         sentCount++;
+
+        // Log to EmailLog (non-fatal)
+        const isAmendedEmail = !!invoiceMap.get(invoiceId)?.record?.fields?.['Sent At'];
+        at('EmailLog', '', {
+          method: 'POST',
+          body: JSON.stringify({ fields: {
+            'Email ID': `invoice-${invoiceId}-${Date.now()}`,
+            'Sent At': new Date().toISOString(),
+            'Type': isAmendedEmail ? 'amended_invoice' : 'invoice',
+            'To Email': emailData.to || '',
+            'Subject': emailData.subject || '',
+            'Body HTML': emailData.html || '',
+            'Related Invoice': [invoiceId],
+            'Status': 'sent',
+            ...(resendId ? { 'Resend ID': resendId } : {}),
+          }}),
+        }).catch((e: any) => console.error('[send-invoices] EmailLog failed:', e.message));
       } catch (err: any) {
         failedCount++;
         const studentName = invoiceMap.get(invoiceId)?.studentName ?? invoiceId;
         console.error(`[send-invoices] Failed to send invoice for ${studentName} (${invoiceId}):`, err.message);
         errors.push({ invoiceId, studentName, error: err.message });
+
+        at('EmailLog', '', {
+          method: 'POST',
+          body: JSON.stringify({ fields: {
+            'Email ID': `invoice-${invoiceId}-${Date.now()}`,
+            'Sent At': new Date().toISOString(),
+            'Type': invoiceMap.get(invoiceId)?.record?.fields?.['Sent At'] ? 'amended_invoice' : 'invoice',
+            'To Email': emailData.to || '',
+            'Subject': emailData.subject || '',
+            'Related Invoice': [invoiceId],
+            'Status': 'failed',
+            'Error': err.message,
+          }}),
+        }).catch(() => {});
       }
       await new Promise((resolve) => setTimeout(resolve, 600));
     }
