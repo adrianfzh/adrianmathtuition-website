@@ -1125,7 +1125,7 @@ export default function AdminPage() {
           headers: authHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ recordId: currentPreviewId, fields: { 'Custom Email Message': message } }),
         });
-        if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error((d.availableFields ? `Available fields: ${d.availableFields.join(', ')}\n\n` : '') + (d.error || `Server error: ${res.status}`)); }
+        if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || `Server error: ${res.status}`); }
         const inv = invoices.find((i: any) => i.id === currentPreviewId);
         if (inv) inv.customEmailMessage = message;
         updateEmailPreviewStatus(!!(message.trim()));

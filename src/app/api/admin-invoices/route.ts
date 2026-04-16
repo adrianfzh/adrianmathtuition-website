@@ -122,16 +122,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(updated);
   } catch (err: any) {
     console.error('[admin-invoices PATCH]', err.message);
-    // On unknown field, fetch the record so we can report what fields actually exist.
-    if (err.message.includes('UNKNOWN_FIELD_NAME')) {
-      try {
-        const rec = await airtableRequest('Invoices', `/${recordId}`);
-        return NextResponse.json(
-          { error: err.message, availableFields: Object.keys(rec.fields) },
-          { status: 500 }
-        );
-      } catch { /* fall through */ }
-    }
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
