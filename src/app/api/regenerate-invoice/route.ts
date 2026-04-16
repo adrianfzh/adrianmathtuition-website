@@ -72,10 +72,13 @@ export async function POST(req: NextRequest) {
       ? (student.fields['Subjects'] as string[]).join(' & ')
       : '';
 
-    // 4. Fetch active enrollments
-    const enrollFormula = encodeURIComponent(`AND({Student}='${studentId}',{Status}='Active')`);
-    const enrollData = await airtableRequestAll('Enrollments', `?filterByFormula=${enrollFormula}`);
-    const enrollment = enrollData.records[0];
+    // 4. Fetch active enrollments — can't filter by linked Student field by record ID in Airtable formulas;
+    // fetch all active enrollments and filter by studentId in JS (same pattern as generate-invoices).
+    const enrollData = await airtableRequestAll(
+      'Enrollments',
+      `?filterByFormula=${encodeURIComponent("{Status}='Active'")}&fields[]=Student&fields[]=Rate Per Lesson&fields[]=Slot`
+    );
+    const enrollment = enrollData.records.find((r: any) => r.fields['Student']?.[0] === studentId);
     const ratePerLesson = (enrollment?.fields['Rate Per Lesson'] as number) || 0;
     const slotId = enrollment?.fields['Slot']?.[0] as string | undefined;
 
@@ -90,14 +93,16 @@ export async function POST(req: NextRequest) {
       slotDayLabel = slotTime ? `${dayAbbrev} ${slotTime}` : dayAbbrev;
     }
 
-    // 6. Fetch lessons for this month (scheduled or completed)
+    // 6. Fetch lessons for this month — can't filter by linked Student field by record ID in Airtable formulas;
+    // fetch all lessons for the date range and filter by studentId in JS (same pattern as generate-invoices).
     const lessonFormula = encodeURIComponent(
-      `AND({Student}='${studentId}',{Date}>='${firstDayStr}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present'))`
+      `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'))`
     );
-    const lessonsData = await airtableRequestAll(
+    const allLessonsData = await airtableRequestAll(
       'Lessons',
-      `?filterByFormula=${lessonFormula}&fields[]=Date&fields[]=Type&fields[]=Status&sort[0][field]=Date&sort[0][direction]=asc`
+      `?filterByFormula=${lessonFormula}&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Student&sort[0][field]=Date&sort[0][direction]=asc`
     );
+    const lessonsData = { records: allLessonsData.records.filter((r: any) => r.fields['Student']?.[0] === studentId) };
 
     const description = `${level} ${subjects} \u2014 ${month}`;
     const lineItems = lessonsData.records.map((r: any) => ({
