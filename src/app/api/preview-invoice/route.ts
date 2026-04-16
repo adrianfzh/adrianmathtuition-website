@@ -58,9 +58,7 @@ export async function GET(req: NextRequest) {
     finalAmount: f['Final Amount'] || 0,
     status: f['Status'] || 'Draft',
     makeupCredits: 0,
-    // Carry-over breakdown kept in Airtable Auto Notes for admin reference;
-    // suppressed from the parent-facing PDF to avoid bot-section overflow.
-    notes: '',
+    notes: (f['Auto Notes'] || '') as string,
     lineItems,
     lineItemsExtra: (() => { try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; } })(),
     registerUrl: buildRegisterUrl(studentId),
