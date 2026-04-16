@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
         finalAmount,
         status: (f['Status'] || 'Draft') as string,
         makeupCredits: 0,
-        notes: '',
+        notes: carryOverNotes.trim(),
         lineItems,
         lineItemsExtra: newExtra,
         registerUrl: buildRegisterUrl(studentId),
