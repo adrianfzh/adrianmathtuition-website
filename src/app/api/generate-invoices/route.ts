@@ -86,8 +86,28 @@ export async function POST(req: NextRequest) {
   const at = (table: string, path: string, options?: RequestInit) =>
     airtableRequest(table, path, options);
 
+  let reqBody: any = {};
+  try { reqBody = await req.json(); } catch { /* cron has no body */ }
+  const requestedMonth = (reqBody.month as string) || '';
+
   try {
-    const invoiceMonth = getInvoiceMonth();
+    // Determine invoice month — use requested month if provided, else default to next month
+    let invoiceMonth: InvoiceMonth;
+    if (requestedMonth) {
+      const FULL_MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const parts = requestedMonth.trim().split(' ');
+      const mIdx = FULL_MONTH_NAMES.indexOf(parts[0]);
+      const yr = parseInt(parts[1] || '', 10);
+      if (mIdx >= 0 && !isNaN(yr)) {
+        const firstDay = new Date(yr, mIdx, 1);
+        const lastDay = new Date(yr, mIdx + 1, 0);
+        invoiceMonth = { label: requestedMonth.trim(), year: yr, month: mIdx + 1, firstDay, lastDay };
+      } else {
+        invoiceMonth = getInvoiceMonth();
+      }
+    } else {
+      invoiceMonth = getInvoiceMonth();
+    }
 
     // IMPORTANT: paginate! A plain airtableRequest() silently caps at 100
     // rows, which previously hid enrollments (and therefore students) past
@@ -151,6 +171,7 @@ export async function POST(req: NextRequest) {
     let skipped = 0;
     const errors: any[] = [];
     const generatedList: { name: string; amount: number; count: number }[] = [];
+    const generatedInvoices: { id: string; studentId: string; lineItemsExtra: any[]; finalAmount: number }[] = [];
     // Structured skip log: shows up in Fly/Vercel logs AND in the Telegram
     // summary so missing students can be triaged without opening the DB.
     const skipReasons: { name: string; reason: string }[] = [];
@@ -374,6 +395,7 @@ export async function POST(req: NextRequest) {
         }
 
         generatedList.push({ name: student.fields['Student Name'], amount: finalAmount, count: lessonCount });
+        generatedInvoices.push({ id: createdRecord.id, studentId, lineItemsExtra: carryOverLineItems, finalAmount: totalFinalAmount });
         generated++;
       } catch (err: any) {
         const studentName = student?.fields?.['Student Name'] || 'Unknown';
@@ -382,6 +404,140 @@ export async function POST(req: NextRequest) {
     }
 
     await closeBrowser();
+
+    // ── Referral reward check ──────────────────────────────────────────────
+    const referralRewards: any[] = [];
+    try {
+      const referralFormula = encodeURIComponent(
+        `AND({How Heard}='Referral', NOT({Referral Reward Applied}), {Status}='Active')`
+      );
+      const referralStudents = await airtableRequestAll('Students',
+        `?filterByFormula=${referralFormula}&fields[]=Student Name&fields[]=Referral Type&fields[]=Referred By Name&fields[]=Referral Reward Applied`
+      );
+
+      if (referralStudents.records.length > 0) {
+        // Fetch all active students once for fuzzy matching
+        const allActiveStudents = await airtableRequestAll('Students',
+          `?filterByFormula=${encodeURIComponent("{Status}='Active'")}&fields[]=Student Name`
+        );
+
+        for (const student of referralStudents.records) {
+          const newStudentName = student.fields['Student Name'] || '';
+          const referrerName = (student.fields['Referred By Name'] || '') as string;
+          const referralType = (student.fields['Referral Type'] || '') as string;
+
+          // Count completed lessons for this referred student
+          const lessonFormula = encodeURIComponent(
+            `AND({Student}='${student.id}',{Status}='Completed')`
+          );
+          const lessonsData = await airtableRequestAll('Lessons', `?filterByFormula=${lessonFormula}&fields[]=Status`);
+          const completedCount = lessonsData.records.length;
+
+          if (completedCount < 12) continue; // Not yet eligible
+
+          if (referralType === 'Current Student') {
+            // Fuzzy match referrer name against active students
+            const referrerNameLower = referrerName.toLowerCase().trim();
+            let matchedReferrer: any = null;
+            let matchConfidence = 'none';
+
+            for (const s of allActiveStudents.records) {
+              const name = ((s.fields['Student Name'] || '') as string).toLowerCase();
+              if (name === referrerNameLower) {
+                matchedReferrer = s;
+                matchConfidence = 'exact';
+                break;
+              }
+              if (!matchedReferrer) {
+                const referrerWords = referrerNameLower.split(/\s+/);
+                const nameWords = name.split(/\s+/);
+                const sharedWords = referrerWords.filter((w: string) => w.length > 1 && nameWords.includes(w));
+                if (sharedWords.length >= 1) {
+                  matchedReferrer = s;
+                  matchConfidence = 'fuzzy';
+                }
+              }
+            }
+
+            if (matchedReferrer) {
+              // Find referrer's enrollment to get rate
+              const enrollFormula = encodeURIComponent(
+                `AND({Student}='${matchedReferrer.id}',{Status}='Active')`
+              );
+              const enrollData = await airtableRequestAll('Enrollments',
+                `?filterByFormula=${enrollFormula}&fields[]=Rate Per Lesson`
+              );
+              const ratePerLesson = (enrollData.records[0]?.fields['Rate Per Lesson'] as number) || 0;
+              const rewardAmount = ratePerLesson * 4;
+
+              // Find the referrer's invoice (from this batch or existing for the month)
+              const referrerInvoice = generatedInvoices.find((inv) => inv.studentId === matchedReferrer.id);
+              if (referrerInvoice) {
+                const existingExtra = Array.isArray(referrerInvoice.lineItemsExtra)
+                  ? [...referrerInvoice.lineItemsExtra]
+                  : [];
+                existingExtra.push({
+                  description: `Referral reward \u2014 referred ${newStudentName}`,
+                  amount: -rewardAmount,
+                });
+                const newFinalAmount = Math.max(0, referrerInvoice.finalAmount - rewardAmount);
+
+                await airtableRequest('Invoices', `/${referrerInvoice.id}`, {
+                  method: 'PATCH',
+                  body: JSON.stringify({ fields: {
+                    'Line Items Extra': JSON.stringify(existingExtra),
+                    'Final Amount': newFinalAmount,
+                  }}),
+                });
+
+                // Update local tracking to prevent double-applying if another referred student points to same referrer
+                referrerInvoice.lineItemsExtra = existingExtra;
+                referrerInvoice.finalAmount = newFinalAmount;
+              }
+
+              // Mark referral as applied (even if invoice not in this batch — avoids re-triggering next month)
+              await airtableRequest('Students', `/${student.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ fields: { 'Referral Reward Applied': true } }),
+              });
+
+              referralRewards.push({
+                newStudent: newStudentName,
+                referrer: matchedReferrer.fields['Student Name'],
+                reward: rewardAmount,
+                type: 'invoice_credit',
+                confidence: matchConfidence,
+                invoiceFound: !!referrerInvoice,
+              });
+            } else {
+              // Could not match referrer — flag for admin (do NOT mark as applied)
+              referralRewards.push({
+                newStudent: newStudentName,
+                referrerName,
+                type: 'unmatched',
+                confidence: 'none',
+              });
+            }
+          } else {
+            // Past student / parent / other — cash reminder
+            referralRewards.push({
+              newStudent: newStudentName,
+              referrerName,
+              referralType,
+              reward: 150,
+              type: 'cash_reminder',
+            });
+
+            await airtableRequest('Students', `/${student.id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ fields: { 'Referral Reward Applied': true } }),
+            });
+          }
+        }
+      }
+    } catch (referralErr: any) {
+      console.error('[generate-invoices] Referral reward check error:', referralErr.message);
+    }
 
     const summaryLines = generatedList
       .map((g) => `${g.name} \u2014 ${g.amount.toFixed(2)} (${g.count} lesson${g.count !== 1 ? 's' : ''})`)
@@ -395,11 +551,28 @@ export async function POST(req: NextRequest) {
           skipReasons.map((s) => `\u2022 ${s.name} \u2014 ${s.reason}`).join('\n')
       : '';
 
+    let referralSection = '';
+    if (referralRewards.length > 0) {
+      referralSection = '\n\n\uD83C\uDF81 <b>Referral Rewards</b>\n';
+      for (const r of referralRewards) {
+        if (r.type === 'invoice_credit') {
+          const badge = r.confidence === 'exact' ? '\u2705' : '\u26A0\uFE0F fuzzy match';
+          const invoiceNote = r.invoiceFound ? '' : ' (invoice not in this batch \u2014 check manually)';
+          referralSection += `${badge} ${r.referrer} gets -$${(r.reward as number).toFixed(2)} (referred ${r.newStudent})${invoiceNote}\n`;
+        } else if (r.type === 'cash_reminder') {
+          referralSection += `\uD83D\uDCB5 Transfer $${r.reward} to ${r.referrerName} (${r.referralType}) \u2014 referred ${r.newStudent}\n`;
+        } else if (r.type === 'unmatched') {
+          referralSection += `\u274C Could not match referrer "${r.referrerName}" for ${r.newStudent} \u2014 please check manually\n`;
+        }
+      }
+    }
+
     await sendTelegram(
       `\ud83d\udccb <b>Draft invoices ready \u2014 ${invoiceMonth.label}</b>\n\n` +
         `${summaryLines}\n\n` +
         `Total: ${generated} invoices \u00b7 ${totalAmount.toFixed(2)}` +
         skipSection +
+        referralSection +
         `\n\nReview and hold any before 15th via /amend [name].\n` +
         `Invoices send automatically at 10am tomorrow.`
     );

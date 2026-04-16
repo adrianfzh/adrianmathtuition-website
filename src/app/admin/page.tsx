@@ -298,6 +298,58 @@ body {
 .btn-record-payment:hover { background: #dcfce7; }
 .btn-full-paid { background: #f0fdf4; border-color: #86efac; color: #15803d; font-weight: 600; }
 .btn-full-paid:hover { background: #dcfce7; }
+.btn-preview-email { background: #fdf4ff; border-color: #e9d5ff; color: #7e22ce; }
+.btn-preview-email:hover:not(:disabled) { background: #f3e8ff; }
+.referral-badge { display: inline-block; font-size: 15px; margin-left: 6px; cursor: default; }
+.email-preview-panel {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 460px;
+  max-width: 100vw;
+  background: white;
+  border-left: 1px solid #e2e8f0;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+.email-preview-panel.open { transform: translateX(0); }
+.email-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.email-preview-header h2 { font-size: 18px; font-weight: 700; color: #0f172a; }
+.btn-close-preview {
+  background: none; border: none; font-size: 22px; cursor: pointer;
+  color: #94a3b8; padding: 4px 8px; border-radius: 6px; line-height: 1;
+}
+.btn-close-preview:hover { background: #f1f5f9; color: #0f172a; }
+.email-preview-subject {
+  padding: 14px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+  color: #475569;
+  flex-shrink: 0;
+}
+.email-preview-subject strong { color: #0f172a; font-size: 15px; }
+.email-preview-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #334155;
+}
+@media (max-width: 600px) {
+  .email-preview-panel { width: 100vw; }
+}
 .btn-partial { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
 .btn-partial:hover { background: #fef3c7; }
 .record-payment-form { display: none; padding: 12px 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
@@ -688,6 +740,9 @@ export default function AdminPage() {
 
       const badgeClass = isDraft ? 'badge-draft' : isApproved ? 'badge-approved' : 'badge-sent';
       const badgeLabel = isDraft ? 'Draft' : isApproved ? 'Approved' : 'Sent';
+      const hasReferralReward = Array.isArray(inv.lineItemsExtra) &&
+        inv.lineItemsExtra.some((item: any) => typeof item.description === 'string' && item.description.includes('Referral reward'));
+      const referralBadgeHtml = hasReferralReward ? '<span class="referral-badge" title="Referral reward applied">\uD83C\uDF81</span>' : '';
 
       const sentAtHtml = isSent && inv.sentAt
         ? `<div class="sent-at">Sent on ${formatSentAt(inv.sentAt)}</div>`
@@ -724,6 +779,7 @@ export default function AdminPage() {
         actionsHtml = `
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
+            <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">\u2705 Approve</button>
@@ -735,6 +791,7 @@ export default function AdminPage() {
         actionsHtml = `
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
+            <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
@@ -746,6 +803,7 @@ export default function AdminPage() {
         actionsHtml = `
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
+            <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
@@ -787,7 +845,7 @@ export default function AdminPage() {
         <div class="invoice-card${cardClass}" id="card-${inv.id}">
           <div class="card-body">
             <div class="card-top">
-              <span class="student-name">${escHtml(inv.studentName)}</span>
+              <span class="student-name">${escHtml(inv.studentName)}${referralBadgeHtml}</span>
               <span class="invoice-month">${escHtml(inv.month)}</span>
               <span class="badge ${badgeClass}">${badgeLabel}</span>
               ${sentAtHtml}
@@ -979,6 +1037,47 @@ export default function AdminPage() {
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDC41 Preview PDF'; }
       }
+    }
+
+    function buildEmailPreviewHtml(inv: any): { subject: string; html: string } {
+      const paymentRef = `${(inv.studentName || '').toUpperCase()} \u2013 ${(inv.month || '').toUpperCase()}`;
+      const isAmended = !!inv.sentAt;
+      const subject = isAmended
+        ? `AMENDED Invoice for ${inv.month} \u2013 ${inv.studentName}`
+        : `Invoice for ${inv.month} \u2013 ${inv.studentName}`;
+      const html = isAmended
+        ? `<p>Dear Parent/Student,</p>
+           <p>Please find attached the <strong>amended invoice</strong> for ${escHtml(inv.studentName)} for ${escHtml(inv.month)} &mdash; <strong>$${(inv.finalAmount as number).toFixed(2)}</strong>, due by <strong>${escHtml(inv.dueDate)}</strong>.</p>
+           <p>This replaces the previously sent invoice. Please disregard the earlier email.</p>
+           <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${escHtml(paymentRef)}</strong>.</p>
+           <p>Please feel free to reach out if you have any questions.</p>
+           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
+           <p style="font-size:13px;color:#6b7280;">Best regards,<br>Adrian</p>`
+        : `<p>Dear Parent/Student,</p>
+           <p>Please find attached the invoice for ${escHtml(inv.studentName)} for ${escHtml(inv.month)} &mdash; <strong>$${(inv.finalAmount as number).toFixed(2)}</strong>, due by <strong>${escHtml(inv.dueDate)}</strong>.</p>
+           <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${escHtml(paymentRef)}</strong>.</p>
+           <p>Please feel free to reach out if you have any questions.</p>
+           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
+           <p style="font-size:13px;color:#6b7280;">Best regards,<br>Adrian</p>`;
+      return { subject, html };
+    }
+
+    function previewEmail(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const { subject, html } = buildEmailPreviewHtml(inv);
+      const panel = document.getElementById('email-preview-panel') as HTMLElement;
+      const subjectEl = document.getElementById('email-preview-subject') as HTMLElement;
+      const bodyEl = document.getElementById('email-preview-body') as HTMLElement;
+      if (!panel || !subjectEl || !bodyEl) return;
+      subjectEl.innerHTML = `<strong>To:</strong> ${escHtml(inv.parentEmail || '(no email)')}<br><strong>Subject:</strong> ${escHtml(subject)}`;
+      bodyEl.innerHTML = html;
+      panel.classList.add('open');
+    }
+
+    function closeEmailPreview() {
+      const panel = document.getElementById('email-preview-panel');
+      if (panel) panel.classList.remove('open');
     }
 
     async function approveInvoice(id: string) {
@@ -1425,13 +1524,11 @@ export default function AdminPage() {
       const suffix = month ? ` (${month})` : '';
       const map: Record<string, string> = {
         'btn-generate-missing': `\u26A1 Generate Missing PDFs${suffix}`,
-        'btn-regenerate-all':   `\uD83D\uDD04 Regenerate All PDFs${suffix}`,
+        'btn-regenerate-all':   `\u267B\uFE0F Regenerate All PDFs${suffix}`,
         'btn-download-all':     `\u2B07\uFE0F Download All PDFs${suffix}`,
         'btn-approve-all':      `\u2705 Approve All Drafts${suffix}`,
         'btn-unapprove-all':    `\u21A9\uFE0F Unapprove All${suffix}`,
         'btn-send-all':         `\uD83D\uDCE4 Send All Approved${suffix}`,
-        'btn-delete-pdfs':      `\uD83E\uDDF9 Delete All PDFs${suffix}`,
-        'btn-delete-invoices':  `\uD83D\uDDD1\uFE0F Delete All Invoices${suffix}`,
       };
       for (const [id, label] of Object.entries(map)) {
         const el = document.getElementById(id) as HTMLButtonElement | null;
@@ -1493,7 +1590,8 @@ export default function AdminPage() {
     }
 
     async function generateInvoices() {
-      if (!confirm('Generate invoices for the current invoice month?\nExisting invoices will be skipped automatically.')) return;
+      const monthDesc = selectedMonth ? `for ${selectedMonth}` : 'for the default next month';
+      if (!confirm(`Generate invoices ${monthDesc}?\nExisting invoices will be skipped automatically.`)) return;
       const btn = document.getElementById('btn-generate-invoices') as HTMLButtonElement;
       btn.disabled = true;
       btn.textContent = '\uD83D\uDCDD Generating\u2026';
@@ -1504,6 +1602,7 @@ export default function AdminPage() {
         const res = await fetch('/api/generate-invoices', {
           method: 'POST',
           headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ month: selectedMonth || '' }),
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
@@ -1531,11 +1630,45 @@ export default function AdminPage() {
       return runBulkGenerate('btn-generate-missing', '\u26A1 Generate Missing PDFs', { recordIds: ids });
     }
 
-    function regenerateAllPDFs() {
-      const { scopeSuffix } = bulkTargetDescription();
-      const ids = filteredInvoices().map((i: any) => i.id);
-      if (!ids.length) { alert(`No invoices to regenerate${scopeSuffix}.`); return; }
-      return runBulkGenerate('btn-regenerate-all', '\uD83D\uDD04 Regenerate All PDFs', { recordIds: ids, force: true });
+    async function regenerateAllPDFs() {
+      const { month, scopeSuffix } = bulkTargetDescription();
+      const invoicesToRegen = filteredInvoices();
+      if (!invoicesToRegen.length) { alert(`No invoices to regenerate${scopeSuffix}.`); return; }
+      if (!confirm(`Regenerate all PDFs${scopeSuffix}? This will update PDFs to reflect current invoice data.`)) return;
+
+      const btn = document.getElementById('btn-regenerate-all') as HTMLButtonElement;
+      const origLabel = btn?.textContent || '\uD83D\uDD04 Regenerate All PDFs';
+      if (btn) btn.disabled = true;
+      const resultBanner = document.getElementById('result-banner') as HTMLElement;
+      resultBanner.style.display = 'none';
+
+      let done = 0;
+      let failed = 0;
+      const total = invoicesToRegen.length;
+
+      for (const inv of invoicesToRegen) {
+        if (btn) btn.textContent = `Regenerating ${done + 1}/${total}\u2026`;
+        try {
+          const res = await fetch('/api/generate-pdf-batch', {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ recordId: inv.id, force: true }),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          done++;
+        } catch {
+          failed++;
+          done++;
+        }
+      }
+
+      if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+      const okCount = total - failed;
+      showDeleteBanner(
+        `\u2705 ${okCount} PDF${okCount !== 1 ? 's' : ''} regenerated${scopeSuffix}.${failed ? ` (\u26A0\uFE0F ${failed} failed)` : ''}`,
+        failed ? 'partial' : 'success'
+      );
+      await loadInvoices();
     }
 
     async function downloadBlob(url: string, filename: string) {
@@ -1722,73 +1855,6 @@ export default function AdminPage() {
       };
     }
 
-    async function deleteAllPDFs() {
-      const { month, scopeSuffix } = bulkTargetDescription();
-      const visible = filteredInvoices();
-      const pdfCount = visible.filter((i: any) => !!i.pdfUrl).length;
-      if (!pdfCount) {
-        alert(`No PDFs to delete${scopeSuffix}.`);
-        return;
-      }
-      if (!confirm(`\u26A0\uFE0F Delete ${pdfCount} PDF file${pdfCount !== 1 ? 's' : ''}${scopeSuffix}?\n\nInvoice data stays in Airtable. Only the PDF files are removed.\n\nThis cannot be undone.`)) return;
-      const btn = document.getElementById('btn-delete-pdfs') as HTMLButtonElement;
-      if (btn) { btn.disabled = true; btn.textContent = 'Deleting...'; }
-      try {
-        const body: any = { scope: 'pdf' };
-        if (month) body.month = month; else body.confirmAll = true;
-        const res = await fetch('/api/admin-invoices', {
-          method: 'DELETE',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
-        showDeleteBanner(`\u2705 Deleted ${data.deletedPdfs} PDF${data.deletedPdfs !== 1 ? 's' : ''}${scopeSuffix}.${data.errors?.length ? ` (${data.errors.length} error${data.errors.length !== 1 ? 's' : ''})` : ''}`, data.errors?.length ? 'partial' : 'success');
-        await loadInvoices();
-      } catch (err: any) {
-        showDeleteBanner(`\u274C ${escHtml(err.message)}`, 'error');
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = '\uD83E\uDDF9 Delete All PDFs'; }
-      }
-    }
-
-    async function deleteAllInvoices() {
-      const { month, scopeSuffix } = bulkTargetDescription();
-      const visible = filteredInvoices();
-      const invCount = visible.length;
-      if (!invCount) {
-        alert(`No invoices to delete${scopeSuffix}.`);
-        return;
-      }
-      const first = `\u26A0\uFE0F DELETE ${invCount} invoice${invCount !== 1 ? 's' : ''}${scopeSuffix}?\n\nThis permanently removes the Airtable records AND their PDFs. This cannot be undone.`;
-      if (!confirm(first)) return;
-      const expect = month || 'DELETE ALL';
-      const typed = prompt(`Type "${expect}" to confirm deletion of ${invCount} invoice${invCount !== 1 ? 's' : ''}:`);
-      if (typed !== expect) {
-        alert('Deletion cancelled — confirmation text did not match.');
-        return;
-      }
-      const btn = document.getElementById('btn-delete-invoices') as HTMLButtonElement;
-      if (btn) { btn.disabled = true; btn.textContent = 'Deleting...'; }
-      try {
-        const body: any = { scope: 'invoice' };
-        if (month) body.month = month; else body.confirmAll = true;
-        const res = await fetch('/api/admin-invoices', {
-          method: 'DELETE',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
-        showDeleteBanner(`\u2705 Deleted ${data.deletedInvoices} invoice${data.deletedInvoices !== 1 ? 's' : ''} and ${data.deletedPdfs} PDF${data.deletedPdfs !== 1 ? 's' : ''}${scopeSuffix}.${data.errors?.length ? ` (${data.errors.length} error${data.errors.length !== 1 ? 's' : ''})` : ''}`, data.errors?.length ? 'partial' : 'success');
-        await loadInvoices();
-      } catch (err: any) {
-        showDeleteBanner(`\u274C ${escHtml(err.message)}`, 'error');
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDDD1\uFE0F Delete All Invoices'; }
-      }
-    }
-
     function showDeleteBanner(html: string, _kind: 'success' | 'partial' | 'error' = 'success') {
       const banner = document.getElementById('result-banner');
       if (!banner) return;
@@ -1834,8 +1900,8 @@ export default function AdminPage() {
     w.saveAlias = saveAlias;
     w.deleteInvoice = deleteInvoice;
     w.deleteInvoicePdf = deleteInvoicePdf;
-    w.deleteAllPDFs = deleteAllPDFs;
-    w.deleteAllInvoices = deleteAllInvoices;
+    w.previewEmail = previewEmail;
+    w.closeEmailPreview = closeEmailPreview;
 
     init();
 
@@ -1848,7 +1914,7 @@ export default function AdminPage() {
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
-        'deleteInvoice','deleteInvoicePdf','deleteAllPDFs','deleteAllInvoices',
+        'deleteInvoice','deleteInvoicePdf','previewEmail','closeEmailPreview',
       ].forEach(fn => delete (window as any)[fn]);
     };
   }, []);
@@ -1901,13 +1967,11 @@ export default function AdminPage() {
           <span id="summary"></span>
           <button className="btn-generate" id="btn-generate-invoices" onClick={() => (window as any).generateInvoices()}>📝 Generate Invoices</button>
           <button className="btn-generate" id="btn-generate-missing" onClick={() => (window as any).generateMissingPDFs()}>⚡ Generate Missing PDFs</button>
-          <button className="btn-generate" id="btn-regenerate-all" onClick={() => (window as any).regenerateAllPDFs()}>🔄 Regenerate All PDFs</button>
+          <button className="btn-generate" id="btn-regenerate-all" onClick={() => (window as any).regenerateAllPDFs()}>♻️ Regenerate All PDFs</button>
           <button className="btn-generate" id="btn-download-all" onClick={() => (window as any).downloadAllPDFs()}>⬇️ Download All PDFs</button>
           <button className="btn-generate" id="btn-approve-all" onClick={() => (window as any).approveAllDrafts()}>✅ Approve All Drafts</button>
           <button className="btn-generate" id="btn-unapprove-all" onClick={() => (window as any).unapproveAllApproved()}>↩️ Unapprove All</button>
           <button className="btn-generate" id="btn-send-all" onClick={() => (window as any).sendAllApproved()}>📤 Send All Approved</button>
-          <button className="btn-danger" id="btn-delete-pdfs" onClick={() => (window as any).deleteAllPDFs()}>🧹 Delete All PDFs</button>
-          <button className="btn-danger-solid" id="btn-delete-invoices" onClick={() => (window as any).deleteAllInvoices()}>🗑️ Delete All Invoices</button>
           <button className="btn-refresh" onClick={() => (window as any).loadInvoices()}>🔄 Refresh</button>
           <button className="btn-refresh" onClick={() => (window as any).logout()}>🚪 Log out</button>
         </div>
@@ -1940,6 +2004,16 @@ export default function AdminPage() {
         </div>
         <div id="result-banner" style={{ display: 'none' }}></div>
         <div id="invoices-container"></div>
+      </div>
+
+      {/* Email preview side panel */}
+      <div id="email-preview-panel" className="email-preview-panel">
+        <div className="email-preview-header">
+          <h2>📧 Email Preview</h2>
+          <button className="btn-close-preview" onClick={() => (window as any).closeEmailPreview()}>✕</button>
+        </div>
+        <div className="email-preview-subject" id="email-preview-subject"></div>
+        <div className="email-preview-body" id="email-preview-body"></div>
       </div>
     </>
   );
