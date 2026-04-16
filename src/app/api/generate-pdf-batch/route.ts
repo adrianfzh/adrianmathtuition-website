@@ -75,10 +75,7 @@ export async function POST(req: NextRequest) {
         finalAmount: f['Final Amount'] || 0,
         status: f['Status'] || 'Draft',
         makeupCredits: 0,
-        // Carry-over breakdown lives in Airtable Auto Notes for admin reference only —
-        // suppressed from the parent-facing PDF (same as the cron flow) so the bot
-        // section doesn't overflow to page 2.
-        notes: '',
+        notes: (f['Auto Notes'] || '') as string,
         lineItems,
         lineItemsExtra: (() => { try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; } })(),
         registerUrl: buildRegisterUrl(studentId),
