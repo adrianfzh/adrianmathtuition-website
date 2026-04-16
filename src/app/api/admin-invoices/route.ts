@@ -114,12 +114,16 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Missing recordId or fields' }, { status: 400 });
   }
 
-  const updated = await airtableRequest('Invoices', `/${recordId}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ fields }),
-  });
-
-  return NextResponse.json(updated);
+  try {
+    const updated = await airtableRequest('Invoices', `/${recordId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ fields }),
+    });
+    return NextResponse.json(updated);
+  } catch (err: any) {
+    console.error('[admin-invoices PATCH]', err.message);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
 }
 
 // DELETE /api/admin-invoices
