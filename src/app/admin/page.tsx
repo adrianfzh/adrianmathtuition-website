@@ -1044,6 +1044,12 @@ export default function AdminPage() {
 
     async function previewPdf(id: string) {
       const btn = document.querySelector(`#actions-${id} .btn-preview`) as HTMLButtonElement;
+
+      // IMPORTANT: Open the new tab IMMEDIATELY while we're still in the user interaction context.
+      // iOS Safari blocks window.open() if called after an await. We open with 'about:blank' first,
+      // then navigate to the blob URL once the PDF is ready.
+      const newTab = window.open('', '_blank');
+
       if (btn) { btn.disabled = true; btn.textContent = '\u23F3 Loading\u2026'; }
       try {
         const res = await fetch(`/api/preview-invoice?id=${encodeURIComponent(id)}`, {
@@ -1052,8 +1058,15 @@ export default function AdminPage() {
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
+
+        if (newTab) {
+          newTab.location.href = url;
+        } else {
+          // Popup was blocked — fall back to same-tab navigation
+          window.location.href = url;
+        }
       } catch (err: any) {
+        if (newTab) newTab.close();
         alert('Failed to load PDF: ' + err.message);
       } finally {
         if (btn) { btn.disabled = false; btn.textContent = '\uD83D\uDC41 Preview PDF'; }
