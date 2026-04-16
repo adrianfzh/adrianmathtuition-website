@@ -804,36 +804,33 @@ export default function AdminPage() {
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
-            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
+            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">\u2705 Approve</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
-            <button class="btn btn-del" onclick="deleteInvoicePdf('${inv.id}')" title="Delete the PDF only (keep invoice data)">\uD83E\uDDF9 Delete PDF</button>
-            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')" title="Delete this invoice + its PDF">\uD83D\uDDD1\uFE0F Delete Invoice</button>
+            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')">\uD83D\uDDD1\uFE0F Delete Invoice</button>
           </div>`;
       } else if (isApproved) {
         actionsHtml = `
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
-            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
+            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
             <button class="btn btn-unapprove" onclick="unapproveInvoice('${inv.id}')">\u21A9\uFE0F Unapprove</button>
-            <button class="btn btn-del" onclick="deleteInvoicePdf('${inv.id}')" title="Delete the PDF only (keep invoice data)">\uD83E\uDDF9 Delete PDF</button>
-            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')" title="Delete this invoice + its PDF">\uD83D\uDDD1\uFE0F Delete Invoice</button>
+            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')">\uD83D\uDDD1\uFE0F Delete Invoice</button>
           </div>`;
       } else {
         actionsHtml = `
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
-            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="generateCardPDF('${inv.id}')">\u26A1 Generate PDF</button>
+            <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
             <button class="btn btn-record-payment" onclick="toggleRecordPayment('${inv.id}')">\uD83D\uDCB0 Record Payment</button>
-            <button class="btn btn-del" onclick="deleteInvoicePdf('${inv.id}')" title="Delete the PDF only (keep invoice data)">\uD83E\uDDF9 Delete PDF</button>
-            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')" title="Delete this invoice + its PDF">\uD83D\uDDD1\uFE0F Delete Invoice</button>
+            <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')">\uD83D\uDDD1\uFE0F Delete Invoice</button>
           </div>
           <div class="record-payment-form" id="payment-form-${inv.id}">
             <div style="font-size:13px;color:#64748b;margin-bottom:12px;">
@@ -1788,37 +1785,32 @@ export default function AdminPage() {
       setTimeout(() => { btn.textContent = '\u2B07\uFE0F Download All PDFs'; }, 6000);
     }
 
-    async function generateCardPDF(id: string) {
+    async function regenerateInvoice(id: string) {
       const btn = document.getElementById(`gen-btn-${id}`) as HTMLButtonElement;
       if (!btn) return;
       btn.disabled = true;
-      btn.textContent = '\u23F3 Generating\u2026';
+      btn.textContent = '\u267B\uFE0F Regenerating\u2026';
       btn.classList.remove('success', 'error');
 
       const existingErr = document.getElementById(`gen-err-${id}`);
       if (existingErr) existingErr.remove();
 
       try {
-        const res = await fetch('/api/generate-pdf-batch', {
+        const res = await fetch('/api/regenerate-invoice', {
           method: 'POST',
           headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ recordId: id, force: true }),
+          body: JSON.stringify({ recordId: id }),
         });
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        const data = await res.json();
-        if (data.errors && data.errors.length > 0) throw new Error(data.errors[0].error);
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error((data as any).error || `Server error: ${res.status}`);
+        }
 
         btn.textContent = '\u2705 Done';
         btn.classList.add('success');
         btn.disabled = false;
 
-        const inv = invoices.find((i: any) => i.id === id);
-        if (inv) inv.pdfUrl = 'generated';
-
-        setTimeout(() => {
-          const card = document.getElementById(`card-${id}`);
-          if (card && inv) card.outerHTML = renderCard(inv);
-        }, 2000);
+        setTimeout(() => loadInvoices(), 1500);
       } catch (err: any) {
         btn.textContent = '\u274C Failed';
         btn.classList.add('error');
@@ -1831,6 +1823,7 @@ export default function AdminPage() {
           errEl.className = 'gen-error-msg';
           errEl.textContent = err.message;
           actionsEl.appendChild(errEl);
+          setTimeout(() => errEl.remove(), 5000);
         }
       }
     }
@@ -1899,31 +1892,6 @@ export default function AdminPage() {
       }
     }
 
-    async function deleteInvoicePdf(id: string) {
-      const label = studentLabel(id);
-      const inv = invoices.find((i: any) => i.id === id);
-      if (!inv?.pdfUrl) {
-        alert(`No PDF on file for ${label}.`);
-        return;
-      }
-      if (!confirm(`\u26A0\uFE0F Delete the PDF for this invoice?\n\n${label}\n\nThe invoice data stays in Airtable. The PDF file will be removed and the PDF URL cleared.`)) return;
-      try {
-        const res = await fetch('/api/admin-invoices', {
-          method: 'DELETE',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ recordId: id, scope: 'pdf' }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
-        inv.pdfUrl = null;
-        const card = document.getElementById(`card-${id}`);
-        if (card) card.outerHTML = renderCard(inv);
-        showDeleteBanner(`\u2705 Deleted PDF for ${escHtml(label)}.`, 'success');
-      } catch (err: any) {
-        alert('Failed to delete PDF: ' + err.message);
-      }
-    }
-
     function bulkTargetDescription(): { month: string; scopeSuffix: string } {
       const month = selectedMonth;
       return {
@@ -1960,7 +1928,7 @@ export default function AdminPage() {
     w.generateInvoices = generateInvoices;
     w.regenerateAllPDFs = regenerateAllPDFs;
     w.downloadAllPDFs = downloadAllPDFs;
-    w.generateCardPDF = generateCardPDF;
+    w.regenerateInvoice = regenerateInvoice;
     w.sendInvoice = sendInvoice;
     w.updateBulkButtonLabels = updateBulkButtonLabels;
     w.approveAllDrafts = approveAllDrafts;
@@ -1975,7 +1943,7 @@ export default function AdminPage() {
     w.cancelAlias = cancelAlias;
     w.saveAlias = saveAlias;
     w.deleteInvoice = deleteInvoice;
-    w.deleteInvoicePdf = deleteInvoicePdf;
+
     w.previewEmail = previewEmail;
     w.closeEmailPreview = closeEmailPreview;
     w.saveCustomMessage = saveCustomMessage;
@@ -1987,12 +1955,12 @@ export default function AdminPage() {
       ['submitPassword','logout','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
         'approveInvoice','unapproveInvoice','saveAmend','toggleAmend','addLineItem',
         'removeLineItem','updateCalc','generateInvoices',
-        'regenerateAllPDFs','downloadAllPDFs','generateCardPDF','sendInvoice',
+        'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
-        'deleteInvoice','deleteInvoicePdf','previewEmail','closeEmailPreview','saveCustomMessage','resetCustomMessage',
+        'deleteInvoice','previewEmail','closeEmailPreview','saveCustomMessage','resetCustomMessage',
       ].forEach(fn => delete (window as any)[fn]);
     };
   }, []);
