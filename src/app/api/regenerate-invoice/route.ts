@@ -161,7 +161,6 @@ export async function POST(req: NextRequest) {
         fields: {
           'Lessons Count': regularCount + additionalCount,
           'Rate Per Lesson': ratePerLesson,
-          'Base Amount': baseAmount + additionalAmount,
           'Final Amount': finalAmount,
           'Line Items': JSON.stringify(lineItems),
           'Line Items Extra': JSON.stringify(newExtra),
