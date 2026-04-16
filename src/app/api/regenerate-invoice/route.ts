@@ -159,21 +159,27 @@ export async function POST(req: NextRequest) {
     const extraTotal = newExtra.reduce((sum: number, item: any) => sum + (parseFloat(item.amount) || 0), 0);
     const finalAmount = Math.max(0, baseAmount + additionalAmount + adjustmentAmount + extraTotal);
 
-    // 9. Update invoice in Airtable
+    // 9. Update invoice in Airtable.
+    // Only overwrite Auto Notes if there is a fresh carry-over to write;
+    // otherwise preserve whatever the admin set via the Amend form.
+    const patchFields: Record<string, any> = {
+      'Lessons Count': regularCount + additionalCount,
+      'Rate Per Lesson': ratePerLesson,
+      'Final Amount': finalAmount,
+      'Line Items': JSON.stringify(lineItems),
+      'Line Items Extra': JSON.stringify(newExtra),
+      'PDF URL': '',
+    };
+    if (carryOverNotes.trim()) patchFields['Auto Notes'] = carryOverNotes.trim();
+
     await at('Invoices', `/${recordId}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        fields: {
-          'Lessons Count': regularCount + additionalCount,
-          'Rate Per Lesson': ratePerLesson,
-          'Final Amount': finalAmount,
-          'Line Items': JSON.stringify(lineItems),
-          'Line Items Extra': JSON.stringify(newExtra),
-          'Auto Notes': carryOverNotes.trim(),
-          'PDF URL': '',
-        },
-      }),
+      body: JSON.stringify({ fields: patchFields }),
     });
+
+    // Use recalculated carry-over notes for the PDF; fall back to the
+    // existing saved Auto Notes if carry-over is empty (e.g. admin-edited notes).
+    const pdfNotes = carryOverNotes.trim() || ((f['Auto Notes'] || '') as string);
 
     // 10. Generate fresh PDF and upload to Vercel Blob
     try {
@@ -189,7 +195,7 @@ export async function POST(req: NextRequest) {
         finalAmount,
         status: (f['Status'] || 'Draft') as string,
         makeupCredits: 0,
-        notes: carryOverNotes.trim(),
+        notes: pdfNotes,
         lineItems,
         lineItemsExtra: newExtra,
         registerUrl: buildRegisterUrl(studentId),
