@@ -159,7 +159,13 @@ export async function POST(req: NextRequest) {
       const subject = isAmended
         ? `AMENDED Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
         : `Invoice for ${invoice.month} \u2013 ${invoice.studentName}`;
-      const html = isAmended ? buildAmendedEmailHtml(invoice) : buildEmailHtml(invoice);
+      const customMessage = (invoiceRecord.fields['Custom Email Message'] || '') as string;
+      let html: string;
+      if (customMessage.trim()) {
+        html = `<p>${customMessage.trim().replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+      } else {
+        html = isAmended ? buildAmendedEmailHtml(invoice) : buildEmailHtml(invoice);
+      }
 
       const emailData: any = {
         from: "Adrian's Math Tuition <invoices@adrianmathtuition.com>",

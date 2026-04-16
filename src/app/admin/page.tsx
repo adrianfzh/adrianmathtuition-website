@@ -339,13 +339,36 @@ body {
   flex-shrink: 0;
 }
 .email-preview-subject strong { color: #0f172a; font-size: 15px; }
-.email-preview-body {
+.email-preview-status {
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #7e22ce;
+  background: #fdf4ff;
+  border-bottom: 1px solid #e9d5ff;
+  flex-shrink: 0;
+}
+.email-preview-status.default { color: #475569; background: #f8fafc; border-color: #e2e8f0; }
+.email-preview-textarea {
   flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  font-size: 15px;
+  margin: 16px 20px 0;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.6;
   color: #334155;
+  resize: none;
+  outline: none;
+}
+.email-preview-textarea:focus { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.15); }
+.email-preview-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px 20px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 @media (max-width: 600px) {
   .email-preview-panel { width: 100vw; }
@@ -477,6 +500,7 @@ export default function AdminPage() {
     let totalVisible = false;
     let selectedMonth = '';
     let searchQuery = '';
+    let currentPreviewId = '';
 
     function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
       return { Authorization: `Bearer ${adminPassword}`, ...extra };
@@ -1039,45 +1063,105 @@ export default function AdminPage() {
       }
     }
 
-    function buildEmailPreviewHtml(inv: any): { subject: string; html: string } {
+    function buildDefaultEmailText(inv: any): string {
       const paymentRef = `${(inv.studentName || '').toUpperCase()} \u2013 ${(inv.month || '').toUpperCase()}`;
+      const amount = `$${(inv.finalAmount as number).toFixed(2)}`;
       const isAmended = !!inv.sentAt;
-      const subject = isAmended
+      if (isAmended) {
+        return `Dear Parent/Student,\n\nPlease find attached the amended invoice for ${inv.studentName} for ${inv.month} \u2014 ${amount}, due by ${inv.dueDate}.\n\nThis replaces the previously sent invoice. Please disregard the earlier email.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
+      }
+      return `Dear Parent/Student,\n\nPlease find attached the invoice for ${inv.studentName} for ${inv.month} \u2014 ${amount}, due by ${inv.dueDate}.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
+    }
+
+    function buildEmailSubject(inv: any): string {
+      const isAmended = !!inv.sentAt;
+      return isAmended
         ? `AMENDED Invoice for ${inv.month} \u2013 ${inv.studentName}`
         : `Invoice for ${inv.month} \u2013 ${inv.studentName}`;
-      const html = isAmended
-        ? `<p>Dear Parent/Student,</p>
-           <p>Please find attached the <strong>amended invoice</strong> for ${escHtml(inv.studentName)} for ${escHtml(inv.month)} &mdash; <strong>$${(inv.finalAmount as number).toFixed(2)}</strong>, due by <strong>${escHtml(inv.dueDate)}</strong>.</p>
-           <p>This replaces the previously sent invoice. Please disregard the earlier email.</p>
-           <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${escHtml(paymentRef)}</strong>.</p>
-           <p>Please feel free to reach out if you have any questions.</p>
-           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-           <p style="font-size:13px;color:#6b7280;">Best regards,<br>Adrian</p>`
-        : `<p>Dear Parent/Student,</p>
-           <p>Please find attached the invoice for ${escHtml(inv.studentName)} for ${escHtml(inv.month)} &mdash; <strong>$${(inv.finalAmount as number).toFixed(2)}</strong>, due by <strong>${escHtml(inv.dueDate)}</strong>.</p>
-           <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${escHtml(paymentRef)}</strong>.</p>
-           <p>Please feel free to reach out if you have any questions.</p>
-           <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
-           <p style="font-size:13px;color:#6b7280;">Best regards,<br>Adrian</p>`;
-      return { subject, html };
+    }
+
+    function updateEmailPreviewStatus(hasCustom: boolean) {
+      const statusEl = document.getElementById('email-preview-status') as HTMLElement;
+      if (!statusEl) return;
+      if (hasCustom) {
+        statusEl.textContent = '\u270F\uFE0F Custom message saved';
+        statusEl.className = 'email-preview-status';
+      } else {
+        statusEl.textContent = '\uD83D\uDCCB Default template';
+        statusEl.className = 'email-preview-status default';
+      }
     }
 
     function previewEmail(id: string) {
       const inv = invoices.find((i: any) => i.id === id);
       if (!inv) return;
-      const { subject, html } = buildEmailPreviewHtml(inv);
+      currentPreviewId = id;
+      const subject = buildEmailSubject(inv);
+      const defaultText = buildDefaultEmailText(inv);
       const panel = document.getElementById('email-preview-panel') as HTMLElement;
       const subjectEl = document.getElementById('email-preview-subject') as HTMLElement;
-      const bodyEl = document.getElementById('email-preview-body') as HTMLElement;
-      if (!panel || !subjectEl || !bodyEl) return;
+      const textarea = document.getElementById('email-preview-textarea') as HTMLTextAreaElement;
+      if (!panel || !subjectEl || !textarea) return;
       subjectEl.innerHTML = `<strong>To:</strong> ${escHtml(inv.parentEmail || '(no email)')}<br><strong>Subject:</strong> ${escHtml(subject)}`;
-      bodyEl.innerHTML = html;
+      const hasCustom = !!(inv.customEmailMessage && inv.customEmailMessage.trim());
+      textarea.value = hasCustom ? inv.customEmailMessage : defaultText;
+      updateEmailPreviewStatus(hasCustom);
       panel.classList.add('open');
+      textarea.focus();
     }
 
     function closeEmailPreview() {
       const panel = document.getElementById('email-preview-panel');
       if (panel) panel.classList.remove('open');
+      currentPreviewId = '';
+    }
+
+    async function saveCustomMessage() {
+      if (!currentPreviewId) return;
+      const textarea = document.getElementById('email-preview-textarea') as HTMLTextAreaElement;
+      const saveBtn = document.getElementById('btn-save-email') as HTMLButtonElement;
+      const message = textarea?.value ?? '';
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026'; }
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: currentPreviewId, fields: { 'Custom Email Message': message } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const inv = invoices.find((i: any) => i.id === currentPreviewId);
+        if (inv) inv.customEmailMessage = message;
+        updateEmailPreviewStatus(!!(message.trim()));
+        if (saveBtn) saveBtn.textContent = '\u2705 Saved';
+        setTimeout(() => { if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\uD83D\uDCBE Save Custom Message'; } }, 1500);
+      } catch (err: any) {
+        alert('Failed to save: ' + err.message);
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '\uD83D\uDCBE Save Custom Message'; }
+      }
+    }
+
+    async function resetCustomMessage() {
+      if (!currentPreviewId) return;
+      const inv = invoices.find((i: any) => i.id === currentPreviewId);
+      if (!inv) return;
+      const resetBtn = document.getElementById('btn-reset-email') as HTMLButtonElement;
+      if (resetBtn) { resetBtn.disabled = true; resetBtn.textContent = 'Resetting\u2026'; }
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: currentPreviewId, fields: { 'Custom Email Message': '' } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        inv.customEmailMessage = '';
+        const textarea = document.getElementById('email-preview-textarea') as HTMLTextAreaElement;
+        if (textarea) textarea.value = buildDefaultEmailText(inv);
+        updateEmailPreviewStatus(false);
+      } catch (err: any) {
+        alert('Failed to reset: ' + err.message);
+      } finally {
+        if (resetBtn) { resetBtn.disabled = false; resetBtn.textContent = '\u21A9\uFE0F Reset to Default'; }
+      }
     }
 
     async function approveInvoice(id: string) {
@@ -1523,12 +1607,12 @@ export default function AdminPage() {
       const month = selectedMonth;
       const suffix = month ? ` (${month})` : '';
       const map: Record<string, string> = {
-        'btn-generate-missing': `\u26A1 Generate Missing PDFs${suffix}`,
-        'btn-regenerate-all':   `\u267B\uFE0F Regenerate All PDFs${suffix}`,
-        'btn-download-all':     `\u2B07\uFE0F Download All PDFs${suffix}`,
-        'btn-approve-all':      `\u2705 Approve All Drafts${suffix}`,
-        'btn-unapprove-all':    `\u21A9\uFE0F Unapprove All${suffix}`,
-        'btn-send-all':         `\uD83D\uDCE4 Send All Approved${suffix}`,
+        'btn-generate-invoices': `\uD83D\uDCC4 Generate Missing Invoices${suffix}`,
+        'btn-regenerate-all':    `\u267B\uFE0F Regenerate All Invoices${suffix}`,
+        'btn-download-all':      `\u2B07\uFE0F Download All PDFs${suffix}`,
+        'btn-approve-all':       `\u2705 Approve All Drafts${suffix}`,
+        'btn-unapprove-all':     `\u21A9\uFE0F Unapprove All${suffix}`,
+        'btn-send-all':          `\uD83D\uDCE4 Send All Approved${suffix}`,
       };
       for (const [id, label] of Object.entries(map)) {
         const el = document.getElementById(id) as HTMLButtonElement | null;
@@ -1591,10 +1675,10 @@ export default function AdminPage() {
 
     async function generateInvoices() {
       const monthDesc = selectedMonth ? `for ${selectedMonth}` : 'for the default next month';
-      if (!confirm(`Generate invoices ${monthDesc}?\nExisting invoices will be skipped automatically.`)) return;
+      if (!confirm(`Generate missing invoices ${monthDesc}?\nStudents who already have an invoice for this month will be skipped.`)) return;
       const btn = document.getElementById('btn-generate-invoices') as HTMLButtonElement;
       btn.disabled = true;
-      btn.textContent = '\uD83D\uDCDD Generating\u2026';
+      btn.textContent = '\uD83D\uDCC4 Generating\u2026';
       const resultBanner = document.getElementById('result-banner') as HTMLElement;
       resultBanner.style.display = 'none';
 
@@ -1619,15 +1703,8 @@ export default function AdminPage() {
         resultBanner.innerHTML = `<span>\u274C ${escHtml(err.message)}</span><button class="btn-dismiss" onclick="this.parentElement.style.display='none'">\u2715</button>`;
       } finally {
         btn.disabled = false;
-        btn.textContent = '\uD83D\uDCDD Generate Invoices';
+        btn.textContent = '\uD83D\uDCC4 Generate Missing Invoices';
       }
-    }
-
-    function generateMissingPDFs() {
-      const { scopeSuffix } = bulkTargetDescription();
-      const ids = filteredInvoices().filter((i: any) => !i.pdfUrl).map((i: any) => i.id);
-      if (!ids.length) { alert(`No invoices missing PDFs${scopeSuffix}.`); return; }
-      return runBulkGenerate('btn-generate-missing', '\u26A1 Generate Missing PDFs', { recordIds: ids });
     }
 
     async function regenerateAllPDFs() {
@@ -1881,7 +1958,6 @@ export default function AdminPage() {
     w.removeLineItem = removeLineItem;
     w.updateCalc = updateCalc;
     w.generateInvoices = generateInvoices;
-    w.generateMissingPDFs = generateMissingPDFs;
     w.regenerateAllPDFs = regenerateAllPDFs;
     w.downloadAllPDFs = downloadAllPDFs;
     w.generateCardPDF = generateCardPDF;
@@ -1902,19 +1978,21 @@ export default function AdminPage() {
     w.deleteInvoicePdf = deleteInvoicePdf;
     w.previewEmail = previewEmail;
     w.closeEmailPreview = closeEmailPreview;
+    w.saveCustomMessage = saveCustomMessage;
+    w.resetCustomMessage = resetCustomMessage;
 
     init();
 
     return () => {
       ['submitPassword','logout','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
         'approveInvoice','unapproveInvoice','saveAmend','toggleAmend','addLineItem',
-        'removeLineItem','updateCalc','generateInvoices','generateMissingPDFs',
+        'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','generateCardPDF','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
-        'deleteInvoice','deleteInvoicePdf','previewEmail','closeEmailPreview',
+        'deleteInvoice','deleteInvoicePdf','previewEmail','closeEmailPreview','saveCustomMessage','resetCustomMessage',
       ].forEach(fn => delete (window as any)[fn]);
     };
   }, []);
@@ -1965,9 +2043,8 @@ export default function AdminPage() {
           <select id="month-filter" onChange={(e) => (window as any).onMonthFilter(e.target.value)}></select>
           <span id="approval-counter"></span>
           <span id="summary"></span>
-          <button className="btn-generate" id="btn-generate-invoices" onClick={() => (window as any).generateInvoices()}>📝 Generate Invoices</button>
-          <button className="btn-generate" id="btn-generate-missing" onClick={() => (window as any).generateMissingPDFs()}>⚡ Generate Missing PDFs</button>
-          <button className="btn-generate" id="btn-regenerate-all" onClick={() => (window as any).regenerateAllPDFs()}>♻️ Regenerate All PDFs</button>
+          <button className="btn-generate" id="btn-generate-invoices" onClick={() => (window as any).generateInvoices()}>📄 Generate Missing Invoices</button>
+          <button className="btn-generate" id="btn-regenerate-all" onClick={() => (window as any).regenerateAllPDFs()}>♻️ Regenerate All Invoices</button>
           <button className="btn-generate" id="btn-download-all" onClick={() => (window as any).downloadAllPDFs()}>⬇️ Download All PDFs</button>
           <button className="btn-generate" id="btn-approve-all" onClick={() => (window as any).approveAllDrafts()}>✅ Approve All Drafts</button>
           <button className="btn-generate" id="btn-unapprove-all" onClick={() => (window as any).unapproveAllApproved()}>↩️ Unapprove All</button>
@@ -2013,7 +2090,17 @@ export default function AdminPage() {
           <button className="btn-close-preview" onClick={() => (window as any).closeEmailPreview()}>✕</button>
         </div>
         <div className="email-preview-subject" id="email-preview-subject"></div>
-        <div className="email-preview-body" id="email-preview-body"></div>
+        <div className="email-preview-status default" id="email-preview-status">📋 Default template</div>
+        <textarea
+          className="email-preview-textarea"
+          id="email-preview-textarea"
+          placeholder="Email body..."
+          rows={16}
+        />
+        <div className="email-preview-actions">
+          <button id="btn-save-email" className="btn btn-save" onClick={() => (window as any).saveCustomMessage()}>💾 Save Custom Message</button>
+          <button id="btn-reset-email" className="btn btn-cancel" onClick={() => (window as any).resetCustomMessage()}>↩️ Reset to Default</button>
+        </div>
       </div>
     </>
   );

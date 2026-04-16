@@ -81,6 +81,7 @@ export async function GET(req: NextRequest) {
       pdfUrl: f['PDF URL'] || null,
       lineItems: f['Line Items'] ? JSON.parse(f['Line Items']) : [],
       lineItemsExtra: f['Line Items Extra'] ? JSON.parse(f['Line Items Extra']) : [],
+      customEmailMessage: f['Custom Email Message'] || '',
     };
   });
 
