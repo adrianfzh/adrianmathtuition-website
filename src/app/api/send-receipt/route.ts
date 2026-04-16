@@ -58,6 +58,53 @@ function buildCorrectionHtml(opts: { studentName: string; month: string }) {
   `;
 }
 
+// GET — return the default subject + HTML preview for the receipt page
+// Query params mirror the POST body (invoiceId required, rest optional)
+export async function GET(req: NextRequest) {
+  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const sp = req.nextUrl.searchParams;
+  const invoiceId       = sp.get('invoiceId');
+  if (!invoiceId) return NextResponse.json({ error: 'Missing invoiceId' }, { status: 400 });
+
+  const paymentAmount   = parseFloat(sp.get('paymentAmount') || '0');
+  const paymentDate     = sp.get('paymentDate') || new Date().toISOString().split('T')[0];
+  const isFullPayment   = sp.get('isFullPayment') === 'true';
+  const isOverpayment   = sp.get('isOverpayment') === 'true';
+  const remainingBalance = parseFloat(sp.get('remainingBalance') || '0');
+  const paymentMethod   = sp.get('paymentMethod') || 'PayNow';
+
+  try {
+    const invoice = await airtableRequest('Invoices', `/${invoiceId}`);
+    const studentId = invoice.fields['Student']?.[0];
+    if (!studentId) return NextResponse.json({ error: 'No student linked' }, { status: 400 });
+    const student = await airtableRequest('Students', `/${studentId}`);
+
+    const studentName = (student.fields['Student Name'] || '') as string;
+    const parentName  = (student.fields['Parent Name']  || '') as string;
+    const parentEmail = (student.fields['Parent Email'] || '') as string;
+    const month       = (invoice.fields['Month']        || '') as string;
+    const finalAmount = (invoice.fields['Final Amount'] as number) || 0;
+
+    let subject: string;
+    if (isOverpayment) {
+      subject = `Payment Received (with Credit) \u2014 ${studentName} (${month})`;
+    } else if (isFullPayment) {
+      subject = `Payment Received \u2014 ${studentName} (${month})`;
+    } else {
+      subject = `Partial Payment Received \u2014 ${studentName} (${month})`;
+    }
+    const html = buildReceiptHtml({
+      studentName, parentName, month,
+      paymentAmount, paymentDate, paymentMethod,
+      isFullPayment, isOverpayment, remainingBalance, finalAmount,
+    });
+    return NextResponse.json({ subject, html, studentName, parentEmail, month });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -69,7 +116,7 @@ export async function POST(req: NextRequest) {
   let body: any = {};
   try { body = await req.json(); } catch { /* no body */ }
 
-  const { invoiceId, paymentAmount, paymentDate, isFullPayment, isOverpayment, remainingBalance, paymentMethod, correction } = body;
+  const { invoiceId, paymentAmount, paymentDate, isFullPayment, isOverpayment, remainingBalance, paymentMethod, correction, customHtml } = body;
   if (!invoiceId) return NextResponse.json({ error: 'Missing invoiceId' }, { status: 400 });
 
   // Fetch invoice + student
@@ -106,7 +153,7 @@ export async function POST(req: NextRequest) {
       subject = `Partial Payment Received \u2014 ${studentName} (${month})`;
       type = 'partial_receipt';
     }
-    html = buildReceiptHtml({
+    html = customHtml || buildReceiptHtml({
       studentName, parentName, month,
       paymentAmount: paymentAmount || 0,
       paymentDate: paymentDate || new Date().toISOString().split('T')[0],
