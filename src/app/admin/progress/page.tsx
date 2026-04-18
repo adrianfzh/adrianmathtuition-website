@@ -126,6 +126,73 @@ function serializeMasteryRatings(ratings: Record<string, Record<string, number>>
 
 // ─── LogForm component ─────────────────────────────────────────────────────────
 
+function TopicDropdown({
+  subject,
+  topics,
+  selected,
+  onToggle,
+}: {
+  subject: string;
+  topics: string[];
+  selected: string[];
+  onToggle: (topic: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const label = selected.length === 0
+    ? 'None selected'
+    : selected.length === 1
+      ? selected[0]
+      : `${selected.length} topics`;
+
+  return (
+    <div className="mb-2">
+      {/* Trigger */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3 min-h-[48px] active:bg-slate-50"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs font-semibold text-slate-500">{subject}</span>
+          <span className="text-sm text-slate-800 truncate">{label}</span>
+        </div>
+        <svg
+          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Dropdown list */}
+      {open && (
+        <div className="mt-1 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+          {topics.map((topic, i) => {
+            const checked = selected.includes(topic);
+            return (
+              <button
+                key={topic}
+                onClick={() => onToggle(topic)}
+                className={`w-full flex items-center justify-between px-4 py-3 min-h-[48px] active:bg-slate-50 text-left ${
+                  i > 0 ? 'border-t border-slate-100' : ''
+                } ${checked ? 'bg-indigo-50' : ''}`}
+              >
+                <span className={`text-sm ${checked ? 'text-indigo-700 font-medium' : 'text-slate-700'}`}>
+                  {topic}
+                </span>
+                {checked && (
+                  <svg className="w-4 h-4 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LogForm({
   lesson,
   pw,
@@ -258,32 +325,20 @@ function LogForm({
           const topics = topicsForSubject(subj);
           if (!hasTopics(subj)) {
             return (
-              <div key={subj} className="mb-3">
-                <div className="text-xs font-medium text-slate-400 mb-1">{subj}</div>
-                <p className="text-xs text-slate-400 italic">Math topics coming soon — use Lesson Notes for now</p>
+              <div key={subj} className="mb-2">
+                <p className="text-xs text-slate-400 italic">{subj}: topics coming soon — use Lesson Notes</p>
               </div>
             );
           }
           const selected = form.selectedTopics[subj] ?? [];
           return (
-            <div key={subj} className="mb-3">
-              <div className="text-xs font-medium text-slate-500 mb-1">{subj}</div>
-              <div className="flex flex-wrap gap-1.5">
-                {topics.map(topic => (
-                  <button
-                    key={topic}
-                    onClick={() => toggleTopic(subj, topic)}
-                    className={`px-2.5 py-1.5 rounded-full text-xs font-medium border transition-colors min-h-[36px] ${
-                      selected.includes(topic)
-                        ? 'bg-indigo-600 border-indigo-600 text-white'
-                        : 'bg-white border-slate-200 text-slate-600 active:bg-slate-50'
-                    }`}
-                  >
-                    {topic}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <TopicDropdown
+              key={subj}
+              subject={subj}
+              topics={topics}
+              selected={selected}
+              onToggle={(topic) => toggleTopic(subj, topic)}
+            />
           );
         })}
       </div>
