@@ -16,13 +16,16 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
-  const filter = encodeURIComponent(
-    `AND({Date}='${date}',OR({Status}='Completed',{Status}='Scheduled',{Status}='Rescheduled In'))`
-  );
+  const formula = `AND(IS_SAME({Date},'${date}','day'),OR({Status}='Completed',{Status}='Scheduled',{Status}='Rescheduled'))`;
+  console.log('[progress/lessons] date param:', date, '| formula:', formula);
+
+  const filter = encodeURIComponent(formula);
   const lessons = await airtableRequestAll(
     'Lessons',
     `?filterByFormula=${filter}&sort[0][field]=Date&sort[0][direction]=asc`
   );
+
+  console.log('[progress/lessons] raw record count:', lessons.records.length);
 
   // Collect unique student + slot IDs
   const studentIds = [...new Set(
