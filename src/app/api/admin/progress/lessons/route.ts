@@ -14,18 +14,16 @@ export async function GET(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const localFallback = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const date = searchParams.get('date') || localFallback;
 
   const formula = `AND(IS_SAME({Date},'${date}','day'),OR({Status}='Completed',{Status}='Scheduled',{Status}='Rescheduled'))`;
-  console.log('[progress/lessons] date param:', date, '| formula:', formula);
-
   const filter = encodeURIComponent(formula);
   const lessons = await airtableRequestAll(
     'Lessons',
     `?filterByFormula=${filter}&sort[0][field]=Date&sort[0][direction]=asc`
   );
-
-  console.log('[progress/lessons] raw record count:', lessons.records.length);
 
   // Collect unique student + slot IDs
   const studentIds = [...new Set(
