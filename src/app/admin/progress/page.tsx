@@ -594,36 +594,44 @@ export default function ProgressPage() {
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Sticky top bar */}
       <div className="sticky top-0 z-10 bg-white border-b border-slate-100 shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
-          <a href="/admin" className="text-slate-400 hover:text-slate-600 shrink-0">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </a>
-          <div className="flex items-center gap-2 flex-1">
+        <div className="max-w-lg mx-auto px-4 pt-3 pb-2">
+          {/* Row 1: back + title + counter */}
+          <div className="flex items-center gap-2 mb-2">
+            <a href="/admin" className="text-slate-400 hover:text-slate-600 shrink-0 p-1 min-h-[36px] min-w-[36px] flex items-center justify-center">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </a>
+            <span className="flex-1 text-base font-semibold text-slate-900">Progress</span>
+            <span className="shrink-0 text-sm font-semibold text-slate-600">
+              {loggedCount}<span className="text-slate-300"> / </span>{lessons.length}
+            </span>
+          </div>
+          {/* Row 2: date navigation */}
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setDate(d => addDays(d, -1))}
-              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 active:bg-slate-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 rounded-lg text-slate-500 active:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg"
             >
-              ←
+              ‹
             </button>
-            <button
-              onClick={() => setDate(todayISO())}
-              className="flex-1 text-sm font-medium text-slate-900 text-center py-2 rounded-lg hover:bg-slate-50 active:bg-slate-100 min-h-[44px]"
-            >
-              {formatDate(date)}
-              {date === todayISO() && <span className="ml-1 text-xs text-indigo-500 font-normal">Today</span>}
-            </button>
+            <div className="flex-1 flex items-center justify-center gap-2">
+              <span className="text-sm font-medium text-slate-900">{formatDate(date)}</span>
+              {date !== todayISO() && (
+                <button
+                  onClick={() => setDate(todayISO())}
+                  className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full active:bg-indigo-100"
+                >
+                  Today
+                </button>
+              )}
+            </div>
             <button
               onClick={() => setDate(d => addDays(d, 1))}
-              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 active:bg-slate-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 rounded-lg text-slate-500 active:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg"
             >
-              →
+              ›
             </button>
-          </div>
-          {/* Counter */}
-          <div className="shrink-0 text-sm font-semibold text-slate-600">
-            {loggedCount}<span className="text-slate-300"> / </span>{lessons.length}
           </div>
         </div>
       </div>
