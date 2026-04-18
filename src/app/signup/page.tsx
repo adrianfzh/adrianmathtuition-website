@@ -119,7 +119,7 @@ function SignupContent() {
       maxDate:       maxDate,
       allowInput:    false,
       disableMobile: true,
-      showMonths:    2,
+      showMonths:    1,
       onChange: (selectedDates: Date[], dateStr: string) => {
         setDatePick(dateStr);
       },
