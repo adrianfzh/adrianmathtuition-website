@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 // ─── Cookie helpers ────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ function setCookie(name: string, value: string, days: number) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function ReceiptPreviewPage() {
+function ReceiptPreviewContent() {
   const params = useSearchParams();
 
   const invoiceId        = params.get('invoiceId') || '';
@@ -278,6 +278,14 @@ export default function ReceiptPreviewPage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function ReceiptPreviewPage() {
+  return (
+    <Suspense>
+      <ReceiptPreviewContent />
+    </Suspense>
   );
 }
 
