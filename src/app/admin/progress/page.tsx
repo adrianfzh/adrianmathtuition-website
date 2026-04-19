@@ -30,6 +30,16 @@ interface LessonCard {
 
 interface MasteryRating { subject: string; topic: string; rating: number }
 
+interface Exam {
+  id: string;
+  examType: string;
+  subject: string;
+  examDate: string;
+  testedTopics: string;
+}
+
+const EXAM_TYPES = ['WA1', 'WA2', 'WA3', 'EOY'] as const;
+
 interface FormState {
   homeworkCompletion: string;
   selectedTopics: Record<string, string[]>; // subject → topics[]
@@ -71,6 +81,12 @@ function addDays(iso: string, n: number): string {
 function formatDate(iso: string): string {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatShortDate(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
 function topicsForSubject(subject: string): string[] {
@@ -193,6 +209,320 @@ function TopicDropdown({
   );
 }
 
+// ─── ExamForm (add / edit inline) ─────────────────────────────────────────────
+
+function ExamForm({
+  initial,
+  subjects,
+  pw,
+  onSave,
+  onCancel,
+  onUnsavedChange,
+}: {
+  initial?: Exam;
+  subjects: Subject[];
+  pw: string;
+  onSave: (data: Omit<Exam, 'id'>) => Promise<void>;
+  onCancel: () => void;
+  onUnsavedChange?: (dirty: boolean) => void;
+}) {
+  const [examType, setExamType] = useState<string>(initial?.examType ?? 'WA1');
+  const [subject, setSubject] = useState<Subject | ''>(
+    (initial?.subject as Subject) ?? (subjects.length === 1 ? subjects[0] : '')
+  );
+  const [examDate, setExamDate] = useState(initial?.examDate ?? '');
+  const [selectedTopics, setSelectedTopics] = useState<string[]>(
+    initial?.testedTopics ? initial.testedTopics.split(',').map(s => s.trim()).filter(Boolean) : []
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const topics = subject ? topicsForSubject(subject) : [];
+
+  // Notify parent when form becomes dirty
+  useEffect(() => {
+    const dirty = !!(examDate || selectedTopics.length > 0);
+    onUnsavedChange?.(dirty);
+    return () => onUnsavedChange?.(false);
+  }, [examDate, selectedTopics.length]);
+
+  function handleSubjectChange(s: Subject) {
+    setSubject(s);
+    setSelectedTopics([]);
+  }
+
+  function toggleTopic(topic: string) {
+    setSelectedTopics(ts =>
+      ts.includes(topic) ? ts.filter(t => t !== topic) : [...ts, topic]
+    );
+  }
+
+  async function handleSave() {
+    if (!subject) { setError('Select a subject'); return; }
+    if (!examDate) { setError('Select a date'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      await onSave({ examType, subject, examDate, testedTopics: selectedTopics.join(', ') });
+    } catch {
+      setError('Save failed');
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="bg-white border border-indigo-200 rounded-xl p-3 space-y-3">
+      {/* Exam type */}
+      <div>
+        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Exam Type</div>
+        <div className="flex gap-2 flex-wrap">
+          {EXAM_TYPES.map(t => (
+            <button key={t} onClick={() => setExamType(t)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium border min-h-[44px] transition-colors ${
+                examType === t ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700 active:bg-slate-100'
+              }`}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Subject */}
+      {subjects.length > 1 && (
+        <div>
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Subject</div>
+          <div className="flex gap-2 flex-wrap">
+            {subjects.map(s => (
+              <button key={s} onClick={() => handleSubjectChange(s as Subject)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium border min-h-[44px] transition-colors ${
+                  subject === s ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700 active:bg-slate-100'
+                }`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Date */}
+      <div>
+        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Exam Date</div>
+        <input type="date" value={examDate} onChange={e => setExamDate(e.target.value)}
+          className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+      </div>
+
+      {/* Topics */}
+      {subject && topics.length > 0 && (
+        <div>
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Tested Topics</div>
+          <TopicDropdown subject={subject} topics={topics} selected={selectedTopics} onToggle={toggleTopic} />
+        </div>
+      )}
+
+      {error && <p className="text-xs text-red-500">{error}</p>}
+
+      <div className="flex gap-2 pt-1">
+        <button onClick={onCancel}
+          className="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-600 bg-white active:bg-slate-50 min-h-[44px]">
+          Cancel
+        </button>
+        <button onClick={handleSave} disabled={saving}
+          className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold disabled:opacity-60 active:bg-indigo-700 min-h-[44px]">
+          {saving ? 'Saving…' : initial ? 'Update' : 'Add Exam'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── UpcomingExams accordion ───────────────────────────────────────────────────
+
+function UpcomingExams({
+  studentId,
+  subjects,
+  pw,
+  onUnsavedChange,
+}: {
+  studentId: string;
+  subjects: Subject[];
+  pw: string;
+  onUnsavedChange: (dirty: boolean) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const today = todayISO();
+
+  async function loadExams() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
+        headers: { Authorization: `Bearer ${pw}` },
+      });
+      const json = await res.json();
+      const upcoming = (json.exams ?? [])
+        .filter((e: Exam) => e.examDate >= today)
+        .sort((a: Exam, b: Exam) => a.examDate.localeCompare(b.examDate));
+      setExams(upcoming);
+    } finally {
+      setLoading(false);
+      setLoaded(true);
+    }
+  }
+
+  function handleToggle() {
+    if (!open && !loaded) loadExams();
+    setOpen(o => !o);
+  }
+
+  async function handleAdd(data: Omit<Exam, 'id'>) {
+    const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed');
+    const created = await res.json();
+    setExams(prev =>
+      [...prev, created]
+        .filter(e => e.examDate >= today)
+        .sort((a, b) => a.examDate.localeCompare(b.examDate))
+    );
+    setAddOpen(false);
+  }
+
+  async function handleEdit(id: string, data: Omit<Exam, 'id'>) {
+    const res = await fetch(`/api/admin/progress/exams/${id}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed');
+    const updated = await res.json();
+    setExams(prev =>
+      prev.map(e => e.id === id ? { ...e, ...updated } : e)
+        .filter(e => e.examDate >= today)
+        .sort((a, b) => a.examDate.localeCompare(b.examDate))
+    );
+    setEditingId(null);
+  }
+
+  async function handleDelete(id: string) {
+    await fetch(`/api/admin/progress/exams/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${pw}` },
+    });
+    setExams(prev => prev.filter(e => e.id !== id));
+    setDeleteConfirmId(null);
+  }
+
+  const headerLabel = !loaded
+    ? 'Upcoming Exams'
+    : exams.length === 0
+      ? 'Upcoming Exams (none)'
+      : `Upcoming Exams (${exams.length})`;
+
+  return (
+    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+      {/* Accordion header */}
+      <button
+        onClick={handleToggle}
+        className="w-full flex items-center justify-between px-4 py-3 min-h-[48px] active:bg-slate-50"
+      >
+        <span className="text-sm font-medium text-slate-700">{headerLabel}</span>
+        <svg className={`w-4 h-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="border-t border-slate-100 bg-slate-50 px-3 py-3 space-y-2">
+          {loading && <p className="text-sm text-slate-400 py-2 text-center">Loading…</p>}
+
+          {/* Exam rows */}
+          {!loading && exams.map(exam => (
+            <div key={exam.id}>
+              {editingId === exam.id ? (
+                <ExamForm
+                  initial={exam}
+                  subjects={subjects}
+                  pw={pw}
+                  onSave={data => handleEdit(exam.id, data)}
+                  onCancel={() => setEditingId(null)}
+                  onUnsavedChange={onUnsavedChange}
+                />
+              ) : (
+                <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2.5 min-h-[48px]">
+                  <button
+                    className="flex-1 text-left min-w-0"
+                    onClick={() => { setEditingId(exam.id); setAddOpen(false); }}
+                  >
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded">{exam.examType}</span>
+                      <span className="text-xs bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">{exam.subject}</span>
+                      <span className="text-xs text-slate-500">{formatShortDate(exam.examDate)}</span>
+                      {exam.testedTopics && (
+                        <span className="text-xs text-slate-400">
+                          {exam.testedTopics.split(',').map(s => s.trim()).filter(Boolean).length} topics
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                  {deleteConfirmId === exam.id ? (
+                    <div className="flex gap-1 shrink-0">
+                      <button onClick={() => setDeleteConfirmId(null)}
+                        className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 min-h-[36px]">
+                        Cancel
+                      </button>
+                      <button onClick={() => handleDelete(exam.id)}
+                        className="text-xs px-2.5 py-1.5 rounded-lg bg-red-100 text-red-600 min-h-[36px]">
+                        Delete
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteConfirmId(exam.id)}
+                      className="text-slate-300 active:text-red-400 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg leading-none"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Add new exam */}
+          {!loading && !addOpen && (
+            <button
+              onClick={() => { setAddOpen(true); setEditingId(null); }}
+              className="w-full py-3 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 active:bg-white min-h-[48px]"
+            >
+              + Add Exam
+            </button>
+          )}
+
+          {addOpen && (
+            <ExamForm
+              subjects={subjects}
+              pw={pw}
+              onSave={handleAdd}
+              onCancel={() => setAddOpen(false)}
+              onUnsavedChange={onUnsavedChange}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LogForm({
   lesson,
   pw,
@@ -213,6 +543,7 @@ function LogForm({
   }));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [examUnsaved, setExamUnsaved] = useState(false);
 
   useEffect(() => {
     fetch(`/api/admin/progress/students/${lesson.studentId}/previous-lesson?before=${lesson.date}`, {
@@ -442,13 +773,26 @@ function LogForm({
         />
       </div>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {/* 7. Upcoming Exams */}
+      <UpcomingExams
+        studentId={lesson.studentId}
+        subjects={lesson.subjects.filter(Boolean) as Subject[]}
+        pw={pw}
+        onUnsavedChange={setExamUnsaved}
+      />
 
-      {/* 7. Save */}
+      {error && <p className="text-sm text-red-500">{error}</p>}
+      {examUnsaved && (
+        <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          ⚠ Exam form has unsaved changes — save or cancel it before saving progress.
+        </p>
+      )}
+
+      {/* 8. Save */}
       <button
         onClick={handleSave}
-        disabled={saving}
-        className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-60 active:bg-indigo-700 transition-colors"
+        disabled={saving || examUnsaved}
+        className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-40 active:bg-indigo-700 transition-colors"
       >
         {saving ? 'Saving…' : 'Save Progress'}
       </button>
@@ -549,6 +893,9 @@ export default function ProgressPage() {
   const [lessons, setLessons] = useState<LessonCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const touchStartY = useRef(0);
+  const pullDistance = useRef(0);
 
   // Check cookie on mount
   useEffect(() => {
@@ -612,6 +959,34 @@ export default function ProgressPage() {
     setLessons(ls => ls.map(l => l.id === id ? { ...l, ...updated } : l));
   }
 
+  async function triggerRefresh() {
+    if (refreshing || loading || !savedPw.current) return;
+    setRefreshing(true);
+    try {
+      const res = await fetch(`/api/admin/progress/lessons?date=${date}`, {
+        headers: { Authorization: `Bearer ${savedPw.current}` },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setLessons(json.lessons ?? []);
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartY.current = e.touches[0].clientY;
+    pullDistance.current = 0;
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    if (dy > 60 && window.scrollY === 0) {
+      triggerRefresh();
+    }
+  }
+
   const loggedCount = lessons.filter(l => l.progressLogged).length;
 
   // ── Auth screen ──
@@ -646,7 +1021,15 @@ export default function ProgressPage() {
 
   // ── Main ──
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      {/* Pull-to-refresh indicator */}
+      {refreshing && (
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-2 pointer-events-none">
+          <div className="bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-md">
+            Refreshing…
+          </div>
+        </div>
+      )}
       {/* Sticky top bar */}
       <div className="sticky top-0 z-10 bg-white border-b border-slate-100 shadow-sm">
         <div className="max-w-lg mx-auto px-4 pt-3 pb-2">
