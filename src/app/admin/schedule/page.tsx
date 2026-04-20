@@ -614,6 +614,7 @@ export default function SchedulePage() {
         </div>
 
         {/* Desktop: full grid */}
+        <div className="desktop-grid-scroll">
         <div className="desktop-grid">
           {DAYS.map((day, i) => {
             const date = weekDates[i];
@@ -631,6 +632,7 @@ export default function SchedulePage() {
               </div>
             );
           })}
+        </div>
         </div>
       </>
     );
@@ -888,6 +890,7 @@ export default function SchedulePage() {
           )}
         </div>
         {/* Desktop: full grid */}
+        <div className="desktop-grid-scroll">
         <div className="desktop-grid">
           {DAYS.map((day, i) => {
             const date = weekDates[i];
@@ -905,6 +908,7 @@ export default function SchedulePage() {
               </div>
             );
           })}
+        </div>
         </div>
         <DragOverlay style={{ zIndex: 9999 }}>
           {activeDragLesson && overlayStyle && (
@@ -1697,13 +1701,16 @@ body {
 @media (min-width: 768px) {
   .mobile-day { display: none; }
   .day-tabs { display: none; }
+  .desktop-grid-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   .desktop-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(160px, 1fr));
+    min-width: 1120px;
     gap: 8px;
     align-items: start;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
   .grid-col { display: flex; flex-direction: column; gap: 8px; }
   .grid-col-today .slot-card { border-color: #bfdbfe; }
