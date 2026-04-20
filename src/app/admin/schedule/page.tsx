@@ -134,6 +134,17 @@ function getTrialName(notes: string): string {
   return m ? m[1].trim() : 'Trial Student';
 }
 
+const LEVEL_DISPLAY: Record<string, { label: string; cls: string }> = {
+  secondary: { label: 'SEC', cls: 'level-sec' },
+  jc:        { label: 'JC',  cls: 'level-jc'  },
+  mixed:     { label: 'MIX', cls: 'level-mixed' },
+};
+function levelChip(level: string) {
+  const key = level.toLowerCase();
+  const d = LEVEL_DISPLAY[key] ?? { label: level.toUpperCase(), cls: `level-${key}` };
+  return <span className={`slot-level ${d.cls}`}>{d.label}</span>;
+}
+
 const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Regular:     { bg: '#f8fafc',  text: '#1e293b', border: '#e2e8f0' },
   Rescheduled: { bg: '#eff6ff',  text: '#1d4ed8', border: '#bfdbfe' },
@@ -445,7 +456,7 @@ export default function SchedulePage() {
           <div className="slot-header">
             <div className="slot-meta">
               <span className="slot-time">⏰ {slot.time}</span>
-              <span className={`slot-level level-${slot.level.toLowerCase()}`}>{slot.level}</span>
+              {levelChip(slot.level)}
             </div>
             <span className={`capacity ${present >= total ? 'full' : ''}`}>
               {present}/{total}
