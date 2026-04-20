@@ -321,7 +321,7 @@ export default function SchedulePage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 5 } })
+    useSensor(TouchSensor, { activationConstraint: { delay: 0, tolerance: 3 } })
   );
 
   const enrichedLessons = useMemo<EnrichedLesson[]>(() => {
@@ -869,7 +869,7 @@ export default function SchedulePage() {
   function renderLessonsView() {
     const overlayStyle = activeDragLesson ? getTypeStyle(activeDragLesson.type, activeDragLesson.status) : null;
     return (
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} autoScroll={{ layoutShiftCompensation: false }}>
         {/* Mobile: single day, expands to full week during drag for cross-day drop */}
         <div className="mobile-day">
           {activeDragLesson ? (
