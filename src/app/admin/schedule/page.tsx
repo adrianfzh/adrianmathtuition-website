@@ -185,11 +185,12 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
   const style = getTypeStyle(lesson.type, lesson.status);
   const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
   const lastTapRef = useRef<number>(0);
+  // True on touch/coarse-pointer devices (phones, tablets).
+  const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
   function handleClick() {
-    // Desktop (fine pointer): single click opens action sheet.
-    // Mobile (coarse pointer): require double tap — long press is reserved for drag.
-    const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+    // Desktop: single click opens action sheet.
+    // Mobile: double tap opens action sheet (long press → drag handle).
     if (!isTouch) { onTap(); return; }
     const now = Date.now();
     if (now - lastTapRef.current < 350) {
@@ -203,24 +204,37 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
       {...attributes}
+      // Desktop: listeners on the whole chip so click-drag works anywhere.
+      // Mobile: listeners only on the grip handle (see below) so the chip body scrolls.
+      {...(!isTouch ? listeners : {})}
       onClick={handleClick}
       className={`lesson-chip${isAbsent ? ' absent' : ''}`}
       style={{
         background: style.bg, color: style.text, borderColor: style.border,
         opacity: isDragging ? 0.3 : 1,
-        touchAction: 'none',
-        cursor: 'grab',
+        cursor: isTouch ? 'default' : 'grab',
+        display: 'flex', alignItems: 'flex-start', gap: 4,
       }}
     >
-      {lesson.type === 'Trial' && <span className="trial-badge">🆕</span>}
-      <span className={isAbsent ? 'absent-name' : ''}>{lesson.studentName}</span>
-      {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
-      {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
-      {lesson.type !== 'Trial' && lesson.notes && (
-        <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
+      {/* Mobile-only drag handle — long press here to drag */}
+      {isTouch && (
+        <span
+          {...listeners}
+          className="drag-handle"
+          style={{ touchAction: 'none' }}
+          aria-label="drag"
+        >⠿</span>
       )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {lesson.type === 'Trial' && <span className="trial-badge">🆕</span>}
+        <span className={isAbsent ? 'absent-name' : ''}>{lesson.studentName}</span>
+        {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
+        {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
+        {lesson.type !== 'Trial' && lesson.notes && (
+          <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1445,6 +1459,11 @@ body {
 .nav-btn:hover { background: rgba(255,255,255,0.25); }
 .refresh-btn { font-size: 18px; }
 .refresh-btn:disabled { opacity: 0.5; cursor: default; }
+.drag-handle {
+  font-size: 13px; opacity: 0.35; line-height: 1;
+  padding: 1px 2px 1px 0; flex-shrink: 0; cursor: grab;
+  user-select: none; -webkit-user-select: none;
+}
 .mobile-drag-day-label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
   text-transform: uppercase; color: #64748b;
