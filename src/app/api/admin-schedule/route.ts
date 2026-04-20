@@ -56,8 +56,10 @@ export async function GET(req: NextRequest) {
   const weekStart = isoDate(monday);
   const weekEnd = isoDate(sunday);
 
-  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<='${weekEnd}')`;
-  console.log('[admin-schedule] lessons filter:', lessonsFilter);
+  // Use exclusive upper bound (+1 day) because Airtable coerces Date to
+  // datetime midnight, so <= '2026-04-26' stops before the day's lessons.
+  const weekEndExclusive = isoDate(addDays(sunday, 1));
+  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<'${weekEndExclusive}')`;
 
   // Fetch slots, enrollments, and lessons in parallel
   const [slotsData, enrollmentsData, lessonsData] = await Promise.all([
@@ -68,26 +70,6 @@ export async function GET(req: NextRequest) {
       `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes`
     ),
   ]);
-
-  console.log('[admin-schedule] DIAGNOSTIC START');
-  console.log('[admin-schedule] weekStart:', weekStart, 'weekEnd:', weekEnd);
-  console.log('[admin-schedule] Total lessons returned:', lessonsData.length);
-  const dateCounts: Record<string, number> = {};
-  for (const r of lessonsData) {
-    const d = r.fields['Date'] || 'MISSING';
-    dateCounts[d] = (dateCounts[d] || 0) + 1;
-  }
-  console.log('[admin-schedule] Lesson counts by date:', dateCounts);
-  console.log('[admin-schedule] Raw sample of first 2 lessons:', JSON.stringify(lessonsData.slice(0, 2), null, 2));
-  console.log('[admin-schedule] DIAGNOSTIC END');
-
-  const sundayOnlyTest = await airtableRequest('Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Date}='2026-04-26'`)}&fields[]=Date&fields[]=Type&fields[]=Status&maxRecords=25`
-  );
-  console.log('[admin-schedule] DIRECT Sunday query returned:', sundayOnlyTest.records?.length || 0, 'records');
-  if (sundayOnlyTest.records?.length) {
-    console.log('[admin-schedule] Sunday sample record:', JSON.stringify(sundayOnlyTest.records[0], null, 2));
-  }
 
   // Collect all unique student IDs (from both enrollments and lessons)
   const studentIds = [
@@ -102,16 +84,12 @@ export async function GET(req: NextRequest) {
     const formula = `OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`;
     const studentsData = await fetchAll(
       'Students',
-      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name&fields[]=Parent Name&fields[]=Parent Email`
+      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name`
     );
     studentsById = Object.fromEntries(
       studentsData.map((r: any) => [
         r.id,
-        {
-          name: r.fields['Student Name'] || '',
-          parentName: r.fields['Parent Name'] || '',
-          parentEmail: r.fields['Parent Email'] || '',
-        },
+        { name: r.fields['Student Name'] || '' },
       ])
     );
   }

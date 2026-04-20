@@ -34,8 +34,14 @@ interface Lesson {
 
 interface Student {
   name: string;
+}
+
+interface StudentContact {
+  name: string;
   parentName: string;
   parentEmail: string;
+  parentContact?: string;
+  studentContact?: string;
 }
 
 interface ScheduleData {
@@ -243,7 +249,9 @@ export default function SchedulePage() {
     return d === 0 ? 6 : d - 1; // 0=Mon…6=Sun
   });
 
-  const [modal, setModal] = useState<{ student: Student; lessonType: string } | null>(null);
+  const [modal, setModal] = useState<{ student: StudentContact; lessonType: string } | null>(null);
+  const [contactCache, setContactCache] = useState<Record<string, StudentContact>>({});
+  const [contactLoading, setContactLoading] = useState(false);
   const savedPw = useRef('');
 
   const [viewMode, setViewMode] = useState<'lessons' | 'roster'>(() => {
@@ -479,8 +487,8 @@ export default function SchedulePage() {
                   key={studentId}
                   className={`lesson-chip ${isAbsent ? 'absent' : ''}`}
                   style={{ background: style.bg, color: style.text, borderColor: style.border }}
-                  onClick={student ? () => setModal({ student, lessonType: type }) : undefined}
-                  role={student ? 'button' : undefined}
+                  onClick={() => openStudentModal(studentId, type)}
+                  role="button"
                 >
                   <span className={isAbsent ? 'absent-name' : ''}>{student?.name || studentId}</span>
                   {type !== 'Regular' && !isAbsent && <span className="type-tag">{type}</span>}
@@ -500,8 +508,8 @@ export default function SchedulePage() {
                   key={lesson.id}
                   className={`lesson-chip ${isAbsent ? 'absent' : ''}`}
                   style={{ background: style.bg, color: style.text, borderColor: style.border }}
-                  onClick={student ? () => setModal({ student, lessonType: lesson.type }) : undefined}
-                  role={student ? 'button' : undefined}
+                  onClick={lesson.studentId ? () => openStudentModal(lesson.studentId!, lesson.type) : undefined}
+                  role={lesson.studentId ? 'button' : undefined}
                 >
                   {isTrial && <span className="trial-badge">🆕</span>}
                   <span className={isAbsent ? 'absent-name' : ''}>{displayName}</span>
@@ -539,8 +547,8 @@ export default function SchedulePage() {
                 key={studentId}
                 className="lesson-chip"
                 style={{ background: TYPE_COLORS.Regular.bg, color: TYPE_COLORS.Regular.text, borderColor: TYPE_COLORS.Regular.border }}
-                onClick={student ? () => setModal({ student, lessonType: 'Regular' }) : undefined}
-                role={student ? 'button' : undefined}
+                onClick={() => openStudentModal(studentId, 'Regular')}
+                role="button"
               >
                 {student?.name || studentId}
               </div>
@@ -736,6 +744,30 @@ export default function SchedulePage() {
     setAddModal({ type: 'Additional', date: isoDate(new Date()), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true });
   }
 
+  async function openStudentModal(studentId: string, lessonType: string) {
+    const cached = contactCache[studentId];
+    if (cached) {
+      setModal({ student: cached, lessonType });
+      return;
+    }
+    const name = data?.students[studentId]?.name || '';
+    setModal({ student: { name, parentName: '', parentEmail: '' }, lessonType });
+    setContactLoading(true);
+    try {
+      const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`, {
+        headers: { Authorization: `Bearer ${savedPw.current}` },
+      });
+      if (!res.ok) throw new Error('Failed to load');
+      const contact: StudentContact = await res.json();
+      setContactCache(prev => ({ ...prev, [studentId]: contact }));
+      setModal(m => m ? { ...m, student: contact } : null);
+    } catch {
+      // modal already open with name; leave contact fields blank
+    } finally {
+      setContactLoading(false);
+    }
+  }
+
   // ── renderLessonsSlotCard ────────────────────────────────────────────────────
   function renderLessonsSlotCard(slot: Slot, date: Date) {
     const dropId = `${isoDate(date)}__${slot.id}`;
@@ -917,17 +949,35 @@ export default function SchedulePage() {
               <button className="modal-close" onClick={() => setModal(null)}>✕</button>
             </div>
             <div className="modal-body">
-              {modal.student.parentName && (
-                <div className="modal-row">
-                  <span className="modal-label">Parent</span>
-                  <span>{modal.student.parentName}</span>
-                </div>
-              )}
-              {modal.student.parentEmail && (
-                <div className="modal-row">
-                  <span className="modal-label">Email</span>
-                  <a href={`mailto:${modal.student.parentEmail}`}>{modal.student.parentEmail}</a>
-                </div>
+              {contactLoading ? (
+                <div className="modal-row" style={{ color: '#94a3b8', fontStyle: 'italic' }}>Loading contact info…</div>
+              ) : (
+                <>
+                  {modal.student.parentName && (
+                    <div className="modal-row">
+                      <span className="modal-label">Parent</span>
+                      <span>{modal.student.parentName}</span>
+                    </div>
+                  )}
+                  {modal.student.parentEmail && (
+                    <div className="modal-row">
+                      <span className="modal-label">Email</span>
+                      <a href={`mailto:${modal.student.parentEmail}`}>{modal.student.parentEmail}</a>
+                    </div>
+                  )}
+                  {modal.student.parentContact && (
+                    <div className="modal-row">
+                      <span className="modal-label">Parent #</span>
+                      <a href={`tel:${modal.student.parentContact}`}>{modal.student.parentContact}</a>
+                    </div>
+                  )}
+                  {modal.student.studentContact && (
+                    <div className="modal-row">
+                      <span className="modal-label">Student #</span>
+                      <a href={`tel:${modal.student.studentContact}`}>{modal.student.studentContact}</a>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
