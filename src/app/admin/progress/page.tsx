@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import topicLists from '@/lib/topic-lists.json';
+import { mergeTopics } from '@/lib/topicMerge';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 type Subject = 'Math' | 'E Math' | 'A Math' | 'H2 Math';
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 interface LessonCard {
   id: string;
@@ -36,23 +38,65 @@ interface Exam {
   subject: string;
   examDate: string;
   testedTopics: string;
+  examNotes: string;
 }
-
-const EXAM_TYPES = ['WA1', 'WA2', 'WA3', 'EOY'] as const;
 
 interface FormState {
   homeworkCompletion: string;
-  selectedTopics: Record<string, string[]>; // subject → topics[]
-  masteryRatings: Record<string, Record<string, number>>; // subject → topic → rating
+  selectedTopics: Record<string, string[]>;
+  masteryRatings: Record<string, Record<string, number>>;
   homeworkAssigned: string;
   mood: string;
   lessonNotes: string;
 }
 
+const EXAM_TYPES = ['WA1', 'WA2', 'WA3', 'EOY'] as const;
 const MOOD_OPTIONS = ['😄 Engaged', '🙂 Fine', '😐 Flat', '😟 Struggling', '😤 Frustrated'];
 const HW_OPTIONS = ['Fully Done', 'Partially Done', 'Not Done', 'Not Set'] as const;
 
-// ─── Cookie helpers ────────────────────────────────────────────────────────────
+// ── Autosave hook ─────────────────────────────────────────────────────────────
+
+function useAutosave(saveFn: (fields: Record<string, any>) => Promise<void>) {
+  const [status, setStatus] = useState<SaveStatus>('idle');
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingRef = useRef<Record<string, any> | null>(null);
+  const inFlightRef = useRef(false);
+  const saveFnRef = useRef(saveFn);
+  saveFnRef.current = saveFn;
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
+
+  async function doSave(fields: Record<string, any>): Promise<void> {
+    if (inFlightRef.current) { pendingRef.current = fields; return; }
+    inFlightRef.current = true;
+    setStatus('saving');
+    try {
+      await saveFnRef.current(fields);
+      setSavedAt(new Date());
+      setStatus('saved');
+    } catch {
+      setStatus('error');
+      inFlightRef.current = false;
+      return;
+    }
+    inFlightRef.current = false;
+    const pending = pendingRef.current;
+    if (pending) { pendingRef.current = null; await doSave(pending); }
+  }
+
+  function schedule(fields: Record<string, any>, immediate = false) {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (immediate) { doSave(fields); }
+    else { timerRef.current = setTimeout(() => doSave(fields), 400); }
+  }
+
+  return { status, savedAt, schedule };
+}
+
+// ── Cookie helpers ────────────────────────────────────────────────────────────
 
 function getCookie(name: string): string {
   if (typeof document === 'undefined') return '';
@@ -65,7 +109,7 @@ function setCookie(name: string, value: string, days: number) {
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ── Date helpers ──────────────────────────────────────────────────────────────
 
 function todayISO(): string {
   const d = new Date();
@@ -89,8 +133,14 @@ function formatShortDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
+function formatSavedAt(d: Date): string {
+  return d.toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+// ── Topic + serialization helpers ─────────────────────────────────────────────
+
 function topicsForSubject(subject: string): string[] {
-  return (topicLists as Record<string, string[]>)[subject] ?? [];
+  return mergeTopics((topicLists as Record<string, string[]>)[subject] ?? []);
 }
 
 function hasTopics(subject: string): boolean {
@@ -104,9 +154,9 @@ function parseTopicsCovered(raw: string): Record<string, string[]> {
     const colon = entry.indexOf(':');
     if (colon === -1) return;
     const subj = entry.slice(0, colon).trim();
-    const topic = entry.slice(colon + 1).trim();
+    const base = entry.slice(colon + 1).trim().replace(/\s*\([^)]*\)\s*$/, '').trim();
     if (!result[subj]) result[subj] = [];
-    result[subj].push(topic);
+    if (!result[subj].includes(base)) result[subj].push(base);
   });
   return result;
 }
@@ -124,7 +174,8 @@ function parseMasteryRatings(raw: string): Record<string, Record<string, number>
     const result: Record<string, Record<string, number>> = {};
     arr.forEach(({ subject, topic, rating }) => {
       if (!result[subject]) result[subject] = {};
-      result[subject][topic] = rating;
+      const base = topic.replace(/\s*\([^)]*\)\s*$/, '').trim();
+      result[subject][base] = rating;
     });
     return result;
   } catch { return {}; }
@@ -133,70 +184,67 @@ function parseMasteryRatings(raw: string): Record<string, Record<string, number>
 function serializeMasteryRatings(ratings: Record<string, Record<string, number>>): string {
   const arr: MasteryRating[] = [];
   Object.entries(ratings).forEach(([subject, topics]) => {
-    Object.entries(topics).forEach(([topic, rating]) => {
-      arr.push({ subject, topic, rating });
-    });
+    Object.entries(topics).forEach(([topic, rating]) => arr.push({ subject, topic, rating }));
   });
   return JSON.stringify(arr);
 }
 
-// ─── LogForm component ─────────────────────────────────────────────────────────
+// ── SaveIndicator ─────────────────────────────────────────────────────────────
+
+function SaveIndicator({
+  status, savedAt, onRetry,
+}: { status: SaveStatus; savedAt: Date | null; onRetry?: () => void }) {
+  if (status === 'idle') return null;
+  if (status === 'saving') return (
+    <span className="font-mono text-[11px] text-neutral-400 animate-pulse">Saving…</span>
+  );
+  if (status === 'saved' && savedAt) return (
+    <span className="font-mono text-[11px] text-neutral-400">Saved {formatSavedAt(savedAt)}</span>
+  );
+  if (status === 'error') return (
+    <button onClick={onRetry} className="font-mono text-[11px] text-red-500 underline">
+      Not saved — retry
+    </button>
+  );
+  return null;
+}
+
+// ── TopicDropdown (lesson log) ────────────────────────────────────────────────
 
 function TopicDropdown({
-  subject,
-  topics,
-  selected,
-  onToggle,
-}: {
-  subject: string;
-  topics: string[];
-  selected: string[];
-  onToggle: (topic: string) => void;
-}) {
+  subject, topics, selected, onToggle,
+}: { subject: string; topics: string[]; selected: string[]; onToggle: (t: string) => void }) {
   const [open, setOpen] = useState(false);
-  const label = selected.length === 0
-    ? 'None selected'
-    : selected.length === 1
-      ? selected[0]
-      : `${selected.length} topics`;
+  const label = selected.length === 0 ? 'None' : selected.length === 1 ? selected[0] : `${selected.length} topics`;
 
   return (
-    <div className="mb-2">
-      {/* Trigger */}
+    <div className="mb-1.5">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3 min-h-[48px] active:bg-slate-50"
+        className="w-full flex items-center justify-between bg-white border border-neutral-200 rounded-md px-3 py-2.5 min-h-[44px] active:bg-neutral-50"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs font-semibold text-slate-500">{subject}</span>
-          <span className="text-sm text-slate-800 truncate">{label}</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 shrink-0">{subject}</span>
+          <span className="text-[13px] text-neutral-700 truncate">{label}</span>
         </div>
-        <svg
-          className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor"
-        >
+        <svg className={`w-4 h-4 text-neutral-300 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
-      {/* Dropdown list */}
       {open && (
-        <div className="mt-1 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="mt-0.5 bg-white border border-neutral-200 rounded-md overflow-hidden">
           {topics.map((topic, i) => {
             const checked = selected.includes(topic);
             return (
-              <button
-                key={topic}
-                onClick={() => onToggle(topic)}
-                className={`w-full flex items-center justify-between px-4 py-3 min-h-[48px] active:bg-slate-50 text-left ${
-                  i > 0 ? 'border-t border-slate-100' : ''
-                } ${checked ? 'bg-indigo-50' : ''}`}
-              >
-                <span className={`text-sm ${checked ? 'text-indigo-700 font-medium' : 'text-slate-700'}`}>
-                  {topic}
-                </span>
+              <button key={topic} onClick={() => onToggle(topic)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 min-h-[44px] active:bg-neutral-50 text-left ${
+                  i > 0 ? 'border-t border-neutral-100' : ''
+                } ${checked ? 'bg-neutral-50' : ''}`}>
+                <span className={`text-[13px] ${checked ? 'text-neutral-900 font-medium' : 'text-neutral-600'}`}>{topic}</span>
                 {checked && (
-                  <svg className="w-4 h-4 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-neutral-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                 )}
@@ -209,24 +257,64 @@ function TopicDropdown({
   );
 }
 
-// ─── ExamForm (add / edit inline) ─────────────────────────────────────────────
+// ── TopicGrid (exam form) ─────────────────────────────────────────────────────
+
+function TopicGrid({
+  topics, selected, onToggle,
+}: { topics: string[]; selected: string[]; onToggle: (t: string) => void }) {
+  const [filter, setFilter] = useState('');
+  const showFilter = topics.length > 15;
+  const visible = filter ? topics.filter(t => t.toLowerCase().includes(filter.toLowerCase())) : topics;
+
+  return (
+    <div>
+      {showFilter && (
+        <input type="text" value={filter} onChange={e => setFilter(e.target.value)}
+          placeholder="Filter topics…"
+          className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] mb-2 focus:outline-none focus:ring-1 focus:ring-neutral-900" />
+      )}
+      <div className="grid grid-cols-2 gap-1">
+        {visible.map(topic => {
+          const checked = selected.includes(topic);
+          return (
+            <button key={topic} onClick={() => onToggle(topic)}
+              className={`flex items-center gap-1.5 px-2.5 py-2 rounded-md text-left border min-h-[40px] transition-colors ${
+                checked
+                  ? 'bg-neutral-950 text-white border-neutral-950'
+                  : 'bg-white border-neutral-200 text-neutral-700 active:bg-neutral-50'
+              }`}>
+              <span className={`w-3 h-3 rounded-sm border shrink-0 flex items-center justify-center text-[8px] leading-none ${
+                checked ? 'border-neutral-600 text-white' : 'border-neutral-300'
+              }`}>
+                {checked && '✓'}
+              </span>
+              <span className="text-[13px] truncate">{topic}</span>
+            </button>
+          );
+        })}
+      </div>
+      {visible.length === 0 && (
+        <p className="text-[13px] text-neutral-400 text-center py-3">No topics match</p>
+      )}
+    </div>
+  );
+}
+
+// ── ExamForm ──────────────────────────────────────────────────────────────────
 
 function ExamForm({
-  initial,
-  subjects,
-  pw,
-  onSave,
-  onCancel,
-  onUnsavedChange,
+  initial, subjects, studentId, pw, onCreated, onUpdated, onDeleted, onClose,
 }: {
   initial?: Exam;
   subjects: Subject[];
+  studentId: string;
   pw: string;
-  onSave: (data: Omit<Exam, 'id'>) => Promise<void>;
-  onCancel: () => void;
-  onUnsavedChange?: (dirty: boolean) => void;
+  onCreated: (exam: Exam) => void;
+  onUpdated: (exam: Exam) => void;
+  onDeleted: (id: string) => void;
+  onClose: () => void;
 }) {
-  const [examType, setExamType] = useState<string>(initial?.examType ?? 'WA1');
+  const [examType, setExamType] = useState(initial?.examType ?? 'WA1');
   const [subject, setSubject] = useState<Subject | ''>(
     (initial?.subject as Subject) ?? (subjects.length === 1 ? subjects[0] : '')
   );
@@ -234,52 +322,143 @@ function ExamForm({
   const [selectedTopics, setSelectedTopics] = useState<string[]>(
     initial?.testedTopics ? initial.testedTopics.split(',').map(s => s.trim()).filter(Boolean) : []
   );
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [examNotes, setExamNotes] = useState(initial?.examNotes ?? '');
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+
+  const examIdRef = useRef<string | null>(initial?.id ?? null);
+  const [examId, setExamId] = useState<string | null>(initial?.id ?? null);
+  const isCreated = examId !== null;
 
   const topics = subject ? topicsForSubject(subject) : [];
 
-  // Notify parent when form becomes dirty
+  // Auto-create when single-subject form opens (subject already set, no initial)
   useEffect(() => {
-    const dirty = !!(examDate || selectedTopics.length > 0);
-    onUnsavedChange?.(dirty);
-    return () => onUnsavedChange?.(false);
-  }, [examDate, selectedTopics.length]);
+    if (!initial && subject && !examIdRef.current) {
+      doCreate(examType, subject);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleSubjectChange(s: Subject) {
-    setSubject(s);
-    setSelectedTopics([]);
+  const saveFn = useCallback(async (fields: Record<string, any>) => {
+    const id = examIdRef.current;
+    if (!id) return;
+    const res = await fetch(`/api/admin/progress/exams/${id}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(fields),
+    });
+    if (!res.ok) throw new Error();
+    const updated = await res.json();
+    onUpdated(updated);
+  }, [pw, onUpdated]);
+
+  const { status: saveStatus, savedAt, schedule } = useAutosave(saveFn);
+
+  function buildExamFields(overrides: Partial<{
+    examType: string; subject: string; examDate: string;
+    selectedTopics: string[]; examNotes: string;
+  }> = {}): Record<string, any> {
+    return {
+      examType: overrides.examType ?? examType,
+      subject: overrides.subject ?? subject,
+      examDate: (overrides.examDate ?? examDate) || null,
+      testedTopics: (overrides.selectedTopics ?? selectedTopics).join(', '),
+      examNotes: overrides.examNotes ?? examNotes,
+    };
   }
 
-  function toggleTopic(topic: string) {
-    setSelectedTopics(ts =>
-      ts.includes(topic) ? ts.filter(t => t !== topic) : [...ts, topic]
-    );
-  }
-
-  async function handleSave() {
-    if (!subject) { setError('Select a subject'); return; }
-    if (!examDate) { setError('Select a date'); return; }
-    setSaving(true);
-    setError('');
+  async function doCreate(type: string, subj: string) {
+    if (examIdRef.current) return;
+    setCreating(true);
+    setCreateError('');
     try {
-      await onSave({ examType, subject, examDate, testedTopics: selectedTopics.join(', ') });
+      const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ examType: type, subject: subj }),
+      });
+      if (!res.ok) throw new Error();
+      const created: Exam = await res.json();
+      examIdRef.current = created.id;
+      setExamId(created.id);
+      onCreated(created);
     } catch {
-      setError('Save failed');
-      setSaving(false);
+      setCreateError('Failed to create — try again');
+    } finally {
+      setCreating(false);
     }
   }
 
+  function handleExamTypeChange(t: string) {
+    setExamType(t);
+    if (isCreated) schedule(buildExamFields({ examType: t }), true);
+  }
+
+  async function handleSubjectChange(s: Subject) {
+    setSubject(s);
+    setSelectedTopics([]);
+    if (!isCreated) {
+      await doCreate(examType, s);
+    } else {
+      schedule(buildExamFields({ subject: s, selectedTopics: [] }), true);
+    }
+  }
+
+  function toggleTopic(topic: string) {
+    const next = selectedTopics.includes(topic)
+      ? selectedTopics.filter(t => t !== topic)
+      : [...selectedTopics, topic];
+    setSelectedTopics(next);
+    if (isCreated) schedule(buildExamFields({ selectedTopics: next }), true);
+  }
+
+  function handleDateChange(v: string) {
+    setExamDate(v);
+    if (isCreated) schedule(buildExamFields({ examDate: v }), true);
+  }
+
+  async function handleDelete() {
+    const id = examIdRef.current;
+    if (!id) { onClose(); return; }
+    await fetch(`/api/admin/progress/exams/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${pw}` },
+    });
+    onDeleted(id);
+  }
+
   return (
-    <div className="bg-white border border-indigo-200 rounded-xl p-3 space-y-3">
+    <div className="bg-white border border-neutral-200 rounded-xl p-3 space-y-3">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+            {initial ? 'Edit Exam' : 'Add Exam'}
+          </span>
+          <SaveIndicator status={saveStatus} savedAt={savedAt}
+            onRetry={() => isCreated && schedule(buildExamFields(), true)} />
+        </div>
+        {deleteConfirm ? (
+          <div className="flex items-center gap-2">
+            <button onClick={handleDelete} className="text-[13px] text-red-500 font-medium">Delete</button>
+            <button onClick={() => setDeleteConfirm(false)} className="text-[13px] text-neutral-400">cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setDeleteConfirm(true)} className="text-neutral-300 text-xl leading-none px-1">×</button>
+        )}
+      </div>
+
       {/* Exam type */}
       <div>
-        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Exam Type</div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Type</div>
+        <div className="flex gap-1.5 flex-wrap">
           {EXAM_TYPES.map(t => (
-            <button key={t} onClick={() => setExamType(t)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium border min-h-[44px] transition-colors ${
-                examType === t ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700 active:bg-slate-100'
+            <button key={t} onClick={() => handleExamTypeChange(t)}
+              className={`px-3 py-2 rounded-md text-[13px] font-medium border min-h-[40px] transition-colors ${
+                examType === t
+                  ? 'bg-neutral-950 border-neutral-950 text-white'
+                  : 'bg-white border-neutral-200 text-neutral-700 active:bg-neutral-50'
               }`}>
               {t}
             </button>
@@ -287,15 +466,17 @@ function ExamForm({
         </div>
       </div>
 
-      {/* Subject */}
+      {/* Subject (multi-subject only) */}
       {subjects.length > 1 && (
         <div>
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Subject</div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Subject</div>
+          <div className="flex gap-1.5 flex-wrap">
             {subjects.map(s => (
-              <button key={s} onClick={() => handleSubjectChange(s as Subject)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium border min-h-[44px] transition-colors ${
-                  subject === s ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700 active:bg-slate-100'
+              <button key={s} onClick={() => handleSubjectChange(s)}
+                className={`px-3 py-2 rounded-md text-[13px] font-medium border min-h-[40px] transition-colors ${
+                  subject === s
+                    ? 'bg-neutral-950 border-neutral-950 text-white'
+                    : 'bg-white border-neutral-200 text-neutral-700 active:bg-neutral-50'
                 }`}>
                 {s}
               </button>
@@ -304,58 +485,94 @@ function ExamForm({
         </div>
       )}
 
-      {/* Date */}
-      <div>
-        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Exam Date</div>
-        <input type="date" value={examDate} onChange={e => setExamDate(e.target.value)}
-          className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-      </div>
-
-      {/* Topics */}
-      {subject && topics.length > 0 && (
-        <div>
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Tested Topics</div>
-          <TopicDropdown subject={subject} topics={topics} selected={selectedTopics} onToggle={toggleTopic} />
-        </div>
+      {/* Add button (multi-subject: fires POST once subject is picked via handleSubjectChange) */}
+      {!isCreated && subjects.length > 1 && !creating && !createError && (
+        <p className="text-[13px] text-neutral-400 italic">Select a subject to begin</p>
       )}
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {/* For single-subject, show "Creating…" while POST is in flight */}
+      {creating && <p className="text-[13px] text-neutral-400">Creating…</p>}
+      {createError && <p className="text-[13px] text-red-500">{createError}</p>}
 
-      <div className="flex gap-2 pt-1">
-        <button onClick={onCancel}
-          className="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-600 bg-white active:bg-slate-50 min-h-[44px]">
-          Cancel
-        </button>
-        <button onClick={handleSave} disabled={saving}
-          className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold disabled:opacity-60 active:bg-indigo-700 min-h-[44px]">
-          {saving ? 'Saving…' : initial ? 'Update' : 'Add Exam'}
-        </button>
-      </div>
+      {/* Fields shown only after exam is created */}
+      {isCreated && (
+        <>
+          {/* Tested Topics */}
+          {subject && topics.length > 0 && (
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
+                Tested Topics
+                {selectedTopics.length > 0 && (
+                  <span className="ml-1 normal-case font-normal">({selectedTopics.length})</span>
+                )}
+              </div>
+              <TopicGrid topics={topics} selected={selectedTopics} onToggle={toggleTopic} />
+            </div>
+          )}
+
+          {/* Exam Notes */}
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Exam Notes</div>
+            <textarea
+              value={examNotes}
+              onChange={e => {
+                const v = e.target.value;
+                setExamNotes(v);
+                schedule(buildExamFields({ examNotes: v }));
+              }}
+              placeholder="e.g. Focus on integration by parts…"
+              rows={2}
+              className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] resize-none focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white"
+              style={{ minHeight: '52px' }}
+              onInput={e => {
+                const el = e.currentTarget;
+                el.style.height = 'auto';
+                el.style.height = el.scrollHeight + 'px';
+              }}
+            />
+          </div>
+
+          {/* Exam Date (optional) */}
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
+              Exam Date <span className="normal-case font-normal text-neutral-400">(optional)</span>
+            </div>
+            <input type="date" value={examDate} onChange={e => handleDateChange(e.target.value)}
+              className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900" />
+          </div>
+
+          <button onClick={onClose}
+            className="w-full py-2.5 border border-neutral-200 rounded-md text-[13px] text-neutral-600 bg-white active:bg-neutral-50 min-h-[44px]">
+            Done
+          </button>
+        </>
+      )}
     </div>
   );
 }
 
-// ─── UpcomingExams accordion ───────────────────────────────────────────────────
+// ── UpcomingExams ─────────────────────────────────────────────────────────────
+
+function sortExams(exams: Exam[], today: string): Exam[] {
+  return [...exams]
+    .filter(e => !e.examDate || e.examDate >= today)
+    .sort((a, b) => {
+      if (!a.examDate && !b.examDate) return 0;
+      if (!a.examDate) return 1;
+      if (!b.examDate) return -1;
+      return a.examDate.localeCompare(b.examDate);
+    });
+}
 
 function UpcomingExams({
-  studentId,
-  subjects,
-  pw,
-  onUnsavedChange,
-}: {
-  studentId: string;
-  subjects: Subject[];
-  pw: string;
-  onUnsavedChange: (dirty: boolean) => void;
-}) {
+  studentId, subjects, pw,
+}: { studentId: string; subjects: Subject[]; pw: string }) {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-
   const today = todayISO();
 
   async function loadExams() {
@@ -365,10 +582,7 @@ function UpcomingExams({
         headers: { Authorization: `Bearer ${pw}` },
       });
       const json = await res.json();
-      const upcoming = (json.exams ?? [])
-        .filter((e: Exam) => e.examDate >= today)
-        .sort((a: Exam, b: Exam) => a.examDate.localeCompare(b.examDate));
-      setExams(upcoming);
+      setExams(sortExams(json.exams ?? [], today));
     } finally {
       setLoading(false);
       setLoaded(true);
@@ -380,130 +594,77 @@ function UpcomingExams({
     setOpen(o => !o);
   }
 
-  async function handleAdd(data: Omit<Exam, 'id'>) {
-    const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('Failed');
-    const created = await res.json();
-    setExams(prev =>
-      [...prev, created]
-        .filter(e => e.examDate >= today)
-        .sort((a, b) => a.examDate.localeCompare(b.examDate))
-    );
-    setAddOpen(false);
+  function handleCreated(exam: Exam) {
+    setExams(prev => sortExams([...prev.filter(e => e.id !== exam.id), exam], today));
   }
 
-  async function handleEdit(id: string, data: Omit<Exam, 'id'>) {
-    const res = await fetch(`/api/admin/progress/exams/${id}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error('Failed');
-    const updated = await res.json();
-    setExams(prev =>
-      prev.map(e => e.id === id ? { ...e, ...updated } : e)
-        .filter(e => e.examDate >= today)
-        .sort((a, b) => a.examDate.localeCompare(b.examDate))
-    );
-    setEditingId(null);
+  function handleUpdated(exam: Exam) {
+    setExams(prev => sortExams(prev.map(e => e.id === exam.id ? { ...e, ...exam } : e), today));
   }
 
-  async function handleDelete(id: string) {
-    await fetch(`/api/admin/progress/exams/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${pw}` },
-    });
+  function handleDeleted(id: string) {
     setExams(prev => prev.filter(e => e.id !== id));
-    setDeleteConfirmId(null);
+    if (editingId === id) setEditingId(null);
+    if (addOpen) setAddOpen(false);
   }
 
   const headerLabel = !loaded
     ? 'Upcoming Exams'
-    : exams.length === 0
-      ? 'Upcoming Exams (none)'
-      : `Upcoming Exams (${exams.length})`;
+    : exams.length === 0 ? 'Upcoming Exams' : `Upcoming Exams (${exams.length})`;
 
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-      {/* Accordion header */}
-      <button
-        onClick={handleToggle}
-        className="w-full flex items-center justify-between px-4 py-3 min-h-[48px] active:bg-slate-50"
-      >
-        <span className="text-sm font-medium text-slate-700">{headerLabel}</span>
-        <svg className={`w-4 h-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
+    <div className="border border-neutral-200 rounded-xl overflow-hidden bg-white">
+      <button onClick={handleToggle}
+        className="w-full flex items-center justify-between px-4 py-3 min-h-[48px] active:bg-neutral-50">
+        <span className="text-[13px] font-medium text-neutral-700">{headerLabel}</span>
+        <svg className={`w-4 h-4 text-neutral-300 transition-transform ${open ? 'rotate-180' : ''}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {open && (
-        <div className="border-t border-slate-100 bg-slate-50 px-3 py-3 space-y-2">
-          {loading && <p className="text-sm text-slate-400 py-2 text-center">Loading…</p>}
+        <div className="border-t border-neutral-100 bg-neutral-50 px-3 py-3 space-y-2">
+          {loading && <p className="text-[13px] text-neutral-400 py-2 text-center">Loading…</p>}
 
-          {/* Exam rows */}
           {!loading && exams.map(exam => (
             <div key={exam.id}>
               {editingId === exam.id ? (
                 <ExamForm
                   initial={exam}
                   subjects={subjects}
+                  studentId={studentId}
                   pw={pw}
-                  onSave={data => handleEdit(exam.id, data)}
-                  onCancel={() => setEditingId(null)}
-                  onUnsavedChange={onUnsavedChange}
+                  onCreated={handleCreated}
+                  onUpdated={handleUpdated}
+                  onDeleted={handleDeleted}
+                  onClose={() => setEditingId(null)}
                 />
               ) : (
-                <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2.5 min-h-[48px]">
-                  <button
-                    className="flex-1 text-left min-w-0"
-                    onClick={() => { setEditingId(exam.id); setAddOpen(false); }}
-                  >
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded">{exam.examType}</span>
-                      <span className="text-xs bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">{exam.subject}</span>
-                      <span className="text-xs text-slate-500">{formatShortDate(exam.examDate)}</span>
-                      {exam.testedTopics && (
-                        <span className="text-xs text-slate-400">
-                          {exam.testedTopics.split(',').map(s => s.trim()).filter(Boolean).length} topics
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                  {deleteConfirmId === exam.id ? (
-                    <div className="flex gap-1 shrink-0">
-                      <button onClick={() => setDeleteConfirmId(null)}
-                        className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 min-h-[36px]">
-                        Cancel
-                      </button>
-                      <button onClick={() => handleDelete(exam.id)}
-                        className="text-xs px-2.5 py-1.5 rounded-lg bg-red-100 text-red-600 min-h-[36px]">
-                        Delete
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setDeleteConfirmId(exam.id)}
-                      className="text-slate-300 active:text-red-400 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg leading-none"
-                    >
-                      ×
-                    </button>
+                <button
+                  className="w-full flex items-center gap-2 bg-white border border-neutral-200 rounded-md px-3 py-2.5 min-h-[44px] text-left active:bg-neutral-50"
+                  onClick={() => { setEditingId(exam.id); setAddOpen(false); }}
+                >
+                  <span className="text-[11px] font-bold bg-neutral-100 text-neutral-700 px-1.5 py-0.5 rounded">{exam.examType}</span>
+                  <span className="text-[11px] bg-neutral-100 text-neutral-600 px-1.5 py-0.5 rounded">{exam.subject}</span>
+                  {exam.examDate
+                    ? <span className="text-[13px] text-neutral-500">{formatShortDate(exam.examDate)}</span>
+                    : <span className="text-[13px] text-neutral-400">No date</span>
+                  }
+                  {exam.testedTopics && (
+                    <span className="text-[13px] text-neutral-400 ml-auto shrink-0">
+                      {exam.testedTopics.split(',').filter(Boolean).length}T
+                    </span>
                   )}
-                </div>
+                </button>
               )}
             </div>
           ))}
 
-          {/* Add new exam */}
-          {!loading && !addOpen && (
+          {!loading && !addOpen && editingId === null && (
             <button
-              onClick={() => { setAddOpen(true); setEditingId(null); }}
-              className="w-full py-3 border border-dashed border-slate-300 rounded-lg text-sm text-slate-500 active:bg-white min-h-[48px]"
-            >
+              onClick={() => setAddOpen(true)}
+              className="w-full py-3 border border-dashed border-neutral-300 rounded-md text-[13px] text-neutral-400 active:bg-white min-h-[44px]">
               + Add Exam
             </button>
           )}
@@ -511,10 +672,12 @@ function UpcomingExams({
           {addOpen && (
             <ExamForm
               subjects={subjects}
+              studentId={studentId}
               pw={pw}
-              onSave={handleAdd}
-              onCancel={() => setAddOpen(false)}
-              onUnsavedChange={onUnsavedChange}
+              onCreated={exam => { handleCreated(exam); }}
+              onUpdated={handleUpdated}
+              onDeleted={id => { handleDeleted(id); setAddOpen(false); }}
+              onClose={() => setAddOpen(false)}
             />
           )}
         </div>
@@ -523,14 +686,15 @@ function UpcomingExams({
   );
 }
 
+// ── LogForm ───────────────────────────────────────────────────────────────────
+
 function LogForm({
-  lesson,
-  pw,
-  onSaved,
+  lesson, pw, onSaved, onStatusChange,
 }: {
   lesson: LessonCard;
   pw: string;
   onSaved: (updated: Partial<LessonCard>) => void;
+  onStatusChange: (status: SaveStatus, savedAt: Date | null) => void;
 }) {
   const [prevLesson, setPrevLesson] = useState<{ homeworkAssigned: string } | null>(null);
   const [form, setForm] = useState<FormState>(() => ({
@@ -541,105 +705,114 @@ function LogForm({
     mood: lesson.mood || '',
     lessonNotes: lesson.lessonNotes || '',
   }));
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [examUnsaved, setExamUnsaved] = useState(false);
+
+  const isFirstSaveRef = useRef(!lesson.progressLogged);
+  const onStatusChangeRef = useRef(onStatusChange);
+  onStatusChangeRef.current = onStatusChange;
 
   useEffect(() => {
     fetch(`/api/admin/progress/students/${lesson.studentId}/previous-lesson?before=${lesson.date}`, {
       headers: { Authorization: `Bearer ${pw}` },
-    })
-      .then(r => r.json())
-      .then(d => setPrevLesson(d.lesson))
-      .catch(() => {});
+    }).then(r => r.json()).then(d => setPrevLesson(d.lesson)).catch(() => {});
   }, [lesson.studentId, lesson.date, pw]);
+
+  function buildFields(f: FormState): Record<string, any> {
+    const fields: Record<string, any> = {
+      'Homework Completion': f.homeworkCompletion,
+      'Topics Covered': serializeTopicsCovered(f.selectedTopics),
+      'Mastery Ratings': serializeMasteryRatings(f.masteryRatings),
+      'Homework Assigned': f.homeworkAssigned,
+      'Mood': f.mood,
+      'Lesson Notes': f.lessonNotes,
+    };
+    if (isFirstSaveRef.current) fields['Progress Logged'] = true;
+    return fields;
+  }
+
+  const saveFn = useCallback(async (fields: Record<string, any>) => {
+    const res = await fetch(`/api/admin/progress/lessons?id=${lesson.id}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields }),
+    });
+    if (!res.ok) throw new Error();
+    if (fields['Progress Logged']) isFirstSaveRef.current = false;
+    onSaved({
+      homeworkCompletion: fields['Homework Completion'],
+      topicsCovered: fields['Topics Covered'],
+      masteryRatings: fields['Mastery Ratings'],
+      homeworkAssigned: fields['Homework Assigned'],
+      mood: fields['Mood'],
+      lessonNotes: fields['Lesson Notes'],
+      progressLogged: true,
+    });
+  }, [lesson.id, pw, onSaved]);
+
+  const { status: saveStatus, savedAt, schedule } = useAutosave(saveFn);
+
+  useEffect(() => {
+    onStatusChangeRef.current(saveStatus, savedAt);
+  }, [saveStatus, savedAt]);
+
+  function updateForm(patch: Partial<FormState>, immediate = false) {
+    setForm(f => {
+      const next = { ...f, ...patch };
+      schedule(buildFields(next), immediate);
+      return next;
+    });
+  }
 
   function toggleTopic(subject: string, topic: string) {
     setForm(f => {
       const current = f.selectedTopics[subject] ?? [];
-      const next = current.includes(topic)
-        ? current.filter(t => t !== topic)
-        : [...current, topic];
-      const updated = { ...f.selectedTopics, [subject]: next };
-      // Remove mastery for deselected topics
+      const next = current.includes(topic) ? current.filter(t => t !== topic) : [...current, topic];
+      const updatedTopics = { ...f.selectedTopics, [subject]: next };
       const newRatings = { ...f.masteryRatings };
       if (!next.includes(topic) && newRatings[subject]) {
-        const subjectRatings = { ...newRatings[subject] };
-        delete subjectRatings[topic];
-        newRatings[subject] = subjectRatings;
+        const sub = { ...newRatings[subject] };
+        delete sub[topic];
+        newRatings[subject] = sub;
       }
-      return { ...f, selectedTopics: updated, masteryRatings: newRatings };
+      const nextForm = { ...f, selectedTopics: updatedTopics, masteryRatings: newRatings };
+      schedule(buildFields(nextForm), true);
+      return nextForm;
     });
   }
 
   function setRating(subject: string, topic: string, rating: number) {
-    setForm(f => ({
-      ...f,
-      masteryRatings: {
-        ...f.masteryRatings,
-        [subject]: { ...(f.masteryRatings[subject] ?? {}), [topic]: rating },
-      },
-    }));
-  }
-
-  async function handleSave() {
-    setSaving(true);
-    setError('');
-    try {
-      const fields: Record<string, any> = {
-        'Homework Completion': form.homeworkCompletion,
-        'Topics Covered': serializeTopicsCovered(form.selectedTopics),
-        'Mastery Ratings': serializeMasteryRatings(form.masteryRatings),
-        'Homework Assigned': form.homeworkAssigned,
-        'Mood': form.mood,
-        'Lesson Notes': form.lessonNotes,
-        'Progress Logged': true,
+    setForm(f => {
+      const nextForm = {
+        ...f,
+        masteryRatings: {
+          ...f.masteryRatings,
+          [subject]: { ...(f.masteryRatings[subject] ?? {}), [topic]: rating },
+        },
       };
-      const res = await fetch(`/api/admin/progress/lessons?id=${lesson.id}`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fields }),
-      });
-      if (!res.ok) throw new Error('Save failed');
-      onSaved({
-        homeworkCompletion: form.homeworkCompletion,
-        topicsCovered: fields['Topics Covered'],
-        masteryRatings: fields['Mastery Ratings'],
-        homeworkAssigned: form.homeworkAssigned,
-        mood: form.mood,
-        lessonNotes: form.lessonNotes,
-        progressLogged: true,
-      });
-    } catch (e: any) {
-      setError(e.message || 'Save failed');
-    } finally {
-      setSaving(false);
-    }
+      schedule(buildFields(nextForm), true);
+      return nextForm;
+    });
   }
 
   const subjects = lesson.subjects.filter(Boolean);
 
   return (
-    <div className="border-t border-slate-100 bg-slate-50 px-4 py-4 space-y-5">
+    <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-4 space-y-5">
 
       {/* 1. Last homework + completion */}
       <div>
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Last Homework</div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Last Homework</div>
         {prevLesson?.homeworkAssigned
-          ? <p className="text-sm text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-2 mb-2">{prevLesson.homeworkAssigned}</p>
-          : <p className="text-sm text-slate-400 italic mb-2">No previous homework recorded</p>
+          ? <p className="text-[13px] text-neutral-700 bg-white border border-neutral-200 rounded-md px-3 py-2 mb-2">{prevLesson.homeworkAssigned}</p>
+          : <p className="text-[13px] text-neutral-400 italic mb-2">No previous homework recorded</p>
         }
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {HW_OPTIONS.map(opt => (
-            <button
-              key={opt}
-              onClick={() => setForm(f => ({ ...f, homeworkCompletion: opt }))}
-              className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors min-h-[44px] ${
+            <button key={opt} onClick={() => updateForm({ homeworkCompletion: opt }, true)}
+              className={`px-3 py-2 rounded-md text-[13px] font-medium border transition-colors min-h-[40px] ${
                 form.homeworkCompletion === opt
-                  ? 'bg-indigo-600 border-indigo-600 text-white'
-                  : 'bg-white border-slate-200 text-slate-700 active:bg-slate-50'
-              }`}
-            >
+                  ? 'bg-neutral-950 border-neutral-950 text-white'
+                  : 'bg-white border-neutral-200 text-neutral-700 active:bg-neutral-50'
+              }`}>
               {opt}
             </button>
           ))}
@@ -648,26 +821,23 @@ function LogForm({
 
       {/* 2. Topics covered */}
       <div>
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Topics Covered</div>
-        {subjects.length === 0 && (
-          <p className="text-sm text-slate-400 italic">No subjects assigned</p>
-        )}
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Topics Covered</div>
+        {subjects.length === 0 && <p className="text-[13px] text-neutral-400 italic">No subjects assigned</p>}
         {subjects.map(subj => {
           const topics = topicsForSubject(subj);
-          if (!hasTopics(subj)) {
+          if (topics.length === 0) {
             return (
-              <div key={subj} className="mb-2">
-                <p className="text-xs text-slate-400 italic">{subj}: topics coming soon — use Lesson Notes</p>
+              <div key={subj} className="mb-1.5">
+                <p className="text-[13px] text-neutral-400 italic">{subj}: topics coming soon — use Lesson Notes</p>
               </div>
             );
           }
-          const selected = form.selectedTopics[subj] ?? [];
           return (
             <TopicDropdown
               key={subj}
               subject={subj}
               topics={topics}
-              selected={selected}
+              selected={form.selectedTopics[subj] ?? []}
               onToggle={(topic) => toggleTopic(subj, topic)}
             />
           );
@@ -677,34 +847,31 @@ function LogForm({
       {/* 3. Mastery */}
       {subjects.some(s => hasTopics(s)) && (
         <div>
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Mastery</div>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-2">Mastery</div>
           {subjects.map(subj => {
             const selected = form.selectedTopics[subj] ?? [];
             if (!hasTopics(subj) || selected.length === 0) return null;
             return (
               <div key={subj} className="mb-3">
-                <div className="text-xs font-medium text-slate-500 mb-1">{subj}</div>
+                {subjects.length > 1 && (
+                  <div className="text-[11px] font-semibold text-neutral-400 mb-1.5">{subj}</div>
+                )}
                 <div className="space-y-2">
                   {selected.map(topic => {
                     const current = form.masteryRatings[subj]?.[topic] ?? 0;
                     return (
                       <div key={topic} className="flex items-center gap-2">
-                        <span className="text-xs text-slate-600 flex-1 min-w-0 truncate">{topic}</span>
+                        <span className="text-[13px] text-neutral-600 flex-1 min-w-0 truncate">{topic}</span>
                         <div className="flex gap-1 shrink-0">
                           {[1, 2, 3, 4, 5].map(n => (
-                            <button
-                              key={n}
-                              onClick={() => setRating(subj, topic, n)}
-                              className={`w-9 h-9 rounded-full text-sm font-bold border transition-colors ${
+                            <button key={n} onClick={() => setRating(subj, topic, n)}
+                              className={`w-8 h-8 rounded-full text-[13px] font-bold border transition-colors ${
                                 current >= n
                                   ? n <= 2 ? 'bg-red-500 border-red-500 text-white'
                                     : n === 3 ? 'bg-yellow-400 border-yellow-400 text-white'
-                                    : 'bg-green-500 border-green-500 text-white'
-                                  : 'bg-white border-slate-200 text-slate-400'
-                              }`}
-                            >
-                              {n}
-                            </button>
+                                    : 'bg-emerald-500 border-emerald-500 text-white'
+                                  : 'bg-white border-neutral-200 text-neutral-400'
+                              }`}>{n}</button>
                           ))}
                         </div>
                       </div>
@@ -719,14 +886,21 @@ function LogForm({
 
       {/* 4. Homework assigned */}
       <div>
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Homework Assigned</div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Homework Assigned</div>
         <textarea
           value={form.homeworkAssigned}
-          onChange={e => setForm(f => ({ ...f, homeworkAssigned: e.target.value }))}
+          onChange={e => {
+            const v = e.target.value;
+            setForm(f => {
+              const next = { ...f, homeworkAssigned: v };
+              schedule(buildFields(next));
+              return next;
+            });
+          }}
           placeholder="e.g. Differentiation worksheet pg 3–5"
           rows={2}
-          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-          style={{ minHeight: '60px' }}
+          className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] resize-none focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white"
+          style={{ minHeight: '56px' }}
           onInput={e => {
             const el = e.currentTarget;
             el.style.height = 'auto';
@@ -737,18 +911,15 @@ function LogForm({
 
       {/* 5. Mood */}
       <div>
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Mood</div>
-        <div className="flex flex-wrap gap-2">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-2">Mood</div>
+        <div className="flex flex-wrap gap-1.5">
           {MOOD_OPTIONS.map(m => (
-            <button
-              key={m}
-              onClick={() => setForm(f => ({ ...f, mood: m }))}
-              className={`px-3 py-2 rounded-lg text-sm border transition-colors min-h-[44px] ${
+            <button key={m} onClick={() => updateForm({ mood: m }, true)}
+              className={`px-3 py-2 rounded-md text-[13px] border transition-colors min-h-[40px] ${
                 form.mood === m
-                  ? 'bg-indigo-600 border-indigo-600 text-white'
-                  : 'bg-white border-slate-200 text-slate-700 active:bg-slate-50'
-              }`}
-            >
+                  ? 'bg-neutral-950 border-neutral-950 text-white'
+                  : 'bg-white border-neutral-200 text-neutral-700 active:bg-neutral-50'
+              }`}>
               {m}
             </button>
           ))}
@@ -757,13 +928,20 @@ function LogForm({
 
       {/* 6. Lesson notes */}
       <div>
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Lesson Notes</div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Lesson Notes</div>
         <textarea
           value={form.lessonNotes}
-          onChange={e => setForm(f => ({ ...f, lessonNotes: e.target.value }))}
+          onChange={e => {
+            const v = e.target.value;
+            setForm(f => {
+              const next = { ...f, lessonNotes: v };
+              schedule(buildFields(next));
+              return next;
+            });
+          }}
           placeholder="Anything notable from today's lesson…"
           rows={3}
-          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+          className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] resize-none focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white"
           style={{ minHeight: '72px' }}
           onInput={e => {
             const el = e.currentTarget;
@@ -778,109 +956,98 @@ function LogForm({
         studentId={lesson.studentId}
         subjects={lesson.subjects.filter(Boolean) as Subject[]}
         pw={pw}
-        onUnsavedChange={setExamUnsaved}
       />
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
-      {examUnsaved && (
-        <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          ⚠ Exam form has unsaved changes — save or cancel it before saving progress.
+      {/* Retry if error */}
+      {saveStatus === 'error' && (
+        <p className="text-[13px] text-red-500 text-center">
+          Failed to save —{' '}
+          <button className="underline" onClick={() => schedule(buildFields(form), true)}>retry</button>
         </p>
       )}
-
-      {/* 8. Save */}
-      <button
-        onClick={handleSave}
-        disabled={saving || examUnsaved}
-        className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-40 active:bg-indigo-700 transition-colors"
-      >
-        {saving ? 'Saving…' : 'Save Progress'}
-      </button>
     </div>
   );
 }
 
-// ─── LessonCardRow ─────────────────────────────────────────────────────────────
+// ── LessonCardRow ─────────────────────────────────────────────────────────────
 
 function LessonCardRow({
-  lesson,
-  pw,
-  onUpdate,
-}: {
-  lesson: LessonCard;
-  pw: string;
-  onUpdate: (id: string, updated: Partial<LessonCard>) => void;
-}) {
+  lesson, pw, onUpdate,
+}: { lesson: LessonCard; pw: string; onUpdate: (id: string, updated: Partial<LessonCard>) => void }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [data, setData] = useState(lesson);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   function handleSaved(updated: Partial<LessonCard>) {
-    const next = { ...data, ...updated };
-    setData(next);
+    setData(d => ({ ...d, ...updated }));
     onUpdate(lesson.id, updated);
-    setOpen(false);
+  }
+
+  function handleStatusChange(status: SaveStatus, at: Date | null) {
+    setSaveStatus(status);
+    if (at) setSavedAt(at);
   }
 
   const subjectBadges = (data.subjects ?? []).filter(Boolean);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
       {/* Card header */}
       <div
-        className="flex items-start gap-3 px-4 py-3 active:bg-slate-50 cursor-pointer"
+        className="flex items-start gap-3 px-4 py-3 active:bg-neutral-50 cursor-pointer"
         onClick={() => setOpen(o => !o)}
       >
         {/* Status dot */}
-        <div className="mt-1 shrink-0">
-          {data.progressLogged
-            ? <span className="block w-3 h-3 rounded-full bg-green-500" title="Logged" />
-            : <span className="block w-3 h-3 rounded-full bg-slate-300" title="Not logged" />
-          }
+        <div className="mt-0.5 shrink-0 text-base leading-none">
+          <span className={data.progressLogged ? 'text-emerald-500' : 'text-neutral-300'}>●</span>
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              className="font-semibold text-slate-900 text-base hover:text-indigo-600 transition-colors"
+              className="font-semibold text-neutral-900 text-[15px] hover:underline"
               onClick={e => { e.stopPropagation(); router.push(`/admin/progress/student/${data.studentId}`); }}
             >
               {data.studentName || 'Unknown Student'}
             </button>
-            <span className="text-xs text-slate-400">{data.slotTime}</span>
+            <span className="text-[13px] text-neutral-400">{data.slotTime}</span>
+            {open && <SaveIndicator status={saveStatus} savedAt={savedAt} />}
           </div>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.level && (
-              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">{data.level}</span>
+              <span className="px-1.5 py-0.5 rounded-md text-[11px] font-medium bg-neutral-100 text-neutral-600">{data.level}</span>
             )}
             {subjectBadges.map(s => (
-              <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">{s}</span>
+              <span key={s} className="px-1.5 py-0.5 rounded-md text-[11px] font-medium bg-neutral-100 text-neutral-600">{s}</span>
             ))}
           </div>
         </div>
 
         {/* Chevron */}
-        <div className="shrink-0 text-slate-300 mt-1">
-          <svg className={`w-5 h-5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="shrink-0 text-neutral-300 mt-1">
+          <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
       </div>
 
-      {/* Inline form */}
       {open && (
         <LogForm
           lesson={data}
           pw={pw}
           onSaved={handleSaved}
+          onStatusChange={handleStatusChange}
         />
       )}
     </div>
   );
 }
 
-// ─── Main page ─────────────────────────────────────────────────────────────────
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ProgressPage() {
   const [password, setPassword] = useState('');
@@ -895,15 +1062,10 @@ export default function ProgressPage() {
   const [fetchError, setFetchError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const touchStartY = useRef(0);
-  const pullDistance = useRef(0);
 
-  // Check cookie on mount
   useEffect(() => {
     const pw = getCookie('progress_pw') || getCookie('admin_pw');
-    if (pw) {
-      savedPw.current = pw;
-      verifyAndLogin(pw);
-    }
+    if (pw) { savedPw.current = pw; verifyAndLogin(pw); }
   }, []);
 
   async function verifyAndLogin(pw: string) {
@@ -950,9 +1112,7 @@ export default function ProgressPage() {
   }, []);
 
   useEffect(() => {
-    if (authed && savedPw.current) {
-      fetchLessons(date, savedPw.current);
-    }
+    if (authed && savedPw.current) fetchLessons(date, savedPw.current);
   }, [authed, date, fetchLessons]);
 
   function updateLesson(id: string, updated: Partial<LessonCard>) {
@@ -966,25 +1126,15 @@ export default function ProgressPage() {
       const res = await fetch(`/api/admin/progress/lessons?date=${date}`, {
         headers: { Authorization: `Bearer ${savedPw.current}` },
       });
-      if (res.ok) {
-        const json = await res.json();
-        setLessons(json.lessons ?? []);
-      }
+      if (res.ok) setLessons((await res.json()).lessons ?? []);
     } finally {
       setRefreshing(false);
     }
   }
 
-  function onTouchStart(e: React.TouchEvent) {
-    touchStartY.current = e.touches[0].clientY;
-    pullDistance.current = 0;
-  }
-
+  function onTouchStart(e: React.TouchEvent) { touchStartY.current = e.touches[0].clientY; }
   function onTouchEnd(e: React.TouchEvent) {
-    const dy = e.changedTouches[0].clientY - touchStartY.current;
-    if (dy > 60 && window.scrollY === 0) {
-      triggerRefresh();
-    }
+    if (e.changedTouches[0].clientY - touchStartY.current > 60 && window.scrollY === 0) triggerRefresh();
   }
 
   const loggedCount = lessons.filter(l => l.progressLogged).length;
@@ -992,25 +1142,17 @@ export default function ProgressPage() {
   // ── Auth screen ──
   if (!authed) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <h1 className="text-lg font-semibold text-slate-900 mb-1">Student Progress</h1>
-          <p className="text-sm text-slate-500 mb-5">Enter admin password to continue.</p>
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-white rounded-2xl border border-neutral-200 p-6">
+          <h1 className="text-[15px] font-semibold text-neutral-900 mb-1">Student Progress</h1>
+          <p className="text-[13px] text-neutral-400 mb-5">Enter admin password to continue.</p>
           <form onSubmit={handleLogin} className="space-y-3">
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Password"
-              autoFocus
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-            {authError && <p className="text-sm text-red-500">{authError}</p>}
-            <button
-              type="submit"
-              disabled={authLoading}
-              className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl text-sm disabled:opacity-60"
-            >
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+              placeholder="Password" autoFocus
+              className="w-full border border-neutral-200 rounded-md px-4 py-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-neutral-900" />
+            {authError && <p className="text-[13px] text-red-500">{authError}</p>}
+            <button type="submit" disabled={authLoading}
+              className="w-full bg-neutral-950 text-white font-semibold py-3 rounded-md text-[13px] disabled:opacity-50">
               {authLoading ? 'Checking…' : 'Login'}
             </button>
           </form>
@@ -1021,53 +1163,48 @@ export default function ProgressPage() {
 
   // ── Main ──
   return (
-    <div className="min-h-screen bg-slate-50 pb-20" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      {/* Pull-to-refresh indicator */}
+    <div className="min-h-screen bg-neutral-50 pb-20" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {refreshing && (
         <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-2 pointer-events-none">
-          <div className="bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-md">
+          <div className="bg-neutral-900 text-white text-[11px] font-medium px-3 py-1 rounded-full">
             Refreshing…
           </div>
         </div>
       )}
-      {/* Sticky top bar */}
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-100 shadow-sm">
+
+      {/* Sticky header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-neutral-100">
         <div className="max-w-lg mx-auto px-4 pt-3 pb-2">
           {/* Row 1: back + title + counter */}
           <div className="flex items-center gap-2 mb-2">
-            <a href="/admin" className="text-slate-400 hover:text-slate-600 shrink-0 p-1 min-h-[36px] min-w-[36px] flex items-center justify-center">
+            <a href="/admin"
+              className="text-neutral-400 hover:text-neutral-600 shrink-0 p-1 min-h-[36px] min-w-[36px] flex items-center justify-center">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </a>
-            <span className="flex-1 text-base font-semibold text-slate-900">Progress</span>
-            <span className="shrink-0 text-sm font-semibold text-slate-600">
-              {loggedCount}<span className="text-slate-300"> / </span>{lessons.length}
+            <span className="flex-1 text-[15px] font-semibold text-neutral-900">Progress</span>
+            <span className="shrink-0 text-[13px] font-semibold text-neutral-600">
+              {loggedCount}<span className="text-neutral-300"> / </span>{lessons.length}
             </span>
           </div>
           {/* Row 2: date navigation */}
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setDate(d => addDays(d, -1))}
-              className="p-2 rounded-lg text-slate-500 active:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg"
-            >
+            <button onClick={() => setDate(d => addDays(d, -1))}
+              className="p-2 rounded-md text-neutral-400 active:bg-neutral-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg">
               ‹
             </button>
             <div className="flex-1 flex items-center justify-center gap-2">
-              <span className="text-sm font-medium text-slate-900">{formatDate(date)}</span>
+              <span className="text-[13px] font-medium text-neutral-900">{formatDate(date)}</span>
               {date !== todayISO() && (
-                <button
-                  onClick={() => setDate(todayISO())}
-                  className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full active:bg-indigo-100"
-                >
+                <button onClick={() => setDate(todayISO())}
+                  className="text-[11px] font-semibold text-neutral-600 bg-neutral-100 px-2 py-1 rounded-md active:bg-neutral-200">
                   Today
                 </button>
               )}
             </div>
-            <button
-              onClick={() => setDate(d => addDays(d, 1))}
-              className="p-2 rounded-lg text-slate-500 active:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg"
-            >
+            <button onClick={() => setDate(d => addDays(d, 1))}
+              className="p-2 rounded-md text-neutral-400 active:bg-neutral-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg">
               ›
             </button>
           </div>
@@ -1075,23 +1212,14 @@ export default function ProgressPage() {
       </div>
 
       {/* Lesson cards */}
-      <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
-        {loading && (
-          <div className="text-center text-slate-400 text-sm py-12">Loading…</div>
-        )}
-        {!loading && fetchError && (
-          <div className="text-center text-red-500 text-sm py-12">{fetchError}</div>
-        )}
+      <div className="max-w-lg mx-auto px-4 pt-4 space-y-2">
+        {loading && <div className="text-center text-[13px] text-neutral-400 py-12">Loading…</div>}
+        {!loading && fetchError && <div className="text-center text-[13px] text-red-500 py-12">{fetchError}</div>}
         {!loading && !fetchError && lessons.length === 0 && (
-          <div className="text-center text-slate-400 text-sm py-12">No lessons on this day</div>
+          <div className="text-center text-[13px] text-neutral-400 py-12">No lessons on this day</div>
         )}
         {!loading && lessons.map(lesson => (
-          <LessonCardRow
-            key={lesson.id}
-            lesson={lesson}
-            pw={savedPw.current}
-            onUpdate={updateLesson}
-          />
+          <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} />
         ))}
       </div>
     </div>

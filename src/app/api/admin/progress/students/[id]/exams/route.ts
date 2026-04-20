@@ -21,6 +21,7 @@ function shapeExam(r: any) {
     resultTotal: r.fields['Result Total'] ?? null,
     resultGrade: r.fields['Result Grade'] ?? '',
     resultNotes: r.fields['Result Notes'] ?? '',
+    examNotes: r.fields['Exam Notes'] ?? '',
     createdAt: r.fields['Created At'] ?? '',
   };
 }
