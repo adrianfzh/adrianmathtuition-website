@@ -505,6 +505,39 @@ export default function SchedulePage() {
     });
   }
 
+  // ── Roster slot card (enrollment-only, no lesson overlays) ──────────────────
+  function renderRosterSlotCard(slot: Slot) {
+    const enrolledIds: string[] = data?.enrollmentsBySlot?.[slot.id] || [];
+    return (
+      <div key={slot.id} className="slot-card">
+        <div className="slot-header">
+          <div className="slot-meta">
+            <span className="slot-time">⏰ {slot.time}</span>
+            <span className={`slot-level level-${slot.level.toLowerCase()}`}>{slot.level}</span>
+          </div>
+          <span className="capacity">{enrolledIds.length}/{slot.capacity}</span>
+        </div>
+        <div className="lesson-list">
+          {enrolledIds.map(studentId => {
+            const student = data?.students[studentId];
+            return (
+              <div
+                key={studentId}
+                className="lesson-chip"
+                style={{ background: TYPE_COLORS.Regular.bg, color: TYPE_COLORS.Regular.text, borderColor: TYPE_COLORS.Regular.border }}
+                onClick={student ? () => setModal({ student, lessonType: 'Regular' }) : undefined}
+                role={student ? 'button' : undefined}
+              >
+                {student?.name || studentId}
+              </div>
+            );
+          })}
+          {enrolledIds.length === 0 && <span className="enrolled-hint">No students enrolled</span>}
+        </div>
+      </div>
+    );
+  }
+
   // ── Roster view ─────────────────────────────────────────────────────────────
   function renderRosterView() {
     return (
@@ -512,7 +545,8 @@ export default function SchedulePage() {
         {/* Mobile: single day */}
         <div className="mobile-day">
           <div className="day-col">
-            {renderDaySlots(activeDay)}
+            {(slotsByDay[DAYS[activeDay]] ?? []).map(slot => renderRosterSlotCard(slot))}
+            {(slotsByDay[DAYS[activeDay]] ?? []).length === 0 && <div className="no-slots">No slots</div>}
           </div>
         </div>
 
@@ -526,10 +560,11 @@ export default function SchedulePage() {
                 <div className="grid-day-header">
                   <span className="grid-day-name">{DAY_SHORT[i]}</span>
                   <span className={`grid-day-date ${isToday ? 'today-date' : ''}`}>
-                    {date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
+                    {isToday ? date.getDate() : date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
-                {renderDaySlots(i)}
+                {(slotsByDay[day] ?? []).map(slot => renderRosterSlotCard(slot))}
+                {(slotsByDay[day] ?? []).length === 0 && <div className="no-slots">No slots</div>}
               </div>
             );
           })}
@@ -737,7 +772,7 @@ export default function SchedulePage() {
                 <div className="grid-day-header">
                   <span className="grid-day-name">{DAY_SHORT[i]}</span>
                   <span className={`grid-day-date${isToday ? ' today-date' : ''}`}>
-                    {date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
+                    {isToday ? date.getDate() : date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
                 {(slotsByDay[day] ?? []).map(slot => renderLessonsSlotCard(slot, date))}
@@ -1485,7 +1520,7 @@ body {
   .day-tabs { display: none; }
   .desktop-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
     align-items: start;
   }
