@@ -571,7 +571,7 @@ function sortExams(exams: Exam[], today: string): Exam[] {
 function UpcomingExams({
   studentId, subjects, pw,
 }: { studentId: string; subjects: Subject[]; pw: string }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(false);
@@ -593,8 +593,9 @@ function UpcomingExams({
     }
   }
 
+  useEffect(() => { loadExams(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleToggle() {
-    if (!open && !loaded) loadExams();
     setOpen(o => !o);
   }
 
