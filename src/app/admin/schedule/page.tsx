@@ -629,7 +629,7 @@ export default function SchedulePage() {
 
   function handleDragStart(event: DragStartEvent) {
     const lesson = enrichedLessons.find(l => l.id === (event.active.id as string));
-    if (lesson) { setActiveDragLesson(lesson); navigator.vibrate?.(15); }
+    if (lesson) { setActiveDragLesson(lesson); navigator.vibrate?.(50); }
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -843,7 +843,7 @@ export default function SchedulePage() {
             );
           })}
         </div>
-        <DragOverlay>
+        <DragOverlay style={{ zIndex: 9999 }}>
           {activeDragLesson && overlayStyle && (
             <div className="lesson-chip" style={{
               background: overlayStyle.bg, color: overlayStyle.text, borderColor: overlayStyle.border,
