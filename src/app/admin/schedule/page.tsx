@@ -281,6 +281,11 @@ export default function SchedulePage() {
 
   // DnD
   const [activeDragLesson, setActiveDragLesson] = useState<EnrichedLesson | null>(null);
+  // Pull-to-refresh
+  const [pullDistance, setPullDistance] = useState(0);
+  const isPullingRef = useRef(false);
+  const pullStartYRef = useRef(0);
+  const contentRef = useRef<HTMLDivElement>(null);
   // Toast
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -749,6 +754,34 @@ export default function SchedulePage() {
     finally { setSubmitting(false); }
   }
 
+  const PULL_THRESHOLD = 80;
+  const MAX_PULL = 120;
+
+  function handleContentTouchStart(e: React.TouchEvent) {
+    if (activeDragLesson) return;
+    const el = contentRef.current;
+    if (!el || el.scrollTop > 0) return;
+    isPullingRef.current = true;
+    pullStartYRef.current = e.touches[0].clientY;
+  }
+
+  function handleContentTouchMove(e: React.TouchEvent) {
+    if (!isPullingRef.current) return;
+    const delta = e.touches[0].clientY - pullStartYRef.current;
+    if (delta <= 0) { isPullingRef.current = false; setPullDistance(0); return; }
+    setPullDistance(Math.min(delta * 0.5, MAX_PULL));
+  }
+
+  async function handleContentTouchEnd() {
+    if (!isPullingRef.current) return;
+    isPullingRef.current = false;
+    const dist = pullDistance;
+    setPullDistance(0);
+    if (dist >= PULL_THRESHOLD) {
+      await fetchSchedule(monday, savedPw.current);
+    }
+  }
+
   function openAddModal(date: Date, slot: Slot) {
     setModalError('');
     setAddModal({ type: 'Additional', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true });
@@ -817,12 +850,22 @@ export default function SchedulePage() {
     const overlayStyle = activeDragLesson ? getTypeStyle(activeDragLesson.type, activeDragLesson.status) : null;
     return (
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Mobile: single day */}
+        {/* Mobile: single day, expands to full week during drag for cross-day drop */}
         <div className="mobile-day">
-          <div className="day-col">
-            {(slotsByDay[DAYS[activeDay]] ?? []).map(slot => renderLessonsSlotCard(slot, weekDates[activeDay]))}
-            {(slotsByDay[DAYS[activeDay]] ?? []).length === 0 && <div className="no-slots">No lessons</div>}
-          </div>
+          {activeDragLesson ? (
+            DAYS.map((day, i) => (
+              <div key={day} className="day-col">
+                <div className="mobile-drag-day-label">{DAY_SHORT[i]} {weekDates[i].getDate()}</div>
+                {(slotsByDay[day] ?? []).map(slot => renderLessonsSlotCard(slot, weekDates[i]))}
+                {(slotsByDay[day] ?? []).length === 0 && <div className="no-slots">No slots</div>}
+              </div>
+            ))
+          ) : (
+            <div className="day-col">
+              {(slotsByDay[DAYS[activeDay]] ?? []).map(slot => renderLessonsSlotCard(slot, weekDates[activeDay]))}
+              {(slotsByDay[DAYS[activeDay]] ?? []).length === 0 && <div className="no-slots">No lessons</div>}
+            </div>
+          )}
         </div>
         {/* Desktop: full grid */}
         <div className="desktop-grid">
@@ -878,6 +921,7 @@ export default function SchedulePage() {
           <button className="nav-btn" onClick={prevWeek}>‹</button>
           <button className="week-label" onClick={thisWeek}>{formatWeekLabel(monday)}</button>
           <button className="nav-btn" onClick={nextWeek}>›</button>
+          <button className="nav-btn refresh-btn" onClick={() => fetchSchedule(monday, savedPw.current)} disabled={loading} title="Refresh">↻</button>
         </div>
       </div>
 
@@ -924,7 +968,23 @@ export default function SchedulePage() {
       </div>
 
       {/* Content */}
-      <div className="sched-content">
+      <div
+        className="sched-content"
+        ref={contentRef}
+        onTouchStart={handleContentTouchStart}
+        onTouchMove={handleContentTouchMove}
+        onTouchEnd={handleContentTouchEnd}
+      >
+        {/* Pull-to-refresh indicator */}
+        {pullDistance > 0 && (
+          <div style={{
+            textAlign: 'center', padding: '8px 0', fontSize: 13,
+            color: '#64748b', transform: `translateY(${pullDistance - 40}px)`,
+            transition: 'none',
+          }}>
+            {pullDistance >= PULL_THRESHOLD ? '↑ Release to refresh' : '↓ Pull to refresh'}
+          </div>
+        )}
         {loading && <div className="loading-msg">Loading…</div>}
         {error && (
           <div className="error-banner">
@@ -1383,6 +1443,14 @@ body {
   transition: background 0.15s;
 }
 .nav-btn:hover { background: rgba(255,255,255,0.25); }
+.refresh-btn { font-size: 18px; }
+.refresh-btn:disabled { opacity: 0.5; cursor: default; }
+.mobile-drag-day-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: #64748b;
+  padding: 10px 0 4px; border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 2px;
+}
 .week-label {
   font-size: 14px; font-weight: 600; color: white;
   background: none; border: none; cursor: pointer;
