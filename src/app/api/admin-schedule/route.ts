@@ -69,14 +69,25 @@ export async function GET(req: NextRequest) {
     ),
   ]);
 
+  console.log('[admin-schedule] DIAGNOSTIC START');
   console.log('[admin-schedule] weekStart:', weekStart, 'weekEnd:', weekEnd);
-  console.log('[admin-schedule] total lessons returned:', lessonsData.length);
-  console.log('[admin-schedule] lesson dates:',
-    [...new Set(lessonsData.map((r: any) => r.fields['Date']))].sort()
+  console.log('[admin-schedule] Total lessons returned:', lessonsData.length);
+  const dateCounts: Record<string, number> = {};
+  for (const r of lessonsData) {
+    const d = r.fields['Date'] || 'MISSING';
+    dateCounts[d] = (dateCounts[d] || 0) + 1;
+  }
+  console.log('[admin-schedule] Lesson counts by date:', dateCounts);
+  console.log('[admin-schedule] Raw sample of first 2 lessons:', JSON.stringify(lessonsData.slice(0, 2), null, 2));
+  console.log('[admin-schedule] DIAGNOSTIC END');
+
+  const sundayOnlyTest = await airtableRequest('Lessons',
+    `?filterByFormula=${encodeURIComponent(`{Date}='2026-04-26'`)}&fields[]=Date&fields[]=Type&fields[]=Status&maxRecords=25`
   );
-  console.log('[admin-schedule] first 3 raw lesson records:',
-    JSON.stringify(lessonsData.slice(0, 3), null, 2)
-  );
+  console.log('[admin-schedule] DIRECT Sunday query returned:', sundayOnlyTest.records?.length || 0, 'records');
+  if (sundayOnlyTest.records?.length) {
+    console.log('[admin-schedule] Sunday sample record:', JSON.stringify(sundayOnlyTest.records[0], null, 2));
+  }
 
   // Collect all unique student IDs (from both enrollments and lessons)
   const studentIds = [
