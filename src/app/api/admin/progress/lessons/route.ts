@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { resolveActiveExamType, checkExamInfoStatus, ExamType, ExamRecord } from '@/lib/exam-season';
 
 export const runtime = 'nodejs';
 
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
     .map((r: any) => r.fields['Rescheduled Lesson ID']?.[0])
     .filter(Boolean) as string[];
 
-  const [studentsById, slotsById, rescheduledDatesById] = await Promise.all([
+  const [studentsById, slotsById, rescheduledDatesById, settingsData] = await Promise.all([
     studentIds.length
       ? airtableRequestAll(
           'Students',
@@ -67,7 +68,44 @@ export async function GET(req: NextRequest) {
           `?filterByFormula=${encodeURIComponent(`OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Date`
         ).then(d => Object.fromEntries(d.records.map((r: any) => [r.id, r.fields['Date'] ?? ''])))
       : Promise.resolve({}),
+    airtableRequest(
+      'Settings',
+      `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`
+    ).catch(() => ({ records: [] })),
   ]);
+
+  // Resolve active exam type from override + date-based windows
+  let forceOn: ExamType | null = null;
+  try {
+    const v = JSON.parse(settingsData.records?.[0]?.fields?.['Value'] || '{}');
+    if (['WA1', 'WA2', 'WA3', 'EOY'].includes(v.forceOn)) forceOn = v.forceOn as ExamType;
+  } catch {}
+  const activeType = resolveActiveExamType(forceOn);
+
+  // Fetch exams for today's students, filtered to the active exam type
+  const examsByStudent: Record<string, ExamRecord[]> = {};
+  if (activeType && studentIds.length) {
+    try {
+      const studentFilter = studentIds.map(id => `FIND('${id}',ARRAYJOIN({Student}))>0`).join(',');
+      const examsData = await airtableRequest(
+        'Exams',
+        `?filterByFormula=${encodeURIComponent(`AND({Exam Type}='${activeType}',OR(${studentFilter}))`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics`
+      );
+      for (const r of (examsData.records ?? [])) {
+        const sid = r.fields['Student']?.[0];
+        if (!sid) continue;
+        if (!examsByStudent[sid]) examsByStudent[sid] = [];
+        examsByStudent[sid].push({
+          id: r.id,
+          examType: r.fields['Exam Type'] ?? '',
+          examDate: r.fields['Exam Date'] ?? null,
+          testedTopics: r.fields['Tested Topics'] ?? null,
+        });
+      }
+    } catch (err) {
+      console.error('[lessons] exam fetch failed:', err);
+    }
+  }
 
   const result = lessons.records.map((r: any) => {
     const studentId = r.fields['Student']?.[0] ?? null;
@@ -90,6 +128,7 @@ export async function GET(req: NextRequest) {
       parentName: student?.['Parent Name'] ?? '',
       slotTime: slot?.['Time'] ?? '',
       rescheduledToDate: rescheduledNewId ? (rescheduledDatesById[rescheduledNewId] ?? '') : '',
+      examStatus: checkExamInfoStatus(examsByStudent[studentId ?? ''] ?? [], activeType),
       // progress fields
       topicsCovered: r.fields['Topics Covered'] ?? '',
       homeworkAssigned: r.fields['Homework Assigned'] ?? '',
