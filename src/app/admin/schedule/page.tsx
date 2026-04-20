@@ -527,7 +527,7 @@ export default function SchedulePage() {
         <div className="slot-header">
           <div className="slot-meta">
             <span className="slot-time">⏰ {slot.time}</span>
-            <span className={`slot-level level-${slot.level.toLowerCase()}`}>{slot.level}</span>
+            {levelChip(slot.level)}
           </div>
           <span className="capacity">{enrolledIds.length}/{slot.capacity}</span>
         </div>
@@ -747,7 +747,7 @@ export default function SchedulePage() {
         <div className="slot-header">
           <div className="slot-meta">
             <span className="slot-time">⏰ {slot.time}</span>
-            <span className={`slot-level level-${slot.level.toLowerCase()}`}>{slot.level}</span>
+            {levelChip(slot.level)}
           </div>
           <div className="slot-header-right">
             <span className="capacity">{presentCount}</span>
