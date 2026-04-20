@@ -184,12 +184,28 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
+  const lastTapRef = useRef<number>(0);
+
+  function handleClick() {
+    // Desktop (fine pointer): single click opens action sheet.
+    // Mobile (coarse pointer): require double tap — long press is reserved for drag.
+    const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+    if (!isTouch) { onTap(); return; }
+    const now = Date.now();
+    if (now - lastTapRef.current < 350) {
+      onTap();
+      lastTapRef.current = 0;
+    } else {
+      lastTapRef.current = now;
+    }
+  }
+
   return (
     <div
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      onClick={onTap}
+      onClick={handleClick}
       className={`lesson-chip${isAbsent ? ' absent' : ''}`}
       style={{
         background: style.bg, color: style.text, borderColor: style.border,
