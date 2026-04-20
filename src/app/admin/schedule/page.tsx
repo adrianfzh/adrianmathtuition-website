@@ -440,6 +440,16 @@ export default function SchedulePage() {
   // ── Build calendar data ─────────────────────────────────────────────────────
   const weekDates = DAYS.map((_, i) => addDays(monday, i));
 
+  // Slots sorted Mon→Sun then by time, used in dropdowns
+  const DAY_ORDER: Record<string, number> = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4, Saturday: 5, Sunday: 6 };
+  const sortedSlots = useMemo(() => {
+    if (!data?.slots) return [];
+    return [...data.slots].sort((a, b) => {
+      const d = (DAY_ORDER[a.dayName] ?? 7) - (DAY_ORDER[b.dayName] ?? 7);
+      return d !== 0 ? d : parseTimeMinutes(a.time) - parseTimeMinutes(b.time);
+    });
+  }, [data]);
+
   // Group slots by day name, sorted by time
   const slotsByDay: Record<string, Slot[]> = {};
   if (data) {
@@ -1146,7 +1156,7 @@ export default function SchedulePage() {
                     <select className="modal-select" value={rescheduleModal.toSlotId}
                       onChange={e => setRescheduleModal(m => m ? { ...m, toSlotId: e.target.value } : null)}>
                       <option value="">Select slot…</option>
-                      {data?.slots.map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
+                      {sortedSlots.map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
                     </select>
                   </div>
                 </>
