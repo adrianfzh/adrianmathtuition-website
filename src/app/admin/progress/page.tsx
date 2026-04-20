@@ -113,13 +113,17 @@ function setCookie(name: string, value: string, days: number) {
 
 function todayISO(): string {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const result = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  console.log('[todayISO] result:', result, '| new Date():', d.toString());
+  return result;
 }
 
 function addDays(iso: string, n: number): string {
   const d = new Date(iso + 'T00:00:00');
   d.setDate(d.getDate() + n);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const result = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  console.log('[addDays] input:', iso, 'n:', n, '→ output:', result, '| Date obj:', d.toString());
+  return result;
 }
 
 function formatDate(iso: string): string {
@@ -1095,6 +1099,7 @@ export default function ProgressPage() {
   }
 
   const fetchLessons = useCallback(async (d: string, pw: string) => {
+    console.log('[effect] fetchLessons called with date:', d);
     setLoading(true);
     setFetchError('');
     try {
@@ -1112,8 +1117,15 @@ export default function ProgressPage() {
   }, []);
 
   useEffect(() => {
+    console.log('[effect] date changed to:', date, '| authed:', authed);
     if (authed && savedPw.current) fetchLessons(date, savedPw.current);
   }, [authed, date, fetchLessons]);
+
+  useEffect(() => {
+    console.log('[mount] userAgent:', navigator.userAgent);
+    console.log('[mount] new Date():', new Date().toString());
+    console.log('[mount] timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+  }, []);
 
   function updateLesson(id: string, updated: Partial<LessonCard>) {
     setLessons(ls => ls.map(l => l.id === id ? { ...l, ...updated } : l));
@@ -1190,7 +1202,7 @@ export default function ProgressPage() {
           </div>
           {/* Row 2: date navigation */}
           <div className="flex items-center gap-1">
-            <button onClick={() => setDate(d => addDays(d, -1))}
+            <button onClick={() => { console.log('[back] current date:', date); setDate(d => { const next = addDays(d, -1); console.log('[back] d arg:', d, '→ next:', next); return next; }); }}
               className="p-2 rounded-md text-neutral-400 active:bg-neutral-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg">
               ‹
             </button>
@@ -1203,7 +1215,7 @@ export default function ProgressPage() {
                 </button>
               )}
             </div>
-            <button onClick={() => setDate(d => addDays(d, 1))}
+            <button onClick={() => { console.log('[fwd] current date:', date); setDate(d => { const next = addDays(d, 1); console.log('[fwd] d arg:', d, '→ next:', next); return next; }); }}
               className="p-2 rounded-md text-neutral-400 active:bg-neutral-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg">
               ›
             </button>
