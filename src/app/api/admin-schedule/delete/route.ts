@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import {
-  verifyAdminAuth,
-  formatDateSlotLabel,
-  notifyLessonChange,
-} from '@/lib/schedule-helpers';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +12,6 @@ export async function POST(req: NextRequest) {
   let body: {
     lessonId: string;
     action: 'delete' | 'absent';
-    notify?: boolean;
     reason?: string;
   };
   try {
@@ -25,7 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { lessonId, action, notify = false, reason } = body;
+  const { lessonId, action, reason } = body;
 
   if (!lessonId || !action) {
     return NextResponse.json({ error: 'lessonId and action are required' }, { status: 400 });
@@ -38,9 +33,6 @@ export async function POST(req: NextRequest) {
     // 1. Fetch lesson for context
     const lessonRec = await airtableRequest('Lessons', `/${lessonId}`);
     const lessonFields = lessonRec.fields;
-    const studentId: string | undefined = lessonFields['Student']?.[0];
-    const slotId: string | undefined = lessonFields['Slot']?.[0];
-    const lessonDate: string = lessonFields['Date'] ?? '';
     const lessonType: string = lessonFields['Type'] ?? 'Regular';
     const existingNotes: string = lessonFields['Notes'] ?? '';
 
@@ -91,41 +83,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. Notify
-    let notificationsSent = { student: false, parent: false };
-    if (notify && studentId) {
-      try {
-        // Fetch slot for label
-        let slotFields: Record<string, any> = {};
-        if (slotId) {
-          const slotRec = await airtableRequest('Slots', `/${slotId}?fields[]=Time&fields[]=Day`);
-          slotFields = slotRec.fields;
-        }
-        const label = formatDateSlotLabel(lessonDate, slotFields);
-
-        // Fetch student name
-        const studentRec = await airtableRequest(
-          'Students',
-          `/${studentId}?fields[]=Student+Name`
-        );
-        const studentName: string = studentRec.fields['Student Name'] ?? 'Student';
-
-        let message: string;
-        if (action === 'delete') {
-          message = `Hi ${studentName}, your ${lessonType.toLowerCase()} lesson on ${label} has been cancelled.`;
-        } else {
-          message =
-            `Hi ${studentName}, your ${lessonType.toLowerCase()} lesson on ${label} has been marked as absent. ` +
-            `You can /makeup in the bot.`;
-        }
-
-        notificationsSent = await notifyLessonChange(studentId, message);
-      } catch (notifyErr) {
-        console.error('[delete] Notification error (non-fatal):', notifyErr);
-      }
-    }
-
-    return NextResponse.json({ success: true, action, notificationsSent });
+    return NextResponse.json({ success: true, action });
   } catch (err: any) {
     console.error('[delete] Error:', err);
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });

@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
 import {
   verifyAdminAuth,
-  formatDateSlotLabel,
   countLessonsInSlot,
-  notifyLessonChange,
 } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -21,7 +19,6 @@ export async function POST(req: NextRequest) {
     studentId?: string;
     trialStudentName?: string;
     notes?: string;
-    notify?: boolean;
     linkedLessonId?: string;
   };
   try {
@@ -31,7 +28,6 @@ export async function POST(req: NextRequest) {
   }
 
   const { type, date, slotId, studentId, trialStudentName, notes, linkedLessonId } = body;
-  const notify = body.notify !== false;
 
   if (!type || !date || !slotId) {
     return NextResponse.json({ error: 'type, date, and slotId are required' }, { status: 400 });
@@ -106,25 +102,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 5. Notify (Additional/Makeup only)
-    let notificationsSent = { student: false, parent: false };
-    if (type !== 'Trial' && notify && studentId) {
-      try {
-        const studentRec = await airtableRequest(
-          'Students',
-          `/${studentId}?fields[]=Student+Name`
-        );
-        const studentName: string = studentRec.fields['Student Name'] ?? 'Student';
-        const label = formatDateSlotLabel(date, slotFields);
-        const typeWord = type === 'Additional' ? 'additional' : 'makeup';
-        const message = `Hi ${studentName}, an ${typeWord} lesson has been booked for you on ${label}. 🔔`;
-        notificationsSent = await notifyLessonChange(studentId, message);
-      } catch (notifyErr) {
-        console.error('[add] Notification error (non-fatal):', notifyErr);
-      }
-    }
-
-    return NextResponse.json({ success: true, lessonId, notificationsSent });
+    return NextResponse.json({ success: true, lessonId });
   } catch (err: any) {
     console.error('[add] Error:', err);
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });

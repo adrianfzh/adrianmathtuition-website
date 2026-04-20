@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import { sendTelegramTo } from '@/lib/telegram';
 
 export function verifyAdminAuth(req: NextRequest): boolean {
   const pw = process.env.ADMIN_PASSWORD;
@@ -26,28 +25,3 @@ export async function countLessonsInSlot(slotId: string, date: string): Promise<
   return data.records.length;
 }
 
-export async function notifyLessonChange(
-  studentId: string,
-  message: string
-): Promise<{ student: boolean; parent: boolean }> {
-  const result = { student: false, parent: false };
-  try {
-    const rec = await airtableRequest(
-      'Students',
-      `/${studentId}?fields[]=Student+Telegram+ID&fields[]=Parent+Telegram+ID`
-    );
-    const studentTgId = rec.fields['Student Telegram ID'];
-    const parentTgId = rec.fields['Parent Telegram ID'];
-    if (studentTgId) {
-      await sendTelegramTo(studentTgId, message);
-      result.student = true;
-    }
-    if (parentTgId) {
-      await sendTelegramTo(parentTgId, message);
-      result.parent = true;
-    }
-  } catch (err) {
-    console.error('[schedule-helpers] notifyLessonChange error:', err);
-  }
-  return result;
-}

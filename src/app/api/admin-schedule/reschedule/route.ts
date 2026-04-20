@@ -1,10 +1,12 @@
+// Admin reschedules are silent. Students are notified via the bot's
+// day-before reminder cron. For same-day or next-day reschedules (<24hr
+// notice), message the student manually — the cron will not catch them in time.
+
 import { NextRequest, NextResponse } from 'next/server';
-import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { airtableRequest } from '@/lib/airtable';
 import {
   verifyAdminAuth,
-  formatDateSlotLabel,
   countLessonsInSlot,
-  notifyLessonChange,
 } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -19,7 +21,6 @@ export async function POST(req: NextRequest) {
     newDate: string;
     newSlotId: string;
     notes?: string;
-    notify?: boolean;
   };
   try {
     body = await req.json();
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { lessonId, newDate, newSlotId, notes, notify = true } = body;
+  const { lessonId, newDate, newSlotId, notes } = body;
 
   if (!lessonId || !newDate || !newSlotId) {
     return NextResponse.json(
@@ -43,7 +44,6 @@ export async function POST(req: NextRequest) {
     const origStudentId: string = origFields['Student']?.[0];
     const origSlotId: string = origFields['Slot']?.[0];
     const origDate: string = origFields['Date'] ?? '';
-    const origType: string = origFields['Type'] ?? 'Regular';
 
     if (!origStudentId) {
       return NextResponse.json({ error: 'Original lesson has no student' }, { status: 400 });
@@ -99,35 +99,7 @@ export async function POST(req: NextRequest) {
       }),
     });
 
-    // 6. Notify
-    let notificationsSent = { student: false, parent: false };
-    if (notify) {
-      try {
-        // Fetch orig slot for label
-        const origSlotRec = origSlotId
-          ? await airtableRequest('Slots', `/${origSlotId}?fields[]=Time&fields[]=Day`)
-          : null;
-        const origLabel = formatDateSlotLabel(origDate, origSlotRec?.fields ?? {});
-        const newLabel = formatDateSlotLabel(newDate, targetFields);
-
-        // Fetch student name
-        const studentRec = await airtableRequest(
-          'Students',
-          `/${origStudentId}?fields[]=Student+Name`
-        );
-        const studentName: string = studentRec.fields['Student Name'] ?? 'Student';
-
-        const message =
-          `Hi ${studentName}, your lesson on ${origLabel} has been rescheduled to ${newLabel}.\n` +
-          `A reminder will be sent a day before your rescheduled lesson. 🔔`;
-
-        notificationsSent = await notifyLessonChange(origStudentId, message);
-      } catch (notifyErr) {
-        console.error('[reschedule] Notification error (non-fatal):', notifyErr);
-      }
-    }
-
-    return NextResponse.json({ success: true, newLessonId, notificationsSent });
+    return NextResponse.json({ success: true, newLessonId });
   } catch (err: any) {
     console.error('[reschedule] Error:', err);
     return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
