@@ -4,6 +4,10 @@ import { resolveActiveExamType, checkExamInfoStatus, ExamType, ExamRecord } from
 
 export const runtime = 'nodejs';
 
+// Progress page only needs student names for display. If contact info is ever
+// needed (modal, mailto links), call /api/admin-schedule/student-contact
+// on demand instead of fetching those fields here.
+
 function checkAuth(req: NextRequest): boolean {
   const pw = process.env.ADMIN_PASSWORD;
   if (!pw) return true;
@@ -53,7 +57,7 @@ export async function GET(req: NextRequest) {
     studentIds.length
       ? airtableRequestAll(
           'Students',
-          `?filterByFormula=${encodeURIComponent(`OR(${studentIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Student Name&fields[]=Level&fields[]=Subjects&fields[]=Subject Level&fields[]=Parent Email&fields[]=Parent Name`
+          `?filterByFormula=${encodeURIComponent(`OR(${studentIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Student Name&fields[]=Level&fields[]=Subjects&fields[]=Subject Level`
         ).then(d => Object.fromEntries(d.records.map((r: any) => [r.id, r.fields])))
       : Promise.resolve({}),
     slotIds.length
@@ -124,8 +128,6 @@ export async function GET(req: NextRequest) {
       level: student?.['Level'] ?? '',
       subjects: student?.['Subjects'] ?? [],
       subjectLevel: student?.['Subject Level'] ?? '',
-      parentEmail: student?.['Parent Email'] ?? '',
-      parentName: student?.['Parent Name'] ?? '',
       slotTime: slot?.['Time'] ?? '',
       rescheduledToDate: rescheduledNewId ? (rescheduledDatesById[rescheduledNewId] ?? '') : '',
       examStatus: checkExamInfoStatus(examsByStudent[studentId ?? ''] ?? [], activeType),
