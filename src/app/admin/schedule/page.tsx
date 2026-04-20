@@ -1631,7 +1631,7 @@ body {
 .absent-name { text-decoration: line-through; color: #94a3b8; }
 .trial-badge { font-size: 14px; }
 .type-tag {
-  margin-left: auto;
+  display: block;
   font-size: 11px; font-weight: 600;
   opacity: 0.7; white-space: nowrap;
 }
