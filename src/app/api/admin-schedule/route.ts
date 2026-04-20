@@ -56,15 +56,27 @@ export async function GET(req: NextRequest) {
   const weekStart = isoDate(monday);
   const weekEnd = isoDate(sunday);
 
+  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<='${weekEnd}')`;
+  console.log('[admin-schedule] lessons filter:', lessonsFilter);
+
   // Fetch slots, enrollments, and lessons in parallel
   const [slotsData, enrollmentsData, lessonsData] = await Promise.all([
     fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`{Is Active}=1`)}`),
     fetchAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot`),
     fetchAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(`AND({Date}>='${weekStart}',{Date}<='${weekEnd}')`)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes`
+      `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes`
     ),
   ]);
+
+  console.log('[admin-schedule] weekStart:', weekStart, 'weekEnd:', weekEnd);
+  console.log('[admin-schedule] total lessons returned:', lessonsData.length);
+  console.log('[admin-schedule] lesson dates:',
+    [...new Set(lessonsData.map((r: any) => r.fields['Date']))].sort()
+  );
+  console.log('[admin-schedule] first 3 raw lesson records:',
+    JSON.stringify(lessonsData.slice(0, 3), null, 2)
+  );
 
   // Collect all unique student IDs (from both enrollments and lessons)
   const studentIds = [
