@@ -187,7 +187,7 @@ function ReceiptPreviewContent() {
 
       <div className="rp-header">
         <div className="rp-title">
-          <a href="/admin" className="back-link">← Admin</a>
+          <a href="/admin/invoices" className="back-link">← Admin</a>
           <h1>Receipt Preview</h1>
           {studentName && <span className="rp-meta">{studentName} · {month}</span>}
         </div>
@@ -268,7 +268,7 @@ function ReceiptPreviewContent() {
                 >
                   {sendState === 'sending' ? 'Sending…' : wasEdited ? '📧 Send Edited Receipt' : '📧 Send Default Receipt'}
                 </button>
-                <a href="/admin" className="cancel-link">Cancel</a>
+                <a href="/admin/invoices" className="cancel-link">Cancel</a>
               </>
             )}
             {sendState === 'error' && (

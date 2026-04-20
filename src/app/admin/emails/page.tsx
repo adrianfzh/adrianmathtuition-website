@@ -232,7 +232,7 @@ export default function EmailsPage() {
 
       <div className="el-header">
         <div className="el-title">
-          <a href="/admin" className="back-link">← Admin</a>
+          <a href="/admin/invoices" className="back-link">← Admin</a>
           <h1>Email Log</h1>
         </div>
         <button className="refresh-btn" onClick={fetchLogs} disabled={loading}>

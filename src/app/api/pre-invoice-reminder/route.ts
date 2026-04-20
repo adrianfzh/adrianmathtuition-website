@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     `📋 <b>Heads up: Invoice generation runs tomorrow at 7am.</b>\n\n` +
     `Please mark any outstanding payments before then so they're not double-billed.\n\n` +
     `→ Use /invoices in Telegram to check\n` +
-    `→ Or review at adrianmathtuition.com/admin`
+    `→ Or review at adrianmathtuition.com/admin/invoices`
   );
 
   return NextResponse.json({ ok: true });
