@@ -9,6 +9,19 @@ import { mergeTopics } from '@/lib/topicMerge';
 
 type Subject = 'Math' | 'E Math' | 'A Math' | 'H2 Math';
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+type ExamType = 'WA1' | 'WA2' | 'WA3' | 'EOY';
+
+interface ExamInfoStatus {
+  complete: boolean;
+  activeType: ExamType | null;
+  missing: { hasNoRecord: boolean; missingDate: boolean; missingTopics: boolean };
+}
+
+interface ExamSeason {
+  override: ExamType | null;
+  active: ExamType | null;
+  source: 'manual' | 'auto' | 'none';
+}
 
 interface LessonCard {
   id: string;
@@ -22,6 +35,7 @@ interface LessonCard {
   subjectLevel: string;
   slotTime: string;
   rescheduledToDate: string;
+  examStatus: ExamInfoStatus;
   topicsCovered: string;
   homeworkAssigned: string;
   homeworkCompletion: string;
@@ -975,6 +989,17 @@ function LogForm({
   );
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function buildExamPillTooltip(s: ExamInfoStatus): string {
+  if (!s.activeType) return '';
+  if (s.missing.hasNoRecord) return `No ${s.activeType} exam record`;
+  const parts: string[] = [];
+  if (s.missing.missingDate) parts.push('exam date');
+  if (s.missing.missingTopics) parts.push('tested topics');
+  return `Missing ${parts.join(' & ')}`;
+}
+
 // ── LessonCardRow ─────────────────────────────────────────────────────────────
 
 function LessonCardRow({
@@ -1025,6 +1050,14 @@ function LessonCardRow({
             >
               {data.studentName || 'Unknown Student'}
             </button>
+            {data.examStatus?.activeType && !data.examStatus.complete && (
+              <span
+                title={buildExamPillTooltip(data.examStatus)}
+                className="px-1.5 py-0.5 rounded-md text-[11px] font-semibold bg-red-50 text-red-500 cursor-default"
+              >
+                ⚠ {data.examStatus.activeType}
+              </span>
+            )}
             <span className="text-[13px] text-neutral-300">{data.slotTime}</span>
             {open && !isDimmed && <SaveIndicator status={saveStatus} savedAt={savedAt} />}
           </div>
@@ -1084,6 +1117,8 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [examSeason, setExamSeason] = useState<ExamSeason | null>(null);
+  const [examSeasonMenu, setExamSeasonMenu] = useState(false);
   const touchStartY = useRef(0);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
@@ -1095,6 +1130,25 @@ export default function ProgressPage() {
     if (pw) { savedPw.current = pw; verifyAndLogin(pw); }
   }, []);
 
+  async function fetchExamSeason(pw: string) {
+    try {
+      const res = await fetch('/api/admin/exam-season', { headers: { Authorization: `Bearer ${pw}` } });
+      if (res.ok) setExamSeason(await res.json());
+    } catch {}
+  }
+
+  async function updateExamSeason(forceOn: ExamType | null) {
+    setExamSeasonMenu(false);
+    try {
+      const res = await fetch('/api/admin/exam-season', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ forceOn }),
+      });
+      if (res.ok) setExamSeason(await res.json());
+    } catch {}
+  }
+
   async function verifyAndLogin(pw: string) {
     setAuthLoading(true);
     try {
@@ -1105,6 +1159,7 @@ export default function ProgressPage() {
         savedPw.current = pw;
         setCookie('progress_pw', pw, 30);
         setAuthed(true);
+        fetchExamSeason(pw);
       } else {
         setAuthError('Incorrect password');
       }
@@ -1185,6 +1240,13 @@ export default function ProgressPage() {
     setPullDistance(0);
     setIsPulling(false);
   }
+
+  useEffect(() => {
+    if (!examSeasonMenu) return;
+    const close = () => setExamSeasonMenu(false);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [examSeasonMenu]);
 
   const loggedCount = lessons.filter(l => l.progressLogged).length;
 
@@ -1282,6 +1344,42 @@ export default function ProgressPage() {
               className="p-2 rounded-md text-neutral-400 active:bg-neutral-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-lg">
               ›
             </button>
+          </div>
+          {/* Row 3: exam season toggle */}
+          <div className="flex items-center justify-between pt-2 pb-1 border-t border-neutral-100 mt-1 relative">
+            <span className="text-[12px] text-neutral-500">
+              Exam season
+              {examSeason?.active
+                ? <> · <span className="font-semibold text-neutral-700">{examSeason.active}</span> · <span className="text-neutral-400">{examSeason.source}</span></>
+                : <> · <span className="text-neutral-400">OFF</span></>
+              }
+            </span>
+            <button
+              onClick={() => setExamSeasonMenu(v => !v)}
+              className="text-[11px] font-semibold text-neutral-600 bg-neutral-100 px-2.5 py-1 rounded-md active:bg-neutral-200 flex items-center gap-1"
+            >
+              {examSeason?.active ? 'Change' : 'Force on'} <span className="text-[10px]">▾</span>
+            </button>
+            {examSeasonMenu && (
+              <div
+                className="absolute right-0 top-full mt-1 bg-white border border-neutral-200 rounded-xl shadow-lg z-20 py-1 min-w-[140px]"
+                onClick={e => e.stopPropagation()}
+              >
+                {(['WA1', 'WA2', 'WA3', 'EOY'] as ExamType[]).map(t => (
+                  <button key={t}
+                    onClick={() => updateExamSeason(t)}
+                    className={`w-full text-left px-4 py-2 text-[13px] hover:bg-neutral-50 ${examSeason?.override === t ? 'font-semibold text-neutral-900' : 'text-neutral-700'}`}>
+                    {t}
+                  </button>
+                ))}
+                <div className="border-t border-neutral-100 my-1" />
+                <button
+                  onClick={() => updateExamSeason(null)}
+                  className="w-full text-left px-4 py-2 text-[13px] text-neutral-500 hover:bg-neutral-50">
+                  Auto (clear override)
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

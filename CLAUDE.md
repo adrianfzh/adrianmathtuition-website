@@ -178,6 +178,41 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 
 All `isoDate()` / `addDays()` helpers use `getFullYear()`/`getMonth()`/`getDate()` (local time), **not** `toISOString()` — SGT is UTC+8 so `toISOString()` returns the previous day for midnight-local Dates.
 
+## /admin/progress — Student Progress & Exam Season
+
+Password-protected progress logging page. Shows lesson cards for a selected date; cards expand to log topics, homework, mastery, mood, and notes.
+
+### Exam season detection
+
+- **Hardcoded windows** in `lib/exam-season.ts` (`EXAM_WINDOWS`): WA1 02-01→03-15, WA2 04-15→06-05, WA3 07-15→09-05, EOY 09-20→11-10 (MM-DD, SGT)
+- **Manual override** stored in Airtable `Settings` table: `Setting Name = 'exam_season_override'`, `Value = '{"forceOn":"WA2"}'` (or `{"forceOn":null}` to clear)
+- `resolveActiveExamType(override)` returns override if set, else date-based window, else null
+- Override UI: toggle row in sticky header lets admin force a season on or off; uses GET/POST `/api/admin/exam-season`
+
+### Exam info status
+
+- Each lesson card fetches the student's exam record for the active exam type (from `Exams` Airtable table)
+- **Complete** = has both `Exam Date` and `Tested Topics` filled in
+- **Incomplete** = missing either field (or no record at all)
+- A red `⚠ WA2` pill appears on the card header when `activeType !== null && !complete`
+- Pill tooltip explains what's missing: "No WA2 exam record", "Missing exam date", "Missing tested topics", or "Missing exam date & topics"
+- Off-season (activeType null): no pills shown, `checkExamInfoStatus` returns `complete: true`
+
+### Key files
+
+| File | Purpose |
+|---|---|
+| `lib/exam-season.ts` | `EXAM_WINDOWS`, `resolveActiveExamType()`, `checkExamInfoStatus()`, types |
+| `app/api/admin/exam-season/route.ts` | GET/POST for reading and writing the override |
+| `app/api/admin/progress/lessons/route.ts` | Attaches `examStatus` to each lesson card in response |
+| `app/admin/progress/page.tsx` | Toggle row UI + red pill per card |
+
+### Graceful degradation
+
+- If the `Settings` row doesn't exist (new installs, deleted row): GET returns null override → auto-detect kicks in
+- If the `Exams` fetch fails: error is logged, `examsByStudent` stays empty → all cards show `complete: true` (no pills)
+- If `activeType` is null (off-season, no override): `checkExamInfoStatus` short-circuits and returns complete
+
 ## Pending Tasks
 
 - Fix revision page content priority (`data.content || data.generatedContent`)
