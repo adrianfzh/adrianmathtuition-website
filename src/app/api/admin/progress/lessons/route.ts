@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const localFallback = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const date = searchParams.get('date') || localFallback;
 
-  const formula = `AND(IS_SAME({Date},'${date}','day'),OR({Status}='Completed',{Status}='Scheduled',{Status}='Rescheduled'))`;
+  const formula = `AND(IS_SAME({Date},'${date}','day'),{Status}='Scheduled')`;
   const filter = encodeURIComponent(formula);
   const lessons = await airtableRequestAll(
     'Lessons',
