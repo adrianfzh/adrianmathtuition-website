@@ -93,12 +93,22 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // Normalize day name to full English name regardless of Airtable storage format
+  // (handles abbreviated "Sun", numeric-prefix "7 Sunday", plain "Sunday", etc.)
+  const DAY_NORMALIZE: Record<string, string> = {
+    mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
+    fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
+    monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday', thursday: 'Thursday',
+    friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday',
+  };
+
   // Parse slots
   const slots = slotsData.map((r: any) => {
     const dayRaw: string = r.fields['Day'] || '';
     const match = dayRaw.match(/^(\d+)\s+(.+)/);
     const dayNum = match ? parseInt(match[1]) : 9;
-    const dayName = match ? match[2].trim() : dayRaw.trim();
+    const rawName = (match ? match[2].trim() : dayRaw.trim()).toLowerCase();
+    const dayName = DAY_NORMALIZE[rawName] || (match ? match[2].trim() : dayRaw.trim());
     return {
       id: r.id,
       dayRaw,
