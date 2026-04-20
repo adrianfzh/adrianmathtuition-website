@@ -196,6 +196,9 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
       <span className={isAbsent ? 'absent-name' : ''}>{lesson.studentName}</span>
       {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
       {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
+      {lesson.type !== 'Trial' && lesson.notes && (
+        <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
+      )}
     </div>
   );
 }
@@ -802,6 +805,9 @@ export default function SchedulePage() {
               {activeDragLesson.type === 'Trial' && <span className="trial-badge">🆕</span>}
               <span>{activeDragLesson.studentName}</span>
               {activeDragLesson.type !== 'Regular' && <span className="type-tag">{activeDragLesson.type}</span>}
+              {activeDragLesson.type !== 'Trial' && activeDragLesson.notes && (
+                <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight">↳ {activeDragLesson.notes}</div>
+              )}
             </div>
           )}
         </DragOverlay>

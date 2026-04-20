@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     fetchAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot`),
     fetchAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(`AND({Date}>='${weekStart}',{Date}<='${weekEnd}')`)}&sort[0][field]=Date&sort[0][direction]=asc`
+      `?filterByFormula=${encodeURIComponent(`AND({Date}>='${weekStart}',{Date}<='${weekEnd}')`)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes`
     ),
   ]);
 
@@ -131,15 +131,26 @@ export async function GET(req: NextRequest) {
     enrollmentsBySlot[slotId].push(studentId);
   }
 
-  const lessons = lessonsData.map((r: any) => ({
-    id: r.id,
-    date: r.fields['Date'] || '',
-    slotId: r.fields['Slot']?.[0] || null,
-    studentId: r.fields['Student']?.[0] || null,
-    type: r.fields['Type'] || 'Regular',
-    status: r.fields['Status'] || '',
-    notes: r.fields['Notes'] || '',
-  }));
+  function isTimeRelatedNote(note: string): boolean {
+    return /\d{1,2}[:.]\d{2}|(?:early|late|delay|arriv|leav|start|end|finish|cancel|\d+\s*(?:min|hr|hour)|half[\s-]?hour)/i.test(note);
+  }
+
+  const lessons = lessonsData.map((r: any) => {
+    const rawNote: string = r.fields['Notes'] || '';
+    const type: string = r.fields['Type'] || 'Regular';
+    // Trial lessons store the student name in Notes — preserve the full value.
+    // For other types, only surface timing-related notes (truncated to 80 chars).
+    const filteredNote = type === 'Trial' || isTimeRelatedNote(rawNote) ? rawNote.slice(0, 80) : '';
+    return {
+      id: r.id,
+      date: r.fields['Date'] || '',
+      slotId: r.fields['Slot']?.[0] || null,
+      studentId: r.fields['Student']?.[0] || null,
+      type,
+      status: r.fields['Status'] || '',
+      notes: filteredNote,
+    };
+  });
 
   return NextResponse.json({
     weekStart,
