@@ -224,7 +224,13 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
           className="drag-handle"
           style={{ touchAction: 'none' }}
           aria-label="drag"
-        >⠿</span>
+        >
+          <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+            <circle cx="3" cy="3" r="1.5"/><circle cx="7" cy="3" r="1.5"/>
+            <circle cx="3" cy="8" r="1.5"/><circle cx="7" cy="8" r="1.5"/>
+            <circle cx="3" cy="13" r="1.5"/><circle cx="7" cy="13" r="1.5"/>
+          </svg>
+        </span>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         {lesson.type === 'Trial' && <span className="trial-badge">🆕</span>}
@@ -1460,8 +1466,11 @@ body {
 .refresh-btn { font-size: 18px; }
 .refresh-btn:disabled { opacity: 0.5; cursor: default; }
 .drag-handle {
-  font-size: 13px; opacity: 0.35; line-height: 1;
-  padding: 1px 2px 1px 0; flex-shrink: 0; cursor: grab;
+  align-self: stretch;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 28px; padding: 0 6px;
+  flex-shrink: 0; cursor: grab; opacity: 0.35;
+  border-right: 1px solid rgba(0,0,0,0.1); margin-right: 4px;
   user-select: none; -webkit-user-select: none;
 }
 .mobile-drag-day-label {
