@@ -1,0 +1,70 @@
+{
+  "student": { "name": "Gavin", "level": "Sec 4 E-Math" },
+  "timestamp": "2026-04-25T12:42:00+08:00",
+  "marking": {
+    "question": {
+      "number": "13(a)",
+      "prompt": "Two bottles of coffee are geometrically similar. The larger bottle is 49% taller than the smaller bottle. The smaller bottle holds 200 g of coffee. Find the mass of coffee in the larger bottle.",
+      "max_marks": 2,
+      "has_diagram": false
+    },
+    "correct": {
+      "final_answer": "60 g",
+      "method_summary": "Cube the ratio of heights and multiply by the known mass: (149/100)³ × 200 ≈ 661 g, or equivalently (100/149)³ × 200 ≈ 60 g for the smaller relative to larger."
+    },
+    "lines": [
+      {
+        "line_index": 1,
+        "transcription_latex": "$\\text{small} : \\text{large} = 49 : 100$",
+        "transcription_plain": "You wrote: small : large = 49 : 100",
+        "is_crossed_out": false,
+        "verdict": "wrong",
+        "error_type": "ratio_inversion",
+        "correction": {
+          "arrow": "up",
+          "text_latex": "'49% taller' means large $= 100 + 49 = 149$, so ratio is $100 : 149$",
+          "text_plain": "'49% taller' means large = 100 + 49 = 149, so ratio is 100 : 149"
+        }
+      },
+      {
+        "line_index": 2,
+        "transcription_latex": "$\\left(\\frac{49}{100}\\right)^3 = 0.117649$",
+        "transcription_plain": "You computed (49/100)³ = 0.117649",
+        "is_crossed_out": false,
+        "verdict": "correct",
+        "error_type": null,
+        "correction": null
+      },
+      {
+        "line_index": 3,
+        "transcription_latex": "$0.117649 \\times 200 = 23.53\\text{ g}$",
+        "transcription_plain": "You computed 0.117649 × 200 = 23.53 g",
+        "is_crossed_out": false,
+        "verdict": "wrong",
+        "error_type": "wrong_setup",
+        "correction": {
+          "arrow": "right",
+          "text_latex": "Should be $\\left(\\dfrac{100}{149}\\right)^3 \\times 200 \\approx 60\\text{ g}$",
+          "text_plain": "Should be (100/149)³ × 200 ≈ 60 g"
+        }
+      }
+    ],
+    "student_final_answer": {
+      "value_raw": "23.5 g",
+      "value_latex": "23.5\\text{ g}",
+      "matches_correct": false,
+      "had_self_correction": false
+    },
+    "marks": {
+      "awarded": 1,
+      "max": 2,
+      "margin_note": "−1"
+    },
+    "summary": {
+      "title": "Where you went wrong",
+      "body_markdown": "You correctly identified that this needs cubing the linear ratio — that's solid thinking and earned **1 method mark**. But the ratio itself was inverted: when the question says the larger bottle is \"49% taller\", it means the larger is **149** units tall when the smaller is 100. Rule of thumb: when a question says 'X% taller/bigger', always add X to 100 to get the full ratio."
+    },
+    "uncertainty": { "raised": false, "notes": [] },
+    "meta": { "level_detected": "Sec 4", "topic_detected": "similar shapes" }
+  }
+}

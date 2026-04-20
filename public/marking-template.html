@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Marking</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="if(window.__buildDone) window.__runKatex()"></script>
+<style>
+:root {
+  --paper-bg:       #faf8f4;
+  --paper-line:     #e8e2d8;
+  --paper-shadow:   rgba(0,0,0,0.10);
+  --ink:            #1a1208;
+  --ink-light:      #4a3f2f;
+  --red:            #c8102e;
+  --red-light:      #fdf0f2;
+  --green:          #166534;
+  --green-light:    #f0fdf4;
+  --font-body:      'Crimson Pro', Georgia, serif;
+  --font-hand:      'Caveat', cursive;
+  --font-mono:      'JetBrains Mono', 'Courier New', monospace;
+  --radius:         6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  margin: 0;
+  padding: 24px 20px 28px;
+  background: #ffffff;
+  font-family: var(--font-body);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Container ──────────────────────────────────────────────────── */
+.container {
+  width: 780px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Paper card ─────────────────────────────────────────────────── */
+.marked-paper {
+  background: var(--paper-bg);
+  border: 1px solid var(--paper-line);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px var(--paper-shadow);
+  padding: 28px 32px 24px;
+  position: relative;
+  /* Subtle ruled-line background */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    var(--paper-line) 31px,
+    var(--paper-line) 32px
+  );
+  background-size: 100% 32px;
+  background-position: 0 56px;
+}
+
+/* ── Paper header ───────────────────────────────────────────────── */
+.paper-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.school-mark {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  background: rgba(0,0,0,0.045);
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.student-info {
+  font-size: 13px;
+  color: var(--ink-light);
+  text-align: right;
+  line-height: 1.5;
+}
+
+/* ── Question number ────────────────────────────────────────────── */
+.question-number {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.q-num-circle {
+  width: 42px;
+  height: 42px;
+  border: 2.5px solid var(--red);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--red);
+  transform: rotate(-3deg);
+  flex-shrink: 0;
+  background: rgba(200,16,46,0.04);
+}
+
+.q-label {
+  font-family: var(--font-hand);
+  font-size: 20px;
+  color: var(--red);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.q-marks {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-light);
+  margin-left: auto;
+  background: rgba(0,0,0,0.04);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* ── Question prompt ────────────────────────────────────────────── */
+.question-prompt {
+  font-size: 15px;
+  color: var(--ink-light);
+  font-style: italic;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--paper-line);
+  background: rgba(0,0,0,0.025);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  line-height: 1.55;
+}
+
+/* ── Working section ────────────────────────────────────────────── */
+.working {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Work line row ──────────────────────────────────────────────── */
+.work-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid transparent;
+  min-height: 38px;
+}
+
+.work-line + .work-line {
+  border-top: none;
+}
+
+.line-content {
+  flex: 1;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink);
+  font-family: var(--font-body);
+  /* Allow KaTeX to render normally */
+  overflow-wrap: break-word;
+}
+
+/* Struck-through line */
+.work-line.struck .line-content {
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 2px;
+  opacity: 0.55;
+}
+
+.line-mark {
+  flex-shrink: 0;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mark-tick {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--green);
+  line-height: 1;
+}
+
+.mark-cross {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--red);
+  line-height: 1;
+}
+
+/* ── Inline correction ──────────────────────────────────────────── */
+.margin-correction {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 8px 8px 16px;
+  margin-bottom: 4px;
+  border-left: 2px solid var(--red);
+  background: var(--red-light);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.margin-correction .arrow {
+  font-family: var(--font-hand);
+  font-size: 18px;
+  color: var(--red);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.margin-correction .correction-text {
+  font-family: var(--font-hand);
+  font-size: 17px;
+  color: var(--red);
+  font-weight: 600;
+  line-height: 1.45;
+  flex: 1;
+}
+
+/* KaTeX inside corrections inherits the Caveat font where possible */
+.margin-correction .katex {
+  font-size: 0.95em;
+}
+
+/* ── Final answer row ───────────────────────────────────────────── */
+.final-answer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.03);
+  border-radius: var(--radius);
+  border: 1px solid var(--paper-line);
+  gap: 12px;
+}
+
+.final-answer-label {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--ink-light);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  flex: 1;
+}
+
+.final-answer-value {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.wrong-answer {
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 2px;
+  color: var(--red);
+  opacity: 0.6;
+  margin-right: 6px;
+}
+
+.correct-answer {
+  font-family: var(--font-hand);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--red);
+}
+
+.final-mark-total {
+  font-family: var(--font-hand);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--red);
+  flex-shrink: 0;
+  min-width: 36px;
+  text-align: center;
+}
+
+/* ── Summary panel ──────────────────────────────────────────────── */
+.summary {
+  background: var(--paper-bg);
+  border: 1px solid var(--paper-line);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px var(--paper-shadow);
+  padding: 20px 24px;
+}
+
+.summary-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--red);
+  font-family: var(--font-body);
+  margin-bottom: 10px;
+  letter-spacing: 0.01em;
+}
+
+.summary-body {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+  font-family: var(--font-body);
+  margin-bottom: 14px;
+}
+
+.summary-body strong {
+  font-weight: 600;
+}
+
+.summary-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-light);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-top: 10px;
+  border-top: 1px solid var(--paper-line);
+}
+
+.score-badge {
+  background: var(--red);
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Page label ─────────────────────────────────────────────────── */
+.page-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #aaa;
+  text-align: center;
+  padding: 2px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="marked-paper" id="paper"></div>
+  <div class="page-label" id="page-label">— PAGE 1 OF 1 —</div>
+  <div class="summary" id="summary-panel"></div>
+</div>
+
+<script id="payload" type="application/json">/*PAYLOAD_PLACEHOLDER*/</script>
+
+<script>
+(function () {
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function markdownLite(md) {
+    // Bold only — these are short 2-4 sentence summaries
+    return esc(md).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  }
+
+  function parseQNumber(s) {
+    // "13(a)" → { num:"13", sub:"(a)" }
+    // "Q12b"  → { num:"12", sub:"(b)" }
+    // "Q2"    → { num:"2",  sub:""    }
+    var m = String(s || '').match(/^Q?\s*(\d+)\s*\(?([a-zA-Z])?\)?/);
+    if (!m) return { num: String(s || 'Q'), sub: '' };
+    return { num: m[1], sub: m[2] ? '(' + m[2].toLowerCase() + ')' : '' };
+  }
+
+  function el(tag, className, html) {
+    var e = document.createElement(tag);
+    if (className) e.className = className;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+
+  // ── Parse payload ──────────────────────────────────────────────────────────
+  var raw = document.getElementById('payload').textContent;
+  var payload;
+  try { payload = JSON.parse(raw); }
+  catch(e) { document.body.textContent = 'ERROR: invalid payload JSON — ' + e.message; window.__katexRendered = true; return; }
+
+  var marking  = payload.marking  || {};
+  var student  = payload.student  || {};
+  var timestamp = payload.timestamp || new Date().toISOString();
+  var diagramDataUrl = payload.diagram_crop_data_url || null;
+
+  var q       = marking.question || {};
+  var lines   = marking.lines    || [];
+  var fa      = marking.student_final_answer || null;
+  var marks   = marking.marks    || {};
+  var summary = marking.summary  || {};
+  var correct = marking.correct  || {};
+
+  // ── Format date ────────────────────────────────────────────────────────────
+  var dateStr;
+  try {
+    dateStr = new Date(timestamp).toLocaleString('en-SG', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true,
+      timeZone: 'Asia/Singapore'
+    });
+  } catch(e) { dateStr = timestamp; }
+
+  // ── Build paper ────────────────────────────────────────────────────────────
+  var paper = document.getElementById('paper');
+
+  // Header
+  var header = el('div', 'paper-header');
+  header.innerHTML =
+    '<div class="school-mark">AdrianMath &middot; Marked by AI</div>' +
+    '<div class="student-info"><strong>' + esc(student.name) + '</strong> &middot; ' + esc(student.level) + '<br>' + esc(dateStr) + '</div>';
+  paper.appendChild(header);
+
+  // Question number
+  var qParts = parseQNumber(q.number || 'Q');
+  var qRow = el('div', 'question-number');
+  qRow.innerHTML =
+    '<div class="q-num-circle">' + esc(qParts.num) + '</div>' +
+    (qParts.sub ? '<div class="q-label">' + esc(qParts.sub) + '</div>' : '') +
+    (q.max_marks != null ? '<div class="q-marks">[' + q.max_marks + ' mark' + (q.max_marks !== 1 ? 's' : '') + ']</div>' : '');
+  paper.appendChild(qRow);
+
+  // Question prompt
+  if (q.prompt) {
+    paper.appendChild(el('div', 'question-prompt', '<em>' + esc(q.prompt) + '</em>'));
+  }
+
+  // Diagram
+  if (q.has_diagram) {
+    if (diagramDataUrl) {
+      var diag = el('div', 'question-diagram');
+      var img = document.createElement('img');
+      img.src = diagramDataUrl;
+      img.alt = "diagram from student's page";
+      img.style.cssText = 'max-width:100%;border:1px solid var(--paper-line);border-radius:3px;margin:12px 0;display:block;';
+      diag.appendChild(img);
+      paper.appendChild(diag);
+    } else {
+      paper.appendChild(el('div', null,
+        '<div style="border:1px dashed #bbb;padding:12px 16px;margin:12px 0;border-radius:4px;text-align:center;font-style:italic;color:#888;font-size:14px;">' +
+        '[Diagram from student\u2019s page \u2014 see original photo]' +
+        '</div>'
+      ));
+    }
+  }
+
+  // Working lines
+  var working = el('div', 'working');
+  lines.forEach(function(line) {
+    var isStruck = !!line.is_crossed_out;
+    var verdict  = line.verdict || 'neutral';
+
+    // Row
+    var row = el('div', 'work-line' + (isStruck ? ' struck' : ''));
+    var content = el('div', 'line-content');
+    // Use LaTeX if available, else plain text
+    content.innerHTML = line.transcription_latex
+      ? line.transcription_latex
+      : esc(line.transcription_plain || '');
+    var markEl = el('div', 'line-mark');
+    if (!isStruck) {
+      if (verdict === 'correct') {
+        markEl.innerHTML = '<div class="mark-tick">\u2713</div>';
+      } else if (verdict === 'wrong') {
+        markEl.innerHTML = '<div class="mark-cross">\u2717</div>';
+      }
+    }
+    row.appendChild(content);
+    row.appendChild(markEl);
+    working.appendChild(row);
+
+    // Inline correction below the line
+    if (line.correction && line.correction.text_latex) {
+      var arrowChar = line.correction.arrow === 'down' ? '\u2193'
+                    : line.correction.arrow === 'right' ? '\u2192'
+                    : '\u2191'; // default up
+      var corr = el('div', 'margin-correction');
+      corr.innerHTML =
+        '<div class="arrow">' + arrowChar + '</div>' +
+        '<div class="correction-text">' + line.correction.text_latex + '</div>';
+      working.appendChild(corr);
+    }
+  });
+  paper.appendChild(working);
+
+  // Final answer
+  if (fa) {
+    var finalRow = el('div', 'final-answer');
+    var isCorrect = !!fa.matches_correct;
+    var correctAnswer = correct.final_answer || '';
+
+    var wrongHtml = '';
+    if (!isCorrect && fa.value_raw) {
+      wrongHtml = '<span class="wrong-answer">' + esc(fa.value_raw) + '</span>';
+    }
+    var answerHtml;
+    if (!isCorrect && correctAnswer) {
+      answerHtml = wrongHtml + ' <span class="correct-answer">' + esc(correctAnswer) + '</span>';
+    } else {
+      answerHtml = '<span>' + esc(fa.value_raw || '') + '</span>';
+    }
+
+    finalRow.innerHTML =
+      '<div class="final-answer-label"><span>Answer</span><span class="final-answer-value">' + answerHtml + '</span></div>' +
+      '<div class="final-mark-total">' + esc(marks.margin_note || '') + '</div>';
+    paper.appendChild(finalRow);
+  }
+
+  // ── Summary panel ──────────────────────────────────────────────────────────
+  var summaryEl = document.getElementById('summary-panel');
+  var awarded = marks.awarded != null ? marks.awarded : 0;
+  var max     = marks.max     != null ? marks.max     : (q.max_marks != null ? q.max_marks : '?');
+  summaryEl.innerHTML =
+    '<div class="summary-title">' + esc(summary.title || 'Feedback') + '</div>' +
+    '<div class="summary-body">' + markdownLite(summary.body_markdown || '') + '</div>' +
+    '<div class="summary-meta">' +
+      '<span>Marked by AdrianMath AI</span>' +
+      '<span class="score-badge">' + awarded + ' / ' + max + ' mark' + (max !== 1 ? 's' : '') + '</span>' +
+    '</div>';
+
+  // ── KaTeX render ───────────────────────────────────────────────────────────
+  window.__buildDone = true;
+
+  function doKatex() {
+    try {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true  },
+          { left: '$',  right: '$',  display: false },
+        ],
+        throwOnError: false,
+        errorColor: '#c8102e',
+      });
+    } catch(e) {
+      console.warn('KaTeX render error:', e);
+    }
+    window.__katexRendered = true;
+  }
+
+  window.__runKatex = doKatex;
+
+  // If auto-render script already loaded (no defer race), run immediately
+  if (typeof renderMathInElement === 'function') {
+    doKatex();
+  }
+  // Otherwise the onload on the auto-render script tag fires __runKatex()
+
+})();
+</script>
+</body>
+</html>
