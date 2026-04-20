@@ -1066,6 +1066,10 @@ export default function ProgressPage() {
   const [fetchError, setFetchError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const touchStartY = useRef(0);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isPulling, setIsPulling] = useState(false);
+  const PULL_THRESHOLD = 80;
+  const MAX_PULL = 120;
 
   useEffect(() => {
     const pw = getCookie('progress_pw') || getCookie('admin_pw');
@@ -1144,9 +1148,23 @@ export default function ProgressPage() {
     }
   }
 
-  function onTouchStart(e: React.TouchEvent) { touchStartY.current = e.touches[0].clientY; }
-  function onTouchEnd(e: React.TouchEvent) {
-    if (e.changedTouches[0].clientY - touchStartY.current > 60 && window.scrollY === 0) triggerRefresh();
+  function onTouchStart(e: React.TouchEvent) {
+    if (window.scrollY > 0) return;
+    touchStartY.current = e.touches[0].clientY;
+    setIsPulling(true);
+  }
+
+  function onTouchMove(e: React.TouchEvent) {
+    if (!isPulling) return;
+    const delta = e.touches[0].clientY - touchStartY.current;
+    if (delta <= 0 || window.scrollY > 0) { setPullDistance(0); return; }
+    setPullDistance(Math.min(delta * 0.5, MAX_PULL));
+  }
+
+  function onTouchEnd() {
+    if (pullDistance >= PULL_THRESHOLD) triggerRefresh();
+    setPullDistance(0);
+    setIsPulling(false);
   }
 
   const loggedCount = lessons.filter(l => l.progressLogged).length;
@@ -1175,11 +1193,26 @@ export default function ProgressPage() {
 
   // ── Main ──
   return (
-    <div className="min-h-screen bg-neutral-50 pb-20" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      {refreshing && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-2 pointer-events-none">
-          <div className="bg-neutral-900 text-white text-[11px] font-medium px-3 py-1 rounded-full">
-            Refreshing…
+    <div className="min-h-screen bg-neutral-50 pb-20" style={{ overscrollBehaviorY: 'contain' }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      {(pullDistance > 0 || refreshing) && (
+        <div
+          className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none transition-transform"
+          style={{ transform: `translateY(${refreshing ? 8 : Math.min(pullDistance - 20, 20)}px)` }}
+        >
+          <div className="bg-neutral-900 text-white text-[11px] font-medium px-3 py-1 rounded-full flex items-center gap-1.5">
+            {refreshing ? (
+              <>
+                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refreshing…
+              </>
+            ) : pullDistance >= PULL_THRESHOLD ? (
+              'Release to refresh'
+            ) : (
+              'Pull to refresh'
+            )}
           </div>
         </div>
       )}
@@ -1196,6 +1229,17 @@ export default function ProgressPage() {
               </svg>
             </a>
             <span className="flex-1 text-[15px] font-semibold text-neutral-900">Progress</span>
+            <button
+              onClick={triggerRefresh}
+              disabled={refreshing || loading}
+              aria-label="Refresh lessons"
+              className="shrink-0 p-1 min-h-[36px] min-w-[36px] flex items-center justify-center text-neutral-400 hover:text-neutral-600 active:bg-neutral-100 rounded-md disabled:opacity-40"
+            >
+              <svg className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
             <span className="shrink-0 text-[13px] font-semibold text-neutral-600">
               {loggedCount}<span className="text-neutral-300"> / </span>{lessons.length}
             </span>

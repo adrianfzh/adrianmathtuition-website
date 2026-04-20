@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+body {
+  overscroll-behavior-y: contain;
+}
+
 @theme {
   /* Colors */
   --color-navy: hsl(220, 60%, 20%);
