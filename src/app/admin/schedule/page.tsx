@@ -1542,7 +1542,7 @@ body {
 }
 .day-tabs::-webkit-scrollbar { display: none; }
 .day-tab {
-  flex: 1; min-width: 44px;
+  flex: 0 0 auto; min-width: 64px; width: calc(100% / 5);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 2px; padding: 10px 4px;
@@ -1699,9 +1699,11 @@ body {
   .day-tabs { display: none; }
   .desktop-grid {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(160px, 1fr));
     gap: 8px;
     align-items: start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .grid-col { display: flex; flex-direction: column; gap: 8px; }
   .grid-col-today .slot-card { border-color: #bfdbfe; }
