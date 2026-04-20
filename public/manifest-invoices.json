@@ -1,0 +1,12 @@
+{
+  "name": "Invoices — Adrian's Math Tuition",
+  "short_name": "Invoices",
+  "start_url": "/admin/invoices",
+  "display": "standalone",
+  "background_color": "#9F1239",
+  "theme_color": "#9F1239",
+  "icons": [
+    { "src": "/icons/invoices-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/invoices-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

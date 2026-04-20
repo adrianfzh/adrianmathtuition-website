@@ -5,6 +5,7 @@ const icons = [
   { letter: 'A', bg: '#1a365d', fg: '#FFF8E7', name: 'admin' },
   { letter: 'S', bg: '#F59E0B', fg: '#1a365d', name: 'schedule' },
   { letter: 'P', bg: '#15803D', fg: '#FFF8E7', name: 'progress' },
+  { letter: '$', bg: '#9F1239', fg: '#FFF8E7', name: 'invoices' },
 ];
 
 const sizes = [180, 192, 512];
