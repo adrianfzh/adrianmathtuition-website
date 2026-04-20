@@ -9,20 +9,29 @@ function checkAuth(req: NextRequest): boolean {
   return req.headers.get('authorization') === `Bearer ${pw}`;
 }
 
+function localToday(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
 // GET /api/admin/progress/lessons?date=YYYY-MM-DD
 export async function GET(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const now = new Date();
-  const localFallback = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const date = searchParams.get('date') || localFallback;
+  const today = localToday();
+  const date = searchParams.get('date') || today;
 
-  const formula = `AND(IS_SAME({Date},'${date}','day'),{Status}='Scheduled')`;
-  const filter = encodeURIComponent(formula);
+  // Today + future: only Scheduled. Past: Completed/Absent/Rescheduled/Cancelled.
+  const isPast = date < today;
+  const statusFilter = isPast
+    ? `OR({Status}='Completed',{Status}='Absent',{Status}='Rescheduled',{Status}='Cancelled')`
+    : `{Status}='Scheduled'`;
+  const formula = `AND(IS_SAME({Date},'${date}','day'),${statusFilter})`;
+
   const lessons = await airtableRequestAll(
     'Lessons',
-    `?filterByFormula=${filter}&sort[0][field]=Date&sort[0][direction]=asc`
+    `?filterByFormula=${encodeURIComponent(formula)}&sort[0][field]=Date&sort[0][direction]=asc`
   );
 
   // Collect unique student + slot IDs
@@ -33,7 +42,13 @@ export async function GET(req: NextRequest) {
     lessons.records.map((r: any) => r.fields['Slot']?.[0]).filter(Boolean)
   )] as string[];
 
-  const [studentsById, slotsById] = await Promise.all([
+  // For rescheduled lessons, fetch the new lesson's date
+  const rescheduledNewIds = lessons.records
+    .filter((r: any) => r.fields['Status'] === 'Rescheduled')
+    .map((r: any) => r.fields['Rescheduled Lesson ID']?.[0])
+    .filter(Boolean) as string[];
+
+  const [studentsById, slotsById, rescheduledDatesById] = await Promise.all([
     studentIds.length
       ? airtableRequestAll(
           'Students',
@@ -46,6 +61,12 @@ export async function GET(req: NextRequest) {
           `?filterByFormula=${encodeURIComponent(`OR(${slotIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Time`
         ).then(d => Object.fromEntries(d.records.map((r: any) => [r.id, r.fields])))
       : Promise.resolve({}),
+    rescheduledNewIds.length
+      ? airtableRequestAll(
+          'Lessons',
+          `?filterByFormula=${encodeURIComponent(`OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Date`
+        ).then(d => Object.fromEntries(d.records.map((r: any) => [r.id, r.fields['Date'] ?? ''])))
+      : Promise.resolve({}),
   ]);
 
   const result = lessons.records.map((r: any) => {
@@ -53,6 +74,7 @@ export async function GET(req: NextRequest) {
     const slotId = r.fields['Slot']?.[0] ?? null;
     const student = studentId ? studentsById[studentId] : null;
     const slot = slotId ? slotsById[slotId] : null;
+    const rescheduledNewId = r.fields['Rescheduled Lesson ID']?.[0] ?? null;
     return {
       id: r.id,
       date: r.fields['Date'] ?? '',
@@ -67,6 +89,7 @@ export async function GET(req: NextRequest) {
       parentEmail: student?.['Parent Email'] ?? '',
       parentName: student?.['Parent Name'] ?? '',
       slotTime: slot?.['Time'] ?? '',
+      rescheduledToDate: rescheduledNewId ? (rescheduledDatesById[rescheduledNewId] ?? '') : '',
       // progress fields
       topicsCovered: r.fields['Topics Covered'] ?? '',
       homeworkAssigned: r.fields['Homework Assigned'] ?? '',

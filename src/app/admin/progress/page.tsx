@@ -21,6 +21,7 @@ interface LessonCard {
   subjects: Subject[];
   subjectLevel: string;
   slotTime: string;
+  rescheduledToDate: string;
   topicsCovered: string;
   homeworkAssigned: string;
   homeworkCompletion: string;
@@ -996,43 +997,60 @@ function LessonCardRow({
   }
 
   const subjectBadges = (data.subjects ?? []).filter(Boolean);
+  const isRescheduled = data.status === 'Rescheduled';
+  const isDimmed = isRescheduled || data.status === 'Absent' || data.status === 'Cancelled';
+  const rescheduledDatePast = isRescheduled && data.rescheduledToDate && data.rescheduledToDate < todayISO();
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+    <div className={`rounded-xl border overflow-hidden ${isDimmed ? 'bg-neutral-50 border-neutral-100' : 'bg-white border-neutral-200'}`}>
       {/* Card header */}
       <div
-        className="flex items-start gap-3 px-4 py-3 active:bg-neutral-50 cursor-pointer"
+        className="flex items-start gap-3 px-4 py-3 active:bg-neutral-100 cursor-pointer"
         onClick={() => setOpen(o => !o)}
       >
         {/* Status dot */}
         <div className="mt-0.5 shrink-0 text-base leading-none">
-          <span className={data.progressLogged ? 'text-emerald-500' : 'text-neutral-300'}>●</span>
+          {isDimmed
+            ? <span className="text-neutral-200">●</span>
+            : <span className={data.progressLogged ? 'text-emerald-500' : 'text-neutral-300'}>●</span>
+          }
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              className="font-semibold text-neutral-900 text-[15px] hover:underline"
+              className={`font-semibold text-[15px] hover:underline ${isDimmed ? 'text-neutral-400' : 'text-neutral-900'}`}
               onClick={e => { e.stopPropagation(); router.push(`/admin/progress/student/${data.studentId}`); }}
             >
               {data.studentName || 'Unknown Student'}
             </button>
-            <span className="text-[13px] text-neutral-400">{data.slotTime}</span>
-            {open && <SaveIndicator status={saveStatus} savedAt={savedAt} />}
+            <span className="text-[13px] text-neutral-300">{data.slotTime}</span>
+            {open && !isDimmed && <SaveIndicator status={saveStatus} savedAt={savedAt} />}
           </div>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.level && (
-              <span className="px-1.5 py-0.5 rounded-md text-[11px] font-medium bg-neutral-100 text-neutral-600">{data.level}</span>
+              <span className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${isDimmed ? 'bg-neutral-100 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>{data.level}</span>
             )}
             {subjectBadges.map(s => (
-              <span key={s} className="px-1.5 py-0.5 rounded-md text-[11px] font-medium bg-neutral-100 text-neutral-600">{s}</span>
+              <span key={s} className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${isDimmed ? 'bg-neutral-100 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>{s}</span>
             ))}
+            {isRescheduled && (
+              <span className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${rescheduledDatePast ? 'bg-neutral-100 text-neutral-300' : 'bg-blue-50 text-blue-400'}`}>
+                → {data.rescheduledToDate ? formatShortDate(data.rescheduledToDate) : '?'}
+              </span>
+            )}
+            {data.status === 'Absent' && (
+              <span className="px-1.5 py-0.5 rounded-md text-[11px] font-medium bg-neutral-100 text-neutral-300">Absent</span>
+            )}
+            {data.status === 'Cancelled' && (
+              <span className="px-1.5 py-0.5 rounded-md text-[11px] font-medium bg-neutral-100 text-neutral-300">Cancelled</span>
+            )}
           </div>
         </div>
 
         {/* Chevron */}
-        <div className="shrink-0 text-neutral-300 mt-1">
+        <div className={`shrink-0 mt-1 ${isDimmed ? 'text-neutral-200' : 'text-neutral-300'}`}>
           <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
