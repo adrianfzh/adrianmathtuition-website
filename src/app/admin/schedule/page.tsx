@@ -1546,7 +1546,7 @@ body {
 }
 .day-tabs::-webkit-scrollbar { display: none; }
 .day-tab {
-  flex: 0 0 auto; min-width: 64px; width: calc(100% / 5);
+  flex: 1; min-width: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 2px; padding: 10px 4px;
