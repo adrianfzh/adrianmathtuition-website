@@ -1,5 +1,4 @@
 import path from 'path';
-import pLimit from 'p-limit';
 import { put } from '@vercel/blob';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -10,6 +9,8 @@ export interface DetectedQuestion {
   questionRegionBox: [number, number, number, number]; // [yMin, xMin, yMax, xMax] 0-1000
   questionRegionPixels: { x1: number; y1: number; x2: number; y2: number };
   hasDiagram: boolean;
+  isContinuation: boolean;       // true = continuation of a question from the previous page
+  lastPartVisible: string;       // e.g. "(ii)" — used to build context for the next page
 }
 
 export interface PageImage {
@@ -28,11 +29,48 @@ export interface ProcessedPage {
   questions: DetectedQuestion[];
 }
 
+export interface QuestionGroup {
+  questionLabel: string;
+  pages: number[];               // page indices where this logical question appears
+}
+
+export interface ProcessResult {
+  pages: ProcessedPage[];
+  questionGroups: QuestionGroup[];
+}
+
+// ── Cross-page context ────────────────────────────────────────────────────────
+
+interface PageContext {
+  lastQuestionLabel: string;     // e.g. "Q1"
+  lastPartLabel: string | null;  // e.g. "(ii)", or null if no sub-parts visible
+}
+
+function buildPageContext(questions: DetectedQuestion[]): PageContext | null {
+  if (questions.length === 0) return null;
+  const last = questions[questions.length - 1];
+  return {
+    lastQuestionLabel: last.questionLabel,
+    lastPartLabel: last.lastPartVisible || null,
+  };
+}
+
 // ── Gemini detection prompt ───────────────────────────────────────────────────
 
-const DETECTION_PROMPT = `This is a page of a Singapore secondary or JC math student's exam paper or worksheet. Each printed question is followed by space below where the student has handwritten their working and answer.
+function buildDetectionPrompt(pageIndex: number, prevContext: PageContext | null): string {
+  const contextSection = prevContext
+    ? `\nContext from the previous page: it ended with question "${prevContext.lastQuestionLabel}"${
+        prevContext.lastPartLabel ? ` (last visible sub-part: ${prevContext.lastPartLabel})` : ''
+      }. Consider whether this page continues that question or starts a new one.\n`
+    : '';
 
-Detect the 2D bounding box around EACH distinct question's combined area (the printed question text PLUS the student's handwritten working below it). Treat sub-parts (e.g. Q12(a), Q12(b), Q12(c)) as ONE region grouped under the parent question — they share working space and should be marked together.
+  return `This is page ${pageIndex + 1} of a Singapore secondary or JC math student's exam paper or worksheet.${contextSection}
+Detect the 2D bounding box around EACH distinct question's combined area on THIS page (the printed question text PLUS the student's handwritten working below it). Treat sub-parts like (a)(b)(c) or (i)(ii)(iii) as ONE region grouped under the parent question.
+
+IMPORTANT RULES FOR CONTINUATIONS:
+- If this page starts with a sub-part like "(iii)" or "(b)" WITHOUT a new question number before it, and the previous page ended with that parent question, label this region with the PARENT question number from the previous page. For example, if the previous page ended with "Q1" parts (i)(ii), and this page begins with "(iii)", label this region as "Q1" (NOT "Q(iii)").
+- If this page starts with a clear new question number like "Q2" or "Question 3", that is a new question — label it as such.
+- If uncertain, use the parent question label from the previous page if context suggests continuation, otherwise use "Q?".
 
 Return coordinates in normalized 0-1000 [y_min, x_min, y_max, x_max] format — Y FIRST.
 
@@ -42,23 +80,22 @@ Return JSON only:
     {
       "label": "Q1",
       "box_2d": [y_min, x_min, y_max, x_max],
-      "has_diagram": false
-    },
-    {
-      "label": "Q12",
-      "box_2d": [y_min, x_min, y_max, x_max],
-      "has_diagram": true
+      "has_diagram": false,
+      "is_continuation": false,
+      "last_part_visible": "(ii)"
     }
   ]
 }
 
-Rules:
-- One entry per parent question. NEVER split sub-parts into multiple entries.
-- The label is the question number/letter as printed (e.g. "Q1", "Q12", "Section A Q3"). If unclear, use "Q?".
-- The box_2d should encompass BOTH the printed question text AND the student's handwritten working below it (so we can crop the whole region for marking).
-- has_diagram=true if the question requires the student to draw/use a diagram (graph, construction, geometric figure). Not for printed diagrams in the question.
-- If a question's working spans multiple regions on the page (rare but possible), pick the bounding box that encompasses the bulk of the visible working.
+Field rules:
+- "label": parent question number as printed (e.g. "Q1", "Q12", "Section A Q3"). Use "Q?" if unclear.
+- "has_diagram": true if the question requires the student to draw/use a diagram (graph, construction, geometric figure). Not for printed diagrams.
+- "is_continuation": true if this region is a continuation of a question from the previous page.
+- "last_part_visible": the last visible sub-part label in this region (e.g. "(ii)", "(c)"). Empty string if no sub-parts or label not visible.
+- One entry per logical question. NEVER split sub-parts into multiple entries.
+- box_2d encompasses BOTH printed question text AND student's handwritten working.
 - If the page is blank or contains no questions, return { "questions": [] }.`;
+}
 
 // ── PDF → page images ─────────────────────────────────────────────────────────
 
@@ -118,6 +155,8 @@ export async function pdfToPageImages(pdfBuffer: Buffer): Promise<PageImage[]> {
   const numPages: number = pdfDoc.numPages;
   await pdfDoc.destroy();
 
+  // Rendering is page-independent — parallelise with a concurrency cap
+  const { default: pLimit } = await import('p-limit');
   const limit = pLimit(5);
   const results = await Promise.all(
     Array.from({ length: numPages }, (_, i) =>
@@ -146,13 +185,14 @@ export async function imageFileToPageImage(
   return { buffer: pngBuffer, width: img.width, height: img.height, pageIndex };
 }
 
-// ── Gemini region detection ───────────────────────────────────────────────────
+// ── Gemini region detection (sequential for cross-page context) ───────────────
 
-export async function detectQuestionsOnPage(
+async function detectQuestionsOnPage(
   imageBuffer: Buffer,
   width: number,
   height: number,
-  pageIndex: number
+  pageIndex: number,
+  prevContext: PageContext | null
 ): Promise<DetectedQuestion[]> {
   const genai = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -160,6 +200,8 @@ export async function detectQuestionsOnPage(
     model: 'gemini-2.5-pro',
     generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } as any,
   });
+
+  const prompt = buildDetectionPrompt(pageIndex, prevContext);
 
   console.time(`gemini-detect-page-${pageIndex}`);
   let result;
@@ -169,13 +211,8 @@ export async function detectQuestionsOnPage(
         {
           role: 'user',
           parts: [
-            {
-              inlineData: {
-                mimeType: 'image/png',
-                data: imageBuffer.toString('base64'),
-              },
-            },
-            { text: DETECTION_PROMPT },
+            { inlineData: { mimeType: 'image/png', data: imageBuffer.toString('base64') } },
+            { text: prompt },
           ],
         },
       ],
@@ -185,7 +222,15 @@ export async function detectQuestionsOnPage(
   }
 
   const text = result.response.text();
-  let parsed: { questions: Array<{ label: string; box_2d: [number, number, number, number]; has_diagram: boolean }> };
+  let parsed: {
+    questions: Array<{
+      label: string;
+      box_2d: [number, number, number, number];
+      has_diagram: boolean;
+      is_continuation: boolean;
+      last_part_visible: string;
+    }>;
+  };
 
   try {
     parsed = JSON.parse(text);
@@ -206,13 +251,15 @@ export async function detectQuestionsOnPage(
         y2: Math.round((yMax / 1000) * height),
       },
       hasDiagram: q.has_diagram ?? false,
+      isContinuation: q.is_continuation ?? false,
+      lastPartVisible: q.last_part_visible ?? '',
     };
   });
 }
 
 // ── Vercel Blob upload ────────────────────────────────────────────────────────
 
-export async function uploadPageImage(
+async function uploadPageImage(
   batchId: string,
   pageIndex: number,
   imageBuffer: Buffer
@@ -224,26 +271,50 @@ export async function uploadPageImage(
   return blob.url;
 }
 
-// ── Parallel orchestration ────────────────────────────────────────────────────
+// ── Orchestration: parallel uploads, sequential detection ─────────────────────
 
 export async function processPages(
   pageImages: PageImage[],
   batchId: string
-): Promise<ProcessedPage[]> {
-  const limit = pLimit(5);
+): Promise<ProcessResult> {
+  // Sort by page order (should already be sorted, but be safe)
+  const sorted = [...pageImages].sort((a, b) => a.pageIndex - b.pageIndex);
 
-  const results = await Promise.all(
-    pageImages.map((page) =>
-      limit(async () => {
-        const { buffer, width, height, pageIndex } = page;
-        const [url, questions] = await Promise.all([
-          uploadPageImage(batchId, pageIndex, buffer),
-          detectQuestionsOnPage(buffer, width, height, pageIndex),
-        ]);
-        return { pageIndex, buffer, width, height, url, questions };
-      })
-    )
+  // Upload all page images to Blob in parallel — page-independent
+  const urlPromises = sorted.map((p) => uploadPageImage(batchId, p.pageIndex, p.buffer));
+  const urls = await Promise.all(urlPromises);
+
+  // Detect questions sequentially to preserve cross-page context chain
+  const allQuestions: DetectedQuestion[][] = [];
+  let prevContext: PageContext | null = null;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const { buffer, width, height, pageIndex } = sorted[i];
+    const questions = await detectQuestionsOnPage(buffer, width, height, pageIndex, prevContext);
+    allQuestions.push(questions);
+    prevContext = buildPageContext(questions);
+  }
+
+  const pages: ProcessedPage[] = sorted.map((p, i) => ({
+    pageIndex: p.pageIndex,
+    buffer: p.buffer,
+    width: p.width,
+    height: p.height,
+    url: urls[i],
+    questions: allQuestions[i],
+  }));
+
+  // Group logical questions across pages by label
+  const groupMap = new Map<string, number[]>();
+  for (const page of pages) {
+    for (const q of page.questions) {
+      if (!groupMap.has(q.questionLabel)) groupMap.set(q.questionLabel, []);
+      groupMap.get(q.questionLabel)!.push(page.pageIndex);
+    }
+  }
+  const questionGroups: QuestionGroup[] = Array.from(groupMap.entries()).map(
+    ([questionLabel, pageList]) => ({ questionLabel, pages: pageList })
   );
 
-  return results.sort((a, b) => a.pageIndex - b.pageIndex);
+  return { pages, questionGroups };
 }

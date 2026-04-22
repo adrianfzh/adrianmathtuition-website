@@ -14,6 +14,13 @@ interface DetectedQuestion {
   questionRegionBox: [number, number, number, number];
   questionRegionPixels: { x1: number; y1: number; x2: number; y2: number };
   hasDiagram: boolean;
+  isContinuation: boolean;
+  lastPartVisible: string;
+}
+
+interface QuestionGroup {
+  questionLabel: string;
+  pages: number[];
 }
 
 interface PageResult {
@@ -29,7 +36,12 @@ interface BatchResult {
   studentName: string;
   studentId: string | null;
   pages: PageResult[];
-  summary: { totalPages: number; totalQuestions: number };
+  summary: {
+    totalPages: number;
+    totalQuestions: number;
+    totalRegions: number;
+    questionGroups: QuestionGroup[];
+  };
 }
 
 type UIState = 'upload' | 'uploading' | 'preview';
@@ -426,7 +438,12 @@ function PreviewView({ result, onCancel }: { result: BatchResult; onCancel: () =
       <div className="preview-summary">
         <span className="summary-chip">{result.studentName}</span>
         <span className="summary-chip">Pages: {result.summary.totalPages}</span>
-        <span className="summary-chip">Detected: {result.summary.totalQuestions} questions</span>
+        <span className="summary-chip">
+          Detected: {result.summary.totalQuestions} question{result.summary.totalQuestions !== 1 ? 's' : ''}
+          {result.summary.totalRegions !== result.summary.totalQuestions
+            ? ` across ${result.summary.totalRegions} regions`
+            : ''}
+        </span>
       </div>
 
       {/* Per-page thumbnails */}
@@ -459,7 +476,9 @@ function PreviewView({ result, onCancel }: { result: BatchResult; onCancel: () =
                     height: Math.round((q.questionRegionPixels.y2 - q.questionRegionPixels.y1) * scale),
                   }}
                 >
-                  <span className="q-label">{q.questionLabel}</span>
+                  <span className="q-label">
+                    {q.questionLabel}{q.isContinuation ? ' (cont.)' : ''}
+                  </span>
                 </div>
               ))}
             </div>
@@ -467,7 +486,7 @@ function PreviewView({ result, onCancel }: { result: BatchResult; onCancel: () =
             <div className="page-detected">
               {page.questions.length === 0
                 ? 'No questions detected'
-                : `Detected: ${page.questions.map(q => q.questionLabel).join(', ')}`}
+                : `Detected: ${page.questions.map(q => q.questionLabel + (q.isContinuation ? ' (continued)' : '')).join(', ')}`}
             </div>
           </div>
         );

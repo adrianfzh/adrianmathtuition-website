@@ -336,12 +336,28 @@ Adrian must create this table in Airtable before the init endpoint can write to 
 
 **Important:** Use `@napi-rs/canvas`, not the `canvas` npm package. `canvas` requires system libraries (Cairo, Pango) that aren't available in Vercel's serverless runtime and causes `DOMMatrix is not defined` errors from pdfjs-dist. `@napi-rs/canvas` uses prebuilt binaries and works out of the box.
 
+### Cross-page continuation handling
+
+Gemini detection runs **sequentially** per page (not in parallel) so each page call receives the previous page's last question label and last visible sub-part. This lets Gemini correctly label continuation regions — e.g. if page 1 ends with Q1 part (ii), page 2 beginning with "(iii)" is labelled "Q1" not "Q(iii)".
+
+Each `DetectedQuestion` has:
+- `isContinuation: boolean` — true if this is a continuation from the previous page
+- `lastPartVisible: string` — last sub-part label visible in this region (feeds context to next page)
+
+The summary includes `questionGroups` — logical questions grouped across pages:
+```json
+"questionGroups": [{ "questionLabel": "Q1", "pages": [0, 1] }, { "questionLabel": "Q2", "pages": [2, 3] }]
+```
+`totalQuestions` = number of unique logical questions; `totalRegions` = number of page regions (may be higher if questions span multiple pages).
+
+Page image **uploads** are parallelised (independent). Only the Gemini detection calls are sequential (for context).
+
 ### PDF rendering notes
 
 - Uses `pdfjs-dist/legacy/build/pdf.mjs` (legacy build avoids DOMMatrix error in Node.js)
 - Worker path set to local file URL: `file://<cwd>/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs`
 - Scale 2.0 = ~150 DPI A4 (1224×1584 px per page)
-- Gemini detection on each page in parallel (p-limit 5 concurrent)
+- PDF page rendering is parallel (p-limit 5); Gemini detection is sequential for cross-page context
 - Page images stored at `batches/<batchId>/page-<index>.png` in Vercel Blob (public, unguessable path)
 
 ### Upload size limit

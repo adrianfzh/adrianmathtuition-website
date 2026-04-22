@@ -120,12 +120,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No pages found in upload' }, { status: 400 });
   }
 
-  // ── Process: upload + detect in parallel ──────────────────────────────────
+  // ── Process: parallel uploads + sequential detection ─────────────────────
 
   const batchId = generateBatchId();
-  let processedPages;
+  let processResult;
   try {
-    processedPages = await processPages(pageImages, batchId);
+    processResult = await processPages(pageImages, batchId);
   } catch (err: any) {
     console.error('[mark-batch/init] processPages error:', err);
     return NextResponse.json(
@@ -134,7 +134,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const totalQuestions = processedPages.reduce((sum, p) => sum + p.questions.length, 0);
+  const { pages: processedPages, questionGroups } = processResult;
+  const totalRegions = processedPages.reduce((sum, p) => sum + p.questions.length, 0);
+  const totalQuestions = questionGroups.length;
 
   const responsePayload = {
     batchId,
@@ -150,6 +152,8 @@ export async function POST(req: NextRequest) {
     summary: {
       totalPages: processedPages.length,
       totalQuestions,
+      totalRegions,
+      questionGroups,
     },
   };
 
