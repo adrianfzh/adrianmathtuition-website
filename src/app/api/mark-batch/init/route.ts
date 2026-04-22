@@ -5,6 +5,12 @@ import {
   imageFileToPageImage,
   processPages,
 } from '@/lib/batch-marking';
+// Explicit imports so Next.js file-tracing bundles these into the serverless function.
+// pdfjs-dist dynamically requires @napi-rs/canvas at runtime; without this hint the
+// bundler omits it and the function fails on Vercel with "Cannot find module".
+import '@napi-rs/canvas';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+require('pdfjs-dist/legacy/build/pdf.mjs');
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
