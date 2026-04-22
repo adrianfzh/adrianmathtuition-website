@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
     '/api/mark-batch/execute': [
       './src/assets/fonts/**/*',
     ],
+    '/api/mark-batch/assemble-pdf': [
+      './src/assets/fonts/**/*',
+    ],
   },
 };
 
