@@ -8,6 +8,7 @@ import {
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
 
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];

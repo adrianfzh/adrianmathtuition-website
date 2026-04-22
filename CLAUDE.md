@@ -330,9 +330,11 @@ Adrian must create this table in Airtable before the init endpoint can write to 
 
 ### Dependencies added
 
-`pdfjs-dist` (v5.x, legacy ESM build), `canvas` (Node.js canvas), `p-limit`, `@google/generative-ai`
+`pdfjs-dist` (v5.x, legacy ESM build), `@napi-rs/canvas` (Node.js canvas — NOT the `canvas` package), `p-limit`, `@google/generative-ai`
 
-`next.config.ts` has `serverExternalPackages: ['canvas', 'pdfjs-dist']` — required because canvas is a native module.
+`next.config.ts` has `serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist']` — required because these are native modules.
+
+**Important:** Use `@napi-rs/canvas`, not the `canvas` npm package. `canvas` requires system libraries (Cairo, Pango) that aren't available in Vercel's serverless runtime and causes `DOMMatrix is not defined` errors from pdfjs-dist. `@napi-rs/canvas` uses prebuilt binaries and works out of the box.
 
 ### PDF rendering notes
 

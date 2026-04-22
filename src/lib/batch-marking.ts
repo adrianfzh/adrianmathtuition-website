@@ -81,7 +81,7 @@ async function pdfPageToImage(
   scale = 2.0
 ): Promise<{ buffer: Buffer; width: number; height: number }> {
   const pdfjsLib = await getPdfjs();
-  const { createCanvas } = await import('canvas');
+  const { createCanvas } = await import('@napi-rs/canvas');
 
   const loadingTask = pdfjsLib.getDocument({
     data: new Uint8Array(pdfBuffer),
@@ -136,7 +136,7 @@ export async function imageFileToPageImage(
   imageBuffer: Buffer,
   pageIndex: number
 ): Promise<PageImage> {
-  const { createCanvas, loadImage } = await import('canvas');
+  const { createCanvas, loadImage } = await import('@napi-rs/canvas');
   const img = await loadImage(imageBuffer);
   const canvas = createCanvas(img.width, img.height);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
