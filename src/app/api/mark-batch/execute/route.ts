@@ -139,16 +139,16 @@ export async function POST(req: NextRequest) {
     detectionData.summary.questionGroups.flatMap(g => g.pages)
   )];
 
-  for (const pageIdx of uniquePageIndices) {
+  await Promise.all(uniquePageIndices.map(async (pageIdx) => {
     const page = detectionData.pages.find(p => p.pageIndex === pageIdx);
-    if (!page) continue;
+    if (!page) return;
     try {
       const buf = await fetchPageBuffer(page.pageImageUrl);
       pageMap.set(pageIdx, { buffer: buf, width: page.pageImageWidth, height: page.pageImageHeight, url: page.pageImageUrl });
     } catch (err) {
       console.error(`[execute] Failed to fetch page ${pageIdx}:`, err);
     }
-  }
+  }));
 
   // ── Process each question group (with concurrency limit) ──────────────────
 
@@ -260,14 +260,22 @@ export async function POST(req: NextRequest) {
           // ── Create Airtable Submission record (non-fatal) ─────────────
           try {
             const submissionFields: Record<string, unknown> = {
-              'Batches': [{ id: batchRecordId }],
+              'Batches': [batchRecordId],  // linked record: array of string IDs
               'Question Number': group.questionLabel,
               'Page Indices': JSON.stringify(group.pages),
               'Annotated Slice URLs': JSON.stringify(
                 result.annotatedSliceUrl ? [result.annotatedSliceUrl] : []
               ),
               'Source': 'batch_web',
+              'Bot Marking JSON': result.markingJson ? JSON.stringify(result.markingJson) : undefined,
+              'Bot Mark Awarded': result.marks.awarded || undefined,
+              'Bot Mark Max': result.marks.max || undefined,
+              'Bot Feedback': result.summary.bodyMarkdown || undefined,
             };
+            // Remove undefined values (Airtable rejects explicit undefineds)
+            for (const k of Object.keys(submissionFields)) {
+              if (submissionFields[k] === undefined) delete submissionFields[k];
+            }
             const submissionRes = await airtableRequest('Submissions', '', {
               method: 'POST',
               body: JSON.stringify({ records: [{ fields: submissionFields }] }),

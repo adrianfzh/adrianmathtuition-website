@@ -288,6 +288,68 @@ export function structuredMarkingToText(json: MarkingOutput): string {
   return out.join('\n').trim();
 }
 
+// ── Retry helpers ─────────────────────────────────────────────────────────────
+
+export async function withGeminiRetry<T>(
+  fn: () => Promise<T>,
+  label: string,
+  maxAttempts = 3
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err: unknown) {
+      lastError = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      const is5xx =
+        msg.includes('503') || msg.includes('429') ||
+        msg.includes('500') || msg.includes('Service Unavailable');
+      if (!is5xx || attempt === maxAttempts) throw err;
+      const delayMs = Math.pow(2, attempt - 1) * 1000;
+      console.log(`[${label}] attempt ${attempt} failed (${msg}). Retrying in ${delayMs}ms.`);
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+  throw lastError;
+}
+
+async function withSonnetRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  try {
+    return await fn();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('429') || msg.includes('rate_limit')) {
+      console.log(`[${label}] rate limited, retrying in 3s`);
+      await new Promise(r => setTimeout(r, 3000));
+      return await fn();
+    }
+    throw err;
+  }
+}
+
+// ── JSON extraction from Sonnet response ─────────────────────────────────────
+
+function extractJsonFromSonnetResponse(text: string): unknown {
+  // Strategy 1: raw parse (clean JSON)
+  try { return JSON.parse(text); } catch { /* fall through */ }
+
+  // Strategy 2: strip markdown fences (```json ... ``` or ``` ... ```)
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenced) {
+    try { return JSON.parse(fenced[1].trim()); } catch { /* fall through */ }
+  }
+
+  // Strategy 3: extract first { ... last } block
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    try { return JSON.parse(text.substring(firstBrace, lastBrace + 1)); } catch { /* fall through */ }
+  }
+
+  throw new Error('Could not extract valid JSON from Sonnet response');
+}
+
 // ── Claude Sonnet marking call ────────────────────────────────────────────────
 
 export async function callSonnetMarking(
@@ -296,34 +358,49 @@ export async function callSonnetMarking(
   systemPrompt: string
 ): Promise<MarkingOutput> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const imageSource = {
+    type: 'base64' as const,
+    media_type: mediaType as 'image/png' | 'image/jpeg' | 'image/webp',
+    data: imageBase64,
+  };
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
-      system: systemPrompt,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: mediaType as 'image/png' | 'image/jpeg' | 'image/webp', data: imageBase64 },
-          },
-          { type: 'text', text: "Mark this student's handwritten working." },
-        ],
-      }],
-    });
+  const makeCall = (userText: string) =>
+    withSonnetRetry(
+      () => client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        system: systemPrompt,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: imageSource },
+            { type: 'text', text: userText },
+          ],
+        }],
+      }),
+      'sonnet-marking'
+    );
 
-    const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    try {
-      return JSON.parse(jsonMatch ? jsonMatch[0] : text) as MarkingOutput;
-    } catch {
-      if (attempt >= 2) throw new Error('Failed to parse marking JSON after 2 attempts');
-      console.warn('[callSonnetMarking] attempt 1: JSON parse failed, retrying');
-    }
+  // Attempt 1: standard prompt
+  const response1 = await makeCall("Mark this student's handwritten working.");
+  const text1 = response1.content[0].type === 'text' ? response1.content[0].text : '';
+  try {
+    return extractJsonFromSonnetResponse(text1) as MarkingOutput;
+  } catch {
+    console.warn('[callSonnetMarking] attempt 1: JSON parse failed. Raw response (500 chars):', text1.substring(0, 500));
   }
-  throw new Error('callSonnetMarking: exhausted retries');
+
+  // Attempt 2: correction prompt with explicit JSON instruction
+  const response2 = await makeCall(
+    'Your previous response was not valid JSON. Please respond ONLY with the JSON object matching the schema — no prose, no markdown fences, just raw JSON starting with { and ending with }.'
+  );
+  const text2 = response2.content[0].type === 'text' ? response2.content[0].text : '';
+  try {
+    return extractJsonFromSonnetResponse(text2) as MarkingOutput;
+  } catch {
+    console.error('[callSonnetMarking] attempt 2: JSON parse also failed. Raw response (500 chars):', text2.substring(0, 500));
+    throw new Error('Failed to parse marking JSON after 2 attempts');
+  }
 }
 
 // ── Gemini annotation bbox call (port from bot handlers/messages.js) ──────────
@@ -373,10 +450,13 @@ Rules:
 
 Output only the JSON object. No markdown, no preamble.`;
 
-  const result = await model.generateContent([
-    { inlineData: { mimeType: mediaType, data: base64Image } },
-    prompt,
-  ]);
+  const result = await withGeminiRetry(
+    () => model.generateContent([
+      { inlineData: { mimeType: mediaType, data: base64Image } },
+      prompt,
+    ]),
+    'gemini-bbox-annotations'
+  );
 
   const responseText = result.response.text().trim();
   const jsonMatch = responseText.match(/\{[\s\S]*\}/);

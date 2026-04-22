@@ -1,6 +1,7 @@
 import path from 'path';
 import { put } from '@vercel/blob';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { withGeminiRetry } from './marking-pipeline';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -206,17 +207,18 @@ async function detectQuestionsOnPage(
   console.time(`gemini-detect-page-${pageIndex}`);
   let result;
   try {
-    result = await model.generateContent({
-      contents: [
-        {
+    result = await withGeminiRetry(
+      () => model.generateContent({
+        contents: [{
           role: 'user',
           parts: [
             { inlineData: { mimeType: 'image/png', data: imageBuffer.toString('base64') } },
             { text: prompt },
           ],
-        },
-      ],
-    });
+        }],
+      }),
+      `gemini-detect-page-${pageIndex}`
+    );
   } finally {
     console.timeEnd(`gemini-detect-page-${pageIndex}`);
   }
