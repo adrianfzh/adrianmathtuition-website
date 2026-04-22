@@ -159,6 +159,8 @@ function MarkUI({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
     setError('');
   }
 
+  const MAX_UPLOAD_MB = 50;
+
   function validateFiles(files: File[]): string | null {
     if (files.length === 0) return 'Select a file to upload.';
     if (files.length > 1) {
@@ -169,8 +171,10 @@ function MarkUI({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
       const ok = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'].includes(f.type);
       if (!ok) return `Unsupported file type: ${f.type}. Use PDF, PNG, JPEG, or WebP.`;
     }
-    const totalSize = files.reduce((sum, f) => sum + f.size, 0);
-    if (totalSize > 50 * 1024 * 1024) return 'Total file size exceeds 50 MB.';
+    const totalMB = files.reduce((sum, f) => sum + f.size, 0) / 1024 / 1024;
+    if (totalMB > MAX_UPLOAD_MB) {
+      return `File is ${totalMB.toFixed(1)} MB — maximum is ${MAX_UPLOAD_MB} MB. Try splitting into smaller batches.`;
+    }
     return null;
   }
 
@@ -208,12 +212,22 @@ function MarkUI({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
         headers: { Authorization: `Bearer ${savedPw.current}` },
         body: fd,
       });
-      const data = await res.json();
       if (!res.ok) {
-        setError(data.error || 'Upload failed');
+        let errorMsg = `Upload failed: ${res.status} ${res.statusText}`;
+        try {
+          const errData = await res.json();
+          errorMsg = errData.error || errData.message || errorMsg;
+        } catch {
+          try {
+            const text = await res.text();
+            if (text) errorMsg = text.substring(0, 200);
+          } catch { /* use status message */ }
+        }
+        setError(errorMsg);
         setUiState('upload');
         return;
       }
+      const data = await res.json();
       setResult(data);
       setUiState('preview');
     } catch (err: any) {

@@ -342,6 +342,10 @@ Adrian must create this table in Airtable before the init endpoint can write to 
 - Gemini detection on each page in parallel (p-limit 5 concurrent)
 - Page images stored at `batches/<batchId>/page-<index>.png` in Vercel Blob (public, unguessable path)
 
+### Upload size limit
+
+50 MB max enforced both client-side (immediate feedback) and server-side. The Vercel default 4.5 MB body limit is raised via `vercel.json` `functions` config — `memory: 3008` on the init route gives Pro-plan body limits up to ~50 MB. If uploads still 413 after deploy, check that `vercel.json` `functions` key deployed correctly. UI shows a descriptive error for non-JSON platform errors (e.g. 413 from Vercel before the handler runs).
+
 ### Env var required
 
 `GOOGLE_API_KEY` — Google AI Studio key with Gemini 2.5 Pro access. Add to Vercel environment variables.

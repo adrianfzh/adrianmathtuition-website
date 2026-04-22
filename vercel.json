@@ -1,5 +1,15 @@
 {
   "framework": "nextjs",
+  "functions": {
+    "src/app/api/mark-batch/init/route.ts": {
+      "maxDuration": 60,
+      "memory": 3008
+    },
+    "src/app/api/mark-batch/page/route.ts": {
+      "maxDuration": 300,
+      "memory": 3008
+    }
+  },
   "crons": [
     { "path": "/api/invoice-reminder",       "schedule": "0 1 12 * *"   },
     { "path": "/api/pre-invoice-reminder",  "schedule": "0 1 13 * *"   },
