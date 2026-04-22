@@ -75,6 +75,17 @@ IMPORTANT RULES FOR CONTINUATIONS:
 
 Return coordinates in normalized 0-1000 [y_min, x_min, y_max, x_max] format — Y FIRST.
 
+IMPORTANT — SPARSE PAGES:
+This page may have VERY LITTLE content: one or two short handwritten answers separated by lots of whitespace. This is still detectable content. Do NOT return { "questions": [] } just because the page looks mostly blank.
+
+Signs of a sparse-but-valid page:
+- A printed sub-part header like "(ii)" or "(iii)" or "(b)" followed by a short handwritten answer
+- A single short line like "x < -8/3 or 1 < x < 2"
+- A few lines of algebra in isolation
+On such pages, your bounding box should enclose the printed sub-part text plus any handwriting near it.
+
+Return { "questions": [] } ONLY if the page is TRULY blank — no printed sub-part text and no handwriting whatsoever.
+
 Return JSON only:
 {
   "questions": [
@@ -94,8 +105,7 @@ Field rules:
 - "is_continuation": true if this region is a continuation of a question from the previous page.
 - "last_part_visible": the last visible sub-part label in this region (e.g. "(ii)", "(c)"). Empty string if no sub-parts or label not visible.
 - One entry per logical question. NEVER split sub-parts into multiple entries.
-- box_2d encompasses BOTH printed question text AND student's handwritten working.
-- If the page is blank or contains no questions, return { "questions": [] }.`;
+- box_2d encompasses BOTH printed question text AND student's handwritten working.`;
 }
 
 // ── PDF → page images ─────────────────────────────────────────────────────────
@@ -188,6 +198,68 @@ export async function imageFileToPageImage(
 
 // ── Gemini region detection (sequential for cross-page context) ───────────────
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function runGeminiDetect(
+  model: any,
+  imageBuffer: Buffer,
+  prompt: string,
+  label: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
+  const result = await withGeminiRetry(
+    () => model.generateContent({
+      contents: [{
+        role: 'user',
+        parts: [
+          { inlineData: { mimeType: 'image/png', data: imageBuffer.toString('base64') } },
+          { text: prompt },
+        ],
+      }],
+    }),
+    label
+  );
+  return result;
+}
+
+function parseDetectionResult(
+  text: string,
+  width: number,
+  height: number,
+  pageIndex: number
+): DetectedQuestion[] {
+  let parsed: {
+    questions: Array<{
+      label: string;
+      box_2d: [number, number, number, number];
+      has_diagram: boolean;
+      is_continuation: boolean;
+      last_part_visible: string;
+    }>;
+  };
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    console.error(`[detectQuestionsOnPage] page ${pageIndex}: failed to parse JSON:`, text.slice(0, 300));
+    return [];
+  }
+  return (parsed.questions || []).map((q) => {
+    const [yMin, xMin, yMax, xMax] = q.box_2d;
+    return {
+      questionLabel: q.label || 'Q?',
+      questionRegionBox: [yMin, xMin, yMax, xMax] as [number, number, number, number],
+      questionRegionPixels: {
+        x1: Math.round((xMin / 1000) * width),
+        y1: Math.round((yMin / 1000) * height),
+        x2: Math.round((xMax / 1000) * width),
+        y2: Math.round((yMax / 1000) * height),
+      },
+      hasDiagram: q.has_diagram ?? false,
+      isContinuation: q.is_continuation ?? false,
+      lastPartVisible: q.last_part_visible ?? '',
+    };
+  });
+}
+
 async function detectQuestionsOnPage(
   imageBuffer: Buffer,
   width: number,
@@ -207,56 +279,33 @@ async function detectQuestionsOnPage(
   console.time(`gemini-detect-page-${pageIndex}`);
   let result;
   try {
-    result = await withGeminiRetry(
-      () => model.generateContent({
-        contents: [{
-          role: 'user',
-          parts: [
-            { inlineData: { mimeType: 'image/png', data: imageBuffer.toString('base64') } },
-            { text: prompt },
-          ],
-        }],
-      }),
-      `gemini-detect-page-${pageIndex}`
-    );
+    result = await runGeminiDetect(model, imageBuffer, prompt, `gemini-detect-page-${pageIndex}`);
   } finally {
     console.timeEnd(`gemini-detect-page-${pageIndex}`);
   }
 
-  const text = result.response.text();
-  let parsed: {
-    questions: Array<{
-      label: string;
-      box_2d: [number, number, number, number];
-      has_diagram: boolean;
-      is_continuation: boolean;
-      last_part_visible: string;
-    }>;
-  };
+  const questions = parseDetectionResult(result.response.text(), width, height, pageIndex);
 
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    console.error(`[detectQuestionsOnPage] page ${pageIndex}: failed to parse JSON:`, text.slice(0, 300));
-    return [];
+  // Retry empty-detection pages when there's previous-page context (likely continuation)
+  if (questions.length === 0 && prevContext?.lastQuestionLabel) {
+    console.log(`[detect-page-${pageIndex}] empty with context — retrying with broader bbox hint`);
+    const retryPrompt = buildDetectionPrompt(pageIndex, prevContext) +
+      `\n\nADDITIONAL HINT: The previous page ended with ${prevContext.lastQuestionLabel}${prevContext.lastPartLabel ? ` (last sub-part: ${prevContext.lastPartLabel})` : ''}. Look very carefully on this page for ANY continuation content — even a single short handwritten answer or sub-part label. Return a bounding box covering any visible content rather than returning an empty list.`;
+    console.time(`gemini-detect-page-${pageIndex}-retry`);
+    let retryResult;
+    try {
+      retryResult = await runGeminiDetect(model, imageBuffer, retryPrompt, `gemini-detect-page-${pageIndex}-retry`);
+    } finally {
+      console.timeEnd(`gemini-detect-page-${pageIndex}-retry`);
+    }
+    const retryQuestions = parseDetectionResult(retryResult.response.text(), width, height, pageIndex);
+    if (retryQuestions.length > 0) {
+      console.log(`[detect-page-${pageIndex}] retry found ${retryQuestions.length} question(s)`);
+      return retryQuestions;
+    }
   }
 
-  return (parsed.questions || []).map((q) => {
-    const [yMin, xMin, yMax, xMax] = q.box_2d;
-    return {
-      questionLabel: q.label || 'Q?',
-      questionRegionBox: [yMin, xMin, yMax, xMax] as [number, number, number, number],
-      questionRegionPixels: {
-        x1: Math.round((xMin / 1000) * width),
-        y1: Math.round((yMin / 1000) * height),
-        x2: Math.round((xMax / 1000) * width),
-        y2: Math.round((yMax / 1000) * height),
-      },
-      hasDiagram: q.has_diagram ?? false,
-      isContinuation: q.is_continuation ?? false,
-      lastPartVisible: q.last_part_visible ?? '',
-    };
-  });
+  return questions;
 }
 
 // ── Vercel Blob upload ────────────────────────────────────────────────────────
@@ -294,7 +343,8 @@ export async function processPages(
     const { buffer, width, height, pageIndex } = sorted[i];
     const questions = await detectQuestionsOnPage(buffer, width, height, pageIndex, prevContext);
     allQuestions.push(questions);
-    prevContext = buildPageContext(questions);
+    // Preserve prevContext across empty pages so subsequent pages still have continuation context
+    prevContext = buildPageContext(questions) ?? prevContext;
   }
 
   const pages: ProcessedPage[] = sorted.map((p, i) => ({

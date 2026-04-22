@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { upload } from '@vercel/blob/client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -64,7 +65,7 @@ interface BatchListItem {
 }
 
 type StudentLevel = 'SECONDARY' | 'JC' | 'unknown';
-type UploadState = 'upload' | 'uploading' | 'preview' | 'marking' | 'marked' | 'assembling';
+type UploadState = 'upload' | 'uploading' | 'detecting' | 'preview' | 'marking' | 'marked' | 'assembling';
 type AppView = 'landing' | 'upload-flow';
 
 // ── Cookie helpers ─────────────────────────────────────────────────────────────
@@ -293,6 +294,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   const [markingResult, setMarkingResult] = useState<MarkingResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [includeCoverPage, setIncludeCoverPage] = useState(true);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -318,23 +320,58 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     if (files.length === 0 || !studentName) return;
     const totalMB = files.reduce((s, f) => s + f.size, 0) / 1024 / 1024;
     if (totalMB > 50) { setError('Total file size exceeds 50 MB.'); return; }
-    setError(''); setUploadState('uploading');
-    const fd = new FormData();
-    fd.append('studentName', studentName);
-    if (selectedStudent) fd.append('studentId', selectedStudent.id);
-    if (files.length === 1 && files[0].type === 'application/pdf') { fd.append('file', files[0]); }
-    else files.forEach(f => fd.append('images[]', f));
-    try {
-      const res = await fetch('/api/mark-batch/init', {
-        method: 'POST', headers: { Authorization: `Bearer ${savedPw.current}` }, body: fd,
-      });
-      if (!res.ok) {
-        let msg = `Upload failed: ${res.status}`;
-        try { msg = (await res.json()).error || msg; } catch { try { msg = (await res.text()).substring(0, 200); } catch { /**/ } }
-        setError(msg); setUploadState('upload'); return;
-      }
-      setBatchResult(await res.json()); setUploadState('preview');
-    } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Network error'); setUploadState('upload'); }
+    setError('');
+
+    const isSinglePdf = files.length === 1 && files[0].type === 'application/pdf';
+
+    if (isSinglePdf) {
+      // ── Large-file path: client uploads directly to Blob, then sends URL ──
+      setUploadState('uploading'); setUploadProgress(0);
+      try {
+        const file = files[0];
+        const blob = await upload(`uploads/${Date.now()}-${file.name}`, file, {
+          access: 'public',
+          handleUploadUrl: '/api/mark-batch/upload-token',
+          clientPayload: savedPw.current,
+          onUploadProgress: (p) => setUploadProgress(Math.round(p.percentage)),
+        });
+
+        setUploadState('detecting');
+        const res = await fetch('/api/mark-batch/init', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pdfBlobUrl: blob.url,
+            studentName,
+            studentId: selectedStudent?.id || null,
+          }),
+        });
+        if (!res.ok) {
+          let msg = `Detection failed: ${res.status}`;
+          try { msg = (await res.json()).error || msg; } catch { /**/ }
+          setError(msg); setUploadState('upload'); return;
+        }
+        setBatchResult(await res.json()); setUploadState('preview');
+      } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Network error'); setUploadState('upload'); }
+    } else {
+      // ── Multipart path: images or small files sent directly ────────────────
+      setUploadState('uploading');
+      const fd = new FormData();
+      fd.append('studentName', studentName);
+      if (selectedStudent) fd.append('studentId', selectedStudent.id);
+      files.forEach(f => fd.append('images[]', f));
+      try {
+        const res = await fetch('/api/mark-batch/init', {
+          method: 'POST', headers: { Authorization: `Bearer ${savedPw.current}` }, body: fd,
+        });
+        if (!res.ok) {
+          let msg = `Upload failed: ${res.status}`;
+          try { msg = (await res.json()).error || msg; } catch { try { msg = (await res.text()).substring(0, 200); } catch { /**/ } }
+          setError(msg); setUploadState('upload'); return;
+        }
+        setBatchResult(await res.json()); setUploadState('preview');
+      } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Network error'); setUploadState('upload'); }
+    }
   }
 
   async function handleStartMarking() {
@@ -435,7 +472,27 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   }
 
   if (uploadState === 'uploading') {
-    return <Spinner label="Uploading and detecting questions…" sub="PDF rendering + Gemini region detection per page. A 10-page batch takes 20–50 seconds." />;
+    const isBlobUpload = files.length === 1 && files[0].type === 'application/pdf';
+    return (
+      <div className="uploading-wrap">
+        <div className="spinner" />
+        <p className="uploading-text">{isBlobUpload ? 'Uploading PDF…' : 'Uploading…'}</p>
+        {isBlobUpload && uploadProgress > 0 && (
+          <div className="progress-bar-wrap">
+            <div className="progress-bar" style={{ width: `${uploadProgress}%` }} />
+          </div>
+        )}
+        <p className="uploading-sub">
+          {isBlobUpload
+            ? `${uploadProgress}% — uploading directly to storage. Large PDFs take 5–20 s.`
+            : 'Uploading images…'}
+        </p>
+      </div>
+    );
+  }
+
+  if (uploadState === 'detecting') {
+    return <Spinner label="Detecting questions…" sub="PDF rendering + Gemini region detection per page. A 10-page batch takes 20–50 seconds." />;
   }
 
   if (uploadState === 'preview' && batchResult) {
@@ -642,8 +699,10 @@ const pageCSS = `
 .uploading-wrap { text-align:center; padding:60px 20px; }
 .spinner { width:44px; height:44px; border:4px solid #e5e7eb; border-top-color:#1e3a5f; border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 20px; }
 @keyframes spin { to { transform:rotate(360deg); } }
-.uploading-text { font-size:16px; font-weight:600; color:#111827; margin:0 0 8px; }
+.uploading-text { font-size:16px; font-weight:600; color:#111827; margin:0 0 12px; }
 .uploading-sub { font-size:13px; color:#9ca3af; line-height:1.6; margin:0; }
+.progress-bar-wrap { height:6px; background:#e5e7eb; border-radius:3px; margin:0 auto 10px; max-width:280px; overflow:hidden; }
+.progress-bar { height:100%; background:#1e3a5f; border-radius:3px; transition:width 0.3s ease; }
 
 /* Preview / Marked */
 .preview-section { display:flex; flex-direction:column; gap:24px; }

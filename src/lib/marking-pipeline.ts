@@ -241,7 +241,17 @@ RULES:
 - error_type enum values: null | "ratio_inversion" | "wrong_setup" | "sign_error" | "arithmetic_slip" | "wrong_formula" | "unit_error" | "incomplete" | "conceptual" | "other"
 - correction.arrow enum values: "up" | "down" | "right" | null
 
-CRITICAL OUTPUT REQUIREMENT: Your response MUST be a single raw JSON object. Start your response with { and end with }. Do not write any text, explanation, or markdown fences before or after the JSON.`;
+===
+FINAL OUTPUT FORMAT — READ CAREFULLY:
+
+Respond with a single JSON object and nothing else. No prose before. No prose after. No markdown fences.
+
+Your response must begin with the character { and end with the character }.
+
+Do NOT start with phrases like "I need to analyze", "Let me think", "Here is the marking", "Looking at this question", or any other narration. Begin your response directly with {"question": ...}.
+
+If you catch yourself about to write narration, stop and begin the JSON object immediately. All internal reasoning happens silently before you start writing.
+===`;
 }
 
 // ── Structured JSON → human-readable text (port from bot ai/annotate.js) ─────
@@ -502,16 +512,14 @@ export async function callSonnetMarking(
               { type: 'text', text: userText },
             ],
           },
-          // Prefill: force JSON-first response
-          { role: 'assistant', content: '{' },
         ],
       }),
       'sonnet-marking'
     );
 
-  // Attempt 1: standard prompt — prepend '{' since we prefilled the assistant turn
+  // Attempt 1: standard prompt
   const response1 = await makeCall("Mark this student's handwritten working.");
-  const text1 = '{' + (response1.content[0].type === 'text' ? response1.content[0].text : '');
+  const text1 = response1.content[0].type === 'text' ? response1.content[0].text : '';
   try {
     return extractJsonFromSonnetResponse(text1) as MarkingOutput;
   } catch {
@@ -522,7 +530,7 @@ export async function callSonnetMarking(
   const response2 = await makeCall(
     'Your previous response was not valid JSON. Please respond ONLY with the JSON object matching the schema — no prose, no markdown fences, just raw JSON starting with { and ending with }.'
   );
-  const text2 = '{' + (response2.content[0].type === 'text' ? response2.content[0].text : '');
+  const text2 = response2.content[0].type === 'text' ? response2.content[0].text : '';
   try {
     return extractJsonFromSonnetResponse(text2) as MarkingOutput;
   } catch {

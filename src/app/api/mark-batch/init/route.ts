@@ -57,67 +57,95 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let formData: FormData;
-  try {
-    formData = await req.formData();
-  } catch {
-    return NextResponse.json({ error: 'Invalid multipart form data' }, { status: 400 });
-  }
-
-  const studentName = (formData.get('studentName') as string | null)?.trim();
-  if (!studentName) {
-    return NextResponse.json({ error: 'studentName is required' }, { status: 400 });
-  }
-
-  const studentId = (formData.get('studentId') as string | null) || null;
-  const singleFile = formData.get('file') as File | null;
-  const imageFiles = formData.getAll('images[]') as File[];
-
-  if (!singleFile && imageFiles.length === 0) {
-    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-  }
-
-  // ── Build page image list ──────────────────────────────────────────────────
-
+  const contentType = req.headers.get('content-type') || '';
+  let studentName: string | null = null;
+  let studentId: string | null = null;
   let pageImages;
 
-  if (singleFile) {
-    if (singleFile.size > MAX_BYTES) {
-      return NextResponse.json({ error: 'File exceeds 50 MB limit' }, { status: 400 });
+  if (contentType.includes('application/json')) {
+    // ── Blob URL path (large PDFs uploaded directly by client) ───────────────
+    let body: { pdfBlobUrl?: string; studentName?: string; studentId?: string };
+    try { body = await req.json(); } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
-    const buffer = Buffer.from(await singleFile.arrayBuffer());
+    studentName = body.studentName?.trim() || null;
+    studentId = body.studentId || null;
 
-    if (singleFile.type === 'application/pdf') {
-      pageImages = await pdfToPageImages(buffer);
-    } else if (ALLOWED_IMAGE_TYPES.includes(singleFile.type)) {
-      pageImages = [await imageFileToPageImage(buffer, 0)];
-    } else {
-      return NextResponse.json(
-        { error: `Unsupported file type: ${singleFile.type}. Use PDF, PNG, JPEG, or WebP.` },
-        { status: 400 }
-      );
+    if (!studentName) {
+      return NextResponse.json({ error: 'studentName is required' }, { status: 400 });
     }
+    if (!body.pdfBlobUrl) {
+      return NextResponse.json({ error: 'pdfBlobUrl is required' }, { status: 400 });
+    }
+
+    const blobRes = await fetch(body.pdfBlobUrl);
+    if (!blobRes.ok) {
+      return NextResponse.json({ error: `Failed to fetch PDF from Blob: ${blobRes.status}` }, { status: 400 });
+    }
+    const pdfBuffer = Buffer.from(await blobRes.arrayBuffer());
+    if (pdfBuffer.length > MAX_BYTES) {
+      return NextResponse.json({ error: 'PDF exceeds 50 MB limit' }, { status: 400 });
+    }
+    pageImages = await pdfToPageImages(pdfBuffer);
   } else {
-    // Multiple images — validate all first
-    let totalSize = 0;
-    for (const f of imageFiles) {
-      if (!ALLOWED_IMAGE_TYPES.includes(f.type)) {
+    // ── Multipart path (small PDFs / image files) ────────────────────────────
+    let formData: FormData;
+    try {
+      formData = await req.formData();
+    } catch {
+      return NextResponse.json({ error: 'Invalid multipart form data' }, { status: 400 });
+    }
+
+    studentName = (formData.get('studentName') as string | null)?.trim() || null;
+    if (!studentName) {
+      return NextResponse.json({ error: 'studentName is required' }, { status: 400 });
+    }
+
+    studentId = (formData.get('studentId') as string | null) || null;
+    const singleFile = formData.get('file') as File | null;
+    const imageFiles = formData.getAll('images[]') as File[];
+
+    if (!singleFile && imageFiles.length === 0) {
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    }
+
+    if (singleFile) {
+      if (singleFile.size > MAX_BYTES) {
+        return NextResponse.json({ error: 'File exceeds 50 MB limit' }, { status: 400 });
+      }
+      const buffer = Buffer.from(await singleFile.arrayBuffer());
+
+      if (singleFile.type === 'application/pdf') {
+        pageImages = await pdfToPageImages(buffer);
+      } else if (ALLOWED_IMAGE_TYPES.includes(singleFile.type)) {
+        pageImages = [await imageFileToPageImage(buffer, 0)];
+      } else {
         return NextResponse.json(
-          { error: `Unsupported file type: ${f.type}. Use PNG, JPEG, or WebP.` },
+          { error: `Unsupported file type: ${singleFile.type}. Use PDF, PNG, JPEG, or WebP.` },
           { status: 400 }
         );
       }
-      totalSize += f.size;
+    } else {
+      let totalSize = 0;
+      for (const f of imageFiles) {
+        if (!ALLOWED_IMAGE_TYPES.includes(f.type)) {
+          return NextResponse.json(
+            { error: `Unsupported file type: ${f.type}. Use PNG, JPEG, or WebP.` },
+            { status: 400 }
+          );
+        }
+        totalSize += f.size;
+      }
+      if (totalSize > MAX_BYTES) {
+        return NextResponse.json({ error: 'Total upload size exceeds 50 MB limit' }, { status: 400 });
+      }
+      pageImages = await Promise.all(
+        imageFiles.map(async (f, i) => {
+          const buf = Buffer.from(await f.arrayBuffer());
+          return imageFileToPageImage(buf, i);
+        })
+      );
     }
-    if (totalSize > MAX_BYTES) {
-      return NextResponse.json({ error: 'Total upload size exceeds 50 MB limit' }, { status: 400 });
-    }
-    pageImages = await Promise.all(
-      imageFiles.map(async (f, i) => {
-        const buf = Buffer.from(await f.arrayBuffer());
-        return imageFileToPageImage(buf, i);
-      })
-    );
   }
 
   if (pageImages.length === 0) {
