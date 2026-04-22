@@ -1,5 +1,32 @@
+import fs from 'fs';
+import path from 'path';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// ── Embedded font (loaded once at module init, injected into every SVG) ───────
+
+const CAVEAT_FONT_PATH = path.join(process.cwd(), 'src/assets/fonts/Caveat.ttf');
+let _caveatBase64: string | null = null;
+
+function getCaveatFontBase64(): string {
+  if (_caveatBase64 === null) {
+    try {
+      _caveatBase64 = fs.readFileSync(CAVEAT_FONT_PATH).toString('base64');
+    } catch {
+      console.warn('[marking-pipeline] Caveat.ttf not found, text will use system fallback');
+      _caveatBase64 = '';
+    }
+  }
+  return _caveatBase64;
+}
+
+function buildSvg(width: number, height: number, content: string): string {
+  const fontBase64 = getCaveatFontBase64();
+  const fontDef = fontBase64
+    ? `<defs><style type="text/css">@font-face{font-family:'Caveat';src:url('data:font/ttf;base64,${fontBase64}') format('truetype');font-weight:normal;font-style:normal;}</style></defs>`
+    : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${fontDef}${content}</svg>`;
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -514,7 +541,7 @@ export async function createAnnotatedImage(
     const fontSize = Math.max(13, Math.min(17, height / 35));
     const pillHeight = Math.round(fontSize * 2.0);
     const pillRadius = pillHeight / 2;
-    const font = 'DejaVu Sans,sans-serif';
+    const font = 'Caveat,sans-serif';
 
     const svgParts: string[] = [];
 
@@ -605,7 +632,7 @@ export async function createAnnotatedImage(
       `<text x="${width / 2}" y="${height - bannerH / 2 + fontSize * 0.38}" font-size="${fontSize * 1.15}" fill="white" font-family="${font}" font-weight="bold" text-anchor="middle">${escapeXml(bannerLabel + scoreSuffix)}</text>`
     );
 
-    const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${svgParts.join('')}</svg>`;
+    const svg = buildSvg(width, height, svgParts.join(''));
 
     return await sharpLib(imageBuffer)
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])

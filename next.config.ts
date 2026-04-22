@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       './node_modules/@napi-rs/canvas-linux-x64-musl/**/*',
       './node_modules/pdfjs-dist/**/*',
     ],
+    '/api/mark-batch/execute': [
+      './src/assets/fonts/**/*',
+    ],
   },
 };
 
