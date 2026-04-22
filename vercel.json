@@ -2,10 +2,10 @@
   "framework": "nextjs",
   "functions": {
     "src/app/api/mark-batch/init/route.ts": {
-      "maxDuration": 60,
+      "maxDuration": 300,
       "memory": 3008
     },
-    "src/app/api/mark-batch/page/route.ts": {
+    "src/app/api/mark-batch/execute/route.ts": {
       "maxDuration": 300,
       "memory": 3008
     }

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist'],
+  serverExternalPackages: ['@napi-rs/canvas', 'pdfjs-dist', 'sharp'],
   outputFileTracingIncludes: {
     '/api/mark-batch/init': [
       './node_modules/@napi-rs/canvas/**/*',

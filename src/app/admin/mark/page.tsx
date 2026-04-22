@@ -44,7 +44,24 @@ interface BatchResult {
   };
 }
 
-type UIState = 'upload' | 'uploading' | 'preview';
+interface QuestionMarkResult {
+  questionLabel: string;
+  pageIndices: number[];
+  annotatedSliceUrl: string | null;
+  marks: { awarded: number; max: number; marginNote: string };
+  summary: { title: string; bodyMarkdown: string };
+  submissionId: string | null;
+  error?: string;
+}
+
+interface MarkingResult {
+  batchId: string;
+  studentName: string;
+  results: QuestionMarkResult[];
+}
+
+type StudentLevel = 'SECONDARY' | 'JC' | 'unknown';
+type UIState = 'upload' | 'uploading' | 'preview' | 'marking' | 'marked';
 
 // ── Cookie helpers ─────────────────────────────────────────────────────────────
 
@@ -140,9 +157,11 @@ function MarkUI({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [adHocName, setAdHocName] = useState('');
+  const [studentLevel, setStudentLevel] = useState<StudentLevel>('unknown');
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState('');
   const [result, setResult] = useState<BatchResult | null>(null);
+  const [markingResult, setMarkingResult] = useState<MarkingResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -173,17 +192,17 @@ function MarkUI({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
 
   const MAX_UPLOAD_MB = 50;
 
-  function validateFiles(files: File[]): string | null {
-    if (files.length === 0) return 'Select a file to upload.';
-    if (files.length > 1) {
-      const hasNonImage = files.some(f => !['image/png', 'image/jpeg', 'image/webp'].includes(f.type));
+  function validateFiles(fs: File[]): string | null {
+    if (fs.length === 0) return 'Select a file to upload.';
+    if (fs.length > 1) {
+      const hasNonImage = fs.some(f => !['image/png', 'image/jpeg', 'image/webp'].includes(f.type));
       if (hasNonImage) return 'When uploading multiple files, all must be images (PNG, JPEG, WebP).';
     } else {
-      const f = files[0];
+      const f = fs[0];
       const ok = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'].includes(f.type);
       if (!ok) return `Unsupported file type: ${f.type}. Use PDF, PNG, JPEG, or WebP.`;
     }
-    const totalMB = files.reduce((sum, f) => sum + f.size, 0) / 1024 / 1024;
+    const totalMB = fs.reduce((sum, f) => sum + f.size, 0) / 1024 / 1024;
     if (totalMB > MAX_UPLOAD_MB) {
       return `File is ${totalMB.toFixed(1)} MB — maximum is ${MAX_UPLOAD_MB} MB. Try splitting into smaller batches.`;
     }
@@ -242,14 +261,46 @@ function MarkUI({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
       const data = await res.json();
       setResult(data);
       setUiState('preview');
-    } catch (err: any) {
-      setError(err.message || 'Network error');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Network error');
       setUiState('upload');
+    }
+  }
+
+  // ── Marking handler ───────────────────────────────────────────────────────
+
+  async function handleStartMarking() {
+    if (!result) return;
+    setUiState('marking');
+    setError('');
+    try {
+      const res = await fetch('/api/mark-batch/execute', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${savedPw.current}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ batchId: result.batchId, studentLevel }),
+      });
+      if (!res.ok) {
+        let errorMsg = `Marking failed: ${res.status} ${res.statusText}`;
+        try { const d = await res.json(); errorMsg = d.error || errorMsg; } catch { /**/ }
+        setError(errorMsg);
+        setUiState('preview');
+        return;
+      }
+      const data = await res.json();
+      setMarkingResult(data);
+      setUiState('marked');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Network error');
+      setUiState('preview');
     }
   }
 
   function handleCancel() {
     setResult(null);
+    setMarkingResult(null);
     setFiles([]);
     setError('');
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -280,6 +331,8 @@ function MarkUI({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
               isAdHoc={isAdHoc}
               adHocName={adHocName}
               setAdHocName={setAdHocName}
+              studentLevel={studentLevel}
+              setStudentLevel={setStudentLevel}
               files={files}
               dragOver={dragOver}
               setDragOver={setDragOver}
@@ -304,7 +357,28 @@ function MarkUI({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
           )}
 
           {uiState === 'preview' && result && (
-            <PreviewView result={result} onCancel={handleCancel} />
+            <PreviewView
+              result={result}
+              studentLevel={studentLevel}
+              error={error}
+              onStartMarking={handleStartMarking}
+              onCancel={handleCancel}
+            />
+          )}
+
+          {uiState === 'marking' && (
+            <div className="uploading-wrap">
+              <div className="spinner" />
+              <p className="uploading-text">Marking in progress…</p>
+              <p className="uploading-sub">
+                Claude Sonnet is marking each question.<br />
+                Gemini is placing annotations. This may take 1–3 minutes.
+              </p>
+            </div>
+          )}
+
+          {uiState === 'marked' && markingResult && (
+            <MarkedView result={markingResult} onReset={handleCancel} />
           )}
         </div>
       </div>
@@ -318,6 +392,7 @@ function UploadView({
   students, studentsLoading,
   selectedStudentId, setSelectedStudentId,
   isAdHoc, adHocName, setAdHocName,
+  studentLevel, setStudentLevel,
   files, dragOver, setDragOver, handleFileDrop, handleFileInput,
   fileInputRef, error, canUpload, handleUpload,
 }: {
@@ -328,6 +403,8 @@ function UploadView({
   isAdHoc: boolean;
   adHocName: string;
   setAdHocName: (v: string) => void;
+  studentLevel: StudentLevel;
+  setStudentLevel: (v: StudentLevel) => void;
   files: File[];
   dragOver: boolean;
   setDragOver: (v: boolean) => void;
@@ -367,6 +444,20 @@ function UploadView({
             style={{ marginTop: 8 }}
           />
         )}
+      </div>
+
+      {/* Level selector */}
+      <div className="field-group">
+        <label className="field-label">Level</label>
+        <select
+          className="field-select"
+          value={studentLevel}
+          onChange={e => setStudentLevel(e.target.value as StudentLevel)}
+        >
+          <option value="unknown">Unknown / auto-detect</option>
+          <option value="SECONDARY">Secondary (O-Level A-Math / E-Math)</option>
+          <option value="JC">JC (A-Level H2 Math)</option>
+        </select>
       </div>
 
       {/* Drop zone */}
@@ -427,16 +518,26 @@ function UploadView({
 
 const THUMB_MAX_WIDTH = 300;
 
-function PreviewView({ result, onCancel }: { result: BatchResult; onCancel: () => void }) {
-  function handleStartMarking() {
-    alert('Marking flow ships in the next iteration.');
-  }
+function PreviewView({
+  result, studentLevel, error, onStartMarking, onCancel,
+}: {
+  result: BatchResult;
+  studentLevel: StudentLevel;
+  error: string;
+  onStartMarking: () => void;
+  onCancel: () => void;
+}) {
+  const levelLabel =
+    studentLevel === 'JC' ? 'JC' :
+    studentLevel === 'SECONDARY' ? 'Secondary' :
+    'Unknown level';
 
   return (
     <div className="preview-section">
       {/* Summary header */}
       <div className="preview-summary">
         <span className="summary-chip">{result.studentName}</span>
+        <span className="summary-chip">{levelLabel}</span>
         <span className="summary-chip">Pages: {result.summary.totalPages}</span>
         <span className="summary-chip">
           Detected: {result.summary.totalQuestions} question{result.summary.totalQuestions !== 1 ? 's' : ''}
@@ -492,14 +593,82 @@ function PreviewView({ result, onCancel }: { result: BatchResult; onCancel: () =
         );
       })}
 
+      {error && <div className="error-msg">{error}</div>}
+
       {/* Actions */}
       <div className="preview-actions">
-        <button className="action-btn action-btn--primary" onClick={handleStartMarking} disabled>
+        <button className="action-btn action-btn--primary" onClick={onStartMarking}>
           Looks right — start marking
-          <span className="action-coming-soon">Coming in next iteration</span>
         </button>
         <button className="action-btn action-btn--secondary" onClick={onCancel}>
           Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Marked view ───────────────────────────────────────────────────────────────
+
+function MarkedView({ result, onReset }: { result: MarkingResult; onReset: () => void }) {
+  const totalAwarded = result.results.reduce((sum, r) => sum + (r.marks.awarded ?? 0), 0);
+  const totalMax = result.results.reduce((sum, r) => sum + (r.marks.max ?? 0), 0);
+
+  return (
+    <div className="preview-section">
+      <div className="preview-summary">
+        <span className="summary-chip">{result.studentName}</span>
+        <span className="summary-chip">
+          {totalMax > 0 ? `Score: ${totalAwarded}/${totalMax}` : `${result.results.length} questions marked`}
+        </span>
+      </div>
+
+      {result.results.map((qr, i) => (
+        <div key={i} className="page-block">
+          <div className="page-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>{qr.questionLabel}</span>
+            {qr.marks.max > 0 && (
+              <span className={`marks-badge ${qr.marks.awarded === qr.marks.max ? 'marks-badge--full' : qr.marks.awarded > 0 ? 'marks-badge--partial' : 'marks-badge--zero'}`}>
+                {qr.marks.awarded}/{qr.marks.max}
+                {qr.marks.marginNote ? ` ${qr.marks.marginNote}` : ''}
+              </span>
+            )}
+          </div>
+
+          {qr.error && (
+            <div className="error-msg" style={{ marginBottom: 8 }}>
+              Marking error: {qr.error}
+            </div>
+          )}
+
+          {qr.annotatedSliceUrl && (
+            <div style={{ marginBottom: 12 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qr.annotatedSliceUrl}
+                alt={`Annotated ${qr.questionLabel}`}
+                style={{ maxWidth: '100%', border: '1px solid #e5e7eb', borderRadius: 6 }}
+              />
+            </div>
+          )}
+
+          {qr.summary.title && (
+            <div className="marking-summary">
+              <div className="marking-summary-title">{qr.summary.title}</div>
+              <div className="marking-summary-body">{qr.summary.bodyMarkdown}</div>
+            </div>
+          )}
+
+          <div className="page-detected" style={{ marginTop: 6 }}>
+            Pages: {qr.pageIndices.map(i => `Page ${i + 1}`).join(', ')}
+            {qr.submissionId && <span style={{ marginLeft: 8, color: '#9ca3af' }}>· saved</span>}
+          </div>
+        </div>
+      ))}
+
+      <div className="preview-actions">
+        <button className="action-btn action-btn--secondary" onClick={onReset}>
+          Mark another paper
         </button>
       </div>
     </div>
@@ -648,7 +817,7 @@ const pageCSS = `
 }
 .upload-btn:disabled { opacity: 0.4; cursor: default; }
 
-/* Uploading */
+/* Uploading / Marking spinner */
 .uploading-wrap {
   text-align: center;
   padding: 60px 20px;
@@ -666,7 +835,7 @@ const pageCSS = `
 .uploading-text { font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 8px; }
 .uploading-sub { font-size: 13px; color: #9ca3af; line-height: 1.6; margin: 0; }
 
-/* Preview */
+/* Preview / Marked */
 .preview-section { display: flex; flex-direction: column; gap: 24px; }
 .preview-summary {
   display: flex;
@@ -728,6 +897,38 @@ const pageCSS = `
   color: #6b7280;
 }
 
+/* Marks badge */
+.marks-badge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+.marks-badge--full { background: #dcfce7; color: #166534; }
+.marks-badge--partial { background: #fef3c7; color: #92400e; }
+.marks-badge--zero { background: #fee2e2; color: #991b1b; }
+
+/* Marking summary block */
+.marking-summary {
+  background: #f8fafc;
+  border-left: 3px solid #1e3a5f;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+.marking-summary-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 4px;
+}
+.marking-summary-body {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.55;
+}
+
 /* Actions */
 .preview-actions {
   display: flex;
@@ -751,9 +952,4 @@ const pageCSS = `
 .action-btn--primary { background: #1e3a5f; color: #fff; }
 .action-btn--primary:disabled { opacity: 0.4; cursor: default; }
 .action-btn--secondary { background: #f3f4f6; color: #374151; }
-.action-coming-soon {
-  font-size: 11px;
-  font-weight: 400;
-  color: #93c5fd;
-}
 `;
