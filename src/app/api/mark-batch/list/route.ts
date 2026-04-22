@@ -22,9 +22,9 @@ export async function GET(req: NextRequest) {
 
   let formula = '';
   if (statusFilter === 'to-mark') {
-    formula = `OR({Status}="detected",{Status}="marking",{Status}="marked")`;
-  } else if (statusFilter === 'finalized') {
-    formula = `{Status}="finalized"`;
+    formula = `OR({Status}="detected",{Status}="marking")`;
+  } else if (statusFilter === 'marked') {
+    formula = `OR({Status}="marked",{Status}="finalized")`;
   }
   // 'all' → no filter, but exclude deleted
   if (!formula) {

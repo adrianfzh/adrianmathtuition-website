@@ -173,7 +173,7 @@ function MarkApp({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
 // ── Landing view ──────────────────────────────────────────────────────────────
 
 function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<string>; onNewBatch: () => void }) {
-  const [tab, setTab] = useState<'to-mark' | 'finalized'>('to-mark');
+  const [tab, setTab] = useState<'to-mark' | 'marked'>('to-mark');
   const [batches, setBatches] = useState<BatchListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -198,7 +198,7 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
   // Auto-refresh every 10s on to-mark tab (batches may be actively marking)
   useEffect(() => {
     if (tab !== 'to-mark') return;
-    const id = setInterval(() => fetchBatches(tab), 10000);
+    const id = setInterval(() => fetchBatches('to-mark'), 10000);
     return () => clearInterval(id);
   }, [tab, fetchBatches]);
 
@@ -227,7 +227,7 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
           <button className={`tab-btn${tab === 'to-mark' ? ' tab-btn--active' : ''}`} onClick={() => setTab('to-mark')}>
             To be marked
           </button>
-          <button className={`tab-btn${tab === 'finalized' ? ' tab-btn--active' : ''}`} onClick={() => setTab('finalized')}>
+          <button className={`tab-btn${tab === 'marked' ? ' tab-btn--active' : ''}`} onClick={() => setTab('marked')}>
             Already marked
           </button>
         </div>
@@ -241,13 +241,13 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
         <div className="landing-empty">
           {tab === 'to-mark'
             ? 'No batches waiting to be marked. Click "+ New Batch" to start.'
-            : 'No finalized batches yet.'}
+            : 'No marked batches yet.'}
         </div>
       )}
 
       <div className="batch-list">
         {batches.map(b => (
-          <div key={b.batchId} className="batch-row">
+          <a key={b.batchId} href={`/admin/mark/batch/${b.batchId}`} className="batch-row batch-row--link">
             <div className="batch-row-main">
               <div className="batch-row-name">{b.studentName || '(unnamed)'}</div>
               <div className="batch-row-meta">
@@ -262,21 +262,12 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
               </div>
             </div>
             <div className="batch-row-actions">
-              {b.status === 'finalized' && (
-                <a href={`/admin/mark/batch/${b.batchId}`} className="row-action-btn row-action-btn--primary">
-                  View
-                </a>
-              )}
-              {b.finalPdfUrl && (
-                <a href={b.finalPdfUrl} target="_blank" rel="noreferrer" className="row-action-btn">
-                  PDF
-                </a>
-              )}
-              <button className="row-action-btn row-action-btn--danger" onClick={() => handleDelete(b)}>
+              <button className="row-action-btn row-action-btn--danger"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(b); }}>
                 Delete
               </button>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </div>
@@ -613,7 +604,9 @@ const pageCSS = `
 
 /* Batch list */
 .batch-list { display:flex; flex-direction:column; gap:8px; }
-.batch-row { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.batch-row { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; text-decoration:none; color:inherit; }
+.batch-row--link { cursor:pointer; transition:background 0.12s,border-color 0.12s; }
+.batch-row--link:hover { background:#f9fafb; border-color:#d1d5db; }
 .batch-row-main { flex:1; min-width:0; }
 .batch-row-name { font-size:15px; font-weight:700; color:#111827; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .batch-row-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }

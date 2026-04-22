@@ -253,7 +253,7 @@ Accepts a structured marking JSON payload from the Fly.io bot (Stage B.1a) and r
 
 **Bot wiring:** Stage B.1c (not yet implemented). The bot will call this endpoint after the AI marking step and upload the PNG to Vercel Blob.
 
-## Batch Marking (Prompt 1 of 3 — Detection only)
+## Batch Marking
 
 Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s limit.
 
@@ -263,8 +263,27 @@ Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s
 |---|---|---|
 | `/api/mark-batch/init` | GET | Student list for dropdown |
 | `/api/mark-batch/init` | POST | PDF/image splitting + Gemini region detection → batch record |
-| `/api/mark-batch/mark` | POST | Mark each detected region (Prompt 2, not yet built) |
-| `/api/mark-batch/finalize` | POST | Stitch marked pages into PDF (Prompt 3, not yet built) |
+| `/api/mark-batch/execute` | POST | Mark each detected region (Claude Sonnet + Gemini annotation) |
+| `/api/mark-batch/assemble-pdf` | POST | Stitch annotated pages into PDF, update batch status → `finalized` |
+| `/api/mark-batch/list` | GET | Batch list for landing page (`?status=to-mark\|marked\|all`) |
+| `/api/mark-batch/get` | GET | Single batch + submissions for detail page (`?batchId=...`) |
+| `/api/mark-batch/submissions` | GET | Submissions for a batch (used internally) |
+| `/api/mark-batch/delete` | POST | Soft-delete a batch (sets Status=deleted) |
+| `/api/mark-batch/upload-amended` | POST | Upload amended PDF → overwrites Final PDF URL |
+
+### Tab filter semantics
+
+- **"To be marked"** tab (`?status=to-mark`): `detected` + `marking` only — not yet AI-processed
+- **"Already marked"** tab (`?status=marked`): `marked` + `finalized` — AI has marked; PDF may or may not be assembled
+- `marked` = AI marking done, no PDF yet; `finalized` = PDF assembled, downloadable
+
+### UX flow
+
+1. Upload PDF → Gemini detects question regions → batch record created (`detected`)
+2. Click "Start marking" in upload flow OR batch detail page → execute endpoint runs → status → `marked`
+3. "Already marked" tab now shows the batch
+4. Click into batch → review annotated gallery → click "Save as marked (assemble PDF)" → status → `finalized`
+5. "Download PDF" appears on finalized batch detail page
 
 ### Init endpoint — POST /api/mark-batch/init
 
@@ -306,8 +325,13 @@ Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s
 | File | Purpose |
 |---|---|
 | `src/lib/batch-marking.ts` | PDF→images (pdfjs-dist+canvas), Gemini detection, Blob upload, p-limit orchestration |
+| `src/lib/marking-pipeline.ts` | Claude Sonnet marking prompt, Gemini bbox annotation, Sharp SVG composite |
 | `src/app/api/mark-batch/init/route.ts` | Init endpoint (GET students + POST batch) |
-| `src/app/admin/mark/page.tsx` | Upload + detection preview UI |
+| `src/app/api/mark-batch/execute/route.ts` | Execute marking per question group |
+| `src/app/api/mark-batch/assemble-pdf/route.ts` | PDF assembly + finalize |
+| `src/app/api/mark-batch/get/route.ts` | Batch + submissions for detail page |
+| `src/app/admin/mark/page.tsx` | Landing page (tabs + upload flow) |
+| `src/app/admin/mark/batch/[batchId]/page.tsx` | Batch detail page (all statuses) |
 
 ### Airtable Batches table (create manually)
 
@@ -320,7 +344,7 @@ Adrian must create this table in Airtable before the init endpoint can write to 
 | `Student Name` | Single line text | |
 | `Total Pages` | Number | |
 | `Total Questions` | Number | |
-| `Status` | Single select | `detected` / `marking` / `finalized` / `failed` |
+| `Status` | Single select | `detected` / `marking` / `marked` / `finalized` / `failed` / `deleted` |
 | `Page Image URLs` | Long text | Newline-separated blob URLs |
 | `Detection JSON` | Long text | Full init response payload (for replay/debug) |
 | `Final PDF URL` | URL | Set in Prompt 3 |

@@ -1,0 +1,89 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/schedule.js",     "use": "@vercel/node" },
+    { "src": "api/signup-data.js",  "use": "@vercel/node" },
+    { "src": "api/signup.js",       "use": "@vercel/node" },
+    { "src": "*.html",              "use": "@vercel/static" },
+    { "src": "favicon.svg",         "use": "@vercel/static" },
+    { "src": "api/generate-invoices.js", "use": "@vercel/node" },
+    { "src": "api/send-invoices.js", "use": "@vercel/node" },
+    { "src": "api/admin-invoices.js", "use": "@vercel/node" },
+    { "src": "api/preview-invoice.js", "use": "@vercel/node" },
+    { "src": "api/generate-pdf-batch.js", "use": "@vercel/node" },
+    { "src": "api/payment-reminder.js", "use": "@vercel/node" },
+    { "src": "api/chat.js", "use": "@vercel/node" },
+    { "src": "o-level-a-math-tuition.html", "use": "@vercel/static" },
+    { "src": "jc-h2-math-tuition.html", "use": "@vercel/static" },
+    { "src": "secondary-math-tuition.html", "use": "@vercel/static" },
+    { "src": "llms.txt", "use": "@vercel/static" },
+    { "src": "learn.html", "use": "@vercel/static" },
+    { "src": "api/learn.js", "use": "@vercel/node" },
+    { "src": "revise.html", "use": "@vercel/static" },
+    { "src": "edit-notes.html", "use": "@vercel/static" },
+    { "src": "api/notes.js", "use": "@vercel/node" },
+    { "src": "formulas/mf27.html", "use": "@vercel/static" },
+    { "src": "formulas/amath.html", "use": "@vercel/static" },
+    { "src": "formulas/emath.html", "use": "@vercel/static" },
+    { "src": "pdfs/mf27.pdf", "use": "@vercel/static" },
+    { "src": "pdfs/amath-syllabus.pdf", "use": "@vercel/static" },
+    { "src": "pdfs/emath-syllabus.pdf", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/schedule",     "dest": "/api/schedule.js"    },
+    { "src": "/api/signup-data",  "dest": "/api/signup-data.js" },
+    { "src": "/api/signup",       "dest": "/api/signup.js"      },
+    { "src": "/signup",           "dest": "/signup.html"        },
+    { "src": "/thankyou",         "dest": "/thankyou.html"      },
+    { "src": "/terms",            "dest": "/terms.html"         },
+    { "src": "/admin",            "dest": "/admin.html"         },
+    { "src": "/",                 "dest": "/index.html"         },
+    { "src": "/api/generate-invoices", "dest": "/api/generate-invoices.js" },
+    { "src": "/api/send-invoices", "dest": "/api/send-invoices.js" },
+    { "src": "/api/admin-invoices", "dest": "/api/admin-invoices.js" },
+    { "src": "/api/preview-invoice", "dest": "/api/preview-invoice.js" },
+    { "src": "/api/generate-pdf-batch", "dest": "/api/generate-pdf-batch.js" },
+    { "src": "/api/payment-reminder", "dest": "/api/payment-reminder.js" },
+    { "src": "/api/chat", "dest": "/api/chat.js" },
+    { "src": "/chat", "dest": "/chat.html" },
+    { "src": "/o-level-a-math-tuition", "dest": "/o-level-a-math-tuition.html" },
+    { "src": "/jc-h2-math-tuition", "dest": "/jc-h2-math-tuition.html" },
+    { "src": "/secondary-math-tuition", "dest": "/secondary-math-tuition.html" },
+    { "src": "/llms.txt", "dest": "/llms.txt" },
+    { "src": "/api/learn", "dest": "/api/learn.js" },
+    { "src": "/learn", "dest": "/learn.html" },
+    { "src": "/api/notes", "dest": "/api/notes.js" },
+    { "src": "/revise", "dest": "/revise.html" },
+    { "src": "/edit-notes", "dest": "/edit-notes.html" },
+    { "src": "/formulas/mf27", "dest": "/formulas/mf27.html" },
+    { "src": "/formulas/amath", "dest": "/formulas/amath.html" },
+    { "src": "/formulas/emath", "dest": "/formulas/emath.html" },
+    { "src": "/pdfs/(.*)", "dest": "/pdfs/$1" },
+    { "src": "/(.*)",             "dest": "/$1"                 }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=60, stale-while-revalidate=59"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=60, stale-while-revalidate=59"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    { "path": "/api/payment-reminder", "schedule": "0 0 14 * *" },
+    { "path": "/api/generate-invoices", "schedule": "0 23 14 * *" },
+    { "path": "/api/send-invoices", "schedule": "0 2 15 * *" }
+  ]
+}
