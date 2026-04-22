@@ -239,7 +239,9 @@ RULES:
 - If the page contains multiple sub-questions, mark only the ONE indicated by the caption/context. If ambiguous, mark the first one and note in uncertainty.
 - verdict enum values: "correct" | "wrong" | "neutral"
 - error_type enum values: null | "ratio_inversion" | "wrong_setup" | "sign_error" | "arithmetic_slip" | "wrong_formula" | "unit_error" | "incomplete" | "conceptual" | "other"
-- correction.arrow enum values: "up" | "down" | "right" | null`;
+- correction.arrow enum values: "up" | "down" | "right" | null
+
+CRITICAL OUTPUT REQUIREMENT: Your response MUST be a single raw JSON object. Start your response with { and end with }. Do not write any text, explanation, or markdown fences before or after the JSON.`;
 }
 
 // ── Structured JSON → human-readable text (port from bot ai/annotate.js) ─────
@@ -377,6 +379,101 @@ function extractJsonFromSonnetResponse(text: string): unknown {
   throw new Error('Could not extract valid JSON from Sonnet response');
 }
 
+// ── Narrative PNG renderer (KaTeX + Puppeteer, best-effort) ──────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _narrativeBrowser: any = null;
+
+async function getNarrativeBrowser(): Promise<unknown | null> {
+  if (_narrativeBrowser) return _narrativeBrowser;
+  try {
+    const { default: puppeteer } = await import('puppeteer-core');
+    if (process.env.VERCEL === '1') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const chromium = await import('@sparticuz/chromium-min') as any;
+      const executablePath = await chromium.default.executablePath(
+        'https://github.com/Sparticuz/chromium/releases/download/v143.0.4/chromium-v143.0.4-pack.x64.tar'
+      );
+      _narrativeBrowser = await puppeteer.launch({
+        args: chromium.default.args,
+        executablePath,
+        headless: true,
+      });
+    } else {
+      _narrativeBrowser = await puppeteer.launch({
+        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+    }
+    return _narrativeBrowser;
+  } catch (err) {
+    console.warn('[getNarrativeBrowser] launch failed:', err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+async function renderNarrativeToPng(markdownText: string, targetWidth: number): Promise<Buffer | null> {
+  const browser = await getNarrativeBrowser();
+  if (!browser || !markdownText.trim()) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const page = await (browser as any).newPage();
+  try {
+    const vpWidth = Math.max(400, Math.round(targetWidth / 2));
+    await page.setViewport({ width: vpWidth, height: 400, deviceScaleFactor: 2 });
+
+    // Convert **bold** to <strong> (escape HTML first)
+    const escaped = markdownText
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const html = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+    const pageContent = `<!DOCTYPE html><html><head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#fffdf8;font-family:Georgia,serif}
+.narrative{padding:14px 18px;font-size:14px;line-height:1.65;color:#374151;border-top:3px solid #1e3a5f}
+strong{color:#1e3a5f}
+</style></head><body>
+<div class="narrative" id="n">${html}</div>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  renderMathInElement(document.getElementById('n'),{
+    delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]
+  });
+  window.__katexDone=true;
+});
+</script></body></html>`;
+
+    await page.setContent(pageContent, { waitUntil: 'networkidle0', timeout: 15000 });
+    await page.evaluate(() => new Promise<void>(resolve => {
+      if ((window as unknown as Record<string, unknown>).__katexDone) return resolve();
+      const iv = setInterval(() => {
+        if ((window as unknown as Record<string, unknown>).__katexDone) { clearInterval(iv); resolve(); }
+      }, 50);
+      setTimeout(() => { clearInterval(iv); resolve(); }, 5000);
+    }));
+
+    const rect = await page.evaluate(() => {
+      const el = document.querySelector('.narrative');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: 0, y: Math.floor(r.top), width: Math.ceil(r.width), height: Math.ceil(r.height) };
+    });
+
+    if (!rect || rect.height < 10) return null;
+    const shot = await page.screenshot({ type: 'png', clip: rect, omitBackground: false });
+    return Buffer.from(shot);
+  } catch (err) {
+    console.warn('[renderNarrativeToPng] failed:', err instanceof Error ? err.message : err);
+    return null;
+  } finally {
+    await page.close().catch(() => {});
+  }
+}
+
 // ── Claude Sonnet marking call ────────────────────────────────────────────────
 
 export async function callSonnetMarking(
@@ -395,22 +492,26 @@ export async function callSonnetMarking(
     withSonnetRetry(
       () => client.messages.create({
         model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
+        max_tokens: 8000,
         system: systemPrompt,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: imageSource },
-            { type: 'text', text: userText },
-          ],
-        }],
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'image', source: imageSource },
+              { type: 'text', text: userText },
+            ],
+          },
+          // Prefill: force JSON-first response
+          { role: 'assistant', content: '{' },
+        ],
       }),
       'sonnet-marking'
     );
 
-  // Attempt 1: standard prompt
+  // Attempt 1: standard prompt — prepend '{' since we prefilled the assistant turn
   const response1 = await makeCall("Mark this student's handwritten working.");
-  const text1 = response1.content[0].type === 'text' ? response1.content[0].text : '';
+  const text1 = '{' + (response1.content[0].type === 'text' ? response1.content[0].text : '');
   try {
     return extractJsonFromSonnetResponse(text1) as MarkingOutput;
   } catch {
@@ -421,7 +522,7 @@ export async function callSonnetMarking(
   const response2 = await makeCall(
     'Your previous response was not valid JSON. Please respond ONLY with the JSON object matching the schema — no prose, no markdown fences, just raw JSON starting with { and ending with }.'
   );
-  const text2 = response2.content[0].type === 'text' ? response2.content[0].text : '';
+  const text2 = '{' + (response2.content[0].type === 'text' ? response2.content[0].text : '');
   try {
     return extractJsonFromSonnetResponse(text2) as MarkingOutput;
   } catch {
@@ -522,7 +623,8 @@ export async function createAnnotatedImage(
   base64Image: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _mediaType: string,
-  annotations: AnnotationResult
+  annotations: AnnotationResult,
+  narrative?: string
 ): Promise<Buffer | null> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let sharpLib: any;
@@ -563,28 +665,32 @@ export async function createAnnotatedImage(
       if (ann.type === 'tick') {
         const pillWidth = Math.round(label.length * fontSize * 0.6 + fontSize * 1.2 + 14);
         const px = Math.min(annotationX, width - pillWidth - 10);
-        const cx = px + pillWidth - fontSize * 0.7;
-        const cy = lineCenterY;
-        const s = fontSize * 0.35;
+        const iconSize = Math.round(pillHeight * 0.72);
+        const iconX = Math.round(px + pillWidth - iconSize - 3);
+        const iconY = Math.round(lineCenterY - iconSize / 2);
         svgParts.push(
           `<rect x="${px + 1}" y="${lineCenterY - pillHeight / 2 + 1}" width="${pillWidth}" height="${pillHeight}" rx="${pillRadius}" fill="rgba(0,0,0,0.15)"/>` +
           `<rect x="${px}" y="${lineCenterY - pillHeight / 2}" width="${pillWidth}" height="${pillHeight}" rx="${pillRadius}" fill="#00c853" stroke="white" stroke-width="1.5"/>` +
           (label ? `<text x="${px + 8}" y="${lineCenterY + fontSize * 0.35}" font-size="${fontSize}" fill="white" font-family="${font}" font-weight="bold">${label}</text>` : '') +
-          `<path d="M${cx - s * 1.2},${cy - s * 0.1} L${cx - s * 0.2},${cy + s * 0.9} L${cx + s * 1.2},${cy - s * 0.7}" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`
+          `<svg x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
+          `<path d="M4,13 L9,18 L20,6" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` +
+          `</svg>`
         );
       } else if (ann.type === 'cross') {
         const errorText = ann.text || '';
         const mainPillWidth = Math.round(label.length * fontSize * 0.6 + fontSize * 1.2 + 14);
         const px = Math.min(annotationX, width - mainPillWidth - 10);
-        const cx = px + mainPillWidth - fontSize * 0.7;
-        const cy = lineCenterY;
-        const s = fontSize * 0.3;
+        const iconSize = Math.round(pillHeight * 0.62);
+        const iconX = Math.round(px + mainPillWidth - iconSize - 3);
+        const iconY = Math.round(lineCenterY - iconSize / 2);
         svgParts.push(
           `<rect x="${px + 1}" y="${lineCenterY - pillHeight / 2 + 1}" width="${mainPillWidth}" height="${pillHeight}" rx="${pillRadius}" fill="rgba(0,0,0,0.15)"/>` +
           `<rect x="${px}" y="${lineCenterY - pillHeight / 2}" width="${mainPillWidth}" height="${pillHeight}" rx="${pillRadius}" fill="#ff1744" stroke="white" stroke-width="1.5"/>` +
           (label ? `<text x="${px + 8}" y="${lineCenterY + fontSize * 0.35}" font-size="${fontSize}" fill="white" font-family="${font}" font-weight="bold">${label}</text>` : '') +
-          `<line x1="${cx - s}" y1="${cy - s}" x2="${cx + s}" y2="${cy + s}" stroke="white" stroke-width="2.5" stroke-linecap="round"/>` +
-          `<line x1="${cx + s}" y1="${cy - s}" x2="${cx - s}" y2="${cy + s}" stroke="white" stroke-width="2.5" stroke-linecap="round"/>`
+          `<svg x="${iconX}" y="${iconY}" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
+          `<line x1="7" y1="7" x2="17" y2="17" stroke="white" stroke-width="3" stroke-linecap="round"/>` +
+          `<line x1="17" y1="7" x2="7" y2="17" stroke="white" stroke-width="3" stroke-linecap="round"/>` +
+          `</svg>`
         );
         if (errorText) {
           const errorPillX = px + mainPillWidth + 4;
@@ -634,10 +740,40 @@ export async function createAnnotatedImage(
 
     const svg = buildSvg(width, height, svgParts.join(''));
 
-    return await sharpLib(imageBuffer)
+    let result: Buffer = await sharpLib(imageBuffer)
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
       .jpeg({ quality: 90 })
       .toBuffer();
+
+    // Append rendered narrative section (best-effort, fails silently)
+    if (narrative) {
+      try {
+        const narrativeBuffer = await renderNarrativeToPng(narrative, width);
+        if (narrativeBuffer) {
+          const nMeta = await sharpLib(narrativeBuffer).metadata();
+          const nW = nMeta.width || width;
+          const nH = nMeta.height || 80;
+          const scaledN = await sharpLib(narrativeBuffer)
+            .resize(width, Math.round(nH * (width / nW)), { fit: 'fill' })
+            .toBuffer();
+          const scaledMeta = await sharpLib(scaledN).metadata();
+          const finalNH = scaledMeta.height || nH;
+          result = await sharpLib({
+            create: { width, height: height + finalNH, channels: 3, background: { r: 255, g: 253, b: 248 } },
+          })
+            .composite([
+              { input: result, top: 0, left: 0 },
+              { input: scaledN, top: height, left: 0 },
+            ])
+            .jpeg({ quality: 90 })
+            .toBuffer();
+        }
+      } catch (narrativeErr) {
+        console.warn('[createAnnotatedImage] narrative append failed:', narrativeErr instanceof Error ? narrativeErr.message : narrativeErr);
+      }
+    }
+
+    return result;
   } catch (err: unknown) {
     console.error('[createAnnotatedImage] error:', err instanceof Error ? err.message : err);
     return null;

@@ -237,7 +237,10 @@ export async function POST(req: NextRequest) {
               base64, mediaType, markingJson, combined.width, combined.height
             );
             console.timeEnd(`gemini-annotate-${group.questionLabel}`);
-            annotatedBuffer = await createAnnotatedImage(base64, mediaType, annotations);
+            annotatedBuffer = await createAnnotatedImage(
+              base64, mediaType, annotations,
+              markingJson.summary?.body_markdown || undefined
+            );
           } catch (annotErr) {
             console.warn(`[execute] Annotation failed for ${group.questionLabel}:`, annotErr);
             // Fall back to unannotated slice
