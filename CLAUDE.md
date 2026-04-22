@@ -253,6 +253,99 @@ Accepts a structured marking JSON payload from the Fly.io bot (Stage B.1a) and r
 
 **Bot wiring:** Stage B.1c (not yet implemented). The bot will call this endpoint after the AI marking step and upload the PNG to Vercel Blob.
 
+## Batch Marking (Prompt 1 of 3 — Detection only)
+
+Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s limit.
+
+### Endpoints
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/api/mark-batch/init` | GET | Student list for dropdown |
+| `/api/mark-batch/init` | POST | PDF/image splitting + Gemini region detection → batch record |
+| `/api/mark-batch/mark` | POST | Mark each detected region (Prompt 2, not yet built) |
+| `/api/mark-batch/finalize` | POST | Stitch marked pages into PDF (Prompt 3, not yet built) |
+
+### Init endpoint — POST /api/mark-batch/init
+
+**Auth:** `Authorization: Bearer ADMIN_PASSWORD` (same as all admin routes).
+
+**Request:** `multipart/form-data`
+- `file` — single PDF, OR `images[]` — one or more image files (png/jpeg/webp)
+- `studentName` — required display name
+- `studentId` — optional Airtable Students record ID
+
+**Response:**
+```json
+{
+  "batchId": "batch_<timestamp>_<rand>",
+  "studentName": "Gavin",
+  "studentId": "recXXX" | null,
+  "pages": [
+    {
+      "pageIndex": 0,
+      "pageImageUrl": "https://blob.vercel-storage.com/.../page-0.png",
+      "pageImageWidth": 2480,
+      "pageImageHeight": 3508,
+      "questions": [
+        {
+          "questionLabel": "Q1",
+          "questionRegionBox": [yMin, xMin, yMax, xMax],
+          "questionRegionPixels": { "x1": 120, "y1": 230, "x2": 2360, "y2": 850 },
+          "hasDiagram": false
+        }
+      ]
+    }
+  ],
+  "summary": { "totalPages": 10, "totalQuestions": 27 }
+}
+```
+
+### Key files
+
+| File | Purpose |
+|---|---|
+| `src/lib/batch-marking.ts` | PDF→images (pdfjs-dist+canvas), Gemini detection, Blob upload, p-limit orchestration |
+| `src/app/api/mark-batch/init/route.ts` | Init endpoint (GET students + POST batch) |
+| `src/app/admin/mark/page.tsx` | Upload + detection preview UI |
+
+### Airtable Batches table (create manually)
+
+Adrian must create this table in Airtable before the init endpoint can write to it. Writes are non-fatal — init returns its response even if Airtable write fails.
+
+| Field | Type | Notes |
+|---|---|---|
+| `Batch ID` | Single line text | Primary — e.g. `batch_1714029384_abc123` |
+| `Student` | Link to Students | Optional |
+| `Student Name` | Single line text | |
+| `Total Pages` | Number | |
+| `Total Questions` | Number | |
+| `Status` | Single select | `detected` / `marking` / `finalized` / `failed` |
+| `Page Image URLs` | Long text | Newline-separated blob URLs |
+| `Detection JSON` | Long text | Full init response payload (for replay/debug) |
+| `Final PDF URL` | URL | Set in Prompt 3 |
+| `Created At` | Date with time | |
+| `Finalized At` | Date with time | Set in Prompt 3 |
+| `Submissions` | Link to Submissions | Set in Prompt 2 |
+
+### Dependencies added
+
+`pdfjs-dist` (v5.x, legacy ESM build), `canvas` (Node.js canvas), `p-limit`, `@google/generative-ai`
+
+`next.config.ts` has `serverExternalPackages: ['canvas', 'pdfjs-dist']` — required because canvas is a native module.
+
+### PDF rendering notes
+
+- Uses `pdfjs-dist/legacy/build/pdf.mjs` (legacy build avoids DOMMatrix error in Node.js)
+- Worker path set to local file URL: `file://<cwd>/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs`
+- Scale 2.0 = ~150 DPI A4 (1224×1584 px per page)
+- Gemini detection on each page in parallel (p-limit 5 concurrent)
+- Page images stored at `batches/<batchId>/page-<index>.png` in Vercel Blob (public, unguessable path)
+
+### Env var required
+
+`GOOGLE_API_KEY` — Google AI Studio key with Gemini 2.5 Pro access. Add to Vercel environment variables.
+
 ## Environment Variables
 
-`AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`, `ANTHROPIC_API_KEY`, `ADMIN_PASSWORD`, `CRON_SECRET`, `SIGNUP_SECRET`, `RESEND_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `RECEIPT_API_TOKEN`, `RENDER_MARKING_SECRET`
+`AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`, `ANTHROPIC_API_KEY`, `ADMIN_PASSWORD`, `CRON_SECRET`, `SIGNUP_SECRET`, `RESEND_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `RECEIPT_API_TOKEN`, `RENDER_MARKING_SECRET`, `GOOGLE_API_KEY`
