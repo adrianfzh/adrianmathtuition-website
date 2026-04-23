@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     if (!studentName) return NextResponse.json({ error: 'studentName is required' }, { status: 400 });
     if (!body.pdfBlobUrl) return NextResponse.json({ error: 'pdfBlobUrl is required' }, { status: 400 });
     pdfBlobUrl = body.pdfBlobUrl;
-    pdfBlobIsPrivate = false; // public store — URL is directly fetchable. Flip to true when store goes private.
+    pdfBlobIsPrivate = true; // private store — Fly fetches with Bearer auth.
     console.log(`[init] public PDF blob received, queuing for Fly: ${pdfBlobUrl.slice(0, 80)}…`);
 
     const batchId = generateBatchId();

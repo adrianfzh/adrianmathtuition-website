@@ -27,12 +27,15 @@ export async function POST(req: NextRequest) {
 
   const sorted = [...parts].sort((a, b) => a.partNumber - b.partNumber);
 
-  // Fetch all temp chunk blobs in parallel
+  // Fetch all temp chunk blobs in parallel (private store — requires Bearer auth)
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN || '';
   let buffers: Buffer[];
   try {
     buffers = await Promise.all(
       sorted.map(async ({ tempUrl, partNumber }) => {
-        const r = await fetch(tempUrl);
+        const r = await fetch(tempUrl, {
+          headers: { Authorization: `Bearer ${blobToken}` },
+        });
         if (!r.ok) throw new Error(`Failed to fetch chunk ${partNumber}: ${r.status}`);
         return Buffer.from(await r.arrayBuffer());
       })
@@ -49,7 +52,7 @@ export async function POST(req: NextRequest) {
   let finalUrl: string;
   try {
     const blob = await put(pathname, fullBuffer, {
-      access: 'public',
+      access: 'private',
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: 'application/pdf',

@@ -33,9 +33,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const blob = await put(`temp/${uploadId}/part-${partNumber}.bin`, body, {
-      access: 'public',
+      access: 'private',
       addRandomSuffix: false,
-      allowOverwrite: true, // safe on retry since key is deterministic
+      allowOverwrite: true,
     });
     console.log(`[upload-chunk] stored part ${partNumber} (${body.length} bytes): ${blob.url.slice(0, 80)}`);
     return NextResponse.json({ tempUrl: blob.url, partNumber });
