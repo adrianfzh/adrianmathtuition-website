@@ -55,10 +55,11 @@ export async function POST(req: NextRequest) {
   let studentName: string | null = null;
   let studentId: string | null = null;
   let pdfBlobUrl: string | null = null;
+  let pdfBlobIsPrivate = false;
   let imageUrls: string[] | null = null;
 
   if (contentType.includes('application/json')) {
-    // ── Blob URL path (large PDFs uploaded client-side) ───────────────────────
+    // ── Blob URL path (large PDFs uploaded client-side as private blobs) ─────
     let body: { pdfBlobUrl?: string; studentName?: string; studentId?: string };
     try { body = await req.json(); } catch {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
@@ -68,6 +69,11 @@ export async function POST(req: NextRequest) {
     if (!studentName) return NextResponse.json({ error: 'studentName is required' }, { status: 400 });
     if (!body.pdfBlobUrl) return NextResponse.json({ error: 'pdfBlobUrl is required' }, { status: 400 });
     pdfBlobUrl = body.pdfBlobUrl;
+    pdfBlobIsPrivate = true; // client-side upload uses access: 'private'
+    console.log(`[init] private PDF blob received, queuing for Fly: ${pdfBlobUrl.slice(0, 80)}…`);
+
+    const batchId = generateBatchId();
+    return enqueueBatch({ batchId, studentName, studentId, pdfBlobUrl, pdfBlobIsPrivate, imageUrls: null });
   } else {
     // ── Multipart path (images or small PDFs) ────────────────────────────────
     let formData: FormData;
@@ -93,6 +99,7 @@ export async function POST(req: NextRequest) {
       const buffer = Buffer.from(await singleFile.arrayBuffer());
 
       if (singleFile.type === 'application/pdf') {
+        // Server-side put() with access:'public' works on private stores — no signing needed
         const blob = await put(`batches/${batchIdForUpload}/source.pdf`, buffer, { access: 'public', contentType: 'application/pdf' });
         pdfBlobUrl = blob.url;
       } else if (ALLOWED_IMAGE_TYPES.includes(singleFile.type)) {
@@ -120,24 +127,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Reuse the batchId we generated for uploads
-    const batchId = batchIdForUpload;
-    return enqueueBatch({ batchId, studentName, studentId, pdfBlobUrl, imageUrls });
+    return enqueueBatch({ batchId: batchIdForUpload, studentName, studentId, pdfBlobUrl, pdfBlobIsPrivate: false, imageUrls });
   }
-
-  const batchId = generateBatchId();
-  return enqueueBatch({ batchId, studentName, studentId, pdfBlobUrl, imageUrls });
 }
 
 // ── Shared enqueue logic ──────────────────────────────────────────────────────
 
 async function enqueueBatch({
-  batchId, studentName, studentId, pdfBlobUrl, imageUrls,
+  batchId, studentName, studentId, pdfBlobUrl, pdfBlobIsPrivate, imageUrls,
 }: {
   batchId: string;
   studentName: string;
   studentId: string | null;
   pdfBlobUrl: string | null;
+  pdfBlobIsPrivate: boolean;
   imageUrls: string[] | null;
 }): Promise<NextResponse> {
   // Insert into Supabase with status='queued'
@@ -163,7 +166,7 @@ async function enqueueBatch({
     flyRes = await fetch(`${flyUrl}/internal/process-batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-worker-secret': flySecret },
-      body: JSON.stringify({ batchId, studentName, studentId, pdfBlobUrl, imageUrls }),
+      body: JSON.stringify({ batchId, studentName, studentId, pdfBlobUrl, pdfBlobIsPrivate, imageUrls }),
     });
   } catch (err) {
     console.error('[init] Failed to reach Fly worker:', err);

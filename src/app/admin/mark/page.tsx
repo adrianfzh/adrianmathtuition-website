@@ -358,7 +358,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
       try {
         const file = files[0];
         const blob = await upload(`uploads/${Date.now()}-${file.name}`, file, {
-          access: 'public',
+          access: 'private',
           handleUploadUrl: '/api/mark-batch/upload-token',
           clientPayload: savedPw.current,
           onUploadProgress: (p) => setUploadProgress(Math.round(p.percentage)),

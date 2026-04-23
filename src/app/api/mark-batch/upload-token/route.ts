@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
         return {
           allowedContentTypes: ['application/pdf'],
           maximumSizeInBytes: 50 * 1024 * 1024,
+          access: 'private',
           tokenPayload: JSON.stringify({ uploadedBy: 'admin' }),
         };
       },
