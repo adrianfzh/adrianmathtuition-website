@@ -58,52 +58,61 @@ async function generateCoverPagePng(params: {
     ? new Date(createdAt).toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' })
     : new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const fontBase64 = getFontBase64();
-  const fontDef = fontBase64
-    ? `<defs><style>@font-face{font-family:'Caveat';src:url('data:font/ttf;base64,${fontBase64}') format('truetype');}</style></defs>`
-    : '';
-
   const hr = (y: number) =>
     `<line x1="${pad}" y1="${y}" x2="${W - pad}" y2="${y}" stroke="#d1d5db" stroke-width="1.5"/>`;
 
+  // Two-column layout if >7 questions, dynamic row height to always fit above footer rule
+  const useColumns = questions.length > 7;
+  const colCount = useColumns ? 2 : 1;
+  const halfN = Math.ceil(questions.length / colCount);
+  const breakdownTop = H * 0.625;
+  const breakdownBot = H * 0.87;
+  const dynLineH = Math.min(lineH * 1.3, (breakdownBot - breakdownTop) / Math.max(halfN, 1));
+  const colW = (W - 2 * pad) / colCount;
+
+  // Use Arial/sans-serif — Sharp's SVG renderer doesn't support @font-face with base64 fonts
+  const FONT = 'Arial,Helvetica,sans-serif';
+
   const qLines = questions.map((q, i) => {
-    const y = H * 0.62 + i * lineH * 1.3;
+    const col = Math.floor(i / halfN);
+    const row = i % halfN;
+    const x = pad + col * colW;
+    const y = breakdownTop + row * dynLineH;
     const pct = q.max > 0 ? Math.round((q.awarded / q.max) * 100) : 0;
     const color = pct === 100 ? '#166534' : pct >= 50 ? '#92400e' : '#991b1b';
-    return `<text x="${pad}" y="${y}" font-size="${smallSize}" fill="${color}" font-family="Caveat,sans-serif" font-weight="bold">${q.label}: ${q.awarded}/${q.max}</text>`;
+    return `<text x="${x}" y="${y}" font-size="${smallSize}" fill="${color}" font-family="${FONT}" font-weight="bold">${q.label}: ${q.awarded}/${q.max}</text>`;
   }).join('');
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-    ${fontDef}
     <rect width="${W}" height="${H}" fill="white"/>
 
     <!-- Header bar -->
     <rect x="0" y="0" width="${W}" height="${Math.round(H * 0.08)}" fill="#1e3a5f"/>
-    <text x="${midX}" y="${Math.round(H * 0.055)}" font-size="${Math.round(titleSize * 0.75)}" fill="white" font-family="Caveat,sans-serif" font-weight="bold" text-anchor="middle">AdrianMath Tuition</text>
+    <text x="${midX}" y="${Math.round(H * 0.055)}" font-size="${Math.round(titleSize * 0.75)}" fill="white" font-family="${FONT}" font-weight="bold" text-anchor="middle">AdrianMath Tuition</text>
 
     <!-- Title -->
-    <text x="${midX}" y="${H * 0.18}" font-size="${titleSize}" fill="#111827" font-family="Caveat,sans-serif" font-weight="bold" text-anchor="middle">Marked Homework</text>
+    <text x="${midX}" y="${H * 0.18}" font-size="${titleSize}" fill="#111827" font-family="${FONT}" font-weight="bold" text-anchor="middle">Marked Homework</text>
 
     <!-- Student details -->
-    <text x="${pad}" y="${H * 0.27}" font-size="${bodySize}" fill="#374151" font-family="Caveat,sans-serif">Student: ${escapeXml(studentName)}</text>
-    <text x="${pad}" y="${H * 0.27 + lineH * 1.4}" font-size="${bodySize}" fill="#374151" font-family="Caveat,sans-serif">Date: ${escapeXml(dateStr)}</text>
-    <text x="${pad}" y="${H * 0.27 + lineH * 2.8}" font-size="${bodySize}" fill="#374151" font-family="Caveat,sans-serif">Level: ${escapeXml(studentLevel || 'Not specified')}</text>
+    <text x="${pad}" y="${H * 0.27}" font-size="${bodySize}" fill="#374151" font-family="${FONT}">Student: ${escapeXml(studentName)}</text>
+    <text x="${pad}" y="${H * 0.27 + lineH * 1.4}" font-size="${bodySize}" fill="#374151" font-family="${FONT}">Date: ${escapeXml(dateStr)}</text>
+    <text x="${pad}" y="${H * 0.27 + lineH * 2.8}" font-size="${bodySize}" fill="#374151" font-family="${FONT}">Level: ${escapeXml(studentLevel || 'Not specified')}</text>
 
     ${hr(H * 0.42)}
 
     <!-- Total score -->
-    <text x="${midX}" y="${H * 0.51}" font-size="${Math.round(titleSize * 1.15)}" fill="#1e3a5f" font-family="Caveat,sans-serif" font-weight="bold" text-anchor="middle">Total: ${totalAwarded} / ${totalMax}</text>
+    <text x="${midX}" y="${H * 0.51}" font-size="${Math.round(titleSize * 1.15)}" fill="#1e3a5f" font-family="${FONT}" font-weight="bold" text-anchor="middle">Total: ${totalAwarded} / ${totalMax}</text>
 
     ${hr(H * 0.58)}
 
     <!-- Per-question breakdown -->
-    <text x="${pad}" y="${H * 0.615}" font-size="${smallSize}" fill="#6b7280" font-family="Caveat,sans-serif">Question breakdown:</text>
+    <text x="${pad}" y="${breakdownTop - dynLineH * 0.4}" font-size="${smallSize}" fill="#6b7280" font-family="${FONT}">Question breakdown:</text>
     ${qLines}
 
     ${hr(H * 0.87)}
 
     <!-- Footer -->
-    <text x="${midX}" y="${H * 0.92}" font-size="${smallSize}" fill="#9ca3af" font-family="Caveat,sans-serif" text-anchor="middle">Marked by AdrianMath AI · Reviewed by Adrian</text>
+    <text x="${midX}" y="${H * 0.92}" font-size="${smallSize}" fill="#9ca3af" font-family="${FONT}" text-anchor="middle">Marked by AdrianMath AI · Reviewed by Adrian</text>
   </svg>`;
 
   try {
