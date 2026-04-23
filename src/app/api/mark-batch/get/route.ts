@@ -50,6 +50,12 @@ export async function GET(req: NextRequest) {
     try { detectionJson = JSON.parse(atFields['Detection JSON'] as string || 'null'); } catch { /**/ }
   }
 
+  // marking_json: set by Fly execute-batch when status='marked'
+  let markingJson: unknown = null;
+  if (sbRow?.marking_json) {
+    markingJson = sbRow.marking_json;
+  }
+
   const batch = {
     batchId,
     airtableRecordId: atRec?.id as string | undefined,
@@ -65,6 +71,7 @@ export async function GET(req: NextRequest) {
     finalizedAt: (atFields['Finalized At'] as string) || null,
     pageImageUrls,
     detectionJson,
+    markingJson,
   };
 
   // Fetch linked submissions from Airtable (unchanged — scope guard)

@@ -195,7 +195,7 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
 
   useEffect(() => { fetchBatches(tab); }, [tab, fetchBatches]);
 
-  // Auto-refresh every 10s on to-mark tab (batches may be actively marking)
+  // Auto-refresh every 10s on to-mark tab (batches may be detecting or marking)
   useEffect(() => {
     if (tab !== 'to-mark') return;
     const id = setInterval(() => fetchBatches('to-mark'), 10000);
@@ -497,22 +497,50 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     }
   }
 
+  async function pollForMarking(batchId: string) {
+    setUploadState('marking');
+    const maxAttempts = 180; // 15 minutes at 5s intervals
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(r => setTimeout(r, 5000));
+      try {
+        const res = await fetch(`/api/mark-batch/get?batchId=${batchId}`, {
+          headers: { Authorization: `Bearer ${savedPw.current}` },
+        });
+        if (!res.ok) continue;
+        const { batch } = await res.json();
+        if ((batch.status === 'marked' || batch.status === 'finalized') && batch.markingJson) {
+          setMarkingResult(batch.markingJson as MarkingResult);
+          setUploadState('marked');
+          return;
+        }
+        if (batch.status === 'failed') {
+          setError(batch.errorMessage || 'Marking failed on the processing worker.');
+          setUploadState('preview');
+          return;
+        }
+      } catch { /* network hiccup — keep polling */ }
+    }
+    setError('Marking timed out after 15 minutes. Check the batch list for status.');
+    setUploadState('preview');
+  }
+
   async function handleStartMarking() {
     if (!batchResult) return;
-    setUploadState('marking'); setError('');
+    setError('');
     try {
       const res = await fetch('/api/mark-batch/execute', {
         method: 'POST',
         headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: batchResult.batchId, studentLevel }),
       });
-      if (!res.ok) {
+      if (!res.ok && res.status !== 202) {
         let msg = `Marking failed: ${res.status}`;
         try { msg = (await res.json()).error || msg; } catch { /**/ }
-        setError(msg); setUploadState('preview'); return;
+        setError(msg); return;
       }
-      setMarkingResult(await res.json()); setUploadState('marked');
-    } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Network error'); setUploadState('preview'); }
+      // Fly accepted the job (202) — poll for completion
+      await pollForMarking(batchResult.batchId);
+    } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Network error'); }
   }
 
   async function handleAssemble() {
@@ -671,7 +699,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   }
 
   if (uploadState === 'marking') {
-    return <Spinner label="Marking in progress…" sub="Claude Sonnet is marking each question. Gemini is placing annotations. This may take 1–3 minutes." />;
+    return <Spinner label="Marking in progress…" sub="Claude Sonnet is marking each question and Gemini is placing annotations. A 10-question batch takes 3–8 minutes. This page will update automatically." />;
   }
 
   if (uploadState === 'marked' && markingResult) {

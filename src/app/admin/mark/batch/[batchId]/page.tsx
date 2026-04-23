@@ -87,6 +87,13 @@ export default function BatchDetailPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [batchId]);
 
+  // Auto-poll every 8s while marking is in progress
+  useEffect(() => {
+    if (batch?.status !== 'marking' && batch?.status !== 'processing') return;
+    const id = setInterval(() => loadBatch(savedPw.current), 8000);
+    return () => clearInterval(id);
+  }, [batch?.status, loadBatch]);
+
   const loadBatch = useCallback(async (pw: string) => {
     setLoading(true); setError('');
     try {
@@ -111,11 +118,12 @@ export default function BatchDetailPage() {
         headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: batch.batchId, studentLevel: 'unknown' }),
       });
-      if (!res.ok) {
+      if (!res.ok && res.status !== 202) {
         const d = await res.json().catch(() => ({}));
-        setActionError(d.error || `Marking failed: ${res.status}`);
+        setActionError(d.error || `Failed to start marking: ${res.status}`);
         return;
       }
+      // Fly accepted (202) — reload to show 'marking' status; auto-poll will take over
       await loadBatch(savedPw.current);
     } catch (e: unknown) {
       setActionError(e instanceof Error ? e.message : 'Network error');
