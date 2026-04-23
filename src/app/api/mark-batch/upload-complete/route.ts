@@ -26,8 +26,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // access:'public' — store is Public/Unprotected. Change to 'private' when store is upgraded.
     const result = await completeMultipartUpload(pathname, parts, {
-      access: 'private',
+      access: 'public',
       uploadId,
       key,
     });

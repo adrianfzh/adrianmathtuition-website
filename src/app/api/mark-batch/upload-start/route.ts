@@ -24,8 +24,9 @@ export async function POST(req: NextRequest) {
 
   const pathname = `uploads/${Date.now()}-${filename}`;
   try {
+    // access:'public' — store is Public/Unprotected. Change to 'private' when store is upgraded.
     const { key, uploadId } = await createMultipartUpload(pathname, {
-      access: 'private',
+      access: 'public',
       contentType: 'application/pdf',
     });
     return NextResponse.json({ uploadId, key, pathname });

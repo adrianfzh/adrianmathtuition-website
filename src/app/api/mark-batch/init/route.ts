@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
     if (!studentName) return NextResponse.json({ error: 'studentName is required' }, { status: 400 });
     if (!body.pdfBlobUrl) return NextResponse.json({ error: 'pdfBlobUrl is required' }, { status: 400 });
     pdfBlobUrl = body.pdfBlobUrl;
-    pdfBlobIsPrivate = true; // client-side upload uses access: 'private'
-    console.log(`[init] private PDF blob received, queuing for Fly: ${pdfBlobUrl.slice(0, 80)}…`);
+    pdfBlobIsPrivate = false; // public store — URL is directly fetchable. Flip to true when store goes private.
+    console.log(`[init] public PDF blob received, queuing for Fly: ${pdfBlobUrl.slice(0, 80)}…`);
 
     const batchId = generateBatchId();
     return enqueueBatch({ batchId, studentName, studentId, pdfBlobUrl, pdfBlobIsPrivate, imageUrls: null });
