@@ -99,10 +99,7 @@ export async function POST(req: NextRequest) {
   const { batchId, studentLevel = 'unknown' } = body;
   if (!batchId) return NextResponse.json({ error: 'batchId is required' }, { status: 400 });
 
-  // ── Fetch batch record from Airtable ─────────────────────────────────────
-
-  let batchRecordId: string;
-  let detectionData: {
+  type DetectionData = {
     pages: Array<{
       pageIndex: number;
       pageImageUrl: string;
@@ -121,18 +118,43 @@ export async function POST(req: NextRequest) {
     studentId: string | null;
   };
 
+  // ── Read detection data from Supabase (primary, fast) ────────────────────
+  // Supabase is the authoritative source — Fly always writes here before returning 202.
+  // Airtable is a non-fatal mirror; don't block on it for the critical data path.
+
+  let detectionData: DetectionData;
   try {
-    const { recordId, fields } = await fetchBatchRecord(batchId);
-    batchRecordId = recordId;
-    const detectionJson = fields['Detection JSON'] as string;
-    if (!detectionJson) throw new Error('No Detection JSON in batch record');
-    detectionData = JSON.parse(detectionJson);
+    const { getSupabase } = await import('@/lib/supabase');
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from('marking_batches')
+      .select('detection_json')
+      .eq('id', batchId)
+      .single();
+    if (error || !data?.detection_json) throw new Error(error?.message || 'No detection_json in Supabase');
+    detectionData = data.detection_json as DetectionData;
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `Batch lookup failed: ${msg}` }, { status: 404 });
+    // Fallback: try Airtable (handles batches created before Supabase migration)
+    try {
+      const { fields } = await fetchBatchRecord(batchId);
+      const detectionJson = fields['Detection JSON'] as string;
+      if (!detectionJson) throw new Error('No Detection JSON in Airtable batch record');
+      detectionData = JSON.parse(detectionJson);
+    } catch (airtableErr: unknown) {
+      const msg = airtableErr instanceof Error ? airtableErr.message : String(airtableErr);
+      return NextResponse.json({ error: `Batch not found in Supabase or Airtable: ${msg}` }, { status: 404 });
+    }
   }
 
-  // ── Fetch unique page image buffers from Blob ─────────────────────────────
+  // ── Get Airtable batchRecordId (non-fatal, 8s timeout) ───────────────────
+  // Needed only for linking Submission records. If Airtable is slow/unavailable,
+  // submissions are still written to Airtable but without the Batch link.
+  const batchRecordId = await Promise.race([
+    fetchBatchRecord(batchId).then(r => r.recordId).catch(() => null as string | null),
+    new Promise<null>(resolve => setTimeout(() => resolve(null), 8000)),
+  ]);
+
+  // ── Fetch unique page image buffers from Blob (parallel with above) ───────
 
   const pageMap = new Map<number, { buffer: Buffer; width: number; height: number; url: string }>();
   const uniquePageIndices = [...new Set(
@@ -153,7 +175,7 @@ export async function POST(req: NextRequest) {
   // ── Process each question group (with concurrency limit) ──────────────────
 
   const { default: pLimit } = await import('p-limit');
-  const limit = pLimit(3);
+  const limit = pLimit(5);
 
   interface QuestionResult {
     questionLabel: string;
@@ -263,7 +285,7 @@ export async function POST(req: NextRequest) {
           // ── Create Airtable Submission record (non-fatal) ─────────────
           try {
             const submissionFields: Record<string, unknown> = {
-              'Batches': [batchRecordId],  // linked record: array of string IDs
+              ...(batchRecordId ? { 'Batches': [batchRecordId] } : {}),
               'Question Number': group.questionLabel,
               'Page Indices': JSON.stringify(group.pages),
               'Annotated Slice URLs': JSON.stringify(
@@ -300,13 +322,15 @@ export async function POST(req: NextRequest) {
 
   // ── Update Batch status to 'marked' (non-fatal) ───────────────────────────
 
-  try {
-    await airtableRequest('Batches', `/${batchRecordId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ fields: { Status: 'marked' } }),
-    });
-  } catch (err) {
-    console.error('[execute] Batch status update failed:', err);
+  if (batchRecordId) {
+    try {
+      await airtableRequest('Batches', `/${batchRecordId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ fields: { Status: 'marked' } }),
+      });
+    } catch (err) {
+      console.error('[execute] Batch status update failed:', err);
+    }
   }
 
   // ── Response ──────────────────────────────────────────────────────────────
