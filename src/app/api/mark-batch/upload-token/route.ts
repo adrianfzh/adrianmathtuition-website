@@ -1,3 +1,5 @@
+// DEPRECATED: replaced by upload-start / upload-chunk / upload-complete (server-side multipart).
+// Kept for one release cycle in case rollback is needed. Safe to delete after next deploy.
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextRequest, NextResponse } from 'next/server';
 

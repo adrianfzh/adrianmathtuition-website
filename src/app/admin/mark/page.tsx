@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { upload } from '@vercel/blob/client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -275,6 +274,90 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
   );
 }
 
+// ── Chunked multipart upload helper ──────────────────────────────────────────
+
+const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB — SDK minimum part size
+
+async function uploadPdfChunked(
+  file: File,
+  pw: string,
+  onProgress: (pct: number) => void,
+  signal: AbortSignal,
+): Promise<string> {
+  // 1. Start multipart upload
+  const startRes = await fetch('/api/mark-batch/upload-start', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename: file.name }),
+    signal,
+  });
+  if (!startRes.ok) {
+    const err = await startRes.json().catch(() => ({}));
+    throw new Error(err.error || `Upload start failed: ${startRes.status}`);
+  }
+  const { uploadId, key, pathname } = await startRes.json();
+
+  // 2. Upload chunks (concurrency 3, retry 3× with backoff)
+  const numChunks = Math.ceil(file.size / CHUNK_SIZE);
+  const bytesUploaded = new Array(numChunks).fill(0);
+
+  async function uploadChunk(partNumber: number): Promise<{ etag: string; partNumber: number }> {
+    const start = (partNumber - 1) * CHUNK_SIZE;
+    const end = Math.min(start + CHUNK_SIZE, file.size);
+    const chunk = file.slice(start, end);
+    const url = `/api/mark-batch/upload-chunk?uploadId=${encodeURIComponent(uploadId)}&key=${encodeURIComponent(key)}&pathname=${encodeURIComponent(pathname)}&partNumber=${partNumber}`;
+
+    for (let attempt = 0; attempt <= 3; attempt++) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/octet-stream' },
+          body: chunk,
+          signal,
+        });
+        if (!res.ok) {
+          const errText = await res.text().catch(() => '');
+          throw new Error(`Chunk ${partNumber} failed: ${res.status} ${errText}`);
+        }
+        const data = await res.json();
+        bytesUploaded[partNumber - 1] = end - start;
+        onProgress(Math.round(bytesUploaded.reduce((a, b) => a + b, 0) / file.size * 100));
+        return data;
+      } catch (e) {
+        if ((e as Error).name === 'AbortError') throw e;
+        if (attempt === 3) throw e;
+        await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 500));
+      }
+    }
+    throw new Error(`Chunk ${partNumber} exhausted retries`);
+  }
+
+  // Worker pool — safe because qi++ is atomic in single-threaded JS
+  const parts: Array<{ etag: string; partNumber: number }> = new Array(numChunks);
+  let qi = 0;
+  async function worker() {
+    while (qi < numChunks) {
+      const partNumber = qi++ + 1;
+      parts[partNumber - 1] = await uploadChunk(partNumber);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(3, numChunks) }, worker));
+
+  // 3. Complete multipart upload
+  const completeRes = await fetch('/api/mark-batch/upload-complete', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uploadId, key, pathname, parts }),
+    signal,
+  });
+  if (!completeRes.ok) {
+    const err = await completeRes.json().catch(() => ({}));
+    throw new Error(err.error || `Upload complete failed: ${completeRes.status}`);
+  }
+  const { url } = await completeRes.json();
+  return url;
+}
+
 // ── Upload flow (upload → detect → preview → mark → marked → assemble) ────────
 
 function UploadFlow({ savedPw, onDone, onCancel }: {
@@ -296,6 +379,11 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   const [includeCoverPage, setIncludeCoverPage] = useState(true);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => { uploadAbortRef.current?.abort(); };
+  }, []);
 
   useEffect(() => {
     fetch('/api/mark-batch/init', { headers: { Authorization: `Bearer ${savedPw.current}` } })
@@ -353,21 +441,24 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     const isSinglePdf = files.length === 1 && files[0].type === 'application/pdf';
 
     if (isSinglePdf) {
-      // ── Large-file path: client uploads directly to Blob, then enqueues ──
+      // ── Large-file path: server-side multipart upload via chunked API ──────
       setUploadState('uploading'); setUploadProgress(0);
+      const abortCtrl = new AbortController();
+      uploadAbortRef.current = abortCtrl;
       try {
         const file = files[0];
-        const blob = await upload(`uploads/${Date.now()}-${file.name}`, file, {
-          access: 'private',
-          handleUploadUrl: '/api/mark-batch/upload-token',
-          clientPayload: savedPw.current,
-          onUploadProgress: (p) => setUploadProgress(Math.round(p.percentage)),
-        });
+        const blobUrl = await uploadPdfChunked(
+          file,
+          savedPw.current,
+          setUploadProgress,
+          abortCtrl.signal,
+        );
 
         const res = await fetch('/api/mark-batch/init', {
           method: 'POST',
           headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pdfBlobUrl: blob.url, studentName, studentId: selectedStudent?.id || null }),
+          body: JSON.stringify({ pdfBlobUrl: blobUrl, studentName, studentId: selectedStudent?.id || null }),
+          signal: abortCtrl.signal,
         });
         if (!res.ok) {
           let msg = `Failed to start: ${res.status}`;
@@ -376,7 +467,11 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
         }
         const { batchId } = await res.json();
         await pollForDetection(batchId);
-      } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Network error'); setUploadState('upload'); }
+      } catch (e: unknown) {
+        if ((e as Error).name === 'AbortError') return;
+        setError(e instanceof Error ? e.message : 'Network error');
+        setUploadState('upload');
+      }
     } else {
       // ── Multipart path: images or small files sent directly ────────────────
       setUploadState('uploading');
