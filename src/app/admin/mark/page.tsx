@@ -386,6 +386,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   const [includeCoverPage, setIncludeCoverPage] = useState(true);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const adHocInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -400,6 +401,11 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
 
   const selectedStudent = students.find(s => s.id === selectedStudentId) || null;
   const isAdHoc = selectedStudentId === '__adhoc__';
+
+  // Auto-focus ad-hoc name input when user selects "Ad-hoc"
+  useEffect(() => {
+    if (isAdHoc) adHocInputRef.current?.focus();
+  }, [isAdHoc]);
   const studentName = isAdHoc ? adHocName.trim() : selectedStudent?.name || '';
   const canUpload = files.length > 0 && studentName.length > 0;
 
@@ -581,7 +587,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
             <option value="__adhoc__">Ad-hoc (enter name)</option>
           </select>
           {isAdHoc && (
-            <input type="text" className="field-input" placeholder="Student name"
+            <input ref={adHocInputRef} type="text" className="field-input" placeholder="Student name"
               value={adHocName} onChange={e => setAdHocName(e.target.value)} style={{ marginTop: 8 }} />
           )}
         </div>
@@ -647,7 +653,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   }
 
   if (uploadState === 'detecting') {
-    return <Spinner label="Detecting questions…" sub="Processing on the marking server — PDF rendering + Gemini region detection per page. A 10-page batch takes 30–90 seconds." />;
+    return <Spinner label="Step 1 of 2 — Detecting questions…" sub="The server is rendering each PDF page and running Gemini AI to find question regions. A 10-page batch takes 30–90 s; a 25-page batch can take 3–5 min. Hang tight." />;
   }
 
   if (uploadState === 'preview' && batchResult) {
@@ -703,7 +709,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   }
 
   if (uploadState === 'marking') {
-    return <Spinner label="Marking in progress…" sub="Claude Sonnet is marking each question and Gemini is placing annotations. A 10-question batch takes 3–8 minutes. This page will update automatically." />;
+    return <Spinner label="Step 2 of 2 — Marking in progress…" sub="Claude Sonnet is marking each question and Gemini is placing annotation badges. A 10-question batch takes 3–8 min. This page will update automatically when done — you can leave it open." />;
   }
 
   if (uploadState === 'marked' && markingResult) {
