@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const blob = await put(`temp/${uploadId}/part-${partNumber}.bin`, body, {
-      access: 'private',
+      access: 'public',
       addRandomSuffix: false,
       allowOverwrite: true,
     });

@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   let finalUrl: string;
   try {
     const blob = await put(pathname, fullBuffer, {
-      access: 'private',
+      access: 'public',
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: 'application/pdf',
