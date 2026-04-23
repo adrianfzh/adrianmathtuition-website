@@ -87,13 +87,6 @@ export default function BatchDetailPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [batchId]);
 
-  // Auto-poll every 8s while marking is in progress
-  useEffect(() => {
-    if (batch?.status !== 'marking' && batch?.status !== 'processing') return;
-    const id = setInterval(() => loadBatch(savedPw.current), 8000);
-    return () => clearInterval(id);
-  }, [batch?.status, loadBatch]);
-
   const loadBatch = useCallback(async (pw: string) => {
     setLoading(true); setError('');
     try {
@@ -108,6 +101,13 @@ export default function BatchDetailPage() {
       setError(e instanceof Error ? e.message : 'Failed to load batch');
     } finally { setLoading(false); }
   }, [batchId]);
+
+  // Auto-poll every 8s while marking is in progress
+  useEffect(() => {
+    if (batch?.status !== 'marking' && batch?.status !== 'processing') return;
+    const id = setInterval(() => loadBatch(savedPw.current), 8000);
+    return () => clearInterval(id);
+  }, [batch?.status, loadBatch]);
 
   async function handleStartMarking() {
     if (!batch) return;
