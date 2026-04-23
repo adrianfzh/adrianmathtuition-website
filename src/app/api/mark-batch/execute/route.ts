@@ -277,7 +277,7 @@ export async function POST(req: NextRequest) {
             const blob = await put(
               `batches/${batchId}/annotated-${safeLabel}.${ext}`,
               annotatedBuffer,
-              { access: 'public', contentType }
+              { access: 'public', contentType, addRandomSuffix: false, allowOverwrite: true }
             );
             result.annotatedSliceUrl = blob.url;
           }
