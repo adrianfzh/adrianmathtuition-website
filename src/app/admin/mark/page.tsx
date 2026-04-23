@@ -316,6 +316,34 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     setFiles(Array.from(e.target.files || [])); setError('');
   }
 
+  async function pollForDetection(batchId: string) {
+    setUploadState('detecting');
+    const maxAttempts = 120; // 10 minutes at 5s intervals
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(r => setTimeout(r, 5000));
+      try {
+        const res = await fetch(`/api/mark-batch/get?batchId=${batchId}`, {
+          headers: { Authorization: `Bearer ${savedPw.current}` },
+        });
+        if (!res.ok) continue;
+        const { batch } = await res.json();
+        if (batch.status === 'detected' && batch.detectionJson) {
+          const dj = batch.detectionJson as BatchResult;
+          setBatchResult({ batchId: dj.batchId, studentName: dj.studentName, studentId: dj.studentId, pages: dj.pages, summary: dj.summary });
+          setUploadState('preview');
+          return;
+        }
+        if (batch.status === 'failed') {
+          setError(batch.errorMessage || 'Detection failed on the processing worker.');
+          setUploadState('upload');
+          return;
+        }
+      } catch { /* network hiccup — keep polling */ }
+    }
+    setError('Detection timed out after 10 minutes. Check the batch list for status.');
+    setUploadState('upload');
+  }
+
   async function handleUpload() {
     if (files.length === 0 || !studentName) return;
     const totalMB = files.reduce((s, f) => s + f.size, 0) / 1024 / 1024;
@@ -325,7 +353,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     const isSinglePdf = files.length === 1 && files[0].type === 'application/pdf';
 
     if (isSinglePdf) {
-      // ── Large-file path: client uploads directly to Blob, then sends URL ──
+      // ── Large-file path: client uploads directly to Blob, then enqueues ──
       setUploadState('uploading'); setUploadProgress(0);
       try {
         const file = files[0];
@@ -336,22 +364,18 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
           onUploadProgress: (p) => setUploadProgress(Math.round(p.percentage)),
         });
 
-        setUploadState('detecting');
         const res = await fetch('/api/mark-batch/init', {
           method: 'POST',
           headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pdfBlobUrl: blob.url,
-            studentName,
-            studentId: selectedStudent?.id || null,
-          }),
+          body: JSON.stringify({ pdfBlobUrl: blob.url, studentName, studentId: selectedStudent?.id || null }),
         });
         if (!res.ok) {
-          let msg = `Detection failed: ${res.status}`;
+          let msg = `Failed to start: ${res.status}`;
           try { msg = (await res.json()).error || msg; } catch { /**/ }
           setError(msg); setUploadState('upload'); return;
         }
-        setBatchResult(await res.json()); setUploadState('preview');
+        const { batchId } = await res.json();
+        await pollForDetection(batchId);
       } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Network error'); setUploadState('upload'); }
     } else {
       // ── Multipart path: images or small files sent directly ────────────────
@@ -369,7 +393,8 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
           try { msg = (await res.json()).error || msg; } catch { try { msg = (await res.text()).substring(0, 200); } catch { /**/ } }
           setError(msg); setUploadState('upload'); return;
         }
-        setBatchResult(await res.json()); setUploadState('preview');
+        const { batchId } = await res.json();
+        await pollForDetection(batchId);
       } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Network error'); setUploadState('upload'); }
     }
   }
@@ -492,7 +517,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   }
 
   if (uploadState === 'detecting') {
-    return <Spinner label="Detecting questions…" sub="PDF rendering + Gemini region detection per page. A 10-page batch takes 20–50 seconds." />;
+    return <Spinner label="Detecting questions…" sub="Processing on the marking server — PDF rendering + Gemini region detection per page. A 10-page batch takes 30–90 seconds." />;
   }
 
   if (uploadState === 'preview' && batchResult) {
