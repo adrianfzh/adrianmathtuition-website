@@ -289,10 +289,25 @@ export async function POST(req: NextRequest) {
   const blob = await put(
     `batches/${batchId}/assembled.pdf`,
     Buffer.from(pdfBytes),
-    { access: 'public', contentType: 'application/pdf' }
+    { access: 'public', contentType: 'application/pdf', allowOverwrite: true }
   );
 
-  // ── Update Airtable Batch ─────────────────────────────────────────────────
+  const finalizedAt = new Date().toISOString();
+
+  // ── Update Supabase (authoritative state) ────────────────────────────────
+
+  try {
+    const supabase = getSupabase();
+    await supabase.from('marking_batches').update({
+      status: 'finalized',
+      final_pdf_url: blob.url,
+      finished_at: finalizedAt,
+    }).eq('id', batchId);
+  } catch (err) {
+    console.error('[assemble-pdf] Supabase update failed:', err);
+  }
+
+  // ── Update Airtable Batch (non-fatal mirror) ─────────────────────────────
 
   try {
     await airtableRequest('Batches', `/${batchAirtableId}`, {
@@ -301,7 +316,7 @@ export async function POST(req: NextRequest) {
         fields: {
           'Final PDF URL': blob.url,
           'Status': 'finalized',
-          'Finalized At': new Date().toISOString(),
+          'Finalized At': finalizedAt,
           'Total Marks Awarded': totalAwarded,
           'Total Marks Max': totalMax,
         },
