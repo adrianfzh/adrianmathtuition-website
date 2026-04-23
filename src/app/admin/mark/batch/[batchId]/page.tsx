@@ -24,6 +24,14 @@ interface DetectionResult {
   summary: { totalPages: number; totalQuestions: number };
 }
 
+interface MarkingJsonResult {
+  questionLabel: string;
+  annotatedSliceUrl: string | null;
+  marks: { awarded: number; max: number; marginNote: string };
+  summary: { title: string; bodyMarkdown: string };
+  error?: string;
+}
+
 interface Batch {
   batchId: string;
   airtableRecordId: string;
@@ -36,6 +44,7 @@ interface Batch {
   totalMarksMax: number | null;
   finalPdfUrl: string | null;
   detectionJson: DetectionResult | null;
+  markingJson: { results: MarkingJsonResult[] } | null;
 }
 
 interface Submission {
@@ -196,8 +205,18 @@ export default function BatchDetailPage() {
     ? new Date(batch.createdAt).toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' })
     : '';
 
-  const totalAwarded = submissions.reduce((s, r) => s + (r.marksAwarded ?? 0), 0);
-  const totalMax = submissions.reduce((s, r) => s + (r.marksMax ?? 0), 0);
+  // Fall back to markingJson when Airtable submissions weren't written
+  const effectiveResults: MarkingJsonResult[] = submissions.length > 0
+    ? submissions.map(s => ({
+        questionLabel: s.questionLabel,
+        annotatedSliceUrl: s.annotatedSliceUrls[0] ?? null,
+        marks: { awarded: s.marksAwarded, max: s.marksMax, marginNote: '' },
+        summary: { title: '', bodyMarkdown: s.botFeedback },
+      }))
+    : (batch?.markingJson?.results ?? []);
+
+  const totalAwarded = effectiveResults.reduce((s, r) => s + (r.marks.awarded ?? 0), 0);
+  const totalMax = effectiveResults.reduce((s, r) => s + (r.marks.max ?? 0), 0);
 
   return (
     <>
@@ -253,7 +272,7 @@ export default function BatchDetailPage() {
                       Delete batch
                     </button>
                   </div>
-                  <AnnotatedGallery submissions={submissions} />
+                  <AnnotatedGallery results={effectiveResults} />
                 </>
               )}
 
@@ -277,7 +296,7 @@ export default function BatchDetailPage() {
                       Delete batch
                     </button>
                   </div>
-                  <AnnotatedGallery submissions={submissions} />
+                  <AnnotatedGallery results={effectiveResults} />
                 </>
               )}
 
@@ -350,30 +369,32 @@ export default function BatchDetailPage() {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function AnnotatedGallery({ submissions }: { submissions: Submission[] }) {
-  if (submissions.length === 0) {
+function AnnotatedGallery({ results }: { results: MarkingJsonResult[] }) {
+  if (results.length === 0) {
     return <div className="empty-gallery">No marked submissions found for this batch.</div>;
   }
   return (
     <div className="gallery">
-      {submissions.map((sub, i) => (
+      {results.map((r, i) => (
         <div key={i} className="gallery-card">
           <div className="gallery-card-header">
-            <span className="gallery-q-label">{sub.questionLabel}</span>
-            {sub.marksMax > 0 && (
-              <span className={`marks-badge ${sub.marksAwarded === sub.marksMax ? 'marks-badge--full' : sub.marksAwarded > 0 ? 'marks-badge--partial' : 'marks-badge--zero'}`}>
-                {sub.marksAwarded}/{sub.marksMax}
+            <span className="gallery-q-label">{r.questionLabel}</span>
+            {r.marks.max > 0 && (
+              <span className={`marks-badge ${r.marks.awarded === r.marks.max ? 'marks-badge--full' : r.marks.awarded > 0 ? 'marks-badge--partial' : 'marks-badge--zero'}`}>
+                {r.marks.awarded}/{r.marks.max}{r.marks.marginNote ? ` ${r.marks.marginNote}` : ''}
               </span>
             )}
           </div>
-          {sub.annotatedSliceUrls.map((url, j) => (
+          {r.error && <div className="error-msg" style={{ marginBottom: 6, fontSize: 13 }}>Error: {r.error}</div>}
+          {r.annotatedSliceUrl && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={j} src={url} alt={`${sub.questionLabel} annotated`}
+            <img src={r.annotatedSliceUrl} alt={`${r.questionLabel} annotated`}
               style={{ maxWidth: '100%', border: '1px solid #e5e7eb', borderRadius: 6, marginBottom: 8 }} />
-          ))}
-          {sub.botFeedback && (
+          )}
+          {r.summary.bodyMarkdown && (
             <div className="marking-summary">
-              <div className="marking-summary-body">{sub.botFeedback}</div>
+              {r.summary.title && <div className="marking-summary-title">{r.summary.title}</div>}
+              <div className="marking-summary-body">{r.summary.bodyMarkdown}</div>
             </div>
           )}
         </div>

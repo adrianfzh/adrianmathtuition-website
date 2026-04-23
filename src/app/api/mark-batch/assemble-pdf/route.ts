@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { getSupabase } from '@/lib/supabase';
 import { put } from '@vercel/blob';
 import { PDFDocument } from 'pdf-lib';
 import fs from 'fs';
@@ -176,7 +177,7 @@ export async function POST(req: NextRequest) {
     return la.localeCompare(lb, undefined, { numeric: true });
   });
 
-  const questions = submissions.map(s => ({
+  let questions = submissions.map(s => ({
     label: s.fields?.['Question Number'] || '?',
     awarded: (s.fields?.['Bot Mark Awarded'] as number) || 0,
     max: (s.fields?.['Bot Mark Max'] as number) || 0,
@@ -186,11 +187,46 @@ export async function POST(req: NextRequest) {
     })(),
   }));
 
-  const totalAwarded = questions.reduce((sum, q) => sum + q.awarded, 0);
-  const totalMax = questions.reduce((sum, q) => sum + q.max, 0);
+  let totalAwarded = questions.reduce((sum, q) => sum + q.awarded, 0);
+  let totalMax = questions.reduce((sum, q) => sum + q.max, 0);
 
-  // Collect all image URLs in order (cover last so we can prepend)
-  const annotatedUrls: string[] = questions.flatMap(q => q.annotatedSliceUrls).filter(Boolean);
+  // Collect all image URLs in order
+  let annotatedUrls: string[] = questions.flatMap(q => q.annotatedSliceUrls).filter(Boolean);
+
+  // ── Supabase fallback — when Airtable submissions are absent ─────────────
+  if (annotatedUrls.length === 0) {
+    try {
+      const supabase = getSupabase();
+      const { data: sbRow } = await supabase
+        .from('marking_batches')
+        .select('marking_json')
+        .eq('id', batchId)
+        .single();
+
+      const mj = sbRow?.marking_json as {
+        results?: Array<{
+          questionLabel: string;
+          annotatedSliceUrl: string | null;
+          marks: { awarded: number; max: number };
+        }>;
+      } | null;
+
+      if (mj?.results?.length) {
+        questions = mj.results.map(r => ({
+          label: r.questionLabel,
+          awarded: r.marks?.awarded ?? 0,
+          max: r.marks?.max ?? 0,
+          annotatedSliceUrls: r.annotatedSliceUrl ? [r.annotatedSliceUrl] : [],
+        }));
+        totalAwarded = questions.reduce((sum, q) => sum + q.awarded, 0);
+        totalMax = questions.reduce((sum, q) => sum + q.max, 0);
+        annotatedUrls = questions.flatMap(q => q.annotatedSliceUrls).filter(Boolean);
+        console.log(`[assemble-pdf] using Supabase fallback: ${questions.length} questions, ${annotatedUrls.length} images`);
+      }
+    } catch (err) {
+      console.error('[assemble-pdf] Supabase fallback failed:', err);
+    }
+  }
 
   if (annotatedUrls.length === 0) {
     return NextResponse.json({ error: 'No annotated images found for this batch' }, { status: 400 });

@@ -257,7 +257,11 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
                 {b.totalMarksAwarded !== null && b.totalMarksMax !== null && b.totalMarksMax > 0 && (
                   <span className="score-chip">{b.totalMarksAwarded}/{b.totalMarksMax}</span>
                 )}
-                <span className="batch-time">{relativeTime(b.createdAt)}</span>
+                <span className="batch-time">
+                  {b.status === 'finalized' && b.finalizedAt
+                    ? `finalized ${relativeTime(b.finalizedAt)}`
+                    : `uploaded ${relativeTime(b.createdAt)}`}
+                </span>
                 <span className="batch-meta-dim">{b.totalPages}pp · {b.totalQuestions}q</span>
               </div>
             </div>
