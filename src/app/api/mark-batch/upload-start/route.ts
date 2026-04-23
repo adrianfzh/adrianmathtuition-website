@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createMultipartUpload } from '@vercel/blob';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,6 +9,8 @@ function checkAuth(req: NextRequest): boolean {
   return req.headers.get('authorization') === `Bearer ${pw}`;
 }
 
+// No longer calls createMultipartUpload — we use put() per chunk (temp blobs) to avoid the
+// 5 MB SDK minimum-part-size constraint vs Vercel's 4.5 MB body limit crossed constraint.
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -22,16 +23,7 @@ export async function POST(req: NextRequest) {
   }
   if (!filename) return NextResponse.json({ error: 'filename required' }, { status: 400 });
 
+  const uploadId = `up_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const pathname = `uploads/${Date.now()}-${filename}`;
-  try {
-    // access:'public' — store is Public/Unprotected. Change to 'private' when store is upgraded.
-    const { key, uploadId } = await createMultipartUpload(pathname, {
-      access: 'public',
-      contentType: 'application/pdf',
-    });
-    return NextResponse.json({ uploadId, key, pathname });
-  } catch (err) {
-    console.error('[upload-start] createMultipartUpload failed:', err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
-  }
+  return NextResponse.json({ uploadId, pathname });
 }

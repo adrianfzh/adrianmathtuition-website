@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { completeMultipartUpload } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -13,28 +13,57 @@ function checkAuth(req: NextRequest): boolean {
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { uploadId: string; key: string; pathname: string; parts: Array<{ etag: string; partNumber: number }> };
+  let body: { pathname: string; parts: Array<{ tempUrl: string; partNumber: number }> };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { uploadId, key, pathname, parts } = body;
-  if (!uploadId || !key || !pathname || !Array.isArray(parts) || parts.length === 0) {
-    return NextResponse.json({ error: 'uploadId, key, pathname, parts required' }, { status: 400 });
+  const { pathname, parts } = body;
+  if (!pathname || !Array.isArray(parts) || parts.length === 0) {
+    return NextResponse.json({ error: 'pathname and parts required' }, { status: 400 });
   }
 
+  const sorted = [...parts].sort((a, b) => a.partNumber - b.partNumber);
+
+  // Fetch all temp chunk blobs in parallel
+  let buffers: Buffer[];
   try {
-    // access:'public' — store is Public/Unprotected. Change to 'private' when store is upgraded.
-    const result = await completeMultipartUpload(pathname, parts, {
-      access: 'public',
-      uploadId,
-      key,
-    });
-    return NextResponse.json({ url: result.url });
+    buffers = await Promise.all(
+      sorted.map(async ({ tempUrl, partNumber }) => {
+        const r = await fetch(tempUrl);
+        if (!r.ok) throw new Error(`Failed to fetch chunk ${partNumber}: ${r.status}`);
+        return Buffer.from(await r.arrayBuffer());
+      })
+    );
   } catch (err) {
-    console.error('[upload-complete] completeMultipartUpload failed:', err);
+    console.error('[upload-complete] chunk fetch failed:', err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
+
+  const fullBuffer = Buffer.concat(buffers);
+  console.log(`[upload-complete] assembled ${sorted.length} chunks → ${fullBuffer.length} bytes`);
+
+  // Upload final PDF blob
+  let finalUrl: string;
+  try {
+    const blob = await put(pathname, fullBuffer, {
+      access: 'public',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: 'application/pdf',
+    });
+    finalUrl = blob.url;
+  } catch (err) {
+    console.error('[upload-complete] final put failed:', err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
+
+  // Clean up temp chunks (non-fatal)
+  del(sorted.map(p => p.tempUrl)).catch(err =>
+    console.error('[upload-complete] temp blob cleanup failed (non-fatal):', err)
+  );
+
+  return NextResponse.json({ url: finalUrl });
 }

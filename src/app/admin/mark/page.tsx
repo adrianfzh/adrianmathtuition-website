@@ -276,7 +276,10 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
 
 // ── Chunked multipart upload helper ──────────────────────────────────────────
 
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB — SDK minimum part size
+// 4 MB chunks — safely under Vercel's 4.5 MB body limit.
+// Uses put()-per-chunk (temp blobs) + server-side assembly, avoiding the 5 MB SDK minimum
+// part-size constraint that conflicts with the body limit on the multipart uploadPart API.
+const CHUNK_SIZE = 4 * 1024 * 1024;
 
 async function uploadPdfChunked(
   file: File,
@@ -284,7 +287,7 @@ async function uploadPdfChunked(
   onProgress: (pct: number) => void,
   signal: AbortSignal,
 ): Promise<string> {
-  // 1. Start multipart upload
+  // 1. Get uploadId + pathname from server
   const startRes = await fetch('/api/mark-batch/upload-start', {
     method: 'POST',
     headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
@@ -295,17 +298,17 @@ async function uploadPdfChunked(
     const err = await startRes.json().catch(() => ({}));
     throw new Error(err.error || `Upload start failed: ${startRes.status}`);
   }
-  const { uploadId, key, pathname } = await startRes.json();
+  const { uploadId, pathname } = await startRes.json();
 
-  // 2. Upload chunks (concurrency 3, retry 3× with backoff)
+  // 2. Upload chunks as temp blobs (concurrency 3, retry 3× with exponential backoff)
   const numChunks = Math.ceil(file.size / CHUNK_SIZE);
   const bytesUploaded = new Array(numChunks).fill(0);
 
-  async function uploadChunk(partNumber: number): Promise<{ etag: string; partNumber: number }> {
+  async function uploadChunk(partNumber: number): Promise<{ tempUrl: string; partNumber: number }> {
     const start = (partNumber - 1) * CHUNK_SIZE;
     const end = Math.min(start + CHUNK_SIZE, file.size);
     const chunk = file.slice(start, end);
-    const url = `/api/mark-batch/upload-chunk?uploadId=${encodeURIComponent(uploadId)}&key=${encodeURIComponent(key)}&pathname=${encodeURIComponent(pathname)}&partNumber=${partNumber}`;
+    const url = `/api/mark-batch/upload-chunk?uploadId=${encodeURIComponent(uploadId)}&partNumber=${partNumber}`;
 
     for (let attempt = 0; attempt <= 3; attempt++) {
       try {
@@ -332,8 +335,8 @@ async function uploadPdfChunked(
     throw new Error(`Chunk ${partNumber} exhausted retries`);
   }
 
-  // Worker pool — safe because qi++ is atomic in single-threaded JS
-  const parts: Array<{ etag: string; partNumber: number }> = new Array(numChunks);
+  // Worker pool — qi++ is atomic in single-threaded JS, no race condition
+  const parts: Array<{ tempUrl: string; partNumber: number }> = new Array(numChunks);
   let qi = 0;
   async function worker() {
     while (qi < numChunks) {
@@ -343,11 +346,11 @@ async function uploadPdfChunked(
   }
   await Promise.all(Array.from({ length: Math.min(3, numChunks) }, worker));
 
-  // 3. Complete multipart upload
+  // 3. Server assembles chunks into final PDF blob and cleans up temp blobs
   const completeRes = await fetch('/api/mark-batch/upload-complete', {
     method: 'POST',
     headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ uploadId, key, pathname, parts }),
+    body: JSON.stringify({ pathname, parts }),
     signal,
   });
   if (!completeRes.ok) {

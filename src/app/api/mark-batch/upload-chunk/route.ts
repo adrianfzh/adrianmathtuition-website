@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadPart } from '@vercel/blob';
+import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,17 +10,17 @@ function checkAuth(req: NextRequest): boolean {
   return req.headers.get('authorization') === `Bearer ${pw}`;
 }
 
+// Stores each chunk as a temp blob. upload-complete fetches, concatenates, and re-uploads the
+// final PDF. This sidesteps the 5MB SDK minimum-part-size vs 4.5MB Vercel body limit conflict.
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const uploadId = searchParams.get('uploadId');
-  const key = searchParams.get('key');
-  const pathname = searchParams.get('pathname');
   const partNumber = parseInt(searchParams.get('partNumber') || '0', 10);
 
-  if (!uploadId || !key || !pathname || !partNumber) {
-    return NextResponse.json({ error: 'uploadId, key, pathname, partNumber required' }, { status: 400 });
+  if (!uploadId || !partNumber) {
+    return NextResponse.json({ error: 'uploadId and partNumber required' }, { status: 400 });
   }
 
   let body: Buffer;
@@ -32,15 +32,15 @@ export async function POST(req: NextRequest) {
   if (body.length === 0) return NextResponse.json({ error: 'Empty chunk' }, { status: 400 });
 
   try {
-    const part = await uploadPart(pathname, body, {
-      access: 'private',
-      uploadId,
-      key,
-      partNumber,
+    const blob = await put(`temp/${uploadId}/part-${partNumber}.bin`, body, {
+      access: 'public',
+      addRandomSuffix: false,
+      allowOverwrite: true, // safe on retry since key is deterministic
     });
-    return NextResponse.json({ etag: part.etag, partNumber: part.partNumber });
+    console.log(`[upload-chunk] stored part ${partNumber} (${body.length} bytes): ${blob.url.slice(0, 80)}`);
+    return NextResponse.json({ tempUrl: blob.url, partNumber });
   } catch (err) {
-    console.error(`[upload-chunk] part ${partNumber} failed:`, err);
+    console.error(`[upload-chunk] put failed for part ${partNumber}:`, err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
