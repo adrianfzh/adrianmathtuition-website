@@ -589,15 +589,13 @@ function ExamForm({
 
 // ── UpcomingExams ─────────────────────────────────────────────────────────────
 
-function sortExams(exams: Exam[], today: string): Exam[] {
-  return [...exams]
-    .filter(e => !e.examDate || e.examDate >= today)
-    .sort((a, b) => {
-      if (!a.examDate && !b.examDate) return 0;
-      if (!a.examDate) return 1;
-      if (!b.examDate) return -1;
-      return a.examDate.localeCompare(b.examDate);
-    });
+function sortExams(exams: Exam[]): Exam[] {
+  return [...exams].sort((a, b) => {
+    if (!a.examDate && !b.examDate) return 0;
+    if (!a.examDate) return 1;
+    if (!b.examDate) return -1;
+    return a.examDate.localeCompare(b.examDate);
+  });
 }
 
 function UpcomingExams({
@@ -609,8 +607,6 @@ function UpcomingExams({
   const [loading, setLoading] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const today = todayISO();
-
   async function loadExams() {
     setLoading(true);
     try {
@@ -618,7 +614,7 @@ function UpcomingExams({
         headers: { Authorization: `Bearer ${pw}` },
       });
       const json = await res.json();
-      setExams(sortExams(json.exams ?? [], today));
+      setExams(sortExams(json.exams ?? []));
     } finally {
       setLoading(false);
       setLoaded(true);
@@ -632,11 +628,11 @@ function UpcomingExams({
   }
 
   function handleCreated(exam: Exam) {
-    setExams(prev => sortExams([...prev.filter(e => e.id !== exam.id), exam], today));
+    setExams(prev => sortExams([...prev.filter(e => e.id !== exam.id), exam]));
   }
 
   function handleUpdated(exam: Exam) {
-    setExams(prev => sortExams(prev.map(e => e.id === exam.id ? { ...e, ...exam } : e), today));
+    setExams(prev => sortExams(prev.map(e => e.id === exam.id ? { ...e, ...exam } : e)));
   }
 
   function handleDeleted(id: string) {
@@ -646,8 +642,8 @@ function UpcomingExams({
   }
 
   const headerLabel = !loaded
-    ? 'Upcoming Exams'
-    : exams.length === 0 ? 'Upcoming Exams' : `Upcoming Exams (${exams.length})`;
+    ? 'Exams'
+    : exams.length === 0 ? 'Exams' : `Exams (${exams.length})`;
 
   return (
     <div className="border border-neutral-200 rounded-xl overflow-hidden bg-white">
@@ -990,7 +986,7 @@ function LogForm({
         />
       </div>
 
-      {/* 7. Upcoming Exams */}
+      {/* 7. Exams */}
       <UpcomingExams
         studentId={lesson.studentId}
         subjects={lesson.subjects.filter(Boolean) as Subject[]}
