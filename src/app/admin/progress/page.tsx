@@ -81,6 +81,7 @@ function useAutosave(saveFn: (fields: Record<string, any>) => Promise<void>) {
   saveFnRef.current = saveFn;
 
   useEffect(() => {
+    // On unmount: cancel any pending debounce timer (flush() should be called first if needed)
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, []);
 
@@ -104,11 +105,22 @@ function useAutosave(saveFn: (fields: Record<string, any>) => Promise<void>) {
 
   function schedule(fields: Record<string, any>, immediate = false) {
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (immediate) { doSave(fields); }
-    else { timerRef.current = setTimeout(() => doSave(fields), 400); }
+    pendingRef.current = fields; // always track latest fields
+    if (immediate) { pendingRef.current = null; doSave(fields); }
+    else { timerRef.current = setTimeout(() => { pendingRef.current = null; doSave(fields); }, 400); }
   }
 
-  return { status, savedAt, schedule };
+  // Call before unmounting to fire any queued debounced save immediately
+  function flush() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    const pending = pendingRef.current;
+    if (pending) { pendingRef.current = null; doSave(pending); }
+  }
+
+  return { status, savedAt, schedule, flush };
 }
 
 // ── Cookie helpers ────────────────────────────────────────────────────────────
@@ -366,7 +378,7 @@ function ExamForm({
 
   const saveFn = useCallback(async (fields: Record<string, any>) => {
     const id = examIdRef.current;
-    if (!id) return;
+    if (!id) throw new Error('exam not yet created');
     const res = await fetch(`/api/admin/progress/exams/${id}`, {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
@@ -377,7 +389,7 @@ function ExamForm({
     onUpdated(updated);
   }, [pw, onUpdated]);
 
-  const { status: saveStatus, savedAt, schedule } = useAutosave(saveFn);
+  const { status: saveStatus, savedAt, schedule, flush } = useAutosave(saveFn);
 
   function buildExamFields(overrides: Partial<{
     examType: string; subject: string; examDate: string;
@@ -565,7 +577,7 @@ function ExamForm({
             />
           </div>
 
-          <button onClick={onClose}
+          <button onClick={() => { flush(); onClose(); }}
             className="w-full py-2.5 border border-neutral-200 rounded-md text-[13px] text-neutral-600 bg-white active:bg-neutral-50 min-h-[44px]">
             Done
           </button>
