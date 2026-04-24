@@ -158,12 +158,21 @@ function formatSavedAt(d: Date): string {
 
 // ── Topic + serialization helpers ─────────────────────────────────────────────
 
-function topicsForSubject(subject: string): string[] {
-  return mergeTopics((topicLists as Record<string, string[]>)[subject] ?? []);
+function topicsForSubject(subject: string, level?: string): string[] {
+  const lists = topicLists as Record<string, string[]>;
+  if (subject === 'Math') {
+    const isS1 = level?.includes('Sec 1') || level?.includes('S1');
+    const isS2 = level?.includes('Sec 2') || level?.includes('S2');
+    if (isS1) return mergeTopics(lists['S1 Math'] ?? []);
+    if (isS2) return mergeTopics([...(lists['S2 Math'] ?? []), ...(lists['S1 Math'] ?? [])]);
+    // fallback: show all
+    return mergeTopics([...(lists['S2 Math'] ?? []), ...(lists['S1 Math'] ?? [])]);
+  }
+  return mergeTopics(lists[subject] ?? []);
 }
 
-function hasTopics(subject: string): boolean {
-  return topicsForSubject(subject).length > 0;
+function hasTopics(subject: string, level?: string): boolean {
+  return topicsForSubject(subject, level).length > 0;
 }
 
 function parseTopicsCovered(raw: string): Record<string, string[]> {
@@ -317,10 +326,11 @@ function TopicGrid({
 // ── ExamForm ──────────────────────────────────────────────────────────────────
 
 function ExamForm({
-  initial, subjects, studentId, pw, onCreated, onUpdated, onDeleted, onClose,
+  initial, subjects, level, studentId, pw, onCreated, onUpdated, onDeleted, onClose,
 }: {
   initial?: Exam;
   subjects: Subject[];
+  level: string;
   studentId: string;
   pw: string;
   onCreated: (exam: Exam) => void;
@@ -345,7 +355,7 @@ function ExamForm({
   const [examId, setExamId] = useState<string | null>(initial?.id ?? null);
   const isCreated = examId !== null;
 
-  const topics = subject ? topicsForSubject(subject) : [];
+  const topics = subject ? topicsForSubject(subject, level) : [];
 
   // Auto-create when single-subject form opens (subject already set, no initial)
   useEffect(() => {
@@ -511,6 +521,15 @@ function ExamForm({
       {/* Fields shown only after exam is created */}
       {isCreated && (
         <>
+          {/* Exam Date (optional) */}
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
+              Exam Date <span className="normal-case font-normal text-neutral-400">(optional)</span>
+            </div>
+            <input type="date" value={examDate} onChange={e => handleDateChange(e.target.value)}
+              className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900" />
+          </div>
+
           {/* Tested Topics */}
           {subject && topics.length > 0 && (
             <div>
@@ -523,15 +542,6 @@ function ExamForm({
               <TopicGrid topics={topics} selected={selectedTopics} onToggle={toggleTopic} />
             </div>
           )}
-
-          {/* Exam Date (optional) */}
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
-              Exam Date <span className="normal-case font-normal text-neutral-400">(optional)</span>
-            </div>
-            <input type="date" value={examDate} onChange={e => handleDateChange(e.target.value)}
-              className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900" />
-          </div>
 
           {/* Exam Notes */}
           <div>
@@ -579,8 +589,8 @@ function sortExams(exams: Exam[], today: string): Exam[] {
 }
 
 function UpcomingExams({
-  studentId, subjects, pw,
-}: { studentId: string; subjects: Subject[]; pw: string }) {
+  studentId, subjects, level, pw,
+}: { studentId: string; subjects: Subject[]; level: string; pw: string }) {
   const [open, setOpen] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const [exams, setExams] = useState<Exam[]>([]);
@@ -648,6 +658,7 @@ function UpcomingExams({
                 <ExamForm
                   initial={exam}
                   subjects={subjects}
+                  level={level}
                   studentId={studentId}
                   pw={pw}
                   onCreated={handleCreated}
@@ -687,6 +698,7 @@ function UpcomingExams({
           {addOpen && (
             <ExamForm
               subjects={subjects}
+              level={level}
               studentId={studentId}
               pw={pw}
               onCreated={exam => { handleCreated(exam); }}
@@ -839,7 +851,7 @@ function LogForm({
         <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Topics Covered</div>
         {subjects.length === 0 && <p className="text-[13px] text-neutral-400 italic">No subjects assigned</p>}
         {subjects.map(subj => {
-          const topics = topicsForSubject(subj);
+          const topics = topicsForSubject(subj, lesson.level);
           if (topics.length === 0) {
             return (
               <div key={subj} className="mb-1.5">
@@ -860,12 +872,12 @@ function LogForm({
       </div>
 
       {/* 3. Mastery */}
-      {subjects.some(s => hasTopics(s)) && (
+      {subjects.some(s => hasTopics(s, lesson.level)) && (
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-2">Mastery</div>
           {subjects.map(subj => {
             const selected = form.selectedTopics[subj] ?? [];
-            if (!hasTopics(subj) || selected.length === 0) return null;
+            if (!hasTopics(subj, lesson.level) || selected.length === 0) return null;
             return (
               <div key={subj} className="mb-3">
                 {subjects.length > 1 && (
@@ -970,6 +982,7 @@ function LogForm({
       <UpcomingExams
         studentId={lesson.studentId}
         subjects={lesson.subjects.filter(Boolean) as Subject[]}
+        level={lesson.level}
         pw={pw}
       />
 
