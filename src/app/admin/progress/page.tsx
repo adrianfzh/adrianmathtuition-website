@@ -299,10 +299,10 @@ function TopicGrid({
             <button key={topic} onClick={() => onToggle(topic)}
               className={`px-3 py-1.5 rounded-full text-[13px] border transition-colors ${
                 checked
-                  ? 'bg-neutral-950 text-white border-neutral-950 ring-2 ring-neutral-950 ring-offset-1'
+                  ? 'bg-neutral-800 text-white border-neutral-800'
                   : 'bg-white border-neutral-200 text-neutral-600 active:bg-neutral-50'
               }`}>
-              {checked && <span className="mr-1 text-[11px]">✓</span>}{topic}
+              {topic}
             </button>
           );
         })}
@@ -1022,7 +1022,13 @@ function LessonCardRow({
   const rescheduledDatePast = isRescheduled && data.rescheduledToDate && data.rescheduledToDate < todayISO();
 
   return (
-    <div className={`rounded-xl border overflow-hidden ${isDimmed ? 'bg-neutral-50 border-neutral-100' : 'bg-white border-neutral-200'}`}>
+    <div className={`rounded-xl border overflow-hidden transition-shadow ${
+      isDimmed
+        ? 'bg-neutral-50 border-neutral-100'
+        : open
+          ? 'bg-white border-neutral-300 shadow-md'
+          : 'bg-white border-neutral-200 shadow-sm'
+    }`}>
       {/* Card header */}
       <div
         className="flex items-start gap-3 px-4 py-3 active:bg-neutral-100 cursor-pointer"
