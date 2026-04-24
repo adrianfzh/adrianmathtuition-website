@@ -34,16 +34,16 @@ export async function GET(
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
-  const filter = encodeURIComponent(`FIND('${id}', ARRAYJOIN({Student}))>0`);
-  const data = await airtableRequestAll(
-    'Exams',
-    `?filterByFormula=${filter}&sort[0][field]=Exam Date&sort[0][direction]=desc`
-  );
+  // ARRAYJOIN filter on linked record fields is unreliable — fetch all and filter in JS
+  const data = await airtableRequestAll('Exams', '');
+  const studentExams = data.records.filter((r: any) => r.fields['Student']?.[0] === id);
 
-  return NextResponse.json({ exams: data.records.map(shapeExam) });
+  return NextResponse.json({ exams: studentExams.map(shapeExam) });
 }
 
 // POST /api/admin/progress/students/[id]/exams
+// Upserts: if an exam for (student × examType × subject) already exists, return it
+// instead of creating a duplicate.
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -52,6 +52,17 @@ export async function POST(
 
   const { id } = await params;
   const body = await req.json();
+
+  // Check for existing exam with same student + type + subject
+  const all = await airtableRequestAll('Exams', '');
+  const existing = all.records.find((r: any) =>
+    r.fields['Student']?.[0] === id &&
+    r.fields['Exam Type'] === body.examType &&
+    (body.subject ? r.fields['Subject'] === body.subject : true)
+  );
+  if (existing) {
+    return NextResponse.json(shapeExam(existing));
+  }
 
   const fields: Record<string, any> = {
     Student: [id],

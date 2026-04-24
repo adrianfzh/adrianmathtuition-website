@@ -90,14 +90,15 @@ export async function GET(req: NextRequest) {
   const examsByStudent: Record<string, ExamRecord[]> = {};
   if (activeType && studentIds.length) {
     try {
-      const studentFilter = studentIds.map(id => `FIND('${id}',ARRAYJOIN({Student}))>0`).join(',');
-      const examsData = await airtableRequest(
+      // Fetch all exams for this exam type — ARRAYJOIN filter on linked record fields is
+      // unreliable (returns names, not IDs). Filter by student in JS instead.
+      const examsData = await airtableRequestAll(
         'Exams',
-        `?filterByFormula=${encodeURIComponent(`AND({Exam Type}='${activeType}',OR(${studentFilter}))`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics`
+        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeType}'`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics`
       );
       for (const r of (examsData.records ?? [])) {
         const sid = r.fields['Student']?.[0];
-        if (!sid) continue;
+        if (!sid || !studentIds.includes(sid)) continue;
         if (!examsByStudent[sid]) examsByStudent[sid] = [];
         examsByStudent[sid].push({
           id: r.id,

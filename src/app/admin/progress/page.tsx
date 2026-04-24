@@ -1047,19 +1047,21 @@ function LessonCardRow({
       isDimmed
         ? 'bg-neutral-50 border-neutral-100'
         : open
-          ? 'bg-white border-neutral-300 shadow-md'
+          ? 'bg-white border-neutral-800 shadow-lg'
           : 'bg-white border-neutral-200 shadow-sm'
     }`}>
       {/* Card header */}
       <div
-        className="flex items-start gap-3 px-4 py-3 active:bg-neutral-100 cursor-pointer"
+        className={`flex items-start gap-3 px-4 py-3 cursor-pointer ${open && !isDimmed ? 'bg-neutral-950' : 'active:bg-neutral-100'}`}
         onClick={() => setOpen(o => !o)}
       >
         {/* Status dot */}
         <div className="mt-0.5 shrink-0 text-base leading-none">
           {isDimmed
             ? <span className="text-neutral-200">●</span>
-            : <span className={data.progressLogged ? 'text-emerald-500' : 'text-neutral-300'}>●</span>
+            : open
+              ? <span className={data.progressLogged ? 'text-emerald-400' : 'text-neutral-600'}>●</span>
+              : <span className={data.progressLogged ? 'text-emerald-500' : 'text-neutral-300'}>●</span>
           }
         </div>
 
@@ -1067,7 +1069,7 @@ function LessonCardRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              className={`font-semibold text-[15px] hover:underline ${isDimmed ? 'text-neutral-400' : 'text-neutral-900'}`}
+              className={`font-semibold text-[15px] hover:underline ${isDimmed ? 'text-neutral-400' : open ? 'text-white' : 'text-neutral-900'}`}
               onClick={e => { e.stopPropagation(); router.push(`/admin/progress/student/${data.studentId}`); }}
             >
               {data.studentName || 'Unknown Student'}
@@ -1075,20 +1077,20 @@ function LessonCardRow({
             {data.examStatus?.activeType && !data.examStatus.complete && (
               <span
                 title={buildExamPillTooltip(data.examStatus)}
-                className="px-1.5 py-0.5 rounded-md text-[11px] font-semibold bg-red-50 text-red-500 cursor-default"
+                className={`px-1.5 py-0.5 rounded-md text-[11px] font-semibold cursor-default ${open ? 'bg-red-900/60 text-red-300' : 'bg-red-50 text-red-500'}`}
               >
                 ⚠ {data.examStatus.activeType}
               </span>
             )}
-            <span className="text-[13px] text-neutral-300">{data.slotTime}</span>
+            <span className={`text-[13px] ${open ? 'text-neutral-400' : 'text-neutral-300'}`}>{data.slotTime}</span>
             {open && !isDimmed && <SaveIndicator status={saveStatus} savedAt={savedAt} />}
           </div>
           <div className="flex flex-wrap gap-1 mt-1">
             {data.level && (
-              <span className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${isDimmed ? 'bg-neutral-100 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>{data.level}</span>
+              <span className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${isDimmed ? 'bg-neutral-100 text-neutral-300' : open ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>{data.level}</span>
             )}
             {subjectBadges.map(s => (
-              <span key={s} className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${isDimmed ? 'bg-neutral-100 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>{s}</span>
+              <span key={s} className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${isDimmed ? 'bg-neutral-100 text-neutral-300' : open ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>{s}</span>
             ))}
             {isRescheduled && (
               <span className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${rescheduledDatePast ? 'bg-neutral-100 text-neutral-300' : 'bg-blue-50 text-blue-400'}`}>
@@ -1125,6 +1127,81 @@ function LessonCardRow({
   );
 }
 
+// ── StudentSearchCard ─────────────────────────────────────────────────────────
+
+interface StudentRecord {
+  id: string;
+  name: string;
+  level: string;
+  subjects: Subject[];
+  subjectLevel: string;
+}
+
+function StudentSearchCard({ student, pw }: { student: StudentRecord; pw: string }) {
+  const [open, setOpen] = useState(false);
+
+  const subjectBadges = (student.subjects ?? []).filter(Boolean);
+
+  return (
+    <div className={`rounded-xl border overflow-hidden transition-shadow ${
+      open ? 'bg-white border-neutral-800 shadow-lg' : 'bg-white border-neutral-200 shadow-sm'
+    }`}>
+      <div
+        className={`flex items-start gap-3 px-4 py-3 cursor-pointer ${open ? 'bg-neutral-950' : 'active:bg-neutral-100'}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        {/* Indicator dot */}
+        <div className="mt-0.5 shrink-0 text-base leading-none">
+          <span className={open ? 'text-neutral-600' : 'text-neutral-300'}>●</span>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`font-semibold text-[15px] ${open ? 'text-white' : 'text-neutral-900'}`}>
+              {student.name}
+            </span>
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-md ${open ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-400'}`}>
+              no lesson today
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {student.level && (
+              <span className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${open ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>
+                {student.level}
+              </span>
+            )}
+            {subjectBadges.map(s => (
+              <span key={s} className={`px-1.5 py-0.5 rounded-md text-[11px] font-medium ${open ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>
+                {s}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Chevron */}
+        <div className={`shrink-0 mt-1 ${open ? 'text-neutral-400' : 'text-neutral-300'}`}>
+          <svg className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+
+      {open && (
+        <div className="border-t border-neutral-100 bg-neutral-50 px-4 py-4">
+          <UpcomingExams
+            studentId={student.id}
+            subjects={student.subjects.filter(Boolean) as Subject[]}
+            level={student.level}
+            pw={pw}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ProgressPage() {
@@ -1141,6 +1218,8 @@ export default function ProgressPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [examSeason, setExamSeason] = useState<ExamSeason | null>(null);
   const [examSeasonMenu, setExamSeasonMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [allStudents, setAllStudents] = useState<StudentRecord[]>([]);
   const touchStartY = useRef(0);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
@@ -1222,6 +1301,14 @@ export default function ProgressPage() {
   }, [authed, date, fetchLessons]);
 
   useEffect(() => {
+    if (!authed || !savedPw.current) return;
+    fetch('/api/admin/progress/students', { headers: { Authorization: `Bearer ${savedPw.current}` } })
+      .then(r => r.json())
+      .then(json => setAllStudents(json.students ?? []))
+      .catch(() => {});
+  }, [authed]);
+
+  useEffect(() => {
     console.log('[mount] userAgent:', navigator.userAgent);
     console.log('[mount] new Date():', new Date().toString());
     console.log('[mount] timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -1271,6 +1358,19 @@ export default function ProgressPage() {
   }, [examSeasonMenu]);
 
   const loggedCount = lessons.filter(l => l.progressLogged).length;
+
+  const trimmedSearch = searchQuery.trim().toLowerCase();
+  const filteredLessons = trimmedSearch
+    ? lessons.filter(l => l.studentName.toLowerCase().includes(trimmedSearch))
+    : lessons;
+
+  const lessonStudentIds = new Set(lessons.map(l => l.studentId));
+  const extraStudents = trimmedSearch
+    ? allStudents.filter(s =>
+        s.name.toLowerCase().includes(trimmedSearch) &&
+        !lessonStudentIds.has(s.id)
+      )
+    : [];
 
   // ── Auth screen ──
   if (!authed) {
@@ -1367,8 +1467,31 @@ export default function ProgressPage() {
               ›
             </button>
           </div>
-          {/* Row 3: exam season toggle */}
-          <div className="flex items-center justify-between pt-2 pb-1 border-t border-neutral-100 mt-1 relative">
+          {/* Row 3: search */}
+          <div className="mt-2">
+            <div className="relative">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+              </svg>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search students…"
+                className="w-full border border-neutral-200 rounded-md pl-8 pr-8 py-2 text-[13px] bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 text-lg leading-none"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+          {/* Row 4: exam season toggle */}
+          <div className="flex items-center justify-between pt-2 pb-1 border-t border-neutral-100 mt-2 relative">
             <span className="text-[12px] text-neutral-500">
               Exam season
               {examSeason?.active
@@ -1410,12 +1533,26 @@ export default function ProgressPage() {
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-2">
         {loading && <div className="text-center text-[13px] text-neutral-400 py-12">Loading…</div>}
         {!loading && fetchError && <div className="text-center text-[13px] text-red-500 py-12">{fetchError}</div>}
-        {!loading && !fetchError && lessons.length === 0 && (
-          <div className="text-center text-[13px] text-neutral-400 py-12">No lessons on this day</div>
+        {!loading && !fetchError && filteredLessons.length === 0 && extraStudents.length === 0 && (
+          <div className="text-center text-[13px] text-neutral-400 py-12">
+            {trimmedSearch ? 'No students match your search' : 'No lessons on this day'}
+          </div>
         )}
-        {!loading && lessons.map(lesson => (
+        {!loading && filteredLessons.map(lesson => (
           <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} />
         ))}
+        {!loading && extraStudents.length > 0 && (
+          <>
+            {filteredLessons.length > 0 && (
+              <div className="pt-2 pb-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">Other students</p>
+              </div>
+            )}
+            {extraStudents.map(student => (
+              <StudentSearchCard key={student.id} student={student} pw={savedPw.current} />
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
