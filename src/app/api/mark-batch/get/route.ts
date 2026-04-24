@@ -60,6 +60,8 @@ export async function GET(req: NextRequest) {
     batchId,
     airtableRecordId: atRec?.id as string | undefined,
     studentName: sbRow?.student_name || (atFields['Student Name'] as string) || '',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    studentId: (detectionJson as any)?.studentId as string | null ?? null,
     createdAt: sbRow?.created_at || (atFields['Created At'] as string) || '',
     status: sbRow?.status || (atFields['Status'] as string) || 'detected',
     totalQuestions: sbRow?.total_questions ?? (atFields['Total Questions'] as number) ?? 0,

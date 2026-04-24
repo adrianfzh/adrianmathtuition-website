@@ -36,6 +36,7 @@ interface Batch {
   batchId: string;
   airtableRecordId: string;
   studentName: string;
+  studentId: string | null;
   createdAt: string;
   status: string;
   totalPages: number;
@@ -88,6 +89,8 @@ export default function BatchDetailPage() {
   const amendInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [sendLoading, setSendLoading] = useState(false);
+  const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   useEffect(() => {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
@@ -174,6 +177,27 @@ export default function BatchDetailPage() {
       alert('Delete failed. Try again.');
       setActionLoading(false);
     }
+  }
+
+  async function handleSendToStudent() {
+    if (!batch) return;
+    setSendLoading(true); setSendResult(null);
+    try {
+      const res = await fetch('/api/mark-batch/send-to-student', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ batchId: batch.batchId }),
+      });
+      const d = await res.json();
+      if (!res.ok) {
+        setSendResult({ ok: false, msg: d.error || `Failed (${res.status})` });
+      } else {
+        const count = d.sentTo?.length ?? 0;
+        setSendResult({ ok: true, msg: `Sent to ${count} recipient${count !== 1 ? 's' : ''} ✓` });
+      }
+    } catch (e: unknown) {
+      setSendResult({ ok: false, msg: e instanceof Error ? e.message : 'Network error' });
+    } finally { setSendLoading(false); }
   }
 
   async function handleAmendUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -276,7 +300,7 @@ export default function BatchDetailPage() {
                 </>
               )}
 
-              {/* ── finalized: gallery + download ── */}
+              {/* ── finalized: gallery + download + send ── */}
               {batch.status === 'finalized' && (
                 <>
                   <div className="batch-actions">
@@ -284,6 +308,12 @@ export default function BatchDetailPage() {
                       <a href={batch.finalPdfUrl} target="_blank" rel="noreferrer" className="action-link">
                         Download PDF
                       </a>
+                    )}
+                    {batch.studentId && (
+                      <button className="action-link action-link--send"
+                        onClick={handleSendToStudent} disabled={sendLoading}>
+                        {sendLoading ? 'Sending…' : '📤 Send to student'}
+                      </button>
                     )}
                     <label className="action-link action-link--upload"
                       style={{ cursor: uploading ? 'wait' : 'pointer' }}>
@@ -296,6 +326,11 @@ export default function BatchDetailPage() {
                       Delete batch
                     </button>
                   </div>
+                  {sendResult && (
+                    <div className={`send-result ${sendResult.ok ? 'send-result--ok' : 'send-result--err'}`}>
+                      {sendResult.msg}
+                    </div>
+                  )}
                   <AnnotatedGallery results={effectiveResults} />
                 </>
               )}
@@ -476,6 +511,12 @@ const css = `
 .action-link--danger { border-color:#fca5a5; color:#b91c1c; }
 .action-link--danger:hover { background:#fef2f2; }
 .action-link--danger:disabled { opacity:0.5; cursor:default; }
+.action-link--send { border-color:#059669; color:#065f46; }
+.action-link--send:hover { background:#ecfdf5; }
+.action-link--send:disabled { opacity:0.5; cursor:default; }
+.send-result { font-size:13px; font-weight:600; padding:8px 14px; border-radius:8px; }
+.send-result--ok { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
+.send-result--err { background:#fef2f2; color:#b91c1c; border:1px solid #fca5a5; }
 
 /* Cover page checkbox */
 .cover-check { display:flex; align-items:center; gap:8px; font-size:13px; color:#374151; cursor:pointer; }
@@ -499,6 +540,7 @@ const css = `
 .marks-badge--partial { background:#fef3c7; color:#92400e; }
 .marks-badge--zero { background:#fee2e2; color:#991b1b; }
 .marking-summary { background:#f8fafc; border-left:3px solid #1e3a5f; padding:10px 14px; border-radius:0 8px 8px 0; }
+.marking-summary-title { font-size:13px; font-weight:700; color:#1e3a5f; margin-bottom:4px; }
 .marking-summary-body { font-size:13px; color:#374151; line-height:1.55; }
 
 /* Detection preview */
