@@ -292,22 +292,17 @@ function TopicGrid({
           placeholder="Filter topics…"
           className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] mb-2 focus:outline-none focus:ring-1 focus:ring-neutral-900" />
       )}
-      <div className="grid grid-cols-2 gap-1">
+      <div className="flex flex-wrap gap-2">
         {visible.map(topic => {
           const checked = selected.includes(topic);
           return (
             <button key={topic} onClick={() => onToggle(topic)}
-              className={`flex items-center gap-1.5 px-2.5 py-2 rounded-md text-left border min-h-[40px] transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-[13px] border transition-colors ${
                 checked
                   ? 'bg-neutral-950 text-white border-neutral-950'
-                  : 'bg-white border-neutral-200 text-neutral-700 active:bg-neutral-50'
+                  : 'bg-white border-neutral-200 text-neutral-600 active:bg-neutral-50'
               }`}>
-              <span className={`w-3 h-3 rounded-sm border shrink-0 flex items-center justify-center text-[8px] leading-none ${
-                checked ? 'border-neutral-600 text-white' : 'border-neutral-300'
-              }`}>
-                {checked && '✓'}
-              </span>
-              <span className="text-[13px] truncate">{topic}</span>
+              {topic}
             </button>
           );
         })}
@@ -529,6 +524,15 @@ function ExamForm({
             </div>
           )}
 
+          {/* Exam Date (optional) */}
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
+              Exam Date <span className="normal-case font-normal text-neutral-400">(optional)</span>
+            </div>
+            <input type="date" value={examDate} onChange={e => handleDateChange(e.target.value)}
+              className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900" />
+          </div>
+
           {/* Exam Notes */}
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Exam Notes</div>
@@ -549,15 +553,6 @@ function ExamForm({
                 el.style.height = el.scrollHeight + 'px';
               }}
             />
-          </div>
-
-          {/* Exam Date (optional) */}
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
-              Exam Date <span className="normal-case font-normal text-neutral-400">(optional)</span>
-            </div>
-            <input type="date" value={examDate} onChange={e => handleDateChange(e.target.value)}
-              className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900" />
           </div>
 
           <button onClick={onClose}
