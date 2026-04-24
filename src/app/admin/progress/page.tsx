@@ -299,10 +299,10 @@ function TopicGrid({
             <button key={topic} onClick={() => onToggle(topic)}
               className={`px-3 py-1.5 rounded-full text-[13px] border transition-colors ${
                 checked
-                  ? 'bg-neutral-950 text-white border-neutral-950'
+                  ? 'bg-neutral-950 text-white border-neutral-950 ring-2 ring-neutral-950 ring-offset-1'
                   : 'bg-white border-neutral-200 text-neutral-600 active:bg-neutral-50'
               }`}>
-              {topic}
+              {checked && <span className="mr-1 text-[11px]">✓</span>}{topic}
             </button>
           );
         })}
