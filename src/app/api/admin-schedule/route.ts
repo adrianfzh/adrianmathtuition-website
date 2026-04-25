@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
+import { resolveActiveExamType, ExamType } from '@/lib/exam-season';
 
 export const runtime = 'nodejs';
 
@@ -157,6 +158,43 @@ export async function GET(req: NextRequest) {
     };
   });
 
+  // ── Exam season + exam dates ──────────────────────────────────────────────
+  let activeExamType: ExamType | null = null;
+  const examsByStudent: Record<string, string | null> = {};
+
+  try {
+    // Resolve active exam type (override from Settings, fallback to date windows)
+    const settingsData = await airtableRequest(
+      'Settings',
+      `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`
+    ).catch(() => ({ records: [] }));
+    let forceOn: ExamType | null = null;
+    try {
+      const v = JSON.parse(settingsData.records?.[0]?.fields?.['Value'] || '{}');
+      if (['WA1', 'WA2', 'WA3', 'EOY'].includes(v.forceOn)) forceOn = v.forceOn as ExamType;
+    } catch {}
+    activeExamType = resolveActiveExamType(forceOn);
+
+    // Only fetch exam dates when in an exam season and there are students
+    if (activeExamType && studentIds.length) {
+      const examsData = await fetchAll(
+        'Exams',
+        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Exam Date`
+      );
+      // Build studentId → earliest exam date (skip if no date set)
+      for (const r of examsData) {
+        const sid = r.fields['Student']?.[0];
+        const examDate: string | undefined = r.fields['Exam Date'];
+        if (!sid || !studentIds.includes(sid) || !examDate) continue;
+        if (!examsByStudent[sid] || examDate < examsByStudent[sid]!) {
+          examsByStudent[sid] = examDate;
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[admin-schedule] exam fetch failed:', err);
+  }
+
   return NextResponse.json({
     weekStart,
     weekEnd,
@@ -164,5 +202,7 @@ export async function GET(req: NextRequest) {
     enrollmentsBySlot,
     lessons,
     students: studentsById,
+    activeExamType,
+    examsByStudent,
   });
 }

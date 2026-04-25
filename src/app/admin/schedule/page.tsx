@@ -51,10 +51,13 @@ interface ScheduleData {
   enrollmentsBySlot: Record<string, string[]>;
   lessons: Lesson[];
   students: Record<string, Student>;
+  activeExamType?: string | null;
+  examsByStudent?: Record<string, string | null>;
 }
 
 interface EnrichedLesson extends Lesson {
   studentName: string;
+  examDate?: string | null;
 }
 interface RescheduleState {
   lesson: EnrichedLesson;
@@ -180,6 +183,11 @@ function setCookie(name: string, value: string, days: number) {
 
 // ─── Module-level DnD components ──────────────────────────────────────────────
 
+function formatExamDate(iso: string): string {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
+}
+
 function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap: () => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
   const style = getTypeStyle(lesson.type, lesson.status);
@@ -237,6 +245,9 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
         <span className={isAbsent ? 'absent-name' : ''}>{lesson.studentName}</span>
         {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
         {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
+        {lesson.examDate && !isAbsent && (
+          <span className="text-[10px] font-medium ml-1 opacity-60" title="Upcoming exam date">📅 {formatExamDate(lesson.examDate)}</span>
+        )}
         {lesson.type !== 'Trial' && lesson.notes && (
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
         )}
@@ -329,7 +340,8 @@ export default function SchedulePage() {
     return data.lessons.map(lesson => {
       const student = lesson.studentId ? data.students[lesson.studentId] : null;
       const studentName = student?.name || (lesson.type === 'Trial' ? getTrialName(lesson.notes) : 'Unknown');
-      return { ...lesson, studentName };
+      const examDate = lesson.studentId ? (data.examsByStudent?.[lesson.studentId] ?? null) : null;
+      return { ...lesson, studentName, examDate };
     });
   }, [data]);
 
