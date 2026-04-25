@@ -963,13 +963,19 @@ export default function SchedulePage() {
     const dropId = `${dateStr}__${slot.id}`;
     const lessons = enrichedLessonMap[dropId] ?? [];
     const isToday = isoDate(date) === isoDate(new Date());
-    const presentCount = lessons.filter(l => l.status !== 'Absent' && l.status !== 'Cancelled').length;
+    // Absent lessons are hidden from view entirely — don't render chips for them
+    const visibleLessons = lessons.filter(l => l.status !== 'Absent');
+    const presentCount = visibleLessons.filter(l => l.status !== 'Cancelled').length;
 
-    // Enrolled students without a lesson record for this date — show as ghost chips
-    const lessonStudentIds = new Set(lessons.map(l => l.studentId).filter(Boolean));
+    // Enrolled students without a visible lesson record for this date — show as ghost chips.
+    // Exclude students who have an Absent record (they're intentionally hidden, not "unrecorded").
+    const absentStudentIds = new Set(
+      lessons.filter(l => l.status === 'Absent').map(l => l.studentId).filter(Boolean)
+    );
+    const visibleStudentIds = new Set(visibleLessons.map(l => l.studentId).filter(Boolean));
     const enrolledIds = data?.enrollmentsBySlot?.[slot.id] ?? [];
     const ghostStudents = enrolledIds
-      .filter(id => !lessonStudentIds.has(id))
+      .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id))
       .map(id => ({ id, name: data?.students[id]?.name ?? 'Unknown' }));
 
     return (
@@ -986,7 +992,7 @@ export default function SchedulePage() {
         </div>
         <DroppableLessonSlot
           id={dropId}
-          lessons={lessons}
+          lessons={visibleLessons}
           onChipTap={(lesson) => { setModalError(''); setActionSheet({ lesson, date: dateStr, slotId: slot.id }); }}
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={handleExamDateClick}
