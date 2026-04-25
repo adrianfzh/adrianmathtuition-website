@@ -268,21 +268,48 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick }: { lesson: Enric
 
 function DroppableLessonSlot({
   id, lessons, onChipTap, onAddClick, onExamDateClick,
+  ghostStudents, onMarkPresent, onMarkAbsent, savingStudents,
 }: {
   id: string;
   lessons: EnrichedLesson[];
   onChipTap: (lesson: EnrichedLesson) => void;
   onAddClick: () => void;
   onExamDateClick?: (lesson: EnrichedLesson) => void;
+  ghostStudents?: { id: string; name: string }[];
+  onMarkPresent?: (studentId: string) => void;
+  onMarkAbsent?: (studentId: string) => void;
+  savingStudents?: Set<string>;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
+  const ghosts = ghostStudents ?? [];
   return (
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
           <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} />
         ))}
-        {lessons.length === 0 && (
+        {ghosts.map(s => (
+          <div key={s.id} className="lesson-chip" style={{ background: '#f8fafc', color: '#64748b', borderColor: '#e2e8f0', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ flex: 1, minWidth: 0, opacity: 0.7 }}>{s.name}</div>
+            {savingStudents?.has(s.id) ? (
+              <span style={{ fontSize: 11, color: '#94a3b8' }}>Saving…</span>
+            ) : (
+              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                <button
+                  onClick={() => onMarkPresent?.(s.id)}
+                  title="Mark present"
+                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >✓</button>
+                <button
+                  onClick={() => onMarkAbsent?.(s.id)}
+                  title="Mark absent"
+                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >✗</button>
+              </div>
+            )}
+          </div>
+        ))}
+        {lessons.length === 0 && ghosts.length === 0 && (
           <button className="add-hint" onClick={onAddClick}>No lessons — tap + to add</button>
         )}
       </div>
@@ -342,6 +369,7 @@ export default function SchedulePage() {
   const [examDetailLoading, setExamDetailLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
+  const [savingAttendance, setSavingAttendance] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -874,6 +902,42 @@ export default function SchedulePage() {
     }
   }
 
+  // ── Attendance marking ───────────────────────────────────────────────────────
+  async function handleAttendance(studentId: string, slotId: string, date: string, status: 'Scheduled' | 'Absent') {
+    setSavingAttendance(prev => new Set([...prev, studentId]));
+    try {
+      const res = await fetch('/api/admin-schedule/attendance', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, slotId, date, status }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      const lesson = await res.json();
+      const student = data?.students[studentId];
+      const examDate = data?.examsByStudent?.[studentId] ?? null;
+      const enriched: EnrichedLesson = {
+        ...lesson,
+        studentName: student?.name || 'Unknown',
+        examDate,
+      };
+      // Add or replace the lesson record in local data
+      setData(d => d ? {
+        ...d,
+        lessons: [...d.lessons.filter(l => l.id !== enriched.id), enriched],
+      } : d);
+    } catch {
+      showToast('error', 'Failed to mark attendance');
+    } finally {
+      setSavingAttendance(prev => { const s = new Set(prev); s.delete(studentId); return s; });
+    }
+  }
+
+  // Mark an existing Absent lesson back to Scheduled
+  async function handleMarkPresent(lesson: EnrichedLesson) {
+    setActionSheet(null);
+    await handleAttendance(lesson.studentId!, lesson.slotId!, lesson.date, 'Scheduled');
+  }
+
   // ── Exam date click handler ──────────────────────────────────────────────────
   async function handleExamDateClick(lesson: EnrichedLesson) {
     if (!lesson.studentId) return;
@@ -895,10 +959,19 @@ export default function SchedulePage() {
 
   // ── renderLessonsSlotCard ────────────────────────────────────────────────────
   function renderLessonsSlotCard(slot: Slot, date: Date) {
-    const dropId = `${isoDate(date)}__${slot.id}`;
+    const dateStr = isoDate(date);
+    const dropId = `${dateStr}__${slot.id}`;
     const lessons = enrichedLessonMap[dropId] ?? [];
     const isToday = isoDate(date) === isoDate(new Date());
     const presentCount = lessons.filter(l => l.status !== 'Absent' && l.status !== 'Cancelled').length;
+
+    // Enrolled students without a lesson record for this date — show as ghost chips
+    const lessonStudentIds = new Set(lessons.map(l => l.studentId).filter(Boolean));
+    const enrolledIds = data?.enrollmentsBySlot?.[slot.id] ?? [];
+    const ghostStudents = enrolledIds
+      .filter(id => !lessonStudentIds.has(id))
+      .map(id => ({ id, name: data?.students[id]?.name ?? 'Unknown' }));
+
     return (
       <div key={slot.id} className={`slot-card${isToday ? ' today' : ''}`}>
         <div className="slot-header">
@@ -914,9 +987,13 @@ export default function SchedulePage() {
         <DroppableLessonSlot
           id={dropId}
           lessons={lessons}
-          onChipTap={(lesson) => { setModalError(''); setActionSheet({ lesson, date: isoDate(date), slotId: slot.id }); }}
+          onChipTap={(lesson) => { setModalError(''); setActionSheet({ lesson, date: dateStr, slotId: slot.id }); }}
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={handleExamDateClick}
+          ghostStudents={ghostStudents}
+          onMarkPresent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Scheduled')}
+          onMarkAbsent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Absent')}
+          savingStudents={savingAttendance}
         />
       </div>
     );
@@ -1211,10 +1288,14 @@ export default function SchedulePage() {
               setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: true, showPickers: true });
               setModalError(''); setActionSheet(null);
             }}>🔄 Reschedule</button>
-            <button className="action-btn" onClick={() => {
-              setAbsentModal({ lesson: actionSheet.lesson, notify: false, reason: '' });
-              setModalError(''); setActionSheet(null);
-            }}>🚫 Mark absent</button>
+            {actionSheet.lesson.status === 'Absent' ? (
+              <button className="action-btn" onClick={() => handleMarkPresent(actionSheet.lesson)}>✅ Mark present</button>
+            ) : (
+              <button className="action-btn" onClick={() => {
+                setAbsentModal({ lesson: actionSheet.lesson, notify: false, reason: '' });
+                setModalError(''); setActionSheet(null);
+              }}>🚫 Mark absent</button>
+            )}
             <button className="action-btn" onClick={() => {
               setEditNotesModal({ lesson: actionSheet.lesson, notes: actionSheet.lesson.notes });
               setModalError(''); setActionSheet(null);
