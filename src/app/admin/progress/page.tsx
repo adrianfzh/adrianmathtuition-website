@@ -351,9 +351,12 @@ function ExamForm({
   onDeleted: (id: string) => void;
   onClose: () => void;
 }) {
+  const examId = initial?.id ?? null;
+
+  // Use || (not ??) so an empty-string subject falls back to the student's subject
   const [examType, setExamType] = useState(initial?.examType ?? 'WA1');
   const [subject, setSubject] = useState<Subject | ''>(
-    (initial?.subject as Subject) ?? (subjects.length === 1 ? subjects[0] : '')
+    (initial?.subject as Subject) || (subjects.length === 1 ? subjects[0] : '')
   );
   const [examDate, setExamDate] = useState(initial?.examDate ?? '');
   const [selectedTopics, setSelectedTopics] = useState<string[]>(
@@ -361,121 +364,77 @@ function ExamForm({
   );
   const [examNotes, setExamNotes] = useState(initial?.examNotes ?? '');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState('');
-
-  const examIdRef = useRef<string | null>(initial?.id ?? null);
-  const [examId, setExamId] = useState<string | null>(initial?.id ?? null);
-  const isCreated = examId !== null;
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const topics = subject ? topicsForSubject(subject, level) : [];
 
-  // Auto-create when single-subject form opens (subject already set, no initial)
-  useEffect(() => {
-    if (!initial && subject && !examIdRef.current) {
-      doCreate(examType, subject);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const saveFn = useCallback(async (fields: Record<string, any>) => {
-    const id = examIdRef.current;
-    if (!id) throw new Error('exam not yet created');
-    const res = await fetch(`/api/admin/progress/exams/${id}`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(fields),
-    });
-    if (!res.ok) throw new Error();
-    const updated = await res.json();
-    onUpdated(updated);
-  }, [pw, onUpdated]);
-
-  const { status: saveStatus, savedAt, schedule, flush } = useAutosave(saveFn);
-
-  function buildExamFields(overrides: Partial<{
-    examType: string; subject: string; examDate: string;
-    selectedTopics: string[]; examNotes: string;
-  }> = {}): Record<string, any> {
-    return {
-      examType: overrides.examType ?? examType,
-      subject: overrides.subject ?? subject,
-      examDate: (overrides.examDate ?? examDate) || null,
-      testedTopics: (overrides.selectedTopics ?? selectedTopics).join(', '),
-      examNotes: overrides.examNotes ?? examNotes,
-    };
-  }
-
-  async function doCreate(type: string, subj: string) {
-    if (examIdRef.current) return;
-    setCreating(true);
-    setCreateError('');
-    try {
-      const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ examType: type, subject: subj }),
-      });
-      if (!res.ok) throw new Error();
-      const created: Exam = await res.json();
-      examIdRef.current = created.id;
-      setExamId(created.id);
-      onCreated(created);
-    } catch {
-      setCreateError('Failed to create — try again');
-    } finally {
-      setCreating(false);
-    }
-  }
-
-  function handleExamTypeChange(t: string) {
-    setExamType(t);
-    if (isCreated) schedule(buildExamFields({ examType: t }), true);
-  }
-
-  async function handleSubjectChange(s: Subject) {
-    setSubject(s);
-    setSelectedTopics([]);
-    if (!isCreated) {
-      await doCreate(examType, s);
-    } else {
-      schedule(buildExamFields({ subject: s, selectedTopics: [] }), true);
-    }
-  }
-
   function toggleTopic(topic: string) {
-    const next = selectedTopics.includes(topic)
-      ? selectedTopics.filter(t => t !== topic)
-      : [...selectedTopics, topic];
-    setSelectedTopics(next);
-    if (isCreated) schedule(buildExamFields({ selectedTopics: next }), true);
+    setSelectedTopics(prev =>
+      prev.includes(topic) ? prev.filter(t => t !== topic) : [...prev, topic]
+    );
   }
 
-  function handleDateChange(v: string) {
-    setExamDate(v);
-    if (isCreated) schedule(buildExamFields({ examDate: v }), true);
+  async function handleDone() {
+    if (!subject && subjects.length > 1) {
+      setSaveError('Please select a subject first');
+      return;
+    }
+    setIsSaving(true);
+    setSaveError('');
+    const payload = {
+      examType,
+      subject: subject || undefined,
+      examDate: examDate || null,
+      testedTopics: selectedTopics.join(', '),
+      examNotes,
+    };
+    try {
+      if (examId) {
+        // Edit existing — PATCH all fields at once
+        const res = await fetch(`/api/admin/progress/exams/${examId}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error('Failed to save');
+        const updated: Exam = await res.json();
+        onUpdated(updated);
+      } else {
+        // New exam — POST creates or upserts with all fields
+        const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error('Failed to save');
+        const created: Exam = await res.json();
+        onCreated(created);
+      }
+      onClose();
+    } catch (e: any) {
+      setSaveError(e.message || 'Failed to save — try again');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleDelete() {
-    const id = examIdRef.current;
-    if (!id) { onClose(); return; }
-    await fetch(`/api/admin/progress/exams/${id}`, {
+    if (!examId) { onClose(); return; }
+    await fetch(`/api/admin/progress/exams/${examId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${pw}` },
     });
-    onDeleted(id);
+    onDeleted(examId);
   }
 
   return (
     <div className="bg-white border border-neutral-200 rounded-xl p-3 space-y-3">
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
-            {initial ? 'Edit Exam' : 'Add Exam'}
-          </span>
-          <SaveIndicator status={saveStatus} savedAt={savedAt}
-            onRetry={() => isCreated && schedule(buildExamFields(), true)} />
-        </div>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+          {initial ? 'Edit Exam' : 'Add Exam'}
+        </span>
         {deleteConfirm ? (
           <div className="flex items-center gap-2">
             <button onClick={handleDelete} className="text-[13px] text-red-500 font-medium">Delete</button>
@@ -491,7 +450,7 @@ function ExamForm({
         <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Type</div>
         <div className="flex gap-1.5 flex-wrap">
           {EXAM_TYPES.map(t => (
-            <button key={t} onClick={() => handleExamTypeChange(t)}
+            <button key={t} onClick={() => setExamType(t)}
               className={`px-3 py-2 rounded-md text-[13px] font-medium border min-h-[40px] transition-colors ${
                 examType === t
                   ? 'bg-neutral-950 border-neutral-950 text-white'
@@ -503,13 +462,13 @@ function ExamForm({
         </div>
       </div>
 
-      {/* Subject (multi-subject only) */}
+      {/* Subject (multi-subject students only) */}
       {subjects.length > 1 && (
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Subject</div>
           <div className="flex gap-1.5 flex-wrap">
             {subjects.map(s => (
-              <button key={s} onClick={() => handleSubjectChange(s)}
+              <button key={s} onClick={() => { setSubject(s); setSelectedTopics([]); setSaveError(''); }}
                 className={`px-3 py-2 rounded-md text-[13px] font-medium border min-h-[40px] transition-colors ${
                   subject === s
                     ? 'bg-neutral-950 border-neutral-950 text-white'
@@ -522,68 +481,55 @@ function ExamForm({
         </div>
       )}
 
-      {/* Add button (multi-subject: fires POST once subject is picked via handleSubjectChange) */}
-      {!isCreated && subjects.length > 1 && !creating && !createError && (
-        <p className="text-[13px] text-neutral-400 italic">Select a subject to begin</p>
+      {/* Exam Date */}
+      <div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
+          Exam Date <span className="normal-case font-normal text-neutral-400">(optional)</span>
+        </div>
+        <input type="date" value={examDate} onChange={e => setExamDate(e.target.value)}
+          className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900" />
+      </div>
+
+      {/* Tested Topics */}
+      {subject && topics.length > 0 && (
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
+            Tested Topics
+            {selectedTopics.length > 0 && (
+              <span className="ml-1 normal-case font-normal">({selectedTopics.length})</span>
+            )}
+          </div>
+          <TopicGrid topics={topics} selected={selectedTopics} onToggle={toggleTopic} />
+        </div>
       )}
 
-      {/* For single-subject, show "Creating…" while POST is in flight */}
-      {creating && <p className="text-[13px] text-neutral-400">Creating…</p>}
-      {createError && <p className="text-[13px] text-red-500">{createError}</p>}
+      {/* Exam Notes */}
+      <div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Exam Notes</div>
+        <textarea
+          value={examNotes}
+          onChange={e => setExamNotes(e.target.value)}
+          placeholder="e.g. Focus on integration by parts…"
+          rows={2}
+          className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] resize-none focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white"
+          style={{ minHeight: '52px' }}
+          onInput={e => {
+            const el = e.currentTarget;
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+          }}
+        />
+      </div>
 
-      {/* Fields shown only after exam is created */}
-      {isCreated && (
-        <>
-          {/* Exam Date (optional) */}
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
-              Exam Date <span className="normal-case font-normal text-neutral-400">(optional)</span>
-            </div>
-            <input type="date" value={examDate} onChange={e => handleDateChange(e.target.value)}
-              className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900" />
-          </div>
+      {saveError && <p className="text-[13px] text-red-500">{saveError}</p>}
 
-          {/* Tested Topics */}
-          {subject && topics.length > 0 && (
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">
-                Tested Topics
-                {selectedTopics.length > 0 && (
-                  <span className="ml-1 normal-case font-normal">({selectedTopics.length})</span>
-                )}
-              </div>
-              <TopicGrid topics={topics} selected={selectedTopics} onToggle={toggleTopic} />
-            </div>
-          )}
-
-          {/* Exam Notes */}
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Exam Notes</div>
-            <textarea
-              value={examNotes}
-              onChange={e => {
-                const v = e.target.value;
-                setExamNotes(v);
-                schedule(buildExamFields({ examNotes: v }));
-              }}
-              placeholder="e.g. Focus on integration by parts…"
-              rows={2}
-              className="w-full border border-neutral-200 rounded-md px-3 py-2 text-[13px] resize-none focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white"
-              style={{ minHeight: '52px' }}
-              onInput={e => {
-                const el = e.currentTarget;
-                el.style.height = 'auto';
-                el.style.height = el.scrollHeight + 'px';
-              }}
-            />
-          </div>
-
-          <button onClick={() => { flush(); onClose(); }}
-            className="w-full py-2.5 border border-neutral-200 rounded-md text-[13px] text-neutral-600 bg-white active:bg-neutral-50 min-h-[44px]">
-            Done
-          </button>
-        </>
-      )}
+      <button
+        onClick={handleDone}
+        disabled={isSaving}
+        className="w-full py-2.5 rounded-md text-[13px] font-medium min-h-[44px] transition-colors disabled:opacity-50 bg-neutral-950 text-white active:bg-neutral-800"
+      >
+        {isSaving ? 'Saving…' : 'Save'}
+      </button>
     </div>
   );
 }

@@ -62,11 +62,22 @@ export async function POST(
     (body.subject ? r.fields['Subject'] === body.subject : true)
   );
   if (existing) {
-    // If caller supplied noExam, patch it onto the existing record before returning
-    if (body.noExam != null) {
+    // Patch all provided fields onto the existing record
+    const patchFields: Record<string, any> = {};
+    if (body.examDate !== undefined) patchFields['Exam Date'] = body.examDate;
+    if (body.testedTopics !== undefined) patchFields['Tested Topics'] = body.testedTopics ?? '';
+    if (body.examNotes !== undefined) patchFields['Exam Notes'] = body.examNotes ?? '';
+    if (body.noExam != null) patchFields['No Exam'] = body.noExam;
+    if (body.subject) patchFields['Subject'] = body.subject;
+    if (body.customName !== undefined) patchFields['Custom Name'] = body.customName ?? '';
+    if (body.resultScore != null) patchFields['Result Score'] = body.resultScore;
+    if (body.resultTotal != null) patchFields['Result Total'] = body.resultTotal;
+    if (body.resultGrade !== undefined) patchFields['Result Grade'] = body.resultGrade ?? '';
+    if (body.resultNotes !== undefined) patchFields['Result Notes'] = body.resultNotes ?? '';
+    if (Object.keys(patchFields).length > 0) {
       const patched = await airtableRequest('Exams', `/${existing.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ fields: { 'No Exam': body.noExam } }),
+        body: JSON.stringify({ fields: patchFields }),
       });
       return NextResponse.json(shapeExam(patched));
     }
@@ -79,6 +90,7 @@ export async function POST(
     Subject: body.subject,
     'Exam Date': body.examDate,
     'Tested Topics': body.testedTopics ?? '',
+    'Exam Notes': body.examNotes ?? '',
   };
   if (body.customName) fields['Custom Name'] = body.customName;
   if (body.noExam != null) fields['No Exam'] = body.noExam;
