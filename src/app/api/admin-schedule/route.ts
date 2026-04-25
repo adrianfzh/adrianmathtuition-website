@@ -60,11 +60,11 @@ export async function GET(req: NextRequest) {
   // Use exclusive upper bound (+1 day) because Airtable coerces Date to
   // datetime midnight, so <= '2026-04-26' stops before the day's lessons.
   const weekEndExclusive = isoDate(addDays(sunday, 1));
-  // Lessons tab shows only lessons that will actually take place:
+  // Lessons tab shows all lessons for the week except ones that were moved/voided:
   // - Excludes Status='Rescheduled' (original lesson moved away; the new date has its own Scheduled record)
   // - Excludes Status='Cancelled' (lesson cancelled, no longer happening)
-  // - Excludes Status='Absent' (student missed it; makeup tracking via bot /allreschedules)
-  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<'${weekEndExclusive}',{Status}!='Rescheduled',{Status}!='Cancelled',{Status}!='Absent')`;
+  // - Includes Status='Absent' — shown as dimmed chips so past slots stay visible
+  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<'${weekEndExclusive}',{Status}!='Rescheduled',{Status}!='Cancelled')`;
 
   // Fetch slots, enrollments, and lessons in parallel
   const [slotsData, enrollmentsData, lessonsData] = await Promise.all([
