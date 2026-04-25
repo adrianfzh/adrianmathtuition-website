@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
       // unreliable (returns names, not IDs). Filter by student in JS instead.
       const examsData = await airtableRequestAll(
         'Exams',
-        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeType}'`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics`
+        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeType}'`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`
       );
       for (const r of (examsData.records ?? [])) {
         const sid = r.fields['Student']?.[0];
@@ -105,6 +105,7 @@ export async function GET(req: NextRequest) {
           examType: r.fields['Exam Type'] ?? '',
           examDate: r.fields['Exam Date'] ?? null,
           testedTopics: r.fields['Tested Topics'] ?? null,
+          noExam: r.fields['No Exam'] ?? false,
         });
       }
     } catch (err) {

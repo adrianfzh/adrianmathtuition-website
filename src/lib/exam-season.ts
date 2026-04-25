@@ -57,6 +57,7 @@ export interface ExamRecord {
   examType: string;
   examDate: string | null;
   testedTopics: string | null;
+  noExam?: boolean; // student explicitly has no exam for this season
 }
 
 /**
@@ -82,6 +83,14 @@ export function checkExamInfoStatus(
       complete: false,
       activeType,
       missing: { hasNoRecord: true, missingDate: true, missingTopics: true },
+    };
+  }
+  // If any record has noExam=true, treat as complete — suppress warning
+  if (matching.some(e => e.noExam)) {
+    return {
+      complete: true,
+      activeType,
+      missing: { hasNoRecord: false, missingDate: false, missingTopics: false },
     };
   }
   // Pick the most complete record as representative

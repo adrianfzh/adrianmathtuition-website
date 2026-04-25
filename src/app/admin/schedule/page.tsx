@@ -188,7 +188,7 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap: () => void }) {
+function DraggableLessonChip({ lesson, onTap, onExamDateClick }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
@@ -245,8 +245,17 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
         <span className={isAbsent ? 'absent-name' : ''}>{lesson.studentName}</span>
         {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
         {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
-        {lesson.examDate && !isAbsent && (
-          <span className="text-[10px] font-medium ml-2 opacity-60" title="Upcoming exam date">📅 {formatExamDate(lesson.examDate)}</span>
+        {lesson.examDate === 'NO_EXAM' && !isAbsent && (
+          <span className="text-[10px] ml-4 opacity-40 italic">no upcoming exam</span>
+        )}
+        {lesson.examDate && lesson.examDate !== 'NO_EXAM' && !isAbsent && (
+          <button
+            className="text-[10px] font-medium ml-4 opacity-60 hover:opacity-90 underline underline-offset-2 cursor-pointer"
+            title="Click to see exam details"
+            onClick={e => { e.stopPropagation(); onExamDateClick?.(lesson); }}
+          >
+            📅 {formatExamDate(lesson.examDate)}
+          </button>
         )}
         {lesson.type !== 'Trial' && lesson.notes && (
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
@@ -257,19 +266,20 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
 }
 
 function DroppableLessonSlot({
-  id, lessons, onChipTap, onAddClick,
+  id, lessons, onChipTap, onAddClick, onExamDateClick,
 }: {
   id: string;
   lessons: EnrichedLesson[];
   onChipTap: (lesson: EnrichedLesson) => void;
   onAddClick: () => void;
+  onExamDateClick?: (lesson: EnrichedLesson) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} />
         ))}
         {lessons.length === 0 && (
           <button className="add-hint" onClick={onAddClick}>No lessons — tap + to add</button>
@@ -327,6 +337,8 @@ export default function SchedulePage() {
   const [absentModal, setAbsentModal] = useState<AbsentDeleteState | null>(null);
   const [deleteModal, setDeleteModal] = useState<AbsentDeleteState | null>(null);
   const [editNotesModal, setEditNotesModal] = useState<{ lesson: EnrichedLesson; notes: string } | null>(null);
+  const [examDetailModal, setExamDetailModal] = useState<{ studentId: string; studentName: string; exams: any[] | null } | null>(null);
+  const [examDetailLoading, setExamDetailLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
 
@@ -861,6 +873,25 @@ export default function SchedulePage() {
     }
   }
 
+  // ── Exam date click handler ──────────────────────────────────────────────────
+  async function handleExamDateClick(lesson: EnrichedLesson) {
+    if (!lesson.studentId) return;
+    setExamDetailModal({ studentId: lesson.studentId, studentName: lesson.studentName, exams: null });
+    setExamDetailLoading(true);
+    try {
+      const res = await fetch(`/api/admin/progress/students/${lesson.studentId}/exams`, {
+        headers: { Authorization: `Bearer ${savedPw.current}` },
+      });
+      if (!res.ok) throw new Error();
+      const json = await res.json();
+      setExamDetailModal(prev => prev ? { ...prev, exams: json.exams ?? [] } : null);
+    } catch {
+      setExamDetailModal(prev => prev ? { ...prev, exams: [] } : null);
+    } finally {
+      setExamDetailLoading(false);
+    }
+  }
+
   // ── renderLessonsSlotCard ────────────────────────────────────────────────────
   function renderLessonsSlotCard(slot: Slot, date: Date) {
     const dropId = `${isoDate(date)}__${slot.id}`;
@@ -884,6 +915,7 @@ export default function SchedulePage() {
           lessons={lessons}
           onChipTap={(lesson) => { setModalError(''); setActionSheet({ lesson, date: isoDate(date), slotId: slot.id }); }}
           onAddClick={() => openAddModal(date, slot)}
+          onExamDateClick={handleExamDateClick}
         />
       </div>
     );
@@ -1100,6 +1132,61 @@ export default function SchedulePage() {
                     </div>
                   )}
                 </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exam detail modal */}
+      {examDetailModal && (
+        <div className="modal-overlay" onClick={() => setExamDetailModal(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <div className="modal-name">{examDetailModal.studentName}</div>
+                <div className="modal-type" style={{ color: '#64748b' }}>Exam Records</div>
+              </div>
+              <button className="modal-close" onClick={() => setExamDetailModal(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {examDetailLoading || examDetailModal.exams === null ? (
+                <div className="modal-row" style={{ color: '#94a3b8', fontStyle: 'italic' }}>Loading…</div>
+              ) : examDetailModal.exams.length === 0 ? (
+                <div className="modal-row" style={{ color: '#94a3b8', fontStyle: 'italic' }}>No exam records found</div>
+              ) : (
+                examDetailModal.exams
+                  .slice()
+                  .sort((a: any, b: any) => {
+                    const order = ['WA1', 'WA2', 'WA3', 'EOY'];
+                    return order.indexOf(a.examType) - order.indexOf(b.examType);
+                  })
+                  .map((exam: any) => (
+                    <div key={exam.id} className="modal-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4, paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontWeight: 700, fontSize: 12, background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>{exam.examType}</span>
+                        {exam.subject && <span style={{ fontSize: 12, color: '#64748b', background: '#f8fafc', padding: '2px 6px', borderRadius: 4, border: '1px solid #e2e8f0' }}>{exam.subject}</span>}
+                        {exam.noExam && <span style={{ fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>no exam</span>}
+                      </div>
+                      {exam.examDate && (
+                        <div style={{ display: 'flex', gap: 6, fontSize: 13, color: '#334155' }}>
+                          <span style={{ color: '#94a3b8' }}>📅</span>
+                          <span>{formatExamDate(exam.examDate)}</span>
+                        </div>
+                      )}
+                      {exam.testedTopics && (
+                        <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.4 }}>
+                          <span style={{ color: '#94a3b8' }}>Topics: </span>{exam.testedTopics}
+                        </div>
+                      )}
+                      {exam.examNotes && (
+                        <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>{exam.examNotes}</div>
+                      )}
+                      {!exam.examDate && !exam.testedTopics && !exam.noExam && (
+                        <div style={{ fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' }}>No details yet</div>
+                      )}
+                    </div>
+                  ))
               )}
             </div>
           </div>

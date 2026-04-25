@@ -180,13 +180,20 @@ export async function GET(req: NextRequest) {
     if (activeExamType) {
       const examsData = await fetchAll(
         'Exams',
-        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Exam Date`
+        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Exam Date&fields[]=No Exam`
       );
-      // Build studentId → earliest exam date (skip records with no date set)
+      // Build studentId → earliest exam date, or 'NO_EXAM' sentinel
       for (const r of examsData) {
         const sid: string | undefined = r.fields['Student']?.[0];
+        if (!sid) continue;
+        const noExam: boolean = r.fields['No Exam'] === true;
+        if (noExam) {
+          examsByStudent[sid] = 'NO_EXAM'; // takes precedence over any date
+          continue;
+        }
+        if (examsByStudent[sid] === 'NO_EXAM') continue; // already flagged
         const examDate: string | undefined = r.fields['Exam Date'];
-        if (!sid || !examDate) continue;
+        if (!examDate) continue;
         if (!examsByStudent[sid] || examDate < examsByStudent[sid]!) {
           examsByStudent[sid] = examDate;
         }

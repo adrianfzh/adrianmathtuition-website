@@ -22,6 +22,7 @@ function shapeExam(r: any) {
     resultGrade: r.fields['Result Grade'] ?? '',
     resultNotes: r.fields['Result Notes'] ?? '',
     examNotes: r.fields['Exam Notes'] ?? '',
+    noExam: r.fields['No Exam'] ?? false,
     createdAt: r.fields['Created At'] ?? '',
   };
 }
@@ -61,6 +62,14 @@ export async function POST(
     (body.subject ? r.fields['Subject'] === body.subject : true)
   );
   if (existing) {
+    // If caller supplied noExam, patch it onto the existing record before returning
+    if (body.noExam != null) {
+      const patched = await airtableRequest('Exams', `/${existing.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ fields: { 'No Exam': body.noExam } }),
+      });
+      return NextResponse.json(shapeExam(patched));
+    }
     return NextResponse.json(shapeExam(existing));
   }
 
@@ -72,6 +81,7 @@ export async function POST(
     'Tested Topics': body.testedTopics ?? '',
   };
   if (body.customName) fields['Custom Name'] = body.customName;
+  if (body.noExam != null) fields['No Exam'] = body.noExam;
   if (body.resultScore != null) fields['Result Score'] = body.resultScore;
   if (body.resultTotal != null) fields['Result Total'] = body.resultTotal;
   if (body.resultGrade) fields['Result Grade'] = body.resultGrade;

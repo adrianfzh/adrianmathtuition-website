@@ -54,6 +54,7 @@ interface Exam {
   examDate: string;
   testedTopics: string;
   examNotes: string;
+  noExam: boolean;
 }
 
 interface FormState {
@@ -599,14 +600,72 @@ function sortExams(exams: Exam[]): Exam[] {
 }
 
 function UpcomingExams({
-  studentId, subjects, level, pw,
-}: { studentId: string; subjects: Subject[]; level: string; pw: string }) {
+  studentId, subjects, level, pw, activeType, onExamCompleteChange,
+}: {
+  studentId: string; subjects: Subject[]; level: string; pw: string;
+  activeType: ExamType | null;
+  onExamCompleteChange?: (complete: boolean) => void;
+}) {
   const [open, setOpen] = useState(true);
   const [loaded, setLoaded] = useState(false);
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [noExamSaving, setNoExamSaving] = useState(false);
+
+  async function handleNoExamToggle() {
+    if (!activeType || noExamSaving) return;
+    const currentNoExam = exams.some(e => e.examType === activeType && e.noExam);
+    const turningOn = !currentNoExam;
+    setNoExamSaving(true);
+    try {
+      if (turningOn) {
+        // Find existing exam record for activeType to patch, or create a new one
+        const existing = exams.find(e => e.examType === activeType);
+        if (existing) {
+          const res = await fetch(`/api/admin/progress/exams/${existing.id}`, {
+            method: 'PATCH',
+            headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ noExam: true }),
+          });
+          if (!res.ok) throw new Error();
+          const updated: Exam = await res.json();
+          setExams(prev => sortExams(prev.map(e => e.id === updated.id ? { ...e, ...updated } : e)));
+        } else {
+          // Create a minimal exam record with noExam=true
+          const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ examType: activeType, noExam: true }),
+          });
+          if (!res.ok) throw new Error();
+          const created: Exam = await res.json();
+          setExams(prev => sortExams([...prev, created]));
+        }
+        onExamCompleteChange?.(true);
+      } else {
+        // Turn off: find the record that has noExam=true and patch it to false
+        const record = exams.find(e => e.examType === activeType && e.noExam);
+        if (record) {
+          const res = await fetch(`/api/admin/progress/exams/${record.id}`, {
+            method: 'PATCH',
+            headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ noExam: false }),
+          });
+          if (!res.ok) throw new Error();
+          const updated: Exam = await res.json();
+          setExams(prev => sortExams(prev.map(e => e.id === updated.id ? { ...e, ...updated } : e)));
+        }
+        onExamCompleteChange?.(false);
+      }
+    } catch {
+      // silently fail — exam state stays as-is
+    } finally {
+      setNoExamSaving(false);
+    }
+  }
+
   async function loadExams() {
     setLoading(true);
     try {
@@ -658,6 +717,31 @@ function UpcomingExams({
 
       {open && (
         <div className="border-t border-neutral-100 bg-neutral-50 px-3 py-3 space-y-2">
+          {/* No-exam toggle — shown only during an active exam season */}
+          {activeType && !loading && (
+            <button
+              onClick={handleNoExamToggle}
+              disabled={noExamSaving}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 min-h-[44px] rounded-md bg-white border border-neutral-200 active:bg-neutral-50 disabled:opacity-50"
+            >
+              {/* Checkbox visual */}
+              <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                exams.some(e => e.examType === activeType && e.noExam)
+                  ? 'bg-neutral-800 border-neutral-800'
+                  : 'bg-white border-neutral-300'
+              }`}>
+                {exams.some(e => e.examType === activeType && e.noExam) && (
+                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </span>
+              <span className="text-[13px] text-neutral-600">
+                {noExamSaving ? 'Saving…' : `No ${activeType} exam this season`}
+              </span>
+            </button>
+          )}
+
           {loading && <p className="text-[13px] text-neutral-400 py-2 text-center">Loading…</p>}
 
           {!loading && exams.map(exam => (
@@ -724,12 +808,14 @@ function UpcomingExams({
 // ── LogForm ───────────────────────────────────────────────────────────────────
 
 function LogForm({
-  lesson, pw, onSaved, onStatusChange,
+  lesson, pw, onSaved, onStatusChange, activeType, onExamCompleteChange,
 }: {
   lesson: LessonCard;
   pw: string;
   onSaved: (updated: Partial<LessonCard>) => void;
   onStatusChange: (status: SaveStatus, savedAt: Date | null) => void;
+  activeType: ExamType | null;
+  onExamCompleteChange?: (complete: boolean) => void;
 }) {
   const [prevLesson, setPrevLesson] = useState<{ homeworkAssigned: string } | null>(null);
   const [form, setForm] = useState<FormState>(() => ({
@@ -992,6 +1078,8 @@ function LogForm({
         subjects={lesson.subjects.filter(Boolean) as Subject[]}
         level={lesson.level}
         pw={pw}
+        activeType={activeType}
+        onExamCompleteChange={onExamCompleteChange}
       />
 
       {/* Retry if error */}
@@ -1019,8 +1107,8 @@ function buildExamPillTooltip(s: ExamInfoStatus): string {
 // ── LessonCardRow ─────────────────────────────────────────────────────────────
 
 function LessonCardRow({
-  lesson, pw, onUpdate,
-}: { lesson: LessonCard; pw: string; onUpdate: (id: string, updated: Partial<LessonCard>) => void }) {
+  lesson, pw, onUpdate, activeType,
+}: { lesson: LessonCard; pw: string; onUpdate: (id: string, updated: Partial<LessonCard>) => void; activeType: ExamType | null }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [data, setData] = useState(lesson);
@@ -1035,6 +1123,13 @@ function LessonCardRow({
   function handleStatusChange(status: SaveStatus, at: Date | null) {
     setSaveStatus(status);
     if (at) setSavedAt(at);
+  }
+
+  function handleExamCompleteChange(complete: boolean) {
+    setData(d => ({
+      ...d,
+      examStatus: { ...d.examStatus, complete },
+    }));
   }
 
   const subjectBadges = (data.subjects ?? []).filter(Boolean);
@@ -1121,6 +1216,8 @@ function LessonCardRow({
           pw={pw}
           onSaved={handleSaved}
           onStatusChange={handleStatusChange}
+          activeType={activeType}
+          onExamCompleteChange={handleExamCompleteChange}
         />
       )}
     </div>
@@ -1137,7 +1234,7 @@ interface StudentRecord {
   subjectLevel: string;
 }
 
-function StudentSearchCard({ student, pw }: { student: StudentRecord; pw: string }) {
+function StudentSearchCard({ student, pw, activeType }: { student: StudentRecord; pw: string; activeType: ExamType | null }) {
   const [open, setOpen] = useState(false);
 
   const subjectBadges = (student.subjects ?? []).filter(Boolean);
@@ -1195,6 +1292,7 @@ function StudentSearchCard({ student, pw }: { student: StudentRecord; pw: string
             subjects={student.subjects.filter(Boolean) as Subject[]}
             level={student.level}
             pw={pw}
+            activeType={activeType}
           />
         </div>
       )}
@@ -1558,7 +1656,7 @@ export default function ProgressPage() {
                 </p>
                 <div className="space-y-2">
                   {group.lessons.map(lesson => (
-                    <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} />
+                    <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} activeType={examSeason?.active ?? null} />
                   ))}
                 </div>
               </div>
@@ -1570,7 +1668,7 @@ export default function ProgressPage() {
                 )}
                 <div className="space-y-2">
                   {extraStudents.map(student => (
-                    <StudentSearchCard key={student.id} student={student} pw={savedPw.current} />
+                    <StudentSearchCard key={student.id} student={student} pw={savedPw.current} activeType={examSeason?.active ?? null} />
                   ))}
                 </div>
               </div>

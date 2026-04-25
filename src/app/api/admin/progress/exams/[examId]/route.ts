@@ -22,6 +22,7 @@ function shapeExam(r: any) {
     resultGrade: r.fields['Result Grade'] ?? '',
     resultNotes: r.fields['Result Notes'] ?? '',
     examNotes: r.fields['Exam Notes'] ?? '',
+    noExam: r.fields['No Exam'] ?? false,
     studentId: r.fields['Student']?.[0] ?? '',
     createdAt: r.fields['Created At'] ?? '',
   };
@@ -59,6 +60,7 @@ export async function PATCH(
   if (body.resultGrade !== undefined) fields['Result Grade'] = body.resultGrade;
   if (body.resultNotes !== undefined) fields['Result Notes'] = body.resultNotes;
   if (body.examNotes !== undefined) fields['Exam Notes'] = body.examNotes;
+  if (body.noExam !== undefined) fields['No Exam'] = body.noExam;
 
   const data = await airtableRequest('Exams', `/${examId}`, {
     method: 'PATCH',
