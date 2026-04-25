@@ -112,6 +112,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  function parseTimeMinutes(time: string): number {
+    const m = time.match(/^(\d+)(am|pm)?[-–]/i);
+    if (!m) return 9999;
+    let h = parseInt(m[1]);
+    if (!m[2]) {
+      if (/pm/i.test(time) && h < 12) h += 12;
+    } else if (m[2].toLowerCase() === 'pm' && h < 12) {
+      h += 12;
+    }
+    return h * 60;
+  }
+
   const result = lessons.records.map((r: any) => {
     const studentId = r.fields['Student']?.[0] ?? null;
     const slotId = r.fields['Slot']?.[0] ?? null;
@@ -142,6 +154,8 @@ export async function GET(req: NextRequest) {
       progressLogged: r.fields['Progress Logged'] ?? false,
     };
   });
+
+  result.sort((a, b) => parseTimeMinutes(a.slotTime) - parseTimeMinutes(b.slotTime));
 
   return NextResponse.json({ lessons: result });
 }
