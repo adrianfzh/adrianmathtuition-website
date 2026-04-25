@@ -246,7 +246,7 @@ function DraggableLessonChip({ lesson, onTap }: { lesson: EnrichedLesson; onTap:
         {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
         {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
         {lesson.examDate && !isAbsent && (
-          <span className="text-[10px] font-medium ml-1 opacity-60" title="Upcoming exam date">📅 {formatExamDate(lesson.examDate)}</span>
+          <span className="text-[10px] font-medium ml-2 opacity-60" title="Upcoming exam date">📅 {formatExamDate(lesson.examDate)}</span>
         )}
         {lesson.type !== 'Trial' && lesson.notes && (
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
