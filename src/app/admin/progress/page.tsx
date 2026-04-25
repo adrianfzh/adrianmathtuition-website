@@ -1364,6 +1364,17 @@ export default function ProgressPage() {
     ? lessons.filter(l => l.studentName.toLowerCase().includes(trimmedSearch))
     : lessons;
 
+  // Group filteredLessons by slot time (already sorted earliest→latest)
+  const lessonGroups = filteredLessons.reduce<{ time: string; lessons: LessonCard[] }[]>((acc, lesson) => {
+    const last = acc[acc.length - 1];
+    if (last && last.time === lesson.slotTime) {
+      last.lessons.push(lesson);
+    } else {
+      acc.push({ time: lesson.slotTime, lessons: [lesson] });
+    }
+    return acc;
+  }, []);
+
   const lessonStudentIds = new Set(lessons.map(l => l.studentId));
   const extraStudents = trimmedSearch
     ? allStudents.filter(s =>
@@ -1530,7 +1541,7 @@ export default function ProgressPage() {
       </div>
 
       {/* Lesson cards */}
-      <div className="max-w-lg mx-auto px-4 pt-4 space-y-2">
+      <div className="max-w-lg mx-auto px-4 pt-4">
         {loading && <div className="text-center text-[13px] text-neutral-400 py-12">Loading…</div>}
         {!loading && fetchError && <div className="text-center text-[13px] text-red-500 py-12">{fetchError}</div>}
         {!loading && !fetchError && filteredLessons.length === 0 && extraStudents.length === 0 && (
@@ -1538,20 +1549,33 @@ export default function ProgressPage() {
             {trimmedSearch ? 'No students match your search' : 'No lessons on this day'}
           </div>
         )}
-        {!loading && filteredLessons.map(lesson => (
-          <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} />
-        ))}
-        {!loading && extraStudents.length > 0 && (
-          <>
-            {filteredLessons.length > 0 && (
-              <div className="pt-2 pb-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">Other students</p>
+        {!loading && (
+          <div className="space-y-4">
+            {lessonGroups.map(group => (
+              <div key={group.time || 'no-time'}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-2 px-1">
+                  {group.time || '—'}
+                </p>
+                <div className="space-y-2">
+                  {group.lessons.map(lesson => (
+                    <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} />
+                  ))}
+                </div>
+              </div>
+            ))}
+            {extraStudents.length > 0 && (
+              <div>
+                {filteredLessons.length > 0 && (
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-2 px-1">Other students</p>
+                )}
+                <div className="space-y-2">
+                  {extraStudents.map(student => (
+                    <StudentSearchCard key={student.id} student={student} pw={savedPw.current} />
+                  ))}
+                </div>
               </div>
             )}
-            {extraStudents.map(student => (
-              <StudentSearchCard key={student.id} student={student} pw={savedPw.current} />
-            ))}
-          </>
+          </div>
         )}
       </div>
     </div>
