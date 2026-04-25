@@ -397,6 +397,18 @@ export default function SchedulePage() {
     return map;
   }, [enrichedLessons]);
 
+  // Absent students keyed by date — catches Absent records that have no Slot linked
+  // (e.g. created by the Telegram bot), which would be missed by enrichedLessonMap.
+  const absentStudentsByDate = useMemo<Record<string, Set<string>>>(() => {
+    const map: Record<string, Set<string>> = {};
+    for (const lesson of enrichedLessons) {
+      if (lesson.status !== 'Absent' || !lesson.studentId) continue;
+      if (!map[lesson.date]) map[lesson.date] = new Set();
+      map[lesson.date].add(lesson.studentId);
+    }
+    return map;
+  }, [enrichedLessons]);
+
   // Check cookie on mount
   useEffect(() => {
     const pw = getCookie('schedule_pw');
@@ -972,10 +984,11 @@ export default function SchedulePage() {
     const absentStudentIds = new Set(
       lessons.filter(l => l.status === 'Absent').map(l => l.studentId).filter(Boolean)
     );
+    const dateAbsentIds = absentStudentsByDate[dateStr] ?? new Set<string>();
     const visibleStudentIds = new Set(visibleLessons.map(l => l.studentId).filter(Boolean));
     const enrolledIds = data?.enrollmentsBySlot?.[slot.id] ?? [];
     const ghostStudents = enrolledIds
-      .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id))
+      .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id) && !dateAbsentIds.has(id))
       .map(id => ({ id, name: data?.students[id]?.name ?? 'Unknown' }));
 
     return (
