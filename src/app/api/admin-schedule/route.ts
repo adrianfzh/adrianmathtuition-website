@@ -175,17 +175,18 @@ export async function GET(req: NextRequest) {
     } catch {}
     activeExamType = resolveActiveExamType(forceOn);
 
-    // Only fetch exam dates when in an exam season and there are students
-    if (activeExamType && studentIds.length) {
+    // Fetch all exam dates for the active season — no studentIds filter needed;
+    // the page only looks up students that actually appear in lessons.
+    if (activeExamType) {
       const examsData = await fetchAll(
         'Exams',
         `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Exam Date`
       );
-      // Build studentId → earliest exam date (skip if no date set)
+      // Build studentId → earliest exam date (skip records with no date set)
       for (const r of examsData) {
-        const sid = r.fields['Student']?.[0];
+        const sid: string | undefined = r.fields['Student']?.[0];
         const examDate: string | undefined = r.fields['Exam Date'];
-        if (!sid || !studentIds.includes(sid) || !examDate) continue;
+        if (!sid || !examDate) continue;
         if (!examsByStudent[sid] || examDate < examsByStudent[sid]!) {
           examsByStudent[sid] = examDate;
         }
