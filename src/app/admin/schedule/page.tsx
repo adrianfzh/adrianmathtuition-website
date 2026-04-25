@@ -246,11 +246,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick }: { lesson: Enric
         {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
         {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
         {lesson.examDate === 'NO_EXAM' && !isAbsent && (
-          <span className="text-[10px] ml-8 opacity-40 italic">no upcoming exam</span>
+          <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 1 }}>no upcoming exam</span>
         )}
         {lesson.examDate && lesson.examDate !== 'NO_EXAM' && !isAbsent && (
           <span
-            className="text-[10px] font-medium ml-8 opacity-60 hover:opacity-90 underline underline-offset-2 cursor-pointer"
+            style={{ display: 'block', fontSize: 10, fontWeight: 600, opacity: 0.6, marginTop: 1, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 }}
             title="Click to see exam details"
             role="button"
             onClick={e => { e.stopPropagation(); onExamDateClick?.(lesson); }}
