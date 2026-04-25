@@ -903,7 +903,7 @@ export default function SchedulePage() {
   }
 
   // ── Attendance marking ───────────────────────────────────────────────────────
-  async function handleAttendance(studentId: string, slotId: string, date: string, status: 'Scheduled' | 'Absent') {
+  async function handleAttendance(studentId: string, slotId: string, date: string, status: 'Completed' | 'Absent') {
     setSavingAttendance(prev => new Set([...prev, studentId]));
     try {
       const res = await fetch('/api/admin-schedule/attendance', {
@@ -932,10 +932,10 @@ export default function SchedulePage() {
     }
   }
 
-  // Mark an existing Absent lesson back to Scheduled
+  // Mark an existing Absent lesson back to Completed
   async function handleMarkPresent(lesson: EnrichedLesson) {
     setActionSheet(null);
-    await handleAttendance(lesson.studentId!, lesson.slotId!, lesson.date, 'Scheduled');
+    await handleAttendance(lesson.studentId!, lesson.slotId!, lesson.date, 'Completed');
   }
 
   // ── Exam date click handler ──────────────────────────────────────────────────
@@ -991,7 +991,7 @@ export default function SchedulePage() {
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={handleExamDateClick}
           ghostStudents={ghostStudents}
-          onMarkPresent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Scheduled')}
+          onMarkPresent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Completed')}
           onMarkAbsent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Absent')}
           savingStudents={savingAttendance}
         />

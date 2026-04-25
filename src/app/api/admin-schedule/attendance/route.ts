@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { studentId: string; slotId: string; date: string; status: 'Scheduled' | 'Absent' };
+  let body: { studentId: string; slotId: string; date: string; status: 'Completed' | 'Absent' };
   try {
     body = await req.json();
   } catch {
@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
   if (!studentId || !slotId || !date || !status) {
     return NextResponse.json({ error: 'Missing fields: studentId, slotId, date, status' }, { status: 400 });
   }
-  if (status !== 'Scheduled' && status !== 'Absent') {
-    return NextResponse.json({ error: 'status must be "Scheduled" or "Absent"' }, { status: 400 });
+  if (status !== 'Completed' && status !== 'Absent') {
+    return NextResponse.json({ error: 'status must be "Completed" or "Absent"' }, { status: 400 });
   }
 
   try {
