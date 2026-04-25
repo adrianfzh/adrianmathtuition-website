@@ -27,11 +27,16 @@ export async function GET(req: NextRequest) {
   const today = localToday();
   const date = searchParams.get('date') || today;
 
-  // Today + future: only Scheduled. Past: Completed/Absent/Rescheduled/Cancelled.
+  // Past dates: show Completed/Absent/Rescheduled/Cancelled (lesson has happened).
+  // Today: show all statuses so past time slots remain visible throughout the day.
+  // Future: show only Scheduled (lessons not yet happened).
   const isPast = date < today;
+  const isFuture = date > today;
   const statusFilter = isPast
     ? `OR({Status}='Completed',{Status}='Absent',{Status}='Rescheduled',{Status}='Cancelled')`
-    : `{Status}='Scheduled'`;
+    : isFuture
+      ? `{Status}='Scheduled'`
+      : `OR({Status}='Scheduled',{Status}='Completed',{Status}='Absent',{Status}='Rescheduled',{Status}='Cancelled')`;
   const formula = `AND(IS_SAME({Date},'${date}','day'),${statusFilter})`;
 
   const lessons = await airtableRequestAll(
