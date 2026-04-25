@@ -613,12 +613,23 @@ function UpcomingExams({
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [noExamSaving, setNoExamSaving] = useState(false);
+  // noExamOptimistic: null = use server data; true/false = optimistic override while save is in flight
+  const [noExamOptimistic, setNoExamOptimistic] = useState<boolean | null>(null);
+
+  // Derived checked state — optimistic takes priority over server data
+  const noExamChecked = noExamOptimistic !== null
+    ? noExamOptimistic
+    : exams.some(e => e.examType === activeType && e.noExam);
 
   async function handleNoExamToggle() {
     if (!activeType || noExamSaving) return;
-    const currentNoExam = exams.some(e => e.examType === activeType && e.noExam);
-    const turningOn = !currentNoExam;
+    const turningOn = !noExamChecked;
+
+    // Optimistic update — visually instant
+    setNoExamOptimistic(turningOn);
     setNoExamSaving(true);
+    onExamCompleteChange?.(turningOn); // update the pill immediately too
+
     try {
       if (turningOn) {
         // Find existing exam record for activeType to patch, or create a new one
@@ -643,10 +654,9 @@ function UpcomingExams({
           const created: Exam = await res.json();
           setExams(prev => sortExams([...prev, created]));
         }
-        onExamCompleteChange?.(true);
       } else {
-        // Turn off: find the record that has noExam=true and patch it to false
-        const record = exams.find(e => e.examType === activeType && e.noExam);
+        // Turn off: find the record for this exam type (noExam may be true or optimistic)
+        const record = exams.find(e => e.examType === activeType);
         if (record) {
           const res = await fetch(`/api/admin/progress/exams/${record.id}`, {
             method: 'PATCH',
@@ -657,10 +667,13 @@ function UpcomingExams({
           const updated: Exam = await res.json();
           setExams(prev => sortExams(prev.map(e => e.id === updated.id ? { ...e, ...updated } : e)));
         }
-        onExamCompleteChange?.(false);
       }
+      // Server confirmed — clear optimistic override; server data now drives the state
+      setNoExamOptimistic(null);
     } catch {
-      // silently fail — exam state stays as-is
+      // Revert optimistic update on failure
+      setNoExamOptimistic(null);
+      onExamCompleteChange?.(!turningOn);
     } finally {
       setNoExamSaving(false);
     }
@@ -726,11 +739,9 @@ function UpcomingExams({
             >
               {/* Checkbox visual */}
               <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                exams.some(e => e.examType === activeType && e.noExam)
-                  ? 'bg-neutral-800 border-neutral-800'
-                  : 'bg-white border-neutral-300'
+                noExamChecked ? 'bg-neutral-800 border-neutral-800' : 'bg-white border-neutral-300'
               }`}>
-                {exams.some(e => e.examType === activeType && e.noExam) && (
+                {noExamChecked && (
                   <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
