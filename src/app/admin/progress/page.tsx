@@ -1064,10 +1064,18 @@ function buildExamPillTooltip(s: ExamInfoStatus): string {
 // ── LessonCardRow ─────────────────────────────────────────────────────────────
 
 function LessonCardRow({
-  lesson, pw, onUpdate, activeType,
-}: { lesson: LessonCard; pw: string; onUpdate: (id: string, updated: Partial<LessonCard>) => void; activeType: ExamType | null }) {
+  lesson, pw, onUpdate, activeType, autoOpen,
+}: { lesson: LessonCard; pw: string; onUpdate: (id: string, updated: Partial<LessonCard>) => void; activeType: ExamType | null; autoOpen?: boolean }) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen ?? false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (autoOpen && cardRef.current) {
+      const t = setTimeout(() => cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+      return () => clearTimeout(t);
+    }
+  }, [autoOpen]);
   const [data, setData] = useState(lesson);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<Date | null>(null);
@@ -1095,7 +1103,7 @@ function LessonCardRow({
   const rescheduledDatePast = isRescheduled && data.rescheduledToDate && data.rescheduledToDate < todayISO();
 
   return (
-    <div className={`rounded-xl border overflow-hidden transition-shadow ${
+    <div ref={cardRef} className={`rounded-xl border overflow-hidden transition-shadow ${
       isDimmed
         ? 'bg-neutral-50 border-neutral-100'
         : open
@@ -1266,7 +1274,17 @@ export default function ProgressPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const savedPw = useRef('');
 
-  const [date, setDate] = useState<string>(todayISO());
+  const [date, setDate] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('date') || todayISO();
+    }
+    return todayISO();
+  });
+  const [openLessonId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') return new URLSearchParams(window.location.search).get('lesson');
+    return null;
+  });
   const [lessons, setLessons] = useState<LessonCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
@@ -1613,7 +1631,7 @@ export default function ProgressPage() {
                 </p>
                 <div className="space-y-2">
                   {group.lessons.map(lesson => (
-                    <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} activeType={examSeason?.active ?? null} />
+                    <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} activeType={examSeason?.active ?? null} autoOpen={lesson.id === openLessonId} />
                   ))}
                 </div>
               </div>

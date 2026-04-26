@@ -1304,6 +1304,10 @@ export default function SchedulePage() {
               <div className="action-sheet-sub">{formatDateSlot(actionSheet.date, actionSheet.slotId)}</div>
             </div>
             <button className="action-btn" onClick={() => {
+              window.open(`/admin/progress?date=${actionSheet.date}&lesson=${actionSheet.lesson.id}`, '_blank');
+              setActionSheet(null);
+            }}>📊 Log progress</button>
+            <button className="action-btn" onClick={() => {
               setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: true, showPickers: true });
               setModalError(''); setActionSheet(null);
             }}>🔄 Reschedule</button>
