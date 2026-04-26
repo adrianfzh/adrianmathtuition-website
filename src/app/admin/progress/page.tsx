@@ -1285,6 +1285,10 @@ export default function ProgressPage() {
     if (typeof window !== 'undefined') return new URLSearchParams(window.location.search).get('lesson');
     return null;
   });
+  const [fromSchedule] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') return new URLSearchParams(window.location.search).get('from') === 'schedule';
+    return false;
+  });
   const [lessons, setLessons] = useState<LessonCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
@@ -1509,11 +1513,12 @@ export default function ProgressPage() {
         <div className="max-w-lg mx-auto px-4 pt-3 pb-2">
           {/* Row 1: back + title + counter */}
           <div className="flex items-center gap-2 mb-2">
-            <a href="/admin"
-              className="text-neutral-400 hover:text-neutral-600 shrink-0 p-1 min-h-[36px] min-w-[36px] flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <a href={fromSchedule ? '/admin/schedule' : '/admin'}
+              className="text-neutral-400 hover:text-neutral-600 shrink-0 p-1 min-h-[36px] flex items-center justify-center gap-1">
+              <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
+              {fromSchedule && <span className="text-[12px] font-medium whitespace-nowrap">Schedule</span>}
             </a>
             <span className="flex-1 text-[15px] font-semibold text-neutral-900">Progress</span>
             <button

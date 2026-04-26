@@ -1011,7 +1011,7 @@ export default function SchedulePage() {
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={handleExamDateClick}
           ghostStudents={ghostStudents}
-          onStudentClick={(lesson) => window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}`, '_blank')}
+          onStudentClick={(lesson) => window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}&from=schedule`, '_blank')}
           onGhostTap={(studentId, studentName) => setGhostActionSheet({ studentId, studentName, slotId: slot.id, date: dateStr })}
           savingStudents={savingAttendance}
           activeExamType={data?.activeExamType}
@@ -1334,9 +1334,10 @@ export default function SchedulePage() {
               setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: true, showPickers: true });
               setModalError(''); setActionSheet(null);
             }}>🔄 Reschedule</button>
-            {actionSheet.lesson.status === 'Absent' ? (
-              <button className="action-btn" onClick={() => handleMarkPresent(actionSheet.lesson)}>✅ Mark present</button>
-            ) : (
+            {actionSheet.lesson.status !== 'Completed' && (
+              <button className="action-btn" onClick={() => { setActionSheet(null); handleMarkPresent(actionSheet.lesson); }}>✅ Mark present</button>
+            )}
+            {actionSheet.lesson.status !== 'Absent' && (
               <button className="action-btn" onClick={() => {
                 setAbsentModal({ lesson: actionSheet.lesson, notify: false, reason: '' });
                 setModalError(''); setActionSheet(null);
