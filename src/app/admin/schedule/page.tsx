@@ -188,7 +188,7 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-function DraggableLessonChip({ lesson, onTap, onExamDateClick, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; activeExamType?: string | null }) {
+function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; activeExamType?: string | null }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
@@ -242,7 +242,12 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, activeExamType }:
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         {lesson.type === 'Trial' && <span className="trial-badge">🆕</span>}
-        <span className={isAbsent ? 'absent-name' : ''}>{lesson.studentName}</span>
+        <span
+          className={isAbsent ? 'absent-name' : ''}
+          role={onStudentClick ? 'button' : undefined}
+          onClick={onStudentClick ? e => { e.stopPropagation(); onStudentClick(); } : undefined}
+          style={onStudentClick ? { cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 } : undefined}
+        >{lesson.studentName}</span>
         {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
         {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
         {lesson.examDate === 'NO_EXAM' && !isAbsent && (
@@ -267,17 +272,17 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, activeExamType }:
 }
 
 function DroppableLessonSlot({
-  id, lessons, onChipTap, onAddClick, onExamDateClick,
-  ghostStudents, onMarkPresent, onMarkAbsent, savingStudents, activeExamType,
+  id, lessons, onChipTap, onAddClick, onExamDateClick, onStudentClick,
+  ghostStudents, onGhostTap, savingStudents, activeExamType,
 }: {
   id: string;
   lessons: EnrichedLesson[];
   onChipTap: (lesson: EnrichedLesson) => void;
   onAddClick: () => void;
   onExamDateClick?: (lesson: EnrichedLesson) => void;
+  onStudentClick?: (lesson: EnrichedLesson) => void;
   ghostStudents?: { id: string; name: string }[];
-  onMarkPresent?: (studentId: string) => void;
-  onMarkAbsent?: (studentId: string) => void;
+  onGhostTap?: (studentId: string, studentName: string) => void;
   savingStudents?: Set<string>;
   activeExamType?: string | null;
 }) {
@@ -287,27 +292,21 @@ function DroppableLessonSlot({
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} activeExamType={activeExamType} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} activeExamType={activeExamType} />
         ))}
         {ghosts.map(s => (
-          <div key={s.id} className="lesson-chip" style={{ background: '#f8fafc', color: '#64748b', borderColor: '#e2e8f0', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div
+            key={s.id}
+            className="lesson-chip"
+            role="button"
+            onClick={() => onGhostTap?.(s.id, s.name)}
+            style={{ background: '#f8fafc', color: '#64748b', borderColor: '#e2e8f0', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+          >
             <div style={{ flex: 1, minWidth: 0, opacity: 0.7 }}>{s.name}</div>
-            {savingStudents?.has(s.id) ? (
-              <span style={{ fontSize: 11, color: '#94a3b8' }}>Saving…</span>
-            ) : (
-              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                <button
-                  onClick={() => onMarkPresent?.(s.id)}
-                  title="Mark present"
-                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >✓</button>
-                <button
-                  onClick={() => onMarkAbsent?.(s.id)}
-                  title="Mark absent"
-                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >✗</button>
-              </div>
-            )}
+            {savingStudents?.has(s.id)
+              ? <span style={{ fontSize: 11, color: '#94a3b8', flexShrink: 0 }}>Saving…</span>
+              : <span style={{ fontSize: 11, color: '#cbd5e1', flexShrink: 0 }}>tap to mark</span>
+            }
           </div>
         ))}
         {lessons.length === 0 && ghosts.length === 0 && (
@@ -368,6 +367,7 @@ export default function SchedulePage() {
   const [editNotesModal, setEditNotesModal] = useState<{ lesson: EnrichedLesson; notes: string } | null>(null);
   const [examDetailModal, setExamDetailModal] = useState<{ studentId: string; studentName: string; exams: any[] | null } | null>(null);
   const [examDetailLoading, setExamDetailLoading] = useState(false);
+  const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
   const [savingAttendance, setSavingAttendance] = useState<Set<string>>(new Set());
@@ -1011,8 +1011,8 @@ export default function SchedulePage() {
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={handleExamDateClick}
           ghostStudents={ghostStudents}
-          onMarkPresent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Completed')}
-          onMarkAbsent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Absent')}
+          onStudentClick={(lesson) => window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}`, '_blank')}
+          onGhostTap={(studentId, studentName) => setGhostActionSheet({ studentId, studentName, slotId: slot.id, date: dateStr })}
           savingStudents={savingAttendance}
           activeExamType={data?.activeExamType}
         />
@@ -1295,6 +1295,27 @@ export default function SchedulePage() {
       {/* FAB (lessons view only) */}
       {viewMode === 'lessons' && data && (
         <button className="fab" onClick={openAddModalFab} title="Add lesson">+</button>
+      )}
+
+      {/* Ghost chip action sheet (mark attendance) */}
+      {ghostActionSheet && (
+        <div className="action-sheet-overlay" onClick={() => setGhostActionSheet(null)}>
+          <div className="action-sheet-card" onClick={e => e.stopPropagation()}>
+            <div className="action-sheet-header">
+              <div className="action-sheet-title">{ghostActionSheet.studentName}</div>
+              <div className="action-sheet-sub">Mark attendance</div>
+            </div>
+            <button className="action-btn" onClick={() => {
+              handleAttendance(ghostActionSheet.studentId, ghostActionSheet.slotId, ghostActionSheet.date, 'Completed');
+              setGhostActionSheet(null);
+            }}>✅ Mark present</button>
+            <button className="action-btn" onClick={() => {
+              handleAttendance(ghostActionSheet.studentId, ghostActionSheet.slotId, ghostActionSheet.date, 'Absent');
+              setGhostActionSheet(null);
+            }}>🚫 Mark absent</button>
+            <button className="action-btn cancel-btn" onClick={() => setGhostActionSheet(null)}>Cancel</button>
+          </div>
+        </div>
       )}
 
       {/* Action sheet */}
