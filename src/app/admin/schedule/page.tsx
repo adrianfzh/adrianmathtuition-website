@@ -957,10 +957,29 @@ export default function SchedulePage() {
     }
   }
 
+  // Patch an existing lesson's Status directly by ID — avoids the upsert
+  // formula search in handleAttendance which can fail to find existing records.
+  async function handleDirectStatus(lesson: EnrichedLesson, status: 'Completed' | 'Absent') {
+    try {
+      const res = await fetch(`/api/admin/progress/lessons?id=${lesson.id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: { Status: status } }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setData(d => d ? {
+        ...d,
+        lessons: d.lessons.map(l => l.id === lesson.id ? { ...l, status } : l),
+      } : d);
+    } catch {
+      showToast('error', 'Failed to update status');
+    }
+  }
+
   // Mark an existing Absent lesson back to Completed
   async function handleMarkPresent(lesson: EnrichedLesson) {
     setActionSheet(null);
-    await handleAttendance(lesson.studentId!, lesson.slotId!, lesson.date, 'Completed');
+    await handleDirectStatus(lesson, 'Completed');
   }
 
   // ── Exam date click handler ──────────────────────────────────────────────────
@@ -1024,8 +1043,8 @@ export default function SchedulePage() {
           onExamDateClick={handleExamDateClick}
           ghostStudents={ghostStudents}
           onStudentClick={(lesson) => window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}&from=schedule`, '_blank')}
-          onMarkPresent={(lesson) => handleAttendance(lesson.studentId!, slot.id, dateStr, 'Completed')}
-          onMarkAbsent={(lesson) => handleAttendance(lesson.studentId!, slot.id, dateStr, 'Absent')}
+          onMarkPresent={(lesson) => handleDirectStatus(lesson, 'Completed')}
+          onMarkAbsent={(lesson) => handleDirectStatus(lesson, 'Absent')}
           onGhostTap={(studentId, studentName) => setGhostActionSheet({ studentId, studentName, slotId: slot.id, date: dateStr })}
           savingStudents={savingAttendance}
           activeExamType={data?.activeExamType}
