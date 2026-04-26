@@ -645,18 +645,31 @@ function UpcomingExams({
     setOpen(o => !o);
   }
 
+  function computeComplete(examList: Exam[]): boolean {
+    if (!activeType) return true;
+    const matching = examList.filter(e => e.examType === activeType);
+    if (matching.some(e => e.noExam)) return true;
+    return matching.some(e => !!e.examDate && !!e.testedTopics);
+  }
+
   function handleCreated(exam: Exam) {
-    setExams(prev => sortExams([...prev.filter(e => e.id !== exam.id), exam]));
+    const next = sortExams([...exams.filter(e => e.id !== exam.id), exam]);
+    setExams(next);
+    onExamCompleteChange?.(computeComplete(next));
   }
 
   function handleUpdated(exam: Exam) {
-    setExams(prev => sortExams(prev.map(e => e.id === exam.id ? { ...e, ...exam } : e)));
+    const next = sortExams(exams.map(e => e.id === exam.id ? { ...e, ...exam } : e));
+    setExams(next);
+    onExamCompleteChange?.(computeComplete(next));
   }
 
   function handleDeleted(id: string) {
-    setExams(prev => prev.filter(e => e.id !== id));
+    const next = exams.filter(e => e.id !== id);
+    setExams(next);
     if (editingId === id) setEditingId(null);
     if (addOpen) setAddOpen(false);
+    onExamCompleteChange?.(computeComplete(next));
   }
 
   const headerLabel = !loaded
