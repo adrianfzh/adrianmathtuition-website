@@ -188,7 +188,7 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; activeExamType?: string | null }) {
+function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; activeExamType?: string | null }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
@@ -257,22 +257,31 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
         )}
       </div>
-      {/* Inline attendance buttons — only on non-dimmed lessons */}
-      {!isAbsent && (onMarkPresent || onMarkAbsent) && (
-        <div style={{ display: 'flex', gap: 3, flexShrink: 0, alignSelf: 'center' }}>
-          {onMarkAbsent && (
-            <button
-              onClick={e => { e.stopPropagation(); onMarkAbsent(); }}
-              title="Mark absent"
-              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            >✗</button>
+      {/* Inline attendance — hidden for Rescheduled/Cancelled */}
+      {lesson.status !== 'Rescheduled' && lesson.status !== 'Cancelled' && (onMarkPresent || onMarkAbsent || onUndo) && (
+        <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignSelf: 'center', alignItems: 'center' }}>
+          {lesson.status === 'Scheduled' && (
+            <>
+              {onMarkAbsent && (
+                <button onClick={e => { e.stopPropagation(); onMarkAbsent(); }} title="Mark absent"
+                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✗</button>
+              )}
+              {onMarkPresent && (
+                <button onClick={e => { e.stopPropagation(); onMarkPresent(); }} title="Mark present"
+                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✓</button>
+              )}
+            </>
           )}
-          {lesson.status !== 'Completed' && onMarkPresent && (
-            <button
-              onClick={e => { e.stopPropagation(); onMarkPresent(); }}
-              title="Mark present"
-              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            >✓</button>
+          {(lesson.status === 'Completed' || lesson.status === 'Absent') && (
+            <>
+              {onUndo && (
+                <button onClick={e => { e.stopPropagation(); onUndo(); }} title="Undo"
+                  style={{ fontSize: 11, fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', flexShrink: 0, height: 22, lineHeight: 1 }}>undo</button>
+              )}
+              <span style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: lesson.status === 'Completed' ? '#16a34a' : '#ef4444' }}>
+                {lesson.status}
+              </span>
+            </>
           )}
         </div>
       )}
@@ -282,7 +291,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
 
 function DroppableLessonSlot({
   id, lessons, onChipTap, onAddClick, onExamDateClick, onStudentClick,
-  onMarkPresent, onMarkAbsent,
+  onMarkPresent, onMarkAbsent, onUndo,
   ghostStudents, onGhostTap, savingStudents, activeExamType,
 }: {
   id: string;
@@ -293,6 +302,7 @@ function DroppableLessonSlot({
   onStudentClick?: (lesson: EnrichedLesson) => void;
   onMarkPresent?: (lesson: EnrichedLesson) => void;
   onMarkAbsent?: (lesson: EnrichedLesson) => void;
+  onUndo?: (lesson: EnrichedLesson) => void;
   ghostStudents?: { id: string; name: string }[];
   onGhostTap?: (studentId: string, studentName: string) => void;
   savingStudents?: Set<string>;
@@ -304,7 +314,7 @@ function DroppableLessonSlot({
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} activeExamType={activeExamType} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} activeExamType={activeExamType} />
         ))}
         {ghosts.map(s => (
           <div
@@ -959,7 +969,7 @@ export default function SchedulePage() {
 
   // Patch an existing lesson's Status directly by ID — avoids the upsert
   // formula search in handleAttendance which can fail to find existing records.
-  async function handleDirectStatus(lesson: EnrichedLesson, status: 'Completed' | 'Absent') {
+  async function handleDirectStatus(lesson: EnrichedLesson, status: 'Completed' | 'Absent' | 'Scheduled') {
     try {
       const res = await fetch(`/api/admin/progress/lessons?id=${lesson.id}`, {
         method: 'PATCH',
@@ -1006,10 +1016,11 @@ export default function SchedulePage() {
     const dateStr = isoDate(date);
     const dropId = `${dateStr}__${slot.id}`;
     const lessons = enrichedLessonMap[dropId] ?? [];
-    const isToday = isoDate(date) === isoDate(new Date());
-    // Absent lessons are hidden from view entirely — don't render chips for them
-    const visibleLessons = lessons.filter(l => l.status !== 'Absent');
-    const presentCount = visibleLessons.filter(l => l.status !== 'Cancelled').length;
+    const isToday = dateStr === isoDate(new Date());
+    // Show Absent lessons on today so the undo button is accessible;
+    // hide them on past/future days to keep the view clean.
+    const visibleLessons = lessons.filter(l => l.status !== 'Absent' || isToday);
+    const presentCount = visibleLessons.filter(l => l.status === 'Completed').length;
 
     // Enrolled students without a visible lesson record for this date — show as ghost chips.
     // Exclude students who have an Absent record (they're intentionally hidden, not "unrecorded").
@@ -1045,6 +1056,7 @@ export default function SchedulePage() {
           onStudentClick={(lesson) => window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}&from=schedule`, '_blank')}
           onMarkPresent={(lesson) => handleDirectStatus(lesson, 'Completed')}
           onMarkAbsent={(lesson) => handleDirectStatus(lesson, 'Absent')}
+          onUndo={(lesson) => handleDirectStatus(lesson, 'Scheduled')}
           onGhostTap={(studentId, studentName) => setGhostActionSheet({ studentId, studentName, slotId: slot.id, date: dateStr })}
           savingStudents={savingAttendance}
           activeExamType={data?.activeExamType}
