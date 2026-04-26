@@ -260,19 +260,19 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
       {/* Inline attendance buttons — only on non-dimmed lessons */}
       {!isAbsent && (onMarkPresent || onMarkAbsent) && (
         <div style={{ display: 'flex', gap: 3, flexShrink: 0, alignSelf: 'center' }}>
-          {lesson.status !== 'Completed' && onMarkPresent && (
-            <button
-              onClick={e => { e.stopPropagation(); onMarkPresent(); }}
-              title="Mark present"
-              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            >✓</button>
-          )}
           {onMarkAbsent && (
             <button
               onClick={e => { e.stopPropagation(); onMarkAbsent(); }}
               title="Mark absent"
               style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
             >✗</button>
+          )}
+          {lesson.status !== 'Completed' && onMarkPresent && (
+            <button
+              onClick={e => { e.stopPropagation(); onMarkPresent(); }}
+              title="Mark present"
+              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            >✓</button>
           )}
         </div>
       )}
