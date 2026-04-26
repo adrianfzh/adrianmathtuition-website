@@ -188,7 +188,7 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; activeExamType?: string | null }) {
+function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; activeExamType?: string | null }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
@@ -257,12 +257,32 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, a
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
         )}
       </div>
+      {/* Inline attendance buttons — only on non-dimmed lessons */}
+      {!isAbsent && (onMarkPresent || onMarkAbsent) && (
+        <div style={{ display: 'flex', gap: 3, flexShrink: 0, alignSelf: 'center' }}>
+          {lesson.status !== 'Completed' && onMarkPresent && (
+            <button
+              onClick={e => { e.stopPropagation(); onMarkPresent(); }}
+              title="Mark present"
+              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            >✓</button>
+          )}
+          {onMarkAbsent && (
+            <button
+              onClick={e => { e.stopPropagation(); onMarkAbsent(); }}
+              title="Mark absent"
+              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            >✗</button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 function DroppableLessonSlot({
   id, lessons, onChipTap, onAddClick, onExamDateClick, onStudentClick,
+  onMarkPresent, onMarkAbsent,
   ghostStudents, onGhostTap, savingStudents, activeExamType,
 }: {
   id: string;
@@ -271,6 +291,8 @@ function DroppableLessonSlot({
   onAddClick: () => void;
   onExamDateClick?: (lesson: EnrichedLesson) => void;
   onStudentClick?: (lesson: EnrichedLesson) => void;
+  onMarkPresent?: (lesson: EnrichedLesson) => void;
+  onMarkAbsent?: (lesson: EnrichedLesson) => void;
   ghostStudents?: { id: string; name: string }[];
   onGhostTap?: (studentId: string, studentName: string) => void;
   savingStudents?: Set<string>;
@@ -282,7 +304,7 @@ function DroppableLessonSlot({
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} activeExamType={activeExamType} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} activeExamType={activeExamType} />
         ))}
         {ghosts.map(s => (
           <div
@@ -1002,6 +1024,8 @@ export default function SchedulePage() {
           onExamDateClick={handleExamDateClick}
           ghostStudents={ghostStudents}
           onStudentClick={(lesson) => window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}&from=schedule`, '_blank')}
+          onMarkPresent={(lesson) => handleAttendance(lesson.studentId!, slot.id, dateStr, 'Completed')}
+          onMarkAbsent={(lesson) => handleAttendance(lesson.studentId!, slot.id, dateStr, 'Absent')}
           onGhostTap={(studentId, studentName) => setGhostActionSheet({ studentId, studentName, slotId: slot.id, date: dateStr })}
           savingStudents={savingAttendance}
           activeExamType={data?.activeExamType}
