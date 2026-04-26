@@ -192,21 +192,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, a
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
-  const lastTapRef = useRef<number>(0);
   // True on touch/coarse-pointer devices (phones, tablets).
   const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
   function handleClick() {
-    // Desktop: single click opens action sheet.
-    // Mobile: double tap opens action sheet (long press → drag handle).
-    if (!isTouch) { onTap(); return; }
-    const now = Date.now();
-    if (now - lastTapRef.current < 350) {
-      onTap();
-      lastTapRef.current = 0;
-    } else {
-      lastTapRef.current = now;
-    }
+    onTap();
   }
 
   return (
