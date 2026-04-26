@@ -188,7 +188,7 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-function DraggableLessonChip({ lesson, onTap, onExamDateClick }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void }) {
+function DraggableLessonChip({ lesson, onTap, onExamDateClick, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; activeExamType?: string | null }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
@@ -255,7 +255,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick }: { lesson: Enric
             role="button"
             onClick={e => { e.stopPropagation(); onExamDateClick?.(lesson); }}
           >
-            📅 {formatExamDate(lesson.examDate)}
+            {activeExamType ? `${activeExamType} @ ` : ''}📅 {formatExamDate(lesson.examDate)}
           </span>
         )}
         {lesson.type !== 'Trial' && lesson.notes && (
@@ -268,7 +268,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick }: { lesson: Enric
 
 function DroppableLessonSlot({
   id, lessons, onChipTap, onAddClick, onExamDateClick,
-  ghostStudents, onMarkPresent, onMarkAbsent, savingStudents,
+  ghostStudents, onMarkPresent, onMarkAbsent, savingStudents, activeExamType,
 }: {
   id: string;
   lessons: EnrichedLesson[];
@@ -279,6 +279,7 @@ function DroppableLessonSlot({
   onMarkPresent?: (studentId: string) => void;
   onMarkAbsent?: (studentId: string) => void;
   savingStudents?: Set<string>;
+  activeExamType?: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const ghosts = ghostStudents ?? [];
@@ -286,7 +287,7 @@ function DroppableLessonSlot({
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} activeExamType={activeExamType} />
         ))}
         {ghosts.map(s => (
           <div key={s.id} className="lesson-chip" style={{ background: '#f8fafc', color: '#64748b', borderColor: '#e2e8f0', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1013,6 +1014,7 @@ export default function SchedulePage() {
           onMarkPresent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Completed')}
           onMarkAbsent={(studentId) => handleAttendance(studentId, slot.id, dateStr, 'Absent')}
           savingStudents={savingAttendance}
+          activeExamType={data?.activeExamType}
         />
       </div>
     );
