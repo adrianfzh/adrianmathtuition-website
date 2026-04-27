@@ -383,6 +383,11 @@ export default function SchedulePage() {
   // Date strip lazy-load offsets (in days relative to today)
   const [stripStartOffset, setStripStartOffset] = useState(-8 * 7);
   const [stripEndOffset, setStripEndOffset] = useState(8 * 7);
+  // Roster-only day selection (0=Mon…6=Sun) — independent of the date strip
+  const [rosterDay, setRosterDay] = useState<number>(() => {
+    const d = new Date().getDay();
+    return d === 0 ? 6 : d - 1; // default to today's day-of-week
+  });
 
   const [modal, setModal] = useState<{ student: StudentContact; lessonType: string } | null>(null);
   const [contactCache, setContactCache] = useState<Record<string, StudentContact>>({});
@@ -787,11 +792,22 @@ export default function SchedulePage() {
   function renderRosterView() {
     return (
       <>
-        {/* Mobile: single day */}
+        {/* Mobile: simple Mon–Sun tab strip (no dates — roster is week-agnostic) */}
         <div className="mobile-day">
-          <div className="day-col">
-            {(slotsByDay[dayNameOf(activeDate)] ?? []).map(slot => renderRosterSlotCard(slot))}
-            {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && <div className="no-slots">No slots</div>}
+          <div className="roster-day-tabs">
+            {DAYS.map((day, i) => (
+              <button
+                key={day}
+                className={`roster-day-tab${rosterDay === i ? ' active' : ''}`}
+                onClick={() => setRosterDay(i)}
+              >
+                {DAY_SHORT[i]}
+              </button>
+            ))}
+          </div>
+          <div className="day-col" style={{ marginTop: 10 }}>
+            {(slotsByDay[DAYS[rosterDay]] ?? []).map(slot => renderRosterSlotCard(slot))}
+            {(slotsByDay[DAYS[rosterDay]] ?? []).length === 0 && <div className="no-slots">No slots</div>}
           </div>
         </div>
 
@@ -1266,8 +1282,8 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {/* Date strip (mobile) — horizontally scrollable, 16+ weeks */}
-      <div ref={stripRef} className="date-strip" onScroll={onStripScroll}>
+      {/* Date strip (mobile) — only shown in Lessons mode */}
+      <div ref={stripRef} className={`date-strip${viewMode !== 'lessons' ? ' date-strip-hidden' : ''}`} onScroll={onStripScroll}>
         {stripDates.map(date => {
           const iso = isoDate(date);
           const isActive = iso === isoDate(activeDate);
@@ -1947,6 +1963,32 @@ body {
 .date-pill.active .dp-dow { color: rgba(255,248,231,0.75); }
 .dp-dow { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
 .dp-date { font-size: 15px; font-weight: 600; margin-top: 1px; }
+.date-strip-hidden { display: none !important; }
+
+/* ── Roster day tabs (mobile, Mon–Sun labels only, no dates) ── */
+.roster-day-tabs {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.roster-day-tabs::-webkit-scrollbar { display: none; }
+.roster-day-tab {
+  flex: 1; min-width: 0;
+  padding: 10px 4px;
+  border: none; background: none;
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: #64748b; cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: background 0.1s, color 0.1s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.roster-day-tab:hover { background: #f8fafc; }
+.roster-day-tab.active { border-bottom-color: #1a365d; color: #1a365d; }
 
 /* ── Content area ── */
 .sched-content { padding: 12px 12px 80px; max-width: 1400px; margin: 0 auto; }
@@ -2081,6 +2123,7 @@ body {
 @media (min-width: 768px) {
   .mobile-day { display: none; }
   .date-strip { display: none; }
+  .roster-day-tabs { display: none; }
   .desktop-grid-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
