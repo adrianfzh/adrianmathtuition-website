@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
+import { getTopicsForLevel, SECONDARY_FLAT, JC_FLAT } from '@/lib/canonical-topics';
 import {
   DndContext, DragOverlay,
   useSensor, useSensors,
@@ -31,6 +32,7 @@ interface Lesson {
   status: string;
   notes: string;
   rescheduledToDate?: string;
+  progressLogged?: boolean;
 }
 
 interface Student {
@@ -59,6 +61,33 @@ interface ScheduleData {
 interface EnrichedLesson extends Lesson {
   studentName: string;
   examDate?: string | null;
+}
+
+// ─── Lesson modal types ────────────────────────────────────────────────────────
+
+interface LessonContextData {
+  current: {
+    topicsCovered: string;
+    homeworkAssigned: string;
+    mastery: string;
+    mood: string;
+    lessonNotes: string;
+    progressLogged: boolean;
+  };
+  prev: {
+    id: string;
+    date: string;
+    topicsCovered: string;
+    homeworkAssigned: string;
+    homeworkReturned: string;
+  } | null;
+  studentLevel: string;
+  examType: string | null;
+  examDate: string | null;
+  examTopics: string | null;
+  noExam: boolean;
+  isEditable: boolean;
+  isFuture: boolean;
 }
 interface RescheduleState {
   lesson: EnrichedLesson;
@@ -183,6 +212,465 @@ function setCookie(name: string, value: string, days: number) {
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
 }
 
+// ─── Lesson input modal ────────────────────────────────────────────────────────
+
+function LessonModal({
+  lesson,
+  password,
+  slots,
+  onClose,
+  onProgressLogged,
+}: {
+  lesson: EnrichedLesson;
+  password: string;
+  slots: { id: string; time: string }[];
+  onClose: () => void;
+  onProgressLogged: (lessonId: string) => void;
+}) {
+  const [ctx, setCtx] = useState<LessonContextData | null>(null);
+  const [ctxLoading, setCtxLoading] = useState(true);
+  const [ctxError, setCtxError] = useState('');
+
+  // Editable fields for current lesson
+  const [topicChips, setTopicChips] = useState<string[]>([]);
+  const [topicFreeText, setTopicFreeText] = useState('');
+  const [mastery, setMastery] = useState('');
+  const [mood, setMood] = useState('');
+  const [hwAssigned, setHwAssigned] = useState('');
+  const [lessonNotes, setLessonNotes] = useState('');
+
+  // Prev lesson homework returned
+  const [prevHwReturned, setPrevHwReturned] = useState('');
+
+  // Exam quick-add
+  const [examDate, setExamDate] = useState('');
+  const [examTopics, setExamTopics] = useState('');
+  const [noExam, setNoExam] = useState(false);
+  const [examSaving, setExamSaving] = useState(false);
+  const [examSaveMsg, setExamSaveMsg] = useState('');
+
+  // Autosave current lesson
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fieldsRef = useRef<Record<string, string>>({});
+
+  // Autosave prev lesson
+  const [prevSaveStatus, setPrevSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const prevDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Fetch context on mount
+  useEffect(() => {
+    setCtxLoading(true);
+    fetch(`/api/admin-schedule/lesson-context?id=${lesson.id}`, {
+      headers: { Authorization: `Bearer ${password}` },
+    })
+      .then(r => r.json())
+      .then((data: LessonContextData) => {
+        setCtx(data);
+        // Separate saved topics into canonical chips + free text
+        const savedTopics = data.current.topicsCovered
+          ? data.current.topicsCovered.split(',').map(t => t.trim()).filter(Boolean)
+          : [];
+        const canonicalAll = [...SECONDARY_FLAT, ...JC_FLAT];
+        const chips = savedTopics.filter(t => canonicalAll.includes(t));
+        const freeText = savedTopics.filter(t => !canonicalAll.includes(t)).join(', ');
+        setTopicChips(chips);
+        setTopicFreeText(freeText);
+        setMastery(data.current.mastery ?? '');
+        setMood(data.current.mood ?? '');
+        setHwAssigned(data.current.homeworkAssigned ?? '');
+        setLessonNotes(data.current.lessonNotes ?? '');
+        setPrevHwReturned(data.prev?.homeworkReturned ?? '');
+        setExamDate(data.examDate ?? '');
+        setExamTopics(data.examTopics ?? '');
+        setNoExam(data.noExam ?? false);
+        // Initialise fieldsRef from loaded data so autosave always sends full state
+        fieldsRef.current = {
+          topicsCovered: data.current.topicsCovered ?? '',
+          mastery: data.current.mastery ?? '',
+          mood: data.current.mood ?? '',
+          homeworkAssigned: data.current.homeworkAssigned ?? '',
+          lessonNotes: data.current.lessonNotes ?? '',
+        };
+        setCtxLoading(false);
+      })
+      .catch(() => {
+        setCtxError('Failed to load lesson context');
+        setCtxLoading(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson.id]);
+
+  // Autosave helpers
+  async function doSave() {
+    try {
+      const res = await fetch('/api/admin-schedule/lesson-update', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${password}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonId: lesson.id, fields: fieldsRef.current }),
+      });
+      if (!res.ok) throw new Error();
+      setSaveStatus('saved');
+      onProgressLogged(lesson.id);
+      setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2500);
+    } catch {
+      setSaveStatus('error');
+    }
+  }
+
+  function scheduleAutosave(updates: Record<string, string>) {
+    if (!ctx?.isEditable) return;
+    fieldsRef.current = { ...fieldsRef.current, ...updates };
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setSaveStatus('saving');
+    debounceRef.current = setTimeout(doSave, 600);
+  }
+
+  function handleTopicToggle(topic: string) {
+    if (!ctx?.isEditable) return;
+    const next = topicChips.includes(topic)
+      ? topicChips.filter(t => t !== topic)
+      : [...topicChips, topic];
+    setTopicChips(next);
+    const combined = [...next, ...topicFreeText.split(',').map(t => t.trim()).filter(Boolean)].join(', ');
+    scheduleAutosave({ topicsCovered: combined });
+  }
+
+  function handleFreeTextChange(val: string) {
+    setTopicFreeText(val);
+    const combined = [...topicChips, ...val.split(',').map(t => t.trim()).filter(Boolean)].join(', ');
+    scheduleAutosave({ topicsCovered: combined });
+  }
+
+  function handleMasteryChange(val: string) {
+    setMastery(val);
+    scheduleAutosave({ mastery: val });
+  }
+
+  function handleMoodChange(val: string) {
+    setMood(val);
+    scheduleAutosave({ mood: val });
+  }
+
+  function handleHwAssignedChange(val: string) {
+    setHwAssigned(val);
+    scheduleAutosave({ homeworkAssigned: val });
+  }
+
+  function handleLessonNotesChange(val: string) {
+    setLessonNotes(val);
+    scheduleAutosave({ lessonNotes: val });
+  }
+
+  function handlePrevHwChange(val: string) {
+    if (!ctx?.prev) return;
+    setPrevHwReturned(val);
+    if (prevDebounceRef.current) clearTimeout(prevDebounceRef.current);
+    setPrevSaveStatus('saving');
+    prevDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/admin-schedule/lesson-prev-update', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${password}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId: ctx.prev!.id, homeworkReturned: val }),
+        });
+        if (!res.ok) throw new Error();
+        setPrevSaveStatus('saved');
+        setTimeout(() => setPrevSaveStatus(s => s === 'saved' ? 'idle' : s), 2500);
+      } catch {
+        setPrevSaveStatus('error');
+      }
+    }, 500);
+  }
+
+  async function handleSaveExam() {
+    if (!lesson.studentId || !ctx?.examType) return;
+    setExamSaving(true);
+    setExamSaveMsg('');
+    try {
+      const reqBody: Record<string, any> = {
+        studentId: lesson.studentId,
+        examType: ctx.examType,
+        noExam,
+      };
+      if (!noExam) {
+        if (examDate) reqBody.examDate = examDate;
+        if (examTopics) reqBody.testedTopics = examTopics;
+      }
+      const res = await fetch('/api/admin-schedule/quick-add-exam', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${password}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+      });
+      if (!res.ok) throw new Error();
+      setExamSaveMsg('✓ Saved');
+      setTimeout(() => setExamSaveMsg(''), 2500);
+    } catch {
+      setExamSaveMsg('⚠ Save failed');
+    } finally {
+      setExamSaving(false);
+    }
+  }
+
+  const slotTime = lesson.slotId ? slots.find(s => s.id === lesson.slotId)?.time : '';
+  const dateLabel = (() => {
+    if (!lesson.date) return '';
+    const d = new Date(lesson.date + 'T00:00:00');
+    return d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
+  })();
+
+  const topicCategories = ctx ? getTopicsForLevel(ctx.studentLevel) : [];
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="lm-card" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="lm-header">
+          <div>
+            <div className="lm-student-name">{lesson.studentName}</div>
+            <div className="lm-sub">
+              {lesson.type} · {dateLabel}{slotTime ? ` · ${slotTime}` : ''}
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="lm-body">
+          {ctxLoading && (
+            <div style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0' }}>Loading…</div>
+          )}
+          {ctxError && <div className="modal-error">{ctxError}</div>}
+
+          {ctx && (
+            <>
+              {/* Section A: Edit lock banner */}
+              {!ctx.isEditable && (
+                <div className="lm-lock-banner">
+                  {ctx.isFuture
+                    ? '🔮 Future lesson — progress log available after class'
+                    : '🔒 Lesson is older than 14 days — read only'}
+                </div>
+              )}
+
+              {/* Section B: Previous lesson recap */}
+              {ctx.prev && (
+                <div className="lm-section">
+                  <div className="lm-section-title">
+                    Last lesson
+                    <span className="lm-section-date">{formatExamDate(ctx.prev.date)}</span>
+                  </div>
+                  {ctx.prev.topicsCovered && (
+                    <div className="lm-recap-row">
+                      <span className="lm-recap-label">Topics</span>
+                      <span className="lm-recap-val">{ctx.prev.topicsCovered}</span>
+                    </div>
+                  )}
+                  {ctx.prev.homeworkAssigned && (
+                    <div className="lm-recap-row">
+                      <span className="lm-recap-label">HW set</span>
+                      <span className="lm-recap-val">{ctx.prev.homeworkAssigned}</span>
+                    </div>
+                  )}
+                  <div style={{ marginTop: 8 }}>
+                    <div className="lm-field-label">HW returned</div>
+                    <div className="lm-radio-row" style={{ marginTop: 4 }}>
+                      {['Yes', 'Partial', 'No'].map(v => (
+                        <button
+                          key={v}
+                          className={`lm-radio-btn${prevHwReturned === v ? ' selected' : ''}`}
+                          onClick={() => handlePrevHwChange(v)}
+                        >{v}</button>
+                      ))}
+                    </div>
+                    {prevSaveStatus !== 'idle' && (
+                      <div className="lm-save-status" style={{ color: prevSaveStatus === 'saved' ? '#16a34a' : prevSaveStatus === 'error' ? '#dc2626' : '#94a3b8' }}>
+                        {prevSaveStatus === 'saving' ? 'Saving…' : prevSaveStatus === 'saved' ? '✓ Saved' : '⚠ Failed'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Section C: Exam season */}
+              {ctx.examType && lesson.studentId && (
+                <div className="lm-section lm-exam-section">
+                  <div className="lm-section-title">{ctx.examType} Exam Info</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {!noExam && (
+                      <>
+                        <div className="lm-field-label">Exam date</div>
+                        <input
+                          type="date"
+                          className="modal-input"
+                          value={examDate}
+                          onChange={e => setExamDate(e.target.value)}
+                          style={{ fontSize: 13 }}
+                        />
+                        <div className="lm-field-label">Topics tested (brief)</div>
+                        <input
+                          type="text"
+                          className="modal-input"
+                          value={examTopics}
+                          onChange={e => setExamTopics(e.target.value)}
+                          placeholder="e.g. Integration, Vectors"
+                          style={{ fontSize: 13 }}
+                        />
+                      </>
+                    )}
+                    <label className="lm-check-row">
+                      <input type="checkbox" checked={noExam} onChange={e => setNoExam(e.target.checked)} />
+                      No exam this season
+                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
+                      <button
+                        className="btn-primary"
+                        style={{ fontSize: 13, padding: '7px 16px' }}
+                        onClick={handleSaveExam}
+                        disabled={examSaving}
+                      >{examSaving ? 'Saving…' : 'Save exam info'}</button>
+                      {examSaveMsg && (
+                        <span style={{ fontSize: 13, color: examSaveMsg.startsWith('✓') ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
+                          {examSaveMsg}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Section D: This lesson input */}
+              <div className="lm-section">
+                <div className="lm-section-title">This lesson</div>
+
+                {/* Topics multi-select */}
+                <div className="lm-field-group">
+                  <div className="lm-field-label">Topics covered</div>
+                  {topicCategories.map(cat => (
+                    <div key={cat.label}>
+                      <div className="lm-cat-label">{cat.label}</div>
+                      <div className="lm-topic-grid">
+                        {cat.topics.map(topic => (
+                          <button
+                            key={topic}
+                            className={`lm-topic-chip${topicChips.includes(topic) ? ' selected' : ''}`}
+                            onClick={() => handleTopicToggle(topic)}
+                            disabled={!ctx.isEditable}
+                          >{topic}</button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <input
+                    type="text"
+                    className="modal-input"
+                    placeholder="Other topics (comma-separated)…"
+                    value={topicFreeText}
+                    onChange={e => handleFreeTextChange(e.target.value)}
+                    disabled={!ctx.isEditable}
+                    style={{ marginTop: 6, fontSize: 13 }}
+                  />
+                </div>
+
+                {/* Mastery */}
+                <div className="lm-field-group">
+                  <div className="lm-field-label">Mastery</div>
+                  <div className="lm-radio-row">
+                    {(['Strong', 'OK', 'Slow'] as const).map(v => {
+                      const label = v === 'Strong' ? '🟢 Strong' : v === 'OK' ? '🟡 OK' : '🔴 Slow';
+                      const selStyle = v === 'Strong' ? { background: '#dcfce7', color: '#166534', borderColor: '#86efac' }
+                        : v === 'OK' ? { background: '#fef9c3', color: '#854d0e', borderColor: '#fde047' }
+                        : { background: '#fee2e2', color: '#991b1b', borderColor: '#fca5a5' };
+                      return (
+                        <button
+                          key={v}
+                          className={`lm-radio-btn lm-perf-btn${mastery === v ? ' selected' : ''}`}
+                          onClick={() => { if (ctx.isEditable) handleMasteryChange(mastery === v ? '' : v); }}
+                          disabled={!ctx.isEditable}
+                          style={mastery === v ? selStyle : {}}
+                        >{label}</button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Mood — values must exactly match Airtable single-select option names (emoji included) */}
+                <div className="lm-field-group">
+                  <div className="lm-field-label">Mood</div>
+                  <div className="lm-radio-row" style={{ flexWrap: 'wrap', gap: 6 }}>
+                    {(['😄 Engaged', '🙂 Fine', '😟 Distracted', '😴 Tired', '😤 Frustrated'] as const).map(v => {
+                      const selStyle = v === '😄 Engaged' ? { background: '#dcfce7', color: '#166534', borderColor: '#86efac' }
+                        : v === '🙂 Fine' ? { background: '#e0f2fe', color: '#075985', borderColor: '#7dd3fc' }
+                        : v === '😟 Distracted' ? { background: '#f1f5f9', color: '#475569', borderColor: '#cbd5e1' }
+                        : v === '😴 Tired' ? { background: '#fef9c3', color: '#854d0e', borderColor: '#fde047' }
+                        : { background: '#fee2e2', color: '#991b1b', borderColor: '#fca5a5' };
+                      return (
+                        <button
+                          key={v}
+                          className={`lm-radio-btn${mood === v ? ' selected' : ''}`}
+                          onClick={() => { if (ctx.isEditable) handleMoodChange(mood === v ? '' : v); }}
+                          disabled={!ctx.isEditable}
+                          style={mood === v ? selStyle : {}}
+                        >{v}</button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Homework assigned */}
+                <div className="lm-field-group">
+                  <div className="lm-field-label">Homework set</div>
+                  <input
+                    type="text"
+                    className="modal-input"
+                    placeholder="e.g. P5 Ex 3A Q1–10"
+                    value={hwAssigned}
+                    onChange={e => { if (ctx.isEditable) handleHwAssignedChange(e.target.value); }}
+                    disabled={!ctx.isEditable}
+                    style={{ fontSize: 13 }}
+                  />
+                </div>
+
+                {/* Lesson notes */}
+                <div className="lm-field-group">
+                  <div className="lm-field-label">Lesson notes</div>
+                  <textarea
+                    className="modal-textarea"
+                    rows={3}
+                    placeholder="Observations, areas to review…"
+                    value={lessonNotes}
+                    onChange={e => { if (ctx.isEditable) handleLessonNotesChange(e.target.value); }}
+                    disabled={!ctx.isEditable}
+                    style={{ fontSize: 13 }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Section E: Footer */}
+        <div className="lm-footer">
+          <div className="lm-autosave-status">
+            {saveStatus === 'saving' && <span style={{ color: '#94a3b8' }}>Saving…</span>}
+            {saveStatus === 'saved' && <span style={{ color: '#16a34a' }}>✓ Autosaved</span>}
+            {saveStatus === 'error' && <span style={{ color: '#dc2626' }}>⚠ Save failed</span>}
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <a
+              href={`/admin/progress?date=${lesson.date}&lesson=${lesson.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="lm-full-link"
+            >Full view ↗</a>
+            <button className="btn-primary" onClick={onClose} style={{ padding: '8px 20px', fontSize: 14 }}>Done</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Module-level DnD components ──────────────────────────────────────────────
 
 function formatExamDate(iso: string): string {
@@ -249,6 +737,9 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
             }}
           >{lesson.studentName}</span>
+          {!isFaded && lesson.progressLogged && (
+            <span title="Progress logged" style={{ fontSize: 9, color: '#16a34a', flexShrink: 0, lineHeight: 1 }}>●</span>
+          )}
           {lesson.type !== 'Regular' && !isFaded && <span className="type-tag" style={{ flexShrink: 0 }}>{lesson.type}</span>}
         </div>
         {/* Faded status sub-lines */}
@@ -369,10 +860,6 @@ export default function SchedulePage() {
   const [authLoading, setAuthLoading] = useState(false);
 
   const [activeDate, setActiveDate] = useState<Date>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('schedule_active_date');
-      if (stored) { const d = new Date(stored + 'T00:00:00'); if (!isNaN(d.getTime())) return d; }
-    }
     const d = new Date(); d.setHours(0, 0, 0, 0); return d;
   });
   const [data, setData] = useState<ScheduleData | null>(null);
@@ -386,6 +873,7 @@ export default function SchedulePage() {
   });
 
   const [modal, setModal] = useState<{ student: StudentContact; lessonType: string } | null>(null);
+  const [lessonModal, setLessonModal] = useState<EnrichedLesson | null>(null);
   const [contactCache, setContactCache] = useState<Record<string, StudentContact>>({});
   const [contactLoading, setContactLoading] = useState(false);
   const savedPw = useRef('');
@@ -401,14 +889,10 @@ export default function SchedulePage() {
 
   useEffect(() => {
     localStorage.setItem('schedule_view_mode', viewMode);
+    // Clear stale active-date key that previously caused the strip to open at old dates
+    localStorage.removeItem('schedule_active_date');
   }, [viewMode]);
 
-  // Persist last-viewed date
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('schedule_active_date', isoDate(activeDate));
-    }
-  }, [activeDate]);
 
   // Date strip: fixed ±26-week range (364 dates) — computed once on mount.
   // No lazy-load: the fixed range is wide enough for tuition scheduling use,
@@ -1037,6 +1521,14 @@ export default function SchedulePage() {
     }
   }
 
+  // ── Lesson modal: mark progress locally so dot appears immediately ───────────
+  function handleProgressLogged(lessonId: string) {
+    setData(d => d ? {
+      ...d,
+      lessons: d.lessons.map(l => l.id === lessonId ? { ...l, progressLogged: true } : l),
+    } : d);
+  }
+
   // ── Attendance marking ───────────────────────────────────────────────────────
   async function handleAttendance(studentId: string, slotId: string, date: string, status: 'Completed' | 'Absent') {
     setSavingAttendance(prev => new Set([...prev, studentId]));
@@ -1170,7 +1662,14 @@ export default function SchedulePage() {
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={handleExamDateClick}
           ghostStudents={ghostStudents}
-          onStudentClick={(lesson) => window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}&from=schedule`, '_blank')}
+          onStudentClick={(lesson) => {
+            // Trial lessons have no linked student — open full progress page instead
+            if (!lesson.studentId || lesson.type === 'Trial') {
+              window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}`, '_blank');
+            } else {
+              setLessonModal(lesson);
+            }
+          }}
           onMarkPresent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Completed') : undefined}
           onMarkAbsent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Absent') : undefined}
           onUndo={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Scheduled') : undefined}
@@ -1280,6 +1779,11 @@ export default function SchedulePage() {
             Roster
           </button>
         </div>
+        {viewMode === 'lessons' && (
+          <button className="today-pill-btn" onClick={goToToday} title="Go to today">
+            Today
+          </button>
+        )}
       </div>
 
       {/* Date strip wrapper — sticky bar, only shown in Lessons mode */}
@@ -1311,9 +1815,6 @@ export default function SchedulePage() {
             );
           })}
         </div>
-        <button className="strip-today-btn" onClick={goToToday} title="Go to today">
-          Today
-        </button>
       </div>
 
       {/* Content */}
@@ -1785,6 +2286,17 @@ export default function SchedulePage() {
         </div>
       )}
 
+      {/* Lesson input modal */}
+      {lessonModal && (
+        <LessonModal
+          lesson={lessonModal}
+          password={savedPw.current}
+          slots={data?.slots ?? []}
+          onClose={() => setLessonModal(null)}
+          onProgressLogged={handleProgressLogged}
+        />
+      )}
+
       {/* Toast */}
       {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
     </>
@@ -1911,6 +2423,7 @@ body {
   z-index: 95;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 .view-tabs {
   display: flex;
@@ -1963,21 +2476,28 @@ body {
   padding: 6px 8px;
 }
 .date-strip::-webkit-scrollbar { display: none; }
-.strip-today-btn {
-  flex-shrink: 0;
-  border: none;
-  border-left: 1px solid #e2e8f0;
+/* Today pill lives in the view-tabs-bar on mobile, right-aligned */
+.today-pill-btn {
+  position: absolute;
+  right: 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
   background: white;
   color: #1a365d;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 0 12px;
+  padding: 4px 10px;
   cursor: pointer;
   font-family: inherit;
-  letter-spacing: 0.02em;
-  transition: background 0.12s;
+  letter-spacing: 0.03em;
+  transition: background 0.12s, border-color 0.12s;
+  white-space: nowrap;
 }
-.strip-today-btn:hover { background: #f1f5f9; }
+.today-pill-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+/* Hidden on desktop — date strip itself is already hidden there */
+@media (min-width: 768px) {
+  .today-pill-btn { display: none; }
+}
 .date-pill {
   flex-shrink: 0;
   display: flex; flex-direction: column;
@@ -2351,4 +2871,124 @@ body {
   text-transform: uppercase; color: #94a3b8; display: block;
 }
 .form-group { display: flex; flex-direction: column; gap: 4px; }
+
+/* ── Lesson input modal ── */
+.lm-card {
+  background: white;
+  border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 520px;
+  box-shadow: 0 -4px 32px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column;
+  max-height: 92vh;
+  overflow: hidden;
+}
+@media (min-width: 560px) {
+  .lm-card { border-radius: 20px; max-height: 88vh; }
+}
+.lm-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+.lm-student-name { font-size: 18px; font-weight: 700; color: #0f172a; }
+.lm-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+.lm-body {
+  flex: 1; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 8px;
+}
+.lm-section {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.lm-section:last-child { border-bottom: none; }
+.lm-section-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: #94a3b8; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.lm-section-date {
+  font-size: 11px; font-weight: 500; color: #cbd5e1;
+  text-transform: none; letter-spacing: 0;
+}
+.lm-lock-banner {
+  margin: 12px 20px; padding: 10px 14px;
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 10px; font-size: 13px; color: #92400e;
+  font-weight: 500;
+}
+.lm-exam-section { background: #f8fafc; }
+.lm-recap-row {
+  display: flex; gap: 10px; align-items: baseline;
+  font-size: 13px; margin-bottom: 4px;
+}
+.lm-recap-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: #94a3b8; min-width: 44px;
+  flex-shrink: 0;
+}
+.lm-recap-val { color: #374151; line-height: 1.4; }
+.lm-field-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.lm-field-group:last-child { margin-bottom: 0; }
+.lm-field-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: #94a3b8;
+}
+.lm-cat-label {
+  font-size: 10px; font-weight: 600; color: #cbd5e1;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin: 6px 0 3px;
+}
+.lm-topic-grid {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-bottom: 2px;
+}
+.lm-topic-chip {
+  padding: 4px 10px; border-radius: 14px;
+  border: 1.5px solid #e2e8f0; background: white;
+  font-size: 12px; color: #475569; cursor: pointer;
+  font-family: inherit; transition: background 0.12s, border-color 0.12s, color 0.12s;
+  line-height: 1.4;
+}
+.lm-topic-chip:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+.lm-topic-chip.selected { background: #1a365d; color: white; border-color: #1a365d; }
+.lm-topic-chip:disabled { opacity: 0.45; cursor: default; }
+.lm-radio-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.lm-radio-btn {
+  padding: 6px 12px; border-radius: 20px;
+  border: 1.5px solid #e2e8f0; background: white;
+  font-size: 13px; color: #475569; cursor: pointer;
+  font-family: inherit; transition: background 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+.lm-radio-btn:hover:not(:disabled) { background: #f1f5f9; }
+.lm-radio-btn.selected { background: #1a365d; color: white; border-color: #1a365d; }
+.lm-radio-btn:disabled { opacity: 0.45; cursor: default; }
+.lm-perf-btn { font-size: 13px; }
+.lm-save-status { font-size: 11px; margin-top: 4px; font-weight: 600; }
+.lm-check-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: #374151; cursor: pointer;
+  margin-top: 2px;
+}
+.lm-check-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: #1a365d; cursor: pointer; }
+.lm-footer {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
+  background: white;
+}
+.lm-autosave-status { font-size: 12px; font-weight: 600; min-height: 18px; }
+.lm-full-link {
+  font-size: 13px; font-weight: 600; color: #64748b;
+  text-decoration: none; padding: 8px 12px;
+  border-radius: 8px; border: 1px solid #e2e8f0;
+  background: white; transition: background 0.12s;
+}
+.lm-full-link:hover { background: #f8fafc; }
 `;

@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     fetchAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot`),
     fetchAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID`
+      `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Progress Logged`
     ),
   ]);
 
@@ -176,6 +176,7 @@ export async function GET(req: NextRequest) {
       status: r.fields['Status'] || '',
       notes: filteredNote,
       rescheduledToDate: rescheduledNewId ? (rescheduledDatesById[rescheduledNewId] ?? '') : '',
+      progressLogged: r.fields['Progress Logged'] === true,
     };
   });
 
