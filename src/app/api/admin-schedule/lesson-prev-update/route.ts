@@ -1,22 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAdminAuth, localToday, daysAgo, EDIT_WINDOW_DAYS } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
-const EDIT_WINDOW_DAYS = 14;
 const VALID_HW_RETURNED = ['Yes', 'Partial', 'No'];
-
-function localToday(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
-
-function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
 
 // POST /api/admin-schedule/lesson-prev-update
 // Patches the Homework Returned field on a previous lesson.

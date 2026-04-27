@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { airtableRequest } from '@/lib/airtable';
+import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { resolveActiveExamType, ExamType } from '@/lib/exam-season';
 
 export const runtime = 'nodejs';
-
-function checkAuth(req: NextRequest): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return true;
-  return req.headers.get('authorization') === `Bearer ${adminPassword}`;
-}
 
 function getMondayOfWeek(dateStr: string): Date {
   const d = new Date(dateStr + 'T00:00:00Z');
@@ -28,21 +23,11 @@ function isoDate(d: Date): string {
   return d.toISOString().split('T')[0];
 }
 
-async function fetchAll(table: string, query: string): Promise<any[]> {
-  const records: any[] = [];
-  let offset: string | undefined;
-  do {
-    const sep = query.includes('?') ? '&' : '?';
-    const url = `${query}${offset ? `${sep}offset=${offset}` : ''}`;
-    const data = await airtableRequest(table, url);
-    records.push(...(data.records || []));
-    offset = data.offset;
-  } while (offset);
-  return records;
-}
+const fetchAll = (table: string, query: string) =>
+  airtableRequestAll(table, query).then(r => r.records);
 
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

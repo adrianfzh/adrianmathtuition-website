@@ -298,10 +298,18 @@ function LessonModal({
         setCtxError('Failed to load lesson context');
         setCtxLoading(false);
       });
+    // lesson.id is the only meaningful dep — password/slots are stable refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson.id]);
 
-  // Autosave helpers
+  // Clear pending timers when the modal closes to prevent post-unmount state updates.
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (prevDebounceRef.current) clearTimeout(prevDebounceRef.current);
+    };
+  }, []);
+
   async function doSave() {
     try {
       const res = await fetch('/api/admin-schedule/lesson-update', {
@@ -419,7 +427,10 @@ function LessonModal({
     return d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
   })();
 
-  const topicCategories = ctx ? getTopicsForLevel(ctx.studentLevel) : [];
+  const topicCategories = useMemo(
+    () => (ctx ? getTopicsForLevel(ctx.studentLevel) : []),
+    [ctx?.studentLevel]
+  );
 
   return (
     <div className="modal-overlay" onClick={onClose}>

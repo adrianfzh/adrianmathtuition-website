@@ -1,22 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAdminAuth, localToday, daysAgo, EDIT_WINDOW_DAYS } from '@/lib/schedule-helpers';
 import { resolveActiveExamType } from '@/lib/exam-season';
 
 export const runtime = 'nodejs';
-
-const EDIT_WINDOW_DAYS = 14;
-
-function localToday(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
-
-function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
 
 // GET /api/admin-schedule/lesson-context?id=recXXX
 export async function GET(req: NextRequest) {
