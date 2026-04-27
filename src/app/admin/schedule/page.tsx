@@ -1636,6 +1636,11 @@ export default function SchedulePage() {
       if (l.status === 'Absent') return !isFuture;
       if (l.status === 'Rescheduled') return !isFuture;
       return true;
+    }).sort((a, b) => {
+      // Absent students sink to the bottom of their slot group
+      const aAbsent = a.status === 'Absent' ? 1 : 0;
+      const bAbsent = b.status === 'Absent' ? 1 : 0;
+      return aAbsent - bAbsent;
     });
     const presentCount = visibleLessons.filter(l => l.status === 'Completed').length;
 
