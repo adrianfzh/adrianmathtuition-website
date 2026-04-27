@@ -996,6 +996,7 @@ export default function SchedulePage() {
   const [contactLoading, setContactLoading] = useState(false);
   const savedPw = useRef('');
   const stripRef = useRef<HTMLDivElement>(null);
+  const desktopScrollRef = useRef<HTMLDivElement>(null);
   // Tracks what triggered the last activeDate change so the auto-scroll effect
   // knows whether to move the strip ('mount' | 'arrow') or leave it alone ('pill').
   const lastChangeSource = useRef<'mount' | 'arrow' | 'pill'>('mount');
@@ -1159,12 +1160,21 @@ export default function SchedulePage() {
   function nextWeek() { setActiveDateFromArrow(addDays(activeDate, 7)); }
   function thisWeek() { goToToday(); }
 
-  // Initial scroll: snap to today's pill synchronously before the browser paints,
-  // so the strip never appears at the wrong position on load.
-  useLayoutEffect(() => {
+  // Initial scroll: snap to today's pill after the first render so the strip
+  // starts centred on today rather than at its leftmost position.
+  useEffect(() => {
     if (!stripRef.current) return;
-    const pill = stripRef.current.querySelector(`[data-iso="${isoDate(activeDate)}"]`) as HTMLElement | null;
-    pill?.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+    const strip = stripRef.current;
+    // rAF ensures the strip has been laid out and its overflow is measurable.
+    requestAnimationFrame(() => {
+      const pill = strip.querySelector(`[data-iso="${isoDate(activeDate)}"]`) as HTMLElement | null;
+      if (!pill) return;
+      // Scroll the strip container directly so only the strip moves, not the page.
+      const containerWidth = strip.clientWidth;
+      const pillLeft = pill.offsetLeft;
+      const pillWidth = pill.offsetWidth;
+      strip.scrollLeft = pillLeft - (containerWidth - pillWidth) / 2;
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // mount only
 
@@ -1176,6 +1186,19 @@ export default function SchedulePage() {
     const pill = stripRef.current.querySelector(`[data-iso="${isoDate(activeDate)}"]`) as HTMLElement | null;
     pill?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [activeDate]);
+
+  // Desktop: scroll the grid so today's column is centred whenever the week or data changes.
+  useEffect(() => {
+    const container = desktopScrollRef.current;
+    if (!container) return;
+    const todayCol = container.querySelector('.grid-col-today') as HTMLElement | null;
+    if (!todayCol) return;
+    const containerRect = container.getBoundingClientRect();
+    const colRect = todayCol.getBoundingClientRect();
+    const targetScrollLeft =
+      container.scrollLeft + (colRect.left - containerRect.left) - (containerRect.width - colRect.width) / 2;
+    container.scrollLeft = Math.max(0, targetScrollLeft);
+  }, [mondayISO, data]);
 
   // Jump to today: reset activeDate + snap strip (no smooth scroll — instant jump)
   function goToToday() {
@@ -1827,7 +1850,7 @@ export default function SchedulePage() {
           )}
         </div>
         {/* Desktop: full grid */}
-        <div className="desktop-grid-scroll">
+        <div ref={desktopScrollRef} className="desktop-grid-scroll">
         <div className="desktop-grid">
           {DAYS.map((day, i) => {
             const date = weekDates[i];
