@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   DndContext, DragOverlay,
   useSensor, useSensors,
@@ -218,7 +218,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
         background: style.bg, color: style.text, borderColor: style.border,
         opacity: isDragging ? 0.3 : 1,
         cursor: isRescheduledAway ? 'default' : (isTouch ? 'default' : 'grab'),
-        display: 'flex', alignItems: 'flex-start', gap: 4,
+        display: 'flex', alignItems: 'center', gap: 4,
       }}
     >
       {/* Mobile-only drag handle — long press here to drag (hidden for rescheduled-away) */}
@@ -236,6 +236,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
           </svg>
         </span>
       )}
+      {/* Content: name + sub-lines — flex:1 with minWidth:0 allows ellipsis truncation */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {lesson.type === 'Trial' && <span className="trial-badge">🆕</span>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
@@ -246,13 +247,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
             style={{
               ...(onStudentClick ? { cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 } : {}),
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
-              // When attendance controls are showing, leave room; otherwise let name breathe
-              maxWidth: hasAttendance ? 'calc(100% - 4px)' : undefined,
             }}
           >{lesson.studentName}</span>
           {lesson.type !== 'Regular' && !isFaded && <span className="type-tag" style={{ flexShrink: 0 }}>{lesson.type}</span>}
         </div>
-        {/* Faded status indicators — show below the name */}
+        {/* Faded status sub-lines */}
         {isRescheduledAway && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.55, marginTop: 2 }}>
             {lesson.rescheduledToDate ? `→ ${formatExamDate(lesson.rescheduledToDate)}` : 'rescheduled'}
@@ -278,36 +277,35 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
         {lesson.type !== 'Trial' && lesson.notes && !isFaded && (
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
         )}
-        {/* Attendance row — shown below name on mobile to prevent name wrapping */}
-        {!isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (
-          <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 4 }}
-               className="attendance-row">
-            {lesson.status === 'Scheduled' && (
-              <>
-                {onMarkAbsent && (
-                  <button onClick={e => { e.stopPropagation(); onMarkAbsent(); }} title="Mark absent"
-                    style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✗</button>
-                )}
-                {onMarkPresent && (
-                  <button onClick={e => { e.stopPropagation(); onMarkPresent(); }} title="Mark present"
-                    style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✓</button>
-                )}
-              </>
-            )}
-            {(lesson.status === 'Completed' || lesson.status === 'Absent') && (
-              <>
-                {onUndo && (
-                  <button onClick={e => { e.stopPropagation(); onUndo(); }} title="Undo"
-                    style={{ fontSize: 11, fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', flexShrink: 0, height: 22, lineHeight: 1 }}>undo</button>
-                )}
-                <span style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: lesson.status === 'Completed' ? '#16a34a' : '#ef4444' }}>
-                  {lesson.status}
-                </span>
-              </>
-            )}
-          </div>
-        )}
       </div>
+      {/* Attendance controls — right-aligned, flex-shrink:0 so name truncates instead of wrapping */}
+      {!isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (
+        <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
+          {lesson.status === 'Scheduled' && (
+            <>
+              {onMarkAbsent && (
+                <button onClick={e => { e.stopPropagation(); onMarkAbsent(); }} title="Mark absent"
+                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✗</button>
+              )}
+              {onMarkPresent && (
+                <button onClick={e => { e.stopPropagation(); onMarkPresent(); }} title="Mark present"
+                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✓</button>
+              )}
+            </>
+          )}
+          {(lesson.status === 'Completed' || lesson.status === 'Absent') && (
+            <>
+              {onUndo && (
+                <button onClick={e => { e.stopPropagation(); onUndo(); }} title="Undo"
+                  style={{ fontSize: 11, fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', flexShrink: 0, height: 22, lineHeight: 1 }}>undo</button>
+              )}
+              <span style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: lesson.status === 'Completed' ? '#16a34a' : '#ef4444' }}>
+                {lesson.status}
+              </span>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1284,20 +1282,29 @@ export default function SchedulePage() {
 
       {/* Date strip (mobile) — only shown in Lessons mode */}
       <div ref={stripRef} className={`date-strip${viewMode !== 'lessons' ? ' date-strip-hidden' : ''}`} onScroll={onStripScroll}>
-        {stripDates.map(date => {
+        {stripDates.map((date, idx) => {
           const iso = isoDate(date);
           const isActive = iso === isoDate(activeDate);
           const isTodayPill = iso === isoDate(new Date());
+          const prevDate = idx > 0 ? stripDates[idx - 1] : null;
+          const isFirstOfMonth = !prevDate || prevDate.getMonth() !== date.getMonth();
           return (
-            <button
-              key={iso}
-              data-iso={iso}
-              className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}`}
-              onClick={() => setActiveDateFromPill(date)}
-            >
-              <span className="dp-dow">{date.toLocaleDateString('en-SG', { weekday: 'short' }).slice(0, 3).toUpperCase()}</span>
-              <span className="dp-date">{date.getDate()}</span>
-            </button>
+            <React.Fragment key={iso}>
+              {isFirstOfMonth && (
+                <div className="strip-month-label">
+                  {date.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' })}
+                </div>
+              )}
+              <button
+                data-iso={iso}
+                className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}`}
+                onClick={() => setActiveDateFromPill(date)}
+              >
+                <span className="dp-dow">{date.toLocaleDateString('en-SG', { weekday: 'short' }).slice(0, 3).toUpperCase()}</span>
+                <span className="dp-date">{date.getDate()}</span>
+                {isTodayPill && <span className="dp-today-dot" />}
+              </button>
+            </React.Fragment>
           );
         })}
       </div>
@@ -1957,12 +1964,34 @@ body {
   font-family: inherit;
 }
 .date-pill:hover { background: #f1f5f9; }
+.date-pill.today:not(.active) { background: rgba(26,54,93,0.07); }
 .date-pill.today .dp-date { color: #1a365d; font-weight: 700; }
 .date-pill.active { background: #1a365d; color: #FFF8E7; }
 .date-pill.active .dp-date { color: #FFF8E7; font-weight: 700; }
 .date-pill.active .dp-dow { color: rgba(255,248,231,0.75); }
 .dp-dow { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
 .dp-date { font-size: 15px; font-weight: 600; margin-top: 1px; }
+/* Dot under today's date number */
+.dp-today-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #1a365d; margin-top: 2px;
+  display: block;
+}
+.date-pill.active .dp-today-dot { background: #FFF8E7; }
+/* Month label inserted before the first pill of each month */
+.strip-month-label {
+  flex-shrink: 0;
+  align-self: flex-end;
+  padding: 0 6px 8px 2px;
+  font-size: 10px; font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  border-left: 1px solid #e2e8f0;
+  margin-left: 4px;
+  line-height: 1;
+}
 .date-strip-hidden { display: none !important; }
 
 /* ── Roster day tabs (mobile, Mon–Sun labels only, no dates) ── */
