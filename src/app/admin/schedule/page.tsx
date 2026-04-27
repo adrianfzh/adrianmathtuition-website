@@ -250,7 +250,6 @@ function LessonModal({
   const [prevHwReturned, setPrevHwReturned] = useState('');
 
   // Exam quick-add
-  const [examExpanded, setExamExpanded] = useState(false);
   const [examSubject, setExamSubject] = useState('');        // '' | 'E Math' | 'A Math'
   const [examDate, setExamDate] = useState('');
   const [examTopicPills, setExamTopicPills] = useState<string[]>([]); // selected topic pills
@@ -502,6 +501,13 @@ function LessonModal({
             <div className="lm-student-name">{lesson.studentName}</div>
             <div className="lm-sub">
               {lesson.type} · {dateLabel}{slotTime ? ` · ${slotTime}` : ''}
+              {ctx && ctx.studentLevel && (
+                <> · {ctx.studentLevel}{ctx.studentSubjects.length > 0 && (
+                  <> · {ctx.studentSubjects.map(s =>
+                    s === 'E Math' ? 'EM' : s === 'A Math' ? 'AM' : s === 'H2 Math' ? 'H2' : s
+                  ).join(' & ')}</>
+                )}</>
+              )}
             </div>
           </div>
           <button className="modal-close" onClick={onClose}>✕</button>
@@ -564,101 +570,87 @@ function LessonModal({
                 </div>
               )}
 
-              {/* Section C: Exam season — collapsed by default */}
+              {/* Section C: Exam season — only shown during active exam season */}
               {ctx.examType && lesson.studentId && (
                 <div className="lm-section lm-exam-section">
-                  {/* Collapsible header */}
-                  <button
-                    className="lm-section-title"
-                    style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0 }}
-                    onClick={() => setExamExpanded(v => !v)}
-                  >
-                    <span>{ctx.examType} Exam Info</span>
-                    <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 400 }}>
-                      {examExpanded ? '▲ hide' : '▼ show'}
-                    </span>
-                  </button>
+                  <div className="lm-exam-season-header">
+                    <span className="lm-exam-badge">📝 {ctx.examType}</span>
+                    <span className="lm-exam-season-label">Exam season — fill in before it starts</span>
+                  </div>
 
-                  {examExpanded && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
-                      {/* Subject selector — only for dual-math students */}
-                      {(() => {
-                        const isDualMath = ctx.studentSubjects.includes('E Math') && ctx.studentSubjects.includes('A Math');
-                        if (!isDualMath) return null;
-                        return (
-                          <div>
-                            <div className="lm-field-label">Subject</div>
-                            <div className="lm-radio-row" style={{ marginTop: 4 }}>
-                              {(['E Math', 'A Math'] as const).map(s => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                    {/* Subject selector — only for dual-math students */}
+                    {ctx.studentSubjects.includes('E Math') && ctx.studentSubjects.includes('A Math') && (
+                      <div>
+                        <div className="lm-field-label">Subject</div>
+                        <div className="lm-radio-row" style={{ marginTop: 4 }}>
+                          {(['E Math', 'A Math'] as const).map(s => (
+                            <button
+                              key={s}
+                              className={`lm-radio-btn${examSubject === s ? ' selected' : ''}`}
+                              onClick={() => handleExamSubjectChange(s)}
+                            >{s}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {!noExam && (
+                      <>
+                        <div className="lm-field-label">Exam date</div>
+                        <input
+                          type="date"
+                          className="modal-input"
+                          value={examDate}
+                          onChange={e => setExamDate(e.target.value)}
+                          style={{ fontSize: 13 }}
+                        />
+
+                        <div className="lm-field-label">Topics tested</div>
+                        {examTopicCategories.map(cat => (
+                          <div key={cat.label}>
+                            <div className="lm-cat-label">{cat.label}</div>
+                            <div className="lm-topic-grid">
+                              {cat.topics.map(topic => (
                                 <button
-                                  key={s}
-                                  className={`lm-radio-btn${examSubject === s ? ' selected' : ''}`}
-                                  onClick={() => handleExamSubjectChange(s)}
-                                >{s}</button>
+                                  key={topic}
+                                  className={`lm-topic-chip${examTopicPills.includes(topic) ? ' selected' : ''}`}
+                                  onClick={() => handleExamTopicToggle(topic)}
+                                >{topic}</button>
                               ))}
                             </div>
                           </div>
-                        );
-                      })()}
+                        ))}
+                        <div className="lm-field-label" style={{ marginTop: 8 }}>Notes</div>
+                        <textarea
+                          className="modal-input"
+                          placeholder="e.g. focus areas, chapters excluded, special instructions…"
+                          value={examNotes}
+                          onChange={e => setExamNotes(e.target.value)}
+                          rows={2}
+                          style={{ fontSize: 13, resize: 'vertical', minHeight: 52 }}
+                        />
+                      </>
+                    )}
 
-                      {!noExam && (
-                        <>
-                          <div className="lm-field-label">Exam date</div>
-                          <input
-                            type="date"
-                            className="modal-input"
-                            value={examDate}
-                            onChange={e => setExamDate(e.target.value)}
-                            style={{ fontSize: 13 }}
-                          />
-
-                          {/* Topics tested as pill selector — filtered by selected subject */}
-                          <div className="lm-field-label">Topics tested</div>
-                          {examTopicCategories.map(cat => (
-                            <div key={cat.label}>
-                              <div className="lm-cat-label">{cat.label}</div>
-                              <div className="lm-topic-grid">
-                                {cat.topics.map(topic => (
-                                  <button
-                                    key={topic}
-                                    className={`lm-topic-chip${examTopicPills.includes(topic) ? ' selected' : ''}`}
-                                    onClick={() => handleExamTopicToggle(topic)}
-                                  >{topic}</button>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                          <div className="lm-field-label" style={{ marginTop: 8 }}>Notes</div>
-                          <textarea
-                            className="modal-input"
-                            placeholder="e.g. focus areas, chapters excluded, special instructions…"
-                            value={examNotes}
-                            onChange={e => setExamNotes(e.target.value)}
-                            rows={2}
-                            style={{ fontSize: 13, resize: 'vertical', minHeight: 52 }}
-                          />
-                        </>
+                    <label className="lm-check-row">
+                      <input type="checkbox" checked={noExam} onChange={e => setNoExam(e.target.checked)} />
+                      No exam this season
+                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
+                      <button
+                        className="btn-primary"
+                        style={{ fontSize: 13, padding: '7px 16px' }}
+                        onClick={handleSaveExam}
+                        disabled={examSaving}
+                      >{examSaving ? 'Saving…' : 'Save exam info'}</button>
+                      {examSaveMsg && (
+                        <span style={{ fontSize: 13, color: examSaveMsg.startsWith('✓') ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
+                          {examSaveMsg}
+                        </span>
                       )}
-
-                      <label className="lm-check-row">
-                        <input type="checkbox" checked={noExam} onChange={e => setNoExam(e.target.checked)} />
-                        No exam this season
-                      </label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
-                        <button
-                          className="btn-primary"
-                          style={{ fontSize: 13, padding: '7px 16px' }}
-                          onClick={handleSaveExam}
-                          disabled={examSaving}
-                        >{examSaving ? 'Saving…' : 'Save exam info'}</button>
-                        {examSaveMsg && (
-                          <span style={{ fontSize: 13, color: examSaveMsg.startsWith('✓') ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
-                            {examSaveMsg}
-                          </span>
-                        )}
-                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
 
@@ -3066,7 +3058,24 @@ body {
   border-radius: 10px; font-size: 13px; color: #92400e;
   font-weight: 500;
 }
-.lm-exam-section { background: #f8fafc; }
+.lm-exam-section {
+  background: #fffbeb;
+  border: 2px solid #fbbf24 !important;
+  border-radius: 12px;
+}
+.lm-exam-season-header {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.lm-exam-badge {
+  display: inline-flex; align-items: center;
+  background: #f59e0b; color: #fff;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 10px; border-radius: 20px;
+  white-space: nowrap;
+}
+.lm-exam-season-label {
+  font-size: 12px; color: #92400e; font-weight: 500;
+}
 .lm-recap-row {
   display: flex; gap: 10px; align-items: baseline;
   font-size: 13px; margin-bottom: 4px;
