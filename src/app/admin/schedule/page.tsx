@@ -250,6 +250,7 @@ function LessonModal({
   const [prevHwReturned, setPrevHwReturned] = useState('');
 
   // Exam quick-add
+  const [examExpanded, setExamExpanded] = useState(false);
   const [examSubject, setExamSubject] = useState('');        // '' | 'E Math' | 'A Math'
   const [examDate, setExamDate] = useState('');
   const [examTopicPills, setExamTopicPills] = useState<string[]>([]); // selected topic pills
@@ -501,14 +502,16 @@ function LessonModal({
             <div className="lm-student-name">{lesson.studentName}</div>
             <div className="lm-sub">
               {lesson.type} · {dateLabel}{slotTime ? ` · ${slotTime}` : ''}
-              {ctx && ctx.studentLevel && (
-                <> · {ctx.studentLevel}{ctx.studentSubjects.length > 0 && (
+            </div>
+            {ctx && ctx.studentLevel && (
+              <div className="lm-sub lm-sub-meta">
+                {ctx.studentLevel}{ctx.studentSubjects.length > 0 && (
                   <> · {ctx.studentSubjects.map(s =>
                     s === 'E Math' ? 'EM' : s === 'A Math' ? 'AM' : s === 'H2 Math' ? 'H2' : s
                   ).join(' & ')}</>
-                )}</>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
@@ -573,12 +576,20 @@ function LessonModal({
               {/* Section C: Exam season — only shown during active exam season */}
               {ctx.examType && lesson.studentId && (
                 <div className="lm-section lm-exam-section">
-                  <div className="lm-exam-season-header">
-                    <span className="lm-exam-badge">📝 {ctx.examType}</span>
-                    <span className="lm-exam-season-label">Exam season — fill in before it starts</span>
-                  </div>
+                  {/* Collapsible header — amber even when collapsed so it's impossible to miss */}
+                  <button
+                    className="lm-exam-toggle"
+                    onClick={() => setExamExpanded(v => !v)}
+                  >
+                    <div className="lm-exam-season-header">
+                      <span className="lm-exam-badge">📝 {ctx.examType}</span>
+                      <span className="lm-exam-season-label">Exam info — tap to {examExpanded ? 'hide' : 'fill in'}</span>
+                    </div>
+                    <span className="lm-exam-chevron">{examExpanded ? '▲' : '▼'}</span>
+                  </button>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                  {examExpanded && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '0 14px 14px' }}>
                     {/* Subject selector — only for dual-math students */}
                     {ctx.studentSubjects.includes('E Math') && ctx.studentSubjects.includes('A Math') && (
                       <div>
@@ -651,6 +662,7 @@ function LessonModal({
                       )}
                     </div>
                   </div>
+                  )}
                 </div>
               )}
 
@@ -3059,10 +3071,18 @@ body {
   font-weight: 500;
 }
 .lm-exam-section {
-  background: #fffbeb;
   border: 2px solid #fbbf24 !important;
   border-radius: 12px;
+  padding: 0 !important;
+  overflow: hidden;
 }
+.lm-exam-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 10px 14px;
+  background: #fffbeb; border: none; cursor: pointer;
+  text-align: left;
+}
+.lm-exam-toggle:hover { background: #fef3c7; }
 .lm-exam-season-header {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }
@@ -3075,6 +3095,12 @@ body {
 }
 .lm-exam-season-label {
   font-size: 12px; color: #92400e; font-weight: 500;
+}
+.lm-exam-chevron {
+  font-size: 11px; color: #d97706; flex-shrink: 0;
+}
+.lm-sub-meta {
+  font-size: 12px; color: #64748b; margin-top: 2px;
 }
 .lm-recap-row {
   display: flex; gap: 10px; align-items: baseline;
