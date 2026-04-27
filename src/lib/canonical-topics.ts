@@ -109,3 +109,103 @@ export function getTopicsForLevel(level: string): TopicCategory[] {
     ...JC_TOPICS.map(c => ({ ...c, label: `[JC] ${c.label}` })),
   ];
 }
+
+// ─── Subject-specific exam topic lists ────────────────────────────────────────
+// Used in the exam quick-add section of the lesson modal.
+// Separate from SECONDARY_TOPICS (which covers all lesson topics).
+
+/** O-Level E Math topics by category */
+export const E_MATH_EXAM_TOPICS: TopicCategory[] = [
+  {
+    label: 'Numbers & Algebra',
+    topics: [
+      'Numbers & Operations',
+      'Ratio, Rate & Percentage',
+      'Algebraic Manipulation',
+      'Equations & Inequalities',
+      'Functions & Graphs (Linear)',
+      'Quadratic Equations',
+      'Quadratic Functions & Graphs',
+    ],
+  },
+  {
+    label: 'Geometry & Trigonometry',
+    topics: [
+      'Angles & Triangles',
+      'Quadrilaterals & Polygons',
+      'Circles (Angle Properties)',
+      'Congruence & Similarity',
+      "Pythagoras' Theorem",
+      'Trigonometry (Basic SOHCAHTOA)',
+      'Mensuration (Perimeter & Area)',
+      'Mensuration (Volume & Surface Area)',
+      'Transformations',
+    ],
+  },
+  {
+    label: 'Statistics & Probability',
+    topics: [
+      'Statistics (Data Representation)',
+      'Mean, Median, Mode',
+      'Standard Deviation',
+      'Probability (Basic)',
+    ],
+  },
+];
+
+/** O-Level A Math topics by category */
+export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
+  {
+    label: 'Algebra',
+    topics: [
+      'Indices & Surds',
+      'Polynomials & Partial Fractions',
+      'Exponential & Log Functions',
+      'Binomial Theorem',
+    ],
+  },
+  {
+    label: 'Geometry & Trigonometry',
+    topics: [
+      'Coordinate Geometry',
+      'Further Trigonometry (Sine/Cosine Rule)',
+      'Trigonometric Identities & Equations',
+      'Proofs in Plane Geometry',
+      'Vectors',
+    ],
+  },
+  {
+    label: 'Calculus',
+    topics: [
+      'Differentiation',
+      'Applications of Differentiation',
+      'Integration',
+      'Applications of Integration',
+    ],
+  },
+  {
+    label: 'Statistics',
+    topics: [
+      'Permutations & Combinations',
+    ],
+  },
+];
+
+/**
+ * Returns the exam topic list appropriate for a given level + subject.
+ * Used in the LessonModal exam section (topics tested) only.
+ */
+export function getExamTopicsForSubject(studentLevel: string, subject: string): TopicCategory[] {
+  const l = studentLevel.toLowerCase();
+  if (l.startsWith('jc')) return JC_TOPICS;
+  if (l.startsWith('sec')) {
+    if (subject === 'E Math') return E_MATH_EXAM_TOPICS;
+    if (subject === 'A Math') return A_MATH_EXAM_TOPICS;
+    // 'Math' or unset: show both sets labelled
+    return [
+      ...E_MATH_EXAM_TOPICS.map(c => ({ ...c, label: `[E] ${c.label}` })),
+      ...A_MATH_EXAM_TOPICS.map(c => ({ ...c, label: `[A] ${c.label}` })),
+    ];
+  }
+  return JC_TOPICS; // JC fallback
+}

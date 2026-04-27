@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
-import { getTopicsForLevel, SECONDARY_FLAT, JC_FLAT } from '@/lib/canonical-topics';
+import { getTopicsForLevel, getExamTopicsForSubject, SECONDARY_FLAT, JC_FLAT } from '@/lib/canonical-topics';
 import {
   DndContext, DragOverlay,
   useSensor, useSensors,
@@ -486,6 +486,13 @@ function LessonModal({
     [ctx?.studentLevel]
   );
 
+  // Exam topic pills — filtered by selected subject (E Math / A Math / H2 Math)
+  const examTopicCategories = useMemo(
+    () => (ctx ? getExamTopicsForSubject(ctx.studentLevel, examSubject) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ctx?.studentLevel, examSubject]
+  );
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="lm-card" onClick={e => e.stopPropagation()}>
@@ -605,9 +612,9 @@ function LessonModal({
                             style={{ fontSize: 13 }}
                           />
 
-                          {/* Topics tested as pill selector */}
+                          {/* Topics tested as pill selector — filtered by selected subject */}
                           <div className="lm-field-label">Topics tested</div>
-                          {topicCategories.map(cat => (
+                          {examTopicCategories.map(cat => (
                             <div key={cat.label}>
                               <div className="lm-cat-label">{cat.label}</div>
                               <div className="lm-topic-grid">
@@ -853,8 +860,14 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
             }}
           >{lesson.studentName}</span>
-          {!isFaded && lesson.progressLogged && (
-            <span title="Progress logged" style={{ fontSize: 9, color: '#16a34a', flexShrink: 0, lineHeight: 1 }}>●</span>
+          {/* Inline exam date badge — replaces the old progress ● dot */}
+          {!isFaded && lesson.examDate && lesson.examDate !== 'NO_EXAM' && (
+            <span
+              title="Click to see exam details"
+              role="button"
+              onClick={e => { e.stopPropagation(); onExamDateClick?.(lesson); }}
+              style={{ fontSize: 9, color: '#64748b', flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer' }}
+            >📅 {formatExamDate(lesson.examDate)}</span>
           )}
           {lesson.type !== 'Regular' && !isFaded && <span className="type-tag" style={{ flexShrink: 0 }}>{lesson.type}</span>}
         </div>
@@ -867,19 +880,8 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
         {lesson.status === 'Absent' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.55, marginTop: 2 }}>Absent</span>
         )}
-        {/* Exam date — only for active (non-faded) lessons */}
         {!isFaded && lesson.examDate === 'NO_EXAM' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 1 }}>no upcoming exam</span>
-        )}
-        {!isFaded && lesson.examDate && lesson.examDate !== 'NO_EXAM' && (
-          <span
-            style={{ display: 'block', fontSize: 10, fontWeight: 600, opacity: 0.6, marginTop: 1, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 }}
-            title="Click to see exam details"
-            role="button"
-            onClick={e => { e.stopPropagation(); onExamDateClick?.(lesson); }}
-          >
-            {activeExamType ? `${activeExamType} @ ` : ''}📅 {formatExamDate(lesson.examDate)}
-          </span>
         )}
         {lesson.type !== 'Trial' && lesson.notes && !isFaded && (
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
