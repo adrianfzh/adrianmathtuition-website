@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import {
   DndContext, DragOverlay,
   useSensor, useSensors,
@@ -378,9 +378,7 @@ export default function SchedulePage() {
   const [data, setData] = useState<ScheduleData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  // Date strip lazy-load offsets (in days relative to today)
-  const [stripStartOffset, setStripStartOffset] = useState(-8 * 7);
-  const [stripEndOffset, setStripEndOffset] = useState(8 * 7);
+  // (no lazy-load state — strip uses a fixed ±26-week range)
   // Roster-only day selection (0=Mon…6=Sun) — independent of the date strip
   const [rosterDay, setRosterDay] = useState<number>(() => {
     const d = new Date().getDay();
@@ -412,13 +410,16 @@ export default function SchedulePage() {
     }
   }, [activeDate]);
 
-  // Date strip: all dates from stripStartOffset to stripEndOffset relative to today
+  // Date strip: fixed ±26-week range (364 dates) — computed once on mount.
+  // No lazy-load: the fixed range is wide enough for tuition scheduling use,
+  // and lazy-load was causing catastrophic scroll-jump bugs when combined with month labels.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const stripDates = useMemo(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const dates: Date[] = [];
-    for (let i = stripStartOffset; i <= stripEndOffset; i++) dates.push(addDays(today, i));
+    for (let i = -26 * 7; i <= 26 * 7; i++) dates.push(addDays(today, i));
     return dates;
-  }, [stripStartOffset, stripEndOffset]);
+  }, []); // intentionally empty — recompute only on full page reload
 
   // DnD
   const [activeDragLesson, setActiveDragLesson] = useState<EnrichedLesson | null>(null);
@@ -554,30 +555,31 @@ export default function SchedulePage() {
   function setActiveDateFromPill(d: Date)  { lastChangeSource.current = 'pill';  setActiveDate(d); }
   function prevWeek() { setActiveDateFromArrow(addDays(activeDate, -7)); }
   function nextWeek() { setActiveDateFromArrow(addDays(activeDate, 7)); }
-  function thisWeek() { lastChangeSource.current = 'arrow'; const t = new Date(); t.setHours(0,0,0,0); setActiveDate(t); }
+  function thisWeek() { goToToday(); }
 
-  // Auto-scroll the strip so the active pill is visible — but only when the
-  // date changed via arrow/mount, NOT when the user tapped a pill themselves.
-  useEffect(() => {
-    if (lastChangeSource.current === 'pill') return;
+  // Initial scroll: snap to today's pill synchronously before the browser paints,
+  // so the strip never appears at the wrong position on load.
+  useLayoutEffect(() => {
     if (!stripRef.current) return;
     const pill = stripRef.current.querySelector(`[data-iso="${isoDate(activeDate)}"]`) as HTMLElement | null;
-    pill?.scrollIntoView({ behavior: lastChangeSource.current === 'mount' ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+    pill?.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // mount only
+
+  // Arrow navigation: smooth-scroll the strip to bring the new active date into view.
+  // Skips if the change came from the user tapping a pill (strip position unchanged).
+  useEffect(() => {
+    if (lastChangeSource.current !== 'arrow') return;
+    if (!stripRef.current) return;
+    const pill = stripRef.current.querySelector(`[data-iso="${isoDate(activeDate)}"]`) as HTMLElement | null;
+    pill?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [activeDate]);
 
-  // Lazy-load: prepend/append 4 more weeks when within ~10 pills of either edge
-  function onStripScroll(e: React.UIEvent<HTMLDivElement>) {
-    const el = e.currentTarget;
-    const PILL_PX = 54; // approximate pill width including gap
-    const THRESHOLD = 10 * PILL_PX;
-    if (el.scrollLeft < THRESHOLD) {
-      setStripStartOffset(prev => prev - 28);
-      // Compensate scrollLeft so the viewport doesn't jump when content is prepended
-      requestAnimationFrame(() => { el.scrollLeft += 28 * PILL_PX; });
-    }
-    if (el.scrollWidth - el.clientWidth - el.scrollLeft < THRESHOLD) {
-      setStripEndOffset(prev => prev + 28);
-    }
+  // Jump to today: reset activeDate + snap strip (no smooth scroll — instant jump)
+  function goToToday() {
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    lastChangeSource.current = 'arrow';
+    setActiveDate(t);
   }
 
   // Slots sorted Mon→Sun then by time, used in dropdowns
@@ -1280,33 +1282,38 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {/* Date strip (mobile) — only shown in Lessons mode */}
-      <div ref={stripRef} className={`date-strip${viewMode !== 'lessons' ? ' date-strip-hidden' : ''}`} onScroll={onStripScroll}>
-        {stripDates.map((date, idx) => {
-          const iso = isoDate(date);
-          const isActive = iso === isoDate(activeDate);
-          const isTodayPill = iso === isoDate(new Date());
-          const prevDate = idx > 0 ? stripDates[idx - 1] : null;
-          const isFirstOfMonth = !prevDate || prevDate.getMonth() !== date.getMonth();
-          return (
-            <React.Fragment key={iso}>
-              {isFirstOfMonth && (
-                <div className="strip-month-label">
-                  {date.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' })}
-                </div>
-              )}
-              <button
-                data-iso={iso}
-                className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}`}
-                onClick={() => setActiveDateFromPill(date)}
-              >
-                <span className="dp-dow">{date.toLocaleDateString('en-SG', { weekday: 'short' }).slice(0, 3).toUpperCase()}</span>
-                <span className="dp-date">{date.getDate()}</span>
-                {isTodayPill && <span className="dp-today-dot" />}
-              </button>
-            </React.Fragment>
-          );
-        })}
+      {/* Date strip wrapper — sticky bar, only shown in Lessons mode */}
+      <div className={`date-strip-wrap${viewMode !== 'lessons' ? ' date-strip-wrap-hidden' : ''}`}>
+        <div ref={stripRef} className="date-strip">
+          {stripDates.map((date, idx) => {
+            const iso = isoDate(date);
+            const isActive = iso === isoDate(activeDate);
+            const isTodayPill = iso === isoDate(new Date());
+            const prevDate = idx > 0 ? stripDates[idx - 1] : null;
+            const isFirstOfMonth = !prevDate || prevDate.getMonth() !== date.getMonth();
+            return (
+              <React.Fragment key={iso}>
+                {isFirstOfMonth && (
+                  <div className="strip-month-label">
+                    {date.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' })}
+                  </div>
+                )}
+                <button
+                  data-iso={iso}
+                  className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}`}
+                  onClick={() => setActiveDateFromPill(date)}
+                >
+                  <span className="dp-dow">{date.toLocaleDateString('en-SG', { weekday: 'short' }).slice(0, 3).toUpperCase()}</span>
+                  <span className="dp-date">{date.getDate()}</span>
+                  {isTodayPill && <span className="dp-today-dot" />}
+                </button>
+              </React.Fragment>
+            );
+          })}
+        </div>
+        <button className="strip-today-btn" onClick={goToToday} title="Go to today">
+          Today
+        </button>
       </div>
 
       {/* Content */}
@@ -1936,20 +1943,41 @@ body {
 }
 
 /* ── Date strip (mobile, replaces old day-tabs) ── */
-.date-strip {
+.date-strip-wrap {
   display: flex;
-  gap: 4px;
+  align-items: stretch;
   background: white;
   border-bottom: 1px solid #e2e8f0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding: 6px 12px;
   position: sticky;
   top: 107px;
   z-index: 90;
 }
+.date-strip-wrap-hidden { display: none !important; }
+.date-strip {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 6px 8px;
+}
 .date-strip::-webkit-scrollbar { display: none; }
+.strip-today-btn {
+  flex-shrink: 0;
+  border: none;
+  border-left: 1px solid #e2e8f0;
+  background: white;
+  color: #1a365d;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 12px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  transition: background 0.12s;
+}
+.strip-today-btn:hover { background: #f1f5f9; }
 .date-pill {
   flex-shrink: 0;
   display: flex; flex-direction: column;
@@ -1992,8 +2020,6 @@ body {
   margin-left: 4px;
   line-height: 1;
 }
-.date-strip-hidden { display: none !important; }
-
 /* ── Roster day tabs (mobile, Mon–Sun labels only, no dates) ── */
 .roster-day-tabs {
   display: flex;
@@ -2151,7 +2177,7 @@ body {
 /* ── Desktop grid ── */
 @media (min-width: 768px) {
   .mobile-day { display: none; }
-  .date-strip { display: none; }
+  .date-strip-wrap { display: none; }
   .roster-day-tabs { display: none; }
   .desktop-grid-scroll {
     overflow-x: auto;
