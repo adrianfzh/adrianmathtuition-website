@@ -30,19 +30,29 @@ export async function GET(req: NextRequest) {
   const at = (table: string, path: string, options?: RequestInit) =>
     airtableRequest(table, path, options);
 
-  const invoiceRecord = await at('Invoices', `/${recordId}`);
+  let invoiceRecord: any;
+  try {
+    invoiceRecord = await at('Invoices', `/${recordId}`);
+  } catch (err: any) {
+    return NextResponse.json({ error: `Airtable fetch failed: ${err.message ?? err}` }, { status: 502 });
+  }
   const f = invoiceRecord.fields;
 
   let studentName = '';
   let parentEmail = '';
   const studentId = f['Student']?.[0];
   if (studentId) {
-    const studentRecord = await at('Students', `/${studentId}`);
-    studentName = studentRecord.fields['Student Name'] || '';
-    parentEmail = studentRecord.fields['Parent Email'] || '';
+    try {
+      const studentRecord = await at('Students', `/${studentId}`);
+      studentName = studentRecord.fields['Student Name'] || '';
+      parentEmail = studentRecord.fields['Parent Email'] || '';
+    } catch { /* non-fatal — render without student name */ }
   }
 
-  const lineItems = f['Line Items'] ? JSON.parse(f['Line Items']) : [];
+  let lineItems: any[] = [];
+  try { lineItems = f['Line Items'] ? JSON.parse(f['Line Items']) : []; }
+  catch { lineItems = []; }
+
   const invoiceData = {
     studentName,
     parentEmail,
@@ -64,7 +74,14 @@ export async function GET(req: NextRequest) {
     registerUrl: buildRegisterUrl(studentId),
   };
 
-  const pdfBuffer = await generateInvoicePDF(invoiceData);
+  let pdfBuffer: Buffer;
+  try {
+    pdfBuffer = await generateInvoicePDF(invoiceData);
+  } catch (err: any) {
+    console.error('[preview-invoice] PDF generation failed:', err);
+    return NextResponse.json({ error: `PDF generation failed: ${err.message ?? err}` }, { status: 500 });
+  }
+
   const filename = `AdrianMathTuition-Invoice-${(studentName || '').replace(/\s+/g, '-')}-${(f['Month'] || recordId).replace(/\s+/g, '-')}.pdf`;
 
   return new Response(pdfBuffer as unknown as BodyInit, {

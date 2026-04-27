@@ -65,6 +65,12 @@ interface EnrichedLesson extends Lesson {
 
 // ─── Lesson modal types ────────────────────────────────────────────────────────
 
+interface ExamRecord {
+  examDate: string | null;
+  examTopics: string | null;
+  noExam: boolean;
+}
+
 interface LessonContextData {
   current: {
     topicsCovered: string;
@@ -82,10 +88,10 @@ interface LessonContextData {
     homeworkReturned: string;
   } | null;
   studentLevel: string;
+  studentSubjects: string[];
   examType: string | null;
-  examDate: string | null;
-  examTopics: string | null;
-  noExam: boolean;
+  /** Keyed by subject ('E Math', 'A Math', 'H2 Math', 'Math', or '' for unset) */
+  examsBySubject: Record<string, ExamRecord | null>;
   isEditable: boolean;
   isFuture: boolean;
 }
@@ -243,14 +249,18 @@ function LessonModal({
   const [prevHwReturned, setPrevHwReturned] = useState('');
 
   // Exam quick-add
+  const [examExpanded, setExamExpanded] = useState(false);
+  const [examSubject, setExamSubject] = useState('');        // '' | 'E Math' | 'A Math'
   const [examDate, setExamDate] = useState('');
-  const [examTopics, setExamTopics] = useState('');
+  const [examTopicPills, setExamTopicPills] = useState<string[]>([]); // selected topic pills
+  const [examTopicFreeText, setExamTopicFreeText] = useState('');
   const [noExam, setNoExam] = useState(false);
   const [examSaving, setExamSaving] = useState(false);
   const [examSaveMsg, setExamSaveMsg] = useState('');
 
   // Autosave current lesson
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveError, setSaveError] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fieldsRef = useRef<Record<string, string>>({});
 
@@ -267,24 +277,20 @@ function LessonModal({
       .then(r => r.json())
       .then((data: LessonContextData) => {
         setCtx(data);
-        // Separate saved topics into canonical chips + free text
+        const canonicalAll = [...SECONDARY_FLAT, ...JC_FLAT];
+        // Separate saved lesson topics into canonical chips + free text
         const savedTopics = data.current.topicsCovered
           ? data.current.topicsCovered.split(',').map(t => t.trim()).filter(Boolean)
           : [];
-        const canonicalAll = [...SECONDARY_FLAT, ...JC_FLAT];
-        const chips = savedTopics.filter(t => canonicalAll.includes(t));
-        const freeText = savedTopics.filter(t => !canonicalAll.includes(t)).join(', ');
-        setTopicChips(chips);
-        setTopicFreeText(freeText);
+        setTopicChips(savedTopics.filter(t => canonicalAll.includes(t)));
+        setTopicFreeText(savedTopics.filter(t => !canonicalAll.includes(t)).join(', '));
         setMastery(data.current.mastery ?? '');
         setMood(data.current.mood ?? '');
         setHwAssigned(data.current.homeworkAssigned ?? '');
         setLessonNotes(data.current.lessonNotes ?? '');
         setPrevHwReturned(data.prev?.homeworkReturned ?? '');
-        setExamDate(data.examDate ?? '');
-        setExamTopics(data.examTopics ?? '');
-        setNoExam(data.noExam ?? false);
-        // Initialise fieldsRef from loaded data so autosave always sends full state
+        // Initialise fieldsRef FIRST so autosave always has something to send even if
+        // the exam-parsing block below throws.
         fieldsRef.current = {
           topicsCovered: data.current.topicsCovered ?? '',
           mastery: data.current.mastery ?? '',
@@ -292,6 +298,21 @@ function LessonModal({
           homeworkAssigned: data.current.homeworkAssigned ?? '',
           lessonNotes: data.current.lessonNotes ?? '',
         };
+        // Exam section setup (wrapped in try-catch so a shape mismatch never blocks saves)
+        try {
+          const isDualMath = (data.studentSubjects ?? []).includes('E Math') && (data.studentSubjects ?? []).includes('A Math');
+          setExamSubject(isDualMath ? 'E Math' : ((data.studentSubjects ?? [])[0] ?? ''));
+          const rec = (data.examsBySubject ?? {})[isDualMath ? 'E Math' : ''] ?? (data.examsBySubject ?? {})[''] ?? null;
+          setExamDate(rec?.examDate ?? '');
+          setNoExam(rec?.noExam ?? false);
+          const savedExamTopics = rec?.examTopics
+            ? rec.examTopics.split(',').map((t: string) => t.trim()).filter(Boolean)
+            : [];
+          setExamTopicPills(savedExamTopics.filter((t: string) => canonicalAll.includes(t)));
+          setExamTopicFreeText(savedExamTopics.filter((t: string) => !canonicalAll.includes(t)).join(', '));
+        } catch (e) {
+          console.warn('[LessonModal] exam section init failed:', e);
+        }
         setCtxLoading(false);
       })
       .catch(() => {
@@ -317,12 +338,21 @@ function LessonModal({
         headers: { Authorization: `Bearer ${password}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ lessonId: lesson.id, fields: fieldsRef.current }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        console.error('[LessonModal] save failed', res.status, json);
+        setSaveStatus('error');
+        setSaveError(json.error ?? `HTTP ${res.status}`);
+        return;
+      }
       setSaveStatus('saved');
+      setSaveError('');
       onProgressLogged(lesson.id);
       setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2500);
-    } catch {
+    } catch (e) {
+      console.error('[LessonModal] save network error', e);
       setSaveStatus('error');
+      setSaveError('Network error');
     }
   }
 
@@ -396,14 +426,19 @@ function LessonModal({
     setExamSaving(true);
     setExamSaveMsg('');
     try {
+      const allTopics = [
+        ...examTopicPills,
+        ...examTopicFreeText.split(',').map(t => t.trim()).filter(Boolean),
+      ].join(', ');
       const reqBody: Record<string, any> = {
         studentId: lesson.studentId,
         examType: ctx.examType,
         noExam,
       };
+      if (examSubject) reqBody.subject = examSubject;
       if (!noExam) {
-        if (examDate) reqBody.examDate = examDate;
-        if (examTopics) reqBody.testedTopics = examTopics;
+        reqBody.examDate = examDate || null;
+        if (allTopics) reqBody.testedTopics = allTopics;
       }
       const res = await fetch('/api/admin-schedule/quick-add-exam', {
         method: 'POST',
@@ -418,6 +453,27 @@ function LessonModal({
     } finally {
       setExamSaving(false);
     }
+  }
+
+  // When subject changes, repopulate exam fields from the loaded context
+  function handleExamSubjectChange(subj: string) {
+    setExamSubject(subj);
+    if (!ctx) return;
+    const rec = ctx.examsBySubject[subj] ?? ctx.examsBySubject[''] ?? null;
+    setExamDate(rec?.examDate ?? '');
+    setNoExam(rec?.noExam ?? false);
+    const savedTopics = rec?.examTopics
+      ? rec.examTopics.split(',').map(t => t.trim()).filter(Boolean)
+      : [];
+    const canonicalAll = [...SECONDARY_FLAT, ...JC_FLAT];
+    setExamTopicPills(savedTopics.filter(t => canonicalAll.includes(t)));
+    setExamTopicFreeText(savedTopics.filter(t => !canonicalAll.includes(t)).join(', '));
+  }
+
+  function handleExamTopicToggle(topic: string) {
+    setExamTopicPills(prev =>
+      prev.includes(topic) ? prev.filter(t => t !== topic) : [...prev, topic]
+    );
   }
 
   const slotTime = lesson.slotId ? slots.find(s => s.id === lesson.slotId)?.time : '';
@@ -503,50 +559,100 @@ function LessonModal({
                 </div>
               )}
 
-              {/* Section C: Exam season */}
+              {/* Section C: Exam season — collapsed by default */}
               {ctx.examType && lesson.studentId && (
                 <div className="lm-section lm-exam-section">
-                  <div className="lm-section-title">{ctx.examType} Exam Info</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {!noExam && (
-                      <>
-                        <div className="lm-field-label">Exam date</div>
-                        <input
-                          type="date"
-                          className="modal-input"
-                          value={examDate}
-                          onChange={e => setExamDate(e.target.value)}
-                          style={{ fontSize: 13 }}
-                        />
-                        <div className="lm-field-label">Topics tested (brief)</div>
-                        <input
-                          type="text"
-                          className="modal-input"
-                          value={examTopics}
-                          onChange={e => setExamTopics(e.target.value)}
-                          placeholder="e.g. Integration, Vectors"
-                          style={{ fontSize: 13 }}
-                        />
-                      </>
-                    )}
-                    <label className="lm-check-row">
-                      <input type="checkbox" checked={noExam} onChange={e => setNoExam(e.target.checked)} />
-                      No exam this season
-                    </label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
-                      <button
-                        className="btn-primary"
-                        style={{ fontSize: 13, padding: '7px 16px' }}
-                        onClick={handleSaveExam}
-                        disabled={examSaving}
-                      >{examSaving ? 'Saving…' : 'Save exam info'}</button>
-                      {examSaveMsg && (
-                        <span style={{ fontSize: 13, color: examSaveMsg.startsWith('✓') ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
-                          {examSaveMsg}
-                        </span>
+                  {/* Collapsible header */}
+                  <button
+                    className="lm-section-title"
+                    style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 0 }}
+                    onClick={() => setExamExpanded(v => !v)}
+                  >
+                    <span>{ctx.examType} Exam Info</span>
+                    <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 400 }}>
+                      {examExpanded ? '▲ hide' : '▼ show'}
+                    </span>
+                  </button>
+
+                  {examExpanded && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                      {/* Subject selector — only for dual-math students */}
+                      {(() => {
+                        const isDualMath = ctx.studentSubjects.includes('E Math') && ctx.studentSubjects.includes('A Math');
+                        if (!isDualMath) return null;
+                        return (
+                          <div>
+                            <div className="lm-field-label">Subject</div>
+                            <div className="lm-radio-row" style={{ marginTop: 4 }}>
+                              {(['E Math', 'A Math'] as const).map(s => (
+                                <button
+                                  key={s}
+                                  className={`lm-radio-btn${examSubject === s ? ' selected' : ''}`}
+                                  onClick={() => handleExamSubjectChange(s)}
+                                >{s}</button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {!noExam && (
+                        <>
+                          <div className="lm-field-label">Exam date</div>
+                          <input
+                            type="date"
+                            className="modal-input"
+                            value={examDate}
+                            onChange={e => setExamDate(e.target.value)}
+                            style={{ fontSize: 13 }}
+                          />
+
+                          {/* Topics tested as pill selector */}
+                          <div className="lm-field-label">Topics tested</div>
+                          {topicCategories.map(cat => (
+                            <div key={cat.label}>
+                              <div className="lm-cat-label">{cat.label}</div>
+                              <div className="lm-topic-grid">
+                                {cat.topics.map(topic => (
+                                  <button
+                                    key={topic}
+                                    className={`lm-topic-chip${examTopicPills.includes(topic) ? ' selected' : ''}`}
+                                    onClick={() => handleExamTopicToggle(topic)}
+                                  >{topic}</button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                          <input
+                            type="text"
+                            className="modal-input"
+                            placeholder="Other topics (comma-separated)…"
+                            value={examTopicFreeText}
+                            onChange={e => setExamTopicFreeText(e.target.value)}
+                            style={{ fontSize: 13, marginTop: 4 }}
+                          />
+                        </>
                       )}
+
+                      <label className="lm-check-row">
+                        <input type="checkbox" checked={noExam} onChange={e => setNoExam(e.target.checked)} />
+                        No exam this season
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
+                        <button
+                          className="btn-primary"
+                          style={{ fontSize: 13, padding: '7px 16px' }}
+                          onClick={handleSaveExam}
+                          disabled={examSaving}
+                        >{examSaving ? 'Saving…' : 'Save exam info'}</button>
+                        {examSaveMsg && (
+                          <span style={{ fontSize: 13, color: examSaveMsg.startsWith('✓') ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
+                            {examSaveMsg}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
@@ -665,7 +771,7 @@ function LessonModal({
           <div className="lm-autosave-status">
             {saveStatus === 'saving' && <span style={{ color: '#94a3b8' }}>Saving…</span>}
             {saveStatus === 'saved' && <span style={{ color: '#16a34a' }}>✓ Autosaved</span>}
-            {saveStatus === 'error' && <span style={{ color: '#dc2626' }}>⚠ Save failed</span>}
+            {saveStatus === 'error' && <span style={{ color: '#dc2626' }}>⚠ Save failed{saveError ? `: ${saveError}` : ''}</span>}
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <a
@@ -1637,10 +1743,10 @@ export default function SchedulePage() {
       if (l.status === 'Rescheduled') return !isFuture;
       return true;
     }).sort((a, b) => {
-      // Absent students sink to the bottom of their slot group
-      const aAbsent = a.status === 'Absent' ? 1 : 0;
-      const bAbsent = b.status === 'Absent' ? 1 : 0;
-      return aAbsent - bAbsent;
+      // Faded (Absent or Rescheduled-away) chips sink to the bottom of their slot group
+      const aFaded = (a.status === 'Absent' || a.status === 'Rescheduled') ? 1 : 0;
+      const bFaded = (b.status === 'Absent' || b.status === 'Rescheduled') ? 1 : 0;
+      return aFaded - bFaded;
     });
     const presentCount = visibleLessons.filter(l => l.status === 'Completed').length;
 

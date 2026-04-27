@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
   } | null = null;
 
   let studentLevel = '';
+  let studentSubjects: string[] = [];
 
   if (studentId) {
     const [prevLessons, studentData] = await Promise.all([
@@ -71,13 +72,13 @@ export async function GET(req: NextRequest) {
     }
 
     studentLevel = (studentData as any).fields?.['Level'] ?? '';
+    // Subjects is a multi-select array, e.g. ['E Math', 'A Math']
+    studentSubjects = (studentData as any).fields?.['Subjects'] ?? [];
   }
 
-  // Fetch active exam type + exam record for this student
+  // Fetch active exam type + all exam records for this student (grouped by subject)
   let examType: string | null = null;
-  let examDate: string | null = null;
-  let examTopics: string | null = null;
-  let noExam = false;
+  const examsBySubject: Record<string, { examDate: string | null; examTopics: string | null; noExam: boolean } | null> = {};
 
   try {
     const settingsData = await airtableRequest(
@@ -96,13 +97,16 @@ export async function GET(req: NextRequest) {
         'Exams',
         `?filterByFormula=${encodeURIComponent(
           `AND({Exam Type}='${examType}',FIND('${studentId}',ARRAYJOIN({Student}))>0)`
-        )}&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&maxRecords=5`
+        )}&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject`
       );
-      if (examsData.records.length > 0) {
-        const r = examsData.records[0];
-        noExam = r.fields['No Exam'] === true;
-        examDate = r.fields['Exam Date'] ?? null;
-        examTopics = r.fields['Tested Topics'] ?? null;
+      // Group by subject; null subject key = no subject field set (legacy / single-math students)
+      for (const r of examsData.records) {
+        const subject: string = r.fields['Subject'] ?? '';
+        examsBySubject[subject] = {
+          examDate: r.fields['Exam Date'] ?? null,
+          examTopics: r.fields['Tested Topics'] ?? null,
+          noExam: r.fields['No Exam'] === true,
+        };
       }
     }
   } catch (err) {
@@ -113,10 +117,9 @@ export async function GET(req: NextRequest) {
     current,
     prev,
     studentLevel,
+    studentSubjects,
     examType,
-    examDate,
-    examTopics,
-    noExam,
+    examsBySubject,
     isEditable,
     isFuture,
   });

@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
   let body: {
     studentId: string;
     examType: string;
+    subject?: string;
     examDate?: string;
     testedTopics?: string;
     noExam?: boolean;
@@ -25,20 +26,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { studentId, examType, examDate, testedTopics, noExam } = body;
+  const { studentId, examType, subject, examDate, testedTopics, noExam } = body;
   if (!studentId || !examType) {
     return NextResponse.json({ error: 'Missing studentId or examType' }, { status: 400 });
   }
 
-  // Check for existing exam record (same student + type)
-  // ARRAYJOIN filter on linked records is unreliable — filter in JS
+  // Check for existing exam record (same student + examType + subject).
+  // ARRAYJOIN filter on linked records is unreliable — filter in JS.
   const allExams = await airtableRequestAll(
     'Exams',
-    `?filterByFormula=${encodeURIComponent(`{Exam Type}='${examType}'`)}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`
+    `?filterByFormula=${encodeURIComponent(`{Exam Type}='${examType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`
   );
-  const existing = allExams.records.find((r: any) => r.fields['Student']?.[0] === studentId);
+  const existing = allExams.records.find(
+    (r: any) =>
+      r.fields['Student']?.[0] === studentId &&
+      (r.fields['Subject'] ?? '') === (subject ?? '')
+  );
 
   const patchFields: Record<string, any> = {};
+  if (subject !== undefined) patchFields['Subject'] = subject || null;
   if (examDate !== undefined) patchFields['Exam Date'] = examDate || null;
   if (testedTopics !== undefined) patchFields['Tested Topics'] = testedTopics ?? '';
   if (noExam !== undefined) patchFields['No Exam'] = noExam;
@@ -52,6 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       id: updated.id,
       examType,
+      subject: updated.fields['Subject'] ?? '',
       examDate: updated.fields['Exam Date'] ?? null,
       testedTopics: updated.fields['Tested Topics'] ?? '',
       noExam: updated.fields['No Exam'] ?? false,
@@ -63,6 +70,7 @@ export async function POST(req: NextRequest) {
     Student: [studentId],
     'Exam Type': examType,
   };
+  if (subject) newFields['Subject'] = subject;
   if (examDate) newFields['Exam Date'] = examDate;
   if (testedTopics) newFields['Tested Topics'] = testedTopics;
   if (noExam !== undefined) newFields['No Exam'] = noExam;
@@ -74,6 +82,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     id: created.id,
     examType,
+    subject: created.fields['Subject'] ?? '',
     examDate: created.fields['Exam Date'] ?? null,
     testedTopics: created.fields['Tested Topics'] ?? '',
     noExam: created.fields['No Exam'] ?? false,

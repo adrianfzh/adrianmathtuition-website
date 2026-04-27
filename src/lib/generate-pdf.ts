@@ -5,7 +5,15 @@ import puppeteer from 'puppeteer-core';
 let browserInstance: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
 
 async function getBrowser() {
-  if (browserInstance) return browserInstance;
+  // If we have a cached instance, verify it's still connected before reusing it.
+  if (browserInstance) {
+    try {
+      await browserInstance.version(); // cheap health-check — throws if browser is gone
+      return browserInstance;
+    } catch {
+      browserInstance = null; // stale/crashed — fall through to re-launch
+    }
+  }
 
   const isProd = process.env.VERCEL === '1';
   if (isProd) {
