@@ -18,9 +18,14 @@ Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/ro
 
 - `page.tsx` — homepage with schedule widget (fetches `/api/schedule`)
 - `chat/page.tsx` — web math solver (SSE to Fly.io `/api/chat`)
-- `admin/page.tsx` — invoice management dashboard (password-protected)
-- `admin/schedule/page.tsx` — two-tab schedule: **Lessons** (editable DnD calendar) + **Roster** (read-only enrollment view). Cookie-based auth (30-day), PWA-ready. See [/admin/schedule — Lesson Management](#adminschedule--lesson-management) below.
-- `admin/edit-notes/page.tsx` — revision notes editor with editor mode toggle for lesson content
+- `admin/page.tsx` — **admin hub**: status cards (logged today, unpaid invoices, makeups owed, this week's lessons) + 4 launcher tiles (Schedule, Progress, Invoices, Students). Cookie-based auth (30-day), PWA-ready.
+- `admin/schedule/page.tsx` — lesson management calendar. See [/admin/schedule](#adminschedule--lesson-management) below.
+- `admin/progress/page.tsx` — read-only student timeline. See [/admin/progress](#adminprogress--student-timeline) below.
+- `admin/invoices/page.tsx` — invoice management dashboard (was `/admin` before restructure)
+- `admin/students/page.tsx` — stub page, links out to Airtable
+- `admin/mark/page.tsx` — AI batch marking landing page (tabs + upload flow)
+- `admin/mark/batch/[batchId]/page.tsx` — batch detail page
+- `admin/edit-notes/page.tsx` — revision notes editor with editor mode toggle
 - `signup/page.tsx` — student registration form (HMAC-signed URL)
 - `thankyou/page.tsx` — post-signup confirmation page
 - `terms/page.tsx` — terms and conditions
@@ -31,28 +36,55 @@ Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/ro
 - `formulas/*` — formula reference pages (indices, factorization, statistics, etc.)
 - `o-level-a-math-tuition/`, `jc-h2-math-tuition/`, `secondary-math-tuition/` — SEO landing pages
 
+Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoices`) has its own `layout.tsx` with PWA metadata and its own manifest + apple-touch-icon. Icons live in `public/icons/`.
+
 ## API Routes (`src/app/api/`)
 
+### Public
 - `schedule/route.ts` — public schedule data from Airtable Slots table
-- `admin-schedule/route.ts` — admin schedule calendar data (GET, week param)
-- `admin-schedule/reschedule/route.ts` — create Rescheduled lesson, mark original, notify
-- `admin-schedule/add/route.ts` — create Additional/Makeup/Trial lesson with capacity check
-- `admin-schedule/delete/route.ts` — hard-delete or mark absent, optional notification
-- `signup/route.ts` — processes registration form → creates Student + Enrollment + Token in Airtable
-- `signup-data/route.ts` — validates HMAC-signed signup link, returns slot info
-- `admin-invoices/route.ts` — GET/PATCH invoices for admin dashboard
+
+### Admin schedule
+- `admin-schedule/route.ts` — weekly calendar data (GET `?week=YYYY-MM-DD`)
+- `admin-schedule/reschedule/route.ts` — create Rescheduled lesson + mark original
+- `admin-schedule/add/route.ts` — create Additional/Makeup/Trial with capacity check
+- `admin-schedule/delete/route.ts` — hard-delete or mark Absent
+- `admin-schedule/attendance/route.ts` — update lesson Status (Completed/Absent/Cancelled etc.)
+- `admin-schedule/lesson-context/route.ts` — load progress fields + prev lesson + exam info for LessonModal
+- `admin-schedule/lesson-update/route.ts` — save Mastery/Mood/Topics/Notes on current lesson (14-day window)
+- `admin-schedule/lesson-prev-update/route.ts` — save Homework Returned on previous lesson (14-day window)
+- `admin-schedule/quick-add-exam/route.ts` — upsert Exams record for active exam type
+- `admin-schedule/student-contact/route.ts` — lazy-load student contact info (NOT returned by main schedule route)
+- `admin-schedule/unmarked-count/route.ts` — count of past lessons with no status set
+
+### Admin progress / hub
+- `admin/progress/student-timeline/route.ts` — student timeline data + aggregations (GET `?id=recXXX&range=90`)
+- `admin/exam-season/route.ts` — GET/POST exam season override
+- `admin/admin-stats/route.ts` — status card data for hub page
+
+### Invoices (cron + admin)
+- `admin-invoices/route.ts` — GET/PATCH invoices for `/admin/invoices`
 - `generate-invoices/route.ts` — creates Draft invoice records (cron: 14th 7am SGT)
 - `generate-pdf-batch/route.ts` — batch PDF generation → Vercel Blob upload
 - `preview-invoice/route.ts` — generates and returns PDF inline
 - `send-invoices/route.ts` — emails invoices via Resend (cron: 15th 9am SGT)
 - `send-receipt/route.ts` — send receipt email
 - `payment-reminder/route.ts` — Telegram reminder to check payments (cron: 14th 8pm SGT)
+
+### Signup
+- `signup/route.ts` — processes registration form → creates Student + Enrollment + Token in Airtable
+- `signup-data/route.ts` — validates HMAC-signed signup link, returns slot info
+
+### Content / AI
 - `notes/route.ts` — revision notes CRUD
 - `revision/route.ts` — revision content API
 - `generate-lesson/route.ts` — AI-generated lesson content
 - `generate-tts/route.ts` — text-to-speech generation
 - `edit-notes-ai/route.ts` — AI-assisted notes editing
 - `learn/route.ts` — learn API
+- `render-marking/route.ts` — accepts marking JSON, returns PNG via Puppeteer
+- `mark-batch/init`, `execute`, `assemble-pdf`, `list`, `get`, `submissions`, `delete`, `upload-amended` — AI batch marking pipeline
+
+### Misc
 - `bot-health/route.ts` — health check for Telegram bot
 
 ## Database
@@ -60,20 +92,37 @@ Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/ro
 **Airtable** — student/lesson/invoice data. See bot project for full schema.
 
 Key tables used by website:
-- `Slots` (schedule) — Day, Time, Level, Normal Capacity, Enrolled Count, Is Active
-- `Students` (signup, admin-invoices) — Student Name, Parent Email, Level, Subjects
-- `Enrollments` (signup) — Student, Slot, Rate Per Lesson, Status
-- `Invoices` (admin-invoices, generate-invoices) — all invoice fields
-- `Tokens` (signup) — registration tokens
-- `Rates` (signup) — current rate lookup by level
-- `Rate History` (signup) — tracks rate changes per student
+- `Slots` — Day, Time, Level, Normal Capacity, Makeup Capacity, Enrolled Count, Is Active
+- `Students` — Student Name, Parent Email, Level, Subjects, Student Telegram ID, Parent Telegram ID
+- `Enrollments` — Student, Slot, Rate Per Lesson, Status
+- `Lessons` — Date, Slot, Student, Type, Status, Notes, Rescheduled Lesson ID, Progress Logged + progress fields below
+- `Exams` — Student, Exam Type, Exam Date, Tested Topics, No Exam
+- `Invoices` — all invoice fields
+- `Tokens` — registration tokens
+- `Rates` — current rate lookup by level
+- `Rate History` — tracks rate changes per student
+- `Settings` — global flags; one row: `Setting Name='exam_season_override'`, `Value='{"forceOn":"WA2"}'` (or `null` to clear)
 
-**Supabase** — revision lesson content in `lesson_content` table (NOT `revision_content`). Holds both notes (`content_type='notes'`) and revision lessons (`content_type='lesson'`). Regular notes still in Airtable Notes table.
+### Lessons table — progress fields added
+
+| Field | Type | Notes |
+|---|---|---|
+| `Mastery` | Single select | `Strong` / `OK` / `Slow` (plain text; emoji added in UI) |
+| `Mood` | Single select | Full emoji-prefixed strings: `'😄 Engaged'` / `'🙂 Fine'` / `'😟 Distracted'` / `'😴 Tired'` / `'😤 Frustrated'` — stored exactly as shown |
+| `Topics Covered` | Long text | JSON array of canonical topic names (from `lib/canonical-topics.ts`) |
+| `Topics Free Text` | Long text | Freeform topics not in the canonical list |
+| `Lesson Notes` | Long text | Admin notes on the lesson — **distinct** from `Notes` (system field for reschedule reasons etc.) |
+| `Homework Assigned` | Long text | What was set |
+| `Homework Returned` | Single select | `Yes` / `Partial` / `No` — written to the **previous** lesson record |
+| `Homework Returned Reason` | Long text | Optional reason if partial/no |
+| `Progress Logged` | Checkbox | Auto-set `true` when any content field is non-empty |
+
+**Supabase** — revision lesson content in `lesson_content` table (NOT `revision_content`). Holds both notes (`content_type='notes'`) and revision lessons (`content_type='lesson'`).
 
 ## Auth Patterns
 
-- **Admin pages:** `ADMIN_PASSWORD` in Bearer token header
-- **Admin schedule:** Cookie-based auth (30-day expiry)
+- **Admin pages:** Cookie-based auth (30-day expiry, `ADMIN_PASSWORD`)
+- **Admin API routes:** `Authorization: Bearer ADMIN_PASSWORD` header; verified via `verifyAdminAuth(req)` in `lib/schedule-helpers.ts`
 - **Cron jobs:** `CRON_SECRET` in Bearer token, or `x-vercel-cron: 1` header, or `ADMIN_PASSWORD`
 - **Signup:** HMAC-SHA256 signature using `SIGNUP_SECRET` — validates slotId + level + subjects + expires
 
@@ -81,13 +130,21 @@ Key tables used by website:
 
 1. `generate-invoices` (14th 7am) → counts lessons per enrollment → creates Draft invoices with Line Items JSON
 2. `payment-reminder` (14th 8pm) → Telegram reminder
-3. Admin reviews on `/admin` → adjusts amounts, approves
+3. Admin reviews on `/admin/invoices` → adjusts amounts, approves
 4. "Generate Missing PDFs" → `generate-pdf-batch` → Puppeteer → Vercel Blob → PDF URL in Airtable
 5. `send-invoices` (15th 9am) → Resend email with PDF attachment → marks Sent
 
+## Notification Policy
+
+**All admin web UI actions are silent** — no Telegram messages sent when admin uses the website.
+
+Students/parents are notified via the bot's day-before reminder cron (`runDayBeforeReminders` in `flows.js`), which automatically picks up Rescheduled/Additional/Makeup/Trial lesson records. Same-day or next-day reschedules won't reach that cron in time — admin should message manually.
+
 ## Important Patterns
 
-- `airtableRequest()` helper shared across API files
+- `airtableRequest()` / `airtableRequestAll()` in `lib/airtable.ts` — use `airtableRequestAll` for any "list all matching" query; it handles Airtable's 100-record page cap transparently
+- `verifyAdminAuth(req)`, `localToday()`, `daysAgo(n)`, `EDIT_WINDOW_DAYS` exported from `lib/schedule-helpers.ts`
+- `lib/canonical-topics.ts` — canonical O-Level Sec and JC H2 topic lists; `getTopicsForLevel(level)` returns categories with topic arrays
 - Invoice `Line Items` and `Line Items Extra` stored as JSON strings in Airtable long text fields — always `JSON.parse()` when reading
 - `getInvoiceMonth()` returns next month from today (used by generate-invoices)
 - `countOccurrencesInMonth()` counts how many times a weekday falls in a month
@@ -95,29 +152,37 @@ Key tables used by website:
 - PDF generation uses Puppeteer with `@sparticuz/chromium` on Vercel, local Chrome path for dev
 - Chat page SSE connects to Fly.io `https://adrianmath-telegram-math-bot.fly.dev/api/chat`, NOT to Vercel
 
-## Dead Code
-
-- `api/chat.js` — already deleted. The old Vercel serverless chat endpoint was dead code; chat.html connects directly to Fly.io.
-
 ## Gotchas
 
-- Vercel serverless functions have a 10s timeout (free) / 60s (Pro) — PDF generation is the bottleneck
+- **Airtable date filter bug**: `{Date}<='endStr'` silently excludes records on `endStr` when Date is date-typed. Always use exclusive upper bound: `{Date}<'dayAfterEnd'` (add 1 day). Reference: `bot/flows.js:643`.
+- **Linked record filtering**: Cannot use `{Student}='recXXX'` on a linked record field. Must use `FIND('recXXX', ARRAYJOIN({Student}))>0`. True for all linked-record Airtable formula filtering.
+- **Single-record GET has no `fields[]`**: Airtable's single-record endpoint (`GET /v0/{base}/{table}/{recXXX}`) ignores `fields[]` query params — they only work on list endpoints. Fetch all fields and filter in JS.
+- **Privacy — lazy-load contact info**: `/api/admin-schedule` does NOT return `parentEmail`/`parentName` eagerly. Use `/api/admin-schedule/student-contact?id=recXXX` to fetch on demand.
+- **UTC vs local time**: `getMondayOfWeek`/`addDays`/`isoDate` in `admin-schedule/route.ts` use UTC. `localToday()`/`daysAgo()` in `lib/schedule-helpers.ts` use local time. Do NOT merge — they serve different domains.
+- Vercel serverless functions: 10s timeout (free) / 60s (Pro) — PDF generation is the bottleneck
 - PDF generation reuses a browser instance (`getBrowser()`) — must call `closeBrowser()` after batch operations
 - PayNow logo in invoice template is embedded as base64 — read from `public/paynow.png`
-- Font loading is blocked in Puppeteer (`page.setRequestInterception`) to speed up PDF generation
 - Signup link expiry is checked against `Date.now()` — links become invalid after the `expires` timestamp
 - Supabase table is `lesson_content`, NOT `revision_content` — easy to confuse
 
 ## /admin/schedule — Lesson Management
 
-Two-tab interface, cookie-auth protected (30-day session, `ADMIN_PASSWORD`), PWA-ready.
+Two-tab interface, cookie-auth protected (30-day), PWA-ready.
 
 ### Tabs
 
-- **Lessons** (default) — editable calendar showing actual lesson records (Regular/Rescheduled/Makeup/Additional/Trial). Drag-to-reschedule (desktop click-drag / mobile 500ms long-press), tap-to-action-sheet (Reschedule / Mark Absent / Delete / Edit Notes), per-slot [+] button and floating FAB.
-- **Roster** — read-only slot enrollment view (which students sit in which weekly slot). Unchanged from original.
+- **Lessons** (default) — editable calendar. Shows Regular/Rescheduled/Makeup/Additional/Trial lesson records. Drag-to-reschedule, tap-to-action-sheet, per-slot [+] button, floating FAB.
+- **Roster** — read-only slot enrollment view (which students are in which weekly slot).
 
 Tab choice persists in `localStorage` (key: `schedule_view_mode`).
+
+### Chip features
+
+- **Quick attendance pills** — ✅ / ❌ appear on chips for today and yesterday only; tap to set Completed/Absent
+- **Status pill** — full menu (Completed / Absent / Cancelled / Cancelled-Prorated / Clear). Past unmarked lessons show amber `?`
+- **⚠ exam season pill** — appears when student is missing exam date or tested topics for the active exam type
+- **Progress dot** — green `●` on chip when `Progress Logged = true`
+- **Student name tap** — opens LessonModal as overlay (non-Trial lessons with studentId); Trial lessons open `/admin/progress` in new tab
 
 ### Drag-and-drop stack
 
@@ -127,45 +192,63 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 - `touchAction: 'none'` on draggable chips (required for iOS Safari)
 - `DraggableLessonChip` and `DroppableLessonSlot` are **module-level components** (not inline) — required because they use `useDraggable`/`useDroppable` hooks
 
-### API routes (all require `Authorization: Bearer ADMIN_PASSWORD`)
+### API routes
 
 | Route | Method | Purpose |
 |---|---|---|
-| `/api/admin-schedule` | GET | Weekly schedule data (slots + lessons + students) |
-| `/api/admin-schedule/reschedule` | POST | Mirror bot `/rs`: new Rescheduled lesson + mark original |
+| `/api/admin-schedule` | GET | Weekly data: slots + lessons + students + exam info |
+| `/api/admin-schedule/reschedule` | POST | New Rescheduled lesson + mark original |
 | `/api/admin-schedule/add` | POST | Create Additional/Makeup/Trial with capacity check |
-| `/api/admin-schedule/delete` | POST | Hard-delete or mark Absent, optional notification |
+| `/api/admin-schedule/delete` | POST | Hard-delete or mark Absent |
+| `/api/admin-schedule/attendance` | POST | Update lesson Status |
+| `/api/admin-schedule/lesson-context` | GET | Fetch progress fields + prev lesson + exam info for LessonModal |
+| `/api/admin-schedule/lesson-update` | POST | Save Mastery/Mood/Topics/Notes (14-day window) |
+| `/api/admin-schedule/lesson-prev-update` | POST | Save Homework Returned on previous lesson (14-day window) |
+| `/api/admin-schedule/quick-add-exam` | POST | Upsert Exams record for active exam type |
+| `/api/admin-schedule/student-contact` | GET | Lazy-load student contact info |
+| `/api/admin-schedule/unmarked-count` | GET | Count of past lessons needing status |
+
+### LessonModal
+
+Opens as an overlay when the student name is tapped on a non-Trial lesson chip. Sections:
+
+1. **Edit-lock banner** — shown if lesson date is outside 14-day window or in future; inputs are disabled
+2. **Previous lesson recap** — read-only (topics, homework set); includes Homework Returned radio (Yes/Partial/No) that writes to the PREVIOUS lesson record
+3. **Exam season quick-add** — shown during active exam season if student is missing exam date or tested topics
+4. **This lesson input** — editable fields:
+   - Topics Covered: canonical multi-select (from `lib/canonical-topics.ts`) + free text
+   - Mastery: Strong / OK / Slow (displayed as 🟢/🟡/🔴, stored as plain text)
+   - Mood: 5 options stored as full emoji-prefixed strings matching Airtable option names exactly
+   - Homework Assigned: long text
+   - Lesson Notes: long text
+5. **Autosave footer** — 500ms debounced save per field; shows saving/saved/error status
+
+14-day edit window enforced server-side in both `lesson-update` and `lesson-prev-update`. Debounce timers cleared on modal unmount.
 
 ### Reschedule semantics (mirrors bot /rs exactly)
 
 - Creates new lesson: `Type: 'Rescheduled'`, `Status: 'Scheduled'`
 - PATCHes original: `Status: 'Rescheduled'`, `Rescheduled Lesson ID: [newId]`, appends `| auto-linked` to Notes
 - Capacity check uses `Makeup Capacity` field (not `Normal Capacity`); excludes Cancelled/Absent lessons
-- Applies to all lesson types — always creates a new record
 - Deleting a Rescheduled record reverts source lesson to `Status: 'Scheduled'` and clears the link
-
-### Notification behaviour
-
-- Reschedule / Add Additional or Makeup: default notify ON → sends to both `Student Telegram ID` and `Parent Telegram ID`
-- Add Trial: no notification (student not yet registered)
-- Delete / Mark Absent: default notify OFF (admin opts in per action)
-- Day-before reminders: handled by bot cron (`runDayBeforeReminders`) — picks up new Rescheduled/Additional records automatically
 
 ### Shared helpers (`lib/schedule-helpers.ts`)
 
 - `verifyAdminAuth(req)` — Bearer token check
+- `localToday()` — today as `YYYY-MM-DD` in local/SGT time
+- `daysAgo(n)` — `n` days before today as `YYYY-MM-DD`
+- `EDIT_WINDOW_DAYS` — `14` (the edit window constant; shared by all lesson-* routes)
 - `formatDateSlotLabel(dateStr, slotFields)` — e.g. `"Mon, 24 Nov 3-5pm"`
-- `countLessonsInSlot(slotId, date)` — excludes Cancelled/Absent; uses `FIND('id', ARRAYJOIN({Slot})) > 0` formula (NOT `{Slot}='id'`)
-- `notifyLessonChange(studentId, message)` — fetches student, sends to both Telegram IDs
+- `countLessonsInSlot(slotId, date)` — excludes Cancelled/Absent; uses `FIND('id', ARRAYJOIN({Slot}))>0`
 
 ### Telegram (`lib/telegram.ts`)
 
-- `sendTelegram(text)` — existing, posts to `TELEGRAM_CHAT_ID` (admin alerts)
-- `sendTelegramTo(chatId, text)` — new, posts to arbitrary chat ID (student/parent)
+- `sendTelegram(text)` — posts to `TELEGRAM_CHAT_ID` (admin alerts)
+- `sendTelegramTo(chatId, text)` — posts to arbitrary chat ID (student/parent)
 
 ### Error conventions
 
-- 401 auth, 400 bad body, 409 slot full, 500 Airtable errors
+- 401 auth, 400 bad body, 403 outside edit window, 409 slot full, 500 Airtable errors
 - Notification failures are logged but never fail the parent request
 
 ### UI patterns
@@ -174,44 +257,37 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 - Drop targets: dashed navy border on hover
 - All destructive actions require modal confirmation
 
-### Date gotcha
+## /admin/progress — Student Timeline
 
-All `isoDate()` / `addDays()` helpers use `getFullYear()`/`getMonth()`/`getDate()` (local time), **not** `toISOString()` — SGT is UTC+8 so `toISOString()` returns the previous day for midnight-local Dates.
+Read-only student history view. Cookie-auth protected (same 30-day session), PWA-ready.
 
-## /admin/progress — Student Progress & Exam Season
+### Structure
 
-Password-protected progress logging page. Shows lesson cards for a selected date; cards expand to log topics, homework, mastery, mood, and notes.
+- **Header**: "Progress" + search box ("Search students…") + Level dropdown filter (All / Sec 1–5 / JC1–2)
+- **Student selection**: URL deep-link via `?student=recXXX`. Selecting a student updates the URL.
+- **Aggregations panel** (4 cards): Attendance % · Mastery breakdown (Strong/OK/Slow counts) · Top topic · Homework returned %
+- **Date range filter**: Last 30 days / Last 90 days (default) / Last 6 months / Last 12 months / All time — triggers refetch
+- **Timeline** (desktop ≥768px): horizontal interactive timeline, lessons + exams interleaved chronologically. Lesson nodes: top half = mastery colour, bottom half = mood emoji. Exam nodes: hexagon shape. Jump buttons: [< 6mo] [< 3mo] [< 1mo] [Now].
+- **Mobile** (<768px): vertical reverse-chronological card list with the same data.
+- **Detail panel**: click any node → full lesson or exam details below the timeline.
+- **"Edit in Schedule" link**: `/admin/schedule?date=YYYY-MM-DD&openLesson=recXXX` — only active within 14-day window; shows muted "Editing locked" otherwise.
 
-### Exam season detection
+### Exam season
 
-- **Hardcoded windows** in `lib/exam-season.ts` (`EXAM_WINDOWS`): WA1 02-01→03-15, WA2 04-15→06-05, WA3 07-15→09-05, EOY 09-20→11-10 (MM-DD, SGT)
-- **Manual override** stored in Airtable `Settings` table: `Setting Name = 'exam_season_override'`, `Value = '{"forceOn":"WA2"}'` (or `{"forceOn":null}` to clear)
-- `resolveActiveExamType(override)` returns override if set, else date-based window, else null
-- Override UI: toggle row in sticky header lets admin force a season on or off; uses GET/POST `/api/admin/exam-season`
-
-### Exam info status
-
-- Each lesson card fetches the student's exam record for the active exam type (from `Exams` Airtable table)
-- **Complete** = has both `Exam Date` and `Tested Topics` filled in
-- **Incomplete** = missing either field (or no record at all)
-- A red `⚠ WA2` pill appears on the card header when `activeType !== null && !complete`
-- Pill tooltip explains what's missing: "No WA2 exam record", "Missing exam date", "Missing tested topics", or "Missing exam date & topics"
-- Off-season (activeType null): no pills shown, `checkExamInfoStatus` returns `complete: true`
+- Hardcoded windows in `lib/exam-season.ts` (`EXAM_WINDOWS`): WA1 02-01→03-15, WA2 04-15→06-05, WA3 07-15→09-05, EOY 09-20→11-10 (MM-DD, SGT)
+- Manual override: Airtable `Settings` row `exam_season_override` → `{"forceOn":"WA2"}` (or `null`)
+- `resolveActiveExamType(override)` — override if set, else date-based window, else null
+- ⚠ pill on schedule chips when student missing exam date or tested topics for active type
 
 ### Key files
 
 | File | Purpose |
 |---|---|
-| `lib/exam-season.ts` | `EXAM_WINDOWS`, `resolveActiveExamType()`, `checkExamInfoStatus()`, types |
-| `app/api/admin/exam-season/route.ts` | GET/POST for reading and writing the override |
-| `app/api/admin/progress/lessons/route.ts` | Attaches `examStatus` to each lesson card in response |
-| `app/admin/progress/page.tsx` | Toggle row UI + red pill per card |
-
-### Graceful degradation
-
-- If the `Settings` row doesn't exist (new installs, deleted row): GET returns null override → auto-detect kicks in
-- If the `Exams` fetch fails: error is logged, `examsByStudent` stays empty → all cards show `complete: true` (no pills)
-- If `activeType` is null (off-season, no override): `checkExamInfoStatus` short-circuits and returns complete
+| `app/admin/progress/page.tsx` | Student timeline page |
+| `app/api/admin/progress/student-timeline/route.ts` | Timeline data + aggregations |
+| `app/api/admin/exam-season/route.ts` | GET/POST exam season override |
+| `lib/exam-season.ts` | `EXAM_WINDOWS`, `resolveActiveExamType()`, `checkExamInfoStatus()` |
+| `lib/canonical-topics.ts` | Canonical topic lists for O-Level Sec and JC H2 |
 
 ## Pending Tasks
 
@@ -299,7 +375,7 @@ Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s
 {
   "batchId": "batch_<timestamp>_<rand>",
   "studentName": "Gavin",
-  "studentId": "recXXX" | null,
+  "studentId": "recXXX | null",
   "pages": [
     {
       "pageIndex": 0,
@@ -347,10 +423,10 @@ Adrian must create this table in Airtable before the init endpoint can write to 
 | `Status` | Single select | `detected` / `marking` / `marked` / `finalized` / `failed` / `deleted` |
 | `Page Image URLs` | Long text | Newline-separated blob URLs |
 | `Detection JSON` | Long text | Full init response payload (for replay/debug) |
-| `Final PDF URL` | URL | Set in Prompt 3 |
+| `Final PDF URL` | URL | Set in assemble-pdf step |
 | `Created At` | Date with time | |
-| `Finalized At` | Date with time | Set in Prompt 3 |
-| `Submissions` | Link to Submissions | Set in Prompt 2 |
+| `Finalized At` | Date with time | Set in assemble-pdf step |
+| `Submissions` | Link to Submissions | Set in execute step |
 
 ### Dependencies added
 
