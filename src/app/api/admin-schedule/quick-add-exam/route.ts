@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     examDate?: string;
     testedTopics?: string;
     noExam?: boolean;
+    notes?: string;
   };
   try {
     body = await req.json();
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { studentId, examType, subject, examDate, testedTopics, noExam } = body;
+  const { studentId, examType, subject, examDate, testedTopics, noExam, notes } = body;
   if (!studentId || !examType) {
     return NextResponse.json({ error: 'Missing studentId or examType' }, { status: 400 });
   }
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
   if (examDate !== undefined) patchFields['Exam Date'] = examDate || null;
   if (testedTopics !== undefined) patchFields['Tested Topics'] = testedTopics ?? '';
   if (noExam !== undefined) patchFields['No Exam'] = noExam;
+  if (notes !== undefined) patchFields['Exam Notes'] = notes ?? '';
 
   if (existing) {
     // Patch existing record
@@ -74,6 +76,7 @@ export async function POST(req: NextRequest) {
   if (examDate) newFields['Exam Date'] = examDate;
   if (testedTopics) newFields['Tested Topics'] = testedTopics;
   if (noExam !== undefined) newFields['No Exam'] = noExam;
+  if (notes) newFields['Exam Notes'] = notes;
 
   const created = await airtableRequest('Exams', '', {
     method: 'POST',

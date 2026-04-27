@@ -95,11 +95,14 @@ export const SECONDARY_FLAT: string[] = SECONDARY_TOPICS.flatMap(c => c.topics);
 export const JC_FLAT: string[] = JC_TOPICS.flatMap(c => c.topics);
 export const ALL_TOPICS_FLAT: string[] = [...SECONDARY_FLAT, ...JC_FLAT];
 
-/** Returns the canonical topic list (with categories) for a given student level string. */
+/** Returns the canonical topic list (with categories) for a given student level string.
+ *  Handles full Airtable level strings like "JC1", "JC2", "Sec1"–"Sec5" as well as
+ *  the legacy bare strings "jc", "secondary", "sec".
+ */
 export function getTopicsForLevel(level: string): TopicCategory[] {
   const l = level.toLowerCase();
-  if (l === 'jc') return JC_TOPICS;
-  if (l === 'secondary' || l === 'sec') return SECONDARY_TOPICS;
+  if (l.startsWith('jc')) return JC_TOPICS;
+  if (l.startsWith('sec')) return SECONDARY_TOPICS;
   // Mixed or unknown: show both
   return [
     ...SECONDARY_TOPICS.map(c => ({ ...c, label: `[Sec] ${c.label}` })),

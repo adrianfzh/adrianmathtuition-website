@@ -69,6 +69,7 @@ interface ExamRecord {
   examDate: string | null;
   examTopics: string | null;
   noExam: boolean;
+  notes: string | null;
 }
 
 interface LessonContextData {
@@ -253,7 +254,7 @@ function LessonModal({
   const [examSubject, setExamSubject] = useState('');        // '' | 'E Math' | 'A Math'
   const [examDate, setExamDate] = useState('');
   const [examTopicPills, setExamTopicPills] = useState<string[]>([]); // selected topic pills
-  const [examTopicFreeText, setExamTopicFreeText] = useState('');
+  const [examNotes, setExamNotes] = useState('');
   const [noExam, setNoExam] = useState(false);
   const [examSaving, setExamSaving] = useState(false);
   const [examSaveMsg, setExamSaveMsg] = useState('');
@@ -309,7 +310,7 @@ function LessonModal({
             ? rec.examTopics.split(',').map((t: string) => t.trim()).filter(Boolean)
             : [];
           setExamTopicPills(savedExamTopics.filter((t: string) => canonicalAll.includes(t)));
-          setExamTopicFreeText(savedExamTopics.filter((t: string) => !canonicalAll.includes(t)).join(', '));
+          setExamNotes(rec?.notes ?? '');
         } catch (e) {
           console.warn('[LessonModal] exam section init failed:', e);
         }
@@ -426,14 +427,12 @@ function LessonModal({
     setExamSaving(true);
     setExamSaveMsg('');
     try {
-      const allTopics = [
-        ...examTopicPills,
-        ...examTopicFreeText.split(',').map(t => t.trim()).filter(Boolean),
-      ].join(', ');
+      const allTopics = examTopicPills.join(', ');
       const reqBody: Record<string, any> = {
         studentId: lesson.studentId,
         examType: ctx.examType,
         noExam,
+        notes: examNotes,
       };
       if (examSubject) reqBody.subject = examSubject;
       if (!noExam) {
@@ -465,9 +464,8 @@ function LessonModal({
     const savedTopics = rec?.examTopics
       ? rec.examTopics.split(',').map(t => t.trim()).filter(Boolean)
       : [];
-    const canonicalAll = [...SECONDARY_FLAT, ...JC_FLAT];
-    setExamTopicPills(savedTopics.filter(t => canonicalAll.includes(t)));
-    setExamTopicFreeText(savedTopics.filter(t => !canonicalAll.includes(t)).join(', '));
+    setExamTopicPills(savedTopics.filter(t => [...SECONDARY_FLAT, ...JC_FLAT].includes(t)));
+    setExamNotes(rec?.notes ?? '');
   }
 
   function handleExamTopicToggle(topic: string) {
@@ -623,13 +621,14 @@ function LessonModal({
                               </div>
                             </div>
                           ))}
-                          <input
-                            type="text"
+                          <div className="lm-field-label" style={{ marginTop: 8 }}>Notes</div>
+                          <textarea
                             className="modal-input"
-                            placeholder="Other topics (comma-separated)…"
-                            value={examTopicFreeText}
-                            onChange={e => setExamTopicFreeText(e.target.value)}
-                            style={{ fontSize: 13, marginTop: 4 }}
+                            placeholder="e.g. focus areas, chapters excluded, special instructions…"
+                            value={examNotes}
+                            onChange={e => setExamNotes(e.target.value)}
+                            rows={2}
+                            style={{ fontSize: 13, resize: 'vertical', minHeight: 52 }}
                           />
                         </>
                       )}
