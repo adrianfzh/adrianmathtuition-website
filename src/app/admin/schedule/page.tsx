@@ -30,6 +30,7 @@ interface Lesson {
   type: string;
   status: string;
   notes: string;
+  rescheduledToDate?: string;
 }
 
 interface Student {
@@ -165,8 +166,9 @@ const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> 
 };
 
 function getTypeStyle(type: string, status: string) {
-  const effectiveType = (status === 'Absent' || status === 'Cancelled') ? status : type;
-  return TYPE_COLORS[effectiveType] || TYPE_COLORS.Regular;
+  // Lessons that have "happened but moved/missed" should look muted regardless of original type
+  if (status === 'Absent' || status === 'Cancelled' || status === 'Rescheduled') return TYPE_COLORS.Absent;
+  return TYPE_COLORS[type] || TYPE_COLORS.Regular;
 }
 
 // ─── Cookie helpers ────────────────────────────────────────────────────────────
@@ -189,11 +191,15 @@ function formatExamDate(iso: string): string {
 }
 
 function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; activeExamType?: string | null }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id });
+  // Rescheduled-away chips (status=Rescheduled) are display-only — disable dragging
+  const isRescheduledAway = lesson.status === 'Rescheduled';
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id, disabled: isRescheduledAway });
   const style = getTypeStyle(lesson.type, lesson.status);
-  const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
+  const isFaded = lesson.status === 'Absent' || lesson.status === 'Cancelled' || isRescheduledAway;
   // True on touch/coarse-pointer devices (phones, tablets).
   const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+  // Whether attendance controls are present (caller passes undefined when not applicable)
+  const hasAttendance = !!(onMarkPresent || onMarkAbsent || onUndo);
 
   function handleClick() {
     onTap();
@@ -205,18 +211,18 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
       {...attributes}
       // Desktop: listeners on the whole chip so click-drag works anywhere.
       // Mobile: listeners only on the grip handle (see below) so the chip body scrolls.
-      {...(!isTouch ? listeners : {})}
+      {...(!isTouch && !isRescheduledAway ? listeners : {})}
       onClick={handleClick}
-      className={`lesson-chip${isAbsent ? ' absent' : ''}`}
+      className={`lesson-chip${isFaded ? ' absent' : ''}`}
       style={{
         background: style.bg, color: style.text, borderColor: style.border,
         opacity: isDragging ? 0.3 : 1,
-        cursor: isTouch ? 'default' : 'grab',
+        cursor: isRescheduledAway ? 'default' : (isTouch ? 'default' : 'grab'),
         display: 'flex', alignItems: 'flex-start', gap: 4,
       }}
     >
-      {/* Mobile-only drag handle — long press here to drag */}
-      {isTouch && (
+      {/* Mobile-only drag handle — long press here to drag (hidden for rescheduled-away) */}
+      {isTouch && !isRescheduledAway && (
         <span
           {...listeners}
           className="drag-handle"
@@ -232,18 +238,34 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         {lesson.type === 'Trial' && <span className="trial-badge">🆕</span>}
-        <span
-          className={isAbsent ? 'absent-name' : ''}
-          role={onStudentClick ? 'button' : undefined}
-          onClick={onStudentClick ? e => { e.stopPropagation(); onStudentClick(); } : undefined}
-          style={onStudentClick ? { cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 } : undefined}
-        >{lesson.studentName}</span>
-        {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
-        {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
-        {lesson.examDate === 'NO_EXAM' && !isAbsent && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+          <span
+            className={isFaded ? 'absent-name' : ''}
+            role={onStudentClick ? 'button' : undefined}
+            onClick={onStudentClick ? e => { e.stopPropagation(); onStudentClick(); } : undefined}
+            style={{
+              ...(onStudentClick ? { cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 } : {}),
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+              // When attendance controls are showing, leave room; otherwise let name breathe
+              maxWidth: hasAttendance ? 'calc(100% - 4px)' : undefined,
+            }}
+          >{lesson.studentName}</span>
+          {lesson.type !== 'Regular' && !isFaded && <span className="type-tag" style={{ flexShrink: 0 }}>{lesson.type}</span>}
+        </div>
+        {/* Faded status indicators — show below the name */}
+        {isRescheduledAway && (
+          <span style={{ display: 'block', fontSize: 10, opacity: 0.55, marginTop: 2 }}>
+            {lesson.rescheduledToDate ? `→ ${formatExamDate(lesson.rescheduledToDate)}` : 'rescheduled'}
+          </span>
+        )}
+        {lesson.status === 'Absent' && (
+          <span style={{ display: 'block', fontSize: 10, opacity: 0.55, marginTop: 2 }}>Absent</span>
+        )}
+        {/* Exam date — only for active (non-faded) lessons */}
+        {!isFaded && lesson.examDate === 'NO_EXAM' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 1 }}>no upcoming exam</span>
         )}
-        {lesson.examDate && lesson.examDate !== 'NO_EXAM' && !isAbsent && (
+        {!isFaded && lesson.examDate && lesson.examDate !== 'NO_EXAM' && (
           <span
             style={{ display: 'block', fontSize: 10, fontWeight: 600, opacity: 0.6, marginTop: 1, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 }}
             title="Click to see exam details"
@@ -253,38 +275,39 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
             {activeExamType ? `${activeExamType} @ ` : ''}📅 {formatExamDate(lesson.examDate)}
           </span>
         )}
-        {lesson.type !== 'Trial' && lesson.notes && (
+        {lesson.type !== 'Trial' && lesson.notes && !isFaded && (
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
         )}
+        {/* Attendance row — shown below name on mobile to prevent name wrapping */}
+        {!isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 4 }}
+               className="attendance-row">
+            {lesson.status === 'Scheduled' && (
+              <>
+                {onMarkAbsent && (
+                  <button onClick={e => { e.stopPropagation(); onMarkAbsent(); }} title="Mark absent"
+                    style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✗</button>
+                )}
+                {onMarkPresent && (
+                  <button onClick={e => { e.stopPropagation(); onMarkPresent(); }} title="Mark present"
+                    style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✓</button>
+                )}
+              </>
+            )}
+            {(lesson.status === 'Completed' || lesson.status === 'Absent') && (
+              <>
+                {onUndo && (
+                  <button onClick={e => { e.stopPropagation(); onUndo(); }} title="Undo"
+                    style={{ fontSize: 11, fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', flexShrink: 0, height: 22, lineHeight: 1 }}>undo</button>
+                )}
+                <span style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: lesson.status === 'Completed' ? '#16a34a' : '#ef4444' }}>
+                  {lesson.status}
+                </span>
+              </>
+            )}
+          </div>
+        )}
       </div>
-      {/* Inline attendance — hidden for Rescheduled/Cancelled */}
-      {lesson.status !== 'Rescheduled' && lesson.status !== 'Cancelled' && (onMarkPresent || onMarkAbsent || onUndo) && (
-        <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignSelf: 'center', alignItems: 'center' }}>
-          {lesson.status === 'Scheduled' && (
-            <>
-              {onMarkAbsent && (
-                <button onClick={e => { e.stopPropagation(); onMarkAbsent(); }} title="Mark absent"
-                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✗</button>
-              )}
-              {onMarkPresent && (
-                <button onClick={e => { e.stopPropagation(); onMarkPresent(); }} title="Mark present"
-                  style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✓</button>
-              )}
-            </>
-          )}
-          {(lesson.status === 'Completed' || lesson.status === 'Absent') && (
-            <>
-              {onUndo && (
-                <button onClick={e => { e.stopPropagation(); onUndo(); }} title="Undo"
-                  style={{ fontSize: 11, fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', flexShrink: 0, height: 22, lineHeight: 1 }}>undo</button>
-              )}
-              <span style={{ fontSize: 11, fontWeight: 600, flexShrink: 0, color: lesson.status === 'Completed' ? '#16a34a' : '#ef4444' }}>
-                {lesson.status}
-              </span>
-            </>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -1014,25 +1037,42 @@ export default function SchedulePage() {
   // ── renderLessonsSlotCard ────────────────────────────────────────────────────
   function renderLessonsSlotCard(slot: Slot, date: Date) {
     const dateStr = isoDate(date);
+    const todayStr = isoDate(new Date());
+    const yesterdayStr = isoDate(addDays(new Date(), -1));
     const dropId = `${dateStr}__${slot.id}`;
     const lessons = enrichedLessonMap[dropId] ?? [];
-    const isToday = dateStr === isoDate(new Date());
-    // Show Absent lessons on today so the undo button is accessible;
-    // hide them on past/future days to keep the view clean.
-    const visibleLessons = lessons.filter(l => l.status !== 'Absent' || isToday);
+    const isToday = dateStr === todayStr;
+    const isYesterday = dateStr === yesterdayStr;
+    const isPast = dateStr < todayStr;
+    const isFuture = dateStr > todayStr;
+    // Show ✗/✓ attendance buttons only for today and yesterday
+    const showAttendance = isToday || isYesterday;
+
+    // Visibility rules:
+    // - Future: only Scheduled/Completed (clean view — no Absent/Rescheduled noise)
+    // - Today + past: show Absent and Rescheduled-away so undo/info is accessible
+    const visibleLessons = lessons.filter(l => {
+      if (l.status === 'Cancelled') return false;
+      if (l.status === 'Absent') return !isFuture;
+      if (l.status === 'Rescheduled') return !isFuture;
+      return true;
+    });
     const presentCount = visibleLessons.filter(l => l.status === 'Completed').length;
 
-    // Enrolled students without a visible lesson record for this date — show as ghost chips.
-    // Exclude students who have an Absent record (they're intentionally hidden, not "unrecorded").
-    const absentStudentIds = new Set(
-      lessons.filter(l => l.status === 'Absent').map(l => l.studentId).filter(Boolean)
-    );
-    const dateAbsentIds = absentStudentsByDate[dateStr] ?? new Set<string>();
-    const visibleStudentIds = new Set(visibleLessons.map(l => l.studentId).filter(Boolean));
+    // Ghost chips: enrolled students with no lesson record for this date.
+    // Only relevant for today and yesterday (not future, not older past days).
     const enrolledIds = data?.enrollmentsBySlot?.[slot.id] ?? [];
-    const ghostStudents = enrolledIds
-      .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id) && !dateAbsentIds.has(id))
-      .map(id => ({ id, name: data?.students[id]?.name ?? 'Unknown' }));
+    let ghostStudents: { id: string; name: string }[] = [];
+    if (showAttendance) {
+      const absentStudentIds = new Set(
+        lessons.filter(l => l.status === 'Absent').map(l => l.studentId).filter(Boolean)
+      );
+      const dateAbsentIds = absentStudentsByDate[dateStr] ?? new Set<string>();
+      const visibleStudentIds = new Set(visibleLessons.map(l => l.studentId).filter(Boolean));
+      ghostStudents = enrolledIds
+        .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id) && !dateAbsentIds.has(id))
+        .map(id => ({ id, name: data?.students[id]?.name ?? 'Unknown' }));
+    }
 
     return (
       <div key={slot.id} className={`slot-card${isToday ? ' today' : ''}`}>
@@ -1054,9 +1094,9 @@ export default function SchedulePage() {
           onExamDateClick={handleExamDateClick}
           ghostStudents={ghostStudents}
           onStudentClick={(lesson) => window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}&from=schedule`, '_blank')}
-          onMarkPresent={(lesson) => handleDirectStatus(lesson, 'Completed')}
-          onMarkAbsent={(lesson) => handleDirectStatus(lesson, 'Absent')}
-          onUndo={(lesson) => handleDirectStatus(lesson, 'Scheduled')}
+          onMarkPresent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Completed') : undefined}
+          onMarkAbsent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Absent') : undefined}
+          onUndo={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Scheduled') : undefined}
           onGhostTap={(studentId, studentName) => setGhostActionSheet({ studentId, studentName, slotId: slot.id, date: dateStr })}
           savingStudents={savingAttendance}
           activeExamType={data?.activeExamType}

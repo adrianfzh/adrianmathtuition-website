@@ -60,11 +60,11 @@ export async function GET(req: NextRequest) {
   // Use exclusive upper bound (+1 day) because Airtable coerces Date to
   // datetime midnight, so <= '2026-04-26' stops before the day's lessons.
   const weekEndExclusive = isoDate(addDays(sunday, 1));
-  // Lessons tab shows all lessons for the week except ones that were moved/voided:
-  // - Excludes Status='Rescheduled' (original lesson moved away; the new date has its own Scheduled record)
+  // Lessons tab shows all lessons for the week except voided ones:
+  // - Includes Status='Rescheduled' (shown as faded chip on past days with a "→ date" indicator)
   // - Excludes Status='Cancelled' (lesson cancelled, no longer happening)
   // - Includes Status='Absent' — shown as dimmed chips so past slots stay visible
-  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<'${weekEndExclusive}',{Status}!='Rescheduled',{Status}!='Cancelled')`;
+  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<'${weekEndExclusive}',{Status}!='Cancelled')`;
 
   // Fetch slots, enrollments, and lessons in parallel
   const [slotsData, enrollmentsData, lessonsData] = await Promise.all([
@@ -72,9 +72,28 @@ export async function GET(req: NextRequest) {
     fetchAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot`),
     fetchAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes`
+      `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID`
     ),
   ]);
+
+  // Collect rescheduled-lesson IDs so we can look up the new lesson's date
+  const rescheduledNewIds = lessonsData
+    .filter((r: any) => r.fields['Status'] === 'Rescheduled')
+    .map((r: any) => r.fields['Rescheduled Lesson ID']?.[0])
+    .filter(Boolean) as string[];
+
+  // Fetch dates for the new (rescheduled-to) lessons, if any
+  let rescheduledDatesById: Record<string, string> = {};
+  if (rescheduledNewIds.length) {
+    const formula = `OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
+    const newLessons = await fetchAll(
+      'Lessons',
+      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Date`
+    );
+    rescheduledDatesById = Object.fromEntries(
+      newLessons.map((r: any) => [r.id, r.fields['Date'] ?? ''])
+    );
+  }
 
   // Collect all unique student IDs (from both enrollments and lessons)
   const studentIds = [
@@ -147,6 +166,7 @@ export async function GET(req: NextRequest) {
     // Trial lessons store the student name in Notes — preserve the full value.
     // For other types, only surface timing-related notes (truncated to 80 chars).
     const filteredNote = type === 'Trial' || isTimeRelatedNote(rawNote) ? rawNote.slice(0, 80) : '';
+    const rescheduledNewId = r.fields['Rescheduled Lesson ID']?.[0] ?? null;
     return {
       id: r.id,
       date: r.fields['Date'] || '',
@@ -155,6 +175,7 @@ export async function GET(req: NextRequest) {
       type,
       status: r.fields['Status'] || '',
       notes: filteredNote,
+      rescheduledToDate: rescheduledNewId ? (rescheduledDatesById[rescheduledNewId] ?? '') : '',
     };
   });
 
