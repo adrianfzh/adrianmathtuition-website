@@ -370,19 +370,28 @@ export default function SchedulePage() {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
-  const [monday, setMonday] = useState<Date>(() => getMondayOfWeek(new Date()));
+  const [activeDate, setActiveDate] = useState<Date>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('schedule_active_date');
+      if (stored) { const d = new Date(stored + 'T00:00:00'); if (!isNaN(d.getTime())) return d; }
+    }
+    const d = new Date(); d.setHours(0, 0, 0, 0); return d;
+  });
   const [data, setData] = useState<ScheduleData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [activeDay, setActiveDay] = useState<number>(() => {
-    const d = new Date().getDay();
-    return d === 0 ? 6 : d - 1; // 0=Mon…6=Sun
-  });
+  // Date strip lazy-load offsets (in days relative to today)
+  const [stripStartOffset, setStripStartOffset] = useState(-8 * 7);
+  const [stripEndOffset, setStripEndOffset] = useState(8 * 7);
 
   const [modal, setModal] = useState<{ student: StudentContact; lessonType: string } | null>(null);
   const [contactCache, setContactCache] = useState<Record<string, StudentContact>>({});
   const [contactLoading, setContactLoading] = useState(false);
   const savedPw = useRef('');
+  const stripRef = useRef<HTMLDivElement>(null);
+  // Tracks what triggered the last activeDate change so the auto-scroll effect
+  // knows whether to move the strip ('mount' | 'arrow') or leave it alone ('pill').
+  const lastChangeSource = useRef<'mount' | 'arrow' | 'pill'>('mount');
 
   const [viewMode, setViewMode] = useState<'lessons' | 'roster'>(() => {
     if (typeof window === 'undefined') return 'lessons';
@@ -392,6 +401,21 @@ export default function SchedulePage() {
   useEffect(() => {
     localStorage.setItem('schedule_view_mode', viewMode);
   }, [viewMode]);
+
+  // Persist last-viewed date
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('schedule_active_date', isoDate(activeDate));
+    }
+  }, [activeDate]);
+
+  // Date strip: all dates from stripStartOffset to stripEndOffset relative to today
+  const stripDates = useMemo(() => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const dates: Date[] = [];
+    for (let i = stripStartOffset; i <= stripEndOffset; i++) dates.push(addDays(today, i));
+    return dates;
+  }, [stripStartOffset, stripEndOffset]);
 
   // DnD
   const [activeDragLesson, setActiveDragLesson] = useState<EnrichedLesson | null>(null);
@@ -421,6 +445,15 @@ export default function SchedulePage() {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 0, tolerance: 3 } })
   );
+
+  // Derive monday as a stable ISO string so the fetch effect only fires on week change,
+  // not when the user taps a different day within the same week.
+  const mondayISO = isoDate(getMondayOfWeek(activeDate));
+  // Helper: map a Date to the full day name ("Monday"…"Sunday")
+  function dayNameOf(d: Date): string {
+    const idx = d.getDay() === 0 ? 6 : d.getDay() - 1; // Sun→6, Mon→0…
+    return DAYS[idx];
+  }
 
   const enrichedLessons = useMemo<EnrichedLesson[]>(() => {
     if (!data) return [];
@@ -509,13 +542,40 @@ export default function SchedulePage() {
 
   useEffect(() => {
     if (authed && savedPw.current) {
-      fetchSchedule(monday, savedPw.current);
+      fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
     }
-  }, [authed, monday, fetchSchedule]);
+  }, [authed, mondayISO, fetchSchedule]);
 
-  function prevWeek() { setMonday(d => addDays(d, -7)); }
-  function nextWeek() { setMonday(d => addDays(d, 7)); }
-  function thisWeek() { setMonday(getMondayOfWeek(new Date())); }
+  // Navigation helpers — track source so auto-scroll effect knows whether to move the strip
+  function setActiveDateFromArrow(d: Date) { lastChangeSource.current = 'arrow'; setActiveDate(d); }
+  function setActiveDateFromPill(d: Date)  { lastChangeSource.current = 'pill';  setActiveDate(d); }
+  function prevWeek() { setActiveDateFromArrow(addDays(activeDate, -7)); }
+  function nextWeek() { setActiveDateFromArrow(addDays(activeDate, 7)); }
+  function thisWeek() { lastChangeSource.current = 'arrow'; const t = new Date(); t.setHours(0,0,0,0); setActiveDate(t); }
+
+  // Auto-scroll the strip so the active pill is visible — but only when the
+  // date changed via arrow/mount, NOT when the user tapped a pill themselves.
+  useEffect(() => {
+    if (lastChangeSource.current === 'pill') return;
+    if (!stripRef.current) return;
+    const pill = stripRef.current.querySelector(`[data-iso="${isoDate(activeDate)}"]`) as HTMLElement | null;
+    pill?.scrollIntoView({ behavior: lastChangeSource.current === 'mount' ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+  }, [activeDate]);
+
+  // Lazy-load: prepend/append 4 more weeks when within ~10 pills of either edge
+  function onStripScroll(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    const PILL_PX = 54; // approximate pill width including gap
+    const THRESHOLD = 10 * PILL_PX;
+    if (el.scrollLeft < THRESHOLD) {
+      setStripStartOffset(prev => prev - 28);
+      // Compensate scrollLeft so the viewport doesn't jump when content is prepended
+      requestAnimationFrame(() => { el.scrollLeft += 28 * PILL_PX; });
+    }
+    if (el.scrollWidth - el.clientWidth - el.scrollLeft < THRESHOLD) {
+      setStripEndOffset(prev => prev + 28);
+    }
+  }
 
   // Slots sorted Mon→Sun then by time, used in dropdowns
   const DAY_ORDER: Record<string, number> = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4, Saturday: 5, Sunday: 6 };
@@ -559,6 +619,7 @@ export default function SchedulePage() {
   }
 
   // ── Build calendar data ─────────────────────────────────────────────────────
+  const monday = new Date(mondayISO + 'T00:00:00');
   const weekDates = DAYS.map((_, i) => addDays(monday, i));
 
   // Group slots by day name, sorted by time
@@ -729,8 +790,8 @@ export default function SchedulePage() {
         {/* Mobile: single day */}
         <div className="mobile-day">
           <div className="day-col">
-            {(slotsByDay[DAYS[activeDay]] ?? []).map(slot => renderRosterSlotCard(slot))}
-            {(slotsByDay[DAYS[activeDay]] ?? []).length === 0 && <div className="no-slots">No slots</div>}
+            {(slotsByDay[dayNameOf(activeDate)] ?? []).map(slot => renderRosterSlotCard(slot))}
+            {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && <div className="no-slots">No slots</div>}
           </div>
         </div>
 
@@ -921,7 +982,7 @@ export default function SchedulePage() {
     const dist = pullDistance;
     setPullDistance(0);
     if (dist >= PULL_THRESHOLD) {
-      await fetchSchedule(monday, savedPw.current);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
     }
   }
 
@@ -932,8 +993,8 @@ export default function SchedulePage() {
 
   function openAddModalFab() {
     setModalError('');
-    const todaySlots = slotsByDay[DAYS[activeDay]] ?? [];
-    setAddModal({ type: 'Additional', date: isoDate(new Date()), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true });
+    const todaySlots = slotsByDay[dayNameOf(activeDate)] ?? [];
+    setAddModal({ type: 'Additional', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true });
   }
 
   async function openStudentModal(studentId: string, lessonType: string) {
@@ -1122,8 +1183,8 @@ export default function SchedulePage() {
             ))
           ) : (
             <div className="day-col">
-              {(slotsByDay[DAYS[activeDay]] ?? []).map(slot => renderLessonsSlotCard(slot, weekDates[activeDay]))}
-              {(slotsByDay[DAYS[activeDay]] ?? []).length === 0 && <div className="no-slots">No lessons</div>}
+              {(slotsByDay[dayNameOf(activeDate)] ?? []).map(slot => renderLessonsSlotCard(slot, activeDate))}
+              {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && <div className="no-slots">No lessons</div>}
             </div>
           )}
         </div>
@@ -1183,7 +1244,7 @@ export default function SchedulePage() {
           <button className="nav-btn" onClick={prevWeek}>‹</button>
           <button className="week-label" onClick={thisWeek}>{formatWeekLabel(monday)}</button>
           <button className="nav-btn" onClick={nextWeek}>›</button>
-          <button className="nav-btn refresh-btn" onClick={() => fetchSchedule(monday, savedPw.current)} disabled={loading} title="Refresh">↻</button>
+          <button className="nav-btn refresh-btn" onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current)} disabled={loading} title="Refresh">↻</button>
         </div>
       </div>
 
@@ -1205,25 +1266,21 @@ export default function SchedulePage() {
         </div>
       </div>
 
-      {/* Day tabs (mobile) */}
-      <div className="day-tabs">
-        {DAYS.map((day, i) => {
-          const date = weekDates[i];
-          const isToday = isoDate(date) === isoDate(new Date());
-          const slots = slotsByDay[day] || [];
-          const hasActivity = data && slots.some(s =>
-            (data.enrollmentsBySlot?.[s.id]?.length || 0) > 0 ||
-            getLessonsForSlot(date, s.id).length > 0
-          );
+      {/* Date strip (mobile) — horizontally scrollable, 16+ weeks */}
+      <div ref={stripRef} className="date-strip" onScroll={onStripScroll}>
+        {stripDates.map(date => {
+          const iso = isoDate(date);
+          const isActive = iso === isoDate(activeDate);
+          const isTodayPill = iso === isoDate(new Date());
           return (
             <button
-              key={day}
-              className={`day-tab ${activeDay === i ? 'active' : ''} ${isToday ? 'today' : ''}`}
-              onClick={() => setActiveDay(i)}
+              key={iso}
+              data-iso={iso}
+              className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}`}
+              onClick={() => setActiveDateFromPill(date)}
             >
-              <span className="day-short">{DAY_SHORT[i]}</span>
-              <span className="day-date">{date.getDate()}</span>
-              {hasActivity && <span className="day-dot" />}
+              <span className="dp-dow">{date.toLocaleDateString('en-SG', { weekday: 'short' }).slice(0, 3).toUpperCase()}</span>
+              <span className="dp-date">{date.getDate()}</span>
             </button>
           );
         })}
@@ -1251,7 +1308,7 @@ export default function SchedulePage() {
         {error && (
           <div className="error-banner">
             {error}
-            <button onClick={() => fetchSchedule(monday, savedPw.current)}>Retry</button>
+            <button onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current)}>Retry</button>
           </div>
         )}
 
@@ -1855,41 +1912,41 @@ body {
   font-weight: 600;
 }
 
-/* ── Day tabs ── */
-.day-tabs {
+/* ── Date strip (mobile, replaces old day-tabs) ── */
+.date-strip {
   display: flex;
+  gap: 4px;
   background: white;
   border-bottom: 1px solid #e2e8f0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  padding: 6px 12px;
   position: sticky;
   top: 107px;
   z-index: 90;
 }
-.day-tabs::-webkit-scrollbar { display: none; }
-.day-tab {
-  flex: 1; min-width: 0;
+.date-strip::-webkit-scrollbar { display: none; }
+.date-pill {
+  flex-shrink: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 2px; padding: 10px 4px;
-  border: none; background: none;
-  cursor: pointer; position: relative;
-  border-bottom: 3px solid transparent;
-  transition: background 0.1s;
+  gap: 1px; padding: 6px 8px;
+  min-width: 46px;
+  border: none; border-radius: 10px;
+  background: transparent;
   color: #64748b;
+  cursor: pointer;
+  transition: background 0.12s;
+  font-family: inherit;
 }
-.day-tab:hover { background: #f8fafc; }
-.day-tab.active { border-bottom-color: #1a365d; color: #1a365d; font-weight: 600; }
-.day-tab.today .day-date { color: #1a365d; font-weight: 700; }
-.day-short { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
-.day-date { font-size: 16px; font-weight: 600; }
-.day-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: #1a365d; position: absolute;
-  bottom: 3px; left: 50%; transform: translateX(-50%);
-}
-.day-tab.active .day-dot { background: #1a365d; }
+.date-pill:hover { background: #f1f5f9; }
+.date-pill.today .dp-date { color: #1a365d; font-weight: 700; }
+.date-pill.active { background: #1a365d; color: #FFF8E7; }
+.date-pill.active .dp-date { color: #FFF8E7; font-weight: 700; }
+.date-pill.active .dp-dow { color: rgba(255,248,231,0.75); }
+.dp-dow { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.dp-date { font-size: 15px; font-weight: 600; margin-top: 1px; }
 
 /* ── Content area ── */
 .sched-content { padding: 12px 12px 80px; max-width: 1400px; margin: 0 auto; }
@@ -2023,7 +2080,7 @@ body {
 /* ── Desktop grid ── */
 @media (min-width: 768px) {
   .mobile-day { display: none; }
-  .day-tabs { display: none; }
+  .date-strip { display: none; }
   .desktop-grid-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
