@@ -33,11 +33,13 @@ export function formatDateSlotLabel(
   return `${day}, ${date} ${slotFields.Time ?? ''}`.trim();
 }
 
+// NOTE: ARRAYJOIN({Slot}) returns slot display names, not record IDs.
+// Filter by Date + Status only in Airtable, then match slotId in JS.
 export async function countLessonsInSlot(slotId: string, date: string): Promise<number> {
   const formula = encodeURIComponent(
-    `AND(FIND('${slotId}',ARRAYJOIN({Slot}))>0,{Date}='${date}',{Status}!='Cancelled',{Status}!='Absent')`
+    `AND({Date}='${date}',{Status}!='Cancelled',{Status}!='Absent')`
   );
-  const data = await airtableRequestAll('Lessons', `?filterByFormula=${formula}&fields[]=Status`);
-  return data.records.length;
+  const data = await airtableRequestAll('Lessons', `?filterByFormula=${formula}&fields[]=Slot`);
+  return data.records.filter((r: any) => r.fields['Slot']?.[0] === slotId).length;
 }
 

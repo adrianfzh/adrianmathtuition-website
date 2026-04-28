@@ -28,17 +28,22 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Check for an existing lesson record for this student + slot + date
-    const formula = `AND({Date}='${date}',FIND('${slotId}',ARRAYJOIN({Slot}))>0,FIND('${studentId}',ARRAYJOIN({Student}))>0)`;
+    // Check for an existing lesson record for this student + slot + date.
+    // NOTE: ARRAYJOIN({Slot}) and ARRAYJOIN({Student}) return display names,
+    // not record IDs — so we filter by Date only in Airtable and match
+    // Slot + Student in JS.
     const existing = await airtableRequestAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1&fields[]=Status&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Notes`
+      `?filterByFormula=${encodeURIComponent(`{Date}='${date}'`)}&fields[]=Status&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Notes`
+    );
+    const matchedRecords = existing.records.filter(
+      (r: any) => r.fields['Slot']?.[0] === slotId && r.fields['Student']?.[0] === studentId
     );
 
     let record: any;
-    if (existing.records.length > 0) {
+    if (matchedRecords.length > 0) {
       // Patch existing record
-      const id = existing.records[0].id;
+      const id = matchedRecords[0].id;
       record = await airtableRequest('Lessons', `/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ fields: { Status: status } }),

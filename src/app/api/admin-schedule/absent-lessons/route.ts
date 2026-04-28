@@ -7,7 +7,12 @@ export const runtime = 'nodejs';
 // GET /api/admin-schedule/absent-lessons?studentId=recXXX
 // Returns ALL of the student's Absent lessons up to and including today,
 // newest first. Lessons already linked to a makeup (Rescheduled Lesson ID
-// non-empty) are excluded in JS so we don't show already-handled ones.
+// non-empty) are excluded.
+//
+// NOTE: ARRAYJOIN({Student}) returns display names (e.g. "Sim Ze Kai"),
+// NOT record IDs — so we cannot use FIND(studentId, ARRAYJOIN({Student}))
+// in the Airtable formula. Instead we filter by Status only in Airtable and
+// match the student in JS by checking r.fields['Student']?.[0].
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,14 +27,16 @@ export async function GET(req: NextRequest) {
   const data = await airtableRequestAll(
     'Lessons',
     `?filterByFormula=${encodeURIComponent(
-      `AND(FIND('${studentId}',ARRAYJOIN({Student}))>0,{Date}<='${today}',{Status}='Absent')`
+      `AND({Status}='Absent',{Date}<='${today}')`
     )}&sort[0][field]=Date&sort[0][direction]=desc` +
-    `&fields[]=Date&fields[]=Slot&fields[]=Rescheduled+Lesson+ID`
+    `&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Rescheduled+Lesson+ID`
   );
 
-  // Exclude lessons already linked to a makeup
   const lessons = data.records
     .filter(r => {
+      // Match student in JS — ARRAYJOIN returns display names, not record IDs
+      if (r.fields['Student']?.[0] !== studentId) return false;
+      // Exclude lessons already linked to a makeup
       const linked: string[] | undefined = r.fields['Rescheduled Lesson ID'];
       return !linked || linked.length === 0 || linked.every((id: string) => !id);
     })

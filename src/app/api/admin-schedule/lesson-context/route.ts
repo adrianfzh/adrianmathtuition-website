@@ -49,19 +49,25 @@ export async function GET(req: NextRequest) {
   let studentSubjects: string[] = [];
 
   if (studentId) {
+    // NOTE: ARRAYJOIN({Student}) returns display names not record IDs, so we
+    // filter by date/status in Airtable and match student in JS.
     const [prevLessons, studentData] = await Promise.all([
       airtableRequestAll(
         'Lessons',
         `?filterByFormula=${encodeURIComponent(
-          `AND(FIND('${studentId}',ARRAYJOIN({Student}))>0,{Date}<'${lessonDate}',{Status}!='Absent',{Status}!='Cancelled',{Status}!='Rescheduled')`
-        )}&sort[0][field]=Date&sort[0][direction]=desc&maxRecords=1` +
-        `&fields[]=Date&fields[]=Topics Covered&fields[]=Homework Assigned&fields[]=Homework Returned`
+          `AND({Date}<'${lessonDate}',{Status}!='Absent',{Status}!='Cancelled',{Status}!='Rescheduled')`
+        )}&sort[0][field]=Date&sort[0][direction]=desc` +
+        `&fields[]=Date&fields[]=Student&fields[]=Topics Covered&fields[]=Homework Assigned&fields[]=Homework Returned`
       ),
       airtableRequest('Students', `/${studentId}`).catch(() => ({ fields: {} })),
     ]);
 
-    if (prevLessons.records.length > 0) {
-      const r = prevLessons.records[0];
+    // Find the most recent lesson for this specific student
+    const prevRecord = prevLessons.records.find(
+      (r: any) => r.fields['Student']?.[0] === studentId
+    );
+    if (prevRecord) {
+      const r = prevRecord;
       prev = {
         id: r.id,
         date: r.fields['Date'] ?? '',
@@ -93,14 +99,16 @@ export async function GET(req: NextRequest) {
     examType = resolveActiveExamType(forceOn);
 
     if (examType && studentId) {
+      // Filter by Exam Type only; match student in JS (ARRAYJOIN returns names, not IDs)
       const examsData = await airtableRequestAll(
         'Exams',
         `?filterByFormula=${encodeURIComponent(
-          `AND({Exam Type}='${examType}',FIND('${studentId}',ARRAYJOIN({Student}))>0)`
-        )}&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject&fields[]=Exam Notes`
+          `{Exam Type}='${examType}'`
+        )}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject&fields[]=Exam Notes`
       );
-      // Group by subject; null subject key = no subject field set (legacy / single-math students)
+      // Group by subject — filter to this student in JS, then key by subject
       for (const r of examsData.records) {
+        if (r.fields['Student']?.[0] !== studentId) continue;
         const subject: string = r.fields['Subject'] ?? '';
         examsBySubject[subject] = {
           examDate: r.fields['Exam Date'] ?? null,
