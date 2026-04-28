@@ -1170,23 +1170,24 @@ export default function SchedulePage() {
   function nextWeek() { setActiveDateFromArrow(addDays(activeDate, 7)); }
   function thisWeek() { goToToday(); }
 
-  // Initial scroll: snap to today's pill after the first render so the strip
-  // starts centred on today rather than at its leftmost position.
+  // Initial scroll: snap to today's pill once the strip is in the DOM.
+  // Must depend on `authed` because the strip only renders after cookie auth
+  // resolves — running on mount alone ([] dep) fires before the strip exists.
   useEffect(() => {
+    if (!authed) return;
     if (!stripRef.current) return;
     const strip = stripRef.current;
     // rAF ensures the strip has been laid out and its overflow is measurable.
     requestAnimationFrame(() => {
       const pill = strip.querySelector(`[data-iso="${isoDate(activeDate)}"]`) as HTMLElement | null;
       if (!pill) return;
-      // Scroll the strip container directly so only the strip moves, not the page.
       const containerWidth = strip.clientWidth;
       const pillLeft = pill.offsetLeft;
       const pillWidth = pill.offsetWidth;
       strip.scrollLeft = pillLeft - (containerWidth - pillWidth) / 2;
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // mount only
+  }, [authed]); // re-run only when auth state changes (false → true)
 
   // Arrow navigation: smooth-scroll the strip to bring the new active date into view.
   // Skips if the change came from the user tapping a pill (strip position unchanged).
