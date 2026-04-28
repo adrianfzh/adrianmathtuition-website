@@ -40,7 +40,9 @@ export async function POST(req: NextRequest) {
     if (action === 'delete') {
       await airtableRequest('Lessons', `/${lessonId}`, { method: 'DELETE' });
 
-      // If this lesson is a Rescheduled type, unlink the source lesson
+      // If this lesson is a Rescheduled type, unlink the source lesson and
+      // restore its status: 'Absent' for past lessons (it was absent and needed
+      // a makeup), 'Scheduled' for future lessons (it was just being moved).
       if (lessonType === 'Rescheduled') {
         try {
           const formula = encodeURIComponent(
@@ -48,20 +50,22 @@ export async function POST(req: NextRequest) {
           );
           const sources = await airtableRequestAll(
             'Lessons',
-            `?filterByFormula=${formula}&fields[]=Status&fields[]=Rescheduled+Lesson+ID`
+            `?filterByFormula=${formula}&fields[]=Status&fields[]=Date&fields[]=Rescheduled+Lesson+ID`
           );
+          const today = new Date().toISOString().slice(0, 10);
           await Promise.all(
-            sources.records.map((r: any) =>
-              airtableRequest('Lessons', `/${r.id}`, {
+            sources.records.map((r: any) => {
+              const restoreStatus = (r.fields['Date'] ?? '') < today ? 'Absent' : 'Scheduled';
+              return airtableRequest('Lessons', `/${r.id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({
                   fields: {
-                    Status: 'Scheduled',
+                    Status: restoreStatus,
                     'Rescheduled Lesson ID': [],
                   },
                 }),
-              })
-            )
+              });
+            })
           );
         } catch (unlinkErr) {
           console.error('[delete] Unlink source lesson error (non-fatal):', unlinkErr);

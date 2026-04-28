@@ -1053,7 +1053,7 @@ export default function SchedulePage() {
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
   // Makeup flow — absent lessons for the selected student
-  const [absentLessons, setAbsentLessons] = useState<{ id: string; date: string; slotId: string | null }[]>([]);
+  const [absentLessons, setAbsentLessons] = useState<{ id: string; date: string; slotId: string | null; status: string }[]>([]);
   const [absentLessonsLoading, setAbsentLessonsLoading] = useState(false);
   const [savingAttendance, setSavingAttendance] = useState<Set<string>>(new Set());
 
@@ -2467,9 +2467,10 @@ export default function SchedulePage() {
                         const d = new Date(l.date + 'T00:00:00');
                         const dateLabel = d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
                         const slot = l.slotId ? data?.slots.find(s => s.id === l.slotId) : null;
+                        const hint = l.status !== 'Absent' ? ' (not marked absent)' : '';
                         return (
                           <option key={l.id} value={l.id}>
-                            {dateLabel}{slot ? ` · ${slot.time}` : ''}
+                            {dateLabel}{slot ? ` · ${slot.time}` : ''}{hint}
                           </option>
                         );
                       })}
