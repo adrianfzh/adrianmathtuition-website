@@ -1988,6 +1988,8 @@ export default function SchedulePage() {
 
       {/* View tabs */}
       <div className="view-tabs-bar">
+        {/* Left spacer — same flex weight as the right side so tabs stay centred */}
+        <div className="view-tabs-side" />
         <div className="view-tabs">
           <button
             className={`view-tab ${viewMode === 'lessons' ? 'active' : ''}`}
@@ -2002,11 +2004,14 @@ export default function SchedulePage() {
             Roster
           </button>
         </div>
-        {viewMode === 'lessons' && (
-          <button className="today-pill-btn" onClick={goToToday} title="Go to today">
-            Today
-          </button>
-        )}
+        {/* Right side — Today pill lives here, always reserves space */}
+        <div className="view-tabs-side view-tabs-right">
+          {viewMode === 'lessons' && (
+            <button className="today-pill-btn" onClick={goToToday} title="Go to today">
+              Today
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Date strip wrapper — sticky bar, only shown in Lessons mode */}
@@ -2712,22 +2717,31 @@ body {
 .view-tabs-bar {
   background: white;
   border-bottom: 1px solid #e2e8f0;
-  padding: 8px 16px;
+  padding: 6px 12px;
   position: sticky;
   top: 57px;
   z-index: 95;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+/* Equal-flex sides keep the centre tabs truly centred */
+.view-tabs-side {
+  flex: 1;
+}
+.view-tabs-right {
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
 }
 .view-tabs {
+  flex: 0 0 auto;
   display: flex;
   background: #f1f5f9;
   border-radius: 20px;
   padding: 3px;
   gap: 2px;
-  width: 100%;
-  max-width: 300px;
+  min-width: 180px;
 }
 .view-tab {
   flex: 1;
@@ -2771,17 +2785,15 @@ body {
   padding: 6px 8px;
 }
 .date-strip::-webkit-scrollbar { display: none; }
-/* Today pill lives in the view-tabs-bar on mobile, right-aligned */
+/* Today pill — sits in the right flex slot, no absolute positioning needed */
 .today-pill-btn {
-  position: absolute;
-  right: 10px;
   border: 1.5px solid #cbd5e1;
-  border-radius: 14px;
+  border-radius: 12px;
   background: white;
   color: #1a365d;
   font-size: 11px;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 3px 9px;
   cursor: pointer;
   font-family: inherit;
   letter-spacing: 0.03em;
@@ -2789,9 +2801,10 @@ body {
   white-space: nowrap;
 }
 .today-pill-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
-/* Hidden on desktop — date strip itself is already hidden there */
+/* Hidden on desktop — the date strip handles navigation there */
 @media (min-width: 768px) {
   .today-pill-btn { display: none; }
+  .view-tabs-side { display: none; }
 }
 .date-pill {
   flex-shrink: 0;
