@@ -33,6 +33,7 @@ interface SlotData {
   slotName: string;
   slotDay: string;
   slotTime: string;
+  startDate: string | null;   // YYYY-MM-DD if admin-prefilled, null otherwise
 }
 
 function SignupContent() {
@@ -44,6 +45,7 @@ function SignupContent() {
   const subjects      = params.get('subjects')      || '';
   const subjectLevel  = params.get('subjectLevel')  || '';
   const trialLessonId = params.get('trialLessonId') || '';
+  const startDateParam = params.get('startDate')    || '';   // YYYY-MM-DD, admin-prefilled
   const expires       = params.get('expires')       || '';
   const sig           = params.get('sig')           || '';
 
@@ -80,6 +82,7 @@ function SignupContent() {
     }
     const qs = new URLSearchParams({ slotId, level, subjects, subjectLevel, expires, sig });
     if (trialLessonId) qs.set('trialLessonId', trialLessonId);
+    if (startDateParam) qs.set('startDate', startDateParam);
     fetch('/api/signup-data?' + qs.toString())
       .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
       .then(({ ok, data }) => {
@@ -94,6 +97,8 @@ function SignupContent() {
         }
         setSlotData(data);
         savedSlotTimeRef.current = (data.slotTime || '').replace(/^\d+\s/, '').trim();
+        // If admin prefilled a start date, use it directly (flatpickr won't initialise)
+        if (data.startDate) setDatePick(data.startDate);
         setPageState('form');
       })
       .catch(() => {
@@ -103,9 +108,11 @@ function SignupContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Init flatpickr when ready
+  // Init flatpickr when ready — skipped entirely if admin prefilled a start date
   useEffect(() => {
     if (!fpReady || pageState !== 'form' || !slotData || !dateInputRef.current) return;
+    // Admin-prefilled date: field is shown as locked read-only, no calendar needed
+    if (slotData.startDate) return;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -410,20 +417,34 @@ function SignupContent() {
                   </div>
                   <div className="mb-4">
                     <label htmlFor="startDate" className="block text-[15px] font-medium mb-1.5">
-                      Preferred Start Date <span className="text-red-500">*</span>
+                      Start Date <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="text" id="startDate" name="startDate"
-                      className="sg-input cursor-pointer"
-                      placeholder="Select a date…"
-                      readOnly autoComplete="off"
-                      ref={dateInputRef}
-                    />
-                    <p className="text-[12px] text-muted-foreground mt-1.5" id="date-hint">
-                      {slotData.slotDay
-                        ? `Only ${(slotData.slotDay || '').replace(/^\d+\s*/, '')}s are available for your slot (next 4 weeks).`
-                        : 'When would you like your first lesson to be?'}
-                    </p>
+                    {slotData.startDate ? (
+                      /* Admin-prefilled: show locked field, hidden input carries the value */
+                      <>
+                        <div className="sg-input sg-prefilled flex items-center gap-2 text-[15px]">
+                          <span>📅</span>
+                          <span>{slotData.startDate}</span>
+                          <span className="ml-auto text-[12px] text-muted-foreground">set by tutor</span>
+                        </div>
+                        <input type="hidden" name="startDate" value={slotData.startDate} />
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="text" id="startDate" name="startDate"
+                          className="sg-input cursor-pointer"
+                          placeholder="Select a date…"
+                          readOnly autoComplete="off"
+                          ref={dateInputRef}
+                        />
+                        <p className="text-[12px] text-muted-foreground mt-1.5" id="date-hint">
+                          {slotData.slotDay
+                            ? `Only ${(slotData.slotDay || '').replace(/^\d+\s*/, '')}s are available for your slot (next 4 weeks).`
+                            : 'When would you like your first lesson to be?'}
+                        </p>
+                      </>
+                    )}
                   </div>
                   <div className="mb-4">
                     <label htmlFor="howHeard" className="block text-[15px] font-medium mb-1.5">

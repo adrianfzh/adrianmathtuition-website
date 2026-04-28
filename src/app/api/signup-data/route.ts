@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   const subjectsRaw   = sp.get('subjects')      || '';
   const subjectLevel  = sp.get('subjectLevel')  || '';
   const trialLessonId = sp.get('trialLessonId') || '';
+  const startDate     = sp.get('startDate')     || '';
   const expires       = sp.get('expires')       || '';
   const sig           = sp.get('sig')           || '';
 
@@ -25,6 +26,7 @@ export async function GET(request: NextRequest) {
   check.set('subjects', subjectsRaw);
   if (subjectLevel) check.set('subjectLevel', subjectLevel);
   if (trialLessonId) check.set('trialLessonId', trialLessonId);
+  if (startDate) check.set('startDate', startDate);
   check.set('expires', expires);
   const expectedSig = createHmac('sha256', process.env.SIGNUP_SECRET || 'fallback-secret')
     .update(check.toString()).digest('hex').slice(0, 16);
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest) {
     const slotTime = sf['Time'] || '';
     const subjects = subjectsRaw ? subjectsRaw.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
 
-    return NextResponse.json({ level, subjects, subjectLevel, slotId, slotName, slotDay: dayRaw, slotTime, trialLessonId: trialLessonId || null });
+    return NextResponse.json({ level, subjects, subjectLevel, slotId, slotName, slotDay: dayRaw, slotTime, trialLessonId: trialLessonId || null, startDate: startDate || null });
   } catch (err) {
     console.error('signup-data error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
