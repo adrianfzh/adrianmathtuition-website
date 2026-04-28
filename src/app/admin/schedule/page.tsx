@@ -110,7 +110,7 @@ interface ActionSheetState {
   slotId: string;
 }
 interface AddModalState {
-  type: 'Additional' | 'Makeup' | 'Trial';
+  type: 'Makeup' | 'Rescheduled' | 'Additional' | 'Trial';
   date: string;
   slotId: string;
   studentId: string;
@@ -118,7 +118,7 @@ interface AddModalState {
   trialStudentName: string;
   notes: string;
   notify: boolean;
-  /** Makeup only — the Absent lesson being made up */
+  /** Makeup: the Absent lesson being made up. Rescheduled: the Scheduled lesson being moved. */
   linkedLessonId: string;
 }
 interface AbsentDeleteState {
@@ -1056,6 +1056,10 @@ export default function SchedulePage() {
   const [absentLessons, setAbsentLessons] = useState<{ id: string; date: string; slotId: string | null }[]>([]);
   const [absentLessonsLoading, setAbsentLessonsLoading] = useState(false);
   const [absentLessonsError, setAbsentLessonsError] = useState('');
+  // Rescheduled flow — upcoming scheduled lessons for the selected student
+  const [upcomingLessons, setUpcomingLessons] = useState<{ id: string; date: string; slotId: string | null }[]>([]);
+  const [upcomingLessonsLoading, setUpcomingLessonsLoading] = useState(false);
+  const [upcomingLessonsError, setUpcomingLessonsError] = useState('');
   const [savingAttendance, setSavingAttendance] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
@@ -1589,6 +1593,24 @@ export default function SchedulePage() {
     }
   }
 
+  async function fetchUpcomingLessons(studentId: string) {
+    setUpcomingLessons([]);
+    setUpcomingLessonsError('');
+    setUpcomingLessonsLoading(true);
+    try {
+      const res = await fetch(`/api/admin-schedule/upcoming-lessons?studentId=${studentId}`, {
+        headers: { Authorization: `Bearer ${savedPw.current}` },
+      });
+      if (!res.ok) { setUpcomingLessonsError(`Error ${res.status} loading lessons`); return; }
+      const json = await res.json();
+      setUpcomingLessons(json.lessons ?? []);
+    } catch {
+      setUpcomingLessonsError('Network error loading lessons');
+    } finally {
+      setUpcomingLessonsLoading(false);
+    }
+  }
+
   async function handleConfirmAdd() {
     if (!addModal) return;
     setSubmitting(true); setModalError('');
@@ -1597,20 +1619,24 @@ export default function SchedulePage() {
       if (addModal.type !== 'Trial' && !addModal.studentId) { setModalError('Select a student'); setSubmitting(false); return; }
       if (!addModal.date || !addModal.slotId) { setModalError('Select a date and slot'); setSubmitting(false); return; }
 
-      // Makeup → reschedule route (links to the original absent lesson)
-      if (addModal.type === 'Makeup') {
-        if (!addModal.linkedLessonId) { setModalError('Select which missed lesson to make up'); setSubmitting(false); return; }
+      // Makeup + Rescheduled → reschedule route (links new lesson to original)
+      if (addModal.type === 'Makeup' || addModal.type === 'Rescheduled') {
+        if (!addModal.linkedLessonId) {
+          setModalError(addModal.type === 'Makeup' ? 'Select which missed lesson to make up' : 'Select which lesson to reschedule');
+          setSubmitting(false); return;
+        }
+        const defaultNote = addModal.type === 'Makeup' ? 'Makeup lesson' : 'Rescheduled by admin';
         const res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',
           headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || 'Makeup lesson' }),
+          body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || defaultNote }),
         });
         const json = await res.json();
         if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
         if (!res.ok) throw new Error(json.error || 'Failed');
         setAddModal(null);
         await fetchSchedule(monday, savedPw.current);
-        showToast('success', '✓ Makeup lesson scheduled');
+        showToast('success', addModal.type === 'Makeup' ? '✓ Makeup lesson scheduled' : '✓ Lesson rescheduled');
         return;
       }
 
@@ -1680,13 +1706,13 @@ export default function SchedulePage() {
 
   function openAddModal(date: Date, slot: Slot) {
     setModalError('');
-    setAddModal({ type: 'Additional', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true, linkedLessonId: '' });
+    setAddModal({ type: 'Makeup', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true, linkedLessonId: '' });
   }
 
   function openAddModalFab() {
     setModalError('');
     const todaySlots = slotsByDay[dayNameOf(activeDate)] ?? [];
-    setAddModal({ type: 'Additional', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true, linkedLessonId: '' });
+    setAddModal({ type: 'Makeup', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true, linkedLessonId: '' });
   }
 
   async function openStudentModal(studentId: string, lessonType: string) {
@@ -2398,9 +2424,11 @@ export default function SchedulePage() {
                     const t = e.target.value as AddModalState['type'];
                     setAddModal(m => m ? { ...m, type: t, studentId: '', studentSearch: '', linkedLessonId: '' } : null);
                     setAbsentLessons([]); setAbsentLessonsError('');
+                    setUpcomingLessons([]); setUpcomingLessonsError('');
                   }}>
-                  <option value="Additional">Additional</option>
                   <option value="Makeup">Makeup</option>
+                  <option value="Rescheduled">Rescheduled</option>
+                  <option value="Additional">Additional</option>
                   <option value="Trial">Trial</option>
                 </select>
               </div>
@@ -2430,6 +2458,7 @@ export default function SchedulePage() {
                         onClick={() => {
                           setAddModal(m => m ? { ...m, studentId: '', studentSearch: '', linkedLessonId: '' } : null);
                           setAbsentLessons([]); setAbsentLessonsError('');
+                          setUpcomingLessons([]); setUpcomingLessonsError('');
                         }}>change</button>
                     </div>
                   ) : (
@@ -2447,6 +2476,7 @@ export default function SchedulePage() {
                                 onClick={() => {
                                   setAddModal(m => m ? { ...m, studentId: id, studentSearch: '' } : null);
                                   if (addModal.type === 'Makeup') fetchAbsentLessons(id);
+                                  if (addModal.type === 'Rescheduled') fetchUpcomingLessons(id);
                                 }}>
                                 {s.name}
                               </button>
@@ -2486,6 +2516,35 @@ export default function SchedulePage() {
                   )}
                 </div>
               )}
+              {/* Lesson to reschedule picker — Rescheduled only */}
+              {addModal.type === 'Rescheduled' && addModal.studentId && (
+                <div className="form-group">
+                  <span className="form-label">Lesson to reschedule</span>
+                  {upcomingLessonsLoading ? (
+                    <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0' }}>Loading upcoming lessons…</div>
+                  ) : upcomingLessonsError ? (
+                    <div style={{ fontSize: 13, color: '#dc2626', padding: '8px 0' }}>{upcomingLessonsError}</div>
+                  ) : upcomingLessons.length === 0 ? (
+                    <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0' }}>No upcoming scheduled lessons found</div>
+                  ) : (
+                    <select className="modal-select" value={addModal.linkedLessonId}
+                      onChange={e => setAddModal(m => m ? { ...m, linkedLessonId: e.target.value } : null)}>
+                      <option value="">Select lesson to reschedule…</option>
+                      {upcomingLessons.map(l => {
+                        const d = new Date(l.date + 'T00:00:00');
+                        const dateLabel = d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+                        const slot = l.slotId ? data?.slots.find(s => s.id === l.slotId) : null;
+                        return (
+                          <option key={l.id} value={l.id}>
+                            {dateLabel}{slot ? ` · ${slot.time}` : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  )}
+                </div>
+              )}
+
               {/* Trial name */}
               {addModal.type === 'Trial' && (
                 <div className="form-group">
