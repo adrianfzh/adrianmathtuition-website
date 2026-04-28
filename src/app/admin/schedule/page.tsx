@@ -118,6 +118,8 @@ interface AddModalState {
   trialStudentName: string;
   notes: string;
   notify: boolean;
+  /** Makeup only — the Absent lesson being made up */
+  linkedLessonId: string;
 }
 interface AbsentDeleteState {
   lesson: EnrichedLesson;
@@ -1050,6 +1052,9 @@ export default function SchedulePage() {
   const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
+  // Makeup flow — absent lessons for the selected student
+  const [absentLessons, setAbsentLessons] = useState<{ id: string; date: string; slotId: string | null }[]>([]);
+  const [absentLessonsLoading, setAbsentLessonsLoading] = useState(false);
   const [savingAttendance, setSavingAttendance] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
@@ -1561,6 +1566,22 @@ export default function SchedulePage() {
     finally { setSubmitting(false); }
   }
 
+  async function fetchAbsentLessons(studentId: string) {
+    setAbsentLessons([]);
+    setAbsentLessonsLoading(true);
+    try {
+      const res = await fetch(`/api/admin-schedule/absent-lessons?studentId=${studentId}`, {
+        headers: { Authorization: `Bearer ${savedPw.current}` },
+      });
+      const json = await res.json();
+      setAbsentLessons(json.lessons ?? []);
+    } catch {
+      setAbsentLessons([]);
+    } finally {
+      setAbsentLessonsLoading(false);
+    }
+  }
+
   async function handleConfirmAdd() {
     if (!addModal) return;
     setSubmitting(true); setModalError('');
@@ -1568,6 +1589,25 @@ export default function SchedulePage() {
       if (addModal.type === 'Trial' && !addModal.trialStudentName) { setModalError('Enter trial student name'); setSubmitting(false); return; }
       if (addModal.type !== 'Trial' && !addModal.studentId) { setModalError('Select a student'); setSubmitting(false); return; }
       if (!addModal.date || !addModal.slotId) { setModalError('Select a date and slot'); setSubmitting(false); return; }
+
+      // Makeup → reschedule route (links to the original absent lesson)
+      if (addModal.type === 'Makeup') {
+        if (!addModal.linkedLessonId) { setModalError('Select which missed lesson to make up'); setSubmitting(false); return; }
+        const res = await fetch('/api/admin-schedule/reschedule', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || 'Makeup lesson' }),
+        });
+        const json = await res.json();
+        if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
+        if (!res.ok) throw new Error(json.error || 'Failed');
+        setAddModal(null);
+        await fetchSchedule(monday, savedPw.current);
+        showToast('success', '✓ Makeup lesson scheduled');
+        return;
+      }
+
+      // Additional / Trial → add route
       const body: Record<string, any> = { type: addModal.type, date: addModal.date, slotId: addModal.slotId, notes: addModal.notes || undefined };
       if (addModal.type === 'Trial') { body.trialStudentName = addModal.trialStudentName; }
       else { body.studentId = addModal.studentId; body.notify = addModal.notify; }
@@ -1633,13 +1673,13 @@ export default function SchedulePage() {
 
   function openAddModal(date: Date, slot: Slot) {
     setModalError('');
-    setAddModal({ type: 'Additional', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true });
+    setAddModal({ type: 'Additional', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true, linkedLessonId: '' });
   }
 
   function openAddModalFab() {
     setModalError('');
     const todaySlots = slotsByDay[dayNameOf(activeDate)] ?? [];
-    setAddModal({ type: 'Additional', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true });
+    setAddModal({ type: 'Additional', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true, linkedLessonId: '' });
   }
 
   async function openStudentModal(studentId: string, lessonType: string) {
@@ -2347,7 +2387,11 @@ export default function SchedulePage() {
               <div className="form-group">
                 <span className="form-label">Type</span>
                 <select className="modal-select" value={addModal.type}
-                  onChange={e => setAddModal(m => m ? { ...m, type: e.target.value as AddModalState['type'], studentId: '', studentSearch: '' } : null)}>
+                  onChange={e => {
+                    const t = e.target.value as AddModalState['type'];
+                    setAddModal(m => m ? { ...m, type: t, studentId: '', studentSearch: '', linkedLessonId: '' } : null);
+                    setAbsentLessons([]);
+                  }}>
                   <option value="Additional">Additional</option>
                   <option value="Makeup">Makeup</option>
                   <option value="Trial">Trial</option>
@@ -2376,7 +2420,10 @@ export default function SchedulePage() {
                     <div className="student-selected">
                       ✓ {data?.students[addModal.studentId]?.name ?? addModal.studentId}
                       <button style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 12 }}
-                        onClick={() => setAddModal(m => m ? { ...m, studentId: '', studentSearch: '' } : null)}>change</button>
+                        onClick={() => {
+                          setAddModal(m => m ? { ...m, studentId: '', studentSearch: '', linkedLessonId: '' } : null);
+                          setAbsentLessons([]);
+                        }}>change</button>
                     </div>
                   ) : (
                     <>
@@ -2390,13 +2437,43 @@ export default function SchedulePage() {
                             .slice(0, 8)
                             .map(([id, s]) => (
                               <button key={id} className="student-result"
-                                onClick={() => setAddModal(m => m ? { ...m, studentId: id, studentSearch: '' } : null)}>
+                                onClick={() => {
+                                  setAddModal(m => m ? { ...m, studentId: id, studentSearch: '' } : null);
+                                  if (addModal.type === 'Makeup') fetchAbsentLessons(id);
+                                }}>
                                 {s.name}
                               </button>
                             ))}
                         </div>
                       )}
                     </>
+                  )}
+                </div>
+              )}
+
+              {/* Missed lesson picker — Makeup only, shown after a student is selected */}
+              {addModal.type === 'Makeup' && addModal.studentId && (
+                <div className="form-group">
+                  <span className="form-label">Missed lesson to make up</span>
+                  {absentLessonsLoading ? (
+                    <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0' }}>Loading missed lessons…</div>
+                  ) : absentLessons.length === 0 ? (
+                    <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0' }}>No unmatched absent lessons found</div>
+                  ) : (
+                    <select className="modal-select" value={addModal.linkedLessonId}
+                      onChange={e => setAddModal(m => m ? { ...m, linkedLessonId: e.target.value } : null)}>
+                      <option value="">Select missed lesson…</option>
+                      {absentLessons.map(l => {
+                        const d = new Date(l.date + 'T00:00:00');
+                        const dateLabel = d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+                        const slot = l.slotId ? data?.slots.find(s => s.id === l.slotId) : null;
+                        return (
+                          <option key={l.id} value={l.id}>
+                            {dateLabel}{slot ? ` · ${slot.time}` : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
                   )}
                 </div>
               )}
