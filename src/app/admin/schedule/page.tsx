@@ -1053,8 +1053,9 @@ export default function SchedulePage() {
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
   // Makeup flow — absent lessons for the selected student
-  const [absentLessons, setAbsentLessons] = useState<{ id: string; date: string; slotId: string | null; status: string }[]>([]);
+  const [absentLessons, setAbsentLessons] = useState<{ id: string; date: string; slotId: string | null }[]>([]);
   const [absentLessonsLoading, setAbsentLessonsLoading] = useState(false);
+  const [absentLessonsError, setAbsentLessonsError] = useState('');
   const [savingAttendance, setSavingAttendance] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
@@ -1568,15 +1569,20 @@ export default function SchedulePage() {
 
   async function fetchAbsentLessons(studentId: string) {
     setAbsentLessons([]);
+    setAbsentLessonsError('');
     setAbsentLessonsLoading(true);
     try {
       const res = await fetch(`/api/admin-schedule/absent-lessons?studentId=${studentId}`, {
         headers: { Authorization: `Bearer ${savedPw.current}` },
       });
+      if (!res.ok) {
+        setAbsentLessonsError(`Error ${res.status} loading lessons`);
+        return;
+      }
       const json = await res.json();
       setAbsentLessons(json.lessons ?? []);
     } catch {
-      setAbsentLessons([]);
+      setAbsentLessonsError('Network error loading lessons');
     } finally {
       setAbsentLessonsLoading(false);
     }
@@ -2390,7 +2396,7 @@ export default function SchedulePage() {
                   onChange={e => {
                     const t = e.target.value as AddModalState['type'];
                     setAddModal(m => m ? { ...m, type: t, studentId: '', studentSearch: '', linkedLessonId: '' } : null);
-                    setAbsentLessons([]);
+                    setAbsentLessons([]); setAbsentLessonsError('');
                   }}>
                   <option value="Additional">Additional</option>
                   <option value="Makeup">Makeup</option>
@@ -2422,7 +2428,7 @@ export default function SchedulePage() {
                       <button style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 12 }}
                         onClick={() => {
                           setAddModal(m => m ? { ...m, studentId: '', studentSearch: '', linkedLessonId: '' } : null);
-                          setAbsentLessons([]);
+                          setAbsentLessons([]); setAbsentLessonsError('');
                         }}>change</button>
                     </div>
                   ) : (
@@ -2457,6 +2463,8 @@ export default function SchedulePage() {
                   <span className="form-label">Missed lesson to make up</span>
                   {absentLessonsLoading ? (
                     <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0' }}>Loading missed lessons…</div>
+                  ) : absentLessonsError ? (
+                    <div style={{ fontSize: 13, color: '#dc2626', padding: '8px 0' }}>{absentLessonsError}</div>
                   ) : absentLessons.length === 0 ? (
                     <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0' }}>No unmatched absent lessons found</div>
                   ) : (
@@ -2467,10 +2475,9 @@ export default function SchedulePage() {
                         const d = new Date(l.date + 'T00:00:00');
                         const dateLabel = d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
                         const slot = l.slotId ? data?.slots.find(s => s.id === l.slotId) : null;
-                        const hint = l.status !== 'Absent' ? ' (not marked absent)' : '';
                         return (
                           <option key={l.id} value={l.id}>
-                            {dateLabel}{slot ? ` · ${slot.time}` : ''}{hint}
+                            {dateLabel}{slot ? ` · ${slot.time}` : ''}
                           </option>
                         );
                       })}
