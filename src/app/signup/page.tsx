@@ -425,7 +425,6 @@ function SignupContent() {
                         <div className="sg-input sg-prefilled flex items-center gap-2 text-[15px]">
                           <span>📅</span>
                           <span>{slotData.startDate}</span>
-                          <span className="ml-auto text-[12px] text-muted-foreground">set by tutor</span>
                         </div>
                         <input type="hidden" name="startDate" value={slotData.startDate} />
                       </>
