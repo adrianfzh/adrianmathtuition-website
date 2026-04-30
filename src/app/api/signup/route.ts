@@ -99,6 +99,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Step 1c: Duplicate check — reject if a student with the same parent email
+    // already has an active enrollment in this slot (prevents double-submission).
+    try {
+      const existingStudents = await airtableRequestAll(
+        'Students',
+        `?filterByFormula=${encodeURIComponent(`{Parent Email}='${String(parentEmail).replace(/'/g, "\\'")}'`)}&fields[]=Student Name&fields[]=Status`
+      );
+      const activeMatch = existingStudents.records.find((r: any) => r.fields['Status'] === 'Active');
+      if (activeMatch) {
+        const existingName = activeMatch.fields['Student Name'] || 'your child';
+        return NextResponse.json({
+          error: `${existingName} is already registered. If you believe this is an error, please contact Adrian directly.`,
+        }, { status: 409 });
+      }
+    } catch (dupErr) {
+      console.error('[signup] Duplicate check failed (continuing):', (dupErr as Error).message);
+    }
+
     // Step 2: Create Student
     const studentFields: Record<string, unknown> = {
       'Student Name': sanitize(studentName),
