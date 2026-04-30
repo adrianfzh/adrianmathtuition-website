@@ -53,10 +53,33 @@ export async function GET(req: NextRequest) {
   try { lineItems = f['Line Items'] ? JSON.parse(f['Line Items']) : []; }
   catch { lineItems = []; }
 
+  // If line items span an earlier month than the stored Month field
+  // (e.g. combined April+May invoice stored as "May 2026"), show the full
+  // range "April–May 2026" in the PDF so the parent sees the complete period.
+  const storedMonth: string = f['Month'] || '';
+  let displayMonth = storedMonth;
+  if (lineItems.length > 0) {
+    const firstItemDate = lineItems[0].date as string | undefined;
+    if (firstItemDate) {
+      const firstDate = new Date(firstItemDate + 'T00:00:00');
+      const storedDateRef = new Date(`1 ${storedMonth}`);
+      if (
+        !isNaN(firstDate.getTime()) &&
+        !isNaN(storedDateRef.getTime()) &&
+        (firstDate.getFullYear() < storedDateRef.getFullYear() ||
+          (firstDate.getFullYear() === storedDateRef.getFullYear() &&
+            firstDate.getMonth() < storedDateRef.getMonth()))
+      ) {
+        const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        displayMonth = `${MONTHS[firstDate.getMonth()]}–${storedMonth}`;
+      }
+    }
+  }
+
   const invoiceData = {
     studentName,
     parentEmail,
-    month: f['Month'] || '',
+    month: displayMonth,
     invoiceId: recordId,
     issueDate: f['Issue Date'] || '',
     dueDate: f['Due Date'] || '',
@@ -82,7 +105,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: `PDF generation failed: ${err.message ?? err}` }, { status: 500 });
   }
 
-  const filename = `AdrianMathTuition-Invoice-${(studentName || '').replace(/\s+/g, '-')}-${(f['Month'] || recordId).replace(/\s+/g, '-')}.pdf`;
+  const filename = `AdrianMathTuition-Invoice-${(studentName || '').replace(/\s+/g, '-')}-${(displayMonth || recordId).replace(/[\s–]/g, '-')}.pdf`;
 
   return new Response(pdfBuffer as unknown as BodyInit, {
     headers: {
