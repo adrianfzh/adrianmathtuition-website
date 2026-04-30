@@ -33,6 +33,19 @@ async function airtableRequest(baseId: string, token: string, tableName: string,
   return data;
 }
 
+async function airtableRequestAll(baseId: string, token: string, tableName: string, path: string): Promise<{ records: any[] }> {
+  let allRecords: any[] = [];
+  let offset: string | undefined;
+  do {
+    const sep = path.includes('?') ? '&' : '?';
+    const pagePath = offset ? `${path}${sep}offset=${encodeURIComponent(offset)}` : path;
+    const data = await airtableRequest(baseId, token, tableName, pagePath);
+    allRecords = allRecords.concat(data.records || []);
+    offset = data.offset;
+  } while (offset);
+  return { records: allRecords };
+}
+
 export async function POST(request: NextRequest) {
   const airtableToken = process.env.AIRTABLE_TOKEN || '';
   const baseId        = process.env.AIRTABLE_BASE_ID || '';
@@ -105,13 +118,13 @@ export async function POST(request: NextRequest) {
     try {
       const nameSafe = sanitize(studentName).replace(/'/g, "\\'");
       const existingStudents = await airtableRequestAll(
-        'Students',
+        baseId, airtableToken, 'Students',
         `?filterByFormula=${encodeURIComponent(`AND(LOWER({Student Name})=LOWER('${nameSafe}'),{Status}='Active')`)}&fields[]=Student Name`
       );
       if (existingStudents.records.length > 0) {
         const existingIds = new Set(existingStudents.records.map((r: any) => r.id));
         const enrollments = await airtableRequestAll(
-          'Enrollments',
+          baseId, airtableToken, 'Enrollments',
           `?filterByFormula=${encodeURIComponent(`AND({Status}='Active',{Slot}='${String(slotId)}')`)}&fields[]=Student`
         );
         const alreadyEnrolled = enrollments.records.some(
