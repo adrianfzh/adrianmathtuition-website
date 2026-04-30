@@ -109,8 +109,9 @@ export async function POST(req: NextRequest) {
       // First invoice: fetch from enrollment start date to end of invoice month
       // so April lessons are included even if the invoice is stored as "May 2026".
       const rangeStart = enrollStartDate < firstDayStr ? enrollStartDate : firstDayStr;
+      // Include all non-cancelled lessons — students are billed even when absent
       const firstInvFormula = encodeURIComponent(
-        `AND({Date}>='${rangeStart}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'))`
+        `AND({Date}>='${rangeStart}',{Date}<='${lastDayStr}',{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
       );
       const allLessonsData = await airtableRequestAll(
         'Lessons',
@@ -136,7 +137,7 @@ export async function POST(req: NextRequest) {
       additionalCount = filtered.filter((r: any) => r.fields['Type'] === 'Additional').length;
     } else {
       const lessonFormula = encodeURIComponent(
-        `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'))`
+        `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
       );
       const allLessonsData = await airtableRequestAll(
         'Lessons',
