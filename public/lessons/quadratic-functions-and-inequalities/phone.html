@@ -36,15 +36,15 @@ body.style-phone {
   height: 100vh;
   position: relative;
 }
-/* Stage = horizontal scroll-snap track of scene cards */
+/* Stage = VERTICAL scroll-snap stack of scene cards (swipe up/down) */
 .stage {
   width: 100%;
   height: 100vh;
   display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -52,7 +52,7 @@ body.style-phone {
 .stage::-webkit-scrollbar { display: none; }
 
 .scene {
-  flex: 0 0 100vw;
+  flex: 0 0 100vh;
   width: 100vw;
   height: 100vh;
   scroll-snap-align: center;
@@ -63,7 +63,7 @@ body.style-phone {
   padding: 24px 20px 100px;
   overflow-y: auto;
   position: relative;
-  border-right: 1px solid #f0e8d8;
+  border-bottom: 1px solid #f0e8d8;
 }
 .scene::before {
   content: '';
@@ -143,71 +143,90 @@ body.style-phone {
 .block-image { margin: 10px 0; }
 .block-image img { max-width: 100%; height: auto; border-radius: 4px; }
 
-/* Floating bottom-right play button (per scene, but it's actually a single
-   global button overlay that targets the visible scene). */
-.phone-controls {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  background: linear-gradient(to top, #fff 60%, transparent);
-  z-index: 10;
-}
+/* Counter pill — fixed top-left so it doesn't compete with the play button */
 .phone-counter {
+  position: fixed;
+  top: 14px; left: 14px;
   font-size: 12px;
-  color: #888;
-  font-weight: 500;
-  background: rgba(255,255,255,0.92);
+  color: #5a4a33;
+  font-weight: 600;
+  background: rgba(255,255,255,0.94);
   padding: 6px 12px;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 10;
 }
+
+/* Speed selector — fixed top-right */
+.phone-speed {
+  position: fixed;
+  top: 14px; right: 14px;
+  background: rgba(255,255,255,0.94);
+  border: 1px solid #d4b896;
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a4a33;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 10;
+  font-family: inherit;
+}
+
+/* Floating play button — bottom-right corner */
 .phone-play-btn {
-  width: 52px; height: 52px;
+  position: fixed;
+  bottom: 24px; right: 20px;
+  width: 60px; height: 60px;
   border-radius: 50%;
   background: #5a4a33;
   color: #fff;
   border: 0;
-  font-size: 22px;
+  font-size: 24px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.22);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, transform 0.2s;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  z-index: 10;
 }
-.phone-play-btn:active { transform: scale(0.95); }
-.phone-play-btn.playing { background: #d96f2f; }
+.phone-play-btn:active { transform: scale(0.93); }
+.phone-play-btn.playing {
+  background: #d96f2f;
+  box-shadow: 0 4px 20px rgba(217, 111, 47, 0.4);
+}
+
+/* Audio progress bar — slim line at the bottom */
 .phone-progress {
-  position: absolute;
+  position: fixed;
   bottom: 0; left: 0;
-  height: 2px;
+  height: 3px;
   background: #d4b896;
   width: 0%;
   transition: width 0.1s linear;
+  z-index: 10;
 }
 
-/* Swipe hint — first-time only, fades after 4s */
+/* Swipe hint — first-time only; arrow points DOWN now */
 .swipe-hint {
-  position: absolute;
-  top: 50%; right: 16px;
-  transform: translateY(-50%);
+  position: fixed;
+  bottom: 100px; left: 50%;
+  transform: translateX(-50%);
   background: rgba(90, 74, 51, 0.92);
   color: #fff;
-  padding: 10px 14px;
+  padding: 10px 18px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   z-index: 11;
   pointer-events: none;
-  animation: swipeHint 4s ease-out forwards;
+  animation: swipeHint 4.5s ease-out forwards;
+  white-space: nowrap;
 }
 @keyframes swipeHint {
-  0%, 60% { opacity: 1; transform: translateY(-50%) translateX(0); }
-  100% { opacity: 0; transform: translateY(-50%) translateX(20px); }
+  0%, 65% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
 }
 </style>
 </head>
@@ -228,6 +247,8 @@ body.style-phone {
       <option value="1" selected>1×</option>
       <option value="1.25">1.25×</option>
       <option value="1.5">1.5×</option>
+      <option value="1.75">1.75×</option>
+      <option value="2">2×</option>
     </select>
   </div>
   <audio id="audio" preload="auto"></audio>
@@ -340,25 +361,57 @@ body.style-phone {
     sceneEls.forEach(el => observer.observe(el));
   }
 
-  // Floating UI: counter + play button + progress bar
+  // Floating UI: counter (top-left), speed selector (top-right),
+  // play button (bottom-right), progress bar (very bottom).
   function buildPhoneControls() {
-    const controls = document.createElement('div');
-    controls.className = 'phone-controls';
-    controls.innerHTML = `
-      <span class="phone-counter" id="phoneCounter">1 / ${scenes.length}</span>
-      <button class="phone-play-btn" id="phonePlayBtn" title="Play narration">▶</button>
-      <span style="width:1px;"></span>
-      <div class="phone-progress" id="phoneProgress"></div>
-    `;
-    document.body.appendChild(controls);
+    // Counter pill
+    const counter = document.createElement('span');
+    counter.className = 'phone-counter';
+    counter.id = 'phoneCounter';
+    counter.textContent = `1 / ${scenes.length}`;
+    document.body.appendChild(counter);
 
-    document.getElementById('phonePlayBtn').addEventListener('click', () => {
+    // Speed selector (saved to localStorage so it persists between visits)
+    const savedSpeed = parseFloat(localStorage.getItem('phone_playback_speed') || '1') || 1;
+    const speed = document.createElement('select');
+    speed.className = 'phone-speed';
+    speed.id = 'phoneSpeed';
+    speed.title = 'Playback speed';
+    [0.75, 1, 1.25, 1.5, 1.75, 2].forEach(v => {
+      const o = document.createElement('option');
+      o.value = String(v);
+      o.textContent = `${v}×`;
+      if (v === savedSpeed) o.selected = true;
+      speed.appendChild(o);
+    });
+    document.body.appendChild(speed);
+    audio.playbackRate = savedSpeed;
+    speed.addEventListener('change', () => {
+      const v = parseFloat(speed.value || '1');
+      audio.playbackRate = v;
+      localStorage.setItem('phone_playback_speed', String(v));
+    });
+
+    // Bottom-right play button
+    const btn = document.createElement('button');
+    btn.className = 'phone-play-btn';
+    btn.id = 'phonePlayBtn';
+    btn.title = 'Tap to hear narration';
+    btn.textContent = '▶';
+    document.body.appendChild(btn);
+
+    // Progress bar (slim line at very bottom of viewport)
+    const progress = document.createElement('div');
+    progress.className = 'phone-progress';
+    progress.id = 'phoneProgress';
+    document.body.appendChild(progress);
+
+    btn.addEventListener('click', () => {
       if (audio.paused) {
         const scene = scenes[currentSceneIdx];
         const audioFile = scene.audio || `audio_${String(scene.id).padStart(2, '0')}.mp3`;
-        if (audio.src.indexOf(audioFile) === -1) {
-          audio.src = audioFile;
-        }
+        if (audio.src.indexOf(audioFile) === -1) audio.src = audioFile;
+        audio.playbackRate = parseFloat(speed.value || '1');
         audio.play().catch(() => {});
       } else {
         audio.pause();
@@ -366,25 +419,22 @@ body.style-phone {
     });
 
     audio.addEventListener('play', () => {
-      document.getElementById('phonePlayBtn').textContent = '❚❚';
-      document.getElementById('phonePlayBtn').classList.add('playing');
+      btn.textContent = '❚❚';
+      btn.classList.add('playing');
     });
     audio.addEventListener('pause', () => {
-      document.getElementById('phonePlayBtn').textContent = '▶';
-      document.getElementById('phonePlayBtn').classList.remove('playing');
+      btn.textContent = '▶';
+      btn.classList.remove('playing');
     });
     audio.addEventListener('ended', () => {
-      document.getElementById('phonePlayBtn').textContent = '▶';
-      document.getElementById('phonePlayBtn').classList.remove('playing');
-      document.getElementById('phoneProgress').style.width = '0%';
+      btn.textContent = '▶';
+      btn.classList.remove('playing');
+      progress.style.width = '0%';
     });
     audio.addEventListener('timeupdate', () => {
       if (audio.duration && isFinite(audio.duration)) {
-        const pct = (audio.currentTime / audio.duration) * 100;
-        document.getElementById('phoneProgress').style.width = `${pct}%`;
+        progress.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
       }
-      // Sync block reveals if user is listening (otherwise blocks revealed
-      // by IntersectionObserver — both code paths converge to .revealed)
       const sceneEls = stage.querySelectorAll('.scene');
       const sceneEl = sceneEls[currentSceneIdx];
       if (sceneEl) {
@@ -410,9 +460,9 @@ body.style-phone {
     if (localStorage.getItem('swipe_hint_seen')) return;
     const hint = document.createElement('div');
     hint.className = 'swipe-hint';
-    hint.textContent = 'Swipe →';
+    hint.textContent = 'Swipe up ↑ for next scene';
     document.body.appendChild(hint);
-    setTimeout(() => hint.remove(), 4500);
+    setTimeout(() => hint.remove(), 5000);
     localStorage.setItem('swipe_hint_seen', '1');
   }
 
