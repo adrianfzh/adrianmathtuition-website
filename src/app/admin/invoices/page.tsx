@@ -795,7 +795,7 @@ export default function AdminPage() {
       }
 
       const notesHtml = inv.autoNotes
-        ? `<div class="auto-notes">${escHtml(inv.autoNotes)}</div>`
+        ? `<div class="auto-notes">${inv.autoNotes}</div>`
         : '';
 
       let actionsHtml: string;

@@ -38,19 +38,14 @@ export async function GET(req: NextRequest) {
   );
   const invoices = invoicesData.records || [];
 
-  const studentIds = [
-    ...new Set(invoices.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)),
-  ] as string[];
-
+  // Fetch all students without an ID filter — the OR(RECORD_ID()=...) approach silently
+  // drops records when there are 50+ students, causing blank names on new students.
   let studentsById: Record<string, any> = {};
-  if (studentIds.length) {
-    const studentsData = await airtableRequestAll(
-      'Students',
-      `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})` +
-        `&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Payment Alias`
-    );
-    studentsById = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r.fields]));
-  }
+  const studentsData = await airtableRequestAll(
+    'Students',
+    `?fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Payment Alias`
+  );
+  studentsById = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r.fields]));
 
   const result = invoices.map((r: any) => {
     const f = r.fields;
