@@ -138,19 +138,24 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
   const paymentRef = `${(invoiceData.studentName || '').toUpperCase()} \u2013 ${(invoiceData.month || '').toUpperCase()}`;
   html = html.replace(/\{\{PAYMENT_REFERENCE\}\}/g, paymentRef);
 
-  // Line items rows
+  // Line items rows \u2014 group by description so multi-month invoices
+  // (e.g. April + May combined) render as separate rows per month.
   let lineItemsRows = '';
   if (invoiceData.lineItems?.length) {
-    const groupedByDay: Record<string, LineItem[]> = {};
+    // Preserve insertion order so April appears before May
+    const groupedByDesc: Map<string, { day: string; count: number }> = new Map();
     invoiceData.lineItems.forEach((item) => {
-      const day = item.day || 'Unknown';
-      if (!groupedByDay[day]) groupedByDay[day] = [];
-      groupedByDay[day].push(item);
+      const desc = item.description || `Tuition \u2014 ${invoiceData.month || ''}`;
+      const day  = item.day || 'Unknown';
+      const existing = groupedByDesc.get(desc);
+      if (existing) {
+        existing.count++;
+      } else {
+        groupedByDesc.set(desc, { day, count: 1 });
+      }
     });
-    lineItemsRows = Object.entries(groupedByDay).map(([day, items]) => {
-      const count = items.length;
+    lineItemsRows = Array.from(groupedByDesc.entries()).map(([description, { day, count }]) => {
       const amount = (count * (invoiceData.ratePerLesson || 0)).toFixed(2);
-      const description = items[0].description || `Tuition \u2014 ${invoiceData.month || ''}`;
       return `<tr><td><div class="desc-main">${description}</div></td><td><span class="slot-pill">${day}</span></td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
     }).join('');
   }
