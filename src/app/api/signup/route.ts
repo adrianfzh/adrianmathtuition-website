@@ -383,7 +383,6 @@ export async function POST(request: NextRequest) {
                 'Month':          invoiceMonthLabel,
                 'Lessons Count':  totalLessons,
                 'Rate Per Lesson': ratePerLesson,
-                'Base Amount':    totalAmount,
                 'Final Amount':   totalAmount,
                 'Line Items':     JSON.stringify(allLineItems),
                 'Invoice Type':   'Regular',
