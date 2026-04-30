@@ -388,7 +388,15 @@ export async function POST(request: NextRequest) {
                 'Invoice Type':   'Regular',
                 'Status':         'Draft',
                 'Issue Date':     todayStr,
-                'Due Date':       firstLessonDate,
+                // Due date = 15th of the invoice month (matches regular monthly batch)
+                'Due Date':       (() => {
+                  const MONTH_IDX = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                  const parts = invoiceMonthLabel.split(' ');
+                  const mIdx = MONTH_IDX.indexOf(parts[0]);
+                  const yr   = parseInt(parts[1]);
+                  if (mIdx !== -1 && !isNaN(yr)) return `${yr}-${String(mIdx + 1).padStart(2, '0')}-15`;
+                  return firstLessonDate; // fallback
+                })(),
                 'Auto Notes':     autoNotes,
               }}),
             });
