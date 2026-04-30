@@ -206,13 +206,27 @@ export async function POST(request: NextRequest) {
     let rateType: string | null = null;
     try {
       const rateLevel = level.startsWith('JC') ? 'JC' : 'Secondary';
-      const rateData = await at('Rates',
+      // Try primary formula first, then fallback without Is Current filter
+      let rateData = await at('Rates',
         `?filterByFormula=${encodeURIComponent(`AND({Level}='${rateLevel}',{Is Current}=TRUE())`)}&maxRecords=1`);
+      console.log(`[signup] Rate lookup (${rateLevel}, Is Current=TRUE): ${rateData.records?.length ?? 0} records`);
+
+      // Fallback: try without Is Current filter in case field name or value differs
+      if (!rateData.records?.length) {
+        rateData = await at('Rates',
+          `?filterByFormula=${encodeURIComponent(`{Level}='${rateLevel}'`)}&sort[0][field]=Created+Time&sort[0][direction]=desc&maxRecords=1`);
+        console.log(`[signup] Rate lookup fallback (${rateLevel}, no Is Current): ${rateData.records?.length ?? 0} records`);
+      }
+
       if (rateData.records?.length > 0) {
         const rec = rateData.records[0];
         rateId = rec.id;
-        ratePerLesson = rec.fields['Amount'] ? rec.fields['Amount'] / 4 : null;
+        const amount = rec.fields['Amount'] ?? rec.fields['Rate'] ?? rec.fields['Monthly Rate'] ?? null;
+        ratePerLesson = amount ? Number(amount) / 4 : null;
         rateType = 'Current';
+        console.log(`[signup] Rate found: id=${rec.id} amount=${amount} ratePerLesson=${ratePerLesson} fields=${JSON.stringify(Object.keys(rec.fields))}`);
+      } else {
+        console.warn(`[signup] No rate found for level=${rateLevel}`);
       }
     } catch (err) {
       console.error('[signup] Rate lookup failed (non-fatal):', (err as Error).message);
