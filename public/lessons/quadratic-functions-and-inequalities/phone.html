@@ -1,0 +1,432 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quadratic Functions and Inequalities — Phone Swipe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>/* Style: Phone Swipe — full-screen card deck, swipe to navigate, tap to hear narration.
+ * Reading-first: students swipe through silently, tap 🔊 if they want narration.
+ *
+ * Layout strategy: horizontal scroll-snap container; each .scene is one snap point.
+ * Native browser swipe gestures handle navigation (no JS lib needed).
+ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+body.style-phone {
+  background: #f4ede0;
+  color: #2a2a2a;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide the desktop player chrome — the phone uses its own UI */
+.controls { display: none !important; }
+
+.player-shell {
+  flex: 1;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+/* Stage = horizontal scroll-snap track of scene cards */
+.stage {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.stage::-webkit-scrollbar { display: none; }
+
+.scene {
+  flex: 0 0 100vw;
+  width: 100vw;
+  height: 100vh;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px 100px;
+  overflow-y: auto;
+  position: relative;
+  border-right: 1px solid #f0e8d8;
+}
+.scene::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d4b896 0%, #c0a380 100%);
+}
+.scene-kind-badge {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: #faf3e8;
+  color: #7a6753;
+  border: 1px solid #e0d4bc;
+  margin-bottom: 12px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.scene-kind-badge.revealed { opacity: 1; transform: translateY(0); }
+.scene-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2a2a2a;
+  margin: 4px 0 14px;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
+}
+.scene-title.revealed { opacity: 1; transform: translateY(0); }
+.scene-body { flex: 1; }
+
+/* In phone mode, blocks reveal immediately on swipe-in (not synced to audio,
+   since by default students swipe through silently). Audio playback can also
+   trigger reveals if the play button is tapped. */
+.block.pre-reveal { opacity: 0; transform: translateY(8px); }
+.block { transition: opacity 0.5s ease, transform 0.5s ease; }
+.block.revealed { opacity: 1; transform: translateY(0); }
+
+.block-heading {
+  font-size: 16px;
+  font-weight: 600;
+  color: #5a4a33;
+  margin: 16px 0 6px;
+}
+.block-paragraph, .block-bullet { margin: 6px 0; font-size: 15px; }
+.block-list { list-style: none; padding: 0; margin: 8px 0; }
+.block-bullet { padding-left: 20px; position: relative; }
+.block-bullet::before {
+  content: '';
+  position: absolute; left: 4px; top: 9px;
+  width: 6px; height: 6px;
+  background: #d4b896; border-radius: 50%;
+}
+.block-math {
+  margin: 12px 0;
+  font-size: 18px;
+  background: #faf3e8;
+  border-radius: 6px;
+  padding: 12px 14px;
+  border-left: 3px solid #d4b896;
+  overflow-x: auto;
+}
+.block-callout {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+.block-callout-info { background: #e8f0f6; color: #1f3d5a; border-left: 3px solid #4a7ba8; }
+.block-callout-warning { background: #fbeee2; color: #7a3a14; border-left: 3px solid #d96f2f; }
+.block-callout-tip { background: #e8f4ec; color: #1f6f3a; border-left: 3px solid #2a8a4a; }
+.block-image { margin: 10px 0; }
+.block-image img { max-width: 100%; height: auto; border-radius: 4px; }
+
+/* Floating bottom-right play button (per scene, but it's actually a single
+   global button overlay that targets the visible scene). */
+.phone-controls {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: linear-gradient(to top, #fff 60%, transparent);
+  z-index: 10;
+}
+.phone-counter {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+  background: rgba(255,255,255,0.92);
+  padding: 6px 12px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.phone-play-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: #5a4a33;
+  color: #fff;
+  border: 0;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+}
+.phone-play-btn:active { transform: scale(0.95); }
+.phone-play-btn.playing { background: #d96f2f; }
+.phone-progress {
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 2px;
+  background: #d4b896;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* Swipe hint — first-time only, fades after 4s */
+.swipe-hint {
+  position: absolute;
+  top: 50%; right: 16px;
+  transform: translateY(-50%);
+  background: rgba(90, 74, 51, 0.92);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 11;
+  pointer-events: none;
+  animation: swipeHint 4s ease-out forwards;
+}
+@keyframes swipeHint {
+  0%, 60% { opacity: 1; transform: translateY(-50%) translateX(0); }
+  100% { opacity: 0; transform: translateY(-50%) translateX(20px); }
+}
+</style>
+</head>
+<body class="style-phone">
+<div class="player-shell">
+  <div class="stage" id="stage"></div>
+  <div class="controls">
+    <button id="prevBtn" title="Previous scene">‹</button>
+    <button id="playBtn" title="Play / Pause">▶</button>
+    <button id="nextBtn" title="Next scene">›</button>
+    <span class="scene-counter" id="sceneCounter">—</span>
+    <span class="title" id="sceneTitle"></span>
+    <div class="seek-wrap">
+      <input type="range" id="seek" min="0" max="100" value="0" step="0.1">
+    </div>
+    <select id="speed" title="Playback speed">
+      <option value="0.75">0.75×</option>
+      <option value="1" selected>1×</option>
+      <option value="1.25">1.25×</option>
+      <option value="1.5">1.5×</option>
+    </select>
+  </div>
+  <audio id="audio" preload="auto"></audio>
+</div>
+<script>window.SCENES = {"topic": "Quadratic Functions and Inequalities", "level": "O Level A Math", "scenes": [{"id": 1, "title": "Introduction", "kind": "intro", "narration": "Today we're revising quadratic functions and inequalities for O Level A Math. We'll cover completing the square, maximum and minimum values, the discriminant, and solving quadratic inequalities. Let's get started.", "blocks": [{"type": "heading", "text": "Quadratic Functions & Inequalities", "reveal_at_seconds": 0}, {"type": "bullet", "text": "Completing the square", "reveal_at_seconds": 3}, {"type": "bullet", "text": "Finding maximum and minimum values", "reveal_at_seconds": 5}, {"type": "bullet", "text": "Discriminant and nature of roots", "reveal_at_seconds": 7}, {"type": "bullet", "text": "Solving quadratic inequalities", "reveal_at_seconds": 9}], "duration_hint_sec": 12, "audio": "audio_01.mp3"}, {"id": 2, "title": "Three Forms of Quadratics", "kind": "concept", "narration": "Quadratics appear in three key forms. General form gives the y-intercept directly. Factorized form shows the x-intercepts. Completed square form reveals the turning point coordinates. Choose the form that suits your problem.", "blocks": [{"type": "heading", "text": "Three Forms of Quadratics", "reveal_at_seconds": 0}, {"type": "math", "latex": "y = ax^2 + bx + c \\quad \\text{(General)}", "reveal_at_seconds": 2}, {"type": "bullet", "text": "Read y-intercept: c", "reveal_at_seconds": 4}, {"type": "math", "latex": "y = (x - \\alpha)(x - \\beta) \\quad \\text{(Factorized)}", "reveal_at_seconds": 7}, {"type": "bullet", "text": "Read x-intercepts: α and β", "reveal_at_seconds": 9}, {"type": "math", "latex": "y = a(x - h)^2 + k \\quad \\text{(Completed Square)}", "reveal_at_seconds": 12}, {"type": "bullet", "text": "Read turning point: (h, k)", "reveal_at_seconds": 14}], "duration_hint_sec": 17, "audio": "audio_02.mp3"}, {"id": 3, "title": "Completing the Square", "kind": "method", "narration": "To complete the square, factor out the coefficient of x squared if needed. Then add and subtract the square of half the x coefficient inside the bracket. Simplify to get the completed square form, which reveals the turning point directly.", "blocks": [{"type": "heading", "text": "Completing the Square", "reveal_at_seconds": 0}, {"type": "math", "latex": "y = -x^2 + 6x - 14", "reveal_at_seconds": 2}, {"type": "math", "latex": "= -(x^2 - 6x + 14)", "reveal_at_seconds": 5}, {"type": "math", "latex": "= -\\left[x^2 - 6x + \\left(\\frac{6}{2}\\right)^2 - \\left(\\frac{6}{2}\\right)^2 + 14\\right]", "reveal_at_seconds": 8}, {"type": "math", "latex": "= -[(x - 3)^2 + 5]", "reveal_at_seconds": 12}, {"type": "math", "latex": "= -(x - 3)^2 - 5", "reveal_at_seconds": 15}, {"type": "callout", "text": "Turning point: (3, -5) — this is a maximum", "kind": "tip", "reveal_at_seconds": 17}], "duration_hint_sec": 20, "audio": "audio_03.mp3"}, {"id": 4, "title": "Maximum and Minimum Values", "kind": "example", "narration": "For a negative leading coefficient, the parabola opens downward and has a maximum at the vertex. For a positive coefficient, it opens upward with a minimum. The k-value in the completed square form gives the max or min value directly.", "blocks": [{"type": "heading", "text": "Finding Maximum and Minimum", "reveal_at_seconds": 0}, {"type": "math", "latex": "y = 3x^2 + 12x + 13", "reveal_at_seconds": 2}, {"type": "math", "latex": "= 3(x^2 + 4x) + 13", "reveal_at_seconds": 4}, {"type": "math", "latex": "= 3\\left[(x + 2)^2 - 4\\right] + 13", "reveal_at_seconds": 7}, {"type": "math", "latex": "= 3(x + 2)^2 + 1", "reveal_at_seconds": 11}, {"type": "callout", "text": "Minimum point: (-2, 1) — coefficient is positive", "kind": "info", "reveal_at_seconds": 13}, {"type": "bullet", "text": "If curves have max below min of another, they won't intersect", "reveal_at_seconds": 16}], "duration_hint_sec": 19, "audio": "audio_04.mp3"}, {"id": 5, "title": "Discriminant and Nature of Roots", "kind": "concept", "narration": "The discriminant b squared minus four a c tells us about roots. If it's greater than zero, we have two distinct real roots. If it equals zero, one repeated root. If it's less than zero, no real roots — the curve doesn't touch the x-axis.", "blocks": [{"type": "heading", "text": "Discriminant: b² - 4ac", "reveal_at_seconds": 0}, {"type": "bullet", "text": "b² - 4ac > 0: Two distinct real roots", "reveal_at_seconds": 3}, {"type": "bullet", "text": "b² - 4ac = 0: One repeated root (tangent)", "reveal_at_seconds": 7}, {"type": "bullet", "text": "b² - 4ac < 0: No real roots (no x-intercepts)", "reveal_at_seconds": 11}, {"type": "callout", "text": "Use the discriminant to find conditions on parameters", "kind": "tip", "reveal_at_seconds": 15}], "duration_hint_sec": 18, "audio": "audio_05.mp3"}, {"id": 6, "title": "Applying the Discriminant", "kind": "example", "narration": "To find when a quadratic has real roots, set the discriminant greater than or equal to zero. Rearrange and solve the resulting inequality. Watch out: don't write p squared greater than or equal to four as p greater than or equal to plus or minus two — that's incorrect. Solve properly using a number line.", "blocks": [{"type": "heading", "text": "Example: Real Roots Condition", "reveal_at_seconds": 0}, {"type": "math", "latex": "4(px - 4) = x^2 \\Rightarrow x^2 - 4px + 16 = 0", "reveal_at_seconds": 3}, {"type": "bullet", "text": "For real roots: b² - 4ac ≥ 0", "reveal_at_seconds": 7}, {"type": "math", "latex": "(-4p)^2 - 4(1)(16) \\geq 0", "reveal_at_seconds": 9}, {"type": "math", "latex": "16p^2 - 64 \\geq 0 \\Rightarrow p^2 - 4 \\geq 0", "reveal_at_seconds": 12}, {"type": "math", "latex": "(p - 2)(p + 2) \\geq 0", "reveal_at_seconds": 15}, {"type": "callout", "text": "Solution: p ≤ -2 or p ≥ 2", "kind": "info", "reveal_at_seconds": 17}, {"type": "callout", "text": "Common mistake: p² ≥ 4 does NOT give p ≥ ±2", "kind": "warning", "reveal_at_seconds": 19}], "duration_hint_sec": 22, "audio": "audio_06.mp3"}, {"id": 7, "title": "Solving Quadratic Inequalities", "kind": "method", "narration": "To solve a quadratic inequality, rearrange to standard form, factorize or use the quadratic formula to find the roots, then sketch a number line or graph. Use the graph to read off the solution intervals. Remember: for less than zero, choose the region between roots if the parabola opens upward.", "blocks": [{"type": "heading", "text": "Solving Quadratic Inequalities", "reveal_at_seconds": 0}, {"type": "math", "latex": "x^2 + x - 2 < 2(x - 1)^2", "reveal_at_seconds": 2}, {"type": "math", "latex": "x^2 + x - 2 < 2x^2 - 4x + 2", "reveal_at_seconds": 5}, {"type": "math", "latex": "-x^2 + 5x - 4 < 0 \\Rightarrow x^2 - 5x + 4 > 0", "reveal_at_seconds": 8}, {"type": "math", "latex": "(x - 4)(x - 1) > 0", "reveal_at_seconds": 11}, {"type": "callout", "text": "Sketch: parabola opens upward, roots at 1 and 4", "kind": "tip", "reveal_at_seconds": 13}, {"type": "bullet", "text": "Solution: x < 1 or x > 4", "reveal_at_seconds": 16}], "duration_hint_sec": 18, "audio": "audio_07.mp3"}, {"id": 8, "title": "Recap and Next Steps", "kind": "outro", "narration": "We've covered completing the square, finding turning points, using the discriminant for nature of roots, and solving quadratic inequalities. Practice these techniques with past papers and watch out for common mistakes with inequalities and discriminant conditions. Good luck!", "blocks": [{"type": "heading", "text": "Summary", "reveal_at_seconds": 0}, {"type": "bullet", "text": "Completing the square reveals turning point", "reveal_at_seconds": 2}, {"type": "bullet", "text": "Discriminant determines nature of roots", "reveal_at_seconds": 5}, {"type": "bullet", "text": "Sketch graphs to solve inequalities correctly", "reveal_at_seconds": 8}, {"type": "callout", "text": "Next: Practice mixed discriminant and inequality questions", "kind": "tip", "reveal_at_seconds": 11}], "duration_hint_sec": 14, "audio": "audio_08.mp3"}], "voice": "Rachel", "total_scenes": 8, "voice_id": "nova", "voice_model": "tts-1", "tts_total_chars": 2022};</script>
+<script>// Phone-swipe player. Same scene data, swipe-driven UX.
+// - Horizontal scroll-snap container = native swipe gestures
+// - Visible scene's blocks reveal once it scrolls into view
+// - Floating bottom play button: tap to hear narration of CURRENT scene
+//   When playing, blocks reveal synced to audio time (just like desktop)
+
+(function () {
+  const scenes = (window.SCENES && Array.isArray(window.SCENES.scenes)) ? window.SCENES.scenes : [];
+  if (!scenes.length) {
+    document.getElementById('stage').innerHTML = '<div class="error">No scenes found.</div>';
+    return;
+  }
+  const stage = document.getElementById('stage');
+  const audio = document.getElementById('audio');
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
+  }
+
+  function renderBlock(block) {
+    if (!block || !block.type) return '';
+    const r = (typeof block.reveal_at_seconds === 'number' ? block.reveal_at_seconds : 0);
+    const dataAttr = `data-reveal-at="${r}"`;
+    if (block.type === 'heading') return `<h2 class="block block-heading pre-reveal" ${dataAttr}>${escapeHtml(block.text || '')}</h2>`;
+    if (block.type === 'bullet') return `<li class="block block-bullet pre-reveal" ${dataAttr}>${escapeHtml(block.text || '')}</li>`;
+    if (block.type === 'callout') {
+      const kind = block.kind || 'info';
+      return `<div class="block block-callout block-callout-${kind} pre-reveal" ${dataAttr}>${escapeHtml(block.text || '')}</div>`;
+    }
+    if (block.type === 'math') {
+      return `<div class="block block-math pre-reveal" ${dataAttr} data-latex="${escapeHtml(block.latex || '')}"></div>`;
+    }
+    if (block.type === 'image') {
+      const cap = block.caption ? `<div class="img-caption">${escapeHtml(block.caption)}</div>` : '';
+      return `<figure class="block block-image pre-reveal" ${dataAttr}><img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.caption || '')}">${cap}</figure>`;
+    }
+    if (block.type === 'paragraph' || block.type === 'text') {
+      return `<p class="block block-paragraph pre-reveal" ${dataAttr}>${escapeHtml(block.text || '')}</p>`;
+    }
+    return '';
+  }
+
+  // Render all scenes upfront (they're in a horizontal scroll container)
+  function renderAllScenes() {
+    stage.innerHTML = scenes.map(scene => {
+      const blocks = Array.isArray(scene.blocks) ? scene.blocks : [];
+      let html = '';
+      let inList = false;
+      blocks.forEach(b => {
+        const isBullet = b && b.type === 'bullet';
+        if (isBullet && !inList) { html += '<ul class="block-list">'; inList = true; }
+        if (!isBullet && inList) { html += '</ul>'; inList = false; }
+        html += renderBlock(b);
+      });
+      if (inList) html += '</ul>';
+      return `
+        <div class="scene scene-${scene.kind || 'concept'}" data-scene-id="${scene.id}">
+          <div class="scene-kind-badge">${escapeHtml((scene.kind || '').toUpperCase())}</div>
+          <h1 class="scene-title">${escapeHtml(scene.title || '')}</h1>
+          <div class="scene-body">${html}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Render KaTeX after all scenes inserted
+    const renderMath = () => {
+      if (typeof window.katex === 'undefined') { setTimeout(renderMath, 80); return; }
+      stage.querySelectorAll('.block-math').forEach(el => {
+        const tex = el.getAttribute('data-latex') || '';
+        try { window.katex.render(tex, el, { throwOnError: false, displayMode: true }); }
+        catch (e) { el.textContent = tex; }
+      });
+    };
+    renderMath();
+  }
+
+  // Reveal all blocks in a scene at once (used when swiping through silently)
+  function revealSceneBlocks(sceneEl) {
+    sceneEl.querySelectorAll('.scene-kind-badge, .scene-title, .block.pre-reveal').forEach(el => {
+      el.classList.remove('pre-reveal');
+      el.classList.add('revealed');
+    });
+  }
+
+  // Track currently-visible scene via IntersectionObserver
+  let currentSceneIdx = 0;
+  function setupVisibilityObserver() {
+    const sceneEls = stage.querySelectorAll('.scene');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+          const idx = Array.from(sceneEls).indexOf(entry.target);
+          if (idx >= 0) {
+            currentSceneIdx = idx;
+            revealSceneBlocks(entry.target);
+            updateUI();
+            // Stop any audio when swiping to a new scene
+            if (!audio.paused) audio.pause();
+          }
+        }
+      });
+    }, { root: stage, threshold: [0.6] });
+    sceneEls.forEach(el => observer.observe(el));
+  }
+
+  // Floating UI: counter + play button + progress bar
+  function buildPhoneControls() {
+    const controls = document.createElement('div');
+    controls.className = 'phone-controls';
+    controls.innerHTML = `
+      <span class="phone-counter" id="phoneCounter">1 / ${scenes.length}</span>
+      <button class="phone-play-btn" id="phonePlayBtn" title="Play narration">▶</button>
+      <span style="width:1px;"></span>
+      <div class="phone-progress" id="phoneProgress"></div>
+    `;
+    document.body.appendChild(controls);
+
+    document.getElementById('phonePlayBtn').addEventListener('click', () => {
+      if (audio.paused) {
+        const scene = scenes[currentSceneIdx];
+        const audioFile = scene.audio || `audio_${String(scene.id).padStart(2, '0')}.mp3`;
+        if (audio.src.indexOf(audioFile) === -1) {
+          audio.src = audioFile;
+        }
+        audio.play().catch(() => {});
+      } else {
+        audio.pause();
+      }
+    });
+
+    audio.addEventListener('play', () => {
+      document.getElementById('phonePlayBtn').textContent = '❚❚';
+      document.getElementById('phonePlayBtn').classList.add('playing');
+    });
+    audio.addEventListener('pause', () => {
+      document.getElementById('phonePlayBtn').textContent = '▶';
+      document.getElementById('phonePlayBtn').classList.remove('playing');
+    });
+    audio.addEventListener('ended', () => {
+      document.getElementById('phonePlayBtn').textContent = '▶';
+      document.getElementById('phonePlayBtn').classList.remove('playing');
+      document.getElementById('phoneProgress').style.width = '0%';
+    });
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration && isFinite(audio.duration)) {
+        const pct = (audio.currentTime / audio.duration) * 100;
+        document.getElementById('phoneProgress').style.width = `${pct}%`;
+      }
+      // Sync block reveals if user is listening (otherwise blocks revealed
+      // by IntersectionObserver — both code paths converge to .revealed)
+      const sceneEls = stage.querySelectorAll('.scene');
+      const sceneEl = sceneEls[currentSceneIdx];
+      if (sceneEl) {
+        sceneEl.querySelectorAll('.block.pre-reveal').forEach(el => {
+          const r = parseFloat(el.getAttribute('data-reveal-at') || '0');
+          if (r <= audio.currentTime) {
+            el.classList.remove('pre-reveal');
+            el.classList.add('revealed');
+          }
+        });
+      }
+    });
+  }
+
+  function updateUI() {
+    const c = document.getElementById('phoneCounter');
+    if (c) c.textContent = `${currentSceneIdx + 1} / ${scenes.length}`;
+  }
+
+  // First-time swipe hint
+  function showSwipeHint() {
+    if (scenes.length < 2) return;
+    if (localStorage.getItem('swipe_hint_seen')) return;
+    const hint = document.createElement('div');
+    hint.className = 'swipe-hint';
+    hint.textContent = 'Swipe →';
+    document.body.appendChild(hint);
+    setTimeout(() => hint.remove(), 4500);
+    localStorage.setItem('swipe_hint_seen', '1');
+  }
+
+  // Boot
+  renderAllScenes();
+  buildPhoneControls();
+  setupVisibilityObserver();
+  // Reveal scene 1 immediately (intersection observer fires async)
+  setTimeout(() => {
+    const first = stage.querySelector('.scene');
+    if (first) revealSceneBlocks(first);
+  }, 100);
+  showSwipeHint();
+})();
+</script>
+</body>
+</html>

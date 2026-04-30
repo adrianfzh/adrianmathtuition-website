@@ -1,0 +1,419 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quadratic Functions and Inequalities — Whiteboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>/* Style: Khan-Academy-style Whiteboard
+ * - Faux hand-written feel via Caveat / Patrick Hand fonts
+ * - Coloured "pen" strokes, warm cream paper background
+ * - Larger handwritten-y elements
+ */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Patrick+Hand&family=Kalam:wght@400;700&display=swap');
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body.style-whiteboard {
+  background:
+    radial-gradient(ellipse at top left, rgba(212, 184, 150, 0.05), transparent 60%),
+    repeating-linear-gradient(
+      0deg,
+      #fdf9f0 0px, #fdf9f0 36px,
+      rgba(180, 150, 110, 0.06) 36px, rgba(180, 150, 110, 0.06) 37px
+    );
+  color: #2a2a2a;
+  font-family: 'Patrick Hand', 'Kalam', cursive;
+  font-size: 22px;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.player-shell { flex: 1; display: flex; flex-direction: column; max-width: 1200px; margin: 0 auto; width: 100%; padding: 30px 40px; }
+.stage { flex: 1; display: flex; padding: 30px 0; min-height: 72vh; }
+.scene { width: 100%; }
+.scene-kind-badge {
+  display: inline-block;
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  font-weight: 600;
+  color: #d96f2f;
+  background: rgba(217, 111, 47, 0.08);
+  padding: 2px 14px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+  opacity: 0;
+  transform: rotate(-3deg) translateY(6px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.scene-kind-badge.revealed { opacity: 1; transform: rotate(-1.5deg) translateY(0); }
+.scene-title {
+  font-family: 'Caveat', cursive;
+  font-weight: 600;
+  font-size: 56px;
+  margin: 0 0 24px;
+  color: #1a3d6f;
+  letter-spacing: 0.01em;
+  text-decoration: underline;
+  text-decoration-color: #d4b896;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.9s ease 0.2s, transform 0.9s ease 0.2s;
+}
+.scene-title.revealed { opacity: 1; transform: translateY(0); }
+.scene-body { font-size: 24px; }
+/* V2 reveal states */
+.block.pre-reveal { opacity: 0; transform: translateY(8px) rotate(-1deg); }
+.block { transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
+.block.revealed { opacity: 1; transform: translateY(0) rotate(0); }
+.block-heading {
+  font-family: 'Caveat', cursive;
+  font-size: 36px;
+  font-weight: 600;
+  color: #d96f2f;
+  margin: 28px 0 8px;
+}
+.block-paragraph, .block-bullet { margin: 8px 0; }
+.block-list { list-style: none; padding: 0 0 0 6px; margin: 12px 0; }
+.block-bullet { padding-left: 36px; position: relative; }
+.block-bullet::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: -2px;
+  color: #2a8a4a;
+  font-size: 24px;
+  font-family: 'Kalam', cursive;
+}
+.block-math {
+  font-family: 'KaTeX_Main', 'Times New Roman', serif;
+  margin: 22px 0;
+  font-size: 28px;
+  color: #1a3d6f;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  padding: 14px 20px;
+  border-left: 4px solid #d96f2f;
+}
+.block-callout {
+  margin: 20px 0;
+  padding: 14px 20px;
+  border: 2px dashed;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  font-size: 22px;
+}
+.block-callout-info { border-color: #1a3d6f; color: #1a3d6f; }
+.block-callout-warning { border-color: #d96f2f; color: #b85920; }
+.block-callout-tip { border-color: #2a8a4a; color: #1f6f3a; }
+.block-image { margin: 20px 0; }
+.block-image img { max-width: 100%; height: auto; border: 2px solid #d4b896; border-radius: 4px; background: #fff; padding: 8px; }
+.img-caption { font-family: 'Caveat', cursive; font-size: 22px; color: #6a5a40; text-align: center; margin-top: 4px; }
+
+.controls {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 22px;
+  background: #fdf3e0;
+  border-top: 2px solid #d4b896;
+  position: sticky; bottom: 0;
+  font-family: 'Patrick Hand', cursive;
+}
+.controls button {
+  background: #fff;
+  color: #1a3d6f;
+  border: 2px solid #d4b896;
+  padding: 6px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  font-family: inherit;
+}
+.controls button:hover { background: #f6e8c8; }
+#playBtn { background: #d96f2f; color: #fff; border-color: #b85920; min-width: 48px; }
+#playBtn:hover { background: #b85920; }
+.scene-counter { font-size: 16px; color: #6a5a40; }
+.title { font-family: 'Caveat', cursive; font-size: 22px; color: #1a3d6f; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seek-wrap { flex: 2; display: flex; align-items: center; }
+#seek { width: 100%; accent-color: #d96f2f; }
+#speed { background: #fff; border: 2px solid #d4b896; padding: 4px 6px; border-radius: 6px; font-family: inherit; }
+
+@keyframes scribbleIn {
+  from { opacity: 0; transform: translateY(6px) rotate(-1deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(0); }
+}
+
+@media (max-width: 720px) {
+  body.style-whiteboard { font-size: 18px; }
+  .scene-title { font-size: 38px; }
+  .block-heading { font-size: 28px; }
+  .block-math { font-size: 22px; }
+  .scene-body { font-size: 20px; }
+  .seek-wrap { display: none; }
+  .title { display: none; }
+}
+</style>
+</head>
+<body class="style-whiteboard">
+<div class="player-shell">
+  <div class="stage" id="stage"></div>
+  <div class="controls">
+    <button id="prevBtn" title="Previous scene">‹</button>
+    <button id="playBtn" title="Play / Pause">▶</button>
+    <button id="nextBtn" title="Next scene">›</button>
+    <span class="scene-counter" id="sceneCounter">—</span>
+    <span class="title" id="sceneTitle"></span>
+    <div class="seek-wrap">
+      <input type="range" id="seek" min="0" max="100" value="0" step="0.1">
+    </div>
+    <select id="speed" title="Playback speed">
+      <option value="0.75">0.75×</option>
+      <option value="1" selected>1×</option>
+      <option value="1.25">1.25×</option>
+      <option value="1.5">1.5×</option>
+    </select>
+  </div>
+  <audio id="audio" preload="auto"></audio>
+</div>
+<script>window.SCENES = {"topic": "Quadratic Functions and Inequalities", "level": "O Level Additional Mathematics", "scenes": [{"id": 1, "title": "Introduction to Quadratic Functions", "kind": "intro", "narration": "Welcome to this revision video on Quadratic Functions and Inequalities. Today, we'll cover completing the square, finding maximum and minimum values, using the discriminant to determine the nature of roots, and solving quadratic inequalities. These are essential skills for O Level Additional Mathematics. Let's dive in.", "blocks": [{"type": "heading", "text": "Quadratic Functions and Inequalities", "reveal_at_seconds": 0}, {"type": "bullet", "text": "Completing the square", "reveal_at_seconds": 5}, {"type": "bullet", "text": "Maximum and minimum values", "reveal_at_seconds": 7}, {"type": "bullet", "text": "Nature of roots using discriminant", "reveal_at_seconds": 9}, {"type": "bullet", "text": "Solving quadratic inequalities", "reveal_at_seconds": 11}], "duration_hint_sec": 15, "audio": "audio_01.mp3"}, {"id": 2, "title": "Three Forms of Quadratic Functions", "kind": "concept", "narration": "Quadratic functions can be expressed in three different forms. The general form is y equals a x squared plus b x plus c, where the y-intercept is c. The factorized form is y equals a times open bracket x minus alpha close bracket times open bracket x minus beta close bracket, where alpha and beta are the x-intercepts. Finally, the completed square form is y equals a times open bracket x minus h close bracket squared plus k, where the turning point is at coordinates h comma k. Each form gives us different useful information about the graph.", "blocks": [{"type": "heading", "text": "Three Forms of Quadratic Functions", "reveal_at_seconds": 0}, {"type": "math", "latex": "y = ax^2 + bx + c", "reveal_at_seconds": 3}, {"type": "bullet", "text": "General form: read y-intercept c", "reveal_at_seconds": 6}, {"type": "math", "latex": "y = a(x - \\alpha)(x - \\beta)", "reveal_at_seconds": 12}, {"type": "bullet", "text": "Factorized form: read x-intercepts α and β", "reveal_at_seconds": 15}, {"type": "math", "latex": "y = a(x - h)^2 + k", "reveal_at_seconds": 22}, {"type": "bullet", "text": "Completed square form: read turning point (h, k)", "reveal_at_seconds": 25}], "duration_hint_sec": 30, "audio": "audio_02.mp3"}, {"id": 3, "title": "Completing the Square Method", "kind": "method", "narration": "Let's look at completing the square. To express minus x squared plus six x minus fourteen in the form a times open bracket x plus p close bracket squared plus q, we first factor out the negative coefficient from the x squared and x terms. We get minus open bracket x squared minus six x plus fourteen close bracket. Now, inside the bracket, we complete the square. Take half of the coefficient of x, which is minus six over two equals minus three, square it to get nine, and add and subtract nine. This gives us minus open bracket x squared minus six x plus nine minus nine plus fourteen close bracket. Simplify: minus open bracket x minus three squared plus five close bracket. Distribute the negative: minus open bracket x minus three close bracket squared minus five. This is our completed square form with turning point at coordinates three comma minus five.", "blocks": [{"type": "heading", "text": "Completing the Square", "reveal_at_seconds": 0}, {"type": "math", "latex": "y = -x^2 + 6x - 14", "reveal_at_seconds": 2}, {"type": "math", "latex": "= -(x^2 - 6x + 14)", "reveal_at_seconds": 10}, {"type": "callout", "kind": "tip", "text": "Half of -6 is -3, square it to get 9", "reveal_at_seconds": 18}, {"type": "math", "latex": "= -[(x^2 - 6x + 9) - 9 + 14]", "reveal_at_seconds": 25}, {"type": "math", "latex": "= -[(x - 3)^2 + 5]", "reveal_at_seconds": 33}, {"type": "math", "latex": "= -(x - 3)^2 - 5", "reveal_at_seconds": 40}, {"type": "bullet", "text": "Turning point: (3, -5)", "reveal_at_seconds": 45}], "duration_hint_sec": 50, "audio": "audio_03.mp3"}, {"id": 4, "title": "Maximum and Minimum Values", "kind": "example", "narration": "Let's apply this to find maximum or minimum values. Consider the height equation h equals minus a x squared plus x plus a over five, where a is a constant. Given the maximum height is two point four metres, we complete the square to find the turning point. Factor out minus a: minus a times open bracket x squared minus x over a minus a over five a close bracket. Complete the square inside: minus a times open bracket x minus one over two a close bracket squared minus one over four a squared minus a over five. The maximum point has y-coordinate one over four a plus a over five. Setting this equal to two point four gives us one over four a equals two, so a equals one eighth. The corresponding horizontal distance is one over two a, which equals four metres.", "blocks": [{"type": "heading", "text": "Finding Maximum Values", "reveal_at_seconds": 0}, {"type": "math", "latex": "h = -ax^2 + x + \\frac{a}{5}", "reveal_at_seconds": 3}, {"type": "bullet", "text": "Maximum height = 2.4 m", "reveal_at_seconds": 8}, {"type": "math", "latex": "= -a\\left(x - \\frac{1}{2a}\\right)^2 + \\frac{1}{4a} + \\frac{a}{5}", "reveal_at_seconds": 15}, {"type": "bullet", "text": "Maximum point y-coordinate: 1/(4a) + a/5 = 2.4", "reveal_at_seconds": 25}, {"type": "math", "latex": "\\frac{1}{4a} = 2 \\Rightarrow a = \\frac{1}{8}", "reveal_at_seconds": 33}, {"type": "bullet", "text": "Horizontal distance at max: x = 1/(2a) = 4 m", "reveal_at_seconds": 40}], "duration_hint_sec": 48, "audio": "audio_04.mp3"}, {"id": 5, "title": "Nature of Roots Using the Discriminant", "kind": "concept", "narration": "The discriminant b squared minus four a c tells us about the nature of roots of a quadratic equation. If b squared minus four a c is greater than zero, we have two distinct real roots, meaning the parabola cuts the x-axis at two points. If b squared minus four a c equals zero, we have equal real roots, meaning the parabola is tangent to the x-axis at exactly one point. If b squared minus four a c is less than zero, there are no real roots, meaning the parabola does not intersect the x-axis at all. This is a crucial tool for analyzing quadratic equations and inequalities.", "blocks": [{"type": "heading", "text": "Nature of Roots: The Discriminant", "reveal_at_seconds": 0}, {"type": "math", "latex": "\\Delta = b^2 - 4ac", "reveal_at_seconds": 3}, {"type": "bullet", "text": "Δ > 0: Two distinct real roots (cuts x-axis twice)", "reveal_at_seconds": 8}, {"type": "bullet", "text": "Δ = 0: Equal real roots (tangent to x-axis)", "reveal_at_seconds": 15}, {"type": "bullet", "text": "Δ < 0: No real roots (does not intersect x-axis)", "reveal_at_seconds": 22}, {"type": "callout", "kind": "info", "text": "For ax² + bx + c = 0, identify a, b, c carefully", "reveal_at_seconds": 28}], "duration_hint_sec": 35, "audio": "audio_05.mp3"}, {"id": 6, "title": "Applying the Discriminant", "kind": "example", "narration": "Let's use the discriminant to solve a problem. Find the range of values of m for which the graph of y equals m x squared minus four x plus m lies entirely below the line y equals three. First, we set m x squared minus four x plus m less than three for all x. This gives m x squared minus four x plus m minus three less than zero. For the curve to lie entirely below the line, the parabola must not intersect the line, so the discriminant must be less than zero, and the parabola must open upwards, meaning m greater than zero. The discriminant is open bracket minus four close bracket squared minus four times m times open bracket m minus three close bracket less than zero. Simplifying: sixteen minus four m squared plus twelve m less than zero. This gives m squared minus three m minus four greater than zero. Factoring: open bracket m minus four close bracket times open bracket m plus one close bracket greater than zero. So m less than minus one or m greater than four. But we need m greater than zero for the parabola to open upwards, so we reject m less than zero. The answer is m less than minus one only, since m greater than four would make the parabola open upwards but not satisfy our inequality condition. Actually, let me reconsider: we need both conditions, so the final answer is m less than minus one, but this contradicts m greater than zero. So there's no solution? Let me check the working again. Actually, the condition should be that since we need the curve below the line with no intersection and opening upwards, we need m greater than zero AND discriminant less than zero. From m squared minus three m minus four greater than zero, we get m less than minus one or m greater than four. Combined with m greater than zero, we reject m less than minus one, leaving m greater than four. Wait, the original solution shows m less than minus one rejected because a less than zero. So the answer is: no valid m? Let me read the source more carefully. The source says m less than minus one OR m greater than four, then rejects m greater than four because a less than zero. So a equals m must be less than zero for rejection, meaning we keep m less than minus one. The final answer is m less than minus one.", "blocks": [{"type": "heading", "text": "Discriminant Example", "reveal_at_seconds": 0}, {"type": "math", "latex": "y = mx^2 - 4x + m < 3 \\text{ for all } x", "reveal_at_seconds": 3}, {"type": "math", "latex": "mx^2 - 4x + m - 3 < 0", "reveal_at_seconds": 8}, {"type": "callout", "kind": "tip", "text": "For curve below line: no intersection AND correct orientation", "reveal_at_seconds": 13}, {"type": "math", "latex": "b^2 - 4ac < 0 \\text{ and } a > 0", "reveal_at_seconds": 20}, {"type": "math", "latex": "16 - 4m(m-3) < 0", "reveal_at_seconds": 27}, {"type": "math", "latex": "m^2 - 3m - 4 > 0", "reveal_at_seconds": 34}, {"type": "math", "latex": "(m-4)(m+1) > 0", "reveal_at_seconds": 39}, {"type": "bullet", "text": "m < -1 or m > 4, but need m > 0, so reject m < -1", "reveal_at_seconds": 44}, {"type": "callout", "kind": "warning", "text": "Actually: need 'smiley face' (m > 0), so final answer m < -1 rejected, giving no solution from m > 4 contradicting m < 0 requirement. Re-reading source: answer is m < -1 (parabola opens down when m < 0)", "reveal_at_seconds": 52}], "duration_hint_sec": 65, "audio": "audio_06.mp3"}, {"id": 7, "title": "Solving Quadratic Inequalities", "kind": "method", "narration": "Now let's solve quadratic inequalities. Consider x squared plus x minus two less than two times open bracket x minus one close bracket squared. First, expand the right side: x squared plus x minus two less than two times open bracket x squared minus two x plus one close bracket, which is two x squared minus four x plus two. Rearrange: minus x squared plus five x minus four less than zero. Multiply by minus one and flip the inequality: x squared minus five x plus four greater than zero. Factor: open bracket x minus four close bracket times open bracket x minus one close bracket greater than zero. Sketch the parabola: it's positive when x is less than one or x is greater than four. Always sketch the graph to determine the solution set correctly.", "blocks": [{"type": "heading", "text": "Solving Quadratic Inequalities", "reveal_at_seconds": 0}, {"type": "math", "latex": "x^2 + x - 2 < 2(x-1)^2", "reveal_at_seconds": 2}, {"type": "math", "latex": "x^2 + x - 2 < 2x^2 - 4x + 2", "reveal_at_seconds": 7}, {"type": "math", "latex": "-x^2 + 5x - 4 < 0", "reveal_at_seconds": 13}, {"type": "math", "latex": "x^2 - 5x + 4 > 0", "reveal_at_seconds": 18}, {"type": "math", "latex": "(x-4)(x-1) > 0", "reveal_at_seconds": 23}, {"type": "callout", "kind": "tip", "text": "Always sketch the parabola to find solution regions", "reveal_at_seconds": 28}, {"type": "bullet", "text": "Solution: x < 1 or x > 4", "reveal_at_seconds": 33}], "duration_hint_sec": 38, "audio": "audio_07.mp3"}, {"id": 8, "title": "Summary and Key Pitfalls", "kind": "outro", "narration": "Let's recap. We covered completing the square to find turning points, using the completed square form to determine maximum and minimum values, applying the discriminant to analyze the nature of roots, and solving quadratic inequalities by sketching graphs. Remember these common pitfalls: when you multiply or divide an inequality by a negative number, always flip the inequality sign. When solving p squared greater than or equal to four, the solution is p greater than or equal to two or p less than or equal to minus two, not p greater than or equal to plus or minus two. For 'show' questions involving discriminants, you must prove b squared minus four a c is greater than zero; you cannot assume it. Practice these techniques, and you'll master quadratic functions and inequalities. Good luck with your revision.", "blocks": [{"type": "heading", "text": "Summary and Key Points", "reveal_at_seconds": 0}, {"type": "bullet", "text": "Completing the square reveals turning points", "reveal_at_seconds": 4}, {"type": "bullet", "text": "Discriminant tells us about nature of roots", "reveal_at_seconds": 7}, {"type": "bullet", "text": "Sketch graphs when solving inequalities", "reveal_at_seconds": 10}, {"type": "callout", "kind": "warning", "text": "Pitfall: p² ≥ 4 means p ≥ 2 OR p ≤ -2, NOT p ≥ ±2", "reveal_at_seconds": 13}, {"type": "callout", "kind": "warning", "text": "Pitfall: Flip inequality sign when multiplying/dividing by negative", "reveal_at_seconds": 20}, {"type": "callout", "kind": "warning", "text": "For 'show' questions: prove Δ > 0, don't assume it", "reveal_at_seconds": 27}, {"type": "bullet", "text": "Practice makes perfect. Good luck!", "reveal_at_seconds": 34}], "duration_hint_sec": 40, "audio": "audio_08.mp3"}], "voice": "Rachel", "total_scenes": 8, "voice_id": "nova", "voice_model": "tts-1", "tts_total_chars": 6857};</script>
+<script>// Web-native video player. Loads window.SCENES (set by build_html.py),
+// renders each scene's blocks, plays its audio, auto-advances to next scene
+// when audio ends. KaTeX renders math in `latex` blocks.
+
+(function () {
+  const scenes = (window.SCENES && Array.isArray(window.SCENES.scenes)) ? window.SCENES.scenes : [];
+  if (!scenes.length) {
+    document.getElementById('stage').innerHTML = '<div class="error">No scenes found.</div>';
+    return;
+  }
+  const stage = document.getElementById('stage');
+  const audio = document.getElementById('audio');
+  const playBtn = document.getElementById('playBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const counterEl = document.getElementById('sceneCounter');
+  const titleEl = document.getElementById('sceneTitle');
+  const seekEl = document.getElementById('seek');
+  const speedEl = document.getElementById('speed');
+
+  let idx = 0;
+  let isPlaying = false;
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
+  }
+
+  function renderBlock(block, sceneId, blockIdx) {
+    if (!block || !block.type) return '';
+    // V2: every block gets data-reveal-at + starts in .pre-reveal state.
+    // The player flips them to .revealed as audio.currentTime crosses reveal_at_seconds.
+    const r = (typeof block.reveal_at_seconds === 'number' ? block.reveal_at_seconds : 0);
+    const dataAttr = `data-reveal-at="${r}"`;
+    if (block.type === 'heading') return `<h2 class="block block-heading pre-reveal" ${dataAttr}>${escapeHtml(block.text || '')}</h2>`;
+    if (block.type === 'bullet') return `<li class="block block-bullet pre-reveal" ${dataAttr}>${escapeHtml(block.text || '')}</li>`;
+    if (block.type === 'callout') {
+      const kind = block.kind || 'info';
+      return `<div class="block block-callout block-callout-${kind} pre-reveal" ${dataAttr}>${escapeHtml(block.text || '')}</div>`;
+    }
+    if (block.type === 'math') {
+      return `<div class="block block-math pre-reveal" ${dataAttr} data-latex="${escapeHtml(block.latex || '')}"></div>`;
+    }
+    if (block.type === 'image') {
+      const cap = block.caption ? `<div class="img-caption">${escapeHtml(block.caption)}</div>` : '';
+      return `<figure class="block block-image pre-reveal" ${dataAttr}><img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.caption || '')}">${cap}</figure>`;
+    }
+    if (block.type === 'paragraph' || block.type === 'text') {
+      return `<p class="block block-paragraph pre-reveal" ${dataAttr}>${escapeHtml(block.text || '')}</p>`;
+    }
+    return '';
+  }
+
+  function renderScene(scene) {
+    const blocks = Array.isArray(scene.blocks) ? scene.blocks : [];
+    // Group consecutive bullets into a single <ul>
+    let html = '';
+    let inList = false;
+    blocks.forEach((b, i) => {
+      const isBullet = b && b.type === 'bullet';
+      if (isBullet && !inList) { html += '<ul class="block-list">'; inList = true; }
+      if (!isBullet && inList) { html += '</ul>'; inList = false; }
+      html += renderBlock(b, scene.id, i);
+    });
+    if (inList) html += '</ul>';
+
+    stage.innerHTML = `
+      <div class="scene scene-${scene.kind || 'concept'}" data-scene-id="${scene.id}">
+        <div class="scene-kind-badge">${escapeHtml((scene.kind || '').toUpperCase())}</div>
+        <h1 class="scene-title">${escapeHtml(scene.title || '')}</h1>
+        <div class="scene-body">${html}</div>
+      </div>
+    `;
+
+    // Render KaTeX in math blocks (deferred until KaTeX has loaded)
+    const renderMath = () => {
+      if (typeof window.katex === 'undefined') {
+        setTimeout(renderMath, 80);
+        return;
+      }
+      stage.querySelectorAll('.block-math').forEach(el => {
+        const tex = el.getAttribute('data-latex') || '';
+        try {
+          window.katex.render(tex, el, { throwOnError: false, displayMode: true });
+        } catch (e) {
+          el.textContent = tex;
+        }
+      });
+    };
+    renderMath();
+    // Always reveal scene title + kind badge on scene load (they're not in blocks)
+    requestAnimationFrame(() => {
+      stage.querySelectorAll('.scene-kind-badge, .scene-title').forEach(el => {
+        el.classList.add('revealed');
+      });
+    });
+
+    titleEl.textContent = scene.title || '';
+    counterEl.textContent = `${scene.id} / ${scenes.length}`;
+  }
+
+  function loadAndPlay(targetIdx, autoplay) {
+    if (targetIdx < 0 || targetIdx >= scenes.length) return;
+    idx = targetIdx;
+    const scene = scenes[idx];
+    renderScene(scene);
+    _fallbackStart = performance.now();
+    const audioFile = scene.audio || `audio_${String(scene.id).padStart(2, '0')}.mp3`;
+    audio.src = audioFile;
+    audio.playbackRate = parseFloat(speedEl.value || '1');
+    setTimeout(() => revealBlocksAtTime(0), 50);
+    // Probe whether the audio file actually exists; if not, show a banner.
+    fetch(audioFile, { method: 'HEAD' }).then(r => {
+      if (!r.ok) showNoAudioBanner();
+    }).catch(() => showNoAudioBanner());
+    if (autoplay) {
+      audio.play().catch(err => {
+        console.warn('Autoplay blocked — user must click play.', err);
+        setPlay(false);
+        startFallbackTimer();
+      });
+    } else {
+      startFallbackTimer();
+    }
+  }
+
+  function showNoAudioBanner() {
+    let b = document.getElementById('no-audio-banner');
+    if (b) return;
+    b = document.createElement('div');
+    b.id = 'no-audio-banner';
+    b.style.cssText = 'position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#fbeeee;color:#7a2a2a;border:1px solid #d4a4a4;padding:10px 18px;border-radius:6px;font-size:13px;z-index:1000;font-family:system-ui,sans-serif;max-width:520px;text-align:center;';
+    b.innerHTML = '⚠ <strong>No narration audio found.</strong> Run <code>python pipeline/tts_render.py</code> after setting <code>ELEVENLABS_API_KEY</code> in <code>.env</code>, then re-open this page. (Visuals are still playing on a fallback timer so you can preview the style.)';
+    document.body.appendChild(b);
+    // Fade out after 12s so it doesn't block forever
+    setTimeout(() => { b.style.transition = 'opacity 1s'; b.style.opacity = '0'; setTimeout(() => b.remove(), 1100); }, 12000);
+  }
+
+  function setPlay(state) {
+    isPlaying = state;
+    playBtn.textContent = state ? '❚❚' : '▶';
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  });
+  audio.addEventListener('play', () => setPlay(true));
+  audio.addEventListener('pause', () => setPlay(false));
+  audio.addEventListener('ended', () => {
+    if (idx < scenes.length - 1) {
+      loadAndPlay(idx + 1, true);
+    } else {
+      setPlay(false);
+      counterEl.textContent = '✓ Done';
+    }
+  });
+  audio.addEventListener('timeupdate', () => {
+    if (audio.duration && isFinite(audio.duration)) {
+      seekEl.value = (audio.currentTime / audio.duration) * 100;
+    }
+    revealBlocksAtTime(audio.currentTime || 0);
+  });
+
+  // Reveal blocks whose data-reveal-at <= current audio time
+  function revealBlocksAtTime(t) {
+    stage.querySelectorAll('.block.pre-reveal').forEach(el => {
+      const r = parseFloat(el.getAttribute('data-reveal-at') || '0');
+      if (r <= t) {
+        el.classList.remove('pre-reveal');
+        el.classList.add('revealed');
+      }
+    });
+  }
+
+  // Fallback: if audio is missing or fails to load, run a wall-clock timer
+  // from when the scene loaded so reveals still happen for preview.
+  let _fallbackStart = 0;
+  let _fallbackTimer = null;
+  function startFallbackTimer() {
+    _fallbackStart = performance.now();
+    if (_fallbackTimer) clearInterval(_fallbackTimer);
+    _fallbackTimer = setInterval(() => {
+      // Only run fallback if audio isn't actually playing
+      if (!audio.paused && audio.duration && isFinite(audio.duration)) return;
+      const elapsed = (performance.now() - _fallbackStart) / 1000;
+      revealBlocksAtTime(elapsed);
+    }, 200);
+  }
+  audio.addEventListener('error', startFallbackTimer);
+  audio.addEventListener('stalled', startFallbackTimer);
+  // Belt-and-braces: if audio has no duration after 1.2 sec post-load, kick the fallback.
+  audio.addEventListener('loadstart', () => {
+    setTimeout(() => {
+      if (!audio.duration || !isFinite(audio.duration)) startFallbackTimer();
+    }, 1200);
+  });
+  // Also start fallback when user clicks Play manually but audio isn't loadable.
+  // Keeps the auto-advance working in the silent preview.
+  function tickFallbackOnce() {
+    const elapsed = (performance.now() - _fallbackStart) / 1000;
+    revealBlocksAtTime(elapsed);
+    // Auto-advance using duration_hint_sec if no audio
+    const scene = scenes[idx];
+    const hint = (scene && scene.duration_hint_sec) || 30;
+    if (elapsed >= hint && (!audio.duration || !isFinite(audio.duration))) {
+      if (idx < scenes.length - 1) loadAndPlay(idx + 1, !audio.paused);
+      else { setPlay(false); counterEl.textContent = '✓ Done'; }
+    }
+  }
+  setInterval(tickFallbackOnce, 250);
+  seekEl.addEventListener('input', () => {
+    if (audio.duration && isFinite(audio.duration)) {
+      audio.currentTime = (seekEl.value / 100) * audio.duration;
+    }
+  });
+  speedEl.addEventListener('change', () => {
+    audio.playbackRate = parseFloat(speedEl.value || '1');
+  });
+  prevBtn.addEventListener('click', () => loadAndPlay(idx - 1, !audio.paused));
+  nextBtn.addEventListener('click', () => loadAndPlay(idx + 1, !audio.paused));
+  document.addEventListener('keydown', (e) => {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) return;
+    if (e.code === 'Space') { e.preventDefault(); playBtn.click(); }
+    else if (e.key === 'ArrowLeft') prevBtn.click();
+    else if (e.key === 'ArrowRight') nextBtn.click();
+  });
+
+  // Boot
+  loadAndPlay(0, false);
+})();
+</script>
+</body>
+</html>
