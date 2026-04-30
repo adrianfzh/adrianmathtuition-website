@@ -83,8 +83,13 @@ export async function POST(req: NextRequest) {
     const slotId = enrollment?.fields['Slot']?.[0] as string | undefined;
     const enrollStartDate = (enrollment?.fields['Start Date'] as string) || firstDayStr;
 
-    // 5. Resolve slot day label
+    // 5. Resolve slot day label + day index (needed for date-math in first invoice)
     let slotDayLabel = '';
+    let slotDayIndex = -1; // 0=Sun … 6=Sat
+    const DAY_INDEX: Record<string, number> = {
+      Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+      Thursday: 4, Friday: 5, Saturday: 6,
+    };
     if (slotId) {
       const slot = await at('Slots', `/${slotId}`);
       const rawDay = (slot.fields['Day'] || '') as string;
@@ -92,6 +97,7 @@ export async function POST(req: NextRequest) {
       const slotTime = ((slot.fields['Time'] || '') as string).trim();
       const dayAbbrev = DAY_ABBREV[dayName] || dayName;
       slotDayLabel = slotTime ? `${dayAbbrev} ${slotTime}` : dayAbbrev;
+      slotDayIndex = DAY_INDEX[dayName] ?? -1;
     }
 
     // 6. Fetch lessons for this month — can't filter by linked Student field by record ID in Airtable formulas;
@@ -105,36 +111,34 @@ export async function POST(req: NextRequest) {
     let regularCount: number;
     let additionalCount: number;
 
-    if (isFirstInvoice) {
-      // First invoice: fetch from enrollment start date to end of invoice month
-      // so April lessons are included even if the invoice is stored as "May 2026".
-      const rangeStart = enrollStartDate < firstDayStr ? enrollStartDate : firstDayStr;
-      // Include all non-cancelled lessons — students are billed even when absent
-      const firstInvFormula = encodeURIComponent(
-        `AND({Date}>='${rangeStart}',{Date}<='${lastDayStr}',{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
-      );
-      const allLessonsData = await airtableRequestAll(
-        'Lessons',
-        `?filterByFormula=${firstInvFormula}&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Student&sort[0][field]=Date&sort[0][direction]=asc`
-      );
-      const filtered = allLessonsData.records.filter((r: any) => r.fields['Student']?.[0] === studentId);
-      // Build line items with per-month descriptions so PDF shows two rows
-      lineItems = filtered.map((r: any) => {
-        const lessonDate: string = r.fields['Date'] || '';
-        const lessonMonthIdx = parseInt(lessonDate.slice(5, 7), 10) - 1;
-        const lessonYear = parseInt(lessonDate.slice(0, 4), 10);
-        const lessonMonthLabel = `${MONTH_NAMES[lessonMonthIdx]} ${lessonYear}`;
-        return {
-          date: lessonDate,
-          day: slotDayLabel,
-          type: (r.fields['Type'] || 'Regular') as string,
-          description: r.fields['Type'] === 'Additional'
-            ? `Additional Lesson — ${lessonMonthLabel}`
-            : `${level} ${subjects} — ${lessonMonthLabel}`,
-        };
-      });
-      regularCount = filtered.filter((r: any) => r.fields['Type'] !== 'Additional').length;
-      additionalCount = filtered.filter((r: any) => r.fields['Type'] === 'Additional').length;
+    if (isFirstInvoice && slotDayIndex >= 0 && enrollStartDate) {
+      // First invoice: use the same date math as signup so the regenerated line
+      // items always match the auto notes. No Airtable query needed — just iterate
+      // dates from enrollment start to end of invoice month.
+      const NO_LESSON_DATES = ['2026-02-17','2026-02-18','2027-02-06','2027-02-07','2026-12-25','2027-12-25'];
+      const start = new Date(enrollStartDate + 'T00:00:00Z');
+      const end   = new Date(lastDayStr + 'T00:00:00Z');
+      lineItems = [];
+      const cur = new Date(start);
+      // Advance to first occurrence of slot day on or after start date
+      while (cur.getUTCDay() !== slotDayIndex) cur.setUTCDate(cur.getUTCDate() + 1);
+      while (cur <= end) {
+        const iso = cur.toISOString().split('T')[0];
+        if (!NO_LESSON_DATES.includes(iso)) {
+          const lm = cur.getUTCMonth();
+          const ly = cur.getUTCFullYear();
+          const lessonMonthLabel = `${MONTH_NAMES[lm]} ${ly}`;
+          lineItems.push({
+            date: iso,
+            day: slotDayLabel,
+            type: 'Regular',
+            description: `${level} ${subjects} — ${lessonMonthLabel}`,
+          });
+        }
+        cur.setUTCDate(cur.getUTCDate() + 7);
+      }
+      regularCount = lineItems.length;
+      additionalCount = 0;
     } else {
       const lessonFormula = encodeURIComponent(
         `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`
