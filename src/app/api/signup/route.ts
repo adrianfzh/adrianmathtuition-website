@@ -99,30 +99,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 1c: Duplicate check — reject if a student with the same parent email
-    // already has an active enrollment in THIS slot (prevents double-submission).
-    // Allows the same parent to register a second child in a different slot.
+    // Step 1c: Duplicate check — reject if the same student name is already
+    // actively enrolled in this slot (prevents double-submission).
+    // Two children from the same parent have different names, so this allows that.
     try {
-      const emailSafe = String(parentEmail).replace(/'/g, "\\'");
+      const nameSafe = sanitize(studentName).replace(/'/g, "\\'");
       const existingStudents = await airtableRequestAll(
         'Students',
-        `?filterByFormula=${encodeURIComponent(`AND({Parent Email}='${emailSafe}',{Status}='Active')`)}&fields[]=Student Name`
+        `?filterByFormula=${encodeURIComponent(`AND(LOWER({Student Name})=LOWER('${nameSafe}'),{Status}='Active')`)}&fields[]=Student Name`
       );
       if (existingStudents.records.length > 0) {
-        // Check if any of these students are enrolled in the same slot
-        const existingIds = existingStudents.records.map((r: any) => r.id);
+        const existingIds = new Set(existingStudents.records.map((r: any) => r.id));
         const enrollments = await airtableRequestAll(
           'Enrollments',
           `?filterByFormula=${encodeURIComponent(`AND({Status}='Active',{Slot}='${String(slotId)}')`)}&fields[]=Student`
         );
-        const slotStudentIds = new Set(
-          enrollments.records.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)
+        const alreadyEnrolled = enrollments.records.some(
+          (r: any) => existingIds.has(r.fields['Student']?.[0])
         );
-        const dupRecord = existingStudents.records.find((r: any) => slotStudentIds.has(r.id));
-        if (dupRecord) {
-          const existingName = dupRecord.fields['Student Name'] || 'your child';
+        if (alreadyEnrolled) {
           return NextResponse.json({
-            error: `${existingName} is already registered for this slot. If you believe this is an error, please contact Adrian directly.`,
+            error: `${sanitize(studentName)} is already registered for this slot. If you believe this is an error, please contact Adrian directly.`,
           }, { status: 409 });
         }
       }
