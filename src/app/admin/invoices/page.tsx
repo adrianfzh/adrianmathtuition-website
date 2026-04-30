@@ -1082,7 +1082,7 @@ export default function AdminPage() {
         return `Dear Parent/Student,\n\nPlease find attached the amended invoice for ${inv.studentName} for ${inv.month} \u2014 ${amount}, due by ${inv.dueDate}.\n\nThis replaces the previously sent invoice. Please disregard the earlier email.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
       }
       const welcomeLine = isFirstInvoice
-        ? `Welcome to Adrian's Math Tuition! We're glad to have ${inv.studentName} on board.\n\n`
+        ? `Welcome to Adrian's Math Tuition! I'm glad to have ${inv.studentName} on board.\n\n`
         : '';
       return `Dear Parent/Student,\n\n${welcomeLine}Please find attached the invoice for ${inv.studentName} for ${inv.month} \u2014 ${amount}, due by ${inv.dueDate}.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
     }
