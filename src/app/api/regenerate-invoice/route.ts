@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       additionalCount = storedLineItems.filter((r: any) => r.type === 'Additional').length;
     } else {
       const lessonFormula = encodeURIComponent(
-        `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'})`
+        `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'))`
       );
       const allLessonsData = await airtableRequestAll(
         'Lessons',
