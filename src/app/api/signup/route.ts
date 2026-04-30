@@ -100,18 +100,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 1c: Duplicate check — reject if a student with the same parent email
-    // already has an active enrollment in this slot (prevents double-submission).
+    // already has an active enrollment in THIS slot (prevents double-submission).
+    // Allows the same parent to register a second child in a different slot.
     try {
+      const emailSafe = String(parentEmail).replace(/'/g, "\\'");
       const existingStudents = await airtableRequestAll(
         'Students',
-        `?filterByFormula=${encodeURIComponent(`{Parent Email}='${String(parentEmail).replace(/'/g, "\\'")}'`)}&fields[]=Student Name&fields[]=Status`
+        `?filterByFormula=${encodeURIComponent(`AND({Parent Email}='${emailSafe}',{Status}='Active')`)}&fields[]=Student Name`
       );
-      const activeMatch = existingStudents.records.find((r: any) => r.fields['Status'] === 'Active');
-      if (activeMatch) {
-        const existingName = activeMatch.fields['Student Name'] || 'your child';
-        return NextResponse.json({
-          error: `${existingName} is already registered. If you believe this is an error, please contact Adrian directly.`,
-        }, { status: 409 });
+      if (existingStudents.records.length > 0) {
+        // Check if any of these students are enrolled in the same slot
+        const existingIds = existingStudents.records.map((r: any) => r.id);
+        const enrollments = await airtableRequestAll(
+          'Enrollments',
+          `?filterByFormula=${encodeURIComponent(`AND({Status}='Active',{Slot}='${String(slotId)}')`)}&fields[]=Student`
+        );
+        const slotStudentIds = new Set(
+          enrollments.records.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)
+        );
+        const dupRecord = existingStudents.records.find((r: any) => slotStudentIds.has(r.id));
+        if (dupRecord) {
+          const existingName = dupRecord.fields['Student Name'] || 'your child';
+          return NextResponse.json({
+            error: `${existingName} is already registered for this slot. If you believe this is an error, please contact Adrian directly.`,
+          }, { status: 409 });
+        }
       }
     } catch (dupErr) {
       console.error('[signup] Duplicate check failed (continuing):', (dupErr as Error).message);
