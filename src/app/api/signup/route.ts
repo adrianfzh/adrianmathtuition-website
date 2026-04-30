@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
   const {
     slotId, level: rawLevel, subjects: subjectsParam, subjectLevel: subjectLevelParam,
-    trialLessonId,
+    trialLessonId, lockedStartDate,
     expires, sig, studentName, school, studentContact,
     parentName, parentContact, parentEmail, startDate, howHeard, referralType, referredBy,
   } = body;
@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
     check.set('subjects', String(subjectsParam || ''));
     if (subjectLevelParam) check.set('subjectLevel', String(subjectLevelParam));
     if (trialLessonId) check.set('trialLessonId', String(trialLessonId));
+    // lockedStartDate is the URL param that was included in the HMAC when admin prefilled a date
+    if (lockedStartDate) check.set('startDate', String(lockedStartDate));
     check.set('expires', String(expires || ''));
     const expectedSig = createHmac('sha256', process.env.SIGNUP_SECRET || 'fallback-secret')
       .update(check.toString()).digest('hex').slice(0, 16);

@@ -184,6 +184,8 @@ function SignupContent() {
     const payload: Record<string, unknown> = {
       slotId, expires, sig, level, subjects, subjectLevel,
       ...(trialLessonId && { trialLessonId }),
+      // Pass the URL's startDate param separately so the POST route can verify the HMAC
+      ...(startDateParam && { lockedStartDate: startDateParam }),
       studentName:    fd.get('studentName'),
       school:         fd.get('school'),
       studentContact: fd.get('studentContact'),
