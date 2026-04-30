@@ -341,10 +341,12 @@ export async function POST(request: NextRequest) {
             const firstLessonDate = allLineItems[0].date;
             const firstLessonFormatted = formatDateLong(firstLessonDate);
 
-            // Month label: "April 2026" or "April–May 2026"
+            // Month stored as "May 2026" so it appears in the May dropdown.
+            // If only start month, store as that month. Line items descriptions
+            // still show "April 2026" / "May 2026" so the parent sees both months.
             const invoiceMonthLabel = batchAlreadyRan && nextMonthCount > 0
-              ? `${startMonthLabel.split(' ')[0]}–${nextMonthLabel}`
-              : startMonthLabel;
+              ? nextMonthLabel      // "May 2026" — shows in May dropdown
+              : startMonthLabel;    // "April 2026" — no next month needed
 
             // Look up trial lesson
             let trialLessonFormatted: string | null = null;
@@ -369,6 +371,7 @@ export async function POST(request: NextRequest) {
                 'Month':          invoiceMonthLabel,
                 'Lessons Count':  totalLessons,
                 'Rate Per Lesson': ratePerLesson,
+                'Base Amount':    totalAmount,
                 'Final Amount':   totalAmount,
                 'Line Items':     JSON.stringify(allLineItems),
                 'Invoice Type':   'Regular',
@@ -393,7 +396,7 @@ export async function POST(request: NextRequest) {
                   dueDate: firstLessonDate,
                   lessonsCount: totalLessons,
                   ratePerLesson,
-                  baseAmount: totalAmount,
+                  baseAmount: totalAmount,   // must be set so PDF template renders correctly
                   finalAmount: totalAmount,
                   status: 'Pending',
                   makeupCredits: 0,
