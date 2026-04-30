@@ -206,10 +206,8 @@ export async function POST(request: NextRequest) {
     let rateType: string | null = null;
     try {
       const rateLevel = level.startsWith('JC') ? 'JC' : 'Secondary';
-      const rateParams = new URLSearchParams();
-      rateParams.set('filterByFormula', `AND({Level}='${rateLevel}', {Is Current}=1)`);
-      rateParams.set('maxRecords', '1');
-      const rateData = await at('Rates', `?${rateParams.toString()}`);
+      const rateData = await at('Rates',
+        `?filterByFormula=${encodeURIComponent(`AND({Level}='${rateLevel}',{Is Current}=TRUE())`)}&maxRecords=1`);
       if (rateData.records?.length > 0) {
         const rec = rateData.records[0];
         rateId = rec.id;
