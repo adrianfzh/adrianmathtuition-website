@@ -95,25 +95,47 @@ export async function POST(req: NextRequest) {
 
     // 6. Fetch lessons for this month — can't filter by linked Student field by record ID in Airtable formulas;
     // fetch all lessons for the date range and filter by studentId in JS (same pattern as generate-invoices).
-    const lessonFormula = encodeURIComponent(
-      `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'))`
-    );
-    const allLessonsData = await airtableRequestAll(
-      'Lessons',
-      `?filterByFormula=${lessonFormula}&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Student&sort[0][field]=Date&sort[0][direction]=asc`
-    );
-    const lessonsData = { records: allLessonsData.records.filter((r: any) => r.fields['Student']?.[0] === studentId) };
+    // Exception: for "First invoice" combined invoices (autoNotes contains "first invoice" AND stored line items
+    // have dates outside the invoice month), preserve stored line items instead of re-fetching.
+    const autoNotesRaw = ((f['Auto Notes'] || '') as string).toLowerCase();
+    let storedLineItems: any[] = [];
+    try { storedLineItems = JSON.parse((f['Line Items'] || '[]') as string); } catch { /* ignore */ }
+    const hasOutsideMonthDates = storedLineItems.some((item: any) => {
+      if (!item.date) return false;
+      return item.date < firstDayStr || item.date > lastDayStr;
+    });
+    const isFirstInvoiceCombined = autoNotesRaw.includes('first invoice') && hasOutsideMonthDates;
 
-    const description = `${level} ${subjects} \u2014 ${month}`;
-    const lineItems = lessonsData.records.map((r: any) => ({
-      date: r.fields['Date'],
-      day: slotDayLabel,
-      type: (r.fields['Type'] || 'Regular') as string,
-      description: r.fields['Type'] === 'Additional' ? `Additional Lesson \u2014 ${month}` : description,
-    }));
+    let lineItems: any[];
+    let regularCount: number;
+    let additionalCount: number;
 
-    const regularCount = lessonsData.records.filter((r: any) => r.fields['Type'] !== 'Additional').length;
-    const additionalCount = lessonsData.records.filter((r: any) => r.fields['Type'] === 'Additional').length;
+    if (isFirstInvoiceCombined) {
+      // Preserve stored line items for first-invoice combined invoices
+      lineItems = storedLineItems;
+      regularCount = storedLineItems.filter((r: any) => r.type !== 'Additional').length;
+      additionalCount = storedLineItems.filter((r: any) => r.type === 'Additional').length;
+    } else {
+      const lessonFormula = encodeURIComponent(
+        `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'})`
+      );
+      const allLessonsData = await airtableRequestAll(
+        'Lessons',
+        `?filterByFormula=${lessonFormula}&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Student&sort[0][field]=Date&sort[0][direction]=asc`
+      );
+      const lessonsData = { records: allLessonsData.records.filter((r: any) => r.fields['Student']?.[0] === studentId) };
+
+      const description = `${level} ${subjects} \u2014 ${month}`;
+      lineItems = lessonsData.records.map((r: any) => ({
+        date: r.fields['Date'],
+        day: slotDayLabel,
+        type: (r.fields['Type'] || 'Regular') as string,
+        description: r.fields['Type'] === 'Additional' ? `Additional Lesson \u2014 ${month}` : description,
+      }));
+
+      regularCount = lessonsData.records.filter((r: any) => r.fields['Type'] !== 'Additional').length;
+      additionalCount = lessonsData.records.filter((r: any) => r.fields['Type'] === 'Additional').length;
+    }
     const baseAmount = regularCount * ratePerLesson;
     const additionalAmount = additionalCount * ratePerLesson;
 
@@ -162,12 +184,14 @@ export async function POST(req: NextRequest) {
     // 9. Update invoice in Airtable.
     // Only overwrite Auto Notes if there is a fresh carry-over to write;
     // otherwise preserve whatever the admin set via the Amend form.
+    const dueDateStr = `${year}-${String(monthIdx + 1).padStart(2, '0')}-15`;
     const patchFields: Record<string, any> = {
       'Lessons Count': regularCount + additionalCount,
       'Rate Per Lesson': ratePerLesson,
       'Final Amount': finalAmount,
       'Line Items': JSON.stringify(lineItems),
       'Line Items Extra': JSON.stringify(newExtra),
+      'Due Date': dueDateStr,
       'PDF URL': '',
     };
     if (carryOverNotes.trim()) patchFields['Auto Notes'] = carryOverNotes.trim();
@@ -188,7 +212,7 @@ export async function POST(req: NextRequest) {
         month,
         invoiceId: recordId,
         issueDate: (f['Issue Date'] || '') as string,
-        dueDate: (f['Due Date'] || '') as string,
+        dueDate: dueDateStr,
         lessonsCount: regularCount + additionalCount,
         ratePerLesson,
         baseAmount: baseAmount + additionalAmount,

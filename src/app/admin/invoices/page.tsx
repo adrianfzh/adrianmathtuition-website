@@ -943,6 +943,10 @@ export default function AdminPage() {
               <label>Adjustment Notes</label>
               <input type="text" id="a-adjnotes-${inv.id}" value="${escAttr(inv.adjustmentNotes || '')}" placeholder="e.g. Additional lesson, discount">
             </div>
+            <div class="form-group">
+              <label>Due Date</label>
+              <input type="date" id="a-duedate-${inv.id}" value="${escAttr(inv.dueDate || '')}">
+            </div>
             <div class="form-group full-width">
               <label>Auto Notes</label>
               <textarea id="a-notes-${inv.id}" rows="3" style="white-space:pre-wrap;">${escHtml(inv.autoNotes || '')}</textarea>
@@ -1232,6 +1236,7 @@ export default function AdminPage() {
       const autoNotes = (document.getElementById(`a-notes-${id}`) as HTMLTextAreaElement).value;
       const adjustmentAmount = parseFloat((document.getElementById(`a-adjustment-${id}`) as HTMLInputElement)?.value) || 0;
       const adjustmentNotes = (document.getElementById(`a-adjnotes-${id}`) as HTMLInputElement)?.value || '';
+      const dueDateValue = (document.getElementById(`a-duedate-${id}`) as HTMLInputElement)?.value || '';
 
       const mainLineItems: any[] = [];
       const reconstructedLineItems: any[] = [];
@@ -1262,7 +1267,7 @@ export default function AdminPage() {
       const extraLineItemsTotal = currentLineItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
       const finalAmount = baseAmount + adjustmentAmount + extraLineItemsTotal;
 
-      const fields = {
+      const fields: Record<string, any> = {
         'Lessons Count': lessonsCount,
         'Auto Notes': autoNotes,
         'Final Amount': finalAmount,
@@ -1271,6 +1276,7 @@ export default function AdminPage() {
         'Adjustment Amount': adjustmentAmount,
         'Adjustment Notes': adjustmentNotes,
       };
+      if (dueDateValue) fields['Due Date'] = dueDateValue;
 
       const saveBtn = document.querySelector(`#amend-${id} .btn-save`) as HTMLButtonElement;
       if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
@@ -1293,6 +1299,7 @@ export default function AdminPage() {
           inv.lineItemsExtra = currentLineItems;
           inv.adjustmentAmount = adjustmentAmount;
           inv.adjustmentNotes = adjustmentNotes;
+          if (dueDateValue) inv.dueDate = dueDateValue;
         }
 
         try {
