@@ -266,230 +266,181 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 6: Auto-generate prorated first invoice (non-fatal)
+    // Step 6: Auto-generate first invoice (non-fatal)
+    // If the monthly batch has already run for next month (today >= 14th of start month),
+    // combine both months into one invoice rather than creating two separate ones.
     let invoiceGenerated = false;
     let invoiceAmount: number | null = null;
     try {
-      const start = new Date(String(startDate) + 'T00:00:00');
-      const today = new Date();
-
-      // Generate invoice if start date is in the current month OR a future month
       if (ratePerLesson && slotIds.length > 0) {
-        const invoiceMonthLabel = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
-        const lastDayOfMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+        const start = new Date(String(startDate) + 'T00:00:00');
+        const todayForInvoice = new Date();
+        const todayStr = todayForInvoice.toISOString().split('T')[0];
 
-        // Fetch slot to get day name and time
+        const batchAlreadyRan =
+          (todayForInvoice.getFullYear() > start.getFullYear()) ||
+          (todayForInvoice.getFullYear() === start.getFullYear() &&
+            todayForInvoice.getMonth() > start.getMonth()) ||
+          (todayForInvoice.getFullYear() === start.getFullYear() &&
+            todayForInvoice.getMonth() === start.getMonth() &&
+            todayForInvoice.getDate() >= 14);
+
+        // Fetch slot once
         const slotRecord = await at('Slots', `/${slotIds[0]}`);
-        const dayRaw = slotRecord.fields?.['Day'] || '';
-        const dayName = dayRaw.replace(/^\d+\s+/, '').trim();
+        const dayRaw  = (slotRecord.fields?.['Day'] || '').replace(/^\d+\s+/, '').trim();
         const slotTime = (slotRecord.fields?.['Time'] || '').trim();
-        const dayLabel = slotTime ? `${dayName} ${slotTime}` : dayName;
-
-        // Count lesson dates from start date to end of month
+        const dayLabel = slotTime ? `${dayRaw} ${slotTime}` : dayRaw;
         const dayIndices: Record<string, number> = {
           Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
           Thursday: 4, Friday: 5, Saturday: 6,
         };
-        const targetDay = dayIndices[dayName];
-        const lineItems: { date: string; day: string; type: string; description: string }[] = [];
+        const targetDay = dayIndices[dayRaw];
+        const subjectsStr = subjects.join(' & ');
+        const formatDateLong = (iso: string) =>
+          new Date(iso + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+        const allLineItems: { date: string; day: string; type: string; description: string }[] = [];
 
         if (targetDay !== undefined) {
-          const subjectsStr = subjects.join(' & ');
-          const description = `${level} ${subjectsStr} — ${invoiceMonthLabel}`;
-          const current = new Date(start);
-          // Advance to first occurrence of target day on or after start date
-          while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
-          while (current <= lastDayOfMonth) {
-            const iso = current.toISOString().split('T')[0];
+          // April (start month) line items — from start date to end of month
+          const startMonthLabel = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
+          const lastDayOfStartMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+          const cur1 = new Date(start);
+          while (cur1.getDay() !== targetDay) cur1.setDate(cur1.getDate() + 1);
+          while (cur1 <= lastDayOfStartMonth) {
+            const iso = cur1.toISOString().split('T')[0];
             if (!NO_LESSON_DATES.includes(iso)) {
-              lineItems.push({ date: iso, day: dayLabel, type: 'Regular', description });
+              allLineItems.push({ date: iso, day: dayLabel, type: 'Regular', description: `${level} ${subjectsStr} — ${startMonthLabel}` });
             }
-            current.setDate(current.getDate() + 7);
+            cur1.setDate(cur1.getDate() + 7);
           }
-        }
+          const aprilCount = allLineItems.length;
 
-        const lessonCount = lineItems.length;
-        if (lessonCount > 0) {
-          const baseAmount = lessonCount * ratePerLesson;
-          const todayStr = new Date().toISOString().split('T')[0];
-          const firstLessonDate = lineItems[0].date;
-          const formatDateLong = (iso: string) =>
-            new Date(iso + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-          const firstLessonFormatted = formatDateLong(firstLessonDate);
-
-          // Look up trial lesson date from Lessons table
-          let trialLessonFormatted: string | null = null;
-          try {
-            const trialRes = await at('Lessons', `?filterByFormula=AND(SEARCH('${studentId}',ARRAYJOIN({Student})),{Type}='Trial')&maxRecords=1`);
-            const trialRecord = trialRes.records?.[0];
-            if (trialRecord?.fields?.['Date']) {
-              trialLessonFormatted = formatDateLong(trialRecord.fields['Date'] as string);
+          // Next month line items — only if batch already ran
+          let nextMonthCount = 0;
+          let nextMonthLabel = '';
+          if (batchAlreadyRan) {
+            const nextMonthStart = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+            const nextMonthEnd   = new Date(start.getFullYear(), start.getMonth() + 2, 0);
+            nextMonthLabel = `${MONTH_NAMES[nextMonthStart.getMonth()]} ${nextMonthStart.getFullYear()}`;
+            const cur2 = new Date(nextMonthStart);
+            while (cur2.getDay() !== targetDay) cur2.setDate(cur2.getDate() + 1);
+            while (cur2 <= nextMonthEnd) {
+              const iso = cur2.toISOString().split('T')[0];
+              if (!NO_LESSON_DATES.includes(iso)) {
+                allLineItems.push({ date: iso, day: dayLabel, type: 'Regular', description: `${level} ${subjectsStr} — ${nextMonthLabel}` });
+              }
+              cur2.setDate(cur2.getDate() + 7);
             }
-          } catch { /* non-fatal */ }
+            nextMonthCount = allLineItems.length - aprilCount;
+          }
 
-          const autoNotes = [
-            `<b>First invoice</b> — prorated from ${firstLessonFormatted} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''})`,
-            trialLessonFormatted ? `Trial lesson: ${trialLessonFormatted}` : null,
-            `First lesson: ${firstLessonFormatted}`,
-          ].filter(Boolean).join('\n');
+          const totalLessons = allLineItems.length;
+          if (totalLessons > 0) {
+            const totalAmount = totalLessons * ratePerLesson;
+            const firstLessonDate = allLineItems[0].date;
+            const firstLessonFormatted = formatDateLong(firstLessonDate);
 
-          const invoiceFields: Record<string, unknown> = {
-            'Student': [studentId],
-            'Month': invoiceMonthLabel,
-            'Lessons Count': lessonCount,
-            'Rate Per Lesson': ratePerLesson,
-            'Final Amount': baseAmount,
-            'Line Items': JSON.stringify(lineItems),
-            'Invoice Type': 'Regular',
-            'Status': 'Draft',
-            'Issue Date': todayStr,
-            'Due Date': firstLessonDate,
-            'Auto Notes': autoNotes,
-          };
+            // Month label: "April 2026" or "April–May 2026"
+            const invoiceMonthLabel = batchAlreadyRan && nextMonthCount > 0
+              ? `${startMonthLabel.split(' ')[0]}–${nextMonthLabel}`
+              : startMonthLabel;
 
-          const createdInvoice = await at('Invoices', '', {
-            method: 'POST',
-            body: JSON.stringify({ fields: invoiceFields }),
-          });
-
-          invoiceGenerated = true;
-          invoiceAmount = baseAmount;
-
-          // Generate PDF (non-fatal)
-          if (process.env.VERCEL === '1') {
+            // Look up trial lesson
+            let trialLessonFormatted: string | null = null;
             try {
-              const invoiceData = {
-                studentName: sanitize(studentName) as string,
-                month: invoiceMonthLabel,
-                invoiceId: createdInvoice.id,
-                issueDate: todayStr,
-                dueDate: firstLessonDate,
-                lessonsCount: lessonCount,
-                ratePerLesson,
-                baseAmount,
-                finalAmount: baseAmount,
-                status: 'Pending',
-                makeupCredits: 0,
-                notes: autoNotes,
-                lineItems,
-                lineItemsExtra: [],
-              };
-              const pdfBuffer = await generateInvoicePDF(invoiceData);
-              const uploadRes = await fetch(
-                `https://content.airtableapi.com/v0/${baseId}/Invoices/${createdInvoice.id}/uploadAttachment`,
-                {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${airtableToken}`,
-                    'Content-Type': 'application/octet-stream',
-                    'X-Airtable-Attachment-Filename': `Invoice-${sanitize(studentName)}-${invoiceMonthLabel}.pdf`,
-                    'X-Airtable-Field-Name': 'Invoice PDF',
-                  },
-                  body: pdfBuffer as unknown as BodyInit,
-                }
-              );
-              if (!uploadRes.ok) throw new Error('Airtable upload failed: ' + await uploadRes.text());
-              await closeBrowser();
-            } catch (pdfError) {
-              console.error('[signup] PDF generation failed (non-fatal):', (pdfError as Error).message);
-              try { await closeBrowser(); } catch { /**/ }
-            }
-          }
+              const trialRes = await at('Lessons', `?filterByFormula=AND(SEARCH('${studentId}',ARRAYJOIN({Student})),{Type}='Trial')&maxRecords=1`);
+              const trialRecord = trialRes.records?.[0];
+              if (trialRecord?.fields?.['Date']) trialLessonFormatted = formatDateLong(trialRecord.fields['Date'] as string);
+            } catch { /* non-fatal */ }
 
-          // Telegram notification (non-fatal)
-          try {
-            await sendTelegram(
-              `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
-              `First invoice generated: $${baseAmount.toFixed(2)} (${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}, ${invoiceMonthLabel})\n` +
-              `Status: Draft — review in admin dashboard.`
-            );
-          } catch (tgError) {
-            console.error('[signup] Telegram notification failed (non-fatal):', (tgError as Error).message);
+            // Auto notes
+            const noteParts: string[] = [
+              `<b>First invoice</b> — prorated from ${firstLessonFormatted} (${aprilCount} lesson${aprilCount !== 1 ? 's' : ''} in ${startMonthLabel}${batchAlreadyRan && nextMonthCount > 0 ? `, ${nextMonthCount} lesson${nextMonthCount !== 1 ? 's' : ''} in ${nextMonthLabel}` : ''})`,
+            ];
+            if (trialLessonFormatted) noteParts.push(`Trial lesson: ${trialLessonFormatted}`);
+            noteParts.push(`First lesson: ${firstLessonFormatted}`);
+            const autoNotes = noteParts.join('\n');
+
+            const createdInvoice = await at('Invoices', '', {
+              method: 'POST',
+              body: JSON.stringify({ fields: {
+                'Student':        [studentId],
+                'Month':          invoiceMonthLabel,
+                'Lessons Count':  totalLessons,
+                'Rate Per Lesson': ratePerLesson,
+                'Final Amount':   totalAmount,
+                'Line Items':     JSON.stringify(allLineItems),
+                'Invoice Type':   'Regular',
+                'Status':         'Draft',
+                'Issue Date':     todayStr,
+                'Due Date':       firstLessonDate,
+                'Auto Notes':     autoNotes,
+              }}),
+            });
+
+            invoiceGenerated = true;
+            invoiceAmount = totalAmount;
+
+            // Generate PDF (non-fatal)
+            if (process.env.VERCEL === '1') {
+              try {
+                const invoiceData = {
+                  studentName: sanitize(studentName) as string,
+                  month: invoiceMonthLabel,
+                  invoiceId: createdInvoice.id,
+                  issueDate: todayStr,
+                  dueDate: firstLessonDate,
+                  lessonsCount: totalLessons,
+                  ratePerLesson,
+                  baseAmount: totalAmount,
+                  finalAmount: totalAmount,
+                  status: 'Pending',
+                  makeupCredits: 0,
+                  notes: autoNotes,
+                  lineItems: allLineItems,
+                  lineItemsExtra: [],
+                };
+                const pdfBuffer = await generateInvoicePDF(invoiceData);
+                const uploadRes = await fetch(
+                  `https://content.airtableapi.com/v0/${baseId}/Invoices/${createdInvoice.id}/uploadAttachment`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${airtableToken}`,
+                      'Content-Type': 'application/octet-stream',
+                      'X-Airtable-Attachment-Filename': `Invoice-${sanitize(studentName)}-${invoiceMonthLabel}.pdf`,
+                      'X-Airtable-Field-Name': 'Invoice PDF',
+                    },
+                    body: pdfBuffer as unknown as BodyInit,
+                  }
+                );
+                if (!uploadRes.ok) throw new Error('Airtable upload failed: ' + await uploadRes.text());
+                await closeBrowser();
+              } catch (pdfError) {
+                console.error('[signup] PDF generation failed (non-fatal):', (pdfError as Error).message);
+                try { await closeBrowser(); } catch { /**/ }
+              }
+            }
+
+            // Telegram notification
+            try {
+              const breakdown = batchAlreadyRan && nextMonthCount > 0
+                ? `${aprilCount} lessons in ${startMonthLabel} + ${nextMonthCount} in ${nextMonthLabel}`
+                : `${totalLessons} lesson${totalLessons !== 1 ? 's' : ''}, ${startMonthLabel}`;
+              await sendTelegram(
+                `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
+                `First invoice: $${totalAmount.toFixed(2)} (${breakdown})\n` +
+                `Status: Draft — review in admin dashboard.`
+              );
+            } catch (tgError) {
+              console.error('[signup] Telegram notification failed (non-fatal):', (tgError as Error).message);
+            }
           }
         }
       }
     } catch (invoiceError) {
       console.error('[signup] Invoice generation failed (non-fatal):', (invoiceError as Error).message);
-    }
-
-    // Step 6b: Generate next-month invoice if monthly batch has already run
-    // The batch runs on the 14th of each month to generate the FOLLOWING month's invoices.
-    // If today >= 14th of startDate's month, this student missed the batch — generate it now.
-    try {
-      const start = new Date(String(startDate) + 'T00:00:00');
-      const todayForBatch = new Date();
-      const batchAlreadyRan =
-        (todayForBatch.getFullYear() > start.getFullYear()) ||
-        (todayForBatch.getFullYear() === start.getFullYear() &&
-          todayForBatch.getMonth() > start.getMonth()) ||
-        (todayForBatch.getFullYear() === start.getFullYear() &&
-          todayForBatch.getMonth() === start.getMonth() &&
-          todayForBatch.getDate() >= 14);
-
-      if (batchAlreadyRan && ratePerLesson && slotIds.length > 0) {
-        const nextMonthStart = new Date(start.getFullYear(), start.getMonth() + 1, 1);
-        const nextMonthEnd   = new Date(start.getFullYear(), start.getMonth() + 2, 0);
-        const nextMonthLabel = `${MONTH_NAMES[nextMonthStart.getMonth()]} ${nextMonthStart.getFullYear()}`;
-
-        const slotRecord2 = await at('Slots', `/${slotIds[0]}`);
-        const dayRaw2  = (slotRecord2.fields?.['Day'] || '').replace(/^\d+\s+/, '').trim();
-        const dayName2 = dayRaw2;
-        const slotTime2 = (slotRecord2.fields?.['Time'] || '').trim();
-        const dayLabel2 = slotTime2 ? `${dayName2} ${slotTime2}` : dayName2;
-
-        const dayIndices2: Record<string, number> = {
-          Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
-          Thursday: 4, Friday: 5, Saturday: 6,
-        };
-        const targetDay2 = dayIndices2[dayName2];
-        const lineItems2: { date: string; day: string; type: string; description: string }[] = [];
-
-        if (targetDay2 !== undefined) {
-          const subjectsStr = subjects.join(' & ');
-          const desc2 = `${level} ${subjectsStr} — ${nextMonthLabel}`;
-          const cur2 = new Date(nextMonthStart);
-          while (cur2.getDay() !== targetDay2) cur2.setDate(cur2.getDate() + 1);
-          while (cur2 <= nextMonthEnd) {
-            const iso = cur2.toISOString().split('T')[0];
-            if (!NO_LESSON_DATES.includes(iso)) {
-              lineItems2.push({ date: iso, day: dayLabel2, type: 'Regular', description: desc2 });
-            }
-            cur2.setDate(cur2.getDate() + 7);
-          }
-        }
-
-        if (lineItems2.length > 0) {
-          const nextAmount = lineItems2.length * ratePerLesson;
-          const todayStr2 = todayForBatch.toISOString().split('T')[0];
-          const nextDueDate = lineItems2[0].date;
-          await at('Invoices', '', {
-            method: 'POST',
-            body: JSON.stringify({ fields: {
-              'Student':        [studentId],
-              'Month':          nextMonthLabel,
-              'Lessons Count':  lineItems2.length,
-              'Rate Per Lesson': ratePerLesson,
-              'Final Amount':   nextAmount,
-              'Line Items':     JSON.stringify(lineItems2),
-              'Invoice Type':   'Regular',
-              'Status':         'Draft',
-              'Issue Date':     todayStr2,
-              'Due Date':       nextDueDate,
-              'Auto Notes':     `New student — ${nextMonthLabel} invoice (${lineItems2.length} lesson${lineItems2.length !== 1 ? 's' : ''})`,
-            }}),
-          });
-          console.log(`[signup] Generated next-month invoice: ${nextMonthLabel} (${lineItems2.length} lessons, $${nextAmount.toFixed(2)})`);
-          try {
-            await sendTelegram(
-              `📅 <b>Next-month invoice also created: ${sanitize(studentName)}</b>\n` +
-              `${nextMonthLabel}: $${nextAmount.toFixed(2)} (${lineItems2.length} lesson${lineItems2.length !== 1 ? 's' : ''})\n` +
-              `Status: Draft`
-            );
-          } catch { /* non-fatal */ }
-        }
-      }
-    } catch (nextInvoiceError) {
-      console.error('[signup] Next-month invoice generation failed (non-fatal):', (nextInvoiceError as Error).message);
     }
 
     // Step 7: Auto-generate lesson records (non-fatal)
