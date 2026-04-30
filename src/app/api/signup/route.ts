@@ -371,6 +371,86 @@ export async function POST(request: NextRequest) {
       console.error('[signup] Invoice generation failed (non-fatal):', (invoiceError as Error).message);
     }
 
+    // Step 6b: Generate next-month invoice if monthly batch has already run
+    // The batch runs on the 14th of each month to generate the FOLLOWING month's invoices.
+    // If today >= 14th of startDate's month, this student missed the batch — generate it now.
+    try {
+      const start = new Date(String(startDate) + 'T00:00:00');
+      const todayForBatch = new Date();
+      const batchAlreadyRan =
+        (todayForBatch.getFullYear() > start.getFullYear()) ||
+        (todayForBatch.getFullYear() === start.getFullYear() &&
+          todayForBatch.getMonth() > start.getMonth()) ||
+        (todayForBatch.getFullYear() === start.getFullYear() &&
+          todayForBatch.getMonth() === start.getMonth() &&
+          todayForBatch.getDate() >= 14);
+
+      if (batchAlreadyRan && ratePerLesson && slotIds.length > 0) {
+        const nextMonthStart = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+        const nextMonthEnd   = new Date(start.getFullYear(), start.getMonth() + 2, 0);
+        const nextMonthLabel = `${MONTH_NAMES[nextMonthStart.getMonth()]} ${nextMonthStart.getFullYear()}`;
+
+        const slotRecord2 = await at('Slots', `/${slotIds[0]}`);
+        const dayRaw2  = (slotRecord2.fields?.['Day'] || '').replace(/^\d+\s+/, '').trim();
+        const dayName2 = dayRaw2;
+        const slotTime2 = (slotRecord2.fields?.['Time'] || '').trim();
+        const dayLabel2 = slotTime2 ? `${dayName2} ${slotTime2}` : dayName2;
+
+        const dayIndices2: Record<string, number> = {
+          Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+          Thursday: 4, Friday: 5, Saturday: 6,
+        };
+        const targetDay2 = dayIndices2[dayName2];
+        const lineItems2: { date: string; day: string; type: string; description: string }[] = [];
+
+        if (targetDay2 !== undefined) {
+          const subjectsStr = subjects.join(' & ');
+          const desc2 = `${level} ${subjectsStr} — ${nextMonthLabel}`;
+          const cur2 = new Date(nextMonthStart);
+          while (cur2.getDay() !== targetDay2) cur2.setDate(cur2.getDate() + 1);
+          while (cur2 <= nextMonthEnd) {
+            const iso = cur2.toISOString().split('T')[0];
+            if (!NO_LESSON_DATES.includes(iso)) {
+              lineItems2.push({ date: iso, day: dayLabel2, type: 'Regular', description: desc2 });
+            }
+            cur2.setDate(cur2.getDate() + 7);
+          }
+        }
+
+        if (lineItems2.length > 0) {
+          const nextAmount = lineItems2.length * ratePerLesson;
+          const todayStr2 = todayForBatch.toISOString().split('T')[0];
+          const nextDueDate = lineItems2[0].date;
+          await at('Invoices', '', {
+            method: 'POST',
+            body: JSON.stringify({ fields: {
+              'Student':        [studentId],
+              'Month':          nextMonthLabel,
+              'Lessons Count':  lineItems2.length,
+              'Rate Per Lesson': ratePerLesson,
+              'Final Amount':   nextAmount,
+              'Line Items':     JSON.stringify(lineItems2),
+              'Invoice Type':   'Regular',
+              'Status':         'Draft',
+              'Issue Date':     todayStr2,
+              'Due Date':       nextDueDate,
+              'Auto Notes':     `New student — ${nextMonthLabel} invoice (${lineItems2.length} lesson${lineItems2.length !== 1 ? 's' : ''})`,
+            }}),
+          });
+          console.log(`[signup] Generated next-month invoice: ${nextMonthLabel} (${lineItems2.length} lessons, $${nextAmount.toFixed(2)})`);
+          try {
+            await sendTelegram(
+              `📅 <b>Next-month invoice also created: ${sanitize(studentName)}</b>\n` +
+              `${nextMonthLabel}: $${nextAmount.toFixed(2)} (${lineItems2.length} lesson${lineItems2.length !== 1 ? 's' : ''})\n` +
+              `Status: Draft`
+            );
+          } catch { /* non-fatal */ }
+        }
+      }
+    } catch (nextInvoiceError) {
+      console.error('[signup] Next-month invoice generation failed (non-fatal):', (nextInvoiceError as Error).message);
+    }
+
     // Step 7: Auto-generate lesson records (non-fatal)
     let lessonsCreated = 0;
     try {
