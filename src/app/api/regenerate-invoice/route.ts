@@ -76,11 +76,12 @@ export async function POST(req: NextRequest) {
     // fetch all active enrollments and filter by studentId in JS (same pattern as generate-invoices).
     const enrollData = await airtableRequestAll(
       'Enrollments',
-      `?filterByFormula=${encodeURIComponent("{Status}='Active'")}&fields[]=Student&fields[]=Rate Per Lesson&fields[]=Slot`
+      `?filterByFormula=${encodeURIComponent("{Status}='Active'")}&fields[]=Student&fields[]=Rate Per Lesson&fields[]=Slot&fields[]=Start Date`
     );
     const enrollment = enrollData.records.find((r: any) => r.fields['Student']?.[0] === studentId);
     const ratePerLesson = (enrollment?.fields['Rate Per Lesson'] as number) || 0;
     const slotId = enrollment?.fields['Slot']?.[0] as string | undefined;
+    const enrollStartDate = (enrollment?.fields['Start Date'] as string) || firstDayStr;
 
     // 5. Resolve slot day label
     let slotDayLabel = '';
@@ -98,23 +99,41 @@ export async function POST(req: NextRequest) {
     // Exception: for "First invoice" combined invoices (autoNotes contains "first invoice" AND stored line items
     // have dates outside the invoice month), preserve stored line items instead of re-fetching.
     const autoNotesRaw = ((f['Auto Notes'] || '') as string).toLowerCase();
-    let storedLineItems: any[] = [];
-    try { storedLineItems = JSON.parse((f['Line Items'] || '[]') as string); } catch { /* ignore */ }
-    const hasOutsideMonthDates = storedLineItems.some((item: any) => {
-      if (!item.date) return false;
-      return item.date < firstDayStr || item.date > lastDayStr;
-    });
-    const isFirstInvoiceCombined = autoNotesRaw.includes('first invoice') && hasOutsideMonthDates;
+    const isFirstInvoice = autoNotesRaw.includes('first invoice');
 
     let lineItems: any[];
     let regularCount: number;
     let additionalCount: number;
 
-    if (isFirstInvoiceCombined) {
-      // Preserve stored line items for first-invoice combined invoices
-      lineItems = storedLineItems;
-      regularCount = storedLineItems.filter((r: any) => r.type !== 'Additional').length;
-      additionalCount = storedLineItems.filter((r: any) => r.type === 'Additional').length;
+    if (isFirstInvoice) {
+      // First invoice: fetch from enrollment start date to end of invoice month
+      // so April lessons are included even if the invoice is stored as "May 2026".
+      const rangeStart = enrollStartDate < firstDayStr ? enrollStartDate : firstDayStr;
+      const firstInvFormula = encodeURIComponent(
+        `AND({Date}>='${rangeStart}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'))`
+      );
+      const allLessonsData = await airtableRequestAll(
+        'Lessons',
+        `?filterByFormula=${firstInvFormula}&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Student&sort[0][field]=Date&sort[0][direction]=asc`
+      );
+      const filtered = allLessonsData.records.filter((r: any) => r.fields['Student']?.[0] === studentId);
+      // Build line items with per-month descriptions so PDF shows two rows
+      lineItems = filtered.map((r: any) => {
+        const lessonDate: string = r.fields['Date'] || '';
+        const lessonMonthIdx = parseInt(lessonDate.slice(5, 7), 10) - 1;
+        const lessonYear = parseInt(lessonDate.slice(0, 4), 10);
+        const lessonMonthLabel = `${MONTH_NAMES[lessonMonthIdx]} ${lessonYear}`;
+        return {
+          date: lessonDate,
+          day: slotDayLabel,
+          type: (r.fields['Type'] || 'Regular') as string,
+          description: r.fields['Type'] === 'Additional'
+            ? `Additional Lesson — ${lessonMonthLabel}`
+            : `${level} ${subjects} — ${lessonMonthLabel}`,
+        };
+      });
+      regularCount = filtered.filter((r: any) => r.fields['Type'] !== 'Additional').length;
+      additionalCount = filtered.filter((r: any) => r.fields['Type'] === 'Additional').length;
     } else {
       const lessonFormula = encodeURIComponent(
         `AND({Date}>='${firstDayStr}',{Date}<='${lastDayStr}',OR({Status}='Scheduled',{Status}='Completed',{Status}='Present',{Status}='Attended'))`
