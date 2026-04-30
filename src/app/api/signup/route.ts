@@ -389,28 +389,50 @@ export async function POST(request: NextRequest) {
           const lessonEnd = new Date(lessonStart);
           lessonEnd.setDate(lessonEnd.getDate() + WEEKS_AHEAD * 7);
 
+          const startStr = lessonStart.toISOString().split('T')[0];
+          const endStr = lessonEnd.toISOString().split('T')[0];
+
+          // Fetch existing lessons for this student in the date range to avoid duplicates
+          const existingSet = new Set<string>();
+          try {
+            const existingData = await at(
+              'Lessons',
+              `?filterByFormula=${encodeURIComponent(`AND(FIND('${studentId}',ARRAYJOIN({Student}))>0,{Date}>='${startStr}',{Date}<='${endStr}')`)}&fields[]=Date`
+            );
+            for (const r of existingData.records || []) {
+              if (r.fields?.['Date']) existingSet.add(r.fields['Date'] as string);
+            }
+            if (existingSet.size > 0) {
+              console.log(`[signup] Skipping ${existingSet.size} already-existing lessons for student ${studentId}`);
+            }
+          } catch (deupErr) {
+            console.error('[signup] Dedup fetch failed (continuing):', (deupErr as Error).message);
+          }
+
           // Advance to first occurrence of target day on or after start date
           const current = new Date(lessonStart);
           while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
 
           while (current <= lessonEnd) {
             const iso = current.toISOString().split('T')[0];
-            const isHoliday = NO_LESSON_DATES.includes(iso);
-            try {
-              await at('Lessons', '', {
-                method: 'POST',
-                body: JSON.stringify({ fields: {
-                  Type: 'Regular',
-                  Student: [studentId],
-                  Slot: slotIds,
-                  Date: iso,
-                  Status: isHoliday ? 'Cancelled' : 'Scheduled',
-                  ...(isHoliday && { Notes: 'Public Holiday' }),
-                }}),
-              });
-              lessonsCreated++;
-            } catch (lessonErr) {
-              console.error(`[signup] Lesson creation failed for ${iso}:`, (lessonErr as Error).message);
+            if (!existingSet.has(iso)) {
+              const isHoliday = NO_LESSON_DATES.includes(iso);
+              try {
+                await at('Lessons', '', {
+                  method: 'POST',
+                  body: JSON.stringify({ fields: {
+                    Type: 'Regular',
+                    Student: [studentId],
+                    Slot: slotIds,
+                    Date: iso,
+                    Status: isHoliday ? 'Cancelled' : 'Scheduled',
+                    ...(isHoliday && { Notes: 'Public Holiday' }),
+                  }}),
+                });
+                lessonsCreated++;
+              } catch (lessonErr) {
+                console.error(`[signup] Lesson creation failed for ${iso}:`, (lessonErr as Error).message);
+              }
             }
             current.setDate(current.getDate() + 7);
           }
