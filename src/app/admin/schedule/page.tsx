@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
-import { getTopicsForLevel, getExamTopicsForSubject, SECONDARY_FLAT, JC_FLAT } from '@/lib/canonical-topics';
+import { getTopicsForLevel, getExamTopicsForSubject, E_MATH_EXAM_TOPICS, SECONDARY_FLAT, JC_FLAT } from '@/lib/canonical-topics';
 import {
   DndContext, DragOverlay,
   useSensor, useSensors,
@@ -304,8 +304,9 @@ function LessonModal({
         // Exam section setup (wrapped in try-catch so a shape mismatch never blocks saves)
         try {
           const isDualMath = (data.studentSubjects ?? []).includes('E Math') && (data.studentSubjects ?? []).includes('A Math');
-          setExamSubject(isDualMath ? 'E Math' : ((data.studentSubjects ?? [])[0] ?? ''));
-          const rec = (data.examsBySubject ?? {})[isDualMath ? 'E Math' : ''] ?? (data.examsBySubject ?? {})[''] ?? null;
+          const subjectKey = isDualMath ? 'E Math' : ((data.studentSubjects ?? [])[0] ?? '');
+          setExamSubject(subjectKey);
+          const rec = (data.examsBySubject ?? {})[subjectKey] ?? (data.examsBySubject ?? {})[''] ?? null;
           setExamDate(rec?.examDate ?? '');
           setNoExam(rec?.noExam ?? false);
           const savedExamTopics = rec?.examTopics
@@ -483,10 +484,14 @@ function LessonModal({
     return d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
   })();
 
-  const topicCategories = useMemo(
-    () => (ctx ? getTopicsForLevel(ctx.studentLevel) : []),
-    [ctx?.studentLevel]
-  );
+  const topicCategories = useMemo(() => {
+    if (!ctx) return [];
+    const subjects = ctx.studentSubjects ?? [];
+    const isSecLevel = ctx.studentLevel.toLowerCase().startsWith('sec');
+    const isEMathOnly = isSecLevel && subjects.includes('E Math') && !subjects.includes('A Math');
+    if (isEMathOnly) return E_MATH_EXAM_TOPICS;
+    return getTopicsForLevel(ctx.studentLevel);
+  }, [ctx?.studentLevel, ctx?.studentSubjects]);
 
   // Exam topic pills — filtered by selected subject (E Math / A Math / H2 Math)
   const examTopicCategories = useMemo(

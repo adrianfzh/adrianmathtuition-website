@@ -131,12 +131,14 @@ export const E_MATH_EXAM_TOPICS: TopicCategory[] = [
   {
     label: 'Geometry & Trigonometry',
     topics: [
+      'Coordinate Geometry',
       'Angles & Triangles',
       'Quadrilaterals & Polygons',
       'Circles (Angle Properties)',
       'Congruence & Similarity',
       "Pythagoras' Theorem",
       'Trigonometry (Basic SOHCAHTOA)',
+      'Further Trigonometry (Sine/Cosine Rule)',
       'Mensuration (Perimeter & Area)',
       'Mensuration (Volume & Surface Area)',
       'Transformations',
