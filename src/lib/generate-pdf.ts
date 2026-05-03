@@ -133,7 +133,14 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
   html = html.replace(/\{\{RATE_PER_LESSON\}\}/g, String(invoiceData.ratePerLesson || 0));
   html = html.replace(/\{\{BASE_AMOUNT\}\}/g, String(invoiceData.baseAmount || 0));
   html = html.replace(/\{\{FINAL_AMOUNT\}\}/g, parseFloat(String(invoiceData.finalAmount || 0)).toFixed(2));
-  html = html.replace(/\{\{STATUS\}\}/g, invoiceData.status || 'Pending');
+  const statusLabel = invoiceData.status || 'Pending';
+  const statusClass = statusLabel.toLowerCase() === 'paid' ? 'paid' : 'pending';
+  html = html.replace(/\{\{STATUS\}\}/g, statusLabel);
+  html = html.replace(/\{\{STATUS_CLASS\}\}/g, statusClass);
+  const paidStamp = statusLabel.toLowerCase() === 'paid'
+    ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%) rotate(-35deg);border:10px solid #16a34a;border-radius:10px;padding:18px 40px;color:#16a34a;font-size:96px;font-weight:900;letter-spacing:0.12em;opacity:0.18;pointer-events:none;z-index:10;white-space:nowrap;font-family:'Open Sans',sans-serif;line-height:1;">PAID</div>`
+    : '';
+  html = html.replace(/\{\{PAID_STAMP\}\}/g, paidStamp);
 
   const paymentRef = `${(invoiceData.studentName || '').toUpperCase()} \u2013 ${(invoiceData.month || '').toUpperCase()}`;
   html = html.replace(/\{\{PAYMENT_REFERENCE\}\}/g, paymentRef);

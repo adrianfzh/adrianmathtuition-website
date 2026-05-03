@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
+import { generateInvoicePDF } from '@/lib/generate-pdf';
+import { buildRegisterUrl } from '@/lib/invoice-register-url';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -165,21 +167,61 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Generate paid PDF attachment (non-fatal if it fails)
+  let pdfAttachment: { filename: string; content: string } | null = null;
+  if (!correction) {
+    try {
+      let lineItems: any[] = [];
+      try { lineItems = JSON.parse(invoice.fields['Line Items'] || '[]'); } catch {}
+      let lineItemsExtra: any[] = [];
+      try { lineItemsExtra = JSON.parse(invoice.fields['Line Items Extra'] || '[]'); } catch {}
+      const invoiceData = {
+        studentName,
+        parentEmail,
+        month,
+        invoiceId,
+        issueDate: (invoice.fields['Issue Date'] || '') as string,
+        dueDate: (invoice.fields['Due Date'] || '') as string,
+        lessonsCount: (invoice.fields['Lessons Count'] as number) || 0,
+        ratePerLesson: (invoice.fields['Rate Per Lesson'] as number) || 0,
+        baseAmount: (invoice.fields['Base Amount'] as number) || 0,
+        adjustmentAmount: (invoice.fields['Adjustment Amount'] as number) || 0,
+        adjustmentNotes: (invoice.fields['Adjustment Notes'] || '') as string,
+        finalAmount,
+        status: 'Paid',
+        makeupCredits: 0,
+        notes: (invoice.fields['Auto Notes'] || '') as string,
+        lineItems,
+        lineItemsExtra,
+        registerUrl: buildRegisterUrl(studentId),
+      };
+      const pdfBuffer = await generateInvoicePDF(invoiceData);
+      const filename = `AdrianMathTuition-Receipt-${studentName.replace(/\s+/g, '-')}-${month.replace(/[\s–]/g, '-')}.pdf`;
+      pdfAttachment = { filename, content: pdfBuffer.toString('base64') };
+    } catch (pdfErr: any) {
+      console.error('[send-receipt] PDF generation failed (continuing without attachment):', pdfErr.message);
+    }
+  }
+
   // Send via Resend
   let resendId = '';
   let status = 'sent';
   let errorMsg = '';
   try {
+    const emailPayload: any = {
+      from: "Adrian's Math Tuition <invoices@adrianmathtuition.com>",
+      to: parentEmail,
+      reply_to: 'adrianmathtuition@gmail.com',
+      subject,
+      html,
+    };
+    if (pdfAttachment) {
+      emailPayload.attachments = [{ filename: pdfAttachment.filename, content: pdfAttachment.content }];
+    }
     const sendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: "Adrian's Math Tuition <invoices@adrianmathtuition.com>",
-        to: parentEmail,
-        reply_to: 'adrianmathtuition@gmail.com',
-        subject,
-        html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
     if (!sendRes.ok) throw new Error('Resend failed: ' + await sendRes.text());
     const sendData = await sendRes.json();

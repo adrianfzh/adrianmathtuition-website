@@ -296,6 +296,10 @@ body {
 .btn-unapprove:hover:not(:disabled) { background: #f1f5f9; }
 .btn-record-payment { background: #f0fdf4; border-color: #86efac; color: #15803d; }
 .btn-record-payment:hover { background: #dcfce7; }
+.btn-receipt { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+.btn-receipt:hover:not(:disabled) { background: #ffedd5; }
+.receipt-form { display: none; padding: 12px 16px; background: #fff7ed; border-top: 1px solid #fed7aa; }
+.receipt-form.open { display: block; }
 .btn-full-paid { background: #f0fdf4; border-color: #86efac; color: #15803d; font-weight: 600; }
 .btn-full-paid:hover { background: #dcfce7; }
 .btn-preview-email { background: #fdf4ff; border-color: #e9d5ff; color: #7e22ce; }
@@ -830,7 +834,39 @@ export default function AdminPage() {
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
             <button class="btn btn-record-payment" onclick="toggleRecordPayment('${inv.id}')">\uD83D\uDCB0 Record Payment</button>
+            <button class="btn btn-receipt" onclick="toggleReceiptForm('${inv.id}', ${inv.finalAmount}, ${inv.amountPaid || 0})">\uD83D\uDCE7 Send Receipt</button>
             <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')">\uD83D\uDDD1\uFE0F Delete Invoice</button>
+          </div>
+          <div class="receipt-form" id="receipt-form-${inv.id}">
+            <div style="font-size:13px;color:#92400e;font-weight:600;margin-bottom:10px;">\uD83D\uDCE7 Send Payment Receipt</div>
+            <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div>
+                <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:4px;">Amount paid</div>
+                <input type="number" id="receipt-amount-${inv.id}" step="0.01" min="0"
+                  value="${(inv.amountPaid || inv.finalAmount).toFixed(2)}"
+                  placeholder="0.00"
+                  style="width:130px;font-size:15px;padding:9px 10px;border:1.5px solid #fed7aa;border-radius:7px;">
+              </div>
+              <div>
+                <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:4px;">Payment date</div>
+                <input type="date" id="receipt-date-${inv.id}"
+                  value="${new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' })}"
+                  style="font-size:15px;padding:9px 10px;border:1.5px solid #fed7aa;border-radius:7px;">
+              </div>
+              <div>
+                <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:4px;">Method</div>
+                <select id="receipt-method-${inv.id}" style="font-size:15px;padding:9px 10px;border:1.5px solid #fed7aa;border-radius:7px;background:white;">
+                  <option value="PayNow">PayNow</option>
+                  <option value="PayLah">PayLah</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-save" onclick="openReceiptPreview('${inv.id}', ${inv.finalAmount})">Preview &amp; Send \u2192</button>
+              <button class="btn btn-cancel" onclick="toggleReceiptForm('${inv.id}', 0, 0)">Cancel</button>
+            </div>
           </div>
           <div class="record-payment-form" id="payment-form-${inv.id}">
             <div style="font-size:13px;color:#64748b;margin-bottom:12px;">
@@ -1044,6 +1080,38 @@ export default function AdminPage() {
     function toggleRecordPayment(id: string) {
       const form = document.getElementById(`payment-form-${id}`);
       if (form) form.classList.toggle('open');
+    }
+
+    function toggleReceiptForm(id: string, finalAmount: number, amountPaid: number) {
+      const form = document.getElementById(`receipt-form-${id}`);
+      if (!form) return;
+      const isOpen = form.classList.contains('open');
+      if (isOpen) { form.classList.remove('open'); return; }
+      // Pre-fill amount with amountPaid if recorded, else finalAmount
+      const amountInput = document.getElementById(`receipt-amount-${id}`) as HTMLInputElement;
+      if (amountInput) amountInput.value = (amountPaid > 0 ? amountPaid : finalAmount).toFixed(2);
+      form.classList.add('open');
+    }
+
+    function openReceiptPreview(id: string, finalAmount: number) {
+      const amount = parseFloat((document.getElementById(`receipt-amount-${id}`) as HTMLInputElement)?.value) || 0;
+      const date = (document.getElementById(`receipt-date-${id}`) as HTMLInputElement)?.value || '';
+      const method = (document.getElementById(`receipt-method-${id}`) as HTMLSelectElement)?.value || 'PayNow';
+      if (amount <= 0) { alert('Please enter the payment amount.'); return; }
+      const isOverpayment = amount > finalAmount;
+      const isFullPayment = amount >= finalAmount;
+      const remainingBalance = Math.max(0, finalAmount - amount);
+      const qs = new URLSearchParams({
+        invoiceId: id,
+        paymentAmount: amount.toFixed(2),
+        paymentDate: date,
+        isFullPayment: String(isFullPayment),
+        isOverpayment: String(isOverpayment),
+        remainingBalance: remainingBalance.toFixed(2),
+        totalPaid: amount.toFixed(2),
+        paymentMethod: method,
+      });
+      window.open(`/admin/receipt?${qs}`, '_blank');
     }
 
     async function previewPdf(id: string) {
