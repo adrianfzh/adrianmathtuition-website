@@ -201,13 +201,11 @@ export function getExamTopicsForSubject(studentLevel: string, subject: string): 
   const l = studentLevel.toLowerCase();
   if (l.startsWith('jc')) return JC_TOPICS;
   if (l.startsWith('sec')) {
-    if (subject === 'E Math') return E_MATH_EXAM_TOPICS;
     if (subject === 'A Math') return A_MATH_EXAM_TOPICS;
-    // 'Math' or unset: show both sets labelled
-    return [
-      ...E_MATH_EXAM_TOPICS.map(c => ({ ...c, label: `[E] ${c.label}` })),
-      ...A_MATH_EXAM_TOPICS.map(c => ({ ...c, label: `[A] ${c.label}` })),
-    ];
+    // E Math, empty, or unrecognised → E Math topics.
+    // All secondary students do at least E Math, and S1/S2 students won't
+    // have a Subjects field set, so this is the safe default.
+    return E_MATH_EXAM_TOPICS;
   }
   return JC_TOPICS; // JC fallback
 }

@@ -304,7 +304,11 @@ function LessonModal({
         // Exam section setup (wrapped in try-catch so a shape mismatch never blocks saves)
         try {
           const isDualMath = (data.studentSubjects ?? []).includes('E Math') && (data.studentSubjects ?? []).includes('A Math');
-          const subjectKey = isDualMath ? 'E Math' : ((data.studentSubjects ?? [])[0] ?? '');
+          const rawSubjectKey = isDualMath ? 'E Math' : ((data.studentSubjects ?? [])[0] ?? '');
+          // S1/S2 and any Sec student without Subjects set → default to 'E Math'
+          // so topic pills show the E Math list rather than the combined [E]+[A] fallback.
+          const isSecLevel = (data.studentLevel ?? '').toLowerCase().startsWith('sec');
+          const subjectKey = rawSubjectKey || (isSecLevel ? 'E Math' : '');
           setExamSubject(subjectKey);
           const rec = (data.examsBySubject ?? {})[subjectKey] ?? (data.examsBySubject ?? {})[''] ?? null;
           setExamDate(rec?.examDate ?? '');
