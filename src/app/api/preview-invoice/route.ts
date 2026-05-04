@@ -9,7 +9,10 @@ export const maxDuration = 60;
 function checkAuth(req: NextRequest): boolean {
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) return true;
-  return req.headers.get('authorization') === `Bearer ${adminPassword}`;
+  if (req.headers.get('authorization') === `Bearer ${adminPassword}`) return true;
+  // Cookie auth for direct browser navigation (new tab links)
+  const cookie = req.cookies.get('admin_pw')?.value;
+  return !!cookie && cookie === adminPassword;
 }
 
 export async function GET(req: NextRequest) {
