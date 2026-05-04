@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
     adjustmentAmount: f['Adjustment Amount'] || 0,
     adjustmentNotes: f['Adjustment Notes'] || '',
     finalAmount: f['Final Amount'] || 0,
-    status: f['Status'] || 'Draft',
+    status: searchParams.get('paid') === 'true' ? 'Paid' : (f['Status'] || 'Draft'),
     makeupCredits: 0,
     notes: (f['Auto Notes'] || '') as string,
     lineItems,

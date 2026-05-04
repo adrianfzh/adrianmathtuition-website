@@ -255,6 +255,19 @@ function ReceiptPreviewContent() {
             </div>
           </div>
 
+          {/* PDF preview link */}
+          <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 13, color: '#475569', fontWeight: 600 }}>📎 Attachment:</span>
+            <a
+              href={`/api/preview-invoice?id=${invoiceId}&paid=true`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'underline' }}
+            >
+              View paid invoice PDF ↗
+            </a>
+          </div>
+
           {/* Action bar */}
           <div className="action-bar">
             {sendState === 'done' ? (
