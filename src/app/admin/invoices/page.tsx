@@ -2027,6 +2027,8 @@ export default function AdminPage() {
     w.unapproveAllApproved = unapproveAllApproved;
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
+    w.toggleReceiptForm = toggleReceiptForm;
+    w.openReceiptPreview = openReceiptPreview;
     w.markFullPaid = markFullPaid;
     w.showPartialInput = showPartialInput;
     w.updatePaymentPreview = updatePaymentPreview;
@@ -2049,6 +2051,7 @@ export default function AdminPage() {
         'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
+        'toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
