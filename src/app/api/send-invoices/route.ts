@@ -183,7 +183,14 @@ export async function POST(req: NextRequest) {
         }];
       }
       emails.push(emailData);
-      invoiceMap.set(invoice.id, { record: invoiceRecord, studentName: invoice.studentName });
+      const autoNotes = (invoiceRecord.fields['Auto Notes'] || '') as string;
+      const isFirstInvoice = autoNotes.toLowerCase().includes('first invoice');
+      invoiceMap.set(invoice.id, {
+        record: invoiceRecord,
+        studentName: invoice.studentName,
+        month: invoice.month,
+        isFirstInvoice,
+      });
     }
 
     if (!emails.length) {
@@ -193,6 +200,7 @@ export async function POST(req: NextRequest) {
     let sentCount = 0;
     let failedCount = 0;
     const errors: any[] = [];
+    const sentDetails: { studentName: string; month: string; isFirstInvoice: boolean }[] = [];
     const invoiceIds = Array.from(invoiceMap.keys());
 
     for (let i = 0; i < invoiceIds.length; i++) {
@@ -213,6 +221,14 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({ fields: { 'Status': 'Sent', 'Sent At': new Date().toISOString() } }),
         });
         sentCount++;
+        const sentMeta = invoiceMap.get(invoiceId);
+        if (sentMeta) {
+          sentDetails.push({
+            studentName: sentMeta.studentName,
+            month: sentMeta.month,
+            isFirstInvoice: sentMeta.isFirstInvoice,
+          });
+        }
 
         // Log to EmailLog (non-fatal)
         const isAmendedEmail = !!invoiceMap.get(invoiceId)?.record?.fields?.['Sent At'];
@@ -255,12 +271,16 @@ export async function POST(req: NextRequest) {
 
     const currentMonth = emails[0]?.subject?.match(/for (.+) \u2013/)?.[1] ?? getInvoiceMonth().label;
     const failedLines = errors.map((e) => `• ${e.studentName ?? e.invoiceId}: ${e.error}`).join('\n');
+    const sentLines = sentDetails
+      .map((d) => `• ${d.studentName} (${d.month})${d.isFirstInvoice ? ' \u{1F195} New student' : ''}`)
+      .join('\n');
     await sendTelegram(
       `\u2705 <b>Invoices Sent \u2014 ${currentMonth}</b>\n\n` +
-        `Sent: ${sentCount}\nFailed: ${failedCount}\n` +
+        `Sent: ${sentCount} | Failed: ${failedCount}` +
+        (sentLines ? `\n\n${sentLines}` : '') +
         (failedCount > 0
-          ? `\u26a0\ufe0f ${failedCount} invoice${failedCount !== 1 ? 's' : ''} failed to send:\n${failedLines}`
-          : `All invoices processed successfully.`)
+          ? `\n\n\u26a0\ufe0f Failed:\n${failedLines}`
+          : '\n\nAll invoices processed successfully.')
     );
 
     return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length });
