@@ -851,7 +851,7 @@ export default function AdminPage() {
                 <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:4px;">Payment date</div>
                 <input type="date" id="receipt-date-${inv.id}"
                   value="${new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' })}"
-                  style="font-size:15px;padding:9px 10px;border:1.5px solid #fed7aa;border-radius:7px;">
+                  style="font-size:15px;padding:9px 10px;border:1.5px solid #fed7aa;border-radius:7px;background:white;">
               </div>
               <div>
                 <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:4px;">Method</div>

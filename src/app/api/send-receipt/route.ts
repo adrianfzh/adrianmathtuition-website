@@ -46,7 +46,6 @@ function buildReceiptHtml(opts: {
     <p>${greeting}</p>
     <p>This is to confirm receipt of your ${opts.paymentMethod} payment of <strong>$${opts.paymentAmount.toFixed(2)}</strong> for ${opts.studentName}'s tuition fees, received on ${dateFormatted}.</p>
     ${statusLine}
-    <p>Thank you for your prompt payment.</p>
     <p>Best regards,<br>Adrian</p>
   `;
 }
