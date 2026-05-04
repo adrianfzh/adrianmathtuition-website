@@ -168,6 +168,7 @@ export async function GET(req: NextRequest) {
   // ── Exam season + exam dates ──────────────────────────────────────────────
   let activeExamType: ExamType | null = null;
   const examsByStudent: Record<string, string | null> = {};
+  const examTopicsByStudent: Record<string, string | null> = {};
 
   try {
     // Resolve active exam type (override from Settings, fallback to date windows)
@@ -187,7 +188,7 @@ export async function GET(req: NextRequest) {
     if (activeExamType) {
       const examsData = await fetchAll(
         'Exams',
-        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Exam Date&fields[]=No Exam`
+        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`
       );
       // Build studentId → earliest exam date, or 'NO_EXAM' sentinel
       for (const r of examsData) {
@@ -203,6 +204,7 @@ export async function GET(req: NextRequest) {
         if (!examDate) continue;
         if (!examsByStudent[sid] || examDate < examsByStudent[sid]!) {
           examsByStudent[sid] = examDate;
+          examTopicsByStudent[sid] = (r.fields['Tested Topics'] as string) || null;
         }
       }
     }
@@ -219,5 +221,6 @@ export async function GET(req: NextRequest) {
     students: studentsById,
     activeExamType,
     examsByStudent,
+    examTopicsByStudent,
   });
 }

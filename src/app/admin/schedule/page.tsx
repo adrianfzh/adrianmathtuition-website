@@ -56,11 +56,13 @@ interface ScheduleData {
   students: Record<string, Student>;
   activeExamType?: string | null;
   examsByStudent?: Record<string, string | null>;
+  examTopicsByStudent?: Record<string, string | null>;
 }
 
 interface EnrichedLesson extends Lesson {
   studentName: string;
   examDate?: string | null;
+  examTopics?: string | null;
 }
 
 // ─── Lesson modal types ────────────────────────────────────────────────────────
@@ -827,7 +829,23 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
   // Whether attendance controls are present (caller passes undefined when not applicable)
   const hasAttendance = !!(onMarkPresent || onMarkAbsent || onUndo);
 
+  const [showTopicDropdown, setShowTopicDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLSpanElement>(null);
+
+  // Close dropdown when clicking outside the chip
+  useEffect(() => {
+    if (!showTopicDropdown) return;
+    function onDocClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowTopicDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [showTopicDropdown]);
+
   function handleClick() {
+    if (showTopicDropdown) { setShowTopicDropdown(false); return; }
     onTap();
   }
 
@@ -875,14 +893,47 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
             }}
           >{lesson.studentName}</span>
-          {/* Inline exam date badge — replaces the old progress ● dot */}
+          {/* Inline exam date badge — shows topic dropdown if topics are recorded */}
           {!isFaded && lesson.examDate && lesson.examDate !== 'NO_EXAM' && (
-            <span
-              title="Click to see exam details"
-              role="button"
-              onClick={e => { e.stopPropagation(); onExamDateClick?.(lesson); }}
-              style={{ fontSize: 9, color: '#64748b', flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer' }}
-            >📅 {formatExamDate(lesson.examDate)}</span>
+            <span ref={dropdownRef} style={{ position: 'relative', flexShrink: 0 }}>
+              <span
+                role="button"
+                title={lesson.examTopics ? 'Click to see topics tested' : 'Click to see exam details'}
+                onClick={e => {
+                  e.stopPropagation();
+                  if (lesson.examTopics) {
+                    setShowTopicDropdown(v => !v);
+                  } else {
+                    onExamDateClick?.(lesson);
+                  }
+                }}
+                style={{ fontSize: 9, color: '#64748b', whiteSpace: 'nowrap', cursor: 'pointer' }}
+              >📅 {formatExamDate(lesson.examDate)}{lesson.examTopics ? ' ▾' : ''}</span>
+              {showTopicDropdown && lesson.examTopics && (
+                <div
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    position: 'absolute', top: '100%', left: 0, zIndex: 200,
+                    background: 'white', border: '1px solid #e2e8f0', borderRadius: 8,
+                    padding: '8px 10px', boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
+                    minWidth: 180, maxWidth: 260, marginTop: 2,
+                  }}
+                >
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                    📝 Topics tested · {formatExamDate(lesson.examDate)}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {lesson.examTopics.split(',').map(t => t.trim()).filter(Boolean).map(topic => (
+                      <span key={topic} style={{
+                        fontSize: 10, padding: '2px 7px',
+                        background: '#f0f9ff', border: '1px solid #bae6fd',
+                        borderRadius: 10, color: '#0369a1', whiteSpace: 'nowrap',
+                      }}>{topic}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </span>
           )}
           {lesson.type !== 'Regular' && !isFaded && <span className="type-tag" style={{ flexShrink: 0 }}>{lesson.type}</span>}
         </div>
@@ -1091,7 +1142,8 @@ export default function SchedulePage() {
       const student = lesson.studentId ? data.students[lesson.studentId] : null;
       const studentName = student?.name || (lesson.type === 'Trial' ? getTrialName(lesson.notes) : 'Unknown');
       const examDate = lesson.studentId ? (data.examsByStudent?.[lesson.studentId] ?? null) : null;
-      return { ...lesson, studentName, examDate };
+      const examTopics = lesson.studentId ? (data.examTopicsByStudent?.[lesson.studentId] ?? null) : null;
+      return { ...lesson, studentName, examDate, examTopics };
     });
   }, [data]);
 
