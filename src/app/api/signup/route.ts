@@ -1,7 +1,7 @@
 import { createHmac } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
-import { sendTelegram } from '@/lib/telegram';
+import { sendTelegram, sendTelegramWithButtons } from '@/lib/telegram';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -450,10 +450,17 @@ export async function POST(request: NextRequest) {
               const breakdown = batchAlreadyRan && nextMonthCount > 0
                 ? `${aprilCount} lessons in ${startMonthLabel} + ${nextMonthCount} in ${nextMonthLabel}`
                 : `${totalLessons} lesson${totalLessons !== 1 ? 's' : ''}, ${startMonthLabel}`;
-              await sendTelegram(
+              const baseUrl = process.env.WEBSITE_URL || 'https://adrianmathtuition.com';
+              await sendTelegramWithButtons(
                 `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
                 `First invoice: $${totalAmount.toFixed(2)} (${breakdown})\n` +
-                `Status: Draft — review in admin dashboard.`
+                `Status: Draft — review and send when ready.`,
+                [
+                  [
+                    { text: '👁 Preview Invoice', url: `${baseUrl}/api/preview-invoice?id=${createdInvoice.id}` },
+                    { text: '📤 Send Invoice', callback_data: `send_invoice_confirm:${createdInvoice.id}` },
+                  ],
+                ]
               );
             } catch (tgError) {
               console.error('[signup] Telegram notification failed (non-fatal):', (tgError as Error).message);
