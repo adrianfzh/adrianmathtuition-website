@@ -131,6 +131,38 @@ export async function GET(req: NextRequest) {
     };
   });
 
+  // Fetch any inactive/adhoc slots referenced by lessons this week that
+  // are NOT already in the active slots list (e.g. one-off Thursday lessons).
+  const activeSlotIds = new Set(slots.map((s: any) => s.id));
+  const extraSlotIds = [
+    ...new Set(
+      lessonsData
+        .map((r: any) => r.fields['Slot']?.[0])
+        .filter((id: string | undefined) => id && !activeSlotIds.has(id))
+    ),
+  ] as string[];
+  if (extraSlotIds.length) {
+    const formula = `OR(${extraSlotIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
+    const extraSlotsData = await fetchAll('Slots', `?filterByFormula=${encodeURIComponent(formula)}`);
+    for (const r of extraSlotsData) {
+      const dayRaw: string = r.fields['Day'] || '';
+      const match = dayRaw.match(/^(\d+)\s+(.+)/);
+      const dayNum = match ? parseInt(match[1]) : 9;
+      const rawName = (match ? match[2].trim() : dayRaw.trim()).toLowerCase();
+      const dayName = DAY_NORMALIZE[rawName] || (match ? match[2].trim() : dayRaw.trim());
+      slots.push({
+        id: r.id,
+        dayRaw,
+        dayNum,
+        dayName,
+        time: r.fields['Time'] || '',
+        level: r.fields['Level'] || '',
+        capacity: r.fields['Normal Capacity'] || 0,
+        enrolledCount: r.fields['Enrolled Count'] || 0,
+      });
+    }
+  }
+
   // enrollmentsBySlot: slotId → studentId[]
   const enrollmentsBySlot: Record<string, string[]> = {};
   for (const r of enrollmentsData) {
