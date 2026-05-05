@@ -1102,6 +1102,7 @@ export default function SchedulePage() {
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Modals
   const [rescheduleModal, setRescheduleModal] = useState<RescheduleState | null>(null);
+  const [showAllRescheduleSlots, setShowAllRescheduleSlots] = useState(false);
   const [actionSheet, setActionSheet] = useState<ActionSheetState | null>(null);
   const [addModal, setAddModal] = useState<AddModalState | null>(null);
   const [absentModal, setAbsentModal] = useState<AbsentDeleteState | null>(null);
@@ -1572,7 +1573,8 @@ export default function SchedulePage() {
     const toDate = toKey.slice(0, sep);
     const toSlotId = toKey.slice(sep + 2);
     setModalError('');
-    setRescheduleModal({ lesson, toDate, toSlotId, notes: '', notify: true, showPickers: false });
+    setRescheduleModal({ lesson, toDate, toSlotId, notes: '', notify: false, showPickers: false });
+    setShowAllRescheduleSlots(false);
   }
 
   async function handleConfirmReschedule() {
@@ -2293,7 +2295,8 @@ export default function SchedulePage() {
               setActionSheet(null);
             }}>📊 Log progress</button>
             <button className="action-btn" onClick={() => {
-              setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: true, showPickers: true });
+              setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: false, showPickers: true });
+              setShowAllRescheduleSlots(false);
               setModalError(''); setActionSheet(null);
             }}>🔄 Reschedule</button>
             {actionSheet.lesson.status !== 'Completed' && (
@@ -2343,11 +2346,37 @@ export default function SchedulePage() {
                   </div>
                   <div className="form-group">
                     <span className="form-label">New Slot</span>
-                    <select className="modal-select" value={rescheduleModal.toSlotId}
-                      onChange={e => setRescheduleModal(m => m ? { ...m, toSlotId: e.target.value } : null)}>
-                      <option value="">Select slot…</option>
-                      {sortedSlots.map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
-                    </select>
+                    {(() => {
+                      const selectedDayName = rescheduleModal.toDate
+                        ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(rescheduleModal.toDate + 'T00:00:00').getDay()]
+                        : null;
+                      const filteredSlots = showAllRescheduleSlots || !selectedDayName
+                        ? sortedSlots
+                        : sortedSlots.filter(s => s.dayName === selectedDayName);
+                      const hiddenCount = sortedSlots.length - filteredSlots.length;
+                      return (
+                        <>
+                          <select className="modal-select" value={rescheduleModal.toSlotId}
+                            onChange={e => setRescheduleModal(m => m ? { ...m, toSlotId: e.target.value } : null)}>
+                            <option value="">Select slot…</option>
+                            {filteredSlots.map(s => {
+                              const enrolled = s.enrolledCount ?? 0;
+                              const cap = s.capacity ?? 0;
+                              const isFull = cap > 0 && enrolled >= cap;
+                              const label = `${s.dayName} ${s.time} (${s.level})${isFull ? ' — FULL' : ` — ${enrolled}/${cap}`}`;
+                              return <option key={s.id} value={s.id} disabled={isFull && !showAllRescheduleSlots}>{label}</option>;
+                            })}
+                          </select>
+                          <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <input type="checkbox" id="show-all-slots" checked={showAllRescheduleSlots}
+                              onChange={e => { setShowAllRescheduleSlots(e.target.checked); setRescheduleModal(m => m ? { ...m, toSlotId: '' } : null); }} />
+                            <label htmlFor="show-all-slots" style={{ fontSize: 12, color: '#64748b', cursor: 'pointer' }}>
+                              Show all slots{hiddenCount > 0 && !showAllRescheduleSlots ? ` (${hiddenCount} other slot${hiddenCount !== 1 ? 's' : ''} hidden)` : ''}
+                            </label>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </>
               ) : (
