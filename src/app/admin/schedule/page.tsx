@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
-import { getTopicsForLevel, getExamTopicsForSubject, E_MATH_EXAM_TOPICS, SECONDARY_FLAT, JC_FLAT } from '@/lib/canonical-topics';
+import { getTopicsForLevel, getExamTopicsForSubject, E_MATH_EXAM_TOPICS, A_MATH_EXAM_TOPICS, SECONDARY_FLAT, JC_FLAT } from '@/lib/canonical-topics';
 import {
   DndContext, DragOverlay,
   useSensor, useSensors,
@@ -494,9 +494,18 @@ function LessonModal({
     if (!ctx) return [];
     const subjects = ctx.studentSubjects ?? [];
     const isSecLevel = ctx.studentLevel.toLowerCase().startsWith('sec');
-    const isEMathOnly = isSecLevel && subjects.includes('E Math') && !subjects.includes('A Math');
-    if (isEMathOnly) return E_MATH_EXAM_TOPICS;
-    return getTopicsForLevel(ctx.studentLevel);
+    if (!isSecLevel) return getTopicsForLevel(ctx.studentLevel); // JC → JC_TOPICS
+    const hasEM = subjects.includes('E Math');
+    const hasAM = subjects.includes('A Math');
+    if (hasEM && hasAM) {
+      // Dual math: show both lists labelled so it's clear which subject each topic belongs to
+      return [
+        ...E_MATH_EXAM_TOPICS.map(c => ({ ...c, label: `[E] ${c.label}` })),
+        ...A_MATH_EXAM_TOPICS.map(c => ({ ...c, label: `[A] ${c.label}` })),
+      ];
+    }
+    if (hasAM) return A_MATH_EXAM_TOPICS; // A Math only
+    return E_MATH_EXAM_TOPICS; // E Math only, or S1/S2 with no subject set
   }, [ctx?.studentLevel, ctx?.studentSubjects]);
 
   // Exam topic pills — filtered by selected subject (E Math / A Math / H2 Math)
