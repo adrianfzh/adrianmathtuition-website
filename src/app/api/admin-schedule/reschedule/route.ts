@@ -70,6 +70,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Format original date for the note e.g. "Mon, 4 May 2026"
+    const origDateFormatted = origDate
+      ? new Date(origDate + 'T00:00:00Z').toLocaleDateString('en-SG', {
+          weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+        })
+      : origDate;
+
     // 4. Create new lesson
     const newLesson = await airtableRequest('Lessons', '', {
       method: 'POST',
@@ -80,21 +87,19 @@ export async function POST(req: NextRequest) {
           Date: newDate,
           Type: 'Rescheduled',
           Status: 'Scheduled',
-          Notes: notes || 'Rescheduled by admin',
+          Notes: notes || (origDateFormatted ? `Rescheduled from ${origDateFormatted}` : ''),
         },
       }),
     });
     const newLessonId: string = newLesson.id;
 
-    // 5. Patch original lesson
-    const existingNotes: string = origFields['Notes'] ?? '';
+    // 5. Patch original lesson — only update Status and link, leave Notes untouched
     await airtableRequest('Lessons', `/${lessonId}`, {
       method: 'PATCH',
       body: JSON.stringify({
         fields: {
           Status: 'Rescheduled',
           'Rescheduled Lesson ID': [newLessonId],
-          Notes: existingNotes ? `${existingNotes} | auto-linked` : 'auto-linked',
         },
       }),
     });
