@@ -20,6 +20,7 @@ interface Slot {
   time: string;
   level: string;
   capacity: number;
+  makeupCapacity: number | null;
   enrolledCount: number;
 }
 
@@ -2359,20 +2360,30 @@ export default function SchedulePage() {
                       const selectedDayName = rescheduleModal.toDate
                         ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(rescheduleModal.toDate + 'T00:00:00').getDay()]
                         : null;
-                      const filteredSlots = showAllRescheduleSlots || !selectedDayName
-                        ? sortedSlots
-                        : sortedSlots.filter(s => s.dayName === selectedDayName);
-                      const hiddenCount = sortedSlots.length - filteredSlots.length;
+                      const daySlots = selectedDayName
+                        ? sortedSlots.filter(s => s.dayName === selectedDayName)
+                        : sortedSlots;
+                      const displaySlots = showAllRescheduleSlots ? sortedSlots : daySlots;
+                      const hiddenCount = sortedSlots.length - daySlots.length;
+
                       return (
                         <>
                           <select className="modal-select" value={rescheduleModal.toSlotId}
                             onChange={e => setRescheduleModal(m => m ? { ...m, toSlotId: e.target.value } : null)}>
                             <option value="">Select slot…</option>
-                            {filteredSlots.map(s => {
-                              const enrolled = s.enrolledCount ?? 0;
-                              const cap = s.capacity ?? 0;
-                              const isFull = cap > 0 && enrolled >= cap;
-                              const label = `${s.dayName} ${s.time} (${s.level})${isFull ? ' — FULL' : ` — ${enrolled}/${cap}`}`;
+                            {displaySlots.map(s => {
+                              const mkCap = s.makeupCapacity ?? s.capacity ?? 0;
+                              // Count existing non-cancelled lessons in this slot for the target date
+                              const existingLessons = rescheduleModal.toDate
+                                ? (enrichedLessonMap[`${rescheduleModal.toDate}__${s.id}`] ?? [])
+                                    .filter(l => l.status !== 'Cancelled' && l.status !== 'Absent').length
+                                : 0;
+                              const isFull = mkCap > 0 && existingLessons >= mkCap;
+                              const spotsLeft = mkCap > 0 ? mkCap - existingLessons : null;
+                              const availStr = mkCap > 0
+                                ? (isFull ? ' — FULL' : ` — ${existingLessons}/${mkCap} makeup`)
+                                : '';
+                              const label = `${s.dayName} ${s.time} (${s.level})${availStr}`;
                               return <option key={s.id} value={s.id} disabled={isFull && !showAllRescheduleSlots}>{label}</option>;
                             })}
                           </select>
@@ -2380,7 +2391,7 @@ export default function SchedulePage() {
                             <input type="checkbox" id="show-all-slots" checked={showAllRescheduleSlots}
                               onChange={e => { setShowAllRescheduleSlots(e.target.checked); setRescheduleModal(m => m ? { ...m, toSlotId: '' } : null); }} />
                             <label htmlFor="show-all-slots" style={{ fontSize: 12, color: '#64748b', cursor: 'pointer' }}>
-                              Show all slots{hiddenCount > 0 && !showAllRescheduleSlots ? ` (${hiddenCount} other slot${hiddenCount !== 1 ? 's' : ''} hidden)` : ''}
+                              Show all slots{hiddenCount > 0 && !showAllRescheduleSlots ? ` (${hiddenCount} on other days)` : ''}
                             </label>
                           </div>
                         </>

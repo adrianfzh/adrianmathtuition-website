@@ -127,6 +127,7 @@ export async function GET(req: NextRequest) {
       time: r.fields['Time'] || '',
       level: r.fields['Level'] || '',
       capacity: r.fields['Normal Capacity'] || 0,
+      makeupCapacity: r.fields['Makeup Capacity'] ?? null,
       enrolledCount: r.fields['Enrolled Count'] || 0,
     };
   });
@@ -158,6 +159,7 @@ export async function GET(req: NextRequest) {
         time: r.fields['Time'] || '',
         level: r.fields['Level'] || '',
         capacity: r.fields['Normal Capacity'] || 0,
+        makeupCapacity: r.fields['Makeup Capacity'] ?? null,
         enrolledCount: r.fields['Enrolled Count'] || 0,
       });
     }
