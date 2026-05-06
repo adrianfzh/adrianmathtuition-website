@@ -1,9 +1,15 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 
-function getPw() {
+function getCookie(name: string): string {
+  if (typeof document === 'undefined') return '';
+  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+function getPw(): string {
   if (typeof window === 'undefined') return '';
-  return sessionStorage.getItem('adminPw') || localStorage.getItem('schedule_pw') || '';
+  return getCookie('admin_pw') || getCookie('schedule_pw') || localStorage.getItem('schedule_pw') || '';
 }
 
 interface ModelStat {
@@ -48,8 +54,11 @@ export default function AnalyticsDashboard() {
     fetch(`/api/admin-analytics?days=${days}`, {
       headers: { Authorization: `Bearer ${getPw()}` },
     })
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
+      .then(r => {
+        if (r.status === 401) { window.location.href = '/admin'; return null; }
+        return r.json();
+      })
+      .then(d => { if (d) { setData(d); } setLoading(false); })
       .catch(() => setLoading(false));
   }, [days]);
 
@@ -64,6 +73,7 @@ export default function AnalyticsDashboard() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getPw()}` },
         body: JSON.stringify({ days: analysisDays }),
       });
+      if (r.status === 401) { window.location.href = '/admin'; return; }
       const d = await r.json();
       setAnalysis(d.analysis || d.error || 'No response');
     } finally {
