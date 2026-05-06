@@ -11,6 +11,12 @@ interface Stats {
   thisWeek: { count: number; weekLabel: string };
 }
 
+interface BotStats {
+  totalQuestions: number;
+  totalCost: number;
+  modelStats: { model: string; count: number; cost: number }[];
+}
+
 // ── Cookie helpers ─────────────────────────────────────────────────────────────
 
 function getCookie(name: string): string {
@@ -36,6 +42,7 @@ export default function AdminHub() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState('');
+  const [botStats, setBotStats] = useState<BotStats | null>(null);
 
   useEffect(() => {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
@@ -72,11 +79,13 @@ export default function AdminHub() {
     setStatsLoading(true);
     setStatsError('');
     try {
-      const res = await fetch('/api/admin-stats', {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
-      if (!res.ok) throw new Error('Failed to load');
-      setStats(await res.json());
+      const [statsRes, botRes] = await Promise.all([
+        fetch('/api/admin-stats', { headers: { Authorization: `Bearer ${savedPw.current}` } }),
+        fetch('/api/admin-analytics?days=1', { headers: { Authorization: `Bearer ${savedPw.current}` } }),
+      ]);
+      if (!statsRes.ok) throw new Error('Failed to load');
+      setStats(await statsRes.json());
+      if (botRes.ok) setBotStats(await botRes.json());
     } catch (err: any) {
       setStatsError(err.message || 'Failed to load stats');
     } finally {
@@ -212,6 +221,28 @@ export default function AdminHub() {
               <button onClick={fetchStats} className="stats-retry">retry</button>
             </div>
           )}
+
+          {/* Bot analytics strip */}
+          <a href="/admin/analytics" className="analytics-strip">
+            <div className="analytics-label">Bot · last 24h</div>
+            <div className="analytics-pills">
+              <span className="analytics-pill">
+                <span className="analytics-pill-val">{botStats ? botStats.totalQuestions : '—'}</span>
+                <span className="analytics-pill-lbl">questions</span>
+              </span>
+              <span className="analytics-pill">
+                <span className="analytics-pill-val">{botStats ? `$${botStats.totalCost.toFixed(3)}` : '—'}</span>
+                <span className="analytics-pill-lbl">cost</span>
+              </span>
+              {botStats?.modelStats.slice(0, 2).map(m => (
+                <span key={m.model} className="analytics-pill">
+                  <span className="analytics-pill-val">{m.count}</span>
+                  <span className="analytics-pill-lbl">{m.model.replace('Claude ', 'C-').replace(' 4.6', '').replace('Gemini 3.1 Flash-Lite', 'Gemini').replace('GPT-5.4', 'GPT')}</span>
+                </span>
+              ))}
+            </div>
+            <span className="analytics-arrow">›</span>
+          </a>
 
           {/* Launcher grid */}
           <div className="launcher-grid">
@@ -412,6 +443,57 @@ const hubCSS = `
   cursor: pointer;
   font-size: 13px;
   padding: 0;
+}
+
+/* Analytics strip */
+.analytics-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 11px 14px;
+  text-decoration: none;
+  color: inherit;
+  margin-bottom: 10px;
+}
+.analytics-strip:hover { background: #f9fafb; }
+.analytics-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.analytics-pills {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.analytics-pill {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 3px 8px;
+}
+.analytics-pill-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+.analytics-pill-lbl {
+  font-size: 11px;
+  color: #6b7280;
+}
+.analytics-arrow {
+  font-size: 18px;
+  color: #9ca3af;
+  margin-left: auto;
 }
 
 /* Launcher grid */
