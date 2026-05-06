@@ -238,6 +238,7 @@ const LAUNCHERS = [
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
   { emoji: '🎓', title: 'Students',     sub: 'Student records (coming soon)',            href: '/admin/students'     },
   { emoji: '💡', title: 'Improvements', sub: 'Suggestion clusters · approve prompt rules', href: '/admin/improvements' },
+  { emoji: '📊', title: 'Analytics',    sub: 'API usage · question log · AI analysis',    href: '/admin/analytics'    },
 ];
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
