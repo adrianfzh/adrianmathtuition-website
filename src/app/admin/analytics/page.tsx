@@ -17,7 +17,15 @@ interface ModelStat {
   avgTokIn: number; avgTokOut: number;
   totalTokIn: number; totalTokOut: number; cost: number;
 }
-interface TrendPoint { date: string; count: number }
+interface DayModelStat {
+  model: string; count: number; cost: number;
+  tokIn: number; tokOut: number; avgTime: number;
+}
+interface TrendPoint {
+  date: string; count: number; cost: number;
+  tokIn: number; tokOut: number; avgTime: number;
+  models: DayModelStat[];
+}
 interface TopicCount  { topic: string; count: number }
 interface Question {
   id: string; timestamp: string; username: string;
@@ -47,10 +55,12 @@ export default function AnalyticsDashboard() {
   const [analysisDays, setAnalysisDays] = useState(1);
   const [search, setSearch]     = useState('');
   const [expandedQ, setExpandedQ] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
     setData(null);
+    setSelectedDate(null);
     fetch(`/api/admin-analytics?days=${days}`, {
       headers: { Authorization: `Bearer ${getPw()}` },
     })
@@ -134,22 +144,109 @@ export default function AnalyticsDashboard() {
 
           {/* Volume trend */}
           <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '16px 20px', marginBottom: 16 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 10 }}>Daily volume</div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 56 }}>
-              {(data.trend || []).map((t: TrendPoint) => (
-                <div key={t.date} title={`${t.date}: ${t.count}`} style={{
-                  flex: 1,
-                  background: t.count > 0 ? '#6366f1' : '#e2e8f0',
-                  borderRadius: '2px 2px 0 0',
-                  height: `${Math.max(4, (t.count / maxTrend) * 100)}%`,
-                  minHeight: t.count > 0 ? 4 : 2,
-                  transition: 'height 0.2s',
-                }} />
-              ))}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>Daily volume</div>
+              <div style={{ fontSize: 11, color: '#94a3b8' }}>(click a bar for that day&apos;s breakdown)</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'stretch', gap: 2, height: 72 }}>
+              {(data.trend || []).map((t: TrendPoint) => {
+                const isSelected = selectedDate === t.date;
+                return (
+                  <button
+                    key={t.date}
+                    type="button"
+                    title={`${t.date}: ${t.count} questions · $${(t.cost ?? 0).toFixed(3)}`}
+                    onClick={() => setSelectedDate(isSelected ? null : t.date)}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      padding: 0,
+                      border: 'none',
+                      background: isSelected ? '#eef2ff' : 'transparent',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <span style={{
+                      display: 'block',
+                      width: '100%',
+                      background: isSelected ? '#4338ca' : (t.count > 0 ? '#6366f1' : '#e2e8f0'),
+                      outline: isSelected ? '2px solid #1e1b4b' : 'none',
+                      outlineOffset: 1,
+                      borderRadius: '2px 2px 0 0',
+                      height: `${Math.max(6, (t.count / maxTrend) * 100)}%`,
+                      minHeight: t.count > 0 ? 6 : 2,
+                      transition: 'height 0.2s, background 0.15s',
+                      pointerEvents: 'none',
+                    }} />
+                  </button>
+                );
+              })}
             </div>
             <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>
               {(data.trend || []).length > 0 && `${data.trend[0]?.date} → ${data.trend[data.trend.length-1]?.date}`}
             </div>
+
+            {selectedDate && (() => {
+              const day: TrendPoint | undefined = (data.trend || []).find((t: TrendPoint) => t.date === selectedDate);
+              if (!day) return null;
+              return (
+                <div style={{ marginTop: 12, padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{day.date}</div>
+                    <div style={{ fontSize: 12, color: '#64748b' }}>
+                      {day.count} question{day.count !== 1 ? 's' : ''} · ${day.cost.toFixed(3)} · {day.avgTime}s avg
+                    </div>
+                    <button
+                      onClick={() => setSelectedDate(null)}
+                      style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  {day.models.length === 0 ? (
+                    <div style={{ fontSize: 12, color: '#94a3b8' }}>No questions on this day.</div>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse', minWidth: 480 }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                            {['Model','Questions','Avg time','Tokens in','Tokens out','Cost'].map(h => (
+                              <th key={h} style={{ textAlign: h === 'Model' ? 'left' : 'right', padding: '4px 8px', color: '#94a3b8', fontWeight: 600, fontSize: 10, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {day.models.map(m => (
+                            <tr key={m.model} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '6px 8px' }}>
+                                <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: modelColour(m.model), marginRight: 6 }} />
+                                {m.model}
+                              </td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>{m.count}</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right' }}>{m.avgTime}s</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{m.tokIn.toLocaleString()}</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{m.tokOut.toLocaleString()}</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>${m.cost.toFixed(3)}</td>
+                            </tr>
+                          ))}
+                          <tr style={{ borderTop: '2px solid #e2e8f0', fontWeight: 700 }}>
+                            <td style={{ padding: '6px 8px' }}>Total</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right' }}>{day.count}</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right' }}>{day.avgTime}s</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{day.tokIn.toLocaleString()}</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{day.tokOut.toLocaleString()}</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right' }}>${day.cost.toFixed(3)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Model stats */}

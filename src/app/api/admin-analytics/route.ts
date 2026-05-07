@@ -80,20 +80,62 @@ export async function GET(req: NextRequest) {
     }))
     .sort((a, b) => b.count - a.count);
 
-  // ── Daily volume trend ────────────────────────────────────────────────────
-  const trendByDay: Record<string, number> = {};
+  // ── Daily volume trend (with cost + per-model breakdown) ──────────────────
+  type DayBucket = {
+    count: number;
+    cost: number;
+    tokIn: number;
+    tokOut: number;
+    totalTime: number;
+    models: Record<string, { count: number; cost: number; tokIn: number; tokOut: number; totalTime: number }>;
+  };
+  const trendByDay: Record<string, DayBucket> = {};
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86400_000 + 8 * 3600_000).toISOString().slice(0, 10);
-    trendByDay[d] = 0;
+    trendByDay[d] = { count: 0, cost: 0, tokIn: 0, tokOut: 0, totalTime: 0, models: {} };
   }
   for (const r of records) {
     const ts = r.fields['Timestamp'] || '';
     if (!ts) continue;
     // Convert to SGT day
     const sgt = new Date(new Date(ts).getTime() + 8 * 3600_000).toISOString().slice(0, 10);
-    if (sgt in trendByDay) trendByDay[sgt]++;
+    const bucket = trendByDay[sgt];
+    if (!bucket) continue;
+    const model = r.fields['Model Used'] || 'Unknown';
+    const tokIn = r.fields['Tokens In'] || 0;
+    const tokOut = r.fields['Tokens Out'] || 0;
+    const time = r.fields['Time Taken'] || 0;
+    const c = costForRecord(r);
+    bucket.count++;
+    bucket.cost += c;
+    bucket.tokIn += tokIn;
+    bucket.tokOut += tokOut;
+    bucket.totalTime += time;
+    if (!bucket.models[model]) bucket.models[model] = { count: 0, cost: 0, tokIn: 0, tokOut: 0, totalTime: 0 };
+    bucket.models[model].count++;
+    bucket.models[model].cost += c;
+    bucket.models[model].tokIn += tokIn;
+    bucket.models[model].tokOut += tokOut;
+    bucket.models[model].totalTime += time;
   }
-  const trend = Object.entries(trendByDay).map(([date, count]) => ({ date, count }));
+  const trend = Object.entries(trendByDay).map(([date, b]) => ({
+    date,
+    count: b.count,
+    cost: +b.cost.toFixed(4),
+    tokIn: b.tokIn,
+    tokOut: b.tokOut,
+    avgTime: b.count ? +(b.totalTime / b.count).toFixed(1) : 0,
+    models: Object.entries(b.models)
+      .map(([model, m]) => ({
+        model,
+        count: m.count,
+        cost: +m.cost.toFixed(4),
+        tokIn: m.tokIn,
+        tokOut: m.tokOut,
+        avgTime: m.count ? +(m.totalTime / m.count).toFixed(1) : 0,
+      }))
+      .sort((a, b) => b.count - a.count),
+  }));
 
   // ── Topic breakdown ───────────────────────────────────────────────────────
   const topicMap: Record<string, number> = {};
