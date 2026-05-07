@@ -209,38 +209,40 @@ export default function AnalyticsDashboard() {
                   {day.models.length === 0 ? (
                     <div style={{ fontSize: 12, color: '#94a3b8' }}>No questions on this day.</div>
                   ) : (
-                    <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                          {['Model','Questions','Avg time','Tokens in','Tokens out','Cost'].map(h => (
-                            <th key={h} style={{ textAlign: h === 'Model' ? 'left' : 'right', padding: '4px 8px', color: '#94a3b8', fontWeight: 600, fontSize: 10, textTransform: 'uppercase' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {day.models.map(m => (
-                          <tr key={m.model} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                            <td style={{ padding: '6px 8px' }}>
-                              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: modelColour(m.model), marginRight: 6 }} />
-                              {m.model}
-                            </td>
-                            <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>{m.count}</td>
-                            <td style={{ padding: '6px 8px', textAlign: 'right' }}>{m.avgTime}s</td>
-                            <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{m.tokIn.toLocaleString()}</td>
-                            <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{m.tokOut.toLocaleString()}</td>
-                            <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>${m.cost.toFixed(3)}</td>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse', minWidth: 480 }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                            {['Model','Questions','Avg time','Tokens in','Tokens out','Cost'].map(h => (
+                              <th key={h} style={{ textAlign: h === 'Model' ? 'left' : 'right', padding: '4px 8px', color: '#94a3b8', fontWeight: 600, fontSize: 10, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{h}</th>
+                            ))}
                           </tr>
-                        ))}
-                        <tr style={{ borderTop: '2px solid #e2e8f0', fontWeight: 700 }}>
-                          <td style={{ padding: '6px 8px' }}>Total</td>
-                          <td style={{ padding: '6px 8px', textAlign: 'right' }}>{day.count}</td>
-                          <td style={{ padding: '6px 8px', textAlign: 'right' }}>{day.avgTime}s</td>
-                          <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{day.tokIn.toLocaleString()}</td>
-                          <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{day.tokOut.toLocaleString()}</td>
-                          <td style={{ padding: '6px 8px', textAlign: 'right' }}>${day.cost.toFixed(3)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {day.models.map(m => (
+                            <tr key={m.model} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '6px 8px' }}>
+                                <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: modelColour(m.model), marginRight: 6 }} />
+                                {m.model}
+                              </td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>{m.count}</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right' }}>{m.avgTime}s</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{m.tokIn.toLocaleString()}</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{m.tokOut.toLocaleString()}</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>${m.cost.toFixed(3)}</td>
+                            </tr>
+                          ))}
+                          <tr style={{ borderTop: '2px solid #e2e8f0', fontWeight: 700 }}>
+                            <td style={{ padding: '6px 8px' }}>Total</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right' }}>{day.count}</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right' }}>{day.avgTime}s</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{day.tokIn.toLocaleString()}</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{day.tokOut.toLocaleString()}</td>
+                            <td style={{ padding: '6px 8px', textAlign: 'right' }}>${day.cost.toFixed(3)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   )}
                 </div>
               );
