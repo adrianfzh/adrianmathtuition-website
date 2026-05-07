@@ -148,26 +148,40 @@ export default function AnalyticsDashboard() {
               <div style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>Daily volume</div>
               <div style={{ fontSize: 11, color: '#94a3b8' }}>(click a bar for that day&apos;s breakdown)</div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 56 }}>
+            <div style={{ display: 'flex', alignItems: 'stretch', gap: 2, height: 72 }}>
               {(data.trend || []).map((t: TrendPoint) => {
                 const isSelected = selectedDate === t.date;
                 return (
-                  <div
+                  <button
                     key={t.date}
+                    type="button"
                     title={`${t.date}: ${t.count} questions · $${(t.cost ?? 0).toFixed(3)}`}
                     onClick={() => setSelectedDate(isSelected ? null : t.date)}
                     style={{
                       flex: 1,
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      padding: 0,
+                      border: 'none',
+                      background: isSelected ? '#eef2ff' : 'transparent',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <span style={{
+                      display: 'block',
+                      width: '100%',
                       background: isSelected ? '#4338ca' : (t.count > 0 ? '#6366f1' : '#e2e8f0'),
                       outline: isSelected ? '2px solid #1e1b4b' : 'none',
                       outlineOffset: 1,
                       borderRadius: '2px 2px 0 0',
-                      height: `${Math.max(4, (t.count / maxTrend) * 100)}%`,
-                      minHeight: t.count > 0 ? 4 : 2,
+                      height: `${Math.max(6, (t.count / maxTrend) * 100)}%`,
+                      minHeight: t.count > 0 ? 6 : 2,
                       transition: 'height 0.2s, background 0.15s',
-                      cursor: 'pointer',
-                    }}
-                  />
+                      pointerEvents: 'none',
+                    }} />
+                  </button>
                 );
               })}
             </div>
