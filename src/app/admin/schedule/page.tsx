@@ -1913,7 +1913,7 @@ export default function SchedulePage() {
     // - Today + past: show Absent and Rescheduled-away so undo/info is accessible
     const visibleLessons = lessons.filter(l => {
       if (l.status === 'Cancelled') return false;
-      if (l.status === 'Absent') return !isFuture;
+      if (l.status === 'Absent') return true; // show on all dates, faded
       if (l.status === 'Rescheduled') return !isFuture;
       return true;
     }).sort((a, b) => {
