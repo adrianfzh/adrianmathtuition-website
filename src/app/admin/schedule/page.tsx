@@ -1779,13 +1779,13 @@ export default function SchedulePage() {
 
   function openAddModal(date: Date, slot: Slot) {
     setModalError('');
-    setAddModal({ type: 'Makeup', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true, linkedLessonId: '' });
+    setAddModal({ type: 'Makeup', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: false, linkedLessonId: '' });
   }
 
   function openAddModalFab() {
     setModalError('');
     const todaySlots = slotsByDay[dayNameOf(activeDate)] ?? [];
-    setAddModal({ type: 'Makeup', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: true, linkedLessonId: '' });
+    setAddModal({ type: 'Makeup', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: false, linkedLessonId: '' });
   }
 
   async function openStudentModal(studentId: string, lessonType: string) {
