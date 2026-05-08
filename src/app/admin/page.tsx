@@ -270,6 +270,7 @@ const LAUNCHERS = [
   { emoji: '🎓', title: 'Students',     sub: 'Student records (coming soon)',            href: '/admin/students'     },
   { emoji: '💡', title: 'Improvements', sub: 'Suggestion clusters · approve prompt rules', href: '/admin/improvements' },
   { emoji: '📊', title: 'Analytics',    sub: 'API usage · question log · AI analysis',    href: '/admin/analytics'    },
+  { emoji: '🤖', title: 'Bot Analytics', sub: 'Questions · suggestions · Opus chat', href: '/admin/bot-analytics' },
 ];
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
