@@ -1,6 +1,64 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from 'react';
 
+// KaTeX web renderer — loads KaTeX from CDN once and renders math in a div
+function WebMathRenderer({ text }: { text: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const render = () => {
+      if (!ref.current) return;
+      const w = window as any;
+      if (w.renderMathInElement) {
+        ref.current.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        w.renderMathInElement(ref.current, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '\\(', right: '\\)', display: false },
+          ],
+          throwOnError: false,
+        });
+      } else if (w.katex) {
+        // Fallback: just strip delimiters
+        ref.current.textContent = text;
+      } else {
+        ref.current.textContent = text;
+      }
+    };
+    // If KaTeX not loaded yet, load it
+    const w = window as any;
+    if (!w.renderMathInElement) {
+      if (!document.getElementById('katex-css')) {
+        const link = document.createElement('link');
+        link.id = 'katex-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
+        document.head.appendChild(link);
+      }
+      if (!document.getElementById('katex-js')) {
+        const s = document.createElement('script');
+        s.id = 'katex-js';
+        s.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
+        s.onload = () => {
+          const s2 = document.createElement('script');
+          s2.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js';
+          s2.onload = render;
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(s);
+      } else {
+        setTimeout(render, 500);
+      }
+    } else {
+      render();
+    }
+  }, [text]);
+
+  return <div ref={ref} style={{ whiteSpace: 'pre-wrap' }}>{text}</div>;
+}
+
 function getCookie(name: string): string {
   if (typeof document === 'undefined') return '';
   const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
@@ -13,10 +71,10 @@ function getAuth(): string {
 type Question = {
   id: string; timestamp: string; studentName: string; chatId: string;
   caption: string; aiResponse: string; modelUsed: string; topic: string;
-  timeTaken: number | null; confidence: string; imageUrl?: string;
+  timeTaken: number | null; confidence: string; status: string; imageUrl?: string;
   suggestions: { id: string; issue: string; suggestion: string; status: string }[];
   // enriched client-side
-  flagReason?: 'low_confidence' | 'confusion_followup' | 'both';
+  flagReason?: 'negative_feedback' | 'low_confidence' | 'confusion_followup' | 'admin_forced' | 'multiple';
   confusedFollowUp?: string;
   dismissed?: boolean;
 };
@@ -31,14 +89,27 @@ const CONFUSION_RE = [
   /^not sure/i, /^what does/i,
 ];
 
+function addFlag(q: Question, reason: Question['flagReason']) {
+  if (!q.flagReason) q.flagReason = reason;
+  else if (q.flagReason !== reason) q.flagReason = 'multiple';
+}
+
 function computeFlags(qs: Question[]): Question[] {
-  // Group by chatId, sort by time, detect confusion follow-ups
   const byChat: Record<string, Question[]> = {};
   for (const q of qs) {
     if (!byChat[q.chatId]) byChat[q.chatId] = [];
     byChat[q.chatId].push(q);
   }
   const enriched = new Map(qs.map(q => [q.id, { ...q }]));
+
+  // Status-based flags (strongest signals)
+  for (const q of enriched.values()) {
+    if (q.status === 'negative_feedback') addFlag(q, 'negative_feedback');
+    if (q.status === 'admin_forced') addFlag(q, 'admin_forced');
+    if (q.status === 'low_confidence' || (q.confidence || '').toLowerCase() === 'low') addFlag(q, 'low_confidence');
+  }
+
+  // Confusion follow-up detection (group by chat, sort by time)
   for (const group of Object.values(byChat)) {
     group.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
     for (let i = 1; i < group.length; i++) {
@@ -49,15 +120,35 @@ function computeFlags(qs: Question[]): Question[] {
       if (minsDiff <= 20 && (CONFUSION_RE.some(r => r.test(cap)) || cap.length < 15)) {
         const p = enriched.get(prev.id)!;
         p.confusedFollowUp = curr.caption;
-        p.flagReason = p.flagReason === 'low_confidence' ? 'both' : 'confusion_followup';
+        addFlag(p, 'confusion_followup');
       }
     }
   }
-  for (const q of enriched.values()) {
-    const isLow = (q.confidence || '').toLowerCase() === 'low';
-    if (isLow) q.flagReason = q.flagReason === 'confusion_followup' ? 'both' : 'low_confidence';
-  }
   return qs.map(q => enriched.get(q.id)!);
+}
+
+// ── Telegram text approximation (mirrors bot's latexToUnicode) ───────────────
+function toTelegramText(raw: string): string {
+  let s = raw || '';
+  s = s.replace(/\\\$/g, '\x01');
+  s = s.replace(/\$\$([\s\S]*?)\$\$/g, '$1');
+  s = s.replace(/\$([^$\n]+)\$/g, '$1');
+  s = s.replace(/\\\[([\s\S]*?)\\\]/g, '$1');
+  s = s.replace(/\x01/g, '$');
+  s = s.replace(/\\\\/g, '\n');
+  s = s.replace(/\\begin\{[^}]+\}|\\end\{[^}]+\}/g, '');
+  s = s.replace(/\\left|\\right/g, '');
+  // Greek
+  const greek: Record<string,string> = { alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',theta:'θ',lambda:'λ',mu:'μ',pi:'π',sigma:'σ',omega:'ω',Gamma:'Γ',Delta:'Δ',Sigma:'Σ',Omega:'Ω' };
+  for (const [k,v] of Object.entries(greek)) s = s.replace(new RegExp(`\\\\${k}\\b`,'g'), v);
+  s = s.replace(/\\times/g,'×').replace(/\\div/g,'÷').replace(/\\pm/g,'±').replace(/\\leq/g,'≤').replace(/\\geq/g,'≥').replace(/\\neq/g,'≠').replace(/\\approx/g,'≈').replace(/\\infty/g,'∞').replace(/\\sqrt\{([^{}]+)\}/g,'√($1)').replace(/\\sqrt\b/g,'√');
+  // frac (up to 4 passes)
+  for (let i = 0; i < 4; i++) s = s.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, '($1)/($2)');
+  s = s.replace(/\^\{([^{}]+)\}/g, (_,c) => c.split('').map((ch: string) => '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ'['0123456789+-=()abcdefghijklmnopqrstuvwxyz'.indexOf(ch)] || ch).join(''));
+  s = s.replace(/\^([0-9])/g, (_,c) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[parseInt(c)]);
+  s = s.replace(/\\[a-zA-Z]+\*?\s*/g,'').replace(/[{}]/g,'');
+  s = s.replace(/^#{1,6}\s+/gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*\n]+)\*/g,'$1');
+  return s.replace(/\n{3,}/g,'\n\n').trim();
 }
 
 export default function BotAnalytics() {
@@ -71,6 +162,7 @@ export default function BotAnalytics() {
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
   const [selected, setSelected]     = useState<Question | null>(null);
   const [opusOpen, setOpusOpen]     = useState(false);
+  const [responseView, setResponseView] = useState<'raw' | 'telegram' | 'web'>('telegram');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput]   = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -134,8 +226,8 @@ export default function BotAnalytics() {
       ? `\n\nFlag: Bot flagged this as LOW CONFIDENCE.`
       : selected.flagReason === 'confusion_followup'
       ? `\n\nFlag: Student followed up with "${selected.confusedFollowUp}" — possible confusing/wrong answer.`
-      : selected.flagReason === 'both'
-      ? `\n\nFlag: Bot flagged LOW CONFIDENCE AND student followed up with "${selected.confusedFollowUp}".`
+      : selected.flagReason === 'multiple'
+      ? `\n\nFlag: Multiple signals — low confidence and/or student followed up with "${selected.confusedFollowUp}".`
       : '';
     const firstMsg: ChatMessage = {
       role: 'user',
@@ -208,14 +300,71 @@ export default function BotAnalytics() {
 
   function flagBadge(q: Question) {
     if (!q.flagReason) return null;
-    const label = q.flagReason === 'low_confidence' ? '⚠ Low confidence'
-      : q.flagReason === 'confusion_followup' ? `💬 Confusion: "${(q.confusedFollowUp || '').slice(0, 30)}"`
-      : `⚠ Low conf + 💬 Confusion`;
+    const labels: Record<string, string> = {
+      negative_feedback: '🚫 Student said wrong',
+      low_confidence: '⚠ Low confidence',
+      admin_forced: '🔧 Admin intervened',
+      confusion_followup: `💬 "${(q.confusedFollowUp || '').slice(0, 25)}"`,
+      multiple: '⚠ Multiple signals',
+    };
     return (
       <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
-        background: '#fef3c7', color: '#92400e', display: 'inline-block', marginTop: 4 }}>
-        {label}
+        background: q.flagReason === 'negative_feedback' ? '#fef2f2' : '#fef3c7',
+        color: q.flagReason === 'negative_feedback' ? '#dc2626' : '#92400e',
+        display: 'inline-block', marginTop: 4 }}>
+        {labels[q.flagReason] || q.flagReason}
       </span>
+    );
+  }
+
+  function statusBadge(status: string) {
+    const cfg: Record<string, { label: string; bg: string; color: string }> = {
+      negative_feedback: { label: '🚫 Wrong', bg: '#fef2f2', color: '#dc2626' },
+      low_confidence:    { label: '⚠ Low conf', bg: '#fef3c7', color: '#b45309' },
+      admin_forced:      { label: '🔧 Admin fix', bg: '#ede9fe', color: '#6d28d9' },
+      New:               { label: 'New', bg: '#f1f5f9', color: '#64748b' },
+    };
+    const c = cfg[status] || { label: status, bg: '#f1f5f9', color: '#64748b' };
+    return <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 8, background: c.bg, color: c.color }}>{c.label}</span>;
+  }
+
+  function ResponseViewer({ aiResponse }: { aiResponse: string }) {
+    const telegramText = toTelegramText(aiResponse);
+    return (
+      <div>
+        {/* View toggle */}
+        <div style={{ display: 'flex', gap: 0, marginBottom: 8, border: '1px solid #e2e8f0', borderRadius: 6, overflow: 'hidden', width: 'fit-content' }}>
+          {(['telegram','web','raw'] as const).map(v => (
+            <button key={v} onClick={() => setResponseView(v)} style={{
+              padding: '4px 12px', fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
+              background: responseView === v ? '#1e3a5f' : 'transparent',
+              color: responseView === v ? '#fff' : '#64748b',
+            }}>
+              {v === 'telegram' ? '📱 Telegram' : v === 'web' ? '🌐 Web' : '📄 Raw'}
+            </button>
+          ))}
+        </div>
+
+        {responseView === 'telegram' && (
+          <div style={{ fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#f0fdf4', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto', fontFamily: 'system-ui, sans-serif' }}>
+            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it in Telegram (Unicode math, no LaTeX rendering)</div>
+            {telegramText}
+          </div>
+        )}
+
+        {responseView === 'web' && (
+          <div style={{ fontSize: 13, lineHeight: 1.7, background: '#eff6ff', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto' }}>
+            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it on web (KaTeX rendered)</div>
+            <WebMathRenderer text={aiResponse} />
+          </div>
+        )}
+
+        {responseView === 'raw' && (
+          <div style={{ fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f8fafc', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto', fontFamily: 'monospace', color: '#475569' }}>
+            {aiResponse || '(no response recorded)'}
+          </div>
+        )}
+      </div>
     );
   }
 
@@ -277,9 +426,10 @@ export default function BotAnalytics() {
                       cursor: 'pointer', transition: 'background 0.1s',
                       outline: isSelected ? '2px solid #3b82f6' : 'none',
                     }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 11, marginBottom: 3 }}>
-                      <span>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
-                      <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 11, marginBottom: 3, gap: 4 }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
+                      <span style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+                        {q.status && q.status !== 'New' && statusBadge(q.status)}
                         {confBadge(q.confidence)}
                         {q.timestamp ? new Date(q.timestamp).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'}) : ''}
                       </span>
@@ -366,6 +516,7 @@ export default function BotAnalytics() {
                   <span style={{ color: '#94a3b8', fontSize: 12 }}>·</span>
                   <span style={{ color: '#64748b', fontSize: 12 }}>{selected.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
                   {confBadge(selected.confidence)}
+                  {selected.status && selected.status !== 'New' && statusBadge(selected.status)}
                   <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 11 }}>
                     {selected.timestamp ? new Date(selected.timestamp).toLocaleString('en-SG', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : ''}
                   </span>
@@ -377,10 +528,16 @@ export default function BotAnalytics() {
 
                   {/* Flag banner */}
                   {selected.flagReason && (
-                    <div style={{ background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: 13 }}>
+                    <div style={{
+                      background: selected.flagReason === 'negative_feedback' ? '#fef2f2' : '#fef3c7',
+                      border: `1px solid ${selected.flagReason === 'negative_feedback' ? '#fca5a5' : '#fcd34d'}`,
+                      borderRadius: 8, padding: '8px 12px', marginBottom: 12, fontSize: 13
+                    }}>
+                      {selected.flagReason === 'negative_feedback' && '🚫 Student explicitly said the answer was wrong'}
+                      {selected.flagReason === 'admin_forced' && '🔧 Admin manually intervened on this response'}
                       {selected.flagReason === 'low_confidence' && '⚠ Bot flagged this response as low confidence'}
-                      {selected.flagReason === 'confusion_followup' && <>💬 Student followed up with <strong>"{selected.confusedFollowUp}"</strong> — bot answer may have been unclear or wrong</>}
-                      {selected.flagReason === 'both' && <>⚠ Low confidence + student replied <strong>"{selected.confusedFollowUp}"</strong></>}
+                      {selected.flagReason === 'confusion_followup' && <>💬 Student followed up with <strong>"{selected.confusedFollowUp}"</strong> — answer may have been unclear or wrong</>}
+                      {selected.flagReason === 'multiple' && <>⚠ Multiple signals:{selected.status === 'negative_feedback' ? ' student said wrong,' : ''}{(selected.confidence||'').toLowerCase() === 'low' ? ' low confidence,' : ''}{selected.confusedFollowUp ? ` follow-up: "${selected.confusedFollowUp}"` : ''}</>}
                     </div>
                   )}
 
@@ -392,12 +549,10 @@ export default function BotAnalytics() {
                     </div>
                   </div>
 
-                  {/* Bot answer */}
+                  {/* Bot answer — with view toggle */}
                   <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Bot answer</div>
-                    <div style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f0fdf4', borderRadius: 8, padding: '10px 12px', maxHeight: opusOpen ? 120 : 280, overflowY: 'auto' }}>
-                      {selected.aiResponse || '(no response recorded)'}
-                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Bot answer</div>
+                    <ResponseViewer aiResponse={selected.aiResponse || ''} />
                   </div>
 
                   {/* Actions */}
