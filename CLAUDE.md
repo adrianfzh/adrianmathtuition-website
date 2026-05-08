@@ -4,6 +4,8 @@
 
 Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Tailwind CSS.
 
+> **🚧 IN-PROGRESS: Student Portal v1 build.** Spec at [`PORTAL.md`](PORTAL.md) (root of repo). Read it before touching anything under `/app/*`, `/login`, `/signup`, or `/api/portal/*`. Schema migrations applied 2026-05-05. File scaffolding in place — search `// TODO PORTAL` for unfinished work.
+
 ## Commands
 
 - `npm run dev` / `next dev` — run locally
@@ -32,6 +34,7 @@ Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/ro
 - `revise/page.tsx` — revision notes landing page
 - `revise/[topic]/page.tsx` — topic listing
 - `revise/[topic]/[subtopic]/[subsubtopic]/lesson/page.tsx` — revision lesson player
+- `revise/[topic]/[subtopic]/worked-examples/page.tsx` — TikTok-style swipe cards over `content_snippets` (route: `/revise/[level]/[topic-slug]/worked-examples`)
 - `learn/page.tsx` — learn page
 - `formulas/*` — formula reference pages (indices, factorization, statistics, etc.)
 - `o-level-a-math-tuition/`, `jc-h2-math-tuition/`, `secondary-math-tuition/` — SEO landing pages
