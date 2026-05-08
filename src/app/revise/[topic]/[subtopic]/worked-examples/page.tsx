@@ -1,0 +1,102 @@
+import { notFound } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+import SwipeApp from './SwipeApp';
+import { topicSlug } from '@/lib/topic-slug';
+
+const VALID_LEVELS = ['am', 'em', 'jc', 's1', 's2'];
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+}
+
+async function findCanonicalTopic(level: string, slug: string): Promise<string | null> {
+  const supa = getSupabase();
+  const { data } = await supa
+    .from('subgroups')
+    .select('topic')
+    .eq('level', level.toUpperCase());
+  const topics = [...new Set((data || []).map((r: { topic: string }) => r.topic))];
+  return topics.find(t => topicSlug(t) === slug) ?? null;
+}
+
+function NotFoundView({ level, slug }: { level: string; slug: string }) {
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center">
+      <p className="text-xl font-semibold text-gray-700">
+        We couldn&apos;t find that topic.
+      </p>
+      <p className="text-gray-500 text-sm">
+        Level: <code className="bg-gray-100 px-1 rounded">{level}</code>{' '}
+        Topic: <code className="bg-gray-100 px-1 rounded">{slug}</code>
+      </p>
+      <a href="/revise" className="mt-2 text-blue-600 underline text-sm">
+        Try the index →
+      </a>
+    </main>
+  );
+}
+
+function EmptyView({ level, topic }: { level: string; topic: string }) {
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center">
+      <p className="text-xl font-semibold text-gray-700">
+        Worked examples for <em>{topic}</em> are still being written.
+      </p>
+      <p className="text-gray-400 text-sm">Coming soon.</p>
+      <a href={`/revise/${level}`} className="mt-2 text-blue-600 underline text-sm">
+        ← Back to {level.toUpperCase()} topics
+      </a>
+    </main>
+  );
+}
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ topic: string; subtopic: string }>;
+}) {
+  const { topic: levelParam, subtopic: topicSlugParam } = await params;
+  const levelLower = levelParam.toLowerCase();
+
+  if (!VALID_LEVELS.includes(levelLower)) return notFound();
+
+  const canonicalTopic = await findCanonicalTopic(levelLower, topicSlugParam);
+  if (!canonicalTopic) {
+    return <NotFoundView level={levelParam} slug={topicSlugParam} />;
+  }
+
+  const supa = getSupabase();
+  const { data: cards } = await supa
+    .from('content_snippets')
+    .select('id, subgroup_id, order_index, card_title, content, content_kind')
+    .eq('level', levelLower.toUpperCase())
+    .eq('topic', canonicalTopic)
+    .eq('content_kind', 'worked_example')
+    .in('feature', ['both', 'web'])
+    .eq('is_published', true)
+    .order('subgroup_id', { ascending: true })
+    .order('order_index', { ascending: true });
+
+  if (!cards || cards.length === 0) {
+    return <EmptyView level={levelLower} topic={canonicalTopic} />;
+  }
+
+  const sgIds = [...new Set(cards.map((c: { subgroup_id: number }) => c.subgroup_id))];
+  const { data: sgs } = await supa
+    .from('subgroups')
+    .select('id, name, description')
+    .in('id', sgIds);
+  const sgMap = Object.fromEntries((sgs || []).map((s: { id: number; name: string; description: string }) => [s.id, s]));
+
+  return (
+    <SwipeApp
+      cards={cards}
+      subgroups={sgMap}
+      level={levelLower}
+      topic={canonicalTopic}
+    />
+  );
+}
