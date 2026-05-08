@@ -51,10 +51,6 @@ export default function AdminHub() {
   const [authLoading, setAuthLoading] = useState(false);
   const savedPw = useRef('');
 
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [statsError, setStatsError] = useState('');
-  const [botStats, setBotStats] = useState<BotStats | null>(null);
 
   useEffect(() => {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
@@ -87,25 +83,6 @@ export default function AdminHub() {
     await verifyAndLogin(password);
   }
 
-  const fetchStats = async () => {
-    setStatsLoading(true);
-    setStatsError('');
-    try {
-      const [statsRes] = await Promise.all([
-        fetch('/api/admin-stats', { headers: { Authorization: `Bearer ${savedPw.current}` } }),
-      ]);
-      if (!statsRes.ok) throw new Error('Failed to load');
-      setStats(await statsRes.json());
-    } catch (err: any) {
-      setStatsError(err.message || 'Failed to load stats');
-    } finally {
-      setStatsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (authed) fetchStats();
-  }, [authed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auth screen ──────────────────────────────────────────────────────────────
   if (!authed) {
@@ -138,17 +115,6 @@ export default function AdminHub() {
     );
   }
 
-  // ── Accent colours ───────────────────────────────────────────────────────────
-  const todayAccent = !stats || stats.today.total === 0
-    ? '#9ca3af'
-    : stats.today.logged === stats.today.total ? '#16a34a' : '#d97706';
-  const invoiceAccent = stats && stats.invoices.count > 0 ? '#dc2626' : '#9ca3af';
-  const makeupAccent  = stats && stats.makeups.count  > 0 ? '#d97706' : '#9ca3af';
-  const weekAccent    = '#1e3a5f';
-
-  const fmtMoney = (n: number) =>
-    '$' + Math.round(n).toLocaleString('en-SG');
-
   // ── Hub ──────────────────────────────────────────────────────────────────────
   return (
     <>
@@ -159,78 +125,10 @@ export default function AdminHub() {
         <div className="hub-header">
           <div className="hub-header-inner">
             <span className="hub-title">Admin</span>
-            <button
-              className="hub-refresh"
-              onClick={fetchStats}
-              disabled={statsLoading}
-              aria-label="Refresh stats"
-            >
-              <svg className={`hub-refresh-icon${statsLoading ? ' spinning' : ''}`}
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
           </div>
         </div>
 
         <div className="hub-body">
-
-          {/* Status strip — 2×2 grid */}
-          <div className="status-grid">
-            <a href="/admin/progress" className="stat-card" style={{ borderLeftColor: todayAccent }}>
-              <div className="stat-top">
-                <span className="stat-num">
-                  {stats ? `${stats.today.logged}/${stats.today.total}` : '—'}
-                </span>
-                <span className="stat-arrow">›</span>
-              </div>
-              <div className="stat-label">logged today</div>
-            </a>
-
-            <a href="/admin/invoices" className="stat-card" style={{ borderLeftColor: invoiceAccent }}>
-              <div className="stat-top">
-                <span className="stat-num">
-                  {stats ? stats.invoices.count : '—'}
-                </span>
-                <span className="stat-arrow">›</span>
-              </div>
-              <div className="stat-label">
-                {stats ? `${fmtMoney(stats.invoices.totalOwed)} owed` : 'unpaid invoices'}
-              </div>
-            </a>
-
-            <a href="/admin/schedule" className="stat-card" style={{ borderLeftColor: makeupAccent }}>
-              <div className="stat-top">
-                <span className="stat-num">
-                  {stats ? stats.makeups.count : '—'}
-                </span>
-                <span className="stat-arrow">›</span>
-              </div>
-              <div className="stat-label">makeups owed</div>
-            </a>
-
-            <a href="/admin/schedule" className="stat-card" style={{ borderLeftColor: weekAccent }}>
-              <div className="stat-top">
-                <span className="stat-num">
-                  {stats ? stats.thisWeek.count : '—'}
-                </span>
-                <span className="stat-arrow">›</span>
-              </div>
-              <div className="stat-label">
-                {stats?.thisWeek.weekLabel
-                  ? `this week · ${stats.thisWeek.weekLabel}`
-                  : 'this week'}
-              </div>
-            </a>
-          </div>
-
-          {statsError && (
-            <div className="stats-error">
-              {statsError} —{' '}
-              <button onClick={fetchStats} className="stats-retry">retry</button>
-            </div>
-          )}
 
           {/* Launcher grid */}
           <div className="launcher-grid">
