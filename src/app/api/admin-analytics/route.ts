@@ -164,6 +164,20 @@ export async function GET(req: NextRequest) {
     cost:       +costForRecord(r).toFixed(5),
   }));
 
+  // ── Cost breakdown from bot CostLog ─────────────────────────────────────────
+  let costBreakdown: any = null;
+  const botBaseUrl = process.env.BOT_BASE_URL;
+  const botSecret  = process.env.BOT_INTERNAL_SECRET;
+  if (botBaseUrl && botSecret) {
+    try {
+      const cr = await fetch(`${botBaseUrl}/api/costs?days=${days}`, {
+        headers: { Authorization: `Bearer ${botSecret}` },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (cr.ok) costBreakdown = await cr.json();
+    } catch { /* non-fatal — dashboard works without it */ }
+  }
+
   return NextResponse.json({
     totalQuestions: records.length,
     totalCost: +totalCost.toFixed(4),
@@ -171,6 +185,7 @@ export async function GET(req: NextRequest) {
     trend,
     topics,
     questions,
+    costBreakdown,
   });
 }
 

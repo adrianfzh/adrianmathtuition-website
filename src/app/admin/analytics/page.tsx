@@ -284,6 +284,70 @@ export default function AnalyticsDashboard() {
             </table>
           </div>
 
+          {/* Cost breakdown by feature */}
+          {data.costBreakdown && (
+            <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '16px 20px', marginBottom: 16 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 12 }}>💰 Cost breakdown (CostLog)</div>
+              {/* Summary row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
+                {[
+                  { label: 'Today', value: `$${data.costBreakdown.today.toFixed(3)}`, sub: `vs $${data.costBreakdown.yesterday.toFixed(3)} yesterday` },
+                  { label: `${data.costBreakdown.periodDays}d total`, value: `$${data.costBreakdown.periodTotal.toFixed(2)}`, sub: `$${data.costBreakdown.avgPerDay.toFixed(2)}/day avg` },
+                  { label: 'Proj. month', value: `$${(data.costBreakdown.avgPerDay * 30).toFixed(0)}`, sub: 'at current rate' },
+                ].map(c => (
+                  <div key={c.label} style={{ background: '#f8fafc', borderRadius: 8, padding: '10px 14px' }}>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>{c.label}</div>
+                    <div style={{ fontSize: 20, fontFamily: 'monospace', fontWeight: 700, color: '#0f172a' }}>{c.value}</div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{c.sub}</div>
+                  </div>
+                ))}
+              </div>
+              {/* By feature + by model side by side */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginBottom: 6 }}>BY FEATURE</div>
+                  {(data.costBreakdown.features || []).slice(0, 10).map((f: any) => (
+                    <div key={f.feature} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: '1px solid #f8fafc' }}>
+                      <span style={{ color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{f.feature}</span>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#0f172a' }}>${f.cost.toFixed(3)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginBottom: 6 }}>BY MODEL</div>
+                  {(data.costBreakdown.models || []).map((m: any) => (
+                    <div key={m.model} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '3px 0', borderBottom: '1px solid #f8fafc' }}>
+                      <span style={{ color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{m.model}</span>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#0f172a' }}>${m.cost.toFixed(3)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* 30-day trend bar chart */}
+              {data.costBreakdown.trend?.length > 0 && (() => {
+                const maxCost = Math.max(...data.costBreakdown.trend.map((t: any) => t.cost), 0.001);
+                return (
+                  <div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginBottom: 6 }}>DAILY TREND</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 48 }}>
+                      {data.costBreakdown.trend.map((t: any) => (
+                        <div
+                          key={t.date}
+                          title={`${t.date}: $${t.cost.toFixed(3)}`}
+                          style={{
+                            flex: 1, borderRadius: '2px 2px 0 0', background: '#10b981',
+                            height: `${Math.max((t.cost / maxCost) * 100, t.cost > 0 ? 4 : 0)}%`,
+                            minHeight: t.cost > 0 ? 2 : 0,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Topics */}
           {data.topics?.length > 0 && (
             <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '16px 20px', marginBottom: 16 }}>
