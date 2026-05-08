@@ -2,6 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+function shortModelName(raw: string): string {
+  const isFollowUp = /follow.?up/i.test(raw);
+  const base = raw
+    .replace(/\s*\(.*?\)\s*/g, '')   // strip parenthetical e.g. "(image follow-up)"
+    .replace(/claude-[\w.-]+/gi, '')  // strip API slug e.g. "claude-sonnet-4-6"
+    .replace(/Claude\s+/i, '')        // strip "Claude "
+    .replace(/\s*4\.?\d*\s*/g, '')    // strip version numbers "4.6" / "4"
+    .replace(/Gemini[\s\d.]+Flash.*/i, 'Gemini')
+    .trim() || raw.slice(0, 8);
+  return isFollowUp ? `${base} (img)` : base;
+}
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface Stats {
@@ -237,7 +249,7 @@ export default function AdminHub() {
               {botStats?.modelStats.slice(0, 2).map(m => (
                 <span key={m.model} className="analytics-pill">
                   <span className="analytics-pill-val">{m.count}</span>
-                  <span className="analytics-pill-lbl">{m.model.replace('Claude ', 'C-').replace(' 4.6', '').replace('Gemini 3.1 Flash-Lite', 'Gemini').replace('GPT-5.4', 'GPT')}</span>
+                  <span className="analytics-pill-lbl">{shortModelName(m.model)}</span>
                 </span>
               ))}
             </div>
