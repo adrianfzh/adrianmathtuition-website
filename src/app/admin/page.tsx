@@ -91,13 +91,11 @@ export default function AdminHub() {
     setStatsLoading(true);
     setStatsError('');
     try {
-      const [statsRes, botRes] = await Promise.all([
+      const [statsRes] = await Promise.all([
         fetch('/api/admin-stats', { headers: { Authorization: `Bearer ${savedPw.current}` } }),
-        fetch('/api/admin-analytics?days=1', { headers: { Authorization: `Bearer ${savedPw.current}` } }),
       ]);
       if (!statsRes.ok) throw new Error('Failed to load');
       setStats(await statsRes.json());
-      if (botRes.ok) setBotStats(await botRes.json());
     } catch (err: any) {
       setStatsError(err.message || 'Failed to load stats');
     } finally {
@@ -234,28 +232,6 @@ export default function AdminHub() {
             </div>
           )}
 
-          {/* Bot analytics strip */}
-          <a href="/admin/analytics" className="analytics-strip">
-            <div className="analytics-label">Bot · last 24h</div>
-            <div className="analytics-pills">
-              <span className="analytics-pill">
-                <span className="analytics-pill-val">{botStats ? botStats.totalQuestions : '—'}</span>
-                <span className="analytics-pill-lbl">questions</span>
-              </span>
-              <span className="analytics-pill">
-                <span className="analytics-pill-val">{botStats ? `$${botStats.totalCost.toFixed(3)}` : '—'}</span>
-                <span className="analytics-pill-lbl">cost</span>
-              </span>
-              {botStats?.modelStats.slice(0, 2).map(m => (
-                <span key={m.model} className="analytics-pill">
-                  <span className="analytics-pill-val">{m.count}</span>
-                  <span className="analytics-pill-lbl">{shortModelName(m.model)}</span>
-                </span>
-              ))}
-            </div>
-            <span className="analytics-arrow">›</span>
-          </a>
-
           {/* Launcher grid */}
           <div className="launcher-grid">
             {LAUNCHERS.map(({ emoji, title, sub, href }) => (
@@ -281,7 +257,7 @@ const LAUNCHERS = [
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
   { emoji: '🎓', title: 'Students',     sub: 'Student records (coming soon)',            href: '/admin/students'     },
   { emoji: '💡', title: 'Improvements', sub: 'Suggestion clusters · approve prompt rules', href: '/admin/improvements' },
-  { emoji: '📊', title: 'Analytics',    sub: 'API usage · question log · AI analysis',    href: '/admin/analytics'    },
+  { emoji: '📊', title: 'API Usage',     sub: 'Cost · token usage · question log',          href: '/admin/analytics'    },
   { emoji: '🤖', title: 'Bot Analytics', sub: 'Questions · suggestions · Opus chat', href: '/admin/bot-analytics' },
 ];
 
