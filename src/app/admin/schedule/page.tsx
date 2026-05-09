@@ -2032,7 +2032,7 @@ export default function SchedulePage() {
         collisionDetection={pointerWithin}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        autoScroll={false}
+        autoScroll={{ layoutShiftCompensation: false, threshold: { x: 0, y: 0.15 } }}
       >
         {/* Mobile: always show only the active day — drag within same day only */}
         <div className="mobile-day">
