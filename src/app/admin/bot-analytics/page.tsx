@@ -156,6 +156,7 @@ export default function BotAnalytics() {
   const [batches, setBatches]       = useState<{ batchId: string; clusters: Cluster[] }[]>([]);
   const [rates, setRates]           = useState<{ topic: string; rate: number; sugs: number; qs: number }[]>([]);
   const [trend, setTrend]           = useState<{ date: string; count: number }[]>([]);
+  const [pendingSugs, setPendingSugs] = useState<{ key: string; suggestion: string; date: string; basedOn: number }[]>([]);
   const [days, setDays]             = useState(7);
   const [loading, setLoading]       = useState(true);
   const [qTab, setQTab]             = useState<'flagged' | 'all'>('flagged');
@@ -179,11 +180,13 @@ export default function BotAnalytics() {
       fetch(`/api/admin/cockpit/questions?days=${days}`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/synthesis-batches`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/error-rates?days=${days}`, { headers: auth }).then(r => r.json()),
-    ]).then(([qd, bd, rd]) => {
+      fetch(`/api/admin/cockpit/pending-suggestions`, { headers: auth }).then(r => r.json()).catch(() => ({ suggestions: [] })),
+    ]).then(([qd, bd, rd, sd]) => {
       setQuestions(computeFlags(qd.questions || []));
       setBatches(bd.batches || []);
       setRates(rd.rates || []);
       setTrend(rd.trend || []);
+      setPendingSugs(sd.suggestions || []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [days, pw]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -448,6 +451,49 @@ export default function BotAnalytics() {
                   </div>
                 );
               })}
+
+              {/* Suggested Rules from daily verification */}
+              {pendingSugs.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13, color: '#475569' }}>💡 Suggested Rules ({pendingSugs.length})</div>
+                  {pendingSugs.map(s => (
+                    <div key={s.key} style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, padding: '10px 14px', marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, color: '#92400e', marginBottom: 4 }}>
+                        Based on {s.basedOn} flagged answer{s.basedOn !== 1 ? 's' : ''} · {s.date}
+                      </div>
+                      <div style={{ fontSize: 13, lineHeight: 1.5, color: '#1e293b', marginBottom: 8, fontStyle: 'italic' }}>"{s.suggestion}"</div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button onClick={async () => {
+                          if (!confirm(`Apply this rule?\n\n${s.suggestion}`)) return;
+                          await fetch('/api/admin/cockpit/append-rule', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                            body: JSON.stringify({ rule: s.suggestion, theme: 'daily-verification', sourceContext: JSON.stringify(s) }),
+                          });
+                          await fetch('/api/admin/cockpit/dismiss-suggestion', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                            body: JSON.stringify({ key: s.key }),
+                          });
+                          setPendingSugs(prev => prev.filter(x => x.key !== s.key));
+                        }} style={{ fontSize: 12, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600 }}>
+                          ✅ Apply
+                        </button>
+                        <button onClick={() => { selectCluster({ theme: 'Suggested rule', proposed_rule: s.suggestion, confidence: 'medium', affects_topics: [], suggestion_ids: [] }); }} style={{ fontSize: 12, background: '#1e3a5f', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600 }}>
+                          ✦ Discuss
+                        </button>
+                        <button onClick={async () => {
+                          await fetch('/api/admin/cockpit/dismiss-suggestion', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                            body: JSON.stringify({ key: s.key }),
+                          });
+                          setPendingSugs(prev => prev.filter(x => x.key !== s.key));
+                        }} style={{ fontSize: 12, background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#64748b' }}>
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Clusters */}
               {totalClusters > 0 && (
