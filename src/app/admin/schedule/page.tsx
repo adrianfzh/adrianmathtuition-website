@@ -6,7 +6,7 @@ import {
   DndContext, DragOverlay,
   useSensor, useSensors,
   PointerSensor, TouchSensor,
-  closestCenter,
+  closestCenter, pointerWithin,
   useDraggable, useDroppable,
 } from '@dnd-kit/core';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
@@ -2016,7 +2016,19 @@ export default function SchedulePage() {
   function renderLessonsView() {
     const overlayStyle = activeDragLesson ? getTypeStyle(activeDragLesson.type, activeDragLesson.status) : null;
     return (
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} autoScroll={false}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={args => {
+          // pointerWithin only hits droppables the pointer is actually inside —
+          // display:none desktop slots have zero rect and are correctly ignored.
+          // Fall back to closestCenter for desktop (pointer between rows).
+          const pw = pointerWithin(args);
+          return pw.length > 0 ? pw : closestCenter(args);
+        }}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        autoScroll={false}
+      >
         {/* Mobile: always show only the active day — drag within same day only */}
         <div className="mobile-day">
           <div className="day-col">
