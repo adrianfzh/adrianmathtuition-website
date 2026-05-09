@@ -9,6 +9,7 @@ import {
   closestCenter,
   useDraggable, useDroppable,
 } from '@dnd-kit/core';
+import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -1169,7 +1170,7 @@ export default function SchedulePage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 0, tolerance: 3 } })
+    useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 8 } })
   );
 
   // Derive monday as a stable ISO string so the fetch effect only fires on week change,
@@ -2054,7 +2055,7 @@ export default function SchedulePage() {
           })}
         </div>
         </div>
-        <DragOverlay style={{ zIndex: 9999 }}>
+        <DragOverlay modifiers={[snapCenterToCursor]} style={{ zIndex: 9999 }}>
           {activeDragLesson && overlayStyle && (
             <div className="lesson-chip" style={{
               background: overlayStyle.bg, color: overlayStyle.text, borderColor: overlayStyle.border,
