@@ -1087,6 +1087,17 @@ export default function SchedulePage() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  // Track actual viewport width so desktop grid is only mounted on desktop.
+  // This prevents display:none desktop droppables from polluting dnd-kit
+  // collision detection on mobile.
+  const [isMobileView, setIsMobileView] = useState(true);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    setIsMobileView(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobileView(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const [activeDate, setActiveDate] = useState<Date>(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d;
@@ -2018,13 +2029,7 @@ export default function SchedulePage() {
     return (
       <DndContext
         sensors={sensors}
-        collisionDetection={args => {
-          // pointerWithin only hits droppables the pointer is actually inside —
-          // display:none desktop slots have zero rect and are correctly ignored.
-          // Fall back to closestCenter for desktop (pointer between rows).
-          const pw = pointerWithin(args);
-          return pw.length > 0 ? pw : closestCenter(args);
-        }}
+        collisionDetection={pointerWithin}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         autoScroll={false}
@@ -2036,7 +2041,8 @@ export default function SchedulePage() {
             {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && <div className="no-slots">No lessons</div>}
           </div>
         </div>
-        {/* Desktop: full grid */}
+        {/* Desktop: full grid — only mounted on desktop to avoid ghost droppables on mobile */}
+        {!isMobileView && (
         <div ref={desktopScrollRef} className="desktop-grid-scroll">
         <div className="desktop-grid">
           {DAYS.map((day, i) => {
@@ -2057,6 +2063,7 @@ export default function SchedulePage() {
           })}
         </div>
         </div>
+        )}
         <DragOverlay modifiers={[snapCenterToCursor]} style={{ zIndex: 9999 }}>
           {activeDragLesson && overlayStyle && (
             <div className="lesson-chip" style={{
