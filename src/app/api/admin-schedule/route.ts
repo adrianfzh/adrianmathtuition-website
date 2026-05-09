@@ -69,14 +69,18 @@ export async function GET(req: NextRequest) {
 
   // Fetch dates for the new (rescheduled-to) lessons, if any
   let rescheduledDatesById: Record<string, string> = {};
+  let rescheduledSlotById: Record<string, string> = {};
   if (rescheduledNewIds.length) {
     const formula = `OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
     const newLessons = await fetchAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Date`
+      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Date&fields[]=Slot`
     );
     rescheduledDatesById = Object.fromEntries(
       newLessons.map((r: any) => [r.id, r.fields['Date'] ?? ''])
+    );
+    rescheduledSlotById = Object.fromEntries(
+      newLessons.map((r: any) => [r.id, r.fields['Slot']?.[0] ?? ''])
     );
   }
 
@@ -195,6 +199,12 @@ export async function GET(req: NextRequest) {
       status: r.fields['Status'] || '',
       notes: filteredNote,
       rescheduledToDate: rescheduledNewId ? (rescheduledDatesById[rescheduledNewId] ?? '') : '',
+      rescheduledToSlotTime: (() => {
+        const sid = rescheduledNewId ? (rescheduledSlotById[rescheduledNewId] ?? '') : '';
+        if (!sid) return '';
+        const slot = slots.find((s: any) => s.id === sid);
+        return slot?.time ?? '';
+      })(),
       progressLogged: r.fields['Progress Logged'] === true,
     };
   });

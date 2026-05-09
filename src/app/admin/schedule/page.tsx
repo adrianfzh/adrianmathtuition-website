@@ -34,6 +34,7 @@ interface Lesson {
   status: string;
   notes: string;
   rescheduledToDate?: string;
+  rescheduledToSlotTime?: string;
   progressLogged?: boolean;
 }
 
@@ -985,7 +986,9 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
         {/* Faded status sub-lines */}
         {isRescheduledAway && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.55, marginTop: 2 }}>
-            {lesson.rescheduledToDate ? `→ ${formatExamDate(lesson.rescheduledToDate)}` : 'rescheduled'}
+            {lesson.rescheduledToDate
+              ? `→ ${formatExamDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}`
+              : 'rescheduled'}
           </span>
         )}
         {lesson.status === 'Absent' && (
