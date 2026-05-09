@@ -900,7 +900,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
             onClick={onStudentClick ? e => { e.stopPropagation(); onStudentClick(); } : undefined}
             style={{
               ...(onStudentClick ? { cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 } : {}),
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+              flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
             }}
           >{lesson.studentName}</span>
           {/* Inline exam date badge — shows topic dropdown if topics are recorded */}
@@ -1151,7 +1151,7 @@ export default function SchedulePage() {
     if (!data) return [];
     return data.lessons.map(lesson => {
       const student = lesson.studentId ? data.students[lesson.studentId] : null;
-      const studentName = student?.name || (lesson.type === 'Trial' ? getTrialName(lesson.notes) : 'Unknown');
+      const studentName = student?.name || (lesson.type === 'Trial' ? getTrialName(lesson.notes) : lesson.type === 'Rescheduled' ? '(no student)' : 'Unknown');
       const examDate = lesson.studentId ? (data.examsByStudent?.[lesson.studentId] ?? null) : null;
       const examTopics = lesson.studentId ? (data.examTopicsByStudent?.[lesson.studentId] ?? null) : null;
       return { ...lesson, studentName, examDate, examTopics };
