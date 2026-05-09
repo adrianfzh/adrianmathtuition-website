@@ -946,8 +946,39 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
             </span>
           )}
         </div>
-        {/* Type label on its own line so it never crowds the student name */}
-        {lesson.type !== 'Regular' && !isFaded && (
+        {/* Line 2 (web only): type-tag + small attendance buttons on the same row */}
+        {!isTouch && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 2, flexWrap: 'wrap' }}>
+            {lesson.type !== 'Regular' && !isFaded && (
+              <span className="type-tag">{lesson.type}</span>
+            )}
+            {!isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && lesson.status === 'Scheduled' && (
+              <>
+                {onMarkAbsent && (
+                  <button onClick={e => { e.stopPropagation(); onMarkAbsent(); }} title="Mark absent"
+                    style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✗</button>
+                )}
+                {onMarkPresent && (
+                  <button onClick={e => { e.stopPropagation(); onMarkPresent(); }} title="Mark present"
+                    style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✓</button>
+                )}
+              </>
+            )}
+            {!isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (lesson.status === 'Completed' || lesson.status === 'Absent') && (
+              <>
+                {onUndo && (
+                  <button onClick={e => { e.stopPropagation(); onUndo(); }} title="Undo"
+                    style={{ fontSize: 10, fontWeight: 600, color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '1px 5px', cursor: 'pointer', flexShrink: 0, lineHeight: 1 }}>undo</button>
+                )}
+                <span style={{ fontSize: 10, fontWeight: 600, flexShrink: 0, color: lesson.status === 'Completed' ? '#16a34a' : '#ef4444' }}>
+                  {lesson.status}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+        {/* Mobile only: type-tag on its own line */}
+        {isTouch && lesson.type !== 'Regular' && !isFaded && (
           <span className="type-tag" style={{ display: 'inline-block', marginTop: 1 }}>{lesson.type}</span>
         )}
         {/* Faded status sub-lines */}
@@ -966,8 +997,8 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
         )}
       </div>
-      {/* Attendance controls — right-aligned, flex-shrink:0 so name truncates instead of wrapping */}
-      {!isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (
+      {/* Attendance controls — mobile only (web uses line-2 inside content div) */}
+      {isTouch && !isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (
         <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
           {lesson.status === 'Scheduled' && (
             <>
