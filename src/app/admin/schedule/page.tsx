@@ -945,8 +945,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
               )}
             </span>
           )}
-          {lesson.type !== 'Regular' && !isFaded && <span className="type-tag" style={{ flexShrink: 0 }}>{lesson.type}</span>}
         </div>
+        {/* Type label on its own line so it never crowds the student name */}
+        {lesson.type !== 'Regular' && !isFaded && (
+          <span className="type-tag" style={{ display: 'inline-block', marginTop: 1 }}>{lesson.type}</span>
+        )}
         {/* Faded status sub-lines */}
         {isRescheduledAway && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.55, marginTop: 2 }}>
