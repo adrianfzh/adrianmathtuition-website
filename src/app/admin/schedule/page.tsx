@@ -2421,11 +2421,15 @@ export default function SchedulePage() {
                             {displaySlots.map(s => {
                               const mkCap = s.makeupCapacity ?? s.capacity ?? 0;
                               // Count existing non-cancelled lessons in this slot for the target date
-                              // Makeup capacity = total slot limit (regular + makeup combined).
-                              const existingLessons = rescheduleModal.toDate
+                              // Regular students = enrolledCount from Airtable (always accurate).
+                              // Non-regular extras = lesson records for that date (makeup/rescheduled/additional).
+                              // Makeup capacity = total limit (regular + extras combined).
+                              const regularCount = s.enrolledCount ?? 0;
+                              const extraCount = rescheduleModal.toDate
                                 ? (enrichedLessonMap[`${rescheduleModal.toDate}__${s.id}`] ?? [])
-                                    .filter(l => l.status !== 'Cancelled' && l.status !== 'Absent').length
+                                    .filter(l => l.status !== 'Cancelled' && l.status !== 'Absent' && l.type !== 'Regular').length
                                 : 0;
+                              const existingLessons = regularCount + extraCount;
                               const isFull = mkCap > 0 && existingLessons >= mkCap;
                               const spotsLeft = mkCap > 0 ? mkCap - existingLessons : null;
                               const availStr = mkCap > 0
