@@ -163,6 +163,7 @@ export default function BotAnalytics() {
   const [selected, setSelected]     = useState<Question | null>(null);
   const [opusOpen, setOpusOpen]     = useState(false);
   const [responseView, setResponseView] = useState<'raw' | 'telegram' | 'web'>('telegram');
+  const [imgRotation, setImgRotation] = useState(0);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput]   = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -196,6 +197,7 @@ export default function BotAnalytics() {
     setOpusOpen(false);
     setChatMessages([]);
     setChatInput('');
+    setImgRotation(0);
   }
 
   function selectCluster(c: Cluster) {
@@ -549,17 +551,42 @@ export default function BotAnalytics() {
 
                   {/* Question */}
                   <div style={{ marginBottom: 12 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Question</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      Question
+                      {selected.imageUrl && (
+                        <button onClick={() => setImgRotation(r => (r + 90) % 360)}
+                          title="Rotate image"
+                          style={{ fontSize: 12, background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 4, padding: '1px 7px', cursor: 'pointer', color: '#475569', fontWeight: 500 }}>
+                          ↻ Rotate
+                        </button>
+                      )}
+                    </div>
                     {selected.imageUrl && (
-                      <img
-                        src={selected.imageUrl}
-                        alt="Student question"
-                        style={{ display: 'block', maxWidth: '100%', maxHeight: 320, borderRadius: 8, marginBottom: 6, border: '1px solid #e2e8f0', objectFit: 'contain', background: '#fff' }}
-                      />
+                      <div style={{ display: 'flex', justifyContent: 'center', background: '#f8fafc', borderRadius: 8, marginBottom: 6, border: '1px solid #e2e8f0', overflow: 'hidden', minHeight: 60 }}>
+                        <img
+                          src={selected.imageUrl}
+                          alt="Student question"
+                          style={{
+                            maxWidth: imgRotation % 180 === 0 ? '100%' : 320,
+                            maxHeight: imgRotation % 180 === 0 ? 320 : '100%',
+                            objectFit: 'contain',
+                            transform: `rotate(${imgRotation}deg)`,
+                            transition: 'transform 0.25s ease',
+                            display: 'block',
+                          }}
+                        />
+                      </div>
                     )}
                     {selected.caption && (
-                      <div style={{ fontSize: 13, lineHeight: 1.6, background: '#f8fafc', borderRadius: 8, padding: '10px 12px' }}>
-                        {selected.caption}
+                      <div>
+                        <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>
+                          {selected.imageUrl
+                            ? '📝 OCR-extracted text (what the bot reads from the image — student just sent the photo)'
+                            : '📝 Student\'s typed question'}
+                        </div>
+                        <div style={{ fontSize: 13, lineHeight: 1.6, background: '#f8fafc', borderRadius: 8, padding: '10px 12px' }}>
+                          <WebMathRenderer text={selected.caption} />
+                        </div>
                       </div>
                     )}
                     {!selected.caption && !selected.imageUrl && (
