@@ -2428,8 +2428,14 @@ export default function SchedulePage() {
                               const slotLessons = rescheduleModal.toDate
                                 ? (enrichedLessonMap[`${rescheduleModal.toDate}__${s.id}`] ?? [])
                                 : [];
+                              // Count only students actually attending:
+                              // exclude Cancelled, Absent, and Rescheduled-away (Status='Rescheduled')
                               const existingLessons = slotLessons.length > 0
-                                ? slotLessons.filter(l => l.status !== 'Cancelled' && l.status !== 'Absent').length
+                                ? slotLessons.filter(l =>
+                                    l.status !== 'Cancelled' &&
+                                    l.status !== 'Absent' &&
+                                    l.status !== 'Rescheduled'
+                                  ).length
                                 : (s.enrolledCount ?? 0);
                               const isFull = mkCap > 0 && existingLessons >= mkCap;
                               const spotsLeft = mkCap > 0 ? mkCap - existingLessons : null;
