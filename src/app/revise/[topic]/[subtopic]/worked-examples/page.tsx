@@ -1,16 +1,9 @@
 import { notFound } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
 import SwipeApp from './SwipeApp';
 import { topicSlug } from '@/lib/topic-slug';
+import { getSupabase } from '@/lib/supabase';
 
 const VALID_LEVELS = ['am', 'em', 'jc', 's1', 's2'];
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-}
 
 async function findCanonicalTopic(level: string, slug: string): Promise<string | null> {
   const supa = getSupabase();
