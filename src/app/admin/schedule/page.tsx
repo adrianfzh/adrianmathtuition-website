@@ -2016,23 +2016,13 @@ export default function SchedulePage() {
   function renderLessonsView() {
     const overlayStyle = activeDragLesson ? getTypeStyle(activeDragLesson.type, activeDragLesson.status) : null;
     return (
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} autoScroll={{ layoutShiftCompensation: false }}>
-        {/* Mobile: single day, expands to full week during drag for cross-day drop */}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} autoScroll={false}>
+        {/* Mobile: always show only the active day — drag within same day only */}
         <div className="mobile-day">
-          {activeDragLesson ? (
-            DAYS.map((day, i) => (
-              <div key={day} className="day-col">
-                <div className="mobile-drag-day-label">{DAY_SHORT[i]} {weekDates[i].getDate()}</div>
-                {(slotsByDay[day] ?? []).map(slot => renderLessonsSlotCard(slot, weekDates[i]))}
-                {(slotsByDay[day] ?? []).length === 0 && <div className="no-slots">No slots</div>}
-              </div>
-            ))
-          ) : (
-            <div className="day-col">
-              {(slotsByDay[dayNameOf(activeDate)] ?? []).map(slot => renderLessonsSlotCard(slot, activeDate))}
-              {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && <div className="no-slots">No lessons</div>}
-            </div>
-          )}
+          <div className="day-col">
+            {(slotsByDay[dayNameOf(activeDate)] ?? []).map(slot => renderLessonsSlotCard(slot, activeDate))}
+            {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && <div className="no-slots">No lessons</div>}
+          </div>
         </div>
         {/* Desktop: full grid */}
         <div ref={desktopScrollRef} className="desktop-grid-scroll">
