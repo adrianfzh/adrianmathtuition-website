@@ -334,7 +334,23 @@ export default function BotAnalytics() {
   }
 
   function ResponseViewer({ aiResponse }: { aiResponse: string }) {
-    const telegramText = toTelegramText(aiResponse);
+    const [telegramText, setTelegramText] = React.useState<string | null>(null);
+    const [telegramLoading, setTelegramLoading] = React.useState(false);
+
+    React.useEffect(() => {
+      if (responseView !== 'telegram' || !aiResponse) return;
+      if (telegramText !== null) return; // already fetched
+      setTelegramLoading(true);
+      fetch('/api/admin/cockpit/format-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...auth },
+        body: JSON.stringify({ text: aiResponse }),
+      }).then(r => r.json()).then(d => {
+        setTelegramText(d.formatted ?? aiResponse);
+      }).catch(() => setTelegramText(toTelegramText(aiResponse))) // fallback to approximation
+        .finally(() => setTelegramLoading(false));
+    }, [responseView, aiResponse]); // eslint-disable-line react-hooks/exhaustive-deps
+
     return (
       <div>
         {/* View toggle */}
@@ -353,7 +369,7 @@ export default function BotAnalytics() {
         {responseView === 'telegram' && (
           <div style={{ fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#f0fdf4', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto', fontFamily: 'system-ui, sans-serif' }}>
             <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it in Telegram (Unicode math, no LaTeX rendering)</div>
-            {telegramText}
+            {telegramLoading ? <span style={{ color: '#94a3b8' }}>Rendering…</span> : (telegramText ?? '')}
           </div>
         )}
 
