@@ -577,7 +577,7 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
                       onKeyDown={onInputKeyDown}
                       placeholder="Type your question…"
                       rows={1}
-                      style={{ flex: 1, resize: 'none', border: 0, borderRadius: 14, padding: '6px 10px', fontSize: 14, lineHeight: 1.3, background: 'rgba(255,255,255,0.22)', color: '#FFF', outline: 'none', minWidth: 0, maxHeight: 40, overflowY: 'hidden', touchAction: 'pan-y' }}
+                      style={{ flex: 1, resize: 'none', border: 0, borderRadius: 14, padding: '6px 10px', fontSize: 16, lineHeight: 1.3, background: 'rgba(255,255,255,0.22)', color: '#FFF', outline: 'none', minWidth: 0, maxHeight: 40, overflowY: 'hidden', touchAction: 'pan-y' }}
                       onInput={e => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 40) + 'px'; }}
                     />
                     <style>{`::placeholder { color: rgba(255,255,255,0.65); }`}</style>
