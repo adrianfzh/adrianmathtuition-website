@@ -60,7 +60,7 @@ function CardMarkdown({ content, bodyStyle }: { content: string; bodyStyle?: Rea
     <div style={bodyStyle}>
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[[rehypeKatex, { strict: false }]]}
         components={{
           p: ({ node: _n, ...props }) => (
             <p style={{ margin: '0 0 12px 0', lineHeight: 1.65 }} {...props} />
@@ -169,6 +169,19 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
   const goNext = useCallback(() => goTo(index + 1, 1), [goTo, index]);
   const goPrev = useCallback(() => goTo(index - 1, -1), [goTo, index]);
 
+  // Problem 3: block pull-to-refresh on mobile browsers while this view is mounted
+  useEffect(() => {
+    const html = document.documentElement;
+    const prevHtml = html.style.overscrollBehaviorY;
+    const prevBody = document.body.style.overscrollBehaviorY;
+    html.style.overscrollBehaviorY = 'none';
+    document.body.style.overscrollBehaviorY = 'none';
+    return () => {
+      html.style.overscrollBehaviorY = prevHtml;
+      document.body.style.overscrollBehaviorY = prevBody;
+    };
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp') { e.preventDefault(); goNext(); }
@@ -199,7 +212,7 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
       {/* Fixed full-screen container — body scroll disabled by overflow:hidden */}
       <div
         className="md:hidden fixed inset-0 flex flex-col"
-        style={{ background: '#F5EFE2', overflow: 'hidden', touchAction: 'none', userSelect: 'none' }}
+        style={{ background: '#F5EFE2', overflow: 'hidden', touchAction: 'none', userSelect: 'none', overscrollBehavior: 'none' }}
       >
         {/* Header */}
         <div
