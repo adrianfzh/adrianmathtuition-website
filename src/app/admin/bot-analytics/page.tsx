@@ -434,8 +434,14 @@ export default function BotAnalytics() {
                         {q.timestamp ? new Date(q.timestamp).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'}) : ''}
                       </span>
                     </div>
-                    {q.caption && <div style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.caption}</div>}
-                    {q.aiResponse && <div style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>→ {q.aiResponse.slice(0,100)}</div>}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                      {q.imageUrl && <img src={q.imageUrl} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0, border: '1px solid #e2e8f0' }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {q.caption && <div style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.caption}</div>}
+                        {!q.caption && q.imageUrl && <div style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>📷 image question</div>}
+                        {q.aiResponse && <div style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>→ {q.aiResponse.slice(0,100)}</div>}
+                      </div>
+                    </div>
                     {flagBadge(q)}
                   </div>
                 );
@@ -544,9 +550,21 @@ export default function BotAnalytics() {
                   {/* Question */}
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Question</div>
-                    <div style={{ fontSize: 13, lineHeight: 1.6, background: '#f8fafc', borderRadius: 8, padding: '10px 12px' }}>
-                      {selected.caption || '(image question — no text caption)'}
-                    </div>
+                    {selected.imageUrl && (
+                      <img
+                        src={selected.imageUrl}
+                        alt="Student question"
+                        style={{ display: 'block', maxWidth: '100%', maxHeight: 320, borderRadius: 8, marginBottom: 6, border: '1px solid #e2e8f0', objectFit: 'contain', background: '#fff' }}
+                      />
+                    )}
+                    {selected.caption && (
+                      <div style={{ fontSize: 13, lineHeight: 1.6, background: '#f8fafc', borderRadius: 8, padding: '10px 12px' }}>
+                        {selected.caption}
+                      </div>
+                    )}
+                    {!selected.caption && !selected.imageUrl && (
+                      <div style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>(no question recorded)</div>
+                    )}
                   </div>
 
                   {/* Bot answer — with view toggle */}
