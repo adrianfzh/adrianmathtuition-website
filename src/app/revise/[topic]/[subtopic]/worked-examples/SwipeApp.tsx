@@ -456,7 +456,7 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
         </AnimatePresence>
 
         {/* Bottom bar: scrollable dots + morphing Ask pill/input bar */}
-        <div className="flex-none" style={{ height: 56, borderTop: '1px solid rgba(0,0,0,0.07)', position: 'relative' }}>
+        <div className="flex-none" style={{ height: 62, borderTop: '1px solid rgba(0,0,0,0.07)', position: 'relative' }}>
           {/* Nav row — fades out when chat is open */}
           <motion.div
             className="absolute inset-0 flex items-center pl-1 pr-0 gap-1"
@@ -505,8 +505,8 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
               <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
             </button>
 
-            {/* Spacer matching pill width so dots don't crowd it */}
-            <div style={{ width: 108, flexShrink: 0 }} />
+            {/* Spacer: pill width (100) + right margin (12) + chevron-to-pill gap (16) */}
+            <div style={{ width: 128, flexShrink: 0 }} />
           </motion.div>
 
           {/* Problem 5: Morphing orange pill ↔ input bar */}
@@ -517,9 +517,9 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
               style={{
                 position: 'absolute',
                 ...(chatOpen
-                  ? { left: 8, right: 8, top: 8, bottom: 8 }
-                  : { right: 12, top: 9, bottom: 9, width: 100 }),
-                borderRadius: 22,
+                  ? { left: 8, right: 8, top: 7, bottom: 7 }
+                  : { right: 12, top: 7, bottom: 7, width: 100 }),
+                borderRadius: 24,
                 background: '#E67E22',
                 display: 'flex',
                 alignItems: 'center',
@@ -540,7 +540,7 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
                 transition={{ repeat: Infinity, repeatDelay: 5.2, duration: 0.45, ease: 'easeInOut', times: [0, 0.25, 0.4, 0.55, 0.75, 0.88, 1] }}
                 style={{ fontSize: 19, lineHeight: 1, flexShrink: 0, display: 'flex', alignItems: 'center' }}
               >
-                🦉
+                🤖
               </motion.span>
 
               {/* Pill mode: "Ask" label */}
