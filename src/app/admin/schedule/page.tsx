@@ -2408,9 +2408,11 @@ export default function SchedulePage() {
                             {displaySlots.map(s => {
                               const mkCap = s.makeupCapacity ?? s.capacity ?? 0;
                               // Count existing non-cancelled lessons in this slot for the target date
+                              // Only count non-Regular lessons against makeup capacity.
+                              // Regular enrolled students don't consume makeup slots.
                               const existingLessons = rescheduleModal.toDate
                                 ? (enrichedLessonMap[`${rescheduleModal.toDate}__${s.id}`] ?? [])
-                                    .filter(l => l.status !== 'Cancelled' && l.status !== 'Absent').length
+                                    .filter(l => l.status !== 'Cancelled' && l.status !== 'Absent' && l.type !== 'Regular').length
                                 : 0;
                               const isFull = mkCap > 0 && existingLessons >= mkCap;
                               const spotsLeft = mkCap > 0 ? mkCap - existingLessons : null;

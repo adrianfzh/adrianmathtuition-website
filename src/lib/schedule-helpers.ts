@@ -35,9 +35,11 @@ export function formatDateSlotLabel(
 
 // NOTE: ARRAYJOIN({Slot}) returns slot display names, not record IDs.
 // Filter by Date + Status only in Airtable, then match slotId in JS.
+// Only non-Regular lessons count against makeup capacity — regular enrolled
+// students are already accounted for by the normal capacity.
 export async function countLessonsInSlot(slotId: string, date: string): Promise<number> {
   const formula = encodeURIComponent(
-    `AND({Date}='${date}',{Status}!='Cancelled',{Status}!='Absent')`
+    `AND({Date}='${date}',{Status}!='Cancelled',{Status}!='Absent',{Type}!='Regular')`
   );
   const data = await airtableRequestAll('Lessons', `?filterByFormula=${formula}&fields[]=Slot`);
   return data.records.filter((r: any) => r.fields['Slot']?.[0] === slotId).length;
