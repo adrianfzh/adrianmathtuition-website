@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { AnimatePresence, LayoutGroup, motion, type PanInfo } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -169,6 +169,9 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
   const stripRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [inputValue, setInputValue] = useState('');
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const dotStripRef = useRef<HTMLDivElement>(null);
+  const activeDotRef = useRef<HTMLButtonElement>(null);
 
   const total = cards.length;
   const card = cards[index];
@@ -201,6 +204,11 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
     }
   }, [chatMessages]);
 
+  // Auto-centre active dot (Problem 7)
+  useEffect(() => {
+    activeDotRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [index]);
+
   const goTo = useCallback(
     (newIndex: number, dir: 1 | -1) => {
       if (newIndex < 0 || newIndex >= total) return;
@@ -232,6 +240,7 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
   }
 
   function openChat() {
+    setHasInteracted(true);
     setChatOpen(true);
     setTimeout(() => inputRef.current?.focus(), 200);
   }
@@ -446,70 +455,154 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
           )}
         </AnimatePresence>
 
-        {/* Bottom bar: progress nav OR chat input */}
-        <div className="flex-none" style={{ height: 56, borderTop: '1px solid rgba(0,0,0,0.07)' }}>
-          {!chatOpen ? (
-              /* Normal bottom nav with progress dots + Ask pill */
-              <div className="flex items-center justify-center gap-3 px-4 h-full">
-                <button onClick={goPrev} disabled={index === 0} className="p-1.5 rounded-full transition-opacity disabled:opacity-20" style={{ color: '#999' }} aria-label="Previous card">
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" /></svg>
-                </button>
-                <div className="flex items-center gap-1.5 flex-1 justify-center">
-                  {cards.map((_, i) => {
-                    const dist = Math.abs(i - index);
-                    if (dist > 4) return null;
-                    return <button key={i} onClick={() => goTo(i, i > index ? 1 : -1)} aria-label={`Go to card ${i + 1}`} className="rounded-full flex-none transition-all duration-200" style={{ width: i === index ? 20 : dist === 1 ? 7 : 5, height: i === index ? 6 : dist === 1 ? 7 : 5, background: i === index ? '#2980B9' : '#C8B89A' }} />;
-                  })}
-                </div>
-                <button onClick={goNext} disabled={index === total - 1} className="p-1.5 rounded-full transition-opacity disabled:opacity-20" style={{ color: '#999' }} aria-label="Next card">
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-                </button>
-                {/* Ask pill button */}
-                <motion.button
-                  onClick={openChat}
-                  initial={{ scale: 0.85, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 1.5, type: 'spring', stiffness: 300, damping: 20 }}
-                  whileTap={{ scale: 0.93 }}
-                  aria-label="Ask the tutor"
-                  style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#E67E22', color: '#FFF', borderRadius: 22, padding: '7px 14px', fontSize: 15, fontWeight: 700, boxShadow: '0 3px 10px rgba(0,0,0,0.18)', flexShrink: 0 }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" /></svg>
-                  Ask
-                </motion.button>
-              </div>
-            ) : (
-              /* Chat input bar */
-              <div
-                className="flex items-center gap-2 px-3 h-full"
-                style={{ background: '#FAFAF8' }}
-                onPointerDown={e => e.stopPropagation()}
+        {/* Bottom bar: scrollable dots + morphing Ask pill/input bar */}
+        <div className="flex-none" style={{ height: 56, borderTop: '1px solid rgba(0,0,0,0.07)', position: 'relative' }}>
+          {/* Nav row — fades out when chat is open */}
+          <motion.div
+            className="absolute inset-0 flex items-center pl-1 pr-0 gap-1"
+            animate={{ opacity: chatOpen ? 0 : 1 }}
+            transition={{ duration: 0.07 }}
+            style={{ pointerEvents: chatOpen ? 'none' : 'auto' }}
+          >
+            <button onClick={goPrev} disabled={index === 0} className="p-1.5 rounded-full transition-opacity disabled:opacity-20 flex-none" style={{ color: '#999' }} aria-label="Previous card">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" /></svg>
+            </button>
+
+            {/* Problem 7: scrollable dot strip with sub-group separators */}
+            <div
+              ref={dotStripRef}
+              className="flex-1"
+              style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none', padding: '0 4px', gap: 0 }}
+            >
+              <style>{`.dot-strip::-webkit-scrollbar { display: none }`}</style>
+              {cards.map((c, i) => {
+                const isSgBreak = i > 0 && cards[i - 1].subgroup_id !== c.subgroup_id;
+                return (
+                  <Fragment key={i}>
+                    {isSgBreak && (
+                      <div style={{ width: 1, height: 14, background: 'rgba(0,0,0,0.13)', flexShrink: 0, margin: '0 3px' }} />
+                    )}
+                    <button
+                      ref={i === index ? activeDotRef : null}
+                      onClick={() => goTo(i, i > index ? 1 : -1)}
+                      aria-label={`Card ${i + 1}`}
+                      style={{ padding: '10px 4px', background: 'transparent', border: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', scrollSnapAlign: 'center', cursor: 'pointer' }}
+                    >
+                      <div style={{
+                        width: i === index ? 12 : 8,
+                        height: i === index ? 12 : 8,
+                        borderRadius: '50%',
+                        background: i === index ? '#E67E22' : 'rgba(0,0,0,0.2)',
+                        transition: 'width 0.18s, height 0.18s, background 0.18s',
+                      }} />
+                    </button>
+                  </Fragment>
+                );
+              })}
+            </div>
+
+            <button onClick={goNext} disabled={index === total - 1} className="p-1.5 rounded-full transition-opacity disabled:opacity-20 flex-none" style={{ color: '#999' }} aria-label="Next card">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+            </button>
+
+            {/* Spacer matching pill width so dots don't crowd it */}
+            <div style={{ width: 108, flexShrink: 0 }} />
+          </motion.div>
+
+          {/* Problem 5: Morphing orange pill ↔ input bar */}
+          <LayoutGroup>
+            <motion.div
+              layout
+              transition={{ layout: { type: 'spring', stiffness: chatOpen ? 400 : 520, damping: chatOpen ? 35 : 38, mass: 0.55 } }}
+              style={{
+                position: 'absolute',
+                ...(chatOpen
+                  ? { left: 8, right: 8, top: 8, bottom: 8 }
+                  : { right: 12, top: 9, bottom: 9, width: 100 }),
+                borderRadius: 22,
+                background: '#E67E22',
+                display: 'flex',
+                alignItems: 'center',
+                padding: chatOpen ? '0 8px' : '0 10px',
+                gap: chatOpen ? 4 : 6,
+                boxShadow: '0 4px 14px rgba(230,126,34,0.35)',
+                willChange: 'transform, width',
+                overflow: 'hidden',
+                cursor: chatOpen ? 'default' : 'pointer',
+              }}
+              onClick={!chatOpen ? openChat : undefined}
+              onPointerDown={e => e.stopPropagation()}
+              aria-label={chatOpen ? undefined : 'Ask the tutor'}
+            >
+              {/* Owl — always visible as anchor */}
+              <motion.span
+                animate={!hasInteracted ? { rotate: [0, 0, 0, -3, 3, 0, 0] } : { rotate: 0 }}
+                transition={{ repeat: Infinity, repeatDelay: 5.2, duration: 0.45, ease: 'easeInOut', times: [0, 0.25, 0.4, 0.55, 0.75, 0.88, 1] }}
+                style={{ fontSize: 19, lineHeight: 1, flexShrink: 0, display: 'flex', alignItems: 'center' }}
               >
-                <button onClick={closeChat} style={{ color: '#AAA', flexShrink: 0, padding: 4 }} aria-label="Close chat">
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-                </button>
-                <textarea
-                  ref={inputRef}
-                  value={inputValue}
-                  onChange={e => setInputValue(e.target.value)}
-                  onKeyDown={onInputKeyDown}
-                  placeholder="Ask about this question…"
-                  rows={1}
-                  style={{ flex: 1, resize: 'none', border: '1px solid #E8E0D5', borderRadius: 10, padding: '7px 10px', fontSize: 15, lineHeight: 1.3, background: '#FFF', color: '#2C2C2C', outline: 'none', maxHeight: 44, overflowY: 'hidden', touchAction: 'pan-y' }}
-                  onInput={e => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 44) + 'px'; }}
-                />
-                <button
-                  onClick={sendMessage}
-                  disabled={!inputValue.trim() || isStreaming}
-                  style={{ width: 36, height: 36, borderRadius: '50%', background: !inputValue.trim() || isStreaming ? '#D0C8BE' : '#E67E22', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}
-                  aria-label="Send"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
-                  </svg>
-                </button>
-              </div>
-            )}
+                🦉
+              </motion.span>
+
+              {/* Pill mode: "Ask" label */}
+              <AnimatePresence>
+                {!chatOpen && (
+                  <motion.span
+                    key="ask-label"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.06 }}
+                    style={{ color: '#FFF', fontWeight: 700, fontSize: 15, flexShrink: 0, letterSpacing: 0.2 }}
+                  >
+                    Ask
+                  </motion.span>
+                )}
+              </AnimatePresence>
+
+              {/* Bar mode: input + send + close */}
+              <AnimatePresence>
+                {chatOpen && (
+                  <motion.div
+                    key="bar-content"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.06, delay: 0.07 }}
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}
+                  >
+                    <textarea
+                      ref={inputRef}
+                      value={inputValue}
+                      onChange={e => setInputValue(e.target.value)}
+                      onKeyDown={onInputKeyDown}
+                      placeholder="Type your question…"
+                      rows={1}
+                      style={{ flex: 1, resize: 'none', border: 0, borderRadius: 14, padding: '6px 10px', fontSize: 14, lineHeight: 1.3, background: 'rgba(255,255,255,0.22)', color: '#FFF', outline: 'none', minWidth: 0, maxHeight: 40, overflowY: 'hidden', touchAction: 'pan-y' }}
+                      onInput={e => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 40) + 'px'; }}
+                    />
+                    <style>{`::placeholder { color: rgba(255,255,255,0.65); }`}</style>
+                    <button
+                      onClick={sendMessage}
+                      disabled={!inputValue.trim() || isStreaming}
+                      style={{ width: 32, height: 32, borderRadius: '50%', background: !inputValue.trim() || isStreaming ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.35)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.12s' }}
+                      aria-label="Send"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={closeChat}
+                      style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                      aria-label="Close chat"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </LayoutGroup>
         </div>
       </div>
     </>
