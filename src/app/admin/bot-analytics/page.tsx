@@ -334,10 +334,10 @@ export default function BotAnalytics() {
   }
 
   function ResponseViewer({ aiResponse }: { aiResponse: string }) {
-    const [telegramText, setTelegramText] = React.useState<string | null>(null);
-    const [telegramLoading, setTelegramLoading] = React.useState(false);
+    const [telegramText, setTelegramText] = useState<string | null>(null);
+    const [telegramLoading, setTelegramLoading] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
       if (responseView !== 'telegram' || !aiResponse) return;
       if (telegramText !== null) return; // already fetched
       setTelegramLoading(true);
