@@ -166,7 +166,7 @@ export default function BotAnalytics() {
     mq.addEventListener('change', h);
     return () => mq.removeEventListener('change', h);
   }, []);
-  const [days, setDays]             = useState(7);
+  const [days, setDays]             = useState(1);
   const [loading, setLoading]       = useState(true);
   const [qTab, setQTab]             = useState<'flagged' | 'all'>('flagged');
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
@@ -406,7 +406,7 @@ export default function BotAnalytics() {
         <span style={{ fontWeight: 700, fontSize: 16 }}>Bot Analytics</span>
         <select value={days} onChange={e => setDays(parseInt(e.target.value))}
           style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 8px', fontSize: 13 }}>
-          {[2,7,14,30].map(d => <option key={d} value={d}>Last {d} day{d!==1?'s':''}</option>)}
+          {[{d:1,label:'Today'},{d:2,label:'Yesterday + today'},{d:3,label:'Last 3 days'},{d:7,label:'Last 7 days'}].map(({d,label}) => <option key={d} value={d}>{label}</option>)}
         </select>
         <button onClick={load} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 13 }}>↻ Refresh</button>
         <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>
@@ -485,8 +485,9 @@ export default function BotAnalytics() {
 
               {/* Suggested Rules from daily verification */}
               {pendingSugsError && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#b91c1c' }}>
-                  ⚠️ Could not load prompt rules — bot may still be deploying. Check again after bot restarts.
+                <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#b91c1c', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>⚠️ Prompt rules endpoint unavailable — bot may still be deploying</span>
+                  <button onClick={load} style={{ fontSize: 11, background: 'none', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', color: '#b91c1c', cursor: 'pointer' }}>Retry</button>
                 </div>
               )}
               {pendingSugs.length > 0 && (
