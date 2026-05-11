@@ -2428,28 +2428,37 @@ export default function SchedulePage() {
                             onChange={e => setRescheduleModal(m => m ? { ...m, toSlotId: e.target.value } : null)}>
                             <option value="">Select slot…</option>
                             {displaySlots.filter(s => {
-                              if (s.id === rescheduleModal.lesson.slotId) return false; // exclude current slot
+                              if (s.id === rescheduleModal.lesson.slotId) return false;
                               if (rescheduleModal.switchMode) {
-                                // Level filter: match Sec/JC based on student's level
+                                // Level filter
                                 const studentLvl = (rescheduleModal.lesson.studentLevel || '').toLowerCase();
                                 const slotLvl = (s.level || '').toLowerCase();
                                 const studentIsJC = studentLvl.startsWith('jc');
                                 const slotIsJC = slotLvl.includes('jc') || slotLvl.includes('junior');
-                                if (studentIsJC !== slotIsJC) return false;
+                                if (!showAllRescheduleSlots && studentIsJC !== slotIsJC) return false;
+                                // Capacity filter: hide full regular slots by default
+                                const regCap = s.capacity ?? 0;
+                                const enrolled = s.enrolledCount ?? 0;
+                                if (!showAllRescheduleSlots && regCap > 0 && enrolled >= regCap) return false;
                               }
                               return true;
                             }).map(s => {
+                              if (rescheduleModal.switchMode) {
+                                // Switch mode: show regular capacity (enrolled vs normal cap)
+                                const regCap = s.capacity ?? 0;
+                                const enrolled = s.enrolledCount ?? 0;
+                                const isFull = regCap > 0 && enrolled >= regCap;
+                                const availStr = regCap > 0
+                                  ? (isFull ? ` — FULL (${enrolled}/${regCap})` : ` — ${enrolled}/${regCap} enrolled`)
+                                  : '';
+                                const label = `${s.dayName} ${s.time} (${s.level})${availStr}`;
+                                return <option key={s.id} value={s.id} disabled={isFull && !showAllRescheduleSlots}>{label}</option>;
+                              }
+                              // Reschedule mode: show makeup capacity
                               const mkCap = s.makeupCapacity ?? s.capacity ?? 0;
-                              // Count existing non-cancelled lessons in this slot for the target date
-                              // If lesson records exist for this date, count them accurately
-                              // (accounts for absences, reschedules-away etc.).
-                              // If no lesson records yet (future date), fall back to
-                              // enrolledCount as an estimate.
                               const slotLessons = rescheduleModal.toDate
                                 ? (enrichedLessonMap[`${rescheduleModal.toDate}__${s.id}`] ?? [])
                                 : [];
-                              // Count only students actually attending:
-                              // exclude Cancelled, Absent, and Rescheduled-away (Status='Rescheduled')
                               const existingLessons = slotLessons.length > 0
                                 ? slotLessons.filter(l =>
                                     l.status !== 'Cancelled' &&
@@ -2458,7 +2467,6 @@ export default function SchedulePage() {
                                   ).length
                                 : (s.enrolledCount ?? 0);
                               const isFull = mkCap > 0 && existingLessons >= mkCap;
-                              const spotsLeft = mkCap > 0 ? mkCap - existingLessons : null;
                               const availStr = mkCap > 0
                                 ? (isFull ? ' — FULL' : ` — ${existingLessons}/${mkCap}`)
                                 : '';
@@ -2471,7 +2479,7 @@ export default function SchedulePage() {
                               onChange={e => { setShowAllRescheduleSlots(e.target.checked); setRescheduleModal(m => m ? { ...m, toSlotId: '' } : null); }} />
                             <label htmlFor="show-all-slots" style={{ fontSize: 12, color: '#64748b', cursor: 'pointer' }}>
                               {rescheduleModal.switchMode
-                                ? `Show all levels${hiddenCount > 0 && !showAllRescheduleSlots ? ` (${hiddenCount} hidden)` : ''}`
+                                ? 'Show full slots and other levels'
                                 : `Show all slots${hiddenCount > 0 && !showAllRescheduleSlots ? ` (${hiddenCount} on other days)` : ''}`}
                             </label>
                           </div>
