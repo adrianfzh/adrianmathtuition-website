@@ -97,12 +97,12 @@ export async function GET(req: NextRequest) {
     const formula = `OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`;
     const studentsData = await fetchAll(
       'Students',
-      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name`
+      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name&fields[]=Level`
     );
     studentsById = Object.fromEntries(
       studentsData.map((r: any) => [
         r.id,
-        { name: r.fields['Student Name'] || '' },
+        { name: r.fields['Student Name'] || '', level: r.fields['Level'] || '' },
       ])
     );
   }
