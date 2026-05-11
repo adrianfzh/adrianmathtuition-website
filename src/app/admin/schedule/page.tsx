@@ -1132,21 +1132,6 @@ export default function SchedulePage() {
   // knows whether to move the strip ('mount' | 'arrow') or leave it alone ('pill').
   const lastChangeSource = useRef<'mount' | 'arrow' | 'pill'>('mount');
 
-  const [examSeasonSaving, setExamSeasonSaving] = useState(false);
-
-  async function handleSetExamSeason(season: string | null) {
-    setExamSeasonSaving(true);
-    try {
-      await fetch('/api/admin/exam-season', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(season ? { forceOn: season } : {}),
-      });
-      // Reload schedule to pick up new active exam type
-      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
-    } catch { /* non-fatal */ } finally { setExamSeasonSaving(false); }
-  }
-
   const [viewMode, setViewMode] = useState<'lessons' | 'roster'>(() => {
     if (typeof window === 'undefined') return 'lessons';
     return (localStorage.getItem('schedule_view_mode') as 'lessons' | 'roster') || 'lessons';
@@ -1306,6 +1291,12 @@ export default function SchedulePage() {
 
   useEffect(() => {
     if (authed && savedPw.current) {
+      // Clear any manual exam season override so auto-detection takes over
+      fetch('/api/admin/exam-season', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      }).catch(() => {}); // non-fatal
       fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
     }
   }, [authed, mondayISO, fetchSchedule]);
@@ -2148,22 +2139,7 @@ export default function SchedulePage() {
           </button>
         </div>
         {/* Right side — Today pill lives here, always reserves space */}
-        <div className="view-tabs-side view-tabs-right" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {/* Exam season quick-select */}
-          {data?.activeExamType !== undefined && (
-            <select
-              value={data?.activeExamType ?? ''}
-              disabled={examSeasonSaving}
-              onChange={e => handleSetExamSeason(e.target.value || null)}
-              title="Active exam season (overrides auto-detect)"
-              style={{ fontSize: 11, padding: '3px 6px', borderRadius: 6, border: '1px solid #e2e8f0', background: data?.activeExamType ? '#fef3c7' : '#f1f5f9', color: data?.activeExamType ? '#92400e' : '#64748b', cursor: 'pointer', fontWeight: 600 }}
-            >
-              <option value="">No exam</option>
-              {(['WA1','WA2','WA3','EOY'] as const).map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          )}
+        <div className="view-tabs-side view-tabs-right">
           {viewMode === 'lessons' && (
             <button className="today-pill-btn" onClick={goToToday} title="Go to today">
               Today
