@@ -114,6 +114,41 @@ export function getTopicsForLevel(level: string): TopicCategory[] {
 // Used in the exam quick-add section of the lesson modal.
 // Separate from SECONDARY_TOPICS (which covers all lesson topics).
 
+/** Lower Secondary (Sec 1–2) E Math topics — excludes Sec 3/4 content */
+export const SEC12_EXAM_TOPICS: TopicCategory[] = [
+  {
+    label: 'Numbers & Algebra',
+    topics: [
+      'Numbers & Operations',
+      'Ratio, Rate & Percentage',
+      'Algebraic Manipulation',
+      'Equations & Inequalities',
+      'Functions & Graphs (Linear)',
+    ],
+  },
+  {
+    label: 'Geometry & Measurement',
+    topics: [
+      'Angles & Triangles',
+      'Quadrilaterals & Polygons',
+      'Congruence & Similarity',
+      "Pythagoras' Theorem",
+      'Mensuration (Perimeter & Area)',
+      'Mensuration (Volume & Surface Area)',
+      'Transformations',
+      'Coordinate Geometry',
+    ],
+  },
+  {
+    label: 'Statistics & Probability',
+    topics: [
+      'Statistics (Data Representation)',
+      'Mean, Median, Mode',
+      'Probability (Basic)',
+    ],
+  },
+];
+
 /** O-Level E Math topics by category */
 export const E_MATH_EXAM_TOPICS: TopicCategory[] = [
   {
@@ -201,10 +236,11 @@ export function getExamTopicsForSubject(studentLevel: string, subject: string): 
   const l = studentLevel.toLowerCase();
   if (l.startsWith('jc')) return JC_TOPICS;
   if (l.startsWith('sec')) {
+    // Sec 1/2: lower secondary topic set (no quadratics, trig, std dev etc.)
+    const secNum = parseInt(l.replace(/[^0-9]/g, '')) || 0;
+    if (secNum <= 2) return SEC12_EXAM_TOPICS;
     if (subject === 'A Math') return A_MATH_EXAM_TOPICS;
-    // E Math, empty, or unrecognised → E Math topics.
-    // All secondary students do at least E Math, and S1/S2 students won't
-    // have a Subjects field set, so this is the safe default.
+    // Sec 3–5 E Math (or unset subject)
     return E_MATH_EXAM_TOPICS;
   }
   return JC_TOPICS; // JC fallback
