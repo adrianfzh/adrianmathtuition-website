@@ -154,6 +154,7 @@ const LAUNCHERS = [
   { emoji: '✏️', title: 'Progress',  sub: "Log today's lesson outcomes",          href: '/admin/progress'  },
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
   { emoji: '🎓', title: 'Students',     sub: 'Student records (coming soon)',            href: '/admin/students'     },
+  { emoji: '📋', title: 'Attendance',   sub: 'Search student · lesson history',           href: '/admin/attendance'   },
   { emoji: '💡', title: 'Improvements', sub: 'Suggestion clusters · approve prompt rules', href: '/admin/improvements' },
   { emoji: '📊', title: 'API Usage',     sub: 'Cost · token usage · question log',          href: '/admin/analytics'    },
   { emoji: '🤖', title: 'Bot Analytics', sub: 'Questions · suggestions · Opus chat', href: '/admin/bot-analytics' },
