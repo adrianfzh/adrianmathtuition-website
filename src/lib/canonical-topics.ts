@@ -1,247 +1,336 @@
 // Canonical topic lists for Singapore secondary and JC mathematics.
-// Used in the lesson input modal for quick multi-select.
+// Source: canonical_topics.json — exact topic names used in the question bank.
+// Used in lesson input modal (quick multi-select) and exam section (topics tested).
 
 export interface TopicCategory {
   label: string;
   topics: string[];
 }
 
-export const SECONDARY_TOPICS: TopicCategory[] = [
+// ─── Sec 1 (23 topics) ────────────────────────────────────────────────────────
+export const S1_EXAM_TOPICS: TopicCategory[] = [
   {
-    label: 'Numbers & Algebra',
+    label: 'Algebra',
     topics: [
-      'Numbers & Operations',
-      'Ratio, Rate & Percentage',
-      'Algebraic Manipulation',
-      'Equations & Inequalities',
-      'Functions & Graphs (Linear)',
-      'Quadratic Equations',
-      'Quadratic Functions & Graphs',
-      'Indices & Surds',
-      'Polynomials & Partial Fractions',
-      'Exponential & Log Functions',
-      'Binomial Theorem',
+      'Algebra (Expansion)',
+      'Algebra (Expressions)',
+      'Algebra (Factorization)',
+      'Algebra (Fractions)',
+      'Algebra (Linear Equations)',
     ],
   },
   {
-    label: 'Geometry & Trigonometry',
+    label: 'Numbers',
     topics: [
-      'Coordinate Geometry',
-      'Angles & Triangles',
-      'Quadrilaterals & Polygons',
-      'Circles (Angle Properties)',
-      'Congruence & Similarity',
+      'Numbers (Estimation)',
+      'Numbers (HCF and LCM)',
+      'Numbers (Percentages)',
+      'Numbers (Prime Factorization)',
+      'Numbers (Rate)',
+      'Numbers (Ratio)',
+      'Numbers (Speed)',
+    ],
+  },
+  {
+    label: 'Geometry & Measurement',
+    topics: [
+      'Angles',
+      'Coordinate Geometry (Lines)',
+      'Geometrical Constructions',
+      'Mensuration',
+      'Polygons',
+      'Symmetry',
+    ],
+  },
+  {
+    label: 'Other',
+    topics: [
+      'Financial Math (Exchange Rate)',
+      'Financial Math (Interest)',
+      'Math In Real World Context',
+      'Number Patterns',
+      'Statistics',
+    ],
+  },
+];
+
+// ─── Sec 2 own topics (25 topics) ─────────────────────────────────────────────
+export const S2_OWN_TOPICS: TopicCategory[] = [
+  {
+    label: 'Algebra',
+    topics: [
+      'Algebra (Expansion)',
+      'Algebra (Expressions)',
+      'Algebra (Factorization)',
+      'Algebra (Fractions)',
+      'Algebra (Graph on Graph Paper)',
+      'Algebra (Identities)',
+      'Algebra (Inequalities)',
+      'Algebra (Quadratic Equations)',
+      'Algebra (Quadratic Graphs)',
+      'Algebra (Simultaneous Equations)',
+      'Algebra (Subject of Formula)',
+    ],
+  },
+  {
+    label: 'Geometry & Measurement',
+    topics: [
+      'Angles',
+      'Congruency and Similarity',
+      'Coordinate Geometry (Lines)',
+      'Map Scales',
+      'Mensuration',
       'Pythagoras\' Theorem',
-      'Trigonometry (Basic SOHCAHTOA)',
-      'Further Trigonometry (Sine/Cosine Rule)',
-      'Mensuration (Perimeter & Area)',
-      'Mensuration (Volume & Surface Area)',
-      'Vectors',
-      'Transformations',
+    ],
+  },
+  {
+    label: 'Numbers',
+    topics: [
+      'Indices',
+      'Indices (Standard Form)',
+      'Numbers (Estimation)',
+      'Numbers (Percentages)',
+      'Proportion',
     ],
   },
   {
     label: 'Statistics & Probability',
     topics: [
-      'Statistics (Data Representation)',
-      'Mean, Median, Mode',
-      'Standard Deviation',
-      'Probability (Basic)',
-      'Permutations & Combinations',
+      'Probability',
+      'Statistics',
+      'Trigonometry',
     ],
   },
 ];
 
+// S2 exam = S2 own topics + S1 topics (cumulative)
+export const S2_EXAM_TOPICS: TopicCategory[] = [
+  ...S2_OWN_TOPICS,
+  ...S1_EXAM_TOPICS.map(c => ({ ...c, label: `[S1] ${c.label}` })),
+];
+
+// ─── O-Level E Math (44 topics) ───────────────────────────────────────────────
+export const EM_OWN_TOPICS: TopicCategory[] = [
+  {
+    label: 'Algebra',
+    topics: [
+      'Algebra (Expansion)',
+      'Algebra (Expressions)',
+      'Algebra (Factorization)',
+      'Algebra (Fractions)',
+      'Algebra (Graph on Graph Paper)',
+      'Algebra (Identities)',
+      'Algebra (Inequalities)',
+      'Algebra (Linear Equations)',
+      'Algebra (Quadratic Equations)',
+      'Algebra (Quadratic Graphs)',
+      'Algebra (Simultaneous Equations)',
+      'Algebra (Subject of Formula)',
+    ],
+  },
+  {
+    label: 'Numbers',
+    topics: [
+      'Indices',
+      'Indices (Standard Form)',
+      'Numbers (Estimation)',
+      'Numbers (HCF and LCM)',
+      'Numbers (Percentages)',
+      'Numbers (Prime Factorization)',
+      'Numbers (Rate)',
+      'Numbers (Ratio)',
+      'Numbers (Speed)',
+      'Proportion',
+    ],
+  },
+  {
+    label: 'Geometry & Trigonometry',
+    topics: [
+      'Angles',
+      'Circle Properties',
+      'Circular Measure',
+      'Congruency and Similarity',
+      'Coordinate Geometry',
+      'Distance and Speed Time Graphs',
+      'Geometrical Constructions',
+      'Graphs of Functions',
+      'Map Scales',
+      'Mensuration',
+      'Polygons',
+      'Trigonometry',
+      'Vectors',
+    ],
+  },
+  {
+    label: 'Other',
+    topics: [
+      'Financial Math (Hire Purchase)',
+      'Financial Math (Interest)',
+      'Financial Math (Taxation)',
+      'Math In Real World Context',
+      'Matrices',
+      'Number Patterns',
+      'Sets',
+    ],
+  },
+  {
+    label: 'Statistics & Probability',
+    topics: [
+      'Probability',
+      'Statistics',
+    ],
+  },
+];
+
+// EM exam = EM own + S2 own + S1 topics (cumulative)
+export const E_MATH_EXAM_TOPICS: TopicCategory[] = [
+  ...EM_OWN_TOPICS,
+  ...S2_OWN_TOPICS.map(c => ({ ...c, label: `[S2] ${c.label}` })),
+  ...S1_EXAM_TOPICS.map(c => ({ ...c, label: `[S1] ${c.label}` })),
+];
+
+// ─── O-Level A Math (33 topics) ───────────────────────────────────────────────
+export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
+  {
+    label: 'Algebra & Functions',
+    topics: [
+      'Binomial Theorem',
+      'Indices',
+      'Linear Law',
+      'Logarithms',
+      'Modulus Functions',
+      'Nature of Roots',
+      'Partial Fractions',
+      'Polynomials',
+      'Power Graphs',
+      'Quadratic Functions',
+      'Quadratic Inequalities',
+      'Simultaneous Equations',
+      'Surds',
+    ],
+  },
+  {
+    label: 'Geometry',
+    topics: [
+      'Circles',
+      'Coordinate Geometry',
+      'Plane Geometry',
+      'Proof',
+    ],
+  },
+  {
+    label: 'Trigonometry',
+    topics: [
+      'Trigonometry (Applications)',
+      'Trigonometry (Equations)',
+      'Trigonometry (Graphs)',
+      'Trigonometry (Identities)',
+      'Trigonometry (R-Formula)',
+      'Trigonometry (Ratios)',
+    ],
+  },
+  {
+    label: 'Calculus',
+    topics: [
+      'Differentiation (Increasing and Decreasing Functions)',
+      'Differentiation (Maximum and Minimum)',
+      'Differentiation (Rates of Change)',
+      'Differentiation (Tangents and Normals)',
+      'Differentiation (Techniques)',
+      'Integration (Applications)',
+      'Integration (Area)',
+      'Integration (Definite Integrals)',
+      'Integration (Techniques)',
+      'Kinematics',
+    ],
+  },
+];
+
+// ─── JC H2 Mathematics (30 topics) ───────────────────────────────────────────
 export const JC_TOPICS: TopicCategory[] = [
   {
     label: 'Pure Mathematics',
     topics: [
-      'Functions (Inverse & Composite)',
-      'Graphs & Transformations',
-      'Inequalities',
-      'Sequences & Series (AP/GP)',
-      'Method of Differences',
-      'Differentiation (Rules)',
-      'Further Differentiation (Implicit/Parametric)',
-      'Applications of Differentiation',
-      'Maclaurin\'s Series',
-      'Integration (Standard & Definite)',
-      'Integration (By Parts & Substitution)',
-      'Integration (Partial Fractions)',
-      'Applications of Integration',
-      'Differential Equations',
-      'Vectors (2D)',
-      'Vectors (3D: Lines & Planes)',
+      'APGP',
+      'Binomial Expansion',
       'Complex Numbers',
+      'Differentiation (Concavity)',
+      'Differentiation (Maclaurin Series)',
+      'Differentiation (Maximum and Minimum)',
+      'Differentiation (Rates of Change)',
+      'Differentiation (Tangents and Normals)',
+      'Differentiation (Techniques)',
+      'Equations',
+      'Functions',
+      'Graphing Techniques',
+      'Inequalities',
+      'Integration (Area and Volume)',
+      'Integration (Differential Equations)',
+      'Integration (Techniques)',
+      'Mathematical Induction',
+      'Parametric Equations',
+      'Series and Sequences',
+      'Vectors',
     ],
   },
   {
     label: 'Statistics',
     topics: [
-      'Permutations & Combinations',
-      'Probability',
-      'Discrete Random Variables',
-      'Binomial Distribution',
-      'Normal Distribution',
-      'Sampling & Estimation',
+      'Distributions (Binomial)',
+      'Distributions (DRV)',
+      'Distributions (Normal)',
+      'Distributions (Poisson)',
+      'Distributions (Sampling)',
       'Hypothesis Testing',
-      'Correlation & Linear Regression',
+      'Linear Regression',
+      'Permutations and Combinations',
+      'Probability',
+      'Sampling Methods',
     ],
   },
 ];
 
-// Flat topic arrays for quick lookup
-export const SECONDARY_FLAT: string[] = SECONDARY_TOPICS.flatMap(c => c.topics);
-export const JC_FLAT: string[] = JC_TOPICS.flatMap(c => c.topics);
-export const ALL_TOPICS_FLAT: string[] = [...SECONDARY_FLAT, ...JC_FLAT];
+// ─── Legacy flat arrays (used for topic chip lookups) ─────────────────────────
+const _s1Flat = S1_EXAM_TOPICS.flatMap(c => c.topics);
+const _s2Flat = S2_OWN_TOPICS.flatMap(c => c.topics);
+const _emFlat = EM_OWN_TOPICS.flatMap(c => c.topics);
+const _amFlat = A_MATH_EXAM_TOPICS.flatMap(c => c.topics);
+const _jcFlat = JC_TOPICS.flatMap(c => c.topics);
 
-/** Returns the canonical topic list (with categories) for a given student level string.
- *  Handles full Airtable level strings like "JC1", "JC2", "Sec1"–"Sec5" as well as
- *  the legacy bare strings "jc", "secondary", "sec".
- */
+export const SECONDARY_FLAT: string[] = [...new Set([..._s1Flat, ..._s2Flat, ..._emFlat, ..._amFlat])];
+export const JC_FLAT: string[] = _jcFlat;
+export const ALL_TOPICS_FLAT: string[] = [...new Set([...SECONDARY_FLAT, ...JC_FLAT])];
+
+// Keep SEC12_EXAM_TOPICS as alias for backwards compat (used in lesson topic useMemo)
+export const SEC12_EXAM_TOPICS = S2_EXAM_TOPICS;
+
+// Legacy SECONDARY_TOPICS — kept for getTopicsForLevel fallback
+export const SECONDARY_TOPICS = E_MATH_EXAM_TOPICS;
+
+/** Returns canonical lesson topics for a given student level. */
 export function getTopicsForLevel(level: string): TopicCategory[] {
   const l = level.toLowerCase();
   if (l.startsWith('jc')) return JC_TOPICS;
   if (l.startsWith('sec')) return SECONDARY_TOPICS;
-  // Mixed or unknown: show both
   return [
     ...SECONDARY_TOPICS.map(c => ({ ...c, label: `[Sec] ${c.label}` })),
     ...JC_TOPICS.map(c => ({ ...c, label: `[JC] ${c.label}` })),
   ];
 }
 
-// ─── Subject-specific exam topic lists ────────────────────────────────────────
-// Used in the exam quick-add section of the lesson modal.
-// Separate from SECONDARY_TOPICS (which covers all lesson topics).
-
-/** Lower Secondary (Sec 1–2) E Math topics — excludes Sec 3/4 content */
-export const SEC12_EXAM_TOPICS: TopicCategory[] = [
-  {
-    label: 'Numbers & Algebra',
-    topics: [
-      'Numbers & Operations',
-      'Ratio, Rate & Percentage',
-      'Algebraic Manipulation',
-      'Equations & Inequalities',
-      'Functions & Graphs (Linear)',
-    ],
-  },
-  {
-    label: 'Geometry & Measurement',
-    topics: [
-      'Angles & Triangles',
-      'Quadrilaterals & Polygons',
-      'Congruence & Similarity',
-      "Pythagoras' Theorem",
-      'Mensuration (Perimeter & Area)',
-      'Mensuration (Volume & Surface Area)',
-      'Transformations',
-      'Coordinate Geometry',
-    ],
-  },
-  {
-    label: 'Statistics & Probability',
-    topics: [
-      'Statistics (Data Representation)',
-      'Mean, Median, Mode',
-      'Probability (Basic)',
-    ],
-  },
-];
-
-/** O-Level E Math topics by category */
-export const E_MATH_EXAM_TOPICS: TopicCategory[] = [
-  {
-    label: 'Numbers & Algebra',
-    topics: [
-      'Numbers & Operations',
-      'Ratio, Rate & Percentage',
-      'Algebraic Manipulation',
-      'Equations & Inequalities',
-      'Functions & Graphs (Linear)',
-      'Quadratic Equations',
-      'Quadratic Functions & Graphs',
-    ],
-  },
-  {
-    label: 'Geometry & Trigonometry',
-    topics: [
-      'Coordinate Geometry',
-      'Angles & Triangles',
-      'Quadrilaterals & Polygons',
-      'Circles (Angle Properties)',
-      'Congruence & Similarity',
-      "Pythagoras' Theorem",
-      'Trigonometry (Basic SOHCAHTOA)',
-      'Further Trigonometry (Sine/Cosine Rule)',
-      'Mensuration (Perimeter & Area)',
-      'Mensuration (Volume & Surface Area)',
-      'Transformations',
-    ],
-  },
-  {
-    label: 'Statistics & Probability',
-    topics: [
-      'Statistics (Data Representation)',
-      'Mean, Median, Mode',
-      'Standard Deviation',
-      'Probability (Basic)',
-    ],
-  },
-];
-
-/** O-Level A Math topics by category */
-export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
-  {
-    label: 'Algebra',
-    topics: [
-      'Indices & Surds',
-      'Polynomials & Partial Fractions',
-      'Exponential & Log Functions',
-      'Binomial Theorem',
-    ],
-  },
-  {
-    label: 'Geometry & Trigonometry',
-    topics: [
-      'Coordinate Geometry',
-      'Further Trigonometry (Sine/Cosine Rule)',
-      'Trigonometric Identities & Equations',
-      'Proofs in Plane Geometry',
-      'Vectors',
-    ],
-  },
-  {
-    label: 'Calculus',
-    topics: [
-      'Differentiation',
-      'Applications of Differentiation',
-      'Integration',
-      'Applications of Integration',
-    ],
-  },
-  {
-    label: 'Statistics',
-    topics: [
-      'Permutations & Combinations',
-    ],
-  },
-];
-
 /**
  * Returns the exam topic list appropriate for a given level + subject.
- * Used in the LessonModal exam section (topics tested) only.
+ * Cascading: S2 includes S1; EM includes S2+S1.
  */
 export function getExamTopicsForSubject(studentLevel: string, subject: string): TopicCategory[] {
   const l = studentLevel.toLowerCase();
   if (l.startsWith('jc')) return JC_TOPICS;
   if (l.startsWith('sec')) {
-    // Sec 1/2: lower secondary topic set (no quadratics, trig, std dev etc.)
     const secNum = parseInt(l.replace(/[^0-9]/g, '')) || 0;
-    if (secNum <= 2) return SEC12_EXAM_TOPICS;
+    if (secNum <= 1) return S1_EXAM_TOPICS;
+    if (secNum === 2) return S2_EXAM_TOPICS;           // S2 + S1
     if (subject === 'A Math') return A_MATH_EXAM_TOPICS;
-    // Sec 3–5 E Math (or unset subject)
-    return E_MATH_EXAM_TOPICS;
+    return E_MATH_EXAM_TOPICS;                         // EM + S2 + S1
   }
-  return JC_TOPICS; // JC fallback
+  return JC_TOPICS;
 }

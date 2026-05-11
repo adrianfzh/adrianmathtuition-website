@@ -1656,18 +1656,32 @@ export default function SchedulePage() {
     if (!toDate) { setModalError(rescheduleModal.switchMode ? 'Select a start date' : 'Select a date'); return; }
     setSubmitting(true); setModalError('');
     try {
-      const res = await fetch('/api/admin-schedule/reschedule', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, notify }),
-      });
-      const json = await res.json();
-      if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
-      if (!res.ok) throw new Error(json.error || 'Failed');
-      setRescheduleModal(null);
-      await fetchSchedule(monday, savedPw.current);
-      const sent = json.notificationsSent?.student || json.notificationsSent?.parent;
-      showToast('success', notify ? (sent ? '✓ Rescheduled — notifications sent' : '✓ Rescheduled (notifications partial)') : '✓ Rescheduled');
+      if (rescheduleModal.switchMode) {
+        // Permanent slot switch: cancel future lessons, create new ones, update enrollment
+        const res = await fetch('/api/admin-schedule/switch', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId: lesson.id, newSlotId: toSlotId, switchDate: toDate }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Switch failed');
+        setRescheduleModal(null);
+        await fetchSchedule(monday, savedPw.current);
+        showToast('success', `✓ Switched to ${json.newSlotName} from ${json.switchDate} — ${json.cancelled} lessons cancelled, ${json.created} created`);
+      } else {
+        const res = await fetch('/api/admin-schedule/reschedule', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, notify }),
+        });
+        const json = await res.json();
+        if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
+        if (!res.ok) throw new Error(json.error || 'Failed');
+        setRescheduleModal(null);
+        await fetchSchedule(monday, savedPw.current);
+        const sent = json.notificationsSent?.student || json.notificationsSent?.parent;
+        showToast('success', notify ? (sent ? '✓ Rescheduled — notifications sent' : '✓ Rescheduled (notifications partial)') : '✓ Rescheduled');
+      }
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
   }
