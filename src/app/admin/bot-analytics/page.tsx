@@ -157,6 +157,15 @@ export default function BotAnalytics() {
   const [rates, setRates]           = useState<{ topic: string; rate: number; sugs: number; qs: number }[]>([]);
   const [trend, setTrend]           = useState<{ date: string; count: number }[]>([]);
   const [pendingSugs, setPendingSugs] = useState<{ key: string; suggestion: string; date: string; basedOn: number }[]>([]);
+  const [pendingSugsError, setPendingSugsError] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    setIsMobile(mq.matches);
+    const h = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', h);
+    return () => mq.removeEventListener('change', h);
+  }, []);
   const [days, setDays]             = useState(7);
   const [loading, setLoading]       = useState(true);
   const [qTab, setQTab]             = useState<'flagged' | 'all'>('flagged');
@@ -180,7 +189,7 @@ export default function BotAnalytics() {
       fetch(`/api/admin/cockpit/questions?days=${days}`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/synthesis-batches`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/error-rates?days=${days}`, { headers: auth }).then(r => r.json()),
-      fetch(`/api/admin/cockpit/pending-suggestions`, { headers: auth }).then(r => r.json()).catch(() => ({ suggestions: [] })),
+      fetch(`/api/admin/cockpit/pending-suggestions`, { headers: auth }).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
     ]).then(([qd, bd, rd, sd]) => {
       setQuestions(computeFlags(qd.questions || []));
       setBatches(bd.batches || []);
@@ -410,8 +419,14 @@ export default function BotAnalytics() {
       {!loading && (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
-          {/* LEFT: questions + clusters + error rates */}
-          <div style={{ width: '45%', overflowY: 'auto', background: '#f8fafc', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+          {/* LEFT: questions + clusters + error rates — hidden on mobile when detail is open */}
+          <div style={{
+            width: isMobile ? '100%' : '45%',
+            display: isMobile && (selected || opusOpen) ? 'none' : 'flex',
+            overflowY: 'auto', background: '#f8fafc',
+            borderRight: isMobile ? 'none' : '1px solid #e2e8f0',
+            flexDirection: 'column',
+          }}>
 
             {/* Questions section */}
             <div style={{ padding: '12px 16px 0' }}>
@@ -455,12 +470,12 @@ export default function BotAnalytics() {
                         {q.timestamp ? new Date(q.timestamp).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'}) : ''}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-                      {q.imageUrl && <img src={q.imageUrl} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 4, flexShrink: 0, border: '1px solid #e2e8f0' }} />}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      {q.imageUrl && <img src={q.imageUrl} alt="" style={{ width: isMobile ? 52 : 36, height: isMobile ? 52 : 36, objectFit: 'cover', borderRadius: 6, flexShrink: 0, border: '1px solid #e2e8f0' }} />}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        {q.caption && <div style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.caption}</div>}
+                        {q.caption && <div style={{ fontSize: isMobile ? 14 : 13, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: isMobile ? 2 : 1, WebkitBoxOrient: 'vertical' as const }}>{q.caption}</div>}
                         {!q.caption && q.imageUrl && <div style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>📷 image question</div>}
-                        {q.aiResponse && <div style={{ fontSize: 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 }}>→ {q.aiResponse.slice(0,100)}</div>}
+                        {q.aiResponse && <div style={{ fontSize: isMobile ? 12 : 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 3 }}>→ {q.aiResponse.slice(0, 100)}</div>}
                       </div>
                     </div>
                     {flagBadge(q)}
@@ -469,6 +484,11 @@ export default function BotAnalytics() {
               })}
 
               {/* Suggested Rules from daily verification */}
+              {pendingSugsError && (
+                <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#b91c1c' }}>
+                  ⚠️ Could not load prompt rules — bot may still be deploying. Check again after bot restarts.
+                </div>
+              )}
               {pendingSugs.length > 0 && (
                 <div style={{ marginTop: 16 }}>
                   <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13, color: '#475569' }}>💡 Suggested Rules ({pendingSugs.length})</div>
@@ -562,8 +582,19 @@ export default function BotAnalytics() {
             </div>
           </div>
 
-          {/* RIGHT: Q&A detail + Opus chat */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#fff', overflow: 'hidden' }}>
+          {/* RIGHT: Q&A detail + Opus chat — full width on mobile when open */}
+          <div style={{
+            flex: 1, display: isMobile && !selected && !opusOpen ? 'none' : 'flex',
+            flexDirection: 'column', background: '#fff', overflow: 'hidden',
+            width: isMobile ? '100%' : undefined,
+          }}>
+            {/* Mobile back button */}
+            {isMobile && (selected || opusOpen) && (
+              <button onClick={() => { setSelected(null); setOpusOpen(false); setChatMessages([]); }}
+                style={{ padding: '10px 16px', background: '#f8fafc', border: 'none', borderBottom: '1px solid #e2e8f0', textAlign: 'left', fontSize: 14, color: '#1e3a5f', fontWeight: 600, cursor: 'pointer' }}>
+                ← Back to questions
+              </button>
+            )}
 
             {/* No selection state */}
             {!selected && !opusOpen && (
