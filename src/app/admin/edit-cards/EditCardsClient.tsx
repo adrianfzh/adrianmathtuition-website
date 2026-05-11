@@ -3,21 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  TouchSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
+  DndContext, DragEndEvent, DragOverlay, DragStartEvent,
+  PointerSensor, TouchSensor, closestCenter, useSensor, useSensors,
 } from '@dnd-kit/core';
 import {
-  SortableContext,
-  arrayMove,
-  useSortable,
-  verticalListSortingStrategy,
+  SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
@@ -36,14 +26,9 @@ interface CardRow {
   card_title: string;
   is_published: boolean;
   source_kb_entry_id: string | null;
+  content: string;
   content_length: number;
   updated_at: string;
-}
-
-interface CardFull extends CardRow {
-  content: string;
-  level: string;
-  topic: string;
 }
 
 interface Subgroup {
@@ -60,9 +45,7 @@ const LEVELS = ['AM', 'EM', 'JC', 'S1', 'S2'];
 // ── KaTeX ─────────────────────────────────────────────────────────────────────
 
 const katexOptions = {
-  strict: false,
-  trust: true,
-  throwOnError: false,
+  strict: false, trust: true, throwOnError: false,
   output: 'htmlAndMathml' as const,
   macros: { '\\tfrac': '\\frac' },
 };
@@ -73,7 +56,7 @@ function fixMathFences(src: string): string {
     .replace(/([^\n\s])\$\$/g, (_, c: string) => `${c}\n$$`);
 }
 
-// ── Cookie helpers ─────────────────────────────────────────────────────────────
+// ── Cookie helper ─────────────────────────────────────────────────────────────
 
 function getCookie(name: string): string {
   if (typeof document === 'undefined') return '';
@@ -86,8 +69,7 @@ function getCookie(name: string): string {
 interface DiffLine { type: 'same' | 'add' | 'remove'; text: string }
 
 function computeDiff(original: string, updated: string): DiffLine[] {
-  const a = original.split('\n');
-  const b = updated.split('\n');
+  const a = original.split('\n'), b = updated.split('\n');
   const m = a.length, n = b.length;
   const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
   for (let i = m - 1; i >= 0; i--)
@@ -118,38 +100,15 @@ const QUICK_ACTIONS = [
 
 // ── Sortable card row ──────────────────────────────────────────────────────────
 
-function SortableCardRow({
-  card,
-  isSelected,
-  onSelect,
-}: {
-  card: CardRow;
-  isSelected: boolean;
-  onSelect: (id: string) => void;
-}) {
+function SortableCardRow({ card, isSelected, onSelect }: { card: CardRow; isSelected: boolean; onSelect: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.35 : 1, touchAction: 'none' as const };
-
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      onClick={() => onSelect(card.id)}
-      className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${
-        isSelected
-          ? 'bg-blue-50 border-blue-300'
-          : 'bg-white border-slate-200 hover:bg-slate-50'
-      }`}
+      ref={setNodeRef} style={style} onClick={() => onSelect(card.id)}
+      className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
     >
-      <span
-        {...attributes}
-        {...listeners}
-        onClick={(e) => e.stopPropagation()}
-        className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0"
-        title="Drag to reorder"
-      >
-        ⠿
-      </span>
+      <span {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0" title="Drag to reorder">⠿</span>
       <span className="text-slate-400 text-xs w-4 shrink-0">{card.order_index}.</span>
       <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
       <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${card.is_published ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-500'}`}>
@@ -170,9 +129,7 @@ function DragCardOverlay({ card }: { card: CardRow }) {
 
 // ── New card modal ─────────────────────────────────────────────────────────────
 
-function NewCardModal({
-  subgroups, level, topic, onClose, onCreated, auth,
-}: {
+function NewCardModal({ subgroups, level, topic, onClose, onCreated, auth }: {
   subgroups: Subgroup[]; level: string; topic: string;
   onClose: () => void; onCreated: (id: string) => void; auth: string;
 }) {
@@ -193,10 +150,7 @@ function NewCardModal({
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Failed');
       onCreated(json.id);
-    } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed');
-      setCreating(false);
-    }
+    } catch (e: unknown) { setErr(e instanceof Error ? e.message : 'Failed'); setCreating(false); }
   }
 
   return (
@@ -225,7 +179,7 @@ function NewCardModal({
   );
 }
 
-// ── Delete confirmation modal ─────────────────────────────────────────────────
+// ── Delete modal ──────────────────────────────────────────────────────────────
 
 function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void; onCancel: () => void; deleting: boolean }) {
   return (
@@ -244,9 +198,7 @@ function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void;
 
 // ── AI Sidebar ────────────────────────────────────────────────────────────────
 
-function AISidebar({
-  cardId, level, topic, subgroup, content, title, auth, onAccept,
-}: {
+function AISidebar({ cardId, level, topic, subgroup, content, title, auth, onAccept }: {
   cardId: string; level: string; topic: string; subgroup: Subgroup | undefined;
   content: string; title: string; auth: string; onAccept: (c: string) => void;
 }) {
@@ -258,7 +210,6 @@ function AISidebar({
   const abortRef = useRef<(() => void) | null>(null);
   const prevCardId = useRef(cardId);
 
-  // Clear diff when switching cards
   useEffect(() => {
     if (prevCardId.current !== cardId) {
       prevCardId.current = cardId;
@@ -274,9 +225,8 @@ function AISidebar({
     abortRef.current = () => { aborted = true; controller.abort(); };
     try {
       const res = await fetch('/api/edit-cards-ai', {
-        method: 'POST',
+        method: 'POST', signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
         body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', password: auth }),
       });
       if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error ?? `HTTP ${res.status}`); }
@@ -299,9 +249,7 @@ function AISidebar({
       if (!aborted && result) setDiffLines(computeDiff(content, result));
     } catch (e: unknown) {
       if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
-    } finally {
-      setStreaming(false); abortRef.current = null;
-    }
+    } finally { setStreaming(false); abortRef.current = null; }
   }, [streaming, title, content, level, topic, subgroup, auth]);
 
   function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); }
@@ -317,9 +265,7 @@ function AISidebar({
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Quick actions</p>
           <div className="space-y-1">
             {QUICK_ACTIONS.map((qa) => (
-              <button key={qa.label} onClick={() => runAI(qa.instruction)} disabled={streaming} className="w-full text-left text-xs px-2.5 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40">
-                {qa.label}
-              </button>
+              <button key={qa.label} onClick={() => runAI(qa.instruction)} disabled={streaming} className="w-full text-left text-xs px-2.5 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40">{qa.label}</button>
             ))}
           </div>
         </div>
@@ -359,59 +305,47 @@ function AISidebar({
 }
 
 // ── Inline editor panel ───────────────────────────────────────────────────────
+// Receives the full card data directly — no fetch needed, loads instantly.
+// onSaved: updates card list metadata only (never changes selectedId).
+// onNavigate: called by Prev/Next to switch selected card.
 
-function EditorPanel({
-  cardId, subgroups, allCards, level, topic, auth,
-  onSaved, onDeleted,
-}: {
-  cardId: string; subgroups: Subgroup[]; allCards: CardRow[];
+function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onSaved, onDeleted, onNavigate }: {
+  initialCard: CardRow; subgroups: Subgroup[]; allCards: CardRow[];
   level: string; topic: string; auth: string;
-  onSaved: (updated: Partial<CardRow> & { id: string }) => void;
+  onSaved: (updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) => void;
   onDeleted: (id: string) => void;
+  onNavigate: (id: string) => void;
 }) {
-  const [card, setCard] = useState<CardFull | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [sgId, setSgId] = useState(0);
-  const [orderIndex, setOrderIndex] = useState(1);
-  const [isPublished, setIsPublished] = useState(false);
+  const [title, setTitle] = useState(initialCard.card_title);
+  const [content, setContent] = useState(initialCard.content);
+  const [sgId, setSgId] = useState(initialCard.subgroup_id);
+  const [orderIndex, setOrderIndex] = useState(initialCard.order_index);
+  const [isPublished, setIsPublished] = useState(initialCard.is_published);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-  const [previewContent, setPreviewContent] = useState('');
+  const [previewContent, setPreviewContent] = useState(initialCard.content);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [aiOpen, setAiOpen] = useState(true);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cardId = initialCard.id;
 
-  // Load full card when id changes
+  // Clear pending timers on unmount so stale saves don't fire after navigation
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/admin/cards/${cardId}`, { headers: { Authorization: `Bearer ${auth}` } })
-      .then((r) => r.json())
-      .then((data) => {
-        setCard(data);
-        setTitle(data.card_title ?? '');
-        setContent(data.content ?? '');
-        setSgId(data.subgroup_id);
-        setOrderIndex(data.order_index);
-        setIsPublished(data.is_published);
-        setPreviewContent(data.content ?? '');
-        setSaveStatus('idle');
-      })
-      .finally(() => setLoading(false));
-  }, [cardId, auth]);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      if (previewTimer.current) clearTimeout(previewTimer.current);
+    };
+  }, []);
 
   // Debounced preview
   useEffect(() => {
     if (previewTimer.current) clearTimeout(previewTimer.current);
     previewTimer.current = setTimeout(() => setPreviewContent(content), 200);
-    return () => { if (previewTimer.current) clearTimeout(previewTimer.current); };
   }, [content]);
 
-  const saveData = useCallback(async (fields: { card_title: string; content: string; subgroup_id: number; order_index: number; is_published: boolean }) => {
+  const doSave = useCallback(async (fields: { card_title: string; content: string; subgroup_id: number; order_index: number; is_published: boolean }) => {
     setSaveStatus('saving');
     try {
       const res = await fetch(`/api/admin/cards/${cardId}`, {
@@ -421,29 +355,35 @@ function EditorPanel({
       });
       if (!res.ok) throw new Error();
       setSaveStatus('saved');
-      onSaved({ id: cardId, card_title: fields.card_title, is_published: fields.is_published, subgroup_id: fields.subgroup_id, order_index: fields.order_index });
-      setTimeout(() => setSaveStatus('idle'), 2500);
+      onSaved({ id: cardId, card_title: fields.card_title, is_published: fields.is_published, subgroup_id: fields.subgroup_id, order_index: fields.order_index, content: fields.content });
+      setTimeout(() => setSaveStatus((s) => s === 'saved' ? 'idle' : s), 2500);
     } catch { setSaveStatus('error'); }
   }, [cardId, auth, onSaved]);
 
-  const scheduleSave = useCallback(() => {
+  const scheduleSave = useCallback((fields: { card_title: string; content: string; subgroup_id: number; order_index: number; is_published: boolean }) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished }), 800);
-  }, [saveData, title, content, sgId, orderIndex, isPublished]);
+    saveTimer.current = setTimeout(() => doSave(fields), 800);
+  }, [doSave]);
 
-  useEffect(() => { if (!loading) scheduleSave(); }, [title, content, sgId, orderIndex, isPublished, scheduleSave, loading]);
+  // Auto-save on field changes (skip on first render)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    scheduleSave({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, content, sgId, orderIndex, isPublished]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
         if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
-        saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
+        doSave({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [saveData, title, content, sgId, orderIndex, isPublished]);
+  }, [doSave, title, content, sgId, orderIndex, isPublished]);
 
   function handleTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Tab') {
@@ -465,29 +405,22 @@ function EditorPanel({
     } catch { setDeleting(false); setShowDelete(false); }
   }
 
-  // Siblings (same subgroup) for prev/next
+  const currentSubgroup = subgroups.find((sg) => sg.id === sgId);
   const siblings = allCards.filter((c) => c.subgroup_id === sgId).sort((a, b) => a.order_index - b.order_index);
   const sibIdx = siblings.findIndex((s) => s.id === cardId);
   const prevSib = sibIdx > 0 ? siblings[sibIdx - 1] : null;
   const nextSib = sibIdx < siblings.length - 1 ? siblings[sibIdx + 1] : null;
 
-  const currentSubgroup = subgroups.find((sg) => sg.id === sgId);
-
-  if (loading) return <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>;
-  if (!card) return <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Not found</div>;
-
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      {/* Editor header */}
+      {/* Editor sub-header */}
       <div className="shrink-0 px-4 py-2 border-b border-slate-200 bg-white flex items-center gap-3">
-        <span className="text-xs text-slate-500 truncate min-w-0">
-          sg{sgId} · {currentSubgroup?.name ?? '…'} · Card {sibIdx + 1} of {siblings.length}
-        </span>
+        <span className="text-xs text-slate-500 truncate min-w-0">sg{sgId} · {currentSubgroup?.name ?? '…'} · Card {sibIdx + 1} of {siblings.length}</span>
         <div className="ml-auto flex items-center gap-2 shrink-0">
           {saveStatus === 'saving' && <span className="text-xs text-slate-400">Saving…</span>}
           {saveStatus === 'saved' && <span className="text-xs text-green-600">Saved ✓</span>}
           {saveStatus === 'error' && <span className="text-xs text-red-600">Error</span>}
-          <button onClick={() => { if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; } saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished }); }} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+          <button onClick={() => { if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; } doSave({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished }); }} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
           <button onClick={() => setAiOpen((v) => !v)} className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">{aiOpen ? 'Hide AI' : '✨ AI'}</button>
         </div>
       </div>
@@ -501,25 +434,16 @@ function EditorPanel({
           </select>
           <label className="flex items-center gap-1.5 text-slate-600">Order <input type="number" className="border border-slate-300 rounded px-2 py-1 w-14" value={orderIndex} onChange={(e) => setOrderIndex(Number(e.target.value))} min={1} /></label>
           <label className="flex items-center gap-1.5 cursor-pointer text-slate-600"><input type="checkbox" checked={isPublished} onChange={(e) => setIsPublished(e.target.checked)} /> Published</label>
-          {card.source_kb_entry_id && <span className="text-slate-400">🔗 KB entry</span>}
+          {initialCard.source_kb_entry_id && <span className="text-slate-400">🔗 KB entry</span>}
         </div>
       </div>
 
-      {/* Main editing area */}
+      {/* Editing area: textarea | preview | AI */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Textarea */}
         <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200">
           <div className="px-3 py-1 bg-slate-50 border-b border-slate-200 text-xs text-slate-500">Markdown + LaTeX</div>
-          <textarea
-            className="flex-1 resize-none px-3 py-2.5 text-sm font-mono focus:outline-none bg-white leading-relaxed"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleTextareaKeyDown}
-            spellCheck={false}
-          />
+          <textarea className="flex-1 resize-none px-3 py-2.5 text-sm font-mono focus:outline-none bg-white leading-relaxed" value={content} onChange={(e) => setContent(e.target.value)} onKeyDown={handleTextareaKeyDown} spellCheck={false} />
         </div>
-
-        {/* Preview */}
         <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 overflow-hidden">
           <div className="px-3 py-1 bg-slate-50 border-b border-slate-200 text-xs text-slate-500">Live preview</div>
           <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none">
@@ -528,15 +452,9 @@ function EditorPanel({
             </ReactMarkdown>
           </div>
         </div>
-
-        {/* AI sidebar */}
         {aiOpen && (
           <div className="w-60 shrink-0 flex flex-col overflow-hidden">
-            <AISidebar
-              cardId={cardId} level={level} topic={topic}
-              subgroup={currentSubgroup} content={content} title={title} auth={auth}
-              onAccept={(c) => setContent(c)}
-            />
+            <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} auth={auth} onAccept={(c) => setContent(c)} />
           </div>
         )}
       </div>
@@ -545,8 +463,8 @@ function EditorPanel({
       <div className="shrink-0 bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-between">
         <button onClick={() => setShowDelete(true)} className="text-xs px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700">Delete card</button>
         <div className="flex gap-2">
-          <button onClick={() => prevSib && onSaved({ id: prevSib.id })} disabled={!prevSib} title={prevSib?.card_title ?? ''} className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-30">← Prev</button>
-          <button onClick={() => nextSib && onSaved({ id: nextSib.id })} disabled={!nextSib} title={nextSib?.card_title ?? ''} className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-30">Next →</button>
+          <button onClick={() => prevSib && onNavigate(prevSib.id)} disabled={!prevSib} title={prevSib?.card_title ?? ''} className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-30">← Prev</button>
+          <button onClick={() => nextSib && onNavigate(nextSib.id)} disabled={!nextSib} title={nextSib?.card_title ?? ''} className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-30">Next →</button>
         </div>
       </div>
 
@@ -634,15 +552,15 @@ export default function EditCardsClient() {
     setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const activeCard = cards.find((c) => c.id === active.id);
-    const overCard = cards.find((c) => c.id === over.id);
-    if (!activeCard || !overCard || activeCard.subgroup_id !== overCard.subgroup_id) return;
-    const sgId = activeCard.subgroup_id;
+    const ac = cards.find((c) => c.id === active.id);
+    const oc = cards.find((c) => c.id === over.id);
+    if (!ac || !oc || ac.subgroup_id !== oc.subgroup_id) return;
+    const sgId = ac.subgroup_id;
     const sgCards = cards.filter((c) => c.subgroup_id === sgId);
-    const oldIdx = sgCards.findIndex((c) => c.id === active.id);
-    const newIdx = sgCards.findIndex((c) => c.id === over.id);
-    if (oldIdx === -1 || newIdx === -1) return;
-    const reordered = arrayMove(sgCards, oldIdx, newIdx);
+    const oi = sgCards.findIndex((c) => c.id === active.id);
+    const ni = sgCards.findIndex((c) => c.id === over.id);
+    if (oi === -1 || ni === -1) return;
+    const reordered = arrayMove(sgCards, oi, ni);
     setCards((prev) => [...prev.filter((c) => c.subgroup_id !== sgId), ...reordered]);
     if (reorderTimers.current[sgId]) clearTimeout(reorderTimers.current[sgId]);
     setReorderStatus((s) => ({ ...s, [sgId]: 'saving' }));
@@ -656,15 +574,12 @@ export default function EditCardsClient() {
     }, 600);
   }
 
-  function handleEditorSaved(updated: Partial<CardRow> & { id: string }) {
-    // If this is a "navigate to sibling" call (just id, no other fields), just change selection
-    if (Object.keys(updated).length === 1) { setSelectedId(updated.id); return; }
+  // Called by EditorPanel after a successful save — updates list metadata only, never changes selectedId
+  function handleCardSaved(updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) {
     setCards((prev) => prev.map((c) => c.id === updated.id ? { ...c, ...updated } : c));
-    // If card moved to different subgroup or selection unchanged, keep selected
-    setSelectedId(updated.id);
   }
 
-  function handleEditorDeleted(id: string) {
+  function handleCardDeleted(id: string) {
     setCards((prev) => prev.filter((c) => c.id !== id));
     setSelectedId(null);
   }
@@ -673,6 +588,7 @@ export default function EditCardsClient() {
   const cardsBySg: Record<number, CardRow[]> = {};
   for (const c of filteredCards) { if (!cardsBySg[c.subgroup_id]) cardsBySg[c.subgroup_id] = []; cardsBySg[c.subgroup_id].push(c); }
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
+  const selectedCard = selectedId ? cards.find((c) => c.id === selectedId) ?? null : null;
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
@@ -710,9 +626,9 @@ export default function EditCardsClient() {
         </div>
       </div>
 
-      {/* Body: list + editor side by side */}
+      {/* Body */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Card list */}
+        {/* Left: card list */}
         <div className="w-72 shrink-0 border-r border-slate-200 bg-white flex flex-col overflow-hidden">
           {!level || !topic ? (
             <div className="flex-1 flex items-center justify-center p-6 text-center text-slate-400 text-sm">Pick a level and topic to start editing.</div>
@@ -754,19 +670,20 @@ export default function EditCardsClient() {
           )}
         </div>
 
-        {/* Editor panel */}
+        {/* Right: editor */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {selectedId ? (
+          {selectedCard ? (
             <EditorPanel
-              key={selectedId}
-              cardId={selectedId}
+              key={selectedCard.id}
+              initialCard={selectedCard}
               subgroups={subgroups}
               allCards={cards}
               level={level}
               topic={topic}
               auth={auth}
-              onSaved={handleEditorSaved}
-              onDeleted={handleEditorDeleted}
+              onSaved={handleCardSaved}
+              onDeleted={handleCardDeleted}
+              onNavigate={setSelectedId}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
@@ -780,9 +697,10 @@ export default function EditCardsClient() {
         <NewCardModal
           subgroups={subgroups} level={level} topic={topic}
           onClose={() => setShowNewModal(false)}
-          onCreated={(id) => {
+          onCreated={async (id) => {
             setShowNewModal(false);
-            fetchCards().then(() => setSelectedId(id));
+            await fetchCards();
+            setSelectedId(id);
           }}
           auth={auth}
         />

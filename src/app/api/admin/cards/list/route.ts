@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
     card_title: c.card_title,
     is_published: c.is_published,
     source_kb_entry_id: c.source_kb_entry_id,
+    content: c.content ?? '',
     content_length: (c.content ?? '').length,
     updated_at: c.updated_at,
   }));
