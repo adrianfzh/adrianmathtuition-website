@@ -28,6 +28,8 @@ Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/ro
 - `admin/mark/page.tsx` — AI batch marking landing page (tabs + upload flow)
 - `admin/mark/batch/[batchId]/page.tsx` — batch detail page
 - `admin/edit-notes/page.tsx` — revision notes editor with editor mode toggle
+- `admin/edit-cards/page.tsx` — Cards editor list view: pick level/topic/subgroup, drag-to-reorder, create/delete cards
+- `admin/edit-cards/[id]/page.tsx` — Single card editor: markdown+LaTeX textarea, live KaTeX preview, AI assist sidebar with diff/accept/reject
 - `signup/page.tsx` — student registration form (HMAC-signed URL)
 - `thankyou/page.tsx` — post-signup confirmation page
 - `terms/page.tsx` — terms and conditions
@@ -63,6 +65,14 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/progress/student-timeline/route.ts` — student timeline data + aggregations (GET `?id=recXXX&range=90`)
 - `admin/exam-season/route.ts` — GET/POST exam season override
 - `admin/admin-stats/route.ts` — status card data for hub page
+
+### Cards editor (`/admin/edit-cards`)
+- `admin/cards/topics/route.ts` — GET `?level=AM` → `{ topics: string[] }` (distinct topics from subgroups)
+- `admin/cards/list/route.ts` — GET `?level=AM&topic=Surds&subgroupId=105` → cards[] + subgroups[]
+- `admin/cards/[id]/route.ts` — GET / PATCH / DELETE single card
+- `admin/cards/create/route.ts` — POST → new card with auto order_index
+- `admin/cards/reorder/route.ts` — POST `{ orderedIds }` → rewrite order_index 1..N
+- `edit-cards-ai/route.ts` — SSE stream for AI card edits (claude-opus-4-6, max 4000 tokens)
 
 ### Invoices (cron + admin)
 - `admin-invoices/route.ts` — GET/PATCH invoices for `/admin/invoices`
