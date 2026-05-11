@@ -20,7 +20,12 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -35,6 +40,12 @@ interface CardRow {
   updated_at: string;
 }
 
+interface CardFull extends CardRow {
+  content: string;
+  level: string;
+  topic: string;
+}
+
 interface Subgroup {
   id: number;
   name: string;
@@ -46,6 +57,22 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const LEVELS = ['AM', 'EM', 'JC', 'S1', 'S2'];
 
+// ── KaTeX ─────────────────────────────────────────────────────────────────────
+
+const katexOptions = {
+  strict: false,
+  trust: true,
+  throwOnError: false,
+  output: 'htmlAndMathml' as const,
+  macros: { '\\tfrac': '\\frac' },
+};
+
+function fixMathFences(src: string): string {
+  return src
+    .replace(/\$\$(?=\S)/g, () => '$$\n')
+    .replace(/([^\n\s])\$\$/g, (_, c: string) => `${c}\n$$`);
+}
+
 // ── Cookie helpers ─────────────────────────────────────────────────────────────
 
 function getCookie(name: string): string {
@@ -54,79 +81,89 @@ function getCookie(name: string): string {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
+// ── Simple line diff ──────────────────────────────────────────────────────────
+
+interface DiffLine { type: 'same' | 'add' | 'remove'; text: string }
+
+function computeDiff(original: string, updated: string): DiffLine[] {
+  const a = original.split('\n');
+  const b = updated.split('\n');
+  const m = a.length, n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = m - 1; i >= 0; i--)
+    for (let j = n - 1; j >= 0; j--)
+      dp[i][j] = a[i] === b[j] ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j], dp[i][j+1]);
+  const result: DiffLine[] = [];
+  let i = 0, j = 0;
+  while (i < m || j < n) {
+    if (i < m && j < n && a[i] === b[j]) { result.push({ type: 'same', text: a[i] }); i++; j++; }
+    else if (j < n && (i >= m || dp[i][j+1] >= dp[i+1][j])) { result.push({ type: 'add', text: b[j] }); j++; }
+    else { result.push({ type: 'remove', text: a[i] }); i++; }
+  }
+  return result;
+}
+
+// ── AI Quick actions ──────────────────────────────────────────────────────────
+
+const QUICK_ACTIONS = [
+  { label: 'Make clearer', instruction: 'Rewrite for clarity. Same content, same answer, but cleaner phrasing and tighter step transitions.' },
+  { label: 'Shorten ~30%', instruction: 'Shorten by roughly 30%. Drop filler, keep every algebra step, keep the worked answer.' },
+  { label: 'Add pitfall note', instruction: "At the end, add a brief 'Common pitfall:' line warning about the most likely student error in this kind of question." },
+  { label: 'Add common-mistake', instruction: "Add a short '⚠ Watch out:' aside near the relevant step where students typically slip up." },
+  { label: 'Add a sanity check', instruction: "Add a short final 'Check:' step that substitutes the answer back / verifies dimensions / spot-checks the result." },
+  { label: 'Tighten algebra', instruction: 'Tighten the algebra steps — combine micro-steps that students can do in one line, but keep enough scaffolding that the logic is followable.' },
+  { label: 'Use a fresh example', instruction: "Same sub-skill, different numbers and surface. Don't reuse the same coefficients/values. Rewrite the whole card with a new example." },
+  { label: 'Add a why-this-works', instruction: 'Add one sentence at the top explaining *why* this method works, before diving into steps.' },
+];
+
 // ── Sortable card row ──────────────────────────────────────────────────────────
 
 function SortableCardRow({
   card,
-  index,
-  onEdit,
+  isSelected,
+  onSelect,
 }: {
   card: CardRow;
-  index: number;
-  onEdit: (id: string) => void;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: card.id,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.35 : 1,
-    touchAction: 'none' as const,
-  };
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.35 : 1, touchAction: 'none' as const };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 px-3 py-2 bg-white border border-slate-200 rounded hover:bg-slate-50 group"
+      onClick={() => onSelect(card.id)}
+      className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${
+        isSelected
+          ? 'bg-blue-50 border-blue-300'
+          : 'bg-white border-slate-200 hover:bg-slate-50'
+      }`}
     >
       <span
         {...attributes}
         {...listeners}
-        className="text-slate-400 cursor-grab active:cursor-grabbing select-none text-lg leading-none"
+        onClick={(e) => e.stopPropagation()}
+        className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0"
         title="Drag to reorder"
       >
         ⠿
       </span>
-      <span className="text-slate-400 text-sm w-5 text-right shrink-0">{index + 1}.</span>
-      <span className="flex-1 text-sm text-slate-800 truncate min-w-0">
-        {card.card_title || <em className="text-slate-400">Untitled</em>}
-      </span>
-      <span
-        className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-          card.is_published
-            ? 'bg-green-100 text-green-800'
-            : 'bg-slate-100 text-slate-600'
-        }`}
-      >
+      <span className="text-slate-400 text-xs w-4 shrink-0">{card.order_index}.</span>
+      <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
+      <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${card.is_published ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-500'}`}>
         {card.is_published ? 'Pub' : 'Draft'}
       </span>
-      {card.source_kb_entry_id && (
-        <span className="text-xs text-slate-400 shrink-0" title="Linked to KB entry">
-          🔗 KB
-        </span>
-      )}
-      <button
-        onClick={() => onEdit(card.id)}
-        className="text-sm px-3 py-1 border border-slate-300 rounded hover:bg-slate-100 shrink-0"
-      >
-        Edit
-      </button>
     </div>
   );
 }
 
-// ── Dragging overlay ───────────────────────────────────────────────────────────
-
-function DragCard({ card }: { card: CardRow }) {
+function DragCardOverlay({ card }: { card: CardRow }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-2 bg-white border border-blue-400 rounded shadow-lg opacity-90">
-      <span className="text-slate-400 text-lg leading-none">⠿</span>
-      <span className="flex-1 text-sm text-slate-800 truncate">
-        {card.card_title || 'Untitled'}
-      </span>
+    <div className="flex items-center gap-2 px-3 py-2 bg-white border border-blue-400 rounded shadow-lg opacity-90">
+      <span className="text-slate-300">⠿</span>
+      <span className="text-sm text-slate-800 truncate">{card.card_title || 'Untitled'}</span>
     </div>
   );
 }
@@ -134,19 +171,10 @@ function DragCard({ card }: { card: CardRow }) {
 // ── New card modal ─────────────────────────────────────────────────────────────
 
 function NewCardModal({
-  subgroups,
-  level,
-  topic,
-  onClose,
-  onCreated,
-  auth,
+  subgroups, level, topic, onClose, onCreated, auth,
 }: {
-  subgroups: Subgroup[];
-  level: string;
-  topic: string;
-  onClose: () => void;
-  onCreated: (id: string) => void;
-  auth: string;
+  subgroups: Subgroup[]; level: string; topic: string;
+  onClose: () => void; onCreated: (id: string) => void; auth: string;
 }) {
   const [sgId, setSgId] = useState<number>(subgroups[0]?.id ?? 0);
   const [title, setTitle] = useState('');
@@ -155,8 +183,7 @@ function NewCardModal({
 
   async function create() {
     if (!sgId) { setErr('Pick a sub-group'); return; }
-    setCreating(true);
-    setErr('');
+    setCreating(true); setErr('');
     try {
       const res = await fetch('/api/admin/cards/create', {
         method: 'POST',
@@ -173,59 +200,357 @@ function NewCardModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">New card</h2>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Sub-group</label>
-            <select
-              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-              value={sgId}
-              onChange={(e) => setSgId(Number(e.target.value))}
-            >
-              {subgroups.map((sg) => (
-                <option key={sg.id} value={sg.id}>
-                  {sg.name} (sg{sg.id})
-                </option>
-              ))}
+            <select className="w-full border border-slate-300 rounded px-3 py-2 text-sm" value={sgId} onChange={(e) => setSgId(Number(e.target.value))}>
+              {subgroups.map((sg) => <option key={sg.id} value={sg.id}>{sg.name} (sg{sg.id})</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Card title <span className="text-slate-400 font-normal">(optional)</span>
-            </label>
-            <input
-              type="text"
-              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-              placeholder="e.g. Simplify √72"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') create(); }}
-              autoFocus
-            />
+            <label className="block text-sm font-medium text-slate-700 mb-1">Card title <span className="text-slate-400 font-normal">(optional)</span></label>
+            <input type="text" className="w-full border border-slate-300 rounded px-3 py-2 text-sm" placeholder="e.g. Simplify √72" value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') create(); }} autoFocus />
           </div>
           {err && <p className="text-red-600 text-sm">{err}</p>}
         </div>
         <div className="flex justify-end gap-2 mt-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={create}
-            disabled={creating}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {creating ? 'Creating…' : 'Create'}
-          </button>
+          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
+          <button onClick={create} disabled={creating} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">{creating ? 'Creating…' : 'Create'}</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Delete confirmation modal ─────────────────────────────────────────────────
+
+function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void; onCancel: () => void; deleting: boolean }) {
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+        <h2 className="text-lg font-semibold text-slate-800 mb-2">Delete this card?</h2>
+        <p className="text-sm text-slate-600 mb-6">This cannot be undone.</p>
+        <div className="flex justify-end gap-2">
+          <button onClick={onCancel} disabled={deleting} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
+          <button onClick={onConfirm} disabled={deleting} className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">{deleting ? 'Deleting…' : 'Delete'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── AI Sidebar ────────────────────────────────────────────────────────────────
+
+function AISidebar({
+  cardId, level, topic, subgroup, content, title, auth, onAccept,
+}: {
+  cardId: string; level: string; topic: string; subgroup: Subgroup | undefined;
+  content: string; title: string; auth: string; onAccept: (c: string) => void;
+}) {
+  const [prompt, setPrompt] = useState('');
+  const [streaming, setStreaming] = useState(false);
+  const [aiResult, setAiResult] = useState('');
+  const [diffLines, setDiffLines] = useState<DiffLine[] | null>(null);
+  const [aiError, setAiError] = useState('');
+  const abortRef = useRef<(() => void) | null>(null);
+  const prevCardId = useRef(cardId);
+
+  // Clear diff when switching cards
+  useEffect(() => {
+    if (prevCardId.current !== cardId) {
+      prevCardId.current = cardId;
+      setDiffLines(null); setAiResult(''); setAiError('');
+    }
+  }, [cardId]);
+
+  const runAI = useCallback(async (instruction: string) => {
+    if (streaming) { abortRef.current?.(); return; }
+    setStreaming(true); setAiResult(''); setDiffLines(null); setAiError('');
+    let result = '', aborted = false;
+    const controller = new AbortController();
+    abortRef.current = () => { aborted = true; controller.abort(); };
+    try {
+      const res = await fetch('/api/edit-cards-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', password: auth }),
+      });
+      if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error ?? `HTTP ${res.status}`); }
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done || aborted) break;
+        buf += decoder.decode(value, { stream: true });
+        const parts = buf.split('\n\n'); buf = parts.pop() ?? '';
+        for (const part of parts) {
+          if (!part.startsWith('data: ')) continue;
+          const data = JSON.parse(part.slice(6));
+          if (data.error) throw new Error(data.error);
+          if (data.done) break;
+          if (data.chunk) { result += data.chunk; setAiResult(result); }
+        }
+      }
+      if (!aborted && result) setDiffLines(computeDiff(content, result));
+    } catch (e: unknown) {
+      if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
+    } finally {
+      setStreaming(false); abortRef.current = null;
+    }
+  }, [streaming, title, content, level, topic, subgroup, auth]);
+
+  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); }
+  function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); }
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden border-l border-slate-200">
+      <div className="px-3 py-2 border-b border-slate-200 bg-slate-50">
+        <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">✨ AI assist</span>
+      </div>
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+        <div>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Quick actions</p>
+          <div className="space-y-1">
+            {QUICK_ACTIONS.map((qa) => (
+              <button key={qa.label} onClick={() => runAI(qa.instruction)} disabled={streaming} className="w-full text-left text-xs px-2.5 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40">
+                {qa.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Or describe a change:</p>
+          <textarea className="w-full border border-slate-300 rounded px-2.5 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} placeholder="e.g. Split into two cards…" value={prompt} onChange={(e) => setPrompt(e.target.value)} disabled={streaming} />
+          <button onClick={() => runAI(prompt)} disabled={!prompt.trim() || streaming} className="mt-1.5 w-full py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">
+            {streaming ? 'Streaming… (click to cancel)' : 'Send to AI →'}
+          </button>
+        </div>
+        {aiError && <p className="text-xs text-red-600 bg-red-50 p-2 rounded">{aiError}</p>}
+        {streaming && aiResult && (
+          <div>
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Streaming…</p>
+            <div className="text-xs font-mono bg-slate-50 border border-slate-200 rounded p-2 max-h-32 overflow-y-auto whitespace-pre-wrap text-slate-600">{aiResult}</div>
+          </div>
+        )}
+        {diffLines && !streaming && (
+          <div>
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Diff preview</p>
+            <div className="text-xs font-mono border border-slate-200 rounded overflow-hidden max-h-56 overflow-y-auto">
+              {diffLines.map((line, i) => (
+                <div key={i} className={`px-2 py-px whitespace-pre-wrap leading-relaxed ${line.type === 'add' ? 'bg-green-50 text-green-800' : line.type === 'remove' ? 'bg-red-50 text-red-700 line-through' : 'text-slate-500'}`}>
+                  {line.type === 'add' ? '+ ' : line.type === 'remove' ? '- ' : '  '}{line.text}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-2">
+              <button onClick={handleAccept} className="flex-1 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Accept</button>
+              <button onClick={handleReject} className="flex-1 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Reject</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Inline editor panel ───────────────────────────────────────────────────────
+
+function EditorPanel({
+  cardId, subgroups, allCards, level, topic, auth,
+  onSaved, onDeleted,
+}: {
+  cardId: string; subgroups: Subgroup[]; allCards: CardRow[];
+  level: string; topic: string; auth: string;
+  onSaved: (updated: Partial<CardRow> & { id: string }) => void;
+  onDeleted: (id: string) => void;
+}) {
+  const [card, setCard] = useState<CardFull | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [sgId, setSgId] = useState(0);
+  const [orderIndex, setOrderIndex] = useState(1);
+  const [isPublished, setIsPublished] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [previewContent, setPreviewContent] = useState('');
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [aiOpen, setAiOpen] = useState(true);
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load full card when id changes
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/admin/cards/${cardId}`, { headers: { Authorization: `Bearer ${auth}` } })
+      .then((r) => r.json())
+      .then((data) => {
+        setCard(data);
+        setTitle(data.card_title ?? '');
+        setContent(data.content ?? '');
+        setSgId(data.subgroup_id);
+        setOrderIndex(data.order_index);
+        setIsPublished(data.is_published);
+        setPreviewContent(data.content ?? '');
+        setSaveStatus('idle');
+      })
+      .finally(() => setLoading(false));
+  }, [cardId, auth]);
+
+  // Debounced preview
+  useEffect(() => {
+    if (previewTimer.current) clearTimeout(previewTimer.current);
+    previewTimer.current = setTimeout(() => setPreviewContent(content), 200);
+    return () => { if (previewTimer.current) clearTimeout(previewTimer.current); };
+  }, [content]);
+
+  const saveData = useCallback(async (fields: { card_title: string; content: string; subgroup_id: number; order_index: number; is_published: boolean }) => {
+    setSaveStatus('saving');
+    try {
+      const res = await fetch(`/api/admin/cards/${cardId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify(fields),
+      });
+      if (!res.ok) throw new Error();
+      setSaveStatus('saved');
+      onSaved({ id: cardId, card_title: fields.card_title, is_published: fields.is_published, subgroup_id: fields.subgroup_id, order_index: fields.order_index });
+      setTimeout(() => setSaveStatus('idle'), 2500);
+    } catch { setSaveStatus('error'); }
+  }, [cardId, auth, onSaved]);
+
+  const scheduleSave = useCallback(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished }), 800);
+  }, [saveData, title, content, sgId, orderIndex, isPublished]);
+
+  useEffect(() => { if (!loading) scheduleSave(); }, [title, content, sgId, orderIndex, isPublished, scheduleSave, loading]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
+        saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [saveData, title, content, sgId, orderIndex, isPublished]);
+
+  function handleTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const ta = e.currentTarget;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const next = ta.value.substring(0, start) + '  ' + ta.value.substring(end);
+      setContent(next);
+      requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = start + 2; });
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/cards/${cardId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${auth}` } });
+      if (!res.ok) throw new Error();
+      onDeleted(cardId);
+    } catch { setDeleting(false); setShowDelete(false); }
+  }
+
+  // Siblings (same subgroup) for prev/next
+  const siblings = allCards.filter((c) => c.subgroup_id === sgId).sort((a, b) => a.order_index - b.order_index);
+  const sibIdx = siblings.findIndex((s) => s.id === cardId);
+  const prevSib = sibIdx > 0 ? siblings[sibIdx - 1] : null;
+  const nextSib = sibIdx < siblings.length - 1 ? siblings[sibIdx + 1] : null;
+
+  const currentSubgroup = subgroups.find((sg) => sg.id === sgId);
+
+  if (loading) return <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>;
+  if (!card) return <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Not found</div>;
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      {/* Editor header */}
+      <div className="shrink-0 px-4 py-2 border-b border-slate-200 bg-white flex items-center gap-3">
+        <span className="text-xs text-slate-500 truncate min-w-0">
+          sg{sgId} · {currentSubgroup?.name ?? '…'} · Card {sibIdx + 1} of {siblings.length}
+        </span>
+        <div className="ml-auto flex items-center gap-2 shrink-0">
+          {saveStatus === 'saving' && <span className="text-xs text-slate-400">Saving…</span>}
+          {saveStatus === 'saved' && <span className="text-xs text-green-600">Saved ✓</span>}
+          {saveStatus === 'error' && <span className="text-xs text-red-600">Error</span>}
+          <button onClick={() => { if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; } saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished }); }} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+          <button onClick={() => setAiOpen((v) => !v)} className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">{aiOpen ? 'Hide AI' : '✨ AI'}</button>
+        </div>
+      </div>
+
+      {/* Card meta */}
+      <div className="shrink-0 px-4 py-2.5 border-b border-slate-200 bg-white space-y-2">
+        <input type="text" className="w-full border border-slate-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Card title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <select className="border border-slate-300 rounded px-2 py-1" value={sgId} onChange={(e) => setSgId(Number(e.target.value))}>
+            {subgroups.map((sg) => <option key={sg.id} value={sg.id}>{sg.name}</option>)}
+          </select>
+          <label className="flex items-center gap-1.5 text-slate-600">Order <input type="number" className="border border-slate-300 rounded px-2 py-1 w-14" value={orderIndex} onChange={(e) => setOrderIndex(Number(e.target.value))} min={1} /></label>
+          <label className="flex items-center gap-1.5 cursor-pointer text-slate-600"><input type="checkbox" checked={isPublished} onChange={(e) => setIsPublished(e.target.checked)} /> Published</label>
+          {card.source_kb_entry_id && <span className="text-slate-400">🔗 KB entry</span>}
+        </div>
+      </div>
+
+      {/* Main editing area */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Textarea */}
+        <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200">
+          <div className="px-3 py-1 bg-slate-50 border-b border-slate-200 text-xs text-slate-500">Markdown + LaTeX</div>
+          <textarea
+            className="flex-1 resize-none px-3 py-2.5 text-sm font-mono focus:outline-none bg-white leading-relaxed"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleTextareaKeyDown}
+            spellCheck={false}
+          />
+        </div>
+
+        {/* Preview */}
+        <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 overflow-hidden">
+          <div className="px-3 py-1 bg-slate-50 border-b border-slate-200 text-xs text-slate-500">Live preview</div>
+          <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[[rehypeKatex, katexOptions]]}>
+              {fixMathFences(previewContent)}
+            </ReactMarkdown>
+          </div>
+        </div>
+
+        {/* AI sidebar */}
+        {aiOpen && (
+          <div className="w-60 shrink-0 flex flex-col overflow-hidden">
+            <AISidebar
+              cardId={cardId} level={level} topic={topic}
+              subgroup={currentSubgroup} content={content} title={title} auth={auth}
+              onAccept={(c) => setContent(c)}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="shrink-0 bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-between">
+        <button onClick={() => setShowDelete(true)} className="text-xs px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700">Delete card</button>
+        <div className="flex gap-2">
+          <button onClick={() => prevSib && onSaved({ id: prevSib.id })} disabled={!prevSib} title={prevSib?.card_title ?? ''} className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-30">← Prev</button>
+          <button onClick={() => nextSib && onSaved({ id: nextSib.id })} disabled={!nextSib} title={nextSib?.card_title ?? ''} className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-30">Next →</button>
+        </div>
+      </div>
+
+      {showDelete && <DeleteModal onConfirm={handleDelete} onCancel={() => setShowDelete(false)} deleting={deleting} />}
     </div>
   );
 }
@@ -235,7 +560,6 @@ function NewCardModal({
 export default function EditCardsClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw') || '';
   const auth = pw;
 
@@ -248,10 +572,10 @@ export default function EditCardsClient() {
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [cards, setCards] = useState<CardRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderStatus, setReorderStatus] = useState<Record<number, SaveStatus>>({});
   const [showNewModal, setShowNewModal] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
-
   const reorderTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
@@ -268,7 +592,6 @@ export default function EditCardsClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist filters to URL + localStorage
   useEffect(() => {
     const params = new URLSearchParams();
     if (level) params.set('level', level);
@@ -278,269 +601,188 @@ export default function EditCardsClient() {
     localStorage.setItem('edit_cards_filters', JSON.stringify({ level, topic, subgroup: subgroupFilter }));
   }, [level, topic, subgroupFilter, router]);
 
-  // Fetch topics when level changes
   useEffect(() => {
     if (!level) { setTopics([]); setTopic(''); return; }
-    fetchTopics(level);
+    fetch(`/api/admin/cards/topics?level=${encodeURIComponent(level)}`, { headers: { Authorization: `Bearer ${auth}` } })
+      .then((r) => r.json()).then((j) => setTopics(j.topics ?? [])).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level]);
 
-  async function fetchTopics(lv: string) {
-    try {
-      const res = await fetch(`/api/admin/cards/topics?level=${encodeURIComponent(lv)}`, {
-        headers: { Authorization: `Bearer ${auth}` },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setTopics(json.topics ?? []);
-      }
-    } catch { /* ignore */ }
-  }
-
-  // Fetch cards + subgroups when level+topic change
   const fetchCards = useCallback(async () => {
     if (!level || !topic) { setCards([]); setSubgroups([]); return; }
     setLoading(true);
     try {
       const params = new URLSearchParams({ level, topic });
       if (subgroupFilter) params.set('subgroupId', subgroupFilter);
-      if (unpublishedOnly) params.set('publishedOnly', 'false');
-      const res = await fetch(`/api/admin/cards/list?${params}`, {
-        headers: { Authorization: `Bearer ${auth}` },
-      });
+      const res = await fetch(`/api/admin/cards/list?${params}`, { headers: { Authorization: `Bearer ${auth}` } });
       const json = await res.json();
       setCards(json.cards ?? []);
       setSubgroups(json.subgroups ?? []);
-    } finally {
-      setLoading(false);
-    }
-  }, [level, topic, subgroupFilter, unpublishedOnly, auth]);
+    } finally { setLoading(false); }
+  }, [level, topic, subgroupFilter, auth]);
 
   useEffect(() => { fetchCards(); }, [fetchCards]);
 
-  // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 5 } })
   );
 
-  function handleDragStart(event: DragStartEvent) {
-    setActiveId(event.active.id as string);
-    if (navigator.vibrate) navigator.vibrate(30);
-  }
+  function handleDragStart(event: DragStartEvent) { setActiveId(event.active.id as string); if (navigator.vibrate) navigator.vibrate(30); }
 
   function handleDragEnd(event: DragEndEvent) {
     setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-
     const activeCard = cards.find((c) => c.id === active.id);
     const overCard = cards.find((c) => c.id === over.id);
-    if (!activeCard || !overCard) return;
-
-    // Only allow reorder within same subgroup
-    if (activeCard.subgroup_id !== overCard.subgroup_id) return;
-
+    if (!activeCard || !overCard || activeCard.subgroup_id !== overCard.subgroup_id) return;
     const sgId = activeCard.subgroup_id;
     const sgCards = cards.filter((c) => c.subgroup_id === sgId);
     const oldIdx = sgCards.findIndex((c) => c.id === active.id);
     const newIdx = sgCards.findIndex((c) => c.id === over.id);
     if (oldIdx === -1 || newIdx === -1) return;
-
     const reordered = arrayMove(sgCards, oldIdx, newIdx);
-    setCards((prev) => {
-      const others = prev.filter((c) => c.subgroup_id !== sgId);
-      return [...others, ...reordered].sort((a, b) =>
-        a.subgroup_id !== b.subgroup_id ? a.subgroup_id - b.subgroup_id : 0
-      );
-    });
-
-    // Debounce save
+    setCards((prev) => [...prev.filter((c) => c.subgroup_id !== sgId), ...reordered]);
     if (reorderTimers.current[sgId]) clearTimeout(reorderTimers.current[sgId]);
     setReorderStatus((s) => ({ ...s, [sgId]: 'saving' }));
     reorderTimers.current[sgId] = setTimeout(async () => {
       try {
-        const res = await fetch('/api/admin/cards/reorder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-          body: JSON.stringify({ orderedIds: reordered.map((c) => c.id) }),
-        });
+        const res = await fetch('/api/admin/cards/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` }, body: JSON.stringify({ orderedIds: reordered.map((c) => c.id) }) });
         if (!res.ok) throw new Error();
         setReorderStatus((s) => ({ ...s, [sgId]: 'saved' }));
         setTimeout(() => setReorderStatus((s) => ({ ...s, [sgId]: 'idle' })), 2000);
-      } catch {
-        setReorderStatus((s) => ({ ...s, [sgId]: 'error' }));
-      }
+      } catch { setReorderStatus((s) => ({ ...s, [sgId]: 'error' })); }
     }, 600);
   }
 
-  function handleEdit(id: string) {
-    const params = new URLSearchParams();
-    if (level) params.set('level', level);
-    if (topic) params.set('topic', topic);
-    router.push(`/admin/edit-cards/${id}?${params.toString()}`);
+  function handleEditorSaved(updated: Partial<CardRow> & { id: string }) {
+    // If this is a "navigate to sibling" call (just id, no other fields), just change selection
+    if (Object.keys(updated).length === 1) { setSelectedId(updated.id); return; }
+    setCards((prev) => prev.map((c) => c.id === updated.id ? { ...c, ...updated } : c));
+    // If card moved to different subgroup or selection unchanged, keep selected
+    setSelectedId(updated.id);
   }
 
-  // Group cards by subgroup
-  const cardsBySg: Record<number, CardRow[]> = {};
+  function handleEditorDeleted(id: string) {
+    setCards((prev) => prev.filter((c) => c.id !== id));
+    setSelectedId(null);
+  }
+
   const filteredCards = unpublishedOnly ? cards.filter((c) => !c.is_published) : cards;
-  for (const c of filteredCards) {
-    if (!cardsBySg[c.subgroup_id]) cardsBySg[c.subgroup_id] = [];
-    cardsBySg[c.subgroup_id].push(c);
-  }
-
+  const cardsBySg: Record<number, CardRow[]> = {};
+  for (const c of filteredCards) { if (!cardsBySg[c.subgroup_id]) cardsBySg[c.subgroup_id] = []; cardsBySg[c.subgroup_id].push(c); }
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-800">Cards editor</h1>
-        <button
-          onClick={() => setShowNewModal(true)}
-          disabled={!level || !topic || subgroups.length === 0}
-          className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40"
-        >
-          + New card
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white border-b border-slate-200 px-6 py-3 flex flex-wrap gap-4 items-center">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-slate-600">Level:</label>
-          <select
-            className="border border-slate-300 rounded px-3 py-1.5 text-sm"
-            value={level}
-            onChange={(e) => { setLevel(e.target.value); setTopic(''); setSubgroupFilter(''); }}
-          >
-            <option value="">—</option>
-            {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-slate-600">Topic:</label>
-          <select
-            className="border border-slate-300 rounded px-3 py-1.5 text-sm"
-            value={topic}
-            onChange={(e) => { setTopic(e.target.value); setSubgroupFilter(''); }}
-            disabled={!level}
-          >
-            <option value="">—</option>
-            {topics.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-slate-600">Sub-group:</label>
-          <select
-            className="border border-slate-300 rounded px-3 py-1.5 text-sm"
-            value={subgroupFilter}
-            onChange={(e) => setSubgroupFilter(e.target.value)}
-            disabled={!topic}
-          >
-            <option value="">All</option>
-            {subgroups.map((sg) => (
-              <option key={sg.id} value={String(sg.id)}>
-                {sg.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={unpublishedOnly}
-            onChange={(e) => setUnpublishedOnly(e.target.checked)}
-            className="rounded"
-          />
-          Show unpublished only
-        </label>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-6">
-        {!level || !topic ? (
-          <p className="text-slate-500 text-center py-16">Pick a level and topic to start editing.</p>
-        ) : loading ? (
-          <p className="text-slate-500 text-center py-16">Loading…</p>
-        ) : filteredCards.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-slate-500 mb-3">No cards yet for {topic}.</p>
-            <button
-              onClick={() => setShowNewModal(true)}
-              disabled={subgroups.length === 0}
-              className="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40"
-            >
-              + Create the first one
-            </button>
+    <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+      {/* Top bar */}
+      <div className="shrink-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-4">
+        <h1 className="text-lg font-semibold text-slate-800">Cards editor</h1>
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500 text-xs">Level</span>
+            <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={level} onChange={(e) => { setLevel(e.target.value); setTopic(''); setSubgroupFilter(''); setSelectedId(null); }}>
+              <option value="">—</option>
+              {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
           </div>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="space-y-6">
-              {subgroups
-                .filter((sg) => !subgroupFilter || String(sg.id) === subgroupFilter)
-                .map((sg) => {
-                  const sgCards = cardsBySg[sg.id] ?? [];
-                  if (sgCards.length === 0 && subgroupFilter) return null;
-                  const status = reorderStatus[sg.id];
-                  return (
-                    <div key={sg.id}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h2 className="text-sm font-semibold text-slate-600">
-                          sg{sg.id} · {sg.name} ({sgCards.length} card{sgCards.length !== 1 ? 's' : ''})
-                        </h2>
-                        {status === 'saving' && (
-                          <span className="text-xs text-slate-400">Saving order…</span>
-                        )}
-                        {status === 'saved' && (
-                          <span className="text-xs text-green-600">Order saved</span>
-                        )}
-                        {status === 'error' && (
-                          <span className="text-xs text-red-600">Save failed</span>
-                        )}
-                      </div>
-                      <SortableContext
-                        items={sgCards.map((c) => c.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <div className="space-y-1.5">
-                          {sgCards.map((card, i) => (
-                            <SortableCardRow
-                              key={card.id}
-                              card={card}
-                              index={i}
-                              onEdit={handleEdit}
-                            />
-                          ))}
-                        </div>
-                      </SortableContext>
-                    </div>
-                  );
-                })}
-            </div>
-            <DragOverlay modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
-              {activeCard ? <DragCard card={activeCard} /> : null}
-            </DragOverlay>
-          </DndContext>
-        )}
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500 text-xs">Topic</span>
+            <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={topic} onChange={(e) => { setTopic(e.target.value); setSubgroupFilter(''); setSelectedId(null); }} disabled={!level}>
+              <option value="">—</option>
+              {topics.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500 text-xs">Sub-group</span>
+            <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={subgroupFilter} onChange={(e) => setSubgroupFilter(e.target.value)} disabled={!topic}>
+              <option value="">All</option>
+              {subgroups.map((sg) => <option key={sg.id} value={String(sg.id)}>{sg.name}</option>)}
+            </select>
+          </div>
+          <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+            <input type="checkbox" checked={unpublishedOnly} onChange={(e) => setUnpublishedOnly(e.target.checked)} /> Drafts only
+          </label>
+        </div>
+        <div className="ml-auto">
+          <button onClick={() => setShowNewModal(true)} disabled={!level || !topic || subgroups.length === 0} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">+ New card</button>
+        </div>
       </div>
 
-      {/* New card modal */}
+      {/* Body: list + editor side by side */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Card list */}
+        <div className="w-72 shrink-0 border-r border-slate-200 bg-white flex flex-col overflow-hidden">
+          {!level || !topic ? (
+            <div className="flex-1 flex items-center justify-center p-6 text-center text-slate-400 text-sm">Pick a level and topic to start editing.</div>
+          ) : loading ? (
+            <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
+          ) : filteredCards.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
+              <p className="text-slate-400 text-sm">No cards yet for {topic}.</p>
+              <button onClick={() => setShowNewModal(true)} disabled={subgroups.length === 0} className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">+ Create the first one</button>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+              <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                {subgroups
+                  .filter((sg) => !subgroupFilter || String(sg.id) === subgroupFilter)
+                  .map((sg) => {
+                    const sgCards = cardsBySg[sg.id] ?? [];
+                    if (sgCards.length === 0 && subgroupFilter) return null;
+                    return (
+                      <div key={sg.id}>
+                        <div className="flex items-center gap-2 mb-1.5 px-1">
+                          <span className="text-xs font-semibold text-slate-500 truncate">{sg.name} <span className="font-normal text-slate-400">({sgCards.length})</span></span>
+                          {reorderStatus[sg.id] === 'saving' && <span className="text-xs text-slate-400 ml-auto">Saving…</span>}
+                          {reorderStatus[sg.id] === 'saved' && <span className="text-xs text-green-600 ml-auto">Saved</span>}
+                        </div>
+                        <SortableContext items={sgCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                          <div className="space-y-1">
+                            {sgCards.map((card) => (
+                              <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </div>
+                    );
+                  })}
+                <DragOverlay modifiers={[restrictToVerticalAxis]}>{activeCard ? <DragCardOverlay card={activeCard} /> : null}</DragOverlay>
+              </DndContext>
+            </div>
+          )}
+        </div>
+
+        {/* Editor panel */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {selectedId ? (
+            <EditorPanel
+              key={selectedId}
+              cardId={selectedId}
+              subgroups={subgroups}
+              allCards={cards}
+              level={level}
+              topic={topic}
+              auth={auth}
+              onSaved={handleEditorSaved}
+              onDeleted={handleEditorDeleted}
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
+              {level && topic ? 'Select a card to edit.' : ''}
+            </div>
+          )}
+        </div>
+      </div>
+
       {showNewModal && level && topic && (
         <NewCardModal
-          subgroups={subgroups}
-          level={level}
-          topic={topic}
+          subgroups={subgroups} level={level} topic={topic}
           onClose={() => setShowNewModal(false)}
           onCreated={(id) => {
             setShowNewModal(false);
-            handleEdit(id);
+            fetchCards().then(() => setSelectedId(id));
           }}
           auth={auth}
         />
