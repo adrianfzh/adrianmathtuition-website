@@ -42,6 +42,55 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const LEVELS = ['AM', 'EM', 'JC', 'S1', 'S2'];
 
+// ── Layout defaults ───────────────────────────────────────────────────────────
+
+const LAYOUT_KEY = 'edit_cards_layout';
+const DEFAULT_LAYOUT = { listWidth: 288, textareaWidth: 420, aiWidth: 240 };
+const MIN = { list: 160, textarea: 200, ai: 160 };
+const MAX = { list: 520, textarea: 900, ai: 420 };
+
+function loadLayout() {
+  try {
+    const saved = localStorage.getItem(LAYOUT_KEY);
+    if (saved) return { ...DEFAULT_LAYOUT, ...JSON.parse(saved) };
+  } catch { /* ignore */ }
+  return DEFAULT_LAYOUT;
+}
+
+// ── Resize handle ─────────────────────────────────────────────────────────────
+
+function ResizeHandle({ onDelta }: { onDelta: (delta: number) => void }) {
+  const onDeltaRef = useRef(onDelta);
+  useEffect(() => { onDeltaRef.current = onDelta; }, [onDelta]);
+
+  function onMouseDown(e: React.MouseEvent) {
+    e.preventDefault();
+    let lastX = e.clientX;
+
+    function onMove(e: MouseEvent) {
+      onDeltaRef.current(e.clientX - lastX);
+      lastX = e.clientX;
+    }
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }
+
+  return (
+    <div
+      onMouseDown={onMouseDown}
+      className="w-1 shrink-0 bg-slate-200 hover:bg-blue-400 cursor-col-resize transition-colors z-10"
+    />
+  );
+}
+
 // ── KaTeX ─────────────────────────────────────────────────────────────────────
 
 const katexOptions = {
@@ -256,7 +305,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, auth, onAcc
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden border-l border-slate-200">
+    <div className="flex flex-col h-full overflow-hidden">
       <div className="px-3 py-2 border-b border-slate-200 bg-slate-50">
         <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">✨ AI assist</span>
       </div>
@@ -305,16 +354,20 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, auth, onAcc
 }
 
 // ── Inline editor panel ───────────────────────────────────────────────────────
-// Receives the full card data directly — no fetch needed, loads instantly.
-// onSaved: updates card list metadata only (never changes selectedId).
-// onNavigate: called by Prev/Next to switch selected card.
 
-function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onSaved, onDeleted, onNavigate }: {
+function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
+  textareaWidth, aiWidth, aiOpen,
+  onSaved, onDeleted, onNavigate, onTextareaResize, onAiResize, onAiToggle,
+}: {
   initialCard: CardRow; subgroups: Subgroup[]; allCards: CardRow[];
   level: string; topic: string; auth: string;
+  textareaWidth: number; aiWidth: number; aiOpen: boolean;
   onSaved: (updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) => void;
   onDeleted: (id: string) => void;
   onNavigate: (id: string) => void;
+  onTextareaResize: (delta: number) => void;
+  onAiResize: (delta: number) => void;
+  onAiToggle: () => void;
 }) {
   const [title, setTitle] = useState(initialCard.card_title);
   const [content, setContent] = useState(initialCard.content);
@@ -325,13 +378,11 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onS
   const [previewContent, setPreviewContent] = useState(initialCard.content);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [aiOpen, setAiOpen] = useState(true);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cardId = initialCard.id;
 
-  // Clear pending timers on unmount so stale saves don't fire after navigation
   useEffect(() => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -339,7 +390,6 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onS
     };
   }, []);
 
-  // Debounced preview
   useEffect(() => {
     if (previewTimer.current) clearTimeout(previewTimer.current);
     previewTimer.current = setTimeout(() => setPreviewContent(content), 200);
@@ -355,7 +405,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onS
       });
       if (!res.ok) throw new Error();
       setSaveStatus('saved');
-      onSaved({ id: cardId, card_title: fields.card_title, is_published: fields.is_published, subgroup_id: fields.subgroup_id, order_index: fields.order_index, content: fields.content });
+      onSaved({ id: cardId, ...fields });
       setTimeout(() => setSaveStatus((s) => s === 'saved' ? 'idle' : s), 2500);
     } catch { setSaveStatus('error'); }
   }, [cardId, auth, onSaved]);
@@ -365,7 +415,6 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onS
     saveTimer.current = setTimeout(() => doSave(fields), 800);
   }, [doSave]);
 
-  // Auto-save on field changes (skip on first render)
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) { isFirstRender.current = false; return; }
@@ -413,7 +462,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onS
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-      {/* Editor sub-header */}
+      {/* Sub-header */}
       <div className="shrink-0 px-4 py-2 border-b border-slate-200 bg-white flex items-center gap-3">
         <span className="text-xs text-slate-500 truncate min-w-0">sg{sgId} · {currentSubgroup?.name ?? '…'} · Card {sibIdx + 1} of {siblings.length}</span>
         <div className="ml-auto flex items-center gap-2 shrink-0">
@@ -421,11 +470,11 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onS
           {saveStatus === 'saved' && <span className="text-xs text-green-600">Saved ✓</span>}
           {saveStatus === 'error' && <span className="text-xs text-red-600">Error</span>}
           <button onClick={() => { if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; } doSave({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished }); }} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
-          <button onClick={() => setAiOpen((v) => !v)} className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">{aiOpen ? 'Hide AI' : '✨ AI'}</button>
+          <button onClick={onAiToggle} className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">{aiOpen ? 'Hide AI' : '✨ AI'}</button>
         </div>
       </div>
 
-      {/* Card meta */}
+      {/* Meta */}
       <div className="shrink-0 px-4 py-2.5 border-b border-slate-200 bg-white space-y-2">
         <input type="text" className="w-full border border-slate-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Card title" value={title} onChange={(e) => setTitle(e.target.value)} />
         <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -438,24 +487,34 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth, onS
         </div>
       </div>
 
-      {/* Editing area: textarea | preview | AI */}
+      {/* Editing area */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200">
-          <div className="px-3 py-1 bg-slate-50 border-b border-slate-200 text-xs text-slate-500">Markdown + LaTeX</div>
-          <textarea className="flex-1 resize-none px-3 py-2.5 text-sm font-mono focus:outline-none bg-white leading-relaxed" value={content} onChange={(e) => setContent(e.target.value)} onKeyDown={handleTextareaKeyDown} spellCheck={false} />
+        {/* Textarea */}
+        <div className="flex flex-col min-w-0 overflow-hidden" style={{ width: textareaWidth, flexShrink: 0 }}>
+          <div className="px-3 py-1 bg-slate-50 border-b border-r border-slate-200 text-xs text-slate-500">Markdown + LaTeX</div>
+          <textarea className="flex-1 resize-none px-3 py-2.5 text-sm font-mono focus:outline-none bg-white leading-relaxed border-r border-slate-200" value={content} onChange={(e) => setContent(e.target.value)} onKeyDown={handleTextareaKeyDown} spellCheck={false} />
         </div>
-        <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 overflow-hidden">
-          <div className="px-3 py-1 bg-slate-50 border-b border-slate-200 text-xs text-slate-500">Live preview</div>
-          <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none">
+
+        <ResizeHandle onDelta={onTextareaResize} />
+
+        {/* Preview */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <div className="px-3 py-1 bg-slate-50 border-b border-r border-slate-200 text-xs text-slate-500">Live preview</div>
+          <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
             <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[[rehypeKatex, katexOptions]]}>
               {fixMathFences(previewContent)}
             </ReactMarkdown>
           </div>
         </div>
+
+        {/* AI sidebar */}
         {aiOpen && (
-          <div className="w-60 shrink-0 flex flex-col overflow-hidden">
-            <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} auth={auth} onAccept={(c) => setContent(c)} />
-          </div>
+          <>
+            <ResizeHandle onDelta={onAiResize} />
+            <div className="flex flex-col overflow-hidden bg-white" style={{ width: aiWidth, flexShrink: 0 }}>
+              <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} auth={auth} onAccept={(c) => setContent(c)} />
+            </div>
+          </>
         )}
       </div>
 
@@ -494,10 +553,29 @@ export default function EditCardsClient() {
   const [reorderStatus, setReorderStatus] = useState<Record<number, SaveStatus>>({});
   const [showNewModal, setShowNewModal] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Panel widths — loaded from localStorage once on mount
+  const [listWidth, setListWidth] = useState(DEFAULT_LAYOUT.listWidth);
+  const [textareaWidth, setTextareaWidth] = useState(DEFAULT_LAYOUT.textareaWidth);
+  const [aiWidth, setAiWidth] = useState(DEFAULT_LAYOUT.aiWidth);
+  const [aiOpen, setAiOpen] = useState(true);
+  const layoutLoaded = useRef(false);
+
   const reorderTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     if (!pw) { window.location.href = '/admin'; return; }
+
+    // Load layout
+    if (!layoutLoaded.current) {
+      layoutLoaded.current = true;
+      const l = loadLayout();
+      setListWidth(l.listWidth);
+      setTextareaWidth(l.textareaWidth);
+      setAiWidth(l.aiWidth);
+    }
+
+    // Load filters
     const saved = localStorage.getItem('edit_cards_filters');
     if (saved) {
       try {
@@ -509,6 +587,12 @@ export default function EditCardsClient() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Persist layout on change
+  useEffect(() => {
+    if (!layoutLoaded.current) return;
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify({ listWidth, textareaWidth, aiWidth }));
+  }, [listWidth, textareaWidth, aiWidth]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -574,7 +658,6 @@ export default function EditCardsClient() {
     }, 600);
   }
 
-  // Called by EditorPanel after a successful save — updates list metadata only, never changes selectedId
   function handleCardSaved(updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) {
     setCards((prev) => prev.map((c) => c.id === updated.id ? { ...c, ...updated } : c));
   }
@@ -583,6 +666,17 @@ export default function EditCardsClient() {
     setCards((prev) => prev.filter((c) => c.id !== id));
     setSelectedId(null);
   }
+
+  // Resize handlers with clamping
+  const handleListResize = useCallback((delta: number) => {
+    setListWidth((w) => Math.max(MIN.list, Math.min(MAX.list, w + delta)));
+  }, []);
+  const handleTextareaResize = useCallback((delta: number) => {
+    setTextareaWidth((w) => Math.max(MIN.textarea, Math.min(MAX.textarea, w + delta)));
+  }, []);
+  const handleAiResize = useCallback((delta: number) => {
+    setAiWidth((w) => Math.max(MIN.ai, Math.min(MAX.ai, w - delta)));
+  }, []);
 
   const filteredCards = unpublishedOnly ? cards.filter((c) => !c.is_published) : cards;
   const cardsBySg: Record<number, CardRow[]> = {};
@@ -629,7 +723,7 @@ export default function EditCardsClient() {
       {/* Body */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Left: card list */}
-        <div className="w-72 shrink-0 border-r border-slate-200 bg-white flex flex-col overflow-hidden">
+        <div className="shrink-0 border-r border-slate-200 bg-white flex flex-col overflow-hidden" style={{ width: listWidth }}>
           {!level || !topic ? (
             <div className="flex-1 flex items-center justify-center p-6 text-center text-slate-400 text-sm">Pick a level and topic to start editing.</div>
           ) : loading ? (
@@ -670,6 +764,8 @@ export default function EditCardsClient() {
           )}
         </div>
 
+        <ResizeHandle onDelta={handleListResize} />
+
         {/* Right: editor */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {selectedCard ? (
@@ -681,9 +777,15 @@ export default function EditCardsClient() {
               level={level}
               topic={topic}
               auth={auth}
+              textareaWidth={textareaWidth}
+              aiWidth={aiWidth}
+              aiOpen={aiOpen}
               onSaved={handleCardSaved}
               onDeleted={handleCardDeleted}
               onNavigate={setSelectedId}
+              onTextareaResize={handleTextareaResize}
+              onAiResize={handleAiResize}
+              onAiToggle={() => setAiOpen((v) => !v)}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
