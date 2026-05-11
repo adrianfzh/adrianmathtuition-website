@@ -1657,6 +1657,17 @@ export default function SchedulePage() {
     setSubmitting(true); setModalError('');
     try {
       if (rescheduleModal.switchMode) {
+        const selectedSlot = sortedSlots.find(s => s.id === toSlotId);
+        const slotLabel = selectedSlot ? `${selectedSlot.dayName} ${selectedSlot.time}` : 'new slot';
+        const confirmed = window.confirm(
+          `Switch ${lesson.studentName} to ${slotLabel} from ${toDate}?\n\n` +
+          `This will:\n` +
+          `• Cancel all future lessons on the current slot (from ${toDate})\n` +
+          `• Create new lessons on ${slotLabel} for the next 28 days\n` +
+          `• Update their enrollment permanently\n\n` +
+          `This cannot be undone easily.`
+        );
+        if (!confirmed) { setSubmitting(false); return; }
         // Permanent slot switch: cancel future lessons, create new ones, update enrollment
         const res = await fetch('/api/admin-schedule/switch', {
           method: 'POST',
