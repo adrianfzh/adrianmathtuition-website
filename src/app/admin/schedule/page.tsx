@@ -1661,7 +1661,8 @@ export default function SchedulePage() {
   async function handleConfirmReschedule() {
     if (!rescheduleModal) return;
     const { lesson, toDate, toSlotId, notes, notify } = rescheduleModal;
-    if (!toDate || !toSlotId) { setModalError('Select a date and slot'); return; }
+    if (!toSlotId) { setModalError('Select a slot'); return; }
+    if (!toDate) { setModalError(rescheduleModal.switchMode ? 'Select a start date' : 'Select a date'); return; }
     setSubmitting(true); setModalError('');
     try {
       const res = await fetch('/api/admin-schedule/reschedule', {
@@ -2438,11 +2439,13 @@ export default function SchedulePage() {
               </div>
               {rescheduleModal.showPickers ? (
                 <>
-                  <div className="form-group">
-                    <span className="form-label">New Date</span>
-                    <input type="date" className="modal-input" value={rescheduleModal.toDate}
-                      onChange={e => setRescheduleModal(m => m ? { ...m, toDate: e.target.value, toSlotId: '' } : null)} />
-                  </div>
+                  {!rescheduleModal.switchMode && (
+                    <div className="form-group">
+                      <span className="form-label">New Date</span>
+                      <input type="date" className="modal-input" value={rescheduleModal.toDate}
+                        onChange={e => setRescheduleModal(m => m ? { ...m, toDate: e.target.value, toSlotId: '' } : null)} />
+                    </div>
+                  )}
                   <div className="form-group">
                     <span className="form-label">New Slot</span>
                     {(() => {
@@ -2459,7 +2462,7 @@ export default function SchedulePage() {
                       return (
                         <>
                           <select className="modal-select" value={rescheduleModal.toSlotId}
-                            onChange={e => setRescheduleModal(m => m ? { ...m, toSlotId: e.target.value } : null)}>
+                            onChange={e => setRescheduleModal(m => m ? { ...m, toSlotId: e.target.value, toDate: rescheduleModal.switchMode ? '' : m?.toDate ?? '' } : null)}>
                             <option value="">Select slot…</option>
                             {displaySlots.filter(s => {
                               if (s.id === rescheduleModal.lesson.slotId) return false;
@@ -2525,6 +2528,51 @@ export default function SchedulePage() {
                       );
                     })()}
                   </div>
+
+                  {/* Switch mode: "Start on" — next two occurrences of the selected slot's day */}
+                  {rescheduleModal.switchMode && rescheduleModal.toSlotId && (() => {
+                    const slot = sortedSlots.find(s => s.id === rescheduleModal.toSlotId);
+                    if (!slot) return null;
+                    const DAY_ORDER = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                    const targetDay = DAY_ORDER.indexOf(slot.dayName);
+                    if (targetDay === -1) return null;
+                    // Find next two occurrences starting from tomorrow (SGT approx)
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+                    const dates: string[] = [];
+                    let d = new Date(today);
+                    d.setDate(d.getDate() + 1); // start from tomorrow
+                    while (dates.length < 2) {
+                      if (d.getDay() === targetDay) {
+                        dates.push(d.toLocaleDateString('en-CA')); // YYYY-MM-DD
+                      }
+                      d.setDate(d.getDate() + 1);
+                    }
+                    return (
+                      <div className="form-group">
+                        <span className="form-label">Start on</span>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
+                          {dates.map(dateStr => {
+                            const label = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
+                            const isSelected = rescheduleModal.toDate === dateStr;
+                            return (
+                              <button key={dateStr} type="button"
+                                onClick={() => setRescheduleModal(m => m ? { ...m, toDate: dateStr } : null)}
+                                style={{
+                                  flex: 1, padding: '10px 8px', borderRadius: 8, border: '1.5px solid',
+                                  borderColor: isSelected ? '#1e3a5f' : '#e2e8f0',
+                                  background: isSelected ? '#1e3a5f' : '#f8fafc',
+                                  color: isSelected ? '#fff' : '#475569',
+                                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                }}>
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </>
               ) : (
                 <div className="modal-row">
