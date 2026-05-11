@@ -2446,7 +2446,8 @@ export default function SchedulePage() {
                   <div className="form-group">
                     <span className="form-label">New Slot</span>
                     {(() => {
-                      const selectedDayName = rescheduleModal.toDate
+                      // Switch mode: show ALL days (don't filter by selected date's day)
+                      const selectedDayName = rescheduleModal.switchMode ? null : rescheduleModal.toDate
                         ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(rescheduleModal.toDate + 'T00:00:00').getDay()]
                         : null;
                       const daySlots = selectedDayName
@@ -2463,13 +2464,17 @@ export default function SchedulePage() {
                             {displaySlots.filter(s => {
                               if (s.id === rescheduleModal.lesson.slotId) return false;
                               if (rescheduleModal.switchMode) {
-                                // Level filter
+                                // Level filter: match Secondary/JC category
+                                // Slot level field is 'Secondary', 'JC', 'Adhoc' etc.
+                                // Student level is 'Sec1'/'Sec2'/... or 'JC1'/'JC2'
                                 const studentLvl = (rescheduleModal.lesson.studentLevel || '').toLowerCase();
                                 const slotLvl = (s.level || '').toLowerCase();
                                 const studentIsJC = studentLvl.startsWith('jc');
-                                const slotIsJC = slotLvl.includes('jc') || slotLvl.includes('junior');
+                                const slotIsJC = slotLvl === 'jc' || slotLvl.startsWith('jc');
+                                const slotIsAdhoc = slotLvl === 'adhoc';
+                                if (slotIsAdhoc) return false; // never show adhoc slots for switch
                                 if (!showAllRescheduleSlots && studentIsJC !== slotIsJC) return false;
-                                // Capacity filter: hide full regular slots by default
+                                // Capacity filter: only show slots with room (enrolledCount < normalCapacity)
                                 const regCap = s.capacity ?? 0;
                                 const enrolled = s.enrolledCount ?? 0;
                                 if (!showAllRescheduleSlots && regCap > 0 && enrolled >= regCap) return false;
