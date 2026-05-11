@@ -157,6 +157,7 @@ const LAUNCHERS = [
   { emoji: '📋', title: 'Attendance',   sub: 'Search student · lesson history',           href: '/admin/attendance'   },
   { emoji: '💡', title: 'Improvements', sub: 'Suggestion clusters · approve prompt rules', href: '/admin/improvements' },
   { emoji: '📊', title: 'API Usage',     sub: 'Cost · token usage · question log',          href: '/admin/analytics'    },
+  { emoji: '📈', title: 'Bot Metrics',   sub: 'Volume · friction · version comparison',      href: '/admin/metrics'      },
   { emoji: '🤖', title: 'Bot Analytics', sub: 'Questions · suggestions · Opus chat', href: '/admin/bot-analytics' },
 ];
 
