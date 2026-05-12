@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   await sendTelegram(
     `📋 <b>Invoice reminder — ${monthLabel}</b>\n\n` +
-    `Draft invoices will be generated tomorrow (14th) at 8am SGT.\n\n` +
+    `Draft invoices will be generated on the 14th (in 2 days) at 7am SGT.\n\n` +
     `Check outstanding balances or new students before then — any changes needed should be made in Airtable first.`
   );
 
