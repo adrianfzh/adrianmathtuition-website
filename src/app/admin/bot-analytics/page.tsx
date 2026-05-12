@@ -156,7 +156,11 @@ export default function BotAnalytics() {
   const [batches, setBatches]       = useState<{ batchId: string; clusters: Cluster[] }[]>([]);
   const [rates, setRates]           = useState<{ topic: string; rate: number; sugs: number; qs: number }[]>([]);
   const [trend, setTrend]           = useState<{ date: string; count: number }[]>([]);
-  const [pendingSugs, setPendingSugs] = useState<{ key: string; suggestion: string; date: string; basedOn: number }[]>([]);
+  const [pendingSugs, setPendingSugs] = useState<{
+    key: string; suggestion: string; date: string; basedOn: number | null;
+    issue?: string | null; question?: string | null; model?: string | null;
+    category?: string | null; level?: string | null;
+  }[]>([]);
   const [pendingSugsError, setPendingSugsError] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -466,9 +470,29 @@ export default function BotAnalytics() {
                   <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13, color: '#475569' }}>💡 Suggested Rules ({pendingSugs.length})</div>
                   {pendingSugs.map(s => (
                     <div key={s.key} style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, padding: '10px 14px', marginBottom: 8 }}>
-                      <div style={{ fontSize: 11, color: '#92400e', marginBottom: 4 }}>
-                        Based on {s.basedOn} flagged answer{s.basedOn !== 1 ? 's' : ''} · {s.date}
+                      <div style={{ fontSize: 11, color: '#92400e', marginBottom: 6, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                        {s.basedOn != null && <span>Based on {s.basedOn} flagged answer{s.basedOn !== 1 ? 's' : ''}</span>}
+                        <span>· {s.date}</span>
+                        {s.model && <span style={{ background: '#fef9c3', borderRadius: 4, padding: '1px 5px' }}>{s.model.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus')}</span>}
+                        {s.level && s.level !== 'unknown' && <span style={{ background: '#f0fdf4', borderRadius: 4, padding: '1px 5px', color: '#15803d' }}>{s.level}</span>}
                       </div>
+                      {/* Issue context — what went wrong */}
+                      {s.issue && (
+                        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#dc2626', lineHeight: 1.5 }}>
+                          ⚠ {s.issue}
+                        </div>
+                      )}
+                      {/* Question context */}
+                      {s.question && s.question !== '(image question)' && (
+                        <div style={{ background: '#f8fafc', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#475569', lineHeight: 1.5, fontStyle: 'italic' }}>
+                          📝 Q: {s.question.slice(0, 200)}{s.question.length > 200 ? '…' : ''}
+                        </div>
+                      )}
+                      {s.question === '(image question)' && (
+                        <div style={{ background: '#f8fafc', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#94a3b8' }}>
+                          📷 Image question — check bot-analytics flagged tab for the date above
+                        </div>
+                      )}
                       <div style={{ fontSize: 13, lineHeight: 1.5, color: '#1e293b', marginBottom: 8, fontStyle: 'italic' }}>"{s.suggestion}"</div>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button onClick={async () => {
