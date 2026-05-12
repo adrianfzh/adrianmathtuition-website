@@ -55,6 +55,9 @@ interface Exam {
   testedTopics: string;
   examNotes: string;
   noExam: boolean;
+  resultScore?: number | null;
+  resultTotal?: number | null;
+  resultGrade?: string;
 }
 
 interface FormState {
@@ -363,6 +366,8 @@ function ExamForm({
     initial?.testedTopics ? initial.testedTopics.split(',').map(s => s.trim()).filter(Boolean) : []
   );
   const [examNotes, setExamNotes] = useState(initial?.examNotes ?? '');
+  const [resultScore, setResultScore] = useState(initial?.resultScore != null ? String(initial.resultScore) : '');
+  const [resultTotal, setResultTotal] = useState(initial?.resultTotal != null ? String(initial.resultTotal) : '');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -382,12 +387,16 @@ function ExamForm({
     }
     setIsSaving(true);
     setSaveError('');
+    const scoreNum = resultScore !== '' ? parseFloat(resultScore) : null;
+    const totalNum = resultTotal !== '' ? parseFloat(resultTotal) : null;
     const payload = {
       examType,
       subject: subject || undefined,
       examDate: examDate || null,
       testedTopics: selectedTopics.join(', '),
       examNotes,
+      ...(scoreNum !== null && !isNaN(scoreNum) ? { resultScore: scoreNum } : {}),
+      ...(totalNum !== null && !isNaN(totalNum) ? { resultTotal: totalNum } : {}),
     };
     try {
       if (examId) {
@@ -502,6 +511,33 @@ function ExamForm({
           <TopicGrid topics={topics} selected={selectedTopics} onToggle={toggleTopic} />
         </div>
       )}
+
+      {/* Marks */}
+      <div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400 mb-1.5">Marks</div>
+        <div className="flex items-center gap-2">
+          <input
+            type="number" min={0} step={0.5} placeholder="Score"
+            value={resultScore}
+            onChange={e => setResultScore(e.target.value)}
+            className="border border-neutral-200 rounded-md px-3 py-2 text-[14px] text-center focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white"
+            style={{ width: 80 }}
+          />
+          <span className="text-neutral-400 font-semibold text-lg">/</span>
+          <input
+            type="number" min={0} step={1} placeholder="Total"
+            value={resultTotal}
+            onChange={e => setResultTotal(e.target.value)}
+            className="border border-neutral-200 rounded-md px-3 py-2 text-[14px] text-center focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white"
+            style={{ width: 80 }}
+          />
+          {resultScore && resultTotal && parseFloat(resultTotal) > 0 && (
+            <span className="text-[14px] font-semibold text-neutral-600">
+              {(parseFloat(resultScore) / parseFloat(resultTotal) * 100).toFixed(1)}%
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* Exam Notes */}
       <div>
@@ -739,11 +775,17 @@ function UpcomingExams({
                     ? <span className="text-[13px] text-neutral-500">{formatShortDate(exam.examDate)}</span>
                     : <span className="text-[13px] text-neutral-400">No date</span>
                   }
-                  {exam.testedTopics && (
+                  {exam.resultScore != null && exam.resultTotal != null && exam.resultTotal > 0 ? (
+                    <span className="text-[13px] font-semibold ml-auto shrink-0" style={{ color: (exam.resultScore / exam.resultTotal) >= 0.75 ? '#16a34a' : (exam.resultScore / exam.resultTotal) >= 0.5 ? '#d97706' : '#dc2626' }}>
+                      {exam.resultScore}/{exam.resultTotal} ({(exam.resultScore / exam.resultTotal * 100).toFixed(0)}%)
+                    </span>
+                  ) : exam.resultScore != null ? (
+                    <span className="text-[13px] font-semibold text-neutral-600 ml-auto shrink-0">{exam.resultScore} pts</span>
+                  ) : exam.testedTopics ? (
                     <span className="text-[13px] text-neutral-400 ml-auto shrink-0">
                       {exam.testedTopics.split(',').filter(Boolean).length}T
                     </span>
-                  )}
+                  ) : null}
                 </button>
               )}
             </div>

@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
   if (testedTopics !== undefined) patchFields['Tested Topics'] = testedTopics ?? '';
   if (noExam !== undefined) patchFields['No Exam'] = noExam;
   if (notes !== undefined) patchFields['Exam Notes'] = notes ?? '';
-  if (score !== undefined) patchFields['Score'] = score ?? null;
-  if (total !== undefined) patchFields['Total Marks'] = total ?? null;
+  if (score !== undefined) patchFields['Result Score'] = score ?? null;
+  if (total !== undefined) patchFields['Result Total'] = total ?? null;
 
   if (existing) {
     // Patch existing record
@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
   if (testedTopics) newFields['Tested Topics'] = testedTopics;
   if (noExam !== undefined) newFields['No Exam'] = noExam;
   if (notes) newFields['Exam Notes'] = notes;
-  if (score != null) newFields['Score'] = score;
-  if (total != null) newFields['Total Marks'] = total;
+  if (score != null) newFields['Result Score'] = score;
+  if (total != null) newFields['Result Total'] = total;
 
   const created = await airtableRequest('Exams', '', {
     method: 'POST',

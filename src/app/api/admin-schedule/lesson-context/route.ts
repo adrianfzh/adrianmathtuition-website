@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
         'Exams',
         `?filterByFormula=${encodeURIComponent(
           `{Exam Type}='${examType}'`
-        )}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject&fields[]=Exam Notes&fields[]=Score&fields[]=Total Marks`
+        )}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject&fields[]=Exam Notes&fields[]=Result Score&fields[]=Result Total`
       );
       // Group by subject — filter to this student in JS, then key by subject
       for (const r of examsData.records) {
@@ -115,8 +115,8 @@ export async function GET(req: NextRequest) {
           examTopics: r.fields['Tested Topics'] ?? null,
           noExam: r.fields['No Exam'] === true,
           notes: r.fields['Exam Notes'] ?? null,
-          score: r.fields['Score'] ?? null,
-          total: r.fields['Total Marks'] ?? null,
+          score: r.fields['Result Score'] ?? null,
+          total: r.fields['Result Total'] ?? null,
         };
       }
     }
