@@ -303,8 +303,20 @@ export default function BotAnalytics() {
       body: JSON.stringify({ rule, theme, sourceContext: JSON.stringify(contextItem) }),
     });
     const d = await r.json();
-    if (d.ok) setChatMessages(prev => [...prev, { role: 'assistant', content: '✅ Rule appended to prompt_additions.txt' }]);
-    else alert('Failed: ' + (d.error || 'unknown error'));
+    if (d.ok) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: '✅ Rule appended to prompt_additions.txt' }]);
+      // Auto-dismiss the originating suggestion from the left panel (if opened via Discuss)
+      const sugKey = contextItem?.suggestionKey;
+      if (sugKey) {
+        await fetch('/api/admin/cockpit/dismiss-suggestion', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+          body: JSON.stringify({ key: sugKey }),
+        });
+        setPendingSugs(prev => prev.filter(x => x.key !== sugKey));
+      }
+    } else {
+      alert('Failed: ' + (d.error || 'unknown error'));
+    }
   }
 
   function dismiss(id: string) {
@@ -473,7 +485,7 @@ export default function BotAnalytics() {
                         }} style={{ fontSize: 12, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600 }}>
                           ✅ Apply
                         </button>
-                        <button onClick={() => { selectCluster({ theme: 'Suggested rule', proposed_rule: s.suggestion, confidence: 'medium', affects_topics: [], suggestion_ids: [] }); }} style={{ fontSize: 12, background: '#1e3a5f', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600 }}>
+                        <button onClick={() => { selectCluster({ theme: 'Suggested rule', proposed_rule: s.suggestion, confidence: 'medium', affects_topics: [], suggestion_ids: [], suggestionKey: s.key }); }} style={{ fontSize: 12, background: '#1e3a5f', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600 }}>
                           ✦ Discuss
                         </button>
                         <button onClick={async () => {
