@@ -357,62 +357,6 @@ export default function BotAnalytics() {
     return <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 8, background: c.bg, color: c.color }}>{c.label}</span>;
   }
 
-  function ResponseViewer({ aiResponse }: { aiResponse: string }) {
-    const [telegramText, setTelegramText] = useState<string | null>(null);
-    const [telegramLoading, setTelegramLoading] = useState(false);
-
-    useEffect(() => {
-      if (responseView !== 'telegram' || !aiResponse) return;
-      if (telegramText !== null) return; // already fetched
-      setTelegramLoading(true);
-      fetch('/api/admin/cockpit/format-telegram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify({ text: aiResponse }),
-      }).then(r => r.json()).then(d => {
-        setTelegramText(d.formatted ?? aiResponse);
-      }).catch(() => setTelegramText(toTelegramText(aiResponse))) // fallback to approximation
-        .finally(() => setTelegramLoading(false));
-    }, [responseView, aiResponse]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    return (
-      <div>
-        {/* View toggle */}
-        <div style={{ display: 'flex', gap: 0, marginBottom: 8, border: '1px solid #e2e8f0', borderRadius: 6, overflow: 'hidden', width: 'fit-content' }}>
-          {(['telegram','web','raw'] as const).map(v => (
-            <button key={v} onClick={() => setResponseView(v)} style={{
-              padding: '4px 12px', fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
-              background: responseView === v ? '#1e3a5f' : 'transparent',
-              color: responseView === v ? '#fff' : '#64748b',
-            }}>
-              {v === 'telegram' ? '📱 Telegram' : v === 'web' ? '🌐 Web' : '📄 Raw'}
-            </button>
-          ))}
-        </div>
-
-        {responseView === 'telegram' && (
-          <div style={{ fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#f0fdf4', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto', fontFamily: 'system-ui, sans-serif' }}>
-            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it in Telegram (Unicode math, no LaTeX rendering)</div>
-            {telegramLoading ? <span style={{ color: '#94a3b8' }}>Rendering…</span> : (telegramText ?? '')}
-          </div>
-        )}
-
-        {responseView === 'web' && (
-          <div style={{ fontSize: 13, lineHeight: 1.7, background: '#eff6ff', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto' }}>
-            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it on web (KaTeX rendered)</div>
-            <WebMathRenderer text={aiResponse} />
-          </div>
-        )}
-
-        {responseView === 'raw' && (
-          <div style={{ fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f8fafc', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto', fontFamily: 'monospace', color: '#475569' }}>
-            {aiResponse || '(no response recorded)'}
-          </div>
-        )}
-      </div>
-    );
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'system-ui, sans-serif', fontSize: 14 }}>
       {/* Header */}
@@ -706,7 +650,7 @@ export default function BotAnalytics() {
                   {/* Bot answer — with view toggle */}
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Bot answer</div>
-                    <ResponseViewer aiResponse={selected.aiResponse || ''} />
+                    <ResponseViewer aiResponse={selected.aiResponse || ''} responseView={responseView} setResponseView={setResponseView} auth={auth} />
                   </div>
 
                   {/* Actions */}
@@ -739,7 +683,7 @@ export default function BotAnalytics() {
                       </div>
                     </div>
 
-                    <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                    <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: 16 }}>
                       {chatMessages.map((m, i) => {
                         const rule = m.role === 'assistant' ? extractRule(m.content) : null;
                         const displayContent = m.content.replace(/```rule\n([\s\S]*?)\n```/g, (_, r) =>
@@ -760,7 +704,7 @@ export default function BotAnalytics() {
                       {chatLoading && <div style={{ color: '#94a3b8', fontSize: 13, fontStyle: 'italic' }}>Opus is thinking…</div>}
                     </div>
 
-                    <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: 8 }}>
+                    <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: 8, flexShrink: 0 }}>
                       <textarea value={chatInput} onChange={e => setChatInput(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send(); }}
                         placeholder="Follow up… (Cmd+Enter to send)"
@@ -778,13 +722,13 @@ export default function BotAnalytics() {
 
             {/* Opus-only mode (clusters/error rates) */}
             {!selected && opusOpen && (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ padding: '10px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontWeight: 600, fontSize: 13 }}>✦ Discuss with Opus</span>
                   <button onClick={() => { setOpusOpen(false); setChatMessages([]); }}
                     style={{ fontSize: 12, color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>Clear</button>
                 </div>
-                <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                <div ref={chatScrollRef} style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: 16 }}>
                   {chatMessages.map((m, i) => {
                     const rule = m.role === 'assistant' ? extractRule(m.content) : null;
                     const displayContent = m.content.replace(/```rule\n([\s\S]*?)\n```/g, (_, r) =>
@@ -804,7 +748,7 @@ export default function BotAnalytics() {
                   })}
                   {chatLoading && <div style={{ color: '#94a3b8', fontSize: 13, fontStyle: 'italic' }}>Opus is thinking…</div>}
                 </div>
-                <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: 8 }}>
+                <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: 8, flexShrink: 0 }}>
                   <textarea value={chatInput} onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send(); }}
                     placeholder="Follow up… (Cmd+Enter to send)"
@@ -818,6 +762,64 @@ export default function BotAnalytics() {
               </div>
             )}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── ResponseViewer — module-level so it never remounts on parent re-render ──
+function ResponseViewer({ aiResponse, responseView, setResponseView, auth }: {
+  aiResponse: string;
+  responseView: 'raw' | 'telegram' | 'web';
+  setResponseView: (v: 'raw' | 'telegram' | 'web') => void;
+  auth: Record<string, string>;
+}) {
+  const [telegramText, setTelegramText] = useState<string | null>(null);
+  const [telegramLoading, setTelegramLoading] = useState(false);
+
+  useEffect(() => {
+    if (responseView !== 'telegram' || !aiResponse) return;
+    if (telegramText !== null) return;
+    setTelegramLoading(true);
+    fetch('/api/admin/cockpit/format-telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...auth },
+      body: JSON.stringify({ text: aiResponse }),
+    }).then(r => r.json()).then(d => {
+      setTelegramText(d.formatted ?? aiResponse);
+    }).catch(() => setTelegramText(toTelegramText(aiResponse)))
+      .finally(() => setTelegramLoading(false));
+  }, [responseView, aiResponse]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 0, marginBottom: 8, border: '1px solid #e2e8f0', borderRadius: 6, overflow: 'hidden', width: 'fit-content' }}>
+        {(['telegram','web','raw'] as const).map(v => (
+          <button key={v} onClick={() => setResponseView(v)} style={{
+            padding: '4px 12px', fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
+            background: responseView === v ? '#1e3a5f' : 'transparent',
+            color: responseView === v ? '#fff' : '#64748b',
+          }}>
+            {v === 'telegram' ? '📱 Telegram' : v === 'web' ? '🌐 Web' : '📄 Raw'}
+          </button>
+        ))}
+      </div>
+      {responseView === 'telegram' && (
+        <div style={{ fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#f0fdf4', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto', fontFamily: 'system-ui, sans-serif' }}>
+          <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it in Telegram</div>
+          {telegramLoading ? <span style={{ color: '#94a3b8' }}>Rendering…</span> : (telegramText ?? '')}
+        </div>
+      )}
+      {responseView === 'web' && (
+        <div style={{ fontSize: 13, lineHeight: 1.7, background: '#eff6ff', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto' }}>
+          <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it on web (KaTeX)</div>
+          <WebMathRenderer text={aiResponse} />
+        </div>
+      )}
+      {responseView === 'raw' && (
+        <div style={{ fontSize: 12, lineHeight: 1.6, whiteSpace: 'pre-wrap', background: '#f8fafc', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto', fontFamily: 'monospace', color: '#475569' }}>
+          {aiResponse || '(no response recorded)'}
         </div>
       )}
     </div>
