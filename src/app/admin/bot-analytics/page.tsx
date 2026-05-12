@@ -406,7 +406,7 @@ export default function BotAnalytics() {
         <span style={{ fontWeight: 700, fontSize: 16 }}>Bot Analytics</span>
         <select value={days} onChange={e => setDays(parseInt(e.target.value))}
           style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 8px', fontSize: 13 }}>
-          {[{d:1,label:'Today'},{d:2,label:'Yesterday'},{d:3,label:'Last 3 days'},{d:7,label:'Last 7 days'}].map(({d,label}) => <option key={d} value={d}>{label}</option>)}
+          {[{d:1,label:'Today'},{d:2,label:'Today + yesterday'},{d:3,label:'Last 3 days'},{d:7,label:'Last 7 days'}].map(({d,label}) => <option key={d} value={d}>{label}</option>)}
         </select>
         <button onClick={load} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 13 }}>↻ Refresh</button>
         <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>
