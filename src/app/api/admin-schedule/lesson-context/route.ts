@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
 
   // Fetch active exam type + all exam records for this student (grouped by subject)
   let examType: string | null = null;
-  const examsBySubject: Record<string, { examDate: string | null; examTopics: string | null; noExam: boolean; notes: string | null } | null> = {};
+  const examsBySubject: Record<string, { examDate: string | null; examTopics: string | null; noExam: boolean; notes: string | null; score: number | null; total: number | null } | null> = {};
 
   try {
     const settingsData = await airtableRequest(
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
         'Exams',
         `?filterByFormula=${encodeURIComponent(
           `{Exam Type}='${examType}'`
-        )}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject&fields[]=Exam Notes`
+        )}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject&fields[]=Exam Notes&fields[]=Score&fields[]=Total Marks`
       );
       // Group by subject — filter to this student in JS, then key by subject
       for (const r of examsData.records) {
@@ -115,6 +115,8 @@ export async function GET(req: NextRequest) {
           examTopics: r.fields['Tested Topics'] ?? null,
           noExam: r.fields['No Exam'] === true,
           notes: r.fields['Exam Notes'] ?? null,
+          score: r.fields['Score'] ?? null,
+          total: r.fields['Total Marks'] ?? null,
         };
       }
     }

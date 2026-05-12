@@ -77,6 +77,8 @@ interface ExamRecord {
   examTopics: string | null;
   noExam: boolean;
   notes: string | null;
+  score?: number | null;
+  total?: number | null;
 }
 
 interface LessonContextData {
@@ -265,6 +267,8 @@ function LessonModal({
   const [examDate, setExamDate] = useState('');
   const [examTopicPills, setExamTopicPills] = useState<string[]>([]); // selected topic pills
   const [examNotes, setExamNotes] = useState('');
+  const [examScore, setExamScore] = useState('');   // marks obtained
+  const [examTotal, setExamTotal] = useState('');   // total marks
   const [noExam, setNoExam] = useState(false);
   const [examSaving, setExamSaving] = useState(false);
   const [examSaveMsg, setExamSaveMsg] = useState('');
@@ -326,6 +330,8 @@ function LessonModal({
             : [];
           setExamTopicPills(savedExamTopics.filter((t: string) => canonicalAll.includes(t)));
           setExamNotes(rec?.notes ?? '');
+          setExamScore(rec?.score != null ? String(rec.score) : '');
+          setExamTotal(rec?.total != null ? String(rec.total) : '');
         } catch (e) {
           console.warn('[LessonModal] exam section init failed:', e);
         }
@@ -453,6 +459,10 @@ function LessonModal({
       if (!noExam) {
         reqBody.examDate = examDate || null;
         if (allTopics) reqBody.testedTopics = allTopics;
+        const scoreNum = examScore !== '' ? parseFloat(examScore) : null;
+        const totalNum = examTotal !== '' ? parseFloat(examTotal) : null;
+        if (scoreNum !== null && !isNaN(scoreNum)) reqBody.score = scoreNum;
+        if (totalNum !== null && !isNaN(totalNum)) reqBody.total = totalNum;
       }
       const res = await fetch('/api/admin-schedule/quick-add-exam', {
         method: 'POST',
@@ -481,6 +491,8 @@ function LessonModal({
       : [];
     setExamTopicPills(savedTopics.filter(t => [...SECONDARY_FLAT, ...JC_FLAT].includes(t)));
     setExamNotes(rec?.notes ?? '');
+    setExamScore(rec?.score != null ? String(rec.score) : '');
+    setExamTotal(rec?.total != null ? String(rec.total) : '');
   }
 
   function handleExamTopicToggle(topic: string) {
@@ -663,6 +675,32 @@ function LessonModal({
                             </div>
                           </div>
                         ))}
+                        <div className="lm-field-label" style={{ marginTop: 8 }}>Marks</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input
+                            type="number" min={0} step={0.5}
+                            className="modal-input"
+                            placeholder="Score"
+                            value={examScore}
+                            onChange={e => setExamScore(e.target.value)}
+                            style={{ fontSize: 13, width: '90px', textAlign: 'center' }}
+                          />
+                          <span style={{ color: '#94a3b8', fontSize: 15, fontWeight: 600 }}>/</span>
+                          <input
+                            type="number" min={0} step={1}
+                            className="modal-input"
+                            placeholder="Total"
+                            value={examTotal}
+                            onChange={e => setExamTotal(e.target.value)}
+                            style={{ fontSize: 13, width: '90px', textAlign: 'center' }}
+                          />
+                          {examScore && examTotal && parseFloat(examTotal) > 0 && (
+                            <span style={{ fontSize: 13, color: '#64748b', fontWeight: 600 }}>
+                              {(parseFloat(examScore) / parseFloat(examTotal) * 100).toFixed(1)}%
+                            </span>
+                          )}
+                        </div>
+
                         <div className="lm-field-label" style={{ marginTop: 8 }}>Notes</div>
                         <textarea
                           className="modal-input"

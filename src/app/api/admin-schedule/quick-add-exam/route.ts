@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
     testedTopics?: string;
     noExam?: boolean;
     notes?: string;
+    score?: number | null;
+    total?: number | null;
   };
   try {
     body = await req.json();
@@ -27,7 +29,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { studentId, examType, subject, examDate, testedTopics, noExam, notes } = body;
+  const { studentId, examType, subject, examDate, testedTopics, noExam, notes, score, total } = body;
   if (!studentId || !examType) {
     return NextResponse.json({ error: 'Missing studentId or examType' }, { status: 400 });
   }
@@ -36,7 +38,7 @@ export async function POST(req: NextRequest) {
   // ARRAYJOIN filter on linked records is unreliable — filter in JS.
   const allExams = await airtableRequestAll(
     'Exams',
-    `?filterByFormula=${encodeURIComponent(`{Exam Type}='${examType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`
+    `?filterByFormula=${encodeURIComponent(`{Exam Type}='${examType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Score&fields[]=Total Marks`
   );
   const existing = allExams.records.find(
     (r: any) =>
@@ -50,6 +52,8 @@ export async function POST(req: NextRequest) {
   if (testedTopics !== undefined) patchFields['Tested Topics'] = testedTopics ?? '';
   if (noExam !== undefined) patchFields['No Exam'] = noExam;
   if (notes !== undefined) patchFields['Exam Notes'] = notes ?? '';
+  if (score !== undefined) patchFields['Score'] = score ?? null;
+  if (total !== undefined) patchFields['Total Marks'] = total ?? null;
 
   if (existing) {
     // Patch existing record
@@ -77,6 +81,8 @@ export async function POST(req: NextRequest) {
   if (testedTopics) newFields['Tested Topics'] = testedTopics;
   if (noExam !== undefined) newFields['No Exam'] = noExam;
   if (notes) newFields['Exam Notes'] = notes;
+  if (score != null) newFields['Score'] = score;
+  if (total != null) newFields['Total Marks'] = total;
 
   const created = await airtableRequest('Exams', '', {
     method: 'POST',
