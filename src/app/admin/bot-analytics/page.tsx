@@ -167,6 +167,21 @@ export default function BotAnalytics() {
     return () => mq.removeEventListener('change', h);
   }, []);
   const [days, setDays]             = useState(1);
+
+  function midnightSGT(daysAgo: number): string {
+    const now = new Date();
+    const sgt = new Date(now.getTime() + 8 * 3600_000);
+    const dateStr = sgt.toISOString().slice(0, 10);
+    const d = new Date(`${dateStr}T00:00:00+08:00`);
+    d.setDate(d.getDate() - daysAgo);
+    return d.toISOString();
+  }
+
+  function buildDateParams(d: number): string {
+    if (d === 1) return `since=${encodeURIComponent(midnightSGT(0))}`; // today only
+    if (d === 2) return `since=${encodeURIComponent(midnightSGT(1))}&until=${encodeURIComponent(midnightSGT(0))}`; // yesterday only
+    return `since=${encodeURIComponent(midnightSGT(d - 1))}`; // last N days
+  }
   const [loading, setLoading]       = useState(true);
   const [qTab, setQTab]             = useState<'flagged' | 'all'>('flagged');
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
@@ -186,9 +201,9 @@ export default function BotAnalytics() {
     if (!pw) { window.location.href = '/admin'; return; }
     setLoading(true);
     Promise.all([
-      fetch(`/api/admin/cockpit/questions?days=${days}`, { headers: auth }).then(r => r.json()),
+      fetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/synthesis-batches`, { headers: auth }).then(r => r.json()),
-      fetch(`/api/admin/cockpit/error-rates?days=${days}`, { headers: auth }).then(r => r.json()),
+      fetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/pending-suggestions`, { headers: auth }).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
     ]).then(([qd, bd, rd, sd]) => {
       setQuestions(computeFlags(qd.questions || []));
@@ -406,7 +421,7 @@ export default function BotAnalytics() {
         <span style={{ fontWeight: 700, fontSize: 16 }}>Bot Analytics</span>
         <select value={days} onChange={e => setDays(parseInt(e.target.value))}
           style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 8px', fontSize: 13 }}>
-          {[{d:1,label:'Today'},{d:2,label:'Today + yesterday'},{d:3,label:'Last 3 days'},{d:7,label:'Last 7 days'}].map(({d,label}) => <option key={d} value={d}>{label}</option>)}
+          {[{d:1,label:'Today'},{d:2,label:'Yesterday'},{d:3,label:'Last 3 days'},{d:7,label:'Last 7 days'}].map(({d,label}) => <option key={d} value={d}>{label}</option>)}
         </select>
         <button onClick={load} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 13 }}>↻ Refresh</button>
         <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>
