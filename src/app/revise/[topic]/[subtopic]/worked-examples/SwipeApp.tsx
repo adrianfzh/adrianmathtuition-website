@@ -28,6 +28,7 @@ interface Props {
   subgroups: Record<number, Subgroup>;
   level: string;
   topic: string;
+  focusedSubgroupName?: string;
 }
 
 interface ChatMessage {
@@ -101,7 +102,7 @@ function CardMarkdown({ content }: { content: string }) {
 }
 
 // ── Desktop list view ─────────────────────────────────────────────────────────
-function DesktopView({ cards, subgroups, level, topic }: Props) {
+function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Props) {
   const groups: { sgId: number; cards: Card[] }[] = [];
   for (const card of cards) {
     const last = groups[groups.length - 1];
@@ -118,7 +119,10 @@ function DesktopView({ cards, subgroups, level, topic }: Props) {
         </a>
         <div className="flex-1 min-w-0">
           <h1 className="text-lg font-semibold text-gray-900 truncate">{topic}</h1>
-          <p className="text-xs text-gray-400 mt-0.5">{cards.length} worked examples</p>
+          {focusedSubgroupName
+            ? <p className="text-xs text-indigo-600 mt-0.5">Focused on: {focusedSubgroupName}</p>
+            : <p className="text-xs text-gray-400 mt-0.5">{cards.length} worked examples</p>
+          }
         </div>
       </div>
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-10">
@@ -156,7 +160,7 @@ function DesktopView({ cards, subgroups, level, topic }: Props) {
 }
 
 // ── Mobile swipe view ─────────────────────────────────────────────────────────
-function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
+function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }: Props) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [showHint, setShowHint] = useState(true);
@@ -344,7 +348,10 @@ function MobileSwipeView({ cards, subgroups, level, topic }: Props) {
               <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </a>
-          <h1 className="flex-1 truncate" style={{ fontSize: 14, fontWeight: 600, color: '#2C3E50' }}>{topic}</h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="truncate" style={{ fontSize: 14, fontWeight: 600, color: '#2C3E50' }}>{topic}</h1>
+            {focusedSubgroupName && <p className="truncate" style={{ fontSize: 11, color: '#6366f1', marginTop: 1 }}>Focused on: {focusedSubgroupName}</p>}
+          </div>
           <span style={{ fontSize: 13, color: '#999', fontVariantNumeric: 'tabular-nums' }}>{index + 1} / {total}</span>
         </div>
 

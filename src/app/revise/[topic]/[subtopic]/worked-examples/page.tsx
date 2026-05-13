@@ -48,10 +48,14 @@ function EmptyView({ level, topic }: { level: string; topic: string }) {
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ topic: string; subtopic: string }>;
+  searchParams: Promise<{ subgroup?: string }>;
 }) {
   const { topic: levelParam, subtopic: topicSlugParam } = await params;
+  const { subgroup: subgroupParam } = await searchParams;
+  const subgroupId = subgroupParam ? Number(subgroupParam) : null;
   const levelLower = levelParam.toLowerCase();
 
   if (!VALID_LEVELS.includes(levelLower)) return notFound();
@@ -62,7 +66,7 @@ export default async function Page({
   }
 
   const supa = getSupabase();
-  const { data: cards } = await supa
+  let query = supa
     .from('content_snippets')
     .select('id, subgroup_id, order_index, card_title, content, content_kind')
     .eq('level', levelLower.toUpperCase())
@@ -72,6 +76,12 @@ export default async function Page({
     .eq('is_published', true)
     .order('subgroup_id', { ascending: true })
     .order('order_index', { ascending: true });
+
+  if (subgroupId !== null && Number.isFinite(subgroupId)) {
+    query = query.eq('subgroup_id', subgroupId);
+  }
+
+  const { data: cards } = await query;
 
   if (!cards || cards.length === 0) {
     return <EmptyView level={levelLower} topic={canonicalTopic} />;
@@ -84,12 +94,18 @@ export default async function Page({
     .in('id', sgIds);
   const sgMap = Object.fromEntries((sgs || []).map((s: { id: number; name: string; description: string }) => [s.id, s]));
 
+  const focusedSubgroupName =
+    subgroupId !== null && sgIds.length === 1 && sgMap[subgroupId]
+      ? (sgMap[subgroupId] as { name: string }).name
+      : undefined;
+
   return (
     <SwipeApp
       cards={cards}
       subgroups={sgMap}
       level={levelLower}
       topic={canonicalTopic}
+      focusedSubgroupName={focusedSubgroupName}
     />
   );
 }

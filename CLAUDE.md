@@ -36,7 +36,8 @@ Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/ro
 - `revise/page.tsx` — revision notes landing page
 - `revise/[topic]/page.tsx` — topic listing
 - `revise/[topic]/[subtopic]/[subsubtopic]/lesson/page.tsx` — revision lesson player
-- `revise/[topic]/[subtopic]/worked-examples/page.tsx` — TikTok-style swipe cards over `content_snippets` (route: `/revise/[level]/[topic-slug]/worked-examples`)
+- `revise/[topic]/[subtopic]/worked-examples/page.tsx` — TikTok-style swipe cards over `content_snippets` (route: `/revise/[level]/[topic-slug]/worked-examples`); accepts `?subgroup={id}` to filter to one sub-group
+- `explain/[id]/page.tsx` — public annotated-explanation page; renders content from `explanations` table with KaTeX (full `\underbrace` support); deep-links into Teach Me via "🎓 Teach me this concept" CTA
 - `learn/page.tsx` — learn page
 - `formulas/*` — formula reference pages (indices, factorization, statistics, etc.)
 - `o-level-a-math-tuition/`, `jc-h2-math-tuition/`, `secondary-math-tuition/` — SEO landing pages
@@ -97,8 +98,8 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `render-marking/route.ts` — accepts marking JSON, returns PNG via Puppeteer
 - `mark-batch/init`, `execute`, `assemble-pdf`, `list`, `get`, `submissions`, `delete`, `upload-amended` — AI batch marking pipeline
 
-### Misc
-- `bot-health/route.ts` — health check for Telegram bot
+### Bot integrations
+- `explanations/route.ts` — bot writes annotated-explain content here (auth: `x-render-secret`), gets back a UUID used for the `/explain/{id}` public page
 
 ## Database
 
