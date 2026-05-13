@@ -510,6 +510,81 @@ function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCr
   );
 }
 
+// ── New section modal (Feature 5) ─────────────────────────────────────────────
+
+function NewSectionModal({ level, topic, auth, onClose, onCreated }: {
+  level: string; topic: string; auth: string;
+  onClose: () => void;
+  onCreated: (sg: Subgroup) => void;
+}) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [err, setErr] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  async function create() {
+    const trimmed = name.trim();
+    if (!trimmed) { setErr('Name is required'); return; }
+    setCreating(true); setErr('');
+    try {
+      const res = await fetch('/api/admin/cards/subgroups/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ level, topic, name: trimmed, description: description.trim() || null }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed to create section');
+      onCreated({ id: json.id, name: json.name, description: json.description ?? '', card_count: 0 });
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : 'Failed');
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h2 className="text-lg font-semibold text-slate-800 mb-1">New section</h2>
+        <p className="text-xs text-slate-500 mb-4">Creates an empty sub-group under <span className="font-medium">{level} · {topic}</span>. Add cards to it afterwards.</p>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Name <span className="text-red-600">*</span></label>
+            <input
+              ref={inputRef}
+              type="text"
+              className="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g. Simplifying nested surds"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') create(); if (e.key === 'Escape') onClose(); }}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Description <span className="text-slate-400 font-normal">(optional, helps AI)</span></label>
+            <textarea
+              className="w-full border border-slate-300 rounded px-3 py-2 text-sm resize-none"
+              rows={3}
+              placeholder="What kind of question falls under this sub-skill?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          {err && <p className="text-red-600 text-sm">{err}</p>}
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
+          <button onClick={create} disabled={creating} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+            {creating ? 'Creating…' : 'Create section'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Delete modal ──────────────────────────────────────────────────────────────
 
 function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void; onCancel: () => void; deleting: boolean }) {
@@ -834,6 +909,7 @@ export default function EditCardsClient() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderStatus, setReorderStatus] = useState<Record<number, SaveStatus>>({});
   const [showNewModal, setShowNewModal] = useState(false);
+  const [showNewSectionModal, setShowNewSectionModal] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // Panel widths — loaded from localStorage once on mount
@@ -1079,7 +1155,8 @@ export default function EditCardsClient() {
             <input type="checkbox" checked={unpublishedOnly} onChange={(e) => setUnpublishedOnly(e.target.checked)} /> Drafts only
           </label>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <button onClick={() => setShowNewSectionModal(true)} disabled={!level || !topic} className="px-3 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-40">+ New section</button>
           <button onClick={() => setShowNewModal(true)} disabled={!level || !topic || subgroups.length === 0} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">+ New card</button>
         </div>
       </div>
@@ -1173,6 +1250,20 @@ export default function EditCardsClient() {
           )}
         </div>
       </div>
+
+      {showNewSectionModal && level && topic && (
+        <NewSectionModal
+          level={level} topic={topic} auth={auth}
+          onClose={() => setShowNewSectionModal(false)}
+          onCreated={(sg) => {
+            setSubgroups((prev) => {
+              if (prev.some((existing) => existing.id === sg.id)) return prev;
+              return [...prev, sg];
+            });
+            setShowNewSectionModal(false);
+          }}
+        />
+      )}
 
       {showNewModal && level && topic && (
         <NewCardModal
