@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 
 interface Card {
@@ -83,7 +84,7 @@ function CardMarkdown({ content }: { content: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkMath, remarkGfm]}
-      rehypePlugins={[[rehypeKatex, katexOptions]]}
+      rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}
       components={{
         p: ({ node: _n, ...props }) => (
           <p style={{ margin: '0 0 12px 0', lineHeight: 1.65 }} {...props} />
