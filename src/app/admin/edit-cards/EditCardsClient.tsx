@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent,
   PointerSensor, TouchSensor, closestCenter, useSensor, useSensors,
-  useDroppable,
+  useDroppable, type CollisionDetection,
 } from '@dnd-kit/core';
 import {
   SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
@@ -148,6 +148,28 @@ const QUICK_ACTIONS = [
   { label: 'Use a fresh example', instruction: "Same sub-skill, different numbers and surface. Don't reuse the same coefficients/values. Rewrite the whole card with a new example." },
   { label: 'Add a why-this-works', instruction: 'Add one sentence at the top explaining *why* this method works, before diving into steps.' },
 ];
+
+// ── Custom collision detection ────────────────────────────────────────────────
+// Routes section-header drags to only collide with other sec-hdr- droppables,
+// and card drags to only collide with card chips + sec-zone- droppables.
+// Without this, closestCenter finds the wrong target when the pools are mixed.
+const customCollision: CollisionDetection = (args) => {
+  const activeId = String(args.active.id);
+  if (activeId.startsWith('sec-hdr-')) {
+    return closestCenter({
+      ...args,
+      droppableContainers: args.droppableContainers.filter(
+        (c) => String(c.id).startsWith('sec-hdr-')
+      ),
+    });
+  }
+  return closestCenter({
+    ...args,
+    droppableContainers: args.droppableContainers.filter(
+      (c) => !String(c.id).startsWith('sec-hdr-')
+    ),
+  });
+};
 
 // ── Sortable card row ──────────────────────────────────────────────────────────
 
@@ -1196,7 +1218,7 @@ export default function EditCardsClient() {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
-              <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+              <DndContext sensors={sensors} collisionDetection={customCollision} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                 <SortableContext items={allSections.map((s) => `sec-hdr-${s}`)} strategy={verticalListSortingStrategy}>
                   {allSections.map((sectionName) => {
                     const sectionCards = cardsBySection[sectionName] ?? [];
