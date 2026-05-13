@@ -73,6 +73,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/cards/[id]/route.ts` — GET / PATCH / DELETE single card
 - `admin/cards/create/route.ts` — POST → new card with auto order_index
 - `admin/cards/reorder/route.ts` — POST `{ orderedIds }` → rewrite order_index 1..N
+- `admin/cards/subgroups/create/route.ts` — POST `{ level, topic, name, description? }` → new `subgroups` row; 409 on duplicate (level+topic+name)
 - `edit-cards-ai/route.ts` — SSE stream for AI card edits (claude-opus-4-6, max 4000 tokens)
 
 ### Invoices (cron + admin)

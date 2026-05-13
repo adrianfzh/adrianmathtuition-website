@@ -369,7 +369,7 @@ function DeleteModal({
 
 // ── Main editor ───────────────────────────────────────────────────────────────
 
-export default function EditorClient({ card, subgroups, siblings }: Props) {
+export default function EditorClient({ card, subgroups: initialSubgroups, siblings }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -378,13 +378,48 @@ export default function EditorClient({ card, subgroups, siblings }: Props) {
 
   const [title, setTitle] = useState(card.card_title);
   const [content, setContent] = useState(card.content);
-  const [sgId, setSgId] = useState(card.subgroup_id);
+  const [subgroups, setSubgroups] = useState<Subgroup[]>(initialSubgroups);
+  const [sgId, setSgId] = useState<number | '__new__'>(card.subgroup_id);
   const [orderIndex, setOrderIndex] = useState(card.order_index);
   const [isPublished, setIsPublished] = useState(card.is_published);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [aiSidebarOpen, setAiSidebarOpen] = useState(true);
+
+  // Inline "+ New sub-group" form state
+  const [newSgName, setNewSgName] = useState('');
+  const [newSgDesc, setNewSgDesc] = useState('');
+  const [creatingSg, setCreatingSg] = useState(false);
+  const [sgErr, setSgErr] = useState('');
+  const lastValidSgId = useRef<number>(card.subgroup_id);
+  useEffect(() => { if (typeof sgId === 'number') lastValidSgId.current = sgId; }, [sgId]);
+
+  async function createNewSubgroup() {
+    if (!newSgName.trim()) { setSgErr('Name is required'); return; }
+    setCreatingSg(true); setSgErr('');
+    try {
+      const res = await fetch('/api/admin/cards/subgroups/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ level: card.level, topic: card.topic, name: newSgName.trim(), description: newSgDesc.trim() || null }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed to create sub-group');
+      const newSg: Subgroup = {
+        id: json.id,
+        name: json.name,
+        description: json.description ?? '',
+      };
+      setSubgroups((prev) => [...prev, newSg].sort((a, b) => a.id - b.id));
+      setSgId(newSg.id);
+      setNewSgName(''); setNewSgDesc('');
+    } catch (e: unknown) {
+      setSgErr(e instanceof Error ? e.message : 'Failed');
+    } finally {
+      setCreatingSg(false);
+    }
+  }
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -436,9 +471,11 @@ export default function EditorClient({ card, subgroups, siblings }: Props) {
   );
 
   const scheduleSave = useCallback(() => {
+    if (typeof sgId !== 'number') return; // Don't save while inline new-sub-group form is open
     if (saveTimer.current) clearTimeout(saveTimer.current);
+    const sgIdForSave = sgId;
     saveTimer.current = setTimeout(() => {
-      saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
+      saveData({ card_title: title, content, subgroup_id: sgIdForSave, order_index: orderIndex, is_published: isPublished });
     }, 800);
   }, [saveData, title, content, sgId, orderIndex, isPublished]);
 
@@ -450,6 +487,7 @@ export default function EditorClient({ card, subgroups, siblings }: Props) {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
+        if (typeof sgId !== 'number') return; // Block save while inline new-sub-group form is open
         if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
         saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
       }
@@ -510,7 +548,7 @@ export default function EditorClient({ card, subgroups, siblings }: Props) {
           ← Back to {card.topic}
         </a>
         <div className="flex-1 min-w-0 text-sm text-slate-500 truncate">
-          sg{sgId} · {currentSubgroup?.name ?? '…'} · Card {siblingIdx + 1} of {siblings.length}
+          sg{typeof sgId === 'number' ? sgId : lastValidSgId.current} · {currentSubgroup?.name ?? '…'} · Card {siblingIdx + 1} of {siblings.length}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {saveStatus === 'saving' && <span className="text-sm text-slate-400">Saving…</span>}
@@ -518,10 +556,12 @@ export default function EditorClient({ card, subgroups, siblings }: Props) {
           {saveStatus === 'error' && <span className="text-sm text-red-600">Save failed</span>}
           <button
             onClick={() => {
+              if (typeof sgId !== 'number') return;
               if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
               saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
             }}
-            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            disabled={typeof sgId !== 'number'}
+            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
           >
             Save
           </button>
@@ -561,13 +601,17 @@ export default function EditorClient({ card, subgroups, siblings }: Props) {
             <select
               className="border border-slate-300 rounded px-2 py-1.5 text-sm"
               value={sgId}
-              onChange={(e) => setSgId(Number(e.target.value))}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSgId(v === '__new__' ? '__new__' : Number(v));
+              }}
             >
               {subgroups.map((sg) => (
                 <option key={sg.id} value={sg.id}>
                   {sg.name} (sg{sg.id})
                 </option>
               ))}
+              <option value="__new__">+ New sub-group…</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -595,6 +639,51 @@ export default function EditorClient({ card, subgroups, siblings }: Props) {
             </span>
           )}
         </div>
+
+        {sgId === '__new__' && (
+          <div className="border border-slate-200 rounded p-3 bg-slate-50 space-y-2">
+            <p className="text-xs text-slate-500">
+              Creating a new sub-group under <span className="font-medium">{card.level} · {card.topic}</span>. Card stays on its current sub-group until you save.
+            </p>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Sub-group name <span className="text-red-600">*</span></label>
+              <input
+                type="text"
+                className="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
+                placeholder="e.g. Simplifying nested surds"
+                value={newSgName}
+                onChange={(e) => setNewSgName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Description <span className="text-slate-400">(optional, helps AI)</span></label>
+              <textarea
+                className="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
+                rows={2}
+                placeholder="What kind of question falls under this sub-skill?"
+                value={newSgDesc}
+                onChange={(e) => setNewSgDesc(e.target.value)}
+              />
+            </div>
+            {sgErr && <p className="text-red-600 text-xs">{sgErr}</p>}
+            <div className="flex gap-2">
+              <button
+                onClick={createNewSubgroup}
+                disabled={creatingSg}
+                className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {creatingSg ? 'Saving…' : 'Save sub-group'}
+              </button>
+              <button
+                onClick={() => { setSgId(lastValidSgId.current); setNewSgName(''); setNewSgDesc(''); setSgErr(''); }}
+                className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-white"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Editor body */}

@@ -178,17 +178,57 @@ function DragCardOverlay({ card }: { card: CardRow }) {
 
 // ── New card modal ─────────────────────────────────────────────────────────────
 
-function NewCardModal({ subgroups, level, topic, onClose, onCreated, auth }: {
+function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCreated, onSubgroupCreated, auth }: {
   subgroups: Subgroup[]; level: string; topic: string;
-  onClose: () => void; onCreated: (id: string) => void; auth: string;
+  onClose: () => void; onCreated: (id: string) => void;
+  onSubgroupCreated: (sg: Subgroup) => void;
+  auth: string;
 }) {
-  const [sgId, setSgId] = useState<number>(subgroups[0]?.id ?? 0);
+  const [subgroups, setSubgroups] = useState<Subgroup[]>(initialSubgroups);
+  const [sgId, setSgId] = useState<number | '__new__'>(initialSubgroups[0]?.id ?? 0);
   const [title, setTitle] = useState('');
   const [creating, setCreating] = useState(false);
   const [err, setErr] = useState('');
 
+  // New-subgroup inline form state
+  const [newSgName, setNewSgName] = useState('');
+  const [newSgDesc, setNewSgDesc] = useState('');
+  const [creatingSg, setCreatingSg] = useState(false);
+  const [sgErr, setSgErr] = useState('');
+
+  async function createNewSubgroup() {
+    if (!newSgName.trim()) { setSgErr('Name is required'); return; }
+    setCreatingSg(true); setSgErr('');
+    try {
+      const res = await fetch('/api/admin/cards/subgroups/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ level, topic, name: newSgName.trim(), description: newSgDesc.trim() || null }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed to create sub-group');
+      const newSg: Subgroup = {
+        id: json.id,
+        name: json.name,
+        description: json.description ?? '',
+        card_count: 0,
+      };
+      setSubgroups((prev) => [...prev, newSg].sort((a, b) => a.id - b.id));
+      setSgId(newSg.id);
+      setNewSgName(''); setNewSgDesc('');
+      onSubgroupCreated(newSg);
+    } catch (e: unknown) {
+      setSgErr(e instanceof Error ? e.message : 'Failed');
+    } finally {
+      setCreatingSg(false);
+    }
+  }
+
   async function create() {
-    if (!sgId) { setErr('Pick a sub-group'); return; }
+    if (typeof sgId !== 'number' || !sgId) {
+      setErr(sgId === '__new__' ? 'Save the new sub-group first' : 'Pick a sub-group');
+      return;
+    }
     setCreating(true); setErr('');
     try {
       const res = await fetch('/api/admin/cards/create', {
@@ -202,6 +242,8 @@ function NewCardModal({ subgroups, level, topic, onClose, onCreated, auth }: {
     } catch (e: unknown) { setErr(e instanceof Error ? e.message : 'Failed'); setCreating(false); }
   }
 
+  const isNewSg = sgId === '__new__';
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
@@ -209,19 +251,82 @@ function NewCardModal({ subgroups, level, topic, onClose, onCreated, auth }: {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Sub-group</label>
-            <select className="w-full border border-slate-300 rounded px-3 py-2 text-sm" value={sgId} onChange={(e) => setSgId(Number(e.target.value))}>
-              {subgroups.map((sg) => <option key={sg.id} value={sg.id}>{sg.name} (sg{sg.id})</option>)}
+            <select
+              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+              value={sgId}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSgId(v === '__new__' ? '__new__' : Number(v));
+              }}
+            >
+              {subgroups.map((sg) => (
+                <option key={sg.id} value={sg.id}>{sg.name} (sg{sg.id})</option>
+              ))}
+              <option value="__new__">+ New sub-group…</option>
             </select>
           </div>
+
+          {isNewSg && (
+            <div className="border border-slate-200 rounded p-3 bg-slate-50 space-y-2">
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Sub-group name <span className="text-red-600">*</span></label>
+                <input
+                  type="text"
+                  className="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
+                  placeholder="e.g. Simplifying nested surds"
+                  value={newSgName}
+                  onChange={(e) => setNewSgName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Description <span className="text-slate-400">(optional, helps AI)</span></label>
+                <textarea
+                  className="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
+                  rows={2}
+                  placeholder="What kind of question falls under this sub-skill?"
+                  value={newSgDesc}
+                  onChange={(e) => setNewSgDesc(e.target.value)}
+                />
+              </div>
+              {sgErr && <p className="text-red-600 text-xs">{sgErr}</p>}
+              <div className="flex gap-2 items-center">
+                <button
+                  onClick={createNewSubgroup}
+                  disabled={creatingSg}
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {creatingSg ? 'Saving…' : 'Save sub-group'}
+                </button>
+                <button
+                  onClick={() => { setSgId(initialSubgroups[0]?.id ?? subgroups[0]?.id ?? 0); setNewSgName(''); setNewSgDesc(''); setSgErr(''); }}
+                  className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-white"
+                >
+                  Cancel
+                </button>
+                <p className="text-xs text-slate-500 ml-auto">
+                  for {level} · {topic}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Card title <span className="text-slate-400 font-normal">(optional)</span></label>
-            <input type="text" className="w-full border border-slate-300 rounded px-3 py-2 text-sm" placeholder="e.g. Simplify √72" value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') create(); }} autoFocus />
+            <input
+              type="text"
+              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+              placeholder="e.g. Simplify √72"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !isNewSg) create(); }}
+            />
           </div>
           {err && <p className="text-red-600 text-sm">{err}</p>}
         </div>
         <div className="flex justify-end gap-2 mt-6">
           <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
-          <button onClick={create} disabled={creating} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">{creating ? 'Creating…' : 'Create'}</button>
+          <button onClick={create} disabled={creating || isNewSg} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">{creating ? 'Creating…' : 'Create card'}</button>
         </div>
       </div>
     </div>
@@ -803,6 +908,12 @@ export default function EditCardsClient() {
             setShowNewModal(false);
             await fetchCards();
             setSelectedId(id);
+          }}
+          onSubgroupCreated={(sg) => {
+            setSubgroups((prev) => {
+              if (prev.some((existing) => existing.id === sg.id)) return prev;
+              return [...prev, sg].sort((a, b) => a.id - b.id);
+            });
           }}
           auth={auth}
         />
