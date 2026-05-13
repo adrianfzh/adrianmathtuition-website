@@ -10,7 +10,15 @@ function WebMathRenderer({ text }: { text: string }) {
       if (!ref.current) return;
       const w = window as any;
       if (w.renderMathInElement) {
-        ref.current.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        // Replace newlines with <br> ONLY outside math delimiters so that
+        // \begin{pmatrix}-3\\5\end{pmatrix} isn't corrupted before KaTeX runs.
+        const safeHtml = text
+          .split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g)
+          .map((chunk, i) => i % 2 === 0
+            ? chunk.replace(/\n/g, '<br>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+            : chunk // leave math delimiters untouched
+          ).join('');
+        ref.current.innerHTML = safeHtml;
         w.renderMathInElement(ref.current, {
           delimiters: [
             { left: '$$', right: '$$', display: true },
