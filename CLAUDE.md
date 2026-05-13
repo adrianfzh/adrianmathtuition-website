@@ -74,6 +74,9 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/cards/create/route.ts` — POST → new card with auto order_index
 - `admin/cards/reorder/route.ts` — POST `{ orderedIds }` → rewrite order_index 1..N
 - `admin/cards/subgroups/create/route.ts` — POST `{ level, topic, name, description? }` → new `subgroups` row; 409 on duplicate (level+topic+name)
+- `admin/cards/subgroups/[id]/route.ts` — PATCH (rename, 409 on duplicate) / DELETE (only when no QB/KB/cards reference)
+- `admin/cards/subgroups/reorder/route.ts` — POST `{ level, topic, orderedIds }` → rewrite order_index 1..N for sub-groups in scope
+- `admin/cards/move/route.ts` — POST `{ cardId, targetSubgroupId, sourceOrderedIds, destOrderedIds }` → move card to different sub-group within same (level, topic), recomputes order_index for both sections
 - `edit-cards-ai/route.ts` — SSE stream for AI card edits (claude-opus-4-6, max 4000 tokens)
 
 ### Invoices (cron + admin)

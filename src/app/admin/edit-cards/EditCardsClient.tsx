@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent,
   PointerSensor, TouchSensor, closestCenter, useSensor, useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
@@ -172,6 +173,182 @@ function DragCardOverlay({ card }: { card: CardRow }) {
     <div className="flex items-center gap-2 px-3 py-2 bg-white border border-blue-400 rounded shadow-lg opacity-90">
       <span className="text-slate-300">⠿</span>
       <span className="text-sm text-slate-800 truncate">{card.card_title || 'Untitled'}</span>
+    </div>
+  );
+}
+
+// ── Sub-group header (Feature 2: rename, Feature 3: delete) ───────────────────
+
+function SubgroupHeader({
+  sg, cardCount, auth, reorderStatus, showDragHandle, dragHandleProps, onRenamed, onDeleted,
+}: {
+  sg: Subgroup; cardCount: number; auth: string; reorderStatus: SaveStatus;
+  showDragHandle: boolean;
+  dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
+  onRenamed: (updated: Pick<Subgroup, 'id' | 'name' | 'description'>) => void;
+  onDeleted: (id: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(sg.name);
+  const [saving, setSaving] = useState(false);
+  const [renameErr, setRenameErr] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteErr, setDeleteErr] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  async function handleSave() {
+    const trimmed = editName.trim();
+    if (!trimmed) { setRenameErr('Name is required'); return; }
+    setSaving(true); setRenameErr('');
+    try {
+      const res = await fetch(`/api/admin/cards/subgroups/${sg.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ name: trimmed }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+      onRenamed({ id: sg.id, name: json.name, description: json.description ?? '' });
+      setEditing(false);
+    } catch (e: unknown) {
+      setRenameErr(e instanceof Error ? e.message : 'Failed');
+    } finally { setSaving(false); }
+  }
+
+  async function handleDelete() {
+    setDeleting(true); setDeleteErr('');
+    try {
+      const res = await fetch(`/api/admin/cards/subgroups/${sg.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${auth}` },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+      onDeleted(sg.id);
+      setShowDeleteConfirm(false);
+    } catch (e: unknown) {
+      setDeleteErr(e instanceof Error ? e.message : 'Failed');
+      setDeleting(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <div className="flex flex-col gap-1 mb-1.5 px-1">
+        <div className="flex items-center gap-1">
+          <input
+            ref={inputRef}
+            type="text"
+            className="flex-1 border border-blue-400 rounded px-2 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSave();
+              if (e.key === 'Escape') { setEditing(false); setEditName(sg.name); setRenameErr(''); }
+            }}
+          />
+          <button onClick={handleSave} disabled={saving} className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+            {saving ? '…' : '✓'}
+          </button>
+          <button onClick={() => { setEditing(false); setEditName(sg.name); setRenameErr(''); }} className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50">
+            ✗
+          </button>
+        </div>
+        {renameErr && <p className="text-red-600 text-xs px-1">{renameErr}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="group flex items-center gap-1 mb-1.5 px-1 min-w-0">
+        {showDragHandle && dragHandleProps && (
+          <span
+            {...dragHandleProps}
+            className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Drag to reorder section"
+          >⠿</span>
+        )}
+        <span
+          className="text-xs font-semibold text-slate-500 truncate flex-1 min-w-0"
+          title="Renaming updates QB, KB, and swipe cards"
+        >
+          {sg.name} <span className="font-normal text-slate-400">({cardCount})</span>
+        </span>
+        <button
+          onClick={() => { setEditing(true); setEditName(sg.name); }}
+          className="text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
+          title="Rename sub-group"
+        >✎</button>
+        {cardCount === 0 && (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
+            title="Delete empty sub-group"
+          >🗑</button>
+        )}
+        {reorderStatus === 'saving' && <span className="text-xs text-slate-400 ml-auto shrink-0">Saving…</span>}
+        {reorderStatus === 'saved' && <span className="text-xs text-green-600 ml-auto shrink-0">Saved</span>}
+      </div>
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteConfirm(false); setDeleteErr(''); } }}>
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <h2 className="text-base font-semibold text-slate-800 mb-2">Delete &ldquo;{sg.name}&rdquo;?</h2>
+            <p className="text-sm text-slate-600 mb-4">This cannot be undone. The sub-group is currently empty in this topic, but it may still be referenced by exam questions or KB entries.</p>
+            {deleteErr && <p className="text-red-600 text-sm mb-3">{deleteErr}</p>}
+            <div className="flex justify-end gap-2">
+              <button onClick={() => { setShowDeleteConfirm(false); setDeleteErr(''); }} disabled={deleting} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
+              <button onClick={handleDelete} disabled={deleting} className="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">{deleting ? 'Deleting…' : 'Delete'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Droppable section zone (Feature 1: cross-section card drop target) ─────────
+
+function DroppableSectionZone({ sgId, children, isDragActive }: { sgId: number; children: React.ReactNode; isDragActive: boolean }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `sg-zone-${sgId}` });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`min-h-6 rounded transition-colors ${isDragActive && isOver ? 'outline outline-2 outline-dashed outline-blue-400 bg-blue-50' : ''}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ── Sortable section row (Feature 4: drag section headers to reorder) ──────────
+
+function SortableSgSection({
+  sg, children, cardCount, auth, reorderStatus, showDragHandle, onRenamed, onDeleted,
+}: {
+  sg: Subgroup; children: React.ReactNode; cardCount: number; auth: string;
+  reorderStatus: SaveStatus; showDragHandle: boolean;
+  onRenamed: (updated: Pick<Subgroup, 'id' | 'name' | 'description'>) => void;
+  onDeleted: (id: number) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `sg-header-${sg.id}` });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <SubgroupHeader
+        sg={sg}
+        cardCount={cardCount}
+        auth={auth}
+        reorderStatus={reorderStatus}
+        showDragHandle={showDragHandle}
+        dragHandleProps={{ ...attributes, ...listeners } as React.HTMLAttributes<HTMLSpanElement>}
+        onRenamed={onRenamed}
+        onDeleted={onDeleted}
+      />
+      {children}
     </div>
   );
 }
@@ -741,26 +918,98 @@ export default function EditCardsClient() {
     setActiveId(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const ac = cards.find((c) => c.id === active.id);
-    const oc = cards.find((c) => c.id === over.id);
-    if (!ac || !oc || ac.subgroup_id !== oc.subgroup_id) return;
-    const sgId = ac.subgroup_id;
-    const sgCards = cards.filter((c) => c.subgroup_id === sgId);
-    const oi = sgCards.findIndex((c) => c.id === active.id);
-    const ni = sgCards.findIndex((c) => c.id === over.id);
-    if (oi === -1 || ni === -1) return;
-    const reordered = arrayMove(sgCards, oi, ni);
-    setCards((prev) => [...prev.filter((c) => c.subgroup_id !== sgId), ...reordered]);
-    if (reorderTimers.current[sgId]) clearTimeout(reorderTimers.current[sgId]);
-    setReorderStatus((s) => ({ ...s, [sgId]: 'saving' }));
-    reorderTimers.current[sgId] = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/admin/cards/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` }, body: JSON.stringify({ orderedIds: reordered.map((c) => c.id) }) });
-        if (!res.ok) throw new Error();
-        setReorderStatus((s) => ({ ...s, [sgId]: 'saved' }));
-        setTimeout(() => setReorderStatus((s) => ({ ...s, [sgId]: 'idle' })), 2000);
-      } catch { setReorderStatus((s) => ({ ...s, [sgId]: 'error' })); }
-    }, 600);
+
+    const activeIdStr = String(active.id);
+    const overIdStr = String(over.id);
+
+    // ── Feature 4: Section reorder ───────────────────────────────────────────
+    if (activeIdStr.startsWith('sg-header-')) {
+      if (!overIdStr.startsWith('sg-header-')) return;
+      const fromId = Number(activeIdStr.replace('sg-header-', ''));
+      const toId = Number(overIdStr.replace('sg-header-', ''));
+      const oi = subgroups.findIndex((s) => s.id === fromId);
+      const ni = subgroups.findIndex((s) => s.id === toId);
+      if (oi === -1 || ni === -1) return;
+      const reordered = arrayMove(subgroups, oi, ni);
+      setSubgroups(reordered);
+      fetch('/api/admin/cards/subgroups/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ level, topic, orderedIds: reordered.map((s) => s.id) }),
+      }).catch(() => fetchCards());
+      return;
+    }
+
+    // ── Feature 1 + existing: Card drag ──────────────────────────────────────
+    const ac = cards.find((c) => c.id === activeIdStr);
+    if (!ac) return;
+
+    // Determine target subgroup from what we dropped onto
+    let targetSgId: number;
+    if (overIdStr.startsWith('sg-zone-')) {
+      targetSgId = Number(overIdStr.replace('sg-zone-', ''));
+    } else if (overIdStr.startsWith('sg-header-')) {
+      targetSgId = Number(overIdStr.replace('sg-header-', ''));
+    } else {
+      const oc = cards.find((c) => c.id === overIdStr);
+      if (!oc) return;
+      targetSgId = oc.subgroup_id;
+    }
+
+    if (ac.subgroup_id === targetSgId) {
+      // ── Within-section reorder (existing behaviour) ───────────────────────
+      if (overIdStr.startsWith('sg-zone-') || overIdStr.startsWith('sg-header-')) return; // zone drop on own section = no-op
+      const sgCards = cards.filter((c) => c.subgroup_id === targetSgId);
+      const oi = sgCards.findIndex((c) => c.id === activeIdStr);
+      const ni = sgCards.findIndex((c) => c.id === overIdStr);
+      if (oi === -1 || ni === -1) return;
+      const reordered = arrayMove(sgCards, oi, ni);
+      setCards((prev) => [...prev.filter((c) => c.subgroup_id !== targetSgId), ...reordered]);
+      if (reorderTimers.current[targetSgId]) clearTimeout(reorderTimers.current[targetSgId]);
+      setReorderStatus((s) => ({ ...s, [targetSgId]: 'saving' }));
+      reorderTimers.current[targetSgId] = setTimeout(async () => {
+        try {
+          const res = await fetch('/api/admin/cards/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+            body: JSON.stringify({ orderedIds: reordered.map((c) => c.id) }),
+          });
+          if (!res.ok) throw new Error();
+          setReorderStatus((s) => ({ ...s, [targetSgId]: 'saved' }));
+          setTimeout(() => setReorderStatus((s) => ({ ...s, [targetSgId]: 'idle' })), 2000);
+        } catch { setReorderStatus((s) => ({ ...s, [targetSgId]: 'error' })); }
+      }, 600);
+    } else {
+      // ── Cross-section move (Feature 1) ────────────────────────────────────
+      const sourceSgId = ac.subgroup_id;
+      const sourceCards = cards.filter((c) => c.subgroup_id === sourceSgId && c.id !== activeIdStr);
+      const destCards = cards.filter((c) => c.subgroup_id === targetSgId);
+      const movedCard = { ...ac, subgroup_id: targetSgId };
+      const newDestCards = [...destCards, movedCard];
+
+      // Optimistic update — move card + recompute order_index for both groups
+      setCards((prev) => [
+        ...prev.filter((c) => c.subgroup_id !== sourceSgId && c.subgroup_id !== targetSgId),
+        ...sourceCards.map((c, i) => ({ ...c, order_index: i + 1 })),
+        ...newDestCards.map((c, i) => ({ ...c, order_index: i + 1 })),
+      ]);
+      setSubgroups((prev) => prev.map((sg) => {
+        if (sg.id === sourceSgId) return { ...sg, card_count: Math.max(0, sg.card_count - 1) };
+        if (sg.id === targetSgId) return { ...sg, card_count: sg.card_count + 1 };
+        return sg;
+      }));
+
+      fetch('/api/admin/cards/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({
+          cardId: activeIdStr,
+          targetSubgroupId: targetSgId,
+          sourceOrderedIds: sourceCards.map((c) => c.id),
+          destOrderedIds: newDestCards.map((c) => c.id),
+        }),
+      }).then((r) => { if (!r.ok) throw new Error(); }).catch(() => fetchCards());
+    }
   }
 
   function handleCardSaved(updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) {
@@ -770,6 +1019,16 @@ export default function EditCardsClient() {
   function handleCardDeleted(id: string) {
     setCards((prev) => prev.filter((c) => c.id !== id));
     setSelectedId(null);
+  }
+
+  function handleSgRenamed(updated: Pick<Subgroup, 'id' | 'name' | 'description'>) {
+    setSubgroups((prev) => prev.map((sg) => sg.id === updated.id ? { ...sg, ...updated } : sg));
+  }
+
+  function handleSgDeleted(id: number) {
+    setSubgroups((prev) => prev.filter((sg) => sg.id !== id));
+    setCards((prev) => prev.filter((c) => c.subgroup_id !== id));
+    if (subgroupFilter === String(id)) setSubgroupFilter('');
   }
 
   // Resize handlers with clamping
@@ -833,37 +1092,52 @@ export default function EditCardsClient() {
             <div className="flex-1 flex items-center justify-center p-6 text-center text-slate-400 text-sm">Pick a level and topic to start editing.</div>
           ) : loading ? (
             <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
-          ) : filteredCards.length === 0 ? (
+          ) : subgroups.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
               <p className="text-slate-400 text-sm">No cards yet for {topic}.</p>
-              <button onClick={() => setShowNewModal(true)} disabled={subgroups.length === 0} className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">+ Create the first one</button>
+              <button onClick={() => setShowNewModal(true)} className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700">+ Create the first one</button>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
               <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                {subgroups
-                  .filter((sg) => !subgroupFilter || String(sg.id) === subgroupFilter)
-                  .map((sg) => {
-                    const sgCards = cardsBySg[sg.id] ?? [];
-                    if (sgCards.length === 0 && subgroupFilter) return null;
-                    return (
-                      <div key={sg.id}>
-                        <div className="flex items-center gap-2 mb-1.5 px-1">
-                          <span className="text-xs font-semibold text-slate-500 truncate">{sg.name} <span className="font-normal text-slate-400">({sgCards.length})</span></span>
-                          {reorderStatus[sg.id] === 'saving' && <span className="text-xs text-slate-400 ml-auto">Saving…</span>}
-                          {reorderStatus[sg.id] === 'saved' && <span className="text-xs text-green-600 ml-auto">Saved</span>}
-                        </div>
-                        <SortableContext items={sgCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-                          <div className="space-y-1">
-                            {sgCards.map((card) => (
-                              <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
-                            ))}
-                          </div>
-                        </SortableContext>
-                      </div>
-                    );
-                  })}
-                <DragOverlay modifiers={[restrictToVerticalAxis]}>{activeCard ? <DragCardOverlay card={activeCard} /> : null}</DragOverlay>
+                <SortableContext items={subgroups.filter((sg) => !subgroupFilter || String(sg.id) === subgroupFilter).map((sg) => `sg-header-${sg.id}`)} strategy={verticalListSortingStrategy}>
+                  {subgroups
+                    .filter((sg) => !subgroupFilter || String(sg.id) === subgroupFilter)
+                    .map((sg) => {
+                      const sgCards = cardsBySg[sg.id] ?? [];
+                      const isCardDrag = !!activeId && !String(activeId).startsWith('sg-header-');
+                      return (
+                        <SortableSgSection
+                          key={sg.id}
+                          sg={sg}
+                          cardCount={sgCards.length}
+                          auth={auth}
+                          reorderStatus={reorderStatus[sg.id] ?? 'idle'}
+                          showDragHandle={!subgroupFilter}
+                          onRenamed={handleSgRenamed}
+                          onDeleted={handleSgDeleted}
+                        >
+                          <DroppableSectionZone sgId={sg.id} isDragActive={isCardDrag}>
+                            <SortableContext items={sgCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                              <div className="space-y-1">
+                                {sgCards.map((card) => (
+                                  <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
+                                ))}
+                              </div>
+                            </SortableContext>
+                          </DroppableSectionZone>
+                        </SortableSgSection>
+                      );
+                    })}
+                </SortableContext>
+                <DragOverlay modifiers={[restrictToVerticalAxis]}>
+                  {activeId && String(activeId).startsWith('sg-header-') ? (
+                    (() => {
+                      const sg = subgroups.find((s) => `sg-header-${s.id}` === String(activeId));
+                      return sg ? <div className="px-3 py-2 bg-white border border-slate-300 rounded shadow-md text-xs font-semibold text-slate-600 opacity-90">{sg.name}</div> : null;
+                    })()
+                  ) : activeCard ? <DragCardOverlay card={activeCard} /> : null}
+                </DragOverlay>
               </DndContext>
             </div>
           )}

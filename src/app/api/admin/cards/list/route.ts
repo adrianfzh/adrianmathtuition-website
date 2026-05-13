@@ -21,9 +21,10 @@ export async function GET(req: NextRequest) {
 
   const sgQuery = supa
     .from('subgroups')
-    .select('id, name, description')
+    .select('id, name, description, order_index')
     .eq('level', level)
     .eq('topic', topic)
+    .order('order_index', { ascending: true, nullsFirst: false })
     .order('id', { ascending: true });
 
   let cardQuery = supa
