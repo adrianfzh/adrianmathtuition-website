@@ -298,6 +298,8 @@ body {
 .btn-record-payment:hover { background: #dcfce7; }
 .btn-receipt { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
 .btn-receipt:hover:not(:disabled) { background: #ffedd5; }
+.btn-reminder { background: #fdf4ff; border-color: #e9d5ff; color: #7e22ce; }
+.btn-reminder:hover:not(:disabled) { background: #f3e8ff; }
 .receipt-form { display: none; padding: 12px 16px; background: #fff7ed; border-top: 1px solid #fed7aa; }
 .receipt-form.open { display: block; }
 .btn-full-paid { background: #f0fdf4; border-color: #86efac; color: #15803d; font-weight: 600; }
@@ -834,6 +836,7 @@ export default function AdminPage() {
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
             <button class="btn btn-record-payment" onclick="toggleRecordPayment('${inv.id}')">\uD83D\uDCB0 Record Payment</button>
+            ${!inv.isPaid ? `<button class="btn btn-reminder" onclick="sendReminder('${inv.id}', ${inv.finalAmount}, ${inv.amountPaid || 0})">\u23F0 Send Reminder</button>` : ''}
             <button class="btn btn-receipt" onclick="toggleReceiptForm('${inv.id}', ${inv.finalAmount}, ${inv.amountPaid || 0})">\uD83D\uDCE7 Send Receipt</button>
             <button class="btn btn-del" onclick="deleteInvoice('${inv.id}')">\uD83D\uDDD1\uFE0F Delete Invoice</button>
           </div>
@@ -1080,6 +1083,33 @@ export default function AdminPage() {
     function toggleRecordPayment(id: string) {
       const form = document.getElementById(`payment-form-${id}`);
       if (form) form.classList.toggle('open');
+    }
+
+    async function sendReminder(id: string, finalAmount: number, amountPaid: number) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const outstanding = finalAmount - amountPaid;
+      const label = amountPaid > 0
+        ? `partial payment — $${amountPaid.toFixed(2)} paid, $${outstanding.toFixed(2)} outstanding`
+        : `full payment of $${finalAmount.toFixed(2)} outstanding`;
+      if (!confirm(`Send payment reminder to ${inv.parentEmail || 'parent'} for ${inv.studentName}?\n\nOutstanding: $${outstanding.toFixed(2)}`)) return;
+      const actionsEl = document.getElementById(`actions-${id}`);
+      const btn = actionsEl?.querySelector('.btn-reminder') as HTMLButtonElement | null;
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Sending…'; }
+      try {
+        const res = await fetch('/api/admin-invoices/send-reminder', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        if (btn) { btn.textContent = '✅ Reminder sent'; btn.disabled = false; }
+        setTimeout(() => { if (btn) btn.textContent = '⏰ Send Reminder'; }, 3000);
+      } catch (err: any) {
+        alert('Failed to send reminder: ' + err.message);
+        if (btn) { btn.disabled = false; btn.textContent = '⏰ Send Reminder'; }
+      }
     }
 
     function toggleReceiptForm(id: string, finalAmount: number, amountPaid: number) {
@@ -2027,6 +2057,7 @@ export default function AdminPage() {
     w.unapproveAllApproved = unapproveAllApproved;
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
+    w.sendReminder = sendReminder;
     w.toggleReceiptForm = toggleReceiptForm;
     w.openReceiptPreview = openReceiptPreview;
     w.markFullPaid = markFullPaid;
@@ -2051,7 +2082,7 @@ export default function AdminPage() {
         'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
-        'toggleReceiptForm','openReceiptPreview',
+        'sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
