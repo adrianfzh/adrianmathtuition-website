@@ -11,6 +11,7 @@ import 'katex/dist/katex.min.css';
 interface Card {
   id: string;
   subgroup_id: number;
+  display_group: string | null;
   order_index: number;
   card_title: string;
   content: string;
@@ -103,11 +104,13 @@ function CardMarkdown({ content }: { content: string }) {
 
 // ── Desktop list view ─────────────────────────────────────────────────────────
 function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Props) {
-  const groups: { sgId: number; cards: Card[] }[] = [];
+  // Group by display_group (falling back to subgroup name for cards without one)
+  const groups: { section: string; cards: Card[] }[] = [];
   for (const card of cards) {
+    const section = card.display_group ?? subgroups[card.subgroup_id]?.name ?? '';
     const last = groups[groups.length - 1];
-    if (last && last.sgId === card.subgroup_id) last.cards.push(card);
-    else groups.push({ sgId: card.subgroup_id, cards: [card] });
+    if (last && last.section === section) last.cards.push(card);
+    else groups.push({ section, cards: [card] });
   }
   return (
     <div className="hidden md:block min-h-screen bg-gray-50">
@@ -126,31 +129,28 @@ function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Pr
         </div>
       </div>
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-10">
-        {groups.map(({ sgId, cards: gc }) => {
-          const sg = subgroups[sgId];
-          return (
-            <section key={sgId} id={`sg-${sgId}`}>
-              {sg && (
-                <div className="flex items-center gap-2 mb-4">
-                  <span>📌</span>
-                  <h2 className="text-sm font-semibold text-indigo-700 uppercase tracking-wide">{sg.name}</h2>
-                </div>
-              )}
-              <div className="space-y-4">
-                {gc.map(card => (
-                  <article key={card.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="px-6 pt-5 pb-4 border-b border-gray-100">
-                      <h3 className="text-base font-semibold text-gray-900 leading-snug">{card.card_title}</h3>
-                    </div>
-                    <div className="px-6 py-5 prose prose-sm max-w-none text-gray-700">
-                      <CardMarkdown content={card.content} />
-                    </div>
-                  </article>
-                ))}
+        {groups.map(({ section, cards: gc }) => (
+          <section key={section} id={`section-${section}`}>
+            {section && (
+              <div className="flex items-center gap-2 mb-4">
+                <span>📌</span>
+                <h2 className="text-sm font-semibold text-indigo-700 uppercase tracking-wide">{section}</h2>
               </div>
-            </section>
-          );
-        })}
+            )}
+            <div className="space-y-4">
+              {gc.map(card => (
+                <article key={card.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="px-6 pt-5 pb-4 border-b border-gray-100">
+                    <h3 className="text-base font-semibold text-gray-900 leading-snug">{card.card_title}</h3>
+                  </div>
+                  <div className="px-6 py-5 prose prose-sm max-w-none text-gray-700">
+                    <CardMarkdown content={card.content} />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
         <div className="text-center pt-4 pb-8">
           <a href={`/revise/${level}`} className="text-indigo-600 text-sm font-medium hover:underline">↩ Back to {topic}</a>
         </div>

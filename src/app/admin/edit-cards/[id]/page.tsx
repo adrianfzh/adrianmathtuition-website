@@ -9,6 +9,7 @@ interface Card {
   level: string;
   topic: string;
   subgroup_id: number;
+  display_group: string | null;
   order_index: number;
   card_title: string;
   content: string;

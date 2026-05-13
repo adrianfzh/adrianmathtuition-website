@@ -23,11 +23,12 @@ export async function POST(req: NextRequest) {
 
   const levels = new Set((cards ?? []).map((c: { level: string }) => c.level));
   const topics = new Set((cards ?? []).map((c: { topic: string }) => c.topic));
-  const sgs = new Set((cards ?? []).map((c: { subgroup_id: number }) => c.subgroup_id));
 
-  if (levels.size > 1 || topics.size > 1 || sgs.size > 1) {
+  // Cards within a display_group section may have different subgroup_ids — only require
+  // same (level, topic).
+  if (levels.size > 1 || topics.size > 1) {
     return NextResponse.json(
-      { error: 'All ids must belong to the same (level, topic, subgroup_id)' },
+      { error: 'All ids must belong to the same (level, topic)' },
       { status: 400 }
     );
   }

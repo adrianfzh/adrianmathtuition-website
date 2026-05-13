@@ -23,6 +23,7 @@ import 'katex/dist/katex.min.css';
 interface CardRow {
   id: string;
   subgroup_id: number;
+  display_group: string | null;
   order_index: number;
   card_title: string;
   is_published: boolean;
@@ -161,6 +162,7 @@ function SortableCardRow({ card, isSelected, onSelect }: { card: CardRow; isSele
       <span {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0" title="Drag to reorder">⠿</span>
       <span className="text-slate-400 text-xs w-4 shrink-0">{card.order_index}.</span>
       <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
+      <span className="text-xs text-slate-400 bg-slate-100 px-1 rounded shrink-0 font-mono">sg{card.subgroup_id}</span>
       <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${card.is_published ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-500'}`}>
         {card.is_published ? 'Pub' : 'Draft'}
       </span>
@@ -177,19 +179,17 @@ function DragCardOverlay({ card }: { card: CardRow }) {
   );
 }
 
-// ── Sub-group header (Feature 2: rename, Feature 3: delete) ───────────────────
+// ── Section header — display_group-based rename + delete ─────────────────────
 
-function SubgroupHeader({
-  sg, cardCount, auth, reorderStatus, showDragHandle, dragHandleProps, onRenamed, onDeleted,
+function SectionHeader({
+  name, cardCount, level, topic, auth, onRenamed, onDeleted,
 }: {
-  sg: Subgroup; cardCount: number; auth: string; reorderStatus: SaveStatus;
-  showDragHandle: boolean;
-  dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
-  onRenamed: (updated: Pick<Subgroup, 'id' | 'name' | 'description'>) => void;
-  onDeleted: (id: number) => void;
+  name: string; cardCount: number; level: string; topic: string; auth: string;
+  onRenamed: (oldName: string, newName: string) => void;
+  onDeleted: (name: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
-  const [editName, setEditName] = useState(sg.name);
+  const [editName, setEditName] = useState(name);
   const [saving, setSaving] = useState(false);
   const [renameErr, setRenameErr] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -204,14 +204,14 @@ function SubgroupHeader({
     if (!trimmed) { setRenameErr('Name is required'); return; }
     setSaving(true); setRenameErr('');
     try {
-      const res = await fetch(`/api/admin/cards/subgroups/${sg.id}`, {
-        method: 'PATCH',
+      const res = await fetch('/api/admin/cards/sections/rename', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-        body: JSON.stringify({ name: trimmed }),
+        body: JSON.stringify({ level, topic, oldName: name, newName: trimmed }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Failed');
-      onRenamed({ id: sg.id, name: json.name, description: json.description ?? '' });
+      onRenamed(name, trimmed);
       setEditing(false);
     } catch (e: unknown) {
       setRenameErr(e instanceof Error ? e.message : 'Failed');
@@ -221,13 +221,14 @@ function SubgroupHeader({
   async function handleDelete() {
     setDeleting(true); setDeleteErr('');
     try {
-      const res = await fetch(`/api/admin/cards/subgroups/${sg.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${auth}` },
+      const res = await fetch('/api/admin/cards/sections/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ level, topic, name }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Failed');
-      onDeleted(sg.id);
+      onDeleted(name);
       setShowDeleteConfirm(false);
     } catch (e: unknown) {
       setDeleteErr(e instanceof Error ? e.message : 'Failed');
@@ -247,13 +248,13 @@ function SubgroupHeader({
             onChange={(e) => setEditName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSave();
-              if (e.key === 'Escape') { setEditing(false); setEditName(sg.name); setRenameErr(''); }
+              if (e.key === 'Escape') { setEditing(false); setEditName(name); setRenameErr(''); }
             }}
           />
           <button onClick={handleSave} disabled={saving} className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
             {saving ? '…' : '✓'}
           </button>
-          <button onClick={() => { setEditing(false); setEditName(sg.name); setRenameErr(''); }} className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50">
+          <button onClick={() => { setEditing(false); setEditName(name); setRenameErr(''); }} className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50">
             ✗
           </button>
         </div>
@@ -265,39 +266,30 @@ function SubgroupHeader({
   return (
     <>
       <div className="group flex items-center gap-1 mb-1.5 px-1 min-w-0">
-        {showDragHandle && dragHandleProps && (
-          <span
-            {...dragHandleProps}
-            className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Drag to reorder section"
-          >⠿</span>
-        )}
         <span
           className="text-xs font-semibold text-slate-500 truncate flex-1 min-w-0"
-          title="Renaming updates QB, KB, and swipe cards"
+          title="Student-facing section name. Renaming updates the swipe app immediately."
         >
-          {sg.name} <span className="font-normal text-slate-400">({cardCount})</span>
+          {name} <span className="font-normal text-slate-400">({cardCount})</span>
         </span>
         <button
-          onClick={() => { setEditing(true); setEditName(sg.name); }}
+          onClick={() => { setEditing(true); setEditName(name); }}
           className="text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
-          title="Rename sub-group"
+          title="Rename section"
         >✎</button>
         {cardCount === 0 && (
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
-            title="Delete empty sub-group"
+            title="Delete empty section"
           >🗑</button>
         )}
-        {reorderStatus === 'saving' && <span className="text-xs text-slate-400 ml-auto shrink-0">Saving…</span>}
-        {reorderStatus === 'saved' && <span className="text-xs text-green-600 ml-auto shrink-0">Saved</span>}
       </div>
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteConfirm(false); setDeleteErr(''); } }}>
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
-            <h2 className="text-base font-semibold text-slate-800 mb-2">Delete &ldquo;{sg.name}&rdquo;?</h2>
-            <p className="text-sm text-slate-600 mb-4">This cannot be undone. The sub-group is currently empty in this topic, but it may still be referenced by exam questions or KB entries.</p>
+            <h2 className="text-base font-semibold text-slate-800 mb-2">Delete &ldquo;{name}&rdquo;?</h2>
+            <p className="text-sm text-slate-600 mb-4">This section is empty. Deleting it removes it from the sidebar. No cards are affected.</p>
             {deleteErr && <p className="text-red-600 text-sm mb-3">{deleteErr}</p>}
             <div className="flex justify-end gap-2">
               <button onClick={() => { setShowDeleteConfirm(false); setDeleteErr(''); }} disabled={deleting} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
@@ -310,10 +302,10 @@ function SubgroupHeader({
   );
 }
 
-// ── Droppable section zone (Feature 1: cross-section card drop target) ─────────
+// ── Droppable section zone (cross-section card drop target, keyed by display_group) ──
 
-function DroppableSectionZone({ sgId, children, isDragActive }: { sgId: number; children: React.ReactNode; isDragActive: boolean }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `sg-zone-${sgId}` });
+function DroppableSectionZone({ name, children, isDragActive }: { name: string; children: React.ReactNode; isDragActive: boolean }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `sec-zone-${name}` });
   return (
     <div
       ref={setNodeRef}
@@ -324,45 +316,19 @@ function DroppableSectionZone({ sgId, children, isDragActive }: { sgId: number; 
   );
 }
 
-// ── Sortable section row (Feature 4: drag section headers to reorder) ──────────
-
-function SortableSgSection({
-  sg, children, cardCount, auth, reorderStatus, showDragHandle, onRenamed, onDeleted,
-}: {
-  sg: Subgroup; children: React.ReactNode; cardCount: number; auth: string;
-  reorderStatus: SaveStatus; showDragHandle: boolean;
-  onRenamed: (updated: Pick<Subgroup, 'id' | 'name' | 'description'>) => void;
-  onDeleted: (id: number) => void;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `sg-header-${sg.id}` });
-  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
-  return (
-    <div ref={setNodeRef} style={style}>
-      <SubgroupHeader
-        sg={sg}
-        cardCount={cardCount}
-        auth={auth}
-        reorderStatus={reorderStatus}
-        showDragHandle={showDragHandle}
-        dragHandleProps={{ ...attributes, ...listeners } as React.HTMLAttributes<HTMLSpanElement>}
-        onRenamed={onRenamed}
-        onDeleted={onDeleted}
-      />
-      {children}
-    </div>
-  );
-}
-
 // ── New card modal ─────────────────────────────────────────────────────────────
 
-function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCreated, onSubgroupCreated, auth }: {
-  subgroups: Subgroup[]; level: string; topic: string;
+function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, level, topic, onClose, onCreated, onSubgroupCreated, auth }: {
+  subgroups: Subgroup[]; sections: string[]; level: string; topic: string;
   onClose: () => void; onCreated: (id: string) => void;
   onSubgroupCreated: (sg: Subgroup) => void;
   auth: string;
 }) {
   const [subgroups, setSubgroups] = useState<Subgroup[]>(initialSubgroups);
   const [sgId, setSgId] = useState<number | '__new__'>(initialSubgroups[0]?.id ?? 0);
+  // Section (display_group) for the new card
+  const [section, setSection] = useState<string | '__new__'>(initialSections[0] ?? '');
+  const [newSectionName, setNewSectionName] = useState('');
   const [title, setTitle] = useState('');
   const [creating, setCreating] = useState(false);
   const [err, setErr] = useState('');
@@ -384,21 +350,14 @@ function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCr
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Failed to create sub-group');
-      const newSg: Subgroup = {
-        id: json.id,
-        name: json.name,
-        description: json.description ?? '',
-        card_count: 0,
-      };
+      const newSg: Subgroup = { id: json.id, name: json.name, description: json.description ?? '', card_count: 0 };
       setSubgroups((prev) => [...prev, newSg].sort((a, b) => a.id - b.id));
       setSgId(newSg.id);
       setNewSgName(''); setNewSgDesc('');
       onSubgroupCreated(newSg);
     } catch (e: unknown) {
       setSgErr(e instanceof Error ? e.message : 'Failed');
-    } finally {
-      setCreatingSg(false);
-    }
+    } finally { setCreatingSg(false); }
   }
 
   async function create() {
@@ -406,12 +365,14 @@ function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCr
       setErr(sgId === '__new__' ? 'Save the new sub-group first' : 'Pick a sub-group');
       return;
     }
+    const resolvedSection = section === '__new__' ? newSectionName.trim() : section;
+    if (!resolvedSection) { setErr('Pick or name a section'); return; }
     setCreating(true); setErr('');
     try {
       const res = await fetch('/api/admin/cards/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-        body: JSON.stringify({ level, topic, subgroup_id: sgId, card_title: title }),
+        body: JSON.stringify({ level, topic, subgroup_id: sgId, card_title: title, display_group: resolvedSection }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Failed');
@@ -420,14 +381,39 @@ function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCr
   }
 
   const isNewSg = sgId === '__new__';
+  const isNewSection = section === '__new__';
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
         <h2 className="text-lg font-semibold text-slate-800 mb-4">New card</h2>
         <div className="space-y-4">
+          {/* Section (display_group) */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Sub-group</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Section <span className="text-slate-400 font-normal text-xs">(student-facing)</span></label>
+            <select
+              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+              value={section}
+              onChange={(e) => setSection(e.target.value === '__new__' ? '__new__' : e.target.value)}
+            >
+              {initialSections.map((s) => <option key={s} value={s}>{s}</option>)}
+              <option value="__new__">+ New section…</option>
+            </select>
+            {isNewSection && (
+              <input
+                type="text"
+                className="mt-1 w-full border border-slate-300 rounded px-3 py-1.5 text-sm"
+                placeholder="Section name"
+                value={newSectionName}
+                onChange={(e) => setNewSectionName(e.target.value)}
+                autoFocus
+              />
+            )}
+          </div>
+
+          {/* Sub-group (QB labelling) */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Sub-group <span className="text-slate-400 font-normal text-xs">(QB labelling)</span></label>
             <select
               className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
               value={sgId}
@@ -457,7 +443,7 @@ function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCr
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Description <span className="text-slate-400">(optional, helps AI)</span></label>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Description <span className="text-slate-400">(optional)</span></label>
                 <textarea
                   className="w-full border border-slate-300 rounded px-2 py-1.5 text-sm"
                   rows={2}
@@ -468,22 +454,12 @@ function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCr
               </div>
               {sgErr && <p className="text-red-600 text-xs">{sgErr}</p>}
               <div className="flex gap-2 items-center">
-                <button
-                  onClick={createNewSubgroup}
-                  disabled={creatingSg}
-                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                >
+                <button onClick={createNewSubgroup} disabled={creatingSg} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
                   {creatingSg ? 'Saving…' : 'Save sub-group'}
                 </button>
-                <button
-                  onClick={() => { setSgId(initialSubgroups[0]?.id ?? subgroups[0]?.id ?? 0); setNewSgName(''); setNewSgDesc(''); setSgErr(''); }}
-                  className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-white"
-                >
+                <button onClick={() => { setSgId(initialSubgroups[0]?.id ?? subgroups[0]?.id ?? 0); setNewSgName(''); setNewSgDesc(''); setSgErr(''); }} className="px-3 py-1 text-xs border border-slate-300 rounded hover:bg-white">
                   Cancel
                 </button>
-                <p className="text-xs text-slate-500 ml-auto">
-                  for {level} · {topic}
-                </p>
               </div>
             </div>
           )}
@@ -512,73 +488,47 @@ function NewCardModal({ subgroups: initialSubgroups, level, topic, onClose, onCr
 
 // ── New section modal (Feature 5) ─────────────────────────────────────────────
 
-function NewSectionModal({ level, topic, auth, onClose, onCreated }: {
-  level: string; topic: string; auth: string;
+// NewSectionModal — UI-only. Sections are implicit (no DB row); just adds the name
+// to local state. The section appears in the sidebar immediately and persists once
+// a card is dragged or created into it.
+function NewSectionModal({ level, topic, existingSections, onClose, onCreated }: {
+  level: string; topic: string; existingSections: string[];
   onClose: () => void;
-  onCreated: (sg: Subgroup) => void;
+  onCreated: (name: string) => void;
 }) {
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [creating, setCreating] = useState(false);
   const [err, setErr] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
-  async function create() {
+  function create() {
     const trimmed = name.trim();
     if (!trimmed) { setErr('Name is required'); return; }
-    setCreating(true); setErr('');
-    try {
-      const res = await fetch('/api/admin/cards/subgroups/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-        body: JSON.stringify({ level, topic, name: trimmed, description: description.trim() || null }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? 'Failed to create section');
-      onCreated({ id: json.id, name: json.name, description: json.description ?? '', card_count: 0 });
-    } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Failed');
-      setCreating(false);
-    }
+    if (existingSections.includes(trimmed)) { setErr('A section with that name already exists'); return; }
+    onCreated(trimmed);
   }
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
         <h2 className="text-lg font-semibold text-slate-800 mb-1">New section</h2>
-        <p className="text-xs text-slate-500 mb-4">Creates an empty sub-group under <span className="font-medium">{level} · {topic}</span>. Add cards to it afterwards.</p>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Name <span className="text-red-600">*</span></label>
-            <input
-              ref={inputRef}
-              type="text"
-              className="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g. Simplifying nested surds"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') create(); if (e.key === 'Escape') onClose(); }}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Description <span className="text-slate-400 font-normal">(optional, helps AI)</span></label>
-            <textarea
-              className="w-full border border-slate-300 rounded px-3 py-2 text-sm resize-none"
-              rows={3}
-              placeholder="What kind of question falls under this sub-skill?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+        <p className="text-xs text-slate-500 mb-4">Adds an empty section under <span className="font-medium">{level} · {topic}</span>. Drag cards into it or create a card directly in it. The section persists once it has at least one card.</p>
+        <div className="space-y-3">
+          <input
+            ref={inputRef}
+            type="text"
+            className="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g. Simplifying surds"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') create(); if (e.key === 'Escape') onClose(); }}
+          />
           {err && <p className="text-red-600 text-sm">{err}</p>}
         </div>
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex justify-end gap-2 mt-5">
           <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
-          <button onClick={create} disabled={creating} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
-            {creating ? 'Creating…' : 'Create section'}
-          </button>
+          <button onClick={create} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">Add section</button>
         </div>
       </div>
     </div>
@@ -910,6 +860,7 @@ export default function EditCardsClient() {
   const [reorderStatus, setReorderStatus] = useState<Record<number, SaveStatus>>({});
   const [showNewModal, setShowNewModal] = useState(false);
   const [showNewSectionModal, setShowNewSectionModal] = useState(false);
+  const [localSections, setLocalSections] = useState<string[]>([]); // UI-only empty sections
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // Panel widths — loaded from localStorage once on mount
@@ -998,52 +949,38 @@ export default function EditCardsClient() {
     const activeIdStr = String(active.id);
     const overIdStr = String(over.id);
 
-    // ── Feature 4: Section reorder ───────────────────────────────────────────
-    if (activeIdStr.startsWith('sg-header-')) {
-      if (!overIdStr.startsWith('sg-header-')) return;
-      const fromId = Number(activeIdStr.replace('sg-header-', ''));
-      const toId = Number(overIdStr.replace('sg-header-', ''));
-      const oi = subgroups.findIndex((s) => s.id === fromId);
-      const ni = subgroups.findIndex((s) => s.id === toId);
-      if (oi === -1 || ni === -1) return;
-      const reordered = arrayMove(subgroups, oi, ni);
-      setSubgroups(reordered);
-      fetch('/api/admin/cards/subgroups/reorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-        body: JSON.stringify({ level, topic, orderedIds: reordered.map((s) => s.id) }),
-      }).catch(() => fetchCards());
-      return;
-    }
-
-    // ── Feature 1 + existing: Card drag ──────────────────────────────────────
+    // ── Card drag only (section reorder is alphabetical in v1) ───────────────
     const ac = cards.find((c) => c.id === activeIdStr);
     if (!ac) return;
 
-    // Determine target subgroup from what we dropped onto
-    let targetSgId: number;
-    if (overIdStr.startsWith('sg-zone-')) {
-      targetSgId = Number(overIdStr.replace('sg-zone-', ''));
-    } else if (overIdStr.startsWith('sg-header-')) {
-      targetSgId = Number(overIdStr.replace('sg-header-', ''));
+    // Determine target section (display_group) from what we dropped onto
+    let targetSection: string;
+    if (overIdStr.startsWith('sec-zone-')) {
+      targetSection = overIdStr.slice('sec-zone-'.length);
     } else {
+      // Dropped on another card
       const oc = cards.find((c) => c.id === overIdStr);
       if (!oc) return;
-      targetSgId = oc.subgroup_id;
+      targetSection = oc.display_group ?? '';
     }
+    if (!targetSection) return;
 
-    if (ac.subgroup_id === targetSgId) {
-      // ── Within-section reorder (existing behaviour) ───────────────────────
-      if (overIdStr.startsWith('sg-zone-') || overIdStr.startsWith('sg-header-')) return; // zone drop on own section = no-op
-      const sgCards = cards.filter((c) => c.subgroup_id === targetSgId);
-      const oi = sgCards.findIndex((c) => c.id === activeIdStr);
-      const ni = sgCards.findIndex((c) => c.id === overIdStr);
+    const sourceSection = ac.display_group ?? '';
+
+    if (sourceSection === targetSection) {
+      // ── Within-section reorder ────────────────────────────────────────────
+      if (overIdStr.startsWith('sec-zone-')) return; // drop on own zone = no-op
+      const sectionCards = cards.filter((c) => c.display_group === sourceSection);
+      const oi = sectionCards.findIndex((c) => c.id === activeIdStr);
+      const ni = sectionCards.findIndex((c) => c.id === overIdStr);
       if (oi === -1 || ni === -1) return;
-      const reordered = arrayMove(sgCards, oi, ni);
-      setCards((prev) => [...prev.filter((c) => c.subgroup_id !== targetSgId), ...reordered]);
-      if (reorderTimers.current[targetSgId]) clearTimeout(reorderTimers.current[targetSgId]);
-      setReorderStatus((s) => ({ ...s, [targetSgId]: 'saving' }));
-      reorderTimers.current[targetSgId] = setTimeout(async () => {
+      const reordered = arrayMove(sectionCards, oi, ni);
+      setCards((prev) => [...prev.filter((c) => c.display_group !== sourceSection), ...reordered]);
+      // Use a string key for reorderStatus (section name)
+      const sKey = sourceSection;
+      if (reorderTimers.current[sKey as unknown as number]) clearTimeout(reorderTimers.current[sKey as unknown as number]);
+      setReorderStatus((s) => ({ ...s, [sKey]: 'saving' }));
+      reorderTimers.current[sKey as unknown as number] = setTimeout(async () => {
         try {
           const res = await fetch('/api/admin/cards/reorder', {
             method: 'POST',
@@ -1051,36 +988,32 @@ export default function EditCardsClient() {
             body: JSON.stringify({ orderedIds: reordered.map((c) => c.id) }),
           });
           if (!res.ok) throw new Error();
-          setReorderStatus((s) => ({ ...s, [targetSgId]: 'saved' }));
-          setTimeout(() => setReorderStatus((s) => ({ ...s, [targetSgId]: 'idle' })), 2000);
-        } catch { setReorderStatus((s) => ({ ...s, [targetSgId]: 'error' })); }
+          setReorderStatus((s) => ({ ...s, [sKey]: 'saved' }));
+          setTimeout(() => setReorderStatus((s) => ({ ...s, [sKey]: 'idle' })), 2000);
+        } catch { setReorderStatus((s) => ({ ...s, [sKey]: 'error' })); }
       }, 600);
     } else {
-      // ── Cross-section move (Feature 1) ────────────────────────────────────
-      const sourceSgId = ac.subgroup_id;
-      const sourceCards = cards.filter((c) => c.subgroup_id === sourceSgId && c.id !== activeIdStr);
-      const destCards = cards.filter((c) => c.subgroup_id === targetSgId);
-      const movedCard = { ...ac, subgroup_id: targetSgId };
+      // ── Cross-section move (keyed by display_group) ───────────────────────
+      const sourceCards = cards.filter((c) => c.display_group === sourceSection && c.id !== activeIdStr);
+      const destCards = cards.filter((c) => c.display_group === targetSection);
+      const movedCard = { ...ac, display_group: targetSection };
       const newDestCards = [...destCards, movedCard];
 
-      // Optimistic update — move card + recompute order_index for both groups
+      // Optimistic update
       setCards((prev) => [
-        ...prev.filter((c) => c.subgroup_id !== sourceSgId && c.subgroup_id !== targetSgId),
+        ...prev.filter((c) => c.display_group !== sourceSection && c.display_group !== targetSection),
         ...sourceCards.map((c, i) => ({ ...c, order_index: i + 1 })),
         ...newDestCards.map((c, i) => ({ ...c, order_index: i + 1 })),
       ]);
-      setSubgroups((prev) => prev.map((sg) => {
-        if (sg.id === sourceSgId) return { ...sg, card_count: Math.max(0, sg.card_count - 1) };
-        if (sg.id === targetSgId) return { ...sg, card_count: sg.card_count + 1 };
-        return sg;
-      }));
+      // Remove targetSection from localSections if it was an empty local section
+      setLocalSections((prev) => prev.filter((s) => s !== targetSection));
 
-      fetch('/api/admin/cards/move', {
+      fetch('/api/admin/cards/sections/move-card', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
         body: JSON.stringify({
           cardId: activeIdStr,
-          targetSubgroupId: targetSgId,
+          targetSection,
           sourceOrderedIds: sourceCards.map((c) => c.id),
           destOrderedIds: newDestCards.map((c) => c.id),
         }),
@@ -1107,6 +1040,18 @@ export default function EditCardsClient() {
     if (subgroupFilter === String(id)) setSubgroupFilter('');
   }
 
+  // Section (display_group) handlers
+  function handleSectionRenamed(oldName: string, newName: string) {
+    setCards((prev) => prev.map((c) => c.display_group === oldName ? { ...c, display_group: newName } : c));
+    setLocalSections((prev) => prev.map((s) => s === oldName ? newName : s));
+  }
+
+  function handleSectionDeleted(name: string) {
+    // Section is implicit — just remove from local state and cards (if any had it)
+    setLocalSections((prev) => prev.filter((s) => s !== name));
+    setCards((prev) => prev.filter((c) => c.display_group !== name));
+  }
+
   // Resize handlers with clamping
   const handleListResize = useCallback((delta: number) => {
     setListWidth((w) => Math.max(MIN.list, Math.min(MAX.list, w + delta)));
@@ -1119,8 +1064,20 @@ export default function EditCardsClient() {
   }, []);
 
   const filteredCards = unpublishedOnly ? cards.filter((c) => !c.is_published) : cards;
-  const cardsBySg: Record<number, CardRow[]> = {};
-  for (const c of filteredCards) { if (!cardsBySg[c.subgroup_id]) cardsBySg[c.subgroup_id] = []; cardsBySg[c.subgroup_id].push(c); }
+
+  // Derive sections from display_group values across filtered cards, sorted alphabetically
+  const usedSections = [...new Set(filteredCards.map((c) => c.display_group ?? '').filter(Boolean))].sort();
+  const allSections = [...new Set([...usedSections, ...localSections])].sort();
+
+  // Group cards by display_group
+  const cardsBySection: Record<string, CardRow[]> = {};
+  for (const c of filteredCards) {
+    const key = c.display_group ?? '';
+    if (!key) continue;
+    if (!cardsBySection[key]) cardsBySection[key] = [];
+    cardsBySection[key].push(c);
+  }
+
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
   const selectedCard = selectedId ? cards.find((c) => c.id === selectedId) ?? null : null;
 
@@ -1169,51 +1126,42 @@ export default function EditCardsClient() {
             <div className="flex-1 flex items-center justify-center p-6 text-center text-slate-400 text-sm">Pick a level and topic to start editing.</div>
           ) : loading ? (
             <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
-          ) : subgroups.length === 0 ? (
+          ) : allSections.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
               <p className="text-slate-400 text-sm">No cards yet for {topic}.</p>
-              <button onClick={() => setShowNewModal(true)} className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700">+ Create the first one</button>
+              <button onClick={() => setShowNewSectionModal(true)} className="text-sm px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">+ New section</button>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
               <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                <SortableContext items={subgroups.filter((sg) => !subgroupFilter || String(sg.id) === subgroupFilter).map((sg) => `sg-header-${sg.id}`)} strategy={verticalListSortingStrategy}>
-                  {subgroups
-                    .filter((sg) => !subgroupFilter || String(sg.id) === subgroupFilter)
-                    .map((sg) => {
-                      const sgCards = cardsBySg[sg.id] ?? [];
-                      const isCardDrag = !!activeId && !String(activeId).startsWith('sg-header-');
-                      return (
-                        <SortableSgSection
-                          key={sg.id}
-                          sg={sg}
-                          cardCount={sgCards.length}
-                          auth={auth}
-                          reorderStatus={reorderStatus[sg.id] ?? 'idle'}
-                          showDragHandle={!subgroupFilter}
-                          onRenamed={handleSgRenamed}
-                          onDeleted={handleSgDeleted}
-                        >
-                          <DroppableSectionZone sgId={sg.id} isDragActive={isCardDrag}>
-                            <SortableContext items={sgCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-                              <div className="space-y-1">
-                                {sgCards.map((card) => (
-                                  <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
-                                ))}
-                              </div>
-                            </SortableContext>
-                          </DroppableSectionZone>
-                        </SortableSgSection>
-                      );
-                    })}
-                </SortableContext>
+                {allSections.map((sectionName) => {
+                  const sectionCards = cardsBySection[sectionName] ?? [];
+                  const isCardDrag = !!activeId;
+                  return (
+                    <div key={sectionName}>
+                      <SectionHeader
+                        name={sectionName}
+                        cardCount={sectionCards.length}
+                        level={level}
+                        topic={topic}
+                        auth={auth}
+                        onRenamed={handleSectionRenamed}
+                        onDeleted={handleSectionDeleted}
+                      />
+                      <DroppableSectionZone name={sectionName} isDragActive={isCardDrag}>
+                        <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                          <div className="space-y-1">
+                            {sectionCards.map((card) => (
+                              <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DroppableSectionZone>
+                    </div>
+                  );
+                })}
                 <DragOverlay modifiers={[restrictToVerticalAxis]}>
-                  {activeId && String(activeId).startsWith('sg-header-') ? (
-                    (() => {
-                      const sg = subgroups.find((s) => `sg-header-${s.id}` === String(activeId));
-                      return sg ? <div className="px-3 py-2 bg-white border border-slate-300 rounded shadow-md text-xs font-semibold text-slate-600 opacity-90">{sg.name}</div> : null;
-                    })()
-                  ) : activeCard ? <DragCardOverlay card={activeCard} /> : null}
+                  {activeCard ? <DragCardOverlay card={activeCard} /> : null}
                 </DragOverlay>
               </DndContext>
             </div>
@@ -1253,13 +1201,10 @@ export default function EditCardsClient() {
 
       {showNewSectionModal && level && topic && (
         <NewSectionModal
-          level={level} topic={topic} auth={auth}
+          level={level} topic={topic} existingSections={allSections}
           onClose={() => setShowNewSectionModal(false)}
-          onCreated={(sg) => {
-            setSubgroups((prev) => {
-              if (prev.some((existing) => existing.id === sg.id)) return prev;
-              return [...prev, sg];
-            });
+          onCreated={(name) => {
+            setLocalSections((prev) => prev.includes(name) ? prev : [...prev, name]);
             setShowNewSectionModal(false);
           }}
         />
@@ -1267,7 +1212,7 @@ export default function EditCardsClient() {
 
       {showNewModal && level && topic && (
         <NewCardModal
-          subgroups={subgroups} level={level} topic={topic}
+          subgroups={subgroups} sections={allSections} level={level} topic={topic}
           onClose={() => setShowNewModal(false)}
           onCreated={async (id) => {
             setShowNewModal(false);

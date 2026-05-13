@@ -15,6 +15,7 @@ interface Card {
   level: string;
   topic: string;
   subgroup_id: number;
+  display_group: string | null;
   order_index: number;
   card_title: string;
   content: string;
@@ -380,6 +381,10 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
   const [content, setContent] = useState(card.content);
   const [subgroups, setSubgroups] = useState<Subgroup[]>(initialSubgroups);
   const [sgId, setSgId] = useState<number | '__new__'>(card.subgroup_id);
+  const [displayGroup, setDisplayGroup] = useState<string>(card.display_group ?? '');
+  const [sections, setSections] = useState<string[]>([]);
+  const [newSectionName, setNewSectionName] = useState('');
+  const [sectionIsNew, setSectionIsNew] = useState(false);
   const [orderIndex, setOrderIndex] = useState(card.order_index);
   const [isPublished, setIsPublished] = useState(card.is_published);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -431,6 +436,25 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
     if (!pw) { window.location.href = '/admin'; }
   }, [pw]);
 
+  // Fetch section list for this card's (level, topic)
+  useEffect(() => {
+    if (!pw || !card.level || !card.topic) return;
+    fetch(`/api/admin/cards/sections/list?level=${encodeURIComponent(card.level)}&topic=${encodeURIComponent(card.topic)}`, {
+      headers: { Authorization: `Bearer ${pw}` },
+    })
+      .then((r) => r.json())
+      .then((j) => {
+        const names: string[] = (j.sections ?? []).map((s: { name: string }) => s.name);
+        setSections(names);
+        // Ensure current display_group is in the list
+        if (card.display_group && !names.includes(card.display_group)) {
+          setSections((prev) => [...prev, card.display_group!].sort());
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pw]);
+
   // Back URL
   const backParams = new URLSearchParams();
   if (card.level) backParams.set('level', card.level);
@@ -450,6 +474,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
       card_title: string;
       content: string;
       subgroup_id: number;
+      display_group: string;
       order_index: number;
       is_published: boolean;
     }) => {
@@ -474,13 +499,14 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
     if (typeof sgId !== 'number') return; // Don't save while inline new-sub-group form is open
     if (saveTimer.current) clearTimeout(saveTimer.current);
     const sgIdForSave = sgId;
+    const dgForSave = sectionIsNew ? newSectionName.trim() : displayGroup;
     saveTimer.current = setTimeout(() => {
-      saveData({ card_title: title, content, subgroup_id: sgIdForSave, order_index: orderIndex, is_published: isPublished });
+      saveData({ card_title: title, content, subgroup_id: sgIdForSave, display_group: dgForSave, order_index: orderIndex, is_published: isPublished });
     }, 800);
-  }, [saveData, title, content, sgId, orderIndex, isPublished]);
+  }, [saveData, title, content, sgId, displayGroup, sectionIsNew, newSectionName, orderIndex, isPublished]);
 
   // Trigger auto-save on any field change
-  useEffect(() => { scheduleSave(); }, [title, content, sgId, orderIndex, isPublished, scheduleSave]);
+  useEffect(() => { scheduleSave(); }, [title, content, sgId, displayGroup, sectionIsNew, newSectionName, orderIndex, isPublished, scheduleSave]);
 
   // Cmd+S for immediate save
   useEffect(() => {
@@ -489,7 +515,8 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
         e.preventDefault();
         if (typeof sgId !== 'number') return; // Block save while inline new-sub-group form is open
         if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
-        saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
+        const dgNow = sectionIsNew ? newSectionName.trim() : displayGroup;
+        saveData({ card_title: title, content, subgroup_id: sgId, display_group: dgNow, order_index: orderIndex, is_published: isPublished });
       }
     };
     window.addEventListener('keydown', handler);
@@ -558,7 +585,8 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
             onClick={() => {
               if (typeof sgId !== 'number') return;
               if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
-              saveData({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
+              const dgNow2 = sectionIsNew ? newSectionName.trim() : displayGroup;
+              saveData({ card_title: title, content, subgroup_id: sgId, display_group: dgNow2, order_index: orderIndex, is_published: isPublished });
             }}
             disabled={typeof sgId !== 'number'}
             className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
@@ -596,6 +624,32 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
           />
         </div>
         <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-slate-500">Section</label>
+            <select
+              className="border border-slate-300 rounded px-2 py-1.5 text-sm"
+              value={sectionIsNew ? '__new__' : displayGroup}
+              onChange={(e) => {
+                if (e.target.value === '__new__') { setSectionIsNew(true); }
+                else { setSectionIsNew(false); setDisplayGroup(e.target.value); }
+              }}
+            >
+              {sections.map((s) => <option key={s} value={s}>{s}</option>)}
+              <option value="__new__">+ New section…</option>
+            </select>
+            {sectionIsNew && (
+              <input
+                type="text"
+                className="border border-slate-300 rounded px-2 py-1.5 text-sm w-40"
+                placeholder="Section name"
+                value={newSectionName}
+                onChange={(e) => setNewSectionName(e.target.value)}
+                onBlur={() => {
+                  if (!newSectionName.trim()) { setSectionIsNew(false); setDisplayGroup(sections[0] ?? ''); }
+                }}
+              />
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-slate-500">Sub-group</label>
             <select

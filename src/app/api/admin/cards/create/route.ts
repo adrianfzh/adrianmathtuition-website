@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { level, topic, subgroup_id, card_title, content } = await req.json();
+  const { level, topic, subgroup_id, card_title, content, display_group } = await req.json();
   if (!level || !topic || !subgroup_id) {
     return NextResponse.json({ error: 'level, topic, subgroup_id required' }, { status: 400 });
   }
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
       subgroup_id,
       card_title: card_title ?? '',
       content: content ?? '',
+      display_group: display_group ?? null,
       order_index,
       content_kind: 'worked_example',
       feature: 'both',

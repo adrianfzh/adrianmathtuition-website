@@ -73,6 +73,10 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/cards/[id]/route.ts` — GET / PATCH / DELETE single card
 - `admin/cards/create/route.ts` — POST → new card with auto order_index
 - `admin/cards/reorder/route.ts` — POST `{ orderedIds }` → rewrite order_index 1..N
+- `admin/cards/sections/list/route.ts` — GET distinct display_groups + card counts for a (level, topic)
+- `admin/cards/sections/rename/route.ts` — POST rename a display_group across all cards in scope (merging allowed)
+- `admin/cards/sections/delete/route.ts` — POST delete a section (refuses 409 if non-empty)
+- `admin/cards/sections/move-card/route.ts` — POST move card to a different display_group section, recompute order_index
 - `admin/cards/subgroups/create/route.ts` — POST `{ level, topic, name, description? }` → new `subgroups` row; 409 on duplicate (level+topic+name)
 - `admin/cards/subgroups/[id]/route.ts` — PATCH (rename, 409 on duplicate) / DELETE (only when no QB/KB/cards reference)
 - `admin/cards/subgroups/reorder/route.ts` — POST `{ level, topic, orderedIds }` → rewrite order_index 1..N for sub-groups in scope
@@ -136,6 +140,8 @@ Key tables used by website:
 | `Progress Logged` | Checkbox | Auto-set `true` when any content field is non-empty |
 
 **Supabase** — revision lesson content in `lesson_content` table (NOT `revision_content`). Holds both notes (`content_type='notes'`) and revision lessons (`content_type='lesson'`).
+
+- `content_snippets.display_group` (text, nullable) — student-facing section name used in the swipe app and cards editor sidebar. Independent of `subgroup_id` (which remains for QB labelling). Cards with the same `display_group` within `(level, topic)` appear as one section. NULL falls back to the sub-group's name. Backfilled from `subgroups.name` on 2026-05-13.
 
 ## Auth Patterns
 

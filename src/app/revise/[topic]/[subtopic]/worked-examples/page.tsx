@@ -68,13 +68,13 @@ export default async function Page({
   const supa = getSupabase();
   let query = supa
     .from('content_snippets')
-    .select('id, subgroup_id, order_index, card_title, content, content_kind')
+    .select('id, subgroup_id, display_group, order_index, card_title, content, content_kind')
     .eq('level', levelLower.toUpperCase())
     .eq('topic', canonicalTopic)
     .eq('content_kind', 'worked_example')
     .in('feature', ['both', 'web'])
     .eq('is_published', true)
-    .order('subgroup_id', { ascending: true })
+    .order('display_group', { ascending: true, nullsFirst: false })
     .order('order_index', { ascending: true });
 
   if (subgroupId !== null && Number.isFinite(subgroupId)) {

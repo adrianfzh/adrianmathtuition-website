@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   let cardQuery = supa
     .from('content_snippets')
-    .select('id, subgroup_id, order_index, card_title, is_published, source_kb_entry_id, updated_at, content')
+    .select('id, subgroup_id, display_group, order_index, card_title, is_published, source_kb_entry_id, updated_at, content')
     .eq('level', level)
     .eq('topic', topic)
     .eq('content_kind', 'worked_example')
@@ -58,11 +58,12 @@ export async function GET(req: NextRequest) {
   }));
 
   const mappedCards = (cards ?? []).map((c: {
-    id: string; subgroup_id: number; order_index: number; card_title: string;
+    id: string; subgroup_id: number; display_group: string | null; order_index: number; card_title: string;
     is_published: boolean; source_kb_entry_id: string | null; updated_at: string; content: string;
   }) => ({
     id: c.id,
     subgroup_id: c.subgroup_id,
+    display_group: c.display_group,
     order_index: c.order_index,
     card_title: c.card_title,
     is_published: c.is_published,
