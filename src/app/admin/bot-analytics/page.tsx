@@ -732,6 +732,7 @@ export default function BotAnalytics() {
                         <img
                           src={selected.imageUrl}
                           alt="Student question"
+                          onError={e => { (e.target as HTMLImageElement).style.display='none'; const p=(e.target as HTMLImageElement).parentElement; if(p){p.innerHTML='<div style="padding:16px;color:#94a3b8;font-size:13px;">⚠️ Image URL broken or expired — was stored at '+selected.imageUrl+'</div>';} }}
                           style={{
                             maxWidth: imgRotation % 180 === 0 ? '100%' : 320,
                             maxHeight: imgRotation % 180 === 0 ? 320 : '100%',
@@ -741,6 +742,11 @@ export default function BotAnalytics() {
                             display: 'block',
                           }}
                         />
+                      </div>
+                    )}
+                    {!selected.imageUrl && !selected.caption && (
+                      <div style={{ background: '#fef9c3', border: '1px solid #fcd34d', borderRadius: 8, padding: '10px 12px', marginBottom: 6, fontSize: 12, color: '#92400e' }}>
+                        📷 Image question — image was not stored to Blob (web images now stored from bot v{new Date().getFullYear()})
                       </div>
                     )}
                     {selected.caption && (
