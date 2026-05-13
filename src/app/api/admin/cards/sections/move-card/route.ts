@@ -32,6 +32,29 @@ export async function POST(req: NextRequest) {
     .update({ display_group: targetSection })
     .eq('id', cardId);
 
+  // Ensure sections_meta has a row for the target section (so its order is tracked)
+  const { data: cardData } = await supa
+    .from('content_snippets')
+    .select('level, topic')
+    .eq('id', cardId)
+    .single();
+  if (cardData) {
+    const { data: maxRow } = await supa
+      .from('sections_meta')
+      .select('order_index')
+      .eq('level', cardData.level)
+      .eq('topic', cardData.topic)
+      .order('order_index', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    await supa
+      .from('sections_meta')
+      .upsert(
+        { level: cardData.level, topic: cardData.topic, name: targetSection, order_index: ((maxRow as { order_index: number } | null)?.order_index ?? 0) + 1 },
+        { onConflict: 'level,topic,name', ignoreDuplicates: true }
+      );
+  }
+
   if (moveErr) return NextResponse.json({ error: moveErr.message }, { status: 500 });
 
   // Rewrite order_index for source section (remaining cards)

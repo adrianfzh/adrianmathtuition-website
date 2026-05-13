@@ -27,6 +27,13 @@ export async function GET(req: NextRequest) {
     .order('order_index', { ascending: true, nullsFirst: false })
     .order('id', { ascending: true });
 
+  const sectionOrderQuery = supa
+    .from('sections_meta')
+    .select('name, order_index')
+    .eq('level', level)
+    .eq('topic', topic)
+    .order('order_index', { ascending: true });
+
   let cardQuery = supa
     .from('content_snippets')
     .select('id, subgroup_id, display_group, order_index, card_title, is_published, source_kb_entry_id, updated_at, content')
@@ -39,10 +46,11 @@ export async function GET(req: NextRequest) {
   if (subgroupId) cardQuery = cardQuery.eq('subgroup_id', Number(subgroupId));
   if (publishedOnly) cardQuery = cardQuery.eq('is_published', true);
 
-  const [{ data: subgroups, error: sgErr }, { data: cards, error: cardErr }] = await Promise.all([
-    sgQuery,
-    cardQuery,
-  ]);
+  const [
+    { data: subgroups, error: sgErr },
+    { data: cards, error: cardErr },
+    { data: sectionMeta },
+  ] = await Promise.all([sgQuery, cardQuery, sectionOrderQuery]);
 
   if (sgErr) return NextResponse.json({ error: sgErr.message }, { status: 500 });
   if (cardErr) return NextResponse.json({ error: cardErr.message }, { status: 500 });
@@ -73,5 +81,10 @@ export async function GET(req: NextRequest) {
     updated_at: c.updated_at,
   }));
 
-  return NextResponse.json({ cards: mappedCards, subgroups: subgroupsWithCount });
+  // Section order from sections_meta (names in order_index order)
+  const sectionOrder: string[] = (sectionMeta ?? []).map(
+    (r: { name: string }) => r.name
+  );
+
+  return NextResponse.json({ cards: mappedCards, subgroups: subgroupsWithCount, sectionOrder });
 }

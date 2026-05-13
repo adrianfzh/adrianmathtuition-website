@@ -32,5 +32,29 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // Keep sections_meta in sync: rename the row (upsert new, delete old if different)
+  if (trimmedNew !== oldName) {
+    // Fetch existing order_index for the old name
+    const { data: existing } = await supa
+      .from('sections_meta')
+      .select('order_index')
+      .eq('level', level)
+      .eq('topic', topic)
+      .eq('name', oldName)
+      .maybeSingle();
+
+    if (existing) {
+      await supa
+        .from('sections_meta')
+        .upsert({ level, topic, name: trimmedNew, order_index: existing.order_index }, { onConflict: 'level,topic,name' });
+      await supa
+        .from('sections_meta')
+        .delete()
+        .eq('level', level)
+        .eq('topic', topic)
+        .eq('name', oldName);
+    }
+  }
+
   return NextResponse.json({ ok: true, updated: count ?? 0 });
 }

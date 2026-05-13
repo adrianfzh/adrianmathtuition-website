@@ -182,9 +182,10 @@ function DragCardOverlay({ card }: { card: CardRow }) {
 // ── Section header — display_group-based rename + delete ─────────────────────
 
 function SectionHeader({
-  name, cardCount, level, topic, auth, onRenamed, onDeleted,
+  name, cardCount, level, topic, auth, dragHandleProps, onRenamed, onDeleted,
 }: {
   name: string; cardCount: number; level: string; topic: string; auth: string;
+  dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
   onRenamed: (oldName: string, newName: string) => void;
   onDeleted: (name: string) => void;
 }) {
@@ -266,6 +267,13 @@ function SectionHeader({
   return (
     <>
       <div className="group flex items-center gap-1 mb-1.5 px-1 min-w-0">
+        {dragHandleProps && (
+          <span
+            {...dragHandleProps}
+            className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Drag to reorder section"
+          >⠿</span>
+        )}
         <span
           className="text-xs font-semibold text-slate-500 truncate flex-1 min-w-0"
           title="Student-facing section name. Renaming updates the swipe app immediately."
@@ -482,6 +490,36 @@ function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, 
           <button onClick={create} disabled={creating || isNewSg} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">{creating ? 'Creating…' : 'Create card'}</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Sortable section wrapper (section drag-to-reorder) ────────────────────────
+
+function SortableSectionWrapper({
+  name, children, level, topic, auth, onRenamed, onDeleted, cardCount,
+}: {
+  name: string; children: React.ReactNode;
+  level: string; topic: string; auth: string;
+  cardCount: number;
+  onRenamed: (oldName: string, newName: string) => void;
+  onDeleted: (name: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `sec-hdr-${name}` });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <SectionHeader
+        name={name}
+        cardCount={cardCount}
+        level={level}
+        topic={topic}
+        auth={auth}
+        dragHandleProps={{ ...attributes, ...listeners } as React.HTMLAttributes<HTMLSpanElement>}
+        onRenamed={onRenamed}
+        onDeleted={onDeleted}
+      />
+      {children}
     </div>
   );
 }
@@ -861,6 +899,7 @@ export default function EditCardsClient() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [showNewSectionModal, setShowNewSectionModal] = useState(false);
   const [localSections, setLocalSections] = useState<string[]>([]); // UI-only empty sections
+  const [sectionOrder, setSectionOrder] = useState<string[]>([]); // persisted order from sections_meta
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // Panel widths — loaded from localStorage once on mount
@@ -929,6 +968,7 @@ export default function EditCardsClient() {
       const json = await res.json();
       setCards(json.cards ?? []);
       setSubgroups(json.subgroups ?? []);
+      setSectionOrder(json.sectionOrder ?? []);
     } finally { setLoading(false); }
   }, [level, topic, subgroupFilter, auth]);
 
@@ -949,7 +989,25 @@ export default function EditCardsClient() {
     const activeIdStr = String(active.id);
     const overIdStr = String(over.id);
 
-    // ── Card drag only (section reorder is alphabetical in v1) ───────────────
+    // ── Section reorder (sec-hdr- prefix) ────────────────────────────────────
+    if (activeIdStr.startsWith('sec-hdr-')) {
+      const fromName = activeIdStr.slice('sec-hdr-'.length);
+      const toName = overIdStr.startsWith('sec-hdr-') ? overIdStr.slice('sec-hdr-'.length) : null;
+      if (!toName) return;
+      const oi = allSections.indexOf(fromName);
+      const ni = allSections.indexOf(toName);
+      if (oi === -1 || ni === -1) return;
+      const reordered = arrayMove(allSections, oi, ni);
+      setSectionOrder(reordered);
+      fetch('/api/admin/cards/sections/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ level, topic, orderedNames: reordered }),
+      }).catch(() => fetchCards());
+      return;
+    }
+
+    // ── Card drag ─────────────────────────────────────────────────────────────
     const ac = cards.find((c) => c.id === activeIdStr);
     if (!ac) return;
 
@@ -1044,12 +1102,13 @@ export default function EditCardsClient() {
   function handleSectionRenamed(oldName: string, newName: string) {
     setCards((prev) => prev.map((c) => c.display_group === oldName ? { ...c, display_group: newName } : c));
     setLocalSections((prev) => prev.map((s) => s === oldName ? newName : s));
+    setSectionOrder((prev) => prev.map((s) => s === oldName ? newName : s));
   }
 
   function handleSectionDeleted(name: string) {
-    // Section is implicit — just remove from local state and cards (if any had it)
     setLocalSections((prev) => prev.filter((s) => s !== name));
     setCards((prev) => prev.filter((c) => c.display_group !== name));
+    setSectionOrder((prev) => prev.filter((s) => s !== name));
   }
 
   // Resize handlers with clamping
@@ -1065,9 +1124,13 @@ export default function EditCardsClient() {
 
   const filteredCards = unpublishedOnly ? cards.filter((c) => !c.is_published) : cards;
 
-  // Derive sections from display_group values across filtered cards, sorted alphabetically
-  const usedSections = [...new Set(filteredCards.map((c) => c.display_group ?? '').filter(Boolean))].sort();
-  const allSections = [...new Set([...usedSections, ...localSections])].sort();
+  // Derive sections: ordered by sectionOrder (from sections_meta), then any new ones alphabetically
+  const usedSections = [...new Set(filteredCards.map((c) => c.display_group ?? '').filter(Boolean))];
+  const combinedSections = [...new Set([...usedSections, ...localSections])];
+  const allSections = [
+    ...sectionOrder.filter((s) => combinedSections.includes(s)),
+    ...combinedSections.filter((s) => !sectionOrder.includes(s)).sort(),
+  ];
 
   // Group cards by display_group
   const cardsBySection: Record<string, CardRow[]> = {};
@@ -1134,12 +1197,13 @@ export default function EditCardsClient() {
           ) : (
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
               <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                {allSections.map((sectionName) => {
-                  const sectionCards = cardsBySection[sectionName] ?? [];
-                  const isCardDrag = !!activeId;
-                  return (
-                    <div key={sectionName}>
-                      <SectionHeader
+                <SortableContext items={allSections.map((s) => `sec-hdr-${s}`)} strategy={verticalListSortingStrategy}>
+                  {allSections.map((sectionName) => {
+                    const sectionCards = cardsBySection[sectionName] ?? [];
+                    const isCardDrag = !!activeId && !String(activeId).startsWith('sec-hdr-');
+                    return (
+                      <SortableSectionWrapper
+                        key={sectionName}
                         name={sectionName}
                         cardCount={sectionCards.length}
                         level={level}
@@ -1147,21 +1211,26 @@ export default function EditCardsClient() {
                         auth={auth}
                         onRenamed={handleSectionRenamed}
                         onDeleted={handleSectionDeleted}
-                      />
-                      <DroppableSectionZone name={sectionName} isDragActive={isCardDrag}>
-                        <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-                          <div className="space-y-1">
-                            {sectionCards.map((card) => (
-                              <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
-                            ))}
-                          </div>
-                        </SortableContext>
-                      </DroppableSectionZone>
-                    </div>
-                  );
-                })}
+                      >
+                        <DroppableSectionZone name={sectionName} isDragActive={isCardDrag}>
+                          <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                            <div className="space-y-1">
+                              {sectionCards.map((card) => (
+                                <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
+                              ))}
+                            </div>
+                          </SortableContext>
+                        </DroppableSectionZone>
+                      </SortableSectionWrapper>
+                    );
+                  })}
+                </SortableContext>
                 <DragOverlay modifiers={[restrictToVerticalAxis]}>
-                  {activeCard ? <DragCardOverlay card={activeCard} /> : null}
+                  {activeId && String(activeId).startsWith('sec-hdr-') ? (
+                    <div className="px-3 py-1.5 bg-white border border-slate-300 rounded shadow-md text-xs font-semibold text-slate-600 opacity-90">
+                      {String(activeId).slice('sec-hdr-'.length)}
+                    </div>
+                  ) : activeCard ? <DragCardOverlay card={activeCard} /> : null}
                 </DragOverlay>
               </DndContext>
             </div>
