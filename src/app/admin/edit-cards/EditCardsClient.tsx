@@ -16,6 +16,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -1282,7 +1283,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
             {aiPreviewContent && <span className="text-blue-600 font-medium">✨ AI suggestion</span>}
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
-            <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[[rehypeKatex, katexOptions]]}>
+            <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}>
               {fixMathFences(aiPreviewContent ?? previewContent)}
             </ReactMarkdown>
           </div>

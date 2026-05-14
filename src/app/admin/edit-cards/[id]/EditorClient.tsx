@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -901,7 +902,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
               <div className="border border-slate-200 rounded p-4 bg-white prose prose-sm max-w-none">
                 <ReactMarkdown
                   remarkPlugins={[remarkMath, remarkGfm]}
-                  rehypePlugins={[[rehypeKatex, katexOptions]]}
+                  rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}
                 >
                   {fixMathFences(previewContent)}
                 </ReactMarkdown>
@@ -934,7 +935,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
               <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none">
                 <ReactMarkdown
                   remarkPlugins={[remarkMath, remarkGfm]}
-                  rehypePlugins={[[rehypeKatex, katexOptions]]}
+                  rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}
                 >
                   {fixMathFences(aiPreviewContent ?? previewContent)}
                 </ReactMarkdown>
