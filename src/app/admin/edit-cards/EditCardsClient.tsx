@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent,
-  PointerSensor, TouchSensor, closestCenter, useSensor, useSensors,
+  PointerSensor, TouchSensor, closestCenter, pointerWithin, useSensor, useSensors,
   useDroppable, type CollisionDetection,
 } from '@dnd-kit/core';
 import {
@@ -158,8 +158,7 @@ const QUICK_ACTIONS = [
 const customCollision: CollisionDetection = (args) => {
   const activeId = String(args.active.id);
   if (activeId.startsWith('sec-hdr-')) {
-    // Section drags collide with other section headers OR panel-level droppables
-    // (panel-rf / panel-we catch drops when the destination panel has no sections yet)
+    // Section drags: only collide with section headers and panel zones
     return closestCenter({
       ...args,
       droppableContainers: args.droppableContainers.filter(
@@ -167,13 +166,17 @@ const customCollision: CollisionDetection = (args) => {
       ),
     });
   }
-  // Card drags: exclude section headers; include card chips, zones, and panels
-  return closestCenter({
-    ...args,
-    droppableContainers: args.droppableContainers.filter(
-      (c) => !String(c.id).startsWith('sec-hdr-')
-    ),
-  });
+  // Card drags: exclude section headers from the pool.
+  // Use pointerWithin FIRST so the small card chip beats its large zone wrapper
+  // (pointerWithin returns droppables containing the pointer ordered by ascending area —
+  // card chips are smaller than their zone, so they come first).
+  // Fall back to closestCenter for drops outside any droppable rect.
+  const cardContainers = args.droppableContainers.filter(
+    (c) => !String(c.id).startsWith('sec-hdr-')
+  );
+  const pointerResult = pointerWithin({ ...args, droppableContainers: cardContainers });
+  if (pointerResult.length > 0) return pointerResult;
+  return closestCenter({ ...args, droppableContainers: cardContainers });
 };
 
 // ── Sortable card row ──────────────────────────────────────────────────────────
