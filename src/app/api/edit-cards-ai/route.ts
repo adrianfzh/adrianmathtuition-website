@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -13,6 +14,7 @@ OUTPUT RULES — ABSOLUTELY CRITICAL
 - Do NOT include the card_title — that's edited separately.
 - Do NOT wrap your output in markdown code fences.
 - Do NOT include "Updated card:" or "Here's the rewrite:" or any framing.
+- If generating an SVG diagram, output it as a raw <svg>...</svg> block inline in the markdown. Keep it minimal: no external dependencies, pure SVG 1.1 with basic shapes, text, and path elements. Width/height should use viewBox for scaling.
 
 FORMATTING CONVENTIONS
 - Math: $inline$ for inline, $$display$$ for block.
@@ -100,10 +102,36 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ error: 'Instruction is required' }), { status: 400 });
     }
 
+    // Upload images to Vercel Blob before calling Claude (when images are present)
+    const blobUrls: string[] = [];
+    if (hasImages) {
+      for (let i = 0; i < imageList.length; i++) {
+        const img = imageList[i];
+        const ext = (img.mediaType ?? 'image/jpeg').split('/')[1] ?? 'jpg';
+        const filename = `card-images/${Date.now()}-${i}.${ext}`;
+        const buffer = Buffer.from(img.data, 'base64');
+        const blob = await put(filename, buffer, {
+          access: 'public',
+          contentType: img.mediaType ?? 'image/jpeg',
+        });
+        blobUrls.push(blob.url);
+      }
+    }
+
+    const blobUrlLines = blobUrls.length > 0
+      ? '\n\nImage URL(s) for embedding:\n' + blobUrls.map((u, i) => `Image ${i + 1}: ${u}`).join('\n')
+      : '';
+
     const textInstruction = instruction?.trim() ||
       (imageList.length === 1
-        ? 'Extract the worked example from this image. Write a complete card with the question, all solution steps, and the final answer. Use markdown + LaTeX formatting exactly as shown in the system prompt.'
-        : `There are ${imageList.length} images (e.g. multiple pages of the same question). Extract and combine all content into one complete card with the question, all solution steps, and the final answer. Use markdown + LaTeX formatting exactly as shown in the system prompt.`);
+        ? `Extract the worked example from this image. Write a complete card:
+- Include the question, all solution steps, and the final answer in markdown + LaTeX.
+- If there is a diagram or figure, embed it using <img src="${blobUrls[0] ?? 'IMAGE_URL'}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> at the correct position in the card (before or after the question, wherever it appears in the original).
+- Use the exact blob URL(s) listed above for images.`
+        : `There are ${imageList.length} images (e.g. multiple pages of the same question). Extract and combine all content into one complete card:
+- Include the question, all solution steps, and the final answer in markdown + LaTeX.
+- If there is a diagram or figure, embed it using <img src="IMAGE_URL" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> at the correct position in the card (before or after the question, wherever it appears in the original).
+- Use the exact blob URL(s) listed above for images.`);
 
     const textBlock = `Level: ${level ?? ''}
 Topic: ${topic ?? ''}
@@ -117,7 +145,7 @@ Current card content:
 ${currentContent ?? ''}
 \`\`\`
 
-Instruction: ${textInstruction}`;
+Instruction: ${textInstruction}${blobUrlLines}`;
 
     // Build message content — images first (each as its own block), then text
     const imageBlocks = imageList.map(img => ({

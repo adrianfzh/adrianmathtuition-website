@@ -115,6 +115,7 @@ const QUICK_ACTIONS = [
   { label: 'Tighten algebra', instruction: 'Tighten the algebra steps — combine micro-steps that students can do in one line, but keep enough scaffolding that the logic is followable.' },
   { label: 'Use a fresh example', instruction: "Same sub-skill, different numbers and surface. Don't reuse the same coefficients/values. Rewrite the whole card with a new example." },
   { label: 'Add a why-this-works', instruction: 'Add one sentence at the top explaining *why* this method works, before diving into steps.' },
+  { label: 'Generate diagram', instruction: 'Generate an SVG diagram that illustrates the mathematical concept or figure described in this card. Output a clean, minimal <svg>...</svg> element embedded inline in the card at the appropriate position. Use only standard SVG shapes (rect, circle, line, path, text, polygon). The SVG should be self-contained with a viewBox, no external fonts or images.' },
 ];
 
 // ── AI Sidebar ────────────────────────────────────────────────────────────────
@@ -777,6 +778,40 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
             />
             <span className="text-slate-600">Published</span>
           </label>
+          <>
+            <label
+              className="flex items-center gap-1 text-slate-500 cursor-pointer hover:text-slate-700 text-xs"
+              title="Insert image into card"
+            >
+              📎 Image
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = async (ev) => {
+                    const dataUrl = ev.target?.result as string;
+                    const base64 = dataUrl.split(',')[1];
+                    const res = await fetch('/api/admin/cards/upload-image', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                      body: JSON.stringify({ imageData: base64, imageMediaType: file.type }),
+                    });
+                    const json = await res.json();
+                    if (res.ok) {
+                      const tag = `\n<img src="${json.url}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />\n`;
+                      setContent((prev) => prev + tag);
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                  e.target.value = '';
+                }}
+              />
+            </label>
+          </>
           {card.source_kb_entry_id && (
             <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
               🔗 Linked to KB entry
