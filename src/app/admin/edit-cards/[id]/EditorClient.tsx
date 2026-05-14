@@ -126,6 +126,7 @@ function AISidebar({
   title,
   auth,
   onAccept,
+  onPreviewChange,
 }: {
   card: Card;
   subgroup: Subgroup | undefined;
@@ -133,6 +134,7 @@ function AISidebar({
   title: string;
   auth: string;
   onAccept: (newContent: string) => void;
+  onPreviewChange?: (content: string | null) => void;
 }) {
   const [prompt, setPrompt] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -220,6 +222,7 @@ function AISidebar({
 
         if (!aborted && result) {
           setDiffLines(computeDiff(content, result));
+          onPreviewChange?.(result);
         }
       } catch (e: unknown) {
         if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
@@ -228,7 +231,7 @@ function AISidebar({
         abortRef.current = null;
       }
     },
-    [streaming, title, content, card, subgroup, image, auth]
+    [streaming, title, content, card, subgroup, image, auth, onPreviewChange]
   );
 
   function handleAccept() {
@@ -238,11 +241,13 @@ function AISidebar({
     setAiResult('');
     setPrompt('');
     setImage(null);
+    onPreviewChange?.(null);
   }
 
   function handleReject() {
     setDiffLines(null);
     setAiResult('');
+    onPreviewChange?.(null);
     setPrompt('');
   }
 
@@ -477,6 +482,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [previewContent, setPreviewContent] = useState(card.content);
+  const [aiPreviewContent, setAiPreviewContent] = useState<string | null>(null);
   const isMobile = useWindowWidth() < 1024;
   const isNarrow = useWindowWidth() < 1280;
 
@@ -836,15 +842,16 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
 
             {/* Preview */}
             <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 overflow-hidden">
-              <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-xs font-medium text-slate-500">
-                Live preview
+              <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-xs font-medium flex items-center gap-1.5">
+                <span className="text-slate-500">Live preview</span>
+                {aiPreviewContent && <span className="text-blue-600">✨ AI suggestion</span>}
               </div>
               <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none">
                 <ReactMarkdown
                   remarkPlugins={[remarkMath, remarkGfm]}
                   rehypePlugins={[[rehypeKatex, katexOptions]]}
                 >
-                  {fixMathFences(previewContent)}
+                  {fixMathFences(aiPreviewContent ?? previewContent)}
                 </ReactMarkdown>
               </div>
             </div>
@@ -859,6 +866,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
                   title={title}
                   auth={auth}
                   onAccept={(newContent) => setContent(newContent)}
+                  onPreviewChange={setAiPreviewContent}
                 />
               </div>
             )}

@@ -874,9 +874,10 @@ function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void;
 
 // ── AI Sidebar ────────────────────────────────────────────────────────────────
 
-function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind, auth, onAccept }: {
+function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind, auth, onAccept, onPreviewChange }: {
   cardId: string; level: string; topic: string; subgroup: Subgroup | undefined;
   content: string; title: string; contentKind: string; auth: string; onAccept: (c: string) => void;
+  onPreviewChange?: (content: string | null) => void;
 }) {
   const [prompt, setPrompt] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -893,8 +894,9 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
     if (prevCardId.current !== cardId) {
       prevCardId.current = cardId;
       setDiffLines(null); setAiResult(''); setAiError(''); setImage(null);
+      onPreviewChange?.(null);
     }
-  }, [cardId]);
+  }, [cardId, onPreviewChange]);
 
   function loadImage(file: File) {
     if (!file.type.startsWith('image/')) return;
@@ -936,14 +938,14 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
           if (data.chunk) { result += data.chunk; setAiResult(result); }
         }
       }
-      if (!aborted && result) setDiffLines(computeDiff(content, result));
+      if (!aborted && result) { setDiffLines(computeDiff(content, result)); onPreviewChange?.(result); }
     } catch (e: unknown) {
       if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
     } finally { setStreaming(false); abortRef.current = null; }
-  }, [streaming, title, content, level, topic, subgroup, contentKind, image, auth]);
+  }, [streaming, title, content, level, topic, subgroup, contentKind, image, auth, onPreviewChange]);
 
-  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImage(null); }
-  function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); }
+  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImage(null); onPreviewChange?.(null); }
+  function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); onPreviewChange?.(null); }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -1059,6 +1061,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
   const [isPublished, setIsPublished] = useState(initialCard.is_published);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [previewContent, setPreviewContent] = useState(initialCard.content);
+  const [aiPreviewContent, setAiPreviewContent] = useState<string | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -1182,10 +1185,13 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
 
         {/* Preview */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="px-3 py-1 bg-slate-50 border-b border-r border-slate-200 text-xs text-slate-500">Live preview</div>
+          <div className="px-3 py-1 bg-slate-50 border-b border-r border-slate-200 text-xs flex items-center gap-1.5">
+            <span className="text-slate-500">Live preview</span>
+            {aiPreviewContent && <span className="text-blue-600 font-medium">✨ AI suggestion</span>}
+          </div>
           <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
             <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[[rehypeKatex, katexOptions]]}>
-              {fixMathFences(previewContent)}
+              {fixMathFences(aiPreviewContent ?? previewContent)}
             </ReactMarkdown>
           </div>
         </div>
@@ -1195,7 +1201,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
           <>
             <ResizeHandle onDelta={onAiResize} />
             <div className="flex flex-col overflow-hidden bg-white" style={{ width: aiWidth, flexShrink: 0 }}>
-              <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} contentKind={initialCard.content_kind} auth={auth} onAccept={(c) => setContent(c)} />
+              <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} contentKind={initialCard.content_kind} auth={auth} onAccept={(c) => setContent(c)} onPreviewChange={setAiPreviewContent} />
             </div>
           </>
         )}
