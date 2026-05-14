@@ -55,7 +55,7 @@ const springTransition = { type: 'spring' as const, stiffness: 300, damping: 30,
 // ── KaTeX overrides ───────────────────────────────────────────────────────────
 const katexStyles = `
   .katex { font-size: 1em !important; }
-  .katex-display { margin: 12px 0 !important; overflow-x: auto; overflow-y: hidden; }
+  .katex-display { margin: 12px 0 !important; overflow-x: auto; overflow-y: hidden; max-width: 100%; }
   .katex-display > .katex { text-align: left; }
 `;
 
@@ -375,7 +375,7 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
                 <div className="flex-none" style={{ padding: '20px 24px 14px', borderBottom: '1px solid #F0EBE0' }}>
                   <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, color: '#2C3E50', lineHeight: 1.3 }}>{card.card_title}</h2>
                 </div>
-                <div className="flex-1 overflow-y-auto" style={{ padding: '16px 24px 20px', fontSize: 16, color: '#2C2C2C', lineHeight: 1.65, touchAction: 'pan-y' }} onPointerDown={e => e.stopPropagation()}>
+                <div className="flex-1 overflow-y-auto" style={{ padding: '16px 24px 20px', fontSize: 16, color: '#2C2C2C', lineHeight: 1.65, touchAction: 'pan-y', overflowX: 'hidden' }} onPointerDown={e => e.stopPropagation()}>
                   <CardMarkdown content={card.content} />
                   {index === total - 1 && (
                     <div style={{ marginTop: 24, textAlign: 'center' }}>
