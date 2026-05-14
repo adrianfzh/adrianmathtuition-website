@@ -70,8 +70,9 @@ export async function POST(req: NextRequest) {
       subgroupName,
       subgroupDescription,
       content_kind,
-      imageData,      // base64-encoded image (no data-URL prefix)
-      imageMediaType, // e.g. 'image/jpeg'
+      images,         // NEW: [{ data: string, mediaType: string }]  — multi-image
+      imageData,      // legacy single-image (kept for backward compat)
+      imageMediaType,
       password,
     } = await req.json();
 
@@ -79,15 +80,30 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    const hasImage = typeof imageData === 'string' && imageData.length > 0;
+    // Normalise to an array regardless of single vs multi format
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
+    type AllowedMediaType = typeof allowedTypes[number];
+    function resolveType(t?: string): AllowedMediaType {
+      return allowedTypes.includes(t as AllowedMediaType) ? (t as AllowedMediaType) : 'image/jpeg';
+    }
 
-    // Instruction is required unless an image is provided
-    if (!hasImage && !instruction?.trim()) {
+    type ImageEntry = { data: string; mediaType?: string };
+    const imageList: ImageEntry[] = Array.isArray(images) && images.length > 0
+      ? images
+      : (typeof imageData === 'string' && imageData.length > 0
+          ? [{ data: imageData, mediaType: imageMediaType }]
+          : []);
+    const hasImages = imageList.length > 0;
+
+    // Instruction is required unless at least one image is provided
+    if (!hasImages && !instruction?.trim()) {
       return new Response(JSON.stringify({ error: 'Instruction is required' }), { status: 400 });
     }
 
     const textInstruction = instruction?.trim() ||
-      'Extract the worked example from this image. Write a complete card with the question, all solution steps, and the final answer. Use markdown + LaTeX formatting exactly as shown in the system prompt.';
+      (imageList.length === 1
+        ? 'Extract the worked example from this image. Write a complete card with the question, all solution steps, and the final answer. Use markdown + LaTeX formatting exactly as shown in the system prompt.'
+        : `There are ${imageList.length} images (e.g. multiple pages of the same question). Extract and combine all content into one complete card with the question, all solution steps, and the final answer. Use markdown + LaTeX formatting exactly as shown in the system prompt.`);
 
     const textBlock = `Level: ${level ?? ''}
 Topic: ${topic ?? ''}
@@ -103,26 +119,18 @@ ${currentContent ?? ''}
 
 Instruction: ${textInstruction}`;
 
-    // Build message content — text only, or image + text for vision requests
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
-    type AllowedMediaType = typeof allowedTypes[number];
-    const resolvedMediaType: AllowedMediaType =
-      allowedTypes.includes(imageMediaType as AllowedMediaType)
-        ? (imageMediaType as AllowedMediaType)
-        : 'image/jpeg';
+    // Build message content — images first (each as its own block), then text
+    const imageBlocks = imageList.map(img => ({
+      type: 'image' as const,
+      source: {
+        type: 'base64' as const,
+        media_type: resolveType(img.mediaType),
+        data: img.data,
+      },
+    }));
 
-    const userContent = hasImage
-      ? [
-          {
-            type: 'image' as const,
-            source: {
-              type: 'base64' as const,
-              media_type: resolvedMediaType,
-              data: imageData as string,
-            },
-          },
-          { type: 'text' as const, text: textBlock },
-        ]
+    const userContent = hasImages
+      ? [...imageBlocks, { type: 'text' as const, text: textBlock }]
       : [{ type: 'text' as const, text: textBlock }];
 
     const client = new Anthropic();

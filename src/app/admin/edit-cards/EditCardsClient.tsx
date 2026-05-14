@@ -884,10 +884,11 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
   const [aiResult, setAiResult] = useState('');
   const [diffLines, setDiffLines] = useState<DiffLine[] | null>(null);
   const [aiError, setAiError] = useState('');
-  const [image, setImage] = useState<{ data: string; mediaType: string; previewUrl: string } | null>(null);
+  type ImgEntry = { data: string; mediaType: string; previewUrl: string };
+  const [images, setImages] = useState<ImgEntry[]>([]);
   const [dragOver, setDragOver] = useState(false);
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [blobUrls, setBlobUrls] = useState<Record<number, string>>({});
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | null>(null);
   const prevCardId = useRef(cardId);
@@ -895,7 +896,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
   useEffect(() => {
     if (prevCardId.current !== cardId) {
       prevCardId.current = cardId;
-      setDiffLines(null); setAiResult(''); setAiError(''); setImage(null); setBlobUrl(null);
+      setDiffLines(null); setAiResult(''); setAiError(''); setImages([]); setBlobUrls({});
       onPreviewChange?.(null);
     }
   }, [cardId, onPreviewChange]);
@@ -905,10 +906,29 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
-      const base64 = dataUrl.split(',')[1];
-      setImage({ data: base64, mediaType: file.type, previewUrl: dataUrl });
+      setImages(prev => [...prev, { data: dataUrl.split(',')[1], mediaType: file.type, previewUrl: dataUrl }]);
     };
     reader.readAsDataURL(file);
+  }
+
+  function removeImage(idx: number) {
+    setImages(prev => prev.filter((_, i) => i !== idx));
+    setBlobUrls(prev => { const n = { ...prev }; delete n[idx]; return n; });
+  }
+
+  async function getUrl(idx: number) {
+    if (blobUrls[idx]) { await navigator.clipboard.writeText(`<img src="${blobUrls[idx]}" alt="diagram" style="max-width:100%" />`); return; }
+    setUploadingIdx(idx);
+    try {
+      const img = images[idx];
+      const res = await fetch('/api/admin/cards/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ imageData: img.data, imageMediaType: img.mediaType }),
+      });
+      const json = await res.json();
+      if (res.ok) { setBlobUrls(prev => ({ ...prev, [idx]: json.url })); await navigator.clipboard.writeText(`<img src="${json.url}" alt="diagram" style="max-width:100%" />`); }
+    } finally { setUploadingIdx(null); }
   }
 
   const runAI = useCallback(async (instruction: string) => {
@@ -921,7 +941,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
       const res = await fetch('/api/edit-cards-ai', {
         method: 'POST', signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', content_kind: contentKind, imageData: image?.data, imageMediaType: image?.mediaType, password: auth }),
+        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', content_kind: contentKind, images: images.map(i => ({ data: i.data, mediaType: i.mediaType })), password: auth }),
       });
       if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error ?? `HTTP ${res.status}`); }
       const reader = res.body!.getReader();
@@ -944,9 +964,9 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
     } catch (e: unknown) {
       if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
     } finally { setStreaming(false); abortRef.current = null; }
-  }, [streaming, title, content, level, topic, subgroup, contentKind, image, auth, onPreviewChange]);
+  }, [streaming, title, content, level, topic, subgroup, contentKind, images, auth, onPreviewChange]);
 
-  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImage(null); setBlobUrl(null); onPreviewChange?.(null); }
+  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImages([]); setBlobUrls({}); onPreviewChange?.(null); }
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); onPreviewChange?.(null); }
 
   return (
@@ -965,59 +985,41 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
         </div>
         <div>
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Or describe a change:</p>
-          {/* Image drop zone */}
+          {/* Image drop zone — accepts multiple */}
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) loadImage(f); }}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); Array.from(e.dataTransfer.files).forEach(f => loadImage(f)); }}
           >
             <textarea
               className={`w-full border rounded px-2.5 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${dragOver ? 'border-blue-400 bg-blue-50' : 'border-slate-300'}`}
               rows={3}
-              placeholder={image ? 'Optional: add instructions for the image…' : 'e.g. Split into two cards… drop or paste an image here'}
+              placeholder={images.length > 0 ? 'Optional: add instructions for the images…' : 'e.g. Split into two cards… drop or paste images here'}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               disabled={streaming}
               onPaste={(e) => {
-                const item = Array.from(e.clipboardData.items).find(i => i.type.startsWith('image/'));
-                if (item) { const f = item.getAsFile(); if (f) { loadImage(f); e.preventDefault(); } }
+                const items = Array.from(e.clipboardData.items).filter(i => i.type.startsWith('image/'));
+                if (items.length > 0) { items.forEach(i => { const f = i.getAsFile(); if (f) loadImage(f); }); e.preventDefault(); }
               }}
             />
           </div>
-          {/* Image preview */}
-          {image && (
-            <div className="mt-1.5 border border-slate-200 rounded bg-slate-50 overflow-hidden">
-              <div className="flex items-center gap-2 p-1.5">
-                <img src={image.previewUrl} alt="uploaded" className="h-10 w-10 object-cover rounded border border-slate-200 shrink-0" />
-                <span className="text-xs text-slate-500 flex-1 truncate">Image attached</span>
-                <button
-                  onClick={async () => {
-                    if (blobUrl) { await navigator.clipboard.writeText(`<img src="${blobUrl}" alt="diagram" style="max-width:100%" />`); return; }
-                    setUploading(true);
-                    try {
-                      const res = await fetch('/api/admin/cards/upload-image', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-                        body: JSON.stringify({ imageData: image.data, imageMediaType: image.mediaType }),
-                      });
-                      const json = await res.json();
-                      if (res.ok) { setBlobUrl(json.url); await navigator.clipboard.writeText(`<img src="${json.url}" alt="diagram" style="max-width:100%" />`); }
-                    } finally { setUploading(false); }
-                  }}
-                  disabled={uploading}
-                  className="text-xs px-1.5 py-0.5 border border-slate-300 rounded hover:bg-white disabled:opacity-50 shrink-0"
-                  title={blobUrl ? 'Copy img tag' : 'Upload image and get embed URL'}
-                >
-                  {uploading ? '…' : blobUrl ? '📋 Copy tag' : '🔗 Get URL'}
-                </button>
-                <button onClick={() => { setImage(null); setBlobUrl(null); }} className="text-slate-400 hover:text-red-500 text-xs shrink-0">✕</button>
+          {/* Thumbnail grid */}
+          {images.length > 0 && (
+            <div className="mt-1.5 border border-slate-200 rounded bg-slate-50 p-1.5 space-y-1">
+              <div className="flex flex-wrap gap-1.5">
+                {images.map((img, idx) => (
+                  <div key={idx} className="relative group shrink-0">
+                    <img src={img.previewUrl} alt={`image ${idx + 1}`} className="h-12 w-12 object-cover rounded border border-slate-200" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center gap-0.5">
+                      <button onClick={() => getUrl(idx)} disabled={uploadingIdx === idx} className="text-white text-xs p-0.5" title="Get URL">🔗</button>
+                      <button onClick={() => removeImage(idx)} className="text-white text-xs p-0.5" title="Remove">✕</button>
+                    </div>
+                    {blobUrls[idx] && <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white" title="Uploaded to Blob" />}
+                  </div>
+                ))}
               </div>
-              {blobUrl && (
-                <div className="px-2 pb-1.5">
-                  <p className="text-xs text-green-700 font-medium mb-0.5">✓ Uploaded — img tag copied to clipboard</p>
-                  <p className="text-xs text-slate-400 break-all font-mono">{blobUrl}</p>
-                </div>
-              )}
+              <p className="text-xs text-slate-400">{images.length} image{images.length > 1 ? 's' : ''} — hover for 🔗 URL / ✕ remove</p>
             </div>
           )}
           <div className="mt-1.5 flex gap-1.5">
@@ -1025,15 +1027,15 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
               onClick={() => fileInputRef.current?.click()}
               disabled={streaming}
               className="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-40 shrink-0"
-              title="Upload image"
+              title="Upload image(s)"
             >📎</button>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) loadImage(f); e.target.value = ''; }} />
+            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { Array.from(e.target.files ?? []).forEach(f => loadImage(f)); e.target.value = ''; }} />
             <button
               onClick={() => runAI(prompt)}
-              disabled={(!prompt.trim() && !image) || streaming}
+              disabled={(!prompt.trim() && images.length === 0) || streaming}
               className="flex-1 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40"
             >
-              {streaming ? 'Streaming… (click to cancel)' : image ? 'Extract from image →' : 'Send to AI →'}
+              {streaming ? 'Streaming… (click to cancel)' : images.length > 0 ? `Extract from ${images.length > 1 ? `${images.length} images` : 'image'} →` : 'Send to AI →'}
             </button>
           </div>
         </div>
