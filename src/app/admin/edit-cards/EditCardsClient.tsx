@@ -157,11 +157,12 @@ const QUICK_ACTIONS = [
 const customCollision: CollisionDetection = (args) => {
   const activeId = String(args.active.id);
   if (activeId.startsWith('sec-hdr-')) {
-    // Section drags only collide with other section headers (both kinds)
+    // Section drags collide with other section headers OR panel-level droppables
+    // (panel-rf / panel-we catch drops when the destination panel has no sections yet)
     return closestCenter({
       ...args,
       droppableContainers: args.droppableContainers.filter(
-        (c) => String(c.id).startsWith('sec-hdr-')
+        (c) => String(c.id).startsWith('sec-hdr-') || String(c.id).startsWith('panel-')
       ),
     });
   }
@@ -1240,9 +1241,13 @@ export default function EditCardsClient() {
     const activeHdr = parseHdrId(activeIdStr);
     if (activeHdr) {
       const overHdr = parseHdrId(overIdStr);
-      if (!overHdr) return;
-      if (activeHdr.kind === overHdr.kind && activeHdr.kind === 'worked_example') {
-        // Within-WE section reorder
+      // Also accept panel-rf / panel-we as a cross-kind drop target
+      const panelKind = overIdStr === 'panel-rf' ? 'refresher' : overIdStr === 'panel-we' ? 'worked_example' : null;
+      if (!overHdr && !panelKind) return;
+      const targetKind = overHdr?.kind ?? panelKind!;
+      if (activeHdr.kind === targetKind && activeHdr.kind === 'worked_example') {
+        // Within-WE section reorder — needs a target section position, not just a panel
+        if (!overHdr) return;
         const oi = allSections.indexOf(activeHdr.name);
         const ni = allSections.indexOf(overHdr.name);
         if (oi === -1 || ni === -1) return;
@@ -1253,10 +1258,10 @@ export default function EditCardsClient() {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
           body: JSON.stringify({ level, topic, orderedNames: reordered }),
         }).catch(() => fetchCards());
-      } else if (activeHdr.kind !== overHdr.kind) {
+      } else if (activeHdr.kind !== targetKind) {
         // Cross-kind section move
         const srcKind = activeHdr.kind;
-        const tgtKind = overHdr.kind;
+        const tgtKind = targetKind;
         const movedSection = activeHdr.name;
         if (srcKind === 'refresher') {
           const moving = refresherCards.filter((c) => c.display_group === movedSection);
