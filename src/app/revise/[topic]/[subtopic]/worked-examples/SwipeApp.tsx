@@ -171,6 +171,7 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
   const [hasInteracted, setHasInteracted] = useState(false);
   const dotStripRef = useRef<HTMLDivElement>(null);
   const activeDotRef = useRef<HTMLButtonElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const total = cards.length;
   const card = cards[index];
@@ -181,6 +182,25 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
     setChatOpen(false);
     setInputValue('');
     abortRef.current?.abort();
+  }, [index]);
+
+  // Scale down .katex-display blocks that are wider than the content area.
+  // touch-action:none on an ancestor prevents horizontal scroll, so we zoom
+  // the element to fit rather than relying on overflow scrolling.
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const run = () => {
+      el.querySelectorAll<HTMLElement>('.katex-display').forEach((display) => {
+        display.style.zoom = '';
+        if (display.scrollWidth > display.offsetWidth + 2) {
+          display.style.zoom = String(display.offsetWidth / display.scrollWidth);
+        }
+      });
+    };
+    // Give KaTeX time to finish rendering before measuring
+    const t = setTimeout(run, 80);
+    return () => clearTimeout(t);
   }, [index]);
 
   // Block pull-to-refresh (Problem 3)
@@ -375,7 +395,7 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
                 <div className="flex-none" style={{ padding: '20px 24px 14px', borderBottom: '1px solid #F0EBE0' }}>
                   <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, color: '#2C3E50', lineHeight: 1.3 }}>{card.card_title}</h2>
                 </div>
-                <div className="flex-1 overflow-y-auto" style={{ padding: '16px 24px 20px', fontSize: 16, color: '#2C2C2C', lineHeight: 1.65, touchAction: 'pan-x pan-y' }} onPointerDown={e => e.stopPropagation()}>
+                <div ref={contentRef} className="flex-1 overflow-y-auto" style={{ padding: '16px 24px 20px', fontSize: 16, color: '#2C2C2C', lineHeight: 1.65, touchAction: 'pan-y' }} onPointerDown={e => e.stopPropagation()}>
                   <CardMarkdown content={card.content} />
                   {index === total - 1 && (
                     <div style={{ marginTop: 24, textAlign: 'center' }}>
