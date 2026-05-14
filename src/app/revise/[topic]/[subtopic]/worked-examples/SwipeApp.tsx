@@ -205,12 +205,13 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
         // ── Wrap ──────────────────────────────────────────────────────────────
         const wrapper = document.createElement('div');
         wrapper.dataset.katexScrollable = '1';
-        wrapper.style.cssText = 'position:relative;margin:12px 0;border-radius:6px;overflow:hidden;';
+        // Extra vertical padding creates a larger grab target above/below the math
+        wrapper.style.cssText = 'position:relative;margin:12px 0;border-radius:6px;overflow:hidden;padding:10px 0;';
 
         // Right-edge fade — mirrors code-block affordance
         const fade = document.createElement('div');
         fade.style.cssText =
-          'position:absolute;top:0;right:0;bottom:0;width:28px;' +
+          'position:absolute;top:0;right:0;bottom:0;width:36px;' +
           'background:linear-gradient(to right,transparent,rgba(255,255,255,0.95));' +
           'pointer-events:none;transition:opacity 0.15s;z-index:1;';
 
@@ -234,9 +235,10 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
         updateFade();
         display.addEventListener('scroll', updateFade);
 
-        // ── Pointer drag-scroll with direction detection ───────────────────────
+        // ── Pointer drag-scroll — drag on wrapper (larger hit area) ───────────
+        // Direction is resolved on first move: vertical releases capture
+        // immediately so native card-content scroll is not blocked.
         let dragging = false;
-        let hasDecided = false;
         let isHorizontalDrag = false;
         let startX = 0;
         let startY = 0;
@@ -244,53 +246,51 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
 
         const onPointerDown = (e: PointerEvent) => {
           dragging = true;
-          hasDecided = false;
           isHorizontalDrag = false;
           startX = e.clientX;
           startY = e.clientY;
           startScroll = display.scrollLeft;
-          display.setPointerCapture(e.pointerId);
+          wrapper.setPointerCapture(e.pointerId);
+          display.style.cursor = 'grabbing';
         };
 
         const onPointerMove = (e: PointerEvent) => {
           if (!dragging) return;
           const dx = e.clientX - startX;
           const dy = e.clientY - startY;
-          if (!hasDecided) {
-            // Wait for a clear signal before committing direction
-            if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
-            hasDecided = true;
-            isHorizontalDrag = Math.abs(dx) > Math.abs(dy);
-            if (!isHorizontalDrag) {
-              // Vertical gesture — release capture so native scroll can take over
-              display.releasePointerCapture(e.pointerId);
+          // Resolve direction on first pixel of movement
+          if (!isHorizontalDrag) {
+            if (dx === 0 && dy === 0) return;
+            if (Math.abs(dy) > Math.abs(dx)) {
+              // Vertical gesture — bail out immediately, no dead zone
+              wrapper.releasePointerCapture(e.pointerId);
               dragging = false;
+              display.style.cursor = 'grab';
               return;
             }
-            display.style.cursor = 'grabbing';
+            isHorizontalDrag = true;
           }
-          if (isHorizontalDrag) {
-            display.scrollLeft = startScroll - dx;
-          }
+          display.scrollLeft = startScroll - dx;
         };
 
         const onPointerUp = () => {
           dragging = false;
+          isHorizontalDrag = false;
           display.style.cursor = 'grab';
         };
 
-        display.addEventListener('pointerdown', onPointerDown);
-        display.addEventListener('pointermove', onPointerMove);
-        display.addEventListener('pointerup', onPointerUp);
-        display.addEventListener('pointercancel', onPointerUp);
+        wrapper.addEventListener('pointerdown', onPointerDown);
+        wrapper.addEventListener('pointermove', onPointerMove);
+        wrapper.addEventListener('pointerup', onPointerUp);
+        wrapper.addEventListener('pointercancel', onPointerUp);
 
         // ── Cleanup: remove listeners and unwrap ───────────────────────────────
         cleanups.push(() => {
           display.removeEventListener('scroll', updateFade);
-          display.removeEventListener('pointerdown', onPointerDown);
-          display.removeEventListener('pointermove', onPointerMove);
-          display.removeEventListener('pointerup', onPointerUp);
-          display.removeEventListener('pointercancel', onPointerUp);
+          wrapper.removeEventListener('pointerdown', onPointerDown);
+          wrapper.removeEventListener('pointermove', onPointerMove);
+          wrapper.removeEventListener('pointerup', onPointerUp);
+          wrapper.removeEventListener('pointercancel', onPointerUp);
           if (wrapper.parentNode) {
             display.style.removeProperty('margin');
             display.style.overflowX = '';
