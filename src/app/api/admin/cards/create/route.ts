@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       order_index,
       content_kind: resolvedKind,
       feature: 'both',
-      is_published: false,
+      is_published: true,
       source: 'manual_admin_editor',
     })
     .select()
