@@ -114,7 +114,6 @@ export default async function Page({
     const aRank = a.display_group != null ? (sectionRank[a.display_group] ?? 999999) : 999999;
     const bRank = b.display_group != null ? (sectionRank[b.display_group] ?? 999999) : 999999;
     if (aRank !== bRank) return aRank - bRank;
-    if (a.subgroup_id !== b.subgroup_id) return a.subgroup_id - b.subgroup_id;
     return (a.order_index ?? 0) - (b.order_index ?? 0);
   });
 
