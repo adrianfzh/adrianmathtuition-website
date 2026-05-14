@@ -33,12 +33,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const updates = orderedIds.map((id: string, i: number) => ({ id, order_index: i + 1 }));
+  // Use individual UPDATE calls (not upsert) to avoid INSERT failing on NOT NULL columns
+  const errors: string[] = [];
+  await Promise.all(
+    (orderedIds as string[]).map(async (id, i) => {
+      const { error } = await supa
+        .from('content_snippets')
+        .update({ order_index: i + 1 })
+        .eq('id', id);
+      if (error) errors.push(error.message);
+    })
+  );
 
-  const { error: updateErr } = await supa
-    .from('content_snippets')
-    .upsert(updates, { onConflict: 'id' });
-
-  if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+  if (errors.length > 0) return NextResponse.json({ error: errors.join('; ') }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
