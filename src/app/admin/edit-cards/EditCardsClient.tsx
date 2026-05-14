@@ -886,6 +886,8 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
   const [aiError, setAiError] = useState('');
   const [image, setImage] = useState<{ data: string; mediaType: string; previewUrl: string } | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | null>(null);
   const prevCardId = useRef(cardId);
@@ -893,7 +895,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
   useEffect(() => {
     if (prevCardId.current !== cardId) {
       prevCardId.current = cardId;
-      setDiffLines(null); setAiResult(''); setAiError(''); setImage(null);
+      setDiffLines(null); setAiResult(''); setAiError(''); setImage(null); setBlobUrl(null);
       onPreviewChange?.(null);
     }
   }, [cardId, onPreviewChange]);
@@ -944,7 +946,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
     } finally { setStreaming(false); abortRef.current = null; }
   }, [streaming, title, content, level, topic, subgroup, contentKind, image, auth, onPreviewChange]);
 
-  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImage(null); onPreviewChange?.(null); }
+  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImage(null); setBlobUrl(null); onPreviewChange?.(null); }
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); onPreviewChange?.(null); }
 
   return (
@@ -984,10 +986,38 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
           </div>
           {/* Image preview */}
           {image && (
-            <div className="mt-1.5 flex items-center gap-2 p-1.5 border border-slate-200 rounded bg-slate-50">
-              <img src={image.previewUrl} alt="uploaded" className="h-10 w-10 object-cover rounded border border-slate-200 shrink-0" />
-              <span className="text-xs text-slate-500 flex-1 truncate">Image attached — AI will extract from it</span>
-              <button onClick={() => setImage(null)} className="text-slate-400 hover:text-red-500 text-xs shrink-0">✕</button>
+            <div className="mt-1.5 border border-slate-200 rounded bg-slate-50 overflow-hidden">
+              <div className="flex items-center gap-2 p-1.5">
+                <img src={image.previewUrl} alt="uploaded" className="h-10 w-10 object-cover rounded border border-slate-200 shrink-0" />
+                <span className="text-xs text-slate-500 flex-1 truncate">Image attached</span>
+                <button
+                  onClick={async () => {
+                    if (blobUrl) { await navigator.clipboard.writeText(`<img src="${blobUrl}" alt="diagram" style="max-width:100%" />`); return; }
+                    setUploading(true);
+                    try {
+                      const res = await fetch('/api/admin/cards/upload-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                        body: JSON.stringify({ imageData: image.data, imageMediaType: image.mediaType }),
+                      });
+                      const json = await res.json();
+                      if (res.ok) { setBlobUrl(json.url); await navigator.clipboard.writeText(`<img src="${json.url}" alt="diagram" style="max-width:100%" />`); }
+                    } finally { setUploading(false); }
+                  }}
+                  disabled={uploading}
+                  className="text-xs px-1.5 py-0.5 border border-slate-300 rounded hover:bg-white disabled:opacity-50 shrink-0"
+                  title={blobUrl ? 'Copy img tag' : 'Upload image and get embed URL'}
+                >
+                  {uploading ? '…' : blobUrl ? '📋 Copy tag' : '🔗 Get URL'}
+                </button>
+                <button onClick={() => { setImage(null); setBlobUrl(null); }} className="text-slate-400 hover:text-red-500 text-xs shrink-0">✕</button>
+              </div>
+              {blobUrl && (
+                <div className="px-2 pb-1.5">
+                  <p className="text-xs text-green-700 font-medium mb-0.5">✓ Uploaded — img tag copied to clipboard</p>
+                  <p className="text-xs text-slate-400 break-all font-mono">{blobUrl}</p>
+                </div>
+              )}
             </div>
           )}
           <div className="mt-1.5 flex gap-1.5">

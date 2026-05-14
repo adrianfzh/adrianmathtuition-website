@@ -143,6 +143,8 @@ function AISidebar({
   const [aiError, setAiError] = useState('');
   const [image, setImage] = useState<{ data: string; mediaType: string; previewUrl: string } | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | null>(null);
 
@@ -241,6 +243,7 @@ function AISidebar({
     setAiResult('');
     setPrompt('');
     setImage(null);
+    setBlobUrl(null);
     onPreviewChange?.(null);
   }
 
@@ -296,10 +299,38 @@ function AISidebar({
             />
           </div>
           {image && (
-            <div className="mt-2 flex items-center gap-2 p-2 border border-slate-200 rounded bg-slate-50">
-              <img src={image.previewUrl} alt="uploaded" className="h-12 w-12 object-cover rounded border border-slate-200 shrink-0" />
-              <span className="text-xs text-slate-500 flex-1 truncate">Image attached — AI will extract from it</span>
-              <button onClick={() => setImage(null)} className="text-slate-400 hover:text-red-500 text-sm shrink-0">✕</button>
+            <div className="mt-2 border border-slate-200 rounded bg-slate-50 overflow-hidden">
+              <div className="flex items-center gap-2 p-2">
+                <img src={image.previewUrl} alt="uploaded" className="h-12 w-12 object-cover rounded border border-slate-200 shrink-0" />
+                <span className="text-xs text-slate-500 flex-1 truncate">Image attached</span>
+                <button
+                  onClick={async () => {
+                    if (blobUrl) { await navigator.clipboard.writeText(`<img src="${blobUrl}" alt="diagram" style="max-width:100%" />`); return; }
+                    setUploading(true);
+                    try {
+                      const res = await fetch('/api/admin/cards/upload-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                        body: JSON.stringify({ imageData: image.data, imageMediaType: image.mediaType }),
+                      });
+                      const json = await res.json();
+                      if (res.ok) { setBlobUrl(json.url); await navigator.clipboard.writeText(`<img src="${json.url}" alt="diagram" style="max-width:100%" />`); }
+                    } finally { setUploading(false); }
+                  }}
+                  disabled={uploading}
+                  className="text-xs px-2 py-1 border border-slate-300 rounded hover:bg-white disabled:opacity-50 shrink-0"
+                  title={blobUrl ? 'Copy img tag' : 'Upload image and get embed URL'}
+                >
+                  {uploading ? '…' : blobUrl ? '📋 Copy tag' : '🔗 Get URL'}
+                </button>
+                <button onClick={() => { setImage(null); setBlobUrl(null); }} className="text-slate-400 hover:text-red-500 shrink-0">✕</button>
+              </div>
+              {blobUrl && (
+                <div className="px-3 pb-2">
+                  <p className="text-xs text-green-700 font-medium mb-0.5">✓ Uploaded — img tag copied to clipboard</p>
+                  <p className="text-xs text-slate-400 break-all font-mono">{blobUrl}</p>
+                </div>
+              )}
             </div>
           )}
           <div className="mt-2 flex gap-2">
