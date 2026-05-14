@@ -157,6 +157,7 @@ const QUICK_ACTIONS = [
 const customCollision: CollisionDetection = (args) => {
   const activeId = String(args.active.id);
   if (activeId.startsWith('sec-hdr-')) {
+    // Section drags only collide with other section headers (both kinds)
     return closestCenter({
       ...args,
       droppableContainers: args.droppableContainers.filter(
@@ -164,6 +165,7 @@ const customCollision: CollisionDetection = (args) => {
       ),
     });
   }
+  // Card drags: exclude section headers; include card chips, zones, and panels
   return closestCenter({
     ...args,
     droppableContainers: args.droppableContainers.filter(
@@ -335,12 +337,26 @@ function SectionHeader({
 
 // ── Droppable section zone (cross-section card drop target, keyed by display_group) ──
 
-function DroppableSectionZone({ name, children, isDragActive }: { name: string; children: React.ReactNode; isDragActive: boolean }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `sec-zone-${name}` });
+function DroppableSectionZone({ name, kindPrefix = 'we', children, isDragActive }: { name: string; kindPrefix?: 'we' | 'rf'; children: React.ReactNode; isDragActive: boolean }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `sec-zone-${kindPrefix}-${name}` });
   return (
     <div
       ref={setNodeRef}
       className={`min-h-6 rounded transition-colors ${isDragActive && isOver ? 'outline outline-2 outline-dashed outline-blue-400 bg-blue-50' : ''}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ── Panel-level droppable (catches cross-kind drops anywhere on the panel) ─────
+
+function DroppablePanel({ id, isCrossKindTarget, children }: { id: string; isCrossKindTarget: boolean; children?: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`min-h-4 rounded transition-colors ${isCrossKindTarget && isOver ? 'bg-indigo-50 outline outline-2 outline-dashed outline-indigo-400' : ''}`}
     >
       {children}
     </div>
@@ -520,15 +536,15 @@ function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, 
 // ── Sortable section wrapper (section drag-to-reorder) ────────────────────────
 
 function SortableSectionWrapper({
-  name, children, level, topic, auth, onRenamed, onDeleted, cardCount,
+  name, kindPrefix = 'we', children, level, topic, auth, onRenamed, onDeleted, cardCount,
 }: {
-  name: string; children: React.ReactNode;
+  name: string; kindPrefix?: 'we' | 'rf'; children: React.ReactNode;
   level: string; topic: string; auth: string;
   cardCount: number;
   onRenamed: (oldName: string, newName: string) => void;
   onDeleted: (name: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `sec-hdr-${name}` });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `sec-hdr-${kindPrefix}-${name}` });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
   return (
     <div ref={setNodeRef} style={style}>
@@ -654,88 +670,98 @@ function NewRefresherModal({ subgroups, defaultSgId, level, topic, auth, onClose
 
 // ── Refresher panel ───────────────────────────────────────────────────────────
 
+// RefresherPanel: no DndContext — participates in parent's single DndContext.
+// Groups cards by display_group (null display_group = flat zone at bottom).
 function RefresherPanel({
   cards, subgroups, auth, selectedId, level, topic,
-  onSelectCard, onCardCreated, onCardSaved, onCardDeleted,
+  activeDragId, isCrossKindDrag,
+  onSelectCard, onCardCreated, onRenamed, onDeleted,
 }: {
   cards: CardRow[]; subgroups: Subgroup[]; auth: string; selectedId: string | null;
   level: string; topic: string;
+  activeDragId: string | null; isCrossKindDrag: boolean;
   onSelectCard: (id: string) => void;
   onCardCreated: (card: CardRow) => void;
-  onCardSaved: (updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) => void;
-  onCardDeleted: (id: string) => void;
+  onRenamed: (oldName: string, newName: string) => void;
+  onDeleted: (name: string) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [reorderStatus, setReorderStatus] = useState<SaveStatus>('idle');
-  const reorderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 5 } })
-  );
-
-  function handleDragStart(e: DragStartEvent) { setActiveId(e.active.id as string); if (navigator.vibrate) navigator.vibrate(30); }
-
-  function handleDragEnd(e: DragEndEvent) {
-    setActiveId(null);
-    const { active, over } = e;
-    if (!over || active.id === over.id) return;
-    const ai = cards.findIndex((c) => c.id === active.id);
-    const oi = cards.findIndex((c) => c.id === over.id);
-    if (ai === -1 || oi === -1) return;
-    const reordered = arrayMove(cards, ai, oi);
-    onCardSaved({ ...reordered[oi], id: reordered[oi].id }); // trigger parent update via special signal
-    // Actually we need to reorder — emit the reordered ids upward
-    if (reorderTimer.current) clearTimeout(reorderTimer.current);
-    setReorderStatus('saving');
-    reorderTimer.current = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/admin/cards/reorder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-          body: JSON.stringify({ orderedIds: reordered.map((c) => c.id) }),
-        });
-        if (!res.ok) throw new Error();
-        setReorderStatus('saved');
-        setTimeout(() => setReorderStatus('idle'), 2000);
-      } catch { setReorderStatus('error'); }
-    }, 600);
-    // Optimistic update: tell parent about reordered cards
-    reordered.forEach((c, i) => { onCardSaved({ id: c.id, card_title: c.card_title, is_published: c.is_published, subgroup_id: c.subgroup_id, order_index: i + 1, content: c.content }); });
+  // Group cards by display_group; null → '' (flat zone)
+  const sections = [...new Set(cards.map((c) => c.display_group ?? ''))].sort();
+  const cardsBySection: Record<string, CardRow[]> = {};
+  for (const c of cards) {
+    const key = c.display_group ?? '';
+    if (!cardsBySection[key]) cardsBySection[key] = [];
+    cardsBySection[key].push(c);
   }
 
-  const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
+  const isCardDrag = !!activeDragId && !String(activeDragId).startsWith('sec-hdr-');
 
   return (
     <div className="mb-2">
       {/* Panel header */}
-      <div className="flex items-center gap-1 px-1 py-1.5">
+      <div className={`flex items-center gap-1 px-1 py-1.5 rounded transition-colors ${isCrossKindDrag ? 'bg-blue-50' : ''}`}>
         <button onClick={() => setExpanded((v) => !v)} className="text-xs text-slate-400 shrink-0">{expanded ? '▾' : '▸'}</button>
         <span className="text-xs font-semibold text-blue-700 flex-1">🧠 Refresher <span className="font-normal text-slate-400">({cards.length})</span></span>
-        {reorderStatus === 'saving' && <span className="text-xs text-slate-400">Saving…</span>}
-        {reorderStatus === 'saved' && <span className="text-xs text-green-600">Saved</span>}
-        <button
-          onClick={() => setShowModal(true)}
-          className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >+ New</button>
+        <button onClick={() => setShowModal(true)} className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700">+ New</button>
       </div>
 
       {expanded && (
-        <div className="space-y-1">
+        <div className="space-y-2">
           {cards.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-slate-400 italic">No refresher cards yet — click + New to create one.</p>
+            <DroppablePanel id="panel-rf" isCrossKindTarget={isCrossKindDrag}>
+              <p className="px-3 py-2 text-xs text-slate-400 italic">No refresher cards yet — click + New or drag a card here.</p>
+            </DroppablePanel>
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-              <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-                {cards.map((card) => (
-                  <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={onSelectCard} />
-                ))}
-              </SortableContext>
-              <DragOverlay modifiers={[restrictToVerticalAxis]}>{activeCard ? <DragCardOverlay card={activeCard} /> : null}</DragOverlay>
-            </DndContext>
+            <SortableContext items={sections.map((s) => `sec-hdr-rf-${s || '__flat__'}`)} strategy={verticalListSortingStrategy}>
+              {sections.map((sectionKey) => {
+                const sectionCards = cardsBySection[sectionKey] ?? [];
+                if (sectionKey === '') {
+                  // Flat (no display_group) — show without section header
+                  return (
+                    <div key="__flat__">
+                      <DroppableSectionZone name="__flat__" kindPrefix="rf" isDragActive={isCardDrag}>
+                        <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                          <div className="space-y-1">
+                            {sectionCards.map((card) => (
+                              <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={onSelectCard} />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DroppableSectionZone>
+                    </div>
+                  );
+                }
+                return (
+                  <SortableSectionWrapper
+                    key={sectionKey}
+                    name={sectionKey}
+                    kindPrefix="rf"
+                    cardCount={sectionCards.length}
+                    level={level}
+                    topic={topic}
+                    auth={auth}
+                    onRenamed={onRenamed}
+                    onDeleted={onDeleted}
+                  >
+                    <DroppableSectionZone name={sectionKey} kindPrefix="rf" isDragActive={isCardDrag}>
+                      <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                        <div className="space-y-1">
+                          {sectionCards.map((card) => (
+                            <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={onSelectCard} />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DroppableSectionZone>
+                  </SortableSectionWrapper>
+                );
+              })}
+            </SortableContext>
           )}
+          {/* Panel-level drop zone at bottom (catches drops past all sections) */}
+          <DroppablePanel id="panel-rf" isCrossKindTarget={isCrossKindDrag && cards.length > 0} />
         </div>
       )}
 
@@ -1082,6 +1108,8 @@ export default function EditCardsClient() {
   const [showNewSectionModal, setShowNewSectionModal] = useState(false);
   const [localSections, setLocalSections] = useState<string[]>([]); // UI-only empty sections
   const [sectionOrder, setSectionOrder] = useState<string[]>([]); // persisted order from sections_meta
+  const [activeDragKind, setActiveDragKind] = useState<string | null>(null); // kind of item being dragged
+  const [toast, setToast] = useState<string | null>(null); // cross-kind drop toast
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // Panel widths — loaded from localStorage once on mount
@@ -1165,63 +1193,120 @@ export default function EditCardsClient() {
     useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 5 } })
   );
 
-  function handleDragStart(event: DragStartEvent) { setActiveId(event.active.id as string); if (navigator.vibrate) navigator.vibrate(30); }
+  // Drag ID helpers
+  function parseHdrId(id: string): { kind: string; name: string } | null {
+    if (id.startsWith('sec-hdr-we-')) return { kind: 'worked_example', name: id.slice('sec-hdr-we-'.length) };
+    if (id.startsWith('sec-hdr-rf-')) return { kind: 'refresher', name: id.slice('sec-hdr-rf-'.length) };
+    return null;
+  }
+  function parseDropId(id: string, allCardsCombined: CardRow[]): { kind: string; section: string } | null {
+    if (id.startsWith('sec-zone-we-')) return { kind: 'worked_example', section: id.slice('sec-zone-we-'.length) };
+    if (id.startsWith('sec-zone-rf-')) return { kind: 'refresher', section: id.slice('sec-zone-rf-'.length) };
+    if (id.startsWith('sec-hdr-we-')) return { kind: 'worked_example', section: id.slice('sec-hdr-we-'.length) };
+    if (id.startsWith('sec-hdr-rf-')) return { kind: 'refresher', section: id.slice('sec-hdr-rf-'.length) };
+    if (id === 'panel-we') return { kind: 'worked_example', section: '' };
+    if (id === 'panel-rf') return { kind: 'refresher', section: '' };
+    const card = allCardsCombined.find((c) => c.id === id);
+    if (card) return { kind: card.content_kind, section: card.display_group ?? '' };
+    return null;
+  }
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast((t) => t === msg ? null : t), 2000);
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const id = String(event.active.id);
+    setActiveId(id);
+    if (navigator.vibrate) navigator.vibrate(30);
+    const hdr = parseHdrId(id);
+    if (hdr) { setActiveDragKind(hdr.kind); return; }
+    const found = [...cards, ...refresherCards].find((c) => c.id === id);
+    setActiveDragKind(found?.content_kind ?? null);
+  }
 
   function handleDragEnd(event: DragEndEvent) {
     setActiveId(null);
+    setActiveDragKind(null);
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
     const activeIdStr = String(active.id);
     const overIdStr = String(over.id);
+    const allCardsCombined = [...cards, ...refresherCards];
 
-    // ── Section reorder (sec-hdr- prefix) ────────────────────────────────────
-    if (activeIdStr.startsWith('sec-hdr-')) {
-      const fromName = activeIdStr.slice('sec-hdr-'.length);
-      const toName = overIdStr.startsWith('sec-hdr-') ? overIdStr.slice('sec-hdr-'.length) : null;
-      if (!toName) return;
-      const oi = allSections.indexOf(fromName);
-      const ni = allSections.indexOf(toName);
-      if (oi === -1 || ni === -1) return;
-      const reordered = arrayMove(allSections, oi, ni);
-      setSectionOrder(reordered);
-      fetch('/api/admin/cards/sections/reorder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-        body: JSON.stringify({ level, topic, orderedNames: reordered }),
-      }).catch(() => fetchCards());
+    // Section header drag
+    const activeHdr = parseHdrId(activeIdStr);
+    if (activeHdr) {
+      const overHdr = parseHdrId(overIdStr);
+      if (!overHdr) return;
+      if (activeHdr.kind === overHdr.kind && activeHdr.kind === 'worked_example') {
+        // Within-WE section reorder
+        const oi = allSections.indexOf(activeHdr.name);
+        const ni = allSections.indexOf(overHdr.name);
+        if (oi === -1 || ni === -1) return;
+        const reordered = arrayMove(allSections, oi, ni);
+        setSectionOrder(reordered);
+        fetch('/api/admin/cards/sections/reorder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+          body: JSON.stringify({ level, topic, orderedNames: reordered }),
+        }).catch(() => fetchCards());
+      } else if (activeHdr.kind !== overHdr.kind) {
+        // Cross-kind section move
+        const srcKind = activeHdr.kind;
+        const tgtKind = overHdr.kind;
+        const movedSection = activeHdr.name;
+        if (srcKind === 'refresher') {
+          const moving = refresherCards.filter((c) => c.display_group === movedSection);
+          setRefresherCards((prev) => prev.filter((c) => c.display_group !== movedSection));
+          setCards((prev) => [...prev, ...moving.map((c) => ({ ...c, content_kind: 'worked_example' }))]);
+        } else {
+          const moving = cards.filter((c) => c.display_group === movedSection);
+          setCards((prev) => prev.filter((c) => c.display_group !== movedSection));
+          setRefresherCards((prev) => [...prev, ...moving.map((c) => ({ ...c, content_kind: 'refresher' }))]);
+        }
+        showToast(`Moved "${movedSection}" to ${tgtKind === 'refresher' ? '🧠 Refresher' : '💡 Worked Examples'}`);
+        fetch('/api/admin/cards/sections/move-section', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+          body: JSON.stringify({ level, topic, displayGroup: movedSection, sourceKind: srcKind, targetKind: tgtKind }),
+        }).then((r) => { if (!r.ok) throw new Error(); }).catch(() => fetchCards());
+      }
       return;
     }
 
-    // ── Card drag ─────────────────────────────────────────────────────────────
-    const ac = cards.find((c) => c.id === activeIdStr);
+    // Card drag
+    const ac = allCardsCombined.find((c) => c.id === activeIdStr);
     if (!ac) return;
+    const srcKind = ac.content_kind;
+    const srcSection = ac.display_group ?? '';
 
-    // Determine target section (display_group) from what we dropped onto
-    let targetSection: string;
-    if (overIdStr.startsWith('sec-zone-')) {
-      targetSection = overIdStr.slice('sec-zone-'.length);
-    } else {
-      // Dropped on another card
-      const oc = cards.find((c) => c.id === overIdStr);
-      if (!oc) return;
-      targetSection = oc.display_group ?? '';
-    }
-    if (!targetSection) return;
+    const dropTarget = parseDropId(overIdStr, allCardsCombined);
+    if (!dropTarget) return;
+    const tgtKind = dropTarget.kind;
+    const tgtSection = dropTarget.section || srcSection; // fall back to srcSection on panel drops
 
-    const sourceSection = ac.display_group ?? '';
+    const isCrossKind = srcKind !== tgtKind;
+    const isCrossSection = srcSection !== tgtSection;
 
-    if (sourceSection === targetSection) {
-      // ── Within-section reorder ────────────────────────────────────────────
-      if (overIdStr.startsWith('sec-zone-')) return; // drop on own zone = no-op
-      const sectionCards = cards.filter((c) => c.display_group === sourceSection);
+    const srcList = srcKind === 'refresher' ? refresherCards : cards;
+    const setSrcList = srcKind === 'refresher' ? setRefresherCards : setCards;
+    const dstList = tgtKind === 'refresher' ? refresherCards : cards;
+    const setDstList = tgtKind === 'refresher' ? setRefresherCards : setCards;
+
+    if (!isCrossKind && !isCrossSection) {
+      // Within-section reorder
+      if (dropTarget.section !== undefined && overIdStr !== activeIdStr && !allCardsCombined.find(c => c.id === overIdStr)) return;
+      if (overIdStr.startsWith('sec-') || overIdStr.startsWith('panel-')) return;
+      const sectionCards = srcList.filter((c) => c.display_group === srcSection);
       const oi = sectionCards.findIndex((c) => c.id === activeIdStr);
       const ni = sectionCards.findIndex((c) => c.id === overIdStr);
       if (oi === -1 || ni === -1) return;
       const reordered = arrayMove(sectionCards, oi, ni);
-      setCards((prev) => [...prev.filter((c) => c.display_group !== sourceSection), ...reordered]);
-      // Use a string key for reorderStatus (section name)
-      const sKey = sourceSection;
+      setSrcList((prev) => [...prev.filter((c) => c.display_group !== srcSection), ...reordered]);
+      const sKey = `${srcKind === 'refresher' ? 'rf' : 'we'}-${srcSection}`;
       if (reorderTimers.current[sKey as unknown as number]) clearTimeout(reorderTimers.current[sKey as unknown as number]);
       setReorderStatus((s) => ({ ...s, [sKey]: 'saving' }));
       reorderTimers.current[sKey as unknown as number] = setTimeout(async () => {
@@ -1236,31 +1321,41 @@ export default function EditCardsClient() {
           setTimeout(() => setReorderStatus((s) => ({ ...s, [sKey]: 'idle' })), 2000);
         } catch { setReorderStatus((s) => ({ ...s, [sKey]: 'error' })); }
       }, 600);
-    } else {
-      // ── Cross-section move (keyed by display_group) ───────────────────────
-      const sourceCards = cards.filter((c) => c.display_group === sourceSection && c.id !== activeIdStr);
-      const destCards = cards.filter((c) => c.display_group === targetSection);
-      const movedCard = { ...ac, display_group: targetSection };
-      const newDestCards = [...destCards, movedCard];
 
-      // Optimistic update
-      setCards((prev) => [
-        ...prev.filter((c) => c.display_group !== sourceSection && c.display_group !== targetSection),
-        ...sourceCards.map((c, i) => ({ ...c, order_index: i + 1 })),
-        ...newDestCards.map((c, i) => ({ ...c, order_index: i + 1 })),
+    } else if (!isCrossKind && isCrossSection) {
+      // Cross-section same-kind move
+      const remainSrc = srcList.filter((c) => c.display_group === srcSection && c.id !== activeIdStr);
+      const destSectionCards = dstList.filter((c) => c.display_group === tgtSection);
+      const moved = { ...ac, display_group: tgtSection };
+      const newDest = [...destSectionCards, moved];
+      setSrcList((prev) => [
+        ...prev.filter((c) => c.display_group !== srcSection && c.display_group !== tgtSection),
+        ...remainSrc.map((c, i) => ({ ...c, order_index: i + 1 })),
+        ...newDest.map((c, i) => ({ ...c, order_index: i + 1 })),
       ]);
-      // Remove targetSection from localSections if it was an empty local section
-      setLocalSections((prev) => prev.filter((s) => s !== targetSection));
-
+      setLocalSections((prev) => prev.filter((s) => s !== tgtSection));
       fetch('/api/admin/cards/sections/move-card', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-        body: JSON.stringify({
-          cardId: activeIdStr,
-          targetSection,
-          sourceOrderedIds: sourceCards.map((c) => c.id),
-          destOrderedIds: newDestCards.map((c) => c.id),
-        }),
+        body: JSON.stringify({ cardId: activeIdStr, targetSection: tgtSection, sourceOrderedIds: remainSrc.map((c) => c.id), destOrderedIds: newDest.map((c) => c.id) }),
+      }).then((r) => { if (!r.ok) throw new Error(); }).catch(() => fetchCards());
+
+    } else {
+      // Cross-kind card move
+      const remainSrc = srcList.filter((c) => c.id !== activeIdStr);
+      const destSectionCards = dstList.filter((c) => c.display_group === tgtSection);
+      const moved = { ...ac, display_group: tgtSection, content_kind: tgtKind };
+      const newDest = [...destSectionCards, moved];
+      setSrcList((prev) => prev.filter((c) => c.id !== activeIdStr));
+      setDstList((prev) => [
+        ...prev.filter((c) => c.display_group !== tgtSection),
+        ...newDest.map((c, i) => ({ ...c, order_index: i + 1 })),
+      ]);
+      showToast(`Moved to ${tgtKind === 'refresher' ? '🧠 Refresher' : '💡 Worked Examples'}`);
+      fetch('/api/admin/cards/sections/move-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ cardId: activeIdStr, targetSection: tgtSection, targetKind: tgtKind, sourceOrderedIds: remainSrc.map((c) => c.id), destOrderedIds: newDest.map((c) => c.id) }),
       }).then((r) => { if (!r.ok) throw new Error(); }).catch(() => fetchCards());
     }
   }
@@ -1380,73 +1475,89 @@ export default function EditCardsClient() {
           ) : loading ? (
             <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
           ) : (
-            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-              {/* ── 🧠 Refresher panel ─────────────────────────────── */}
-              <RefresherPanel
-                cards={refresherCards}
-                subgroups={subgroups}
-                auth={auth}
-                selectedId={selectedId}
-                level={level}
-                topic={topic}
-                onSelectCard={setSelectedId}
-                onCardCreated={(card) => setRefresherCards((prev) => [...prev, card])}
-                onCardSaved={handleCardSaved}
-                onCardDeleted={handleCardDeleted}
-              />
+            <DndContext sensors={sensors} collisionDetection={customCollision} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+              <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+                {/* Toast */}
+                {toast && (
+                  <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-white text-xs px-4 py-2 rounded-full shadow-lg pointer-events-none">
+                    {toast}
+                  </div>
+                )}
 
-              {/* ── 💡 Worked Examples panel ───────────────────────── */}
-              <div className="flex items-center gap-1 px-1 py-1.5 mt-2">
-                <span className="text-xs font-semibold text-amber-700 flex-1">💡 Worked Examples <span className="font-normal text-slate-400">({filteredCards.length})</span></span>
-              </div>
+                {/* 🧠 Refresher panel — no DndContext, uses parent's */}
+                <RefresherPanel
+                  cards={refresherCards}
+                  subgroups={subgroups}
+                  auth={auth}
+                  selectedId={selectedId}
+                  level={level}
+                  topic={topic}
+                  activeDragId={activeId}
+                  isCrossKindDrag={activeDragKind !== null && activeDragKind !== 'refresher'}
+                  onSelectCard={setSelectedId}
+                  onCardCreated={(card) => setRefresherCards((prev) => [...prev, card])}
+                  onRenamed={handleSectionRenamed}
+                  onDeleted={handleSectionDeleted}
+                />
 
-              {allSections.length === 0 ? (
-                <div className="px-3 py-3 text-center">
-                  <p className="text-slate-400 text-sm mb-2">No worked examples yet.</p>
-                  <button onClick={() => setShowNewSectionModal(true)} className="text-sm px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">+ New section</button>
+                {/* 💡 Worked Examples panel */}
+                <div className={`flex items-center gap-1 px-1 py-1.5 mt-2 rounded transition-colors ${activeDragKind !== null && activeDragKind === 'refresher' ? 'bg-amber-50' : ''}`}>
+                  <span className="text-xs font-semibold text-amber-700 flex-1">💡 Worked Examples <span className="font-normal text-slate-400">({filteredCards.length})</span></span>
                 </div>
-              ) : (
-              <div className="space-y-4">
-              <DndContext sensors={sensors} collisionDetection={customCollision} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                <SortableContext items={allSections.map((s) => `sec-hdr-${s}`)} strategy={verticalListSortingStrategy}>
-                  {allSections.map((sectionName) => {
-                    const sectionCards = cardsBySection[sectionName] ?? [];
-                    const isCardDrag = !!activeId && !String(activeId).startsWith('sec-hdr-');
-                    return (
-                      <SortableSectionWrapper
-                        key={sectionName}
-                        name={sectionName}
-                        cardCount={sectionCards.length}
-                        level={level}
-                        topic={topic}
-                        auth={auth}
-                        onRenamed={handleSectionRenamed}
-                        onDeleted={handleSectionDeleted}
-                      >
-                        <DroppableSectionZone name={sectionName} isDragActive={isCardDrag}>
-                          <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-                            <div className="space-y-1">
-                              {sectionCards.map((card) => (
-                                <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
-                              ))}
-                            </div>
-                          </SortableContext>
-                        </DroppableSectionZone>
-                      </SortableSectionWrapper>
-                    );
-                  })}
-                </SortableContext>
-                <DragOverlay modifiers={[restrictToVerticalAxis]}>
-                  {activeId && String(activeId).startsWith('sec-hdr-') ? (
-                    <div className="px-3 py-1.5 bg-white border border-slate-300 rounded shadow-md text-xs font-semibold text-slate-600 opacity-90">
-                      {String(activeId).slice('sec-hdr-'.length)}
+
+                {allSections.length === 0 ? (
+                  <DroppablePanel id="panel-we" isCrossKindTarget={activeDragKind === 'refresher'}>
+                    <div className="px-3 py-3 text-center">
+                      <p className="text-slate-400 text-sm mb-2">No worked examples yet.</p>
+                      <button onClick={() => setShowNewSectionModal(true)} className="text-sm px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">+ New section</button>
                     </div>
-                  ) : activeCard ? <DragCardOverlay card={activeCard} /> : null}
-                </DragOverlay>
-              </DndContext>
+                  </DroppablePanel>
+                ) : (
+                  <div className="space-y-4">
+                    <SortableContext items={allSections.map((s) => `sec-hdr-we-${s}`)} strategy={verticalListSortingStrategy}>
+                      {allSections.map((sectionName) => {
+                        const sectionCards = cardsBySection[sectionName] ?? [];
+                        const isCardDrag = !!activeId && !String(activeId).startsWith('sec-hdr-');
+                        return (
+                          <SortableSectionWrapper
+                            key={sectionName}
+                            name={sectionName}
+                            kindPrefix="we"
+                            cardCount={sectionCards.length}
+                            level={level}
+                            topic={topic}
+                            auth={auth}
+                            onRenamed={handleSectionRenamed}
+                            onDeleted={handleSectionDeleted}
+                          >
+                            <DroppableSectionZone name={sectionName} kindPrefix="we" isDragActive={isCardDrag}>
+                              <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                                <div className="space-y-1">
+                                  {sectionCards.map((card) => (
+                                    <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
+                                  ))}
+                                </div>
+                              </SortableContext>
+                            </DroppableSectionZone>
+                          </SortableSectionWrapper>
+                        );
+                      })}
+                    </SortableContext>
+                    <DroppablePanel id="panel-we" isCrossKindTarget={activeDragKind === 'refresher'} />
+                  </div>
+                )}
               </div>
-              )}
-            </div>
+
+              <DragOverlay modifiers={[restrictToVerticalAxis]}>
+                {activeId ? (() => {
+                  const id = String(activeId);
+                  const hdrName = id.startsWith('sec-hdr-we-') ? id.slice('sec-hdr-we-'.length)
+                    : id.startsWith('sec-hdr-rf-') ? id.slice('sec-hdr-rf-'.length) : null;
+                  if (hdrName) return <div className="px-3 py-1.5 bg-white border border-slate-300 rounded shadow-md text-xs font-semibold text-slate-600 opacity-90">{hdrName}</div>;
+                  return activeCard ? <DragCardOverlay card={activeCard} /> : null;
+                })() : null}
+              </DragOverlay>
+            </DndContext>
           )}
         </div>
 

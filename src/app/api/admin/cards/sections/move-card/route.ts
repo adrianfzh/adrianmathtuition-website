@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { cardId, targetSection, sourceOrderedIds, destOrderedIds } = await req.json();
+  const { cardId, targetSection, targetKind, sourceOrderedIds, destOrderedIds } = await req.json();
 
   if (
     !cardId ||
@@ -26,10 +26,16 @@ export async function POST(req: NextRequest) {
 
   const supa = getSupabaseAdmin();
 
-  // Update the card's display_group
+  // Build update payload — include content_kind when targetKind is provided and differs
+  const updatePayload: Record<string, string> = { display_group: targetSection };
+  if (typeof targetKind === 'string' && ['worked_example', 'refresher'].includes(targetKind)) {
+    updatePayload.content_kind = targetKind;
+  }
+
+  // Update the card's display_group (and optionally content_kind for cross-kind moves)
   const { error: moveErr } = await supa
     .from('content_snippets')
-    .update({ display_group: targetSection })
+    .update(updatePayload)
     .eq('id', cardId);
 
   // Ensure sections_meta has a row for the target section (so its order is tracked)
