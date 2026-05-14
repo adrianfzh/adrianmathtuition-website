@@ -93,25 +93,27 @@ export default async function Page({
     );
   }
 
-  // Sort by section order (sections_meta), then subgroup_id, then order_index —
-  // matches the order shown in the Cards Editor.
+  // Sort by section order (sections_meta), then subgroup_id, then order_index.
+  // Unknown sections appear alphabetically after known ones.
   const { data: sectionsMeta } = await supa
     .from('sections_meta')
     .select('name, order_index')
     .eq('level', levelLower.toUpperCase())
     .eq('topic', canonicalTopic);
-  const sectionOrder: Record<string, number> = Object.fromEntries(
+  const metaOrder: Record<string, number> = Object.fromEntries(
     (sectionsMeta || []).map((s: { name: string; order_index: number }) => [s.name, s.order_index])
   );
-  const SECTION_FALLBACK = 9999;
   type Card = { id: string; subgroup_id: number; display_group: string | null; order_index: number; card_title: string; content: string; content_kind: string };
+  const allSections = [...new Set((cardsRaw as Card[]).map(c => c.display_group).filter(Boolean))] as string[];
+  const knownSections = allSections.filter(s => metaOrder[s] !== undefined).sort((a, b) => metaOrder[a] - metaOrder[b]);
+  const unknownSections = allSections.filter(s => metaOrder[s] === undefined).sort();
+  const sectionRank: Record<string, number> = Object.fromEntries(
+    [...knownSections, ...unknownSections].map((s, i) => [s, i])
+  );
   const cards: Card[] = [...cardsRaw as Card[]].sort((a, b) => {
-    const aSec = a.display_group ? (sectionOrder[a.display_group] ?? SECTION_FALLBACK) : SECTION_FALLBACK;
-    const bSec = b.display_group ? (sectionOrder[b.display_group] ?? SECTION_FALLBACK) : SECTION_FALLBACK;
-    if (aSec !== bSec) return aSec - bSec;
-    if (aSec === SECTION_FALLBACK && a.display_group && b.display_group && a.display_group !== b.display_group) {
-      return a.display_group.localeCompare(b.display_group);
-    }
+    const aRank = a.display_group != null ? (sectionRank[a.display_group] ?? 999999) : 999999;
+    const bRank = b.display_group != null ? (sectionRank[b.display_group] ?? 999999) : 999999;
+    if (aRank !== bRank) return aRank - bRank;
     if (a.subgroup_id !== b.subgroup_id) return a.subgroup_id - b.subgroup_id;
     return (a.order_index ?? 0) - (b.order_index ?? 0);
   });
