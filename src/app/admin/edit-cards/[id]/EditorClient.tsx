@@ -232,20 +232,20 @@ function AISidebar({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-200">
+      <div className="px-4 py-3 border-b border-slate-200 shrink-0">
         <span className="text-sm font-semibold text-slate-800">✨ AI assist</span>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-        {/* Quick actions */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 min-h-0">
+        {/* Quick actions — 2-column grid */}
         <div>
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Quick actions</p>
-          <div className="space-y-1">
+          <div className="grid grid-cols-2 gap-1.5">
             {QUICK_ACTIONS.map((qa) => (
               <button
                 key={qa.label}
                 onClick={() => runAI(qa.instruction)}
                 disabled={streaming}
-                className="w-full text-left text-sm px-3 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40 truncate"
+                className="text-left text-sm px-2.5 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40 leading-tight"
               >
                 {qa.label}
               </button>
@@ -288,11 +288,11 @@ function AISidebar({
           </div>
         )}
 
-        {/* Diff preview */}
+        {/* Diff preview — no max-h cap; fills remaining space */}
         {diffLines && !streaming && (
           <div>
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Diff preview</p>
-            <div className="text-xs font-mono border border-slate-200 rounded overflow-hidden max-h-64 overflow-y-auto">
+            <div className="text-xs font-mono border border-slate-200 rounded overflow-hidden overflow-y-auto">
               {diffLines.map((line, i) => (
                 <div
                   key={i}
@@ -309,23 +309,27 @@ function AISidebar({
                 </div>
               ))}
             </div>
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={handleAccept}
-                className="flex-1 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Accept
-              </button>
-              <button
-                onClick={handleReject}
-                className="flex-1 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50"
-              >
-                Reject
-              </button>
-            </div>
           </div>
         )}
       </div>
+
+      {/* Sticky Accept/Reject — outside scroll area, always visible */}
+      {diffLines && !streaming && (
+        <div className="shrink-0 px-4 py-3 border-t border-slate-200 bg-white flex gap-2">
+          <button
+            onClick={handleAccept}
+            className="flex-1 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+          >
+            Accept
+          </button>
+          <button
+            onClick={handleReject}
+            className="flex-1 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50"
+          >
+            Reject
+          </button>
+        </div>
+      )}
     </div>
   );
 }

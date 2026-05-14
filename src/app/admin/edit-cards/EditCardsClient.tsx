@@ -933,15 +933,15 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-3 py-2 border-b border-slate-200 bg-slate-50">
+      <div className="px-3 py-2 border-b border-slate-200 bg-slate-50 shrink-0">
         <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">✨ AI assist</span>
       </div>
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 min-h-0">
         <div>
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Quick actions</p>
-          <div className="space-y-1">
+          <div className="grid grid-cols-2 gap-1">
             {QUICK_ACTIONS.map((qa) => (
-              <button key={qa.label} onClick={() => runAI(qa.instruction)} disabled={streaming} className="w-full text-left text-xs px-2.5 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40">{qa.label}</button>
+              <button key={qa.label} onClick={() => runAI(qa.instruction)} disabled={streaming} className="text-left text-xs px-2 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40 leading-tight">{qa.label}</button>
             ))}
           </div>
         </div>
@@ -962,20 +962,23 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
         {diffLines && !streaming && (
           <div>
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Diff preview</p>
-            <div className="text-xs font-mono border border-slate-200 rounded overflow-hidden max-h-56 overflow-y-auto">
+            <div className="text-xs font-mono border border-slate-200 rounded overflow-hidden overflow-y-auto">
               {diffLines.map((line, i) => (
                 <div key={i} className={`px-2 py-px whitespace-pre-wrap leading-relaxed ${line.type === 'add' ? 'bg-green-50 text-green-800' : line.type === 'remove' ? 'bg-red-50 text-red-700 line-through' : 'text-slate-500'}`}>
                   {line.type === 'add' ? '+ ' : line.type === 'remove' ? '- ' : '  '}{line.text}
                 </div>
               ))}
             </div>
-            <div className="flex gap-2 mt-2">
-              <button onClick={handleAccept} className="flex-1 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Accept</button>
-              <button onClick={handleReject} className="flex-1 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Reject</button>
-            </div>
           </div>
         )}
       </div>
+      {/* Sticky Accept/Reject — always visible when diff is ready */}
+      {diffLines && !streaming && (
+        <div className="shrink-0 px-3 py-2 border-t border-slate-200 bg-white flex gap-2">
+          <button onClick={handleAccept} className="flex-1 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-medium">Accept</button>
+          <button onClick={handleReject} className="flex-1 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Reject</button>
+        </div>
+      )}
     </div>
   );
 }
