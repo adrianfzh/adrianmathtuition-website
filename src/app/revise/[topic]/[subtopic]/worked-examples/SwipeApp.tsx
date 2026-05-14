@@ -184,21 +184,24 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
     abortRef.current?.abort();
   }, [index]);
 
-  // Scale down .katex-display blocks that are wider than the content area.
-  // touch-action:none on an ancestor prevents horizontal scroll, so we zoom
-  // the element to fit rather than relying on overflow scrolling.
+  // Shrink .katex-display blocks that overflow the content area.
+  // KaTeX uses em units throughout, so reducing font-size on the block
+  // proportionally shrinks the content while the block stays full-width.
+  // (zoom on a block with width:auto is wrong — it scales container+content
+  // equally so the overflow ratio never changes.)
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
     const run = () => {
       el.querySelectorAll<HTMLElement>('.katex-display').forEach((display) => {
-        display.style.zoom = '';
+        display.style.fontSize = ''; // reset first so we measure natural size
         if (display.scrollWidth > display.offsetWidth + 2) {
-          display.style.zoom = String(display.offsetWidth / display.scrollWidth);
+          const scale = display.offsetWidth / display.scrollWidth;
+          const natural = parseFloat(getComputedStyle(display).fontSize);
+          display.style.fontSize = `${natural * scale}px`;
         }
       });
     };
-    // Give KaTeX time to finish rendering before measuring
     const t = setTimeout(run, 80);
     return () => clearTimeout(t);
   }, [index]);
