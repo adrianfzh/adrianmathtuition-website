@@ -742,12 +742,12 @@ function NewRefresherModal({ subgroups, defaultSgId, level, topic, auth, onClose
 // Groups cards by display_group (null → flat zone). Supports + New section and per-section + card.
 function RefresherPanel({
   cards, subgroups, auth, selectedId, level, topic,
-  localSections, activeDragId, isCrossKindDrag,
+  localSections, sectionOrder, activeDragId, isCrossKindDrag,
   onSelectCard, onCardCreated, onRenamed, onDeleted, onNewSection, onAddCard,
 }: {
   cards: CardRow[]; subgroups: Subgroup[]; auth: string; selectedId: string | null;
   level: string; topic: string;
-  localSections: string[];
+  localSections: string[]; sectionOrder: string[];
   activeDragId: string | null; isCrossKindDrag: boolean;
   onSelectCard: (id: string) => void;
   onCardCreated: (card: CardRow) => void;
@@ -760,8 +760,12 @@ function RefresherPanel({
   const [showNewSectionModal, setShowNewSectionModal] = useState(false);
 
   // Group cards by display_group; null → '' (flat zone)
-  const cardSections = [...new Set(cards.map((c) => c.display_group ?? '').filter(Boolean))].sort();
-  const allSections = [...new Set([...cardSections, ...localSections])].sort();
+  const cardSections = [...new Set(cards.map((c) => c.display_group ?? '').filter(Boolean))];
+  const combined = [...new Set([...cardSections, ...localSections])];
+  // Apply rfSectionOrder if set, append any new sections alphabetically at end
+  const allSections = sectionOrder.length > 0
+    ? [...sectionOrder.filter(s => combined.includes(s)), ...combined.filter(s => !sectionOrder.includes(s)).sort()]
+    : [...combined].sort();
   const cardsBySection: Record<string, CardRow[]> = {};
   for (const c of cards) {
     const key = c.display_group ?? '';
@@ -1182,6 +1186,7 @@ export default function EditCardsClient() {
   const [activeDragKind, setActiveDragKind] = useState<string | null>(null); // kind of item being dragged
   const [toast, setToast] = useState<string | null>(null); // cross-kind drop toast
   const [rfLocalSections, setRfLocalSections] = useState<string[]>([]); // UI-only empty refresher sections
+  const [rfSectionOrder, setRfSectionOrder] = useState<string[]>([]); // drag-reordered RF sections (session-only)
   const [quickAdd, setQuickAdd] = useState<{ sectionName: string; kind: 'worked_example' | 'refresher' } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -1317,19 +1322,34 @@ export default function EditCardsClient() {
       const panelKind = overIdStr === 'panel-rf' ? 'refresher' : overIdStr === 'panel-we' ? 'worked_example' : null;
       if (!overHdr && !panelKind) return;
       const targetKind = overHdr?.kind ?? panelKind!;
-      if (activeHdr.kind === targetKind && activeHdr.kind === 'worked_example') {
-        // Within-WE section reorder — needs a target section position, not just a panel
+      if (activeHdr.kind === targetKind) {
+        // Within-same-kind section reorder — needs a peer target, not just a panel
         if (!overHdr) return;
-        const oi = allSections.indexOf(activeHdr.name);
-        const ni = allSections.indexOf(overHdr.name);
-        if (oi === -1 || ni === -1) return;
-        const reordered = arrayMove(allSections, oi, ni);
-        setSectionOrder(reordered);
-        fetch('/api/admin/cards/sections/reorder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-          body: JSON.stringify({ level, topic, orderedNames: reordered }),
-        }).catch(() => fetchCards());
+        if (activeHdr.kind === 'worked_example') {
+          // WE: persistent via sections/reorder endpoint
+          const oi = allSections.indexOf(activeHdr.name);
+          const ni = allSections.indexOf(overHdr.name);
+          if (oi === -1 || ni === -1) return;
+          const reordered = arrayMove(allSections, oi, ni);
+          setSectionOrder(reordered);
+          fetch('/api/admin/cards/sections/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+            body: JSON.stringify({ level, topic, orderedNames: reordered }),
+          }).catch(() => fetchCards());
+        } else {
+          // RF: UI-only reorder (no persistence yet — reverts on page reload)
+          // Derive current RF section order from rfSectionOrder state or fallback to alphabetical
+          const rfCardSections = [...new Set(refresherCards.map(c => c.display_group ?? '').filter(Boolean))];
+          const allRfSections = [...new Set([...rfCardSections, ...rfLocalSections])];
+          const currentOrder = rfSectionOrder.length > 0
+            ? [...rfSectionOrder.filter(s => allRfSections.includes(s)), ...allRfSections.filter(s => !rfSectionOrder.includes(s)).sort()]
+            : [...allRfSections].sort();
+          const oi = currentOrder.indexOf(activeHdr.name);
+          const ni = currentOrder.indexOf(overHdr.name);
+          if (oi === -1 || ni === -1) return;
+          setRfSectionOrder(arrayMove(currentOrder, oi, ni));
+        }
       } else if (activeHdr.kind !== targetKind) {
         // Cross-kind section move
         const srcKind = activeHdr.kind;
@@ -1567,6 +1587,7 @@ export default function EditCardsClient() {
                   level={level}
                   topic={topic}
                   localSections={rfLocalSections}
+                  sectionOrder={rfSectionOrder}
                   activeDragId={activeId}
                   isCrossKindDrag={activeDragKind !== null && activeDragKind !== 'refresher'}
                   onSelectCard={setSelectedId}
