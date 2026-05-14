@@ -622,6 +622,29 @@ body {
 .state-message { padding: 56px 0; text-align: center; color: var(--color-muted-foreground); }
 .state-message .state-title { font-family: var(--font-display); font-size: 1.5rem; color: var(--color-navy); margin-bottom: 10px; }
 
+/* ── EDIT CARDS — prose table styles (Tailwind Typography has no borders by default) ── */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875em;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+.prose th,
+.prose td {
+  border: 1px solid #cbd5e1; /* slate-300 */
+  padding: 0.4em 0.75em;
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  background: #f1f5f9; /* slate-100 */
+  font-weight: 600;
+}
+.prose tr:nth-child(even) td {
+  background: #f8fafc; /* slate-50 */
+}
+
 /* ── EDIT NOTES PAGE ─────────────────────────────────────────────── */
 /* ── EDIT CARDS — cross-section drop animation ───────────────────── */
 @keyframes cardSectionEntry {
