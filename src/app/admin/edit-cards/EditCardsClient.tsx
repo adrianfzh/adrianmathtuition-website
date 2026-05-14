@@ -1556,12 +1556,15 @@ export default function EditCardsClient() {
 
   const filteredCards = unpublishedOnly ? cards.filter((c) => !c.is_published) : cards;
 
-  // Derive sections: ordered by sectionOrder (from sections_meta), then any new ones alphabetically
+  // Derive sections: ordered by sectionOrder (from sections_meta), then any new ones alphabetically.
+  // sectionOrder is the source of truth — includes persisted sections even if they have no cards yet.
   const usedSections = [...new Set(filteredCards.map((c) => c.display_group ?? '').filter(Boolean))];
   const combinedSections = [...new Set([...usedSections, ...localSections])];
   const allSections = [
-    ...sectionOrder.filter((s) => combinedSections.includes(s)),
-    ...combinedSections.filter((s) => !sectionOrder.includes(s)).sort(),
+    ...new Set([
+      ...sectionOrder,                                                        // persisted (incl. empty)
+      ...combinedSections.filter((s) => !sectionOrder.includes(s)).sort(),    // unordered new ones
+    ]),
   ];
 
   // Group cards by display_group
@@ -1780,8 +1783,17 @@ export default function EditCardsClient() {
           level={level} topic={topic} existingSections={allSections}
           onClose={() => setShowNewSectionModal(false)}
           onCreated={(name) => {
+            if (allSections.includes(name)) { setShowNewSectionModal(false); return; }
+            const newOrder = [...allSections, name];
             setLocalSections((prev) => prev.includes(name) ? prev : [...prev, name]);
+            setSectionOrder(newOrder); // optimistic — section shows immediately in correct position
             setShowNewSectionModal(false);
+            // Persist to sections_meta so the section survives a page reload
+            fetch('/api/admin/cards/sections/reorder', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+              body: JSON.stringify({ level, topic, orderedNames: newOrder }),
+            }).catch(() => {}); // best-effort
           }}
         />
       )}
