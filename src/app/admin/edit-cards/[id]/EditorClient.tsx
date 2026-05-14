@@ -468,6 +468,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
   const [title, setTitle] = useState(card.card_title);
   const [content, setContent] = useState(card.content);
   const [contentHistory, setContentHistory] = useState<string[]>([]);
+  const [imgToolbar, setImgToolbar] = useState<{ src: string; top: number; left: number; align: 'left'|'center'|'right'; pct: number } | null>(null);
   const [subgroups, setSubgroups] = useState<Subgroup[]>(initialSubgroups);
 
   function handleUndo() {
@@ -476,6 +477,37 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
     setContentHistory(h => h.slice(0, -1));
     setContent(prev);
     setAiPreviewContent(null);
+  }
+
+  function parseImgStyle(style: string): { pct: number; align: 'left'|'center'|'right' } {
+    const pct = parseInt(style.match(/max-width:(\d+)%/)?.[1] ?? '100');
+    const align: 'left'|'center'|'right' =
+      style.includes('8px 0') && !style.includes('0 8px auto') ? 'left'
+      : style.includes('0 8px auto') ? 'right' : 'center';
+    return { pct, align };
+  }
+  function makeImgStyle(align: 'left'|'center'|'right', pct: number) {
+    const w = `max-width:${pct}%;`;
+    if (align === 'left')  return `display:block;${w}margin:8px auto 8px 0`;
+    if (align === 'right') return `display:block;${w}margin:8px 0 8px auto`;
+    return `display:block;${w}margin:8px auto`;
+  }
+  function applyImgStyle(newStyle: string) {
+    if (!imgToolbar) return;
+    const src = imgToolbar.src;
+    setContent(prev => {
+      const idx = prev.indexOf(src);
+      if (idx === -1) return prev;
+      const tagStart = prev.lastIndexOf('<img', idx);
+      const tagEnd = prev.indexOf('/>', tagStart) + 2;
+      if (tagStart === -1 || tagEnd === 1) return prev;
+      const tag = prev.slice(tagStart, tagEnd);
+      const updated = tag.includes('style="')
+        ? tag.replace(/style="[^"]*"/, `style="${newStyle}"`)
+        : tag.replace('/>', ` style="${newStyle}"/>`);
+      return prev.slice(0, tagStart) + updated + prev.slice(tagEnd);
+    });
+    setImgToolbar(prev => prev ? { ...prev, ...parseImgStyle(newStyle) } : null);
   }
   const [sgId, setSgId] = useState<number | '__new__'>(card.subgroup_id);
   const [displayGroup, setDisplayGroup] = useState<string>(card.display_group ?? '');
@@ -931,8 +963,20 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
               <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-xs font-medium flex items-center gap-1.5">
                 <span className="text-slate-500">Live preview</span>
                 {aiPreviewContent && <span className="text-blue-600">✨ AI suggestion</span>}
+                {!aiPreviewContent && <span className="text-slate-400 ml-auto font-normal">Click image to resize/align</span>}
               </div>
-              <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none">
+              <div
+                className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none"
+                onClick={(e) => {
+                  const t = e.target as HTMLElement;
+                  if (t.tagName === 'IMG') {
+                    const img = t as HTMLImageElement;
+                    const r = img.getBoundingClientRect();
+                    const style = img.getAttribute('style') ?? '';
+                    setImgToolbar({ src: img.src, top: Math.max(8, r.top - 46), left: r.left, ...parseImgStyle(style) });
+                  } else { setImgToolbar(null); }
+                }}
+              >
                 <ReactMarkdown
                   remarkPlugins={[remarkMath, remarkGfm]}
                   rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}
@@ -941,6 +985,31 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
                 </ReactMarkdown>
               </div>
             </div>
+            {/* Image toolbar */}
+            {imgToolbar && (
+              <div
+                className="fixed z-50 bg-white border border-slate-200 rounded-lg shadow-lg flex items-center gap-0.5 px-1.5 py-1 text-xs"
+                style={{ top: imgToolbar.top, left: imgToolbar.left }}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                {(['left','center','right'] as const).map(a => (
+                  <button key={a} onClick={() => applyImgStyle(makeImgStyle(a, imgToolbar.pct))}
+                    className={`px-2 py-1 rounded ${imgToolbar.align === a ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-slate-100'}`}
+                    title={a === 'left' ? 'Align left' : a === 'right' ? 'Align right' : 'Centre'}>
+                    {a === 'left' ? '←' : a === 'right' ? '→' : '⎼'}
+                  </button>
+                ))}
+                <div className="w-px h-4 bg-slate-200 mx-0.5" />
+                {[25,50,75,100].map(p => (
+                  <button key={p} onClick={() => applyImgStyle(makeImgStyle(imgToolbar.align, p))}
+                    className={`px-1.5 py-1 rounded ${imgToolbar.pct === p ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-slate-100'}`}>
+                    {p}%
+                  </button>
+                ))}
+                <div className="w-px h-4 bg-slate-200 mx-0.5" />
+                <button onClick={() => setImgToolbar(null)} className="px-1 py-1 text-slate-400 hover:text-slate-600">✕</button>
+              </div>
+            )}
 
             {/* AI sidebar */}
             {(!isNarrow || aiSidebarOpen) && (
