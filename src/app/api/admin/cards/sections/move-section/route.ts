@@ -54,16 +54,25 @@ export async function POST(req: NextRequest) {
 
   const destOffset = (destMaxRow as { order_index: number } | null)?.order_index ?? 0;
 
-  // Update all cards: change content_kind, recompute order_index (appending to dest)
-  const updates = (sourceCards as { id: string; order_index: number }[]).map((c, i) => ({
+  const cardIds = (sourceCards as { id: string; order_index: number }[]).map(c => c.id);
+
+  // Step 1: flip content_kind for all cards in one UPDATE (safe partial update)
+  const { error: kindErr } = await supa
+    .from('content_snippets')
+    .update({ content_kind: targetKind })
+    .in('id', cardIds);
+
+  if (kindErr) return NextResponse.json({ error: kindErr.message }, { status: 500 });
+
+  // Step 2: recompute order_index — upsert only id + order_index (same pattern as /reorder)
+  const reorderUpdates = (sourceCards as { id: string; order_index: number }[]).map((c, i) => ({
     id: c.id,
-    content_kind: targetKind,
     order_index: destOffset + i + 1,
   }));
 
   const { error: updateErr } = await supa
     .from('content_snippets')
-    .upsert(updates, { onConflict: 'id' });
+    .upsert(reorderUpdates, { onConflict: 'id' });
 
   if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
 

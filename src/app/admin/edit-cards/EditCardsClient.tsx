@@ -706,7 +706,7 @@ function RefresherPanel({
       <div className={`flex items-center gap-1 px-1 py-1.5 rounded transition-colors ${isCrossKindDrag ? 'bg-blue-50' : ''}`}>
         <button onClick={() => setExpanded((v) => !v)} className="text-xs text-slate-400 shrink-0">{expanded ? '▾' : '▸'}</button>
         <span className="text-xs font-semibold text-blue-700 flex-1">🧠 Refresher <span className="font-normal text-slate-400">({cards.length})</span></span>
-        <button onClick={() => setShowModal(true)} className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700">+ New</button>
+        <button onClick={() => setShowModal(true)} className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700">+ New card</button>
       </div>
 
       {expanded && (
@@ -1466,8 +1466,7 @@ export default function EditCardsClient() {
           </label>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <button onClick={() => setShowNewSectionModal(true)} disabled={!level || !topic} className="px-3 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-40">+ New section</button>
-          <button onClick={() => setShowNewModal(true)} disabled={!level || !topic || subgroups.length === 0} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">+ New card</button>
+          <button onClick={() => setShowNewModal(true)} disabled={!level || !topic || subgroups.length === 0} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">+ New worked example</button>
         </div>
       </div>
 
@@ -1508,6 +1507,12 @@ export default function EditCardsClient() {
                 {/* 💡 Worked Examples panel */}
                 <div className={`flex items-center gap-1 px-1 py-1.5 mt-2 rounded transition-colors ${activeDragKind !== null && activeDragKind === 'refresher' ? 'bg-amber-50' : ''}`}>
                   <span className="text-xs font-semibold text-amber-700 flex-1">💡 Worked Examples <span className="font-normal text-slate-400">({filteredCards.length})</span></span>
+                  <button
+                    onClick={() => setShowNewSectionModal(true)}
+                    disabled={!level || !topic}
+                    className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-40 shrink-0"
+                    title="Add a new section"
+                  >+ Section</button>
                 </div>
 
                 {allSections.length === 0 ? (
