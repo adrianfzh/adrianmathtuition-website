@@ -205,15 +205,73 @@ function DragCardOverlay({ card }: { card: CardRow }) {
   );
 }
 
+// ── Quick-add card to a known section ─────────────────────────────────────────
+
+function QuickAddCardToSectionModal({ sectionName, kind, subgroups, level, topic, auth, onClose, onCreated }: {
+  sectionName: string; kind: 'worked_example' | 'refresher';
+  subgroups: Subgroup[]; level: string; topic: string; auth: string;
+  onClose: () => void; onCreated: (card: CardRow) => void;
+}) {
+  const [sgId, setSgId] = useState<number>(subgroups[0]?.id ?? 0);
+  const [title, setTitle] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [err, setErr] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  async function create() {
+    if (!sgId) { setErr('Pick a sub-group'); return; }
+    setCreating(true); setErr('');
+    try {
+      const res = await fetch('/api/admin/cards/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ level, topic, subgroup_id: sgId, card_title: title, display_group: sectionName, content_kind: kind }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+      onCreated(json as CardRow);
+    } catch (e: unknown) { setErr(e instanceof Error ? e.message : 'Failed'); setCreating(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+        <h2 className="text-base font-semibold text-slate-800 mb-1">
+          {kind === 'refresher' ? '🧠' : '💡'} New card in <span className="text-blue-600">"{sectionName}"</span>
+        </h2>
+        <div className="space-y-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Sub-group <span className="text-slate-400 font-normal text-xs">(QB labelling)</span></label>
+            <select className="w-full border border-slate-300 rounded px-3 py-2 text-sm" value={sgId} onChange={(e) => setSgId(Number(e.target.value))}>
+              {subgroups.map((sg) => <option key={sg.id} value={sg.id}>{sg.name} (sg{sg.id})</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Card title <span className="text-slate-400 font-normal">(optional)</span></label>
+            <input ref={inputRef} type="text" className="w-full border border-slate-300 rounded px-3 py-2 text-sm" placeholder="e.g. Simplify √72" value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') create(); if (e.key === 'Escape') onClose(); }} />
+          </div>
+          {err && <p className="text-red-600 text-sm">{err}</p>}
+        </div>
+        <div className="flex justify-end gap-2 mt-5">
+          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
+          <button onClick={create} disabled={creating} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">{creating ? 'Creating…' : 'Create card'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Section header — display_group-based rename + delete ─────────────────────
 
 function SectionHeader({
-  name, cardCount, level, topic, auth, dragHandleProps, onRenamed, onDeleted,
+  name, cardCount, level, topic, auth, dragHandleProps, onRenamed, onDeleted, onAddCard,
 }: {
   name: string; cardCount: number; level: string; topic: string; auth: string;
   dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
   onRenamed: (oldName: string, newName: string) => void;
   onDeleted: (name: string) => void;
+  onAddCard?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(name);
@@ -306,6 +364,13 @@ function SectionHeader({
         >
           {name} <span className="font-normal text-slate-400">({cardCount})</span>
         </span>
+        {onAddCard && (
+          <button
+            onClick={onAddCard}
+            className="text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs font-medium leading-none"
+            title="Add card to this section"
+          >+ card</button>
+        )}
         <button
           onClick={() => { setEditing(true); setEditName(name); }}
           className="text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
@@ -537,13 +602,14 @@ function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, 
 // ── Sortable section wrapper (section drag-to-reorder) ────────────────────────
 
 function SortableSectionWrapper({
-  name, kindPrefix = 'we', children, level, topic, auth, onRenamed, onDeleted, cardCount,
+  name, kindPrefix = 'we', children, level, topic, auth, onRenamed, onDeleted, onAddCard, cardCount,
 }: {
   name: string; kindPrefix?: 'we' | 'rf'; children: React.ReactNode;
   level: string; topic: string; auth: string;
   cardCount: number;
   onRenamed: (oldName: string, newName: string) => void;
   onDeleted: (name: string) => void;
+  onAddCard?: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: `sec-hdr-${kindPrefix}-${name}` });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
@@ -558,6 +624,7 @@ function SortableSectionWrapper({
         dragHandleProps={{ ...attributes, ...listeners } as React.HTMLAttributes<HTMLSpanElement>}
         onRenamed={onRenamed}
         onDeleted={onDeleted}
+        onAddCard={onAddCard}
       />
       {children}
     </div>
@@ -672,31 +739,36 @@ function NewRefresherModal({ subgroups, defaultSgId, level, topic, auth, onClose
 // ── Refresher panel ───────────────────────────────────────────────────────────
 
 // RefresherPanel: no DndContext — participates in parent's single DndContext.
-// Groups cards by display_group (null display_group = flat zone at bottom).
+// Groups cards by display_group (null → flat zone). Supports + New section and per-section + card.
 function RefresherPanel({
   cards, subgroups, auth, selectedId, level, topic,
-  activeDragId, isCrossKindDrag,
-  onSelectCard, onCardCreated, onRenamed, onDeleted,
+  localSections, activeDragId, isCrossKindDrag,
+  onSelectCard, onCardCreated, onRenamed, onDeleted, onNewSection, onAddCard,
 }: {
   cards: CardRow[]; subgroups: Subgroup[]; auth: string; selectedId: string | null;
   level: string; topic: string;
+  localSections: string[];
   activeDragId: string | null; isCrossKindDrag: boolean;
   onSelectCard: (id: string) => void;
   onCardCreated: (card: CardRow) => void;
   onRenamed: (oldName: string, newName: string) => void;
   onDeleted: (name: string) => void;
+  onNewSection: (name: string) => void;
+  onAddCard: (sectionName: string) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showNewSectionModal, setShowNewSectionModal] = useState(false);
 
   // Group cards by display_group; null → '' (flat zone)
-  const sections = [...new Set(cards.map((c) => c.display_group ?? ''))].sort();
+  const cardSections = [...new Set(cards.map((c) => c.display_group ?? '').filter(Boolean))].sort();
+  const allSections = [...new Set([...cardSections, ...localSections])].sort();
   const cardsBySection: Record<string, CardRow[]> = {};
   for (const c of cards) {
     const key = c.display_group ?? '';
     if (!cardsBySection[key]) cardsBySection[key] = [];
     cardsBySection[key].push(c);
   }
+  const flatCards = cardsBySection[''] ?? [];
 
   const isCardDrag = !!activeDragId && !String(activeDragId).startsWith('sec-hdr-');
 
@@ -706,24 +778,48 @@ function RefresherPanel({
       <div className={`flex items-center gap-1 px-1 py-1.5 rounded transition-colors ${isCrossKindDrag ? 'bg-blue-50' : ''}`}>
         <button onClick={() => setExpanded((v) => !v)} className="text-xs text-slate-400 shrink-0">{expanded ? '▾' : '▸'}</button>
         <span className="text-xs font-semibold text-blue-700 flex-1">🧠 Refresher <span className="font-normal text-slate-400">({cards.length})</span></span>
-        <button onClick={() => setShowModal(true)} className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700">+ New card</button>
+        <button onClick={() => setShowNewSectionModal(true)} className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50">+ Section</button>
       </div>
 
       {expanded && (
         <div className="space-y-2">
-          {cards.length === 0 ? (
+          {allSections.length === 0 && flatCards.length === 0 ? (
             <DroppablePanel id="panel-rf" isCrossKindTarget={isCrossKindDrag}>
-              <p className="px-3 py-2 text-xs text-slate-400 italic">No refresher cards yet — click + New or drag a card here.</p>
+              <p className="px-3 py-2 text-xs text-slate-400 italic">No refresher cards yet — add a section or drag a card here.</p>
             </DroppablePanel>
           ) : (
-            <SortableContext items={sections.map((s) => `sec-hdr-rf-${s || '__flat__'}`)} strategy={verticalListSortingStrategy}>
-              {sections.map((sectionKey) => {
-                const sectionCards = cardsBySection[sectionKey] ?? [];
-                if (sectionKey === '') {
-                  // Flat (no display_group) — show without section header
+            <>
+              {/* Flat (no display_group) cards */}
+              {flatCards.length > 0 && (
+                <DroppableSectionZone name="__flat__" kindPrefix="rf" isDragActive={isCardDrag}>
+                  <SortableContext items={flatCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-1">
+                      {flatCards.map((card) => (
+                        <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={onSelectCard} />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DroppableSectionZone>
+              )}
+
+              {/* Sectioned cards */}
+              <SortableContext items={allSections.map((s) => `sec-hdr-rf-${s}`)} strategy={verticalListSortingStrategy}>
+                {allSections.map((sectionKey) => {
+                  const sectionCards = cardsBySection[sectionKey] ?? [];
                   return (
-                    <div key="__flat__">
-                      <DroppableSectionZone name="__flat__" kindPrefix="rf" isDragActive={isCardDrag}>
+                    <SortableSectionWrapper
+                      key={sectionKey}
+                      name={sectionKey}
+                      kindPrefix="rf"
+                      cardCount={sectionCards.length}
+                      level={level}
+                      topic={topic}
+                      auth={auth}
+                      onRenamed={onRenamed}
+                      onDeleted={onDeleted}
+                      onAddCard={() => onAddCard(sectionKey)}
+                    >
+                      <DroppableSectionZone name={sectionKey} kindPrefix="rf" isDragActive={isCardDrag}>
                         <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                           <div className="space-y-1">
                             {sectionCards.map((card) => (
@@ -732,49 +828,23 @@ function RefresherPanel({
                           </div>
                         </SortableContext>
                       </DroppableSectionZone>
-                    </div>
+                    </SortableSectionWrapper>
                   );
-                }
-                return (
-                  <SortableSectionWrapper
-                    key={sectionKey}
-                    name={sectionKey}
-                    kindPrefix="rf"
-                    cardCount={sectionCards.length}
-                    level={level}
-                    topic={topic}
-                    auth={auth}
-                    onRenamed={onRenamed}
-                    onDeleted={onDeleted}
-                  >
-                    <DroppableSectionZone name={sectionKey} kindPrefix="rf" isDragActive={isCardDrag}>
-                      <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-                        <div className="space-y-1">
-                          {sectionCards.map((card) => (
-                            <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={onSelectCard} />
-                          ))}
-                        </div>
-                      </SortableContext>
-                    </DroppableSectionZone>
-                  </SortableSectionWrapper>
-                );
-              })}
-            </SortableContext>
+                })}
+              </SortableContext>
+            </>
           )}
-          {/* Panel-level drop zone at bottom (catches drops past all sections) */}
-          <DroppablePanel id="panel-rf" isCrossKindTarget={isCrossKindDrag && cards.length > 0} />
+          <DroppablePanel id="panel-rf" isCrossKindTarget={isCrossKindDrag && (allSections.length > 0 || flatCards.length > 0)} />
         </div>
       )}
 
-      {showModal && (
-        <NewRefresherModal
-          subgroups={subgroups}
-          defaultSgId={null}
+      {showNewSectionModal && (
+        <NewSectionModal
           level={level}
           topic={topic}
-          auth={auth}
-          onClose={() => setShowModal(false)}
-          onCreated={(card) => { onCardCreated(card); setShowModal(false); onSelectCard(card.id); }}
+          existingSections={allSections}
+          onClose={() => setShowNewSectionModal(false)}
+          onCreated={(name) => { onNewSection(name); setShowNewSectionModal(false); }}
         />
       )}
     </div>
@@ -1111,6 +1181,8 @@ export default function EditCardsClient() {
   const [sectionOrder, setSectionOrder] = useState<string[]>([]); // persisted order from sections_meta
   const [activeDragKind, setActiveDragKind] = useState<string | null>(null); // kind of item being dragged
   const [toast, setToast] = useState<string | null>(null); // cross-kind drop toast
+  const [rfLocalSections, setRfLocalSections] = useState<string[]>([]); // UI-only empty refresher sections
+  const [quickAdd, setQuickAdd] = useState<{ sectionName: string; kind: 'worked_example' | 'refresher' } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // Panel widths — loaded from localStorage once on mount
@@ -1465,9 +1537,7 @@ export default function EditCardsClient() {
             <input type="checkbox" checked={unpublishedOnly} onChange={(e) => setUnpublishedOnly(e.target.checked)} /> Drafts only
           </label>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={() => setShowNewModal(true)} disabled={!level || !topic || subgroups.length === 0} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">+ New worked example</button>
-        </div>
+        <div className="ml-auto" />
       </div>
 
       {/* Body */}
@@ -1496,12 +1566,17 @@ export default function EditCardsClient() {
                   selectedId={selectedId}
                   level={level}
                   topic={topic}
+                  localSections={rfLocalSections}
                   activeDragId={activeId}
                   isCrossKindDrag={activeDragKind !== null && activeDragKind !== 'refresher'}
                   onSelectCard={setSelectedId}
                   onCardCreated={(card) => setRefresherCards((prev) => [...prev, card])}
                   onRenamed={handleSectionRenamed}
                   onDeleted={handleSectionDeleted}
+                  onNewSection={(name) => {
+                    setRfLocalSections((prev) => prev.includes(name) ? prev : [...prev, name]);
+                  }}
+                  onAddCard={(sectionName) => setQuickAdd({ sectionName, kind: 'refresher' })}
                 />
 
                 {/* 💡 Worked Examples panel */}
@@ -1539,6 +1614,7 @@ export default function EditCardsClient() {
                             auth={auth}
                             onRenamed={handleSectionRenamed}
                             onDeleted={handleSectionDeleted}
+                            onAddCard={() => setQuickAdd({ sectionName, kind: 'worked_example' })}
                           >
                             <DroppableSectionZone name={sectionName} kindPrefix="we" isDragActive={isCardDrag}>
                               <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
@@ -1601,6 +1677,30 @@ export default function EditCardsClient() {
           )}
         </div>
       </div>
+
+      {quickAdd && level && topic && (
+        <QuickAddCardToSectionModal
+          sectionName={quickAdd.sectionName}
+          kind={quickAdd.kind}
+          subgroups={subgroups}
+          level={level}
+          topic={topic}
+          auth={auth}
+          onClose={() => setQuickAdd(null)}
+          onCreated={(card) => {
+            if (quickAdd.kind === 'refresher') {
+              setRefresherCards((prev) => [...prev, card]);
+              // Remove from rfLocalSections now that it has a card
+              setRfLocalSections((prev) => prev.filter((s) => s !== quickAdd.sectionName));
+            } else {
+              setCards((prev) => [...prev, card]);
+              setLocalSections((prev) => prev.filter((s) => s !== quickAdd.sectionName));
+            }
+            setSelectedId(card.id);
+            setQuickAdd(null);
+          }}
+        />
+      )}
 
       {showNewSectionModal && level && topic && (
         <NewSectionModal
