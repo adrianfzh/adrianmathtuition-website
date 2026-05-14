@@ -970,10 +970,14 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
             <textarea
               className={`w-full border rounded px-2.5 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${dragOver ? 'border-blue-400 bg-blue-50' : 'border-slate-300'}`}
               rows={3}
-              placeholder={image ? 'Optional: add instructions for the image…' : 'e.g. Split into two cards… or drop an image here'}
+              placeholder={image ? 'Optional: add instructions for the image…' : 'e.g. Split into two cards… drop or paste an image here'}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               disabled={streaming}
+              onPaste={(e) => {
+                const item = Array.from(e.clipboardData.items).find(i => i.type.startsWith('image/'));
+                if (item) { const f = item.getAsFile(); if (f) { loadImage(f); e.preventDefault(); } }
+              }}
             />
           </div>
           {/* Image preview */}
