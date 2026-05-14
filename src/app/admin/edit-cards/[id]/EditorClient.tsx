@@ -466,7 +466,16 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
 
   const [title, setTitle] = useState(card.card_title);
   const [content, setContent] = useState(card.content);
+  const [contentHistory, setContentHistory] = useState<string[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>(initialSubgroups);
+
+  function handleUndo() {
+    if (contentHistory.length === 0) return;
+    const prev = contentHistory[contentHistory.length - 1];
+    setContentHistory(h => h.slice(0, -1));
+    setContent(prev);
+    setAiPreviewContent(null);
+  }
   const [sgId, setSgId] = useState<number | '__new__'>(card.subgroup_id);
   const [displayGroup, setDisplayGroup] = useState<string>(card.display_group ?? '');
   const [sections, setSections] = useState<string[]>([]);
@@ -596,20 +605,25 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
   // Trigger auto-save on any field change
   useEffect(() => { scheduleSave(); }, [title, content, sgId, displayGroup, sectionIsNew, newSectionName, orderIndex, isPublished, scheduleSave]);
 
-  // Cmd+S for immediate save
+  // Cmd+S / Cmd+Z keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
-        if (typeof sgId !== 'number') return; // Block save while inline new-sub-group form is open
+        if (typeof sgId !== 'number') return;
         if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
         const dgNow = sectionIsNew ? newSectionName.trim() : displayGroup;
         saveData({ card_title: title, content, subgroup_id: sgId, display_group: dgNow, order_index: orderIndex, is_published: isPublished });
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        const active = document.activeElement;
+        const inText = active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
+        if (!inText && contentHistory.length > 0) { e.preventDefault(); handleUndo(); }
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [saveData, title, content, sgId, orderIndex, isPublished]);
+  }, [saveData, title, content, sgId, orderIndex, isPublished, contentHistory]);
 
   // Tab key in textarea inserts 2 spaces
   function handleTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -672,6 +686,9 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
           {saveStatus === 'saving' && <span className="text-sm text-slate-400">Saving…</span>}
           {saveStatus === 'saved' && <span className="text-sm text-green-600">Saved ✓</span>}
           {saveStatus === 'error' && <span className="text-sm text-red-600">Save failed</span>}
+          {contentHistory.length > 0 && (
+            <button onClick={handleUndo} className="px-3 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50" title="Undo last change (⌘Z)">↩ Undo</button>
+          )}
           <button
             onClick={() => {
               if (typeof sgId !== 'number') return;
@@ -933,7 +950,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
                   content={content}
                   title={title}
                   auth={auth}
-                  onAccept={(newContent) => setContent(newContent)}
+                  onAccept={(newContent) => { setContentHistory(prev => [...prev.slice(-9), content]); setContent(newContent); }}
                   onPreviewChange={setAiPreviewContent}
                 />
               </div>

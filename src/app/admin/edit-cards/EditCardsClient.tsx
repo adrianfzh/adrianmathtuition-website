@@ -1089,6 +1089,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
 }) {
   const [title, setTitle] = useState(initialCard.card_title);
   const [content, setContent] = useState(initialCard.content);
+  const [contentHistory, setContentHistory] = useState<string[]>([]);
   const [sgId, setSgId] = useState(initialCard.subgroup_id);
   const [orderIndex, setOrderIndex] = useState(initialCard.order_index);
   const [isPublished, setIsPublished] = useState(initialCard.is_published);
@@ -1097,6 +1098,14 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
   const [aiPreviewContent, setAiPreviewContent] = useState<string | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  function handleUndo() {
+    if (contentHistory.length === 0) return;
+    const prev = contentHistory[contentHistory.length - 1];
+    setContentHistory(h => h.slice(0, -1));
+    setContent(prev);
+    setAiPreviewContent(null);
+  }
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1148,10 +1157,20 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
         if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
         doSave({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
       }
+      // Cmd+Z / Ctrl+Z — undo last major change (AI accept etc.)
+      // Only when the textarea is not focused (let browser handle native undo there)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        const active = document.activeElement;
+        const inText = active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
+        if (!inText && contentHistory.length > 0) {
+          e.preventDefault();
+          handleUndo();
+        }
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [doSave, title, content, sgId, orderIndex, isPublished]);
+  }, [doSave, title, content, sgId, orderIndex, isPublished, contentHistory]);
 
   function handleTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Tab') {
@@ -1188,6 +1207,9 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
           {saveStatus === 'saving' && <span className="text-xs text-slate-400">Saving…</span>}
           {saveStatus === 'saved' && <span className="text-xs text-green-600">Saved ✓</span>}
           {saveStatus === 'error' && <span className="text-xs text-red-600">Error</span>}
+          {contentHistory.length > 0 && (
+            <button onClick={handleUndo} className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50" title="Undo last change (⌘Z)">↩ Undo</button>
+          )}
           <button onClick={() => { if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; } doSave({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished }); }} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
           <button onClick={onAiToggle} className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">{aiOpen ? 'Hide AI' : '✨ AI'}</button>
         </div>
@@ -1268,7 +1290,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
           <>
             <ResizeHandle onDelta={onAiResize} />
             <div className="flex flex-col overflow-hidden bg-white" style={{ width: aiWidth, flexShrink: 0 }}>
-              <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} contentKind={initialCard.content_kind} auth={auth} onAccept={(c) => setContent(c)} onPreviewChange={setAiPreviewContent} />
+              <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} contentKind={initialCard.content_kind} auth={auth} onAccept={(c) => { setContentHistory(prev => [...prev.slice(-9), content]); setContent(c); }} onPreviewChange={setAiPreviewContent} />
             </div>
           </>
         )}
