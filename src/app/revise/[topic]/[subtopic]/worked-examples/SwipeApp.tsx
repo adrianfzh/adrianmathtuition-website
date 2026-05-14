@@ -57,6 +57,7 @@ const katexStyles = `
   .katex { font-size: 1em !important; }
   .katex-display { margin: 12px 0 !important; overflow-x: auto; overflow-y: hidden; max-width: 100%; }
   .katex-display > .katex { text-align: left; }
+  [data-katex-scrollable] .katex-display::-webkit-scrollbar { display: none; }
 `;
 
 // ── Problem 6 fix: remark-math v6 requires $$ on its own line (fence model).
@@ -184,26 +185,130 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
     abortRef.current?.abort();
   }, [index]);
 
-  // Shrink .katex-display blocks that overflow the content area.
-  // KaTeX uses em units throughout, so reducing font-size on the block
-  // proportionally shrinks the content while the block stays full-width.
-  // (zoom on a block with width:auto is wrong — it scales container+content
-  // equally so the overflow ratio never changes.)
+  // Wrap overflowing .katex-display blocks with a drag-scrollable container.
+  // Uses pointer events (not touch events) so it bypasses touch-action restrictions
+  // from the ancestor card drag handler. Direction is detected before committing:
+  // mostly-vertical gestures release capture and let native scroll handle it.
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
+    const cleanups: (() => void)[] = [];
+
     const run = () => {
       el.querySelectorAll<HTMLElement>('.katex-display').forEach((display) => {
-        display.style.fontSize = ''; // reset first so we measure natural size
-        if (display.scrollWidth > display.offsetWidth + 2) {
-          const scale = display.offsetWidth / display.scrollWidth;
-          const natural = parseFloat(getComputedStyle(display).fontSize);
-          display.style.fontSize = `${natural * scale}px`;
-        }
+        // Reset any stale font-size from old approach
+        display.style.fontSize = '';
+        // Skip already-wrapped or non-overflowing
+        if (display.parentElement?.dataset.katexScrollable) return;
+        if (display.scrollWidth <= display.offsetWidth + 2) return;
+
+        // ── Wrap ──────────────────────────────────────────────────────────────
+        const wrapper = document.createElement('div');
+        wrapper.dataset.katexScrollable = '1';
+        wrapper.style.cssText = 'position:relative;margin:12px 0;border-radius:6px;overflow:hidden;';
+
+        // Right-edge fade — mirrors code-block affordance
+        const fade = document.createElement('div');
+        fade.style.cssText =
+          'position:absolute;top:0;right:0;bottom:0;width:28px;' +
+          'background:linear-gradient(to right,transparent,rgba(255,255,255,0.95));' +
+          'pointer-events:none;transition:opacity 0.15s;z-index:1;';
+
+        display.parentNode!.insertBefore(wrapper, display);
+        wrapper.appendChild(display);
+        wrapper.appendChild(fade);
+
+        // The wrapper now provides the margin; override katexStyles' !important
+        display.style.setProperty('margin', '0', 'important');
+        display.style.overflowX = 'auto';
+        display.style.overflowY = 'hidden';
+        display.style.cursor = 'grab';
+        display.style.setProperty('scrollbar-width', 'none');
+        (display.style as CSSStyleDeclaration & { msOverflowStyle: string }).msOverflowStyle = 'none';
+
+        // Show/hide fade as user scrolls
+        const updateFade = () => {
+          const atEnd = display.scrollLeft + display.clientWidth >= display.scrollWidth - 2;
+          fade.style.opacity = atEnd ? '0' : '1';
+        };
+        updateFade();
+        display.addEventListener('scroll', updateFade);
+
+        // ── Pointer drag-scroll with direction detection ───────────────────────
+        let dragging = false;
+        let hasDecided = false;
+        let isHorizontalDrag = false;
+        let startX = 0;
+        let startY = 0;
+        let startScroll = 0;
+
+        const onPointerDown = (e: PointerEvent) => {
+          dragging = true;
+          hasDecided = false;
+          isHorizontalDrag = false;
+          startX = e.clientX;
+          startY = e.clientY;
+          startScroll = display.scrollLeft;
+          display.setPointerCapture(e.pointerId);
+        };
+
+        const onPointerMove = (e: PointerEvent) => {
+          if (!dragging) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          if (!hasDecided) {
+            // Wait for a clear signal before committing direction
+            if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+            hasDecided = true;
+            isHorizontalDrag = Math.abs(dx) > Math.abs(dy);
+            if (!isHorizontalDrag) {
+              // Vertical gesture — release capture so native scroll can take over
+              display.releasePointerCapture(e.pointerId);
+              dragging = false;
+              return;
+            }
+            display.style.cursor = 'grabbing';
+          }
+          if (isHorizontalDrag) {
+            display.scrollLeft = startScroll - dx;
+          }
+        };
+
+        const onPointerUp = () => {
+          dragging = false;
+          display.style.cursor = 'grab';
+        };
+
+        display.addEventListener('pointerdown', onPointerDown);
+        display.addEventListener('pointermove', onPointerMove);
+        display.addEventListener('pointerup', onPointerUp);
+        display.addEventListener('pointercancel', onPointerUp);
+
+        // ── Cleanup: remove listeners and unwrap ───────────────────────────────
+        cleanups.push(() => {
+          display.removeEventListener('scroll', updateFade);
+          display.removeEventListener('pointerdown', onPointerDown);
+          display.removeEventListener('pointermove', onPointerMove);
+          display.removeEventListener('pointerup', onPointerUp);
+          display.removeEventListener('pointercancel', onPointerUp);
+          if (wrapper.parentNode) {
+            display.style.removeProperty('margin');
+            display.style.overflowX = '';
+            display.style.overflowY = '';
+            display.style.cursor = '';
+            display.style.removeProperty('scrollbar-width');
+            wrapper.parentNode.insertBefore(display, wrapper);
+            wrapper.parentNode.removeChild(wrapper);
+          }
+        });
       });
     };
+
     const t = setTimeout(run, 80);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      cleanups.forEach(c => c());
+    };
   }, [index]);
 
   // Block pull-to-refresh (Problem 3)
