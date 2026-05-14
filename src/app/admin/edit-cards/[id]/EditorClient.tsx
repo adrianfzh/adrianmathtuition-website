@@ -228,7 +228,7 @@ function AISidebar({
         abortRef.current = null;
       }
     },
-    [streaming, title, content, card, subgroup, auth]
+    [streaming, title, content, card, subgroup, image, auth]
   );
 
   function handleAccept() {

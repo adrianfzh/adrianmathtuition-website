@@ -940,7 +940,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
     } catch (e: unknown) {
       if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
     } finally { setStreaming(false); abortRef.current = null; }
-  }, [streaming, title, content, level, topic, subgroup, auth]);
+  }, [streaming, title, content, level, topic, subgroup, contentKind, image, auth]);
 
   function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImage(null); }
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); }
