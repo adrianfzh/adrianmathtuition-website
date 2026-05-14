@@ -557,6 +557,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [previewContent, setPreviewContent] = useState(card.content);
   const [aiPreviewContent, setAiPreviewContent] = useState<string | null>(null);
   const isMobile = useWindowWidth() < 1024;
@@ -950,11 +951,37 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
                 Markdown + LaTeX
               </div>
               <textarea
+                ref={textareaRef}
                 className="flex-1 resize-none px-4 py-3 text-sm font-mono focus:outline-none bg-white leading-relaxed"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onKeyDown={handleTextareaKeyDown}
                 spellCheck={false}
+                onPaste={async (e) => {
+                  const imgItem = Array.from(e.clipboardData.items).find(i => i.type.startsWith('image/'));
+                  if (!imgItem) return;
+                  e.preventDefault();
+                  const file = imgItem.getAsFile();
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = async (ev) => {
+                    const dataUrl = ev.target?.result as string;
+                    const res = await fetch('/api/admin/cards/upload-image', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                      body: JSON.stringify({ imageData: dataUrl.split(',')[1], imageMediaType: file.type }),
+                    });
+                    const json = await res.json();
+                    if (!res.ok) return;
+                    const tag = `\n<img src="${json.url}" alt="diagram" style="display:block;max-width:100%;margin:8px auto" />\n`;
+                    const ta = textareaRef.current;
+                    const start = ta?.selectionStart ?? content.length;
+                    const end = ta?.selectionEnd ?? content.length;
+                    setContent(prev => prev.slice(0, start) + tag + prev.slice(end));
+                    requestAnimationFrame(() => { if (ta) ta.selectionStart = ta.selectionEnd = start + tag.length; });
+                  };
+                  reader.readAsDataURL(file);
+                }}
               />
             </div>
 

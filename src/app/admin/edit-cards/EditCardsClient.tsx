@@ -1147,6 +1147,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const cardId = initialCard.id;
 
   useEffect(() => {
@@ -1305,7 +1306,39 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
         {/* Textarea */}
         <div className="flex flex-col min-w-0 overflow-hidden" style={{ width: textareaWidth, flexShrink: 0 }}>
           <div className="px-3 py-1 bg-slate-50 border-b border-r border-slate-200 text-xs text-slate-500">Markdown + LaTeX</div>
-          <textarea className="flex-1 resize-none px-3 py-2.5 text-sm font-mono focus:outline-none bg-white leading-relaxed border-r border-slate-200" value={content} onChange={(e) => setContent(e.target.value)} onKeyDown={handleTextareaKeyDown} spellCheck={false} />
+          <textarea
+            ref={textareaRef}
+            className="flex-1 resize-none px-3 py-2.5 text-sm font-mono focus:outline-none bg-white leading-relaxed border-r border-slate-200"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleTextareaKeyDown}
+            spellCheck={false}
+            onPaste={async (e) => {
+              const imgItem = Array.from(e.clipboardData.items).find(i => i.type.startsWith('image/'));
+              if (!imgItem) return; // no image — let default text paste happen
+              e.preventDefault();
+              const file = imgItem.getAsFile();
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = async (ev) => {
+                const dataUrl = ev.target?.result as string;
+                const res = await fetch('/api/admin/cards/upload-image', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                  body: JSON.stringify({ imageData: dataUrl.split(',')[1], imageMediaType: file.type }),
+                });
+                const json = await res.json();
+                if (!res.ok) return;
+                const tag = `\n<img src="${json.url}" alt="diagram" style="display:block;max-width:100%;margin:8px auto" />\n`;
+                const ta = textareaRef.current;
+                const start = ta?.selectionStart ?? content.length;
+                const end = ta?.selectionEnd ?? content.length;
+                setContent(prev => prev.slice(0, start) + tag + prev.slice(end));
+                requestAnimationFrame(() => { if (ta) ta.selectionStart = ta.selectionEnd = start + tag.length; });
+              };
+              reader.readAsDataURL(file);
+            }}
+          />
         </div>
 
         <ResizeHandle onDelta={onTextareaResize} />
