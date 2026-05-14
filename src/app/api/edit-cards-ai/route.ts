@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
-const SYSTEM_PROMPT = `You are editing ONE swipe-app worked-example card for a Singapore math student.
+const WORKED_EXAMPLE_PROMPT = `You are editing ONE swipe-app worked-example card for a Singapore math student.
 
 Cards are bite-sized — typically 120-220 words. They appear one-at-a-time in a TikTok-style vertical swipe interface and render via react-markdown + remark-math + rehype-katex with strict=false, trust=true.
 
@@ -32,6 +32,33 @@ CONTEXT YOU'RE GIVEN
 
 If the instruction is impossible or self-contradictory, return the current content unchanged.`;
 
+const REFRESHER_PROMPT = `You are editing ONE swipe-app refresher card for a Singapore math student.
+
+Refresher cards are SHORT memory aids — typically 40-100 words. They are NOT worked examples. They appear one-at-a-time in a TikTok-style vertical swipe interface and render via react-markdown + remark-math + rehype-katex with strict=false, trust=true.
+
+OUTPUT RULES — ABSOLUTELY CRITICAL
+- Return ONLY the updated card content body. No preamble, no postamble, no commentary.
+- Do NOT include the card_title — that's edited separately.
+- Do NOT wrap your output in markdown code fences.
+- Do NOT include "Updated card:" or "Here's the rewrite:" or any framing.
+
+REFRESHER CARD PURPOSE
+A refresher card is a compact formula/rule/tip that a student glances at before a test.
+- Focus on: key formula, key condition, common pitfall, or mnemonic.
+- NOT a worked example — no long step-by-step workings.
+- Bullet points and short lines preferred over prose.
+- Math: $inline$ for inline, $$display$$ for a single formula.
+
+FORMATTING CONVENTIONS
+- Bold labels like **Formula:**, **Remember:**, **Watch out:**, **Key condition:** — pick the one that fits.
+- Singapore syllabus methods and notation. No US-isms.
+
+CONTENT RULES
+- Keep the card tightly scoped to the sub-skill — don't drift.
+- Preserve mathematical correctness unless the instruction says to fix an error.
+
+If the instruction is impossible or self-contradictory, return the current content unchanged.`;
+
 export async function POST(req: NextRequest) {
   try {
     const {
@@ -42,6 +69,7 @@ export async function POST(req: NextRequest) {
       topic,
       subgroupName,
       subgroupDescription,
+      content_kind,
       password,
     } = await req.json();
 
@@ -78,10 +106,11 @@ Instruction: ${instruction}`;
 
     (async () => {
       try {
+        const systemPrompt = content_kind === 'refresher' ? REFRESHER_PROMPT : WORKED_EXAMPLE_PROMPT;
         const stream = client.messages.stream({
           model: 'claude-opus-4-6',
           max_tokens: 4000,
-          system: SYSTEM_PROMPT,
+          system: systemPrompt,
           messages: [{ role: 'user', content: userMessage }],
         });
 

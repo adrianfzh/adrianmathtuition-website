@@ -16,6 +16,7 @@ interface Card {
   topic: string;
   subgroup_id: number;
   display_group: string | null;
+  content_kind: string;
   order_index: number;
   card_title: string;
   content: string;
@@ -161,6 +162,7 @@ function AISidebar({
         topic: card.topic,
         subgroupName: subgroup?.name ?? '',
         subgroupDescription: subgroup?.description ?? '',
+        content_kind: card.content_kind,
         password: auth,
       });
 
@@ -574,8 +576,11 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
         <a href={backUrl} className="text-sm text-blue-600 hover:underline whitespace-nowrap">
           ← Back to {card.topic}
         </a>
-        <div className="flex-1 min-w-0 text-sm text-slate-500 truncate">
-          sg{typeof sgId === 'number' ? sgId : lastValidSgId.current} · {currentSubgroup?.name ?? '…'} · Card {siblingIdx + 1} of {siblings.length}
+        <div className="flex-1 min-w-0 text-sm text-slate-500 flex items-center gap-2 truncate">
+          <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ${card.content_kind === 'refresher' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+            {card.content_kind === 'refresher' ? '🧠 Refresher' : '💡 Worked Example'}
+          </span>
+          <span className="truncate">sg{typeof sgId === 'number' ? sgId : lastValidSgId.current} · {currentSubgroup?.name ?? '…'} · Card {siblingIdx + 1} of {siblings.length}</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {saveStatus === 'saving' && <span className="text-sm text-slate-400">Saving…</span>}

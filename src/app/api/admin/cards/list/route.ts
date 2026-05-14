@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   const level = searchParams.get('level');
   const topic = searchParams.get('topic');
   const subgroupId = searchParams.get('subgroupId');
+  const kind = searchParams.get('kind') ?? 'worked_example';
   const publishedOnly = searchParams.get('publishedOnly') === 'true';
 
   if (!level || !topic) {
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
     .select('id, subgroup_id, display_group, order_index, card_title, is_published, source_kb_entry_id, updated_at, content')
     .eq('level', level)
     .eq('topic', topic)
-    .eq('content_kind', 'worked_example')
+    .eq('content_kind', kind)
     .order('subgroup_id', { ascending: true })
     .order('order_index', { ascending: true });
 

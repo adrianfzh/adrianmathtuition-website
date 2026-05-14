@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const level = searchParams.get('level');
   const topic = searchParams.get('topic');
+  const kind = searchParams.get('kind') ?? 'worked_example';
 
   if (!level || !topic) {
     return NextResponse.json({ error: 'level and topic required' }, { status: 400 });
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
     .select('display_group')
     .eq('level', level)
     .eq('topic', topic)
-    .eq('content_kind', 'worked_example')
+    .eq('content_kind', kind)
     .not('display_group', 'is', null);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

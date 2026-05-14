@@ -24,6 +24,7 @@ interface CardRow {
   id: string;
   subgroup_id: number;
   display_group: string | null;
+  content_kind: string;
   order_index: number;
   card_title: string;
   is_published: boolean;
@@ -595,6 +596,164 @@ function NewSectionModal({ level, topic, existingSections, onClose, onCreated }:
   );
 }
 
+// ── New refresher modal ───────────────────────────────────────────────────────
+
+function NewRefresherModal({ subgroups, defaultSgId, level, topic, auth, onClose, onCreated }: {
+  subgroups: Subgroup[]; defaultSgId: number | null;
+  level: string; topic: string; auth: string;
+  onClose: () => void;
+  onCreated: (card: CardRow) => void;
+}) {
+  const [sgId, setSgId] = useState<number>(defaultSgId ?? subgroups[0]?.id ?? 0);
+  const [title, setTitle] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [err, setErr] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  async function create() {
+    if (!sgId) { setErr('Pick a sub-group'); return; }
+    setCreating(true); setErr('');
+    try {
+      const res = await fetch('/api/admin/cards/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ level, topic, subgroup_id: sgId, card_title: title, content_kind: 'refresher' }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Failed');
+      onCreated(json as CardRow);
+    } catch (e: unknown) { setErr(e instanceof Error ? e.message : 'Failed'); setCreating(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+        <h2 className="text-lg font-semibold text-slate-800 mb-4">🧠 New refresher card</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Sub-group <span className="text-slate-400 font-normal text-xs">(QB labelling)</span></label>
+            <select className="w-full border border-slate-300 rounded px-3 py-2 text-sm" value={sgId} onChange={(e) => setSgId(Number(e.target.value))}>
+              {subgroups.map((sg) => <option key={sg.id} value={sg.id}>{sg.name} (sg{sg.id})</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Card title <span className="text-slate-400 font-normal">(optional)</span></label>
+            <input ref={inputRef} type="text" className="w-full border border-slate-300 rounded px-3 py-2 text-sm" placeholder="e.g. Surd form a√b — key conditions" value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') create(); }} />
+          </div>
+          {err && <p className="text-red-600 text-sm">{err}</p>}
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <button onClick={onClose} className="px-4 py-2 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
+          <button onClick={create} disabled={creating} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">{creating ? 'Creating…' : 'Create'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Refresher panel ───────────────────────────────────────────────────────────
+
+function RefresherPanel({
+  cards, subgroups, auth, selectedId, level, topic,
+  onSelectCard, onCardCreated, onCardSaved, onCardDeleted,
+}: {
+  cards: CardRow[]; subgroups: Subgroup[]; auth: string; selectedId: string | null;
+  level: string; topic: string;
+  onSelectCard: (id: string) => void;
+  onCardCreated: (card: CardRow) => void;
+  onCardSaved: (updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) => void;
+  onCardDeleted: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [reorderStatus, setReorderStatus] = useState<SaveStatus>('idle');
+  const reorderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 5 } })
+  );
+
+  function handleDragStart(e: DragStartEvent) { setActiveId(e.active.id as string); if (navigator.vibrate) navigator.vibrate(30); }
+
+  function handleDragEnd(e: DragEndEvent) {
+    setActiveId(null);
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const ai = cards.findIndex((c) => c.id === active.id);
+    const oi = cards.findIndex((c) => c.id === over.id);
+    if (ai === -1 || oi === -1) return;
+    const reordered = arrayMove(cards, ai, oi);
+    onCardSaved({ ...reordered[oi], id: reordered[oi].id }); // trigger parent update via special signal
+    // Actually we need to reorder — emit the reordered ids upward
+    if (reorderTimer.current) clearTimeout(reorderTimer.current);
+    setReorderStatus('saving');
+    reorderTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/admin/cards/reorder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+          body: JSON.stringify({ orderedIds: reordered.map((c) => c.id) }),
+        });
+        if (!res.ok) throw new Error();
+        setReorderStatus('saved');
+        setTimeout(() => setReorderStatus('idle'), 2000);
+      } catch { setReorderStatus('error'); }
+    }, 600);
+    // Optimistic update: tell parent about reordered cards
+    reordered.forEach((c, i) => { onCardSaved({ id: c.id, card_title: c.card_title, is_published: c.is_published, subgroup_id: c.subgroup_id, order_index: i + 1, content: c.content }); });
+  }
+
+  const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
+
+  return (
+    <div className="mb-2">
+      {/* Panel header */}
+      <div className="flex items-center gap-1 px-1 py-1.5">
+        <button onClick={() => setExpanded((v) => !v)} className="text-xs text-slate-400 shrink-0">{expanded ? '▾' : '▸'}</button>
+        <span className="text-xs font-semibold text-blue-700 flex-1">🧠 Refresher <span className="font-normal text-slate-400">({cards.length})</span></span>
+        {reorderStatus === 'saving' && <span className="text-xs text-slate-400">Saving…</span>}
+        {reorderStatus === 'saved' && <span className="text-xs text-green-600">Saved</span>}
+        <button
+          onClick={() => setShowModal(true)}
+          className="text-xs px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >+ New</button>
+      </div>
+
+      {expanded && (
+        <div className="space-y-1">
+          {cards.length === 0 ? (
+            <p className="px-3 py-2 text-xs text-slate-400 italic">No refresher cards yet — click + New to create one.</p>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+              <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                {cards.map((card) => (
+                  <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={onSelectCard} />
+                ))}
+              </SortableContext>
+              <DragOverlay modifiers={[restrictToVerticalAxis]}>{activeCard ? <DragCardOverlay card={activeCard} /> : null}</DragOverlay>
+            </DndContext>
+          )}
+        </div>
+      )}
+
+      {showModal && (
+        <NewRefresherModal
+          subgroups={subgroups}
+          defaultSgId={null}
+          level={level}
+          topic={topic}
+          auth={auth}
+          onClose={() => setShowModal(false)}
+          onCreated={(card) => { onCardCreated(card); setShowModal(false); onSelectCard(card.id); }}
+        />
+      )}
+    </div>
+  );
+}
+
 // ── Delete modal ──────────────────────────────────────────────────────────────
 
 function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void; onCancel: () => void; deleting: boolean }) {
@@ -614,9 +773,9 @@ function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void;
 
 // ── AI Sidebar ────────────────────────────────────────────────────────────────
 
-function AISidebar({ cardId, level, topic, subgroup, content, title, auth, onAccept }: {
+function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind, auth, onAccept }: {
   cardId: string; level: string; topic: string; subgroup: Subgroup | undefined;
-  content: string; title: string; auth: string; onAccept: (c: string) => void;
+  content: string; title: string; contentKind: string; auth: string; onAccept: (c: string) => void;
 }) {
   const [prompt, setPrompt] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -643,7 +802,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, auth, onAcc
       const res = await fetch('/api/edit-cards-ai', {
         method: 'POST', signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', password: auth }),
+        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', content_kind: contentKind, password: auth }),
       });
       if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error ?? `HTTP ${res.status}`); }
       const reader = res.body!.getReader();
@@ -879,7 +1038,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
           <>
             <ResizeHandle onDelta={onAiResize} />
             <div className="flex flex-col overflow-hidden bg-white" style={{ width: aiWidth, flexShrink: 0 }}>
-              <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} auth={auth} onAccept={(c) => setContent(c)} />
+              <AISidebar cardId={cardId} level={level} topic={topic} subgroup={currentSubgroup} content={content} title={title} contentKind={initialCard.content_kind} auth={auth} onAccept={(c) => setContent(c)} />
             </div>
           </>
         )}
@@ -915,6 +1074,7 @@ export default function EditCardsClient() {
   const [topics, setTopics] = useState<string[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [cards, setCards] = useState<CardRow[]>([]);
+  const [refresherCards, setRefresherCards] = useState<CardRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reorderStatus, setReorderStatus] = useState<Record<number, SaveStatus>>({});
@@ -981,16 +1141,20 @@ export default function EditCardsClient() {
   }, [level]);
 
   const fetchCards = useCallback(async () => {
-    if (!level || !topic) { setCards([]); setSubgroups([]); return; }
+    if (!level || !topic) { setCards([]); setSubgroups([]); setRefresherCards([]); return; }
     setLoading(true);
     try {
       const params = new URLSearchParams({ level, topic });
       if (subgroupFilter) params.set('subgroupId', subgroupFilter);
-      const res = await fetch(`/api/admin/cards/list?${params}`, { headers: { Authorization: `Bearer ${auth}` } });
-      const json = await res.json();
-      setCards(json.cards ?? []);
-      setSubgroups(json.subgroups ?? []);
-      setSectionOrder(json.sectionOrder ?? []);
+      const [weRes, rfRes] = await Promise.all([
+        fetch(`/api/admin/cards/list?${params}`, { headers: { Authorization: `Bearer ${auth}` } }),
+        fetch(`/api/admin/cards/list?${params}&kind=refresher`, { headers: { Authorization: `Bearer ${auth}` } }),
+      ]);
+      const [weJson, rfJson] = await Promise.all([weRes.json(), rfRes.json()]);
+      setCards(weJson.cards ?? []);
+      setSubgroups(weJson.subgroups ?? []);
+      setSectionOrder(weJson.sectionOrder ?? []);
+      setRefresherCards(rfJson.cards ?? []);
     } finally { setLoading(false); }
   }, [level, topic, subgroupFilter, auth]);
 
@@ -1103,10 +1267,12 @@ export default function EditCardsClient() {
 
   function handleCardSaved(updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) {
     setCards((prev) => prev.map((c) => c.id === updated.id ? { ...c, ...updated } : c));
+    setRefresherCards((prev) => prev.map((c) => c.id === updated.id ? { ...c, ...updated } : c));
   }
 
   function handleCardDeleted(id: string) {
     setCards((prev) => prev.filter((c) => c.id !== id));
+    setRefresherCards((prev) => prev.filter((c) => c.id !== id));
     setSelectedId(null);
   }
 
@@ -1164,7 +1330,9 @@ export default function EditCardsClient() {
   }
 
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
-  const selectedCard = selectedId ? cards.find((c) => c.id === selectedId) ?? null : null;
+  const selectedCard = selectedId
+    ? (cards.find((c) => c.id === selectedId) ?? refresherCards.find((c) => c.id === selectedId) ?? null)
+    : null;
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
@@ -1211,13 +1379,34 @@ export default function EditCardsClient() {
             <div className="flex-1 flex items-center justify-center p-6 text-center text-slate-400 text-sm">Pick a level and topic to start editing.</div>
           ) : loading ? (
             <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
-          ) : allSections.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
-              <p className="text-slate-400 text-sm">No cards yet for {topic}.</p>
-              <button onClick={() => setShowNewSectionModal(true)} className="text-sm px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">+ New section</button>
-            </div>
           ) : (
-            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+              {/* ── 🧠 Refresher panel ─────────────────────────────── */}
+              <RefresherPanel
+                cards={refresherCards}
+                subgroups={subgroups}
+                auth={auth}
+                selectedId={selectedId}
+                level={level}
+                topic={topic}
+                onSelectCard={setSelectedId}
+                onCardCreated={(card) => setRefresherCards((prev) => [...prev, card])}
+                onCardSaved={handleCardSaved}
+                onCardDeleted={handleCardDeleted}
+              />
+
+              {/* ── 💡 Worked Examples panel ───────────────────────── */}
+              <div className="flex items-center gap-1 px-1 py-1.5 mt-2">
+                <span className="text-xs font-semibold text-amber-700 flex-1">💡 Worked Examples <span className="font-normal text-slate-400">({filteredCards.length})</span></span>
+              </div>
+
+              {allSections.length === 0 ? (
+                <div className="px-3 py-3 text-center">
+                  <p className="text-slate-400 text-sm mb-2">No worked examples yet.</p>
+                  <button onClick={() => setShowNewSectionModal(true)} className="text-sm px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">+ New section</button>
+                </div>
+              ) : (
+              <div className="space-y-4">
               <DndContext sensors={sensors} collisionDetection={customCollision} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                 <SortableContext items={allSections.map((s) => `sec-hdr-${s}`)} strategy={verticalListSortingStrategy}>
                   {allSections.map((sectionName) => {
@@ -1255,6 +1444,8 @@ export default function EditCardsClient() {
                   ) : activeCard ? <DragCardOverlay card={activeCard} /> : null}
                 </DragOverlay>
               </DndContext>
+              </div>
+              )}
             </div>
           )}
         </div>
@@ -1268,7 +1459,7 @@ export default function EditCardsClient() {
               key={selectedCard.id}
               initialCard={selectedCard}
               subgroups={subgroups}
-              allCards={cards}
+              allCards={selectedCard?.content_kind === 'refresher' ? refresherCards : cards}
               level={level}
               topic={topic}
               auth={auth}
