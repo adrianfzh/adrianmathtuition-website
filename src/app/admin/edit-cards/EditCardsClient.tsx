@@ -46,6 +46,12 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const LEVELS = ['AM', 'EM', 'JC', 'S1', 'S2'];
 
+// ── Cross-section drop animation tracker ──────────────────────────────────────
+// Set to the card ID just before the cross-section optimistic state update fires.
+// SortableCardRow checks this at mount-time to decide whether to play the entry
+// animation. Cleared after a short delay (only needed during the mount call).
+let _recentlyMovedCardId: string | null = null;
+
 // ── Layout defaults ───────────────────────────────────────────────────────────
 
 const LAYOUT_KEY = 'edit_cards_layout';
@@ -227,11 +233,15 @@ function SortableCardRow({ card, displayIndex, isSelected, onSelect }: { card: C
     id: card.id,
     data: { section: card.display_group ?? '', kind: card.content_kind },
   });
+  // Play a brief slide-in when this card just arrived from another section.
+  // _recentlyMovedCardId is set (module-level) in handleDragEnd before the state
+  // update that mounts this component here.
+  const [animateIn] = useState(() => card.id === _recentlyMovedCardId);
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.35 : 1, touchAction: 'none' as const };
   return (
     <div
       ref={setNodeRef} style={style} onClick={() => onSelect(card.id)}
-      className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
+      className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:bg-slate-50'} ${animateIn ? 'card-section-entry' : ''}`}
     >
       <span {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0" title="Drag to reorder">⠿</span>
       <span className="text-slate-400 text-xs w-4 shrink-0">{displayIndex ?? card.order_index}.</span>
@@ -1491,6 +1501,9 @@ export default function EditCardsClient() {
   const [rfSectionOrder, setRfSectionOrder] = useState<string[]>([]); // drag-reordered RF sections (session-only)
   const [quickAdd, setQuickAdd] = useState<{ sectionName: string; kind: 'worked_example' | 'refresher' } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  // Editor panels that should remain mounted (to preserve AI streaming state across card switches).
+  // When the user selects a card, its panel mounts and stays alive (visibility:hidden) for the last 5 cards.
+  const [mountedCardIds, setMountedCardIds] = useState<string[]>([]);
 
   // Panel widths — loaded from localStorage once on mount
   const [listWidth, setListWidth] = useState(DEFAULT_LAYOUT.listWidth);
@@ -1567,6 +1580,19 @@ export default function EditCardsClient() {
   }, [level, topic, subgroupFilter, auth]);
 
   useEffect(() => { fetchCards(); }, [fetchCards]);
+
+  // Keep recently-visited editor panels alive (up to 5) so AI streaming survives card switches.
+  useEffect(() => {
+    if (!selectedId) return;
+    setMountedCardIds((prev) => {
+      if (prev.includes(selectedId)) return prev;
+      const next = [...prev, selectedId];
+      return next.length > 5 ? next.slice(-5) : next;
+    });
+  }, [selectedId]);
+
+  // Drop all mounted panels when level or topic changes (fresh card set).
+  useEffect(() => { setMountedCardIds([]); }, [level, topic]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -1727,6 +1753,9 @@ export default function EditCardsClient() {
       const destSectionCards = dstList.filter((c) => c.display_group === tgtSection);
       const moved = { ...ac, display_group: tgtSection };
       const newDest = [...destSectionCards, moved];
+      // Mark card for entry animation (read in SortableCardRow useState initializer on mount)
+      _recentlyMovedCardId = activeIdStr;
+      setTimeout(() => { _recentlyMovedCardId = null; }, 80);
       setSrcList((prev) => [
         ...prev.filter((c) => c.display_group !== srcSection && c.display_group !== tgtSection),
         ...remainSrc.map((c, i) => ({ ...c, order_index: i + 1 })),
@@ -1745,6 +1774,8 @@ export default function EditCardsClient() {
       const destSectionCards = dstList.filter((c) => c.display_group === tgtSection);
       const moved = { ...ac, display_group: tgtSection, content_kind: tgtKind };
       const newDest = [...destSectionCards, moved];
+      _recentlyMovedCardId = activeIdStr;
+      setTimeout(() => { _recentlyMovedCardId = null; }, 80);
       setSrcList((prev) => prev.filter((c) => c.id !== activeIdStr));
       setDstList((prev) => [
         ...prev.filter((c) => c.display_group !== tgtSection),
@@ -1768,6 +1799,7 @@ export default function EditCardsClient() {
     setCards((prev) => prev.filter((c) => c.id !== id));
     setRefresherCards((prev) => prev.filter((c) => c.id !== id));
     setSelectedId(null);
+    setMountedCardIds((prev) => prev.filter((mid) => mid !== id));
   }
 
   function handleSgRenamed(updated: Pick<Subgroup, 'id' | 'name' | 'description'>) {
@@ -1827,9 +1859,6 @@ export default function EditCardsClient() {
   }
 
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
-  const selectedCard = selectedId
-    ? (cards.find((c) => c.id === selectedId) ?? refresherCards.find((c) => c.id === selectedId) ?? null)
-    : null;
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
@@ -1839,14 +1868,14 @@ export default function EditCardsClient() {
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-1.5">
             <span className="text-slate-500 text-xs">Level</span>
-            <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={level} onChange={(e) => { setLevel(e.target.value); setTopic(''); setSubgroupFilter(''); setSelectedId(null); }}>
+            <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={level} onChange={(e) => { setLevel(e.target.value); setTopic(''); setSubgroupFilter(''); setSelectedId(null); setMountedCardIds([]); }}>
               <option value="">—</option>
               {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-slate-500 text-xs">Topic</span>
-            <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={topic} onChange={(e) => { setTopic(e.target.value); setSubgroupFilter(''); setSelectedId(null); }} disabled={!level}>
+            <select className="border border-slate-300 rounded px-2 py-1 text-sm" value={topic} onChange={(e) => { setTopic(e.target.value); setSubgroupFilter(''); setSelectedId(null); setMountedCardIds([]); }} disabled={!level}>
               <option value="">—</option>
               {topics.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -1975,32 +2004,48 @@ export default function EditCardsClient() {
 
         <ResizeHandle onDelta={handleListResize} />
 
-        {/* Right: editor */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {selectedCard ? (
-            <EditorPanel
-              key={selectedCard.id}
-              initialCard={selectedCard}
-              subgroups={subgroups}
-              allCards={selectedCard?.content_kind === 'refresher' ? refresherCards : cards}
-              level={level}
-              topic={topic}
-              auth={auth}
-              textareaWidth={textareaWidth}
-              aiWidth={aiWidth}
-              aiOpen={aiOpen}
-              onSaved={handleCardSaved}
-              onDeleted={handleCardDeleted}
-              onNavigate={setSelectedId}
-              onTextareaResize={handleTextareaResize}
-              onAiResize={handleAiResize}
-              onAiToggle={() => setAiOpen((v) => !v)}
-            />
-          ) : (
+        {/* Right: editor — keep recently-visited panels mounted so AI streaming survives card switches */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+          {/* Empty state — shown when no card is selected */}
+          {!selectedId && (
             <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
               {level && topic ? 'Select a card to edit.' : ''}
             </div>
           )}
+          {/* One panel per recently-visited card; inactive panels stay mounted but hidden */}
+          {mountedCardIds.map((id) => {
+            const card = cards.find((c) => c.id === id) ?? refresherCards.find((c) => c.id === id);
+            if (!card) return null;
+            const isActive = id === selectedId;
+            return (
+              <div
+                key={id}
+                className="absolute inset-0 flex flex-col min-w-0 overflow-hidden"
+                style={isActive ? {} : { visibility: 'hidden', pointerEvents: 'none' }}
+              >
+                <EditorPanel
+                  key={id}
+                  initialCard={card}
+                  subgroups={subgroups}
+                  allCards={card.content_kind === 'refresher' ? refresherCards : cards}
+                  level={level}
+                  topic={topic}
+                  auth={auth}
+                  textareaWidth={textareaWidth}
+                  aiWidth={aiWidth}
+                  aiOpen={aiOpen}
+                  onSaved={handleCardSaved}
+                  onDeleted={handleCardDeleted}
+                  onNavigate={setSelectedId}
+                  onTextareaResize={handleTextareaResize}
+                  onAiResize={handleAiResize}
+                  onAiToggle={() => setAiOpen((v) => !v)}
+                />
+              </div>
+            );
+          })}
+          {/* Invisible spacer so the right column keeps its flex width when all panels are hidden */}
+          <div className="flex-1" />
         </div>
       </div>
 
