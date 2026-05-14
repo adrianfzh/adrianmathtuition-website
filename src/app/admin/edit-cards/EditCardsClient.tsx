@@ -178,7 +178,7 @@ const customCollision: CollisionDetection = (args) => {
 
 // ── Sortable card row ──────────────────────────────────────────────────────────
 
-function SortableCardRow({ card, isSelected, onSelect }: { card: CardRow; isSelected: boolean; onSelect: (id: string) => void }) {
+function SortableCardRow({ card, displayIndex, isSelected, onSelect }: { card: CardRow; displayIndex?: number; isSelected: boolean; onSelect: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.35 : 1, touchAction: 'none' as const };
   return (
@@ -187,7 +187,7 @@ function SortableCardRow({ card, isSelected, onSelect }: { card: CardRow; isSele
       className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
     >
       <span {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0" title="Drag to reorder">⠿</span>
-      <span className="text-slate-400 text-xs w-4 shrink-0">{card.order_index}.</span>
+      <span className="text-slate-400 text-xs w-4 shrink-0">{displayIndex ?? card.order_index}.</span>
       <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
       <span className="text-xs text-slate-400 bg-slate-100 px-1 rounded shrink-0 font-mono">sg{card.subgroup_id}</span>
       <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${card.is_published ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-500'}`}>
@@ -799,8 +799,8 @@ function RefresherPanel({
                 <DroppableSectionZone name="__flat__" kindPrefix="rf" isDragActive={isCardDrag}>
                   <SortableContext items={flatCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-1">
-                      {flatCards.map((card) => (
-                        <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={onSelectCard} />
+                      {flatCards.map((card, idx) => (
+                        <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={onSelectCard} />
                       ))}
                     </div>
                   </SortableContext>
@@ -827,8 +827,8 @@ function RefresherPanel({
                       <DroppableSectionZone name={sectionKey} kindPrefix="rf" isDragActive={isCardDrag}>
                         <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                           <div className="space-y-1">
-                            {sectionCards.map((card) => (
-                              <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={onSelectCard} />
+                            {sectionCards.map((card, idx) => (
+                              <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={onSelectCard} />
                             ))}
                           </div>
                         </SortableContext>
@@ -1772,8 +1772,8 @@ export default function EditCardsClient() {
                             <DroppableSectionZone name={sectionName} kindPrefix="we" isDragActive={isCardDrag}>
                               <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                                 <div className="space-y-1">
-                                  {sectionCards.map((card) => (
-                                    <SortableCardRow key={card.id} card={card} isSelected={selectedId === card.id} onSelect={setSelectedId} />
+                                  {sectionCards.map((card, idx) => (
+                                    <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={setSelectedId} />
                                   ))}
                                 </div>
                               </SortableContext>
