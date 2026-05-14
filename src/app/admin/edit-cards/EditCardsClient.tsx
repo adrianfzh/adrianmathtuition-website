@@ -883,15 +883,29 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
   const [aiResult, setAiResult] = useState('');
   const [diffLines, setDiffLines] = useState<DiffLine[] | null>(null);
   const [aiError, setAiError] = useState('');
+  const [image, setImage] = useState<{ data: string; mediaType: string; previewUrl: string } | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | null>(null);
   const prevCardId = useRef(cardId);
 
   useEffect(() => {
     if (prevCardId.current !== cardId) {
       prevCardId.current = cardId;
-      setDiffLines(null); setAiResult(''); setAiError('');
+      setDiffLines(null); setAiResult(''); setAiError(''); setImage(null);
     }
   }, [cardId]);
+
+  function loadImage(file: File) {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      const base64 = dataUrl.split(',')[1];
+      setImage({ data: base64, mediaType: file.type, previewUrl: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  }
 
   const runAI = useCallback(async (instruction: string) => {
     if (streaming) { abortRef.current?.(); return; }
@@ -903,7 +917,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
       const res = await fetch('/api/edit-cards-ai', {
         method: 'POST', signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', content_kind: contentKind, password: auth }),
+        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', content_kind: contentKind, imageData: image?.data, imageMediaType: image?.mediaType, password: auth }),
       });
       if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error ?? `HTTP ${res.status}`); }
       const reader = res.body!.getReader();
@@ -928,7 +942,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
     } finally { setStreaming(false); abortRef.current = null; }
   }, [streaming, title, content, level, topic, subgroup, auth]);
 
-  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); }
+  function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImage(null); }
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); }
 
   return (
@@ -947,10 +961,45 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
         </div>
         <div>
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Or describe a change:</p>
-          <textarea className="w-full border border-slate-300 rounded px-2.5 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} placeholder="e.g. Split into two cards…" value={prompt} onChange={(e) => setPrompt(e.target.value)} disabled={streaming} />
-          <button onClick={() => runAI(prompt)} disabled={!prompt.trim() || streaming} className="mt-1.5 w-full py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">
-            {streaming ? 'Streaming… (click to cancel)' : 'Send to AI →'}
-          </button>
+          {/* Image drop zone */}
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) loadImage(f); }}
+          >
+            <textarea
+              className={`w-full border rounded px-2.5 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${dragOver ? 'border-blue-400 bg-blue-50' : 'border-slate-300'}`}
+              rows={3}
+              placeholder={image ? 'Optional: add instructions for the image…' : 'e.g. Split into two cards… or drop an image here'}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              disabled={streaming}
+            />
+          </div>
+          {/* Image preview */}
+          {image && (
+            <div className="mt-1.5 flex items-center gap-2 p-1.5 border border-slate-200 rounded bg-slate-50">
+              <img src={image.previewUrl} alt="uploaded" className="h-10 w-10 object-cover rounded border border-slate-200 shrink-0" />
+              <span className="text-xs text-slate-500 flex-1 truncate">Image attached — AI will extract from it</span>
+              <button onClick={() => setImage(null)} className="text-slate-400 hover:text-red-500 text-xs shrink-0">✕</button>
+            </div>
+          )}
+          <div className="mt-1.5 flex gap-1.5">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={streaming}
+              className="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-40 shrink-0"
+              title="Upload image"
+            >📎</button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) loadImage(f); e.target.value = ''; }} />
+            <button
+              onClick={() => runAI(prompt)}
+              disabled={(!prompt.trim() && !image) || streaming}
+              className="flex-1 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40"
+            >
+              {streaming ? 'Streaming… (click to cancel)' : image ? 'Extract from image →' : 'Send to AI →'}
+            </button>
+          </div>
         </div>
         {aiError && <p className="text-xs text-red-600 bg-red-50 p-2 rounded">{aiError}</p>}
         {streaming && aiResult && (

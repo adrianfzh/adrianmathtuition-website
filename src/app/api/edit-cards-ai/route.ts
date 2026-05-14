@@ -70,6 +70,8 @@ export async function POST(req: NextRequest) {
       subgroupName,
       subgroupDescription,
       content_kind,
+      imageData,      // base64-encoded image (no data-URL prefix)
+      imageMediaType, // e.g. 'image/jpeg'
       password,
     } = await req.json();
 
@@ -77,11 +79,17 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    if (!instruction?.trim()) {
+    const hasImage = typeof imageData === 'string' && imageData.length > 0;
+
+    // Instruction is required unless an image is provided
+    if (!hasImage && !instruction?.trim()) {
       return new Response(JSON.stringify({ error: 'Instruction is required' }), { status: 400 });
     }
 
-    const userMessage = `Level: ${level ?? ''}
+    const textInstruction = instruction?.trim() ||
+      'Extract the worked example from this image. Write a complete card with the question, all solution steps, and the final answer. Use markdown + LaTeX formatting exactly as shown in the system prompt.';
+
+    const textBlock = `Level: ${level ?? ''}
 Topic: ${topic ?? ''}
 Sub-group: ${subgroupName ?? ''}
 Sub-group scope: ${subgroupDescription ?? '—'}
@@ -93,7 +101,29 @@ Current card content:
 ${currentContent ?? ''}
 \`\`\`
 
-Instruction: ${instruction}`;
+Instruction: ${textInstruction}`;
+
+    // Build message content — text only, or image + text for vision requests
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
+    type AllowedMediaType = typeof allowedTypes[number];
+    const resolvedMediaType: AllowedMediaType =
+      allowedTypes.includes(imageMediaType as AllowedMediaType)
+        ? (imageMediaType as AllowedMediaType)
+        : 'image/jpeg';
+
+    const userContent = hasImage
+      ? [
+          {
+            type: 'image' as const,
+            source: {
+              type: 'base64' as const,
+              media_type: resolvedMediaType,
+              data: imageData as string,
+            },
+          },
+          { type: 'text' as const, text: textBlock },
+        ]
+      : [{ type: 'text' as const, text: textBlock }];
 
     const client = new Anthropic();
     const { readable, writable } = new TransformStream();
@@ -111,7 +141,7 @@ Instruction: ${instruction}`;
           model: 'claude-opus-4-6',
           max_tokens: 4000,
           system: systemPrompt,
-          messages: [{ role: 'user', content: userMessage }],
+          messages: [{ role: 'user', content: userContent }],
         });
 
         for await (const event of stream) {

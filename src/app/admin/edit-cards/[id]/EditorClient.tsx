@@ -139,7 +139,20 @@ function AISidebar({
   const [aiResult, setAiResult] = useState('');
   const [diffLines, setDiffLines] = useState<DiffLine[] | null>(null);
   const [aiError, setAiError] = useState('');
+  const [image, setImage] = useState<{ data: string; mediaType: string; previewUrl: string } | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | null>(null);
+
+  function loadImage(file: File) {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setImage({ data: dataUrl.split(',')[1], mediaType: file.type, previewUrl: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  }
 
   const runAI = useCallback(
     async (instruction: string) => {
@@ -163,6 +176,8 @@ function AISidebar({
         subgroupName: subgroup?.name ?? '',
         subgroupDescription: subgroup?.description ?? '',
         content_kind: card.content_kind,
+        imageData: image?.data,
+        imageMediaType: image?.mediaType,
         password: auth,
       });
 
@@ -222,6 +237,7 @@ function AISidebar({
     setDiffLines(null);
     setAiResult('');
     setPrompt('');
+    setImage(null);
   }
 
   function handleReject() {
@@ -253,24 +269,46 @@ function AISidebar({
           </div>
         </div>
 
-        {/* Free-form prompt */}
+        {/* Free-form prompt + image */}
         <div>
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Or describe a change:</p>
-          <textarea
-            className="w-full border border-slate-300 rounded px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={4}
-            placeholder="e.g. Split into two cards…"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            disabled={streaming}
-          />
-          <button
-            onClick={() => runAI(prompt)}
-            disabled={!prompt.trim() || streaming}
-            className="mt-2 w-full py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40"
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) loadImage(f); }}
           >
-            {streaming ? 'Streaming… (click to cancel)' : 'Send to AI'}
-          </button>
+            <textarea
+              className={`w-full border rounded px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${dragOver ? 'border-blue-400 bg-blue-50' : 'border-slate-300'}`}
+              rows={4}
+              placeholder={image ? 'Optional: add instructions for the image…' : 'e.g. Split into two cards… or drop an image here'}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              disabled={streaming}
+            />
+          </div>
+          {image && (
+            <div className="mt-2 flex items-center gap-2 p-2 border border-slate-200 rounded bg-slate-50">
+              <img src={image.previewUrl} alt="uploaded" className="h-12 w-12 object-cover rounded border border-slate-200 shrink-0" />
+              <span className="text-xs text-slate-500 flex-1 truncate">Image attached — AI will extract from it</span>
+              <button onClick={() => setImage(null)} className="text-slate-400 hover:text-red-500 text-sm shrink-0">✕</button>
+            </div>
+          )}
+          <div className="mt-2 flex gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={streaming}
+              className="px-3 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-40 shrink-0"
+              title="Upload image"
+            >📎</button>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) loadImage(f); e.target.value = ''; }} />
+            <button
+              onClick={() => runAI(prompt)}
+              disabled={(!prompt.trim() && !image) || streaming}
+              className="flex-1 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40"
+            >
+              {streaming ? 'Streaming… (click to cancel)' : image ? 'Extract from image' : 'Send to AI'}
+            </button>
+          </div>
         </div>
 
         {/* Error */}
