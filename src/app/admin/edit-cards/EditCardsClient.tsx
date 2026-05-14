@@ -154,8 +154,17 @@ const QUICK_ACTIONS = [
 
 // ── Custom collision detection ────────────────────────────────────────────────
 // Routes section-header drags to only collide with other sec-hdr- droppables,
-// and card drags to only collide with card chips + sec-zone- droppables.
-// Without this, closestCenter finds the wrong target when the pools are mixed.
+// and card drags to card chips + sec-zone- droppables with smart fallback.
+//
+// Key problem this solves:
+//   When the pointer lands in the gap between two cards (not over any chip),
+//   pointerWithin only returns the section zone. If that zone belongs to the
+//   SAME section the card came from, we want closestCenter among chips (so the
+//   nearest card wins). If the zone belongs to a DIFFERENT section / kind, we
+//   want the zone itself (cross-section or cross-kind drop).
+//
+// We get the active card's section + kind from the `data` field set in
+// SortableCardRow's useSortable({ data: { section, kind } }) call.
 const customCollision: CollisionDetection = (args) => {
   const activeId = String(args.active.id);
   if (activeId.startsWith('sec-hdr-')) {
@@ -167,23 +176,57 @@ const customCollision: CollisionDetection = (args) => {
       ),
     });
   }
-  // Card drags: exclude section headers from the pool.
-  // Use pointerWithin FIRST so the small card chip beats its large zone wrapper
-  // (pointerWithin returns droppables containing the pointer ordered by ascending area —
-  // card chips are smaller than their zone, so they come first).
-  // Fall back to closestCenter for drops outside any droppable rect.
+
+  // Card drags — active card's home section + kind (set via useSortable data)
+  const activeSection: string = (args.active.data.current as { section?: string } | undefined)?.section ?? '';
+  const activeKind: string = (args.active.data.current as { kind?: string } | undefined)?.kind ?? '';
+
+  // All droppables except section headers
   const cardContainers = args.droppableContainers.filter(
     (c) => !String(c.id).startsWith('sec-hdr-')
   );
-  const pointerResult = pointerWithin({ ...args, droppableContainers: cardContainers });
-  if (pointerResult.length > 0) return pointerResult;
-  return closestCenter({ ...args, droppableContainers: cardContainers });
+
+  // Tier 1: pointer directly over a card chip — most precise, always wins
+  const chipContainers = cardContainers.filter(
+    (c) => !String(c.id).startsWith('sec-zone-') && !String(c.id).startsWith('panel-')
+  );
+  const chipPointer = pointerWithin({ ...args, droppableContainers: chipContainers });
+  if (chipPointer.length > 0) return chipPointer;
+
+  // Tier 2: pointer is over a zone/panel (gap between chips, or panel drop target).
+  // Check whether it's the active card's OWN section zone — if so it's a gap drop
+  // within the same section, and we should fall through to closestCenter instead.
+  const zonePointer = pointerWithin({ ...args, droppableContainers: cardContainers });
+  if (zonePointer.length > 0) {
+    const firstId = String(zonePointer[0].id);
+    // Extract kind + section from the zone id
+    let zoneKind = '';
+    let zoneSection = '';
+    if (firstId.startsWith('sec-zone-we-')) { zoneKind = 'worked_example'; zoneSection = firstId.slice('sec-zone-we-'.length); }
+    else if (firstId.startsWith('sec-zone-rf-')) { zoneKind = 'refresher'; zoneSection = firstId.slice('sec-zone-rf-'.length); }
+    else if (firstId === 'panel-we') { zoneKind = 'worked_example'; zoneSection = ''; }
+    else if (firstId === 'panel-rf') { zoneKind = 'refresher'; zoneSection = ''; }
+
+    const isSameSectionGap = zoneSection === activeSection && zoneKind === activeKind;
+    if (!isSameSectionGap) {
+      // Cross-section or cross-kind zone/panel — use it (enables section-to-section and kind-to-kind drops)
+      return zonePointer;
+    }
+    // Same-section gap: fall through to closestCenter among chips below
+  }
+
+  // Tier 3: pointer not over any droppable, or it was a same-section gap.
+  // Use closestCenter among card chips so the nearest sibling card wins.
+  return closestCenter({ ...args, droppableContainers: chipContainers.length > 0 ? chipContainers : cardContainers });
 };
 
 // ── Sortable card row ──────────────────────────────────────────────────────────
 
 function SortableCardRow({ card, displayIndex, isSelected, onSelect }: { card: CardRow; displayIndex?: number; isSelected: boolean; onSelect: (id: string) => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: card.id,
+    data: { section: card.display_group ?? '', kind: card.content_kind },
+  });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.35 : 1, touchAction: 'none' as const };
   return (
     <div
@@ -1505,9 +1548,9 @@ export default function EditCardsClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level]);
 
-  const fetchCards = useCallback(async () => {
+  const fetchCards = useCallback(async (silent = false) => {
     if (!level || !topic) { setCards([]); setSubgroups([]); setRefresherCards([]); return; }
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({ level, topic });
       if (subgroupFilter) params.set('subgroupId', subgroupFilter);
@@ -1520,7 +1563,7 @@ export default function EditCardsClient() {
       setSubgroups(weJson.subgroups ?? []);
       setSectionOrder(weJson.sectionOrder ?? []);
       setRefresherCards(rfJson.cards ?? []);
-    } finally { setLoading(false); }
+    } finally { if (!silent) setLoading(false); }
   }, [level, topic, subgroupFilter, auth]);
 
   useEffect(() => { fetchCards(); }, [fetchCards]);
@@ -1694,7 +1737,7 @@ export default function EditCardsClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
         body: JSON.stringify({ cardId: activeIdStr, targetSection: tgtSection, sourceOrderedIds: remainSrc.map((c) => c.id), destOrderedIds: newDest.map((c) => c.id) }),
-      }).then((r) => { if (!r.ok) throw new Error(); }).catch(() => fetchCards());
+      }).then((r) => { if (!r.ok) throw new Error(); fetchCards(true); }).catch(() => fetchCards());
 
     } else {
       // Cross-kind card move
