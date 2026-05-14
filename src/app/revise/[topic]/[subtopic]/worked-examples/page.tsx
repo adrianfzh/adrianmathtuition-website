@@ -73,19 +73,41 @@ export default async function Page({
     .eq('topic', canonicalTopic)
     .eq('content_kind', 'worked_example')
     .in('feature', ['both', 'web'])
-    .eq('is_published', true)
-    .order('display_group', { ascending: true, nullsFirst: false })
-    .order('order_index', { ascending: true });
+    .eq('is_published', true);
 
   if (subgroupId !== null && Number.isFinite(subgroupId)) {
     query = query.eq('subgroup_id', subgroupId);
   }
 
-  const { data: cards } = await query;
+  const { data: cardsRaw } = await query;
 
-  if (!cards || cards.length === 0) {
+  if (!cardsRaw || cardsRaw.length === 0) {
     return <EmptyView level={levelLower} topic={canonicalTopic} />;
   }
+
+  // Sort by section order (sections_meta), then subgroup_id, then order_index —
+  // matches the order shown in the Cards Editor.
+  const { data: sectionsMeta } = await supa
+    .from('sections_meta')
+    .select('name, order_index')
+    .eq('level', levelLower.toUpperCase())
+    .eq('topic', canonicalTopic);
+  const sectionOrder: Record<string, number> = Object.fromEntries(
+    (sectionsMeta || []).map((s: { name: string; order_index: number }) => [s.name, s.order_index])
+  );
+  const SECTION_FALLBACK = 9999; // unknown sections sink to the bottom
+  type Card = { id: string; subgroup_id: number; display_group: string | null; order_index: number; card_title: string; content: string; content_kind: string };
+  const cards: Card[] = [...cardsRaw as Card[]].sort((a, b) => {
+    const aSec = a.display_group ? (sectionOrder[a.display_group] ?? SECTION_FALLBACK) : SECTION_FALLBACK;
+    const bSec = b.display_group ? (sectionOrder[b.display_group] ?? SECTION_FALLBACK) : SECTION_FALLBACK;
+    if (aSec !== bSec) return aSec - bSec;
+    // Fallback to alphabetical for unknown sections so behaviour is deterministic
+    if (aSec === SECTION_FALLBACK && a.display_group && b.display_group && a.display_group !== b.display_group) {
+      return a.display_group.localeCompare(b.display_group);
+    }
+    if (a.subgroup_id !== b.subgroup_id) return a.subgroup_id - b.subgroup_id;
+    return (a.order_index ?? 0) - (b.order_index ?? 0);
+  });
 
   const sgIds = [...new Set(cards.map((c: { subgroup_id: number }) => c.subgroup_id))];
   const { data: sgs } = await supa

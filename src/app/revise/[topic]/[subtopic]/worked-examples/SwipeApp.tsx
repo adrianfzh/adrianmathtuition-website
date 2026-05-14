@@ -132,12 +132,6 @@ function DesktopView({ cards, subgroups, level, topic, focusedSubgroupName }: Pr
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-10">
         {groups.map(({ section, cards: gc }) => (
           <section key={section} id={`section-${section}`}>
-            {section && (
-              <div className="flex items-center gap-2 mb-4">
-                <span>📌</span>
-                <h2 className="text-sm font-semibold text-indigo-700 uppercase tracking-wide">{section}</h2>
-              </div>
-            )}
             <div className="space-y-4">
               {gc.map(card => (
                 <article key={card.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -379,11 +373,6 @@ function MobileSwipeView({ cards, subgroups, level, topic, focusedSubgroupName }
                 style={{ maxWidth: 'min(92vw, 600px)', maxHeight: 'calc(100% - 8px)', background: '#FFFFFF', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', overflow: 'hidden' }}
               >
                 <div className="flex-none" style={{ padding: '20px 24px 14px', borderBottom: '1px solid #F0EBE0' }}>
-                  {isFirstInSubgroup && sg && (
-                    <div className="inline-flex items-center gap-1" style={{ background: '#EAF2F8', color: '#2980B9', fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20, marginBottom: 10 }}>
-                      <span>📌</span><span>{sg.name}</span>
-                    </div>
-                  )}
                   <h2 style={{ margin: 0, fontSize: 19, fontWeight: 600, color: '#2C3E50', lineHeight: 1.3 }}>{card.card_title}</h2>
                 </div>
                 <div className="flex-1 overflow-y-auto" style={{ padding: '16px 24px 20px', fontSize: 16, color: '#2C2C2C', lineHeight: 1.65, touchAction: 'pan-y' }} onPointerDown={e => e.stopPropagation()}>
