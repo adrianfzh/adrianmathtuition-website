@@ -41,7 +41,6 @@ export async function GET(req: NextRequest) {
     .eq('level', level)
     .eq('topic', topic)
     .eq('content_kind', kind)
-    .order('subgroup_id', { ascending: true })
     .order('order_index', { ascending: true });
 
   if (subgroupId) cardQuery = cardQuery.eq('subgroup_id', Number(subgroupId));
