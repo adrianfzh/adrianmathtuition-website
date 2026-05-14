@@ -118,20 +118,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const blobUrlLines = blobUrls.length > 0
-      ? '\n\nImage URL(s) for embedding:\n' + blobUrls.map((u, i) => `Image ${i + 1}: ${u}`).join('\n')
+    const blobUrlLines = ''; // URLs are now embedded in textInstruction / blobNote directly
+
+    const blobNote = blobUrls.length > 0
+      ? `\n\nBlob URLs (use these if you need to embed diagrams as images):\n${blobUrls.map((u, i) => `Image ${i + 1}: ${u}`).join('\n')}`
       : '';
 
     const textInstruction = instruction?.trim() ||
       (imageList.length === 1
-        ? `Extract the worked example from this image. Write a complete card:
-- Include the question, all solution steps, and the final answer in markdown + LaTeX.
-- If there is a diagram or figure, embed it using <img src="${blobUrls[0] ?? 'IMAGE_URL'}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> at the correct position in the card (before or after the question, wherever it appears in the original).
-- Use the exact blob URL(s) listed above for images.`
-        : `There are ${imageList.length} images (e.g. multiple pages of the same question). Extract and combine all content into one complete card:
-- Include the question, all solution steps, and the final answer in markdown + LaTeX.
-- If there is a diagram or figure, embed it using <img src="IMAGE_URL" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> at the correct position in the card (before or after the question, wherever it appears in the original).
-- Use the exact blob URL(s) listed above for images.`);
+        ? `Extract the worked example from this image and write a complete card in markdown + LaTeX:
+1. Read ALL text, equations, and steps from the image — treat every part as text to transcribe.
+2. Include the question, all solution steps, and the final answer.
+3. ONLY if there is a geometric diagram or figure (not equations/text), also embed it as <img src="${blobUrls[0] ?? ''}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> at the correct position. Do NOT use an <img> tag for plain equation images — write those as LaTeX instead.`
+        : `There are ${imageList.length} images (e.g. multiple pages of the same question). Read ALL text and equations from EVERY image and combine them into one complete card in markdown + LaTeX:
+1. Transcribe ALL text, equations, and steps from each image in sequence.
+2. Include the full question, all solution steps, and the final answer.
+3. ONLY if an image contains a geometric diagram or figure (not equations/text), embed it as <img src="BLOB_URL" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> using the blob URL listed below. Do NOT use <img> for equation images — write those as LaTeX instead.`);
 
     const textBlock = `Level: ${level ?? ''}
 Topic: ${topic ?? ''}
@@ -145,7 +147,7 @@ Current card content:
 ${currentContent ?? ''}
 \`\`\`
 
-Instruction: ${textInstruction}${blobUrlLines}`;
+Instruction: ${textInstruction}${blobNote}`;
 
     // Build message content — images first (each as its own block), then text
     const imageBlocks = imageList.map(img => ({
