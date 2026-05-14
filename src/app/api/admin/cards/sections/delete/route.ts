@@ -33,6 +33,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Section is implicit — nothing to delete in DB.
+  // Remove from sections_meta so the section doesn't reappear on reload
+  await supa
+    .from('sections_meta')
+    .delete()
+    .eq('level', level)
+    .eq('topic', topic)
+    .eq('name', name);
+
   return NextResponse.json({ ok: true });
 }
