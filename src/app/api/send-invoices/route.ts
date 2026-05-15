@@ -82,7 +82,7 @@ function buildJune2026EmailHtml(invoice: {
     <ul>
       <li><strong>Revision lessons replace regular lessons in June.</strong> The two are mutually exclusive — if you sign up for the June revision sprint, there will be no regular June lessons. You can disregard the attached June invoice; a new separate invoice will be sent for the revision sign-up.</li>
       <li>Regular lessons will resume in July.</li>
-      <li>If you opt out of the revision lessons, then it will be regular lessons in June as usual, and the attached invoice stands.</li>
+      <li>If you prefer not to attend the revision lessons, then it will be regular lessons in June as usual, and the attached invoice stands.</li>
     </ul>
     <p>To sign up: <a href="${waLink}">${waLink}</a></p>` + signOff;
   }
@@ -100,7 +100,7 @@ function buildJune2026EmailHtml(invoice: {
     <ul>
       <li><strong>Revision lessons replace regular lessons in June.</strong> The two are mutually exclusive — if you sign up for the June revision sprint, there will be no regular June lessons. You can disregard the attached June invoice; a new separate invoice will be sent for the revision sign-up.</li>
       <li>Regular lessons will resume in July.</li>
-      <li>If you opt out of the revision lessons, then it will be regular lessons in June as usual, and the attached invoice stands.</li>
+      <li>If you prefer not to attend the revision lessons, then it will be regular lessons in June as usual, and the attached invoice stands.</li>
     </ul>
     <p>To sign up: <a href="${waLink}">${waLink}</a></p>` + signOff;
   }
