@@ -91,5 +91,23 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  return NextResponse.json({ pending: pending.sort((a, b) => b.lessonsCompleted - a.lessonsCompleted) });
+  // Also fetch cash referrals that are applied but not yet marked cash-paid
+  // These are non-current-student referrals where Referral Reward Applied = true
+  // but Referral Cash Paid is not set.
+  const cashFormula = encodeURIComponent(`AND({How Heard}='Referral',{Referral Reward Applied}=TRUE(),NOT({Referral Cash Paid}),{Status}='Active',{Referral Type}!='Current Student')`);
+  const cashPending = await airtableRequestAll('Students',
+    `?filterByFormula=${cashFormula}&fields[]=Student Name&fields[]=Referred By Name&fields[]=Referral Type`
+  );
+  const pendingCash = cashPending.records.map((r: any) => ({
+    studentId: r.id,
+    studentName: r.fields['Student Name'] || '',
+    referrerNameGiven: r.fields['Referred By Name'] || '',
+    referralType: r.fields['Referral Type'] || '',
+    type: 'cash_unpaid',
+  }));
+
+  return NextResponse.json({
+    pending: pending.sort((a, b) => b.lessonsCompleted - a.lessonsCompleted),
+    pendingCash,
+  });
 }

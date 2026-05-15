@@ -1710,7 +1710,8 @@ export default function AdminPage() {
         const res = await fetch('/api/admin-invoices/referral-status', { headers: authHeaders() });
         const data = await res.json();
         const pending = (data.pending || []) as any[];
-        if (!pending.length) return;
+        const pendingCash = (data.pendingCash || []) as any[];
+        if (!pending.length && !pendingCash.length) return;
         const el = document.getElementById('referral-status-banner');
         if (!el) return;
         // Split into 3 groups: no name given, eligible (12+), approaching (8–11)
@@ -1742,9 +1743,37 @@ export default function AdminPage() {
             html += `<div style="margin:3px 0;color:#64748b;">${escHtml(p.studentName)}: ${p.lessonsCompleted}/12 lessons — ${nameNote}</div>`;
           }
         }
+        if (pendingCash.length) {
+          html += `<div style="margin-top:${(noName.length || eligible.length || approaching.length) ? 10 : 0}px;border-top:${(noName.length || eligible.length || approaching.length) ? '1px solid #fcd34d' : 'none'};padding-top:${(noName.length || eligible.length || approaching.length) ? 8 : 0}px;">`;
+          html += `<div style="font-weight:600;color:#92400e;margin-bottom:4px;">💵 Pending cash referral payments ($150 each):</div>`;
+          for (const p of pendingCash) {
+            html += `<div style="margin:4px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="color:#475569;">${escHtml(p.referrerNameGiven || '(no name)')} referred ${escHtml(p.studentName)} (${escHtml(p.referralType)})</span>
+              <button onclick="markReferralCashPaid('${p.studentId}', this)" style="font-size:12px;background:#16a34a;color:#fff;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-weight:600;">✅ Mark as paid</button>
+            </div>`;
+          }
+          html += `</div>`;
+        }
         html += `</div>`;
         el.innerHTML = html;
       } catch { /* non-fatal */ }
+    }
+
+    async function markReferralCashPaid(studentId: string, btn: HTMLButtonElement) {
+      btn.disabled = true;
+      btn.textContent = '⏳…';
+      try {
+        const res = await fetch('/api/admin-invoices/referral-mark-paid', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ studentId }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        btn.textContent = '✅ Paid';
+        btn.style.background = '#94a3b8';
+        btn.closest('div')?.querySelectorAll('span').forEach(s => s.style.textDecoration = 'line-through');
+        setTimeout(() => loadReferralStatus(), 1000);
+      } catch { btn.disabled = false; btn.textContent = '✅ Mark as paid'; }
     }
 
     async function loadAutoSendPauseState() {
@@ -2239,6 +2268,7 @@ export default function AdminPage() {
     w.unapproveAllApproved = unapproveAllApproved;
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
+    w.markReferralCashPaid = markReferralCashPaid;
     w.onPaymentFilter = onPaymentFilter;
     w.onLevelFilter = onLevelFilter;
     w.sendFilteredApproved = sendFilteredApproved;
@@ -2271,7 +2301,7 @@ export default function AdminPage() {
         'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
-        'onPaymentFilter','onLevelFilter','sendFilteredApproved','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
+        'markReferralCashPaid','onPaymentFilter','onLevelFilter','sendFilteredApproved','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias','removeAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
