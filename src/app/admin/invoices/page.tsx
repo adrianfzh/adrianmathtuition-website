@@ -1238,22 +1238,22 @@ export default function AdminPage() {
         return `Dear Parent/Student,\n\nPlease find attached the amended invoice for ${inv.studentName} for ${inv.month} \u2014 ${amount}, due by ${inv.dueDate}.\n\nThis replaces the previously sent invoice. Please disregard the earlier email.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
       }
 
-      // June 2026 \u2014 level-based template preview
+      // June 2026 — level-based template preview (matches buildJune2026EmailHtml)
       if (inv.month === 'June 2026') {
         const lvl = (inv.studentLevel || '').replace(/\s+/g, '').toUpperCase();
-        const base = `Dear Parent/Student,\n\nPlease find attached the invoice for ${inv.studentName} for June 2026 \u2014 ${amount}, due by ${inv.dueDate}.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian\n\n\u2014\u2014\u2014`;
+        const header = `Dear Parent/Student,\n\nPlease find attached the invoice for ${inv.studentName} for June 2026 — ${amount}, due by ${inv.dueDate}.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\n\u2014\u2014\u2014`;
+        const signOff = `\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
         const wa = `https://wa.me/6591397985?text=${encodeURIComponent(`Hi Adrian, I'd like to sign up ${inv.studentName} for the June Holiday Revision Sprint.`)}`;
-        const howItWorks = `\n\nHow it works:\n\u2022 Revision lessons replace regular lessons in June (mutually exclusive).\n\u2022 Missed revision sessions convert to regular makeup lessons.\n\u2022 Payment due before the first lesson. Regular lessons resume in July.\n\u2022 If you opt out, the attached invoice stands.\n\nTo sign up: ${wa}`;
+        const howItWorks = `\n\nHow it works:\n\u2022 Revision lessons replace regular lessons in June. The two are mutually exclusive \u2014 if you sign up for the June revision sprint, you don't pay for regular June lessons. You can disregard the attached June invoice; a new separate invoice will be sent to reflect the revision sign-up.\n\u2022 Payment due before the first lesson. Regular lessons resume in July.\n\u2022 If you opt out, the attached invoice stands.\n\nTo sign up: ${wa}`;
         if (lvl === 'SEC4' || lvl === 'S4') {
-          return base + `\n\n\ud83c\udfc3 June Holiday Revision Sprint \u2014 Sec 4 (EM & AM)\n\nEM: Every Tue & Fri, 10am\u201312pm (2\u201326 Jun) \u2014 8 lessons, $500\nAM: Every Tue & Fri, 1pm\u20133pm (2\u201326 Jun) \u2014 8 lessons, $500\n\n$31.25/lesson-hour \u2014 focused exam-prep format.\nSchedule: adrianmathtuition.com/june-revision/sec4` + howItWorks;
+          return header + `\n\n\ud83c\udfc3 June Holiday Revision Sprint \u2014 Sec 4 (EM & AM)\n\nI'm running a focused 4-week revision sprint over the June holidays, covering the major topics in the Sec 4 syllabus. Each session is split into concept teaching followed by guided practice.\n\nEM: Every Tue & Fri, 10am\u201312pm (2\u201326 Jun) \u2014 8 lessons, $500\nAM: Every Tue & Fri, 1pm\u20133pm (2\u201326 Jun) \u2014 8 lessons, $500\n\nFull revision schedule: adrianmathtuition.com/june-revision/sec4\n\nThis is especially valuable for Sec 4 students given how quickly the pace picks up after June. Highly recommended for students to prepare for their O Levels.` + howItWorks + signOff;
         }
         if (lvl === 'JC2' || lvl === 'J2') {
-          return base + `\n\n\ud83c\udfc3 June Holiday Revision Sprint \u2014 JC2 H2 Mathematics\n\nEvery Mon & Thu, 12pm\u20132.30pm (1\u201325 Jun) \u2014 8 lessons, $600\n\n$30/lesson-hour \u2014 focused exam-prep format.\nSchedule: adrianmathtuition.com/june-revision/jc2` + howItWorks;
+          return header + `\n\n\ud83c\udfc3 June Holiday Revision Sprint \u2014 JC2 H2 Mathematics\n\nI'm running a focused 4-week revision sprint over the June holidays for JC2 students preparing for A-Levels, covering the major topics in the H2 Math syllabus \u2014 Functions, Calculus, Vectors, Complex Numbers, Probability, and Distributions. Each session combines concept consolidation in the first half with exam-style guided practice in the second.\n\nEvery Mon & Thu, 12pm\u20132.30pm (1\u201325 Jun) \u2014 8 lessons, $600\n\nFull revision schedule: adrianmathtuition.com/june-revision/jc2\n\nHighly recommended for students to prepare for their A Levels.` + howItWorks + signOff;
         }
-        // Junior levels
-        return base + `\n\n\ud83c\udfd6\ufe0f June Holidays \u2014 Flexible Attendance (Policy Update)\n\nJune is a flexible-attendance month \u2014 lessons are optional if you have travel plans or would like a break. Fees will be prorated based on lessons attended, with the adjustment reflected in the July invoice. Just give me a heads up in advance.`;
+        return header + `\n\n\ud83c\udfd6\ufe0f June Holidays \u2014 Flexible Attendance (Policy Update)\n\nJune is a flexible-attendance month \u2014 lessons are optional if you have travel plans or would like a break. Fees will be prorated based on lessons attended, with the adjustment reflected in the July invoice. Just give me a heads up in advance.` + signOff;
       }
-
+      
       const welcomeLine = isFirstInvoice ? `Welcome to Adrian's Math Tuition! I'm glad to have ${inv.studentName} on board.\n\n` : '';
       return `Dear Parent/Student,\n\n${welcomeLine}Please find attached the invoice for ${inv.studentName} for ${inv.month} \u2014 ${amount}, due by ${inv.dueDate}.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
     }
