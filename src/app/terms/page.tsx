@@ -114,7 +114,7 @@ const policies = [
           Just give Adrian a heads up in advance.
         </p>
         <p style={{ marginTop: '1em' }}>
-          💡 <em>A note on consistency:</em> We encourage students to attend regular lessons where possible, even during
+          💡 <em>A note on consistency:</em>{' '}We encourage students to attend regular lessons where possible, even during
           holidays. Steady, consistent learning is far more effective than trying to catch up everything later. This is
           especially important during the June holidays — the pace after June tends to pick up significantly, and
           end-of-year exams come soon after. It&apos;s always easier to learn ahead than to play catch-up.
