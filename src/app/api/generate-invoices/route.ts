@@ -321,8 +321,11 @@ export async function POST(req: NextRequest) {
         if (prevInvoice) {
           const finalAmt = prevInvoice.fields['Final Amount'] || 0;
           const amountPaid = prevInvoice.fields['Amount Paid'] || 0;
-          // Always compute from (final - paid). Handles: unpaid (0 paid), partial, full.
-          const outstanding = Math.max(0, finalAmt - amountPaid);
+          const isPaid = prevInvoice.fields['Is Paid'] || false;
+          // If Is Paid is ticked, treat as fully settled regardless of Amount Paid field
+          // (Amount Paid may be $0 if payment was recorded via the Airtable checkbox directly
+          // rather than through the admin UI, which always writes both fields together).
+          const outstanding = isPaid ? 0 : Math.max(0, finalAmt - amountPaid);
           if (outstanding > 0) {
             carryOverLineItems.push({
               description: `Outstanding balance \u2014 ${prevMonthLabel}`,
