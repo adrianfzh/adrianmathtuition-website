@@ -101,19 +101,24 @@ export async function POST(req: NextRequest) {
 
   try {
     let invoiceRecords: any[];
-    const isCronPath = !singleRecordId && !(Array.isArray(recordIds) && recordIds.length);
+    // True cron: called by Vercel scheduler (x-vercel-cron header) or CRON_SECRET
+    // Manual send from admin UI uses ADMIN_PASSWORD — pause flag should NOT block it
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = req.headers.get('authorization');
+    const isActualCron = req.headers.get('x-vercel-cron') === '1' ||
+      !!(cronSecret && authHeader === `Bearer ${cronSecret}`);
 
     if (Array.isArray(recordIds) && recordIds.length) {
       invoiceRecords = await Promise.all(recordIds.map((id: string) => at('Invoices', `/${id}`)));
     } else if (singleRecordId) {
       invoiceRecords = [await at('Invoices', `/${singleRecordId}`)];
     } else {
-      // Cron path — check pause flag before sending
+      // Cron path — check pause flag ONLY for actual cron calls, not manual admin sends
       const settingsData = await airtableRequest('Settings',
         `?filterByFormula=${encodeURIComponent(`{Setting Name}='pause_auto_send'`)}&maxRecords=1`
       ).catch(() => ({ records: [] }));
       const pauseRecord = settingsData.records?.[0];
-      if (pauseRecord?.fields?.['Value'] === 'true') {
+      if (isActualCron && pauseRecord?.fields?.['Value'] === 'true') {
         console.log('[send-invoices] auto-send paused by admin — skipping cron send');
         // Auto-clear the flag after it fires so it doesn't block next month
         airtableRequest('Settings', `/${pauseRecord.id}`, {
