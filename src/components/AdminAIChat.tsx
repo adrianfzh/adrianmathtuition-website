@@ -30,8 +30,12 @@ interface AdminAIChatProps {
   title: string;
   accentColor?: string;
   placeholder?: string;
+  // FAB variant
   fabBottom?: number;
   fabTop?: number;
+  // Bottom-bar variant
+  variant?: 'fab' | 'bottom-bar';
+  barBottom?: number; // px above the bar (e.g. 48 to clear legend tabs)
 }
 
 // ─── Action executor ──────────────────────────────────────────────────────────
@@ -130,8 +134,11 @@ export default function AdminAIChat({
   placeholder = 'Ask me anything…',
   fabBottom = 24,
   fabTop,
+  variant = 'fab',
+  barBottom = 48,
 }: AdminAIChatProps) {
   const [open, setOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -165,6 +172,7 @@ export default function AdminAIChat({
     setMessages(prev => [...prev, userMsg, assistantMsg]);
     setInput('');
     setStreaming(true);
+    if (variant === 'bottom-bar') setPanelOpen(true);
 
     // Build conversation history for API (exclude current empty assistant msg)
     const history = [...messages, userMsg].map(m => ({
@@ -564,6 +572,68 @@ export default function AdminAIChat({
       padding: '0 24px',
       gap: 8,
     },
+    // ── Bottom-bar variant styles ──────────────────────────────────────────
+    askBar: {
+      position: 'fixed' as const,
+      bottom: barBottom,
+      left: 0,
+      right: 0,
+      background: '#fff',
+      borderTop: '1px solid #e2e8f0',
+      padding: '8px 12px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      zIndex: 9000,
+      boxShadow: '0 -2px 8px rgba(0,0,0,0.06)',
+    },
+    askInput: {
+      flex: 1,
+      border: '1px solid #e2e8f0',
+      borderRadius: 20,
+      padding: '8px 14px',
+      fontSize: 14,
+      outline: 'none',
+      background: '#f8fafc',
+      color: '#0f172a',
+      fontFamily: 'inherit',
+    },
+    askSendBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: '50%',
+      background: accentColor,
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+      color: '#fff',
+      fontSize: 16,
+    },
+    barPanel: {
+      position: 'fixed' as const,
+      bottom: barBottom + 57,
+      left: 0,
+      right: 0,
+      height: 'min(55vh, 420px)',
+      background: '#fff',
+      borderTop: '1px solid #e2e8f0',
+      boxShadow: '0 -4px 20px rgba(0,0,0,0.10)',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      zIndex: 9001,
+      animation: 'aiChatSlideUp 0.18s ease',
+    },
+    barPanelHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '10px 14px',
+      borderBottom: '1px solid #f1f5f9',
+      flexShrink: 0,
+    },
   };
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -718,6 +788,82 @@ export default function AdminAIChat({
             </button>
           </div>
         </div>
+      )}
+
+      {/* ── Bottom-bar variant ─────────────────────────────────────────────── */}
+      {variant === 'bottom-bar' && (
+        <>
+          {/* Slide-up conversation panel */}
+          {panelOpen && messages.length > 0 && (
+            <div style={s.barPanel}>
+              <div style={s.barPanelHeader}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>✨ {title}</span>
+                <button
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#94a3b8', lineHeight: 1, padding: '0 2px' }}
+                  onClick={() => { setPanelOpen(false); abortRef.current?.abort(); }}
+                >✕</button>
+              </div>
+              <div style={s.messages}>
+                {messages.map((msg, i) => (
+                  <React.Fragment key={i}>
+                    <div style={msg.role === 'user' ? s.userBubble : s.assistantBubble}>
+                      {msg.content}
+                      {streaming && i === messages.length - 1 && msg.role === 'assistant' && (
+                        <span style={s.cursor} />
+                      )}
+                    </div>
+                    {msg.actionPlan && msg.actionState !== 'cancelled' && msg.actionState !== 'done' && (
+                      <div style={s.actionCard}>
+                        <div style={s.actionSummary}>📋 {msg.actionPlan.summary}</div>
+                        <ul style={s.actionList}>
+                          {msg.actionPlan.actions.map(action => (
+                            <li key={action.id} style={s.actionListItem}>
+                              <span style={{ color: accentColor, fontWeight: 700 }}>→</span>
+                              {action.label}
+                            </li>
+                          ))}
+                        </ul>
+                        {msg.actionState === 'pending' && (
+                          <div style={s.actionBtns}>
+                            <button style={s.confirmBtn} onClick={() => handleConfirm(i)}>Confirm</button>
+                            <button style={s.cancelBtn} onClick={() => handleCancel(i)}>Cancel</button>
+                          </div>
+                        )}
+                        {msg.actionState === 'executing' && (
+                          <div style={s.executingText}>
+                            <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid #e2e8f0', borderTopColor: accentColor, borderRadius: '50%', animation: 'aiChatSpin 0.7s linear infinite' }} />
+                            Executing…
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </React.Fragment>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+          )}
+
+          {/* Sticky ask bar */}
+          <div style={s.askBar}>
+            <input
+              style={s.askInput}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+              onFocus={() => { if (messages.length > 0) setPanelOpen(true); }}
+              placeholder={streaming ? 'Thinking…' : placeholder}
+              disabled={streaming}
+            />
+            <button
+              style={{ ...s.askSendBtn, opacity: streaming || !input.trim() ? 0.4 : 1 }}
+              onClick={send}
+              disabled={streaming || !input.trim()}
+            >
+              ↑
+            </button>
+          </div>
+        </>
       )}
     </>
   );
