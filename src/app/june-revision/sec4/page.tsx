@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'June Holidays Revision 2026 – Sec 4 EM & AM | Adrian\'s Math Tuition',
+  title: 'June Holidays Revision 2026 — Sec 4 EM & AM | Adrian\'s Math Tuition',
   description: 'June 2026 holiday revision schedule for Secondary 4 E Math (10am–12pm) and A Math (1–3pm).',
 };
 
@@ -14,16 +14,16 @@ const HEADER_BG = '#1e3a5f';
 type Week = { label: string; tue: string; fri: string };
 
 const EM_WEEKS: Week[] = [
-  { label: 'Week 1 – 2 & 5 Jun',   tue: 'Algebra + Indices',                     fri: 'Coordinate Geometry + Graphs' },
-  { label: 'Week 2 – 9 & 12 Jun',  tue: 'Trigonometry + Congruency & Similarity', fri: 'Circle Properties + Circular Measure' },
-  { label: 'Week 3 – 16 & 19 Jun', tue: 'Mensuration + Real World Qns',               fri: 'Number Patterns + Proportion + Polygons' },
+  { label: 'Week 1 — 2 & 5 Jun',   tue: 'Algebra + Indices',                     fri: 'Coordinate Geometry + Graphs' },
+  { label: 'Week 2 — 9 & 12 Jun',  tue: 'Trigonometry + Congruency & Similarity', fri: 'Circle Properties + Circular Measure' },
+  { label: 'Week 3 — 16 & 19 Jun', tue: 'Mensuration + Real World Qns',               fri: 'Number Patterns + Proportion + Polygons' },
 ];
 
 const AM_WEEKS: Week[] = [
-  { label: 'Week 1 – 2 & 5 Jun',   tue: 'Quadratic Functions + Surds',                     fri: 'Indices & Logarithms' },
-  { label: 'Week 2 – 9 & 12 Jun',  tue: 'Coordinate Geometry & Circles',                    fri: 'Linear Law + Binomial Theorem' },
-  { label: 'Week 3 – 16 & 19 Jun', tue: 'Polynomials & Partial Fractions + Plane Geometry', fri: 'Trigonometry' },
-  { label: 'Week 4 – 23 & 26 Jun', tue: 'Differentiation and Applications',                  fri: 'Integration and Applications' },
+  { label: 'Week 1 — 2 & 5 Jun',   tue: 'Quadratic Functions + Surds',                     fri: 'Indices & Logarithms' },
+  { label: 'Week 2 — 9 & 12 Jun',  tue: 'Coordinate Geometry & Circles',                    fri: 'Linear Law + Binomial Theorem' },
+  { label: 'Week 3 — 16 & 19 Jun', tue: 'Polynomials & Partial Fractions + Plane Geometry', fri: 'Trigonometry' },
+  { label: 'Week 4 — 23 & 26 Jun', tue: 'Differentiation and Applications',                  fri: 'Integration and Applications' },
 ];
 
 function CalendarTable({ weeks, color, bg }: { weeks: Week[]; color: string; bg: string }) {
@@ -64,7 +64,7 @@ export default function JuneRevisionSec4Page() {
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Adrian's Math Tuition</div>
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, lineHeight: 1.2 }}>June Holidays Revision 2026</h1>
         <div style={{ marginTop: 8, fontSize: 15, color: 'rgba(255,255,255,0.75)' }}>Secondary 4 · E Math &amp; A Math</div>
-        <div style={{ marginTop: 6, fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>2 June – 26 June 2026</div>
+        <div style={{ marginTop: 6, fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>2 June — 26 June 2026</div>
       </div>
 
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 20px 60px' }}>
@@ -75,7 +75,7 @@ export default function JuneRevisionSec4Page() {
             <div style={{ width: 4, height: 32, background: EM_COLOR, borderRadius: 2, flexShrink: 0 }} />
             <div>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: EM_COLOR }}>E Math (EM)</h2>
-              <div style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>Every Tuesday &amp; Friday · <strong>10am – 12pm</strong></div>
+              <div style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>Every Tuesday &amp; Friday · <strong>10am — 12pm</strong></div>
             </div>
           </div>
           <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
@@ -89,7 +89,7 @@ export default function JuneRevisionSec4Page() {
             <div style={{ width: 4, height: 32, background: AM_COLOR, borderRadius: 2, flexShrink: 0 }} />
             <div>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: AM_COLOR }}>A Math (AM)</h2>
-              <div style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>Every Tuesday &amp; Friday · <strong>1pm – 3pm</strong></div>
+              <div style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>Every Tuesday &amp; Friday · <strong>1pm — 3pm</strong></div>
             </div>
           </div>
           <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>

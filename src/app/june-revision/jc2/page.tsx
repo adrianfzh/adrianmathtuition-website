@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'June Holidays Revision 2026 – JC2 H2 Math | Adrian\'s Math Tuition',
+  title: 'June Holidays Revision 2026 — JC2 H2 Math | Adrian\'s Math Tuition',
   description: 'June 2026 holiday revision schedule for JC2 H2 Mathematics (12pm–2.30pm).',
 };
 
@@ -12,10 +12,10 @@ const HEADER_BG = '#1e3a5f';
 type JCWeek = { label: string; mon: string; thu: string };
 
 const JC_WEEKS: JCWeek[] = [
-  { label: 'Week 1 – 1 & 4 Jun',   mon: 'Graphing Techniques + Functions',                                     thu: 'APGP + Series & Sequences' },
-  { label: 'Week 2 – 8 & 11 Jun',  mon: 'Differentiation Techniques and Applications',                         thu: 'Integration Techniques and Applications + Differential Equations' },
-  { label: 'Week 3 – 15 & 18 Jun', mon: 'Vectors',                                                              thu: 'Complex Numbers + P&C' },
-  { label: 'Week 4 – 22 & 25 Jun', mon: 'Probability + DRV',                                                    thu: 'Binomial + Normal + Sampling Distributions' },
+  { label: 'Week 1 — 1 & 4 Jun',   mon: 'Graphing Techniques + Functions',                                     thu: 'APGP + Series & Sequences' },
+  { label: 'Week 2 — 8 & 11 Jun',  mon: 'Differentiation Techniques and Applications',                         thu: 'Integration Techniques and Applications + Differential Equations' },
+  { label: 'Week 3 — 15 & 18 Jun', mon: 'Vectors',                                                              thu: 'Complex Numbers + P&C' },
+  { label: 'Week 4 — 22 & 25 Jun', mon: 'Probability + DRV',                                                    thu: 'Binomial + Normal + Sampling Distributions' },
 ];
 
 export default function JuneRevisionJC2Page() {
@@ -26,7 +26,7 @@ export default function JuneRevisionJC2Page() {
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Adrian's Math Tuition</div>
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, lineHeight: 1.2 }}>June Holidays Revision 2026</h1>
         <div style={{ marginTop: 8, fontSize: 15, color: 'rgba(255,255,255,0.75)' }}>JC2 · H2 Mathematics</div>
-        <div style={{ marginTop: 6, fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>1 June – 25 June 2026</div>
+        <div style={{ marginTop: 6, fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>1 June — 25 June 2026</div>
       </div>
 
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 20px 60px' }}>
@@ -37,7 +37,7 @@ export default function JuneRevisionJC2Page() {
             <div style={{ width: 4, height: 32, background: JC_COLOR, borderRadius: 2, flexShrink: 0 }} />
             <div>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: JC_COLOR }}>H2 Mathematics (JC)</h2>
-              <div style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>Every Monday &amp; Thursday · <strong>12pm – 2.30pm</strong></div>
+              <div style={{ fontSize: 14, color: '#64748b', marginTop: 2 }}>Every Monday &amp; Thursday · <strong>12pm — 2.30pm</strong></div>
             </div>
           </div>
           <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
