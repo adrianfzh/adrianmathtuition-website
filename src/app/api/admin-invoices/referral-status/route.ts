@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   // Count completed lessons in JS (can't filter linked records by ID in Airtable)
   const allCompleted = await airtableRequestAll('Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Status}='Completed'`)}&fields[]=Student`
+    `?filterByFormula=${encodeURIComponent(`AND({Status}='Completed',{Type}!='Trial')`)}&fields[]=Student`
   );
   const lessonsByStudent: Record<string, number> = {};
   for (const r of allCompleted.records) {

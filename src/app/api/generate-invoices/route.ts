@@ -439,7 +439,7 @@ export async function POST(req: NextRequest) {
           // Count completed lessons for this referred student.
           // NOTE: Cannot use {Student}='recXXX' on linked record fields — filter in JS instead.
           const lessonsData = await airtableRequestAll('Lessons',
-            `?filterByFormula=${encodeURIComponent(`{Status}='Completed'`)}&fields[]=Student`
+            `?filterByFormula=${encodeURIComponent(`AND({Status}='Completed',{Type}!='Trial')`)}&fields[]=Student&fields[]=Type`
           );
           const completedCount = lessonsData.records.filter(
             (r: any) => r.fields['Student']?.[0] === student.id
