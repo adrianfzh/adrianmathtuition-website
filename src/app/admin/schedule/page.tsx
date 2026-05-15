@@ -2930,7 +2930,7 @@ export default function SchedulePage() {
         title="Schedule Assistant"
         accentColor="#1e3a5f"
         placeholder="e.g. Mark all today's lessons completed. Who is absent this week?"
-        fabBottom={90}
+        fabTop={16}
       />
     </>
   );
