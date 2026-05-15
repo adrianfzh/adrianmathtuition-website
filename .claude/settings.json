@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(fly logs *)",
+      "Bash(fly status *)",
+      "Bash(fly machine list *)",
+      "Bash(node --check *)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_Preview__preview_screenshot",
+      "mcp__Claude_Preview__preview_list"
+    ]
+  }
+}
