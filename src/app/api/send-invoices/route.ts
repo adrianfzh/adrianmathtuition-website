@@ -77,7 +77,7 @@ function buildJune2026EmailHtml(invoice: {
       <li><strong>AM:</strong> Every Tue &amp; Fri, 1pm–3pm (2–26 Jun) — 8 lessons, $500</li>
     </ul>
     <p>📅 Full revision schedule: <a href="https://www.adrianmathtuition.com/june-revision/sec4">adrianmathtuition.com/june-revision/sec4</a></p>
-    <p>I'd strongly recommend students attend if they can.</p>
+    <p>I'd strongly recommend students attend if they can as the revision sprint gives comprehensive revision coverage on the major topics tested.</p>
     <p><strong>How it works:</strong></p>
     <ul>
       <li><strong>Revision lessons replace regular lessons in June.</strong> The two are mutually exclusive — if you sign up for the June revision sprint, there will be no regular June lessons. You can disregard the attached June invoice; a new separate invoice will be sent for the revision sign-up.</li>
@@ -95,7 +95,7 @@ function buildJune2026EmailHtml(invoice: {
       <li>Every Mon &amp; Thu, 12pm–2.30pm (1–25 Jun) — 8 lessons, $600</li>
     </ul>
     <p>📅 Full revision schedule: <a href="https://www.adrianmathtuition.com/june-revision/jc2">adrianmathtuition.com/june-revision/jc2</a></p>
-    <p>I'd strongly recommend students attend if they can.</p>
+    <p>I'd strongly recommend students attend if they can as the revision sprint gives comprehensive revision coverage on the major topics tested.</p>
     <p><strong>How it works:</strong></p>
     <ul>
       <li><strong>Revision lessons replace regular lessons in June.</strong> The two are mutually exclusive — if you sign up for the June revision sprint, there will be no regular June lessons. You can disregard the attached June invoice; a new separate invoice will be sent for the revision sign-up.</li>
