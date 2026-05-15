@@ -15,7 +15,7 @@ const JC_WEEKS: JCWeek[] = [
   { label: 'Week 1 · 1 & 4 Jun',   mon: 'Graphing Techniques / Functions', thu: 'APGP / Series & Sequences' },
   { label: 'Week 2 · 8 & 11 Jun',  mon: 'Differentiation',                  thu: 'Integration' },
   { label: 'Week 3 · 15 & 18 Jun', mon: 'Vectors',                           thu: 'Complex Numbers / P&C' },
-  { label: 'Week 4 · 22 & 25 Jun', mon: 'Probability / DRV',                 thu: 'Binomial / Normal / Sampling' },
+  { label: 'Week 4 · 22 & 25 Jun', mon: 'Probability / DRV',                 thu: 'Binomial / Normal / Sampling Distributions' },
 ];
 
 export default function JuneRevisionJC2Page() {
