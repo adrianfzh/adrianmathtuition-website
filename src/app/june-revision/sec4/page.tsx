@@ -101,12 +101,7 @@ export default function JuneRevisionSec4Page() {
         {/* Notes */}
         <div style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', border: '1px solid #e2e8f0', fontSize: 14, color: '#475569', lineHeight: 1.7 }}>
           <strong style={{ color: '#0f172a' }}>Notes</strong>
-          <ul style={{ margin: '8px 0 0 0', paddingLeft: 20 }}>
-            <li>1st hour will be teaching concepts, 2nd hour will be practice</li>
-            <li>Classes are held at 203 Hougang Street 21, #03-51</li>
-            <li>Bring your school notes and calculator</li>
-            <li>For enquiries, message Adrian at <strong>@adriannhz</strong> on Telegram</li>
-          </ul>
+          <p style={{ margin: '8px 0 0 0', lineHeight: 1.6 }}>Each session is structured as concept teaching in the first half, followed by guided practice in the second half.</p>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#94a3b8' }}>
