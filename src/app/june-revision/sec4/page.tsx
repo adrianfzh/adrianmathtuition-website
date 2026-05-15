@@ -14,16 +14,16 @@ const HEADER_BG = '#1e3a5f';
 type Week = { label: string; tue: string; fri: string };
 
 const EM_WEEKS: Week[] = [
-  { label: 'Week 1 · 2 & 5 Jun',   tue: 'Algebra',                               fri: 'Coordinate Geometry / Graphs' },
-  { label: 'Week 2 · 9 & 12 Jun',  tue: 'Trigonometry / Congruency & Similarity', fri: 'Circles / Mensuration' },
+  { label: 'Week 1 · 2 & 5 Jun',   tue: 'Algebra',                               fri: 'Coordinate Geometry + Graphs' },
+  { label: 'Week 2 · 9 & 12 Jun',  tue: 'Trigonometry + Congruency & Similarity', fri: 'Circles + Mensuration' },
   { label: 'Week 3 · 16 & 19 Jun', tue: 'Math In Real World Context',             fri: 'Geometry' },
   { label: 'Week 4 · 23 & 26 Jun', tue: 'Arithmetic',                             fri: 'Practice Paper' },
 ];
 
 const AM_WEEKS: Week[] = [
-  { label: 'Week 1 · 2 & 5 Jun',   tue: 'Quadratic Functions / Surds',                     fri: 'Indices & Logarithms' },
-  { label: 'Week 2 · 9 & 12 Jun',  tue: 'Coordinate Geometry & Circles',                    fri: 'Linear Law / Binomial Theorem' },
-  { label: 'Week 3 · 16 & 19 Jun', tue: 'Polynomials & Partial Fractions / Plane Geometry', fri: 'Trigonometry' },
+  { label: 'Week 1 · 2 & 5 Jun',   tue: 'Quadratic Functions + Surds',                     fri: 'Indices & Logarithms' },
+  { label: 'Week 2 · 9 & 12 Jun',  tue: 'Coordinate Geometry & Circles',                    fri: 'Linear Law + Binomial Theorem' },
+  { label: 'Week 3 · 16 & 19 Jun', tue: 'Polynomials & Partial Fractions + Plane Geometry', fri: 'Trigonometry' },
   { label: 'Week 4 · 23 & 26 Jun', tue: 'Differentiation',                                  fri: 'Integration' },
 ];
 
