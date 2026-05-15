@@ -1713,12 +1713,22 @@ export default function AdminPage() {
         if (!pending.length) return;
         const el = document.getElementById('referral-status-banner');
         if (!el) return;
-        const eligible = pending.filter((p: any) => p.eligible);
+        // Split into 3 groups: no name given, eligible (12+), approaching (8–11)
+        const noName = pending.filter((p: any) => p.eligible && !p.referrerNameGiven);
+        const eligible = pending.filter((p: any) => p.eligible && p.referrerNameGiven);
         const approaching = pending.filter((p: any) => !p.eligible);
+        if (!noName.length && !eligible.length && !approaching.length) return;
         let html = `<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;">
           <div style="font-weight:700;color:#c2410c;margin-bottom:8px;">🎁 Referral Rewards</div>`;
+        if (noName.length) {
+          html += `<div style="font-weight:600;color:#b45309;margin-bottom:4px;">⚠️ Completed 12 lessons but NO referrer name given — follow up to find out who referred them:</div>`;
+          for (const p of noName) {
+            html += `<div style="margin:3px 0;color:#92400e;background:#fef3c7;border-radius:4px;padding:3px 8px;display:inline-block;margin-right:4px;">${escHtml(p.studentName)} (${p.lessonsCompleted} lessons) — no referrer recorded</div>`;
+          }
+          html += `<div style="margin-top:4px;"></div>`;
+        }
         if (eligible.length) {
-          html += `<div style="font-weight:600;color:#92400e;margin-bottom:4px;">Ready to apply on next invoice generation (12+ lessons):</div>`;
+          html += `<div style="font-weight:600;color:#92400e;margin-top:${noName.length ? 8 : 0}px;margin-bottom:4px;">Ready to apply on next invoice generation (12+ lessons):</div>`;
           for (const p of eligible) {
             const conf = p.matchConfidence === 'exact' ? '✅' : p.matchConfidence === 'fuzzy' ? '⚠️ fuzzy match' : '❌ no match';
             const referrer = p.matchedReferrer ? `→ <strong>${escHtml(p.matchedReferrer)}</strong> ${conf}` : `→ <span style="color:#dc2626">cannot match "${escHtml(p.referrerNameGiven)}"</span> ❌`;
@@ -1728,7 +1738,8 @@ export default function AdminPage() {
         if (approaching.length) {
           html += `<div style="font-weight:600;color:#92400e;margin-top:8px;margin-bottom:4px;">Approaching (8–11 lessons):</div>`;
           for (const p of approaching) {
-            html += `<div style="margin:3px 0;color:#64748b;">${escHtml(p.studentName)}: ${p.lessonsCompleted}/12 lessons — referred by "${escHtml(p.referrerNameGiven)}"</div>`;
+            const nameNote = p.referrerNameGiven ? `referred by "${escHtml(p.referrerNameGiven)}"` : `<span style="color:#d97706">no referrer name recorded</span>`;
+            html += `<div style="margin:3px 0;color:#64748b;">${escHtml(p.studentName)}: ${p.lessonsCompleted}/12 lessons — ${nameNote}</div>`;
           }
         }
         html += `</div>`;

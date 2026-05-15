@@ -49,6 +49,20 @@ export async function GET(req: NextRequest) {
 
     let matchedName = '';
     let matchConfidence = 'none';
+    // No name given: flag for follow-up (show in banner even without matching)
+    if (referralType === 'Current Student' && !referrerName) {
+      pending.push({
+        studentId: s.id,
+        studentName: s.fields['Student Name'] || '',
+        referrerNameGiven: '',
+        referralType,
+        lessonsCompleted: count,
+        eligible: count >= 12,
+        matchedReferrer: '',
+        matchConfidence: 'none',
+      });
+      continue;
+    }
     if (referralType === 'Current Student' && referrerName) {
       const nl = referrerName.toLowerCase().trim();
       for (const a of allActive.records) {
