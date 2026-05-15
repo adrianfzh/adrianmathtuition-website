@@ -24,7 +24,7 @@ const AM_WEEKS: Week[] = [
   { label: 'Week 1 · 2 & 5 Jun',   tue: 'Quadratic Functions + Surds',                     fri: 'Indices & Logarithms' },
   { label: 'Week 2 · 9 & 12 Jun',  tue: 'Coordinate Geometry & Circles',                    fri: 'Linear Law + Binomial Theorem' },
   { label: 'Week 3 · 16 & 19 Jun', tue: 'Polynomials & Partial Fractions + Plane Geometry', fri: 'Trigonometry' },
-  { label: 'Week 4 · 23 & 26 Jun', tue: 'Differentiation',                                  fri: 'Integration' },
+  { label: 'Week 4 · 23 & 26 Jun', tue: 'Differentiation and Applications',                  fri: 'Integration and Applications' },
 ];
 
 function CalendarTable({ weeks, color, bg }: { weeks: Week[]; color: string; bg: string }) {
