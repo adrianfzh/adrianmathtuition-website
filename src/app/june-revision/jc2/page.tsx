@@ -12,10 +12,10 @@ const HEADER_BG = '#1e3a5f';
 type JCWeek = { label: string; mon: string; thu: string };
 
 const JC_WEEKS: JCWeek[] = [
-  { label: 'Week 1 — 1 & 4 Jun',   mon: 'Graphing Techniques + Functions',                                     thu: 'APGP + Series & Sequences' },
-  { label: 'Week 2 — 8 & 11 Jun',  mon: 'Differentiation Techniques and Applications',                         thu: 'Integration Techniques and Applications + Differential Equations' },
-  { label: 'Week 3 — 15 & 18 Jun', mon: 'Vectors',                                                              thu: 'Complex Numbers + P&C' },
-  { label: 'Week 4 — 22 & 25 Jun', mon: 'Probability + DRV',                                                    thu: 'Binomial + Normal + Sampling Distributions' },
+  { label: 'Week 1 – Jun 1 & 4',   mon: 'Graphing Techniques + Functions',                                     thu: 'APGP + Series & Sequences' },
+  { label: 'Week 2 – Jun 8 & 11',  mon: 'Differentiation Techniques and Applications',                         thu: 'Integration Techniques and Applications + Differential Equations' },
+  { label: 'Week 3 – Jun 15 & 18', mon: 'Vectors',                                                              thu: 'Complex Numbers + P&C' },
+  { label: 'Week 4 – Jun 22 & 25', mon: 'Probability + DRV',                                                    thu: 'Binomial + Normal + Sampling Distributions' },
 ];
 
 export default function JuneRevisionJC2Page() {
