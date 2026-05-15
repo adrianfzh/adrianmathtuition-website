@@ -912,9 +912,15 @@ export default function AdminPage() {
       const amendForm = renderAmendForm(inv);
       const cardClass = isDraft ? '' : isApproved ? ' approved' : ' sent';
 
-      const aliasDisplayHtml = inv.paymentAlias
-        ? `<span class="alias-label">Pays as:</span><span class="alias-value">${escHtml(inv.paymentAlias)}</span><button class="alias-edit-btn" onclick="editAlias('${inv.id}')">✏️ Edit</button>`
-        : `<span class="alias-label">Pays as:</span><button class="alias-edit-btn" onclick="editAlias('${inv.id}')" style="color:#1e40af;border-color:#bfdbfe;background:#eff6ff;">+ Set payee name</button>`;
+      // Support multiple payer names stored comma-separated
+      const aliases = inv.paymentAlias ? inv.paymentAlias.split(',').map((a: string) => a.trim()).filter(Boolean) : [];
+      const aliasTags = aliases.map((a: string, i: number) =>
+        `<span style="display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:2px 8px;font-size:14px;font-weight:600;color:#0f172a;">${escHtml(a)}<button onclick="removeAlias('${inv.id}','${inv.studentId}',${i})" title="Remove" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:13px;padding:0 0 0 2px;line-height:1;">✕</button></span>`
+      ).join(' ');
+      const aliasDisplayHtml = `<span class="alias-label">Pays as:</span>${aliasTags}
+        <button class="alias-edit-btn" onclick="editAlias('${inv.id}')" style="${aliases.length ? '' : 'color:#1e40af;border-color:#bfdbfe;background:#eff6ff;'}">
+          ${aliases.length ? '+ Add name' : '+ Set payee name'}
+        </button>`;
 
       return `
         <div class="invoice-card${cardClass}" id="card-${inv.id}">
@@ -927,8 +933,8 @@ export default function AdminPage() {
             </div>
             <div class="payment-alias" id="alias-display-${inv.id}">${aliasDisplayHtml}</div>
             <div class="alias-input-row" id="alias-edit-${inv.id}">
-              <input type="text" class="alias-input" id="alias-input-${inv.id}" value="${escAttr(inv.paymentAlias || '')}" placeholder="e.g. TAN WEI MING" onkeydown="if(event.key==='Enter')saveAlias('${inv.id}','${inv.studentId}');if(event.key==='Escape')cancelAlias('${inv.id}')">
-              <button class="btn-alias-save" onclick="saveAlias('${inv.id}','${inv.studentId}')">✓</button>
+              <input type="text" class="alias-input" id="alias-input-${inv.id}" value="" placeholder="Add payer name e.g. TAN WEI MING" onkeydown="if(event.key==='Enter')saveAlias('${inv.id}','${inv.studentId}');if(event.key==='Escape')cancelAlias('${inv.id}')">
+              <button class="btn-alias-save" onclick="saveAlias('${inv.id}','${inv.studentId}')">Add</button>
               <button class="btn-alias-cancel" onclick="cancelAlias('${inv.id}')">✕</button>
             </div>
             <div class="amounts">
@@ -2026,24 +2032,54 @@ export default function AdminPage() {
 
     async function saveAlias(id: string, studentId: string) {
       const input = document.getElementById(`alias-input-${id}`) as HTMLInputElement;
-      const alias = input?.value.trim() ?? '';
+      const newName = input?.value.trim() ?? '';
+      if (!newName) { cancelAlias(id); return; }
+      const inv = invoices.find((i: any) => i.id === id);
+      const existing = inv?.paymentAlias ? inv.paymentAlias.split(',').map((a: string) => a.trim()).filter(Boolean) : [];
+      if (existing.map((a: string) => a.toLowerCase()).includes(newName.toLowerCase())) {
+        alert('That name is already in the list.'); return;
+      }
+      const combined = [...existing, newName].join(', ');
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
           headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ studentId, paymentAlias: alias }),
+          body: JSON.stringify({ studentId, paymentAlias: combined }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        // Update all invoices for this student and re-render their cards
-        invoices.forEach((inv: any) => {
-          if (inv.studentId === studentId) {
-            inv.paymentAlias = alias;
-            const card = document.getElementById(`card-${inv.id}`);
-            if (card) card.outerHTML = renderCard(inv);
+        invoices.forEach((i: any) => {
+          if (i.studentId === studentId) {
+            i.paymentAlias = combined;
+            const card = document.getElementById(`card-${i.id}`);
+            if (card) card.outerHTML = renderCard(i);
           }
         });
       } catch (err: any) {
-        alert('Failed to save alias: ' + err.message);
+        alert('Failed to save: ' + err.message);
+      }
+    }
+
+    async function removeAlias(id: string, studentId: string, index: number) {
+      const inv = invoices.find((i: any) => i.id === id);
+      const aliases = inv?.paymentAlias ? inv.paymentAlias.split(',').map((a: string) => a.trim()).filter(Boolean) : [];
+      aliases.splice(index, 1);
+      const combined = aliases.join(', ');
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ studentId, paymentAlias: combined }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        invoices.forEach((i: any) => {
+          if (i.studentId === studentId) {
+            i.paymentAlias = combined;
+            const card = document.getElementById(`card-${i.id}`);
+            if (card) card.outerHTML = renderCard(i);
+          }
+        });
+      } catch (err: any) {
+        alert('Failed to remove: ' + err.message);
       }
     }
 
@@ -2129,6 +2165,7 @@ export default function AdminPage() {
     w.editAlias = editAlias;
     w.cancelAlias = cancelAlias;
     w.saveAlias = saveAlias;
+    w.removeAlias = removeAlias;
     w.deleteInvoice = deleteInvoice;
 
     w.previewEmail = previewEmail;
@@ -2147,7 +2184,7 @@ export default function AdminPage() {
         'sendAllApproved','toggleRecordPayment',
         'onPaymentFilter','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
-        'editAlias','cancelAlias','saveAlias',
+        'editAlias','cancelAlias','saveAlias','removeAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
         'deleteInvoice','previewEmail','closeEmailPreview','saveCustomMessage','resetCustomMessage',
       ].forEach(fn => delete (window as any)[fn]);
