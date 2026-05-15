@@ -466,7 +466,6 @@ function SignupContent() {
                       <option value="Google Search">Google Search</option>
                       <option value="Social Media">Social Media</option>
                       <option value="Walked Past">Walked Past</option>
-                      <option value="School Friend">School Friend</option>
                       <option value="Others">Others</option>
                     </select>
                   </div>
