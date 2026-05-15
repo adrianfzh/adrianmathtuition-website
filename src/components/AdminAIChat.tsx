@@ -30,6 +30,7 @@ interface AdminAIChatProps {
   title: string;
   accentColor?: string;
   placeholder?: string;
+  fabBottom?: number;
 }
 
 // ─── Action executor ──────────────────────────────────────────────────────────
@@ -126,6 +127,7 @@ export default function AdminAIChat({
   title,
   accentColor = '#1e3a5f',
   placeholder = 'Ask me anything…',
+  fabBottom = 24,
 }: AdminAIChatProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -339,7 +341,7 @@ export default function AdminAIChat({
   const s = {
     fab: {
       position: 'fixed' as const,
-      bottom: 24,
+      bottom: fabBottom,
       right: 24,
       zIndex: 9000,
       display: 'flex',
@@ -360,7 +362,7 @@ export default function AdminAIChat({
     },
     panel: {
       position: 'fixed' as const,
-      bottom: 80,
+      bottom: fabBottom + 56,
       right: 24,
       zIndex: 9001,
       width: 400,
