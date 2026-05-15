@@ -56,65 +56,64 @@ function buildJune2026EmailHtml(invoice: {
   const encodedMsg = encodeURIComponent(`Hi Adrian, I'd like to sign up ${studentName} for the June Holiday Revision Sprint.`);
   const waLink = `https://wa.me/6591397985?text=${encodedMsg}`;
   const amt = typeof finalAmount === 'number' ? finalAmount.toFixed(2) : finalAmount;
+  const lvl = level.replace(/\s+/g, '').toUpperCase();
 
-  const base = `
+  const header = `
     <p>Dear Parent/Student,</p>
     <p>Please find attached the invoice for ${studentName} for June 2026 — <strong>$${amt}</strong>, due by <strong>${dueFmt}</strong>.</p>
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${paymentRef}</strong>.</p>
-    <p>Please feel free to reach out if you have any questions.</p>
-    <p>Best regards,<br>Adrian</p>
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />`;
 
-  const howItWorks = `
-    <p><strong>How it works:</strong></p>
-    <ul>
-      <li>Revision lessons replace regular lessons in June — the two are mutually exclusive. If you sign up, you don't pay for regular June lessons.</li>
-      <li>If you can't attend a revision session, it will be converted into a regular lesson you can use as a makeup later.</li>
-      <li>Payment for the revision sprint is due before the first lesson.</li>
-      <li>Regular lessons resume in July.</li>
-      <li>If you opt out, you'll continue with regular lessons throughout June as usual — the attached invoice stands.</li>
-    </ul>
-    <p>To sign up, just tap below to message me on WhatsApp:<br>
-    <a href="${waLink}" style="display:inline-block;margin-top:8px;background:#25D366;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;">💬 Sign up on WhatsApp</a></p>
-    <p>Let me know if you have any questions!</p>`;
-
-  const lvl = level.replace(/\s+/g, '').toUpperCase();
+  const signOff = `
+    <p>Please feel free to reach out if you have any questions.</p>
+    <p>Best regards,<br>Adrian</p>`;
 
   if (lvl === 'SEC4' || lvl === 'S4') {
-    return base + `
+    return header + `
     <p>🏃 <strong>June Holiday Revision Sprint — Sec 4 (EM &amp; AM)</strong></p>
     <p>I'm running a focused 4-week revision sprint over the June holidays, covering the major topics in the Sec 4 syllabus. Each session is split into concept teaching followed by guided practice.</p>
     <ul>
-      <li><strong>EM:</strong> Every Tuesday &amp; Friday, 10am–12pm (2–26 Jun) — 8 lessons, $500</li>
-      <li><strong>AM:</strong> Every Tuesday &amp; Friday, 1pm–3pm (2–26 Jun) — 8 lessons, $500</li>
+      <li><strong>EM:</strong> Every Tue &amp; Fri, 10am–12pm (2–26 Jun) — 8 lessons, $500</li>
+      <li><strong>AM:</strong> Every Tue &amp; Fri, 1pm–3pm (2–26 Jun) — 8 lessons, $500</li>
     </ul>
-    <p>That's $31.25 per lesson-hour — slightly below the regular rate, but with double the lessons in a focused, exam-prep format.</p>
-    <p>📅 Full schedule: <a href="https://www.adrianmathtuition.com/june-revision/sec4">adrianmathtuition.com/june-revision/sec4</a></p>
-    <p>Highly recommended — the pace picks up significantly after June and preparation now makes a real difference for O Levels.</p>
-    ${howItWorks}`;
+    <p>📅 Full revision schedule: <a href="https://www.adrianmathtuition.com/june-revision/sec4">adrianmathtuition.com/june-revision/sec4</a></p>
+    <p>This is especially valuable for Sec 4 students given how quickly the pace picks up after June. Highly recommended for students to prepare for their O Levels.</p>
+    <p><strong>How it works:</strong></p>
+    <ul>
+      <li>Revision lessons replace regular lessons in June. The two are mutually exclusive — if you sign up for the June revision sprint, you don't pay for regular June lessons. You can disregard the attached June invoice; a new separate invoice will be sent to reflect the revision sign-up.</li>
+      <li>Payment due before the first lesson. Regular lessons resume in July.</li>
+      <li>If you opt out, the attached invoice stands.</li>
+    </ul>
+    <p>To sign up: <a href="${waLink}">${waLink}</a></p>` + signOff;
   }
 
   if (lvl === 'JC2' || lvl === 'J2') {
-    return base + `
+    return header + `
     <p>🏃 <strong>June Holiday Revision Sprint — JC2 H2 Mathematics</strong></p>
-    <p>I'm running a focused 4-week revision sprint over the June holidays for JC2 students preparing for A-Levels, covering the major topics — Functions, Calculus, Vectors, Complex Numbers, Probability, and Distributions.</p>
+    <p>I'm running a focused 4-week revision sprint over the June holidays for JC2 students preparing for A-Levels, covering the major topics in the H2 Math syllabus — Functions, Calculus, Vectors, Complex Numbers, Probability, and Distributions. Each session combines concept consolidation in the first half with exam-style guided practice in the second.</p>
     <ul>
-      <li>Every Monday &amp; Thursday, 12pm–2.30pm (1–25 Jun) — 8 lessons, $600</li>
+      <li>Every Mon &amp; Thu, 12pm–2.30pm (1–25 Jun) — 8 lessons, $600</li>
     </ul>
-    <p>That's $30 per lesson-hour — slightly below the regular rate, but with double the lessons in a focused, exam-prep format.</p>
-    <p>📅 Full schedule: <a href="https://www.adrianmathtuition.com/june-revision/jc2">adrianmathtuition.com/june-revision/jc2</a></p>
-    <p>Each session combines concept consolidation in the first half with exam-style guided practice in the second. Highly recommended for A-Level preparation.</p>
-    ${howItWorks}`;
+    <p>📅 Full revision schedule: <a href="https://www.adrianmathtuition.com/june-revision/jc2">adrianmathtuition.com/june-revision/jc2</a></p>
+    <p>Highly recommended for students to prepare for their A Levels.</p>
+    <p><strong>How it works:</strong></p>
+    <ul>
+      <li>Revision lessons replace regular lessons in June. The two are mutually exclusive — if you sign up for the June revision sprint, you don't pay for regular June lessons. You can disregard the attached June invoice; a new separate invoice will be sent to reflect the revision sign-up.</li>
+      <li>Payment due before the first lesson. Regular lessons resume in July.</li>
+      <li>If you opt out, the attached invoice stands.</li>
+    </ul>
+    <p>To sign up: <a href="${waLink}">${waLink}</a></p>` + signOff;
   }
 
-  // Junior levels (S1, S2, S3, JC1) — flexible attendance note
-  return base + `
+  // Junior levels (S1, S2, S3, JC1) — flexible attendance note (unchanged)
+  return header + `
     <p>🏖️ <strong>June Holidays — Flexible Attendance (Policy Update)</strong></p>
     <p>A quick note: we've updated our terms &amp; conditions to include June as a flexible-attendance month, since many families travel during this period. Lessons are now optional in June — if you have travel plans or would like a short break, you can skip lessons without penalty.</p>
     <p>Fees will be prorated based on lessons attended in June — the adjustment will be reflected in the July invoice. Just give me a heads up in advance so I can plan class sizes.</p>
     <p>That said, I do encourage attending regular lessons where possible. Steady, consistent learning is far more effective than catching up later — the pace tends to pick up after June and it's always easier to learn ahead than to play catch-up.</p>
-    <p>Let me know if you'd like to adjust your June lessons.</p>`;
+    <p>Let me know if you'd like to adjust your June lessons.</p>` + signOff;
 }
+
 
 function buildAmendedEmailHtml(invoice: {
   studentName: string;
