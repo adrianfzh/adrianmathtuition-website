@@ -198,12 +198,15 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        const ratePerLesson = studentEnrollments[0].fields['Rate Per Lesson'] || 0;
-        if (!ratePerLesson) {
+        // Use each enrollment's own rate; fall back across enrollments for skip check
+        const anyRate = studentEnrollments.some((e: any) => e.fields['Rate Per Lesson'] > 0);
+        if (!anyRate) {
           skipped++;
-          recordSkip(studentId, 'Rate Per Lesson is 0 or blank on enrollment');
+          recordSkip(studentId, 'Rate Per Lesson is 0 or blank on all enrollments');
           continue;
         }
+        // Primary rate (first enrollment with a non-zero rate) — used for Additional lessons & invoice header
+        const ratePerLesson = studentEnrollments.find((e: any) => e.fields['Rate Per Lesson'] > 0)?.fields['Rate Per Lesson'] || 0;
 
         const isProrated = isProratedMonth(invoiceMonth.month);
         let allLineItems: { date: string; day: string; type: string }[] = [];
@@ -231,8 +234,9 @@ export async function POST(req: NextRequest) {
             const dayLabel = slotTime ? `${dayAbbrev} ${slotTime}` : dayAbbrev;
             const endDateStr = enrollment.fields['End Date'];
             const endDate = endDateStr ? new Date(endDateStr + 'T00:00:00') : null;
+            const enrollRate: number = enrollment.fields['Rate Per Lesson'] || ratePerLesson;
             const lineItems = countOccurrencesInMonth(dayName, invoiceMonth, endDate)
-              .map((li) => ({ ...li, day: dayLabel }));
+              .map((li) => ({ ...li, day: dayLabel, enrollRate }));
             if (lineItems.length > 0) hasLessons = true;
             allLineItems.push(...lineItems);
           }
@@ -278,7 +282,10 @@ export async function POST(req: NextRequest) {
 
         if (!isProrated) allLineItems.sort((a, b) => a.date.localeCompare(b.date));
 
-        const baseAmount = lessonCount * ratePerLesson;
+        // Calculate base amount using per-enrollment rates (handles multi-rate students)
+        const baseAmount = isProrated
+          ? lessonCount * ratePerLesson
+          : allLineItems.reduce((sum, item) => sum + ((item as any).enrollRate || ratePerLesson), 0);
         const additionalAmount = additionalCount * ratePerLesson;
         const finalAmount = baseAmount + additionalAmount;
 
@@ -293,7 +300,10 @@ export async function POST(req: NextRequest) {
             lineItemsForInvoice.push({ date: r.fields['Date'], day: '', type: 'Regular', description });
           });
         } else {
-          allLineItems.forEach((item) => lineItemsForInvoice.push({ ...item, description }));
+          allLineItems.forEach((item) => {
+            const itemRate = (item as any).enrollRate || ratePerLesson;
+            lineItemsForInvoice.push({ ...item, description, rate: itemRate });
+          });
         }
         additionalLessons.forEach((r: any) => {
           lineItemsForInvoice.push({

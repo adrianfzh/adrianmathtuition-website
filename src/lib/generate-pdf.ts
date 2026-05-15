@@ -150,7 +150,8 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
   let lineItemsRows = '';
   if (invoiceData.lineItems?.length) {
     // Preserve insertion order so April appears before May
-    const groupedByDesc: Map<string, { day: string; count: number }> = new Map();
+    // Group by description; store per-group rate when items carry their own rate
+    const groupedByDesc: Map<string, { day: string; count: number; rate?: number }> = new Map();
     invoiceData.lineItems.forEach((item) => {
       const desc = item.description || `Tuition \u2014 ${invoiceData.month || ''}`;
       const day  = item.day || 'Unknown';
@@ -158,11 +159,13 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
       if (existing) {
         existing.count++;
       } else {
-        groupedByDesc.set(desc, { day, count: 1 });
+        groupedByDesc.set(desc, { day, count: 1, rate: (item as any).rate ?? undefined });
       }
     });
-    lineItemsRows = Array.from(groupedByDesc.entries()).map(([description, { day, count }]) => {
-      const amount = (count * (invoiceData.ratePerLesson || 0)).toFixed(2);
+    lineItemsRows = Array.from(groupedByDesc.entries()).map(([description, { day, count, rate }]) => {
+      // Use per-group rate if stored (multi-rate students), otherwise fall back to invoice rate
+      const effectiveRate = rate !== undefined ? rate : (invoiceData.ratePerLesson || 0);
+      const amount = (count * effectiveRate).toFixed(2);
       return `<tr><td><div class="desc-main">${description}</div></td><td><span class="slot-pill">${day}</span></td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
     }).join('');
   }
