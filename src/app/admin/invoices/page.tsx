@@ -507,7 +507,7 @@ export default function AdminPage() {
     let selectedMonth = '';
     let searchQuery = '';
     let paymentFilter = '';
-    let levelFilter = '';
+    const selectedLevels = new Set<string>();
     let currentPreviewId = '';
 
     function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -662,15 +662,12 @@ export default function AdminPage() {
 
     function filteredInvoices() {
       let out = selectedMonth ? invoices.filter((i: any) => i.month === selectedMonth) : invoices;
-      if (levelFilter) {
+      if (selectedLevels.size > 0) {
         out = out.filter((i: any) => {
-          const lvl = (i.studentLevel || '').toLowerCase();
-          const subj = (i.studentSubjects || '').toLowerCase();
-          if (levelFilter === 'jc')  return lvl.startsWith('jc');
-          if (levelFilter === 'sec') return lvl.startsWith('sec');
-          if (levelFilter === 'em')  return lvl.startsWith('sec') && subj.includes('e math') && !subj.includes('a math');
-          if (levelFilter === 'am')  return lvl.startsWith('sec') && subj.includes('a math');
-          return true;
+          // Normalise e.g. 'Sec 3', 'Sec3', 'sec3', 'JC 1', 'JC1' → 'S3', 'JC1'
+          const raw = (i.studentLevel || '').trim();
+          const norm = raw.replace(/^(Sec|sec)\s*/i, 'S').replace(/^(JC|jc)\s*/i, 'JC');
+          return selectedLevels.has(norm);
         });
       }
       if (paymentFilter) {
@@ -698,8 +695,21 @@ export default function AdminPage() {
       renderAll();
     }
 
-    function onLevelFilter(val: string) {
-      levelFilter = val;
+    function onLevelPillToggle(lvl: string) {
+      if (selectedLevels.has(lvl)) {
+        selectedLevels.delete(lvl);
+      } else {
+        selectedLevels.add(lvl);
+      }
+      // Update pill visual state
+      ['S1','S2','S3','S4','JC1','JC2'].forEach(l => {
+        const btn = document.getElementById('lvl-pill-' + l) as HTMLButtonElement | null;
+        if (!btn) return;
+        const active = selectedLevels.has(l);
+        btn.style.background = active ? '#1e3a5f' : '#f8fafc';
+        btn.style.color = active ? '#fff' : '#475569';
+        btn.style.borderColor = active ? '#1e3a5f' : '#e2e8f0';
+      });
       renderAll();
       updateBulkButtonLabels();
     }
@@ -2288,7 +2298,7 @@ export default function AdminPage() {
     w.toggleRecordPayment = toggleRecordPayment;
     w.markReferralCashPaid = markReferralCashPaid;
     w.onPaymentFilter = onPaymentFilter;
-    w.onLevelFilter = onLevelFilter;
+    w.onLevelPillToggle = onLevelPillToggle;
     w.sendFilteredApproved = sendFilteredApproved;
     w.toggleAutoSendPause = toggleAutoSendPause;
     w.sendReminder = sendReminder;
@@ -2379,14 +2389,14 @@ export default function AdminPage() {
             <option value="partial">Partially paid</option>
             <option value="paid">Fully paid</option>
           </select>
-          <select id="level-filter" onChange={(e) => (window as any).onLevelFilter(e.target.value)}
-            style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px', fontSize: 13, background: 'white', cursor: 'pointer' }}>
-            <option value="">All levels</option>
-            <option value="jc">JC only</option>
-            <option value="sec">Secondary only</option>
-            <option value="em">EM only</option>
-            <option value="am">AM only</option>
-          </select>
+          <div id="level-pills" style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+            {['S1','S2','S3','S4','JC1','JC2'].map((lvl: string) => (
+              <button key={lvl} id={`lvl-pill-${lvl}`} onClick={() => (window as any).onLevelPillToggle(lvl)}
+                style={{ padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', cursor: 'pointer' }}>
+                {lvl}
+              </button>
+            ))}
+          </div>
           <span id="approval-counter"></span>
           <span id="summary"></span>
           <button className="btn-generate" id="btn-generate-invoices" onClick={() => (window as any).generateInvoices()}>📄 Generate Missing Invoices</button>
