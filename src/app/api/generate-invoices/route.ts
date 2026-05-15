@@ -426,12 +426,14 @@ export async function POST(req: NextRequest) {
           const referrerName = (student.fields['Referred By Name'] || '') as string;
           const referralType = (student.fields['Referral Type'] || '') as string;
 
-          // Count completed lessons for this referred student
-          const lessonFormula = encodeURIComponent(
-            `AND({Student}='${student.id}',{Status}='Completed')`
+          // Count completed lessons for this referred student.
+          // NOTE: Cannot use {Student}='recXXX' on linked record fields — filter in JS instead.
+          const lessonsData = await airtableRequestAll('Lessons',
+            `?filterByFormula=${encodeURIComponent(`{Status}='Completed'`)}&fields[]=Student`
           );
-          const lessonsData = await airtableRequestAll('Lessons', `?filterByFormula=${lessonFormula}&fields[]=Status`);
-          const completedCount = lessonsData.records.length;
+          const completedCount = lessonsData.records.filter(
+            (r: any) => r.fields['Student']?.[0] === student.id
+          ).length;
 
           if (completedCount < 12) continue; // Not yet eligible
 
@@ -461,13 +463,14 @@ export async function POST(req: NextRequest) {
 
             if (matchedReferrer) {
               // Find referrer's enrollment to get rate
-              const enrollFormula = encodeURIComponent(
-                `AND({Student}='${matchedReferrer.id}',{Status}='Active')`
-              );
+              // Fetch active enrollments and match by student in JS (linked record filter workaround)
               const enrollData = await airtableRequestAll('Enrollments',
-                `?filterByFormula=${enrollFormula}&fields[]=Rate Per Lesson`
+                `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Rate Per Lesson`
               );
-              const ratePerLesson = (enrollData.records[0]?.fields['Rate Per Lesson'] as number) || 0;
+              const referrerEnrollment = enrollData.records.find(
+                (r: any) => r.fields['Student']?.[0] === matchedReferrer.id
+              );
+              const ratePerLesson = (referrerEnrollment?.fields['Rate Per Lesson'] as number) || 0;
               const rewardAmount = ratePerLesson * 4;
 
               // Find the referrer's invoice (from this batch or existing for the month)
@@ -477,8 +480,10 @@ export async function POST(req: NextRequest) {
                   ? [...referrerInvoice.lineItemsExtra]
                   : [];
                 existingExtra.push({
-                  description: `Referral reward \u2014 referred ${newStudentName}`,
+                  description: `Referral reward${matchConfidence === 'fuzzy' ? ' \u26a0 fuzzy match' : ''} \u2014 referred ${newStudentName}`,
                   amount: -rewardAmount,
+                  matchConfidence,
+                  referrerNameGiven: referrerName,
                 });
                 const newFinalAmount = Math.max(0, referrerInvoice.finalAmount - rewardAmount);
 

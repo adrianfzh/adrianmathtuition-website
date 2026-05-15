@@ -785,9 +785,14 @@ export default function AdminPage() {
 
       const badgeClass = isDraft ? 'badge-draft' : isApproved ? 'badge-approved' : 'badge-sent';
       const badgeLabel = isDraft ? 'Draft' : isApproved ? 'Approved' : 'Sent';
-      const hasReferralReward = Array.isArray(inv.lineItemsExtra) &&
-        inv.lineItemsExtra.some((item: any) => typeof item.description === 'string' && item.description.includes('Referral reward'));
-      const referralBadgeHtml = hasReferralReward ? '<span class="referral-badge" title="Referral reward applied">\uD83C\uDF81</span>' : '';
+      const referralItem = Array.isArray(inv.lineItemsExtra)
+        ? inv.lineItemsExtra.find((item: any) => typeof item.description === 'string' && item.description.includes('Referral reward'))
+        : null;
+      const referralBadgeHtml = referralItem
+        ? referralItem.matchConfidence === 'fuzzy'
+          ? `<span class="referral-badge" title="Referral reward applied (\u26A0 fuzzy name match \u2014 referrer name given: '${escAttr(referralItem.referrerNameGiven || '')}')">\uD83C\uDF81\u26A0</span>`
+          : `<span class="referral-badge" title="Referral reward applied">\uD83C\uDF81</span>`
+        : '';
 
       const sentAtHtml = isSent && inv.sentAt
         ? `<div class="sent-at">Sent on ${formatSentAt(inv.sentAt)}</div>`
@@ -1682,6 +1687,37 @@ export default function AdminPage() {
       }
     }
 
+    async function loadReferralStatus() {
+      try {
+        const res = await fetch('/api/admin-invoices/referral-status', { headers: authHeaders() });
+        const data = await res.json();
+        const pending = (data.pending || []) as any[];
+        if (!pending.length) return;
+        const el = document.getElementById('referral-status-banner');
+        if (!el) return;
+        const eligible = pending.filter((p: any) => p.eligible);
+        const approaching = pending.filter((p: any) => !p.eligible);
+        let html = `<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;">
+          <div style="font-weight:700;color:#c2410c;margin-bottom:8px;">🎁 Referral Rewards</div>`;
+        if (eligible.length) {
+          html += `<div style="font-weight:600;color:#92400e;margin-bottom:4px;">Ready to apply on next invoice generation (12+ lessons):</div>`;
+          for (const p of eligible) {
+            const conf = p.matchConfidence === 'exact' ? '✅' : p.matchConfidence === 'fuzzy' ? '⚠️ fuzzy match' : '❌ no match';
+            const referrer = p.matchedReferrer ? `→ <strong>${escHtml(p.matchedReferrer)}</strong> ${conf}` : `→ <span style="color:#dc2626">cannot match "${escHtml(p.referrerNameGiven)}"</span> ❌`;
+            html += `<div style="margin:3px 0;color:#475569;">${escHtml(p.studentName)} (${p.lessonsCompleted} lessons) ${referrer}</div>`;
+          }
+        }
+        if (approaching.length) {
+          html += `<div style="font-weight:600;color:#92400e;margin-top:8px;margin-bottom:4px;">Approaching (8–11 lessons):</div>`;
+          for (const p of approaching) {
+            html += `<div style="margin:3px 0;color:#64748b;">${escHtml(p.studentName)}: ${p.lessonsCompleted}/12 lessons — referred by "${escHtml(p.referrerNameGiven)}"</div>`;
+          }
+        }
+        html += `</div>`;
+        el.innerHTML = html;
+      } catch { /* non-fatal */ }
+    }
+
     async function loadAutoSendPauseState() {
       try {
         const res = await fetch('/api/admin-invoices/auto-send-pause', { headers: authHeaders() });
@@ -2175,6 +2211,7 @@ export default function AdminPage() {
 
     init();
     loadAutoSendPauseState();
+    loadReferralStatus();
 
     return () => {
       ['submitPassword','logout','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
@@ -2257,6 +2294,7 @@ export default function AdminPage() {
       </div>
 
       <div className="content">
+        <div id="referral-status-banner"></div>
         <div className="search-bar">
           <div className="search-input-wrap">
             <span className="search-icon">🔍</span>
