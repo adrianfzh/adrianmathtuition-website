@@ -101,12 +101,28 @@ export async function POST(req: NextRequest) {
 
   try {
     let invoiceRecords: any[];
+    const isCronPath = !singleRecordId && !(Array.isArray(recordIds) && recordIds.length);
+
     if (Array.isArray(recordIds) && recordIds.length) {
       invoiceRecords = await Promise.all(recordIds.map((id: string) => at('Invoices', `/${id}`)));
     } else if (singleRecordId) {
       invoiceRecords = [await at('Invoices', `/${singleRecordId}`)];
     } else {
-      // Cron path — scope to current invoice month only so stale Approved
+      // Cron path — check pause flag before sending
+      const settingsData = await airtableRequest('Settings',
+        `?filterByFormula=${encodeURIComponent(`{Setting Name}='pause_auto_send'`)}&maxRecords=1`
+      ).catch(() => ({ records: [] }));
+      const pauseRecord = settingsData.records?.[0];
+      if (pauseRecord?.fields?.['Value'] === 'true') {
+        console.log('[send-invoices] auto-send paused by admin — skipping cron send');
+        // Auto-clear the flag after it fires so it doesn't block next month
+        airtableRequest('Settings', `/${pauseRecord.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ fields: { Value: '' } }),
+        }).catch(() => {});
+        return NextResponse.json({ sent: 0, failed: 0, errors: [], paused: true });
+      }
+      // Scope to current invoice month only so stale Approved
       // rows from previous cycles don't get re-sent automatically.
       const invoiceMonth = getInvoiceMonth();
       const formula = `AND({Status}='Approved',{Month}='${invoiceMonth.label}')`;

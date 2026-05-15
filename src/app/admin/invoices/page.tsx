@@ -1661,6 +1661,51 @@ export default function AdminPage() {
       }
     }
 
+    async function loadAutoSendPauseState() {
+      try {
+        const res = await fetch('/api/admin-invoices/auto-send-pause', { headers: authHeaders() });
+        const data = await res.json();
+        updatePauseBtn(data.paused);
+      } catch { /* non-fatal */ }
+    }
+
+    function updatePauseBtn(paused: boolean) {
+      const btn = document.getElementById('btn-pause-autosend') as HTMLButtonElement | null;
+      if (!btn) return;
+      if (paused) {
+        btn.textContent = '▶ Auto-send PAUSED — click to re-enable';
+        btn.style.background = '#fef9c3';
+        btn.style.borderColor = '#fcd34d';
+        btn.style.color = '#92400e';
+      } else {
+        btn.textContent = '⏸ Auto-send ON — click to pause 15th send';
+        btn.style.background = '#f0fdf4';
+        btn.style.borderColor = '#86efac';
+        btn.style.color = '#15803d';
+      }
+    }
+
+    async function toggleAutoSendPause() {
+      const btn = document.getElementById('btn-pause-autosend') as HTMLButtonElement | null;
+      if (!btn) return;
+      const currentlyPaused = btn.textContent?.includes('PAUSED');
+      const newPaused = !currentlyPaused;
+      const action = newPaused ? 'pause' : 're-enable';
+      if (!confirm(`${newPaused ? '⏸ Pause' : '▶ Re-enable'} the automatic invoice send on the 15th?\n\n${newPaused ? 'You can still send manually using "Send All Approved".' : 'Invoices will be sent automatically at 10am SGT on the 15th.'}`)) return;
+      btn.disabled = true;
+      btn.textContent = `${newPaused ? 'Pausing' : 'Re-enabling'}…`;
+      try {
+        const res = await fetch('/api/admin-invoices/auto-send-pause', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ paused: newPaused }),
+        });
+        const data = await res.json();
+        updatePauseBtn(data.paused);
+      } catch { updatePauseBtn(currentlyPaused); }
+      finally { btn.disabled = false; }
+    }
+
     async function sendAllApproved() {
       const { scopeSuffix } = bulkTargetDescription();
       const approvedInvoices = filteredInvoices().filter((i: any) => i.status === 'Approved');
@@ -2057,6 +2102,7 @@ export default function AdminPage() {
     w.unapproveAllApproved = unapproveAllApproved;
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
+    w.toggleAutoSendPause = toggleAutoSendPause;
     w.sendReminder = sendReminder;
     w.toggleReceiptForm = toggleReceiptForm;
     w.openReceiptPreview = openReceiptPreview;
@@ -2075,6 +2121,7 @@ export default function AdminPage() {
     w.resetCustomMessage = resetCustomMessage;
 
     init();
+    loadAutoSendPauseState();
 
     return () => {
       ['submitPassword','logout','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
@@ -2082,7 +2129,7 @@ export default function AdminPage() {
         'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
-        'sendReminder','toggleReceiptForm','openReceiptPreview',
+        'toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
@@ -2143,6 +2190,7 @@ export default function AdminPage() {
           <button className="btn-generate" id="btn-approve-all" onClick={() => (window as any).approveAllDrafts()}>✅ Approve All Drafts</button>
           <button className="btn-generate" id="btn-unapprove-all" onClick={() => (window as any).unapproveAllApproved()}>↩️ Unapprove All</button>
           <button className="btn-generate" id="btn-send-all" onClick={() => (window as any).sendAllApproved()}>📤 Send All Approved</button>
+          <button className="btn-generate" id="btn-pause-autosend" onClick={() => (window as any).toggleAutoSendPause()} style={{ background: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }}>⏸ Auto-send on 15th: checking…</button>
           <button className="btn-refresh" onClick={() => (window as any).loadInvoices()}>🔄 Refresh</button>
           <button className="btn-refresh" onClick={() => (window as any).logout()}>🚪 Log out</button>
         </div>
