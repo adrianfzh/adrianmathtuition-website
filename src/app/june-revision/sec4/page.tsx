@@ -101,7 +101,7 @@ export default function JuneRevisionSec4Page() {
         {/* Notes */}
         <div style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', border: '1px solid #e2e8f0', fontSize: 14, color: '#475569', lineHeight: 1.7 }}>
           <strong style={{ color: '#0f172a' }}>Notes</strong>
-          <p style={{ margin: '8px 0 0 0', lineHeight: 1.6 }}>Each session is structured as concept teaching in the first half, followed by guided practice in the second half.</p>
+          <p style={{ margin: '8px 0 0 0', lineHeight: 1.6 }}>Each session: 1 hour of focused concept teaching, followed by 1 hour of guided practice.</p>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#94a3b8' }}>
