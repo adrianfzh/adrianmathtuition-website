@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
   let studentsById: Record<string, any> = {};
   const studentsData = await airtableRequestAll(
     'Students',
-    `?fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Payment Alias`
+    `?fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Payment Alias&fields[]=Level&fields[]=Subjects`
   );
   studentsById = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r.fields]));
 
@@ -58,6 +58,8 @@ export async function GET(req: NextRequest) {
       parentEmail: studentFields['Parent Email'] || '',
       parentName: studentFields['Parent Name'] || '',
       paymentAlias: studentFields['Payment Alias'] || '',
+      studentLevel: studentFields['Level'] || '',
+      studentSubjects: (studentFields['Subjects'] || []).join(', '),
       month: f['Month'] || '',
       lessonsCount: f['Lessons Count'] || 0,
       ratePerLesson: f['Rate Per Lesson'] || 0,

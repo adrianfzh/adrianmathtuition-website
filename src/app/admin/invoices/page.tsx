@@ -507,6 +507,7 @@ export default function AdminPage() {
     let selectedMonth = '';
     let searchQuery = '';
     let paymentFilter = '';
+    let levelFilter = '';
     let currentPreviewId = '';
 
     function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -661,6 +662,17 @@ export default function AdminPage() {
 
     function filteredInvoices() {
       let out = selectedMonth ? invoices.filter((i: any) => i.month === selectedMonth) : invoices;
+      if (levelFilter) {
+        out = out.filter((i: any) => {
+          const lvl = (i.studentLevel || '').toLowerCase();
+          const subj = (i.studentSubjects || '').toLowerCase();
+          if (levelFilter === 'jc')  return lvl.startsWith('jc');
+          if (levelFilter === 'sec') return lvl.startsWith('sec');
+          if (levelFilter === 'em')  return lvl.startsWith('sec') && subj.includes('e math') && !subj.includes('a math');
+          if (levelFilter === 'am')  return lvl.startsWith('sec') && subj.includes('a math');
+          return true;
+        });
+      }
       if (paymentFilter) {
         out = out.filter((i: any) => {
           const outstanding = i.finalAmount - (i.amountPaid || 0);
@@ -684,6 +696,12 @@ export default function AdminPage() {
     function onPaymentFilter(val: string) {
       paymentFilter = val;
       renderAll();
+    }
+
+    function onLevelFilter(val: string) {
+      levelFilter = val;
+      renderAll();
+      updateBulkButtonLabels();
     }
 
     function onSearchChange(val: string) {
@@ -1763,6 +1781,27 @@ export default function AdminPage() {
       finally { btn.disabled = false; }
     }
 
+    async function sendFilteredApproved() {
+      const visible = filteredInvoices();
+      const approvedIds = visible.filter((i: any) => i.status === 'Approved').map((i: any) => i.id);
+      if (!approvedIds.length) { alert('No approved invoices in the current filter.'); return; }
+      if (!confirm(`Send ${approvedIds.length} approved invoice${approvedIds.length !== 1 ? 's' : ''} in the current filter?`)) return;
+      const btn = document.getElementById('btn-send-filtered') as HTMLButtonElement;
+      if (btn) btn.disabled = true;
+      try {
+        const res = await fetch('/api/send-invoices', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordIds: approvedIds }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        alert(`✅ Sent ${data.sent ?? approvedIds.length} invoice${(data.sent ?? approvedIds.length) !== 1 ? 's' : ''}.`);
+        await loadInvoices();
+      } catch (err: any) { alert('Failed: ' + err.message); }
+      finally { if (btn) btn.disabled = false; }
+    }
+
     async function sendAllApproved() {
       const { scopeSuffix } = bulkTargetDescription();
       const approvedInvoices = filteredInvoices().filter((i: any) => i.status === 'Approved');
@@ -2190,6 +2229,8 @@ export default function AdminPage() {
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
     w.onPaymentFilter = onPaymentFilter;
+    w.onLevelFilter = onLevelFilter;
+    w.sendFilteredApproved = sendFilteredApproved;
     w.toggleAutoSendPause = toggleAutoSendPause;
     w.sendReminder = sendReminder;
     w.toggleReceiptForm = toggleReceiptForm;
@@ -2219,7 +2260,7 @@ export default function AdminPage() {
         'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
-        'onPaymentFilter','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
+        'onPaymentFilter','onLevelFilter','sendFilteredApproved','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias','removeAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
@@ -2279,6 +2320,14 @@ export default function AdminPage() {
             <option value="partial">Partially paid</option>
             <option value="paid">Fully paid</option>
           </select>
+          <select id="level-filter" onChange={(e) => (window as any).onLevelFilter(e.target.value)}
+            style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px', fontSize: 13, background: 'white', cursor: 'pointer' }}>
+            <option value="">All levels</option>
+            <option value="jc">JC only</option>
+            <option value="sec">Secondary only</option>
+            <option value="em">EM only</option>
+            <option value="am">AM only</option>
+          </select>
           <span id="approval-counter"></span>
           <span id="summary"></span>
           <button className="btn-generate" id="btn-generate-invoices" onClick={() => (window as any).generateInvoices()}>📄 Generate Missing Invoices</button>
@@ -2287,6 +2336,8 @@ export default function AdminPage() {
           <button className="btn-generate" id="btn-approve-all" onClick={() => (window as any).approveAllDrafts()}>✅ Approve All Drafts</button>
           <button className="btn-generate" id="btn-unapprove-all" onClick={() => (window as any).unapproveAllApproved()}>↩️ Unapprove All</button>
           <button className="btn-generate" id="btn-send-all" onClick={() => (window as any).sendAllApproved()}>📤 Send All Approved</button>
+          <button className="btn-generate" id="btn-send-filtered" onClick={() => (window as any).sendFilteredApproved()} style={{ background: '#f0fdf4', borderColor: '#86efac', color: '#15803d' }}>📤 Send Filtered Approved</button>
+          <a className="btn-generate" href="/admin/emails" style={{ textDecoration: 'none', background: '#fdf4ff', borderColor: '#e9d5ff', color: '#7e22ce' }}>📨 Email Log</a>
           <button className="btn-generate" id="btn-pause-autosend" onClick={() => (window as any).toggleAutoSendPause()} style={{ background: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }}>⏸ Auto-send on 15th: checking…</button>
           <button className="btn-refresh" onClick={() => (window as any).loadInvoices()}>🔄 Refresh</button>
           <button className="btn-refresh" onClick={() => (window as any).logout()}>🚪 Log out</button>
