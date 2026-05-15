@@ -2929,9 +2929,9 @@ export default function SchedulePage() {
         apiRoute="/api/admin/ai-schedule"
         title="Schedule Assistant"
         accentColor="#1e3a5f"
-        placeholder="Ask the schedule assistant…"
-        variant="bottom-bar"
-        barBottom={48}
+        placeholder="e.g. Mark all today's lessons completed. Who is absent this week?"
+        fabTop={16}
+        fabSmall
       />
     </>
   );

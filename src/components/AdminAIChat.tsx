@@ -33,6 +33,7 @@ interface AdminAIChatProps {
   // FAB variant
   fabBottom?: number;
   fabTop?: number;
+  fabSmall?: boolean; // compact button — icon + short label, smaller padding
   // Bottom-bar variant
   variant?: 'fab' | 'bottom-bar';
   barBottom?: number; // px above the bar (e.g. 48 to clear legend tabs)
@@ -134,6 +135,7 @@ export default function AdminAIChat({
   placeholder = 'Ask me anything…',
   fabBottom = 24,
   fabTop,
+  fabSmall = false,
   variant = 'fab',
   barBottom = 48,
 }: AdminAIChatProps) {
@@ -356,15 +358,15 @@ export default function AdminAIChat({
       zIndex: 9000,
       display: 'flex',
       alignItems: 'center',
-      gap: 8,
-      padding: '12px 18px',
+      gap: fabSmall ? 5 : 8,
+      padding: fabSmall ? '6px 12px' : '12px 18px',
       background: accentColor,
       color: 'white',
       border: 'none',
       borderRadius: 28,
-      boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.18)',
       cursor: 'pointer',
-      fontSize: 14,
+      fontSize: fabSmall ? 12 : 14,
       fontWeight: 600,
       fontFamily: 'inherit',
       transition: 'transform 0.15s, box-shadow 0.15s',
@@ -662,8 +664,8 @@ export default function AdminAIChat({
           onClick={() => setOpen(true)}
           title={title}
         >
-          <span style={{ fontSize: 16 }}>✨</span>
-          {title}
+          <span style={{ fontSize: fabSmall ? 12 : 16 }}>✨</span>
+          {fabSmall ? 'AI' : title}
         </button>
       )}
 
