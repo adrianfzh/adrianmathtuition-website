@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import AdminAIChat from '@/components/AdminAIChat';
 
 const CSS = `
 html { font-size: 18px; }
@@ -2477,6 +2478,13 @@ export default function AdminPage() {
           <button id="btn-reset-email" className="btn btn-cancel" onClick={() => (window as any).resetCustomMessage()}>↩️ Reset to Default</button>
         </div>
       </div>
+
+      <AdminAIChat
+        apiRoute="/api/admin/ai-invoices"
+        title="Invoice Assistant"
+        accentColor="#1e3a5f"
+        placeholder="e.g. Who hasn't paid June yet? Fix carry-overs. Send amended to Chloe."
+      />
     </>
   );
 }

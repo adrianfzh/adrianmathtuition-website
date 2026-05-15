@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
+import AdminAIChat from '@/components/AdminAIChat';
 import { getTopicsForLevel, getExamTopicsForSubject, E_MATH_EXAM_TOPICS, A_MATH_EXAM_TOPICS, SEC12_EXAM_TOPICS, SECONDARY_FLAT, JC_FLAT } from '@/lib/canonical-topics';
 import {
   DndContext, DragOverlay,
@@ -2923,6 +2924,13 @@ export default function SchedulePage() {
 
       {/* Toast */}
       {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
+
+      <AdminAIChat
+        apiRoute="/api/admin/ai-schedule"
+        title="Schedule Assistant"
+        accentColor="#1e3a5f"
+        placeholder="e.g. Mark all today's lessons completed. Who is absent this week?"
+      />
     </>
   );
 }
