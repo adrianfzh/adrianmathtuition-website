@@ -41,6 +41,26 @@ export async function GET(req: NextRequest) {
   }
   const f = invoiceRecord.fields;
 
+  // ── Fast path: serve stored PDF URL directly (avoids Puppeteer regeneration) ──
+  // Only skip stored PDF when ?paid=true is requested (needs PAID stamp regeneration)
+  const storedPdfUrl: string = f['PDF URL'] || '';
+  if (storedPdfUrl && searchParams.get('paid') !== 'true') {
+    try {
+      const pdfRes = await fetch(storedPdfUrl);
+      if (pdfRes.ok) {
+        const storedName = f['Student Name'] || '';
+        const storedMonth = f['Month'] || recordId;
+        const filename = `AdrianMathTuition-Invoice-${storedName.replace(/\s+/g, '-')}-${storedMonth.replace(/[\s–]/g, '-')}.pdf`;
+        return new Response(pdfRes.body as unknown as BodyInit, {
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `inline; filename="${filename}"`,
+          },
+        });
+      }
+    } catch { /* stored PDF unavailable — fall through to regeneration */ }
+  }
+
   let studentName = '';
   let parentEmail = '';
   const studentId = f['Student']?.[0];
