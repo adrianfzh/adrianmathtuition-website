@@ -72,7 +72,7 @@ export default function JuneRevisionJC2Page() {
         {/* Notes */}
         <div style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', border: '1px solid #e2e8f0', fontSize: 14, color: '#475569', lineHeight: 1.7 }}>
           <strong style={{ color: '#0f172a' }}>Notes</strong>
-          <p style={{ margin: '8px 0 0 0', lineHeight: 1.6 }}>Each session: 1 hour of focused concept teaching, followed by 1.5 hours of guided practice.</p>
+          <p style={{ margin: '8px 0 0 0', lineHeight: 1.6 }}>Each session is split into concept teaching in the first hour, followed by guided practice for the rest of the lesson.</p>
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#94a3b8' }}>
