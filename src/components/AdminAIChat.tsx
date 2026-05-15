@@ -359,7 +359,7 @@ export default function AdminAIChat({
       display: 'flex',
       alignItems: 'center',
       gap: fabSmall ? 5 : 8,
-      padding: fabSmall ? '6px 12px' : '12px 18px',
+      padding: fabSmall ? '9px 19px' : '12px 18px',
       background: accentColor,
       color: 'white',
       border: 'none',
