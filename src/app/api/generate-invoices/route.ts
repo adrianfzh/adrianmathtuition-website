@@ -496,12 +496,14 @@ export async function POST(req: NextRequest) {
                   referrerNameGiven: referrerName,
                 });
                 const newFinalAmount = Math.max(0, referrerInvoice.finalAmount - rewardAmount);
+                const referralNote = `Thank you so much for referring ${newStudentName} to us! 🎉 As a token of our appreciation, we've applied a complimentary month of lessons to this invoice.`;
 
                 await airtableRequest('Invoices', `/${referrerInvoice.id}`, {
                   method: 'PATCH',
                   body: JSON.stringify({ fields: {
                     'Line Items Extra': JSON.stringify(existingExtra),
                     'Final Amount': newFinalAmount,
+                    'Auto Notes': referralNote,
                   }}),
                 });
 
