@@ -1237,9 +1237,24 @@ export default function AdminPage() {
       if (isAmended) {
         return `Dear Parent/Student,\n\nPlease find attached the amended invoice for ${inv.studentName} for ${inv.month} \u2014 ${amount}, due by ${inv.dueDate}.\n\nThis replaces the previously sent invoice. Please disregard the earlier email.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
       }
-      const welcomeLine = isFirstInvoice
-        ? `Welcome to Adrian's Math Tuition! I'm glad to have ${inv.studentName} on board.\n\n`
-        : '';
+
+      // June 2026 \u2014 level-based template preview
+      if (inv.month === 'June 2026') {
+        const lvl = (inv.studentLevel || '').replace(/\s+/g, '').toUpperCase();
+        const base = `Dear Parent/Student,\n\nPlease find attached the invoice for ${inv.studentName} for June 2026 \u2014 ${amount}, due by ${inv.dueDate}.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian\n\n\u2014\u2014\u2014`;
+        const wa = `https://wa.me/6591397985?text=${encodeURIComponent(`Hi Adrian, I'd like to sign up ${inv.studentName} for the June Holiday Revision Sprint.`)}`;
+        const howItWorks = `\n\nHow it works:\n\u2022 Revision lessons replace regular lessons in June (mutually exclusive).\n\u2022 Missed revision sessions convert to regular makeup lessons.\n\u2022 Payment due before the first lesson. Regular lessons resume in July.\n\u2022 If you opt out, the attached invoice stands.\n\nTo sign up: ${wa}`;
+        if (lvl === 'SEC4' || lvl === 'S4') {
+          return base + `\n\n\ud83c\udfc3 June Holiday Revision Sprint \u2014 Sec 4 (EM & AM)\n\nEM: Every Tue & Fri, 10am\u201312pm (2\u201326 Jun) \u2014 8 lessons, $500\nAM: Every Tue & Fri, 1pm\u20133pm (2\u201326 Jun) \u2014 8 lessons, $500\n\n$31.25/lesson-hour \u2014 focused exam-prep format.\nSchedule: adrianmathtuition.com/june-revision/sec4` + howItWorks;
+        }
+        if (lvl === 'JC2' || lvl === 'J2') {
+          return base + `\n\n\ud83c\udfc3 June Holiday Revision Sprint \u2014 JC2 H2 Mathematics\n\nEvery Mon & Thu, 12pm\u20132.30pm (1\u201325 Jun) \u2014 8 lessons, $600\n\n$30/lesson-hour \u2014 focused exam-prep format.\nSchedule: adrianmathtuition.com/june-revision/jc2` + howItWorks;
+        }
+        // Junior levels
+        return base + `\n\n\ud83c\udfd6\ufe0f June Holidays \u2014 Flexible Attendance (Policy Update)\n\nJune is a flexible-attendance month \u2014 lessons are optional if you have travel plans or would like a break. Fees will be prorated based on lessons attended, with the adjustment reflected in the July invoice. Just give me a heads up in advance.`;
+      }
+
+      const welcomeLine = isFirstInvoice ? `Welcome to Adrian's Math Tuition! I'm glad to have ${inv.studentName} on board.\n\n` : '';
       return `Dear Parent/Student,\n\n${welcomeLine}Please find attached the invoice for ${inv.studentName} for ${inv.month} \u2014 ${amount}, due by ${inv.dueDate}.\n\nTo pay, PayNow to 91397985 with reference ${paymentRef}.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nAdrian`;
     }
 

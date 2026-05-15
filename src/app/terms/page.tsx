@@ -105,6 +105,17 @@ const policies = [
   },
   {
     icon: '🏖️',
+    title: 'June Holidays',
+    body: (
+      <p>
+        June is a flexible-attendance month — lessons are optional if you have travel plans or would like a short break.
+        Fees will be prorated based on lessons attended in June, with any adjustment reflected in the July invoice. Just
+        give Adrian a heads up in advance so he can plan class sizes.
+      </p>
+    ),
+  },
+  {
+    icon: '🏖️',
     title: 'October, November & December Holidays',
     body: (
       <p>
