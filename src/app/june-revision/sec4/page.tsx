@@ -14,16 +14,16 @@ const HEADER_BG = '#1e3a5f';
 type Week = { label: string; tue: string; fri: string };
 
 const EM_WEEKS: Week[] = [
-  { label: 'Week 1 · 2 & 5 Jun',   tue: 'Algebra + Indices',                     fri: 'Coordinate Geometry + Graphs' },
-  { label: 'Week 2 · 9 & 12 Jun',  tue: 'Trigonometry + Congruency & Similarity', fri: 'Circle Properties + Circular Measure' },
-  { label: 'Week 3 · 16 & 19 Jun', tue: 'Mensuration + Real World Qns',               fri: 'Number Patterns + Proportion + Polygons' },
+  { label: 'Week 1  |  2 & 5 Jun',   tue: 'Algebra + Indices',                     fri: 'Coordinate Geometry + Graphs' },
+  { label: 'Week 2  |  9 & 12 Jun',  tue: 'Trigonometry + Congruency & Similarity', fri: 'Circle Properties + Circular Measure' },
+  { label: 'Week 3  |  16 & 19 Jun', tue: 'Mensuration + Real World Qns',               fri: 'Number Patterns + Proportion + Polygons' },
 ];
 
 const AM_WEEKS: Week[] = [
-  { label: 'Week 1 · 2 & 5 Jun',   tue: 'Quadratic Functions + Surds',                     fri: 'Indices & Logarithms' },
-  { label: 'Week 2 · 9 & 12 Jun',  tue: 'Coordinate Geometry & Circles',                    fri: 'Linear Law + Binomial Theorem' },
-  { label: 'Week 3 · 16 & 19 Jun', tue: 'Polynomials & Partial Fractions + Plane Geometry', fri: 'Trigonometry' },
-  { label: 'Week 4 · 23 & 26 Jun', tue: 'Differentiation and Applications',                  fri: 'Integration and Applications' },
+  { label: 'Week 1  |  2 & 5 Jun',   tue: 'Quadratic Functions + Surds',                     fri: 'Indices & Logarithms' },
+  { label: 'Week 2  |  9 & 12 Jun',  tue: 'Coordinate Geometry & Circles',                    fri: 'Linear Law + Binomial Theorem' },
+  { label: 'Week 3  |  16 & 19 Jun', tue: 'Polynomials & Partial Fractions + Plane Geometry', fri: 'Trigonometry' },
+  { label: 'Week 4  |  23 & 26 Jun', tue: 'Differentiation and Applications',                  fri: 'Integration and Applications' },
 ];
 
 function CalendarTable({ weeks, color, bg }: { weeks: Week[]; color: string; bg: string }) {
