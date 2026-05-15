@@ -106,8 +106,33 @@ export async function GET(req: NextRequest) {
     type: 'cash_unpaid',
   }));
 
+  // Fetch current-student referrals already applied (for the "Applied" history section)
+  const appliedFormula = encodeURIComponent(`AND({How Heard}='Referral',{Referral Reward Applied}=TRUE(),{Status}='Active',{Referral Type}='Current Student')`);
+  const appliedStudents = await airtableRequestAll('Students',
+    `?filterByFormula=${appliedFormula}&fields[]=Student Name&fields[]=Referred By Name`
+  );
+  const applied = appliedStudents.records.map((r: any) => ({
+    studentId: r.id,
+    studentName: r.fields['Student Name'] || '',
+    referrerNameGiven: r.fields['Referred By Name'] || '',
+  }));
+
+  // Fetch cash referrals already paid
+  const cashPaidFormula = encodeURIComponent(`AND({How Heard}='Referral',{Referral Cash Paid}=TRUE(),{Status}='Active')`);
+  const cashPaidStudents = await airtableRequestAll('Students',
+    `?filterByFormula=${cashPaidFormula}&fields[]=Student Name&fields[]=Referred By Name&fields[]=Referral Type`
+  );
+  const appliedCash = cashPaidStudents.records.map((r: any) => ({
+    studentId: r.id,
+    studentName: r.fields['Student Name'] || '',
+    referrerNameGiven: r.fields['Referred By Name'] || '',
+    referralType: r.fields['Referral Type'] || '',
+  }));
+
   return NextResponse.json({
     pending: pending.sort((a, b) => b.lessonsCompleted - a.lessonsCompleted),
     pendingCash,
+    applied,
+    appliedCash,
   });
 }

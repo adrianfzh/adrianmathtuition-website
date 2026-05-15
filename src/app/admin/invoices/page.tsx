@@ -1711,7 +1711,9 @@ export default function AdminPage() {
         const data = await res.json();
         const pending = (data.pending || []) as any[];
         const pendingCash = (data.pendingCash || []) as any[];
-        if (!pending.length && !pendingCash.length) return;
+        const applied = (data.applied || []) as any[];
+        const appliedCash = (data.appliedCash || []) as any[];
+        if (!pending.length && !pendingCash.length && !applied.length && !appliedCash.length) return;
         const el = document.getElementById('referral-status-banner');
         if (!el) return;
         // Split into 3 groups: no name given, eligible (12+), approaching (8–11)
@@ -1751,6 +1753,22 @@ export default function AdminPage() {
               <span style="color:#475569;">${escHtml(p.referrerNameGiven || '(no name)')} referred ${escHtml(p.studentName)} (${escHtml(p.referralType)})</span>
               <button onclick="markReferralCashPaid('${p.studentId}', this)" style="font-size:12px;background:#16a34a;color:#fff;border:none;border-radius:6px;padding:3px 10px;cursor:pointer;font-weight:600;">✅ Mark as paid</button>
             </div>`;
+          }
+          html += `</div>`;
+        }
+        if (applied.length) {
+          html += `<div style="margin-top:10px;border-top:1px solid #fcd34d;padding-top:8px;">`;
+          html += `<div style="font-weight:600;color:#15803d;margin-bottom:4px;">✅ Invoice credit applied:</div>`;
+          for (const a of applied) {
+            html += `<div style="margin:3px 0;color:#64748b;text-decoration:line-through;">${escHtml(a.referrerNameGiven || '(unknown)')} referred ${escHtml(a.studentName)}</div>`;
+          }
+          html += `</div>`;
+        }
+        if (appliedCash.length) {
+          html += `<div style="margin-top:${applied.length ? 6 : 10}px;${!applied.length ? 'border-top:1px solid #fcd34d;padding-top:8px;' : ''}">`;
+          html += `<div style="font-weight:600;color:#15803d;margin-bottom:4px;">✅ Cash paid ($150):</div>`;
+          for (const a of appliedCash) {
+            html += `<div style="margin:3px 0;color:#64748b;text-decoration:line-through;">${escHtml(a.referrerNameGiven || '(unknown)')} (${escHtml(a.referralType)}) — referred ${escHtml(a.studentName)}</div>`;
           }
           html += `</div>`;
         }
