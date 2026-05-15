@@ -16,8 +16,8 @@ type Week = { label: string; tue: string; fri: string };
 const EM_WEEKS: Week[] = [
   { label: 'Week 1 · 2 & 5 Jun',   tue: 'Algebra + Indices',                     fri: 'Coordinate Geometry + Graphs' },
   { label: 'Week 2 · 9 & 12 Jun',  tue: 'Trigonometry + Congruency & Similarity', fri: 'Circle Properties + Circular Measure' },
-  { label: 'Week 3 · 16 & 19 Jun', tue: 'Mensuration and Math In Real World Context', fri: 'Math In Real World Context' },
-  { label: 'Week 4 · 23 & 26 Jun', tue: 'Number Patterns, Proportion, Polygons and Arithmetic (Rate, Ratio, Percentages and Speed)', fri: 'Practice Paper' },
+  { label: 'Week 3 · 16 & 19 Jun', tue: 'Mensuration + Real World Qns',               fri: 'Number Patterns + Proportion + Polygons' },
+  { label: 'Week 4 · 23 & 26 Jun', tue: 'Arithmetic (Rate, Ratio, Percentages and Speed)',                                            fri: 'Practice Paper' },
 ];
 
 const AM_WEEKS: Week[] = [
