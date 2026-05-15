@@ -506,6 +506,7 @@ export default function AdminPage() {
     let totalVisible = false;
     let selectedMonth = '';
     let searchQuery = '';
+    let paymentFilter = '';
     let currentPreviewId = '';
 
     function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -660,6 +661,15 @@ export default function AdminPage() {
 
     function filteredInvoices() {
       let out = selectedMonth ? invoices.filter((i: any) => i.month === selectedMonth) : invoices;
+      if (paymentFilter) {
+        out = out.filter((i: any) => {
+          const outstanding = i.finalAmount - (i.amountPaid || 0);
+          if (paymentFilter === 'unpaid')  return i.status === 'Sent' && !i.isPaid && !(i.amountPaid > 0);
+          if (paymentFilter === 'partial') return i.status === 'Sent' && !i.isPaid && i.amountPaid > 0 && outstanding > 0;
+          if (paymentFilter === 'paid')    return i.isPaid || outstanding <= 0;
+          return true;
+        });
+      }
       if (searchQuery) {
         const q = searchQuery;
         out = out.filter((i: any) => {
@@ -669,6 +679,11 @@ export default function AdminPage() {
         });
       }
       return out;
+    }
+
+    function onPaymentFilter(val: string) {
+      paymentFilter = val;
+      renderAll();
     }
 
     function onSearchChange(val: string) {
@@ -2102,6 +2117,7 @@ export default function AdminPage() {
     w.unapproveAllApproved = unapproveAllApproved;
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
+    w.onPaymentFilter = onPaymentFilter;
     w.toggleAutoSendPause = toggleAutoSendPause;
     w.sendReminder = sendReminder;
     w.toggleReceiptForm = toggleReceiptForm;
@@ -2129,7 +2145,7 @@ export default function AdminPage() {
         'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
-        'toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
+        'onPaymentFilter','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'editAlias','cancelAlias','saveAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
@@ -2182,6 +2198,13 @@ export default function AdminPage() {
         </div>
         <div className="header-right">
           <select id="month-filter" onChange={(e) => (window as any).onMonthFilter(e.target.value)}></select>
+          <select id="payment-filter" onChange={(e) => (window as any).onPaymentFilter(e.target.value)}
+            style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px', fontSize: 13, background: 'white', cursor: 'pointer' }}>
+            <option value="">All payments</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partially paid</option>
+            <option value="paid">Fully paid</option>
+          </select>
           <span id="approval-counter"></span>
           <span id="summary"></span>
           <button className="btn-generate" id="btn-generate-invoices" onClick={() => (window as any).generateInvoices()}>📄 Generate Missing Invoices</button>
