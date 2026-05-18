@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { put } from '@vercel/blob/client';
 
 const SLUG_TO_LABEL: Record<string, string> = {
   's1': 'S1', 's2': 'S2',
@@ -142,17 +143,36 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
       }
       setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'uploading' } : p));
       try {
-        const fd = new FormData();
-        fd.append('file', pf.file); fd.append('title', pf.title.trim()); fd.append('level', level);
-        const res = await fetch('/api/admin-notes/upload', {
-          method: 'POST', headers: { Authorization: `Bearer ${pw}` }, body: fd,
-        });
-        if (!res.ok) {
-          const text = await res.text().catch(() => '');
-          let msg = `HTTP ${res.status}`;
-          try { const d = JSON.parse(text); msg = d.error ?? msg; } catch { if (text) msg += `: ${text.slice(0, 120)}`; }
-          throw new Error(msg);
+        // Step 1: Get a short-lived client upload token from our server
+        const tokenRes = await fetch(
+          `/api/admin-notes/upload-token?level=${encodeURIComponent(level)}&filename=${encodeURIComponent(pf.file.name)}`,
+          { headers: { Authorization: `Bearer ${pw}` } }
+        );
+        if (!tokenRes.ok) {
+          const d = await tokenRes.json().catch(() => ({}));
+          throw new Error(d.error ?? `Token error HTTP ${tokenRes.status}`);
         }
+        const { token, pathname } = await tokenRes.json();
+
+        // Step 2: Upload directly from browser to Vercel Blob (no Next.js body limit)
+        const blob = await put(pathname, pf.file, {
+          access: 'public',
+          token,
+          multipart: pf.file.size > 5 * 1024 * 1024, // multipart for files > 5 MB
+          contentType: 'application/pdf',
+        });
+
+        // Step 3: Register in Airtable
+        const regRes = await fetch('/api/admin-notes/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` },
+          body: JSON.stringify({ blobUrl: blob.url, blobPathname: blob.pathname, title: pf.title.trim(), level }),
+        });
+        if (!regRes.ok) {
+          const d = await regRes.json().catch(() => ({}));
+          throw new Error(d.error ?? `Register error HTTP ${regRes.status}`);
+        }
+
         setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'done' } : p));
         anyDone = true;
       } catch (err: unknown) {
