@@ -190,53 +190,80 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     }
   }
 
-  const [tab, setTab] = useState<'print' | 'manage'>('print');
-
   return (
     <>
       <style>{css}</style>
-      <div className="nl-wrap" onDragOver={e => { e.preventDefault(); if (tab === 'manage') setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={e => { if (tab === 'manage') onDrop(e); else e.preventDefault(); }}>
+      <div className="nl-wrap" onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={onDrop}>
 
         {/* Header */}
         <div className="nl-header">
           <a href="/admin/notes" className="nl-back">← Notes</a>
-          <span className="nl-title">{levelLabel}</span>
+          <span className="nl-title">{levelLabel} Notes</span>
+          <button className={`nl-edit-btn${editMode ? ' active' : ''}`} onClick={() => { setEditMode(e => !e); setRenamingId(null); }}>
+            {editMode ? 'Done' : 'Edit'}
+          </button>
         </div>
 
-        {/* Tab bar */}
-        <div className="nl-tabs">
-          <button className={`nl-tab${tab === 'print' ? ' active' : ''}`} onClick={() => setTab('print')}>🖨 Print</button>
-          <button className={`nl-tab${tab === 'manage' ? ' active' : ''}`} onClick={() => setTab('manage')}>⚙️ Manage</button>
-        </div>
-
-        {/* Drag overlay (manage tab only) */}
-        {dragging && tab === 'manage' && (
+        {/* Drag overlay */}
+        {dragging && (
           <div className="nl-drag-overlay">
             <div className="nl-drag-msg">📄 Drop PDFs to upload</div>
           </div>
         )}
 
         <div className="nl-body">
-          {/* ── Print tab ── */}
-          {tab === 'print' && (
-            loading ? <div className="nl-loading">Loading…</div>
-            : error   ? <div className="nl-error">{error}</div>
-            : notes.length === 0
-              ? <div className="nl-empty">No notes yet — go to Manage to upload</div>
-              : <div className="nl-grid">
-                  {notes.map(note => (
-                    <a key={note.id} href={`/admin/notes/${level}/${note.id}`} className="nl-card">
+          {/* Notes grid */}
+          {loading ? (
+            <div className="nl-loading">Loading…</div>
+          ) : error ? (
+            <div className="nl-error">{error}</div>
+          ) : notes.length === 0 ? (
+            <div className="nl-empty">No notes yet — upload below</div>
+          ) : (
+            <div className="nl-grid">
+              {notes.map(note => (
+                <div key={note.id} className="nl-card-wrap">
+                  {renamingId === note.id ? (
+                    <div className="nl-rename-wrap">
+                      <input
+                        ref={renameInputRef}
+                        className="nl-rename-input"
+                        value={renameValue}
+                        onChange={e => setRenameValue(e.target.value)}
+                        onBlur={() => commitRename(note.id)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') commitRename(note.id);
+                          if (e.key === 'Escape') setRenamingId(null);
+                        }}
+                      />
+                    </div>
+                  ) : editMode ? (
+                    <div className="nl-card nl-card-edit">
+                      <span className="nl-card-text">{note.title}</span>
+                      <div className="nl-edit-actions">
+                        <button className="nl-action-btn" onClick={() => startRename(note)}>✏️</button>
+                        <button className="nl-action-btn nl-delete-btn" onClick={() => handleDelete(note.id)} disabled={deletingId === note.id}>
+                          {deletingId === note.id ? '…' : '🗑'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <a href={`/admin/notes/${level}/${note.id}`} className="nl-card">
                       <span className="nl-card-text">{note.title}</span>
                     </a>
-                  ))}
+                  )}
                 </div>
+              ))}
+            </div>
           )}
 
-          {/* ── Manage tab ── */}
-          {tab === 'manage' && (
-            <div className="nl-manage">
-              {/* Upload form */}
-              <div className="nl-section-label">Upload</div>
+          {/* Upload section — collapsed by default */}
+          <div className="nl-upload-section">
+            <button className="nl-upload-toggle" onClick={() => setUploadOpen(o => !o)}>
+              {uploadOpen ? '▲ Hide upload' : '＋ Upload notes'}
+            </button>
+
+            {uploadOpen && (
               <form className="nl-upload-form" onSubmit={handleUpload}>
                 <label className="nl-drop-zone">
                   <span className="nl-drop-icon">📄</span>
@@ -280,46 +307,8 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                     : pendingFiles.length > 1 ? `Upload All (${pendingFiles.length})` : 'Upload'}
                 </button>
               </form>
-
-              {/* Notes list with rename + delete */}
-              <div className="nl-section-label" style={{ marginTop: 28 }}>Notes</div>
-              {loading ? (
-                <div className="nl-loading">Loading…</div>
-              ) : error ? (
-                <div className="nl-error">{error}</div>
-              ) : notes.length === 0 ? (
-                <div className="nl-empty">No notes yet</div>
-              ) : (
-                <div className="nl-manage-list">
-                  {notes.map(note => (
-                    <div key={note.id} className="nl-manage-row">
-                      {renamingId === note.id ? (
-                        <input
-                          ref={renameInputRef}
-                          className="nl-rename-input"
-                          value={renameValue}
-                          onChange={e => setRenameValue(e.target.value)}
-                          onBlur={() => commitRename(note.id)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') commitRename(note.id);
-                            if (e.key === 'Escape') setRenamingId(null);
-                          }}
-                        />
-                      ) : (
-                        <span className="nl-manage-title" onClick={() => startRename(note)}>{note.title}</span>
-                      )}
-                      <div className="nl-manage-actions">
-                        <button className="nl-action-btn" onClick={() => startRename(note)} title="Rename">✏️</button>
-                        <button className="nl-action-btn nl-delete-btn" onClick={() => handleDelete(note.id)} disabled={deletingId === note.id} title="Delete">
-                          {deletingId === note.id ? '…' : '🗑'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {toast && <div className="nl-toast">{toast}</div>}
@@ -343,17 +332,12 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 .nl-back { font-size: 14px; color: #2563eb; text-decoration: none; white-space: nowrap; }
 .nl-back:hover { text-decoration: underline; }
 .nl-title { flex: 1; font-size: 17px; font-weight: 700; color: #111827; }
-
-/* Tab bar */
-.nl-tabs {
-  display: flex; background: #fff; border-bottom: 1px solid #e5e7eb;
+.nl-edit-btn {
+  font-size: 14px; font-weight: 600; padding: 5px 14px;
+  border: 1px solid #d1d5db; border-radius: 8px; background: #fff;
+  color: #374151; cursor: pointer;
 }
-.nl-tab {
-  flex: 1; padding: 11px 0; font-size: 14px; font-weight: 600;
-  border: none; background: none; cursor: pointer; color: #6b7280;
-  border-bottom: 2px solid transparent; transition: color 0.15s;
-}
-.nl-tab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; }
+.nl-edit-btn.active { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
 
 /* Drag overlay */
 .nl-drag-overlay {
@@ -397,38 +381,44 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
   font-size: 14px; font-weight: 600; color: #111827; line-height: 1.35;
 }
 
-/* Manage tab */
-.nl-manage { display: flex; flex-direction: column; gap: 0; }
-.nl-section-label {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 10px;
+/* Edit-mode card */
+.nl-card-edit {
+  display: flex; flex-direction: column; align-items: stretch;
+  min-height: 80px; padding: 12px;
+  background: #fff; border-radius: 12px;
+  border: 2px solid #fbbf24;
+  gap: 8px;
 }
-.nl-manage-list {
-  background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden;
-}
-.nl-manage-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 12px 14px; border-bottom: 1px solid #f3f4f6;
-  min-height: 52px;
-}
-.nl-manage-row:last-child { border-bottom: none; }
-.nl-manage-title {
-  flex: 1; font-size: 14px; font-weight: 600; color: #111827;
-  cursor: pointer;
-}
-.nl-manage-title:hover { color: #1e3a5f; }
-.nl-manage-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.nl-card-edit .nl-card-text { font-size: 13px; color: #374151; flex: 1; }
+.nl-edit-actions { display: flex; gap: 6px; justify-content: flex-end; }
 .nl-action-btn {
   background: #f3f4f6; border: none; border-radius: 6px;
-  cursor: pointer; font-size: 15px; padding: 5px 8px;
+  cursor: pointer; font-size: 15px; padding: 4px 8px;
 }
 .nl-action-btn:active { background: #e5e7eb; }
 .nl-delete-btn:hover { background: #fee2e2; }
-.nl-rename-input {
-  flex: 1; border: 1px solid #1e3a5f; border-radius: 6px; outline: none;
-  font-size: 14px; font-weight: 600; color: #111827;
-  font-family: inherit; padding: 5px 8px; background: #f0f4f8;
+
+/* Rename */
+.nl-rename-wrap {
+  min-height: 80px; display: flex; align-items: center;
+  background: #fff; border-radius: 12px; border: 2px solid #1e3a5f;
+  padding: 8px;
 }
+.nl-rename-input {
+  width: 100%; border: none; outline: none;
+  font-size: 14px; font-weight: 600; color: #111827;
+  font-family: inherit; background: transparent;
+}
+
+/* Upload section */
+.nl-upload-section { margin-top: 8px; }
+.nl-upload-toggle {
+  width: 100%; padding: 12px; background: #fff;
+  border: 1px dashed #d1d5db; border-radius: 10px;
+  font-size: 14px; font-weight: 600; color: #6b7280;
+  cursor: pointer; text-align: center;
+}
+.nl-upload-toggle:hover { border-color: #9ca3af; color: #374151; }
 .nl-upload-form { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
 .nl-drop-zone {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
