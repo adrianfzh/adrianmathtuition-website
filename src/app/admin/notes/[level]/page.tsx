@@ -75,6 +75,28 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     setPendingFiles(prev => prev.map((pf, i) => i === idx ? { ...pf, title: val } : pf));
   }
 
+  // Drag-and-drop
+  const [dragging, setDragging] = useState(false);
+
+  function onDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setDragging(true);
+  }
+  function onDragLeave(e: React.DragEvent) {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false);
+  }
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragging(false);
+    const dropped = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+    if (!dropped.length) return;
+    setPendingFiles(dropped.map(f => ({
+      file: f,
+      title: fileNameToTitle(f.name),
+      status: 'pending' as const,
+    })));
+  }
+
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -198,21 +220,33 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
           <div className="notes-card">
             <div className="notes-section-label">Upload Notes</div>
             <form onSubmit={handleUpload}>
-              {/* File picker */}
-              <label className="upload-file-btn" style={{ display: 'block', marginBottom: 12 }}>
-                {pendingFiles.length === 0
-                  ? 'Choose PDF(s)…'
-                  : `${pendingFiles.length} file${pendingFiles.length > 1 ? 's' : ''} selected`}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="application/pdf"
-                  multiple
-                  style={{ display: 'none' }}
-                  onChange={onFilesSelected}
-                  disabled={uploading}
-                />
-              </label>
+              {/* Drop zone / file picker */}
+              <div
+                className={`drop-zone${dragging ? ' drop-zone-active' : ''}`}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+              >
+                <label className="drop-zone-label">
+                  <span className="drop-zone-icon">📄</span>
+                  <span className="drop-zone-text">
+                    {dragging
+                      ? 'Drop PDFs here'
+                      : pendingFiles.length === 0
+                        ? <>Drag &amp; drop PDFs here, or <span className="drop-zone-browse">browse</span></>
+                        : `${pendingFiles.length} file${pendingFiles.length > 1 ? 's' : ''} selected — drop more to replace`}
+                  </span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={onFilesSelected}
+                    disabled={uploading}
+                  />
+                </label>
+              </div>
 
               {/* Per-file title rows */}
               {pendingFiles.length > 0 && (
@@ -485,6 +519,22 @@ const css = `
   white-space: nowrap;
   box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 12px;
+}
+.drop-zone:hover { border-color: #1e3a5f; background: #f0f4f8; }
+.drop-zone-active { border-color: #1e3a5f !important; background: #e8f0f8 !important; }
+.drop-zone-label { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.drop-zone-icon { font-size: 28px; }
+.drop-zone-text { font-size: 14px; color: #6b7280; }
+.drop-zone-browse { color: #1e3a5f; font-weight: 600; text-decoration: underline; }
 /* Bulk upload */
 .bulk-file-list {
   display: flex;
