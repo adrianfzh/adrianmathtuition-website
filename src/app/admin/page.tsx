@@ -153,6 +153,7 @@ const LAUNCHERS = [
   { emoji: '📅', title: 'Schedule',  sub: 'Weekly lessons · drag to reschedule', href: '/admin/schedule'  },
   { emoji: '✏️', title: 'Progress',  sub: "Log today's lesson outcomes",          href: '/admin/progress'  },
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
+  { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
   { emoji: '🎓', title: 'Students',     sub: 'Student records (coming soon)',            href: '/admin/students'     },
   { emoji: '📋', title: 'Attendance',   sub: 'Search student · lesson history',           href: '/admin/attendance'   },
   { emoji: '💡', title: 'Improvements', sub: 'Suggestion clusters · approve prompt rules', href: '/admin/improvements' },
