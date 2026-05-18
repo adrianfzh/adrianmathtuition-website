@@ -164,14 +164,6 @@ export default function BotAnalytics() {
   const [batches, setBatches]       = useState<{ batchId: string; clusters: Cluster[] }[]>([]);
   const [rates, setRates]           = useState<{ topic: string; rate: number; sugs: number; qs: number }[]>([]);
   const [trend, setTrend]           = useState<{ date: string; count: number }[]>([]);
-  const [pendingSugs, setPendingSugs] = useState<{
-    key: string; suggestion: string; date: string; basedOn: number | null;
-    issue?: string | null; question?: string | null; model?: string | null;
-    category?: string | null; level?: string | null;
-  }[]>([]);
-  const [pendingSugsError, setPendingSugsError] = useState(false);
-  const [selectedSugKeys, setSelectedSugKeys] = useState<Set<string>>(new Set());
-  const [bulkLoading, setBulkLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -208,6 +200,26 @@ export default function BotAnalytics() {
   const [chatLoading, setChatLoading] = useState(false);
   const [contextItem, setContextItem] = useState<any>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  // Lint reports — populated by cron/prompt-lint.js, one row per (run_at, stack)
+  type LintFinding = {
+    category: string; severity: 'high' | 'medium' | 'low';
+    headline: string; source_a?: string | null; source_b?: string | null; fix?: string | null;
+  };
+  type LintRow = {
+    id: string; run_at: string; stack_level: 'AM' | 'EM' | 'JC';
+    summary_json: Record<string, number>;
+    findings_json: LintFinding[];
+    model_used?: string; duration_ms?: number; error_text?: string | null;
+  };
+  type LintRun = { run_at: string; stacks: Partial<Record<'AM'|'EM'|'JC', LintRow>> };
+  const [lintRuns, setLintRuns] = useState<LintRun[]>([]);
+  const [lintRunIdx, setLintRunIdx] = useState(0);
+  const [lintStack, setLintStack] = useState<'all'|'AM'|'EM'|'JC'>('all');
+  const [lintExpanded, setLintExpanded] = useState(false);
+  // Auto-expand if user arrives via Telegram digest link with #lint anchor
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#lint') setLintExpanded(true);
+  }, []);
   const pw = getAuth();
   const auth = { Authorization: `Bearer ${pw}` };
 
@@ -218,13 +230,14 @@ export default function BotAnalytics() {
       fetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/synthesis-batches`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`, { headers: auth }).then(r => r.json()),
-      fetch(`/api/admin/cockpit/pending-suggestions`, { headers: auth }).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
-    ]).then(([qd, bd, rd, sd]) => {
+      fetch(`/api/admin/cockpit/lint-reports?limit=12`, { headers: auth }).then(r => r.ok ? r.json() : { runs: [] }).catch(() => ({ runs: [] })),
+    ]).then(([qd, bd, rd, ld]) => {
       setQuestions(computeFlags(qd.questions || []));
       setBatches(bd.batches || []);
       setRates(rd.rates || []);
       setTrend(rd.trend || []);
-      setPendingSugs(sd.suggestions || []);
+      setLintRuns(ld.runs || []);
+      setLintRunIdx(0);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [days, pw]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -319,14 +332,13 @@ export default function BotAnalytics() {
     const d = await r.json();
     if (d.ok) {
       setChatMessages(prev => [...prev, { role: 'assistant', content: '✅ Rule appended to prompt_additions.txt' }]);
-      // Auto-dismiss the originating suggestion from the left panel (if opened via Discuss)
+      // Auto-dismiss the originating suggestion from the server (if opened via Discuss)
       const sugKey = contextItem?.suggestionKey;
       if (sugKey) {
         await fetch('/api/admin/cockpit/dismiss-suggestion', {
           method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
           body: JSON.stringify({ key: sugKey }),
         });
-        setPendingSugs(prev => prev.filter(x => x.key !== sugKey));
       }
     } else {
       alert('Failed: ' + (d.error || 'unknown error'));
@@ -401,6 +413,107 @@ export default function BotAnalytics() {
 
       {loading && <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>Loading…</div>}
 
+      {/* ─── Lint section (collapsible) ─────────────────────────────── */}
+      {!loading && lintRuns.length > 0 && (() => {
+        const run = lintRuns[lintRunIdx];
+        const stacks = (['AM','EM','JC'] as const).filter(s => run.stacks[s]);
+        const filterStacks = lintStack === 'all' ? stacks : stacks.filter(s => s === lintStack);
+        const allFindings = filterStacks.flatMap(s => (run.stacks[s]?.findings_json || []).map(f => ({ ...f, _stack: s })));
+        const highCount = allFindings.filter(f => f.severity === 'high').length;
+        const sevOrder = { high: 0, medium: 1, low: 2 } as const;
+        const sortedFindings = allFindings.slice().sort((a, b) => (sevOrder[a.severity] ?? 3) - (sevOrder[b.severity] ?? 3));
+        const sevEmoji = (s: string) => s === 'high' ? '🔴' : s === 'medium' ? '🟡' : '⚪️';
+        const catLabel: Record<string, string> = {
+          hard_contradiction: '❗ Contradiction',
+          method_conflict: '⚠️ Method conflict',
+          duplication: '🔁 Duplication',
+          vague_rule: '🌫 Vague',
+          stale_reference: '🏚 Stale',
+          bloat_warning: '📏 Bloat',
+        };
+        const dateStr = new Date(run.run_at).toISOString().slice(0, 10);
+        return (
+          <div id="lint" style={{ background: '#fffbea', borderBottom: '1px solid #fcd34d' }}>
+            <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', cursor: 'pointer' }}
+              onClick={() => setLintExpanded(!lintExpanded)}>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>🧹 Prompt Lint</span>
+              <span style={{ fontSize: 12, color: '#92400e' }}>{dateStr}</span>
+              <span style={{ fontSize: 12, color: '#92400e' }}>
+                {allFindings.length} findings ({highCount} 🔴 high)
+              </span>
+              <span style={{ marginLeft: 'auto', fontSize: 12, color: '#64748b' }}>
+                {lintExpanded ? '▾ collapse' : '▸ expand'}
+              </span>
+            </div>
+            {lintExpanded && (
+              <div style={{ padding: '0 20px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {/* Controls */}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 12, color: '#64748b' }}>Run:</span>
+                  <select value={lintRunIdx} onChange={e => setLintRunIdx(parseInt(e.target.value))}
+                    style={{ border: '1px solid #fcd34d', borderRadius: 6, padding: '3px 6px', fontSize: 12, background: '#fff' }}>
+                    {lintRuns.map((r, i) => {
+                      const ds = new Date(r.run_at).toISOString().slice(0, 16).replace('T', ' ');
+                      const totalCount = Object.values(r.stacks).reduce((s: number, x: any) => s + (x?.findings_json?.length || 0), 0);
+                      return <option key={r.run_at} value={i}>{ds} ({totalCount} findings)</option>;
+                    })}
+                  </select>
+                  <span style={{ fontSize: 12, color: '#64748b', marginLeft: 8 }}>Stack:</span>
+                  {(['all','AM','EM','JC'] as const).map(s => (
+                    <button key={s} onClick={() => setLintStack(s)} style={{
+                      padding: '3px 10px', borderRadius: 6, border: '1px solid #fcd34d', fontSize: 12,
+                      background: lintStack === s ? '#1e3a5f' : '#fff', color: lintStack === s ? '#fff' : '#92400e',
+                      cursor: 'pointer',
+                    }}>{s === 'all' ? `All (${allFindings.length})` : `${s} (${(run.stacks[s]?.findings_json || []).length})`}</button>
+                  ))}
+                </div>
+
+                {/* Per-stack summary chips */}
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 11, color: '#92400e' }}>
+                  {filterStacks.map(s => {
+                    const sum = run.stacks[s]?.summary_json || {};
+                    const parts: string[] = [];
+                    if (sum.hard_contradictions) parts.push(`${sum.hard_contradictions}❗`);
+                    if (sum.method_conflicts) parts.push(`${sum.method_conflicts}⚠️`);
+                    if (sum.duplications) parts.push(`${sum.duplications}🔁`);
+                    if (sum.vague_rules) parts.push(`${sum.vague_rules}🌫`);
+                    if (sum.stale_references) parts.push(`${sum.stale_references}🏚`);
+                    if (sum.bloat_warnings) parts.push(`${sum.bloat_warnings}📏`);
+                    return <span key={s} style={{ background: '#fef3c7', padding: '3px 8px', borderRadius: 6 }}>
+                      <b>{s}</b> · {parts.join(' ') || '✅ clean'}
+                    </span>;
+                  })}
+                </div>
+
+                {/* Findings list */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {sortedFindings.length === 0 && (
+                    <div style={{ fontSize: 13, color: '#16a34a', padding: 8 }}>✅ No findings.</div>
+                  )}
+                  {sortedFindings.map((f, i) => (
+                    <details key={i} style={{
+                      background: '#fff', border: '1px solid #fcd34d', borderRadius: 8, padding: '8px 12px',
+                    }}>
+                      <summary style={{ cursor: 'pointer', fontSize: 13, listStyle: 'none', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 14 }}>{sevEmoji(f.severity)}</span>
+                        <span style={{ background: '#1e3a5f', color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8 }}>{(f as any)._stack}</span>
+                        <span style={{ fontSize: 10, color: '#64748b' }}>{catLabel[f.category] || f.category}</span>
+                        <span style={{ flex: 1, color: '#1e293b' }}>{f.headline}</span>
+                      </summary>
+                      <div style={{ marginTop: 8, fontSize: 12, color: '#475569', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {f.source_a && <div><b>Source A:</b> <code style={{ background: '#f1f5f9', padding: '1px 4px', borderRadius: 3 }}>{f.source_a}</code></div>}
+                        {f.source_b && <div><b>Source B:</b> <code style={{ background: '#f1f5f9', padding: '1px 4px', borderRadius: 3 }}>{f.source_b}</code></div>}
+                        {f.fix && <div style={{ marginTop: 4, padding: 6, background: '#f0fdf4', borderRadius: 4, color: '#15803d' }}>→ <b>Fix:</b> {f.fix}</div>}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {!loading && (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
@@ -467,150 +580,6 @@ export default function BotAnalytics() {
                   </div>
                 );
               })}
-
-              {/* Suggested Rules from daily verification */}
-              {pendingSugsError && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#b91c1c', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>⚠️ Prompt rules endpoint unavailable — bot may still be deploying</span>
-                  <button onClick={load} style={{ fontSize: 11, background: 'none', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', color: '#b91c1c', cursor: 'pointer' }}>Retry</button>
-                </div>
-              )}
-              {pendingSugs.length > 0 && (() => {
-                const allSelected = pendingSugs.length > 0 && pendingSugs.every(s => selectedSugKeys.has(s.key));
-                const anySelected = selectedSugKeys.size > 0;
-                const numSelected = selectedSugKeys.size;
-
-                async function applyKeys(keys: string[]) {
-                  setBulkLoading(true);
-                  for (const key of keys) {
-                    const s = pendingSugs.find(x => x.key === key);
-                    if (!s) continue;
-                    await fetch('/api/admin/cockpit/append-rule', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
-                      body: JSON.stringify({ rule: s.suggestion, theme: 'daily-verification', sourceContext: JSON.stringify(s) }),
-                    });
-                    await fetch('/api/admin/cockpit/dismiss-suggestion', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
-                      body: JSON.stringify({ key }),
-                    });
-                  }
-                  setPendingSugs(prev => prev.filter(x => !keys.includes(x.key)));
-                  setSelectedSugKeys(new Set());
-                  setBulkLoading(false);
-                }
-
-                async function dismissKeys(keys: string[]) {
-                  setBulkLoading(true);
-                  for (const key of keys) {
-                    await fetch('/api/admin/cockpit/dismiss-suggestion', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
-                      body: JSON.stringify({ key }),
-                    });
-                  }
-                  setPendingSugs(prev => prev.filter(x => !keys.includes(x.key)));
-                  setSelectedSugKeys(new Set());
-                  setBulkLoading(false);
-                }
-
-                return (
-                  <div style={{ marginTop: 16 }}>
-                    {/* Header + bulk actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: '#475569' }}>
-                        <input type="checkbox" checked={allSelected} onChange={e => {
-                          if (e.target.checked) setSelectedSugKeys(new Set(pendingSugs.map(s => s.key)));
-                          else setSelectedSugKeys(new Set());
-                        }} style={{ width: 14, height: 14 }} />
-                        {allSelected ? 'Deselect all' : 'Select all'}
-                      </label>
-                      <span style={{ fontWeight: 600, fontSize: 13, color: '#475569', flex: 1 }}>
-                        💡 Suggested Rules ({pendingSugs.length})
-                        {anySelected && <span style={{ fontWeight: 400, color: '#94a3b8' }}> · {numSelected} selected</span>}
-                      </span>
-                      {anySelected && (
-                        <>
-                          <button disabled={bulkLoading} onClick={() => applyKeys([...selectedSugKeys])}
-                            style={{ fontSize: 12, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600, opacity: bulkLoading ? 0.5 : 1 }}>
-                            ✅ Apply {numSelected}
-                          </button>
-                          <button disabled={bulkLoading} onClick={() => dismissKeys([...selectedSugKeys])}
-                            style={{ fontSize: 12, background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#64748b', opacity: bulkLoading ? 0.5 : 1 }}>
-                            Dismiss {numSelected}
-                          </button>
-                        </>
-                      )}
-                      {!anySelected && (
-                        <>
-                          <button disabled={bulkLoading} onClick={() => { if (confirm(`Apply all ${pendingSugs.length} rules?`)) applyKeys(pendingSugs.map(s => s.key)); }}
-                            style={{ fontSize: 12, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600, opacity: bulkLoading ? 0.5 : 1 }}>
-                            ✅ Apply all
-                          </button>
-                          <button disabled={bulkLoading} onClick={() => { if (confirm(`Dismiss all ${pendingSugs.length} rules?`)) dismissKeys(pendingSugs.map(s => s.key)); }}
-                            style={{ fontSize: 12, background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#64748b', opacity: bulkLoading ? 0.5 : 1 }}>
-                            Dismiss all
-                          </button>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Individual cards */}
-                    {pendingSugs.map(s => {
-                      const isSelected = selectedSugKeys.has(s.key);
-                      return (
-                        <div key={s.key} style={{ background: isSelected ? '#fef9c3' : '#fffbeb', border: `1px solid ${isSelected ? '#f59e0b' : '#fcd34d'}`, borderRadius: 8, padding: '10px 14px', marginBottom: 8 }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
-                            <input type="checkbox" checked={isSelected}
-                              onChange={e => setSelectedSugKeys(prev => {
-                                const next = new Set(prev);
-                                e.target.checked ? next.add(s.key) : next.delete(s.key);
-                                return next;
-                              })}
-                              style={{ width: 14, height: 14, marginTop: 2, flexShrink: 0, cursor: 'pointer' }} />
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 11, color: '#92400e', marginBottom: 6, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                                {s.basedOn != null && <span>Based on {s.basedOn} flagged answer{s.basedOn !== 1 ? 's' : ''}</span>}
-                                <span>· {s.date}</span>
-                                {s.model && <span style={{ background: '#fef9c3', borderRadius: 4, padding: '1px 5px' }}>{s.model.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus')}</span>}
-                                {s.level && s.level !== 'unknown' && <span style={{ background: '#f0fdf4', borderRadius: 4, padding: '1px 5px', color: '#15803d' }}>{s.level}</span>}
-                              </div>
-                              {s.issue && (
-                                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#dc2626', lineHeight: 1.5 }}>
-                                  ⚠ {s.issue}
-                                </div>
-                              )}
-                              {s.question && s.question !== '(image question)' && (
-                                <div style={{ background: '#f8fafc', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#475569', lineHeight: 1.5, fontStyle: 'italic' }}>
-                                  📝 Q: {s.question.slice(0, 200)}{s.question.length > 200 ? '…' : ''}
-                                </div>
-                              )}
-                              {s.question === '(image question)' && (
-                                <div style={{ background: '#f8fafc', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#94a3b8' }}>
-                                  📷 Image question — check flagged tab for {s.date}
-                                </div>
-                              )}
-                              <div style={{ fontSize: 13, lineHeight: 1.5, color: '#1e293b', marginBottom: 8, fontStyle: 'italic' }}>"{s.suggestion}"</div>
-                              <div style={{ display: 'flex', gap: 6 }}>
-                                <button disabled={bulkLoading} onClick={() => applyKeys([s.key])}
-                                  style={{ fontSize: 12, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600, opacity: bulkLoading ? 0.5 : 1 }}>
-                                  ✅ Apply
-                                </button>
-                                <button onClick={() => selectCluster({ theme: 'Suggested rule', proposed_rule: s.suggestion, confidence: 'medium', affects_topics: [], suggestion_ids: [] })}
-                                  style={{ fontSize: 12, background: '#1e3a5f', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600 }}>
-                                  ✦ Discuss
-                                </button>
-                                <button disabled={bulkLoading} onClick={() => dismissKeys([s.key])}
-                                  style={{ fontSize: 12, background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#64748b', opacity: bulkLoading ? 0.5 : 1 }}>
-                                  Dismiss
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
 
               {/* Clusters */}
               {totalClusters > 0 && (
