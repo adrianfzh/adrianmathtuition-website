@@ -41,52 +41,138 @@ type Difficulty = typeof DIFFICULTIES[number];
 
 const STORAGE_BUCKET = 'https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/';
 
+// Returns a usable image URL for the question, or null.
+//
+// image_url is a TEXT column that historically holds three shapes:
+//   1. NULL / '' / '[]'           → no image
+//   2. 'question_images/x.png' or 'https://...'  → single ref (legacy single-image rows)
+//   3. '["question_images/x.png", "question_images/y.png"]'  → JSON-serialized array (~3,620 rows)
+// Plus the `images` jsonb column on newer rows.
+//
+// This helper normalises all three into a single rendered URL (first image only).
 function questionImageUrl(q: BankQuestion): string | null {
-  if (q.image_url) {
-    return q.image_url.startsWith('http') ? q.image_url : STORAGE_BUCKET + q.image_url.replace(/^question_images\//, '');
+  const toStorageUrl = (s: string): string =>
+    s.startsWith('http') ? s : STORAGE_BUCKET + s.replace(/^question_images\//, '');
+
+  const isPlausibleFilename = (s: string | null | undefined): s is string =>
+    typeof s === 'string' && s.length >= 6 && !['[]', '{}', 'null', 'undefined', '[object Object]'].includes(s.trim());
+
+  // Try image_url: handle JSON-array shape first, fall back to plain string
+  const raw = q.image_url?.trim();
+  if (raw && raw !== '[]' && raw.length >= 3) {
+    if (raw.startsWith('[') && raw.endsWith(']')) {
+      try {
+        const arr = JSON.parse(raw) as unknown;
+        if (Array.isArray(arr) && arr.length > 0) {
+          const first = arr.find((x) => isPlausibleFilename(typeof x === 'string' ? x : null));
+          if (typeof first === 'string') return toStorageUrl(first);
+        }
+      } catch {
+        // Malformed JSON — fall through to images jsonb
+      }
+    } else if (isPlausibleFilename(raw)) {
+      return toStorageUrl(raw);
+    }
   }
-  const first = q.images && q.images.length > 0 ? q.images[0]?.filename : null;
-  if (!first) return null;
-  return first.startsWith('http') ? first : STORAGE_BUCKET + first.replace(/^question_images\//, '');
+
+  // Fall back to images jsonb column
+  const firstFromJsonb = q.images && q.images.length > 0 ? q.images[0]?.filename : null;
+  if (!isPlausibleFilename(firstFromJsonb)) return null;
+  return toStorageUrl(firstFromJsonb);
 }
 
 /**
  * Build the markdown content for a "full template" drop from a bank question.
  * Used when dragging into the middle editor (replace) or into the left card list (new card).
+ *
+ * Rules:
+ *  - Marks shown at end of each part text (matches the paper style + bank card display)
+ *  - Image only emitted if filename looks plausible (>= 4 chars, no weird `[]`)
+ *  - Per-part solutions (parts[i].solution) included alongside top-level solution
+ *  - Working/Answer sections only emitted if there's real content to put in them
  */
 export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string; content: string } {
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const title = `WE: ${tag}`;
 
-  const parts: string[] = [];
-  parts.push(`**${tag}**`);
+  const out: string[] = [];
+  out.push(`**${tag}**`);
 
-  if (q.question_text) parts.push(q.question_text);
+  if (q.question_text) out.push(q.question_text);
 
-  // Image (if any)
+  // Top-level image (handles legacy single-string + JSON-array shapes)
   const imgUrl = questionImageUrl(q);
   if (imgUrl) {
-    parts.push(`<img src="${imgUrl}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
+    out.push(`<img src="${imgUrl}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
   }
 
-  // Sub-parts as a bullet list (if present)
+  // Sub-parts as a bullet list with marks at END (matches paper style).
+  // Also emit per-part image_url / image_url_after if present.
   if (Array.isArray(q.parts) && q.parts.length > 0) {
     const sub: string[] = [];
-    for (const p of q.parts as Array<{ label?: string; text?: string; marks?: number }>) {
+    type PartLike = {
+      label?: string;
+      text?: string;
+      marks?: number;
+      image_url?: string;
+      image_url_after?: string;
+      subparts?: Array<{ label?: string; text?: string; marks?: number; image_url?: string }>;
+    };
+    const partImg = (path?: string): string | null => {
+      if (!path || typeof path !== 'string' || path.length < 6 || path === '[]') return null;
+      return path.startsWith('http') ? path : STORAGE_BUCKET + path.replace(/^question_images\//, '');
+    };
+    for (const p of q.parts as PartLike[]) {
       if (!p?.label) continue;
       const marks = p.marks ? ` [${p.marks}m]` : '';
-      sub.push(`(${p.label})${marks} ${p.text ?? ''}`);
+      const before = partImg(p.image_url);
+      const after = partImg(p.image_url_after);
+      const lines: string[] = [];
+      if (before) lines.push(`<img src="${before}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
+      lines.push(`(${p.label}) ${p.text ?? ''}${marks}`);
+      if (after) lines.push(`<img src="${after}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
+      sub.push(lines.join('\n\n'));
+      if (Array.isArray(p.subparts)) {
+        for (const sp of p.subparts) {
+          if (!sp?.label) continue;
+          const spMarks = sp.marks ? ` [${sp.marks}m]` : '';
+          const spImg = partImg(sp.image_url);
+          const spLines: string[] = [];
+          if (spImg) spLines.push(`  <img src="${spImg}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
+          spLines.push(`  (${sp.label}) ${sp.text ?? ''}${spMarks}`);
+          sub.push(spLines.join('\n\n'));
+        }
+      }
     }
-    if (sub.length > 0) parts.push(sub.join('\n\n'));
+    if (sub.length > 0) out.push(sub.join('\n\n'));
   }
 
-  parts.push('---');
-  parts.push('**Working:**');
-  if (q.solution) parts.push(q.solution);
-  parts.push('---');
-  parts.push(`**Answer:** ${q.answer ?? ''}`);
+  // Gather solutions — top-level + any per-part solutions (parts[i].solution)
+  const solBits: string[] = [];
+  if (q.solution) solBits.push(q.solution);
+  if (Array.isArray(q.parts)) {
+    for (const p of q.parts as Array<{ label?: string; solution?: string; subparts?: Array<{ label?: string; solution?: string }> }>) {
+      if (p?.solution) solBits.push(`**(${p.label})** ${p.solution}`);
+      if (Array.isArray(p?.subparts)) {
+        for (const sp of p.subparts) {
+          if (sp?.solution) solBits.push(`**(${p.label})(${sp.label})** ${sp.solution}`);
+        }
+      }
+    }
+  }
 
-  return { title, content: parts.join('\n\n') };
+  // Only emit Working/Answer sections if there's something to show
+  if (solBits.length > 0) {
+    out.push('---');
+    out.push('**Working:**');
+    out.push(solBits.join('\n\n'));
+  }
+  if (q.answer) {
+    out.push('---');
+    out.push(`**Answer:** ${q.answer}`);
+  }
+
+  return { title, content: out.join('\n\n') };
 }
 
 export function BankPanel({
