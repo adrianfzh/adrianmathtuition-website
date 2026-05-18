@@ -329,8 +329,33 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
               <ul className="notes-list">
                 {notes.map(note => (
                   <li key={note.id} className="notes-row">
-                    <div className="notes-row-info">
-                      {renamingId === note.id ? (
+                    {/* Tappable area → opens viewer + auto-prints */}
+                    <a href={`/admin/notes/${level}/${note.id}`} className="notes-row-tap">
+                      <div className="notes-row-title">{note.title}</div>
+                      <div className="notes-row-meta">{relativeTime(note.uploadedAt)}</div>
+                    </a>
+                    {/* Edit / delete — stop propagation so tapping these doesn't navigate */}
+                    <div className="notes-row-actions">
+                      <button
+                        className="notes-rename-btn"
+                        onClick={e => { e.preventDefault(); startRename(note); }}
+                        aria-label="Rename"
+                        title="Rename"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="notes-delete-btn"
+                        onClick={e => { e.preventDefault(); handleDelete(note.id); }}
+                        disabled={deletingId === note.id}
+                        aria-label="Delete note"
+                      >
+                        {deletingId === note.id ? '…' : '🗑'}
+                      </button>
+                    </div>
+                    {/* Inline rename — shown as overlay when active */}
+                    {renamingId === note.id && (
+                      <div className="rename-overlay" onClick={e => e.stopPropagation()}>
                         <input
                           ref={renameInputRef}
                           className="rename-input"
@@ -342,30 +367,8 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                             if (e.key === 'Escape') setRenamingId(null);
                           }}
                         />
-                      ) : (
-                        <div
-                          className="notes-row-title"
-                          onClick={() => startRename(note)}
-                          title="Tap to rename"
-                        >
-                          {note.title} <span className="rename-hint">✏️</span>
-                        </div>
-                      )}
-                      <div className="notes-row-meta">{relativeTime(note.uploadedAt)}</div>
-                    </div>
-                    <div className="notes-row-actions">
-                      <a href={`/admin/notes/${level}/${note.id}`} className="notes-view-btn">
-                        View
-                      </a>
-                      <button
-                        className="notes-delete-btn"
-                        onClick={() => handleDelete(note.id)}
-                        disabled={deletingId === note.id}
-                        aria-label="Delete note"
-                      >
-                        {deletingId === note.id ? '…' : '🗑'}
-                      </button>
-                    </div>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -500,17 +503,16 @@ const css = `
   gap: 1px;
 }
 .notes-row {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 11px 0;
   border-bottom: 1px solid #f3f4f6;
-  gap: 12px;
+  min-height: 64px;
 }
 .notes-row:last-child { border-bottom: none; }
-.notes-row-info { flex: 1; min-width: 0; }
+.notes-row:active { background: #f9fafb; }
 .notes-row-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #111827;
   white-space: nowrap;
@@ -528,18 +530,26 @@ const css = `
   gap: 8px;
   flex-shrink: 0;
 }
-.notes-view-btn {
-  display: inline-block;
-  padding: 6px 14px;
-  background: #1e3a5f;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 7px;
+.notes-row-tap {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 2px;
   text-decoration: none;
-  transition: opacity 0.15s;
+  color: inherit;
+  padding: 14px 0 14px 16px;
 }
-.notes-view-btn:hover { opacity: 0.85; }
+.notes-row-tap:active { opacity: 0.6; }
+.notes-rename-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; padding: 6px; border-radius: 6px;
+  color: #9ca3af; transition: background 0.1s;
+}
+.notes-rename-btn:hover { background: #f3f4f6; }
+.rename-overlay {
+  position: absolute; inset: 0;
+  background: #fff; border-radius: 10px;
+  display: flex; align-items: center; padding: 0 12px;
+  z-index: 2;
+}
 .notes-delete-btn {
   background: none;
   border: none;
