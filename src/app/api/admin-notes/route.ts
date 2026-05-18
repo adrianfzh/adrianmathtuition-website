@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   const levelLabel = SLUG_TO_LABEL[level];
   const formula = encodeURIComponent(`{Level}='${levelLabel}'`);
-  const query = `?filterByFormula=${formula}&sort[0][field]=Uploaded At&sort[0][direction]=desc`;
+  const query = `?filterByFormula=${formula}&sort[0][field]=Title&sort[0][direction]=asc`;
 
   const data = await airtableRequestAll('PrintNotes', query);
 
