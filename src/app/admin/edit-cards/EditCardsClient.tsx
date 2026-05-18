@@ -1270,12 +1270,11 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
         if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
         doSave({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished });
       }
-      // Cmd+Z / Ctrl+Z — undo last major change (AI accept etc.)
-      // Only when the textarea is not focused (let browser handle native undo there)
+      // Cmd+Z / Ctrl+Z — undo last major change (AI accept, bank drop, etc.)
+      // If contentHistory has entries, take precedence even from inside the textarea —
+      // otherwise native textarea undo would silently lose the snapshot restoration.
       if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
-        const active = document.activeElement;
-        const inText = active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
-        if (!inText && contentHistory.length > 0) {
+        if (contentHistory.length > 0) {
           e.preventDefault();
           handleUndo();
         }
@@ -1320,9 +1319,14 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
           {saveStatus === 'saving' && <span className="text-xs text-slate-400">Saving…</span>}
           {saveStatus === 'saved' && <span className="text-xs text-green-600">Saved ✓</span>}
           {saveStatus === 'error' && <span className="text-xs text-red-600">Error</span>}
-          {contentHistory.length > 0 && (
-            <button onClick={handleUndo} className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50" title="Undo last change (⌘Z)">↩ Undo</button>
-          )}
+          <button
+            onClick={handleUndo}
+            disabled={contentHistory.length === 0}
+            className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            title={contentHistory.length > 0 ? `Undo last change (⌘Z) — ${contentHistory.length} step${contentHistory.length > 1 ? 's' : ''} available` : 'No undo history yet'}
+          >
+            ↩ Undo{contentHistory.length > 0 ? ` (${contentHistory.length})` : ''}
+          </button>
           <button onClick={() => { if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; } doSave({ card_title: title, content, subgroup_id: sgId, order_index: orderIndex, is_published: isPublished }); }} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
           <button onClick={onAiToggle} className="px-2.5 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">{aiOpen ? 'Hide AI' : '✨ AI'}</button>
         </div>

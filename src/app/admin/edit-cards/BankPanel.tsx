@@ -217,7 +217,8 @@ export function BankPanel({
 // Render full question_text + parts with KaTeX math, plus full-size diagram.
 // Defaults to collapsed (320px max-height); click anywhere in body to expand/collapse.
 function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDragStart?: () => void; onDragEnd?: () => void }) {
-  const [expanded, setExpanded] = useState(false);
+  // Default expanded — Adrian wants full visibility while browsing
+  const [expanded, setExpanded] = useState(true);
   const imgUrl = questionImageUrl(q);
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const difficulty = q.difficulty ?? 'Standard';
@@ -231,12 +232,13 @@ function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDr
       for (const p of parts) {
         if (!p?.label) continue;
         const marks = p.marks ? ` _[${p.marks}m]_` : '';
-        lines.push(`**(${p.label})**${marks} ${p.text ?? ''}`);
+        // Marks at end, after the text — matches paper style
+        lines.push(`**(${p.label})** ${p.text ?? ''}${marks}`);
         if (Array.isArray(p.subparts)) {
           for (const sp of p.subparts) {
             if (!sp?.label) continue;
             const spMarks = sp.marks ? ` _[${sp.marks}m]_` : '';
-            lines.push(`  **(${sp.label})**${spMarks} ${sp.text ?? ''}`);
+            lines.push(`  **(${sp.label})** ${sp.text ?? ''}${spMarks}`);
           }
         }
       }
