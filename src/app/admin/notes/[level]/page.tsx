@@ -147,7 +147,12 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
         const res = await fetch('/api/admin-notes/upload', {
           method: 'POST', headers: { Authorization: `Bearer ${pw}` }, body: fd,
         });
-        if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error ?? 'Upload failed'); }
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          let msg = `HTTP ${res.status}`;
+          try { const d = JSON.parse(text); msg = d.error ?? msg; } catch { if (text) msg += `: ${text.slice(0, 120)}`; }
+          throw new Error(msg);
+        }
         setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'done' } : p));
         anyDone = true;
       } catch (err: unknown) {
@@ -260,6 +265,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                           {pf.status === 'error' && '❌'}
                           {pf.status === 'pending' && '📄'}
                           <span className="nl-fname">{pf.file.name}</span>
+                          <span className="nl-fsize">({(pf.file.size / 1024 / 1024).toFixed(1)} MB)</span>
                           {pf.error && <span className="nl-ferr">{pf.error}</span>}
                         </div>
                         <input
@@ -410,7 +416,8 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 }
 .nl-file-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280; margin-bottom: 4px; flex-wrap: wrap; }
 .nl-fname { word-break: break-all; }
-.nl-ferr { color: #dc2626; font-size: 11px; }
+.nl-fsize { color: #9ca3af; white-space: nowrap; }
+.nl-ferr { color: #dc2626; font-size: 11px; width: 100%; }
 .nl-title-input {
   width: 100%; border: 1px solid #e5e7eb; border-radius: 6px;
   padding: 6px 10px; font-size: 13px; font-family: inherit;
