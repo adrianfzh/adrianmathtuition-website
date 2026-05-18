@@ -25,9 +25,12 @@ export type BankQuestion = {
   parts: unknown;
   answer: string | null;
   solution: string | null;
+  /** JSON-serialised array of solution diagram URLs (legacy text column) */
+  solution_images: string | null;
   topics: string[] | null;
   total_marks: number | null;
   has_image: boolean;
+  /** JSON-serialised array of stem image records: bare URL or {url, pos:'before'|'after'} */
   image_url: string | null;
   images: { filename: string }[] | null;
   difficulty: string | null;
@@ -41,55 +44,112 @@ type Difficulty = typeof DIFFICULTIES[number];
 
 const STORAGE_BUCKET = 'https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/';
 
-// Returns a usable image URL for the question, or null.
+// ---------- Image schema helpers ----------
 //
-// image_url is a TEXT column that historically holds three shapes:
-//   1. NULL / '' / '[]'           → no image
-//   2. 'question_images/x.png' or 'https://...'  → single ref (legacy single-image rows)
-//   3. '["question_images/x.png", "question_images/y.png"]'  → JSON-serialized array (~3,620 rows)
-// Plus the `images` jsonb column on newer rows.
+// Mirrors the question_bank_viewer.html schema:
 //
-// This helper normalises all three into a single rendered URL (first image only).
-function questionImageUrl(q: BankQuestion): string | null {
-  const toStorageUrl = (s: string): string =>
-    s.startsWith('http') ? s : STORAGE_BUCKET + s.replace(/^question_images\//, '');
+//  * q.image_url is a JSON-serialised array of stem-image records.
+//    Each entry is either a bare URL string (legacy — treated as pos:'after')
+//    or an object { url, pos: 'before' | 'after' }.
+//
+//  * q.parts[i].image_url      — diagram shown BEFORE the part's text
+//    q.parts[i].image_url_after — diagram shown AFTER the part's text
+//    Same for subparts.
+//
+//  * q.parts[i].text and q.question_text may contain inline image tokens
+//    `{{IMG:question_images/xyz.png}}` which render at that exact position.
+//
+//  * q.solution_images is a JSON-serialised array of URLs (top-level solution
+//    diagrams). q.parts[i].solution_image is a per-part variant.
+//
+// Treating image_url as a flat string (as we used to) loses position metadata
+// and drops secondary images. These helpers re-implement the viewer's reader
+// side so the bank panel renders exactly what the viewer renders.
 
-  const isPlausibleFilename = (s: string | null | undefined): s is string =>
-    typeof s === 'string' && s.length >= 6 && !['[]', '{}', 'null', 'undefined', '[object Object]'].includes(s.trim());
+type StemImageRecord = { url: string; pos: 'before' | 'after' };
 
-  // Try image_url: handle JSON-array shape first, fall back to plain string
-  const raw = q.image_url?.trim();
-  if (raw && raw !== '[]' && raw.length >= 3) {
-    if (raw.startsWith('[') && raw.endsWith(']')) {
-      try {
-        const arr = JSON.parse(raw) as unknown;
-        if (Array.isArray(arr) && arr.length > 0) {
-          const first = arr.find((x) => isPlausibleFilename(typeof x === 'string' ? x : null));
-          if (typeof first === 'string') return toStorageUrl(first);
-        }
-      } catch {
-        // Malformed JSON — fall through to images jsonb
-      }
-    } else if (isPlausibleFilename(raw)) {
-      return toStorageUrl(raw);
+function toStorageUrl(s: string): string {
+  return s.startsWith('http') ? s : STORAGE_BUCKET + s.replace(/^question_images\//, '');
+}
+
+function isPlausibleFilename(s: unknown): s is string {
+  return typeof s === 'string' && s.length >= 6
+    && !['[]', '{}', 'null', 'undefined', '[object Object]'].includes(s.trim());
+}
+
+/** Parse q.image_url (JSON array of records, or legacy bare string) into a list of {url,pos}. */
+function getStemImageRecords(q: BankQuestion): StemImageRecord[] {
+  if (!q.image_url) return [];
+  const raw = q.image_url.trim();
+  if (!raw || raw === '[]') return [];
+  let parsed: unknown;
+  try {
+    parsed = raw.startsWith('[') ? JSON.parse(raw) : raw;
+  } catch {
+    parsed = raw;
+  }
+  const arr = Array.isArray(parsed) ? parsed : [parsed];
+  const records: StemImageRecord[] = [];
+  for (const entry of arr) {
+    if (typeof entry === 'string' && isPlausibleFilename(entry)) {
+      records.push({ url: entry, pos: 'after' });
+    } else if (entry && typeof entry === 'object' && 'url' in entry && isPlausibleFilename((entry as { url: unknown }).url)) {
+      const e = entry as { url: string; pos?: string };
+      records.push({ url: e.url, pos: e.pos === 'before' ? 'before' : 'after' });
     }
   }
+  // Fall back to images jsonb column if image_url yielded nothing
+  if (records.length === 0 && q.images && q.images.length > 0) {
+    for (const img of q.images) {
+      if (isPlausibleFilename(img?.filename)) records.push({ url: img.filename, pos: 'after' });
+    }
+  }
+  return records;
+}
 
-  // Fall back to images jsonb column
-  const firstFromJsonb = q.images && q.images.length > 0 ? q.images[0]?.filename : null;
-  if (!isPlausibleFilename(firstFromJsonb)) return null;
-  return toStorageUrl(firstFromJsonb);
+/** Walks q.solution_images (JSON array) into a flat list of URLs. */
+function getSolutionImageUrls(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed === '[]') return [];
+  try {
+    const parsed = trimmed.startsWith('[') ? JSON.parse(trimmed) : trimmed;
+    const arr = Array.isArray(parsed) ? parsed : [parsed];
+    return arr.filter(isPlausibleFilename) as string[];
+  } catch {
+    return isPlausibleFilename(trimmed) ? [trimmed] : [];
+  }
+}
+
+/** Replace `{{IMG:question_images/xyz.png}}` tokens with raw `<img>` tags (rehypeRaw renders them). */
+function renderInlineImagesInText(text: string | null | undefined): string {
+  if (!text) return '';
+  return text.replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
+    const cleaned = url.trim();
+    if (!isPlausibleFilename(cleaned)) return '';
+    return `<img src="${toStorageUrl(cleaned)}" alt="" style="max-width:100%;display:block;margin:6px 0" />`;
+  });
+}
+
+/** Build an HTML `<img>` tag for a per-part image_url. Returns '' on null/garbage. */
+function partImageHtml(path: string | null | undefined): string {
+  if (!isPlausibleFilename(path)) return '';
+  return `<img src="${toStorageUrl(path)}" alt="" style="max-width:100%;display:block;margin:6px 0" />`;
 }
 
 /**
  * Build the markdown content for a "full template" drop from a bank question.
  * Used when dragging into the middle editor (replace) or into the left card list (new card).
  *
- * Rules:
- *  - Marks shown at end of each part text (matches the paper style + bank card display)
- *  - Image only emitted if filename looks plausible (>= 4 chars, no weird `[]`)
- *  - Per-part solutions (parts[i].solution) included alongside top-level solution
- *  - Working/Answer sections only emitted if there's real content to put in them
+ * Image rules — mirrors question_bank_viewer.html exactly:
+ *  - Stem images (q.image_url) are a JSON array of {url, pos:'before'|'after'} records:
+ *      'before' images go above the stem text, 'after' images go below.
+ *  - Inline `{{IMG:url}}` tokens inside q.question_text / parts[i].text /
+ *    subparts[j].text are replaced with `<img>` at the exact position.
+ *  - Per-part: parts[i].image_url goes BEFORE the part's text,
+ *    parts[i].image_url_after goes AFTER it. Same for subparts.
+ *  - Solution images: q.solution_images (JSON array of URLs) goes after the
+ *    top-level solution; parts[i].solution_image goes after the per-part solution.
  */
 export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string; content: string } {
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
@@ -98,48 +158,48 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
   const out: string[] = [];
   out.push(`**${tag}**`);
 
-  if (q.question_text) out.push(q.question_text);
+  // Stem images — split into before/after groups
+  const stemRecords = getStemImageRecords(q);
+  const stemBefore = stemRecords.filter((r) => r.pos === 'before');
+  const stemAfter = stemRecords.filter((r) => r.pos === 'after');
 
-  // Top-level image (handles legacy single-string + JSON-array shapes)
-  const imgUrl = questionImageUrl(q);
-  if (imgUrl) {
-    out.push(`<img src="${imgUrl}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
+  for (const r of stemBefore) {
+    out.push(`<img src="${toStorageUrl(r.url)}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
+  }
+  if (q.question_text) out.push(renderInlineImagesInText(q.question_text));
+  for (const r of stemAfter) {
+    out.push(`<img src="${toStorageUrl(r.url)}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
   }
 
-  // Sub-parts as a bullet list with marks at END (matches paper style).
-  // Also emit per-part image_url / image_url_after if present.
+  // Parts (with per-part diagrams + inline tokens)
   if (Array.isArray(q.parts) && q.parts.length > 0) {
-    const sub: string[] = [];
     type PartLike = {
-      label?: string;
-      text?: string;
-      marks?: number;
-      image_url?: string;
-      image_url_after?: string;
-      subparts?: Array<{ label?: string; text?: string; marks?: number; image_url?: string }>;
+      label?: string; text?: string; marks?: number;
+      image_url?: string; image_url_after?: string;
+      subparts?: Array<{ label?: string; text?: string; marks?: number; image_url?: string; image_url_after?: string }>;
     };
-    const partImg = (path?: string): string | null => {
-      if (!path || typeof path !== 'string' || path.length < 6 || path === '[]') return null;
-      return path.startsWith('http') ? path : STORAGE_BUCKET + path.replace(/^question_images\//, '');
-    };
+    const sub: string[] = [];
     for (const p of q.parts as PartLike[]) {
       if (!p?.label) continue;
       const marks = p.marks ? ` [${p.marks}m]` : '';
-      const before = partImg(p.image_url);
-      const after = partImg(p.image_url_after);
       const lines: string[] = [];
-      if (before) lines.push(`<img src="${before}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
-      lines.push(`(${p.label}) ${p.text ?? ''}${marks}`);
-      if (after) lines.push(`<img src="${after}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
+      const beforeImg = partImageHtml(p.image_url);
+      const afterImg = partImageHtml(p.image_url_after);
+      if (beforeImg) lines.push(beforeImg);
+      lines.push(`(${p.label}) ${renderInlineImagesInText(p.text)}${marks}`);
+      if (afterImg) lines.push(afterImg);
       sub.push(lines.join('\n\n'));
+
       if (Array.isArray(p.subparts)) {
         for (const sp of p.subparts) {
           if (!sp?.label) continue;
           const spMarks = sp.marks ? ` [${sp.marks}m]` : '';
-          const spImg = partImg(sp.image_url);
           const spLines: string[] = [];
-          if (spImg) spLines.push(`  <img src="${spImg}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
-          spLines.push(`  (${sp.label}) ${sp.text ?? ''}${spMarks}`);
+          const spBefore = partImageHtml(sp.image_url);
+          const spAfter = partImageHtml(sp.image_url_after);
+          if (spBefore) spLines.push(`  ${spBefore}`);
+          spLines.push(`  (${sp.label}) ${renderInlineImagesInText(sp.text)}${spMarks}`);
+          if (spAfter) spLines.push(`  ${spAfter}`);
           sub.push(spLines.join('\n\n'));
         }
       }
@@ -147,21 +207,32 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
     if (sub.length > 0) out.push(sub.join('\n\n'));
   }
 
-  // Gather solutions — top-level + any per-part solutions (parts[i].solution)
+  // Solutions — top-level + per-part, each followed by their respective solution images
+  type PartSolution = {
+    label?: string; solution?: string; solution_image?: string;
+    subparts?: Array<{ label?: string; solution?: string; solution_image?: string }>;
+  };
   const solBits: string[] = [];
-  if (q.solution) solBits.push(q.solution);
+  if (q.solution) solBits.push(renderInlineImagesInText(q.solution));
+  // Top-level solution_images (JSON array of URLs)
+  for (const u of getSolutionImageUrls(q.solution_images)) {
+    solBits.push(`<img src="${toStorageUrl(u)}" alt="solution diagram" style="max-width:100%;display:block;margin:6px 0" />`);
+  }
   if (Array.isArray(q.parts)) {
-    for (const p of q.parts as Array<{ label?: string; solution?: string; subparts?: Array<{ label?: string; solution?: string }> }>) {
-      if (p?.solution) solBits.push(`**(${p.label})** ${p.solution}`);
+    for (const p of q.parts as PartSolution[]) {
+      if (p?.solution) solBits.push(`**(${p.label})** ${renderInlineImagesInText(p.solution)}`);
+      const psi = partImageHtml(p?.solution_image);
+      if (psi) solBits.push(psi);
       if (Array.isArray(p?.subparts)) {
         for (const sp of p.subparts) {
-          if (sp?.solution) solBits.push(`**(${p.label})(${sp.label})** ${sp.solution}`);
+          if (sp?.solution) solBits.push(`**(${p.label})(${sp.label})** ${renderInlineImagesInText(sp.solution)}`);
+          const spsi = partImageHtml(sp?.solution_image);
+          if (spsi) solBits.push(spsi);
         }
       }
     }
   }
 
-  // Only emit Working/Answer sections if there's something to show
   if (solBits.length > 0) {
     out.push('---');
     out.push('**Working:**');
@@ -300,35 +371,61 @@ export function BankPanel({
   );
 }
 
-// Render full question_text + parts with KaTeX math, plus full-size diagram.
+// Render full question with proper image positioning (mirrors viewer schema):
+//   stem before-images → stem text (inline tokens resolved) → stem after-images
+//   per-part: image_url → text → image_url_after, then same for each subpart.
 // Always fully expanded — no truncation, no click-to-expand toggle.
 function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDragStart?: () => void; onDragEnd?: () => void }) {
-  const imgUrl = questionImageUrl(q);
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const difficulty = q.difficulty ?? 'Standard';
-  const parts = Array.isArray(q.parts) ? (q.parts as Array<{ label?: string; text?: string; marks?: number; subparts?: Array<{ label?: string; text?: string; marks?: number }> }>) : null;
+  type PartLike = {
+    label?: string; text?: string; marks?: number;
+    image_url?: string; image_url_after?: string;
+    subparts?: Array<{ label?: string; text?: string; marks?: number; image_url?: string; image_url_after?: string }>;
+  };
+  const parts = Array.isArray(q.parts) ? (q.parts as PartLike[]) : null;
 
-  // Build the markdown source: stem + parts list
+  // Build markdown source. Images are emitted as raw <img> tags; rehypeRaw
+  // (already in the plugin chain) renders them. Inline {{IMG:url}} tokens
+  // inside text are replaced inline.
   const markdown = useMemo(() => {
     const lines: string[] = [];
-    if (q.question_text) lines.push(q.question_text);
+    const stemRecords = getStemImageRecords(q);
+    const stemBefore = stemRecords.filter((r) => r.pos === 'before');
+    const stemAfter = stemRecords.filter((r) => r.pos === 'after');
+
+    for (const r of stemBefore) {
+      lines.push(`<img src="${toStorageUrl(r.url)}" alt="" style="max-width:100%;display:block;margin:6px auto" />`);
+    }
+    if (q.question_text) lines.push(renderInlineImagesInText(q.question_text));
+    for (const r of stemAfter) {
+      lines.push(`<img src="${toStorageUrl(r.url)}" alt="" style="max-width:100%;display:block;margin:6px auto" />`);
+    }
+
     if (parts && parts.length > 0) {
       for (const p of parts) {
         if (!p?.label) continue;
         const marks = p.marks ? ` _[${p.marks}m]_` : '';
-        // Marks at end, after the text — matches paper style
-        lines.push(`**(${p.label})** ${p.text ?? ''}${marks}`);
+        const beforeImg = partImageHtml(p.image_url);
+        const afterImg = partImageHtml(p.image_url_after);
+        if (beforeImg) lines.push(beforeImg);
+        lines.push(`**(${p.label})** ${renderInlineImagesInText(p.text)}${marks}`);
+        if (afterImg) lines.push(afterImg);
         if (Array.isArray(p.subparts)) {
           for (const sp of p.subparts) {
             if (!sp?.label) continue;
             const spMarks = sp.marks ? ` _[${sp.marks}m]_` : '';
-            lines.push(`  **(${sp.label})** ${sp.text ?? ''}${spMarks}`);
+            const spBefore = partImageHtml(sp.image_url);
+            const spAfter = partImageHtml(sp.image_url_after);
+            if (spBefore) lines.push(`  ${spBefore}`);
+            lines.push(`  **(${sp.label})** ${renderInlineImagesInText(sp.text)}${spMarks}`);
+            if (spAfter) lines.push(`  ${spAfter}`);
           }
         }
       }
     }
     return lines.join('\n\n');
-  }, [q.question_text, parts]);
+  }, [q, parts]);
 
   return (
     <div
@@ -356,13 +453,7 @@ function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDr
         )}
       </div>
 
-      {/* Diagram (if any) — full width */}
-      {imgUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={imgUrl} alt="" className="max-w-full max-h-48 rounded border border-slate-200 mx-auto block" />
-      )}
-
-      {/* Question body with rendered LaTeX — always fully expanded */}
+      {/* Question body — images render inline as <img> via rehypeRaw, math via rehypeKatex */}
       {markdown && (
         <div
           className="prose prose-sm prose-slate max-w-none text-[12px] leading-snug bank-q-prose"

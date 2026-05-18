@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
   let qQuery = supa
     .from('questions')
     .select(
-      'id, school, year, paper, question_number, question_text, parts, answer, solution, topics, total_marks, has_image, image_url, images, difficulty, source_file',
+      'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file',
       { count: 'exact' },
     )
     .eq('level', level)
