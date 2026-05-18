@@ -8,6 +8,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
+import rehypeKatex from 'rehype-katex';
+import rehypeRaw from 'rehype-raw';
+import 'katex/dist/katex.min.css';
 
 export type BankQuestion = {
   id: string;
@@ -208,23 +214,47 @@ export function BankPanel({
   );
 }
 
+// Render full question_text + parts with KaTeX math, plus full-size diagram.
+// Defaults to collapsed (320px max-height); click anywhere in body to expand/collapse.
 function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDragStart?: () => void; onDragEnd?: () => void }) {
-  const preview = (q.question_text ?? '').replace(/[$#*_]/g, '').slice(0, 140);
+  const [expanded, setExpanded] = useState(false);
   const imgUrl = questionImageUrl(q);
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const difficulty = q.difficulty ?? 'Standard';
+  const parts = Array.isArray(q.parts) ? (q.parts as Array<{ label?: string; text?: string; marks?: number; subparts?: Array<{ label?: string; text?: string; marks?: number }> }>) : null;
+
+  // Build the markdown source: stem + parts list
+  const markdown = useMemo(() => {
+    const lines: string[] = [];
+    if (q.question_text) lines.push(q.question_text);
+    if (parts && parts.length > 0) {
+      for (const p of parts) {
+        if (!p?.label) continue;
+        const marks = p.marks ? ` _[${p.marks}m]_` : '';
+        lines.push(`**(${p.label})**${marks} ${p.text ?? ''}`);
+        if (Array.isArray(p.subparts)) {
+          for (const sp of p.subparts) {
+            if (!sp?.label) continue;
+            const spMarks = sp.marks ? ` _[${sp.marks}m]_` : '';
+            lines.push(`  **(${sp.label})**${spMarks} ${sp.text ?? ''}`);
+          }
+        }
+      }
+    }
+    return lines.join('\n\n');
+  }, [q.question_text, parts]);
 
   return (
     <div
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData('application/x-bank-question', JSON.stringify(q));
-        e.dataTransfer.setData('text/plain', tag); // fallback so misfires don't insert garbage
+        e.dataTransfer.setData('text/plain', tag);
         e.dataTransfer.effectAllowed = 'copy';
         onDragStart?.();
       }}
       onDragEnd={() => onDragEnd?.()}
-      className="border border-slate-200 rounded p-2 bg-white hover:border-blue-400 hover:shadow-sm cursor-grab active:cursor-grabbing text-xs space-y-1"
+      className="border border-slate-200 rounded p-2 bg-white hover:border-blue-400 hover:shadow-sm cursor-grab active:cursor-grabbing text-xs space-y-1.5"
     >
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="font-mono text-slate-700 font-medium">{tag}</span>
@@ -239,13 +269,47 @@ function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDr
           </span>
         )}
       </div>
-      <div className="flex gap-2">
-        {imgUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={imgUrl} alt="" className="w-12 h-12 object-cover rounded border border-slate-200 shrink-0" />
-        )}
-        <div className="text-slate-600 line-clamp-3 leading-tight">{preview}{preview.length === 140 ? '…' : ''}</div>
-      </div>
+
+      {/* Diagram (if any) — full width */}
+      {imgUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={imgUrl} alt="" className="max-w-full max-h-48 rounded border border-slate-200 mx-auto block" />
+      )}
+
+      {/* Question body with rendered LaTeX. Click to expand/collapse. */}
+      {markdown && (
+        <div
+          className={`prose prose-sm prose-slate max-w-none text-[12px] leading-snug bank-q-prose ${expanded ? '' : 'overflow-hidden'}`}
+          style={expanded ? undefined : { maxHeight: imgUrl ? 140 : 220, position: 'relative' }}
+          onClick={(e) => {
+            // Don't expand if click was on a link inside the markdown
+            const tag = (e.target as HTMLElement).tagName;
+            if (tag === 'A' || tag === 'BUTTON') return;
+            setExpanded((v) => !v);
+          }}
+          onMouseDown={(e) => e.stopPropagation()} /* allow text selection */
+        >
+          <ReactMarkdown
+            remarkPlugins={[remarkMath, remarkGfm]}
+            rehypePlugins={[rehypeRaw, rehypeKatex]}
+          >
+            {markdown}
+          </ReactMarkdown>
+          {!expanded && (
+            <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent pointer-events-none flex items-end justify-end pr-1">
+              <span className="text-[10px] text-blue-600 font-medium bg-white px-1 rounded pointer-events-auto">click to expand</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Answer (compact) */}
+      {q.answer && (
+        <div className="text-[11px] flex items-center gap-1.5">
+          <span className="text-slate-400 font-medium">Answer:</span>
+          <code className="bg-green-50 border border-green-200 text-green-800 px-1.5 py-px rounded">{String(q.answer).slice(0, 80)}</code>
+        </div>
+      )}
     </div>
   );
 }
