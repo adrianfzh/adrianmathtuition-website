@@ -115,10 +115,6 @@ function renderToElement(el: HTMLDivElement, text: string) {
   text = text.replace(/\\begin\{matrix\}/g, '\\begin{pmatrix}');
   text = text.replace(/\\end\{matrix\}/g, '\\end{pmatrix}');
 
-  // Fix 2: wrap undelimited vector commands in $...$ so KaTeX renders them with proper arrowheads
-  text = text.replace(/\\overrightarrow\{([^{}]*)\}/g, '$\\overrightarrow{$1}$');
-  text = text.replace(/\\overleftarrow\{([^{}]*)\}/g, '$\\overleftarrow{$1}$');
-  text = text.replace(/\\vec\{([^}]*)\}/g, '$\\vec{$1}$');
 
   // Fix 3: escaped dollar signs (\$123) → plain dollar ($123) so currency renders correctly
   text = text.replace(/\\\$(\d)/g, '$$$1');

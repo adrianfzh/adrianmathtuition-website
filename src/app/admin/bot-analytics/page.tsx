@@ -10,14 +10,9 @@ function WebMathRenderer({ text }: { text: string }) {
       if (!ref.current) return;
       const w = window as any;
       if (w.renderMathInElement) {
-        // Wrap undelimited vector commands so KaTeX renders them with proper arrowheads
-        const processedText = text
-          .replace(/\\overrightarrow\{([^{}]*)\}/g, '$\\overrightarrow{$1}$')
-          .replace(/\\overleftarrow\{([^{}]*)\}/g, '$\\overleftarrow{$1}$')
-          .replace(/\\vec\{([^}]*)\}/g, '$\\vec{$1}$');
         // Replace newlines with <br> ONLY outside math delimiters so that
         // \begin{pmatrix}-3\\5\end{pmatrix} isn't corrupted before KaTeX runs.
-        const safeHtml = processedText
+        const safeHtml = text
           .split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g)
           .map((chunk, i) => i % 2 === 0
             ? chunk.replace(/\n/g, '<br>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
