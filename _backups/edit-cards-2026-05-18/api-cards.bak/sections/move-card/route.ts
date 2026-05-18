@@ -1,0 +1,89 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { getSupabaseAdmin } from '@/lib/supabase';
+
+// POST /api/admin/cards/sections/move-card
+// Moves a card to a different display_group section within the same (level, topic),
+// then rewrites order_index for both source and destination sections.
+export async function POST(req: NextRequest) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { cardId, targetSection, targetKind, sourceOrderedIds, destOrderedIds } = await req.json();
+
+  if (
+    !cardId ||
+    typeof targetSection !== 'string' ||
+    !Array.isArray(sourceOrderedIds) ||
+    !Array.isArray(destOrderedIds)
+  ) {
+    return NextResponse.json(
+      { error: 'cardId, targetSection, sourceOrderedIds, destOrderedIds required' },
+      { status: 400 }
+    );
+  }
+
+  const supa = getSupabaseAdmin();
+
+  // Build update payload — include content_kind when targetKind is provided and differs
+  const updatePayload: Record<string, string> = { display_group: targetSection };
+  if (typeof targetKind === 'string' && ['worked_example', 'refresher'].includes(targetKind)) {
+    updatePayload.content_kind = targetKind;
+  }
+
+  // Update the card's display_group (and optionally content_kind for cross-kind moves)
+  const { error: moveErr } = await supa
+    .from('content_snippets')
+    .update(updatePayload)
+    .eq('id', cardId);
+
+  // Ensure sections_meta has a row for the target section (so its order is tracked)
+  const { data: cardData } = await supa
+    .from('content_snippets')
+    .select('level, topic')
+    .eq('id', cardId)
+    .single();
+  if (cardData) {
+    const { data: maxRow } = await supa
+      .from('sections_meta')
+      .select('order_index')
+      .eq('level', cardData.level)
+      .eq('topic', cardData.topic)
+      .order('order_index', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    await supa
+      .from('sections_meta')
+      .upsert(
+        { level: cardData.level, topic: cardData.topic, name: targetSection, order_index: ((maxRow as { order_index: number } | null)?.order_index ?? 0) + 1 },
+        { onConflict: 'level,topic,name', ignoreDuplicates: true }
+      );
+  }
+
+  if (moveErr) return NextResponse.json({ error: moveErr.message }, { status: 500 });
+
+  // Rewrite order_index for source section (remaining cards)
+  if ((sourceOrderedIds as string[]).length > 0) {
+    const srcErrors: string[] = [];
+    await Promise.all(
+      (sourceOrderedIds as string[]).map(async (id, i) => {
+        const { error } = await supa.from('content_snippets').update({ order_index: i + 1 }).eq('id', id);
+        if (error) srcErrors.push(error.message);
+      })
+    );
+    if (srcErrors.length > 0) return NextResponse.json({ error: srcErrors.join('; ') }, { status: 500 });
+  }
+
+  // Rewrite order_index for destination section (including moved card)
+  const destErrors: string[] = [];
+  await Promise.all(
+    (destOrderedIds as string[]).map(async (id, i) => {
+      const { error } = await supa.from('content_snippets').update({ order_index: i + 1 }).eq('id', id);
+      if (error) destErrors.push(error.message);
+    })
+  );
+  if (destErrors.length > 0) return NextResponse.json({ error: destErrors.join('; ') }, { status: 500 });
+
+  return NextResponse.json({ ok: true });
+}
