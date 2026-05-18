@@ -47,12 +47,33 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Upload state
-  const [file, setFile] = useState<File | null>(null);
-  const [title, setTitle] = useState('');
+  // Upload state — supports single or bulk
+  interface PendingFile {
+    file: File;
+    title: string;
+    status: 'pending' | 'uploading' | 'done' | 'error';
+    error?: string;
+  }
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadMsg, setUploadMsg] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function fileNameToTitle(name: string) {
+    return name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
+  }
+
+  function onFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? []);
+    setPendingFiles(selected.map(f => ({
+      file: f,
+      title: fileNameToTitle(f.name),
+      status: 'pending' as const,
+    })));
+  }
+
+  function updateTitle(idx: number, val: string) {
+    setPendingFiles(prev => prev.map((pf, i) => i === idx ? { ...pf, title: val } : pf));
+  }
 
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -100,32 +121,45 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
-    if (!file || !title.trim()) return;
+    if (!pendingFiles.length || uploading) return;
     setUploading(true);
-    setUploadMsg('');
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('title', title.trim());
-      fd.append('level', level);
-      const res = await fetch('/api/admin-notes/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${pw}` },
-        body: fd,
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Upload failed' }));
-        throw new Error(data.error ?? 'Upload failed');
+    let anyDone = false;
+    for (let i = 0; i < pendingFiles.length; i++) {
+      const pf = pendingFiles[i];
+      if (!pf.title.trim()) {
+        setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'error', error: 'Title required' } : p));
+        continue;
       }
-      setFile(null);
-      setTitle('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      showToast('Uploaded!');
+      setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'uploading' } : p));
+      try {
+        const fd = new FormData();
+        fd.append('file', pf.file);
+        fd.append('title', pf.title.trim());
+        fd.append('level', level);
+        const res = await fetch('/api/admin-notes/upload', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${pw}` },
+          body: fd,
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({ error: 'Upload failed' }));
+          throw new Error(data.error ?? 'Upload failed');
+        }
+        setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'done' } : p));
+        anyDone = true;
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Upload failed';
+        setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'error', error: msg } : p));
+      }
+    }
+    setUploading(false);
+    if (anyDone) {
       fetchNotes();
-    } catch (e: unknown) {
-      setUploadMsg(e instanceof Error ? e.message : 'Upload failed');
-    } finally {
-      setUploading(false);
+      // Clear completed files after a short delay so user sees the ✅
+      setTimeout(() => {
+        setPendingFiles(prev => prev.filter(p => p.status !== 'done'));
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }, 1500);
     }
   }
 
@@ -162,35 +196,60 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
         <div className="notes-body">
           {/* Upload section */}
           <div className="notes-card">
-            <div className="notes-section-label">Upload New Note</div>
+            <div className="notes-section-label">Upload Notes</div>
             <form onSubmit={handleUpload}>
-              <div className="upload-file-row">
-                <label className="upload-file-btn">
-                  {file ? file.name : 'Choose PDF…'}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    style={{ display: 'none' }}
-                    onChange={e => setFile(e.target.files?.[0] ?? null)}
-                  />
-                </label>
-              </div>
-              <input
-                className="notes-input"
-                type="text"
-                placeholder="e.g. Quadratic Functions — Worked Examples"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                disabled={uploading}
-              />
-              {uploadMsg && <div className="notes-error">{uploadMsg}</div>}
+              {/* File picker */}
+              <label className="upload-file-btn" style={{ display: 'block', marginBottom: 12 }}>
+                {pendingFiles.length === 0
+                  ? 'Choose PDF(s)…'
+                  : `${pendingFiles.length} file${pendingFiles.length > 1 ? 's' : ''} selected`}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={onFilesSelected}
+                  disabled={uploading}
+                />
+              </label>
+
+              {/* Per-file title rows */}
+              {pendingFiles.length > 0 && (
+                <div className="bulk-file-list">
+                  {pendingFiles.map((pf, i) => (
+                    <div key={i} className="bulk-file-row">
+                      <div className="bulk-file-name">
+                        {pf.status === 'done' && <span className="bulk-status">✅</span>}
+                        {pf.status === 'uploading' && <span className="bulk-status bulk-spin">⏳</span>}
+                        {pf.status === 'error' && <span className="bulk-status bulk-err">❌</span>}
+                        <span className="bulk-fname">{pf.file.name}</span>
+                        {pf.error && <span className="bulk-err-msg">{pf.error}</span>}
+                      </div>
+                      <input
+                        className="notes-input"
+                        type="text"
+                        placeholder="Title"
+                        value={pf.title}
+                        onChange={e => updateTitle(i, e.target.value)}
+                        disabled={uploading || pf.status === 'done'}
+                        style={{ marginBottom: 0, marginTop: 4 }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <button
                 type="submit"
                 className="notes-upload-btn"
-                disabled={uploading || !file || !title.trim()}
+                disabled={uploading || pendingFiles.length === 0}
               >
-                {uploading ? 'Uploading…' : 'Upload'}
+                {uploading
+                  ? `Uploading ${pendingFiles.filter(p => p.status === 'done').length}/${pendingFiles.length}…`
+                  : pendingFiles.length > 1
+                    ? `Upload All (${pendingFiles.length})`
+                    : 'Upload'}
               </button>
             </form>
           </div>
@@ -426,4 +485,32 @@ const css = `
   white-space: nowrap;
   box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
+/* Bulk upload */
+.bulk-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.bulk-file-row {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.bulk-file-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+.bulk-fname {
+  font-size: 12px;
+  color: #6b7280;
+  word-break: break-all;
+}
+.bulk-status { font-size: 14px; flex-shrink: 0; }
+.bulk-err { color: #dc2626; }
+.bulk-err-msg { font-size: 11px; color: #dc2626; }
 `;
