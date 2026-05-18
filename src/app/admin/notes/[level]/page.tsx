@@ -100,6 +100,34 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   // Delete state
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Rename state
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  function startRename(note: Note) {
+    setRenamingId(note.id);
+    setRenameValue(note.title);
+    setTimeout(() => renameInputRef.current?.select(), 30);
+  }
+
+  async function commitRename(id: string) {
+    const val = renameValue.trim();
+    if (!val) { setRenamingId(null); return; }
+    try {
+      await fetch(`/api/admin-notes/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` },
+        body: JSON.stringify({ title: val }),
+      });
+      setNotes(prev => prev.map(n => n.id === id ? { ...n, title: val } : n));
+      showToast('Renamed');
+    } catch {
+      showToast('Rename failed');
+    }
+    setRenamingId(null);
+  }
+
   // Toast
   const [toast, setToast] = useState('');
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -302,7 +330,27 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                 {notes.map(note => (
                   <li key={note.id} className="notes-row">
                     <div className="notes-row-info">
-                      <div className="notes-row-title">{note.title}</div>
+                      {renamingId === note.id ? (
+                        <input
+                          ref={renameInputRef}
+                          className="rename-input"
+                          value={renameValue}
+                          onChange={e => setRenameValue(e.target.value)}
+                          onBlur={() => commitRename(note.id)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') commitRename(note.id);
+                            if (e.key === 'Escape') setRenamingId(null);
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="notes-row-title"
+                          onClick={() => startRename(note)}
+                          title="Tap to rename"
+                        >
+                          {note.title} <span className="rename-hint">✏️</span>
+                        </div>
+                      )}
                       <div className="notes-row-meta">{relativeTime(note.uploadedAt)}</div>
                     </div>
                     <div className="notes-row-actions">
@@ -519,6 +567,26 @@ const css = `
   white-space: nowrap;
   box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
+/* Rename */
+.rename-input {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  border: 1px solid #1e3a5f;
+  border-radius: 6px;
+  padding: 4px 8px;
+  outline: none;
+  font-family: inherit;
+  background: #f0f4f8;
+}
+.rename-hint {
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.notes-row-title:hover .rename-hint { opacity: 1; }
+.notes-row-title { cursor: pointer; }
 /* Drop zone */
 .drop-zone {
   border: 2px dashed #d1d5db;

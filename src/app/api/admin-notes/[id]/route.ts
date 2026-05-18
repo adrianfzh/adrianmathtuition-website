@@ -31,6 +31,26 @@ export async function GET(
   });
 }
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!verifyAdminAuth(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const { title } = await req.json();
+  if (!title?.trim()) return NextResponse.json({ error: 'Title required' }, { status: 400 });
+
+  await airtableRequest('PrintNotes', `/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ fields: { Title: title.trim() } }),
+  });
+
+  return NextResponse.json({ success: true });
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

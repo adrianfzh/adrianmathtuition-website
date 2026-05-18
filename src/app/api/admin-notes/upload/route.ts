@@ -36,11 +36,13 @@ export async function POST(req: NextRequest) {
   if (!file) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 });
   }
-  if (file.type !== 'application/pdf') {
-    return NextResponse.json({ error: 'File must be a PDF' }, { status: 400 });
+  // Accept pdf by MIME type OR by filename extension (some browsers/OS send blank type)
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  if (!isPdf) {
+    return NextResponse.json({ error: `File must be a PDF (got type: "${file.type || 'unknown'}")` }, { status: 400 });
   }
-  if (file.size > 10 * 1024 * 1024) {
-    return NextResponse.json({ error: 'File must be under 10 MB' }, { status: 400 });
+  if (file.size > 50 * 1024 * 1024) {
+    return NextResponse.json({ error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB — max 50 MB)` }, { status: 400 });
   }
   if (!title) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -52,25 +54,35 @@ export async function POST(req: NextRequest) {
   const levelLabel = SLUG_TO_LABEL[level];
   const uuid = crypto.randomUUID();
 
-  // Upload to Vercel Blob
-  const blob = await put(`notes/${level}/${uuid}.pdf`, file, {
-    access: 'public',
-    contentType: 'application/pdf',
-  });
+  let blob: Awaited<ReturnType<typeof put>>;
+  try {
+    blob = await put(`notes/${level}/${uuid}.pdf`, file, {
+      access: 'public',
+      contentType: 'application/pdf',
+    });
+  } catch (err: any) {
+    console.error('[admin-notes/upload] Blob error:', err);
+    return NextResponse.json({ error: `Blob upload failed: ${err.message ?? err}` }, { status: 500 });
+  }
 
-  // Create Airtable record in PrintNotes table
-  const record = await airtableRequest('PrintNotes', '', {
-    method: 'POST',
-    body: JSON.stringify({
-      fields: {
-        Title: title,
-        Level: levelLabel,
-        'PDF URL': blob.url,
-        'Blob Pathname': blob.pathname,
-        'Uploaded At': new Date().toISOString(),
-      },
-    }),
-  });
+  let record: any;
+  try {
+    record = await airtableRequest('PrintNotes', '', {
+      method: 'POST',
+      body: JSON.stringify({
+        fields: {
+          Title: title,
+          Level: levelLabel,
+          'PDF URL': blob.url,
+          'Blob Pathname': blob.pathname,
+          'Uploaded At': new Date().toISOString(),
+        },
+      }),
+    });
+  } catch (err: any) {
+    console.error('[admin-notes/upload] Airtable error:', err);
+    return NextResponse.json({ error: `Airtable error: ${err.message ?? err}` }, { status: 500 });
+  }
 
   return NextResponse.json({
     success: true,
