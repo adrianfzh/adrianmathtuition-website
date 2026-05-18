@@ -215,10 +215,8 @@ export function BankPanel({
 }
 
 // Render full question_text + parts with KaTeX math, plus full-size diagram.
-// Defaults to collapsed (320px max-height); click anywhere in body to expand/collapse.
+// Always fully expanded — no truncation, no click-to-expand toggle.
 function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDragStart?: () => void; onDragEnd?: () => void }) {
-  // Default expanded — Adrian wants full visibility while browsing
-  const [expanded, setExpanded] = useState(true);
   const imgUrl = questionImageUrl(q);
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const difficulty = q.difficulty ?? 'Standard';
@@ -278,17 +276,10 @@ function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDr
         <img src={imgUrl} alt="" className="max-w-full max-h-48 rounded border border-slate-200 mx-auto block" />
       )}
 
-      {/* Question body with rendered LaTeX. Click to expand/collapse. */}
+      {/* Question body with rendered LaTeX — always fully expanded */}
       {markdown && (
         <div
-          className={`prose prose-sm prose-slate max-w-none text-[12px] leading-snug bank-q-prose ${expanded ? '' : 'overflow-hidden'}`}
-          style={expanded ? undefined : { maxHeight: imgUrl ? 140 : 220, position: 'relative' }}
-          onClick={(e) => {
-            // Don't expand if click was on a link inside the markdown
-            const tag = (e.target as HTMLElement).tagName;
-            if (tag === 'A' || tag === 'BUTTON') return;
-            setExpanded((v) => !v);
-          }}
+          className="prose prose-sm prose-slate max-w-none text-[12px] leading-snug bank-q-prose"
           onMouseDown={(e) => e.stopPropagation()} /* allow text selection */
         >
           <ReactMarkdown
@@ -297,11 +288,6 @@ function BankQuestionCard({ q, onDragStart, onDragEnd }: { q: BankQuestion; onDr
           >
             {markdown}
           </ReactMarkdown>
-          {!expanded && (
-            <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent pointer-events-none flex items-end justify-end pr-1">
-              <span className="text-[10px] text-blue-600 font-medium bg-white px-1 rounded pointer-events-auto">click to expand</span>
-            </div>
-          )}
         </div>
       )}
 

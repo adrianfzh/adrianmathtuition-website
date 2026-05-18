@@ -229,7 +229,14 @@ const customCollision: CollisionDetection = (args) => {
 
 // ── Sortable card row ──────────────────────────────────────────────────────────
 
-function SortableCardRow({ card, displayIndex, isSelected, onSelect }: { card: CardRow; displayIndex?: number; isSelected: boolean; onSelect: (id: string) => void }) {
+function SortableCardRow({ card, displayIndex, isSelected, onSelect, onBankDrop }: {
+  card: CardRow;
+  displayIndex?: number;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  /** Bank-drag drop handler — receives the question + insertion position relative to this row. */
+  onBankDrop?: (q: BankQuestion, anchorCard: CardRow, position: 'above' | 'below') => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
     data: { section: card.display_group ?? '', kind: card.content_kind },
@@ -238,12 +245,45 @@ function SortableCardRow({ card, displayIndex, isSelected, onSelect }: { card: C
   // _recentlyMovedCardId is set (module-level) in handleDragEnd before the state
   // update that mounts this component here.
   const [animateIn] = useState(() => card.id === _recentlyMovedCardId);
+  const [bankHover, setBankHover] = useState<'above' | 'below' | null>(null);
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.35 : 1, touchAction: 'none' as const };
   return (
     <div
-      ref={setNodeRef} style={style} onClick={() => onSelect(card.id)}
-      className={`flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:bg-slate-50'} ${animateIn ? 'card-section-entry' : ''}`}
+      ref={setNodeRef}
+      style={style}
+      onClick={() => onSelect(card.id)}
+      onDragOver={(e) => {
+        if (!onBankDrop) return;
+        if (!e.dataTransfer.types.includes('application/x-bank-question')) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        const rect = e.currentTarget.getBoundingClientRect();
+        const pos: 'above' | 'below' = (e.clientY - rect.top) < rect.height / 2 ? 'above' : 'below';
+        setBankHover(pos);
+      }}
+      onDragLeave={(e) => {
+        // Only clear if pointer fully exited the row
+        if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+        setBankHover(null);
+      }}
+      onDrop={(e) => {
+        if (!onBankDrop) return;
+        const payload = e.dataTransfer.getData('application/x-bank-question');
+        if (!payload) return;
+        e.preventDefault();
+        const pos = bankHover ?? 'below';
+        setBankHover(null);
+        try {
+          const q = JSON.parse(payload) as BankQuestion;
+          onBankDrop(q, card, pos);
+        } catch (err) {
+          console.error('bank drop parse failed', err);
+        }
+      }}
+      className={`relative flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:bg-slate-50'} ${animateIn ? 'card-section-entry' : ''} ${bankHover ? 'ring-2 ring-blue-200' : ''}`}
     >
+      {bankHover === 'above' && <div className="absolute -top-1 left-0 right-0 h-1 bg-blue-500 rounded-full pointer-events-none" />}
+      {bankHover === 'below' && <div className="absolute -bottom-1 left-0 right-0 h-1 bg-blue-500 rounded-full pointer-events-none" />}
       <span {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0" title="Drag to reorder">⠿</span>
       <span className="text-slate-400 text-xs w-4 shrink-0">{displayIndex ?? card.order_index}.</span>
       <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
@@ -803,6 +843,7 @@ function RefresherPanel({
   cards, subgroups, auth, selectedId, level, topic,
   localSections, sectionOrder, activeDragId, isCrossKindDrag,
   onSelectCard, onCardCreated, onRenamed, onDeleted, onNewSection, onAddCard,
+  onBankDrop,
 }: {
   cards: CardRow[]; subgroups: Subgroup[]; auth: string; selectedId: string | null;
   level: string; topic: string;
@@ -814,6 +855,7 @@ function RefresherPanel({
   onDeleted: (name: string) => void;
   onNewSection: (name: string) => void;
   onAddCard: (sectionName: string) => void;
+  onBankDrop?: (q: BankQuestion, anchorCard: CardRow, position: 'above' | 'below') => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const [showNewSectionModal, setShowNewSectionModal] = useState(false);
@@ -858,7 +900,7 @@ function RefresherPanel({
                   <SortableContext items={flatCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-1">
                       {flatCards.map((card, idx) => (
-                        <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={onSelectCard} />
+                        <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={onSelectCard} onBankDrop={onBankDrop} />
                       ))}
                     </div>
                   </SortableContext>
@@ -886,7 +928,7 @@ function RefresherPanel({
                         <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                           <div className="space-y-1">
                             {sectionCards.map((card, idx) => (
-                              <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={onSelectCard} />
+                              <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={onSelectCard} onBankDrop={onBankDrop} />
                             ))}
                           </div>
                         </SortableContext>
@@ -1649,6 +1691,46 @@ export default function EditCardsClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level]);
 
+  // Bank-question drop on left card list — create new card at insertion point
+  // and refetch. Used by both RefresherPanel and the WE panel below.
+  const handleBankDropOnList = useCallback(async (q: BankQuestion, anchorCard: CardRow, position: 'above' | 'below') => {
+    const { title: tplTitle, content: tplContent } = buildBankWorkedExampleTemplate(q);
+    if (q.usage_count > 0) {
+      const ok = window.confirm(`This question is already used in ${q.usage_count} card${q.usage_count > 1 ? 's' : ''}. Create a new card from it anyway?`);
+      if (!ok) return;
+    }
+    const body: Record<string, unknown> = {
+      level,
+      topic,
+      subgroup_id: anchorCard.subgroup_id,
+      card_title: tplTitle,
+      content: tplContent,
+      display_group: anchorCard.display_group ?? null,
+      content_kind: anchorCard.content_kind,
+      source_question_id: q.id,
+    };
+    if (position === 'above') body.insert_before_card_id = anchorCard.id;
+    else body.insert_after_card_id = anchorCard.id;
+    try {
+      const res = await fetch('/api/admin/cards/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const newCard = await res.json();
+      // Refetch so order_indexes are accurate after the server shift, then select the new card
+      await fetchCardsRef.current?.(true);
+      setSelectedId(newCard.id);
+    } catch (err) {
+      console.error('bank drop create failed', err);
+      alert('Failed to create card from bank question: ' + (err instanceof Error ? err.message : String(err)));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth, level, topic]);
+  // Keep a ref to fetchCards so handleBankDropOnList (defined first) can call it without circular dep
+  const fetchCardsRef = useRef<((silent?: boolean) => Promise<void>) | null>(null);
+
   const fetchCards = useCallback(async (silent = false) => {
     if (!level || !topic) { setCards([]); setSubgroups([]); setRefresherCards([]); return; }
     if (!silent) setLoading(true);
@@ -1668,6 +1750,8 @@ export default function EditCardsClient() {
   }, [level, topic, subgroupFilter, auth]);
 
   useEffect(() => { fetchCards(); }, [fetchCards]);
+  // Keep the ref in sync so handleBankDropOnList can call latest fetchCards
+  useEffect(() => { fetchCardsRef.current = fetchCards; }, [fetchCards]);
 
   // Keep recently-visited editor panels alive (up to 5) so AI streaming survives card switches.
   useEffect(() => {
@@ -2014,6 +2098,7 @@ export default function EditCardsClient() {
                   isCrossKindDrag={activeDragKind !== null && activeDragKind !== 'refresher'}
                   onSelectCard={setSelectedId}
                   onCardCreated={(card) => setRefresherCards((prev) => [...prev, card])}
+                  onBankDrop={handleBankDropOnList}
                   onRenamed={handleSectionRenamed}
                   onDeleted={handleSectionDeleted}
                   onNewSection={(name) => {
@@ -2063,7 +2148,7 @@ export default function EditCardsClient() {
                               <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                                 <div className="space-y-1">
                                   {sectionCards.map((card, idx) => (
-                                    <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={setSelectedId} />
+                                    <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={setSelectedId} onBankDrop={handleBankDropOnList} />
                                   ))}
                                 </div>
                               </SortableContext>
