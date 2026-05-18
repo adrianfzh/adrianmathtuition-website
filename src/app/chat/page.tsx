@@ -130,7 +130,7 @@ function renderToElement(el: HTMLDivElement, text: string) {
       try { return window.katex.renderToString(math, { displayMode: true, throwOnError: false }); }
       catch { return `$$${math}$$`; }
     });
-    html = html.replace(/(?<!\$)\$([^$\n]{1,200}?)\$(?!\$)/g, (_, math) => {
+    html = html.replace(/(?<!\$)\$([^$]{1,2000}?)\$(?!\$)/g, (_, math) => {
       try { return window.katex.renderToString(math, { displayMode: false, throwOnError: false }); }
       catch { return `$${math}$`; }
     });
