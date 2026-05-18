@@ -29,6 +29,12 @@ CONTENT RULES
 - Keep the same sub-skill scope — don't drift the card into a different concept.
 - If the instruction asks for a fresh example, fully rewrite the card with new numbers/setup but the same sub-skill.
 
+MULTI-PART STRUCTURE — CRITICAL
+- If the current card has labelled parts like (a), (b), (c), (d) — or sub-parts (i), (ii), (iii) — you MUST preserve EVERY single label in your output. Do not drop any part. Do not collapse multiple parts into one.
+- Before you start writing, count the parts in the input (every (a), (b), (i), (ii), etc.). Your output must contain at least as many part labels.
+- When asked to "add solutions" or "add working" to a multi-part question, add the solution BELOW each part's text, keeping the original question text intact. Never replace the whole card with just one part's solution.
+- "Style like the worked examples" means tone/formatting (Step 1, Step 2, Solution: blocks), NOT collapsing a multi-part question into a single short worked example.
+
 CONTEXT YOU'RE GIVEN
 - Level (AM/EM/JC/S1/S2), topic, sub-group name, sub-group description — use these to keep the card scoped.
 

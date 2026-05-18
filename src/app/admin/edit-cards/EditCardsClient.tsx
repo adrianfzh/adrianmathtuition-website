@@ -148,6 +148,17 @@ function computeDiff(original: string, updated: string): DiffLine[] {
 // ── AI Quick actions ──────────────────────────────────────────────────────────
 
 const QUICK_ACTIONS = [
+  { label: 'Generate solutions', instruction: `Add a full worked solution to this card.
+
+CRITICAL — preserve every part:
+- The card may contain labelled parts (a), (b), (c), (d) and sub-parts (i), (ii), (iii). Keep EVERY label intact and keep the original question text under each one.
+- After the part's question text, add a complete worked solution for THAT part.
+- If there are sub-parts under a part, solve each sub-part separately.
+- Do not drop, merge, or skip any part. If the input has parts (a), (b), (c), (d), the output must have solutions for (a), (b), (c), and (d).
+
+Style: match the existing worked-example house style. Use **Step 1.**, **Step 2.**, **Solution:** blocks where helpful. Use $\\begin{aligned}...\\end{aligned}$ for chained equations. Final answer on its own line as **Solution:** $...$. Speak to the student in second person.
+
+If a per-part solution already exists, leave it intact and only add solutions for the parts that don't have one.` },
   { label: 'Make clearer', instruction: 'Rewrite for clarity. Same content, same answer, but cleaner phrasing and tighter step transitions.' },
   { label: 'Shorten ~30%', instruction: 'Shorten by roughly 30%. Drop filler, keep every algebra step, keep the worked answer.' },
   { label: 'Add pitfall note', instruction: "At the end, add a brief 'Common pitfall:' line warning about the most likely student error in this kind of question." },
