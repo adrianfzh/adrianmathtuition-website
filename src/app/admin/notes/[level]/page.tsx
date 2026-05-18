@@ -4,22 +4,13 @@ import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 
 const SLUG_TO_LABEL: Record<string, string> = {
-  's1': 'S1',
-  's2': 'S2',
-  's3-em': 'S3 EM',
-  's3-am': 'S3 AM',
-  's4-em': 'S4 EM',
-  's4-am': 'S4 AM',
-  'jc1': 'JC1',
-  'jc2': 'JC2',
+  's1': 'S1', 's2': 'S2',
+  's3-em': 'S3 EM', 's3-am': 'S3 AM',
+  's4-em': 'S4 EM', 's4-am': 'S4 AM',
+  'jc1': 'JC1', 'jc2': 'JC2',
 };
 
-interface Note {
-  id: string;
-  title: string;
-  pdfUrl: string;
-  uploadedAt: string;
-}
+interface Note { id: string; title: string; pdfUrl: string; uploadedAt: string; }
 
 function getCookie(name: string): string {
   if (typeof document === 'undefined') return '';
@@ -27,14 +18,8 @@ function getCookie(name: string): string {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+function fileNameToTitle(name: string) {
+  return name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
 }
 
 export default function NotesLevelPage({ params }: { params: Promise<{ level: string }> }) {
@@ -47,70 +32,59 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Upload state — supports single or bulk
-  interface PendingFile {
-    file: File;
-    title: string;
-    status: 'pending' | 'uploading' | 'done' | 'error';
-    error?: string;
-  }
-  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  function fileNameToTitle(name: string) {
-    return name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
-  }
-
-  function onFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(e.target.files ?? []);
-    setPendingFiles(selected.map(f => ({
-      file: f,
-      title: fileNameToTitle(f.name),
-      status: 'pending' as const,
-    })));
-  }
-
-  function updateTitle(idx: number, val: string) {
-    setPendingFiles(prev => prev.map((pf, i) => i === idx ? { ...pf, title: val } : pf));
-  }
-
-  // Drag-and-drop
-  const [dragging, setDragging] = useState(false);
-
-  function onDragOver(e: React.DragEvent) {
-    e.preventDefault();
-    setDragging(true);
-  }
-  function onDragLeave(e: React.DragEvent) {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false);
-  }
-  function onDrop(e: React.DragEvent) {
-    e.preventDefault();
-    setDragging(false);
-    const dropped = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
-    if (!dropped.length) return;
-    setPendingFiles(dropped.map(f => ({
-      file: f,
-      title: fileNameToTitle(f.name),
-      status: 'pending' as const,
-    })));
-  }
-
-  // Delete state
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  // Rename state
+  // Edit mode
+  const [editMode, setEditMode] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
-  function startRename(note: Note) {
-    setRenamingId(note.id);
-    setRenameValue(note.title);
-    setTimeout(() => renameInputRef.current?.select(), 30);
+  // Upload
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<
+    { file: File; title: string; status: 'pending'|'uploading'|'done'|'error'; error?: string }[]
+  >([]);
+  const [uploading, setUploading] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Toast
+  const [toast, setToast] = useState('');
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function showToast(msg: string) {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 3000);
   }
 
+  // Auth
+  useEffect(() => {
+    const cookie = getCookie('admin_pw');
+    if (!cookie) { router.replace('/admin'); return; }
+    setPw(cookie);
+  }, [router]);
+
+  useEffect(() => { if (pw) fetchNotes(); }, [pw]);
+
+  async function fetchNotes() {
+    setLoading(true); setError('');
+    try {
+      const res = await fetch(`/api/admin-notes?level=${encodeURIComponent(level)}`, {
+        headers: { Authorization: `Bearer ${pw}` },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setNotes(data.notes ?? []);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to load notes');
+    } finally { setLoading(false); }
+  }
+
+  // ── Rename ──────────────────────────────────────────────────────────────────
+  function startRename(note: Note) {
+    setRenamingId(note.id); setRenameValue(note.title);
+    setTimeout(() => renameInputRef.current?.select(), 30);
+  }
   async function commitRename(id: string) {
     const val = renameValue.trim();
     if (!val) { setRenamingId(null); return; }
@@ -122,51 +96,37 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
       });
       setNotes(prev => prev.map(n => n.id === id ? { ...n, title: val } : n));
       showToast('Renamed');
-    } catch {
-      showToast('Rename failed');
-    }
+    } catch { showToast('Rename failed'); }
     setRenamingId(null);
   }
 
-  // Toast
-  const [toast, setToast] = useState('');
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  function showToast(msg: string) {
-    setToast(msg);
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(''), 3000);
+  // ── Delete ──────────────────────────────────────────────────────────────────
+  async function handleDelete(id: string) {
+    if (!confirm('Delete this note? Cannot be undone.')) return;
+    setDeletingId(id);
+    try {
+      await fetch(`/api/admin-notes/${id}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${pw}` },
+      });
+      showToast('Deleted');
+      fetchNotes();
+    } catch { showToast('Delete failed'); }
+    finally { setDeletingId(null); }
   }
 
-  useEffect(() => {
-    const cookie = getCookie('admin_pw');
-    if (!cookie) {
-      router.replace('/admin');
-      return;
-    }
-    setPw(cookie);
-  }, [router]);
-
-  useEffect(() => {
-    if (pw) fetchNotes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pw]);
-
-  async function fetchNotes() {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch(`/api/admin-notes?level=${encodeURIComponent(level)}`, {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      setNotes(data.notes ?? []);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to load notes');
-    } finally {
-      setLoading(false);
-    }
+  // ── Upload ───────────────────────────────────────────────────────────────────
+  function onFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    setPendingFiles(files.map(f => ({ file: f, title: fileNameToTitle(f.name), status: 'pending' })));
+  }
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault(); setDragging(false);
+    const dropped = Array.from(e.dataTransfer.files).filter(
+      f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+    );
+    if (!dropped.length) return;
+    setPendingFiles(dropped.map(f => ({ file: f, title: fileNameToTitle(f.name), status: 'pending' })));
+    setUploadOpen(true);
   }
 
   async function handleUpload(e: React.FormEvent) {
@@ -183,18 +143,11 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
       setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'uploading' } : p));
       try {
         const fd = new FormData();
-        fd.append('file', pf.file);
-        fd.append('title', pf.title.trim());
-        fd.append('level', level);
+        fd.append('file', pf.file); fd.append('title', pf.title.trim()); fd.append('level', level);
         const res = await fetch('/api/admin-notes/upload', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${pw}` },
-          body: fd,
+          method: 'POST', headers: { Authorization: `Bearer ${pw}` }, body: fd,
         });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({ error: 'Upload failed' }));
-          throw new Error(data.error ?? 'Upload failed');
-        }
+        if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error ?? 'Upload failed'); }
         setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, status: 'done' } : p));
         anyDone = true;
       } catch (err: unknown) {
@@ -205,7 +158,6 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     setUploading(false);
     if (anyDone) {
       fetchNotes();
-      // Clear completed files after a short delay so user sees the ✅
       setTimeout(() => {
         setPendingFiles(prev => prev.filter(p => p.status !== 'done'));
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -213,432 +165,270 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Delete this note? This cannot be undone.')) return;
-    setDeletingId(id);
-    try {
-      const res = await fetch(`/api/admin-notes/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${pw}` },
-      });
-      if (!res.ok) throw new Error('Delete failed');
-      showToast('Deleted');
-      fetchNotes();
-    } catch {
-      showToast('Delete failed');
-    } finally {
-      setDeletingId(null);
-    }
-  }
-
   return (
     <>
       <style>{css}</style>
-      <div className="notes-wrap">
+      <div className="nl-wrap" onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={onDrop}>
+
         {/* Header */}
-        <div className="notes-header">
-          <div className="notes-header-inner">
-            <a href="/admin/notes" className="notes-back">← Notes</a>
-            <span className="notes-title">{levelLabel} Notes</span>
-          </div>
+        <div className="nl-header">
+          <a href="/admin/notes" className="nl-back">← Notes</a>
+          <span className="nl-title">{levelLabel} Notes</span>
+          <button className={`nl-edit-btn${editMode ? ' active' : ''}`} onClick={() => { setEditMode(e => !e); setRenamingId(null); }}>
+            {editMode ? 'Done' : 'Edit'}
+          </button>
         </div>
 
-        <div className="notes-body">
-          {/* Upload section */}
-          <div className="notes-card">
-            <div className="notes-section-label">Upload Notes</div>
-            <form onSubmit={handleUpload}>
-              {/* Drop zone / file picker */}
-              <div
-                className={`drop-zone${dragging ? ' drop-zone-active' : ''}`}
-                onDragOver={onDragOver}
-                onDragLeave={onDragLeave}
-                onDrop={onDrop}
-              >
-                <label className="drop-zone-label">
-                  <span className="drop-zone-icon">📄</span>
-                  <span className="drop-zone-text">
-                    {dragging
-                      ? 'Drop PDFs here'
-                      : pendingFiles.length === 0
-                        ? <>Drag &amp; drop PDFs here, or <span className="drop-zone-browse">browse</span></>
-                        : `${pendingFiles.length} file${pendingFiles.length > 1 ? 's' : ''} selected — drop more to replace`}
-                  </span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    multiple
-                    style={{ display: 'none' }}
-                    onChange={onFilesSelected}
-                    disabled={uploading}
-                  />
-                </label>
-              </div>
+        {/* Drag overlay */}
+        {dragging && (
+          <div className="nl-drag-overlay">
+            <div className="nl-drag-msg">📄 Drop PDFs to upload</div>
+          </div>
+        )}
 
-              {/* Per-file title rows */}
-              {pendingFiles.length > 0 && (
-                <div className="bulk-file-list">
-                  {pendingFiles.map((pf, i) => (
-                    <div key={i} className="bulk-file-row">
-                      <div className="bulk-file-name">
-                        {pf.status === 'done' && <span className="bulk-status">✅</span>}
-                        {pf.status === 'uploading' && <span className="bulk-status bulk-spin">⏳</span>}
-                        {pf.status === 'error' && <span className="bulk-status bulk-err">❌</span>}
-                        <span className="bulk-fname">{pf.file.name}</span>
-                        {pf.error && <span className="bulk-err-msg">{pf.error}</span>}
-                      </div>
+        <div className="nl-body">
+          {/* Notes grid */}
+          {loading ? (
+            <div className="nl-loading">Loading…</div>
+          ) : error ? (
+            <div className="nl-error">{error}</div>
+          ) : notes.length === 0 ? (
+            <div className="nl-empty">No notes yet — upload below</div>
+          ) : (
+            <div className="nl-grid">
+              {notes.map(note => (
+                <div key={note.id} className="nl-card-wrap">
+                  {renamingId === note.id ? (
+                    <div className="nl-rename-wrap">
                       <input
-                        className="notes-input"
-                        type="text"
-                        placeholder="Title"
-                        value={pf.title}
-                        onChange={e => updateTitle(i, e.target.value)}
-                        disabled={uploading || pf.status === 'done'}
-                        style={{ marginBottom: 0, marginTop: 4 }}
+                        ref={renameInputRef}
+                        className="nl-rename-input"
+                        value={renameValue}
+                        onChange={e => setRenameValue(e.target.value)}
+                        onBlur={() => commitRename(note.id)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') commitRename(note.id);
+                          if (e.key === 'Escape') setRenamingId(null);
+                        }}
                       />
                     </div>
-                  ))}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="notes-upload-btn"
-                disabled={uploading || pendingFiles.length === 0}
-              >
-                {uploading
-                  ? `Uploading ${pendingFiles.filter(p => p.status === 'done').length}/${pendingFiles.length}…`
-                  : pendingFiles.length > 1
-                    ? `Upload All (${pendingFiles.length})`
-                    : 'Upload'}
-              </button>
-            </form>
-          </div>
-
-          {/* Notes list */}
-          <div className="notes-card">
-            <div className="notes-section-label">Notes for {levelLabel}</div>
-            {loading ? (
-              <div className="notes-loading">Loading…</div>
-            ) : error ? (
-              <div className="notes-error">{error}</div>
-            ) : notes.length === 0 ? (
-              <div className="notes-empty">No notes yet for {levelLabel}. Upload the first one above.</div>
-            ) : (
-              <ul className="notes-list">
-                {notes.map(note => (
-                  <li key={note.id} className="notes-row">
-                    {/* Tappable area → opens viewer + auto-prints */}
-                    <a href={`/admin/notes/${level}/${note.id}`} className="notes-row-tap">
-                      <div className="notes-row-title">{note.title}</div>
-                      <div className="notes-row-meta">{relativeTime(note.uploadedAt)}</div>
-                    </a>
-                    {/* Edit / delete — stop propagation so tapping these doesn't navigate */}
-                    <div className="notes-row-actions">
-                      <button
-                        className="notes-rename-btn"
-                        onClick={e => { e.preventDefault(); startRename(note); }}
-                        aria-label="Rename"
-                        title="Rename"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        className="notes-delete-btn"
-                        onClick={e => { e.preventDefault(); handleDelete(note.id); }}
-                        disabled={deletingId === note.id}
-                        aria-label="Delete note"
-                      >
-                        {deletingId === note.id ? '…' : '🗑'}
-                      </button>
+                  ) : editMode ? (
+                    <div className="nl-card nl-card-edit">
+                      <span className="nl-card-text">{note.title}</span>
+                      <div className="nl-edit-actions">
+                        <button className="nl-action-btn" onClick={() => startRename(note)}>✏️</button>
+                        <button className="nl-action-btn nl-delete-btn" onClick={() => handleDelete(note.id)} disabled={deletingId === note.id}>
+                          {deletingId === note.id ? '…' : '🗑'}
+                        </button>
+                      </div>
                     </div>
-                    {/* Inline rename — shown as overlay when active */}
-                    {renamingId === note.id && (
-                      <div className="rename-overlay" onClick={e => e.stopPropagation()}>
+                  ) : (
+                    <a href={`/admin/notes/${level}/${note.id}`} className="nl-card">
+                      <span className="nl-card-text">{note.title}</span>
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload section — collapsed by default */}
+          <div className="nl-upload-section">
+            <button className="nl-upload-toggle" onClick={() => setUploadOpen(o => !o)}>
+              {uploadOpen ? '▲ Hide upload' : '＋ Upload notes'}
+            </button>
+
+            {uploadOpen && (
+              <form className="nl-upload-form" onSubmit={handleUpload}>
+                <label className="nl-drop-zone">
+                  <span className="nl-drop-icon">📄</span>
+                  <span className="nl-drop-text">
+                    {pendingFiles.length === 0
+                      ? 'Drag & drop or tap to choose PDFs'
+                      : `${pendingFiles.length} file${pendingFiles.length > 1 ? 's' : ''} selected`}
+                  </span>
+                  <input ref={fileInputRef} type="file" accept="application/pdf" multiple style={{ display: 'none' }} onChange={onFilesSelected} disabled={uploading} />
+                </label>
+
+                {pendingFiles.length > 0 && (
+                  <div className="nl-file-list">
+                    {pendingFiles.map((pf, i) => (
+                      <div key={i} className="nl-file-row">
+                        <div className="nl-file-status">
+                          {pf.status === 'done' && '✅'}
+                          {pf.status === 'uploading' && '⏳'}
+                          {pf.status === 'error' && '❌'}
+                          {pf.status === 'pending' && '📄'}
+                          <span className="nl-fname">{pf.file.name}</span>
+                          {pf.error && <span className="nl-ferr">{pf.error}</span>}
+                        </div>
                         <input
-                          ref={renameInputRef}
-                          className="rename-input"
-                          value={renameValue}
-                          onChange={e => setRenameValue(e.target.value)}
-                          onBlur={() => commitRename(note.id)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') commitRename(note.id);
-                            if (e.key === 'Escape') setRenamingId(null);
-                          }}
+                          className="nl-title-input"
+                          type="text"
+                          placeholder="Title"
+                          value={pf.title}
+                          onChange={e => setPendingFiles(prev => prev.map((p, idx) => idx === i ? { ...p, title: e.target.value } : p))}
+                          disabled={uploading || pf.status === 'done'}
                         />
                       </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                    ))}
+                  </div>
+                )}
+
+                <button type="submit" className="nl-upload-btn" disabled={uploading || pendingFiles.length === 0}>
+                  {uploading
+                    ? `Uploading ${pendingFiles.filter(p => p.status === 'done').length}/${pendingFiles.length}…`
+                    : pendingFiles.length > 1 ? `Upload All (${pendingFiles.length})` : 'Upload'}
+                </button>
+              </form>
             )}
           </div>
         </div>
 
-        {/* Toast */}
-        {toast && <div className="notes-toast">{toast}</div>}
+        {toast && <div className="nl-toast">{toast}</div>}
       </div>
     </>
   );
 }
 
 const css = `
-.notes-wrap {
-  min-height: 100vh;
-  background: #f3f4f6;
-  padding-bottom: 32px;
-}
-.notes-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-}
-.notes-header-inner {
-  max-width: 620px;
-  margin: 0 auto;
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.nl-wrap { min-height: 100vh; background: #f3f4f6; }
+
+/* Header */
+.nl-header {
+  position: sticky; top: 0; z-index: 10;
+  background: #fff; border-bottom: 1px solid #e5e7eb;
+  display: flex; align-items: center; gap: 10px;
   padding: 12px 16px;
-  display: flex;
-  align-items: center;
+}
+.nl-back { font-size: 14px; color: #2563eb; text-decoration: none; white-space: nowrap; }
+.nl-back:hover { text-decoration: underline; }
+.nl-title { flex: 1; font-size: 17px; font-weight: 700; color: #111827; }
+.nl-edit-btn {
+  font-size: 14px; font-weight: 600; padding: 5px 14px;
+  border: 1px solid #d1d5db; border-radius: 8px; background: #fff;
+  color: #374151; cursor: pointer;
+}
+.nl-edit-btn.active { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
+
+/* Drag overlay */
+.nl-drag-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(30,58,95,0.85);
+  display: flex; align-items: center; justify-content: center;
+}
+.nl-drag-msg { color: #fff; font-size: 24px; font-weight: 700; }
+
+/* Body */
+.nl-body { padding: 20px 16px 40px; max-width: 700px; margin: 0 auto; }
+.nl-loading, .nl-error, .nl-empty {
+  text-align: center; padding: 40px 16px;
+  font-size: 15px; color: #9ca3af;
+}
+.nl-error { color: #ef4444; }
+
+/* Notes grid — 2 columns */
+.nl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
+  margin-bottom: 32px;
 }
-.notes-back {
-  font-size: 13px;
-  color: #2563eb;
+.nl-card-wrap { position: relative; }
+
+/* Note card — tap to print */
+.nl-card {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 80px; padding: 14px 12px;
+  background: #fff; border-radius: 12px;
+  border: 2px solid #e5e7eb;
   text-decoration: none;
-  white-space: nowrap;
-}
-.notes-back:hover { text-decoration: underline; }
-.notes-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #111827;
-}
-.notes-body {
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.notes-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 16px;
-}
-.notes-section-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 12px;
-}
-.upload-file-row { margin-bottom: 10px; }
-.upload-file-btn {
-  display: inline-block;
-  padding: 9px 16px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 9px;
-  font-size: 14px;
-  color: #374151;
   cursor: pointer;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.upload-file-btn:hover { background: #e5e7eb; }
-.notes-input {
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #e5e7eb;
-  border-radius: 9px;
-  padding: 10px 14px;
-  font-size: 14px;
-  color: #111827;
-  outline: none;
-  margin-bottom: 10px;
-}
-.notes-input:focus { border-color: #1e3a5f; }
-.notes-upload-btn {
-  width: 100%;
-  background: #1e3a5f;
-  color: #fff;
-  border: none;
-  border-radius: 9px;
-  padding: 12px 0;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.notes-upload-btn:disabled { opacity: 0.4; cursor: default; }
-.notes-error {
-  font-size: 13px;
-  color: #ef4444;
-  margin-bottom: 8px;
-}
-.notes-loading {
-  font-size: 14px;
-  color: #9ca3af;
-  padding: 12px 0;
-}
-.notes-empty {
-  font-size: 14px;
-  color: #9ca3af;
-  padding: 8px 0;
-}
-.notes-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.notes-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #f3f4f6;
-  min-height: 64px;
-}
-.notes-row:last-child { border-bottom: none; }
-.notes-row:active { background: #f9fafb; }
-.notes-row-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.notes-row-meta {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 2px;
-}
-.notes-row-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.notes-row-tap {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column; gap: 2px;
-  text-decoration: none;
-  color: inherit;
-  padding: 14px 0 14px 16px;
-}
-.notes-row-tap:active { opacity: 0.6; }
-.notes-rename-btn {
-  background: none; border: none; cursor: pointer;
-  font-size: 16px; padding: 6px; border-radius: 6px;
-  color: #9ca3af; transition: background 0.1s;
-}
-.notes-rename-btn:hover { background: #f3f4f6; }
-.rename-overlay {
-  position: absolute; inset: 0;
-  background: #fff; border-radius: 10px;
-  display: flex; align-items: center; padding: 0 12px;
-  z-index: 2;
-}
-.notes-delete-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 4px;
-  border-radius: 6px;
-  color: #6b7280;
-  transition: background 0.1s;
-}
-.notes-delete-btn:hover { background: #fee2e2; }
-.notes-delete-btn:disabled { opacity: 0.4; cursor: default; }
-.notes-toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #111827;
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 100;
-  white-space: nowrap;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-}
-/* Rename */
-.rename-input {
-  width: 100%;
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
-  border: 1px solid #1e3a5f;
-  border-radius: 6px;
-  padding: 4px 8px;
-  outline: none;
-  font-family: inherit;
-  background: #f0f4f8;
-}
-.rename-hint {
-  font-size: 11px;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.notes-row-title:hover .rename-hint { opacity: 1; }
-.notes-row-title { cursor: pointer; }
-/* Drop zone */
-.drop-zone {
-  border: 2px dashed #d1d5db;
-  border-radius: 10px;
-  padding: 24px 16px;
+  transition: border-color 0.15s, background 0.1s;
   text-align: center;
+}
+.nl-card:active { background: #eff6ff; border-color: #1e3a5f; }
+@media (hover: hover) { .nl-card:hover { border-color: #1e3a5f; background: #f8faff; } }
+.nl-card-text {
+  font-size: 14px; font-weight: 600; color: #111827; line-height: 1.35;
+}
+
+/* Edit-mode card */
+.nl-card-edit {
+  display: flex; flex-direction: column; align-items: stretch;
+  min-height: 80px; padding: 12px;
+  background: #fff; border-radius: 12px;
+  border: 2px solid #fbbf24;
+  gap: 8px;
+}
+.nl-card-edit .nl-card-text { font-size: 13px; color: #374151; flex: 1; }
+.nl-edit-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.nl-action-btn {
+  background: #f3f4f6; border: none; border-radius: 6px;
+  cursor: pointer; font-size: 15px; padding: 4px 8px;
+}
+.nl-action-btn:active { background: #e5e7eb; }
+.nl-delete-btn:hover { background: #fee2e2; }
+
+/* Rename */
+.nl-rename-wrap {
+  min-height: 80px; display: flex; align-items: center;
+  background: #fff; border-radius: 12px; border: 2px solid #1e3a5f;
+  padding: 8px;
+}
+.nl-rename-input {
+  width: 100%; border: none; outline: none;
+  font-size: 14px; font-weight: 600; color: #111827;
+  font-family: inherit; background: transparent;
+}
+
+/* Upload section */
+.nl-upload-section { margin-top: 8px; }
+.nl-upload-toggle {
+  width: 100%; padding: 12px; background: #fff;
+  border: 1px dashed #d1d5db; border-radius: 10px;
+  font-size: 14px; font-weight: 600; color: #6b7280;
+  cursor: pointer; text-align: center;
+}
+.nl-upload-toggle:hover { border-color: #9ca3af; color: #374151; }
+.nl-upload-form { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.nl-drop-zone {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 2px dashed #d1d5db; border-radius: 10px; padding: 20px;
+  cursor: pointer; text-align: center;
+  background: #fafafa;
+}
+.nl-drop-zone:hover { border-color: #1e3a5f; }
+.nl-drop-icon { font-size: 24px; }
+.nl-drop-text { font-size: 13px; color: #6b7280; }
+.nl-file-list { display: flex; flex-direction: column; gap: 8px; }
+.nl-file-row {
+  background: #f9fafb; border: 1px solid #e5e7eb;
+  border-radius: 8px; padding: 8px 10px;
+}
+.nl-file-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280; margin-bottom: 4px; flex-wrap: wrap; }
+.nl-fname { word-break: break-all; }
+.nl-ferr { color: #dc2626; font-size: 11px; }
+.nl-title-input {
+  width: 100%; border: 1px solid #e5e7eb; border-radius: 6px;
+  padding: 6px 10px; font-size: 13px; font-family: inherit;
+  background: #fff; outline: none;
+}
+.nl-title-input:focus { border-color: #1e3a5f; }
+.nl-upload-btn {
+  width: 100%; padding: 12px; background: #1e3a5f; color: #fff;
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  margin-bottom: 12px;
 }
-.drop-zone:hover { border-color: #1e3a5f; background: #f0f4f8; }
-.drop-zone-active { border-color: #1e3a5f !important; background: #e8f0f8 !important; }
-.drop-zone-label { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.drop-zone-icon { font-size: 28px; }
-.drop-zone-text { font-size: 14px; color: #6b7280; }
-.drop-zone-browse { color: #1e3a5f; font-weight: 600; text-decoration: underline; }
-/* Bulk upload */
-.bulk-file-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 12px;
+.nl-upload-btn:disabled { opacity: 0.5; cursor: default; }
+
+/* Toast */
+.nl-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #111827; color: #fff; padding: 10px 22px;
+  border-radius: 20px; font-size: 14px; font-weight: 500;
+  z-index: 100; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
-.bulk-file-row {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 10px 12px;
-}
-.bulk-file-name {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 2px;
-}
-.bulk-fname {
-  font-size: 12px;
-  color: #6b7280;
-  word-break: break-all;
-}
-.bulk-status { font-size: 14px; flex-shrink: 0; }
-.bulk-err { color: #dc2626; }
-.bulk-err-msg { font-size: 11px; color: #dc2626; }
 `;
