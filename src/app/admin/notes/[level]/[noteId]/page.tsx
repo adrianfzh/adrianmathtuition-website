@@ -48,17 +48,46 @@ export default function NoteViewerPage({
       .catch(e => setFetchError(e.message ?? 'Failed to load note'));
   }, [pw, noteId]);
 
-  // Auto-print once iframe finishes loading
+  // Auto-print: fetch PDF as blob (same-origin) → iframe.contentWindow.print() → all pages print
+  async function triggerPrint() {
+    const frame = document.getElementById('pdf-frame') as HTMLIFrameElement | null;
+    // First try: iframe.contentWindow.print() — works when same-origin (blob URL)
+    try {
+      if (frame?.contentWindow) {
+        frame.contentWindow.print();
+        setPrintState('done');
+        return;
+      }
+    } catch { /* cross-origin or unsupported — fall through */ }
+    // Fallback: window.print() (may only print visible page on some browsers)
+    window.print();
+    setPrintState('done');
+  }
+
   function onIframeLoad() {
     if (hasPrinted.current) return;
     hasPrinted.current = true;
     setPrintState('printing');
-    // Small delay so PDF finishes rendering before dialog opens
-    setTimeout(() => {
-      window.print();
-      setPrintState('done');
-    }, 600);
+    setTimeout(triggerPrint, 600);
   }
+
+  // Fetch PDF as blob → set iframe to same-origin blob URL so all pages print
+  useEffect(() => {
+    if (!pdfUrl) return;
+    let blobUrl = '';
+    fetch(pdfUrl)
+      .then(r => r.blob())
+      .then(blob => {
+        blobUrl = URL.createObjectURL(blob);
+        const frame = document.getElementById('pdf-frame') as HTMLIFrameElement | null;
+        if (frame) {
+          hasPrinted.current = false; // reset so onIframeLoad fires again with blob URL
+          frame.src = blobUrl;
+        }
+      })
+      .catch(() => { /* keep original pdfUrl if fetch fails */ });
+    return () => { if (blobUrl) URL.revokeObjectURL(blobUrl); };
+  }, [pdfUrl]);
 
   return (
     <>
@@ -124,7 +153,7 @@ export default function NoteViewerPage({
         <button className="v-btn v-btn-open" onClick={() => window.open(pdfUrl, '_blank')} style={{ display: pdfUrl ? undefined : 'none' }}>
           Open ↗
         </button>
-        <button className="v-btn v-btn-print" onClick={() => window.print()} disabled={!pdfUrl}>
+        <button className="v-btn v-btn-print" onClick={triggerPrint} disabled={!pdfUrl}>
           🖨 Print
         </button>
       </div>
