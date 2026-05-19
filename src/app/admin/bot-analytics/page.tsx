@@ -881,18 +881,34 @@ export default function BotAnalytics() {
                         📷 Image question — image was not stored to Blob (web images now stored from bot v{new Date().getFullYear()})
                       </div>
                     )}
-                    {selected.caption && (
-                      <div>
-                        <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>
-                          {selected.imageUrl
-                            ? '📝 OCR-extracted text (what the bot reads from the image — student just sent the photo)'
-                            : '📝 Student\'s typed question'}
+                    {selected.caption && (() => {
+                      // Split student's actual message from bot-injected context (SCOPING INSTRUCTION etc.)
+                      const scopingIdx = selected.caption.indexOf('\n\nSCOPING INSTRUCTION');
+                      const inlineIdx  = selected.caption.indexOf(' SCOPING INSTRUCTION');
+                      const splitIdx   = scopingIdx !== -1 ? scopingIdx : inlineIdx !== -1 ? inlineIdx : -1;
+                      const studentText   = splitIdx !== -1 ? selected.caption.slice(0, splitIdx).trim() : selected.caption;
+                      const internalCtx   = splitIdx !== -1 ? selected.caption.slice(splitIdx).trim() : '';
+                      return (
+                        <div>
+                          <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>
+                            {selected.imageUrl
+                              ? '📝 OCR-extracted text (what the bot reads from the image — student just sent the photo)'
+                              : '📝 Student\'s typed question'}
+                          </div>
+                          {/* What the student actually sent */}
+                          <div style={{ fontSize: 13, lineHeight: 1.6, background: '#f8fafc', borderRadius: 8, padding: '10px 12px', marginBottom: internalCtx ? 6 : 0 }}>
+                            <WebMathRenderer text={studentText} />
+                          </div>
+                          {/* Bot-injected context — dimmed, not visible to student */}
+                          {internalCtx && (
+                            <div style={{ fontSize: 11, color: '#94a3b8', background: '#f1f5f9', borderRadius: 8, padding: '7px 12px', border: '1px dashed #cbd5e1' }}>
+                              <span style={{ fontWeight: 700, color: '#94a3b8' }}>🔒 Internal context (not seen by student):</span>
+                              <div style={{ marginTop: 3, fontStyle: 'italic' }}>{internalCtx}</div>
+                            </div>
+                          )}
                         </div>
-                        <div style={{ fontSize: 13, lineHeight: 1.6, background: '#f8fafc', borderRadius: 8, padding: '10px 12px' }}>
-                          <WebMathRenderer text={selected.caption} />
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                     {!selected.caption && !selected.imageUrl && (
                       <div style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>(no question recorded)</div>
                     )}
@@ -1028,10 +1044,18 @@ function ResponseViewer({ aiResponse, responseView, setResponseView, auth }: {
 }) {
   const [telegramText, setTelegramText] = useState<string | null>(null);
   const [telegramLoading, setTelegramLoading] = useState(false);
+  const lastFetchedResponse = useRef('');
+
+  // Reset cached text whenever aiResponse changes (different question selected)
+  useEffect(() => {
+    setTelegramText(null);
+    lastFetchedResponse.current = '';
+  }, [aiResponse]);
 
   useEffect(() => {
     if (responseView !== 'telegram' || !aiResponse) return;
-    if (telegramText !== null) return;
+    if (lastFetchedResponse.current === aiResponse) return; // already fetched for this response
+    lastFetchedResponse.current = aiResponse;
     setTelegramLoading(true);
     fetch('/api/admin/cockpit/format-telegram', {
       method: 'POST',
