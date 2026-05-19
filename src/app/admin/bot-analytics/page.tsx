@@ -164,6 +164,14 @@ export default function BotAnalytics() {
   const [batches, setBatches]       = useState<{ batchId: string; clusters: Cluster[] }[]>([]);
   const [rates, setRates]           = useState<{ topic: string; rate: number; sugs: number; qs: number }[]>([]);
   const [trend, setTrend]           = useState<{ date: string; count: number }[]>([]);
+  const [pendingSugs, setPendingSugs] = useState<{
+    key: string; suggestion: string; date: string; basedOn: number | null;
+    issue?: string | null; question?: string | null; model?: string | null;
+    category?: string | null; level?: string | null;
+  }[]>([]);
+  const [pendingSugsError, setPendingSugsError] = useState(false);
+  const [selectedSugKeys, setSelectedSugKeys] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -230,12 +238,14 @@ export default function BotAnalytics() {
       fetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/synthesis-batches`, { headers: auth }).then(r => r.json()),
       fetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`, { headers: auth }).then(r => r.json()),
+      fetch(`/api/admin/cockpit/pending-suggestions`, { headers: auth }).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
       fetch(`/api/admin/cockpit/lint-reports?limit=12`, { headers: auth }).then(r => r.ok ? r.json() : { runs: [] }).catch(() => ({ runs: [] })),
-    ]).then(([qd, bd, rd, ld]) => {
+    ]).then(([qd, bd, rd, sd, ld]) => {
       setQuestions(computeFlags(qd.questions || []));
       setBatches(bd.batches || []);
       setRates(rd.rates || []);
       setTrend(rd.trend || []);
+      setPendingSugs(sd.suggestions || []);
       setLintRuns(ld.runs || []);
       setLintRunIdx(0);
       setLoading(false);
@@ -332,13 +342,14 @@ export default function BotAnalytics() {
     const d = await r.json();
     if (d.ok) {
       setChatMessages(prev => [...prev, { role: 'assistant', content: '✅ Rule appended to prompt_additions.txt' }]);
-      // Auto-dismiss the originating suggestion from the server (if opened via Discuss)
+      // Auto-dismiss the originating suggestion from the left panel (if opened via Discuss)
       const sugKey = contextItem?.suggestionKey;
       if (sugKey) {
         await fetch('/api/admin/cockpit/dismiss-suggestion', {
           method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
           body: JSON.stringify({ key: sugKey }),
         });
+        setPendingSugs(prev => prev.filter(x => x.key !== sugKey));
       }
     } else {
       alert('Failed: ' + (d.error || 'unknown error'));
@@ -580,6 +591,150 @@ export default function BotAnalytics() {
                   </div>
                 );
               })}
+
+              {/* Suggested Rules from daily verification */}
+              {pendingSugsError && (
+                <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#b91c1c', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>⚠️ Prompt rules endpoint unavailable — bot may still be deploying</span>
+                  <button onClick={load} style={{ fontSize: 11, background: 'none', border: '1px solid #fca5a5', borderRadius: 4, padding: '2px 8px', color: '#b91c1c', cursor: 'pointer' }}>Retry</button>
+                </div>
+              )}
+              {pendingSugs.length > 0 && (() => {
+                const allSelected = pendingSugs.length > 0 && pendingSugs.every(s => selectedSugKeys.has(s.key));
+                const anySelected = selectedSugKeys.size > 0;
+                const numSelected = selectedSugKeys.size;
+
+                async function applyKeys(keys: string[]) {
+                  setBulkLoading(true);
+                  for (const key of keys) {
+                    const s = pendingSugs.find(x => x.key === key);
+                    if (!s) continue;
+                    await fetch('/api/admin/cockpit/append-rule', {
+                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                      body: JSON.stringify({ rule: s.suggestion, theme: 'daily-verification', sourceContext: JSON.stringify(s) }),
+                    });
+                    await fetch('/api/admin/cockpit/dismiss-suggestion', {
+                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                      body: JSON.stringify({ key }),
+                    });
+                  }
+                  setPendingSugs(prev => prev.filter(x => !keys.includes(x.key)));
+                  setSelectedSugKeys(new Set());
+                  setBulkLoading(false);
+                }
+
+                async function dismissKeys(keys: string[]) {
+                  setBulkLoading(true);
+                  for (const key of keys) {
+                    await fetch('/api/admin/cockpit/dismiss-suggestion', {
+                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                      body: JSON.stringify({ key }),
+                    });
+                  }
+                  setPendingSugs(prev => prev.filter(x => !keys.includes(x.key)));
+                  setSelectedSugKeys(new Set());
+                  setBulkLoading(false);
+                }
+
+                return (
+                  <div style={{ marginTop: 16 }}>
+                    {/* Header + bulk actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: '#475569' }}>
+                        <input type="checkbox" checked={allSelected} onChange={e => {
+                          if (e.target.checked) setSelectedSugKeys(new Set(pendingSugs.map(s => s.key)));
+                          else setSelectedSugKeys(new Set());
+                        }} style={{ width: 14, height: 14 }} />
+                        {allSelected ? 'Deselect all' : 'Select all'}
+                      </label>
+                      <span style={{ fontWeight: 600, fontSize: 13, color: '#475569', flex: 1 }}>
+                        💡 Suggested Rules ({pendingSugs.length})
+                        {anySelected && <span style={{ fontWeight: 400, color: '#94a3b8' }}> · {numSelected} selected</span>}
+                      </span>
+                      {anySelected && (
+                        <>
+                          <button disabled={bulkLoading} onClick={() => applyKeys([...selectedSugKeys])}
+                            style={{ fontSize: 12, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600, opacity: bulkLoading ? 0.5 : 1 }}>
+                            ✅ Apply {numSelected}
+                          </button>
+                          <button disabled={bulkLoading} onClick={() => dismissKeys([...selectedSugKeys])}
+                            style={{ fontSize: 12, background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#64748b', opacity: bulkLoading ? 0.5 : 1 }}>
+                            Dismiss {numSelected}
+                          </button>
+                        </>
+                      )}
+                      {!anySelected && (
+                        <>
+                          <button disabled={bulkLoading} onClick={() => { if (confirm(`Apply all ${pendingSugs.length} rules?`)) applyKeys(pendingSugs.map(s => s.key)); }}
+                            style={{ fontSize: 12, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600, opacity: bulkLoading ? 0.5 : 1 }}>
+                            ✅ Apply all
+                          </button>
+                          <button disabled={bulkLoading} onClick={() => { if (confirm(`Dismiss all ${pendingSugs.length} rules?`)) dismissKeys(pendingSugs.map(s => s.key)); }}
+                            style={{ fontSize: 12, background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#64748b', opacity: bulkLoading ? 0.5 : 1 }}>
+                            Dismiss all
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Individual cards */}
+                    {pendingSugs.map(s => {
+                      const isSelected = selectedSugKeys.has(s.key);
+                      return (
+                        <div key={s.key} style={{ background: isSelected ? '#fef9c3' : '#fffbeb', border: `1px solid ${isSelected ? '#f59e0b' : '#fcd34d'}`, borderRadius: 8, padding: '10px 14px', marginBottom: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                            <input type="checkbox" checked={isSelected}
+                              onChange={e => setSelectedSugKeys(prev => {
+                                const next = new Set(prev);
+                                e.target.checked ? next.add(s.key) : next.delete(s.key);
+                                return next;
+                              })}
+                              style={{ width: 14, height: 14, marginTop: 2, flexShrink: 0, cursor: 'pointer' }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 11, color: '#92400e', marginBottom: 6, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                                {s.basedOn != null && <span>Based on {s.basedOn} flagged answer{s.basedOn !== 1 ? 's' : ''}</span>}
+                                <span>· {s.date}</span>
+                                {s.model && <span style={{ background: '#fef9c3', borderRadius: 4, padding: '1px 5px' }}>{s.model.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus')}</span>}
+                                {s.level && s.level !== 'unknown' && <span style={{ background: '#f0fdf4', borderRadius: 4, padding: '1px 5px', color: '#15803d' }}>{s.level}</span>}
+                              </div>
+                              {s.issue && (
+                                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#dc2626', lineHeight: 1.5 }}>
+                                  ⚠ {s.issue}
+                                </div>
+                              )}
+                              {s.question && s.question !== '(image question)' && (
+                                <div style={{ background: '#f8fafc', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#475569', lineHeight: 1.5, fontStyle: 'italic' }}>
+                                  📝 Q: {s.question.slice(0, 200)}{s.question.length > 200 ? '…' : ''}
+                                </div>
+                              )}
+                              {s.question === '(image question)' && (
+                                <div style={{ background: '#f8fafc', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 12, color: '#94a3b8' }}>
+                                  📷 Image question — check flagged tab for {s.date}
+                                </div>
+                              )}
+                              <div style={{ fontSize: 13, lineHeight: 1.5, color: '#1e293b', marginBottom: 8, fontStyle: 'italic' }}>"{s.suggestion}"</div>
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                <button disabled={bulkLoading} onClick={() => applyKeys([s.key])}
+                                  style={{ fontSize: 12, background: '#16a34a', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600, opacity: bulkLoading ? 0.5 : 1 }}>
+                                  ✅ Apply
+                                </button>
+                                <button onClick={() => selectCluster({ theme: 'Suggested rule', proposed_rule: s.suggestion, confidence: 'medium', affects_topics: [], suggestion_ids: [] })}
+                                  style={{ fontSize: 12, background: '#1e3a5f', color: '#fff', border: 'none', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 600 }}>
+                                  ✦ Discuss
+                                </button>
+                                <button disabled={bulkLoading} onClick={() => dismissKeys([s.key])}
+                                  style={{ fontSize: 12, background: 'none', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#64748b', opacity: bulkLoading ? 0.5 : 1 }}>
+                                  Dismiss
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
               {/* Clusters */}
               {totalClusters > 0 && (
