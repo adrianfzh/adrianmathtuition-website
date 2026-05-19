@@ -2,10 +2,12 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Notes — Adrian's Math Tuition",
+  manifest: '/manifest-notes.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Notes',
+    startupImage: '/icons/notes-180.png',
   },
   icons: {
     apple: '/icons/notes-180.png',

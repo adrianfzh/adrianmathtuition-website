@@ -4,17 +4,10 @@ import { airtableRequestAll } from '@/lib/airtable';
 
 export const runtime = 'nodejs';
 
-// Maps URL slug → one or more Airtable Level values
+// Maps URL slug → Airtable Level value
 const SLUG_TO_LEVELS: Record<string, string[]> = {
-  's1':  ['S1'],
-  's2':  ['S2'],
-  'em':  ['S3 EM', 'S4 EM'],
-  'am':  ['S3 AM', 'S4 AM'],
-  'jc':  ['JC1', 'JC2'],
-  // legacy slugs (kept for any existing links)
-  's3-em': ['S3 EM'], 's4-em': ['S4 EM'],
-  's3-am': ['S3 AM'], 's4-am': ['S4 AM'],
-  'jc1': ['JC1'], 'jc2': ['JC2'],
+  's1': ['S1'], 's2': ['S2'],
+  'em': ['EM'], 'am': ['AM'], 'jc': ['JC'],
 };
 
 export async function GET(req: NextRequest) {
