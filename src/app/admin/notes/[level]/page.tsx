@@ -258,12 +258,9 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                       </div>
                     </div>
                   ) : (
-                    <button
-                      className="nl-card"
-                      onClick={() => window.open(note.pdfUrl, '_blank')}
-                    >
+                    <a href={`/admin/notes/${level}/${note.id}`} className="nl-card">
                       <span className="nl-card-text">{note.title}</span>
-                    </button>
+                    </a>
                   )}
                 </div>
               ))}
