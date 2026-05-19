@@ -7,12 +7,8 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
-const SLUG_TO_LABEL: Record<string, string> = {
-  's1': 'S1', 's2': 'S2',
-  's3-em': 'S3 EM', 's3-am': 'S3 AM',
-  's4-em': 'S4 EM', 's4-am': 'S4 AM',
-  'jc1': 'JC1', 'jc2': 'JC2',
-};
+// All valid Airtable level values (token endpoint receives the specific sub-level, not the merged slug)
+const VALID_LEVELS = new Set(['S1','S2','S3 EM','S4 EM','S3 AM','S4 AM','JC1','JC2']);
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) {
@@ -23,12 +19,14 @@ export async function GET(req: NextRequest) {
   const level    = searchParams.get('level') ?? '';
   const filename = searchParams.get('filename') ?? 'upload.pdf';
 
-  if (!SLUG_TO_LABEL[level]) {
+  // level here is the specific Airtable value (e.g. 'S3 AM'), not the merged slug
+  if (!VALID_LEVELS.has(level)) {
     return NextResponse.json({ error: 'Invalid level' }, { status: 400 });
   }
 
+  const slug     = level.toLowerCase().replace(/\s+/g, '-');
   const uuid     = crypto.randomUUID();
-  const pathname = `notes/${level}/${uuid}.pdf`;
+  const pathname = `notes/${slug}/${uuid}.pdf`;
 
   const token = await generateClientTokenFromReadWriteToken({
     token:           process.env.BLOB_READ_WRITE_TOKEN!,

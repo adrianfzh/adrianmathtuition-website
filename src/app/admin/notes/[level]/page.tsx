@@ -5,9 +5,23 @@ import { useRouter } from 'next/navigation';
 import { put } from '@vercel/blob/client';
 
 const SLUG_TO_LABEL: Record<string, string> = {
+  's1': 'S1', 's2': 'S2', 'em': 'E Math', 'am': 'A Math', 'jc': 'JC H2',
+  // legacy
+  's3-em': 'S3 EM', 's3-am': 'S3 AM', 's4-em': 'S4 EM', 's4-am': 'S4 AM',
+  'jc1': 'JC1', 'jc2': 'JC2',
+};
+
+// Sub-levels for merged slugs — user picks one when uploading
+const SLUG_TO_SUBLEVELS: Record<string, string[]> = {
+  'em': ['S3 EM', 'S4 EM'],
+  'am': ['S3 AM', 'S4 AM'],
+  'jc': ['JC1', 'JC2'],
+};
+
+// Default upload level for single-level slugs
+const SLUG_TO_UPLOAD_LEVEL: Record<string, string> = {
   's1': 'S1', 's2': 'S2',
-  's3-em': 'S3 EM', 's3-am': 'S3 AM',
-  's4-em': 'S4 EM', 's4-am': 'S4 AM',
+  's3-em': 'S3 EM', 's3-am': 'S3 AM', 's4-em': 'S4 EM', 's4-am': 'S4 AM',
   'jc1': 'JC1', 'jc2': 'JC2',
 };
 
@@ -41,7 +55,10 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const renameInputRef = useRef<HTMLInputElement>(null);
 
   // Upload
+  const subLevels = SLUG_TO_SUBLEVELS[level] ?? [];
+  const defaultUploadLevel = SLUG_TO_UPLOAD_LEVEL[level] ?? subLevels[0] ?? '';
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadLevel, setUploadLevel] = useState(defaultUploadLevel);
   const [pendingFiles, setPendingFiles] = useState<
     { file: File; title: string; status: 'pending'|'uploading'|'done'|'error'; error?: string }[]
   >([]);
@@ -145,7 +162,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
       try {
         // Step 1: Get a short-lived client upload token from our server
         const tokenRes = await fetch(
-          `/api/admin-notes/upload-token?level=${encodeURIComponent(level)}&filename=${encodeURIComponent(pf.file.name)}`,
+          `/api/admin-notes/upload-token?level=${encodeURIComponent(uploadLevel)}&filename=${encodeURIComponent(pf.file.name)}`,
           { headers: { Authorization: `Bearer ${pw}` } }
         );
         if (!tokenRes.ok) {
@@ -166,7 +183,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
         const regRes = await fetch('/api/admin-notes/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` },
-          body: JSON.stringify({ blobUrl: blob.url, blobPathname: blob.pathname, title: pf.title.trim(), level }),
+          body: JSON.stringify({ blobUrl: blob.url, blobPathname: blob.pathname, title: pf.title.trim(), level: uploadLevel }),
         });
         if (!regRes.ok) {
           const d = await regRes.json().catch(() => ({}));
@@ -265,6 +282,21 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
 
             {uploadOpen && (
               <form className="nl-upload-form" onSubmit={handleUpload}>
+                {subLevels.length > 0 && (
+                  <div className="nl-sublevel-row">
+                    <span className="nl-sublevel-label">Upload to:</span>
+                    {subLevels.map(sl => (
+                      <button
+                        key={sl}
+                        type="button"
+                        className={`nl-sublevel-btn${uploadLevel === sl ? ' active' : ''}`}
+                        onClick={() => setUploadLevel(sl)}
+                      >
+                        {sl}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <label className="nl-drop-zone">
                   <span className="nl-drop-icon">📄</span>
                   <span className="nl-drop-text">
@@ -420,6 +452,13 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 }
 .nl-upload-toggle:hover { border-color: #9ca3af; color: #374151; }
 .nl-upload-form { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.nl-sublevel-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.nl-sublevel-label { font-size: 13px; color: #6b7280; font-weight: 500; }
+.nl-sublevel-btn {
+  padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  border: 2px solid #e5e7eb; background: #f9fafb; color: #374151; cursor: pointer;
+}
+.nl-sublevel-btn.active { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
 .nl-drop-zone {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   border: 2px dashed #d1d5db; border-radius: 10px; padding: 20px;

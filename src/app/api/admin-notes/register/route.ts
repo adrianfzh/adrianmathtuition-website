@@ -7,12 +7,8 @@ import { airtableRequest } from '@/lib/airtable';
 
 export const runtime = 'nodejs';
 
-const SLUG_TO_LABEL: Record<string, string> = {
-  's1': 'S1', 's2': 'S2',
-  's3-em': 'S3 EM', 's3-am': 'S3 AM',
-  's4-em': 'S4 EM', 's4-am': 'S4 AM',
-  'jc1': 'JC1', 'jc2': 'JC2',
-};
+// level in the body is always a specific Airtable value (e.g. 'S3 AM')
+const VALID_LEVELS = new Set(['S1','S2','S3 EM','S4 EM','S3 AM','S4 AM','JC1','JC2']);
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) {
@@ -21,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   const { blobUrl, blobPathname, title, level } = await req.json();
 
-  if (!blobUrl || !title?.trim() || !level || !SLUG_TO_LABEL[level]) {
+  if (!blobUrl || !title?.trim() || !level || !VALID_LEVELS.has(level)) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
@@ -30,7 +26,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       fields: {
         Title:          title.trim(),
-        Level:          SLUG_TO_LABEL[level],
+        Level:          level,
         'PDF URL':      blobUrl,
         'Blob Pathname': blobPathname,
         'Uploaded At':  new Date().toISOString(),

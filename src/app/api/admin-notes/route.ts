@@ -4,15 +4,17 @@ import { airtableRequestAll } from '@/lib/airtable';
 
 export const runtime = 'nodejs';
 
-const SLUG_TO_LABEL: Record<string, string> = {
-  's1': 'S1',
-  's2': 'S2',
-  's3-em': 'S3 EM',
-  's3-am': 'S3 AM',
-  's4-em': 'S4 EM',
-  's4-am': 'S4 AM',
-  'jc1': 'JC1',
-  'jc2': 'JC2',
+// Maps URL slug → one or more Airtable Level values
+const SLUG_TO_LEVELS: Record<string, string[]> = {
+  's1':  ['S1'],
+  's2':  ['S2'],
+  'em':  ['S3 EM', 'S4 EM'],
+  'am':  ['S3 AM', 'S4 AM'],
+  'jc':  ['JC1', 'JC2'],
+  // legacy slugs (kept for any existing links)
+  's3-em': ['S3 EM'], 's4-em': ['S4 EM'],
+  's3-am': ['S3 AM'], 's4-am': ['S4 AM'],
+  'jc1': ['JC1'], 'jc2': ['JC2'],
 };
 
 export async function GET(req: NextRequest) {
@@ -23,13 +25,15 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const level = searchParams.get('level');
 
-  if (!level || !SLUG_TO_LABEL[level]) {
+  if (!level || !SLUG_TO_LEVELS[level]) {
     return NextResponse.json({ error: 'Invalid level' }, { status: 400 });
   }
 
-  const levelLabel = SLUG_TO_LABEL[level];
-  const formula = encodeURIComponent(`{Level}='${levelLabel}'`);
-  const query = `?filterByFormula=${formula}&sort[0][field]=Title&sort[0][direction]=asc`;
+  const labels = SLUG_TO_LEVELS[level];
+  const filterExpr = labels.length === 1
+    ? `{Level}='${labels[0]}'`
+    : `OR(${labels.map(l => `{Level}='${l}'`).join(',')})`;
+  const query = `?filterByFormula=${encodeURIComponent(filterExpr)}&sort[0][field]=Title&sort[0][direction]=asc`;
 
   const data = await airtableRequestAll('PrintNotes', query);
 

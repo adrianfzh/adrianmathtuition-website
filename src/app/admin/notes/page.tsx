@@ -3,14 +3,11 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 const LEVELS = [
-  { slug: 's1',    label: 'S1',    color: '#0369a1' },
-  { slug: 's2',    label: 'S2',    color: '#0369a1' },
-  { slug: 's3-em', label: 'S3 EM', color: '#7c3aed' },
-  { slug: 's3-am', label: 'S3 AM', color: '#7c3aed' },
-  { slug: 's4-em', label: 'S4 EM', color: '#0f766e' },
-  { slug: 's4-am', label: 'S4 AM', color: '#0f766e' },
-  { slug: 'jc1',   label: 'JC1',   color: '#b45309' },
-  { slug: 'jc2',   label: 'JC2',   color: '#b45309' },
+  { slug: 's1', label: 'S1',    sub: 'Sec 1',     color: '#0369a1' },
+  { slug: 's2', label: 'S2',    sub: 'Sec 2',     color: '#0369a1' },
+  { slug: 'em', label: 'EM',    sub: 'E Math',    color: '#7c3aed' },
+  { slug: 'am', label: 'AM',    sub: 'A Math',    color: '#0f766e' },
+  { slug: 'jc', label: 'JC',    sub: 'H2 Maths',  color: '#b45309' },
 ];
 
 export default async function NotesIndexPage() {
@@ -35,21 +32,17 @@ export default async function NotesIndexPage() {
 
       {/* Level grid */}
       <div className="max-w-xl mx-auto px-4 mt-5">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {LEVELS.map(({ slug, label, color }) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {LEVELS.map(({ slug, label, sub, color }) => (
             <Link
               key={slug}
               href={`/admin/notes/${slug}`}
               className="block bg-white rounded-xl shadow-sm hover:shadow-md active:bg-gray-50 transition-shadow no-underline"
-              style={{ borderLeft: `4px solid ${color}`, minHeight: '90px' }}
+              style={{ borderLeft: `4px solid ${color}`, minHeight: '100px' }}
             >
-              <div className="flex items-center justify-center h-full min-h-[90px]">
-                <span
-                  className="text-2xl font-bold"
-                  style={{ color }}
-                >
-                  {label}
-                </span>
+              <div className="flex flex-col items-center justify-center h-full min-h-[100px] gap-1">
+                <span className="text-3xl font-bold" style={{ color }}>{label}</span>
+                <span className="text-xs text-gray-400 font-medium">{sub}</span>
               </div>
             </Link>
           ))}
