@@ -54,11 +54,10 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
-  // Upload
+  // Upload — for merged slugs (em/am/jc), just use the first sub-level internally
   const subLevels = SLUG_TO_SUBLEVELS[level] ?? [];
-  const defaultUploadLevel = SLUG_TO_UPLOAD_LEVEL[level] ?? subLevels[0] ?? '';
+  const uploadLevel = SLUG_TO_UPLOAD_LEVEL[level] ?? subLevels[0] ?? '';
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [uploadLevel, setUploadLevel] = useState(defaultUploadLevel);
   const [pendingFiles, setPendingFiles] = useState<
     { file: File; title: string; status: 'pending'|'uploading'|'done'|'error'; error?: string }[]
   >([]);
@@ -282,21 +281,6 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
 
             {uploadOpen && (
               <form className="nl-upload-form" onSubmit={handleUpload}>
-                {subLevels.length > 0 && (
-                  <div className="nl-sublevel-row">
-                    <span className="nl-sublevel-label">Upload to:</span>
-                    {subLevels.map(sl => (
-                      <button
-                        key={sl}
-                        type="button"
-                        className={`nl-sublevel-btn${uploadLevel === sl ? ' active' : ''}`}
-                        onClick={() => setUploadLevel(sl)}
-                      >
-                        {sl}
-                      </button>
-                    ))}
-                  </div>
-                )}
                 <label className="nl-drop-zone">
                   <span className="nl-drop-icon">📄</span>
                   <span className="nl-drop-text">
