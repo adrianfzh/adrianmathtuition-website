@@ -258,9 +258,12 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                       </div>
                     </div>
                   ) : (
-                    <a href={`/admin/notes/${level}/${note.id}`} className="nl-card">
+                    <button
+                      className="nl-card"
+                      onClick={() => window.open(note.pdfUrl, '_blank')}
+                    >
                       <span className="nl-card-text">{note.title}</span>
-                    </a>
+                    </button>
                   )}
                 </div>
               ))}
@@ -384,6 +387,7 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
   cursor: pointer;
   transition: border-color 0.15s, background 0.1s;
   text-align: center;
+  width: 100%; font-family: inherit; /* button reset */
 }
 .nl-card:active { background: #eff6ff; border-color: #1e3a5f; }
 @media (hover: hover) { .nl-card:hover { border-color: #1e3a5f; background: #f8faff; } }
