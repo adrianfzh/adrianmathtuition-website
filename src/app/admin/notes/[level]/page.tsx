@@ -11,19 +11,13 @@ const SLUG_TO_LABEL: Record<string, string> = {
   'jc1': 'JC1', 'jc2': 'JC2',
 };
 
-// Sub-levels for merged slugs — user picks one when uploading
-const SLUG_TO_SUBLEVELS: Record<string, string[]> = {
-  'em': ['S3 EM', 'S4 EM'],
-  'am': ['S3 AM', 'S4 AM'],
-  'jc': ['JC1', 'JC2'],
+// Slug → Airtable Level value used when uploading
+const SLUG_TO_UPLOAD_LEVEL: Record<string, string> = {
+  's1': 'S1', 's2': 'S2', 'em': 'EM', 'am': 'AM', 'jc': 'JC',
 };
 
-// Default upload level for single-level slugs
-const SLUG_TO_UPLOAD_LEVEL: Record<string, string> = {
-  's1': 'S1', 's2': 'S2',
-  's3-em': 'S3 EM', 's3-am': 'S3 AM', 's4-em': 'S4 EM', 's4-am': 'S4 AM',
-  'jc1': 'JC1', 'jc2': 'JC2',
-};
+// No sub-levels needed any more — everything is flat
+const SLUG_TO_SUBLEVELS: Record<string, string[]> = {};
 
 interface Note { id: string; title: string; pdfUrl: string; uploadedAt: string; }
 

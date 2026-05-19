@@ -8,7 +8,7 @@ import { airtableRequest } from '@/lib/airtable';
 export const runtime = 'nodejs';
 
 // level in the body is always a specific Airtable value (e.g. 'S3 AM')
-const VALID_LEVELS = new Set(['S1','S2','S3 EM','S4 EM','S3 AM','S4 AM','JC1','JC2']);
+const VALID_LEVELS = new Set(['S1','S2','EM','AM','JC']);
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) {
