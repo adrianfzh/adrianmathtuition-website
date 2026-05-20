@@ -1624,6 +1624,7 @@ export default function EditCardsClient() {
   const [topic, setTopic] = useState(searchParams.get('topic') || '');
   const [subgroupFilter, setSubgroupFilter] = useState(searchParams.get('subgroup') || '');
   const [unpublishedOnly, setUnpublishedOnly] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const [topics, setTopics] = useState<string[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
@@ -2045,9 +2046,81 @@ export default function EditCardsClient() {
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+      {/* Info overlay */}
+      {showInfo && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={() => setShowInfo(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 sticky top-0 bg-white">
+              <h2 className="text-base font-semibold text-slate-800">ℹ️ About the Cards editor</h2>
+              <button onClick={() => setShowInfo(false)} className="text-slate-400 hover:text-slate-700 text-lg leading-none">✕</button>
+            </div>
+            <div className="px-5 py-4 text-sm text-slate-700 space-y-4 leading-relaxed">
+              <section>
+                <h3 className="font-semibold text-slate-800 mb-1">What this is</h3>
+                <p>You&apos;re editing the <code className="bg-slate-100 px-1 rounded text-xs">content_snippets</code> table — atomic swipe cards shown to students. &quot;Cards&quot; and &quot;snippets&quot; are the same thing under two names.</p>
+              </section>
+              <section>
+                <h3 className="font-semibold text-slate-800 mb-1">Three card kinds</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong className="text-emerald-700">Refresher</strong> — atomic memory aid (40–100 words). Formula, condition, mnemonic, pitfall.</li>
+                  <li><strong className="text-blue-700">Worked Example</strong> — full Question + Solution problem (120–220 words).</li>
+                  <li><strong className="text-orange-700">Practice</strong> — bank question with answer only (no full solution).</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-semibold text-slate-800 mb-1">Where the cards show up</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>Website swipe app</strong> — <code className="bg-slate-100 px-1 rounded text-xs">adrianmathtuition.com/revise/&#123;level&#125;/&#123;topic-slug&#125;/worked-examples</code></li>
+                  <li><strong>Telegram bot</strong> — <code className="bg-slate-100 px-1 rounded text-xs">/revise</code> command picks from the same pool</li>
+                  <li><strong>Teach Me link</strong> from chat answers — drops students into a sub-group-filtered swipe</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-semibold text-slate-800 mb-1">Pipeline (where these come from)</h3>
+                <p><code className="bg-slate-100 px-1 rounded text-xs">kb_entries</code> (your teaching content) → curate → <code className="bg-slate-100 px-1 rounded text-xs">content_snippets</code> (these cards) → swipe app + bot.</p>
+                <p className="mt-1 text-xs text-slate-500">Bulk-promote from KB via the Harvesting UI. Or write/edit directly here.</p>
+              </section>
+              <section>
+                <h3 className="font-semibold text-slate-800 mb-1">Editing tips</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><kbd className="bg-slate-100 px-1 rounded text-xs">Cmd+Z</kbd> undoes editor changes</li>
+                  <li>Drag bank questions from the right panel into the markdown editor or onto the card list</li>
+                  <li>✨ AI Assist — &quot;Generate solutions&quot; preserves all parts; &quot;Make clearer&quot;, &quot;Tighten algebra&quot; etc.</li>
+                  <li>Use <code className="bg-slate-100 px-1 rounded text-xs">$...$</code> for inline math, <code className="bg-slate-100 px-1 rounded text-xs">$$...$$</code> for display, <code className="bg-slate-100 px-1 rounded text-xs">\begin&#123;aligned&#125;</code> for chained equations</li>
+                  <li>Drafts only checkbox shows unpublished cards (useful for staging)</li>
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-semibold text-slate-800 mb-1">Reference topics</h3>
+                <p>Solid examples to mirror style:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>AM Surds</strong> — refresher + worked examples</li>
+                  <li><strong>AM Polynomials</strong> — full 3-section set (refresher / worked / practice)</li>
+                  <li><strong>EM Subject of Formula</strong> — refresher + worked examples + practice</li>
+                  <li><strong>JC Functions</strong> — KB-grounded atomic style</li>
+                </ul>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="shrink-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-4">
         <h1 className="text-lg font-semibold text-slate-800">Cards editor</h1>
+        <button
+          onClick={() => setShowInfo(true)}
+          className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold border border-slate-300 transition-colors"
+          title="About the cards editor"
+        >
+          ?
+        </button>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-1.5">
             <span className="text-slate-500 text-xs">Level</span>
