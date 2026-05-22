@@ -1,7 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+export default function CardsPreviewPage() {
+  return (
+    <Suspense>
+      <CardsPreviewInner />
+    </Suspense>
+  );
+}
 import { topicSlug } from '@/lib/topic-slug';
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -77,7 +85,7 @@ async function fetchLevelCounts(): Promise<Record<string, number>> {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function CardsPreviewPage() {
+function CardsPreviewInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const level = sp.get('level') ?? '';
