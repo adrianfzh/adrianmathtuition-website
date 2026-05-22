@@ -9,5 +9,19 @@
       "mcp__Claude_Preview__preview_screenshot",
       "mcp__Claude_Preview__preview_list"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/adrianfong/Desktop/adrianmathtuition-website && npm run sync-schema 2>/dev/null || true",
+            "timeout": 15,
+            "statusMessage": "Syncing Airtable schema…"
+          }
+        ]
+      }
+    ]
   }
 }

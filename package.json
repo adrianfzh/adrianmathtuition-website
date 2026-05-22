@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync-schema": "node scripts/sync-airtable-schema.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.81.0",
