@@ -22,6 +22,19 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git push *)",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "ADVISORY PRE-PUSH REVIEW — this is informational only, never block the push.\n\nRun these shell commands to get the changes:\n  git diff HEAD~1..HEAD --stat\n  git diff HEAD~1..HEAD\n\nThen run these three checks and report findings:\n\n📋 REVIEW (always)\nLook for: obvious bugs, wrong Airtable field names used as strings, missing error handling, logic errors, incorrect API field names.\n\n🔒 SECURITY (if any changed file is under src/app/api/, or contains 'auth', 'password', 'cookie', 'token', 'admin')\nLook for: exposed secrets, missing auth checks, PII leaking into logs or responses, SQL/injection risks.\n\n✨ SIMPLIFY (only if total lines changed >100 OR files changed >5)\nLook for: duplicated logic that could be a shared function, overly complex conditionals, repeated Airtable field name strings that should be constants.\n\nFormat output exactly as:\n📋 REVIEW: <findings, or 'No issues found'>\n🔒 SECURITY: <findings, or 'Not triggered — no API/auth files changed'>\n✨ SIMPLIFY: <suggestions, or 'Not triggered — small change (<100 lines)'>\n\n✅ Push proceeding.\n\nIMPORTANT: Always end with '✅ Push proceeding.' and never block the push regardless of findings.",
+            "timeout": 120,
+            "statusMessage": "📋 Reviewing changes before push…"
+          }
+        ]
+      }
     ]
   }
 }
