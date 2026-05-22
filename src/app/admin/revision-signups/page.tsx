@@ -12,8 +12,7 @@ interface Student {
   id: string;
   name: string;
   level: 'Sec 4' | 'JC2';
-  parentName: string;
-  parentContact: string;
+  parentEmail: string;
   subjects: string[];
   revisionStatus: RevisionStatus;
   revisionSubjects: string[];
@@ -73,6 +72,8 @@ export default function RevisionSignupsPage() {
   const [reverting, setReverting] = useState(false);
   const [revertError, setRevertError] = useState('');
   const [revertConfirm, setRevertConfirm] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendMsg, setSendMsg] = useState('');
 
   // Auth check
   useEffect(() => {
@@ -199,13 +200,41 @@ export default function RevisionSignupsPage() {
     setManageStudent(student);
     setRevertError('');
     setRevertConfirm(false);
+    setSendMsg('');
   }
 
   function closeManage() {
-    if (reverting) return;
+    if (reverting || sending) return;
     setManageStudent(null);
     setRevertError('');
     setRevertConfirm(false);
+    setSendMsg('');
+  }
+
+  async function handleSendInvoice() {
+    if (!manageStudent?.revisionInvoiceId) return;
+    setSending(true); setSendMsg('');
+    try {
+      await sendInvoice(manageStudent.revisionInvoiceId);
+      setSendMsg('✅ Invoice sent!');
+    } catch (e: unknown) {
+      setSendMsg(`❌ ${e instanceof Error ? e.message : 'Send failed'}`);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function sendInvoice(invoiceId: string) {
+    const res = await fetch('/api/send-invoices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      body: JSON.stringify({ recordIds: [invoiceId] }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || 'Failed to send invoice');
+    }
+    await fetchStudents();
   }
 
   async function confirmRevert() {
@@ -360,12 +389,22 @@ export default function RevisionSignupsPage() {
               </div>
             </div>
 
+            {/* Send invoice button */}
+            {manageStudent.revisionInvoiceId && (
+              <div className="rs-manage-send">
+                <button className="rs-btn-primary rs-btn-sm" onClick={handleSendInvoice} disabled={sending}>
+                  {sending ? 'Sending…' : '📧 Send Invoice'}
+                </button>
+                {sendMsg && <span className="rs-send-msg">{sendMsg}</span>}
+              </div>
+            )}
+
             {revertError && <div className="rs-dialog-error">{revertError}</div>}
 
             {!revertConfirm ? (
               <div className="rs-dialog-actions">
-                <button className="rs-btn-ghost" onClick={closeManage} disabled={reverting}>Close</button>
-                <button className="rs-btn-danger" onClick={() => setRevertConfirm(true)}>Revert Sign-up</button>
+                <button className="rs-btn-ghost" onClick={closeManage} disabled={reverting || sending}>Close</button>
+                <button className="rs-btn-danger" onClick={() => setRevertConfirm(true)} disabled={sending}>Revert Sign-up</button>
               </div>
             ) : (
               <div className="rs-revert-confirm">
@@ -417,8 +456,7 @@ function StudentCard({
       </div>
 
       <div className="rs-card-contact">
-        {student.parentName && <span>{student.parentName}</span>}
-        {student.parentContact && <span> · {student.parentContact}</span>}
+        {student.parentEmail && <span>{student.parentEmail}</span>}
       </div>
 
       {student.revisionStatus === 'Signed Up' && (
@@ -761,6 +799,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   padding: 4px 0;
 }
 .rs-manage-label { color: #9ca3af; font-weight: 500; }
+
+.rs-manage-send {
+  display: flex; align-items: center; gap: 10px;
+  margin: 12px 0 4px;
+}
+.rs-send-msg { font-size: 13px; }
 
 .rs-revert-confirm { margin-top: 8px; }
 .rs-revert-warning {

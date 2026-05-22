@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     );
     const studentsData = await airtableRequestAll(
       'Students',
-      `?filterByFormula=${studentFormula}&fields[]=Student%20Name&fields[]=Level&fields[]=Parent%20Name&fields[]=Parent%20Contact&fields[]=Subjects&fields[]=June%20Revision%202026`
+      `?filterByFormula=${studentFormula}&fields[]=Student%20Name&fields[]=Level&fields[]=Parent%20Email&fields[]=Subjects&fields[]=June%20Revision%202026`
     );
 
     // Fetch all June 2026 Revision Sprint invoices (match student in JS)
@@ -85,8 +85,7 @@ export async function GET(req: NextRequest) {
         id: studentId,
         name: r.fields['Student Name'] || '',
         level: r.fields['Level'] as 'Sec 4' | 'JC2',
-        parentName: r.fields['Parent Name'] || '',
-        parentContact: r.fields['Parent Contact'] || '',
+        parentEmail: r.fields['Parent Email'] || '',
         subjects,
         revisionStatus: (revStatus === 'No Response' || revStatus === 'Signed Up' || revStatus === 'Opted Out')
           ? revStatus as 'No Response' | 'Signed Up' | 'Opted Out'

@@ -64,6 +64,26 @@ function buildLineItems(subjects: string[]): { lineItems: LineItem[]; totalLesso
   return { lineItems, totalLessons };
 }
 
+function buildLessonRecords(subjects: string[], studentId: string, level: string, invoiceId: string) {
+  const records: Array<{ fields: Record<string, unknown> }> = [];
+  if (subjects.includes('EM')) {
+    for (const date of EM_DATES) {
+      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId], Level: level, Day: EM_DAY } });
+    }
+  }
+  if (subjects.includes('AM')) {
+    for (const date of AM_DATES) {
+      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId], Level: level, Day: AM_DAY } });
+    }
+  }
+  if (subjects.includes('JC')) {
+    for (const date of JC_DATES) {
+      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId], Level: level, Day: JC_DAY } });
+    }
+  }
+  return records;
+}
+
 // Split array into batches of max N
 function chunk<T>(arr: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -98,8 +118,53 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Failed to fetch student: ${e instanceof Error ? e.message : e}` }, { status: 500 });
   }
 
+  // If already signed up, check if they want to ADD subjects (not re-sign-up from scratch)
   if (studentRecord.fields['June Revision 2026'] === 'Signed Up') {
-    return NextResponse.json({ error: 'Student already signed up for June revision' }, { status: 409 });
+    // Find existing revision invoice to check what they already have
+    const existingRevFormula = encodeURIComponent(`AND({Month}='June 2026',{Invoice Type}='Revision Sprint',{Status}!='Voided')`);
+    const existingRevInvoices = await airtableRequestAll('Invoices', `?filterByFormula=${existingRevFormula}&fields[]=Student&fields[]=Line+Items&fields[]=Final+Amount`);
+    const existingInv = existingRevInvoices.records.find((r: { fields: Record<string, unknown[]> }) => r.fields['Student']?.[0] === studentId);
+    if (!existingInv) {
+      return NextResponse.json({ error: 'Student already signed up but no revision invoice found' }, { status: 409 });
+    }
+    // Parse existing subjects
+    let existingItems: Array<{description?: string}> = [];
+    try { existingItems = JSON.parse(existingInv.fields['Line Items'] as string || '[]'); } catch { /* ignore */ }
+    const existingSubjects = new Set<string>();
+    for (const item of existingItems) {
+      const d = item.description || '';
+      if (d.includes('E Math') || d.includes('EM')) existingSubjects.add('EM');
+      else if (d.includes('A Math') || d.includes('AM')) existingSubjects.add('AM');
+      else if (d.includes('H2') || d.includes('JC')) existingSubjects.add('JC');
+    }
+    // Only allow adding new subjects
+    const newSubjects = subjects.filter(s => !existingSubjects.has(s));
+    if (newSubjects.length === 0) {
+      return NextResponse.json({ error: 'All selected subjects are already signed up' }, { status: 409 });
+    }
+    // Add new subjects: update invoice and create new lesson records
+    const { lineItems: newItems, totalLessons: newLessons } = buildLineItems(newSubjects);
+    const existingAmount = (existingInv.fields['Final Amount'] as number) || 0;
+    const addAmount = newItems.reduce((s, i) => s + i.amount, 0);
+    const allItems = [...existingItems, ...newItems];
+    await airtableRequest('Invoices', `/${existingInv.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ fields: {
+        'Line Items': JSON.stringify(allItems),
+        'Base Amount': existingAmount + addAmount,
+        'Final Amount': existingAmount + addAmount,
+        'Lessons Count': (existingInv.fields['Lessons Count'] as number || 0) + newLessons,
+      }}),
+    });
+    // Create lesson records for new subjects only
+    const lessonRecords = buildLessonRecords(newSubjects, studentId, level, existingInv.id);
+    const batches = chunk(lessonRecords, 10);
+    let lessonsCreated = 0;
+    for (const batch of batches) {
+      await airtableRequest('Lessons', '', { method: 'POST', body: JSON.stringify({ records: batch }) });
+      lessonsCreated += batch.length;
+    }
+    return NextResponse.json({ success: true, invoiceId: existingInv.id, lessonsCreated, added: newSubjects });
   }
 
   const today = localToday();
@@ -168,57 +233,7 @@ export async function POST(req: NextRequest) {
     revisionInvoiceId = revisionInvoice.id;
 
     // ── Step 4: Create lesson records ─────────────────────────────────────────
-    const lessonRecords: Array<{ fields: Record<string, unknown> }> = [];
-
-    if (subjects.includes('EM')) {
-      for (const date of EM_DATES) {
-        lessonRecords.push({
-          fields: {
-            Student: [studentId],
-            Date: date,
-            Type: 'Revision Sprint',
-            Status: 'Scheduled',
-            'Source Invoice': [revisionInvoiceId],
-            Level: level,
-            Day: EM_DAY,
-          },
-        });
-      }
-    }
-
-    if (subjects.includes('AM')) {
-      for (const date of AM_DATES) {
-        lessonRecords.push({
-          fields: {
-            Student: [studentId],
-            Date: date,
-            Type: 'Revision Sprint',
-            Status: 'Scheduled',
-            'Source Invoice': [revisionInvoiceId],
-            Level: level,
-            Day: AM_DAY,
-          },
-        });
-      }
-    }
-
-    if (subjects.includes('JC')) {
-      for (const date of JC_DATES) {
-        lessonRecords.push({
-          fields: {
-            Student: [studentId],
-            Date: date,
-            Type: 'Revision Sprint',
-            Status: 'Scheduled',
-            'Source Invoice': [revisionInvoiceId],
-            Level: level,
-            Day: JC_DAY,
-          },
-        });
-      }
-    }
-
-    // Airtable batch create: max 10 per request
+    const lessonRecords = buildLessonRecords(subjects, studentId, level, revisionInvoiceId!);
     const batches = chunk(lessonRecords, 10);
     let lessonsCreated = 0;
     for (const batch of batches) {
