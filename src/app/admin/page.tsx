@@ -150,6 +150,7 @@ export default function AdminHub() {
 // ── Data ───────────────────────────────────────────────────────────────────────
 
 const LAUNCHERS = [
+  { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
   { emoji: '📅', title: 'Schedule',  sub: 'Weekly lessons · drag to reschedule', href: '/admin/schedule'  },
   { emoji: '✏️', title: 'Progress',  sub: "Log today's lesson outcomes",          href: '/admin/progress'  },
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
