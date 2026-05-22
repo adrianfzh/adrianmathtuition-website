@@ -224,6 +224,8 @@ const customCollision: CollisionDetection = (args) => {
     else if (firstId.startsWith('sec-zone-rf-')) { zoneKind = 'refresher'; zoneSection = firstId.slice('sec-zone-rf-'.length); }
     else if (firstId === 'panel-we') { zoneKind = 'worked_example'; zoneSection = ''; }
     else if (firstId === 'panel-rf') { zoneKind = 'refresher'; zoneSection = ''; }
+    // The "__flat__" sentinel represents the no-display_group zone — normalise to ''
+    if (zoneSection === '__flat__') zoneSection = '';
 
     const isSameSectionGap = zoneSection === activeSection && zoneKind === activeKind;
     if (!isSameSectionGap) {
@@ -1790,8 +1792,10 @@ export default function EditCardsClient() {
     return null;
   }
   function parseDropId(id: string, allCardsCombined: CardRow[]): { kind: string; section: string } | null {
-    if (id.startsWith('sec-zone-we-')) return { kind: 'worked_example', section: id.slice('sec-zone-we-'.length) };
-    if (id.startsWith('sec-zone-rf-')) return { kind: 'refresher', section: id.slice('sec-zone-rf-'.length) };
+    // The "__flat__" zone name is a UI sentinel for the no-display_group zone — map to ''
+    const normaliseSection = (s: string) => (s === '__flat__' ? '' : s);
+    if (id.startsWith('sec-zone-we-')) return { kind: 'worked_example', section: normaliseSection(id.slice('sec-zone-we-'.length)) };
+    if (id.startsWith('sec-zone-rf-')) return { kind: 'refresher', section: normaliseSection(id.slice('sec-zone-rf-'.length)) };
     if (id.startsWith('sec-hdr-we-')) return { kind: 'worked_example', section: id.slice('sec-hdr-we-'.length) };
     if (id.startsWith('sec-hdr-rf-')) return { kind: 'refresher', section: id.slice('sec-hdr-rf-'.length) };
     if (id === 'panel-we') return { kind: 'worked_example', section: '' };
@@ -1909,12 +1913,12 @@ export default function EditCardsClient() {
       // Within-section reorder
       if (dropTarget.section !== undefined && overIdStr !== activeIdStr && !allCardsCombined.find(c => c.id === overIdStr)) return;
       if (overIdStr.startsWith('sec-') || overIdStr.startsWith('panel-')) return;
-      const sectionCards = srcList.filter((c) => c.display_group === srcSection);
+      const sectionCards = srcList.filter((c) => (c.display_group ?? '') === srcSection);
       const oi = sectionCards.findIndex((c) => c.id === activeIdStr);
       const ni = sectionCards.findIndex((c) => c.id === overIdStr);
       if (oi === -1 || ni === -1) return;
       const reordered = arrayMove(sectionCards, oi, ni);
-      setSrcList((prev) => [...prev.filter((c) => c.display_group !== srcSection), ...reordered]);
+      setSrcList((prev) => [...prev.filter((c) => (c.display_group ?? '') !== srcSection), ...reordered]);
       const sKey = `${srcKind === 'refresher' ? 'rf' : 'we'}-${srcSection}`;
       if (reorderTimers.current[sKey as unknown as number]) clearTimeout(reorderTimers.current[sKey as unknown as number]);
       setReorderStatus((s) => ({ ...s, [sKey]: 'saving' }));
@@ -1933,15 +1937,15 @@ export default function EditCardsClient() {
 
     } else if (!isCrossKind && isCrossSection) {
       // Cross-section same-kind move
-      const remainSrc = srcList.filter((c) => c.display_group === srcSection && c.id !== activeIdStr);
-      const destSectionCards = dstList.filter((c) => c.display_group === tgtSection);
+      const remainSrc = srcList.filter((c) => (c.display_group ?? '') === srcSection && c.id !== activeIdStr);
+      const destSectionCards = dstList.filter((c) => (c.display_group ?? '') === tgtSection);
       const moved = { ...ac, display_group: tgtSection };
       const newDest = [...destSectionCards, moved];
       // Mark card for entry animation (read in SortableCardRow useState initializer on mount)
       _recentlyMovedCardId = activeIdStr;
       setTimeout(() => { _recentlyMovedCardId = null; }, 80);
       setSrcList((prev) => [
-        ...prev.filter((c) => c.display_group !== srcSection && c.display_group !== tgtSection),
+        ...prev.filter((c) => (c.display_group ?? '') !== srcSection && (c.display_group ?? '') !== tgtSection),
         ...remainSrc.map((c, i) => ({ ...c, order_index: i + 1 })),
         ...newDest.map((c, i) => ({ ...c, order_index: i + 1 })),
       ]);
@@ -1955,14 +1959,14 @@ export default function EditCardsClient() {
     } else {
       // Cross-kind card move
       const remainSrc = srcList.filter((c) => c.id !== activeIdStr);
-      const destSectionCards = dstList.filter((c) => c.display_group === tgtSection);
+      const destSectionCards = dstList.filter((c) => (c.display_group ?? '') === tgtSection);
       const moved = { ...ac, display_group: tgtSection, content_kind: tgtKind };
       const newDest = [...destSectionCards, moved];
       _recentlyMovedCardId = activeIdStr;
       setTimeout(() => { _recentlyMovedCardId = null; }, 80);
       setSrcList((prev) => prev.filter((c) => c.id !== activeIdStr));
       setDstList((prev) => [
-        ...prev.filter((c) => c.display_group !== tgtSection),
+        ...prev.filter((c) => (c.display_group ?? '') !== tgtSection),
         ...newDest.map((c, i) => ({ ...c, order_index: i + 1 })),
       ]);
       showToast(`Moved to ${tgtKind === 'refresher' ? '🧠 Refresher' : '💡 Worked Examples'}`);
@@ -2033,14 +2037,14 @@ export default function EditCardsClient() {
     ]),
   ];
 
-  // Group cards by display_group
+  // Group cards by display_group; null/empty → '' (flat zone, rendered above sections)
   const cardsBySection: Record<string, CardRow[]> = {};
   for (const c of filteredCards) {
     const key = c.display_group ?? '';
-    if (!key) continue;
     if (!cardsBySection[key]) cardsBySection[key] = [];
     cardsBySection[key].push(c);
   }
+  const weFlatCards = cardsBySection[''] ?? [];
 
   const activeCard = activeId ? cards.find((c) => c.id === activeId) : null;
 
@@ -2202,7 +2206,7 @@ export default function EditCardsClient() {
                   >+ Section</button>
                 </div>
 
-                {allSections.length === 0 ? (
+                {allSections.length === 0 && weFlatCards.length === 0 ? (
                   <DroppablePanel id="panel-we" isCrossKindTarget={activeDragKind === 'refresher'}>
                     <div className="px-3 py-3 text-center">
                       <p className="text-slate-400 text-sm mb-2">No worked examples yet.</p>
@@ -2211,6 +2215,22 @@ export default function EditCardsClient() {
                   </DroppablePanel>
                 ) : (
                   <div className="space-y-4">
+                    {/* Flat (no display_group) cards */}
+                    {weFlatCards.length > 0 && (() => {
+                      const isCardDrag = !!activeId && !String(activeId).startsWith('sec-hdr-');
+                      return (
+                        <DroppableSectionZone name="__flat__" kindPrefix="we" isDragActive={isCardDrag}>
+                          <SortableContext items={weFlatCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+                            <div className="space-y-1">
+                              {weFlatCards.map((card, idx) => (
+                                <SortableCardRow key={card.id} card={card} displayIndex={idx + 1} isSelected={selectedId === card.id} onSelect={setSelectedId} onBankDrop={handleBankDropOnList} />
+                              ))}
+                            </div>
+                          </SortableContext>
+                        </DroppableSectionZone>
+                      );
+                    })()}
+
                     <SortableContext items={allSections.map((s) => `sec-hdr-we-${s}`)} strategy={verticalListSortingStrategy}>
                       {allSections.map((sectionName) => {
                         const sectionCards = cardsBySection[sectionName] ?? [];
