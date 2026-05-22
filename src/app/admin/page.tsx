@@ -162,6 +162,7 @@ const LAUNCHERS = [
   { emoji: '📈', title: 'Bot Metrics',   sub: 'Volume · friction · version comparison',      href: '/admin/metrics'      },
   { emoji: '📨', title: 'Email Log',     sub: 'All sent invoices & receipts',               href: '/admin/emails'       },
   { emoji: '🤖', title: 'Bot Analytics', sub: 'Questions · suggestions · Opus chat', href: '/admin/bot-analytics' },
+  { emoji: '📚', title: 'Cards Preview', sub: 'Browse swipe decks · level → topic',  href: '/admin/cards-preview' },
 ];
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
