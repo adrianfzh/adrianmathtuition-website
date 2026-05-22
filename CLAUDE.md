@@ -164,6 +164,30 @@ Key tables used by website:
 
 Students/parents are notified via the bot's day-before reminder cron (`runDayBeforeReminders` in `flows.js`), which automatically picks up Rescheduled/Additional/Makeup/Trial lesson records. Same-day or next-day reschedules won't reach that cron in time — admin should message manually.
 
+## Airtable Schema — MANDATORY pre-coding check
+
+**Before writing any code that touches an Airtable table, always query the live schema first:**
+
+```python
+import urllib.request, urllib.parse, json
+TOKEN = "<from .env.local>"; BASE = "<from .env.local>"
+url = f"https://api.airtable.com/v0/meta/bases/{BASE}/tables"
+req = urllib.request.Request(url, headers={"Authorization": f"Bearer {TOKEN}"})
+with urllib.request.urlopen(req) as r:
+    meta = json.loads(r.read())
+for table in meta["tables"]:
+    if table["name"] in ["Students", "Invoices"]:  # tables you need
+        for f in table["fields"]:
+            opts = [o["name"] for o in f.get("options",{}).get("choices",[])]
+            print(f"  {f['name']} ({f['type']}){' → ' + str(opts) if opts else ''}")
+```
+
+This takes 2 seconds and returns **no student data** — only field names, types, and option values. It catches wrong field names before they become silent bugs.
+
+- The committed `src/lib/airtable-schema.ts` is a searchable reference (auto-synced at session start via hook)
+- But always do a **live query** for the specific tables you're about to write code against — it's always current
+- Never assume field names from memory or spec — verify them
+
 ## Important Patterns
 
 - `airtableRequest()` / `airtableRequestAll()` in `lib/airtable.ts` — use `airtableRequestAll` for any "list all matching" query; it handles Airtable's 100-record page cap transparently
