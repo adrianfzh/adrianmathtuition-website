@@ -12,6 +12,8 @@ interface Student {
   id: string;
   name: string;
   level: 'Sec 4' | 'JC2';
+  parentName: string;
+  parentContact: string;
   parentEmail: string;
   subjects: string[];
   revisionStatus: RevisionStatus;
@@ -493,7 +495,9 @@ function StudentCard({
       </div>
 
       <div className="rs-card-contact">
-        {student.parentEmail && <span>{student.parentEmail}</span>}
+        {student.parentName && <span>{student.parentName}</span>}
+        {student.parentContact && <span> · {student.parentContact}</span>}
+        {student.parentEmail && <span> · {student.parentEmail}</span>}
       </div>
 
       {student.revisionStatus === 'Signed Up' && (
