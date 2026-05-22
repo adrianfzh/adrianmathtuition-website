@@ -115,6 +115,29 @@ function buildJune2026EmailHtml(invoice: {
 }
 
 
+function buildRevisionSprintEmailHtml(invoice: {
+  studentName: string; finalAmount: number; dueDate: string; paymentRef: string;
+  lineItemsText: string;
+}): string {
+  const { studentName, finalAmount, dueDate, paymentRef, lineItemsText } = invoice;
+  const dueFmt = dueDate
+    ? new Date(dueDate + 'T00:00:00Z').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+    : dueDate;
+  const amt = finalAmount.toFixed(2);
+  return `
+    <p>Dear Parent/Student,</p>
+    <p>Thank you for signing up for the <strong>June 2026 Revision Sprint</strong>!</p>
+    <p>Please find attached the invoice for ${studentName} — <strong>$${amt}</strong>, due by <strong>${dueFmt}</strong>.</p>
+    <p>Please disregard the regular June 2026 invoice sent earlier — it has been voided and this invoice replaces it.</p>
+    <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${paymentRef}</strong>.</p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+    <p><strong>What you've signed up for:</strong></p>
+    ${lineItemsText}
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+    <p>Please feel free to reach out if you have any questions.</p>
+    <p>Best regards,<br>Adrian</p>`;
+}
+
 function buildAmendedEmailHtml(invoice: {
   studentName: string;
   month: string;
@@ -254,9 +277,18 @@ export async function POST(req: NextRequest) {
         ? `AMENDED Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
         : `Invoice for ${invoice.month} \u2013 ${invoice.studentName}`;
       const customMessage = (invoiceRecord.fields['Custom Email Message'] || '') as string;
+      const invoiceType = (invoiceRecord.fields['Invoice Type'] || 'Regular') as string;
       let html: string;
       if (customMessage.trim()) {
         html = `<p>${customMessage.trim().replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+      } else if (invoiceType === 'Revision Sprint') {
+        // Parse line items to build a readable summary
+        let lineItems: {description?: string; amount?: number}[] = [];
+        try { lineItems = JSON.parse(invoiceRecord.fields['Line Items'] || '[]'); } catch { /* ignore */ }
+        const lineItemsText = lineItems.map(li =>
+          `<p>• ${li.description || 'Revision lessons'} — <strong>$${(li.amount || 0).toFixed(2)}</strong></p>`
+        ).join('');
+        html = buildRevisionSprintEmailHtml({ ...invoice, lineItemsText });
       } else if (isAmended) {
         html = buildAmendedEmailHtml(invoice);
       } else if (invoice.month === 'June 2026') {

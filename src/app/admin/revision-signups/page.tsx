@@ -213,8 +213,17 @@ export default function RevisionSignupsPage() {
 
   async function handleSendInvoice() {
     if (!manageStudent?.revisionInvoiceId) return;
-    setSending(true); setSendMsg('');
+    setSending(true); setSendMsg('Generating PDF…');
     try {
+      // Step 1: generate PDF and attach to invoice record
+      const pdfRes = await fetch('/api/generate-pdf-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+        body: JSON.stringify({ recordIds: [manageStudent.revisionInvoiceId], force: true }),
+      });
+      if (!pdfRes.ok) throw new Error('PDF generation failed');
+      // Step 2: send email with PDF
+      setSendMsg('Sending email…');
       await sendInvoice(manageStudent.revisionInvoiceId);
       setSendMsg('✅ Invoice sent!');
     } catch (e: unknown) {
@@ -389,14 +398,42 @@ export default function RevisionSignupsPage() {
               </div>
             </div>
 
-            {/* Send invoice button */}
+            {/* Preview + Send */}
             {manageStudent.revisionInvoiceId && (
               <div className="rs-manage-send">
+                <a
+                  href={`/api/preview-invoice?id=${manageStudent.revisionInvoiceId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rs-btn-ghost rs-btn-sm"
+                  style={{ textDecoration: 'none', display: 'inline-block' }}
+                >
+                  📄 Preview PDF
+                </a>
                 <button className="rs-btn-primary rs-btn-sm" onClick={handleSendInvoice} disabled={sending}>
-                  {sending ? 'Sending…' : '📧 Send Invoice'}
+                  {sending ? sendMsg || 'Working…' : '📧 Send Invoice'}
                 </button>
-                {sendMsg && <span className="rs-send-msg">{sendMsg}</span>}
               </div>
+            )}
+            {sendMsg && !sending && <div className="rs-send-msg" style={{ marginTop: 4 }}>{sendMsg}</div>}
+
+            {/* Email preview */}
+            {manageStudent.revisionInvoiceId && (
+              <details className="rs-email-preview">
+                <summary>📋 Preview email text</summary>
+                <div className="rs-email-body">
+                  <p>Dear Parent/Student,</p>
+                  <p>Thank you for signing up for the <strong>June 2026 Revision Sprint</strong>!</p>
+                  <p>Please find attached the invoice for {manageStudent.name} — <strong>${manageStudent.revisionTotal.toLocaleString()}</strong>, due by 1 June 2026.</p>
+                  <p>Please disregard the regular June 2026 invoice sent earlier — it has been voided and this invoice replaces it.</p>
+                  <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>{manageStudent.name.toUpperCase()} – JUNE 2026</strong>.</p>
+                  <p><strong>What you've signed up for:</strong></p>
+                  {manageStudent.revisionSubjects.includes('EM') && <p>• Sec 4 EM June Holiday Revision Sprint (6 lessons) — <strong>$420</strong></p>}
+                  {manageStudent.revisionSubjects.includes('AM') && <p>• Sec 4 AM June Holiday Revision Sprint (8 lessons) — <strong>$560</strong></p>}
+                  {manageStudent.revisionSubjects.includes('JC') && <p>• JC2 H2 Math June Holiday Revision Sprint (8 lessons) — <strong>$640</strong></p>}
+                  <p>Best regards,<br/>Adrian</p>
+                </div>
+              </details>
             )}
 
             {revertError && <div className="rs-dialog-error">{revertError}</div>}
@@ -801,10 +838,26 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rs-manage-label { color: #9ca3af; font-weight: 500; }
 
 .rs-manage-send {
-  display: flex; align-items: center; gap: 10px;
-  margin: 12px 0 4px;
+  display: flex; align-items: center; gap: 8px;
+  margin: 12px 0 4px; flex-wrap: wrap;
 }
 .rs-send-msg { font-size: 13px; }
+.rs-email-preview {
+  margin-top: 12px; border: 1px solid #e5e7eb;
+  border-radius: 8px; overflow: hidden;
+}
+.rs-email-preview summary {
+  padding: 8px 12px; cursor: pointer; font-size: 13px;
+  font-weight: 600; color: #374151; background: #f9fafb;
+  list-style: none; user-select: none;
+}
+.rs-email-preview summary::-webkit-details-marker { display: none; }
+.rs-email-body {
+  padding: 12px 14px; font-size: 13px; color: #374151;
+  line-height: 1.6; background: #fff;
+}
+.rs-email-body p { margin: 0 0 8px; }
+.rs-email-body p:last-child { margin: 0; }
 
 .rs-revert-confirm { margin-top: 8px; }
 .rs-revert-warning {
