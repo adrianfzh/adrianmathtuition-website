@@ -151,7 +151,6 @@ export async function POST(req: NextRequest) {
       method: 'PATCH',
       body: JSON.stringify({ fields: {
         'Line Items': JSON.stringify(allItems),
-        'Base Amount': existingAmount + addAmount,
         'Final Amount': existingAmount + addAmount,
         'Lessons Count': (existingInv.fields['Lessons Count'] as number || 0) + newLessons,
       }}),
@@ -224,7 +223,6 @@ export async function POST(req: NextRequest) {
           'Issue Date': today,
           'Due Date': '2026-06-01',
           'Line Items': JSON.stringify(lineItems),
-          'Base Amount': total,
           'Final Amount': total,
           'Lessons Count': totalLessons,
         },
