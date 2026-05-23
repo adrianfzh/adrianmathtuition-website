@@ -154,7 +154,7 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
     const groupedByDesc: Map<string, { day: string; count: number; rate?: number }> = new Map();
     invoiceData.lineItems.forEach((item) => {
       const desc = item.description || `Tuition \u2014 ${invoiceData.month || ''}`;
-      const day  = item.day || 'Unknown';
+      const day  = item.day || '';
       const existing = groupedByDesc.get(desc);
       if (existing) {
         existing.count++;
@@ -166,7 +166,8 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
       // Use per-group rate if stored (multi-rate students), otherwise fall back to invoice rate
       const effectiveRate = rate !== undefined ? rate : (invoiceData.ratePerLesson || 0);
       const amount = (count * effectiveRate).toFixed(2);
-      return `<tr><td><div class="desc-main">${description}</div></td><td><span class="slot-pill">${day}</span></td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
+      const slotCell = day ? `<span class="slot-pill">${day}</span>` : '';
+      return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
     }).join('');
   }
   html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
@@ -227,7 +228,7 @@ export async function generateReceiptPDF(receiptData: ReceiptData): Promise<Buff
   if (receiptData.lineItems?.length) {
     const groupedByDay: Record<string, LineItem[]> = {};
     receiptData.lineItems.forEach((item) => {
-      const day = item.day || 'Unknown';
+      const day = item.day || '';
       if (!groupedByDay[day]) groupedByDay[day] = [];
       groupedByDay[day].push(item);
     });
@@ -235,7 +236,8 @@ export async function generateReceiptPDF(receiptData: ReceiptData): Promise<Buff
       const count = items.length;
       const amount = (count * (receiptData.ratePerLesson || 0)).toFixed(2);
       const description = items[0].description || `Tuition \u2014 ${receiptData.month || ''}`;
-      return `<tr><td><div class="desc-main">${description}</div></td><td><span class="slot-pill">${day}</span></td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
+      const slotCell = day ? `<span class="slot-pill">${day}</span>` : '';
+      return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
     }).join('');
   }
   html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
