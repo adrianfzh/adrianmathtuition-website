@@ -81,6 +81,9 @@ export default function JuneRevisionSec4Page() {
           <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
             <CalendarTable weeks={EM_WEEKS} color={EM_COLOR} bg={EM_BG} />
           </div>
+          <div style={{ marginTop: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#92400e', lineHeight: 1.6 }}>
+            📌 <strong>O Level Chinese (2 Jun):</strong> Students with O Level Chinese on 2 Jun (Tue) may attend a makeup lesson on <strong>3 Jun (Wed), 10am–12pm</strong> instead.
+          </div>
         </div>
 
         {/* AM Calendar */}
@@ -94,6 +97,9 @@ export default function JuneRevisionSec4Page() {
           </div>
           <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
             <CalendarTable weeks={AM_WEEKS} color={AM_COLOR} bg={AM_BG} />
+          </div>
+          <div style={{ marginTop: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#92400e', lineHeight: 1.6 }}>
+            📌 <strong>O Level Chinese (2 Jun):</strong> Students with O Level Chinese on 2 Jun (Tue) may attend a makeup lesson on <strong>3 Jun (Wed), 1pm–3pm</strong> instead.
           </div>
         </div>
 
