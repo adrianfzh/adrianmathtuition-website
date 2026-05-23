@@ -166,8 +166,9 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
       // Use per-group rate if stored (multi-rate students), otherwise fall back to invoice rate
       const effectiveRate = rate !== undefined ? rate : (invoiceData.ratePerLesson || 0);
       const amount = (count * effectiveRate).toFixed(2);
-      const slotCell = day ? `<span class="slot-pill">${day}</span>` : '';
-      return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
+      const slotCell    = day ? `<span class="slot-pill">${day}</span>` : '';
+      const lessonsCell = day ? `<span class="lessons-badge">${count}</span>` : '';
+      return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>$${amount}</td></tr>`;
     }).join('');
   }
   html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
@@ -236,8 +237,9 @@ export async function generateReceiptPDF(receiptData: ReceiptData): Promise<Buff
       const count = items.length;
       const amount = (count * (receiptData.ratePerLesson || 0)).toFixed(2);
       const description = items[0].description || `Tuition \u2014 ${receiptData.month || ''}`;
-      const slotCell = day ? `<span class="slot-pill">${day}</span>` : '';
-      return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td><span class="lessons-badge">${count}</span></td><td>$${amount}</td></tr>`;
+      const slotCell    = day ? `<span class="slot-pill">${day}</span>` : '';
+      const lessonsCell = day ? `<span class="lessons-badge">${count}</span>` : '';
+      return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>$${amount}</td></tr>`;
     }).join('');
   }
   html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
