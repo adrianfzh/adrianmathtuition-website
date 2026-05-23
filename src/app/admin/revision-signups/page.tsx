@@ -76,6 +76,7 @@ export default function RevisionSignupsPage() {
   const [revertConfirm, setRevertConfirm] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendMsg, setSendMsg] = useState('');
+  const [customEmailText, setCustomEmailText] = useState<string | null>(null);
 
   // Auth check
   useEffect(() => {
@@ -203,6 +204,7 @@ export default function RevisionSignupsPage() {
     setRevertError('');
     setRevertConfirm(false);
     setSendMsg('');
+    setCustomEmailText(null);
   }
 
   function closeManage() {
@@ -224,8 +226,15 @@ export default function RevisionSignupsPage() {
         body: JSON.stringify({ recordIds: [manageStudent.revisionInvoiceId], force: true }),
       });
       if (!pdfRes.ok) throw new Error('PDF generation failed');
-      // Step 2: send email with PDF
+      // Step 2: patch custom email message if edited, then send
       setSendMsg('Sending email…');
+      if (customEmailText !== null) {
+        await fetch(`/api/admin-invoices`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+          body: JSON.stringify({ recordId: manageStudent.revisionInvoiceId, fields: { 'Custom Email Message': customEmailText } }),
+        });
+      }
       await sendInvoice(manageStudent.revisionInvoiceId);
       setSendMsg('✅ Invoice sent!');
     } catch (e: unknown) {
@@ -298,6 +307,12 @@ export default function RevisionSignupsPage() {
               {chip}
               {chip === 'No Response' && noResponse.length > 0 && (
                 <span className="rs-chip-count">{noResponse.length}</span>
+              )}
+              {chip === 'Signed Up' && signedUp.length > 0 && (
+                <span className="rs-chip-count" style={{ background: '#16a34a' }}>{signedUp.length}</span>
+              )}
+              {chip === 'Opted Out' && optedOut.length > 0 && (
+                <span className="rs-chip-count" style={{ background: '#dc2626' }}>{optedOut.length}</span>
               )}
             </button>
           ))}
@@ -419,24 +434,45 @@ export default function RevisionSignupsPage() {
             )}
             {sendMsg && !sending && <div className="rs-send-msg" style={{ marginTop: 4 }}>{sendMsg}</div>}
 
-            {/* Email preview */}
-            {manageStudent.revisionInvoiceId && (
-              <details className="rs-email-preview">
-                <summary>📋 Preview email text</summary>
-                <div className="rs-email-body">
-                  <p>Dear Parent/Student,</p>
-                  <p>Thank you for signing up for the <strong>June 2026 Revision Sprint</strong>!</p>
-                  <p>Please find attached the invoice for {manageStudent.name} — <strong>${manageStudent.revisionTotal.toLocaleString()}</strong>, due by 1 June 2026.</p>
-                  <p>Please disregard the regular June 2026 invoice sent earlier — it has been voided and this invoice replaces it.</p>
-                  <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>{manageStudent.name.toUpperCase()} – JUNE 2026</strong>.</p>
-                  <p><strong>What you've signed up for:</strong></p>
-                  {manageStudent.revisionSubjects.includes('EM') && <p>• Sec 4 EM June Holiday Revision Sprint (6 lessons) — <strong>$420</strong></p>}
-                  {manageStudent.revisionSubjects.includes('AM') && <p>• Sec 4 AM June Holiday Revision Sprint (8 lessons) — <strong>$560</strong></p>}
-                  {manageStudent.revisionSubjects.includes('JC') && <p>• JC2 H2 Math June Holiday Revision Sprint (8 lessons) — <strong>$640</strong></p>}
-                  <p>Best regards,<br/>Adrian</p>
-                </div>
-              </details>
-            )}
+            {/* Editable email text */}
+            {manageStudent.revisionInvoiceId && (() => {
+              const defaultEmail = [
+                `Dear Parent/Student,`,
+                ``,
+                `Thank you for signing up for the June 2026 Revision Sprint!`,
+                ``,
+                `Please find attached the invoice for ${manageStudent.name} — $${manageStudent.revisionTotal.toLocaleString()}, due by 1 June 2026.`,
+                ``,
+                `Please disregard the regular June 2026 invoice sent earlier — it has been voided and this invoice replaces it.`,
+                ``,
+                `To pay, PayNow to 91397985 with reference ${manageStudent.name.toUpperCase()} – JUNE 2026.`,
+                ``,
+                `What you've signed up for:`,
+                ...(manageStudent.revisionSubjects.includes('EM') ? [`• Sec 4 EM June Holiday Revision Sprint (6 lessons) — $420`] : []),
+                ...(manageStudent.revisionSubjects.includes('AM') ? [`• Sec 4 AM June Holiday Revision Sprint (8 lessons) — $560`] : []),
+                ...(manageStudent.revisionSubjects.includes('JC') ? [`• JC2 H2 Math June Holiday Revision Sprint (8 lessons) — $640`] : []),
+                ``,
+                `Best regards,`,
+                `Adrian`,
+              ].join('\n');
+              return (
+                <details className="rs-email-preview">
+                  <summary>📋 Edit email text</summary>
+                  <textarea
+                    className="rs-email-textarea"
+                    value={customEmailText ?? defaultEmail}
+                    onChange={e => setCustomEmailText(e.target.value)}
+                    rows={16}
+                  />
+                  {customEmailText !== null && customEmailText !== defaultEmail && (
+                    <button
+                      className="rs-reset-email"
+                      onClick={() => setCustomEmailText(null)}
+                    >↩ Reset to default</button>
+                  )}
+                </details>
+              );
+            })()}
 
             {revertError && <div className="rs-dialog-error">{revertError}</div>}
 
@@ -856,6 +892,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   list-style: none; user-select: none;
 }
 .rs-email-preview summary::-webkit-details-marker { display: none; }
+.rs-email-textarea {
+  width: 100%; padding: 10px 12px; font-size: 13px; line-height: 1.6;
+  font-family: inherit; color: #374151; background: #fff;
+  border: none; border-top: 1px solid #f1f5f9; resize: vertical;
+  outline: none; display: block;
+}
+.rs-reset-email {
+  width: 100%; padding: 6px; font-size: 12px; color: #6b7280;
+  background: #f9fafb; border: none; border-top: 1px solid #f1f5f9;
+  cursor: pointer; text-align: center;
+}
+.rs-reset-email:hover { color: #374151; }
 .rs-email-body {
   padding: 12px 14px; font-size: 13px; color: #374151;
   line-height: 1.6; background: #fff;
