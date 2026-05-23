@@ -18,9 +18,6 @@ const JC_DATES = [
   '2026-06-22', '2026-06-25',
 ];
 
-const EM_DAY = 'Tue/Fri 10am-12pm';
-const AM_DAY = 'Tue/Fri 1pm-3pm';
-const JC_DAY = 'Mon/Thu 12pm-2.30pm';
 
 interface LineItem {
   description: string;
@@ -64,21 +61,21 @@ function buildLineItems(subjects: string[]): { lineItems: LineItem[]; totalLesso
   return { lineItems, totalLessons };
 }
 
-function buildLessonRecords(subjects: string[], studentId: string, level: string, invoiceId: string) {
+function buildLessonRecords(subjects: string[], studentId: string, _level: string, invoiceId: string) {
   const records: Array<{ fields: Record<string, unknown> }> = [];
   if (subjects.includes('EM')) {
     for (const date of EM_DATES) {
-      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId], Level: level, Day: EM_DAY } });
+      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId] } });
     }
   }
   if (subjects.includes('AM')) {
     for (const date of AM_DATES) {
-      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId], Level: level, Day: AM_DAY } });
+      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId] } });
     }
   }
   if (subjects.includes('JC')) {
     for (const date of JC_DATES) {
-      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId], Level: level, Day: JC_DAY } });
+      records.push({ fields: { Student: [studentId], Date: date, Type: 'Revision Sprint', Status: 'Scheduled', 'Source Invoice': [invoiceId] } });
     }
   }
   return records;
