@@ -306,7 +306,9 @@ export async function POST(req: NextRequest) {
       };
       if (pdfBuffer) {
         emailData.attachments = [{
-          filename: `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/\s+/g, '-')}.pdf`,
+          filename: invoiceType === 'Revision Sprint'
+            ? `AdrianMathTuition-Revision-Sprint-${(invoice.studentName || '').replace(/\s+/g, '-')}-June-2026.pdf`
+            : `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/\s+/g, '-')}.pdf`,
           content: pdfBuffer.toString('base64'),
           type: 'application/pdf',
           disposition: 'attachment',
