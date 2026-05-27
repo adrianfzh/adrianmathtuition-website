@@ -186,6 +186,12 @@ export async function clearLevelQuestions(level: string): Promise<number> {
   return ids.length;
 }
 
+/** How many questions are cached for this level right now. */
+export async function countLevelQuestions(level: string): Promise<number> {
+  const all = await queryQuestions(level, []);
+  return all.length;
+}
+
 /**
  * Query the local cache for questions matching a lesson's topics + level.
  * Optional filters mirror what the bank panel supports today.

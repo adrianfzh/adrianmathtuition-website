@@ -15,7 +15,7 @@ import {
   getOfflineSettings, setOfflineSettings,
   getQBSync, deleteQBSync,
   countCachedQuestions, clearQuestionCache,
-  syncEnabledLevels, syncLevel, disableOfflineMode, clearLevelQuestions,
+  syncEnabledLevels, syncLevel, disableOfflineMode, clearLevelQuestions, countLevelQuestions,
   estimateStorageBytes,
   type OfflineSettings, type QBSyncState, type SyncProgress,
 } from '@/lib/offline/qb-cache';
@@ -51,6 +51,7 @@ export default function OfflineSettingsClient() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [settings, setSettings] = useState<OfflineSettings | null>(null);
   const [syncState, setSyncState] = useState<Record<string, QBSyncState | undefined>>({});
+  const [levelCounts, setLevelCounts] = useState<Record<string, number>>({});
   const [cachedCount, setCachedCount] = useState<number>(0);
   const [storageBytes, setStorageBytes] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -73,8 +74,13 @@ export default function OfflineSettingsClient() {
     const s = await getOfflineSettings();
     setSettings(s);
     const states: Record<string, QBSyncState | undefined> = {};
-    for (const lv of s.levels) states[lv] = await getQBSync(lv);
+    const counts: Record<string, number> = {};
+    for (const lv of s.levels) {
+      states[lv] = await getQBSync(lv);
+      counts[lv] = await countLevelQuestions(lv);
+    }
     setSyncState(states);
+    setLevelCounts(counts);
     setCachedCount(await countCachedQuestions());
     setStorageBytes(await estimateStorageBytes());
     try {
@@ -288,6 +294,10 @@ export default function OfflineSettingsClient() {
                       </label>
                       {enabled && !isConfirming && (
                         <>
+                          <span className="text-[11px] text-slate-500" title={`Cached questions for ${level}`}>
+                            {levelCounts[level]?.toLocaleString() ?? '0'} cached
+                          </span>
+                          <span className="text-slate-300">·</span>
                           <span className="text-[11px] text-slate-500" title={st?.last_synced_at ?? ''}>
                             {st ? `synced ${timeAgo(st.last_synced_at)}` : 'never synced'}
                           </span>
