@@ -92,6 +92,17 @@ async function clearDirty(kind: 'card' | 'lesson', id: string) {
 
 async function replay(m: MutationRow): Promise<void> {
   switch (m.kind) {
+    case 'lesson_add': {
+      const { lesson } = m.payload as {
+        lesson: { id: string; name: string; level: string; topics: string[]; description: string | null };
+      };
+      const res = await apiFetch('/api/admin/lessons', {
+        method: 'POST', body: JSON.stringify(lesson),
+      });
+      if (!res.ok) throw new Error(`POST lesson ${lesson.id}: ${res.status} ${await res.text()}`);
+      await clearDirty('lesson', lesson.id);
+      return;
+    }
     case 'lesson_patch': {
       const { lessonId, patch } = m.payload as { lessonId: string; patch: Record<string, unknown> };
       const res = await apiFetch(`/api/admin/lessons/${lessonId}`, {

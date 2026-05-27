@@ -47,6 +47,7 @@ export interface LocalCard {
 }
 
 export type MutationKind =
+  | 'lesson_add'
   | 'lesson_patch'
   | 'card_add'
   | 'card_patch'

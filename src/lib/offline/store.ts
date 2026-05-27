@@ -11,7 +11,7 @@
 
 import {
   getLesson, listCardsForLesson, putLesson, putCard, deleteCardLocal,
-  replaceCardsForLesson, enqueueMutation,
+  replaceCardsForLesson, enqueueMutation, listLessons,
   type LocalLesson, type LocalCard, type ContentKind,
 } from './db';
 import { kickSync } from './sync';
@@ -64,6 +64,78 @@ export async function loadLesson(lessonId: string): Promise<LoadResult | null> {
   if (!lesson) return null;
   const cards = await listCardsForLesson(lessonId);
   return { lesson, cards, source: 'cache' };
+}
+
+// ── Lesson list (network-first, local fallback) ─────────────────────────────
+
+export interface LessonListResult {
+  lessons: LocalLesson[];
+  source: 'network' | 'cache';
+}
+
+export async function loadLessons(): Promise<LessonListResult> {
+  const online = typeof navigator !== 'undefined' ? navigator.onLine : true;
+  if (online) {
+    try {
+      const res = await apiFetch('/api/admin/lessons');
+      if (res.ok) {
+        const json = await res.json() as { lessons: LocalLesson[] };
+        // Mirror to IndexedDB so the list is available offline.
+        for (const l of json.lessons) {
+          await putLesson({ ...l, updated_at: l.updated_at ?? nowISO(), _dirty: false });
+        }
+        // Also surface any locally-created lessons whose lesson_add mutation hasn't
+        // landed yet (they'll be missing from the server response).
+        const local = await listLessons();
+        const seen = new Set(json.lessons.map((l) => l.id));
+        const pending = local.filter((l) => !seen.has(l.id) && l._dirty);
+        return { lessons: [...pending, ...json.lessons], source: 'network' };
+      }
+    } catch { /* fall through */ }
+  }
+  const local = await listLessons();
+  // Sort newest first to match server's order
+  local.sort((a, b) => (a.updated_at < b.updated_at ? 1 : -1));
+  return { lessons: local, source: 'cache' };
+}
+
+// ── Lesson create (offline-capable) ─────────────────────────────────────────
+
+export interface NewLessonInput {
+  name: string;
+  level: string;
+  topics?: string[];
+  description?: string | null;
+}
+
+export async function addLesson(input: NewLessonInput): Promise<LocalLesson> {
+  const id = genId();
+  const lesson: LocalLesson = {
+    id,
+    name: input.name,
+    level: input.level,
+    topics: input.topics ?? [],
+    description: input.description ?? null,
+    is_archived: false,
+    updated_at: nowISO(),
+    _dirty: true,
+  };
+  await putLesson(lesson);
+  await enqueueMutation({
+    kind: 'lesson_add',
+    payload: {
+      lesson: {
+        id,
+        name: lesson.name,
+        level: lesson.level,
+        topics: lesson.topics,
+        description: lesson.description,
+      },
+    },
+    status: 'pending', attempts: 0, created_at: nowISO(),
+  });
+  void kickSync();
+  return lesson;
 }
 
 // ── Lesson metadata ─────────────────────────────────────────────────────────
