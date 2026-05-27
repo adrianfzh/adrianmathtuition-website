@@ -23,8 +23,6 @@ export default function LessonsListPage() {
 
   useEffect(() => {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw');
-    // Cookie check has to happen client-side after hydration; setState here is intentional.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAuthed(!!pw);
   }, []);
 
@@ -35,9 +33,6 @@ export default function LessonsListPage() {
     setSource(r.source);
   }, []);
 
-  // Load list on auth or refresh function change. setState inside the async load is the
-  // intended pattern — we're fetching external data, not just mirroring React state.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (authed) void refresh(); }, [authed, refresh]);
 
   if (authed === null) return <div className="p-8 text-slate-500">Loading…</div>;
@@ -48,9 +43,20 @@ export default function LessonsListPage() {
     </main>
   );
 
+  // Custom level order: most-used levels first (Adrian's business is mostly EM + AM + JC),
+  // then S2/S1 at the bottom. Unknown levels go after everything else.
+  // Within each level, newest first (already the server's order; we preserve it).
+  const LEVEL_ORDER: Record<string, number> = { EM: 0, AM: 1, JC: 2, S2: 3, S1: 4 };
+  const ordered = [...lessons].sort((a, b) => {
+    const la = LEVEL_ORDER[a.level] ?? 99;
+    const lb = LEVEL_ORDER[b.level] ?? 99;
+    if (la !== lb) return la - lb;
+    // Same level — keep server's updated_at desc by leaving original order
+    return a.updated_at < b.updated_at ? 1 : a.updated_at > b.updated_at ? -1 : 0;
+  });
   const filtered = filter
-    ? lessons.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.level.toLowerCase().includes(filter.toLowerCase()))
-    : lessons;
+    ? ordered.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.level.toLowerCase().includes(filter.toLowerCase()))
+    : ordered;
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -110,32 +116,50 @@ export default function LessonsListPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-2">
-            {filtered.map(l => (
-              <Link key={l.id} href={`/admin/lessons/${l.id}`}
-                 className="block bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold text-slate-800">{l.name}</span>
-                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded font-medium">{l.level}</span>
-                  {l._dirty && <span className="text-[10px] px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded font-medium" title="Created locally; syncs when you reconnect">queued</span>}
-                  {l.topics.length > 0 && (
-                    <span className="text-xs text-slate-500">{l.topics.length} topic{l.topics.length === 1 ? '' : 's'}</span>
-                  )}
-                  <span className="flex-1" />
-                  <span className="text-xs text-slate-400">{new Date(l.updated_at).toLocaleDateString()}</span>
-                </div>
-                {l.description && <div className="text-xs text-slate-500 mt-1">{l.description}</div>}
-                {l.topics.length > 0 && (
-                  <div className="flex gap-1 flex-wrap mt-2">
-                    {l.topics.slice(0, 6).map(t => (
-                      <span key={t} className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">{t}</span>
-                    ))}
-                    {l.topics.length > 6 && <span className="text-xs text-slate-400">+{l.topics.length - 6} more</span>}
+          (() => {
+            // Group filtered list by level, preserve level-order computed above
+            const groups: Record<string, LocalLesson[]> = {};
+            for (const l of filtered) { (groups[l.level] ||= []).push(l); }
+            const levelKeys = Object.keys(groups).sort((a, b) => (LEVEL_ORDER[a] ?? 99) - (LEVEL_ORDER[b] ?? 99));
+            return (
+              <div className="space-y-6">
+                {levelKeys.map(level => (
+                  <div key={level}>
+                    <div className="flex items-baseline gap-2 mb-2 px-1">
+                      <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">{level}</span>
+                      <span className="text-[11px] text-slate-400">{groups[level].length} lesson{groups[level].length === 1 ? '' : 's'}</span>
+                    </div>
+                    <div className="space-y-2">
+                      {groups[level].map(l => (
+                        <Link key={l.id} href={`/admin/lessons/${l.id}`}
+                          className="block bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <span className="font-semibold text-slate-800">{l.name}</span>
+                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded font-medium">{l.level}</span>
+                            {l._dirty && <span className="text-[10px] px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded font-medium" title="Created locally; syncs when you reconnect">queued</span>}
+                            {l.topics.length > 0 && (
+                              <span className="text-xs text-slate-500">{l.topics.length} topic{l.topics.length === 1 ? '' : 's'}</span>
+                            )}
+                            <span className="flex-1" />
+                            <span className="text-xs text-slate-400">{new Date(l.updated_at).toLocaleDateString()}</span>
+                          </div>
+                          {l.description && <div className="text-xs text-slate-500 mt-1">{l.description}</div>}
+                          {l.topics.length > 0 && (
+                            <div className="flex gap-1 flex-wrap mt-2">
+                              {l.topics.slice(0, 6).map(t => (
+                                <span key={t} className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">{t}</span>
+                              ))}
+                              {l.topics.length > 6 && <span className="text-xs text-slate-400">+{l.topics.length - 6} more</span>}
+                            </div>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                )}
-              </Link>
-            ))}
-          </div>
+                ))}
+              </div>
+            );
+          })()
         )}
       </div>
 
