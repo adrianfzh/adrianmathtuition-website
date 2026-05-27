@@ -301,39 +301,55 @@ function LevelScopePicker({
 
   return (
     <div className="px-3 py-2 space-y-2">
+      {/* Mode switch: cache every topic for this level, or hand-pick a subset. */}
       <div className="flex items-center gap-2 text-xs">
         <button
           onClick={() => onChange('all')}
           className={`px-2 py-0.5 rounded ${isAll ? 'bg-emerald-100 text-emerald-800 font-medium' : 'border border-slate-300 text-slate-600 hover:bg-slate-50'}`}
         >All topics</button>
         <button
-          onClick={() => onChange([])}
-          className={`px-2 py-0.5 rounded ${!isAll && (scope as string[]).length === 0 ? 'bg-rose-100 text-rose-800 font-medium' : 'border border-slate-300 text-slate-600 hover:bg-slate-50'}`}
-        >None</button>
+          // First click into custom mode pre-selects all topics so the picker is in a
+          // "deselect what you don't want" state rather than "nothing chosen yet."
+          onClick={() => onChange(isAll ? allTopics.slice() : (scope as string[]))}
+          className={`px-2 py-0.5 rounded ${!isAll ? 'bg-blue-100 text-blue-800 font-medium' : 'border border-slate-300 text-slate-600 hover:bg-slate-50'}`}
+        >Pick topics</button>
         <span className="text-[11px] text-slate-400 ml-auto">
           {isAll ? `all ${allTopics.length}` : `${(scope as string[]).length} of ${allTopics.length}`}
         </span>
       </div>
       {!isAll && (
-        <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
-          {cats.map((cat) => (
-            <div key={cat.label}>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-0.5">{cat.label}</div>
-              <div className="flex flex-wrap gap-1">
-                {cat.topics.map((t) => {
-                  const on = selected.has(t);
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => toggleTopic(t)}
-                      className={`text-[11px] px-1.5 py-0.5 rounded border ${on ? 'bg-blue-50 border-blue-400 text-blue-700' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}
-                    >{t}</button>
-                  );
-                })}
+        <>
+          <div className="flex items-center gap-3 text-[11px]">
+            <button
+              onClick={() => onChange(allTopics.slice())}
+              className="text-blue-600 hover:underline"
+            >Select all</button>
+            <button
+              onClick={() => onChange([])}
+              className="text-slate-500 hover:underline"
+            >Clear</button>
+            <span className="text-slate-400 ml-auto">Click pills to toggle individual topics</span>
+          </div>
+          <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+            {cats.map((cat) => (
+              <div key={cat.label}>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-0.5">{cat.label}</div>
+                <div className="flex flex-wrap gap-1">
+                  {cat.topics.map((t) => {
+                    const on = selected.has(t);
+                    return (
+                      <button
+                        key={t}
+                        onClick={() => toggleTopic(t)}
+                        className={`text-[11px] px-1.5 py-0.5 rounded border ${on ? 'bg-blue-50 border-blue-400 text-blue-700' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}
+                      >{t}</button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
