@@ -320,7 +320,7 @@ function DragCardOverlay({ card }: { card: CardRow }) {
 // ── Quick-add card to a known section ─────────────────────────────────────────
 
 function QuickAddCardToSectionModal({ sectionName, kind, subgroups, level, topic, auth, onClose, onCreated }: {
-  sectionName: string; kind: 'worked_example' | 'refresher';
+  sectionName: string; kind: 'worked_example' | 'refresher' | 'practice';
   subgroups: Subgroup[]; level: string; topic: string; auth: string;
   onClose: () => void; onCreated: (card: CardRow) => void;
 }) {
@@ -515,7 +515,7 @@ function SectionHeader({
 
 // ── Droppable section zone (cross-section card drop target, keyed by display_group) ──
 
-function DroppableSectionZone({ name, kindPrefix = 'we', children, isDragActive }: { name: string; kindPrefix?: 'we' | 'rf'; children: React.ReactNode; isDragActive: boolean }) {
+function DroppableSectionZone({ name, kindPrefix = 'we', children, isDragActive }: { name: string; kindPrefix?: 'we' | 'rf' | 'pr'; children: React.ReactNode; isDragActive: boolean }) {
   const { setNodeRef, isOver } = useDroppable({ id: `sec-zone-${kindPrefix}-${name}` });
   return (
     <div
@@ -716,7 +716,7 @@ function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, 
 function SortableSectionWrapper({
   name, kindPrefix = 'we', children, level, topic, auth, onRenamed, onDeleted, onAddCard, cardCount,
 }: {
-  name: string; kindPrefix?: 'we' | 'rf'; children: React.ReactNode;
+  name: string; kindPrefix?: 'we' | 'rf' | 'pr'; children: React.ReactNode;
   level: string; topic: string; auth: string;
   cardCount: number;
   onRenamed: (oldName: string, newName: string) => void;
@@ -857,6 +857,9 @@ function RefresherPanel({
   localSections, sectionOrder, activeDragId, isCrossKindDrag,
   onSelectCard, onCardCreated, onRenamed, onDeleted, onNewSection, onAddCard,
   onBankDrop,
+  kindPrefix = 'rf',
+  label = '🧠 Refresher',
+  colorClass = 'text-blue-700',
 }: {
   cards: CardRow[]; subgroups: Subgroup[]; auth: string; selectedId: string | null;
   level: string; topic: string;
@@ -869,6 +872,9 @@ function RefresherPanel({
   onNewSection: (name: string) => void;
   onAddCard: (sectionName: string) => void;
   onBankDrop?: (q: BankQuestion, anchorCard: CardRow, position: 'above' | 'below') => void;
+  kindPrefix?: 'rf' | 'pr';
+  label?: string;
+  colorClass?: string;
 }) {
   const [expanded, setExpanded] = useState(true);
   const [showNewSectionModal, setShowNewSectionModal] = useState(false);
@@ -895,21 +901,21 @@ function RefresherPanel({
       {/* Panel header */}
       <div className={`flex items-center gap-1 px-1 py-1.5 rounded transition-colors ${isCrossKindDrag ? 'bg-blue-50' : ''}`}>
         <button onClick={() => setExpanded((v) => !v)} className="text-xs text-slate-400 shrink-0">{expanded ? '▾' : '▸'}</button>
-        <span className="text-xs font-semibold text-blue-700 flex-1">🧠 Refresher <span className="font-normal text-slate-400">({cards.length})</span></span>
+        <span className={`text-xs font-semibold ${colorClass} flex-1`}>{label} <span className="font-normal text-slate-400">({cards.length})</span></span>
         <button onClick={() => setShowNewSectionModal(true)} className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50">+ Section</button>
       </div>
 
       {expanded && (
         <div className="space-y-2">
           {allSections.length === 0 && flatCards.length === 0 ? (
-            <DroppablePanel id="panel-rf" isCrossKindTarget={isCrossKindDrag}>
-              <p className="px-3 py-2 text-xs text-slate-400 italic">No refresher cards yet — add a section or drag a card here.</p>
+            <DroppablePanel id={`panel-${kindPrefix}`} isCrossKindTarget={isCrossKindDrag}>
+              <p className="px-3 py-2 text-xs text-slate-400 italic">No cards yet — add a section or drag a card here.</p>
             </DroppablePanel>
           ) : (
             <>
               {/* Flat (no display_group) cards */}
               {flatCards.length > 0 && (
-                <DroppableSectionZone name="__flat__" kindPrefix="rf" isDragActive={isCardDrag}>
+                <DroppableSectionZone name="__flat__" kindPrefix={kindPrefix} isDragActive={isCardDrag}>
                   <SortableContext items={flatCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-1">
                       {flatCards.map((card, idx) => (
@@ -921,14 +927,14 @@ function RefresherPanel({
               )}
 
               {/* Sectioned cards */}
-              <SortableContext items={allSections.map((s) => `sec-hdr-rf-${s}`)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={allSections.map((s) => `sec-hdr-${kindPrefix}-${s}`)} strategy={verticalListSortingStrategy}>
                 {allSections.map((sectionKey) => {
                   const sectionCards = cardsBySection[sectionKey] ?? [];
                   return (
                     <SortableSectionWrapper
                       key={sectionKey}
                       name={sectionKey}
-                      kindPrefix="rf"
+                      kindPrefix={kindPrefix}
                       cardCount={sectionCards.length}
                       level={level}
                       topic={topic}
@@ -937,7 +943,7 @@ function RefresherPanel({
                       onDeleted={onDeleted}
                       onAddCard={() => onAddCard(sectionKey)}
                     >
-                      <DroppableSectionZone name={sectionKey} kindPrefix="rf" isDragActive={isCardDrag}>
+                      <DroppableSectionZone name={sectionKey} kindPrefix={kindPrefix} isDragActive={isCardDrag}>
                         <SortableContext items={sectionCards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                           <div className="space-y-1">
                             {sectionCards.map((card, idx) => (
@@ -952,7 +958,7 @@ function RefresherPanel({
               </SortableContext>
             </>
           )}
-          <DroppablePanel id="panel-rf" isCrossKindTarget={isCrossKindDrag && (allSections.length > 0 || flatCards.length > 0)} />
+          <DroppablePanel id={`panel-${kindPrefix}`} isCrossKindTarget={isCrossKindDrag && (allSections.length > 0 || flatCards.length > 0)} />
         </div>
       )}
 
@@ -1643,7 +1649,10 @@ export default function EditCardsClient() {
   const [toast, setToast] = useState<string | null>(null); // cross-kind drop toast
   const [rfLocalSections, setRfLocalSections] = useState<string[]>([]); // UI-only empty refresher sections
   const [rfSectionOrder, setRfSectionOrder] = useState<string[]>([]); // drag-reordered RF sections (session-only)
-  const [quickAdd, setQuickAdd] = useState<{ sectionName: string; kind: 'worked_example' | 'refresher' } | null>(null);
+  const [practiceCards, setPracticeCards] = useState<CardRow[]>([]);
+  const [prLocalSections, setPrLocalSections] = useState<string[]>([]);
+  const [prSectionOrder, setPrSectionOrder] = useState<string[]>([]);
+  const [quickAdd, setQuickAdd] = useState<{ sectionName: string; kind: 'worked_example' | 'refresher' | 'practice' } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   // Editor panels that should remain mounted (to preserve AI streaming state across card switches).
   // When the user selects a card, its panel mounts and stays alive (visibility:hidden) for the last 5 cards.
@@ -1746,20 +1755,22 @@ export default function EditCardsClient() {
   const fetchCardsRef = useRef<((silent?: boolean) => Promise<void>) | null>(null);
 
   const fetchCards = useCallback(async (silent = false) => {
-    if (!level || !topic) { setCards([]); setSubgroups([]); setRefresherCards([]); return; }
+    if (!level || !topic) { setCards([]); setSubgroups([]); setRefresherCards([]); setPracticeCards([]); return; }
     if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({ level, topic });
       if (subgroupFilter) params.set('subgroupId', subgroupFilter);
-      const [weRes, rfRes] = await Promise.all([
+      const [weRes, rfRes, prRes] = await Promise.all([
         fetch(`/api/admin/cards/list?${params}`, { headers: { Authorization: `Bearer ${auth}` } }),
         fetch(`/api/admin/cards/list?${params}&kind=refresher`, { headers: { Authorization: `Bearer ${auth}` } }),
+        fetch(`/api/admin/cards/list?${params}&kind=practice`, { headers: { Authorization: `Bearer ${auth}` } }),
       ]);
-      const [weJson, rfJson] = await Promise.all([weRes.json(), rfRes.json()]);
+      const [weJson, rfJson, prJson] = await Promise.all([weRes.json(), rfRes.json(), prRes.json()]);
       setCards(weJson.cards ?? []);
       setSubgroups(weJson.subgroups ?? []);
       setSectionOrder(weJson.sectionOrder ?? []);
       setRefresherCards(rfJson.cards ?? []);
+      setPracticeCards(prJson.cards ?? []);
     } finally { if (!silent) setLoading(false); }
   }, [level, topic, subgroupFilter, auth]);
 
@@ -1789,6 +1800,7 @@ export default function EditCardsClient() {
   function parseHdrId(id: string): { kind: string; name: string } | null {
     if (id.startsWith('sec-hdr-we-')) return { kind: 'worked_example', name: id.slice('sec-hdr-we-'.length) };
     if (id.startsWith('sec-hdr-rf-')) return { kind: 'refresher', name: id.slice('sec-hdr-rf-'.length) };
+    if (id.startsWith('sec-hdr-pr-')) return { kind: 'practice', name: id.slice('sec-hdr-pr-'.length) };
     return null;
   }
   function parseDropId(id: string, allCardsCombined: CardRow[]): { kind: string; section: string } | null {
@@ -1796,10 +1808,13 @@ export default function EditCardsClient() {
     const normaliseSection = (s: string) => (s === '__flat__' ? '' : s);
     if (id.startsWith('sec-zone-we-')) return { kind: 'worked_example', section: normaliseSection(id.slice('sec-zone-we-'.length)) };
     if (id.startsWith('sec-zone-rf-')) return { kind: 'refresher', section: normaliseSection(id.slice('sec-zone-rf-'.length)) };
+    if (id.startsWith('sec-zone-pr-')) return { kind: 'practice', section: normaliseSection(id.slice('sec-zone-pr-'.length)) };
     if (id.startsWith('sec-hdr-we-')) return { kind: 'worked_example', section: id.slice('sec-hdr-we-'.length) };
     if (id.startsWith('sec-hdr-rf-')) return { kind: 'refresher', section: id.slice('sec-hdr-rf-'.length) };
+    if (id.startsWith('sec-hdr-pr-')) return { kind: 'practice', section: id.slice('sec-hdr-pr-'.length) };
     if (id === 'panel-we') return { kind: 'worked_example', section: '' };
     if (id === 'panel-rf') return { kind: 'refresher', section: '' };
+    if (id === 'panel-pr') return { kind: 'practice', section: '' };
     const card = allCardsCombined.find((c) => c.id === id);
     if (card) return { kind: card.content_kind, section: card.display_group ?? '' };
     return null;
@@ -1816,7 +1831,7 @@ export default function EditCardsClient() {
     if (navigator.vibrate) navigator.vibrate(30);
     const hdr = parseHdrId(id);
     if (hdr) { setActiveDragKind(hdr.kind); return; }
-    const found = [...cards, ...refresherCards].find((c) => c.id === id);
+    const found = [...cards, ...refresherCards, ...practiceCards].find((c) => c.id === id);
     setActiveDragKind(found?.content_kind ?? null);
   }
 
@@ -1828,7 +1843,7 @@ export default function EditCardsClient() {
 
     const activeIdStr = String(active.id);
     const overIdStr = String(over.id);
-    const allCardsCombined = [...cards, ...refresherCards];
+    const allCardsCombined = [...cards, ...refresherCards, ...practiceCards];
 
     // Section header drag
     const activeHdr = parseHdrId(activeIdStr);
@@ -1981,11 +1996,13 @@ export default function EditCardsClient() {
   function handleCardSaved(updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) {
     setCards((prev) => prev.map((c) => c.id === updated.id ? { ...c, ...updated } : c));
     setRefresherCards((prev) => prev.map((c) => c.id === updated.id ? { ...c, ...updated } : c));
+    setPracticeCards((prev) => prev.map((c) => c.id === updated.id ? { ...c, ...updated } : c));
   }
 
   function handleCardDeleted(id: string) {
     setCards((prev) => prev.filter((c) => c.id !== id));
     setRefresherCards((prev) => prev.filter((c) => c.id !== id));
+    setPracticeCards((prev) => prev.filter((c) => c.id !== id));
     setSelectedId(null);
     setMountedCardIds((prev) => prev.filter((mid) => mid !== id));
   }
@@ -2266,11 +2283,40 @@ export default function EditCardsClient() {
                 )}
               </div>
 
+              {/* ✏️ Practice panel — reuses RefresherPanel with kind='practice' props */}
+              <div className="mt-4">
+                <RefresherPanel
+                  cards={practiceCards}
+                  subgroups={subgroups}
+                  auth={auth}
+                  selectedId={selectedId}
+                  level={level}
+                  topic={topic}
+                  localSections={prLocalSections}
+                  sectionOrder={prSectionOrder}
+                  activeDragId={activeId}
+                  isCrossKindDrag={false}
+                  onSelectCard={setSelectedId}
+                  onCardCreated={(card) => setPracticeCards((prev) => [...prev, card])}
+                  onBankDrop={handleBankDropOnList}
+                  onRenamed={handleSectionRenamed}
+                  onDeleted={handleSectionDeleted}
+                  onNewSection={(name) => {
+                    setPrLocalSections((prev) => prev.includes(name) ? prev : [...prev, name]);
+                  }}
+                  onAddCard={(sectionName) => setQuickAdd({ sectionName, kind: 'practice' })}
+                  kindPrefix="pr"
+                  label="✏️ Practice"
+                  colorClass="text-orange-700"
+                />
+              </div>
+
               <DragOverlay modifiers={[restrictToVerticalAxis]}>
                 {activeId ? (() => {
                   const id = String(activeId);
                   const hdrName = id.startsWith('sec-hdr-we-') ? id.slice('sec-hdr-we-'.length)
-                    : id.startsWith('sec-hdr-rf-') ? id.slice('sec-hdr-rf-'.length) : null;
+                    : id.startsWith('sec-hdr-rf-') ? id.slice('sec-hdr-rf-'.length)
+                    : id.startsWith('sec-hdr-pr-') ? id.slice('sec-hdr-pr-'.length) : null;
                   if (hdrName) return <div className="px-3 py-1.5 bg-white border border-slate-300 rounded shadow-md text-xs font-semibold text-slate-600 opacity-90">{hdrName}</div>;
                   return activeCard ? <DragCardOverlay card={activeCard} /> : null;
                 })() : null}
@@ -2291,7 +2337,7 @@ export default function EditCardsClient() {
           )}
           {/* One panel per recently-visited card; inactive panels stay mounted but hidden */}
           {mountedCardIds.map((id) => {
-            const card = cards.find((c) => c.id === id) ?? refresherCards.find((c) => c.id === id);
+            const card = cards.find((c) => c.id === id) ?? refresherCards.find((c) => c.id === id) ?? practiceCards.find((c) => c.id === id);
             if (!card) return null;
             const isActive = id === selectedId;
             return (
@@ -2338,8 +2384,10 @@ export default function EditCardsClient() {
           onCreated={(card) => {
             if (quickAdd.kind === 'refresher') {
               setRefresherCards((prev) => [...prev, card]);
-              // Remove from rfLocalSections now that it has a card
               setRfLocalSections((prev) => prev.filter((s) => s !== quickAdd.sectionName));
+            } else if (quickAdd.kind === 'practice') {
+              setPracticeCards((prev) => [...prev, card]);
+              setPrLocalSections((prev) => prev.filter((s) => s !== quickAdd.sectionName));
             } else {
               setCards((prev) => [...prev, card]);
               setLocalSections((prev) => prev.filter((s) => s !== quickAdd.sectionName));
