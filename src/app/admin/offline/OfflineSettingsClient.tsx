@@ -19,6 +19,7 @@ import {
   estimateStorageBytes,
   type OfflineSettings, type QBSyncState, type SyncProgress,
 } from '@/lib/offline/qb-cache';
+import { requestPersistentStorage } from '@/lib/offline/persistStorage';
 
 const LEVELS = ['AM', 'EM', 'JC', 'S1', 'S2'];
 
@@ -55,10 +56,14 @@ export default function OfflineSettingsClient() {
   const [syncing, setSyncing] = useState(false);
   const [progress, setProgress] = useState<SyncProgress | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [persisted, setPersisted] = useState<boolean | null>(null);
 
   useEffect(() => {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw');
     setAuthed(!!pw);
+    // Strong intent signal — user opened the settings page, so ask the browser to
+    // promote our storage to persistent (resists eviction under disk pressure).
+    void requestPersistentStorage();
   }, []);
 
   const refresh = useCallback(async () => {
@@ -69,6 +74,10 @@ export default function OfflineSettingsClient() {
     setSyncState(states);
     setCachedCount(await countCachedQuestions());
     setStorageBytes(await estimateStorageBytes());
+    try {
+      const p = await (navigator.storage?.persisted?.() ?? Promise.resolve(false));
+      setPersisted(p);
+    } catch { setPersisted(null); }
   }, []);
 
   useEffect(() => { if (authed) void refresh(); }, [authed, refresh]);
@@ -272,6 +281,14 @@ export default function OfflineSettingsClient() {
             <span className="font-mono text-right">{cachedCount.toLocaleString()}</span>
             <span>Browser storage used</span>
             <span className="font-mono text-right">{bytesPretty(storageBytes)}</span>
+            <span>Eviction protection</span>
+            <span className="text-right">
+              {persisted === null
+                ? <span className="text-slate-400">—</span>
+                : persisted
+                  ? <span className="text-emerald-700">🛡 persistent</span>
+                  : <span className="text-amber-700" title="Storage is best-effort and could be evicted under disk pressure. Reload the page or click Sync now to retry the persistence request.">⚠ best-effort</span>}
+            </span>
           </div>
           <div className="mt-3 flex justify-end">
             <button

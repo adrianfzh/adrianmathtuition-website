@@ -19,6 +19,7 @@ import {
   getLesson, putLesson, listAllMutations,
   type MutationRow,
 } from './db';
+import { requestPersistentStorage } from './persistStorage';
 
 type Listener = (state: SyncState) => void;
 
@@ -193,6 +194,9 @@ export function initSyncEngine(): void {
   _initialised = true;
   emit({ online: navigator.onLine });
   refreshCounts();
+  // Ask the browser to mark our storage as persistent so the cache isn't evicted
+  // under disk pressure. Auto-granted in Chrome for engaged origins; Safari/FF prompt.
+  void requestPersistentStorage();
   window.addEventListener('online', () => { emit({ online: true }); void kickSync(); });
   window.addEventListener('offline', () => emit({ online: false }));
   document.addEventListener('visibilitychange', () => {
