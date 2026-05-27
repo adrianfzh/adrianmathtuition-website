@@ -4,7 +4,7 @@ import puppeteer from 'puppeteer-core';
 
 let browserInstance: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
 
-async function getBrowser() {
+export async function getBrowser() {
   // If we have a cached instance, verify it's still connected before reusing it.
   if (browserInstance) {
     try {

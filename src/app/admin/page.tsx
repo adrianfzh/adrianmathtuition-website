@@ -152,17 +152,16 @@ export default function AdminHub() {
 const LAUNCHERS = [
   { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
   { emoji: '📅', title: 'Schedule',  sub: 'Weekly lessons · drag to reschedule', href: '/admin/schedule'  },
-  { emoji: '✏️', title: 'Progress',  sub: "Log today's lesson outcomes",          href: '/admin/progress'  },
+  { emoji: '✏️', title: 'Progress',  sub: 'Student history · mastery timeline',   href: '/admin/progress'  },
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
-  { emoji: '🎓', title: 'Students',     sub: 'Student records (coming soon)',            href: '/admin/students'     },
   { emoji: '📋', title: 'Attendance',   sub: 'Search student · lesson history',           href: '/admin/attendance'   },
-  { emoji: '💡', title: 'Improvements', sub: 'Suggestion clusters · approve prompt rules', href: '/admin/improvements' },
   { emoji: '📊', title: 'API Usage',     sub: 'Cost · token usage · question log',          href: '/admin/analytics'    },
   { emoji: '📈', title: 'Bot Metrics',   sub: 'Volume · friction · version comparison',      href: '/admin/metrics'      },
   { emoji: '📨', title: 'Email Log',     sub: 'All sent invoices & receipts',               href: '/admin/emails'       },
   { emoji: '🤖', title: 'Bot Analytics', sub: 'Questions · suggestions · Opus chat', href: '/admin/bot-analytics' },
   { emoji: '📚', title: 'Cards Preview', sub: 'Browse swipe decks · level → topic',  href: '/admin/cards-preview' },
+  { emoji: '🎓', title: 'Lessons',       sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
 ];
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
