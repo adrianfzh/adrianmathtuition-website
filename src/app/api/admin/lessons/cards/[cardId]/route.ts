@@ -16,6 +16,13 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ cardId: s
   }
   if (typeof body.marks === 'number') patch.marks = body.marks;
   if (typeof body.order_index === 'number') patch.order_index = body.order_index;
+  // Cross-kind drag moves and bank-link saves
+  if (typeof body.content_kind === 'string' && ['refresher', 'worked_example', 'practice'].includes(body.content_kind)) {
+    patch.content_kind = body.content_kind;
+  }
+  if (typeof body.source_question_id === 'string' || body.source_question_id === null) {
+    patch.source_question_id = body.source_question_id;
+  }
 
   const supa = getSupabaseAdmin();
   const { data, error } = await supa.from('lesson_cards').update(patch).eq('id', cardId).select().single();
