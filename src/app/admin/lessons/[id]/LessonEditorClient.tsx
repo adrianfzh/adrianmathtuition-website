@@ -39,6 +39,7 @@ import {
   reorderCards as storeReorderCards,
 } from '@/lib/offline/store';
 import { SyncStatusPill } from '@/lib/offline/SyncStatusPill';
+import { BankStalePill } from '@/lib/offline/BankStalePill';
 import { syncEnabledLevels } from '@/lib/offline/qb-cache';
 import { registerLessonsServiceWorker } from '@/lib/offline/registerLessonsSW';
 
@@ -1591,6 +1592,7 @@ export default function LessonEditorClient() {
         <span className="text-emerald-300 font-medium truncate">{lesson.name}</span>
         <span className="flex-1" />
         <SyncStatusPill />
+        <BankStalePill />
         {savedAt && <span className="text-xs text-emerald-300/70">{savedAt.toLocaleTimeString()}</span>}
         <button
           onClick={() => generatePDF(id, pw.current, lesson.name)}

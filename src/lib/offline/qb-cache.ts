@@ -89,6 +89,15 @@ export async function syncLevel(
 /**
  * Sync every enabled level using its configured topic scope.
  * Triggered by the editor on load and by the "Sync now" button.
+ *
+ * Scope-change handling:
+ *  - Narrowed (topics removed): drop out-of-scope rows from the cache.
+ *  - Widened to 'all' from a list: fetch the *complement* (all topics minus what we had)
+ *    from `since=null` to fill the historical gap, then run normal delta over the cursor.
+ *  - Widened by adding specific topics: fetch the added topics with `since=null`, then
+ *    run normal delta for the full new scope over the cursor. This avoids re-downloading
+ *    everything in the (potentially large) original scope.
+ *  - Unchanged: just run delta over the cursor.
  */
 export async function syncEnabledLevels(onProgress?: (p: SyncProgress) => void): Promise<void> {
   const settings = await getOfflineSettings();
@@ -96,27 +105,49 @@ export async function syncEnabledLevels(onProgress?: (p: SyncProgress) => void):
   for (const level of settings.levels) {
     const scope = settings.topic_scope[level] ?? 'all';
     const existing = await getQBSync(level);
-    // If the scope has narrowed since last sync, the cache will contain out-of-scope rows.
-    // Trim them before pulling new data so a single delta call is enough.
+
+    // Narrowed: drop out-of-scope cached rows.
     if (existing && Array.isArray(existing.topic_scope) && Array.isArray(scope)) {
       const before = new Set(existing.topic_scope);
-      const after = new Set(scope);
-      const removed = [...before].filter((t) => !after.has(t));
+      const removed = [...before].filter((t) => !new Set(scope).has(t));
       if (removed.length > 0) await trimLevelToScope(level, scope);
     }
-    // If the scope has widened, we need to refetch the newly-included topics from scratch
-    // — the simplest correct thing is to reset the cursor and resync.
-    const scopeWidened =
-      existing && Array.isArray(scope) && Array.isArray(existing.topic_scope)
-        ? scope.some((t) => !existing.topic_scope.includes(t))
-        : (existing && scope === 'all' && existing.topic_scope !== 'all');
-    const since = scopeWidened ? null : existing?.cursor ?? null;
+
     try {
-      await syncLevel(level, scope, since, onProgress);
+      const widenedTopics = computeWidenedTopics(existing?.topic_scope, scope);
+      // Fill historical gap for any topics newly included in the scope.
+      if (widenedTopics !== null && widenedTopics.length > 0) {
+        await syncLevel(level, widenedTopics, null, onProgress);
+      } else if (widenedTopics === 'all') {
+        // Scope expanded to 'all' from a previous explicit list: pull everything since the
+        // beginning. We can still re-use the existing cursor for the delta pass after.
+        await syncLevel(level, 'all', null, onProgress);
+      }
+      // Forward delta: catches new and edited questions across the current scope since
+      // the last sync (no-op on first run because cursor is null at that point).
+      await syncLevel(level, scope, existing?.cursor ?? null, onProgress);
     } catch (e) {
       onProgress?.({ level, fetched: 0, done: true, error: e instanceof Error ? e.message : String(e) });
     }
   }
+}
+
+/**
+ * Compare new scope vs prior scope and return the "newly-included" topics:
+ *  - null       → no widening (or first sync); nothing extra to fetch
+ *  - 'all'      → scope went from explicit list to 'all'; resync all topics from scratch
+ *  - string[]   → these specific topics were added to the scope; fetch them from scratch
+ */
+function computeWidenedTopics(
+  prior: QBSyncState['topic_scope'] | undefined,
+  next: 'all' | string[],
+): null | 'all' | string[] {
+  if (!prior) return null; // first sync — delta over null cursor handles everything
+  if (next === 'all') return prior === 'all' ? null : 'all';
+  if (prior === 'all') return null; // narrowing — trimLevelToScope handles it
+  const before = new Set(prior);
+  const added = next.filter((t) => !before.has(t));
+  return added.length > 0 ? added : null;
 }
 
 /** Remove cached rows that don't match the level's current topic scope. */

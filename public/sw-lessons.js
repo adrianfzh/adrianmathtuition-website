@@ -15,8 +15,19 @@
  */
 
 const CACHE_PREFIX = 'adrianmath-lessons-';
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
+const IMG_CACHE_NAME = CACHE_PREFIX + 'images-' + CACHE_VERSION;
+
+// Hosts whose images we cache for offline use. Supabase storage serves the
+// question_images bucket; the path includes '/storage/v1/object/public/question_images/'.
+// We cache anything from the bucket so stem + solution diagrams both work offline.
+const IMAGE_ALLOWED_HOSTS = ['nempslbewxtlikfzachi.supabase.co'];
+
+function isQuestionImage(url) {
+  if (!IMAGE_ALLOWED_HOSTS.includes(url.host)) return false;
+  return url.pathname.includes('/question_images/');
+}
 
 self.addEventListener('install', (event) => {
   // Activate as soon as installed — we have only one client per session.
@@ -28,7 +39,7 @@ self.addEventListener('activate', (event) => {
     const keys = await caches.keys();
     await Promise.all(
       keys
-        .filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME)
+        .filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME && k !== IMG_CACHE_NAME)
         .map((k) => caches.delete(k)),
     );
     await self.clients.claim();
@@ -53,8 +64,35 @@ self.addEventListener('fetch', (event) => {
   // Never cache APIs — the offline editor uses IndexedDB for data
   if (url.pathname.startsWith('/api/')) return;
 
-  // Only handle same-origin
-  if (url.origin !== self.location.origin) return;
+  // Cross-origin: only intervene for the question-image bucket.
+  if (url.origin !== self.location.origin) {
+    if (!isQuestionImage(url)) return;
+    event.respondWith((async () => {
+      const cache = await caches.open(IMG_CACHE_NAME);
+      const cached = await cache.match(req);
+      if (cached) {
+        // Opportunistically refresh; ignore failures (e.g. offline).
+        fetch(req).then((res) => {
+          if (res && (res.ok || res.type === 'opaque')) {
+            cache.put(req, res.clone()).catch(() => {});
+          }
+        }).catch(() => {});
+        return cached;
+      }
+      try {
+        // mode: 'no-cors' lets us cache even when CORS headers aren't set —
+        // we get an opaque response, which the browser still renders into <img>.
+        const fresh = await fetch(req, { mode: 'no-cors' });
+        if (fresh && (fresh.ok || fresh.type === 'opaque')) {
+          cache.put(req, fresh.clone()).catch(() => {});
+        }
+        return fresh;
+      } catch {
+        return new Response('', { status: 504 });
+      }
+    })());
+    return;
+  }
 
   if (isLessonsNavigation(req, url)) {
     event.respondWith((async () => {
