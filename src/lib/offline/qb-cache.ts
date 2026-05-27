@@ -41,6 +41,15 @@ interface BankSyncResponse {
   serverNow: string;
 }
 
+// Page size for /api/admin/lessons/bank-sync. Stays under typical Supabase PostgREST
+// max-rows cap (default 1000) so the server can return exactly `BATCH_SIZE` rows when
+// there are more to come, which is how we detect hasMore = (rows.length === limit).
+const BATCH_SIZE = 800;
+// Safety cap: refuse to loop forever if the server keeps saying hasMore but we're not
+// making progress (e.g. cursor not advancing). 1 million rows is way more than we'll
+// ever have, but enough headroom that we never hit it in normal operation.
+const MAX_PAGES = 200;
+
 /** Sync one level. Returns number of rows ingested + the new cursor. */
 export async function syncLevel(
   level: string,
@@ -52,9 +61,14 @@ export async function syncLevel(
   let cursor = since ?? '';
   let totalFetched = 0;
   let hasMore = true;
+  let pages = 0;
 
   while (hasMore) {
-    const params = new URLSearchParams({ level, limit: '2000' });
+    pages += 1;
+    if (pages > MAX_PAGES) {
+      throw new Error(`bank-sync ${level}: exceeded ${MAX_PAGES} pages without finishing — cursor may not be advancing`);
+    }
+    const params = new URLSearchParams({ level, limit: String(BATCH_SIZE) });
     if (Array.isArray(topics) && topics.length > 0) params.set('topics', topics.join(','));
     if (cursor) params.set('since', cursor);
 
@@ -72,6 +86,10 @@ export async function syncLevel(
     if (tombstones.length > 0) await deleteQuestions(tombstones);
 
     totalFetched += json.questions.length;
+    // Guard against a cursor that doesn't advance (would loop forever otherwise).
+    if (json.cursor === cursor && json.hasMore) {
+      throw new Error(`bank-sync ${level}: cursor stuck at ${cursor}`);
+    }
     cursor = json.cursor;
     hasMore = json.hasMore;
     onProgress?.({ level, fetched: totalFetched, done: !hasMore });

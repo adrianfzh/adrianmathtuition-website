@@ -1,4 +1,4 @@
-// GET /api/admin/lessons/bank-sync?level=AM[&topics=t1,t2][&since=ISO][&limit=2000]
+// GET /api/admin/lessons/bank-sync?level=AM[&topics=t1,t2][&since=ISO][&limit=800]
 //
 // Returns questions in (level, optionally topics-overlap) whose updated_at > since.
 // Includes tombstoned rows (deleted_at IS NOT NULL) — the offline client uses the
@@ -6,17 +6,29 @@
 //
 // Response:
 //   {
-//     questions: BankQuestion[],   // active + tombstoned, capped at `limit`
+//     questions: BankQuestion[],   // active + tombstoned
 //     cursor: string,              // max(updated_at) across returned rows — use as next `since`
-//     hasMore: boolean,            // true if `limit` was hit
+//     hasMore: boolean,            // true if there are likely more rows past this page
 //     serverNow: string            // ISO timestamp on the server — fallback cursor if no rows
 //   }
 //
 // Cold-start: client passes since='' or omits it → full snapshot for that (level, topics) scope.
+//
+// Pagination strategy:
+// We use `.range(0, limit-1)` instead of `.limit(n+1)`. The +1 trick fails when PostgREST's
+// max-rows cap kicks in (Supabase default = 1000) — the cap silently shrinks `.limit(2001)` to
+// 1000 rows and our "got more than limit" hasMore check never fires, so the client loop exits
+// after one page. With explicit `.range()` and `hasMore = rows.length === limit`, this works
+// reliably regardless of the PostgREST max-rows config.
+//
+// Default limit is 800 to stay well under typical Supabase max-rows caps (commonly 1000).
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
+
+const DEFAULT_LIMIT = 800;
+const MAX_LIMIT = 1000;
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -25,7 +37,8 @@ export async function GET(req: NextRequest) {
   const level = searchParams.get('level');
   const topicsParam = (searchParams.get('topics') ?? '').trim();
   const since = (searchParams.get('since') ?? '').trim();
-  const limit = Math.min(Number(searchParams.get('limit') ?? 2000), 5000);
+  const requested = Number(searchParams.get('limit') ?? DEFAULT_LIMIT);
+  const limit = Math.max(1, Math.min(requested || DEFAULT_LIMIT, MAX_LIMIT));
 
   if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });
   const topics = topicsParam ? topicsParam.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -38,7 +51,8 @@ export async function GET(req: NextRequest) {
     )
     .eq('level', level)
     .order('updated_at', { ascending: true })
-    .limit(limit + 1);
+    .order('id', { ascending: true })  // tiebreaker for rows with identical updated_at
+    .range(0, limit - 1);
 
   if (topics.length > 0) q = q.overlaps('topics', topics);
   if (since) q = q.gt('updated_at', since);
@@ -46,10 +60,10 @@ export async function GET(req: NextRequest) {
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const all = data ?? [];
-  const hasMore = all.length > limit;
-  const rows = hasMore ? all.slice(0, limit) : all;
-
+  const rows = data ?? [];
+  // If we received exactly `limit` rows, assume there's more on the server.
+  // Worst case (exactly N*limit rows total) → one extra empty page request, harmless.
+  const hasMore = rows.length === limit;
   const cursor = rows.length > 0
     ? (rows[rows.length - 1].updated_at as string)
     : (since || new Date().toISOString());
@@ -59,5 +73,6 @@ export async function GET(req: NextRequest) {
     cursor,
     hasMore,
     serverNow: new Date().toISOString(),
+    fetched: rows.length,
   });
 }
