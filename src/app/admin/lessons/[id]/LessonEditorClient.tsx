@@ -28,7 +28,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
-import { getTopicsForLevel } from '@/lib/canonical-topics';
+import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
 import {
   loadLesson as storeLoadLesson,
@@ -1129,7 +1129,7 @@ function LessonHeader({ lesson, onSave }: { lesson: Lesson; onSave: (patch: Part
 }
 
 function TopicPicker({ level, selected, onPick }: { level: string; selected: string[]; onPick: (t: string) => void }) {
-  const cats = getTopicsForLevel(level);
+  const cats = getTopicsForPaperLevel(level);
   return (
     <div className="bg-slate-50 border border-slate-200 rounded p-3 max-h-72 overflow-y-auto">
       {cats.map(cat => (

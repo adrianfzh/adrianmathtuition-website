@@ -312,10 +312,38 @@ export function getTopicsForLevel(level: string): TopicCategory[] {
   const l = level.toLowerCase();
   if (l.startsWith('jc')) return JC_TOPICS;
   if (l.startsWith('sec')) return SECONDARY_TOPICS;
+  // Paper-code shortcuts so callers passing 'AM' / 'EM' / 'JC' / 'S1' / 'S2'
+  // get the right canonical list instead of a Sec+JC mash-up.
+  const paper = getTopicsForPaperLevel(level);
+  if (paper.length > 0) return paper;
   return [
     ...SECONDARY_TOPICS.map(c => ({ ...c, label: `[Sec] ${c.label}` })),
     ...JC_TOPICS.map(c => ({ ...c, label: `[JC] ${c.label}` })),
   ];
+}
+
+/**
+ * Returns the canonical topic list for a paper-code level — the codes used in the
+ * question bank's `level` column and on the lessons editor / offline cache.
+ *
+ *   AM  → A_MATH_EXAM_TOPICS                 (33 topics — AM's own)
+ *   EM  → E_MATH_EXAM_TOPICS                 (EM + [S2] + [S1] cascading; matches
+ *                                             how EM questions are tagged in the QB)
+ *   JC  → JC_TOPICS                          (30 topics — H2 Math)
+ *   S1  → S1_EXAM_TOPICS                     (Sec 1's own)
+ *   S2  → S2_EXAM_TOPICS                     (S2 + [S1] cascading)
+ *
+ * Unknown code → empty array (caller can fall back as needed).
+ */
+export function getTopicsForPaperLevel(level: string): TopicCategory[] {
+  switch (level.toUpperCase()) {
+    case 'AM': return A_MATH_EXAM_TOPICS;
+    case 'EM': return E_MATH_EXAM_TOPICS;
+    case 'JC': return JC_TOPICS;
+    case 'S1': return S1_EXAM_TOPICS;
+    case 'S2': return S2_EXAM_TOPICS;
+    default: return [];
+  }
 }
 
 /**

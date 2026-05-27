@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getTopicsForLevel } from '@/lib/canonical-topics';
+import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import {
   getOfflineSettings, setOfflineSettings,
   getQBSync, deleteQBSync,
@@ -287,7 +287,7 @@ function LevelScopePicker({
   scope: 'all' | string[];
   onChange: (next: 'all' | string[]) => void;
 }) {
-  const cats = useMemo(() => getTopicsForLevel(level), [level]);
+  const cats = useMemo(() => getTopicsForPaperLevel(level), [level]);
   const allTopics = useMemo(() => cats.flatMap((c) => c.topics), [cats]);
   const isAll = scope === 'all';
   const selected = useMemo(() => new Set(Array.isArray(scope) ? scope : allTopics), [scope, allTopics]);
