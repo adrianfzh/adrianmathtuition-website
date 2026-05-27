@@ -11,6 +11,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
+import { getOfflineSettings, queryLocalBank } from '@/lib/offline/qb-cache';
 
 export type BankQuestion = {
   id: string;
@@ -221,38 +222,74 @@ export function LessonBankPanel({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const url = useMemo(() => {
-    const params = new URLSearchParams();
-    params.set('level', level);
-    params.set('topics', topics.join(','));
-    if (search.trim()) params.set('q', search.trim());
-    if (hasImage !== 'any') params.set('hasImage', hasImage);
-    if (difficulties.size > 0) params.set('difficulty', Array.from(difficulties).join(','));
-    params.set('limit', '100');
-    return `/api/admin/lessons/bank?${params.toString()}`;
-  }, [level, topics, search, hasImage, difficulties]);
+  // Pick the data source per fetch:
+  //   * online & offline mode off  → server
+  //   * online & offline mode on for this level → local cache (snappier, no waiting)
+  //   * offline & cache available  → local cache
+  //   * offline & cache empty      → friendly empty state
+  type Source = 'server' | 'local' | 'unavailable';
+  const [source, setSource] = useState<Source>('server');
 
   useEffect(() => {
     if (!level || topics.length === 0) {
       setQuestions([]); setTotal(0); return;
     }
+    let cancelled = false;
     const t = setTimeout(async () => {
       setLoading(true); setError(null);
       try {
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${auth}` } });
+        const settings = await getOfflineSettings();
+        const offlineOnThisLevel = settings.enabled && settings.levels.includes(level);
+        const online = typeof navigator !== 'undefined' ? navigator.onLine : true;
+        const wantLocal = offlineOnThisLevel || !online;
+
+        if (wantLocal) {
+          const local = await queryLocalBank({
+            level,
+            topics,
+            search: search.trim() || undefined,
+            hasImage: hasImage === 'any' ? undefined : hasImage,
+            difficulties: Array.from(difficulties),
+            limit: 100,
+          });
+          if (cancelled) return;
+          if (local.length === 0 && !online && !offlineOnThisLevel) {
+            setSource('unavailable');
+            setQuestions([]); setTotal(0);
+          } else {
+            setSource('local');
+            setQuestions(local as unknown as BankQuestion[]);
+            setTotal(local.length);
+          }
+          return;
+        }
+
+        // Server path
+        const params = new URLSearchParams();
+        params.set('level', level);
+        params.set('topics', topics.join(','));
+        if (search.trim()) params.set('q', search.trim());
+        if (hasImage !== 'any') params.set('hasImage', hasImage);
+        if (difficulties.size > 0) params.set('difficulty', Array.from(difficulties).join(','));
+        params.set('limit', '100');
+        const res = await fetch(`/api/admin/lessons/bank?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
+        if (cancelled) return;
+        setSource('server');
         setQuestions(json.questions ?? []);
         setTotal(json.total ?? (json.questions?.length ?? 0));
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Load error');
-        setQuestions([]);
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : 'Load error');
+          setQuestions([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }, 250);
-    return () => clearTimeout(t);
-  }, [url, level, topics, auth]);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [level, topics, search, hasImage, difficulties, auth]);
 
   function toggleDifficulty(d: Difficulty) {
     setDifficulties(prev => {
@@ -295,12 +332,22 @@ export function LessonBankPanel({
             <option value="false">No</option>
           </select>
         </div>
-        <div className="text-[10px] text-slate-400">{loading ? 'Loading…' : `${total} matching · showing ${questions.length}`}</div>
+        <div className="text-[10px] text-slate-400 flex items-center gap-2">
+          <span>{loading ? 'Loading…' : `${total} matching · showing ${questions.length}`}</span>
+          {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
+          {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">offline</span>}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1.5 min-h-0">
         {error && <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{error}</div>}
-        {!loading && !error && questions.length === 0 && topics.length > 0 && (
+        {!loading && !error && source === 'unavailable' && topics.length > 0 && (
+          <div className="text-xs text-slate-500 italic px-2 py-4 text-center space-y-2">
+            <p>You&apos;re offline and this level isn&apos;t cached.</p>
+            <a href="/admin/offline" className="inline-block px-2 py-1 border border-slate-300 rounded text-slate-700 not-italic hover:bg-slate-50">Configure offline mode →</a>
+          </div>
+        )}
+        {!loading && !error && source !== 'unavailable' && questions.length === 0 && topics.length > 0 && (
           <div className="text-xs text-slate-400 italic px-2 py-4 text-center">No matching questions.</div>
         )}
         {questions.map(q => (

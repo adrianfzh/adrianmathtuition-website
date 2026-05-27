@@ -39,6 +39,8 @@ import {
   reorderCards as storeReorderCards,
 } from '@/lib/offline/store';
 import { SyncStatusPill } from '@/lib/offline/SyncStatusPill';
+import { syncEnabledLevels } from '@/lib/offline/qb-cache';
+import { registerLessonsServiceWorker } from '@/lib/offline/registerLessonsSW';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -562,8 +564,26 @@ function AISidebar({
     setImages(prev => prev.filter((_, i) => i !== idx));
   }
 
+  // Track online state so we can disable AI when offline (the Anthropic endpoint
+  // requires network — no offline fallback exists).
+  const [aiOnline, setAiOnline] = useState<boolean>(
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
+  );
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const up = () => setAiOnline(true);
+    const down = () => setAiOnline(false);
+    window.addEventListener('online', up);
+    window.addEventListener('offline', down);
+    return () => {
+      window.removeEventListener('online', up);
+      window.removeEventListener('offline', down);
+    };
+  }, []);
+
   const runAI = useCallback(async (instruction: string) => {
     if (streaming) { abortRef.current?.(); return; }
+    if (!aiOnline) { setAiError('AI Assist needs a network connection.'); return; }
     setStreaming(true); setAiResult(''); setDiffLines(null); setAiError('');
     let result = '', aborted = false;
     const controller = new AbortController();
@@ -609,7 +629,7 @@ function AISidebar({
     } catch (e: unknown) {
       if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
     } finally { setStreaming(false); abortRef.current = null; }
-  }, [streaming, title, content, lessonLevel, lessonTopics, sectionName, contentKind, images, auth, onPreviewChange]);
+  }, [streaming, aiOnline, title, content, lessonLevel, lessonTopics, sectionName, contentKind, images, auth, onPreviewChange]);
 
   function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImages([]); onPreviewChange?.(null); }
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); onPreviewChange?.(null); }
@@ -619,12 +639,17 @@ function AISidebar({
       <div className="px-3 py-2 border-b border-slate-200 bg-slate-50 shrink-0">
         <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">✨ AI assist</span>
       </div>
+      {!aiOnline && (
+        <div className="shrink-0 px-3 py-2 bg-amber-50 border-b border-amber-200 text-[11px] text-amber-800">
+          🔴 Offline — AI Assist is unavailable. Reconnect to use quick actions or send a custom prompt.
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 min-h-0">
         <div>
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Quick actions</p>
           <div className="grid grid-cols-2 gap-1">
             {QUICK_ACTIONS.map(qa => (
-              <button key={qa.label} onClick={() => runAI(qa.instruction)} disabled={streaming} className="text-left text-xs px-2 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40 leading-tight">{qa.label}</button>
+              <button key={qa.label} onClick={() => runAI(qa.instruction)} disabled={streaming || !aiOnline} className="text-left text-xs px-2 py-1.5 rounded border border-slate-200 hover:bg-slate-50 disabled:opacity-40 leading-tight">{qa.label}</button>
             ))}
           </div>
         </div>
@@ -678,10 +703,10 @@ function AISidebar({
             />
             <button
               onClick={() => runAI(prompt)}
-              disabled={(!prompt.trim() && images.length === 0) || streaming}
+              disabled={(!prompt.trim() && images.length === 0) || streaming || !aiOnline}
               className="flex-1 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40"
             >
-              {streaming ? 'Streaming… (click to cancel)' : images.length > 0 ? `Extract from ${images.length > 1 ? `${images.length} images` : 'image'} →` : 'Send to AI →'}
+              {streaming ? 'Streaming… (click to cancel)' : !aiOnline ? 'Offline' : images.length > 0 ? `Extract from ${images.length > 1 ? `${images.length} images` : 'image'} →` : 'Send to AI →'}
             </button>
           </div>
         </div>
@@ -1288,6 +1313,21 @@ export default function LessonEditorClient() {
   }, [authed, id]);
 
   useEffect(() => { loadLesson(); }, [loadLesson]);
+
+  // Auto-sync the question-bank cache (no-op if offline mode is off or we're offline).
+  // Runs once on mount; we deliberately don't put it on a dep array because we want
+  // exactly one attempt per editor session.
+  useEffect(() => {
+    if (!authed) return;
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+    void syncEnabledLevels();
+  }, [authed]);
+
+  // Register the lessons service worker (page-shell cache) once authed. No-op in dev.
+  useEffect(() => {
+    if (!authed) return;
+    registerLessonsServiceWorker();
+  }, [authed]);
 
   async function saveLessonMeta(patch: Partial<Lesson>) {
     if (!lesson) return;

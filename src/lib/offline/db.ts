@@ -15,7 +15,8 @@
 // — see lib/offline/sync.ts.
 
 const DB_NAME = 'adrianmath_lessons_offline';
-const DB_VERSION = 1;
+// v1 → v2: add qb_questions store + qb_sync_state in meta for offline bank cache.
+const DB_VERSION = 2;
 
 export type ContentKind = 'refresher' | 'worked_example' | 'practice';
 
@@ -78,22 +79,36 @@ export function openDB(): Promise<IDBDatabase> {
   if (_dbPromise) return _dbPromise;
   _dbPromise = new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = (event) => {
       const db = req.result;
-      if (!db.objectStoreNames.contains('lessons')) {
-        db.createObjectStore('lessons', { keyPath: 'id' });
+      const oldVersion = event.oldVersion ?? 0;
+
+      if (oldVersion < 1) {
+        if (!db.objectStoreNames.contains('lessons')) {
+          db.createObjectStore('lessons', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('lesson_cards')) {
+          const cards = db.createObjectStore('lesson_cards', { keyPath: 'id' });
+          cards.createIndex('lesson_id', 'lesson_id', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('mutations')) {
+          const m = db.createObjectStore('mutations', { keyPath: 'id', autoIncrement: true });
+          m.createIndex('status', 'status', { unique: false });
+          m.createIndex('created_at', 'created_at', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('meta')) {
+          db.createObjectStore('meta', { keyPath: 'key' });
+        }
       }
-      if (!db.objectStoreNames.contains('lesson_cards')) {
-        const cards = db.createObjectStore('lesson_cards', { keyPath: 'id' });
-        cards.createIndex('lesson_id', 'lesson_id', { unique: false });
-      }
-      if (!db.objectStoreNames.contains('mutations')) {
-        const m = db.createObjectStore('mutations', { keyPath: 'id', autoIncrement: true });
-        m.createIndex('status', 'status', { unique: false });
-        m.createIndex('created_at', 'created_at', { unique: false });
-      }
-      if (!db.objectStoreNames.contains('meta')) {
-        db.createObjectStore('meta', { keyPath: 'key' });
+
+      if (oldVersion < 2) {
+        if (!db.objectStoreNames.contains('qb_questions')) {
+          const qb = db.createObjectStore('qb_questions', { keyPath: 'id' });
+          qb.createIndex('level', 'level', { unique: false });
+          // Note: topics is text[] in the source — IndexedDB multiEntry indexes the array values.
+          qb.createIndex('topics', 'topics', { unique: false, multiEntry: true });
+          qb.createIndex('updated_at', 'updated_at', { unique: false });
+        }
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -280,4 +295,137 @@ export async function getMeta<T = unknown>(key: string): Promise<T | undefined> 
 
 export async function setMeta<T = unknown>(key: string, value: T): Promise<void> {
   await withStore('meta', 'readwrite', (s) => reqAsPromise(s.put({ key, value })));
+}
+
+// ── Question-bank cache ─────────────────────────────────────────────────────
+// Mirrors the questions table for the levels/topics the user has opted into.
+// `topics` is multiEntry-indexed so we can fetch all questions tagged with a
+// given canonical topic without a full scan.
+
+export interface CachedQuestion {
+  id: string;
+  level: string;
+  topics: string[];
+  school: string;
+  year: number;
+  paper: string;
+  question_number: string;
+  question_text: string | null;
+  parts: unknown;
+  answer: string | null;
+  solution: string | null;
+  solution_images: string | null;
+  total_marks: number | null;
+  has_image: boolean;
+  image_url: string | null;
+  images: { filename: string }[] | null;
+  difficulty: string | null;
+  source_file: string | null;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export async function putQuestions(rows: CachedQuestion[]): Promise<void> {
+  if (rows.length === 0) return;
+  await withStore('qb_questions', 'readwrite', (s) => {
+    return Promise.all(rows.map((r) => reqAsPromise(s.put(r))));
+  });
+}
+
+export async function deleteQuestions(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  await withStore('qb_questions', 'readwrite', (s) => {
+    return Promise.all(ids.map((id) => reqAsPromise(s.delete(id))));
+  });
+}
+
+/** Get every question matching a level + topics-overlap filter from the local cache. */
+export async function queryQuestions(level: string, topics: string[]): Promise<CachedQuestion[]> {
+  if (topics.length === 0) {
+    return withStore('qb_questions', 'readonly', (s) => {
+      return new Promise<CachedQuestion[]>((resolve, reject) => {
+        const idx = s.index('level');
+        const req = idx.getAll(IDBKeyRange.only(level));
+        req.onsuccess = () => resolve(req.result as CachedQuestion[]);
+        req.onerror = () => reject(req.error);
+      });
+    });
+  }
+  // multiEntry index lookup union'd across topics
+  return withStore('qb_questions', 'readonly', (s) => {
+    return new Promise<CachedQuestion[]>((resolve, reject) => {
+      const topicsIdx = s.index('topics');
+      const seen = new Map<string, CachedQuestion>();
+      let pending = topics.length;
+      let errored = false;
+      for (const t of topics) {
+        const req = topicsIdx.getAll(IDBKeyRange.only(t));
+        req.onsuccess = () => {
+          if (errored) return;
+          for (const row of req.result as CachedQuestion[]) {
+            if (row.level !== level) continue;
+            if (row.deleted_at) continue;
+            if (!seen.has(row.id)) seen.set(row.id, row);
+          }
+          if (--pending === 0) resolve(Array.from(seen.values()));
+        };
+        req.onerror = () => { errored = true; reject(req.error); };
+      }
+    });
+  });
+}
+
+export async function countCachedQuestions(): Promise<number> {
+  return withStore('qb_questions', 'readonly', (s) => reqAsPromise(s.count()));
+}
+
+export async function clearQuestionCache(): Promise<void> {
+  await withStore('qb_questions', 'readwrite', (s) => reqAsPromise(s.clear()));
+}
+
+// ── Sync state (per level) ──────────────────────────────────────────────────
+
+export interface QBSyncState {
+  /** ISO timestamp — pass back as `since` next sync. */
+  cursor: string | null;
+  /** Wall-clock of last successful sync, for UI display. */
+  last_synced_at: string | null;
+  /** Subset of canonical topics the user wants cached, or 'all'. */
+  topic_scope: 'all' | string[];
+}
+
+const QB_SYNC_PREFIX = 'qb_sync__';
+
+export async function getQBSync(level: string): Promise<QBSyncState | undefined> {
+  return getMeta<QBSyncState>(`${QB_SYNC_PREFIX}${level}`);
+}
+
+export async function setQBSync(level: string, state: QBSyncState): Promise<void> {
+  await setMeta(`${QB_SYNC_PREFIX}${level}`, state);
+}
+
+export async function deleteQBSync(level: string): Promise<void> {
+  await withStore('meta', 'readwrite', (s) => reqAsPromise(s.delete(`${QB_SYNC_PREFIX}${level}`)));
+}
+
+// ── Offline settings ────────────────────────────────────────────────────────
+
+export interface OfflineSettings {
+  enabled: boolean;
+  /** Levels the user opted into. */
+  levels: string[];
+  /** Per-level topic scope. Missing entry means 'all'. */
+  topic_scope: Record<string, 'all' | string[]>;
+}
+
+export const DEFAULT_OFFLINE_SETTINGS: OfflineSettings = {
+  enabled: false, levels: [], topic_scope: {},
+};
+
+export async function getOfflineSettings(): Promise<OfflineSettings> {
+  return (await getMeta<OfflineSettings>('offline_settings')) ?? DEFAULT_OFFLINE_SETTINGS;
+}
+
+export async function setOfflineSettings(s: OfflineSettings): Promise<void> {
+  await setMeta('offline_settings', s);
 }
