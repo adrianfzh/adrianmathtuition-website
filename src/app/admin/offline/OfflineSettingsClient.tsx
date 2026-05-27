@@ -15,7 +15,7 @@ import {
   getOfflineSettings, setOfflineSettings,
   getQBSync, deleteQBSync,
   countCachedQuestions, clearQuestionCache,
-  syncEnabledLevels, syncLevel, disableOfflineMode,
+  syncEnabledLevels, syncLevel, disableOfflineMode, clearLevelQuestions,
   estimateStorageBytes,
   type OfflineSettings, type QBSyncState, type SyncProgress,
 } from '@/lib/offline/qb-cache';
@@ -57,6 +57,9 @@ export default function OfflineSettingsClient() {
   const [progress, setProgress] = useState<SyncProgress | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [persisted, setPersisted] = useState<boolean | null>(null);
+  // Inline confirmation prompts (replaces unreliable window.confirm).
+  const [confirmDisableAll, setConfirmDisableAll] = useState(false);
+  const [confirmDisableLevel, setConfirmDisableLevel] = useState<string | null>(null);
 
   useEffect(() => {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw');
@@ -87,39 +90,54 @@ export default function OfflineSettingsClient() {
     setSettings(next);
   }, []);
 
+  // Master toggle. Enabling is one-click; disabling shows an inline confirm step
+  // because it wipes the cache (could be a lot of data).
   const handleToggle = useCallback(async (next: boolean) => {
     if (!settings) return;
     if (!next) {
-      const ok = window.confirm('Disable offline mode? This will clear the cached question bank from this device.');
-      if (!ok) return;
-      await disableOfflineMode();
-      await refresh();
+      // Don't call window.confirm — modern browsers may suppress dialogs from
+      // controls that toggle rapidly. Drive a clear inline confirm instead.
+      setConfirmDisableAll(true);
       return;
     }
+    setConfirmDisableAll(false);
     await save({ ...settings, enabled: true, levels: settings.levels.length === 0 ? ['AM'] : settings.levels });
-  }, [settings, save, refresh]);
+  }, [settings, save]);
 
+  const confirmDisableNow = useCallback(async () => {
+    setConfirmDisableAll(false);
+    await disableOfflineMode();
+    await refresh();
+  }, [refresh]);
+
+  // Per-level toggle. Enabling adds and defaults to "all topics" scope.
+  // Disabling wipes that level's cached questions AND its per-level cursor.
   const handleLevelToggle = useCallback(async (level: string) => {
     if (!settings) return;
     const has = settings.levels.includes(level);
-    let nextLevels: string[];
     if (has) {
-      const ok = window.confirm(`Stop caching ${level}? Cached ${level} questions will be removed.`);
-      if (!ok) return;
-      nextLevels = settings.levels.filter((l) => l !== level);
-      // Drop the per-level cursor + cached rows for this level
-      await deleteQBSync(level);
-      // (Cache rows are dropped on next sync run via trim, but explicitly wipe here for cleanliness)
-      // Cleanest is a no-op here; user can hit "Resync" if they re-enable.
-    } else {
-      nextLevels = [...settings.levels, level];
+      setConfirmDisableLevel(level);
+      return;
     }
+    const nextLevels = [...settings.levels, level];
     const nextScope = { ...settings.topic_scope };
-    if (!has) nextScope[level] = nextScope[level] ?? 'all';
-    else delete nextScope[level];
+    nextScope[level] = nextScope[level] ?? 'all';
     await save({ ...settings, levels: nextLevels, topic_scope: nextScope });
     await refresh();
   }, [settings, save, refresh]);
+
+  const confirmDisableLevelNow = useCallback(async () => {
+    if (!settings || !confirmDisableLevel) return;
+    const level = confirmDisableLevel;
+    setConfirmDisableLevel(null);
+    const nextLevels = settings.levels.filter((l) => l !== level);
+    const nextScope = { ...settings.topic_scope };
+    delete nextScope[level];
+    await deleteQBSync(level);
+    await clearLevelQuestions(level);
+    await save({ ...settings, levels: nextLevels, topic_scope: nextScope });
+    await refresh();
+  }, [settings, confirmDisableLevel, save, refresh]);
 
   const handleScopeChange = useCallback(async (level: string, scope: 'all' | string[]) => {
     if (!settings) return;
@@ -153,8 +171,9 @@ export default function OfflineSettingsClient() {
     }
   }, [settings, syncState, refresh]);
 
+  const [confirmWipe, setConfirmWipe] = useState(false);
   const handleHardReset = useCallback(async () => {
-    if (!window.confirm('Wipe ALL offline data on this device? This clears the QB cache and any unsynced changes. Lessons will be re-downloaded the next time you open them.')) return;
+    setConfirmWipe(false);
     await clearQuestionCache();
     if (settings) {
       for (const level of settings.levels) await deleteQBSync(level);
@@ -195,13 +214,15 @@ export default function OfflineSettingsClient() {
             <label className="flex items-center gap-2 cursor-pointer flex-1">
               <input
                 type="checkbox"
-                checked={settings.enabled}
+                checked={settings.enabled && !confirmDisableAll}
                 onChange={(e) => handleToggle(e.target.checked)}
                 className="w-4 h-4 accent-emerald-600"
               />
               <span className="font-semibold text-slate-800">Enable offline mode</span>
+              {settings.enabled && !confirmDisableAll && <span className="text-[10px] px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded">on</span>}
+              {!settings.enabled && <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 text-slate-600 rounded">off</span>}
             </label>
-            {settings.enabled && (
+            {settings.enabled && !confirmDisableAll && (
               <button
                 onClick={handleSyncAll}
                 disabled={syncing || settings.levels.length === 0}
@@ -211,6 +232,24 @@ export default function OfflineSettingsClient() {
               </button>
             )}
           </div>
+          {confirmDisableAll && (
+            <div className="mt-3 p-3 bg-rose-50 border border-rose-200 rounded">
+              <p className="text-sm text-rose-900 font-medium mb-1">Disable offline mode?</p>
+              <p className="text-xs text-rose-800 mb-3">
+                This wipes the cached question bank ({cachedCount.toLocaleString()} question{cachedCount === 1 ? '' : 's'}, {bytesPretty(storageBytes)}) from this device. Your lessons stay intact.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={confirmDisableNow}
+                  className="px-3 py-1.5 bg-rose-600 text-white text-xs font-semibold rounded hover:bg-rose-700"
+                >Yes, disable & wipe cache</button>
+                <button
+                  onClick={() => setConfirmDisableAll(false)}
+                  className="px-3 py-1.5 border border-slate-300 text-xs rounded hover:bg-slate-50"
+                >Cancel</button>
+              </div>
+            </div>
+          )}
           <p className="text-xs text-slate-500 mt-1.5">
             When on, the question bank for the selected scope is cached on this device.
             Lesson edits work offline regardless and sync automatically when you reconnect.
@@ -234,19 +273,20 @@ export default function OfflineSettingsClient() {
                 const enabled = settings.levels.includes(level);
                 const scope = settings.topic_scope[level] ?? 'all';
                 const st = syncState[level];
+                const isConfirming = confirmDisableLevel === level;
                 return (
                   <div key={level} className="border border-slate-200 rounded-lg">
                     <div className="flex items-center gap-3 px-3 py-2 border-b border-slate-100 bg-slate-50">
                       <label className="flex items-center gap-2 cursor-pointer flex-1">
                         <input
                           type="checkbox"
-                          checked={enabled}
+                          checked={enabled && !isConfirming}
                           onChange={() => handleLevelToggle(level)}
                           className="w-4 h-4 accent-emerald-600"
                         />
                         <span className="text-sm font-semibold text-slate-800">{level}</span>
                       </label>
-                      {enabled && (
+                      {enabled && !isConfirming && (
                         <>
                           <span className="text-[11px] text-slate-500" title={st?.last_synced_at ?? ''}>
                             {st ? `synced ${timeAgo(st.last_synced_at)}` : 'never synced'}
@@ -259,7 +299,22 @@ export default function OfflineSettingsClient() {
                         </>
                       )}
                     </div>
-                    {enabled && (
+                    {isConfirming && (
+                      <div className="px-3 py-2 bg-rose-50 border-b border-rose-200">
+                        <p className="text-xs text-rose-900 mb-2">Stop caching <span className="font-semibold">{level}</span>? Its cached questions will be removed from this device.</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={confirmDisableLevelNow}
+                            className="px-2.5 py-1 bg-rose-600 text-white text-[11px] font-semibold rounded hover:bg-rose-700"
+                          >Yes, stop caching {level}</button>
+                          <button
+                            onClick={() => setConfirmDisableLevel(null)}
+                            className="px-2.5 py-1 border border-slate-300 text-[11px] rounded hover:bg-slate-50"
+                          >Cancel</button>
+                        </div>
+                      </div>
+                    )}
+                    {enabled && !isConfirming && (
                       <LevelScopePicker
                         level={level}
                         scope={scope}
@@ -290,12 +345,30 @@ export default function OfflineSettingsClient() {
                   : <span className="text-amber-700" title="Storage is best-effort and could be evicted under disk pressure. Reload the page or click Sync now to retry the persistence request.">⚠ best-effort</span>}
             </span>
           </div>
-          <div className="mt-3 flex justify-end">
-            <button
-              onClick={handleHardReset}
-              className="text-[11px] px-3 py-1 border border-red-300 text-red-600 rounded hover:bg-red-50"
-            >Wipe offline data</button>
-          </div>
+          {!confirmWipe ? (
+            <div className="mt-3 flex justify-end">
+              <button
+                onClick={() => setConfirmWipe(true)}
+                className="text-[11px] px-3 py-1 border border-red-300 text-red-600 rounded hover:bg-red-50"
+              >Wipe offline data</button>
+            </div>
+          ) : (
+            <div className="mt-3 p-3 bg-rose-50 border border-rose-200 rounded">
+              <p className="text-xs text-rose-900 mb-2">
+                Wipe ALL offline data on this device? This clears the QB cache ({cachedCount.toLocaleString()} questions, {bytesPretty(storageBytes)}) and any unsynced changes. Lessons are re-downloaded the next time you open them online.
+              </p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setConfirmWipe(false)}
+                  className="px-2.5 py-1 border border-slate-300 text-[11px] rounded hover:bg-slate-50"
+                >Cancel</button>
+                <button
+                  onClick={handleHardReset}
+                  className="px-2.5 py-1 bg-rose-600 text-white text-[11px] font-semibold rounded hover:bg-rose-700"
+                >Yes, wipe everything</button>
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </main>

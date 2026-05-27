@@ -160,6 +160,14 @@ async function trimLevelToScope(level: string, scope: string[]): Promise<void> {
   if (toDrop.length > 0) await deleteQuestions(toDrop);
 }
 
+/** Remove every cached question for a given level. Used when a level is deselected. */
+export async function clearLevelQuestions(level: string): Promise<number> {
+  const all = await queryQuestions(level, []);
+  const ids = all.map((q) => q.id);
+  if (ids.length > 0) await deleteQuestions(ids);
+  return ids.length;
+}
+
 /**
  * Query the local cache for questions matching a lesson's topics + level.
  * Optional filters mirror what the bank panel supports today.
