@@ -40,6 +40,7 @@ import {
 } from '@/lib/offline/store';
 import { SyncStatusPill } from '@/lib/offline/SyncStatusPill';
 import { BankStalePill } from '@/lib/offline/BankStalePill';
+import { OfflineModePill } from '@/lib/offline/OfflineModePill';
 import { syncEnabledLevels } from '@/lib/offline/qb-cache';
 import { registerLessonsServiceWorker } from '@/lib/offline/registerLessonsSW';
 
@@ -1593,11 +1594,7 @@ export default function LessonEditorClient() {
         <span className="flex-1" />
         <SyncStatusPill />
         <BankStalePill />
-        <Link
-          href="/admin/offline"
-          title="Offline mode settings"
-          className="text-xs px-2 py-1 rounded font-medium bg-slate-700/40 hover:bg-slate-600/60 text-slate-200"
-        >⚙ Offline</Link>
+        <OfflineModePill />
         {savedAt && <span className="text-xs text-emerald-300/70">{savedAt.toLocaleTimeString()}</span>}
         <button
           onClick={() => generatePDF(id, pw.current, lesson.name)}
