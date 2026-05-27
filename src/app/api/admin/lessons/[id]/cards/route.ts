@@ -1,8 +1,19 @@
 // POST /api/admin/lessons/[id]/cards → add a card to the lesson
-// Body: { content_kind, section_name?, card_title?, content?, marks?, source_card_id?, source_question_id? }
+// Body: { id?, content_kind, section_name?, card_title?, content?, marks?, source_card_id?, source_question_id? }
+//
+// `id` is optional and only used by the offline editor — when a card is created offline the
+// client generates a UUID with crypto.randomUUID() so the mutation can be replayed verbatim
+// when connectivity returns. The lesson_cards.id column accepts UUIDs and Postgres will
+// generate one via `gen_random_uuid()` if we leave the field unset.
+//
+// Idempotent on (id) — if a card with the given UUID already exists for this lesson the
+// existing row is returned. This makes the offline replay safe against double-fires from
+// the sync engine (e.g. tab close + reopen mid-flight).
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -11,6 +22,16 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   if (!body?.content_kind) return NextResponse.json({ error: 'content_kind required' }, { status: 400 });
 
   const supa = getSupabaseAdmin();
+  const clientId = typeof body.id === 'string' && UUID_RE.test(body.id) ? body.id : null;
+
+  // Idempotency: if the client-provided id already exists, return that row instead of
+  // attempting an insert (avoids replay duplicates from the offline sync engine).
+  if (clientId) {
+    const { data: existing } = await supa
+      .from('lesson_cards').select('*').eq('id', clientId).maybeSingle();
+    if (existing) return NextResponse.json({ card: existing });
+  }
+
   // Compute next order_index in this (lesson, content_kind, section_name)
   const sectionName = (typeof body.section_name === 'string' && body.section_name) || defaultSectionFor(body.content_kind as string);
   const { data: maxRow } = await supa
@@ -24,7 +45,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     .maybeSingle();
   const nextIdx = ((maxRow?.order_index ?? -1) as number) + 1;
 
-  const insert = {
+  const insert: Record<string, unknown> = {
     lesson_id: lessonId,
     source_card_id: body.source_card_id ?? null,
     source_question_id: body.source_question_id ?? null,
@@ -35,6 +56,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     marks: typeof body.marks === 'number' ? body.marks : null,
     order_index: nextIdx,
   };
+  if (clientId) insert.id = clientId;
+
   const { data, error } = await supa.from('lesson_cards').insert(insert).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ card: data });

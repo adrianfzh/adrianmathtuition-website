@@ -30,6 +30,15 @@ import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { getTopicsForLevel } from '@/lib/canonical-topics';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
+import {
+  loadLesson as storeLoadLesson,
+  saveLessonMeta as storeSaveLessonMeta,
+  addCard as storeAddCard,
+  patchCard as storePatchCard,
+  deleteCard as storeDeleteCard,
+  reorderCards as storeReorderCards,
+} from '@/lib/offline/store';
+import { SyncStatusPill } from '@/lib/offline/SyncStatusPill';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -775,7 +784,7 @@ function EditorPanel({
 
   const doSave = useCallback(async () => {
     setSaveStatus('saving');
-    const patch: Record<string, unknown> = {
+    const patch: Partial<Card> = {
       card_title: title,
       content,
       section_name: sectionName,
@@ -784,19 +793,15 @@ function EditorPanel({
     if (initialCard.content_kind === 'practice' && !isNaN(m)) patch.marks = m;
     if (pendingSourceQuestionId) patch.source_question_id = pendingSourceQuestionId;
     try {
-      const res = await fetch(`/api/admin/lessons/cards/${cardId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-        body: JSON.stringify(patch),
-      });
-      if (!res.ok) throw new Error();
-      const json = await res.json();
+      // Local-first via store; the sync engine ships it to the server (immediately when
+      // online, queued when offline). The optimistic UI is already correct.
+      const updated = await storePatchCard(cardId, patch);
       setSaveStatus('saved');
-      if (json.card) onSaved(json.card as Card);
+      if (updated) onSaved(updated as Card);
       if (pendingSourceQuestionId) setPendingSourceQuestionId(null);
       setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2000);
     } catch { setSaveStatus('error'); }
-  }, [cardId, auth, title, content, marks, sectionName, initialCard.content_kind, onSaved, pendingSourceQuestionId]);
+  }, [cardId, title, content, marks, sectionName, initialCard.content_kind, onSaved, pendingSourceQuestionId]);
 
   const scheduleSave = useCallback(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -859,8 +864,8 @@ function EditorPanel({
   async function handleDelete() {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/lessons/cards/${cardId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${auth}` } });
-      if (!res.ok) throw new Error();
+      // Optimistic local delete + queued server delete via the offline store.
+      await storeDeleteCard(cardId);
       onDeleted(cardId);
     } catch { setDeleting(false); setShowDelete(false); }
   }
@@ -1272,9 +1277,13 @@ export default function LessonEditorClient() {
     if (!authed || !id) return;
     setLoading(true);
     try {
-      const d = await api(`/api/admin/lessons/${id}`, pw.current);
-      setLesson(d.lesson);
-      setCards(d.cards ?? []);
+      // storeLoadLesson is network-first when online, falls back to IndexedDB when offline.
+      // Either way it returns the same shape; the caller doesn't need to know which.
+      const d = await storeLoadLesson(id);
+      if (d) {
+        setLesson(d.lesson as unknown as Lesson);
+        setCards(d.cards as unknown as Card[]);
+      }
     } finally { setLoading(false); }
   }, [authed, id]);
 
@@ -1283,28 +1292,27 @@ export default function LessonEditorClient() {
   async function saveLessonMeta(patch: Partial<Lesson>) {
     if (!lesson) return;
     setLesson({ ...lesson, ...patch });
-    const d = await api(`/api/admin/lessons/${id}`, pw.current, { method: 'PATCH', body: JSON.stringify(patch) });
-    if (d.lesson) { setLesson(d.lesson); setSavedAt(new Date()); }
+    const updated = await storeSaveLessonMeta(id, patch as Record<string, unknown>);
+    if (updated) { setLesson(updated as unknown as Lesson); setSavedAt(new Date()); }
   }
 
   const addCard = useCallback(async (kind: ContentKind, extra: Partial<Card> = {}) => {
     const section = extra.section_name ?? DEFAULT_SECTION[kind];
-    const d = await api(`/api/admin/lessons/${id}/cards`, pw.current, {
-      method: 'POST',
-      body: JSON.stringify({
-        content_kind: kind,
-        section_name: section,
-        card_title: extra.card_title ?? '',
-        content: extra.content ?? '',
-        marks: extra.marks ?? null,
-        source_question_id: extra.source_question_id ?? null,
-      }),
+    const created = await storeAddCard({
+      lesson_id: id,
+      content_kind: kind,
+      section_name: section,
+      card_title: extra.card_title ?? '',
+      content: extra.content ?? '',
+      marks: extra.marks ?? null,
+      source_question_id: extra.source_question_id ?? null,
+      source_card_id: extra.source_card_id ?? null,
     });
-    if (d.card) {
-      setCards(prev => [...prev, d.card as Card]);
+    if (created) {
+      setCards(prev => [...prev, created as unknown as Card]);
       setLocalSections(prev => ({ ...prev, [kind]: prev[kind].filter(s => s !== section) }));
       setSavedAt(new Date());
-      return d.card as Card;
+      return created as unknown as Card;
     }
     return null;
   }, [id]);
@@ -1326,10 +1334,8 @@ export default function LessonEditorClient() {
     const toRename = cards.filter(c => c.content_kind === kind && c.section_name === oldName);
     setCards(prev => prev.map(c => (c.content_kind === kind && c.section_name === oldName) ? { ...c, section_name: newName } : c));
     setLocalSections(prev => ({ ...prev, [kind]: prev[kind].map(s => s === oldName ? newName : s) }));
-    // Fire-and-forget patch for each card
-    await Promise.all(toRename.map(c =>
-      api(`/api/admin/lessons/cards/${c.id}`, pw.current, { method: 'PATCH', body: JSON.stringify({ section_name: newName }) })
-    ));
+    // Local-first patch for each card; sync engine ships them.
+    await Promise.all(toRename.map(c => storePatchCard(c.id, { section_name: newName })));
     setSavedAt(new Date());
   }, [cards]);
 
@@ -1358,7 +1364,7 @@ export default function LessonEditorClient() {
     const newOrder = [...sectionCards];
     newOrder.splice(insertIdx, 0, created);
     const orderedIds = newOrder.map(c => c.id);
-    await api('/api/admin/lessons/cards/reorder', pw.current, { method: 'POST', body: JSON.stringify({ orderedIds }) });
+    await storeReorderCards(orderedIds);
     // Optimistically update order_index in state
     setCards(prev => {
       const map = new Map(prev.map(c => [c.id, c]));
@@ -1462,7 +1468,7 @@ export default function LessonEditorClient() {
         });
         return Array.from(map.values());
       });
-      await api('/api/admin/lessons/cards/reorder', pw.current, { method: 'POST', body: JSON.stringify({ orderedIds: reorderedIds }) });
+      await storeReorderCards(reorderedIds);
       setSavedAt(new Date());
       return;
     }
@@ -1503,15 +1509,11 @@ export default function LessonEditorClient() {
     else if (isCrossSection) showToast(`Moved to "${tgtSection}"`);
 
     try {
-      await api(`/api/admin/lessons/cards/${activeIdStr}`, pw.current, { method: 'PATCH', body: JSON.stringify(patch) });
+      await storePatchCard(activeIdStr, patch as Partial<Card>);
       // Reorder destination
-      if (newDst.length > 0) {
-        await api('/api/admin/lessons/cards/reorder', pw.current, { method: 'POST', body: JSON.stringify({ orderedIds: newDst.map(c => c.id) }) });
-      }
+      if (newDst.length > 0) await storeReorderCards(newDst.map(c => c.id));
       // Reorder source remainder (if any)
-      if (remainingSrc.length > 0) {
-        await api('/api/admin/lessons/cards/reorder', pw.current, { method: 'POST', body: JSON.stringify({ orderedIds: remainingSrc.map(c => c.id) }) });
-      }
+      if (remainingSrc.length > 0) await storeReorderCards(remainingSrc.map(c => c.id));
       setSavedAt(new Date());
     } catch {
       // Reload on failure to ensure UI matches server
@@ -1548,7 +1550,8 @@ export default function LessonEditorClient() {
         <span className="text-slate-400">/</span>
         <span className="text-emerald-300 font-medium truncate">{lesson.name}</span>
         <span className="flex-1" />
-        {savedAt && <span className="text-xs text-emerald-300">Saved {savedAt.toLocaleTimeString()}</span>}
+        <SyncStatusPill />
+        {savedAt && <span className="text-xs text-emerald-300/70">{savedAt.toLocaleTimeString()}</span>}
         <button
           onClick={() => generatePDF(id, pw.current, lesson.name)}
           className="px-3 py-1 bg-rose-600 hover:bg-rose-700 rounded text-xs font-medium"
@@ -1660,15 +1663,8 @@ export default function LessonEditorClient() {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-async function api(url: string, pw: string, init?: RequestInit) {
-  const headers = new Headers(init?.headers);
-  headers.set('Authorization', `Bearer ${pw}`);
-  if (init?.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-  const res = await fetch(url, { ...init, headers });
-  if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
-  return res.json();
-}
+// (The old `api()` helper was removed when this component was migrated to the offline
+// store in lib/offline/store.ts — every mutation now flows through there.)
 
 async function generatePDF(lessonId: string, pw: string, name: string) {
   try {
