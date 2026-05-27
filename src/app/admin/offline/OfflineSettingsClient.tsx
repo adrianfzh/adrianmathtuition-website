@@ -8,6 +8,7 @@
 // - Storage estimate from navigator.storage.estimate().
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import {
@@ -45,6 +46,7 @@ function timeAgo(iso: string | null | undefined): string {
 }
 
 export default function OfflineSettingsClient() {
+  const router = useRouter();
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [settings, setSettings] = useState<OfflineSettings | null>(null);
   const [syncState, setSyncState] = useState<Record<string, QBSyncState | undefined>>({});
@@ -165,7 +167,14 @@ export default function OfflineSettingsClient() {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-3 flex items-center gap-3 text-sm">
+        <button
+          onClick={() => router.back()}
+          title="Back to where you came from"
+          className="text-slate-300 hover:text-white text-xs px-2 py-0.5 border border-slate-600 hover:border-slate-400 rounded"
+        >← Back</button>
         <Link href="/admin" className="hover:text-emerald-300 font-medium">⚙ Admin</Link>
+        <span className="text-slate-400">/</span>
+        <Link href="/admin/lessons" className="hover:text-emerald-300">📚 Lessons</Link>
         <span className="text-slate-400">/</span>
         <span className="text-emerald-300 font-medium">Offline mode</span>
       </div>
