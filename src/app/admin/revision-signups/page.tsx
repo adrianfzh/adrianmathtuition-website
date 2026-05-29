@@ -209,6 +209,7 @@ export default function RevisionSignupsPage() {
     if (!signupStudent || selectedSubjects.length === 0) return;
     setSaving(true);
     setSaveError('');
+    const studentIdForManage = signupStudent.id;
     try {
       const total = subjectTotal(selectedSubjects, signupStudent.level);
       const res = await fetch('/api/admin-revision-signup', {
@@ -229,7 +230,16 @@ export default function RevisionSignupsPage() {
         throw new Error(data.error || 'Sign-up failed');
       }
       setSignupStudent(null);
-      await fetchStudents();
+      // Re-fetch and auto-open Manage for the newly signed-up student
+      const listRes = await fetch('/api/admin-revision-list', {
+        headers: { Authorization: `Bearer ${adminPw}` },
+      });
+      if (listRes.ok) {
+        const data = await listRes.json();
+        setStudents(data.students);
+        const fresh = (data.students as Student[]).find(s => s.id === studentIdForManage);
+        if (fresh) openManage(fresh);
+      }
     } catch (e: unknown) {
       setSaveError(e instanceof Error ? e.message : 'Error');
     } finally {
@@ -369,6 +379,8 @@ export default function RevisionSignupsPage() {
       }
       await sendInvoice(manageStudent.revisionInvoiceId);
       setSendMsg('✅ Invoice sent!');
+      // Update the stale manageStudent snapshot so the badge flips immediately
+      setManageStudent(prev => prev ? { ...prev, revisionInvoiceStatus: 'Sent' } : null);
     } catch (e: unknown) {
       setSendMsg(`❌ ${e instanceof Error ? e.message : 'Send failed'}`);
     } finally {
