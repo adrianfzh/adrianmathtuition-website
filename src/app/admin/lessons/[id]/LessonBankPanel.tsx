@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -37,6 +37,10 @@ export type BankQuestion = {
 
 type SearchMode = 'keyword' | 'smart';
 type Source = 'server' | 'local' | 'unavailable';
+// The committed search — what actually drives a fetch. Set only when the user clicks Search
+// (or presses Enter), so typing/toggling never fires a request on its own. Difficulty/image are
+// NOT here — they're client-side display filters and never trigger a fetch.
+type Committed = { query: string; mode: SearchMode; aiModel: 'haiku' | 'sonnet' };
 
 // Module-scoped cache of the last bank search. The editor mounts the panel with
 // key={selectedCard.id}, so switching cards REMOUNTS this component and would otherwise wipe
@@ -239,15 +243,23 @@ export function LessonBankPanel({
   const lessonKey = `${level}::${[...topics].sort().join('|')}`;
   const hit = bankCache && bankCache.lessonKey === lessonKey ? bankCache : null;
 
+  // `search`/`mode`/`aiModel` are the PENDING (typed) values; `committed` is what's actually been
+  // searched. They diverge until the user clicks Search.
   const [search, setSearch] = useState(hit?.search ?? '');
   const [mode, setMode] = useState<SearchMode>(hit?.mode ?? 'keyword');
   const [aiModel, setAiModel] = useState<'haiku' | 'sonnet'>(hit?.aiModel ?? 'haiku');
+  const [committed, setCommitted] = useState<Committed>(
+    hit ? { query: hit.search, mode: hit.mode, aiModel: hit.aiModel } : { query: '', mode: 'keyword', aiModel: 'haiku' },
+  );
   const [hasImage, setHasImage] = useState<'any' | 'true' | 'false'>(hit?.hasImage ?? 'any');
   const [difficulties, setDifficulties] = useState<Set<Difficulty>>(new Set(hit?.difficulties ?? []));
   const [questions, setQuestions] = useState<BankQuestion[]>(hit?.results ?? []);
   const [total, setTotal] = useState(hit?.total ?? 0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Lets us reuse the cache on the FIRST effect run (mount / card-switch remount) but force a real
+  // fetch on any later run (i.e. when the user explicitly clicks Search).
+  const firstRun = useRef(true);
 
   // Smart (semantic) search runs server-side only — it needs the embedding API. Track
   // connectivity so we can disable it (and fall back to keyword) when offline.
@@ -259,7 +271,6 @@ export function LessonBankPanel({
     window.addEventListener('offline', update);
     return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
   }, []);
-  const smartActive = mode === 'smart' && online;
 
   // Pick the data source per fetch:
   //   * online & offline mode off  → server
@@ -268,46 +279,67 @@ export function LessonBankPanel({
   //   * offline & cache empty      → friendly empty state
   const [source, setSource] = useState<Source>(hit?.source ?? 'server');
 
+  // Difficulty/image are client-side display filters over the fetched set — they NEVER trigger a
+  // fetch (so changing them can't spend AI tokens). `displayed` is what the list renders.
+  const displayed = useMemo(() => {
+    let list = questions;
+    if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
+    if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
+    return list;
+  }, [questions, difficulties, hasImage]);
+
+  // Read current filters at fetch-time without putting them in the fetch effect's deps.
+  const filtersRef = useRef({ hasImage, difficulties });
+  filtersRef.current = { hasImage, difficulties };
+
+  // Keep the cache's filter fields current so a remount rehydrates the latest filter UI.
+  useEffect(() => {
+    if (bankCache && bankCache.lessonKey === lessonKey) {
+      bankCache.hasImage = hasImage;
+      bankCache.difficulties = Array.from(difficulties);
+    }
+  }, [hasImage, difficulties, lessonKey]);
+
+  // Fetch is driven ONLY by `committed` (set on Search click / Enter), level/topics, and online.
   useEffect(() => {
     if (!level || topics.length === 0) {
-      setQuestions([]); setTotal(0); return;
+      setQuestions([]); setTotal(0); firstRun.current = false; return;
     }
-    // Smart mode with an empty query: nothing to rank — show the hint instead of fetching.
-    if (smartActive && !search.trim()) {
-      setQuestions([]); setTotal(0); setError(null); return;
+    const cQuery = committed.query.trim();
+    const cSmart = committed.mode === 'smart' && online;
+    // Smart with an empty query: nothing to rank.
+    if (cSmart && !cQuery) {
+      setQuestions([]); setTotal(0); setError(null); firstRun.current = false; return;
     }
-    // Signature of this exact search. Identical sig ⇒ identical results, so reuse the cache and
-    // skip the network/AI call entirely (this is the token-saving path on a card-switch remount).
-    const sig = JSON.stringify({
-      k: lessonKey,
-      q: search.trim(),
-      m: smartActive ? `smart:${aiModel}` : 'kw',
-      img: hasImage,
-      diff: Array.from(difficulties).sort(),
-    });
-    if (bankCache && bankCache.lessonKey === lessonKey && bankCache.sig === sig) {
-      setSource(bankCache.source);
-      setQuestions(bankCache.results);
-      setTotal(bankCache.total);
-      setError(null);
+    const sig = JSON.stringify({ k: lessonKey, q: cQuery, m: cSmart ? `smart:${committed.aiModel}` : 'kw' });
+    // First run after (re)mount with a matching cache → reuse, no fetch (token-saver on card switch).
+    // Any later run is an explicit Search → always fetch fresh.
+    if (firstRun.current && bankCache && bankCache.lessonKey === lessonKey && bankCache.sig === sig) {
+      setSource(bankCache.source); setQuestions(bankCache.results); setTotal(bankCache.total); setError(null);
+      firstRun.current = false;
       return;
     }
+    firstRun.current = false;
     let cancelled = false;
-    const t = setTimeout(async () => {
+    (async () => {
       setLoading(true); setError(null);
-      // Persist a successful result so the next remount (or repeat query) reuses it.
       const commit = (list: BankQuestion[], tot: number, src: Source) => {
         setSource(src); setQuestions(list); setTotal(tot);
-        bankCache = { lessonKey, sig, search, mode, aiModel, hasImage, difficulties: Array.from(difficulties), results: list, total: tot, source: src };
+        bankCache = {
+          lessonKey, sig,
+          search: committed.query, mode: committed.mode, aiModel: committed.aiModel,
+          hasImage: filtersRef.current.hasImage, difficulties: Array.from(filtersRef.current.difficulties),
+          results: list, total: tot, source: src,
+        };
       };
       try {
         // Smart (AI-rerank) path — server only, scoped to the lesson's topics.
-        if (smartActive && search.trim()) {
+        if (cSmart && cQuery) {
           const params = new URLSearchParams();
           params.set('level', level);
           params.set('topics', topics.join(','));
-          params.set('q', search.trim());
-          params.set('model', aiModel);
+          params.set('q', cQuery);
+          params.set('model', committed.aiModel);
           params.set('limit', '60');
           const res = await fetch(`/api/admin/lessons/bank-semantic?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
           if (!res.ok) {
@@ -316,11 +348,7 @@ export function LessonBankPanel({
           }
           const json = await res.json();
           if (cancelled) return;
-          // The AI rank doesn't filter difficulty/image — apply those client-side on the ranked set.
-          let list = (json.questions ?? []) as BankQuestion[];
-          if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
-          if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
-          commit(list, list.length, 'server');
+          commit((json.questions ?? []) as BankQuestion[], (json.questions ?? []).length, 'server');
           return;
         }
 
@@ -330,17 +358,9 @@ export function LessonBankPanel({
         const wantLocal = offlineOnThisLevel || !isOnline;
 
         if (wantLocal) {
-          const local = await queryLocalBank({
-            level,
-            topics,
-            search: search.trim() || undefined,
-            hasImage: hasImage === 'any' ? undefined : hasImage,
-            difficulties: Array.from(difficulties),
-            limit: 100,
-          });
+          const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit: 100 });
           if (cancelled) return;
           if (local.length === 0 && !isOnline && !offlineOnThisLevel) {
-            // Transient offline-without-cache state — don't persist it.
             setSource('unavailable');
             setQuestions([]); setTotal(0);
           } else {
@@ -353,9 +373,7 @@ export function LessonBankPanel({
         const params = new URLSearchParams();
         params.set('level', level);
         params.set('topics', topics.join(','));
-        if (search.trim()) params.set('q', search.trim());
-        if (hasImage !== 'any') params.set('hasImage', hasImage);
-        if (difficulties.size > 0) params.set('difficulty', Array.from(difficulties).join(','));
+        if (cQuery) params.set('q', cQuery);
         params.set('limit', '100');
         const res = await fetch(`/api/admin/lessons/bank?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -370,9 +388,29 @@ export function LessonBankPanel({
       } finally {
         if (!cancelled) setLoading(false);
       }
-    }, 250);
-    return () => { cancelled = true; clearTimeout(t); };
-  }, [level, topics, lessonKey, search, mode, hasImage, difficulties, auth, smartActive, aiModel]);
+    })();
+    return () => { cancelled = true; };
+  }, [level, topics, lessonKey, committed, auth, online]);
+
+  const committedSmart = committed.mode === 'smart' && online;
+  // True when the typed query/mode/model differs from what's been searched — highlights Search.
+  const dirty = search.trim() !== committed.query.trim()
+    || mode !== committed.mode
+    || (mode === 'smart' && aiModel !== committed.aiModel);
+
+  function runSearch() {
+    if (topics.length === 0) return;
+    const q = search.trim();
+    if (mode === 'smart' && online && !q) return; // nothing to rank
+    setCommitted({ query: q, mode, aiModel });
+  }
+
+  function clearSearch() {
+    setSearch('');
+    setMode('keyword');
+    setCommitted({ query: '', mode: 'keyword', aiModel });
+    if (bankCache && bankCache.lessonKey === lessonKey) bankCache = null;
+  }
 
   function toggleDifficulty(d: Difficulty) {
     setDifficulties(prev => {
@@ -400,14 +438,29 @@ export function LessonBankPanel({
             className={`flex-1 px-2 py-0.5 rounded text-[11px] border ${mode === 'smart' ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
           >✨ Smart</button>
         </div>
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder={topics.length === 0 ? 'Add topics to enable bank' : mode === 'smart' ? 'Describe it, e.g. conics hyperbola' : 'Search question text…'}
-          disabled={topics.length === 0}
-          className="w-full border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
+        <div className="flex gap-1">
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') runSearch(); }}
+            placeholder={topics.length === 0 ? 'Add topics to enable bank' : mode === 'smart' ? 'Describe it, e.g. conics hyperbola' : 'Search question text…'}
+            disabled={topics.length === 0}
+            className="flex-1 min-w-0 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <button
+            onClick={runSearch}
+            disabled={topics.length === 0 || (mode === 'smart' && online && !search.trim())}
+            title="Run the search"
+            className={`px-2.5 py-1 text-xs rounded text-white disabled:opacity-40 ${dirty ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-400 hover:bg-slate-500'}`}
+          >Search</button>
+          <button
+            onClick={clearSearch}
+            disabled={topics.length === 0}
+            title="Clear search and cached results"
+            className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-500 hover:bg-slate-100 disabled:opacity-40"
+          >Clear</button>
+        </div>
         {mode === 'smart' && !online && (
           <p className="text-[10px] text-amber-700">Smart search needs a connection — using keyword search while offline.</p>
         )}
@@ -447,7 +500,7 @@ export function LessonBankPanel({
           </select>
         </div>
         <div className="text-[10px] text-slate-400 flex items-center gap-2">
-          <span>{loading ? (smartActive ? 'Claude is reading…' : 'Loading…') : `${total} matching · showing ${questions.length}`}</span>
+          <span>{loading ? (committedSmart ? 'Claude is reading…' : 'Loading…') : `${total} found · showing ${displayed.length}`}</span>
           {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
           {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">offline</span>}
         </div>
@@ -461,12 +514,14 @@ export function LessonBankPanel({
             <a href="/admin/offline" className="inline-block px-2 py-1 border border-slate-300 rounded text-slate-700 not-italic hover:bg-slate-50">Configure offline mode →</a>
           </div>
         )}
-        {!loading && !error && source !== 'unavailable' && questions.length === 0 && topics.length > 0 && (
+        {!loading && !error && source !== 'unavailable' && displayed.length === 0 && topics.length > 0 && (
           <div className="text-xs text-slate-400 italic px-2 py-4 text-center">
-            {smartActive && !search.trim() ? 'Type a phrase to search by meaning.' : 'No matching questions.'}
+            {mode === 'smart' && !committed.query && !search.trim()
+              ? 'Type a phrase and press Search to rank by meaning.'
+              : questions.length > 0 ? 'No questions match the current filters.' : 'No matching questions.'}
           </div>
         )}
-        {questions.map(q => (
+        {displayed.map(q => (
           <BankQuestionCard
             key={q.id}
             q={q}
