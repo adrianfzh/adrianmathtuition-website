@@ -81,9 +81,9 @@ const DEFAULT_SECTION: Record<ContentKind, string> = {
 // Section-first model: a lesson is an ordered list of named sections; each card carries a `kind`
 // (refresher / worked example / practice) shown as a chip and used for PDF styling + answers.
 const KIND_CHIP: Record<ContentKind, { icon: string; cls: string; short: string }> = {
-  refresher: { icon: '🧠', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', short: 'Refresher' },
-  worked_example: { icon: '💡', cls: 'bg-blue-50 text-blue-700 border-blue-200', short: 'Worked eg' },
-  practice: { icon: '✏️', cls: 'bg-orange-50 text-orange-700 border-orange-200', short: 'Practice' },
+  refresher: { icon: 'R', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', short: 'Refresher' },
+  worked_example: { icon: 'E', cls: 'bg-blue-50 text-blue-700 border-blue-200', short: 'Worked example' },
+  practice: { icon: 'P', cls: 'bg-orange-50 text-orange-700 border-orange-200', short: 'Practice' },
 };
 // Single DnD id namespace now that sections are lesson-level (no per-kind prefix).
 const SEC = 'x';
@@ -288,7 +288,7 @@ function SortableCardRow({
       {bankHover === 'below' && <div className="absolute -bottom-1 left-0 right-0 h-1 bg-blue-500 rounded-full pointer-events-none" />}
       <span {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0" title="Drag to reorder">⠿</span>
       <span className="text-slate-400 text-xs w-4 shrink-0">{displayIndex}.</span>
-      <span className={`text-[10px] px-1 py-px rounded border shrink-0 ${KIND_CHIP[card.content_kind].cls}`} title={KIND_CHIP[card.content_kind].short}>{KIND_CHIP[card.content_kind].icon}</span>
+      <span className={`text-[10px] font-bold w-4 text-center rounded border shrink-0 ${KIND_CHIP[card.content_kind].cls}`} title={KIND_CHIP[card.content_kind].short}>{KIND_CHIP[card.content_kind].icon}</span>
       <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug truncate">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
       {card.content_kind === 'practice' && card.marks != null && (
         <span className="text-[10px] text-slate-400 bg-slate-100 px-1 rounded shrink-0">{card.marks}m</span>
@@ -1015,9 +1015,9 @@ function EditorPanel({
           className="text-xs font-semibold border border-slate-300 rounded px-1 py-0.5 bg-white"
           title="Card type"
         >
-          <option value="refresher">🧠 Refresher</option>
-          <option value="worked_example">💡 Worked example</option>
-          <option value="practice">✏️ Practice</option>
+          <option value="refresher">R — Refresher</option>
+          <option value="worked_example">E — Worked example</option>
+          <option value="practice">P — Practice</option>
         </select>
         <span className="text-xs text-slate-400">·</span>
         <span className="text-xs text-slate-500 truncate min-w-0">{sectionName} · Card {sibIdx >= 0 ? sibIdx + 1 : '?'} of {siblings.length}</span>
@@ -1335,9 +1335,9 @@ function SectionFlow({
                   {/* Add a card of a chosen kind to this section */}
                   <div className="flex gap-1 mt-1 pl-1">
                     <span className="text-[10px] text-slate-400 self-center">+ card:</span>
-                    <button onClick={() => onAddCard(sectionName, 'refresher')} className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">🧠 Refresher</button>
-                    <button onClick={() => onAddCard(sectionName, 'worked_example')} className="text-[10px] px-1.5 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">💡 Worked eg</button>
-                    <button onClick={() => onAddCard(sectionName, 'practice')} className="text-[10px] px-1.5 py-0.5 rounded border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100">✏️ Practice</button>
+                    <button onClick={() => onAddCard(sectionName, 'refresher')} className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"><b>R</b> Refresher</button>
+                    <button onClick={() => onAddCard(sectionName, 'worked_example')} className="text-[10px] px-1.5 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"><b>E</b> Example</button>
+                    <button onClick={() => onAddCard(sectionName, 'practice')} className="text-[10px] px-1.5 py-0.5 rounded border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"><b>P</b> Practice</button>
                   </div>
                 </SortableSectionWrapper>
               );
