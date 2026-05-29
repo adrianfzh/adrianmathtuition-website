@@ -36,6 +36,25 @@ export type BankQuestion = {
 };
 
 type SearchMode = 'keyword' | 'smart';
+type Source = 'server' | 'local' | 'unavailable';
+
+// Module-scoped cache of the last bank search. The editor mounts the panel with
+// key={selectedCard.id}, so switching cards REMOUNTS this component and would otherwise wipe
+// the query + results — forcing a fresh (token-costing) AI search to reuse the same questions.
+// Persisting here lets a remount rehydrate instantly and skip re-fetching when nothing changed.
+type BankCache = {
+  lessonKey: string;   // level + topics — only reuse within the same lesson scope
+  sig: string;         // full search signature; identical sig ⇒ reuse, don't re-fetch
+  search: string;
+  mode: SearchMode;
+  aiModel: 'haiku' | 'sonnet';
+  hasImage: 'any' | 'true' | 'false';
+  difficulties: Difficulty[];
+  results: BankQuestion[];
+  total: number;
+  source: Source;
+};
+let bankCache: BankCache | null = null;
 
 const DIFFICULTIES = ['Standard', 'Advanced', 'Challenging', 'Bonus'] as const;
 type Difficulty = typeof DIFFICULTIES[number];
@@ -216,13 +235,17 @@ export function LessonBankPanel({
   /** Quick-insert (button) — drops a card into a specific kind. */
   onInsert?: (q: BankQuestion, kind: 'refresher' | 'worked_example' | 'practice') => void;
 }) {
-  const [search, setSearch] = useState('');
-  const [mode, setMode] = useState<SearchMode>('keyword');
-  const [aiModel, setAiModel] = useState<'haiku' | 'sonnet'>('haiku');
-  const [hasImage, setHasImage] = useState<'any' | 'true' | 'false'>('any');
-  const [difficulties, setDifficulties] = useState<Set<Difficulty>>(new Set());
-  const [questions, setQuestions] = useState<BankQuestion[]>([]);
-  const [total, setTotal] = useState(0);
+  // Identity of the current lesson scope — cache is only reused when this matches.
+  const lessonKey = `${level}::${[...topics].sort().join('|')}`;
+  const hit = bankCache && bankCache.lessonKey === lessonKey ? bankCache : null;
+
+  const [search, setSearch] = useState(hit?.search ?? '');
+  const [mode, setMode] = useState<SearchMode>(hit?.mode ?? 'keyword');
+  const [aiModel, setAiModel] = useState<'haiku' | 'sonnet'>(hit?.aiModel ?? 'haiku');
+  const [hasImage, setHasImage] = useState<'any' | 'true' | 'false'>(hit?.hasImage ?? 'any');
+  const [difficulties, setDifficulties] = useState<Set<Difficulty>>(new Set(hit?.difficulties ?? []));
+  const [questions, setQuestions] = useState<BankQuestion[]>(hit?.results ?? []);
+  const [total, setTotal] = useState(hit?.total ?? 0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -243,8 +266,7 @@ export function LessonBankPanel({
   //   * online & offline mode on for this level → local cache (snappier, no waiting)
   //   * offline & cache available  → local cache
   //   * offline & cache empty      → friendly empty state
-  type Source = 'server' | 'local' | 'unavailable';
-  const [source, setSource] = useState<Source>('server');
+  const [source, setSource] = useState<Source>(hit?.source ?? 'server');
 
   useEffect(() => {
     if (!level || topics.length === 0) {
@@ -254,9 +276,30 @@ export function LessonBankPanel({
     if (smartActive && !search.trim()) {
       setQuestions([]); setTotal(0); setError(null); return;
     }
+    // Signature of this exact search. Identical sig ⇒ identical results, so reuse the cache and
+    // skip the network/AI call entirely (this is the token-saving path on a card-switch remount).
+    const sig = JSON.stringify({
+      k: lessonKey,
+      q: search.trim(),
+      m: smartActive ? `smart:${aiModel}` : 'kw',
+      img: hasImage,
+      diff: Array.from(difficulties).sort(),
+    });
+    if (bankCache && bankCache.lessonKey === lessonKey && bankCache.sig === sig) {
+      setSource(bankCache.source);
+      setQuestions(bankCache.results);
+      setTotal(bankCache.total);
+      setError(null);
+      return;
+    }
     let cancelled = false;
     const t = setTimeout(async () => {
       setLoading(true); setError(null);
+      // Persist a successful result so the next remount (or repeat query) reuses it.
+      const commit = (list: BankQuestion[], tot: number, src: Source) => {
+        setSource(src); setQuestions(list); setTotal(tot);
+        bankCache = { lessonKey, sig, search, mode, aiModel, hasImage, difficulties: Array.from(difficulties), results: list, total: tot, source: src };
+      };
       try {
         // Smart (AI-rerank) path — server only, scoped to the lesson's topics.
         if (smartActive && search.trim()) {
@@ -277,9 +320,7 @@ export function LessonBankPanel({
           let list = (json.questions ?? []) as BankQuestion[];
           if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
           if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
-          setSource('server');
-          setQuestions(list);
-          setTotal(list.length);
+          commit(list, list.length, 'server');
           return;
         }
 
@@ -299,12 +340,11 @@ export function LessonBankPanel({
           });
           if (cancelled) return;
           if (local.length === 0 && !isOnline && !offlineOnThisLevel) {
+            // Transient offline-without-cache state — don't persist it.
             setSource('unavailable');
             setQuestions([]); setTotal(0);
           } else {
-            setSource('local');
-            setQuestions(local as unknown as BankQuestion[]);
-            setTotal(local.length);
+            commit(local as unknown as BankQuestion[], local.length, 'local');
           }
           return;
         }
@@ -321,9 +361,7 @@ export function LessonBankPanel({
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (cancelled) return;
-        setSource('server');
-        setQuestions(json.questions ?? []);
-        setTotal(json.total ?? (json.questions?.length ?? 0));
+        commit(json.questions ?? [], json.total ?? (json.questions?.length ?? 0), 'server');
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e.message : 'Load error');
@@ -334,7 +372,7 @@ export function LessonBankPanel({
       }
     }, 250);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [level, topics, search, hasImage, difficulties, auth, smartActive, aiModel]);
+  }, [level, topics, lessonKey, search, mode, hasImage, difficulties, auth, smartActive, aiModel]);
 
   function toggleDifficulty(d: Difficulty) {
     setDifficulties(prev => {
