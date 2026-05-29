@@ -34,6 +34,7 @@ interface AdminAIChatProps {
   fabBottom?: number;
   fabTop?: number;
   fabSmall?: boolean; // compact button — icon + short label, smaller padding
+  fabClassName?: string; // extra class on the FAB button (use for CSS media-query overrides)
   // Bottom-bar variant
   variant?: 'fab' | 'bottom-bar';
   barBottom?: number; // px above the bar (e.g. 48 to clear legend tabs)
@@ -136,6 +137,7 @@ export default function AdminAIChat({
   fabBottom = 24,
   fabTop,
   fabSmall = false,
+  fabClassName,
   variant = 'fab',
   barBottom = 48,
 }: AdminAIChatProps) {
@@ -661,6 +663,7 @@ export default function AdminAIChat({
       {!open && (
         <button
           style={s.fab}
+          className={fabClassName}
           onClick={() => setOpen(true)}
           title={title}
         >

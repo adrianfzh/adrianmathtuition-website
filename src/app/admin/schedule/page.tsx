@@ -2932,6 +2932,7 @@ export default function SchedulePage() {
         placeholder="e.g. Mark all today's lessons completed. Who is absent this week?"
         fabTop={16}
         fabSmall
+        fabClassName="schedule-ai-fab"
       />
     </>
   );
@@ -3338,6 +3339,8 @@ body {
 
 /* ── Desktop grid ── */
 @media (min-width: 768px) {
+  /* Move AI FAB away from header — use bottom-right on desktop */
+  .schedule-ai-fab { top: auto !important; bottom: 24px !important; }
   .mobile-day { display: none; }
   .date-strip-wrap { display: none; }
   .roster-day-tabs { display: none; }
