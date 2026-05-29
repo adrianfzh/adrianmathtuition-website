@@ -35,6 +35,8 @@ export type BankQuestion = {
   subgroup_links: { id: number; name: string; isPrimary: boolean }[];
 };
 
+type SearchMode = 'keyword' | 'smart';
+
 const DIFFICULTIES = ['Standard', 'Advanced', 'Challenging', 'Bonus'] as const;
 type Difficulty = typeof DIFFICULTIES[number];
 
@@ -215,12 +217,26 @@ export function LessonBankPanel({
   onInsert?: (q: BankQuestion, kind: 'refresher' | 'worked_example' | 'practice') => void;
 }) {
   const [search, setSearch] = useState('');
+  const [mode, setMode] = useState<SearchMode>('keyword');
+  const [aiModel, setAiModel] = useState<'haiku' | 'sonnet'>('haiku');
   const [hasImage, setHasImage] = useState<'any' | 'true' | 'false'>('any');
   const [difficulties, setDifficulties] = useState<Set<Difficulty>>(new Set());
   const [questions, setQuestions] = useState<BankQuestion[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Smart (semantic) search runs server-side only — it needs the embedding API. Track
+  // connectivity so we can disable it (and fall back to keyword) when offline.
+  const [online, setOnline] = useState(true);
+  useEffect(() => {
+    const update = () => setOnline(typeof navigator === 'undefined' ? true : navigator.onLine);
+    update();
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
+  }, []);
+  const smartActive = mode === 'smart' && online;
 
   // Pick the data source per fetch:
   //   * online & offline mode off  → server
@@ -234,14 +250,43 @@ export function LessonBankPanel({
     if (!level || topics.length === 0) {
       setQuestions([]); setTotal(0); return;
     }
+    // Smart mode with an empty query: nothing to rank — show the hint instead of fetching.
+    if (smartActive && !search.trim()) {
+      setQuestions([]); setTotal(0); setError(null); return;
+    }
     let cancelled = false;
     const t = setTimeout(async () => {
       setLoading(true); setError(null);
       try {
+        // Smart (AI-rerank) path — server only, scoped to the lesson's topics.
+        if (smartActive && search.trim()) {
+          const params = new URLSearchParams();
+          params.set('level', level);
+          params.set('topics', topics.join(','));
+          params.set('q', search.trim());
+          params.set('model', aiModel);
+          params.set('limit', '60');
+          const res = await fetch(`/api/admin/lessons/bank-semantic?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
+          if (!res.ok) {
+            const j = await res.json().catch(() => ({} as { error?: string }));
+            throw new Error(j.error || `HTTP ${res.status}`);
+          }
+          const json = await res.json();
+          if (cancelled) return;
+          // The AI rank doesn't filter difficulty/image — apply those client-side on the ranked set.
+          let list = (json.questions ?? []) as BankQuestion[];
+          if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
+          if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
+          setSource('server');
+          setQuestions(list);
+          setTotal(list.length);
+          return;
+        }
+
         const settings = await getOfflineSettings();
         const offlineOnThisLevel = settings.enabled && settings.levels.includes(level);
-        const online = typeof navigator !== 'undefined' ? navigator.onLine : true;
-        const wantLocal = offlineOnThisLevel || !online;
+        const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+        const wantLocal = offlineOnThisLevel || !isOnline;
 
         if (wantLocal) {
           const local = await queryLocalBank({
@@ -253,7 +298,7 @@ export function LessonBankPanel({
             limit: 100,
           });
           if (cancelled) return;
-          if (local.length === 0 && !online && !offlineOnThisLevel) {
+          if (local.length === 0 && !isOnline && !offlineOnThisLevel) {
             setSource('unavailable');
             setQuestions([]); setTotal(0);
           } else {
@@ -264,7 +309,7 @@ export function LessonBankPanel({
           return;
         }
 
-        // Server path
+        // Server path (keyword)
         const params = new URLSearchParams();
         params.set('level', level);
         params.set('topics', topics.join(','));
@@ -289,7 +334,7 @@ export function LessonBankPanel({
       }
     }, 250);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [level, topics, search, hasImage, difficulties, auth]);
+  }, [level, topics, search, hasImage, difficulties, auth, smartActive, aiModel]);
 
   function toggleDifficulty(d: Difficulty) {
     setDifficulties(prev => {
@@ -306,14 +351,45 @@ export function LessonBankPanel({
           <span className="font-medium">{level}</span>·
           <span className="truncate" title={topics.join(', ')}>{topics.length === 0 ? '(no topics)' : topics.length === 1 ? topics[0] : `${topics.length} topics`}</span>
         </div>
+        <div className="flex gap-1">
+          <button
+            onClick={() => setMode('keyword')}
+            className={`flex-1 px-2 py-0.5 rounded text-[11px] border ${mode === 'keyword' ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+          >Keyword</button>
+          <button
+            onClick={() => setMode('smart')}
+            title="Search by meaning using question embeddings"
+            className={`flex-1 px-2 py-0.5 rounded text-[11px] border ${mode === 'smart' ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+          >✨ Smart</button>
+        </div>
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder={topics.length === 0 ? 'Add topics to enable bank' : 'Search question text…'}
+          placeholder={topics.length === 0 ? 'Add topics to enable bank' : mode === 'smart' ? 'Describe it, e.g. conics hyperbola' : 'Search question text…'}
           disabled={topics.length === 0}
           className="w-full border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
+        {mode === 'smart' && !online && (
+          <p className="text-[10px] text-amber-700">Smart search needs a connection — using keyword search while offline.</p>
+        )}
+        {mode === 'smart' && online && (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] text-slate-400">Claude reads &amp; ranks, within this lesson&apos;s topics.</span>
+            <span className="flex items-center gap-0.5 text-[10px]">
+              <button
+                onClick={() => setAiModel('haiku')}
+                title="Fast & cheap"
+                className={`px-1.5 py-px rounded border ${aiModel === 'haiku' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+              >Haiku</button>
+              <button
+                onClick={() => setAiModel('sonnet')}
+                title="Slower, sharper judgement"
+                className={`px-1.5 py-px rounded border ${aiModel === 'sonnet' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+              >Sonnet</button>
+            </span>
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-1 text-[10px]">
           <span className="text-slate-400 uppercase tracking-wide font-medium">Difficulty:</span>
           {DIFFICULTIES.map(d => (
@@ -333,7 +409,7 @@ export function LessonBankPanel({
           </select>
         </div>
         <div className="text-[10px] text-slate-400 flex items-center gap-2">
-          <span>{loading ? 'Loading…' : `${total} matching · showing ${questions.length}`}</span>
+          <span>{loading ? (smartActive ? 'Claude is reading…' : 'Loading…') : `${total} matching · showing ${questions.length}`}</span>
           {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
           {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">offline</span>}
         </div>
@@ -348,7 +424,9 @@ export function LessonBankPanel({
           </div>
         )}
         {!loading && !error && source !== 'unavailable' && questions.length === 0 && topics.length > 0 && (
-          <div className="text-xs text-slate-400 italic px-2 py-4 text-center">No matching questions.</div>
+          <div className="text-xs text-slate-400 italic px-2 py-4 text-center">
+            {smartActive && !search.trim() ? 'Type a phrase to search by meaning.' : 'No matching questions.'}
+          </div>
         )}
         {questions.map(q => (
           <BankQuestionCard
