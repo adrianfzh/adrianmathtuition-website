@@ -470,7 +470,15 @@ function NewSectionModal({ kind, existingSections, onClose, onCreated }: {
 
   function create() {
     const trimmed = name.trim();
-    if (!trimmed) { setErr('Name required'); return; }
+    if (!trimmed) {
+      // Blank name → create an "Untitled section" the user can rename later via the
+      // section header. Auto-number to keep it unique within this kind.
+      let auto = 'Untitled section';
+      let n = 2;
+      while (existingSections.includes(auto)) auto = `Untitled section ${n++}`;
+      onCreated(auto);
+      return;
+    }
     if (existingSections.includes(trimmed)) { setErr('That section already exists'); return; }
     onCreated(trimmed);
   }
@@ -489,9 +497,10 @@ function NewSectionModal({ kind, existingSections, onClose, onCreated }: {
           onKeyDown={(e) => { if (e.key === 'Enter') create(); if (e.key === 'Escape') onClose(); }}
         />
         {err && <p className="text-red-600 text-sm mt-2">{err}</p>}
+        <p className="text-xs text-slate-400 mt-2">Leave blank to create an untitled section you can rename later.</p>
         <div className="flex justify-end gap-2 mt-4">
           <button onClick={onClose} className="px-3 py-1.5 text-sm border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
-          <button onClick={create} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">Create</button>
+          <button onClick={create} className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">{name.trim() ? 'Create' : 'Create untitled'}</button>
         </div>
       </div>
     </div>
