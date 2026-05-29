@@ -376,13 +376,11 @@ function SectionHeader({
         className="text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
         title="Rename section"
       >✎</button>
-      {cardCount === 0 && (
-        <button
-          onClick={() => onDeleted(name)}
-          className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
-          title="Delete empty section"
-        >🗑</button>
-      )}
+      <button
+        onClick={() => onDeleted(name)}
+        className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
+        title={cardCount === 0 ? 'Delete section' : `Delete section and its ${cardCount} card${cardCount > 1 ? 's' : ''}`}
+      >🗑</button>
     </div>
   );
 }
@@ -1485,13 +1483,21 @@ export default function LessonEditorClient() {
     setSavedAt(new Date());
   }, [cards, lesson]);
 
-  // Delete an empty lesson-level section.
-  const handleDeleteSection = useCallback((name: string) => {
-    if (cards.some(c => c.section_name === name)) { alert('Move or delete the cards in this section first.'); return; }
+  // Delete a lesson-level section. If it still has cards, confirm and delete them too.
+  const handleDeleteSection = useCallback(async (name: string) => {
+    const inSection = cards.filter(c => c.section_name === name);
+    if (inSection.length > 0) {
+      const ok = window.confirm(`Delete section "${name}" and its ${inSection.length} card${inSection.length > 1 ? 's' : ''}? This can't be undone.`);
+      if (!ok) return;
+      if (inSection.some(c => c.id === selectedId)) setSelectedId(null);
+      setCards(prev => prev.filter(c => c.section_name !== name));
+      await Promise.all(inSection.map(c => storeDeleteCard(c.id)));
+    }
     setLocalSections(prev => prev.filter(s => s !== name));
     const cur = asOrder(lesson?.section_order);
     if (cur.includes(name)) void saveLessonMeta({ section_order: cur.filter(s => s !== name) });
-  }, [cards, lesson]);
+    setSavedAt(new Date());
+  }, [cards, lesson, selectedId]);
 
   // Bank-question drop on the card list — create a new card at insertion point (keeps anchor's kind).
   const handleBankDropOnList = useCallback(async (q: BankQuestion, anchorCard: Card, position: 'above' | 'below') => {
