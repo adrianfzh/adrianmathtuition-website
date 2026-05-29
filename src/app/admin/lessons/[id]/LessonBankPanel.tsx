@@ -64,6 +64,27 @@ let bankCache: BankCache | null = null;
 // stays parked on the question you were looking at instead of jumping back to the top.
 let bankScroll: { lessonKey: string; top: number } = { lessonKey: '', top: 0 };
 
+// Persist the cache to localStorage so a full page reload restores the LAST search (query +
+// results) instead of falling back to the default topic listing — and without re-spending tokens.
+const BANK_CACHE_LS_KEY = 'lesson_bank_cache_v1';
+let lsLoaded = false;
+function ensureCacheLoaded() {
+  if (lsLoaded) return;
+  lsLoaded = true;
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage.getItem(BANK_CACHE_LS_KEY);
+    if (raw) bankCache = JSON.parse(raw) as BankCache;
+  } catch { /* ignore corrupt/old payloads */ }
+}
+function persistCache() {
+  if (typeof window === 'undefined') return;
+  try {
+    if (bankCache) window.localStorage.setItem(BANK_CACHE_LS_KEY, JSON.stringify(bankCache));
+    else window.localStorage.removeItem(BANK_CACHE_LS_KEY);
+  } catch { /* quota/serialise issue — non-fatal */ }
+}
+
 const DIFFICULTIES = ['Standard', 'Advanced', 'Challenging', 'Bonus'] as const;
 type Difficulty = typeof DIFFICULTIES[number];
 
@@ -244,6 +265,7 @@ export function LessonBankPanel({
   onInsert?: (q: BankQuestion, kind: 'refresher' | 'worked_example' | 'practice') => void;
 }) {
   // Identity of the current lesson scope — cache is only reused when this matches.
+  ensureCacheLoaded(); // hydrate the module cache from localStorage on first use (survives reload)
   const lessonKey = `${level}::${[...topics].sort().join('|')}`;
   const hit = bankCache && bankCache.lessonKey === lessonKey ? bankCache : null;
 
@@ -258,6 +280,8 @@ export function LessonBankPanel({
   const [hasImage, setHasImage] = useState<'any' | 'true' | 'false'>(hit?.hasImage ?? 'any');
   const [difficulties, setDifficulties] = useState<Set<Difficulty>>(new Set(hit?.difficulties ?? []));
   const [year, setYear] = useState<string>(hit?.year ?? 'any');
+  // How many rows to fetch for keyword/local browsing. "Load more" raises it. Resets on new search.
+  const [limit, setLimit] = useState(100);
   const [questions, setQuestions] = useState<BankQuestion[]>(hit?.results ?? []);
   const [total, setTotal] = useState(hit?.total ?? 0);
   const [loading, setLoading] = useState(false);
@@ -338,6 +362,7 @@ export function LessonBankPanel({
           year: filtersRef.current.year,
           results: list, total: tot, source: src,
         };
+        persistCache(); // survive a full reload
       };
 
       // Use the local cache ONLY when offline mode is explicitly enabled for this level.
@@ -348,7 +373,7 @@ export function LessonBankPanel({
 
       // Keyword browse while offline mode is on → read the synced local cache.
       if (offlineModeOn && !cSmart) {
-        const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit: 100 });
+        const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit });
         if (cancelled) return;
         if (local.length === 0) {
           setSource('unavailable'); setQuestions([]); setTotal(0); // enabled but not synced yet
@@ -383,7 +408,7 @@ export function LessonBankPanel({
         params.set('level', level);
         params.set('topics', topics.join(','));
         if (cQuery) params.set('q', cQuery);
-        params.set('limit', '100');
+        params.set('limit', String(limit));
         const res = await fetch(`/api/admin/lessons/bank?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
@@ -394,7 +419,7 @@ export function LessonBankPanel({
         // Genuine network/server failure. For keyword, fall back to local cache if we have it.
         if (!cSmart) {
           try {
-            const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit: 100 });
+            const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit });
             if (cancelled) return;
             if (local.length > 0) { commit(local as unknown as BankQuestion[], local.length, 'local'); return; }
           } catch { /* ignore and fall through to error */ }
@@ -406,7 +431,7 @@ export function LessonBankPanel({
       }
     })();
     return () => { cancelled = true; };
-  }, [level, topics, lessonKey, committed, auth]);
+  }, [level, topics, lessonKey, committed, auth, limit]);
 
   // Restore the saved scroll position once this lesson's results are on screen (after a card switch).
   // Runs once per mount so it doesn't fight the user's own scrolling.
@@ -428,6 +453,7 @@ export function LessonBankPanel({
     if (mode === 'smart' && !q) return; // nothing to rank
     bankScroll = { lessonKey, top: 0 };          // a fresh search starts at the top
     listRef.current?.scrollTo({ top: 0 });
+    setLimit(100);
     setCommitted({ query: q, mode, aiModel });
   }
 
@@ -436,8 +462,10 @@ export function LessonBankPanel({
     setMode('keyword');
     bankScroll = { lessonKey, top: 0 };
     listRef.current?.scrollTo({ top: 0 });
+    setLimit(100);
     setCommitted({ query: '', mode: 'keyword', aiModel });
     if (bankCache && bankCache.lessonKey === lessonKey) bankCache = null;
+    persistCache();
   }
 
   function toggleDifficulty(d: Difficulty) {
@@ -564,6 +592,12 @@ export function LessonBankPanel({
             onInsert={onInsert}
           />
         ))}
+        {!loading && committed.mode !== 'smart' && questions.length < total && (
+          <button
+            onClick={() => setLimit(l => l + 100)}
+            className="w-full text-xs py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
+          >Load {Math.min(100, total - questions.length)} more ({questions.length} of {total})</button>
+        )}
       </div>
     </div>
   );

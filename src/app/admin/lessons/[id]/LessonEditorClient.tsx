@@ -53,6 +53,8 @@ interface Lesson {
   topics: string[];
   description: string | null;
   updated_at: string;
+  // Custom section ordering per kind; absent/unknown sections fall back to alphabetical.
+  section_order?: Partial<Record<ContentKind, string[]>>;
 }
 
 type ContentKind = 'refresher' | 'worked_example' | 'practice';
@@ -1171,6 +1173,7 @@ function KindPanel({
   activeId,
   activeDragKind,
   localSections,
+  sectionOrder,
   onSelectCard,
   onBankDropOnList,
   onAddSection,
@@ -1184,6 +1187,7 @@ function KindPanel({
   activeId: string | null;
   activeDragKind: string | null;
   localSections: string[];
+  sectionOrder: string[];
   onSelectCard: (id: string) => void;
   onBankDropOnList: (q: BankQuestion, anchor: Card, position: 'above' | 'below') => void;
   onAddSection: (kind: ContentKind) => void;
@@ -1197,8 +1201,11 @@ function KindPanel({
   const sections = useMemo(() => {
     const fromCards = [...new Set(cards.map(c => c.section_name))].filter(Boolean);
     const all = [...new Set([...fromCards, ...localSections])];
-    return all.sort();
-  }, [cards, localSections]);
+    // Honour the saved drag order first; any sections not in it fall back to alphabetical.
+    const known = sectionOrder.filter(s => all.includes(s));
+    const rest = all.filter(s => !known.includes(s)).sort();
+    return [...known, ...rest];
+  }, [cards, localSections, sectionOrder]);
 
   const isPanelDragTarget = activeDragKind !== null && activeDragKind !== kind;
   const isCardDrag = !!activeId && !String(activeId).startsWith('sec-hdr-');
@@ -1483,9 +1490,23 @@ export default function LessonEditorClient() {
     // because sections are just per-card strings, no section_meta table).
     const activeHdr = parseHdrId(activeIdStr);
     if (activeHdr) {
-      // No-op: lessons don't persist section order separately (no sections_meta table). Section
-      // ordering is alphabetical for now. Reordering UI was kept so the drag handle still renders,
-      // but the drag is non-destructive.
+      // Reorder sections WITHIN a kind. Persisted in lessons.section_order (per-kind string[]).
+      const overHdr = parseHdrId(overIdStr);
+      if (!overHdr || overHdr.kind !== activeHdr.kind) return; // only header→header, same kind
+      const kind = activeHdr.kind;
+      // Rebuild the kind's current displayed section order (same logic as KindPanel.sections).
+      const all = [...new Set([
+        ...cards.filter(c => c.content_kind === kind).map(c => c.section_name).filter(Boolean),
+        ...localSections[kind],
+      ])];
+      const stored = lesson?.section_order?.[kind] ?? [];
+      const known = stored.filter(s => all.includes(s));
+      const ordered = [...known, ...all.filter(s => !known.includes(s)).sort()];
+      const oi = ordered.indexOf(activeHdr.name);
+      const ni = ordered.indexOf(overHdr.name);
+      if (oi === -1 || ni === -1 || oi === ni) return;
+      const nextOrder = { ...(lesson?.section_order ?? {}), [kind]: arrayMove(ordered, oi, ni) };
+      void saveLessonMeta({ section_order: nextOrder });
       return;
     }
 
@@ -1641,6 +1662,7 @@ export default function LessonEditorClient() {
                   activeId={activeId}
                   activeDragKind={activeDragKind}
                   localSections={localSections[kind]}
+                  sectionOrder={lesson?.section_order?.[kind] ?? []}
                   onSelectCard={setSelectedId}
                   onBankDropOnList={handleBankDropOnList}
                   onAddSection={(k) => setNewSectionKind(k)}

@@ -33,7 +33,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   ]);
   if (!lesson) return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
 
-  const html = renderLessonHTML(lesson as { name: string; level: string; topics: string[]; description: string | null }, (cards ?? []) as Card[]);
+  const html = renderLessonHTML(lesson as { name: string; level: string; topics: string[]; description: string | null; section_order?: Record<string, string[]> }, (cards ?? []) as Card[]);
 
   try {
     const browser = await getBrowser();
@@ -62,12 +62,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
 // ── HTML template ──
 
-function renderLessonHTML(lesson: { name: string; level: string; topics: string[]; description: string | null }, cards: Card[]): string {
+function renderLessonHTML(lesson: { name: string; level: string; topics: string[]; description: string | null; section_order?: Record<string, string[]> }, cards: Card[]): string {
   const refreshers = cards.filter(c => c.content_kind === 'refresher');
   const workedExamples = cards.filter(c => c.content_kind === 'worked_example');
   const practice = cards.filter(c => c.content_kind === 'practice');
 
-  const groupBySection = (list: Card[]) => {
+  const groupBySection = (list: Card[], order: string[] = []) => {
     const out: Record<string, Card[]> = {};
     for (const c of list) {
       const k = c.section_name || 'Default';
@@ -75,12 +75,19 @@ function renderLessonHTML(lesson: { name: string; level: string; topics: string[
       out[k].push(c);
     }
     for (const k of Object.keys(out)) out[k].sort((a, b) => a.order_index - b.order_index);
-    return out;
+    // Reorder section keys to match the editor's saved drag order, then alphabetical for the rest.
+    const keys = Object.keys(out);
+    const known = order.filter(s => keys.includes(s));
+    const rest = keys.filter(s => !known.includes(s)).sort();
+    const ordered: Record<string, Card[]> = {};
+    for (const k of [...known, ...rest]) ordered[k] = out[k];
+    return ordered;
   };
 
-  const refreshersBySection = groupBySection(refreshers);
-  const wesBySection = groupBySection(workedExamples);
-  const practiceBySection = groupBySection(practice);
+  const so = lesson.section_order ?? {};
+  const refreshersBySection = groupBySection(refreshers, so.refresher ?? []);
+  const wesBySection = groupBySection(workedExamples, so.worked_example ?? []);
+  const practiceBySection = groupBySection(practice, so.practice ?? []);
 
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
