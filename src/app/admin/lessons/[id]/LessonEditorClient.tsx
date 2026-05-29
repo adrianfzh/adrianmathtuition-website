@@ -550,6 +550,7 @@ function AISidebar({
   const [aiError, setAiError] = useState('');
   type ImgEntry = { data: string; mediaType: string; previewUrl: string };
   const [images, setImages] = useState<ImgEntry[]>([]);
+  const [cropIdx, setCropIdx] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | null>(null);
@@ -692,7 +693,8 @@ function AISidebar({
                 {images.map((img, idx) => (
                   <div key={idx} className="relative group shrink-0">
                     <img src={img.previewUrl} alt={`image ${idx + 1}`} className="h-12 w-12 object-cover rounded border border-slate-200" />
-                    <button onClick={() => removeImage(idx)} className="absolute top-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-bl">✕</button>
+                    <button onClick={() => setCropIdx(idx)} className="absolute bottom-0 left-0 bg-black/60 text-white text-[10px] px-1 rounded-tr" title="Crop">✂</button>
+                    <button onClick={() => removeImage(idx)} className="absolute top-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-bl" title="Remove">✕</button>
                   </div>
                 ))}
               </div>
@@ -749,6 +751,97 @@ function AISidebar({
           <button onClick={handleReject} className="flex-1 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Reject</button>
         </div>
       )}
+      {cropIdx !== null && images[cropIdx] && (
+        <ImageCropModal
+          src={images[cropIdx].previewUrl}
+          onCancel={() => setCropIdx(null)}
+          onApply={(data, mediaType, previewUrl) => {
+            setImages(prev => prev.map((im, i) => i === cropIdx ? { data, mediaType, previewUrl } : im));
+            setCropIdx(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Image crop modal — drag a box over a pasted/uploaded snippet to crop it before extraction ──
+function ImageCropModal({ src, onCancel, onApply }: {
+  src: string;
+  onCancel: () => void;
+  onApply: (data: string, mediaType: string, previewUrl: string) => void;
+}) {
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [sel, setSel] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
+
+  function relPoint(e: React.PointerEvent) {
+    const r = imgRef.current!.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(e.clientX - r.left, r.width)),
+      y: Math.max(0, Math.min(e.clientY - r.top, r.height)),
+    };
+  }
+  function onDown(e: React.PointerEvent) {
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    const p = relPoint(e);
+    startRef.current = p;
+    setSel({ x: p.x, y: p.y, w: 0, h: 0 });
+  }
+  function onMove(e: React.PointerEvent) {
+    if (!startRef.current) return;
+    const p = relPoint(e);
+    const s = startRef.current;
+    setSel({ x: Math.min(s.x, p.x), y: Math.min(s.y, p.y), w: Math.abs(p.x - s.x), h: Math.abs(p.y - s.y) });
+  }
+  function onUp() { startRef.current = null; }
+
+  function apply() {
+    const img = imgRef.current;
+    if (!img) return;
+    const r = img.getBoundingClientRect();
+    // No (or tiny) selection → treat as "use the whole image" (a no-op crop).
+    const region = sel && sel.w > 4 && sel.h > 4 ? sel : { x: 0, y: 0, w: r.width, h: r.height };
+    const scaleX = img.naturalWidth / r.width;
+    const scaleY = img.naturalHeight / r.height;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(region.w * scaleX));
+    canvas.height = Math.max(1, Math.round(region.h * scaleY));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(img, region.x * scaleX, region.y * scaleY, region.w * scaleX, region.h * scaleY, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/png');
+    onApply(dataUrl.split(',')[1], 'image/png', dataUrl);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div className="bg-white rounded-lg shadow-xl p-3 max-w-[90vw] max-h-[90vh] flex flex-col gap-2">
+        <p className="text-xs text-slate-500">Drag to select the area to keep. Leave empty to keep the whole image.</p>
+        <div className="relative overflow-auto" style={{ touchAction: 'none' }}>
+          <img
+            ref={imgRef}
+            src={src}
+            alt="crop source"
+            draggable={false}
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            className="max-w-full max-h-[70vh] select-none cursor-crosshair block"
+          />
+          {sel && sel.w > 0 && sel.h > 0 && (
+            <div
+              className="absolute border-2 border-blue-500 bg-blue-500/10 pointer-events-none"
+              style={{ left: sel.x, top: sel.y, width: sel.w, height: sel.h }}
+            />
+          )}
+        </div>
+        <div className="flex justify-end gap-2">
+          {sel && <button onClick={() => setSel(null)} className="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Reset</button>}
+          <button onClick={onCancel} className="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
+          <button onClick={apply} className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Apply crop</button>
+        </div>
+      </div>
     </div>
   );
 }

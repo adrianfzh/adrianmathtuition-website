@@ -182,7 +182,7 @@ Instruction: ${textInstruction}${blobNote}`;
       try {
         const systemPrompt = content_kind === 'refresher' ? REFRESHER_PROMPT : WORKED_EXAMPLE_PROMPT;
         const stream = client.messages.stream({
-          model: 'claude-opus-4-6',
+          model: 'claude-opus-4-8',
           max_tokens: 4000,
           system: systemPrompt,
           messages: [{ role: 'user', content: userContent }],

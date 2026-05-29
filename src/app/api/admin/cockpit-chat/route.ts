@@ -40,11 +40,11 @@ export async function POST(req: NextRequest) {
     ? `${SYSTEM}\n\n--- CONTEXT ---\n${JSON.stringify(contextItem, null, 2)}`
     : SYSTEM;
   const response = await client.messages.create({
-    model: 'claude-opus-4-6',
+    model: 'claude-opus-4-8',
     max_tokens: 2000,
     system: [{ type: 'text', text: systemWithCtx, cache_control: { type: 'ephemeral' } }],
     messages,
   });
-  const text = response.content.filter((b: any) => b.type === 'text').map((b: any) => b.text).join('');
+  const text = response.content.filter((b): b is Anthropic.TextBlock => b.type === 'text').map(b => b.text).join('');
   return NextResponse.json({ text });
 }
