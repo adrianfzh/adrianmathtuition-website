@@ -691,7 +691,7 @@ function AISidebar({
             <div className="mt-1.5 border border-slate-200 rounded bg-slate-50 p-1.5 space-y-1.5">
               {images.map((img, idx) => (
                 <div key={idx} className="flex items-center gap-2">
-                  <img src={img.previewUrl} alt={`image ${idx + 1}`} className="h-14 w-14 object-cover rounded border border-slate-200 shrink-0" />
+                  <img src={img.previewUrl} alt={`image ${idx + 1}`} className="h-16 w-20 object-contain bg-white rounded border border-slate-200 shrink-0" />
                   <button onClick={() => setCropIdx(idx)} className="text-xs px-2 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50">✂ Crop</button>
                   <button onClick={() => removeImage(idx)} className="text-xs px-2 py-1 border border-slate-300 rounded bg-white text-red-600 hover:bg-red-50">Remove</button>
                 </div>
@@ -834,10 +834,15 @@ function ImageCropModal({ src, onCancel, onApply }: {
             />
           )}
         </div>
-        <div className="flex justify-end gap-2">
+        <div className="flex items-center justify-end gap-2">
+          <span className="mr-auto text-[11px] text-slate-500">
+            {sel && sel.w > 4 && sel.h > 4 ? `Selected ${Math.round(sel.w)}×${Math.round(sel.h)} px` : 'No selection — will keep the whole image'}
+          </span>
           {sel && <button onClick={() => setSel(null)} className="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Reset</button>}
           <button onClick={onCancel} className="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
-          <button onClick={apply} className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">Apply crop</button>
+          <button onClick={apply} className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
+            {sel && sel.w > 4 && sel.h > 4 ? 'Apply crop' : 'Use whole image'}
+          </button>
         </div>
       </div>
     </div>
