@@ -739,11 +739,17 @@ export default function RevisionSignupsPage() {
               <div className="rs-dialog-actions">
                 <button className="rs-btn-ghost" onClick={closeManage} disabled={reverting || sending}>Close</button>
                 <button className="rs-btn-ghost rs-btn-danger-outline" onClick={() => setRevertConfirm(true)} disabled={sending}>Revert Sign-up</button>
-                {manageStudent.revisionInvoiceId && (
-                  <button className="rs-btn-primary" onClick={handleSendInvoice} disabled={sending}>
-                    {sending ? sendMsg || 'Working…' : '📧 Send Invoice'}
-                  </button>
-                )}
+                {manageStudent.revisionInvoiceId && (() => {
+                  const alreadySent = manageStudent.revisionInvoiceStatus === 'Sent'
+                    || manageStudent.revisionInvoiceStatus === 'Paid';
+                  return (
+                    <button className="rs-btn-primary" onClick={handleSendInvoice} disabled={sending}>
+                      {sending
+                        ? sendMsg || 'Working…'
+                        : alreadySent ? '📧 Send Amended Invoice' : '📧 Send Invoice'}
+                    </button>
+                  );
+                })()}
               </div>
             ) : (
               <div className="rs-revert-confirm">
