@@ -752,26 +752,32 @@ function AISidebar({
       {cropIdx !== null && images[cropIdx] && (
         <ImageCropModal
           src={images[cropIdx].previewUrl}
-          onCancel={() => setCropIdx(null)}
-          onApply={(data, mediaType, previewUrl) => {
+          onAddCrop={(data, mediaType, previewUrl) => setImages(prev => [...prev, { data, mediaType, previewUrl }])}
+          onReplace={(data, mediaType, previewUrl) => {
             setImages(prev => prev.map((im, i) => i === cropIdx ? { data, mediaType, previewUrl } : im));
             setCropIdx(null);
           }}
+          onClose={() => setCropIdx(null)}
         />
       )}
     </div>
   );
 }
 
-// ── Image crop modal — drag a box over a pasted/uploaded snippet to crop it before extraction ──
-function ImageCropModal({ src, onCancel, onApply }: {
+// ── Image crop modal — drag a box over a pasted/uploaded snippet to crop it before extraction.
+// "Add crop" appends each selection as a NEW attachment (so you can pull several regions out of one
+// source image); "Replace original" swaps the source image for the single crop.
+function ImageCropModal({ src, onAddCrop, onReplace, onClose }: {
   src: string;
-  onCancel: () => void;
-  onApply: (data: string, mediaType: string, previewUrl: string) => void;
+  onAddCrop: (data: string, mediaType: string, previewUrl: string) => void;
+  onReplace: (data: string, mediaType: string, previewUrl: string) => void;
+  onClose: () => void;
 }) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [sel, setSel] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [added, setAdded] = useState(0);
   const startRef = useRef<{ x: number; y: number } | null>(null);
+  const hasSel = !!sel && sel.w > 4 && sel.h > 4;
 
   function relPoint(e: React.PointerEvent) {
     const r = imgRef.current!.getBoundingClientRect();
@@ -794,28 +800,42 @@ function ImageCropModal({ src, onCancel, onApply }: {
   }
   function onUp() { startRef.current = null; }
 
-  function apply() {
+  // Render the current selection (or whole image if none) to a PNG data URL.
+  function computeCrop(): { data: string; mediaType: string; previewUrl: string } | null {
     const img = imgRef.current;
-    if (!img) return;
+    if (!img) return null;
     const r = img.getBoundingClientRect();
-    // No (or tiny) selection → treat as "use the whole image" (a no-op crop).
-    const region = sel && sel.w > 4 && sel.h > 4 ? sel : { x: 0, y: 0, w: r.width, h: r.height };
+    const region = hasSel ? sel! : { x: 0, y: 0, w: r.width, h: r.height };
     const scaleX = img.naturalWidth / r.width;
     const scaleY = img.naturalHeight / r.height;
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(region.w * scaleX));
     canvas.height = Math.max(1, Math.round(region.h * scaleY));
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return null;
     ctx.drawImage(img, region.x * scaleX, region.y * scaleY, region.w * scaleX, region.h * scaleY, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL('image/png');
-    onApply(dataUrl.split(',')[1], 'image/png', dataUrl);
+    return { data: dataUrl.split(',')[1], mediaType: 'image/png', previewUrl: dataUrl };
+  }
+
+  function handleAdd() {
+    if (!hasSel) return; // need a region to add a new image
+    const c = computeCrop();
+    if (!c) return;
+    onAddCrop(c.data, c.mediaType, c.previewUrl);
+    setAdded(a => a + 1);
+    setSel(null); // ready to draw the next region
+  }
+  function handleReplace() {
+    const c = computeCrop();
+    if (!c) return;
+    onReplace(c.data, c.mediaType, c.previewUrl);
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-white rounded-lg shadow-xl p-3 max-w-[90vw] max-h-[90vh] flex flex-col gap-2">
-        <p className="text-xs text-slate-500">Drag to select the area to keep. Leave empty to keep the whole image.</p>
+        <p className="text-xs text-slate-500">Drag a box over a region. <strong>Add crop</strong> saves it as a new image and lets you grab another part of the same picture. <strong>Replace original</strong> swaps this image for the single crop.</p>
         <div className="relative overflow-auto" style={{ touchAction: 'none' }}>
           <img
             ref={imgRef}
@@ -834,15 +854,15 @@ function ImageCropModal({ src, onCancel, onApply }: {
             />
           )}
         </div>
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-2 flex-wrap">
           <span className="mr-auto text-[11px] text-slate-500">
-            {sel && sel.w > 4 && sel.h > 4 ? `Selected ${Math.round(sel.w)}×${Math.round(sel.h)} px` : 'No selection — will keep the whole image'}
+            {hasSel ? `Selected ${Math.round(sel!.w)}×${Math.round(sel!.h)} px` : 'Drag a box to select a region'}
+            {added > 0 ? ` · ${added} crop${added > 1 ? 's' : ''} added` : ''}
           </span>
           {sel && <button onClick={() => setSel(null)} className="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Reset</button>}
-          <button onClick={onCancel} className="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Cancel</button>
-          <button onClick={apply} className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
-            {sel && sel.w > 4 && sel.h > 4 ? 'Apply crop' : 'Use whole image'}
-          </button>
+          <button onClick={handleAdd} disabled={!hasSel} className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-40">+ Add crop</button>
+          <button onClick={handleReplace} disabled={!hasSel} className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40">Replace original</button>
+          <button onClick={onClose} className="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">{added > 0 ? 'Done' : 'Cancel'}</button>
         </div>
       </div>
     </div>
