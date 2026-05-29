@@ -27,7 +27,7 @@ export interface LocalLesson {
   topics: string[];
   description: string | null;
   is_archived?: boolean;
-  section_order?: Partial<Record<ContentKind, string[]>>;
+  section_order?: string[];
   updated_at: string;
   _dirty?: boolean;
 }

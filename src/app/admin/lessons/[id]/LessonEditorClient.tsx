@@ -9,7 +9,7 @@
 //   * Bank questions filter by lesson.topics (array), not by sub-group.
 //   * Reorder endpoint takes a single orderedIds list per (kind, section) group.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -53,8 +53,8 @@ interface Lesson {
   topics: string[];
   description: string | null;
   updated_at: string;
-  // Custom section ordering per kind; absent/unknown sections fall back to alphabetical.
-  section_order?: Partial<Record<ContentKind, string[]>>;
+  // Lesson-level ordered list of section names; unknown sections fall back to alphabetical.
+  section_order?: string[];
 }
 
 type ContentKind = 'refresher' | 'worked_example' | 'practice';
@@ -73,25 +73,28 @@ interface Card {
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-const KIND_ORDER: ContentKind[] = ['refresher', 'worked_example', 'practice'];
-const KIND_LABEL: Record<ContentKind, string> = {
-  refresher: '🧠 Refreshers',
-  worked_example: '💡 Worked Examples',
-  practice: '✏️ Practice',
-};
-const KIND_PREFIX: Record<ContentKind, 'rf' | 'we' | 'pr'> = {
-  refresher: 'rf', worked_example: 'we', practice: 'pr',
-};
-const KIND_ACCENT: Record<ContentKind, string> = {
-  refresher: 'text-emerald-700',
-  worked_example: 'text-blue-700',
-  practice: 'text-orange-700',
-};
 const DEFAULT_SECTION: Record<ContentKind, string> = {
   refresher: 'Refreshers',
   worked_example: 'Worked Examples',
   practice: 'Practice',
 };
+// Section-first model: a lesson is an ordered list of named sections; each card carries a `kind`
+// (refresher / worked example / practice) shown as a chip and used for PDF styling + answers.
+const KIND_CHIP: Record<ContentKind, { icon: string; cls: string; short: string }> = {
+  refresher: { icon: '🧠', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', short: 'Refresher' },
+  worked_example: { icon: '💡', cls: 'bg-blue-50 text-blue-700 border-blue-200', short: 'Worked eg' },
+  practice: { icon: '✏️', cls: 'bg-orange-50 text-orange-700 border-orange-200', short: 'Practice' },
+};
+// Single DnD id namespace now that sections are lesson-level (no per-kind prefix).
+const SEC = 'x';
+
+// Lesson-level ordered section list: saved order first, then any new sections alphabetically.
+function orderedSections(cards: Card[], local: string[], order: string[]): string[] {
+  const all = [...new Set([...cards.map(c => c.section_name).filter(Boolean), ...local])];
+  const known = (order ?? []).filter(s => all.includes(s));
+  const rest = all.filter(s => !known.includes(s)).sort();
+  return [...known, ...rest];
+}
 
 // ── Module-level animation tracker (matches edit-cards pattern) ──────────────
 let _recentlyMovedCardId: string | null = null;
@@ -205,38 +208,25 @@ const QUICK_ACTIONS = [
 const customCollision: CollisionDetection = (args) => {
   const activeId = String(args.active.id);
   if (activeId.startsWith('sec-hdr-')) {
+    // Section header drag → only consider other section headers.
     return closestCenter({
       ...args,
-      droppableContainers: args.droppableContainers.filter(
-        c => String(c.id).startsWith('sec-hdr-') || String(c.id).startsWith('panel-')
-      ),
+      droppableContainers: args.droppableContainers.filter(c => String(c.id).startsWith('sec-hdr-')),
     });
   }
 
   const activeSection: string = (args.active.data.current as { section?: string } | undefined)?.section ?? '';
-  const activeKind: string = (args.active.data.current as { kind?: string } | undefined)?.kind ?? '';
-
   const cardContainers = args.droppableContainers.filter(c => !String(c.id).startsWith('sec-hdr-'));
+  const chipContainers = cardContainers.filter(c => !String(c.id).startsWith('sec-zone-'));
 
-  const chipContainers = cardContainers.filter(
-    c => !String(c.id).startsWith('sec-zone-') && !String(c.id).startsWith('panel-')
-  );
   const chipPointer = pointerWithin({ ...args, droppableContainers: chipContainers });
   if (chipPointer.length > 0) return chipPointer;
 
   const zonePointer = pointerWithin({ ...args, droppableContainers: cardContainers });
   if (zonePointer.length > 0) {
     const firstId = String(zonePointer[0].id);
-    let zoneKind = '';
-    let zoneSection = '';
-    for (const k of KIND_ORDER) {
-      const pre = KIND_PREFIX[k];
-      if (firstId.startsWith(`sec-zone-${pre}-`)) { zoneKind = k; zoneSection = firstId.slice(`sec-zone-${pre}-`.length); }
-      if (firstId === `panel-${pre}`) { zoneKind = k; zoneSection = ''; }
-    }
-    if (zoneSection === '__flat__') zoneSection = '';
-    const sameSection = zoneSection === activeSection && zoneKind === activeKind;
-    if (!sameSection) return zonePointer;
+    const zoneSection = firstId.startsWith(`sec-zone-${SEC}-`) ? firstId.slice(`sec-zone-${SEC}-`.length) : '';
+    if (zoneSection !== activeSection) return zonePointer; // dropping into a different section
   }
 
   return closestCenter({ ...args, droppableContainers: chipContainers.length > 0 ? chipContainers : cardContainers });
@@ -297,6 +287,7 @@ function SortableCardRow({
       {bankHover === 'below' && <div className="absolute -bottom-1 left-0 right-0 h-1 bg-blue-500 rounded-full pointer-events-none" />}
       <span {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0" title="Drag to reorder">⠿</span>
       <span className="text-slate-400 text-xs w-4 shrink-0">{displayIndex}.</span>
+      <span className={`text-[10px] px-1 py-px rounded border shrink-0 ${KIND_CHIP[card.content_kind].cls}`} title={KIND_CHIP[card.content_kind].short}>{KIND_CHIP[card.content_kind].icon}</span>
       <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug truncate">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
       {card.content_kind === 'practice' && card.marks != null && (
         <span className="text-[10px] text-slate-400 bg-slate-100 px-1 rounded shrink-0">{card.marks}m</span>
@@ -320,14 +311,13 @@ function DragCardOverlay({ card }: { card: Card }) {
 // ── Section header with rename / delete (no API — section is a per-card field) ──
 
 function SectionHeader({
-  kind, name, cardCount, dragHandleProps, onRenamed, onDeleted, onAddCard,
+  name, cardCount, dragHandleProps, onRenamed, onDeleted, onAddCard,
 }: {
-  kind: ContentKind;
   name: string;
   cardCount: number;
   dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
-  onRenamed: (kind: ContentKind, oldName: string, newName: string) => void;
-  onDeleted: (kind: ContentKind, name: string) => void;
+  onRenamed: (oldName: string, newName: string) => void;
+  onDeleted: (name: string) => void;
   onAddCard?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -338,7 +328,7 @@ function SectionHeader({
   function commit() {
     const trimmed = editName.trim();
     if (!trimmed || trimmed === name) { setEditing(false); setEditName(name); return; }
-    onRenamed(kind, name, trimmed);
+    onRenamed(name, trimmed);
     setEditing(false);
   }
 
@@ -387,7 +377,7 @@ function SectionHeader({
       >✎</button>
       {cardCount === 0 && (
         <button
-          onClick={() => onDeleted(kind, name)}
+          onClick={() => onDeleted(name)}
           className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs leading-none"
           title="Delete empty section"
         >🗑</button>
@@ -398,10 +388,10 @@ function SectionHeader({
 
 // ── Droppable wrappers ───────────────────────────────────────────────────────
 
-function DroppableSectionZone({ name, kindPrefix, children, isDragActive }: {
-  name: string; kindPrefix: 'we' | 'rf' | 'pr'; children: React.ReactNode; isDragActive: boolean;
+function DroppableSectionZone({ name, children, isDragActive }: {
+  name: string; children: React.ReactNode; isDragActive: boolean;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `sec-zone-${kindPrefix}-${name}` });
+  const { setNodeRef, isOver } = useDroppable({ id: `sec-zone-${SEC}-${name}` });
   return (
     <div
       ref={setNodeRef}
@@ -412,39 +402,24 @@ function DroppableSectionZone({ name, kindPrefix, children, isDragActive }: {
   );
 }
 
-function DroppablePanel({ id, isCrossKindTarget, children }: { id: string; isCrossKindTarget: boolean; children?: React.ReactNode }) {
-  const { setNodeRef, isOver } = useDroppable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      className={`min-h-4 rounded transition-colors ${isCrossKindTarget && isOver ? 'bg-indigo-50 outline outline-2 outline-dashed outline-indigo-400' : ''}`}
-    >
-      {children}
-    </div>
-  );
-}
-
 function SortableSectionWrapper({
-  kind, name, cardCount, onRenamed, onDeleted, onAddCard, children,
+  name, cardCount, onRenamed, onDeleted, onAddCard, children,
 }: {
-  kind: ContentKind;
   name: string;
   cardCount: number;
-  onRenamed: (kind: ContentKind, oldName: string, newName: string) => void;
-  onDeleted: (kind: ContentKind, name: string) => void;
+  onRenamed: (oldName: string, newName: string) => void;
+  onDeleted: (name: string) => void;
   onAddCard: () => void;
   children: React.ReactNode;
 }) {
-  const pre = KIND_PREFIX[kind];
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: `sec-hdr-${pre}-${name}`,
-    data: { isSectionHeader: true, kind, name },
+    id: `sec-hdr-${SEC}-${name}`,
+    data: { isSectionHeader: true, name },
   });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
   return (
     <div ref={setNodeRef} style={style}>
       <SectionHeader
-        kind={kind}
         name={name}
         cardCount={cardCount}
         dragHandleProps={{ ...attributes, ...listeners } as React.HTMLAttributes<HTMLSpanElement>}
@@ -459,8 +434,7 @@ function SortableSectionWrapper({
 
 // ── Quick-add section modal ──────────────────────────────────────────────────
 
-function NewSectionModal({ kind, existingSections, onClose, onCreated }: {
-  kind: ContentKind;
+function NewSectionModal({ existingSections, onClose, onCreated }: {
   existingSections: string[];
   onClose: () => void;
   onCreated: (name: string) => void;
@@ -473,8 +447,7 @@ function NewSectionModal({ kind, existingSections, onClose, onCreated }: {
   function create() {
     const trimmed = name.trim();
     if (!trimmed) {
-      // Blank name → create an "Untitled section" the user can rename later via the
-      // section header. Auto-number to keep it unique within this kind.
+      // Blank name → create an "Untitled section" the user can rename later via the header.
       let auto = 'Untitled section';
       let n = 2;
       while (existingSections.includes(auto)) auto = `Untitled section ${n++}`;
@@ -488,7 +461,7 @@ function NewSectionModal({ kind, existingSections, onClose, onCreated }: {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-white rounded-lg shadow-xl p-5 w-full max-w-sm">
-        <h2 className="text-base font-semibold text-slate-800 mb-3">New {KIND_LABEL[kind].replace(/^\S+\s/, '')} section</h2>
+        <h2 className="text-base font-semibold text-slate-800 mb-3">New section</h2>
         <input
           ref={inputRef}
           type="text"
@@ -910,6 +883,7 @@ function EditorPanel({
   const [content, setContent] = useState(initialCard.content ?? '');
   const [marks, setMarks] = useState<string>(initialCard.marks?.toString() ?? '');
   const [sectionName, setSectionName] = useState(initialCard.section_name);
+  const [kind, setKind] = useState<ContentKind>(initialCard.content_kind);
   const [contentHistory, setContentHistory] = useState<string[]>([]);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [previewContent, setPreviewContent] = useState(initialCard.content ?? '');
@@ -942,9 +916,10 @@ function EditorPanel({
       card_title: title,
       content,
       section_name: sectionName,
+      content_kind: kind,
     };
     const m = parseInt(marks, 10);
-    if (initialCard.content_kind === 'practice' && !isNaN(m)) patch.marks = m;
+    if (kind === 'practice' && !isNaN(m)) patch.marks = m;
     if (pendingSourceQuestionId) patch.source_question_id = pendingSourceQuestionId;
     try {
       // Local-first via store; the sync engine ships it to the server (immediately when
@@ -955,7 +930,7 @@ function EditorPanel({
       if (pendingSourceQuestionId) setPendingSourceQuestionId(null);
       setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2000);
     } catch { setSaveStatus('error'); }
-  }, [cardId, title, content, marks, sectionName, initialCard.content_kind, onSaved, pendingSourceQuestionId]);
+  }, [cardId, title, content, marks, sectionName, kind, onSaved, pendingSourceQuestionId]);
 
   const scheduleSave = useCallback(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -967,7 +942,7 @@ function EditorPanel({
     if (isFirstRender.current) { isFirstRender.current = false; return; }
     scheduleSave();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, content, marks, sectionName]);
+  }, [title, content, marks, sectionName, kind]);
 
   // Keep the Bank-drop title/content/source-id in sync if the user drops one in.
   const handleBankDropOnEditor = useCallback((q: BankQuestion) => {
@@ -1024,7 +999,7 @@ function EditorPanel({
     } catch { setDeleting(false); setShowDelete(false); }
   }
 
-  const siblings = allKindCards.filter(c => c.content_kind === initialCard.content_kind && c.section_name === initialCard.section_name).sort((a, b) => a.order_index - b.order_index);
+  const siblings = allKindCards.filter(c => c.section_name === initialCard.section_name).sort((a, b) => a.order_index - b.order_index);
   const sibIdx = siblings.findIndex(s => s.id === cardId);
   const prevSib = sibIdx > 0 ? siblings[sibIdx - 1] : null;
   const nextSib = sibIdx >= 0 && sibIdx < siblings.length - 1 ? siblings[sibIdx + 1] : null;
@@ -1033,9 +1008,16 @@ function EditorPanel({
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Sub-header */}
       <div className="shrink-0 px-4 py-2 border-b border-slate-200 bg-white flex items-center gap-3">
-        <span className={`text-xs font-semibold ${KIND_ACCENT[initialCard.content_kind]}`}>
-          {KIND_LABEL[initialCard.content_kind]}
-        </span>
+        <select
+          value={kind}
+          onChange={(e) => setKind(e.target.value as ContentKind)}
+          className="text-xs font-semibold border border-slate-300 rounded px-1 py-0.5 bg-white"
+          title="Card type"
+        >
+          <option value="refresher">🧠 Refresher</option>
+          <option value="worked_example">💡 Worked example</option>
+          <option value="practice">✏️ Practice</option>
+        </select>
         <span className="text-xs text-slate-400">·</span>
         <span className="text-xs text-slate-500 truncate min-w-0">{sectionName} · Card {sibIdx >= 0 ? sibIdx + 1 : '?'} of {siblings.length}</span>
         <div className="ml-auto flex items-center gap-2 shrink-0">
@@ -1074,7 +1056,7 @@ function EditorPanel({
               onChange={(e) => setSectionName(e.target.value)}
             />
           </label>
-          {initialCard.content_kind === 'practice' && (
+          {kind === 'practice' && (
             <label className="flex items-center gap-1.5 text-slate-600">
               Marks
               <input
@@ -1137,9 +1119,9 @@ function EditorPanel({
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleTextareaKeyDown}
             spellCheck={false}
-            placeholder={initialCard.content_kind === 'refresher'
+            placeholder={kind === 'refresher'
               ? 'Short memory aid — formula, condition, mnemonic. Use $...$ for inline math, $$...$$ for display.'
-              : initialCard.content_kind === 'worked_example'
+              : kind === 'worked_example'
                 ? 'Question + Solution. Use $\\begin{aligned}...\\end{aligned}$ for chained equations.'
                 : 'Practice question. Drop a bank question to populate.'}
           />
@@ -1179,7 +1161,7 @@ function EditorPanel({
                     sectionName={sectionName}
                     content={content}
                     title={title}
-                    contentKind={initialCard.content_kind}
+                    contentKind={kind}
                     auth={auth}
                     onAccept={(c) => { setContentHistory(prev => [...prev.slice(-9), content]); setContent(c); }}
                     onPreviewChange={setAiPreviewContent}
@@ -1280,16 +1262,13 @@ function TopicPicker({ level, selected, onPick }: { level: string; selected: str
   );
 }
 
-// ── Kind panel — one of refresher/worked_example/practice ────────────────────
+// ── Section flow — lesson-level ordered sections, each holding mixed-kind cards ──
 
-function KindPanel({
-  kind,
+function SectionFlow({
   cards,
+  sections,
   selectedId,
   activeId,
-  activeDragKind,
-  localSections,
-  sectionOrder,
   onSelectCard,
   onBankDropOnList,
   onAddSection,
@@ -1297,73 +1276,48 @@ function KindPanel({
   onRenameSection,
   onDeleteSection,
 }: {
-  kind: ContentKind;
   cards: Card[];
+  sections: string[];                 // lesson-level ordered section names
   selectedId: string | null;
   activeId: string | null;
-  activeDragKind: string | null;
-  localSections: string[];
-  sectionOrder: string[];
   onSelectCard: (id: string) => void;
   onBankDropOnList: (q: BankQuestion, anchor: Card, position: 'above' | 'below') => void;
-  onAddSection: (kind: ContentKind) => void;
-  onAddCard: (kind: ContentKind, section: string) => void;
-  onRenameSection: (kind: ContentKind, oldName: string, newName: string) => void;
-  onDeleteSection: (kind: ContentKind, name: string) => void;
+  onAddSection: () => void;
+  onAddCard: (section: string, kind: ContentKind) => void;
+  onRenameSection: (oldName: string, newName: string) => void;
+  onDeleteSection: (name: string) => void;
 }) {
-  const pre = KIND_PREFIX[kind];
-  const accent = KIND_ACCENT[kind];
-
-  const sections = useMemo(() => {
-    const fromCards = [...new Set(cards.map(c => c.section_name))].filter(Boolean);
-    const all = [...new Set([...fromCards, ...localSections])];
-    // Honour the saved drag order first; any sections not in it fall back to alphabetical.
-    const known = sectionOrder.filter(s => all.includes(s));
-    const rest = all.filter(s => !known.includes(s)).sort();
-    return [...known, ...rest];
-  }, [cards, localSections, sectionOrder]);
-
-  const isPanelDragTarget = activeDragKind !== null && activeDragKind !== kind;
   const isCardDrag = !!activeId && !String(activeId).startsWith('sec-hdr-');
 
   return (
-    <div className="mt-2">
-      <div className={`flex items-center gap-1 px-1 py-1.5 rounded transition-colors ${isPanelDragTarget ? 'bg-indigo-50' : ''}`}>
-        <span className={`text-xs font-semibold flex-1 ${accent}`}>
-          {KIND_LABEL[kind]} <span className="font-normal text-slate-400">({cards.length})</span>
-        </span>
-        <button
-          onClick={() => onAddSection(kind)}
-          className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50 shrink-0"
-          title="Add a new section"
-        >+ Section</button>
+    <div className="mt-1">
+      <div className="flex items-center gap-1 px-1 py-1.5">
+        <span className="text-xs font-semibold flex-1 text-slate-600">Sections <span className="font-normal text-slate-400">({sections.length})</span></span>
+        <button onClick={onAddSection} className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50 shrink-0" title="Add a new section">+ Section</button>
       </div>
 
       {sections.length === 0 ? (
-        <DroppablePanel id={`panel-${pre}`} isCrossKindTarget={isPanelDragTarget}>
-          <div className="px-3 py-3 text-center">
-            <p className="text-slate-400 text-sm mb-2">No {kind.replace('_', ' ')} cards yet.</p>
-            <button onClick={() => onAddSection(kind)} className="text-sm px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">+ New section</button>
-          </div>
-        </DroppablePanel>
+        <div className="px-3 py-6 text-center">
+          <p className="text-slate-400 text-sm mb-2">No sections yet.</p>
+          <button onClick={onAddSection} className="text-sm px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">+ New section</button>
+        </div>
       ) : (
         <div className="space-y-3">
-          <SortableContext items={sections.map(s => `sec-hdr-${pre}-${s}`)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={sections.map(s => `sec-hdr-${SEC}-${s}`)} strategy={verticalListSortingStrategy}>
             {sections.map(sectionName => {
               const sectionCards = cards.filter(c => c.section_name === sectionName).sort((a, b) => a.order_index - b.order_index);
               return (
                 <SortableSectionWrapper
                   key={sectionName}
-                  kind={kind}
                   name={sectionName}
                   cardCount={sectionCards.length}
                   onRenamed={onRenameSection}
                   onDeleted={onDeleteSection}
-                  onAddCard={() => onAddCard(kind, sectionName)}
+                  onAddCard={() => onAddCard(sectionName, 'worked_example')}
                 >
-                  <DroppableSectionZone name={sectionName} kindPrefix={pre} isDragActive={isCardDrag}>
+                  <DroppableSectionZone name={sectionName} isDragActive={isCardDrag}>
                     <SortableContext items={sectionCards.map(c => c.id)} strategy={verticalListSortingStrategy}>
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-h-[8px]">
                         {sectionCards.map((card, idx) => (
                           <SortableCardRow
                             key={card.id}
@@ -1377,11 +1331,17 @@ function KindPanel({
                       </div>
                     </SortableContext>
                   </DroppableSectionZone>
+                  {/* Add a card of a chosen kind to this section */}
+                  <div className="flex gap-1 mt-1 pl-1">
+                    <span className="text-[10px] text-slate-400 self-center">+ card:</span>
+                    <button onClick={() => onAddCard(sectionName, 'refresher')} className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">🧠 Refresher</button>
+                    <button onClick={() => onAddCard(sectionName, 'worked_example')} className="text-[10px] px-1.5 py-0.5 rounded border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">💡 Worked eg</button>
+                    <button onClick={() => onAddCard(sectionName, 'practice')} className="text-[10px] px-1.5 py-0.5 rounded border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100">✏️ Practice</button>
+                  </div>
                 </SortableSectionWrapper>
               );
             })}
           </SortableContext>
-          <DroppablePanel id={`panel-${pre}`} isCrossKindTarget={isPanelDragTarget} />
         </div>
       )}
     </div>
@@ -1404,11 +1364,10 @@ export default function LessonEditorClient() {
   const [aiOpen, setAiOpen] = useState(true);
   const [rightTab, setRightTab] = useState<'ai' | 'bank'>('ai');
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [activeDragKind, setActiveDragKind] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [newSectionKind, setNewSectionKind] = useState<ContentKind | null>(null);
-  // UI-only "empty" sections per kind — sections with no cards yet, kept locally until a card is added.
-  const [localSections, setLocalSections] = useState<Record<ContentKind, string[]>>({ refresher: [], worked_example: [], practice: [] });
+  const [newSectionOpen, setNewSectionOpen] = useState(false);
+  // UI-only "empty" sections (lesson-level) — sections with no cards yet, kept locally until a card is added.
+  const [localSections, setLocalSections] = useState<string[]>([]);
 
   // Layout (localStorage)
   const [listWidth, setListWidth] = useState(DEFAULT_LAYOUT.listWidth);
@@ -1484,7 +1443,7 @@ export default function LessonEditorClient() {
     });
     if (created) {
       setCards(prev => [...prev, created as unknown as Card]);
-      setLocalSections(prev => ({ ...prev, [kind]: prev[kind].filter(s => s !== section) }));
+      setLocalSections(prev => prev.filter(s => s !== section)); // it now has a card
       setSavedAt(new Date());
       return created as unknown as Card;
     }
@@ -1502,25 +1461,38 @@ export default function LessonEditorClient() {
     setSavedAt(new Date());
   }, []);
 
-  // Rename section: bulk-PATCH every card in that (kind, section) to the new section name.
-  const handleRenameSection = useCallback(async (kind: ContentKind, oldName: string, newName: string) => {
+  // Create a new (empty) lesson-level section and append it to the saved order.
+  const createSection = useCallback((name: string) => {
+    setLocalSections(prev => prev.includes(name) ? prev : [...prev, name]);
+    const cur = lesson?.section_order ?? [];
+    if (!cur.includes(name)) void saveLessonMeta({ section_order: [...cur, name] });
+    setNewSectionOpen(false);
+  }, [lesson]);
+
+  // Rename a lesson-level section: bulk-PATCH every card in it (any kind) + update saved order.
+  const handleRenameSection = useCallback(async (oldName: string, newName: string) => {
     if (oldName === newName) return;
-    const toRename = cards.filter(c => c.content_kind === kind && c.section_name === oldName);
-    setCards(prev => prev.map(c => (c.content_kind === kind && c.section_name === oldName) ? { ...c, section_name: newName } : c));
-    setLocalSections(prev => ({ ...prev, [kind]: prev[kind].map(s => s === oldName ? newName : s) }));
-    // Local-first patch for each card; sync engine ships them.
+    if (cards.some(c => c.section_name === newName) || (lesson?.section_order ?? []).includes(newName)) {
+      alert('A section with that name already exists.'); return;
+    }
+    const toRename = cards.filter(c => c.section_name === oldName);
+    setCards(prev => prev.map(c => c.section_name === oldName ? { ...c, section_name: newName } : c));
+    setLocalSections(prev => prev.map(s => s === oldName ? newName : s));
+    const cur = lesson?.section_order ?? [];
+    if (cur.includes(oldName)) void saveLessonMeta({ section_order: cur.map(s => s === oldName ? newName : s) });
     await Promise.all(toRename.map(c => storePatchCard(c.id, { section_name: newName })));
     setSavedAt(new Date());
-  }, [cards]);
+  }, [cards, lesson]);
 
-  // Delete an empty section — just remove from localSections (no API call needed because no cards remain).
-  const handleDeleteSection = useCallback((kind: ContentKind, name: string) => {
-    const hasCards = cards.some(c => c.content_kind === kind && c.section_name === name);
-    if (hasCards) { alert('Move or delete the cards in this section first.'); return; }
-    setLocalSections(prev => ({ ...prev, [kind]: prev[kind].filter(s => s !== name) }));
-  }, [cards]);
+  // Delete an empty lesson-level section.
+  const handleDeleteSection = useCallback((name: string) => {
+    if (cards.some(c => c.section_name === name)) { alert('Move or delete the cards in this section first.'); return; }
+    setLocalSections(prev => prev.filter(s => s !== name));
+    const cur = lesson?.section_order ?? [];
+    if (cur.includes(name)) void saveLessonMeta({ section_order: cur.filter(s => s !== name) });
+  }, [cards, lesson]);
 
-  // Bank-question drop on the card list — create a new card at insertion point
+  // Bank-question drop on the card list — create a new card at insertion point (keeps anchor's kind).
   const handleBankDropOnList = useCallback(async (q: BankQuestion, anchorCard: Card, position: 'above' | 'below') => {
     const { title: tplTitle, content: tplContent } = buildBankWorkedExampleTemplate(q);
     const created = await addCard(anchorCard.content_kind, {
@@ -1531,8 +1503,8 @@ export default function LessonEditorClient() {
       marks: anchorCard.content_kind === 'practice' ? q.total_marks ?? null : null,
     });
     if (!created) return;
-    // Reorder: place the new card immediately above/below the anchor within its (kind, section).
-    const sectionCards = cards.filter(c => c.content_kind === anchorCard.content_kind && c.section_name === anchorCard.section_name).sort((a, b) => a.order_index - b.order_index);
+    // Reorder: place the new card immediately above/below the anchor within its SECTION (any kind).
+    const sectionCards = cards.filter(c => c.section_name === anchorCard.section_name).sort((a, b) => a.order_index - b.order_index);
     const idx = sectionCards.findIndex(c => c.id === anchorCard.id);
     const insertIdx = position === 'above' ? idx : idx + 1;
     const newOrder = [...sectionCards];
@@ -1559,22 +1531,15 @@ export default function LessonEditorClient() {
     useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 5 } })
   );
 
-  function parseHdrId(id: string): { kind: ContentKind; name: string } | null {
-    for (const k of KIND_ORDER) {
-      const pre = KIND_PREFIX[k];
-      if (id.startsWith(`sec-hdr-${pre}-`)) return { kind: k, name: id.slice(`sec-hdr-${pre}-`.length) };
-    }
+  function parseHdrId(id: string): { name: string } | null {
+    if (id.startsWith(`sec-hdr-${SEC}-`)) return { name: id.slice(`sec-hdr-${SEC}-`.length) };
     return null;
   }
-  function parseDropId(id: string, all: Card[]): { kind: ContentKind; section: string } | null {
-    for (const k of KIND_ORDER) {
-      const pre = KIND_PREFIX[k];
-      if (id.startsWith(`sec-zone-${pre}-`)) return { kind: k, section: id.slice(`sec-zone-${pre}-`.length) };
-      if (id.startsWith(`sec-hdr-${pre}-`)) return { kind: k, section: id.slice(`sec-hdr-${pre}-`.length) };
-      if (id === `panel-${pre}`) return { kind: k, section: '' };
-    }
+  function parseDropId(id: string, all: Card[]): { section: string } | null {
+    if (id.startsWith(`sec-zone-${SEC}-`)) return { section: id.slice(`sec-zone-${SEC}-`.length) };
+    if (id.startsWith(`sec-hdr-${SEC}-`)) return { section: id.slice(`sec-hdr-${SEC}-`.length) };
     const card = all.find(c => c.id === id);
-    if (card) return { kind: card.content_kind, section: card.section_name };
+    if (card) return { section: card.section_name };
     return null;
   }
 
@@ -1587,42 +1552,26 @@ export default function LessonEditorClient() {
     const idStr = String(e.active.id);
     setActiveId(idStr);
     if (navigator.vibrate) navigator.vibrate(30);
-    const hdr = parseHdrId(idStr);
-    if (hdr) { setActiveDragKind(hdr.kind); return; }
-    const found = cards.find(c => c.id === idStr);
-    setActiveDragKind(found?.content_kind ?? null);
   }
 
   async function handleDragEnd(e: DragEndEvent) {
     setActiveId(null);
-    setActiveDragKind(null);
     const { active, over } = e;
     if (!over || active.id === over.id) return;
 
     const activeIdStr = String(active.id);
     const overIdStr = String(over.id);
 
-    // Section drag — within-kind only for lessons (cross-kind section moves are excluded
-    // because sections are just per-card strings, no section_meta table).
+    // Section drag — reorder lesson-level sections, persisted in lessons.section_order (string[]).
     const activeHdr = parseHdrId(activeIdStr);
     if (activeHdr) {
-      // Reorder sections WITHIN a kind. Persisted in lessons.section_order (per-kind string[]).
       const overHdr = parseHdrId(overIdStr);
-      if (!overHdr || overHdr.kind !== activeHdr.kind) return; // only header→header, same kind
-      const kind = activeHdr.kind;
-      // Rebuild the kind's current displayed section order (same logic as KindPanel.sections).
-      const all = [...new Set([
-        ...cards.filter(c => c.content_kind === kind).map(c => c.section_name).filter(Boolean),
-        ...localSections[kind],
-      ])];
-      const stored = lesson?.section_order?.[kind] ?? [];
-      const known = stored.filter(s => all.includes(s));
-      const ordered = [...known, ...all.filter(s => !known.includes(s)).sort()];
+      if (!overHdr) return;
+      const ordered = orderedSections(cards, localSections, lesson?.section_order ?? []);
       const oi = ordered.indexOf(activeHdr.name);
       const ni = ordered.indexOf(overHdr.name);
       if (oi === -1 || ni === -1 || oi === ni) return;
-      const nextOrder = { ...(lesson?.section_order ?? {}), [kind]: arrayMove(ordered, oi, ni) };
-      void saveLessonMeta({ section_order: nextOrder });
+      void saveLessonMeta({ section_order: arrayMove(ordered, oi, ni) });
       return;
     }
 
@@ -1631,29 +1580,21 @@ export default function LessonEditorClient() {
     const dropTarget = parseDropId(overIdStr, cards);
     if (!dropTarget) return;
 
-    const srcKind = ac.content_kind;
     const srcSection = ac.section_name;
-    const tgtKind = dropTarget.kind;
     const tgtSection = dropTarget.section || srcSection;
-
-    const isCrossKind = srcKind !== tgtKind;
     const isCrossSection = srcSection !== tgtSection;
 
-    if (!isCrossKind && !isCrossSection) {
-      // Reorder within same (kind, section)
-      if (overIdStr.startsWith('sec-') || overIdStr.startsWith('panel-')) return;
-      const sectionCards = cards.filter(c => c.content_kind === srcKind && c.section_name === srcSection).sort((a, b) => a.order_index - b.order_index);
+    if (!isCrossSection) {
+      // Reorder within the same section (cards keep their kind).
+      if (overIdStr.startsWith('sec-hdr-')) return;
+      const sectionCards = cards.filter(c => c.section_name === srcSection).sort((a, b) => a.order_index - b.order_index);
       const oi = sectionCards.findIndex(c => c.id === activeIdStr);
       const ni = sectionCards.findIndex(c => c.id === overIdStr);
       if (oi === -1 || ni === -1) return;
-      const reordered = arrayMove(sectionCards, oi, ni);
-      const reorderedIds = reordered.map(c => c.id);
+      const reorderedIds = arrayMove(sectionCards, oi, ni).map(c => c.id);
       setCards(prev => {
         const map = new Map(prev.map(c => [c.id, c]));
-        reorderedIds.forEach((cid, i) => {
-          const c = map.get(cid);
-          if (c) c.order_index = i;
-        });
+        reorderedIds.forEach((cid, i) => { const c = map.get(cid); if (c) c.order_index = i; });
         return Array.from(map.values());
       });
       await storeReorderCards(reorderedIds);
@@ -1661,29 +1602,24 @@ export default function LessonEditorClient() {
       return;
     }
 
-    // Cross-section and/or cross-kind move: PATCH the card, then reorder both src + dst groups.
+    // Cross-section move (kind unchanged): PATCH section_name, then reorder src + dst.
     _recentlyMovedCardId = activeIdStr;
     setTimeout(() => { _recentlyMovedCardId = null; }, 80);
 
-    const patch: Record<string, unknown> = {};
-    if (isCrossKind) patch.content_kind = tgtKind; // NB: API doesn't whitelist content_kind in PATCH currently — see note below.
-    if (isCrossSection) patch.section_name = tgtSection;
-
-    // Build new src + dst lists with the move applied
-    const remainingSrc = cards.filter(c => c.content_kind === srcKind && c.section_name === srcSection && c.id !== activeIdStr).sort((a, b) => a.order_index - b.order_index);
-    const dstExisting = cards.filter(c => c.content_kind === tgtKind && c.section_name === tgtSection && c.id !== activeIdStr).sort((a, b) => a.order_index - b.order_index);
-    const movedCard: Card = { ...ac, content_kind: tgtKind, section_name: tgtSection };
+    const remainingSrc = cards.filter(c => c.section_name === srcSection && c.id !== activeIdStr).sort((a, b) => a.order_index - b.order_index);
+    const dstExisting = cards.filter(c => c.section_name === tgtSection && c.id !== activeIdStr).sort((a, b) => a.order_index - b.order_index);
+    const movedCard: Card = { ...ac, section_name: tgtSection };
     const newDst = [...dstExisting, movedCard];
 
     setCards(prev => prev
       .filter(c => c.id !== activeIdStr)
       .concat([movedCard])
       .map(c => {
-        if (c.content_kind === srcKind && c.section_name === srcSection) {
+        if (c.section_name === srcSection) {
           const idx = remainingSrc.findIndex(x => x.id === c.id);
           return idx >= 0 ? { ...c, order_index: idx } : c;
         }
-        if (c.content_kind === tgtKind && c.section_name === tgtSection) {
+        if (c.section_name === tgtSection) {
           const idx = newDst.findIndex(x => x.id === c.id);
           return idx >= 0 ? { ...c, order_index: idx } : c;
         }
@@ -1691,20 +1627,15 @@ export default function LessonEditorClient() {
       })
     );
 
-    setLocalSections(prev => ({ ...prev, [tgtKind]: prev[tgtKind].filter(s => s !== tgtSection) }));
-
-    if (isCrossKind) showToast(`Moved to ${KIND_LABEL[tgtKind]}`);
-    else if (isCrossSection) showToast(`Moved to "${tgtSection}"`);
+    setLocalSections(prev => prev.filter(s => s !== tgtSection));
+    showToast(`Moved to "${tgtSection}"`);
 
     try {
-      await storePatchCard(activeIdStr, patch as Partial<Card>);
-      // Reorder destination
+      await storePatchCard(activeIdStr, { section_name: tgtSection } as Partial<Card>);
       if (newDst.length > 0) await storeReorderCards(newDst.map(c => c.id));
-      // Reorder source remainder (if any)
       if (remainingSrc.length > 0) await storeReorderCards(remainingSrc.map(c => c.id));
       setSavedAt(new Date());
     } catch {
-      // Reload on failure to ensure UI matches server
       loadLesson();
     }
   }
@@ -1720,15 +1651,11 @@ export default function LessonEditorClient() {
   );
   if (!lesson) return <div className="p-8 text-red-500">Lesson not found.</div>;
 
-  const cardsByKind: Record<ContentKind, Card[]> = {
-    refresher: cards.filter(c => c.content_kind === 'refresher'),
-    worked_example: cards.filter(c => c.content_kind === 'worked_example'),
-    practice: cards.filter(c => c.content_kind === 'practice'),
-  };
-
+  const sectionList = orderedSections(cards, localSections, lesson.section_order ?? []);
   const activeCard = activeId ? cards.find(c => c.id === activeId) : null;
   const selectedCard = selectedId ? cards.find(c => c.id === selectedId) ?? null : null;
-  const allCardsForNav = selectedCard ? cards.filter(c => c.content_kind === selectedCard.content_kind) : [];
+  // Prev/Next now walks the whole lesson in section → order sequence.
+  const allCardsForNav = sectionList.flatMap(s => cards.filter(c => c.section_name === s).sort((a, b) => a.order_index - b.order_index));
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
@@ -1769,35 +1696,23 @@ export default function LessonEditorClient() {
         <div className="shrink-0 border-r border-slate-200 bg-white flex flex-col overflow-hidden" style={{ width: listWidth }}>
           <DndContext sensors={sensors} collisionDetection={customCollision} modifiers={[restrictToVerticalAxis]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div className="flex-1 overflow-y-auto px-3 py-3">
-              {KIND_ORDER.map(kind => (
-                <KindPanel
-                  key={kind}
-                  kind={kind}
-                  cards={cardsByKind[kind]}
-                  selectedId={selectedId}
-                  activeId={activeId}
-                  activeDragKind={activeDragKind}
-                  localSections={localSections[kind]}
-                  sectionOrder={lesson?.section_order?.[kind] ?? []}
-                  onSelectCard={setSelectedId}
-                  onBankDropOnList={handleBankDropOnList}
-                  onAddSection={(k) => setNewSectionKind(k)}
-                  onAddCard={(k, section) => addCard(k, { section_name: section })}
-                  onRenameSection={handleRenameSection}
-                  onDeleteSection={handleDeleteSection}
-                />
-              ))}
+              <SectionFlow
+                cards={cards}
+                sections={sectionList}
+                selectedId={selectedId}
+                activeId={activeId}
+                onSelectCard={setSelectedId}
+                onBankDropOnList={handleBankDropOnList}
+                onAddSection={() => setNewSectionOpen(true)}
+                onAddCard={(section, kind) => addCard(kind, { section_name: section })}
+                onRenameSection={handleRenameSection}
+                onDeleteSection={handleDeleteSection}
+              />
             </div>
             <DragOverlay modifiers={[restrictToVerticalAxis]}>
               {activeId ? (() => {
-                const hdrName = (() => {
-                  for (const k of KIND_ORDER) {
-                    const pre = KIND_PREFIX[k];
-                    const prefix = `sec-hdr-${pre}-`;
-                    if (String(activeId).startsWith(prefix)) return String(activeId).slice(prefix.length);
-                  }
-                  return null;
-                })();
+                const prefix = `sec-hdr-${SEC}-`;
+                const hdrName = String(activeId).startsWith(prefix) ? String(activeId).slice(prefix.length) : null;
                 if (hdrName) return <div className="px-3 py-1.5 bg-white border border-slate-300 rounded shadow-md text-xs font-semibold text-slate-600 opacity-90">{hdrName}</div>;
                 return activeCard ? <DragCardOverlay card={activeCard} /> : null;
               })() : null}
@@ -1838,15 +1753,11 @@ export default function LessonEditorClient() {
         </div>
       </div>
 
-      {newSectionKind && (
+      {newSectionOpen && (
         <NewSectionModal
-          kind={newSectionKind}
-          existingSections={[...new Set(cards.filter(c => c.content_kind === newSectionKind).map(c => c.section_name))]}
-          onClose={() => setNewSectionKind(null)}
-          onCreated={(name) => {
-            setLocalSections(prev => ({ ...prev, [newSectionKind]: prev[newSectionKind].includes(name) ? prev[newSectionKind] : [...prev[newSectionKind], name] }));
-            setNewSectionKind(null);
-          }}
+          existingSections={sectionList}
+          onClose={() => setNewSectionOpen(false)}
+          onCreated={createSection}
         />
       )}
     </div>

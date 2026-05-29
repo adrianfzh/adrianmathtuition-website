@@ -33,7 +33,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   ]);
   if (!lesson) return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
 
-  const html = renderLessonHTML(lesson as { name: string; level: string; topics: string[]; description: string | null; section_order?: Record<string, string[]> }, (cards ?? []) as Card[]);
+  const html = renderLessonHTML(lesson as { name: string; level: string; topics: string[]; description: string | null; section_order?: string[] }, (cards ?? []) as Card[]);
 
   try {
     const browser = await getBrowser();
@@ -62,32 +62,32 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
 // ── HTML template ──
 
-function renderLessonHTML(lesson: { name: string; level: string; topics: string[]; description: string | null; section_order?: Record<string, string[]> }, cards: Card[]): string {
-  const refreshers = cards.filter(c => c.content_kind === 'refresher');
-  const workedExamples = cards.filter(c => c.content_kind === 'worked_example');
-  const practice = cards.filter(c => c.content_kind === 'practice');
+function renderLessonHTML(lesson: { name: string; level: string; topics: string[]; description: string | null; section_order?: string[] }, cards: Card[]): string {
+  // Section-first: a lesson is an ordered list of named sections, each holding mixed-kind cards.
+  const order = Array.isArray(lesson.section_order) ? lesson.section_order : [];
+  const allSecs = [...new Set(cards.map(c => c.section_name || 'Default'))];
+  const known = order.filter(s => allSecs.includes(s));
+  const sections = [...known, ...allSecs.filter(s => !known.includes(s)).sort()];
+  const cardsOf = (sec: string) => cards.filter(c => (c.section_name || 'Default') === sec).sort((a, b) => a.order_index - b.order_index);
 
-  const groupBySection = (list: Card[], order: string[] = []) => {
-    const out: Record<string, Card[]> = {};
-    for (const c of list) {
-      const k = c.section_name || 'Default';
-      if (!out[k]) out[k] = [];
-      out[k].push(c);
+  // Practice questions in lesson (section → order) sequence — numbered consistently across the
+  // body, the Answers list, and the Solutions list.
+  const practiceOrdered = sections.flatMap(sec => cardsOf(sec).filter(c => c.content_kind === 'practice'));
+  const practiceNum = new Map<string, number>();
+  practiceOrdered.forEach((c, i) => practiceNum.set(c.id, i + 1));
+
+  // Render one card by its kind (refresher = compact box, worked example = full, practice = question
+  // + writing space). Answers/solutions for practice are collected at the back, not inline.
+  const renderCard = (c: Card): string => {
+    if (c.content_kind === 'refresher') {
+      return `<div class="refresher-card">${c.card_title ? `<div class="title">${escapeHtml(c.card_title)}</div>` : ''}<div class="content">${mdToHtml(c.content ?? '')}</div></div>`;
     }
-    for (const k of Object.keys(out)) out[k].sort((a, b) => a.order_index - b.order_index);
-    // Reorder section keys to match the editor's saved drag order, then alphabetical for the rest.
-    const keys = Object.keys(out);
-    const known = order.filter(s => keys.includes(s));
-    const rest = keys.filter(s => !known.includes(s)).sort();
-    const ordered: Record<string, Card[]> = {};
-    for (const k of [...known, ...rest]) ordered[k] = out[k];
-    return ordered;
+    if (c.content_kind === 'practice') {
+      const n = practiceNum.get(c.id) ?? 0;
+      return `<div class="practice-q"><div class="qnum">${n}. ${escapeHtml(c.card_title ?? '')}${c.marks ? `<span class="marks">[${c.marks}]</span>` : ''}</div><div class="content">${mdToHtml(c.content ?? '')}</div>${writingSpace(c.marks ?? 0)}</div>`;
+    }
+    return `<div class="we-card"><div class="header">${escapeHtml(c.card_title ?? 'Worked example')}</div><div class="body">${mdToHtml(c.content ?? '')}</div></div>`;
   };
-
-  const so = lesson.section_order ?? {};
-  const refreshersBySection = groupBySection(refreshers, so.refresher ?? []);
-  const wesBySection = groupBySection(workedExamples, so.worked_example ?? []);
-  const practiceBySection = groupBySection(practice, so.practice ?? []);
 
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -159,72 +159,23 @@ function renderLessonHTML(lesson: { name: string; level: string; topics: string[
   <div class="date">Generated ${today}</div>
 </div>
 
-<!-- Refreshers -->
-${refreshers.length > 0 ? `
-<div class="section section-first">
-  <h2>Refreshers</h2>
-  ${Object.entries(refreshersBySection).map(([sec, list]) => `
-    ${Object.keys(refreshersBySection).length > 1 ? `<h3>${escapeHtml(sec)}</h3>` : ''}
-    <div class="refreshers-grid">
-      ${list.map(c => `
-        <div class="refresher-card">
-          ${c.card_title ? `<div class="title">${escapeHtml(c.card_title)}</div>` : ''}
-          <div class="content">${mdToHtml(c.content ?? '')}</div>
-        </div>`).join('')}
-    </div>`).join('')}
-</div>` : ''}
+<!-- Lesson sections (in order; cards rendered by their kind) -->
+${sections.map((sec, si) => `
+<div class="section${si === 0 ? ' section-first' : ''}">
+  <h2>${escapeHtml(sec)}</h2>
+  ${cardsOf(sec).map(renderCard).join('')}
+</div>`).join('')}
 
-<!-- Worked Examples -->
-${workedExamples.length > 0 ? `
-<div class="section">
-  <h2>Worked Examples</h2>
-  ${Object.entries(wesBySection).map(([sec, list]) => `
-    ${Object.keys(wesBySection).length > 1 ? `<h3>${escapeHtml(sec)}</h3>` : ''}
-    ${list.map((c, i) => `
-      <div class="we-card">
-        <div class="header">${i + 1}. ${escapeHtml(c.card_title ?? 'Worked example')}</div>
-        <div class="body">${mdToHtml(c.content ?? '')}</div>
-      </div>`).join('')}
-  `).join('')}
-</div>` : ''}
-
-<!-- Practice Questions -->
-${practice.length > 0 ? `
-<div class="section">
-  <h2>Practice Questions</h2>
-  ${Object.entries(practiceBySection).map(([sec, list]) => `
-    ${Object.keys(practiceBySection).length > 1 ? `<h3>${escapeHtml(sec)}</h3>` : ''}
-    ${list.map((c, i) => `
-      <div class="practice-q">
-        <div class="qnum">${i + 1}. ${escapeHtml(c.card_title ?? '')}
-          ${c.marks ? `<span class="marks">[${c.marks}]</span>` : ''}
-        </div>
-        <div class="content">${mdToHtml(c.content ?? '')}</div>
-        ${writingSpace(c.marks ?? 0)}
-      </div>`).join('')}
-  `).join('')}
-</div>
-
-<!-- Answers -->
-<div class="answers-section">
-  <h2>Practice — Answers</h2>
-  ${practice.map((c, i) => `
-    <div class="answer-row">
-      <span class="qnum">${i + 1}.</span>
-      <em style="color:#9ca3af">[answer here — view full solution at the back]</em>
-    </div>`).join('')}
-</div>
-
-<!-- Solutions -->
+${practiceOrdered.length > 0 ? `
+<!-- Practice — Solutions (collected at the back; refreshers & worked examples excluded) -->
 <div class="solutions-section">
   <h2>Practice — Solutions</h2>
-  ${practice.map((c, i) => `
+  ${practiceOrdered.map(c => `
     <div class="solution-block">
-      <div class="qnum">${i + 1}. ${escapeHtml(c.card_title ?? '')}</div>
+      <div class="qnum">${practiceNum.get(c.id)}. ${escapeHtml(c.card_title ?? '')}</div>
       <div>${mdToHtml(c.content ?? '')}</div>
     </div>`).join('')}
-</div>
-` : ''}
+</div>` : ''}
 
 <script>
 // Render KaTeX in all elements, then signal we're ready for screenshot.
