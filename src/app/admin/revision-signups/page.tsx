@@ -45,6 +45,57 @@ function subjectLabel(subjects: string[]): string {
   return subjects.join(' + ');
 }
 
+// ── WhatsApp reminder message ──────────────────────────────────────────────────
+
+function generateWhatsAppMsg(student: Student): string {
+  const firstName = student.name.split(' ')[0];
+
+  if (student.level === 'JC2') {
+    return [
+      `Hi ${firstName}! 👋`,
+      ``,
+      `Just a heads-up — I'm running June Holiday H2 Math Revision lessons this year (details were sent to your parents via email).`,
+      ``,
+      `📅 H2 Mathematics — Tuesdays & Fridays, 2–5pm`,
+      `8 lessons · 2 Jun – 26 Jun · $640`,
+      ``,
+      `I'd highly recommend signing up. We'll cover the majority of the H2 Math syllabus — things like integration, vectors, stats, complex numbers, and more. The holidays are genuinely the best window to consolidate everything before the final stretch. If you skip the revision and wait until Term 3, you'll find yourself very tight on time trying to cover all of this alongside school.`,
+      ``,
+      `Let me know if you'd like to join! 😊`,
+    ].join('\n');
+  }
+
+  const hasEM = student.subjects.includes('EM');
+  const hasAM = student.subjects.includes('AM');
+
+  const lines: string[] = [
+    `Hi ${firstName}! 👋`,
+    ``,
+    `Just a heads-up — I'm running June Holiday Revision lessons this year (details were sent to your parents via email).`,
+    ``,
+    `📅 Schedule:`,
+  ];
+
+  if (hasEM) lines.push(`• E Math — Tues & Fri, 10am–12pm · 6 lessons · 2–19 Jun · $420`);
+  if (hasAM) lines.push(`• A Math — Tues & Fri, 1–3pm · 8 lessons · 2–26 Jun · $560`);
+
+  lines.push(``);
+  lines.push(`I'd highly recommend signing up — the revision covers the majority of the O-Level syllabus, and the holidays are the most effective time to do this. If you don't revise during the holidays, you'll find yourself very tight on time once school reopens and new topics come in.`);
+
+  if (hasEM && hasAM) {
+    lines.push(``);
+    lines.push(`If budget is a concern and you're only considering one subject, I'd prioritise the A Math revision — it's the heavier subject with more ground to cover. E Math topics are generally easier to pick up during our regular lessons if needed.`);
+  } else if (hasAM && !hasEM) {
+    lines.push(``);
+    lines.push(`A Math has a lot of ground to cover — these 8 lessons will make a real difference heading into the O-Level year.`);
+  }
+
+  lines.push(``);
+  lines.push(`Let me know if you'd like to sign up! 😊`);
+
+  return lines.join('\n');
+}
+
 // ── Cookie helper ──────────────────────────────────────────────────────────────
 
 function getCookie(name: string): string {
@@ -77,6 +128,7 @@ export default function RevisionSignupsPage() {
   const [sending, setSending] = useState(false);
   const [sendMsg, setSendMsg] = useState('');
   const [customEmailText, setCustomEmailText] = useState<string | null>(null);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
 
   // Auth check
   useEffect(() => {
@@ -178,6 +230,35 @@ export default function RevisionSignupsPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  // WhatsApp reminder
+  const [waStudent, setWaStudent] = useState<Student | null>(null);
+  const [waMsg, setWaMsg] = useState('');
+  const [waCopied, setWaCopied] = useState(false);
+
+  function openWhatsApp(student: Student) {
+    setWaStudent(student);
+    setWaMsg(generateWhatsAppMsg(student));
+    setWaCopied(false);
+  }
+
+  function closeWhatsApp() {
+    setWaStudent(null);
+    setWaCopied(false);
+  }
+
+  async function copyWaMsg() {
+    await navigator.clipboard.writeText(waMsg);
+    setWaCopied(true);
+    setTimeout(() => setWaCopied(false), 2000);
+  }
+
+  function waLink(student: Student): string | null {
+    const raw = student.parentContact?.replace(/\D/g, '') ?? '';
+    if (!raw) return null;
+    const num = raw.startsWith('65') ? raw : `65${raw}`;
+    return `https://wa.me/${num}?text=${encodeURIComponent(waMsg)}`;
   }
 
   // Status update (Opted Out / No Response)
@@ -339,6 +420,7 @@ export default function RevisionSignupsPage() {
             onOptOut={() => updateStatus(student.id, 'Opted Out')}
             onRemoveOptOut={() => updateStatus(student.id, 'No Response')}
             onManage={() => openManage(student)}
+            onWhatsApp={() => openWhatsApp(student)}
           />
         ))}
       </div>
@@ -397,6 +479,59 @@ export default function RevisionSignupsPage() {
         </div>
       )}
 
+      {/* WhatsApp reminder dialog */}
+      {waStudent && (
+        <div className="rs-overlay" onClick={closeWhatsApp}>
+          <div className="rs-dialog" onClick={e => e.stopPropagation()}>
+            <div className="rs-dialog-title">📱 WhatsApp Reminder</div>
+            <div className="rs-dialog-sub">{waStudent.name} · {waStudent.level}</div>
+
+            <textarea
+              className="rs-email-textarea"
+              style={{ border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: 10, minHeight: 260 }}
+              value={waMsg}
+              onChange={e => setWaMsg(e.target.value)}
+              rows={14}
+            />
+
+            <div className="rs-dialog-actions" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <button className="rs-btn-ghost" onClick={closeWhatsApp}>Close</button>
+              <button className="rs-btn-ghost" onClick={copyWaMsg}>
+                {waCopied ? '✅ Copied!' : '📋 Copy'}
+              </button>
+              {waLink(waStudent) && (
+                <a
+                  href={waLink(waStudent)!}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rs-btn-primary"
+                  style={{ textDecoration: 'none' }}
+                >
+                  Open WhatsApp →
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PDF preview overlay */}
+      {pdfPreviewUrl && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#fff', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: 12, background: '#fff' }}>
+            <button
+              onClick={() => setPdfPreviewUrl(null)}
+              style={{ background: 'none', border: 'none', fontSize: 15, fontWeight: 600, color: '#1e3a5f', cursor: 'pointer', padding: '4px 0', display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              ← Back
+            </button>
+            <span style={{ fontSize: 14, color: '#6b7280', flex: 1 }}>Invoice Preview</span>
+            <a href={pdfPreviewUrl} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: '#6b7280', textDecoration: 'none' }}>Open ↗</a>
+          </div>
+          <iframe src={pdfPreviewUrl} style={{ flex: 1, width: '100%', border: 'none' }} title="Invoice PDF" />
+        </div>
+      )}
+
       {/* Manage dialog */}
       {manageStudent && (
         <div className="rs-overlay" onClick={closeManage}>
@@ -415,20 +550,14 @@ export default function RevisionSignupsPage() {
               </div>
             </div>
 
-            {/* Preview + Send */}
+            {/* Preview PDF */}
             {manageStudent.revisionInvoiceId && (
               <div className="rs-manage-send">
-                <a
-                  href={`/api/preview-invoice?id=${manageStudent.revisionInvoiceId}`}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
                   className="rs-btn-ghost rs-btn-sm"
-                  style={{ textDecoration: 'none', display: 'inline-block' }}
+                  onClick={() => setPdfPreviewUrl(`/api/preview-invoice?id=${manageStudent.revisionInvoiceId}`)}
                 >
                   📄 Preview PDF
-                </a>
-                <button className="rs-btn-primary rs-btn-sm" onClick={handleSendInvoice} disabled={sending}>
-                  {sending ? sendMsg || 'Working…' : '📧 Send Invoice'}
                 </button>
               </div>
             )}
@@ -479,7 +608,12 @@ export default function RevisionSignupsPage() {
             {!revertConfirm ? (
               <div className="rs-dialog-actions">
                 <button className="rs-btn-ghost" onClick={closeManage} disabled={reverting || sending}>Close</button>
-                <button className="rs-btn-danger" onClick={() => setRevertConfirm(true)} disabled={sending}>Revert Sign-up</button>
+                <button className="rs-btn-ghost rs-btn-danger-outline" onClick={() => setRevertConfirm(true)} disabled={sending}>Revert Sign-up</button>
+                {manageStudent.revisionInvoiceId && (
+                  <button className="rs-btn-primary" onClick={handleSendInvoice} disabled={sending}>
+                    {sending ? sendMsg || 'Working…' : '📧 Send Invoice'}
+                  </button>
+                )}
               </div>
             ) : (
               <div className="rs-revert-confirm">
@@ -507,12 +641,14 @@ function StudentCard({
   onOptOut,
   onRemoveOptOut,
   onManage,
+  onWhatsApp,
 }: {
   student: Student;
   onSignup: () => void;
   onOptOut: () => void;
   onRemoveOptOut: () => void;
   onManage: () => void;
+  onWhatsApp: () => void;
 }) {
   const levelColor = student.level === 'Sec 4' ? 'blue' : 'purple';
   const statusColor =
@@ -546,6 +682,7 @@ function StudentCard({
         {student.revisionStatus === 'No Response' && (
           <>
             <button className="rs-btn-primary rs-btn-sm" onClick={onSignup}>Sign Up</button>
+            <button className="rs-btn-ghost rs-btn-sm" onClick={onWhatsApp}>📱 Remind</button>
             <button className="rs-btn-ghost rs-btn-sm" onClick={onOptOut}>Opted Out</button>
           </>
         )}
@@ -761,6 +898,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   gap: 6px;
 }
 .rs-btn-danger:disabled { opacity: 0.45; cursor: default; }
+.rs-btn-danger-outline {
+  color: #ef4444;
+  border-color: #fecaca;
+}
+.rs-btn-danger-outline:not(:disabled):hover { background: #fef2f2; }
 .rs-btn-sm { padding: 7px 13px; font-size: 13px; }
 
 /* Summary bar */
