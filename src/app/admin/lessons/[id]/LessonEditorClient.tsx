@@ -162,12 +162,6 @@ const katexOptions = {
   macros: { '\\tfrac': '\\frac' },
 };
 
-function fixMathFences(src: string): string {
-  return src
-    .replace(/\$\$(?=\S)/g, () => '$$\n')
-    .replace(/([^\n\s])\$\$/g, (_, c: string) => `${c}\n$$`);
-}
-
 // ── Cookie helper ────────────────────────────────────────────────────────────
 
 function getCookie(name: string): string {
@@ -1144,7 +1138,7 @@ function EditorPanel({
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
             <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}>
-              {fixMathFences(aiPreviewContent ?? previewContent)}
+              {aiPreviewContent ?? previewContent}
             </ReactMarkdown>
           </div>
         </div>
