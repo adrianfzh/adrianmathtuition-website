@@ -2177,6 +2177,15 @@ export default function SchedulePage() {
           <h1>Schedule</h1>
         </div>
         <div className="week-nav">
+          <AdminAIChat
+            apiRoute="/api/admin/ai-schedule"
+            title="Schedule Assistant"
+            accentColor="#1e3a5f"
+            placeholder="e.g. Mark all today's lessons completed. Who is absent this week?"
+            fabTop={16}
+            fabSmall
+            fabClassName="schedule-ai-fab"
+          />
           <button className="nav-btn" onClick={prevWeek}>‹</button>
           <button className="week-label" onClick={thisWeek}>{formatWeekLabel(monday)}</button>
           <button className="nav-btn" onClick={nextWeek}>›</button>
@@ -2924,16 +2933,6 @@ export default function SchedulePage() {
 
       {/* Toast */}
       {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
-
-      <AdminAIChat
-        apiRoute="/api/admin/ai-schedule"
-        title="Schedule Assistant"
-        accentColor="#1e3a5f"
-        placeholder="e.g. Mark all today's lessons completed. Who is absent this week?"
-        fabTop={16}
-        fabSmall
-        fabClassName="schedule-ai-fab"
-      />
     </>
   );
 }
@@ -3339,8 +3338,12 @@ body {
 
 /* ── Desktop grid ── */
 @media (min-width: 768px) {
-  /* Move AI FAB away from header — use bottom-right on desktop */
-  .schedule-ai-fab { top: auto !important; bottom: 24px !important; }
+  /* On desktop the AI button sits inline in the header, left of the week nav */
+  .schedule-ai-fab {
+    position: static !important;
+    top: auto !important; right: auto !important; bottom: auto !important;
+    margin-right: 6px;
+  }
   .mobile-day { display: none; }
   .date-strip-wrap { display: none; }
   .roster-day-tabs { display: none; }
