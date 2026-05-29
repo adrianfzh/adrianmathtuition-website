@@ -12,6 +12,16 @@ Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Ta
 - `vercel --prod` — deploy to production (or auto-deploys from git push)
 - `vercel env pull .env.local` — pull env vars for local dev
 
+## Auto commit + push policy
+
+**On any turn where I change code, auto commit + push to `main` at the end of that turn — no need for the user to say "push".** Pushing to `main` auto-deploys to Vercel production.
+
+- Only when code/files actually changed. Pure-discussion or read-only turns → no commit, no push.
+- Always run the build/typecheck first; never push a broken build.
+- The advisory pre-push review hook (`.claude/settings.json`) still runs on every push.
+- The user can say **"don't push"** (or "hold off") to skip auto-push for that turn.
+- Write a real, descriptive commit message (not "auto"); end with the `Co-Authored-By` trailer.
+
 ## Architecture
 
 Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/route.ts`. Shared components in `src/`. Deployed on Vercel.
