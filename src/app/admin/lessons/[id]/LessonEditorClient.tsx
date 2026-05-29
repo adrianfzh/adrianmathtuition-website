@@ -88,10 +88,17 @@ const KIND_CHIP: Record<ContentKind, { icon: string; cls: string; short: string 
 // Single DnD id namespace now that sections are lesson-level (no per-kind prefix).
 const SEC = 'x';
 
+// Coerce lessons.section_order to an array — legacy rows stored it as a `{}` object (the column's
+// old default), so we must never assume it's an array.
+function asOrder(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+}
+
 // Lesson-level ordered section list: saved order first, then any new sections alphabetically.
-function orderedSections(cards: Card[], local: string[], order: string[]): string[] {
+function orderedSections(cards: Card[], local: string[], order: unknown): string[] {
+  const ord = asOrder(order);
   const all = [...new Set([...cards.map(c => c.section_name).filter(Boolean), ...local])];
-  const known = (order ?? []).filter(s => all.includes(s));
+  const known = ord.filter(s => all.includes(s));
   const rest = all.filter(s => !known.includes(s)).sort();
   return [...known, ...rest];
 }
@@ -1464,7 +1471,7 @@ export default function LessonEditorClient() {
   // Create a new (empty) lesson-level section and append it to the saved order.
   const createSection = useCallback((name: string) => {
     setLocalSections(prev => prev.includes(name) ? prev : [...prev, name]);
-    const cur = lesson?.section_order ?? [];
+    const cur = asOrder(lesson?.section_order);
     if (!cur.includes(name)) void saveLessonMeta({ section_order: [...cur, name] });
     setNewSectionOpen(false);
   }, [lesson]);
@@ -1472,13 +1479,13 @@ export default function LessonEditorClient() {
   // Rename a lesson-level section: bulk-PATCH every card in it (any kind) + update saved order.
   const handleRenameSection = useCallback(async (oldName: string, newName: string) => {
     if (oldName === newName) return;
-    if (cards.some(c => c.section_name === newName) || (lesson?.section_order ?? []).includes(newName)) {
+    if (cards.some(c => c.section_name === newName) || asOrder(lesson?.section_order).includes(newName)) {
       alert('A section with that name already exists.'); return;
     }
     const toRename = cards.filter(c => c.section_name === oldName);
     setCards(prev => prev.map(c => c.section_name === oldName ? { ...c, section_name: newName } : c));
     setLocalSections(prev => prev.map(s => s === oldName ? newName : s));
-    const cur = lesson?.section_order ?? [];
+    const cur = asOrder(lesson?.section_order);
     if (cur.includes(oldName)) void saveLessonMeta({ section_order: cur.map(s => s === oldName ? newName : s) });
     await Promise.all(toRename.map(c => storePatchCard(c.id, { section_name: newName })));
     setSavedAt(new Date());
@@ -1488,7 +1495,7 @@ export default function LessonEditorClient() {
   const handleDeleteSection = useCallback((name: string) => {
     if (cards.some(c => c.section_name === name)) { alert('Move or delete the cards in this section first.'); return; }
     setLocalSections(prev => prev.filter(s => s !== name));
-    const cur = lesson?.section_order ?? [];
+    const cur = asOrder(lesson?.section_order);
     if (cur.includes(name)) void saveLessonMeta({ section_order: cur.filter(s => s !== name) });
   }, [cards, lesson]);
 
