@@ -216,15 +216,28 @@ function writingSpace(marks: number): string {
 function mdToHtml(md: string): string {
   // Minimal Markdown — bold, italic, paragraphs. KaTeX delimiters are preserved.
   if (!md) return '';
-  // Split on blank lines for paragraphs
-  const paras = md.split(/\n\n+/).map(p => p.trim()).filter(Boolean);
-  return paras.map(p => {
-    // Bold + italic
-    let html = p
+
+  // Protect raw <svg> blocks (AI-generated diagrams may span many lines / contain blank lines)
+  // so the paragraph splitter + <br> insertion below don't mangle them.
+  const blocks: string[] = [];
+  const src = md.replace(/<svg[\s\S]*?<\/svg>/gi, (m) => {
+    blocks.push(m);
+    return `@@B${blocks.length - 1}@@`;
+  });
+
+  const html = src.split(/\n\n+/).map(p => p.trim()).filter(Boolean).map(p => {
+    // A paragraph that is exactly a protected SVG block → emit it raw (no <p>, no <br>).
+    const only = p.match(/^@@B(\d+)@@$/);
+    if (only) return blocks[Number(only[1])];
+    // A paragraph that is a single raw block element → pass through untouched.
+    if (/^<(img|div|figure|table|svg)[\s>]/i.test(p)) return p;
+    let h = p
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>');
-    // Preserve LaTeX delimiters as-is; replace remaining newlines with <br>
-    html = html.replace(/\n/g, '<br>');
-    return `<p>${html}</p>`;
+    h = h.replace(/\n/g, '<br>');
+    return `<p>${h}</p>`;
   }).join('\n');
+
+  // Restore any SVG that was inline within a paragraph (placeholder survived the <p> wrap).
+  return html.replace(/@@B(\d+)@@/g, (_, i) => blocks[Number(i)]);
 }

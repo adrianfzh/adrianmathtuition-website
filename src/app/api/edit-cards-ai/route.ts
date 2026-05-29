@@ -28,6 +28,7 @@ CONTENT RULES
 - Preserve the worked example's numeric values unless the instruction says to change them.
 - Keep the same sub-skill scope — don't drift the card into a different concept.
 - If the instruction asks for a fresh example, fully rewrite the card with new numbers/setup but the same sub-skill.
+- FORMATTING-ONLY INSTRUCTIONS: If the instruction is about readability, layout, spacing, or formatting (e.g. "make it easier to read", "format better", "tidy up"), you MUST keep ALL existing content — every example, formula, value and line. Reformat the presentation only; never delete, drop, or shorten content in that case.
 
 MULTI-PART STRUCTURE — CRITICAL
 - If the current card has labelled parts like (a), (b), (c), (d) — or sub-parts (i), (ii), (iii) — you MUST preserve EVERY single label in your output. Do not drop any part. Do not collapse multiple parts into one.
@@ -64,6 +65,7 @@ FORMATTING CONVENTIONS
 CONTENT RULES
 - Keep the card tightly scoped to the sub-skill — don't drift.
 - Preserve mathematical correctness unless the instruction says to fix an error.
+- PRESERVE CONTENT ON FORMATTING REQUESTS: If the instruction is only about readability, layout, spacing, or formatting (e.g. "make it easier to read", "format better"), you MUST keep ALL existing content — every example, formula, value and line. Reformat the presentation only; never delete, shorten, or drop examples. This takes precedence over the "keep it short" guidance above — do not strip worked examples that are already on the card just because it is a refresher.
 
 If the instruction is impossible or self-contradictory, return the current content unchanged.`;
 
