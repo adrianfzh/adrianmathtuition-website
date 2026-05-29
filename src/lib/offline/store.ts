@@ -159,6 +159,7 @@ export async function saveLessonMeta(lessonId: string, patch: Partial<LocalLesso
 // ── Cards ───────────────────────────────────────────────────────────────────
 
 export interface NewCardInput {
+  id?: string; // optional client id — used to restore a deleted card with its original id (undo)
   lesson_id: string;
   content_kind: ContentKind;
   section_name: string;
@@ -184,7 +185,7 @@ function genId(): string {
 }
 
 export async function addCard(input: NewCardInput): Promise<LocalCard> {
-  const id = genId();
+  const id = input.id ?? genId();
   const existing = await listCardsForLesson(input.lesson_id);
   const peers = existing.filter((c) => c.content_kind === input.content_kind && c.section_name === input.section_name);
   const order_index = peers.length === 0 ? 0 : Math.max(...peers.map((c) => c.order_index)) + 1;

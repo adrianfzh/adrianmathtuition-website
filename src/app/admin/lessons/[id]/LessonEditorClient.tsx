@@ -1368,6 +1368,14 @@ export default function LessonEditorClient() {
   // UI-only "empty" sections (lesson-level) — sections with no cards yet, kept locally until a card is added.
   const [localSections, setLocalSections] = useState<string[]>([]);
 
+  // ── Undo (structural actions: delete / reorder / move / add) ──────────────
+  // Snapshot the card-state before each structural action; Ctrl/Cmd+Z restores it and reconciles
+  // the offline store (re-adds deleted cards, re-deletes added ones, re-patches/reorders).
+  const cardsRef = useRef<Card[]>([]); cardsRef.current = cards;
+  const lessonRef = useRef<Lesson | null>(null); lessonRef.current = lesson;
+  const undoStack = useRef<{ label: string; cards: Card[]; sectionOrder: string[] }[]>([]);
+  const [undoTop, setUndoTop] = useState<string | null>(null);
+
   // Layout (localStorage)
   const [listWidth, setListWidth] = useState(DEFAULT_LAYOUT.listWidth);
   const [textareaWidth, setTextareaWidth] = useState(DEFAULT_LAYOUT.textareaWidth);
@@ -1429,6 +1437,7 @@ export default function LessonEditorClient() {
   }
 
   const addCard = useCallback(async (kind: ContentKind, extra: Partial<Card> = {}) => {
+    pushUndo('Add card');
     const section = extra.section_name ?? DEFAULT_SECTION[kind];
     const created = await storeAddCard({
       lesson_id: id,
@@ -1455,6 +1464,7 @@ export default function LessonEditorClient() {
   }, []);
 
   const handleCardDeleted = useCallback((cardId: string) => {
+    pushUndo('Delete card');
     setCards(prev => prev.filter(c => c.id !== cardId));
     setSelectedId(null);
     setSavedAt(new Date());
@@ -1487,8 +1497,9 @@ export default function LessonEditorClient() {
   const handleDeleteSection = useCallback(async (name: string) => {
     const inSection = cards.filter(c => c.section_name === name);
     if (inSection.length > 0) {
-      const ok = window.confirm(`Delete section "${name}" and its ${inSection.length} card${inSection.length > 1 ? 's' : ''}? This can't be undone.`);
+      const ok = window.confirm(`Delete section "${name}" and its ${inSection.length} card${inSection.length > 1 ? 's' : ''}? (You can undo with Ctrl/Cmd+Z.)`);
       if (!ok) return;
+      pushUndo('Delete section');
       if (inSection.some(c => c.id === selectedId)) setSelectedId(null);
       setCards(prev => prev.filter(c => c.section_name !== name));
       await Promise.all(inSection.map(c => storeDeleteCard(c.id)));
@@ -1555,6 +1566,69 @@ export default function LessonEditorClient() {
     setTimeout(() => setToast(t => t === msg ? null : t), 2000);
   }
 
+  // Capture the pre-action card-state so it can be restored. Reads via refs so it's always fresh,
+  // even when called from a memoized handler.
+  function pushUndo(label: string) {
+    undoStack.current.push({ label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order) });
+    if (undoStack.current.length > 25) undoStack.current.shift();
+    setUndoTop(label);
+  }
+
+  async function runUndo() {
+    const entry = undoStack.current.pop();
+    setUndoTop(undoStack.current[undoStack.current.length - 1]?.label ?? null);
+    if (!entry) return;
+    const cur = cardsRef.current;
+    const snapById = new Map(entry.cards.map(c => [c.id, c]));
+    const curById = new Map(cur.map(c => [c.id, c]));
+    try {
+      // Re-add cards that were deleted (in snapshot, gone now) — restore with their original id.
+      for (const c of entry.cards) {
+        if (!curById.has(c.id)) {
+          await storeAddCard({ id: c.id, lesson_id: id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, source_question_id: c.source_question_id, source_card_id: c.source_card_id });
+        }
+      }
+      // Delete cards that were added since the snapshot.
+      for (const c of cur) if (!snapById.has(c.id)) await storeDeleteCard(c.id);
+      // Re-patch changed fields (section/kind/title/content/marks).
+      for (const c of entry.cards) {
+        const cu = curById.get(c.id);
+        if (cu && (cu.section_name !== c.section_name || cu.content_kind !== c.content_kind || cu.card_title !== c.card_title || cu.content !== c.content || cu.marks !== c.marks)) {
+          await storePatchCard(c.id, { section_name: c.section_name, content_kind: c.content_kind, card_title: c.card_title, content: c.content, marks: c.marks });
+        }
+      }
+      // Restore UI state + per-section order.
+      setCards(entry.cards.map(c => ({ ...c })));
+      const bySection = new Map<string, Card[]>();
+      for (const c of entry.cards) { const a = bySection.get(c.section_name) ?? []; a.push(c); bySection.set(c.section_name, a); }
+      for (const [, list] of bySection) { list.sort((a, b) => a.order_index - b.order_index); await storeReorderCards(list.map(c => c.id)); }
+      if (JSON.stringify(asOrder(lessonRef.current?.section_order)) !== JSON.stringify(entry.sectionOrder)) {
+        void saveLessonMeta({ section_order: entry.sectionOrder });
+      }
+      setSavedAt(new Date());
+      showToast(`Undone: ${entry.label}`);
+    } catch {
+      loadLesson();
+    }
+  }
+
+  // Global Ctrl/Cmd+Z → structural undo, but only when not typing in a field (the markdown
+  // editor handles its own content undo).
+  const runUndoRef = useRef<() => void>(() => {});
+  runUndoRef.current = runUndo;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.shiftKey || (e.key !== 'z' && e.key !== 'Z')) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t?.isContentEditable) return;
+      e.preventDefault();
+      void runUndoRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   function handleDragStart(e: DragStartEvent) {
     const idStr = String(e.active.id);
     setActiveId(idStr);
@@ -1578,6 +1652,7 @@ export default function LessonEditorClient() {
       const oi = ordered.indexOf(activeHdr.name);
       const ni = ordered.indexOf(overHdr.name);
       if (oi === -1 || ni === -1 || oi === ni) return;
+      pushUndo('Reorder sections');
       void saveLessonMeta({ section_order: arrayMove(ordered, oi, ni) });
       return;
     }
@@ -1598,6 +1673,7 @@ export default function LessonEditorClient() {
       const oi = sectionCards.findIndex(c => c.id === activeIdStr);
       const ni = sectionCards.findIndex(c => c.id === overIdStr);
       if (oi === -1 || ni === -1) return;
+      pushUndo('Reorder cards');
       const reorderedIds = arrayMove(sectionCards, oi, ni).map(c => c.id);
       setCards(prev => {
         const map = new Map(prev.map(c => [c.id, c]));
@@ -1610,6 +1686,7 @@ export default function LessonEditorClient() {
     }
 
     // Cross-section move (kind unchanged): PATCH section_name, then reorder src + dst.
+    pushUndo('Move card');
     _recentlyMovedCardId = activeIdStr;
     setTimeout(() => { _recentlyMovedCardId = null; }, 80);
 
@@ -1676,6 +1753,12 @@ export default function LessonEditorClient() {
         <BankStalePill />
         <OfflineModePill />
         {savedAt && <span className="text-xs text-emerald-300/70">{savedAt.toLocaleTimeString()}</span>}
+        <button
+          onClick={() => void runUndo()}
+          disabled={!undoTop}
+          title={undoTop ? `Undo: ${undoTop} (Ctrl/Cmd+Z)` : 'Nothing to undo'}
+          className="px-2 py-1 rounded text-xs hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent"
+        >↩ Undo</button>
         <button
           onClick={() => generatePDF(id, pw.current, lesson.name)}
           className="px-3 py-1 bg-rose-600 hover:bg-rose-700 rounded text-xs font-medium"
