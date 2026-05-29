@@ -130,6 +130,9 @@ export default function RevisionSignupsPage() {
   const [sendMsg, setSendMsg] = useState('');
   const [customEmailText, setCustomEmailText] = useState<string | null>(null);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [emailViewMode, setEmailViewMode] = useState<'edit' | 'preview'>('edit');
+  const [quickSendingId, setQuickSendingId] = useState<string | null>(null);
+  const [quickSendMsg, setQuickSendMsg] = useState<Record<string, string>>({});
   const emailTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auth check
@@ -333,6 +336,7 @@ export default function RevisionSignupsPage() {
     setRevertConfirm(false);
     setSendMsg('');
     setCustomEmailText(null);
+    setEmailViewMode('edit');
   }
 
   function closeManage() {
@@ -383,6 +387,36 @@ export default function RevisionSignupsPage() {
       throw new Error(d.error || 'Failed to send invoice');
     }
     await fetchStudents();
+  }
+
+  async function quickSendInvoice(student: Student) {
+    if (!student.revisionInvoiceId) return;
+    setQuickSendingId(student.id);
+    setQuickSendMsg(prev => ({ ...prev, [student.id]: 'Generating PDF…' }));
+    try {
+      const pdfRes = await fetch('/api/generate-pdf-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+        body: JSON.stringify({ recordIds: [student.revisionInvoiceId], force: true }),
+      });
+      if (!pdfRes.ok) throw new Error('PDF generation failed');
+      setQuickSendMsg(prev => ({ ...prev, [student.id]: 'Sending email…' }));
+      const res = await fetch('/api/send-invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+        body: JSON.stringify({ recordIds: [student.revisionInvoiceId] }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || 'Failed to send');
+      }
+      setQuickSendMsg(prev => ({ ...prev, [student.id]: '✅ Sent!' }));
+      await fetchStudents();
+    } catch (e: unknown) {
+      setQuickSendMsg(prev => ({ ...prev, [student.id]: `❌ ${e instanceof Error ? e.message : 'Error'}` }));
+    } finally {
+      setQuickSendingId(null);
+    }
   }
 
   async function confirmRevert() {
@@ -459,17 +493,35 @@ export default function RevisionSignupsPage() {
         {!loading && !error && filtered.length === 0 && (
           <div className="rs-empty">No students in this group.</div>
         )}
-        {!loading && !error && filtered.map(student => (
-          <StudentCard
-            key={student.id}
-            student={student}
-            onSignup={() => openSignup(student)}
-            onOptOut={() => updateStatus(student.id, 'Opted Out')}
-            onRemoveOptOut={() => updateStatus(student.id, 'No Response')}
-            onManage={() => openManage(student)}
-            onWhatsApp={() => openWhatsApp(student)}
-          />
-        ))}
+        {!loading && !error && (() => {
+          const showGroups = filter !== 'Sec 4' && filter !== 'JC2' &&
+            filtered.some(s => s.level === 'Sec 4') && filtered.some(s => s.level === 'JC2');
+          const groups: { label: string; students: Student[] }[] = showGroups
+            ? [
+                { label: 'Sec 4', students: filtered.filter(s => s.level === 'Sec 4') },
+                { label: 'JC2', students: filtered.filter(s => s.level === 'JC2') },
+              ]
+            : [{ label: '', students: filtered }];
+          return groups.map(group => (
+            <div key={group.label}>
+              {group.label && <div className="rs-level-header">{group.label}</div>}
+              {group.students.map(student => (
+                <StudentCard
+                  key={student.id}
+                  student={student}
+                  quickSendMsg={quickSendMsg[student.id] || ''}
+                  isSendingQuick={quickSendingId === student.id}
+                  onSignup={() => openSignup(student)}
+                  onOptOut={() => updateStatus(student.id, 'Opted Out')}
+                  onRemoveOptOut={() => updateStatus(student.id, 'No Response')}
+                  onManage={() => openManage(student)}
+                  onWhatsApp={() => openWhatsApp(student)}
+                  onQuickSend={() => quickSendInvoice(student)}
+                />
+              ))}
+            </div>
+          ));
+        })()}
       </div>
 
       {/* Bottom summary bar */}
@@ -625,19 +677,40 @@ export default function RevisionSignupsPage() {
               return (
                 <details className="rs-email-preview">
                   <summary>📋 Edit email text</summary>
-                  <div className="rs-format-toolbar">
-                    <button className="rs-fmt-btn" title="Bold" onMouseDown={e => { e.preventDefault(); wrapSelection('strong'); }}><strong>B</strong></button>
-                    <button className="rs-fmt-btn" title="Italic" onMouseDown={e => { e.preventDefault(); wrapSelection('em'); }}><em>I</em></button>
-                    <button className="rs-fmt-btn" title="Underline" onMouseDown={e => { e.preventDefault(); wrapSelection('u'); }}><u>U</u></button>
-                    <span className="rs-fmt-hint">Select text then tap B / I / U</span>
+                  {/* Tab row */}
+                  <div className="rs-email-tabs">
+                    <button
+                      className={`rs-email-tab${emailViewMode === 'edit' ? ' active' : ''}`}
+                      onClick={() => setEmailViewMode('edit')}
+                    >Edit</button>
+                    <button
+                      className={`rs-email-tab${emailViewMode === 'preview' ? ' active' : ''}`}
+                      onClick={() => setEmailViewMode('preview')}
+                    >Preview</button>
+                    {emailViewMode === 'edit' && (
+                      <span className="rs-email-tabs-right">
+                        <button className="rs-fmt-btn" title="Bold" onMouseDown={e => { e.preventDefault(); wrapSelection('strong'); }}><strong>B</strong></button>
+                        <button className="rs-fmt-btn" title="Italic" onMouseDown={e => { e.preventDefault(); wrapSelection('em'); }}><em>I</em></button>
+                        <button className="rs-fmt-btn" title="Underline" onMouseDown={e => { e.preventDefault(); wrapSelection('u'); }}><u>U</u></button>
+                      </span>
+                    )}
                   </div>
-                  <textarea
-                    ref={emailTextareaRef}
-                    className="rs-email-textarea"
-                    value={customEmailText ?? defaultEmail}
-                    onChange={e => setCustomEmailText(e.target.value)}
-                    rows={16}
-                  />
+                  {emailViewMode === 'edit' ? (
+                    <textarea
+                      ref={emailTextareaRef}
+                      className="rs-email-textarea"
+                      value={customEmailText ?? defaultEmail}
+                      onChange={e => setCustomEmailText(e.target.value)}
+                      rows={16}
+                    />
+                  ) : (
+                    <div
+                      className="rs-email-rendered"
+                      dangerouslySetInnerHTML={{
+                        __html: `<p>${(customEmailText ?? defaultEmail).trim().replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`
+                      }}
+                    />
+                  )}
                   {customEmailText !== null && customEmailText !== defaultEmail && (
                     <button
                       className="rs-reset-email"
@@ -682,18 +755,24 @@ export default function RevisionSignupsPage() {
 
 function StudentCard({
   student,
+  quickSendMsg,
+  isSendingQuick,
   onSignup,
   onOptOut,
   onRemoveOptOut,
   onManage,
   onWhatsApp,
+  onQuickSend,
 }: {
   student: Student;
+  quickSendMsg: string;
+  isSendingQuick: boolean;
   onSignup: () => void;
   onOptOut: () => void;
   onRemoveOptOut: () => void;
   onManage: () => void;
   onWhatsApp: () => void;
+  onQuickSend: () => void;
 }) {
   const levelColor = student.level === 'Sec 4' ? 'blue' : 'purple';
   const statusColor =
@@ -719,7 +798,15 @@ function StudentCard({
 
       {student.revisionStatus === 'Signed Up' && (
         <div className="rs-card-subjects">
-          {student.revisionSubjects.join(' + ')} · ${student.revisionTotal.toLocaleString()}
+          <span>{student.revisionSubjects.join(' + ')} · ${student.revisionTotal.toLocaleString()}</span>
+          {student.revisionInvoiceStatus && (
+            <span className={`rs-invoice-status-badge rs-invoice-${student.revisionInvoiceStatus.toLowerCase()}`}>
+              {student.revisionInvoiceStatus === 'Sent' ? '📧 Sent' :
+               student.revisionInvoiceStatus === 'Paid' ? '✅ Paid' :
+               student.revisionInvoiceStatus === 'Approved' ? '✓ Approved' :
+               '— Not sent'}
+            </span>
+          )}
         </div>
       )}
 
@@ -732,7 +819,21 @@ function StudentCard({
           </>
         )}
         {student.revisionStatus === 'Signed Up' && (
-          <button className="rs-btn-amber rs-btn-sm" onClick={onManage}>Manage</button>
+          <>
+            <button className="rs-btn-amber rs-btn-sm" onClick={onManage}>Manage</button>
+            {student.revisionInvoiceId && student.revisionInvoiceStatus !== 'Sent' && student.revisionInvoiceStatus !== 'Paid' && (
+              <button
+                className="rs-btn-primary rs-btn-sm"
+                onClick={onQuickSend}
+                disabled={isSendingQuick}
+              >
+                {isSendingQuick ? (quickSendMsg || 'Sending…') : '📧 Send Invoice'}
+              </button>
+            )}
+            {quickSendMsg && !isSendingQuick && (
+              <span className="rs-card-send-msg">{quickSendMsg}</span>
+            )}
+          </>
         )}
         {student.revisionStatus === 'Opted Out' && (
           <>
@@ -880,6 +981,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   margin-bottom: 8px;
 }
 .rs-card-subjects {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   font-size: 13px;
   color: #374151;
   font-weight: 500;
@@ -1064,6 +1169,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 }
 .rs-manage-label { color: #9ca3af; font-weight: 500; }
 
+/* Level section header */
+.rs-level-header {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  padding: 10px 2px 4px;
+}
+.rs-level-header:first-child { padding-top: 0; }
+
+.rs-card-send-msg {
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: 2px;
+}
+
 /* Invoice status badge */
 .rs-invoice-status-badge {
   font-size: 12px;
@@ -1102,6 +1224,44 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   color: #9ca3af;
   margin-left: 4px;
 }
+
+/* Email edit/preview tabs */
+.rs-email-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 6px 10px;
+  background: #f9fafb;
+  border-top: 1px solid #f1f5f9;
+}
+.rs-email-tab {
+  background: none;
+  border: 1px solid #e5e7eb;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+}
+.rs-email-tab:first-child { border-radius: 6px 0 0 6px; }
+.rs-email-tab:nth-child(2) { border-radius: 0 6px 6px 0; border-left: none; }
+.rs-email-tab.active { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
+.rs-email-tabs-right {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.rs-email-rendered {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.7;
+  background: #fff;
+  border-top: 1px solid #f1f5f9;
+  min-height: 120px;
+}
+.rs-email-rendered p { margin: 0 0 10px; }
+.rs-email-rendered p:last-child { margin: 0; }
 
 .rs-manage-send {
   display: flex; align-items: center; gap: 8px;
