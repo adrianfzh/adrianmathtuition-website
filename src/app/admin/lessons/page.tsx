@@ -4,8 +4,23 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadLessons, addLesson } from '@/lib/offline/store';
+import { loadLessons, addLesson, saveLessonMeta } from '@/lib/offline/store';
 import type { LocalLesson } from '@/lib/offline/db';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+
+// Within a level: manual order (list_order) first when set, otherwise natural-alphanumeric by name
+// ("2 Foo" before "10 Foo"; case-insensitive).
+function cmpInLevel(a: LocalLesson, b: LocalLesson): number {
+  const ao = a.list_order, bo = b.list_order;
+  const aHas = typeof ao === 'number', bHas = typeof bo === 'number';
+  if (aHas && bHas) return (ao as number) - (bo as number);
+  if (aHas) return -1;
+  if (bHas) return 1;
+  return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+}
 
 function getCookie(name: string): string {
   if (typeof document === 'undefined') return '';
@@ -35,6 +50,24 @@ export default function LessonsListPage() {
 
   useEffect(() => { if (authed) void refresh(); }, [authed, refresh]);
 
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  // Drag-to-reorder within one level: assign list_order 1..N to that level's lessons + persist.
+  const reorderLevel = useCallback((level: string, e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    setLessons(prev => {
+      const group = prev.filter(l => l.level === level).sort(cmpInLevel);
+      const oldI = group.findIndex(l => l.id === active.id);
+      const newI = group.findIndex(l => l.id === over.id);
+      if (oldI < 0 || newI < 0) return prev;
+      const moved = arrayMove(group, oldI, newI);
+      const orderById = new Map(moved.map((l, i) => [l.id, i + 1]));
+      moved.forEach((l, i) => { void saveLessonMeta(l.id, { list_order: i + 1 }); });
+      return prev.map(l => orderById.has(l.id) ? { ...l, list_order: orderById.get(l.id)! } : l);
+    });
+  }, []);
+
   if (authed === null) return <div className="p-8 text-slate-500">Loading…</div>;
   if (!authed) return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-3 px-6 text-center">
@@ -45,18 +78,10 @@ export default function LessonsListPage() {
 
   // Custom level order: most-used levels first (Adrian's business is mostly EM + AM + JC),
   // then S2/S1 at the bottom. Unknown levels go after everything else.
-  // Within each level, newest first (already the server's order; we preserve it).
   const LEVEL_ORDER: Record<string, number> = { EM: 0, AM: 1, JC: 2, S2: 3, S1: 4 };
-  const ordered = [...lessons].sort((a, b) => {
-    const la = LEVEL_ORDER[a.level] ?? 99;
-    const lb = LEVEL_ORDER[b.level] ?? 99;
-    if (la !== lb) return la - lb;
-    // Same level — keep server's updated_at desc by leaving original order
-    return a.updated_at < b.updated_at ? 1 : a.updated_at > b.updated_at ? -1 : 0;
-  });
   const filtered = filter
-    ? ordered.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.level.toLowerCase().includes(filter.toLowerCase()))
-    : ordered;
+    ? lessons.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.level.toLowerCase().includes(filter.toLowerCase()))
+    : lessons;
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -117,10 +142,12 @@ export default function LessonsListPage() {
           </div>
         ) : (
           (() => {
-            // Group filtered list by level, preserve level-order computed above
+            // Group filtered list by level (custom level order); sort each group by cmpInLevel.
             const groups: Record<string, LocalLesson[]> = {};
             for (const l of filtered) { (groups[l.level] ||= []).push(l); }
+            for (const k of Object.keys(groups)) groups[k].sort(cmpInLevel);
             const levelKeys = Object.keys(groups).sort((a, b) => (LEVEL_ORDER[a] ?? 99) - (LEVEL_ORDER[b] ?? 99));
+            const dragDisabled = !!filter; // don't reorder a filtered subset
             return (
               <div className="space-y-6">
                 {levelKeys.map(level => (
@@ -129,32 +156,15 @@ export default function LessonsListPage() {
                       <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">{level}</span>
                       <span className="text-[11px] text-slate-400">{groups[level].length} lesson{groups[level].length === 1 ? '' : 's'}</span>
                     </div>
-                    <div className="space-y-2">
-                      {groups[level].map(l => (
-                        <Link key={l.id} href={`/admin/lessons/${l.id}`}
-                          className="block bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <span className="font-semibold text-slate-800">{l.name}</span>
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded font-medium">{l.level}</span>
-                            {l._dirty && <span className="text-[10px] px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded font-medium" title="Created locally; syncs when you reconnect">queued</span>}
-                            {l.topics.length > 0 && (
-                              <span className="text-xs text-slate-500">{l.topics.length} topic{l.topics.length === 1 ? '' : 's'}</span>
-                            )}
-                            <span className="flex-1" />
-                            <span className="text-xs text-slate-400">{new Date(l.updated_at).toLocaleDateString()}</span>
-                          </div>
-                          {l.description && <div className="text-xs text-slate-500 mt-1">{l.description}</div>}
-                          {l.topics.length > 0 && (
-                            <div className="flex gap-1 flex-wrap mt-2">
-                              {l.topics.slice(0, 6).map(t => (
-                                <span key={t} className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">{t}</span>
-                              ))}
-                              {l.topics.length > 6 && <span className="text-xs text-slate-400">+{l.topics.length - 6} more</span>}
-                            </div>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={(e) => reorderLevel(level, e)}>
+                      <SortableContext items={groups[level].map(l => l.id)} strategy={verticalListSortingStrategy}>
+                        <div className="space-y-2">
+                          {groups[level].map(l => (
+                            <SortableLessonRow key={l.id} lesson={l} dragDisabled={dragDisabled} />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
                   </div>
                 ))}
               </div>
@@ -174,6 +184,45 @@ export default function LessonsListPage() {
         />
       )}
     </main>
+  );
+}
+
+// ── Draggable lesson row (handle reorders; the card itself still navigates) ──
+function SortableLessonRow({ lesson: l, dragDisabled }: { lesson: LocalLesson; dragDisabled: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: l.id, disabled: dragDisabled });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-stretch gap-1">
+      <span
+        {...attributes}
+        {...listeners}
+        style={{ touchAction: 'none' }}
+        title="Drag to reorder"
+        className={`flex items-center px-1 select-none text-slate-300 ${dragDisabled ? 'invisible' : 'cursor-grab active:cursor-grabbing hover:text-slate-500'}`}
+      >⠿</span>
+      <Link href={`/admin/lessons/${l.id}`}
+        className="flex-1 min-w-0 block bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-slate-800">{l.name}</span>
+          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded font-medium">{l.level}</span>
+          {l._dirty && <span className="text-[10px] px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded font-medium" title="Created locally; syncs when you reconnect">queued</span>}
+          {l.topics.length > 0 && (
+            <span className="text-xs text-slate-500">{l.topics.length} topic{l.topics.length === 1 ? '' : 's'}</span>
+          )}
+          <span className="flex-1" />
+          <span className="text-xs text-slate-400">{new Date(l.updated_at).toLocaleDateString()}</span>
+        </div>
+        {l.description && <div className="text-xs text-slate-500 mt-1">{l.description}</div>}
+        {l.topics.length > 0 && (
+          <div className="flex gap-1 flex-wrap mt-2">
+            {l.topics.slice(0, 6).map(t => (
+              <span key={t} className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">{t}</span>
+            ))}
+            {l.topics.length > 6 && <span className="text-xs text-slate-400">+{l.topics.length - 6} more</span>}
+          </div>
+        )}
+      </Link>
+    </div>
   );
 }
 

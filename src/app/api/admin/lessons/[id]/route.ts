@@ -39,6 +39,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   if (body.description !== undefined) patch.description = body.description;
   if (typeof body.is_archived === 'boolean') patch.is_archived = body.is_archived;
   if (body.section_order !== undefined && typeof body.section_order === 'object') patch.section_order = body.section_order;
+  if (body.list_order === null || typeof body.list_order === 'number') patch.list_order = body.list_order;
 
   const supa = getSupabaseAdmin();
   const { data, error } = await supa.from('lessons').update(patch).eq('id', id).select().single();

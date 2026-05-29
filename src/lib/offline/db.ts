@@ -28,6 +28,7 @@ export interface LocalLesson {
   description: string | null;
   is_archived?: boolean;
   section_order?: string[];
+  list_order?: number | null;
   updated_at: string;
   _dirty?: boolean;
 }
