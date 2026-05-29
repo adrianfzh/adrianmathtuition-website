@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     );
 
     // Build a map: studentId -> revision invoice
-    const revisionInvoiceMap = new Map<string, { id: string; amount: number; lineItems: unknown[] }>();
+    const revisionInvoiceMap = new Map<string, { id: string; amount: number; lineItems: unknown[]; status: string }>();
     for (const inv of invoicesData.records) {
       const studentId = inv.fields['Student']?.[0];
       if (!studentId) continue;
@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
         id: inv.id,
         amount: inv.fields['Final Amount'] ?? 0,
         lineItems,
+        status: (inv.fields['Status'] || 'Draft') as string,
       });
     }
 
@@ -67,10 +68,12 @@ export async function GET(req: NextRequest) {
       let revisionSubjects: string[] = [];
       let revisionTotal = 0;
       let revisionInvoiceId: string | null = null;
+      let revisionInvoiceStatus: string | null = null;
 
       if (revInvoice) {
         revisionInvoiceId = revInvoice.id;
         revisionTotal = revInvoice.amount;
+        revisionInvoiceStatus = revInvoice.status;
         // Parse subjects from line items
         const lineItems = revInvoice.lineItems as Array<{ description?: string }>;
         for (const item of lineItems) {
@@ -95,6 +98,7 @@ export async function GET(req: NextRequest) {
         revisionSubjects,
         revisionTotal,
         revisionInvoiceId,
+        revisionInvoiceStatus,
       };
     });
 

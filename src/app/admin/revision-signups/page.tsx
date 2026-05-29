@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -20,6 +20,7 @@ interface Student {
   revisionSubjects: string[];
   revisionTotal: number;
   revisionInvoiceId: string | null;
+  revisionInvoiceStatus: string | null;
 }
 
 // ── Price config ───────────────────────────────────────────────────────────────
@@ -129,6 +130,7 @@ export default function RevisionSignupsPage() {
   const [sendMsg, setSendMsg] = useState('');
   const [customEmailText, setCustomEmailText] = useState<string | null>(null);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const emailTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auth check
   useEffect(() => {
@@ -259,6 +261,51 @@ export default function RevisionSignupsPage() {
     if (!raw) return null;
     const num = raw.startsWith('65') ? raw : `65${raw}`;
     return `https://wa.me/${num}?text=${encodeURIComponent(waMsg)}`;
+  }
+
+  // Rich-text helpers for email editor
+  function getDefaultEmail(student: Student): string {
+    return [
+      `Dear Parent/Student,`,
+      ``,
+      `Thank you for signing up for the June 2026 Revision Sprint!`,
+      ``,
+      `Please find attached the invoice for ${student.name} — $${student.revisionTotal.toLocaleString()}, due by 1 June 2026.`,
+      ``,
+      `Please disregard the regular June 2026 invoice sent earlier — it has been voided and this invoice replaces it.`,
+      ``,
+      `To pay, PayNow to 91397985 with reference ${student.name.toUpperCase()} – JUNE 2026.`,
+      ``,
+      `What you've signed up for:`,
+      ...(student.revisionSubjects.includes('EM') ? [`• Sec 4 EM June Holiday Revision Sprint (6 lessons) — $420`] : []),
+      ...(student.revisionSubjects.includes('AM') ? [`• Sec 4 AM June Holiday Revision Sprint (8 lessons) — $560`] : []),
+      ...(student.revisionSubjects.includes('JC') ? [`• JC2 H2 Math June Holiday Revision Sprint (8 lessons) — $640`] : []),
+      ``,
+      `Best regards,`,
+      `Adrian`,
+    ].join('\n');
+  }
+
+  function wrapSelection(tag: string) {
+    const ta = emailTextareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const current = customEmailText ?? (manageStudent ? getDefaultEmail(manageStudent) : '');
+    const selected = current.slice(start, end);
+    const open = `<${tag}>`;
+    const close = `</${tag}>`;
+    // Toggle off if already wrapped
+    if (selected.startsWith(open) && selected.endsWith(close)) {
+      const inner = selected.slice(open.length, selected.length - close.length);
+      const next = current.slice(0, start) + inner + current.slice(end);
+      setCustomEmailText(next);
+      setTimeout(() => { ta.focus(); ta.setSelectionRange(start, start + inner.length); }, 0);
+    } else {
+      const next = current.slice(0, start) + open + selected + close + current.slice(end);
+      setCustomEmailText(next);
+      setTimeout(() => { ta.focus(); ta.setSelectionRange(start + open.length, start + open.length + selected.length); }, 0);
+    }
   }
 
   // Status update (Opted Out / No Response)
@@ -548,6 +595,15 @@ export default function RevisionSignupsPage() {
                 <span className="rs-manage-label">Total</span>
                 <span>${manageStudent.revisionTotal.toLocaleString()}</span>
               </div>
+              <div className="rs-manage-row">
+                <span className="rs-manage-label">Invoice</span>
+                <span className={`rs-invoice-status-badge rs-invoice-${(manageStudent.revisionInvoiceStatus || 'draft').toLowerCase()}`}>
+                  {manageStudent.revisionInvoiceStatus === 'Sent' ? '📧 Sent' :
+                   manageStudent.revisionInvoiceStatus === 'Paid' ? '✅ Paid' :
+                   manageStudent.revisionInvoiceStatus === 'Approved' ? '✓ Approved' :
+                   '— Not sent'}
+                </span>
+              </div>
             </div>
 
             {/* Preview PDF */}
@@ -565,29 +621,18 @@ export default function RevisionSignupsPage() {
 
             {/* Editable email text */}
             {manageStudent.revisionInvoiceId && (() => {
-              const defaultEmail = [
-                `Dear Parent/Student,`,
-                ``,
-                `Thank you for signing up for the June 2026 Revision Sprint!`,
-                ``,
-                `Please find attached the invoice for ${manageStudent.name} — $${manageStudent.revisionTotal.toLocaleString()}, due by 1 June 2026.`,
-                ``,
-                `Please disregard the regular June 2026 invoice sent earlier — it has been voided and this invoice replaces it.`,
-                ``,
-                `To pay, PayNow to 91397985 with reference ${manageStudent.name.toUpperCase()} – JUNE 2026.`,
-                ``,
-                `What you've signed up for:`,
-                ...(manageStudent.revisionSubjects.includes('EM') ? [`• Sec 4 EM June Holiday Revision Sprint (6 lessons) — $420`] : []),
-                ...(manageStudent.revisionSubjects.includes('AM') ? [`• Sec 4 AM June Holiday Revision Sprint (8 lessons) — $560`] : []),
-                ...(manageStudent.revisionSubjects.includes('JC') ? [`• JC2 H2 Math June Holiday Revision Sprint (8 lessons) — $640`] : []),
-                ``,
-                `Best regards,`,
-                `Adrian`,
-              ].join('\n');
+              const defaultEmail = getDefaultEmail(manageStudent);
               return (
                 <details className="rs-email-preview">
                   <summary>📋 Edit email text</summary>
+                  <div className="rs-format-toolbar">
+                    <button className="rs-fmt-btn" title="Bold" onMouseDown={e => { e.preventDefault(); wrapSelection('strong'); }}><strong>B</strong></button>
+                    <button className="rs-fmt-btn" title="Italic" onMouseDown={e => { e.preventDefault(); wrapSelection('em'); }}><em>I</em></button>
+                    <button className="rs-fmt-btn" title="Underline" onMouseDown={e => { e.preventDefault(); wrapSelection('u'); }}><u>U</u></button>
+                    <span className="rs-fmt-hint">Select text then tap B / I / U</span>
+                  </div>
                   <textarea
+                    ref={emailTextareaRef}
                     className="rs-email-textarea"
                     value={customEmailText ?? defaultEmail}
                     onChange={e => setCustomEmailText(e.target.value)}
@@ -1018,6 +1063,45 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   padding: 4px 0;
 }
 .rs-manage-label { color: #9ca3af; font-weight: 500; }
+
+/* Invoice status badge */
+.rs-invoice-status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.rs-invoice-draft { background: #f3f4f6; color: #6b7280; }
+.rs-invoice-approved { background: #fef9c3; color: #92400e; }
+.rs-invoice-sent { background: #dcfce7; color: #15803d; }
+.rs-invoice-paid { background: #d1fae5; color: #065f46; }
+
+/* Formatting toolbar */
+.rs-format-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: #f9fafb;
+  border-top: 1px solid #f1f5f9;
+}
+.rs-fmt-btn {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #374151;
+  line-height: 1.6;
+  min-width: 28px;
+}
+.rs-fmt-btn:hover { background: #f3f4f6; border-color: #d1d5db; }
+.rs-fmt-hint {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-left: 4px;
+}
 
 .rs-manage-send {
   display: flex; align-items: center; gap: 8px;
