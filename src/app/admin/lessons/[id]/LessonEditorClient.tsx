@@ -688,17 +688,15 @@ function AISidebar({
             />
           </div>
           {images.length > 0 && (
-            <div className="mt-1.5 border border-slate-200 rounded bg-slate-50 p-1.5 space-y-1">
-              <div className="flex flex-wrap gap-1.5">
-                {images.map((img, idx) => (
-                  <div key={idx} className="relative group shrink-0">
-                    <img src={img.previewUrl} alt={`image ${idx + 1}`} className="h-12 w-12 object-cover rounded border border-slate-200" />
-                    <button onClick={() => setCropIdx(idx)} className="absolute bottom-0 left-0 bg-black/60 text-white text-[10px] px-1 rounded-tr" title="Crop">✂</button>
-                    <button onClick={() => removeImage(idx)} className="absolute top-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-bl" title="Remove">✕</button>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[10px] text-slate-400">{images.length} image{images.length > 1 ? 's' : ''}</p>
+            <div className="mt-1.5 border border-slate-200 rounded bg-slate-50 p-1.5 space-y-1.5">
+              {images.map((img, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <img src={img.previewUrl} alt={`image ${idx + 1}`} className="h-14 w-14 object-cover rounded border border-slate-200 shrink-0" />
+                  <button onClick={() => setCropIdx(idx)} className="text-xs px-2 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50">✂ Crop</button>
+                  <button onClick={() => removeImage(idx)} className="text-xs px-2 py-1 border border-slate-300 rounded bg-white text-red-600 hover:bg-red-50">Remove</button>
+                </div>
+              ))}
+              <p className="text-[10px] text-slate-400">{images.length} image{images.length > 1 ? 's' : ''} — crop to the part you want, then Extract.</p>
             </div>
           )}
           <div className="mt-1.5 flex gap-1.5">
