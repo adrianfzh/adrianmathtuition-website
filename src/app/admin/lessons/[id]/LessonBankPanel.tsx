@@ -54,6 +54,7 @@ type BankCache = {
   aiModel: 'haiku' | 'sonnet';
   hasImage: 'any' | 'true' | 'false';
   difficulties: Difficulty[];
+  year: string;
   results: BankQuestion[];
   total: number;
   source: Source;
@@ -253,6 +254,7 @@ export function LessonBankPanel({
   );
   const [hasImage, setHasImage] = useState<'any' | 'true' | 'false'>(hit?.hasImage ?? 'any');
   const [difficulties, setDifficulties] = useState<Set<Difficulty>>(new Set(hit?.difficulties ?? []));
+  const [year, setYear] = useState<string>(hit?.year ?? 'any');
   const [questions, setQuestions] = useState<BankQuestion[]>(hit?.results ?? []);
   const [total, setTotal] = useState(hit?.total ?? 0);
   const [loading, setLoading] = useState(false);
@@ -261,17 +263,6 @@ export function LessonBankPanel({
   // fetch on any later run (i.e. when the user explicitly clicks Search).
   const firstRun = useRef(true);
 
-  // Smart (semantic) search runs server-side only — it needs the embedding API. Track
-  // connectivity so we can disable it (and fall back to keyword) when offline.
-  const [online, setOnline] = useState(true);
-  useEffect(() => {
-    const update = () => setOnline(typeof navigator === 'undefined' ? true : navigator.onLine);
-    update();
-    window.addEventListener('online', update);
-    window.addEventListener('offline', update);
-    return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
-  }, []);
-
   // Pick the data source per fetch:
   //   * online & offline mode off  → server
   //   * online & offline mode on for this level → local cache (snappier, no waiting)
@@ -279,34 +270,43 @@ export function LessonBankPanel({
   //   * offline & cache empty      → friendly empty state
   const [source, setSource] = useState<Source>(hit?.source ?? 'server');
 
-  // Difficulty/image are client-side display filters over the fetched set — they NEVER trigger a
-  // fetch (so changing them can't spend AI tokens). `displayed` is what the list renders.
+  // Distinct years present in the current result set, newest first — populates the Year dropdown.
+  const availableYears = useMemo(() => {
+    const ys = new Set<number>();
+    for (const q of questions) if (typeof q.year === 'number') ys.add(q.year);
+    return Array.from(ys).sort((a, b) => b - a);
+  }, [questions]);
+
+  // Difficulty/image/year are client-side display filters over the fetched set — they NEVER trigger
+  // a fetch (so changing them can't spend AI tokens). `displayed` is what the list renders.
   const displayed = useMemo(() => {
     let list = questions;
     if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
     if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
+    if (year !== 'any') list = list.filter(q => String(q.year) === year);
     return list;
-  }, [questions, difficulties, hasImage]);
+  }, [questions, difficulties, hasImage, year]);
 
   // Read current filters at fetch-time without putting them in the fetch effect's deps.
-  const filtersRef = useRef({ hasImage, difficulties });
-  filtersRef.current = { hasImage, difficulties };
+  const filtersRef = useRef({ hasImage, difficulties, year });
+  filtersRef.current = { hasImage, difficulties, year };
 
   // Keep the cache's filter fields current so a remount rehydrates the latest filter UI.
   useEffect(() => {
     if (bankCache && bankCache.lessonKey === lessonKey) {
       bankCache.hasImage = hasImage;
       bankCache.difficulties = Array.from(difficulties);
+      bankCache.year = year;
     }
-  }, [hasImage, difficulties, lessonKey]);
+  }, [hasImage, difficulties, year, lessonKey]);
 
-  // Fetch is driven ONLY by `committed` (set on Search click / Enter), level/topics, and online.
+  // Fetch is driven ONLY by `committed` (set on Search click / Enter) and level/topics.
   useEffect(() => {
     if (!level || topics.length === 0) {
       setQuestions([]); setTotal(0); firstRun.current = false; return;
     }
     const cQuery = committed.query.trim();
-    const cSmart = committed.mode === 'smart' && online;
+    const cSmart = committed.mode === 'smart';
     // Smart with an empty query: nothing to rank.
     if (cSmart && !cQuery) {
       setQuestions([]); setTotal(0); setError(null); firstRun.current = false; return;
@@ -329,11 +329,31 @@ export function LessonBankPanel({
           lessonKey, sig,
           search: committed.query, mode: committed.mode, aiModel: committed.aiModel,
           hasImage: filtersRef.current.hasImage, difficulties: Array.from(filtersRef.current.difficulties),
+          year: filtersRef.current.year,
           results: list, total: tot, source: src,
         };
       };
+
+      // Use the local cache ONLY when offline mode is explicitly enabled for this level.
+      // We deliberately ignore navigator.onLine — it reports false "offline" far too often.
+      const settings = await getOfflineSettings();
+      const offlineModeOn = settings.enabled && settings.levels.includes(level);
+      if (cancelled) return;
+
+      // Keyword browse while offline mode is on → read the synced local cache.
+      if (offlineModeOn && !cSmart) {
+        const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit: 100 });
+        if (cancelled) return;
+        if (local.length === 0) {
+          setSource('unavailable'); setQuestions([]); setTotal(0); // enabled but not synced yet
+        } else {
+          commit(local as unknown as BankQuestion[], local.length, 'local');
+        }
+        return;
+      }
+
       try {
-        // Smart (AI-rerank) path — server only, scoped to the lesson's topics.
+        // Smart (AI-rerank) path — needs the server.
         if (cSmart && cQuery) {
           const params = new URLSearchParams();
           params.set('level', level);
@@ -352,23 +372,6 @@ export function LessonBankPanel({
           return;
         }
 
-        const settings = await getOfflineSettings();
-        const offlineOnThisLevel = settings.enabled && settings.levels.includes(level);
-        const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
-        const wantLocal = offlineOnThisLevel || !isOnline;
-
-        if (wantLocal) {
-          const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit: 100 });
-          if (cancelled) return;
-          if (local.length === 0 && !isOnline && !offlineOnThisLevel) {
-            setSource('unavailable');
-            setQuestions([]); setTotal(0);
-          } else {
-            commit(local as unknown as BankQuestion[], local.length, 'local');
-          }
-          return;
-        }
-
         // Server path (keyword)
         const params = new URLSearchParams();
         params.set('level', level);
@@ -381,18 +384,25 @@ export function LessonBankPanel({
         if (cancelled) return;
         commit(json.questions ?? [], json.total ?? (json.questions?.length ?? 0), 'server');
       } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : 'Load error');
-          setQuestions([]);
+        if (cancelled) return;
+        // Genuine network/server failure. For keyword, fall back to local cache if we have it.
+        if (!cSmart) {
+          try {
+            const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit: 100 });
+            if (cancelled) return;
+            if (local.length > 0) { commit(local as unknown as BankQuestion[], local.length, 'local'); return; }
+          } catch { /* ignore and fall through to error */ }
         }
+        setError(e instanceof Error ? e.message : 'Load error');
+        setQuestions([]); setTotal(0);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [level, topics, lessonKey, committed, auth, online]);
+  }, [level, topics, lessonKey, committed, auth]);
 
-  const committedSmart = committed.mode === 'smart' && online;
+  const committedSmart = committed.mode === 'smart';
   // True when the typed query/mode/model differs from what's been searched — highlights Search.
   const dirty = search.trim() !== committed.query.trim()
     || mode !== committed.mode
@@ -401,7 +411,7 @@ export function LessonBankPanel({
   function runSearch() {
     if (topics.length === 0) return;
     const q = search.trim();
-    if (mode === 'smart' && online && !q) return; // nothing to rank
+    if (mode === 'smart' && !q) return; // nothing to rank
     setCommitted({ query: q, mode, aiModel });
   }
 
@@ -450,7 +460,7 @@ export function LessonBankPanel({
           />
           <button
             onClick={runSearch}
-            disabled={topics.length === 0 || (mode === 'smart' && online && !search.trim())}
+            disabled={topics.length === 0 || (mode === 'smart' && !search.trim())}
             title="Run the search"
             className={`px-2.5 py-1 text-xs rounded text-white disabled:opacity-40 ${dirty ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-400 hover:bg-slate-500'}`}
           >Search</button>
@@ -461,10 +471,7 @@ export function LessonBankPanel({
             className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-500 hover:bg-slate-100 disabled:opacity-40"
           >Clear</button>
         </div>
-        {mode === 'smart' && !online && (
-          <p className="text-[10px] text-amber-700">Smart search needs a connection — using keyword search while offline.</p>
-        )}
-        {mode === 'smart' && online && (
+        {mode === 'smart' && (
           <div className="flex items-center justify-between gap-2">
             <span className="text-[10px] text-slate-400">Claude reads &amp; ranks, within this lesson&apos;s topics.</span>
             <span className="flex items-center gap-0.5 text-[10px]">
@@ -498,11 +505,16 @@ export function LessonBankPanel({
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
+          <span className="text-slate-400 ml-2">Year:</span>
+          <select value={year} onChange={e => setYear(e.target.value)} className="border border-slate-300 rounded px-1 py-px text-[10px]">
+            <option value="any">Any</option>
+            {availableYears.map(y => <option key={y} value={String(y)}>{y}</option>)}
+          </select>
         </div>
         <div className="text-[10px] text-slate-400 flex items-center gap-2">
           <span>{loading ? (committedSmart ? 'Claude is reading…' : 'Loading…') : `${total} found · showing ${displayed.length}`}</span>
           {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
-          {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">offline</span>}
+          {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">not synced</span>}
         </div>
       </div>
 
@@ -510,7 +522,7 @@ export function LessonBankPanel({
         {error && <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{error}</div>}
         {!loading && !error && source === 'unavailable' && topics.length > 0 && (
           <div className="text-xs text-slate-500 italic px-2 py-4 text-center space-y-2">
-            <p>You&apos;re offline and this level isn&apos;t cached.</p>
+            <p>Offline mode is on for this level, but it hasn&apos;t been synced yet.</p>
             <a href="/admin/offline" className="inline-block px-2 py-1 border border-slate-300 rounded text-slate-700 not-italic hover:bg-slate-50">Configure offline mode →</a>
           </div>
         )}

@@ -99,7 +99,7 @@ let _recentlyMovedCardId: string | null = null;
 const LAYOUT_KEY = 'lesson_editor_layout';
 const DEFAULT_LAYOUT = { listWidth: 300, textareaWidth: 440, aiWidth: 320 };
 const MIN = { list: 200, textarea: 220, ai: 220 };
-const MAX = { list: 560, textarea: 900, ai: 480 };
+const MAX = { list: 560, textarea: 900, ai: 576 };
 
 function loadLayout() {
   try {
