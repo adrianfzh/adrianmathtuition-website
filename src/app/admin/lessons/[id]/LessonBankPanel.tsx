@@ -60,6 +60,9 @@ type BankCache = {
   source: Source;
 };
 let bankCache: BankCache | null = null;
+// Scroll position of the results list, kept across the card-switch remount so the bank panel
+// stays parked on the question you were looking at instead of jumping back to the top.
+let bankScroll: { lessonKey: string; top: number } = { lessonKey: '', top: 0 };
 
 const DIFFICULTIES = ['Standard', 'Advanced', 'Challenging', 'Bonus'] as const;
 type Difficulty = typeof DIFFICULTIES[number];
@@ -262,6 +265,9 @@ export function LessonBankPanel({
   // Lets us reuse the cache on the FIRST effect run (mount / card-switch remount) but force a real
   // fetch on any later run (i.e. when the user explicitly clicks Search).
   const firstRun = useRef(true);
+  // Scrollable results container — used to save/restore scroll position across card switches.
+  const listRef = useRef<HTMLDivElement>(null);
+  const scrollRestored = useRef(false);
 
   // Pick the data source per fetch:
   //   * online & offline mode off  → server
@@ -402,6 +408,14 @@ export function LessonBankPanel({
     return () => { cancelled = true; };
   }, [level, topics, lessonKey, committed, auth]);
 
+  // Restore the saved scroll position once this lesson's results are on screen (after a card switch).
+  // Runs once per mount so it doesn't fight the user's own scrolling.
+  useEffect(() => {
+    if (scrollRestored.current || !listRef.current || questions.length === 0) return;
+    if (bankScroll.lessonKey === lessonKey) listRef.current.scrollTop = bankScroll.top;
+    scrollRestored.current = true;
+  }, [questions, lessonKey]);
+
   const committedSmart = committed.mode === 'smart';
   // True when the typed query/mode/model differs from what's been searched — highlights Search.
   const dirty = search.trim() !== committed.query.trim()
@@ -412,12 +426,16 @@ export function LessonBankPanel({
     if (topics.length === 0) return;
     const q = search.trim();
     if (mode === 'smart' && !q) return; // nothing to rank
+    bankScroll = { lessonKey, top: 0 };          // a fresh search starts at the top
+    listRef.current?.scrollTo({ top: 0 });
     setCommitted({ query: q, mode, aiModel });
   }
 
   function clearSearch() {
     setSearch('');
     setMode('keyword');
+    bankScroll = { lessonKey, top: 0 };
+    listRef.current?.scrollTo({ top: 0 });
     setCommitted({ query: '', mode: 'keyword', aiModel });
     if (bankCache && bankCache.lessonKey === lessonKey) bankCache = null;
   }
@@ -518,7 +536,11 @@ export function LessonBankPanel({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1.5 min-h-0">
+      <div
+        ref={listRef}
+        onScroll={e => { bankScroll = { lessonKey, top: e.currentTarget.scrollTop }; }}
+        className="flex-1 overflow-y-auto px-2 py-2 space-y-1.5 min-h-0"
+      >
         {error && <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{error}</div>}
         {!loading && !error && source === 'unavailable' && topics.length > 0 && (
           <div className="text-xs text-slate-500 italic px-2 py-4 text-center space-y-2">
