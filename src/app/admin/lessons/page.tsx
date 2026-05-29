@@ -206,21 +206,10 @@ function SortableLessonRow({ lesson: l, dragDisabled }: { lesson: LocalLesson; d
           <span className="font-semibold text-slate-800">{l.name}</span>
           <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded font-medium">{l.level}</span>
           {l._dirty && <span className="text-[10px] px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded font-medium" title="Created locally; syncs when you reconnect">queued</span>}
-          {l.topics.length > 0 && (
-            <span className="text-xs text-slate-500">{l.topics.length} topic{l.topics.length === 1 ? '' : 's'}</span>
-          )}
           <span className="flex-1" />
           <span className="text-xs text-slate-400">{new Date(l.updated_at).toLocaleDateString()}</span>
         </div>
         {l.description && <div className="text-xs text-slate-500 mt-1">{l.description}</div>}
-        {l.topics.length > 0 && (
-          <div className="flex gap-1 flex-wrap mt-2">
-            {l.topics.slice(0, 6).map(t => (
-              <span key={t} className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">{t}</span>
-            ))}
-            {l.topics.length > 6 && <span className="text-xs text-slate-400">+{l.topics.length - 6} more</span>}
-          </div>
-        )}
       </Link>
     </div>
   );
