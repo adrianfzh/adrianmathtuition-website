@@ -1000,6 +1000,40 @@ function EditorPanel({
     setAiPreviewContent(null);
   }, [content, title]);
 
+  // Paste an image straight into the markdown editor → upload it and insert an <img> at the cursor.
+  async function handleEditorPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const imgItem = Array.from(e.clipboardData.items).find(i => i.type.startsWith('image/'));
+    if (!imgItem) return; // let normal text paste proceed
+    e.preventDefault();
+    const file = imgItem.getAsFile();
+    if (!file) return;
+    const ta = e.currentTarget;
+    const at = ta.selectionStart;
+    const placeholder = '\n\n_⏳ uploading image…_\n\n';
+    const before = content.slice(0, at), after = content.slice(ta.selectionEnd);
+    setContentHistory(prev => [...prev.slice(-9), content]);
+    setContent(before + placeholder + after);
+    try {
+      const dataUrl: string = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result as string);
+        r.onerror = () => rej(new Error('read failed'));
+        r.readAsDataURL(file);
+      });
+      const resp = await fetch('/api/admin/lessons/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ dataUrl }),
+      });
+      if (!resp.ok) { const j = await resp.json().catch(() => ({} as { error?: string })); throw new Error(j.error || `HTTP ${resp.status}`); }
+      const { url } = await resp.json() as { url: string };
+      const img = `<img src="${url}" alt="" style="max-width:100%;display:block;margin:8px 0" />`;
+      setContent(c => c.replace(placeholder, `\n\n${img}\n\n`));
+    } catch (err) {
+      setContent(c => c.replace(placeholder, `\n\n_⚠ image upload failed: ${err instanceof Error ? err.message : 'error'}_\n\n`));
+    }
+  }
+
   function handleUndo() {
     if (contentHistory.length === 0) return;
     const prev = contentHistory[contentHistory.length - 1];
@@ -1164,6 +1198,7 @@ function EditorPanel({
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleTextareaKeyDown}
+            onPaste={handleEditorPaste}
             spellCheck={false}
             placeholder={kind === 'refresher'
               ? 'Short memory aid — formula, condition, mnemonic. Use $...$ for inline math, $$...$$ for display.'
