@@ -171,6 +171,15 @@ function getCookie(name: string): string {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
+// Wrap standalone <img> tags (each on its own line) in a <div> before rendering. A bare <img> is
+// inline/phrasing content, and react-markdown's raw-HTML reparse (rehype-raw) can reorder it
+// relative to adjacent blocks (e.g. an image swapping places with the next paragraph). Wrapping it
+// in a block-level <div> keeps it in source order. Render-time only — stored content is untouched,
+// so this also fixes images already saved in older cards.
+function wrapBlockImages(md: string): string {
+  return md.replace(/^[ \t]*(<img\b[^>]*?>)[ \t]*$/gim, '<div>$1</div>');
+}
+
 // Rewrite the width of the Nth <img> in the markdown source (used by drag-to-resize in the preview).
 // Sets an explicit pixel width and removes max-width so the chosen size sticks.
 function setImgWidthInMarkdown(md: string, index: number, widthPx: number): string {
@@ -1289,7 +1298,7 @@ function EditorPanel({
           </div>
           <div ref={previewRef} onClick={onPreviewClick} className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
             <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}>
-              {aiPreviewContent ?? previewContent}
+              {wrapBlockImages(aiPreviewContent ?? previewContent)}
             </ReactMarkdown>
           </div>
         </div>
