@@ -219,6 +219,7 @@ function computeDiff(original: string, updated: string): DiffLine[] {
 const QUICK_ACTIONS = [
   { label: 'Generate solutions', instruction: `Add a full worked solution to this card. Preserve every labelled part — if the input has (a), (b), (i), (ii), keep them all and solve each. Style: match the lesson worked-example style. Use **Step 1.**, **Solution:** etc. Use $\\begin{aligned}...\\end{aligned}$ for chained equations. Speak to the student in second person. If a per-part solution already exists, leave it intact.` },
   { label: 'Make clearer', instruction: 'Rewrite for clarity. Same content, same answer, but cleaner phrasing.' },
+  { label: 'Format nicely', instruction: 'Improve the formatting and readability ONLY. Keep ALL existing content — every example, formula, value, line and labelled part. Do not delete, shorten, reword the maths, or remove anything. Just improve layout: clear bold headers/labels, sensible line breaks and spacing, put each formula on its own line with $$...$$ where it helps, and use bullet points or short lines where they make it easier to scan.' },
   { label: 'Shorten ~30%', instruction: 'Shorten by roughly 30%. Drop filler, keep every algebra step.' },
   { label: 'Add pitfall note', instruction: "At the end, add a brief 'Common pitfall:' line warning about the most likely student error." },
   { label: 'Add sanity check', instruction: "Add a final 'Check:' step that substitutes the answer back or spot-checks the result." },
