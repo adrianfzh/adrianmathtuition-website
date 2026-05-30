@@ -29,6 +29,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
+import { renderDesmosPng } from '@/lib/desmos';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
 import {
   loadLesson as storeLoadLesson,
@@ -524,6 +525,10 @@ function AISidebar({
   const [images, setImages] = useState<ImgEntry[]>([]);
   const [cropIdx, setCropIdx] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  // Desmos graph generator
+  const [graphEqs, setGraphEqs] = useState('');
+  const [graphBusy, setGraphBusy] = useState(false);
+  const [graphErr, setGraphErr] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | null>(null);
   const prevCardId = useRef(cardId);
@@ -620,6 +625,30 @@ function AISidebar({
   function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImages([]); onPreviewChange?.(null); }
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); onPreviewChange?.(null); }
 
+  // Render the equations in Desmos (a real plotting engine), upload the PNG, append it to the card.
+  async function insertGraph() {
+    const eqs = graphEqs.split('\n').map(s => s.trim()).filter(Boolean);
+    if (eqs.length === 0) { setGraphErr('Enter at least one equation'); return; }
+    setGraphBusy(true); setGraphErr('');
+    try {
+      const dataUrl = await renderDesmosPng(eqs);
+      const res = await fetch('/api/admin/lessons/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({ dataUrl }),
+      });
+      if (!res.ok) { const j = await res.json().catch(() => ({} as { error?: string })); throw new Error(j.error || `HTTP ${res.status}`); }
+      const { url } = await res.json() as { url: string };
+      const img = `<img src="${url}" alt="graph" style="max-width:100%;display:block;margin:8px 0" />`;
+      onAccept((content ? content + '\n\n' : '') + img);
+      setGraphEqs('');
+    } catch (e) {
+      setGraphErr(e instanceof Error ? e.message : 'Graph generation failed');
+    } finally {
+      setGraphBusy(false);
+    }
+  }
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="px-3 py-2 border-b border-slate-200 bg-slate-50 shrink-0">
@@ -694,6 +723,24 @@ function AISidebar({
               {streaming ? 'Streaming… (click to cancel)' : !aiOnline ? 'Offline' : images.length > 0 ? `Extract from ${images.length > 1 ? `${images.length} images` : 'image'} →` : 'Send to AI →'}
             </button>
           </div>
+        </div>
+        <div className="border-t border-slate-200 pt-2 mt-1">
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">📈 Graph (Desmos)</p>
+          <textarea
+            className="w-full border border-slate-300 rounded px-2.5 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            rows={2}
+            placeholder={'One equation per line, e.g.\n(x-1)^2+(y+2)^2=9'}
+            value={graphEqs}
+            onChange={(e) => setGraphEqs(e.target.value)}
+            disabled={graphBusy}
+          />
+          <button
+            onClick={insertGraph}
+            disabled={graphBusy || !aiOnline || !graphEqs.trim()}
+            className="mt-1.5 w-full py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-40"
+          >{graphBusy ? 'Plotting…' : !aiOnline ? 'Offline' : 'Insert accurate graph →'}</button>
+          {graphErr && <p className="text-[11px] text-red-600 mt-1">{graphErr}</p>}
+          <p className="text-[10px] text-slate-400 mt-1">Plotted by Desmos and inserted as an image — accurate on axes (unlike AI sketches).</p>
         </div>
         {aiError && <p className="text-xs text-red-600 bg-red-50 p-2 rounded">{aiError}</p>}
         {streaming && aiResult && (
