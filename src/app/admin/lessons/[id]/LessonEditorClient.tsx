@@ -171,6 +171,28 @@ function getCookie(name: string): string {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
+// Rewrite the width of the Nth <img> in the markdown source (used by drag-to-resize in the preview).
+// Sets an explicit pixel width and removes max-width so the chosen size sticks.
+function setImgWidthInMarkdown(md: string, index: number, widthPx: number): string {
+  let i = -1;
+  return md.replace(/<img\b[^>]*>/gi, (tag) => {
+    i++;
+    if (i !== index) return tag;
+    const styleDecl = `width:${widthPx}px;max-width:100%`;
+    if (/style\s*=\s*"/i.test(tag)) {
+      return tag.replace(/style\s*=\s*"([^"]*)"/i, (_m, s: string) => {
+        const rest = s
+          .split(';')
+          .map(d => d.trim())
+          .filter(d => d && !/^width\s*:/i.test(d) && !/^max-width\s*:/i.test(d))
+          .join('; ');
+        return `style="${rest ? rest + '; ' : ''}${styleDecl}"`;
+      });
+    }
+    return tag.replace(/<img\b/i, `<img style="${styleDecl}"`);
+  });
+}
+
 // ── Simple line diff ─────────────────────────────────────────────────────────
 
 interface DiffLine { type: 'same' | 'add' | 'remove'; text: string }
@@ -1042,6 +1064,55 @@ function EditorPanel({
     setAiPreviewContent(null);
   }
 
+  // ── Drag-to-resize images in the live preview ────────────────────────────
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [selImg, setSelImg] = useState<HTMLImageElement | null>(null);
+  const [handlePos, setHandlePos] = useState<{ x: number; y: number } | null>(null);
+  const resizeDrag = useRef<{ startX: number; startW: number; el: HTMLImageElement } | null>(null);
+
+  // Track the selected image's on-screen corner (survives scroll/layout) via a rAF loop.
+  useEffect(() => {
+    if (!selImg) { setHandlePos(null); return; }
+    selImg.style.outline = '2px solid #2563eb';
+    let raf = 0;
+    const tick = () => {
+      if (!selImg.isConnected) { setSelImg(null); return; }
+      const r = selImg.getBoundingClientRect();
+      setHandlePos({ x: r.right, y: r.bottom });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(raf); try { selImg.style.outline = ''; } catch { /* gone */ } };
+  }, [selImg]);
+
+  function onPreviewClick(e: React.MouseEvent) {
+    if (aiPreviewContent) return; // don't resize while an AI suggestion is being previewed
+    const t = e.target as HTMLElement;
+    setSelImg(t.tagName === 'IMG' ? (t as HTMLImageElement) : null);
+  }
+  function onResizeDown(e: React.PointerEvent) {
+    if (!selImg) return;
+    e.preventDefault(); e.stopPropagation();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    resizeDrag.current = { startX: e.clientX, startW: selImg.getBoundingClientRect().width, el: selImg };
+  }
+  function onResizeMove(e: React.PointerEvent) {
+    const d = resizeDrag.current; if (!d) return;
+    const w = Math.max(40, Math.round(d.startW + (e.clientX - d.startX)));
+    d.el.style.width = `${w}px`; d.el.style.maxWidth = 'none';
+  }
+  function onResizeUp() {
+    const d = resizeDrag.current; if (!d) return;
+    resizeDrag.current = null;
+    const imgs = Array.from(previewRef.current?.querySelectorAll('img') ?? []);
+    const idx = imgs.indexOf(d.el);
+    const w = parseInt(d.el.style.width, 10);
+    if (idx >= 0 && w > 0) {
+      setContentHistory(prev => [...prev.slice(-9), content]);
+      setContent(c => setImgWidthInMarkdown(c, idx, w));
+    }
+  }
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
@@ -1216,12 +1287,23 @@ function EditorPanel({
             <span className="text-slate-500">Live preview</span>
             {aiPreviewContent && <span className="text-blue-600 font-medium">✨ AI suggestion</span>}
           </div>
-          <div className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
+          <div ref={previewRef} onClick={onPreviewClick} className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
             <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}>
               {aiPreviewContent ?? previewContent}
             </ReactMarkdown>
           </div>
         </div>
+        {/* Drag-to-resize handle for the selected preview image */}
+        {handlePos && (
+          <div
+            onPointerDown={onResizeDown}
+            onPointerMove={onResizeMove}
+            onPointerUp={onResizeUp}
+            title="Drag to resize image"
+            style={{ position: 'fixed', left: handlePos.x - 8, top: handlePos.y - 8, touchAction: 'none', zIndex: 60 }}
+            className="w-4 h-4 rounded-sm bg-blue-600 border-2 border-white shadow cursor-nwse-resize"
+          />
+        )}
 
         {/* Right tabbed panel */}
         {aiOpen && (
