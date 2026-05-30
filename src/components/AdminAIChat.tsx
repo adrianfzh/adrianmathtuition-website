@@ -698,7 +698,7 @@ export default function AdminAIChat({
             {messages.length === 0 && (
               <div style={s.emptyState}>
                 <div style={{ fontSize: 28 }}>✨</div>
-                <div>Ask me anything about {title.toLowerCase().replace(' assistant', '')}.</div>
+                <div>Ask a question or tell me to make a change — I&apos;ll show you a plan to confirm first.</div>
                 <div style={{ fontSize: 12 }}>{placeholder}</div>
               </div>
             )}

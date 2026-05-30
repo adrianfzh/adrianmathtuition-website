@@ -40,7 +40,8 @@ export async function POST(req: NextRequest) {
       `?filterByFormula=${formula}&sort[0][field]=Student&sort[0][direction]=asc` +
         `&fields[]=Student&fields[]=Month&fields[]=Final Amount` +
         `&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Status` +
-        `&fields[]=Sent At&fields[]=Line Items Extra&fields[]=Auto Notes`
+        `&fields[]=Sent At&fields[]=Line Items Extra&fields[]=Auto Notes` +
+        `&fields[]=Deferred Amount&fields[]=Deferred Note&fields[]=Deferred To Month&fields[]=Deferred Applied`
     );
 
     // Fetch all students (avoid RECORD_ID filter truncation bug)
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
       studentsData.records.map((r: any) => [r.id, r.fields['Student Name'] || r.id])
     );
 
+    const pendingDeferrals: string[] = [];
     const rows = invoicesData.records.map((r: any) => {
       const f = r.fields;
       const studentId = f['Student']?.[0] ?? '';
@@ -62,12 +64,25 @@ export async function POST(req: NextRequest) {
       const sentAt: string = f['Sent At'] ? String(f['Sent At']).slice(0, 10) : '—';
       const isPaid: boolean = f['Is Paid'] ?? false;
 
+      // Collect any unapplied deferred adjustment carried on this invoice
+      const defAmt: number = f['Deferred Amount'] ?? 0;
+      const defApplied: boolean = f['Deferred Applied'] ?? false;
+      if (defAmt !== 0 && !defApplied) {
+        pendingDeferrals.push(
+          `${r.id} | ${studentName} | carries $${defAmt.toFixed(2)} → ${f['Deferred To Month'] ?? '(no target month)'} | note: ${f['Deferred Note'] ?? ''}`
+        );
+      }
+
       return `${r.id} | ${studentName} | ${f['Month'] ?? ''} | $${finalAmount.toFixed(2)} | $${amountPaid.toFixed(2)} | $${outstanding.toFixed(2)} | ${f['Status'] ?? ''} | sent:${sentAt} | paid:${isPaid}`;
     });
 
     invoiceTable =
       'recId | Student | Month | Final | Paid | Outstanding | Status | SentAt | IsPaid\n' +
-      rows.join('\n');
+      rows.join('\n') +
+      '\n\n## Pending deferred adjustments (not yet applied)\n' +
+      (pendingDeferrals.length
+        ? 'carrierRecId | Student | Carries → Target Month | Note\n' + pendingDeferrals.join('\n')
+        : '(none)');
   } catch (err: any) {
     invoiceTable = `(Error fetching invoices: ${err?.message ?? err})`;
   }
@@ -94,6 +109,17 @@ Action types and their required fields:
 - regenerate_pdfs: recordIds (string array)
 - send_emails: recordIds (string array)
 - mark_paid: recordId (string), amount (number), isPaid (boolean)
+
+## Deferred adjustments (reminders that apply to a FUTURE month's invoice)
+Use this when the user wants a credit/charge applied to a LATER month's invoice that does not exist yet (e.g. "defer Kiara's -$280 referral fee to July", "remind me to add $50 to Bob's August invoice").
+- You CANNOT edit a future invoice directly (it isn't generated until that month). Instead, store the deferral on the student's CURRENT/most-recent invoice using patch_invoice with these fields:
+  - "Deferred Amount": signed number (negative for a credit, e.g. -280; positive for an extra charge)
+  - "Deferred Note": short reason shown on the future invoice
+  - "Deferred To Month": the target month as exactly "Month YYYY" (e.g. "July 2026"). Today is ${today}, so infer the year.
+  - Leave "Deferred Applied" unset/false — the invoice generator ticks it automatically when it applies the adjustment next month.
+- When the generator runs for the target month, it auto-adds this as a line item, adjusts the Final Amount, and ticks Deferred Applied. A banner also reminds the admin.
+- To CANCEL a pending deferral, patch_invoice that carrier record with {"Deferred Amount":0,"Deferred Note":"","Deferred To Month":""}.
+- "Pending deferred adjustments" above lists deferrals already scheduled but not yet applied.
 
 Rules:
 - Always explain what you found and what you plan to do BEFORE the ACTION_PLAN block

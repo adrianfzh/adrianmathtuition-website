@@ -559,6 +559,83 @@ export async function POST(req: NextRequest) {
       console.error('[generate-invoices] Referral reward check error:', referralErr.message);
     }
 
+    // ── Deferred adjustments ───────────────────────────────────────────────
+    // Admin (or the invoice AI assistant) can park a credit/charge on a
+    // student's current invoice with a target month. When that month is
+    // generated, apply it to the new invoice and tick Deferred Applied so it
+    // only ever lands once. See CLAUDE.md > Deferred Adjustments.
+    const deferredResults: { name: string; amount: number; applied: boolean; note: string }[] = [];
+    try {
+      const deferredFormula = encodeURIComponent(
+        `AND({Deferred To Month}='${invoiceMonth.label}', NOT({Deferred Applied}), {Deferred Amount}!=0)`
+      );
+      const carriers = await airtableRequestAll('Invoices',
+        `?filterByFormula=${deferredFormula}&fields[]=Student&fields[]=Deferred Amount&fields[]=Deferred Note&fields[]=Deferred To Month`
+      );
+
+      for (const carrier of carriers.records || []) {
+       try {
+        const sid = carrier.fields['Student']?.[0];
+        const amount: number = carrier.fields['Deferred Amount'] || 0;
+        const note: string = (carrier.fields['Deferred Note'] || '').toString();
+        const name = sid ? (studentsById[sid]?.fields?.['Student Name'] || sid) : '(unknown)';
+        if (!sid || amount === 0) continue;
+
+        // Find this student's invoice for the month being generated:
+        // prefer one created in this batch, else an existing one for the month.
+        let targetId = generatedInvoices.find((inv) => inv.studentId === sid)?.id || null;
+        if (!targetId) {
+          const existing = existingInvoicesData.records.find((r: any) => r.fields['Student']?.[0] === sid);
+          targetId = existing?.id || null;
+        }
+        if (!targetId) {
+          // No invoice this month to attach to — leave unapplied so it surfaces again next run.
+          deferredResults.push({ name, amount, applied: false, note });
+          continue;
+        }
+
+        // Fresh read so we stack on top of (not clobber) referral credits / other extras.
+        const inv = await at('Invoices', `/${targetId}`);
+        const existingExtra = inv.fields['Line Items Extra']
+          ? JSON.parse(inv.fields['Line Items Extra'])
+          : [];
+        existingExtra.push({
+          description: note || `Adjustment carried forward from ${carrier.fields['Deferred To Month'] || ''}`.trim(),
+          amount: parseFloat(amount.toFixed(2)),
+        });
+        const newFinal = Math.max(0, (inv.fields['Final Amount'] || 0) + amount);
+        const prevNotes = (inv.fields['Auto Notes'] || '').toString();
+        const sign = amount >= 0 ? '+' : '−';
+        const noteLine = `${note || 'Deferred adjustment'} (${sign}$${Math.abs(amount).toFixed(2)})`;
+        const newNotes = prevNotes ? `${prevNotes}\n\n${noteLine}` : noteLine;
+
+        await at('Invoices', `/${targetId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ fields: {
+            'Line Items Extra': JSON.stringify(existingExtra),
+            'Final Amount': newFinal,
+            'Auto Notes': newNotes,
+          }}),
+        });
+        // Tick the carrier so it never applies twice.
+        await at('Invoices', `/${carrier.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ fields: { 'Deferred Applied': true } }),
+        });
+
+        // Keep in-memory batch state consistent for any later steps.
+        const gen = generatedInvoices.find((g) => g.id === targetId);
+        if (gen) { gen.finalAmount = newFinal; gen.lineItemsExtra = existingExtra; }
+
+        deferredResults.push({ name, amount, applied: true, note });
+       } catch (oneErr: any) {
+        console.error('[generate-invoices] Deferred adjustment (single record) error:', oneErr.message);
+       }
+      }
+    } catch (deferredErr: any) {
+      console.error('[generate-invoices] Deferred adjustment error:', deferredErr.message);
+    }
+
     const summaryLines = generatedList
       .map((g) => `${g.name} \u2014 ${g.amount.toFixed(2)} (${g.count} lesson${g.count !== 1 ? 's' : ''})`)
       .join('\n');
@@ -587,12 +664,25 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    let deferredSection = '';
+    if (deferredResults.length > 0) {
+      deferredSection = '\n\n\u23f0 <b>Deferred adjustments</b>\n';
+      for (const d of deferredResults) {
+        const sign = d.amount >= 0 ? '+' : '\u2212';
+        const amt = `${sign}$${Math.abs(d.amount).toFixed(2)}`;
+        deferredSection += d.applied
+          ? `\u2705 ${d.name}: ${amt} applied${d.note ? ` \u2014 ${d.note}` : ''}\n`
+          : `\u26a0\ufe0f ${d.name}: ${amt} pending \u2014 no ${invoiceMonth.label} invoice to attach to, apply manually\n`;
+      }
+    }
+
     await sendTelegram(
       `\ud83d\udccb <b>Draft invoices ready \u2014 ${invoiceMonth.label}</b>\n\n` +
         `${summaryLines}\n\n` +
         `Total: ${generated} invoices \u00b7 ${totalAmount.toFixed(2)}` +
         skipSection +
         referralSection +
+        deferredSection +
         `\n\nReview and hold any before 15th via /amend [name].\n` +
         `Invoices send automatically at 10am tomorrow.`
     );

@@ -1803,6 +1803,57 @@ export default function AdminPage() {
       } catch { /* non-fatal */ }
     }
 
+    async function loadDeferredPending() {
+      try {
+        const res = await fetch('/api/admin-invoices/deferred-pending', { headers: authHeaders() });
+        const data = await res.json();
+        const pending = (data.pending || []) as any[];
+        const el = document.getElementById('deferred-pending-banner');
+        if (!el) return;
+        if (!pending.length) { el.innerHTML = ''; return; }
+
+        // Group by target month so each upcoming month is its own block
+        const byMonth: Record<string, any[]> = {};
+        for (const p of pending) {
+          const key = p.targetMonth || '(no target month)';
+          (byMonth[key] = byMonth[key] || []).push(p);
+        }
+
+        let html = `<div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;">
+          <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;">⏰ Pending adjustments — auto-apply on invoice generation</div>`;
+        for (const month of Object.keys(byMonth).sort()) {
+          html += `<div style="font-weight:600;color:#1e40af;margin-top:6px;margin-bottom:4px;">${escHtml(month)}:</div>`;
+          for (const p of byMonth[month]) {
+            const amt = (p.amount >= 0 ? '+' : '−') + '$' + Math.abs(p.amount).toFixed(2);
+            const color = p.amount < 0 ? '#15803d' : '#b91c1c';
+            html += `<div style="margin:3px 0;color:#334155;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <strong>${escHtml(p.studentName)}</strong>
+              <span style="color:${color};font-weight:700;">${amt}</span>
+              ${p.note ? `<span style="color:#64748b;">— ${escHtml(p.note)}</span>` : ''}
+              <button onclick="cancelDeferred('${p.id}', this)" style="font-size:11px;background:none;border:1px solid #cbd5e1;border-radius:6px;padding:2px 8px;cursor:pointer;color:#64748b;">✕ Cancel</button>
+            </div>`;
+          }
+        }
+        html += `</div>`;
+        el.innerHTML = html;
+      } catch { /* non-fatal */ }
+    }
+
+    async function cancelDeferred(invoiceId: string, btn: HTMLButtonElement) {
+      if (!confirm('Cancel this pending adjustment? It will not be applied to any future invoice.')) return;
+      btn.disabled = true;
+      btn.textContent = '⏳…';
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: invoiceId, fields: { 'Deferred Amount': 0, 'Deferred Note': '', 'Deferred To Month': '' } }),
+        });
+        if (!res.ok) throw new Error('Failed');
+        loadDeferredPending();
+      } catch { btn.disabled = false; btn.textContent = '✕ Cancel'; }
+    }
+
     async function markReferralCashPaid(studentId: string, btn: HTMLButtonElement) {
       btn.disabled = true;
       btn.textContent = '⏳…';
@@ -2313,6 +2364,7 @@ export default function AdminPage() {
     w.sendAllApproved = sendAllApproved;
     w.toggleRecordPayment = toggleRecordPayment;
     w.markReferralCashPaid = markReferralCashPaid;
+    w.cancelDeferred = cancelDeferred;
     w.onPaymentFilter = onPaymentFilter;
     w.onLevelPillToggle = onLevelPillToggle;
     w.sendFilteredApproved = sendFilteredApproved;
@@ -2338,6 +2390,7 @@ export default function AdminPage() {
     init();
     loadAutoSendPauseState();
     loadReferralStatus();
+    loadDeferredPending();
 
     return () => {
       ['submitPassword','logout','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
@@ -2430,6 +2483,7 @@ export default function AdminPage() {
       </div>
 
       <div className="content">
+        <div id="deferred-pending-banner"></div>
         <div id="referral-status-banner"></div>
         <div className="search-bar">
           <div className="search-input-wrap">

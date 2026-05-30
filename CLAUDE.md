@@ -168,6 +168,22 @@ Key tables used by website:
 4. "Generate Missing PDFs" → `generate-pdf-batch` → Puppeteer → Vercel Blob → PDF URL in Airtable
 5. `send-invoices` (15th 9am) → Resend email with PDF attachment → marks Sent
 
+### Deferred Adjustments (carry a credit/charge to a FUTURE month's invoice)
+
+For when an adjustment must land on a month whose invoice doesn't exist yet (e.g. a referral credit deferred from June to July). Stored on the student's **current** invoice via 4 Invoices fields:
+
+| Field | Type | Notes |
+|---|---|---|
+| `Deferred Amount` | Currency | Signed — negative = credit, positive = extra charge |
+| `Deferred Note` | Long text | Reason, shown as the line-item description on the future invoice |
+| `Deferred To Month` | Single line text | Target month, exactly `Month YYYY` (e.g. `July 2026`) |
+| `Deferred Applied` | Checkbox | Auto-ticked by the generator once applied (applies exactly once) |
+
+- **Set it:** via the Invoice Assistant AI ("defer Kiara's −$280 referral to July") → `patch_invoice` sets the 4 fields; or manually in Airtable.
+- **Apply:** `generate-invoices` queries `AND({Deferred To Month}='<month>', NOT({Deferred Applied}), {Deferred Amount}!=0)`, adds a `Line Items Extra` line to that student's new invoice, bumps `Final Amount`, appends `Auto Notes`, ticks `Deferred Applied`. If no invoice exists that month to attach to, it's left unapplied (resurfaces next run) and flagged in the Telegram summary.
+- **Banner:** `/admin/invoices` shows a blue "⏰ Pending adjustments" banner (data from `/api/admin-invoices/deferred-pending`) grouped by target month, each with a ✕ Cancel button.
+- PDF caveat: like referral credits, the deferral changes `Final Amount` after the draft PDF was rendered — regenerate PDFs before sending (the normal draft-review step covers this).
+
 ## Notification Policy
 
 **All admin web UI actions are silent** — no Telegram messages sent when admin uses the website.
