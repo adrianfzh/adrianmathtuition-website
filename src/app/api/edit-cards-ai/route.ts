@@ -132,16 +132,27 @@ export async function POST(req: NextRequest) {
       ? `\n\nBlob URLs (use these if you need to embed diagrams as images):\n${blobUrls.map((u, i) => `Image ${i + 1}: ${u}`).join('\n')}`
       : '';
 
-    const textInstruction = instruction?.trim() ||
+    // When an image is attached AND the user typed their own instruction, prepend a guardrail so a
+    // casually-worded prompt ("redo this", "make a card from this") can't wipe existing card
+    // content. Skipped if they explicitly ask to replace/rewrite/overwrite the card.
+    const userInstr = instruction?.trim() ?? '';
+    const wantsReplace = /\b(replace|overwrite|rewrite|start over|from scratch|wipe|discard)\b/i.test(userInstr);
+    const imageGuard = (hasImages && userInstr && !wantsReplace)
+      ? `An image is attached. KEEP all existing card content intact and only ADD the image's material (append/insert) — do NOT delete or rewrite existing content unless explicitly told to. Then follow this instruction: `
+      : '';
+
+    const textInstruction = (userInstr ? imageGuard + userInstr : '') ||
       (imageList.length === 1
-        ? `Extract the worked example from this image and write a complete card in markdown + LaTeX:
-1. Read ALL text, equations, and steps from the image — treat every part as text to transcribe.
-2. Include the question, all solution steps, and the final answer.
-3. ONLY if there is a geometric diagram or figure (not equations/text), also embed it as <img src="${blobUrls[0] ?? ''}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> at the correct position. Do NOT use an <img> tag for plain equation images — write those as LaTeX instead.`
-        : `There are ${imageList.length} images (e.g. multiple pages of the same question). Read ALL text and equations from EVERY image and combine them into one complete card in markdown + LaTeX:
-1. Transcribe ALL text, equations, and steps from each image in sequence.
-2. Include the full question, all solution steps, and the final answer.
-3. ONLY if an image contains a geometric diagram or figure (not equations/text), embed it as <img src="BLOB_URL" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> using the blob URL listed below. Do NOT use <img> for equation images — write those as LaTeX instead.`);
+        ? `KEEP the current card content EXACTLY as it is, and ADD the material from this image to it. Do NOT delete, rewrite, or drop any existing content — only append/insert.
+1. Read ALL text, equations, and steps from the image and transcribe them in markdown + LaTeX.
+2. Append the transcribed material to the END of the current card content (or insert at the most relevant place), keeping everything already on the card intact.
+3. ONLY if the image is a geometric diagram or figure (not equations/text), embed it as <img src="${blobUrls[0] ?? ''}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> at the right spot. Do NOT use an <img> tag for plain equation images — write those as LaTeX instead.
+4. Your output MUST contain all of the original card content plus the new image material.`
+        : `KEEP the current card content EXACTLY as it is, and ADD the material from these ${imageList.length} images to it. Do NOT delete, rewrite, or drop any existing content — only append/insert.
+1. Transcribe ALL text and equations from EVERY image in sequence as markdown + LaTeX.
+2. Append the transcribed material to the END of the current card content, keeping everything already on the card intact.
+3. ONLY if an image is a geometric diagram or figure (not equations/text), embed it as <img src="BLOB_URL" alt="diagram" style="max-width:100%;display:block;margin:8px 0" /> using the blob URL listed below. Do NOT use <img> for equation images — write those as LaTeX instead.
+4. Your output MUST contain all of the original card content plus the new image material.`);
 
     const textBlock = `Level: ${level ?? ''}
 Topic: ${topic ?? ''}
