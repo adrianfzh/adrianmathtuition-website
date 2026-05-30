@@ -225,7 +225,6 @@ const QUICK_ACTIONS = [
   { label: 'Add sanity check', instruction: "Add a final 'Check:' step that substitutes the answer back or spot-checks the result." },
   { label: 'Tighten algebra', instruction: 'Combine micro-steps that students can do in one line, but keep enough scaffolding that the logic is followable.' },
   { label: 'Fresh example', instruction: "Same sub-skill, different numbers and surface. Don't reuse the same coefficients. Rewrite the whole card." },
-  { label: 'Generate diagram', instruction: 'Generate an SVG diagram that illustrates the mathematical figure described in this card. Output a clean, minimal <svg>...</svg> element inline, with viewBox and basic shapes only.' },
 ];
 
 // ── Custom collision detection (cards + section headers) ─────────────────────
