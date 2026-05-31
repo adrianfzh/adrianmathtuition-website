@@ -204,6 +204,21 @@ function levelChip(level: string) {
   return <span className={`slot-level ${d.cls}`}>{d.label}</span>;
 }
 
+// Returns the student's level label when it doesn't match the slot's level
+// category (e.g. a JC student rescheduled into a Sec slot), else null.
+// Mixed/Adhoc slots intentionally hold multiple levels and are never flagged.
+function crossLevelBadge(studentLevel: string, slotLevel: string): string | null {
+  const stu = (studentLevel || '').toLowerCase();
+  const sl = (slotLevel || '').toLowerCase();
+  if (!stu || !sl) return null;
+  if (sl === 'mixed' || sl === 'adhoc') return null;
+  const studentIsJC = stu.startsWith('jc');
+  const slotIsJC = sl.startsWith('jc');
+  const slotIsSec = sl.startsWith('sec'); // 'secondary' or 'sec'
+  if (!slotIsJC && !slotIsSec) return null; // unknown slot category — don't flag
+  return studentIsJC !== slotIsJC ? studentLevel.toUpperCase() : null;
+}
+
 const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Regular:     { bg: '#f8fafc',  text: '#1e293b', border: '#e2e8f0' },
   Rescheduled: { bg: '#eff6ff',  text: '#1d4ed8', border: '#bfdbfe' },
@@ -875,9 +890,11 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, activeExamType }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; activeExamType?: string | null }) {
+function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; activeExamType?: string | null; slotLevel?: string }) {
   // Rescheduled-away chips (status=Rescheduled) are display-only — disable dragging
   const isRescheduledAway = lesson.status === 'Rescheduled';
+  // Cross-level flag: e.g. a JC student rescheduled into a Sec slot
+  const crossBadge = crossLevelBadge(lesson.studentLevel, slotLevel || '');
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id, disabled: isRescheduledAway });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isFaded = lesson.status === 'Absent' || lesson.status === 'Cancelled' || isRescheduledAway;
@@ -950,6 +967,17 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
               flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
             }}
           >{lesson.studentName}</span>
+          {/* Cross-level badge — student level differs from this slot's level */}
+          {crossBadge && (
+            <span
+              title={`${lesson.studentLevel} student in a ${slotLevel} slot`}
+              style={{
+                flexShrink: 0, fontSize: 9, fontWeight: 700, lineHeight: 1.4,
+                padding: '1px 5px', borderRadius: 8, whiteSpace: 'nowrap',
+                background: '#fef3c7', color: '#b45309', border: '1px solid #fcd34d',
+              }}
+            >⚠ {crossBadge}</span>
+          )}
           {/* Inline exam date badge — shows topic dropdown if topics are recorded */}
           {!isFaded && lesson.examDate && lesson.examDate !== 'NO_EXAM' && (
             <span ref={dropdownRef} style={{ position: 'relative', flexShrink: 0 }}>
@@ -1081,10 +1109,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
 function DroppableLessonSlot({
   id, lessons, onChipTap, onAddClick, onExamDateClick, onStudentClick,
   onMarkPresent, onMarkAbsent, onUndo,
-  ghostStudents, onGhostTap, savingStudents, activeExamType,
+  ghostStudents, onGhostTap, savingStudents, activeExamType, slotLevel,
 }: {
   id: string;
   lessons: EnrichedLesson[];
+  slotLevel?: string;
   onChipTap: (lesson: EnrichedLesson) => void;
   onAddClick: () => void;
   onExamDateClick?: (lesson: EnrichedLesson) => void;
@@ -1103,7 +1132,7 @@ function DroppableLessonSlot({
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} activeExamType={activeExamType} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} activeExamType={activeExamType} slotLevel={slotLevel} />
         ))}
         {ghosts.map(s => (
           <div
@@ -2081,6 +2110,7 @@ export default function SchedulePage() {
         <DroppableLessonSlot
           id={dropId}
           lessons={visibleLessons}
+          slotLevel={slot.level}
           onChipTap={(lesson) => { setModalError(''); setActionSheet({ lesson, date: dateStr, slotId: slot.id }); }}
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={handleExamDateClick}
