@@ -1238,6 +1238,8 @@ export default function SchedulePage() {
   const [showAllRescheduleSlots, setShowAllRescheduleSlots] = useState(false);
   const [actionSheet, setActionSheet] = useState<ActionSheetState | null>(null);
   const [addModal, setAddModal] = useState<AddModalState | null>(null);
+  const [addSlotModal, setAddSlotModal] = useState<{ slot: Slot; studentId: string; studentSearch: string; startDate: string } | null>(null);
+  const [addSlotSubmitting, setAddSlotSubmitting] = useState(false);
   const [absentModal, setAbsentModal] = useState<AbsentDeleteState | null>(null);
   const [deleteModal, setDeleteModal] = useState<AbsentDeleteState | null>(null);
   const [editNotesModal, setEditNotesModal] = useState<{ lesson: EnrichedLesson; notes: string } | null>(null);
@@ -1607,7 +1609,14 @@ export default function SchedulePage() {
             <span className="slot-time">⏰ {slot.time}</span>
             {levelChip(slot.level)}
           </div>
-          <span className="capacity">{enrolledIds.length}/{slot.capacity}</span>
+          <div className="slot-header-right">
+            <span className="capacity">{enrolledIds.length}/{slot.capacity}</span>
+            <button
+              className="slot-add-btn"
+              title="Add a weekly student to this slot"
+              onClick={() => setAddSlotModal({ slot, studentId: '', studentSearch: '', startDate: isoDate(new Date()) })}
+            >+</button>
+          </div>
         </div>
         <div className="lesson-list">
           {enrolledIds.map(studentId => {
@@ -1684,6 +1693,35 @@ export default function SchedulePage() {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast({ type, message });
     toastTimerRef.current = setTimeout(() => setToast(null), 3000);
+  }
+
+  // Add a recurring weekly slot for a student: creates an Active enrollment +
+  // generates 9 weeks of Regular lessons (server-side).
+  async function submitAddWeeklySlot() {
+    if (!addSlotModal) return;
+    if (!addSlotModal.studentId) { showToast('error', 'Select a student'); return; }
+    if (!addSlotModal.startDate) { showToast('error', 'Pick a start date'); return; }
+    setAddSlotSubmitting(true);
+    try {
+      const res = await fetch('/api/admin-schedule/add-weekly-slot', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: addSlotModal.studentId,
+          slotId: addSlotModal.slot.id,
+          startDate: addSlotModal.startDate,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || 'Failed to add weekly slot');
+      setAddSlotModal(null);
+      showToast('success', `✓ Added — ${json.lessonsCreated} lesson${json.lessonsCreated !== 1 ? 's' : ''} generated`);
+      await fetchSchedule(monday, savedPw.current);
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed');
+    } finally {
+      setAddSlotSubmitting(false);
+    }
   }
 
   function formatDateSlot(dateStr: string, slotId: string | null): string {
@@ -2769,6 +2807,59 @@ export default function SchedulePage() {
                 <button className="btn-cancel" onClick={() => setEditNotesModal(null)} disabled={submitting}>Cancel</button>
                 <button className="btn-primary" onClick={handleSaveNotes} disabled={submitting}>
                   {submitting ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add weekly slot modal */}
+      {addSlotModal && (
+        <div className="modal-overlay" onClick={() => !addSlotSubmitting && setAddSlotModal(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div><div className="modal-name">Add weekly slot</div></div>
+              <button className="modal-close" onClick={() => setAddSlotModal(null)} disabled={addSlotSubmitting}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>
+                {addSlotModal.slot.dayName} {addSlotModal.slot.time} · {addSlotModal.slot.level}
+              </div>
+
+              <div className="form-group">
+                <span className="form-label">Student</span>
+                <select
+                  className="modal-select"
+                  value={addSlotModal.studentId}
+                  onChange={e => setAddSlotModal({ ...addSlotModal, studentId: e.target.value })}
+                >
+                  <option value="">Select a student…</option>
+                  {Object.entries(data?.students ?? {})
+                    .map(([id, s]) => ({ id, name: (s as { name: string }).name }))
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginTop: 12 }}>
+                <span className="form-label">Start date</span>
+                <input
+                  type="date"
+                  className="modal-input"
+                  value={addSlotModal.startDate}
+                  onChange={e => setAddSlotModal({ ...addSlotModal, startDate: e.target.value })}
+                />
+              </div>
+
+              <div style={{ marginTop: 10, fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
+                Creates an active enrollment in this slot and generates 9 weeks of weekly lessons (rate copied from the student&apos;s existing enrollment).
+              </div>
+
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setAddSlotModal(null)} disabled={addSlotSubmitting}>Cancel</button>
+                <button className="btn-primary" onClick={submitAddWeeklySlot} disabled={addSlotSubmitting || !addSlotModal.studentId}>
+                  {addSlotSubmitting ? 'Adding…' : 'Add weekly slot'}
                 </button>
               </div>
             </div>

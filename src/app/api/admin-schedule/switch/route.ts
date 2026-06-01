@@ -8,24 +8,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { generateRegularLessonsForSlot, DEFAULT_WEEKS_AHEAD } from '@/lib/lesson-generation';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
-
-// Public holidays — no lessons on these dates (matches bot NO_LESSON_DATES)
-const NO_LESSON_DATES: string[] = [
-  '2026-01-01','2026-01-29','2026-01-30',
-  '2026-03-28','2026-04-03','2026-05-01',
-  '2026-05-12','2026-06-06','2026-08-09',
-  '2026-10-20','2026-11-09','2026-12-25',
-];
-
-function addDays(d: Date, n: number): Date {
-  const r = new Date(d); r.setUTCDate(r.getUTCDate() + n); return r;
-}
-function isoDate(d: Date): string {
-  return d.toISOString().split('T')[0];
-}
 
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
@@ -81,46 +67,19 @@ export async function POST(req: NextRequest) {
     results.errors.push(`Cancel step: ${err.message}`);
   }
 
-  // ── B. Create new weekly lessons on new slot (28-day horizon) ───────────────
+  // ── B. Create new weekly lessons on new slot (9-week horizon) ───────────────
+  // (was 28 days — too short, so switched students ran out of lessons before
+  // the bot's weekly generator extended them. Now matches signup's 9 weeks.)
   try {
-    const endDate = addDays(new Date(), 28);
-    const dayAfterEnd = addDays(endDate, 1);
-
-    // Existing lessons to avoid duplicates
-    const existingData = await airtableRequestAll('Lessons',
-      `?filterByFormula=${encodeURIComponent(`AND({Date}>='${switchDate}',IS_BEFORE({Date},'${isoDate(dayAfterEnd)}'))`)}&fields[]=Student&fields[]=Date&fields[]=Slot`
-    );
-    const existingKeys = new Set(
-      existingData.records
-        .filter((r: any) => r.fields['Student']?.[0] === studentId)
-        .map((r: any) => `${r.fields['Date']}|${r.fields['Slot']?.[0] || ''}`)
-    );
-
-    // Find first occurrence of targetDay on or after switchDate
-    let d = new Date(switchDate + 'T00:00:00Z');
-    while (d.getUTCDay() !== targetDay) d = addDays(d, 1);
-
-    let firstNonHolidayCreated = false;
-    while (d <= endDate) {
-      const dateStr = isoDate(d);
-      if (!existingKeys.has(`${dateStr}|${newSlotId}`)) {
-        const isHoliday = NO_LESSON_DATES.includes(dateStr);
-        const isFirst = !firstNonHolidayCreated && !isHoliday;
-        if (isFirst) firstNonHolidayCreated = true;
-        const fields: Record<string, any> = {
-          Type: isFirst ? 'Rescheduled' : 'Regular',
-          Student: [studentId],
-          Slot: [newSlotId],
-          Date: dateStr,
-          Status: isHoliday ? 'Cancelled' : 'Scheduled',
-        };
-        if (isHoliday) fields['Notes'] = 'Public Holiday';
-        if (isFirst) fields['Notes'] = `Switched from ${oldSlotName} to ${newSlotName} (first lesson after switch)`;
-        await airtableRequest('Lessons', '', { method: 'POST', body: JSON.stringify({ fields }) });
-        results.created++;
-      }
-      d = addDays(d, 7);
-    }
+    const { created } = await generateRegularLessonsForSlot({
+      studentId,
+      slotId: newSlotId,
+      startDate: switchDate,
+      weeksAhead: DEFAULT_WEEKS_AHEAD,
+      markFirstAsRescheduled: true,
+      firstNote: `Switched from ${oldSlotName} to ${newSlotName} (first lesson after switch)`,
+    });
+    results.created = created;
   } catch (err: any) {
     results.errors.push(`Create step: ${err.message}`);
   }

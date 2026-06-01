@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-05-30T11:45:57.129Z
+// Last synced: 2026-06-01T09:40:21.466Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -573,6 +573,18 @@ export const SCHEMA = {
       "Lessons": {
         "type": "multipleRecordLinks",
         "linkedTable": "Lessons"
+      },
+      "Deferred Amount": {
+        "type": "currency"
+      },
+      "Deferred Note": {
+        "type": "multilineText"
+      },
+      "Deferred To Month": {
+        "type": "singleLineText"
+      },
+      "Deferred Applied": {
+        "type": "checkbox"
       }
     }
   },

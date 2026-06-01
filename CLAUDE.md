@@ -274,6 +274,15 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 - `touchAction: 'none'` on draggable chips (required for iOS Safari)
 - `DraggableLessonChip` and `DroppableLessonSlot` are **module-level components** (not inline) — required because they use `useDraggable`/`useDroppable` hooks
 
+### Recurring lesson generation (Regular lessons)
+
+Regular weekly lessons exist as individual `Lessons` records. Three things create them, all using `src/lib/lesson-generation.ts > generateRegularLessonsForSlot` (9-week default horizon, dedup by date+slot, holidays → `Cancelled`):
+- **Signup** (`/api/signup`) — for new students (own inline copy, 9 weeks).
+- **Slot switch** (`/api/admin-schedule/switch`) — deletes future old-slot lessons, generates 9 weeks on the new slot (was 28 days — too short).
+- **Add weekly slot** (`/api/admin-schedule/add-weekly-slot`) — Roster tab [+] button → creates a 2nd Active Enrollment + 9 weeks of lessons.
+
+**The forward-extender lives in the BOT**, not here: `generateUpcomingLessons(weeksAhead=4)` in `bot.js` runs **Mon 7am SGT** (and via `/generate`), topping up Regular lessons 4 weeks ahead for all Active enrollments. It only generates *forward from today* and never backfills, so a **missed cron run leaves a permanent gap** (the cause of the June 2026 hole). It dedups by `studentId|date` (not `+slot`), an edge-case bug for students whose two slots fall on the same date. If gaps appear, run `/generate` in the bot or backfill via the Airtable API.
+
 ### API routes
 
 | Route | Method | Purpose |
@@ -281,6 +290,8 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 | `/api/admin-schedule` | GET | Weekly data: slots + lessons + students + exam info |
 | `/api/admin-schedule/reschedule` | POST | New Rescheduled lesson + mark original |
 | `/api/admin-schedule/add` | POST | Create Additional/Makeup/Trial with capacity check |
+| `/api/admin-schedule/add-weekly-slot` | POST | Create an Active Enrollment + generate 9 weeks of Regular lessons (Roster tab [+] button) |
+| `/api/admin-schedule/switch` | POST | Permanent slot switch: delete future old-slot lessons + generate 9 weeks on new slot + update enrollment |
 | `/api/admin-schedule/delete` | POST | Hard-delete or mark Absent |
 | `/api/admin-schedule/attendance` | POST | Update lesson Status |
 | `/api/admin-schedule/lesson-context` | GET | Fetch progress fields + prev lesson + exam info for LessonModal |

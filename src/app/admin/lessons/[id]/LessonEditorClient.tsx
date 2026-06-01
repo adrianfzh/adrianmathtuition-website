@@ -1937,6 +1937,11 @@ export default function LessonEditorClient() {
           className="px-3 py-1 bg-rose-600 hover:bg-rose-700 rounded text-xs font-medium"
         >📄 Generate PDF</button>
         <button
+          onClick={() => downloadDocx(lesson, cards)}
+          title="Download as Word (.docx) with editable equations"
+          className="px-3 py-1 bg-blue-700 hover:bg-blue-800 rounded text-xs font-medium"
+        >⬇ DOCX</button>
+        <button
           onClick={() => deleteLesson(id, pw.current, router)}
           className="px-2 py-1 hover:bg-rose-700/40 rounded text-xs"
           title="Delete lesson"
@@ -2043,6 +2048,24 @@ async function generatePDF(lessonId: string, pw: string, name: string) {
     URL.revokeObjectURL(url);
   } catch (e) {
     alert('PDF error: ' + (e as Error).message);
+  }
+}
+
+// Build the lesson .docx in-browser (native Word/OMML equations) and download it.
+async function downloadDocx(lesson: Lesson, cards: Card[]) {
+  try {
+    const { buildLessonDocx } = await import('@/lib/lesson-docx-build');
+    const blob = await buildLessonDocx(
+      { name: lesson.name, level: lesson.level, description: lesson.description, topics: lesson.topics, section_order: lesson.section_order },
+      cards.map(c => ({ id: c.id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, order_index: c.order_index })),
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${lesson.name.replace(/[^a-z0-9-]+/gi, '_')}.docx`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('DOCX export failed: ' + (e as Error).message);
   }
 }
 
