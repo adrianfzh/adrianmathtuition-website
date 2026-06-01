@@ -184,6 +184,14 @@ For when an adjustment must land on a month whose invoice doesn't exist yet (e.g
 - **Banner:** `/admin/invoices` shows a blue "⏰ Pending adjustments" banner (data from `/api/admin-invoices/deferred-pending`) grouped by target month, each with a ✕ Cancel button.
 - PDF caveat: like referral credits, the deferral changes `Final Amount` after the draft PDF was rendered — regenerate PDFs before sending (the normal draft-review step covers this).
 
+## June 2026 Revision Sprint
+
+Managed on `/admin/revision-signups`. Sign-up (`/api/admin-revision-signup`) does: (1) mark Student `June Revision 2026='Signed Up'`, (2) void the regular June invoice, (3) create a `Revision Sprint` invoice, (4) create `Revision Sprint` lesson records on the sprint dates, (5) **soft-cancel the student's June `Regular` lessons** (they don't attend normal weekly lessons in June). Revert (`/api/admin-revision-revert`) undoes all of it, including restoring those regular lessons.
+
+- Regular-lesson cancel/restore lives in `src/lib/revision-regular-lessons.ts` (`cancelJuneRegularLessons` / `restoreJuneRegularLessons`).
+- Cancelled lessons get `Status='Cancelled'` and a Notes marker `Cancelled — June Revision Sprint sign-up`; restore matches that marker so only the auto-cancelled ones come back.
+- Soft-cancel (not hard delete) → reversible, auditable, and dropped from the schedule (the schedule filters out `Status='Cancelled'`). Doesn't affect June invoicing (June isn't prorated; invoice generation counts slot occurrences, not these records).
+
 ## Notification Policy
 
 **All admin web UI actions are silent** — no Telegram messages sent when admin uses the website.

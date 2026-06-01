@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { cancelJuneRegularLessons } from '@/lib/revision-regular-lessons';
 
 export const runtime = 'nodejs';
 
@@ -160,7 +161,12 @@ export async function POST(req: NextRequest) {
       await airtableRequest('Lessons', '', { method: 'POST', body: JSON.stringify({ records: batch }) });
       lessonsCreated += batch.length;
     }
-    return NextResponse.json({ success: true, invoiceId: existingInv.id, lessonsCreated, added: newSubjects });
+    // Revision students don't attend regular June lessons — soft-cancel any
+    // that still exist (idempotent: already-cancelled ones are skipped).
+    let regularCancelled = 0;
+    try { regularCancelled = await cancelJuneRegularLessons(studentId); }
+    catch (e) { console.error('[admin-revision-signup] cancel June regular (add-subjects) failed:', e); }
+    return NextResponse.json({ success: true, invoiceId: existingInv.id, lessonsCreated, added: newSubjects, regularCancelled });
   }
 
   const today = localToday();
@@ -239,7 +245,15 @@ export async function POST(req: NextRequest) {
       lessonsCreated += batch.length;
     }
 
-    return NextResponse.json({ success: true, invoiceId: revisionInvoiceId, lessonsCreated });
+    // ── Step 5: Cancel regular June lessons ───────────────────────────────────
+    // Revision students don't attend their normal weekly lessons in June.
+    // Soft-cancel (Status='Cancelled') so they drop off the schedule; the
+    // revert flow restores exactly these via the Notes marker.
+    let regularCancelled = 0;
+    try { regularCancelled = await cancelJuneRegularLessons(studentId); }
+    catch (e) { console.error('[admin-revision-signup] cancel June regular failed:', e); }
+
+    return NextResponse.json({ success: true, invoiceId: revisionInvoiceId, lessonsCreated, regularCancelled });
   } catch (e: unknown) {
     console.error('[admin-revision-signup] Error:', e);
 

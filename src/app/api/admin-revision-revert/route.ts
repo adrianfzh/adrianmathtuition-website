@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { restoreJuneRegularLessons } from '@/lib/revision-regular-lessons';
 
 export const runtime = 'nodejs';
 
@@ -95,13 +96,18 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── Step 5: Reset student revision status ─────────────────────────────────
+    // ── Step 5: Restore the regular June lessons we cancelled at sign-up ───────
+    let regularRestored = 0;
+    try { regularRestored = await restoreJuneRegularLessons(studentId); }
+    catch (e) { console.error('[admin-revision-revert] restore June regular failed:', e); }
+
+    // ── Step 6: Reset student revision status ─────────────────────────────────
     await airtableRequest('Students', `/${studentId}`, {
       method: 'PATCH',
       body: JSON.stringify({ fields: { 'June Revision 2026': 'No Response' } }),
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, regularRestored });
   } catch (e: unknown) {
     console.error('[admin-revision-revert] Error:', e);
     return NextResponse.json(
