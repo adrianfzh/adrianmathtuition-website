@@ -2187,8 +2187,12 @@ export default function SchedulePage() {
     );
     if (!revs.length) return null;
     const style = TYPE_COLORS['Revision Sprint'];
-    const enriched = revs
-      .map(l => ({ ...l, studentName: l.studentId ? (data?.students[l.studentId]?.name ?? 'Unknown') : 'Trial' }))
+    const enriched: EnrichedLesson[] = revs
+      .map(l => ({
+        ...l,
+        studentName: l.studentId ? (data?.students[l.studentId]?.name ?? 'Unknown') : 'Trial',
+        studentLevel: l.studentId ? (data?.students[l.studentId]?.level ?? '') : '',
+      }))
       .sort((a, b) => (a.revisionTime || '').localeCompare(b.revisionTime || '') || a.studentName.localeCompare(b.studentName));
     return (
       <div className="slot-card revision-card" key={`rev-${dateStr}`}>
@@ -2211,8 +2215,26 @@ export default function SchedulePage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2, flexWrap: 'wrap' }}>
                     <span className="type-tag" style={{ background: '#cffafe', color: '#0e7490', border: '1px solid #a5f3fc' }}>Revision</span>
                     {l.revisionLabel && <span style={{ fontSize: 10, color: '#64748b' }}>{l.revisionLabel}</span>}
-                    {l.status === 'Completed' && <span style={{ fontSize: 10, color: '#15803d', fontWeight: 700 }}>✓</span>}
-                    {l.status === 'Absent' && <span style={{ fontSize: 10, color: '#dc2626', fontWeight: 700 }}>missed</span>}
+                    {l.status === 'Scheduled' && (
+                      <>
+                        <button onClick={() => handleDirectStatus(l, 'Absent')} title="Mark missed"
+                          style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✗</button>
+                        <button onClick={() => handleDirectStatus(l, 'Completed')} title="Mark attended"
+                          style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✓</button>
+                      </>
+                    )}
+                    {l.status === 'Completed' && (
+                      <span style={{ fontSize: 10, color: '#15803d', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        ✓ Attended
+                        <button onClick={() => handleDirectStatus(l, 'Scheduled')} style={{ fontSize: 9, color: '#94a3b8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>undo</button>
+                      </span>
+                    )}
+                    {l.status === 'Absent' && (
+                      <span style={{ fontSize: 10, color: '#dc2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        ✗ Missed
+                        <button onClick={() => handleDirectStatus(l, 'Scheduled')} style={{ fontSize: 9, color: '#94a3b8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>undo</button>
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
