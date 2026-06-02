@@ -143,7 +143,7 @@ Rules:
         let actionPlanEmitted = false;
 
         const response = await anthropic.messages.stream({
-          model: 'claude-sonnet-4-5-20251001',
+          model: 'claude-sonnet-4-6',
           max_tokens: 1500,
           system: systemPrompt,
           messages: anthropicMessages,
