@@ -68,7 +68,7 @@ function buildFirstInvoiceEmailHtml(invoice: {
     : '';
   return `
     <p>Dear Parent/Student,</p>
-    <p>A warm welcome to Adrian's Math Tuition — we're delighted to have <strong>${studentName}</strong> onboard!</p>
+    <p>A warm welcome to Adrian's Math Tuition — delighted to have <strong>${studentName}</strong> onboard!</p>
     <p>Please find attached <strong>${studentName}'s first invoice</strong> for ${month} — <strong>$${finalAmount}</strong>, due by <strong>${dueFmt}</strong>.</p>
     ${prorationLine}
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${paymentRef}</strong>.</p>
