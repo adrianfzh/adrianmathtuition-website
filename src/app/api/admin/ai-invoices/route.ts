@@ -105,10 +105,21 @@ When you want to take action, end your response with an action plan in this EXAC
 </ACTION_PLAN>
 
 Action types and their required fields:
-- patch_invoice: recordId (string), fields (object — any Invoices fields to PATCH)
+- patch_invoice: recordId (string), fields (object — ONLY the Invoices fields listed below)
 - regenerate_pdfs: recordIds (string array)
 - send_emails: recordIds (string array)
 - mark_paid: recordId (string), amount (number), isPaid (boolean)
+
+## Valid Invoices fields for patch_invoice (use these EXACT names — others 422)
+- "Auto Notes" (long text) — admin/parent-facing note shown on the invoice. THIS is the notes field; there is NO field called "Notes".
+- "Adjustment Notes" (long text) — reason for a manual adjustment.
+- "Adjustment Amount" (number, signed) — manual one-off adjustment for THIS invoice.
+- "Final Amount" (number) — the total billed.
+- "Custom Email Message" (long text) — overrides the email body when sending.
+- "Status" (one of: Draft, Approved, Sent, Paid, Overdue, Voided).
+- "Deferred Amount" / "Deferred Note" / "Deferred To Month" — see deferred adjustments below.
+- To APPEND to a note, include the existing text plus your addition (PATCH replaces the whole field).
+- There is NO "Title", "Label", or "Amended" field. An invoice is marked AMENDED automatically when it's re-sent (it already has a Sent At) — the email subject becomes "AMENDED Invoice…". To re-send an amended invoice, just regenerate_pdfs then send_emails; do not try to set an "Amended" field.
 
 ## Deferred adjustments (reminders that apply to a FUTURE month's invoice)
 Use this when the user wants a credit/charge applied to a LATER month's invoice that does not exist yet (e.g. "defer Kiara's -$280 referral fee to July", "remind me to add $50 to Bob's August invoice").
