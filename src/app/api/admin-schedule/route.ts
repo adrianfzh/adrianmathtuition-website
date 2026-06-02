@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { resolveActiveExamType, ExamType } from '@/lib/exam-season';
+import { subjectsFromRevisionLineItems, assignRevisionSessions } from '@/lib/revision-sessions';
 
 export const runtime = 'nodejs';
 
@@ -208,6 +209,39 @@ export async function GET(req: NextRequest) {
       progressLogged: r.fields['Progress Logged'] === true,
     };
   });
+
+  // ── Revision Sprint session labels ────────────────────────────────────────
+  // Revision lessons have no Slot, so the schedule renders them in a separate
+  // "Revision Sprint" card. Derive each one's subject/time (EM 10–12 / AM 1–3 /
+  // H2 2–5) from the student's signed-up subjects + the sprint date schedule.
+  const revisionLessons = lessons.filter((l: any) => l.type === 'Revision Sprint');
+  if (revisionLessons.length) {
+    const invData = await fetchAll('Invoices',
+      `?filterByFormula=${encodeURIComponent(`AND({Invoice Type}='Revision Sprint',{Status}!='Voided')`)}&fields[]=Student&fields[]=Line Items`);
+    const subjectsByStudent: Record<string, string[]> = {};
+    for (const r of invData) {
+      const sid = r.fields['Student']?.[0];
+      if (sid) subjectsByStudent[sid] = subjectsFromRevisionLineItems(r.fields['Line Items'] || '');
+    }
+    const byStudent: Record<string, { id: string; date: string }[]> = {};
+    for (const l of revisionLessons) {
+      if (!l.studentId) continue;
+      (byStudent[l.studentId] = byStudent[l.studentId] || []).push({ id: l.id, date: l.date });
+    }
+    const labelById: Record<string, { subject: string; subjectLabel: string; time: string }> = {};
+    for (const sid of Object.keys(byStudent)) {
+      const sorted = byStudent[sid].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+      Object.assign(labelById, assignRevisionSessions(subjectsByStudent[sid] || [], sorted));
+    }
+    for (const l of lessons as any[]) {
+      const lbl = labelById[l.id];
+      if (l.type === 'Revision Sprint' && lbl) {
+        l.revisionSubject = lbl.subject;
+        l.revisionTime = lbl.time;
+        l.revisionLabel = `${lbl.subjectLabel} · ${lbl.time}`;
+      }
+    }
+  }
 
   // ── Exam season + exam dates ──────────────────────────────────────────────
   let activeExamType: ExamType | null = null;

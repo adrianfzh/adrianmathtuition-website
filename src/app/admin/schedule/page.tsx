@@ -37,6 +37,9 @@ interface Lesson {
   rescheduledToDate?: string;
   rescheduledToSlotTime?: string;
   progressLogged?: boolean;
+  revisionLabel?: string;
+  revisionSubject?: string;
+  revisionTime?: string;
 }
 
 interface Student {
@@ -225,6 +228,7 @@ const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> 
   Trial:       { bg: '#f0fdf4',  text: '#15803d', border: '#bbf7d0' },
   Makeup:      { bg: '#fff7ed',  text: '#c2410c', border: '#fed7aa' },
   Additional:  { bg: '#faf5ff',  text: '#7c3aed', border: '#e9d5ff' },
+  'Revision Sprint': { bg: '#ecfeff', text: '#0e7490', border: '#a5f3fc' },
   Absent:      { bg: '#f1f5f9',  text: '#94a3b8', border: '#e2e8f0' },
   Cancelled:   { bg: '#f1f5f9',  text: '#94a3b8', border: '#e2e8f0' },
 };
@@ -2172,6 +2176,53 @@ export default function SchedulePage() {
     );
   }
 
+  // ── Revision Sprint card (June only) ─────────────────────────────────────────
+  // Revision lessons have no Slot, so they render in their own per-day card,
+  // clearly badged. Display-only here — attendance/makeups live on
+  // /admin/revision-signups → Attendance tab.
+  function renderRevisionCard(date: Date) {
+    const dateStr = isoDate(date);
+    const revs = (data?.lessons ?? []).filter(
+      l => l.type === 'Revision Sprint' && l.date === dateStr && l.status !== 'Cancelled'
+    );
+    if (!revs.length) return null;
+    const style = TYPE_COLORS['Revision Sprint'];
+    const enriched = revs
+      .map(l => ({ ...l, studentName: l.studentId ? (data?.students[l.studentId]?.name ?? 'Unknown') : 'Trial' }))
+      .sort((a, b) => (a.revisionTime || '').localeCompare(b.revisionTime || '') || a.studentName.localeCompare(b.studentName));
+    return (
+      <div className="slot-card revision-card" key={`rev-${dateStr}`}>
+        <div className="slot-header">
+          <div className="slot-meta">
+            <span className="slot-time">🏖 Revision Sprint</span>
+          </div>
+          <span className="capacity">{enriched.length}</span>
+        </div>
+        <div className="lesson-list">
+          {enriched.map(l => {
+            const faded = l.status === 'Absent';
+            return (
+              <div key={l.id} className="lesson-chip" style={{
+                background: style.bg, color: style.text, borderColor: style.border,
+                display: 'flex', alignItems: 'center', gap: 4, opacity: faded ? 0.55 : 1,
+              }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: faded ? 'line-through' : 'none' }}>{l.studentName}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2, flexWrap: 'wrap' }}>
+                    <span className="type-tag" style={{ background: '#cffafe', color: '#0e7490', border: '1px solid #a5f3fc' }}>Revision</span>
+                    {l.revisionLabel && <span style={{ fontSize: 10, color: '#64748b' }}>{l.revisionLabel}</span>}
+                    {l.status === 'Completed' && <span style={{ fontSize: 10, color: '#15803d', fontWeight: 700 }}>✓</span>}
+                    {l.status === 'Absent' && <span style={{ fontSize: 10, color: '#dc2626', fontWeight: 700 }}>missed</span>}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   // ── Lessons view ─────────────────────────────────────────────────────────────
   function renderLessonsView() {
     const overlayStyle = activeDragLesson ? getTypeStyle(activeDragLesson.type, activeDragLesson.status) : null;
@@ -2186,8 +2237,9 @@ export default function SchedulePage() {
         {/* Mobile: always show only the active day — drag within same day only */}
         <div className="mobile-day">
           <div className="day-col">
+            {renderRevisionCard(activeDate)}
             {(slotsByDay[dayNameOf(activeDate)] ?? []).map(slot => renderLessonsSlotCard(slot, activeDate))}
-            {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && <div className="no-slots">No lessons</div>}
+            {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && !renderRevisionCard(activeDate) && <div className="no-slots">No lessons</div>}
           </div>
         </div>
         {/* Desktop: full grid — only mounted on desktop to avoid ghost droppables on mobile */}
@@ -2205,8 +2257,9 @@ export default function SchedulePage() {
                     {isToday ? date.getDate() : date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
+                {renderRevisionCard(date)}
                 {(slotsByDay[day] ?? []).map(slot => renderLessonsSlotCard(slot, date))}
-                {(slotsByDay[day] ?? []).length === 0 && <div className="no-slots">No slots</div>}
+                {(slotsByDay[day] ?? []).length === 0 && !renderRevisionCard(date) && <div className="no-slots">No slots</div>}
               </div>
             );
           })}
@@ -3357,6 +3410,8 @@ body {
   border: 1px solid #e8ecf1;
 }
 .slot-card.today { border-color: #bfdbfe; }
+.slot-card.revision-card { border-left: 4px solid #06b6d4; background: #f6feff; }
+.slot-card.revision-card .slot-time { color: #0e7490; }
 .slot-header {
   display: flex; align-items: center;
   justify-content: space-between;
