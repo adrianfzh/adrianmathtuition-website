@@ -43,6 +43,50 @@ function buildEmailHtml(invoice: {
   `;
 }
 
+// ── First-invoice welcome template ───────────────────────────────────────────
+// Used for a new student's first invoice (detected via the "First invoice" flag
+// in Auto Notes). Adds a welcome intro + a plain-English proration explainer.
+function buildFirstInvoiceEmailHtml(invoice: {
+  studentName: string;
+  month: string;
+  finalAmount: number;
+  dueDate: string;
+  paymentRef: string;
+  lessonsCount?: number;
+  firstLessonDate?: string;
+}) {
+  const { studentName, month, finalAmount, dueDate, paymentRef, lessonsCount, firstLessonDate } = invoice;
+  const dueFmt = dueDate
+    ? new Date(dueDate + 'T00:00:00Z').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+    : dueDate;
+  const firstFmt = firstLessonDate
+    ? new Date(firstLessonDate + 'T00:00:00Z').toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+    : '';
+  const prorationLine = (lessonsCount && firstFmt)
+    ? `<p>As this is the first invoice, it's <strong>prorated</strong> — it covers only the <strong>${lessonsCount} lesson${lessonsCount !== 1 ? 's' : ''}</strong> from <strong>${firstFmt}</strong> to the end of the month, rather than a full month.</p>`
+    : '';
+  return `
+    <p>Dear Parent/Student,</p>
+    <p>A warm welcome to Adrian's Math Tuition — we're delighted to have <strong>${studentName}</strong> join us! 🎉</p>
+    <p>Please find attached <strong>${studentName}'s first invoice</strong> for ${month} — <strong>$${finalAmount}</strong>, due by <strong>${dueFmt}</strong>.</p>
+    ${prorationLine}
+    <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${paymentRef}</strong>.</p>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 AdrianMath Telegram Bot</strong></p>
+    <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly.</p>
+    <p style="font-size: 14px; color: #6b7280;">Parents and students can also use the bot to:</p>
+    <ul style="font-size: 14px; color: #6b7280; padding-left: 20px;">
+      <li>Reschedule upcoming lessons</li>
+      <li>Book makeup lessons for missed classes</li>
+      <li>Switch to a different regular timeslot</li>
+      <li>Book additional lessons</li>
+    </ul>
+    <p style="font-size: 14px; color: #6b7280;">Search <strong>@AdrianMathBot</strong> on Telegram to get started. If you haven't registered yet, ask Adrian for your registration code.</p>
+    <p>We're really looking forward to working with ${studentName}. Please reach out anytime if you have any questions.</p>
+    <p>Best regards,<br>Adrian</p>
+  `;
+}
+
 // ── June 2026 revision sprint templates ──────────────────────────────────────
 // Only used when invoice.month === 'June 2026'. Remove after July 2026.
 function buildJune2026EmailHtml(invoice: {
@@ -215,9 +259,12 @@ export async function POST(req: NextRequest) {
         level: (stu.fields['Level'] || '') as string,
       };
       const isAmended = !!rec.fields['Sent At'];
+      const isFirstInvP = ((rec.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice');
       const subject = isAmended
         ? `AMENDED Invoice for ${month} – ${studentName}`
-        : `Invoice for ${month} – ${studentName}`;
+        : isFirstInvP
+          ? `Welcome to Adrian's Math Tuition — First Invoice for ${studentName} (${month})`
+          : `Invoice for ${month} – ${studentName}`;
       const customMessage = (rec.fields['Custom Email Message'] || '') as string;
       const invoiceType = (rec.fields['Invoice Type'] || 'Regular') as string;
       let html: string;
@@ -231,6 +278,10 @@ export async function POST(req: NextRequest) {
         html = buildRevisionSprintEmailHtml({ ...invoice, lineItemsText });
       } else if (isAmended) {
         html = buildAmendedEmailHtml(invoice);
+      } else if (isFirstInvP) {
+        let firstLessonDate = '';
+        try { const li = JSON.parse(rec.fields['Line Items'] || '[]'); firstLessonDate = li[0]?.date || ''; } catch { /* ignore */ }
+        html = buildFirstInvoiceEmailHtml({ ...invoice, lessonsCount: rec.fields['Lessons Count'] || 0, firstLessonDate });
       } else if (month === 'June 2026') {
         html = buildJune2026EmailHtml(invoice);
       } else {
@@ -329,9 +380,12 @@ export async function POST(req: NextRequest) {
 
       const pdfBuffer = pdfBuffers[i];
       const isAmended = !!invoiceRecord.fields['Sent At'];
+      const isFirstInv = ((invoiceRecord.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice');
       const subject = isAmended
         ? `AMENDED Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
-        : `Invoice for ${invoice.month} \u2013 ${invoice.studentName}`;
+        : isFirstInv
+          ? `Welcome to Adrian's Math Tuition \u2014 First Invoice for ${invoice.studentName} (${invoice.month})`
+          : `Invoice for ${invoice.month} \u2013 ${invoice.studentName}`;
       const customMessage = (invoiceRecord.fields['Custom Email Message'] || '') as string;
       const invoiceType = (invoiceRecord.fields['Invoice Type'] || 'Regular') as string;
       let html: string;
@@ -347,6 +401,10 @@ export async function POST(req: NextRequest) {
         html = buildRevisionSprintEmailHtml({ ...invoice, lineItemsText });
       } else if (isAmended) {
         html = buildAmendedEmailHtml(invoice);
+      } else if (((invoiceRecord.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice')) {
+        let firstLessonDate = '';
+        try { const li = JSON.parse(invoiceRecord.fields['Line Items'] || '[]'); firstLessonDate = li[0]?.date || ''; } catch { /* ignore */ }
+        html = buildFirstInvoiceEmailHtml({ ...invoice, lessonsCount: invoiceRecord.fields['Lessons Count'] || 0, firstLessonDate });
       } else if (invoice.month === 'June 2026') {
         html = buildJune2026EmailHtml(invoice);
       } else {
