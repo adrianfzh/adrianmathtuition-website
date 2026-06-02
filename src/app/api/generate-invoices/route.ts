@@ -567,7 +567,7 @@ export async function POST(req: NextRequest) {
     const deferredResults: { name: string; amount: number; applied: boolean; note: string }[] = [];
     try {
       const deferredFormula = encodeURIComponent(
-        `AND({Deferred To Month}='${invoiceMonth.label}', NOT({Deferred Applied}), {Deferred Amount}!=0)`
+        `AND({Deferred To Month}='${invoiceMonth.label}', NOT({Deferred Applied}), {Deferred Amount})`
       );
       const carriers = await airtableRequestAll('Invoices',
         `?filterByFormula=${deferredFormula}&fields[]=Student&fields[]=Deferred Amount&fields[]=Deferred Note&fields[]=Deferred To Month`

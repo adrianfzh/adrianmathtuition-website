@@ -17,7 +17,12 @@ function checkAuth(req: NextRequest): boolean {
 export async function GET(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const formula = encodeURIComponent(`AND({Deferred Amount}!=0, NOT({Deferred Applied}))`);
+  // NOTE: use truthiness ({Deferred Amount}), NOT `!=0`. In Airtable a BLANK
+  // currency field is "not equal to 0" (BLANK()!=0 → TRUE), so `!=0` matched
+  // every invoice with an empty Deferred Amount and flooded the banner with
+  // +$0.00 rows. Truthiness is falsy for both 0 and blank — only real,
+  // non-zero deferrals match.
+  const formula = encodeURIComponent(`AND({Deferred Amount}, NOT({Deferred Applied}))`);
   const invoices = await airtableRequestAll('Invoices',
     `?filterByFormula=${formula}&fields[]=Student&fields[]=Month&fields[]=Deferred Amount&fields[]=Deferred Note&fields[]=Deferred To Month`
   );
