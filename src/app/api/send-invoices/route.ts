@@ -68,7 +68,7 @@ function buildFirstInvoiceEmailHtml(invoice: {
     : '';
   return `
     <p>Dear Parent/Student,</p>
-    <p>A warm welcome to Adrian's Math Tuition — we're delighted to have <strong>${studentName}</strong> join us! 🎉</p>
+    <p>A warm welcome to Adrian's Math Tuition — we're delighted to have <strong>${studentName}</strong> onboard!</p>
     <p>Please find attached <strong>${studentName}'s first invoice</strong> for ${month} — <strong>$${finalAmount}</strong>, due by <strong>${dueFmt}</strong>.</p>
     ${prorationLine}
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${paymentRef}</strong>.</p>
@@ -83,7 +83,7 @@ function buildFirstInvoiceEmailHtml(invoice: {
       <li>Book additional lessons</li>
     </ul>
     <p style="font-size: 14px; color: #6b7280;">Search <strong>@AdrianMathBot</strong> on Telegram to get started. If you haven't registered yet, ask Adrian for your registration code.</p>
-    <p>We're really looking forward to working with ${studentName}. Please reach out anytime if you have any questions.</p>
+    <p>I am looking forward to working with ${studentName}. Please reach out anytime if you have any questions.</p>
     <p>Best regards,<br>Adrian</p>
   `;
 }
