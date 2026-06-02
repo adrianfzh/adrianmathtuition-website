@@ -89,12 +89,18 @@ export async function POST(req: NextRequest) {
         { access: 'public', contentType: 'application/pdf', allowOverwrite: true }
       );
 
-      const issueDate = new Date();
-      issueDate.setDate(15);
-      const issueDateStr = issueDate.toISOString().split('T')[0];
+      // Only default the Issue Date (to the 15th) when it's blank — never
+      // clobber an explicitly-set issue date (e.g. an amended invoice reissued
+      // with today's date). Regenerating a PDF must not silently change it.
+      const issueDateFields: Record<string, any> = { 'PDF URL': blob.url };
+      if (!f['Issue Date']) {
+        const issueDate = new Date();
+        issueDate.setDate(15);
+        issueDateFields['Issue Date'] = issueDate.toISOString().split('T')[0];
+      }
       await at('Invoices', `/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ fields: { 'PDF URL': blob.url, 'Issue Date': issueDateStr } }),
+        body: JSON.stringify({ fields: issueDateFields }),
       });
 
       generated++;
