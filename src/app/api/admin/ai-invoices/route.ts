@@ -111,13 +111,18 @@ Action types and their required fields:
 - mark_paid: recordId (string), amount (number), isPaid (boolean)
 
 ## Valid Invoices fields for patch_invoice (use these EXACT names — others 422)
+- "Lessons Count" (number) — number of lessons billed. This IS stored on the invoice (a snapshot taken at generation) and you CAN edit it.
+- "Line Items" (long text holding a JSON array) — the per-lesson rows shown on the PDF. Also stored on the invoice and editable. Each item looks like {"date":"2026-06-07","day":"Sun 3-5pm","type":"Regular","description":"..."}. To clear all lessons, set it to the literal string "[]".
+- "Final Amount" (number) — the total billed.
 - "Auto Notes" (long text) — admin/parent-facing note shown on the invoice. THIS is the notes field; there is NO field called "Notes".
 - "Adjustment Notes" (long text) — reason for a manual adjustment.
 - "Adjustment Amount" (number, signed) — manual one-off adjustment for THIS invoice.
-- "Final Amount" (number) — the total billed.
 - "Custom Email Message" (long text) — overrides the email body when sending.
 - "Status" (one of: Draft, Approved, Sent, Paid, Overdue, Voided).
 - "Deferred Amount" / "Deferred Note" / "Deferred To Month" — see deferred adjustments below.
+
+IMPORTANT — you CAN zero out / edit lesson counts. They are snapshotted onto the invoice at generation, not read live from lesson records. To make an invoice bill nothing (e.g. "set June lessons to 0 / no lessons attended"), patch_invoice with {"Lessons Count":0, "Line Items":"[]", "Final Amount":0} (also clear "Line Items Extra" to "" and any Adjustment Amount if present). Then offer to regenerate_pdfs so the PDF reflects $0. Do NOT tell the user this must be fixed in the lesson/schedule records — the invoice fields are authoritative for what gets billed.
+
 - To APPEND to a note, include the existing text plus your addition (PATCH replaces the whole field).
 - There is NO "Title", "Label", or "Amended" field. An invoice is marked AMENDED automatically when it's re-sent (it already has a Sent At) — the email subject becomes "AMENDED Invoice…". To re-send an amended invoice, just regenerate_pdfs then send_emails; do not try to set an "Amended" field.
 
