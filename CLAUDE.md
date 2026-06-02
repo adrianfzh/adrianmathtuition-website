@@ -186,7 +186,18 @@ For when an adjustment must land on a month whose invoice doesn't exist yet (e.g
 
 ## June 2026 Revision Sprint
 
-Managed on `/admin/revision-signups`. Sign-up (`/api/admin-revision-signup`) does: (1) mark Student `June Revision 2026='Signed Up'`, (2) void the regular June invoice, (3) create a `Revision Sprint` invoice, (4) create `Revision Sprint` lesson records on the sprint dates, (5) **soft-cancel the student's June `Regular` lessons** (they don't attend normal weekly lessons in June). Revert (`/api/admin-revision-revert`) undoes all of it, including restoring those regular lessons.
+`/admin/revision-signups` has two tabs: **Sign-ups** (manage sign-ups) and **Attendance**.
+
+### Attendance tab (`/api/admin-revision-attendance`)
+
+Tracks revision-lesson attendance + makeups for signed-up students. Revision lessons (`Type='Revision Sprint'`) were created with only `{Student, Date}` — no subject/time — so the **subject/session label (EM 10am–12pm / AM 1–3pm / H2 2–5pm) is derived at read time** from the student's signed-up subjects (parsed from the Revision Sprint invoice line items) + the fixed sprint date schedule. EM dates ⊂ AM dates, so EM+AM students get two records on shared dates, assigned deterministically (sorted by record id).
+
+- **GET** → per student: sessions (date · subject · time · status) + linked makeup + summary (attended/missed/madeUp/outstanding).
+- **POST** `{action:'mark', lessonId, status}` — set a revision lesson's Status.
+- **POST** `{action:'makeup', lessonId, studentId, date, slotId}` — creates a makeup lesson at a regular slot (`Type='Additional'`, Notes `'Revision makeup'`), marks the revision lesson `Absent`, links them via `Rescheduled Lesson ID`. (`Makeup` is NOT a valid Lessons Type — options are Regular/Rescheduled/Additional/Trial/Revision Sprint — so makeups use `Additional`.)
+- **POST** `{action:'unmakeup', lessonId}` — deletes the makeup lesson + clears the link.
+
+Sign-ups tab: Sign-up (`/api/admin-revision-signup`) does: (1) mark Student `June Revision 2026='Signed Up'`, (2) void the regular June invoice, (3) create a `Revision Sprint` invoice, (4) create `Revision Sprint` lesson records on the sprint dates, (5) **soft-cancel the student's June `Regular` lessons** (they don't attend normal weekly lessons in June). Revert (`/api/admin-revision-revert`) undoes all of it, including restoring those regular lessons.
 
 - Regular-lesson cancel/restore lives in `src/lib/revision-regular-lessons.ts` (`cancelJuneRegularLessons` / `restoreJuneRegularLessons`).
 - Cancelled lessons get `Status='Cancelled'` and a Notes marker `Cancelled — June Revision Sprint sign-up`; restore matches that marker so only the auto-cancelled ones come back.

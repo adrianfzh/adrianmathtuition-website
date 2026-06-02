@@ -23,6 +23,25 @@ interface Student {
   revisionInvoiceStatus: string | null;
 }
 
+interface AttSession {
+  lessonId: string;
+  date: string;
+  subject: string;
+  subjectLabel: string;
+  time: string;
+  status: string;
+  makeup: { lessonId: string; date: string; slotLabel: string } | null;
+}
+interface AttStudent {
+  id: string;
+  name: string;
+  level: string;
+  subjects: string[];
+  sessions: AttSession[];
+  summary: { total: number; attended: number; missed: number; madeUp: number; outstanding: number };
+}
+interface AttSlot { id: string; dayName: string; time: string; level: string; label: string; }
+
 // ── Price config ───────────────────────────────────────────────────────────────
 
 const SUBJECTS_SEC4 = [
@@ -44,6 +63,12 @@ function subjectTotal(subjects: string[], level: string): number {
 
 function subjectLabel(subjects: string[]): string {
   return subjects.join(' + ');
+}
+
+function fmtDate(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 // ── WhatsApp reminder message ──────────────────────────────────────────────────
@@ -115,6 +140,15 @@ export default function RevisionSignupsPage() {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<FilterChip>('No Response');
 
+  // View tab + Attendance state
+  const [viewMode, setViewMode] = useState<'signups' | 'attendance'>('signups');
+  const [attData, setAttData] = useState<{ students: AttStudent[]; slots: AttSlot[] } | null>(null);
+  const [attLoading, setAttLoading] = useState(false);
+  const [attError, setAttError] = useState('');
+  const [expandedAtt, setExpandedAtt] = useState<Set<string>>(new Set());
+  const [makeupModal, setMakeupModal] = useState<{ lessonId: string; studentId: string; label: string; date: string; slotId: string } | null>(null);
+  const [makeupSaving, setMakeupSaving] = useState(false);
+
   // Sign-up dialog
   const [signupStudent, setSignupStudent] = useState<Student | null>(null);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
@@ -166,6 +200,72 @@ export default function RevisionSignupsPage() {
   useEffect(() => {
     if (adminPw) fetchStudents();
   }, [adminPw, fetchStudents]);
+
+  // ── Attendance tab ─────────────────────────────────────────────────────────
+  const fetchAttendance = useCallback(async () => {
+    if (!adminPw) return;
+    setAttLoading(true); setAttError('');
+    try {
+      const res = await fetch('/api/admin-revision-attendance', { headers: { Authorization: `Bearer ${adminPw}` } });
+      if (!res.ok) throw new Error(await res.text());
+      setAttData(await res.json());
+    } catch (e: unknown) {
+      setAttError(e instanceof Error ? e.message : 'Failed to load');
+    } finally {
+      setAttLoading(false);
+    }
+  }, [adminPw]);
+
+  useEffect(() => {
+    if (adminPw && viewMode === 'attendance' && !attData) fetchAttendance();
+  }, [adminPw, viewMode, attData, fetchAttendance]);
+
+  async function markSession(lessonId: string, status: string) {
+    await fetch('/api/admin-revision-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      body: JSON.stringify({ action: 'mark', lessonId, status }),
+    });
+    await fetchAttendance();
+  }
+
+  function openMakeup(s: AttSession, studentId: string) {
+    setMakeupModal({ lessonId: s.lessonId, studentId, label: `${s.subjectLabel} · ${s.date}`, date: '', slotId: '' });
+  }
+
+  async function submitMakeup() {
+    if (!makeupModal) return;
+    if (!makeupModal.date || !makeupModal.slotId) return;
+    setMakeupSaving(true);
+    try {
+      const res = await fetch('/api/admin-revision-attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+        body: JSON.stringify({ action: 'makeup', lessonId: makeupModal.lessonId, studentId: makeupModal.studentId, date: makeupModal.date, slotId: makeupModal.slotId }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setMakeupModal(null);
+      await fetchAttendance();
+    } catch (e: unknown) {
+      alert(e instanceof Error ? e.message : 'Failed to log makeup');
+    } finally {
+      setMakeupSaving(false);
+    }
+  }
+
+  async function removeMakeup(lessonId: string) {
+    if (!confirm('Remove this makeup? The makeup lesson will be deleted.')) return;
+    await fetch('/api/admin-revision-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      body: JSON.stringify({ action: 'unmakeup', lessonId }),
+    });
+    await fetchAttendance();
+  }
+
+  function toggleExpand(id: string) {
+    setExpandedAtt(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  }
 
   // Filter
   const filtered = students.filter(s => {
@@ -469,6 +569,13 @@ export default function RevisionSignupsPage() {
         <h1 className="rs-title">June 2026 Revision Sprint</h1>
       </div>
 
+      {/* View tabs */}
+      <div className="rs-viewtabs">
+        <button className={`rs-viewtab${viewMode === 'signups' ? ' active' : ''}`} onClick={() => setViewMode('signups')}>Sign-ups</button>
+        <button className={`rs-viewtab${viewMode === 'attendance' ? ' active' : ''}`} onClick={() => setViewMode('attendance')}>Attendance</button>
+      </div>
+
+      {viewMode === 'signups' && (<>
       {/* Filter chips */}
       <div className="rs-chips-wrap">
         <div className="rs-chips">
@@ -546,6 +653,103 @@ export default function RevisionSignupsPage() {
         <span className="rs-summary-sep">·</span>
         <span className="rs-summary-item revenue">${totalRevenue.toLocaleString()}</span>
       </div>
+      </>)}
+
+      {/* ── Attendance view ────────────────────────────────────────────────── */}
+      {viewMode === 'attendance' && (
+        <div className="rs-body">
+          {attLoading && <div className="rs-loading">Loading attendance…</div>}
+          {attError && <div className="rs-error">{attError}<button className="rs-retry" onClick={fetchAttendance}>Retry</button></div>}
+          {!attLoading && !attError && attData && attData.students.length === 0 && (
+            <div className="rs-empty">No signed-up students yet.</div>
+          )}
+          {!attLoading && !attError && attData && attData.students.map(stu => {
+            const expanded = expandedAtt.has(stu.id);
+            const sm = stu.summary;
+            return (
+              <div key={stu.id} className="rs-card">
+                <div className="rs-card-top" style={{ cursor: 'pointer' }} onClick={() => toggleExpand(stu.id)}>
+                  <div className="rs-card-name">{stu.name} <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 400 }}>{stu.subjects.join(' + ')}</span></div>
+                  <div className="rs-att-summary">
+                    <span className="rs-att-pill green" title="Attended">✓ {sm.attended}</span>
+                    <span className="rs-att-pill red" title="Missed">✗ {sm.missed}</span>
+                    <span className="rs-att-pill blue" title="Made up">↻ {sm.madeUp}</span>
+                    {sm.outstanding > 0 && <span className="rs-att-pill amber" title="Outstanding makeups">⚠ {sm.outstanding}</span>}
+                    <span className="rs-att-caret">{expanded ? '▴' : '▾'}</span>
+                  </div>
+                </div>
+
+                {expanded && (
+                  <div className="rs-att-sessions">
+                    {stu.sessions.map(s => (
+                      <div key={s.lessonId} className="rs-att-row">
+                        <div className="rs-att-when">
+                          <span className="rs-att-date">{fmtDate(s.date)}</span>
+                          <span className="rs-att-subj">{s.subjectLabel} · {s.time}</span>
+                        </div>
+                        <div className="rs-att-actions">
+                          {s.status === 'Completed' && (
+                            <>
+                              <span className="rs-att-status done">✓ Attended</span>
+                              <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
+                            </>
+                          )}
+                          {s.status === 'Absent' && (
+                            <>
+                              {s.makeup ? (
+                                <span className="rs-att-status madeup">↻ Made up: {s.makeup.slotLabel || ''} {fmtDate(s.makeup.date)}
+                                  <button className="rs-att-undo" onClick={() => removeMakeup(s.lessonId)}>✕</button>
+                                </span>
+                              ) : (
+                                <>
+                                  <span className="rs-att-status missed">✗ Missed</span>
+                                  <button className="rs-att-makeup" onClick={() => openMakeup(s, stu.id)}>＋ Log makeup</button>
+                                  <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
+                                </>
+                              )}
+                            </>
+                          )}
+                          {(s.status === 'Scheduled' || (s.status !== 'Completed' && s.status !== 'Absent')) && (
+                            <>
+                              <button className="rs-att-btn green" onClick={() => markSession(s.lessonId, 'Completed')}>✓ Attended</button>
+                              <button className="rs-att-btn red" onClick={() => markSession(s.lessonId, 'Absent')}>✗ Missed</button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Makeup dialog */}
+      {makeupModal && (
+        <div className="rs-overlay" onClick={() => !makeupSaving && setMakeupModal(null)}>
+          <div className="rs-dialog" onClick={e => e.stopPropagation()}>
+            <div className="rs-dialog-title">Log makeup</div>
+            <div className="rs-dialog-sub">Missed: {makeupModal.label}</div>
+            <label className="rs-mk-label">Makeup date</label>
+            <input type="date" className="rs-mk-input" value={makeupModal.date}
+              onChange={e => setMakeupModal({ ...makeupModal, date: e.target.value })} />
+            <label className="rs-mk-label" style={{ marginTop: 10 }}>Slot (any regular timing)</label>
+            <select className="rs-mk-input" value={makeupModal.slotId}
+              onChange={e => setMakeupModal({ ...makeupModal, slotId: e.target.value })}>
+              <option value="">Select a slot…</option>
+              {(attData?.slots ?? []).map(sl => <option key={sl.id} value={sl.id}>{sl.label} ({sl.level})</option>)}
+            </select>
+            <div className="rs-dialog-actions" style={{ marginTop: 16 }}>
+              <button className="rs-btn-ghost" onClick={() => setMakeupModal(null)} disabled={makeupSaving}>Cancel</button>
+              <button className="rs-btn-primary" onClick={submitMakeup} disabled={makeupSaving || !makeupModal.date || !makeupModal.slotId}>
+                {makeupSaving ? 'Saving…' : 'Create makeup'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sign-up dialog */}
       {signupStudent && (
@@ -1336,4 +1540,65 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   animation: rs-spin 0.7s linear infinite;
 }
 @keyframes rs-spin { to { transform: rotate(360deg); } }
+
+/* ── View tabs ── */
+.rs-viewtabs {
+  display: flex; gap: 8px; padding: 10px 16px 0;
+  background: #fff; border-bottom: 1px solid #e5e7eb;
+}
+.rs-viewtab {
+  padding: 8px 16px; border: none; background: none; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: #6b7280;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.rs-viewtab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; }
+
+/* ── Attendance ── */
+.rs-att-summary { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.rs-att-pill {
+  font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 10px; white-space: nowrap;
+}
+.rs-att-pill.green { background: #dcfce7; color: #15803d; }
+.rs-att-pill.red   { background: #fef2f2; color: #dc2626; }
+.rs-att-pill.blue  { background: #eff6ff; color: #1d4ed8; }
+.rs-att-pill.amber { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+.rs-att-caret { color: #9ca3af; font-size: 12px; margin-left: 2px; }
+
+.rs-att-sessions { margin-top: 10px; border-top: 1px solid #f1f5f9; }
+.rs-att-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 2px; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap;
+}
+.rs-att-row:last-child { border-bottom: none; }
+.rs-att-when { display: flex; flex-direction: column; min-width: 0; }
+.rs-att-date { font-size: 13px; font-weight: 600; color: #111827; }
+.rs-att-subj { font-size: 12px; color: #6b7280; }
+.rs-att-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rs-att-btn {
+  font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 7px;
+  border: 1px solid; cursor: pointer; background: #fff;
+}
+.rs-att-btn.green { color: #15803d; border-color: #bbf7d0; }
+.rs-att-btn.green:hover { background: #f0fdf4; }
+.rs-att-btn.red { color: #dc2626; border-color: #fecaca; }
+.rs-att-btn.red:hover { background: #fef2f2; }
+.rs-att-status { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.rs-att-status.done { color: #15803d; }
+.rs-att-status.missed { color: #dc2626; }
+.rs-att-status.madeup { color: #1d4ed8; }
+.rs-att-makeup {
+  font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 7px;
+  border: 1px solid #93c5fd; background: #eff6ff; color: #1d4ed8; cursor: pointer;
+}
+.rs-att-undo {
+  font-size: 11px; color: #9ca3af; background: none; border: none; cursor: pointer; text-decoration: underline;
+}
+.rs-att-undo:hover { color: #6b7280; }
+
+.rs-mk-label { display: block; font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 4px; }
+.rs-mk-input {
+  width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; padding: 9px 12px;
+  font-size: 14px; color: #111; box-sizing: border-box; outline: none;
+}
+.rs-mk-input:focus { border-color: #1e3a5f; }
 `;
