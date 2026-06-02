@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { getInvoiceMonth } from '@/lib/invoice-month';
+import { copy } from '@vercel/blob';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -476,6 +477,22 @@ export async function POST(req: NextRequest) {
           });
         }
 
+        // Archive the exact PDF that was just sent to a permanent (never-overwritten)
+        // path, so it's preserved even after a future amendment overwrites the
+        // invoice's working PDF URL. Stored on the EmailLog row → one email = one PDF.
+        let archivedPdfUrl = '';
+        const currentPdfUrl = invoiceMap.get(invoiceId)?.record?.fields?.['PDF URL'] as string | undefined;
+        if (currentPdfUrl) {
+          try {
+            const archived = await copy(currentPdfUrl, `invoices/archive/${invoiceId}-${Date.now()}.pdf`, {
+              access: 'public', contentType: 'application/pdf',
+            });
+            archivedPdfUrl = archived.url;
+          } catch (e: any) {
+            console.error('[send-invoices] PDF archive failed (non-fatal):', e.message);
+          }
+        }
+
         // Log to EmailLog (non-fatal)
         const isAmendedEmail = !!invoiceMap.get(invoiceId)?.record?.fields?.['Sent At'];
         at('EmailLog', '', {
@@ -489,6 +506,7 @@ export async function POST(req: NextRequest) {
             'Body HTML': emailData.html || '',
             'Related Invoice': [invoiceId],
             'Status': 'sent',
+            ...(archivedPdfUrl ? { 'PDF URL': archivedPdfUrl } : {}),
             ...(resendId ? { 'Resend ID': resendId } : {}),
           }}),
         }).catch((e: any) => console.error('[send-invoices] EmailLog failed:', e.message));

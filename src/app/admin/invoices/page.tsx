@@ -310,16 +310,16 @@ body {
 .referral-badge { display: inline-block; font-size: 15px; margin-left: 6px; cursor: default; }
 .email-preview-panel {
   position: fixed;
-  top: 0; right: 0; bottom: 0;
+  top: 0; left: 0; bottom: 0;
   width: 460px;
   max-width: 100vw;
   background: white;
-  border-left: 1px solid #e2e8f0;
-  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.12);
   z-index: 200;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
+  transform: translateX(-100%);
   transition: transform 0.25s ease;
 }
 .email-preview-panel.open { transform: translateX(0); }

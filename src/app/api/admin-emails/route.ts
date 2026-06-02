@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
       toEmail: r.fields['To Email'] || '',
       subject: r.fields['Subject'] || '',
       bodyHtml: r.fields['Body HTML'] || '',
+      pdfUrl: r.fields['PDF URL'] || '',
       relatedInvoice: r.fields['Related Invoice']?.[0] || '',
       status: r.fields['Status'] || '',
       error: r.fields['Error'] || '',

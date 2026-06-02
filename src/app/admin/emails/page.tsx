@@ -12,6 +12,7 @@ interface EmailLog {
   toEmail: string;
   subject: string;
   bodyHtml: string;
+  pdfUrl: string;
   relatedInvoice: string;
   status: string;
   error: string;
@@ -312,6 +313,17 @@ export default function EmailsPage() {
                             )}
                             {log.relatedInvoice && (
                               <div className="detail-meta">Invoice: {log.relatedInvoice}</div>
+                            )}
+                            {log.pdfUrl && (
+                              <div className="detail-meta">
+                                <a
+                                  href={log.pdfUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={e => e.stopPropagation()}
+                                  style={{ color: '#1e3a5f', fontWeight: 600, textDecoration: 'none' }}
+                                >📄 View the exact PDF that was sent →</a>
+                              </div>
                             )}
 
                             <div className="detail-actions">
