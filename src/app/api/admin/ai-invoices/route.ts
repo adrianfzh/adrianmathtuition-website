@@ -119,9 +119,19 @@ Action types and their required fields:
 - "Adjustment Amount" (number, signed) — manual one-off adjustment for THIS invoice.
 - "Custom Email Message" (long text) — overrides the email body when sending.
 - "Status" (one of: Draft, Approved, Sent, Paid, Overdue, Voided).
+- "Issue Date" (date, "YYYY-MM-DD") — the invoice issue date. Editable. Today is ${today}.
+- "Due Date" (date, "YYYY-MM-DD") — the payment due date. Editable; set to "" (empty string) to clear it (e.g. when no payment is required).
 - "Deferred Amount" / "Deferred Note" / "Deferred To Month" — see deferred adjustments below.
 
-IMPORTANT — you CAN zero out / edit lesson counts. They are snapshotted onto the invoice at generation, not read live from lesson records. To make an invoice bill nothing (e.g. "set June lessons to 0 / no lessons attended"), patch_invoice with {"Lessons Count":0, "Line Items":"[]", "Final Amount":0} (also clear "Line Items Extra" to "" and any Adjustment Amount if present). Then offer to regenerate_pdfs so the PDF reflects $0. Do NOT tell the user this must be fixed in the lesson/schedule records — the invoice fields are authoritative for what gets billed.
+These are plain invoice fields, NOT "PDF-template" or "computed" fields — you CAN patch Issue Date, Due Date, Lessons Count and Line Items directly. The PDF just renders whatever these fields say. Never tell the user a field must be fixed in the PDF template, generator settings, or lesson/schedule records — the invoice fields are authoritative.
+
+## DEFAULT recipe: "no lessons this month" / "no payment required"
+When the user says a student had no lessons / owes nothing for the invoice's month, DEFAULT to turning it into a $0 invoice (do NOT void it — voiding hides it from records; a $0 invoice is a clear document the parent receives). In ONE patch_invoice set:
+  {"Lessons Count":0, "Line Items":"[]", "Line Items Extra":"", "Final Amount":0, "Adjustment Amount":0,
+   "Issue Date":"${today}", "Due Date":"",
+   "Auto Notes":"No lessons conducted in <Month> — no payment required.",
+   "Custom Email Message":"Dear Parent/Student,\n\nThere are no lessons for <Student> in <Month>, so no payment is required. Please disregard any earlier invoice for this month.\n\nBest regards,\nAdrian"}
+Replace <Month>/<Student> with the real values. Then offer to regenerate_pdfs (so the PDF shows $0, today's issue date, no due date) and send_emails. Only VOID instead if the user explicitly asks to cancel/void the invoice.
 
 - To APPEND to a note, include the existing text plus your addition (PATCH replaces the whole field).
 - There is NO "Title", "Label", or "Amended" field. An invoice is marked AMENDED automatically when it's re-sent (it already has a Sent At) — the email subject becomes "AMENDED Invoice…". To re-send an amended invoice, just regenerate_pdfs then send_emails; do not try to set an "Amended" field.
