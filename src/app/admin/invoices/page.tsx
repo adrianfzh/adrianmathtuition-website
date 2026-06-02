@@ -1287,21 +1287,39 @@ export default function AdminPage() {
       }
     }
 
-    function previewEmail(id: string) {
+    async function previewEmail(id: string) {
       const inv = invoices.find((i: any) => i.id === id);
       if (!inv) return;
       currentPreviewId = id;
-      const subject = buildEmailSubject(inv);
-      const defaultText = buildDefaultEmailText(inv);
       const panel = document.getElementById('email-preview-panel') as HTMLElement;
       const subjectEl = document.getElementById('email-preview-subject') as HTMLElement;
       const textarea = document.getElementById('email-preview-textarea') as HTMLTextAreaElement;
       if (!panel || !subjectEl || !textarea) return;
-      subjectEl.innerHTML = `<strong>To:</strong> ${escHtml(inv.parentEmail || '(no email)')}<br><strong>Subject:</strong> ${escHtml(subject)}`;
       const hasCustom = !!(inv.customEmailMessage && inv.customEmailMessage.trim());
-      textarea.value = hasCustom ? inv.customEmailMessage : defaultText;
-      updateEmailPreviewStatus(hasCustom);
       panel.classList.add('open');
+      subjectEl.innerHTML = 'Loading preview…';
+      textarea.value = '';
+      updateEmailPreviewStatus(hasCustom);
+
+      // Fetch the EXACT email the server would send (welcome / amended / June /
+      // standard / custom) so the preview always matches what's actually sent.
+      try {
+        const res = await fetch('/api/send-invoices', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, preview: true }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'preview failed');
+        subjectEl.innerHTML = `<strong>To:</strong> ${escHtml(data.recipient || inv.parentEmail || '(no email)')}<br><strong>Subject:</strong> ${escHtml(data.subject || '')}`;
+        // Keep the raw custom message editable; otherwise show the server's rendered default.
+        textarea.value = hasCustom ? inv.customEmailMessage : (data.text || '');
+      } catch {
+        // Fallback to the client-side reconstruction if the preview endpoint fails.
+        subjectEl.innerHTML = `<strong>To:</strong> ${escHtml(inv.parentEmail || '(no email)')}<br><strong>Subject:</strong> ${escHtml(buildEmailSubject(inv))}`;
+        textarea.value = hasCustom ? inv.customEmailMessage : buildDefaultEmailText(inv);
+      }
+      updateEmailPreviewStatus(hasCustom);
       textarea.focus();
     }
 

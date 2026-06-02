@@ -287,7 +287,9 @@ export async function POST(request: NextRequest) {
       if (ratePerLesson && slotIds.length > 0) {
         const start = new Date(String(startDate) + 'T00:00:00');
         const todayForInvoice = new Date();
-        const todayStr = todayForInvoice.toISOString().split('T')[0];
+        // Use SGT (UTC+8) for the issue date — plain toISOString() is UTC, which
+        // lands on the PREVIOUS day for signups in the early-morning SGT hours.
+        const todayStr = new Date(todayForInvoice.getTime() + 8 * 3600 * 1000).toISOString().split('T')[0];
 
         const batchAlreadyRan =
           (todayForInvoice.getFullYear() > start.getFullYear()) ||
