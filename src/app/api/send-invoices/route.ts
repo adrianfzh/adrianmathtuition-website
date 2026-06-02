@@ -290,12 +290,18 @@ export async function POST(req: NextRequest) {
       }
       // HTML → readable plain text for Telegram
       const text = html
-        .replace(/<\/p>/gi, '\n\n').replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<li>/gi, '• ').replace(/<\/li>/gi, '\n')
+        .replace(/<\/p>/gi, '\n\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<li>/gi, '\n• ')
+        .replace(/<\/li>/gi, '')
         .replace(/<hr[^>]*>/gi, '\n———\n')
         .replace(/<[^>]+>/g, '')
         .replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ')
-        .replace(/\n{3,}/g, '\n\n').trim();
+        .split('\n').map((l) => l.trim()).join('\n')  // drop the template's indentation
+        .replace(/[ \t]+\n/g, '\n')                    // strip trailing spaces
+        .replace(/\n{2,}(• )/g, '\n$1')                // single-space bullet lists
+        .replace(/\n{3,}/g, '\n\n')                    // collapse runs of blank lines
+        .trim();
       return NextResponse.json({ preview: true, recipient: invoice.parentEmail, subject, text });
     } catch (e: any) {
       return NextResponse.json({ error: e?.message || 'Preview failed' }, { status: 500 });
