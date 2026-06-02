@@ -194,6 +194,62 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); } catch { /* no body */ }
   const { recordId: singleRecordId, recordIds } = body;
 
+  // ── Preview mode: build the email for ONE invoice and RETURN it (no send) ──
+  // Used by the bot's "Review & Send" flow so the admin sees the exact message
+  // before approving. Reuses the same subject/html builders as the real send.
+  if (body.preview === true && singleRecordId) {
+    try {
+      const rec = await at('Invoices', `/${singleRecordId}`);
+      const sid = rec.fields['Student']?.[0];
+      const stu = sid ? await at('Students', `/${sid}`) : { fields: {} };
+      const month = (rec.fields['Month'] || '') as string;
+      const studentName = (stu.fields['Student Name'] || '') as string;
+      const invoice = {
+        id: rec.id,
+        studentName,
+        parentEmail: (stu.fields['Parent Email'] || '') as string,
+        month,
+        finalAmount: rec.fields['Final Amount'] || 0,
+        dueDate: rec.fields['Due Date'],
+        paymentRef: `${studentName.toUpperCase()} – ${month.toUpperCase()}`,
+        level: (stu.fields['Level'] || '') as string,
+      };
+      const isAmended = !!rec.fields['Sent At'];
+      const subject = isAmended
+        ? `AMENDED Invoice for ${month} – ${studentName}`
+        : `Invoice for ${month} – ${studentName}`;
+      const customMessage = (rec.fields['Custom Email Message'] || '') as string;
+      const invoiceType = (rec.fields['Invoice Type'] || 'Regular') as string;
+      let html: string;
+      if (customMessage.trim()) {
+        html = `<p>${customMessage.trim().replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+      } else if (invoiceType === 'Revision Sprint') {
+        let lineItems: { description?: string; amount?: number }[] = [];
+        try { lineItems = JSON.parse(rec.fields['Line Items'] || '[]'); } catch { /* ignore */ }
+        const lineItemsText = lineItems.map(li =>
+          `<p>• ${li.description || 'Revision lessons'} — <strong>$${(li.amount || 0).toFixed(2)}</strong></p>`).join('');
+        html = buildRevisionSprintEmailHtml({ ...invoice, lineItemsText });
+      } else if (isAmended) {
+        html = buildAmendedEmailHtml(invoice);
+      } else if (month === 'June 2026') {
+        html = buildJune2026EmailHtml(invoice);
+      } else {
+        html = buildEmailHtml(invoice);
+      }
+      // HTML → readable plain text for Telegram
+      const text = html
+        .replace(/<\/p>/gi, '\n\n').replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<li>/gi, '• ').replace(/<\/li>/gi, '\n')
+        .replace(/<hr[^>]*>/gi, '\n———\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ')
+        .replace(/\n{3,}/g, '\n\n').trim();
+      return NextResponse.json({ preview: true, recipient: invoice.parentEmail, subject, text });
+    } catch (e: any) {
+      return NextResponse.json({ error: e?.message || 'Preview failed' }, { status: 500 });
+    }
+  }
+
   try {
     let invoiceRecords: any[];
     // True cron: called by Vercel scheduler (x-vercel-cron header) or CRON_SECRET

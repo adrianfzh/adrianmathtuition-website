@@ -457,8 +457,8 @@ export async function POST(request: NextRequest) {
                 `Status: Draft — review and send when ready.`,
                 [
                   [
-                    { text: '👁 Preview Invoice', url: `${baseUrl}/api/preview-invoice?id=${createdInvoice.id}` },
-                    { text: '📤 Send Invoice', callback_data: `send_invoice_confirm:${createdInvoice.id}` },
+                    { text: '👁 Preview PDF', url: `${baseUrl}/api/preview-invoice?id=${createdInvoice.id}` },
+                    { text: '📤 Review & Send', callback_data: `send_invoice_review:${createdInvoice.id}` },
                   ],
                 ]
               );
