@@ -47,6 +47,28 @@ export async function GET(req: NextRequest) {
   );
   studentsById = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r.fields]));
 
+  // Latest archived "sent PDF" per invoice (from EmailLog) — lets the invoice
+  // card link the exact PDF the parent received, even after an amendment
+  // overwrote the working PDF. Can't filter linked records by ID in Airtable,
+  // so fetch the (small) set of logs that carry an archived PDF and match in JS.
+  const sentPdfByInvoice: Record<string, { url: string; sentAt: string }> = {};
+  try {
+    const logs = await airtableRequestAll(
+      'EmailLog',
+      `?filterByFormula=${encodeURIComponent(`NOT({PDF URL}='')`)}&fields[]=Related Invoice&fields[]=PDF URL&fields[]=Sent At`
+    );
+    for (const lr of logs.records || []) {
+      const invId = lr.fields['Related Invoice']?.[0];
+      const url = lr.fields['PDF URL'];
+      const sentAt = (lr.fields['Sent At'] || '') as string;
+      if (!invId || !url) continue;
+      const cur = sentPdfByInvoice[invId];
+      if (!cur || sentAt > cur.sentAt) sentPdfByInvoice[invId] = { url, sentAt };
+    }
+  } catch (e: any) {
+    console.error('[admin-invoices] sent-PDF join failed (non-fatal):', e?.message);
+  }
+
   const result = invoices.map((r: any) => {
     const f = r.fields;
     const studentId = f['Student']?.[0];
@@ -76,6 +98,7 @@ export async function GET(req: NextRequest) {
       amountPaid: f['Amount Paid'] || 0,
       isPaid: f['Is Paid'] || false,
       pdfUrl: f['PDF URL'] || null,
+      lastSentPdfUrl: sentPdfByInvoice[r.id]?.url || null,
       lineItems: f['Line Items'] ? JSON.parse(f['Line Items']) : [],
       lineItemsExtra: f['Line Items Extra'] ? JSON.parse(f['Line Items Extra']) : [],
       customEmailMessage: f['Custom Email Message'] || '',

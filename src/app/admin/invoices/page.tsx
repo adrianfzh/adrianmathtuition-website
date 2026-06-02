@@ -853,12 +853,19 @@ export default function AdminPage() {
         ? `<div class="auto-notes">${inv.autoNotes}</div>`
         : '';
 
+      // Link to the exact PDF that was last emailed (archived per send). Differs
+      // from "Preview PDF" (the current working PDF) after an amendment.
+      const sentPdfBtn = inv.lastSentPdfUrl
+        ? `<a class="btn btn-preview" href="${inv.lastSentPdfUrl}" target="_blank" rel="noreferrer" style="text-decoration:none;">📄 Sent PDF</a>`
+        : '';
+
       let actionsHtml: string;
       if (isDraft) {
         actionsHtml = `
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
+            ${sentPdfBtn}
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-approve" onclick="approveInvoice('${inv.id}')">\u2705 Approve</button>
@@ -870,6 +877,7 @@ export default function AdminPage() {
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
+            ${sentPdfBtn}
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
@@ -881,6 +889,7 @@ export default function AdminPage() {
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
+            ${sentPdfBtn}
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
             <button class="btn btn-send" onclick="sendInvoice('${inv.id}')">\uD83D\uDCE4 Send</button>
