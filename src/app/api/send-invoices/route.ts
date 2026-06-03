@@ -233,8 +233,11 @@ async function fetchDeliveredWithPdf(invoiceIds: string[]): Promise<Set<string>>
   const out = new Set<string>();
   if (!want.size) return out;
   try {
+    // Carried a PDF AND was not a known non-delivery (suppressed/bounced/etc).
+    // 'sent' counts as delivered optimistically until the webhook confirms.
+    const formula = `AND(NOT({PDF URL}=''),{Status}!='failed',{Status}!='suppressed',{Status}!='bounced',{Status}!='complained',{Status}!='delayed')`;
     const logs = await airtableRequestAll('EmailLog',
-      `?filterByFormula=${encodeURIComponent(`NOT({PDF URL}='')`)}&fields[]=Related Invoice&fields[]=PDF URL`);
+      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Related Invoice&fields[]=PDF URL&fields[]=Status`);
     for (const r of logs.records || []) {
       const id = r.fields['Related Invoice']?.[0];
       if (id && want.has(id)) out.add(id);
