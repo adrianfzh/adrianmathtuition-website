@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-06-01T09:40:21.466Z
+// Last synced: 2026-06-03T06:52:35.477Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -965,6 +965,9 @@ export const SCHEMA = {
       },
       "Resend ID": {
         "type": "singleLineText"
+      },
+      "PDF URL": {
+        "type": "url"
       }
     }
   },
