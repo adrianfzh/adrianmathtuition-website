@@ -296,7 +296,19 @@ export default function EmailsPage() {
                       <td className="col-date">{formatSentAt(log.sentAt)}</td>
                       <td><TypeBadge type={log.type} /></td>
                       <td className="col-email">{log.toEmail}</td>
-                      <td className="col-subject">{log.subject}</td>
+                      <td className="col-subject">
+                        {log.subject}
+                        {log.pdfUrl && (
+                          <a
+                            href={log.pdfUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            title="View the exact PDF that was sent"
+                            style={{ marginLeft: 6, textDecoration: 'none', whiteSpace: 'nowrap' }}
+                          >📄 PDF</a>
+                        )}
+                      </td>
                       <td><StatusBadge status={log.status} /></td>
                     </tr>
                     {expanded === log.id && (
