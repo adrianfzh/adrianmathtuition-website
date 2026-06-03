@@ -3,6 +3,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { copy } from '@vercel/blob';
+import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -359,9 +360,22 @@ export async function POST(req: NextRequest) {
     );
 
     const pdfBuffers = await Promise.all(
-      invoiceRecords.map((record: any) => {
+      invoiceRecords.map(async (record: any) => {
         const pdfUrl = record.fields['PDF URL'];
-        return pdfUrl ? downloadPdf(pdfUrl) : Promise.resolve(null);
+        if (pdfUrl) return downloadPdf(pdfUrl);
+        // No blob PDF yet (e.g. a signup invoice — its PDF lives only as an
+        // Airtable attachment). Generate one now so the email never goes out
+        // without its invoice, and so it gets archived. Also updates the
+        // in-memory record so the post-send archive step picks up the new URL.
+        try {
+          const studentName = studentsById[record.fields['Student']?.[0]]?.['Student Name'] || '';
+          const { buffer, url } = await generateAndStoreInvoicePdf(record, studentName);
+          record.fields['PDF URL'] = url;
+          return buffer;
+        } catch (e: any) {
+          console.error('[send-invoices] inline PDF generation failed:', e?.message);
+          return null;
+        }
       })
     );
 
