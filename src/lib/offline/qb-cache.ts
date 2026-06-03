@@ -202,17 +202,25 @@ export interface CacheQueryOpts {
   search?: string;
   hasImage?: 'true' | 'false' | 'any';
   difficulties?: string[];
+  exam?: string; // Promo | MY | Prelim | '' (JC only; requires exam_type in cache)
   limit?: number;
 }
 
+const JC_FAMILY = ['JC', 'JC1', 'JC2'];
+
 export async function queryLocalBank(opts: CacheQueryOpts): Promise<CachedQuestion[]> {
-  const rows = await queryQuestions(opts.level, opts.topics);
+  // A JC lesson matches the whole JC1/JC2 family in the cache too.
+  const levels = JC_FAMILY.includes(opts.level) ? JC_FAMILY : [opts.level];
+  const lists = await Promise.all(levels.map((lv) => queryQuestions(lv, opts.topics)));
+  const seen = new Set<string>();
+  const rows = lists.flat().filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)));
   const search = opts.search?.trim().toLowerCase() ?? '';
   const diffs = new Set(opts.difficulties ?? []);
   const filtered = rows.filter((r) => {
     if (opts.hasImage === 'true' && !r.has_image) return false;
     if (opts.hasImage === 'false' && r.has_image) return false;
     if (diffs.size > 0 && (!r.difficulty || !diffs.has(r.difficulty))) return false;
+    if (opts.exam && r.exam_type !== opts.exam) return false;
     if (search && !(r.question_text ?? '').toLowerCase().includes(search)) return false;
     return true;
   });

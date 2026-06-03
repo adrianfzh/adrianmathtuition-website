@@ -31,6 +31,7 @@ export type BankQuestion = {
   images: { filename: string }[] | null;
   difficulty: string | null;
   source_file: string | null;
+  exam_type?: string | null;
   usage_count: number;
   subgroup_links: { id: number; name: string; isPrimary: boolean }[];
 };
@@ -55,6 +56,7 @@ type BankCache = {
   hasImage: 'any' | 'true' | 'false';
   difficulties: Difficulty[];
   year: string;
+  exam: string;
   results: BankQuestion[];
   total: number;
   source: Source;
@@ -280,6 +282,9 @@ export function LessonBankPanel({
   const [hasImage, setHasImage] = useState<'any' | 'true' | 'false'>(hit?.hasImage ?? 'any');
   const [difficulties, setDifficulties] = useState<Set<Difficulty>>(new Set(hit?.difficulties ?? []));
   const [year, setYear] = useState<string>(hit?.year ?? 'any');
+  // Exam-type filter (JC only — its papers are Promo/MY/Prelim). Client-side display filter.
+  const isJC = ['JC', 'JC1', 'JC2'].includes(level);
+  const [exam, setExam] = useState<string>(hit?.exam ?? 'any');
   // How many rows to fetch for keyword/local browsing. "Load more" raises it. Resets on new search.
   const [limit, setLimit] = useState(100);
   const [questions, setQuestions] = useState<BankQuestion[]>(hit?.results ?? []);
@@ -314,12 +319,13 @@ export function LessonBankPanel({
     if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
     if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
     if (year !== 'any') list = list.filter(q => String(q.year) === year);
+    if (exam !== 'any') list = list.filter(q => (q.exam_type ?? '') === exam);
     return list;
-  }, [questions, difficulties, hasImage, year]);
+  }, [questions, difficulties, hasImage, year, exam]);
 
   // Read current filters at fetch-time without putting them in the fetch effect's deps.
-  const filtersRef = useRef({ hasImage, difficulties, year });
-  filtersRef.current = { hasImage, difficulties, year };
+  const filtersRef = useRef({ hasImage, difficulties, year, exam });
+  filtersRef.current = { hasImage, difficulties, year, exam };
 
   // Keep the cache's filter fields current so a remount rehydrates the latest filter UI.
   useEffect(() => {
@@ -327,8 +333,9 @@ export function LessonBankPanel({
       bankCache.hasImage = hasImage;
       bankCache.difficulties = Array.from(difficulties);
       bankCache.year = year;
+      bankCache.exam = exam;
     }
-  }, [hasImage, difficulties, year, lessonKey]);
+  }, [hasImage, difficulties, year, exam, lessonKey]);
 
   // Fetch is driven ONLY by `committed` (set on Search click / Enter) and level/topics.
   useEffect(() => {
@@ -359,7 +366,7 @@ export function LessonBankPanel({
           lessonKey, sig,
           search: committed.query, mode: committed.mode, aiModel: committed.aiModel,
           hasImage: filtersRef.current.hasImage, difficulties: Array.from(filtersRef.current.difficulties),
-          year: filtersRef.current.year,
+          year: filtersRef.current.year, exam: filtersRef.current.exam,
           results: list, total: tot, source: src,
         };
         persistCache(); // survive a full reload
@@ -556,6 +563,17 @@ export function LessonBankPanel({
             <option value="any">Any</option>
             {availableYears.map(y => <option key={y} value={String(y)}>{y}</option>)}
           </select>
+          {isJC && (
+            <>
+              <span className="text-slate-400 ml-2">Exam:</span>
+              <select value={exam} onChange={e => setExam(e.target.value)} className="border border-slate-300 rounded px-1 py-px text-[10px]">
+                <option value="any">Any</option>
+                <option value="Promo">Promo</option>
+                <option value="MY">MY</option>
+                <option value="Prelim">Prelim</option>
+              </select>
+            </>
+          )}
         </div>
         <div className="text-[10px] text-slate-400 flex items-center gap-2">
           <span>{loading ? (committedSmart ? 'Claude is reading…' : 'Loading…') : `${total} found · showing ${displayed.length}`}</span>

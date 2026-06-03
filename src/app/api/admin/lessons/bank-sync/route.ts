@@ -43,16 +43,20 @@ export async function GET(req: NextRequest) {
   if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });
   const topics = topicsParam ? topicsParam.split(',').map(s => s.trim()).filter(Boolean) : [];
 
+  // A JC lesson caches the whole JC1/JC2 family (Promo/MY/Prelim).
+  const JC_FAMILY = ['JC', 'JC1', 'JC2'];
+  const isJC = JC_FAMILY.includes(level);
+
   const supa = getSupabaseAdmin();
   let q = supa
     .from('questions')
     .select(
-      'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, updated_at, deleted_at'
+      'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type, updated_at, deleted_at'
     )
-    .eq('level', level)
     .order('updated_at', { ascending: true })
     .order('id', { ascending: true })  // tiebreaker for rows with identical updated_at
     .range(0, limit - 1);
+  q = isJC ? q.in('level', JC_FAMILY) : q.eq('level', level);
 
   if (topics.length > 0) q = q.overlaps('topics', topics);
   if (since) q = q.gt('updated_at', since);

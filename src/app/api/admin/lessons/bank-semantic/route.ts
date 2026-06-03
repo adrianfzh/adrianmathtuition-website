@@ -38,7 +38,7 @@ const POOL_CAP = 600;
 const SNIPPET_CHARS = 360;
 
 const FULL_COLUMNS =
-  'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file';
+  'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type';
 
 type PartLike = { label?: string; text?: string; subparts?: Array<{ label?: string; text?: string }> };
 
@@ -89,6 +89,7 @@ export async function GET(req: NextRequest) {
   const topicsParam = searchParams.get('topics') ?? '';
   const query = (searchParams.get('q') ?? searchParams.get('search') ?? '').trim();
   const modelKey: ModelKey = searchParams.get('model') === 'sonnet' ? 'sonnet' : 'haiku';
+  const exam = (searchParams.get('exam') ?? '').trim();
   const limit = Math.min(Number(searchParams.get('limit') ?? 40), 100);
 
   if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });
@@ -96,19 +97,24 @@ export async function GET(req: NextRequest) {
   const topics = topicsParam.split(',').map(s => s.trim()).filter(Boolean);
   if (topics.length === 0) return NextResponse.json({ questions: [], total: 0 });
 
+  const JC_FAMILY = ['JC', 'JC1', 'JC2'];
+  const isJC = JC_FAMILY.includes(level);
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: 'AI search unavailable: ANTHROPIC_API_KEY not configured' }, { status: 503 });
   }
 
   const supa = getSupabaseAdmin();
 
-  // 1. Candidate pool — in-scope questions only.
-  const { data: pool, error: poolErr, count } = await supa
+  // 1. Candidate pool — in-scope questions only (JC lesson = whole JC1/JC2 family).
+  let poolQ = supa
     .from('questions')
     .select('id, question_text, parts', { count: 'exact' })
-    .eq('level', level)
     .overlaps('topics', topics)
-    .is('deleted_at', null)
+    .is('deleted_at', null);
+  poolQ = isJC ? poolQ.in('level', JC_FAMILY) : poolQ.eq('level', level);
+  if (isJC && exam) poolQ = poolQ.eq('exam_type', exam);
+  const { data: pool, error: poolErr, count } = await poolQ
     .order('year', { ascending: false })
     .order('school', { ascending: true })
     .limit(POOL_CAP);

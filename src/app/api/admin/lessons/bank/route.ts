@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
   const search = (searchParams.get('q') ?? searchParams.get('search') ?? '').trim();
   const hasImage = searchParams.get('hasImage'); // 'true' | 'false' | null
   const difficultyCsv = searchParams.get('difficulty') ?? '';
+  const exam = (searchParams.get('exam') ?? '').trim(); // Promo | MY | Prelim | '' (JC only)
   const limit = Math.min(Number(searchParams.get('limit') ?? 100), 500);
   const offset = Number(searchParams.get('offset') ?? 0);
 
@@ -20,17 +21,24 @@ export async function GET(req: NextRequest) {
   const topics = topicsParam.split(',').map(s => s.trim()).filter(Boolean);
   if (topics.length === 0) return NextResponse.json({ questions: [], total: 0 });
 
+  // JC was split into JC1/JC2 (Promo/MY=JC1, Prelim=JC2) + a few legacy 'JC' rows. A JC lesson
+  // should see the whole family; non-JC levels match exactly.
+  const JC_FAMILY = ['JC', 'JC1', 'JC2'];
+  const isJC = JC_FAMILY.includes(level);
+
   const supa = getSupabaseAdmin();
 
   // questions.topics is text[] — match any question whose topics array overlaps with the lesson's topics.
   let qQuery = supa
     .from('questions')
     .select(
-      'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file',
+      'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type',
       { count: 'exact' },
     )
-    .eq('level', level)
-    .overlaps('topics', topics)
+    .overlaps('topics', topics);
+  qQuery = isJC ? qQuery.in('level', JC_FAMILY) : qQuery.eq('level', level);
+  if (isJC && exam) qQuery = qQuery.eq('exam_type', exam);
+  qQuery = qQuery
     .order('school', { ascending: true })
     .order('year', { ascending: false })
     .order('paper', { ascending: true })

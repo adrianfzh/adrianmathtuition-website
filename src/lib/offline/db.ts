@@ -324,6 +324,7 @@ export interface CachedQuestion {
   images: { filename: string }[] | null;
   difficulty: string | null;
   source_file: string | null;
+  exam_type?: string | null;
   updated_at: string;
   deleted_at: string | null;
 }
