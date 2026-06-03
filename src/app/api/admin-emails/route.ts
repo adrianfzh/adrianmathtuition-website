@@ -60,9 +60,26 @@ export async function POST(req: NextRequest) {
     const html = f['Body HTML'] as string;
     const relatedInvoice = f['Related Invoice']?.[0] as string | undefined;
     const type = f['Type'] as string;
+    const pdfUrl = f['PDF URL'] as string | undefined;
 
     if (!toEmail || !subject || !html) {
       return NextResponse.json({ error: 'Log entry missing To/Subject/Body' }, { status: 400 });
+    }
+
+    // Re-attach the exact PDF that was originally sent (archived on the log), so
+    // a resent invoice goes out WITH its invoice — not body-only.
+    let attachments: { filename: string; content: string }[] | undefined;
+    if (pdfUrl) {
+      try {
+        const pdfResp = await fetch(pdfUrl);
+        if (pdfResp.ok) {
+          const buf = Buffer.from(await pdfResp.arrayBuffer());
+          const fname = (subject.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'invoice') + '.pdf';
+          attachments = [{ filename: fname, content: buf.toString('base64') }];
+        }
+      } catch (e: any) {
+        console.error('[admin-emails] resend PDF fetch failed:', e?.message);
+      }
     }
 
     const sendRes = await fetch('https://api.resend.com/emails', {
@@ -74,6 +91,7 @@ export async function POST(req: NextRequest) {
         reply_to: 'adrianmathtuition@gmail.com',
         subject: `[Resent] ${subject}`,
         html,
+        ...(attachments ? { attachments } : {}),
       }),
     });
     if (!sendRes.ok) throw new Error('Resend failed: ' + await sendRes.text());
@@ -92,6 +110,7 @@ export async function POST(req: NextRequest) {
           'Subject': `[Resent] ${subject}`,
           'Body HTML': html,
           ...(relatedInvoice ? { 'Related Invoice': [relatedInvoice] } : {}),
+          ...(pdfUrl ? { 'PDF URL': pdfUrl } : {}),
           'Status': 'sent',
           ...(resendId ? { 'Resend ID': resendId } : {}),
         },
