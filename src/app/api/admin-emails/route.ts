@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { sendTelegram } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -98,6 +99,21 @@ export async function POST(req: NextRequest) {
     const sendData = await sendRes.json().catch(() => ({}));
     const resendId = (sendData as any).id || '';
 
+    // Detect immediate suppression (address blocked → never delivered).
+    let delivered = true;
+    let failEvent = '';
+    if (resendId) {
+      try {
+        const st = await fetch(`https://api.resend.com/emails/${resendId}`, {
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+        });
+        if (st.ok) {
+          const ev = (await st.json())?.last_event;
+          if (ev === 'suppressed' || ev === 'failed' || ev === 'bounced') { delivered = false; failEvent = ev; }
+        }
+      } catch { /* status check failed — assume sent; webhook will catch async failures */ }
+    }
+
     // Log the resend as a new entry
     await airtableRequest('EmailLog', '', {
       method: 'POST',
@@ -111,13 +127,20 @@ export async function POST(req: NextRequest) {
           'Body HTML': html,
           ...(relatedInvoice ? { 'Related Invoice': [relatedInvoice] } : {}),
           ...(pdfUrl ? { 'PDF URL': pdfUrl } : {}),
-          'Status': 'sent',
+          'Status': delivered ? 'sent' : 'failed',
           ...(resendId ? { 'Resend ID': resendId } : {}),
         },
       }),
     });
 
-    return NextResponse.json({ success: true, resendId });
+    // Notify on Telegram (the admin explicitly wants resend confirmations).
+    await sendTelegram(
+      delivered
+        ? `↩ <b>Email resent</b>\n${subject}\nTo: ${toEmail}${pdfUrl ? '\n📎 PDF attached' : ''}`
+        : `⚠️ <b>Resend NOT delivered (${failEvent})</b>\n${subject}\nTo: ${toEmail}\nThe address is blocked by the email provider — verify it / clear the suppression in Resend.`,
+    ).catch(() => {});
+
+    return NextResponse.json({ success: true, resendId, delivered, ...(delivered ? {} : { warning: `not delivered (${failEvent})` }) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

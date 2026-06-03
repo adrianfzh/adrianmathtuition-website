@@ -509,6 +509,27 @@ export async function POST(req: NextRequest) {
         const sendData = await sendRes.json().catch(() => ({}));
         const resendId = (sendData as any).id || '';
 
+        // Resend returns 200 + an id even when the address is SUPPRESSED (blocked
+        // because a prior email to it hard-bounced or was marked spam) — the mail
+        // is never delivered. Verify the status so we don't mark undelivered mail
+        // as "Sent" (this is what silently dropped Ian's invoice).
+        if (resendId) {
+          try {
+            const st = await fetch(`https://api.resend.com/emails/${resendId}`, {
+              headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+            });
+            if (st.ok) {
+              const ev = (await st.json())?.last_event;
+              if (ev === 'suppressed' || ev === 'failed' || ev === 'bounced') {
+                throw new Error(`NOT DELIVERED (${ev}) — recipient blocked by the email provider. Verify the address or clear the suppression in Resend, then resend.`);
+              }
+            }
+          } catch (e: any) {
+            if (typeof e?.message === 'string' && e.message.includes('NOT DELIVERED')) throw e;
+            // status-check network error → don't block the send; the webhook still catches async failures
+          }
+        }
+
         await at('Invoices', `/${invoiceId}`, {
           method: 'PATCH',
           body: JSON.stringify({ fields: { 'Status': 'Sent', 'Sent At': new Date().toISOString() } }),
@@ -585,12 +606,12 @@ export async function POST(req: NextRequest) {
       .map((d) => `• ${d.studentName} (${d.month})${d.isFirstInvoice ? ' \u{1F195} New student' : ''}`)
       .join('\n');
     await sendTelegram(
-      `\u2705 <b>Invoices Sent \u2014 ${currentMonth}</b>\n\n` +
-        `Sent: ${sentCount} | Failed: ${failedCount}` +
+      `${failedCount > 0 ? '\u26a0\ufe0f <b>Invoices \u2014 DELIVERY ISSUES</b>' : '\u2705 <b>Invoices delivered</b>'} \u2014 ${currentMonth}\n\n` +
+        `Delivered: ${sentCount} | Not delivered: ${failedCount}` +
         (sentLines ? `\n\n${sentLines}` : '') +
         (failedCount > 0
-          ? `\n\n\u26a0\ufe0f Failed:\n${failedLines}`
-          : '\n\nAll invoices processed successfully.')
+          ? `\n\n\u26a0\ufe0f NOT delivered (fix + resend):\n${failedLines}`
+          : '\n\nAll invoices delivered successfully.')
     );
 
     return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length });
