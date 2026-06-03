@@ -223,6 +223,28 @@ async function downloadPdf(url: string): Promise<Buffer | null> {
   }
 }
 
+// Of the given invoices, which have ALREADY been delivered with a PDF — i.e.
+// a prior EmailLog entry for them carries an archived PDF URL. Only such a prior
+// COMPLETE delivery makes a re-send an "amendment"; a first send that went out
+// without a PDF (legacy) does NOT count. (Can't filter linked records by ID in
+// Airtable, so fetch the small set of logs that carry a PDF and match in JS.)
+async function fetchDeliveredWithPdf(invoiceIds: string[]): Promise<Set<string>> {
+  const want = new Set(invoiceIds);
+  const out = new Set<string>();
+  if (!want.size) return out;
+  try {
+    const logs = await airtableRequestAll('EmailLog',
+      `?filterByFormula=${encodeURIComponent(`NOT({PDF URL}='')`)}&fields[]=Related Invoice&fields[]=PDF URL`);
+    for (const r of logs.records || []) {
+      const id = r.fields['Related Invoice']?.[0];
+      if (id && want.has(id)) out.add(id);
+    }
+  } catch (e: any) {
+    console.error('[send-invoices] delivered-with-pdf check failed:', e?.message);
+  }
+  return out;
+}
+
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -260,7 +282,7 @@ export async function POST(req: NextRequest) {
         paymentRef: `${studentName.toUpperCase()} – ${month.toUpperCase()}`,
         level: (stu.fields['Level'] || '') as string,
       };
-      const isAmended = !!rec.fields['Sent At'];
+      const isAmended = (await fetchDeliveredWithPdf([rec.id])).has(rec.id);
       const isFirstInvP = ((rec.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice');
       const subject = isAmended
         ? `AMENDED Invoice for ${month} – ${studentName}`
@@ -379,6 +401,10 @@ export async function POST(req: NextRequest) {
       })
     );
 
+    // Which of these invoices already had a COMPLETE (PDF-carrying) delivery —
+    // checked before this send archives anything, so it reflects prior sends only.
+    const deliveredWithPdf = await fetchDeliveredWithPdf(invoiceRecords.map((r: any) => r.id));
+
     const emails: any[] = [];
     const invoiceMap = new Map<string, any>();
 
@@ -400,7 +426,7 @@ export async function POST(req: NextRequest) {
       };
 
       const pdfBuffer = pdfBuffers[i];
-      const isAmended = !!invoiceRecord.fields['Sent At'];
+      const isAmended = deliveredWithPdf.has(invoiceRecord.id);
       const isFirstInv = ((invoiceRecord.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice');
       const subject = isAmended
         ? `AMENDED Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
@@ -514,7 +540,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Log to EmailLog (non-fatal)
-        const isAmendedEmail = !!invoiceMap.get(invoiceId)?.record?.fields?.['Sent At'];
+        const isAmendedEmail = deliveredWithPdf.has(invoiceId);
         at('EmailLog', '', {
           method: 'POST',
           body: JSON.stringify({ fields: {
@@ -541,7 +567,7 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({ fields: {
             'Email ID': `invoice-${invoiceId}-${Date.now()}`,
             'Sent At': new Date().toISOString(),
-            'Type': invoiceMap.get(invoiceId)?.record?.fields?.['Sent At'] ? 'amended_invoice' : 'invoice',
+            'Type': deliveredWithPdf.has(invoiceId) ? 'amended_invoice' : 'invoice',
             'To Email': emailData.to || '',
             'Subject': emailData.subject || '',
             'Related Invoice': [invoiceId],
