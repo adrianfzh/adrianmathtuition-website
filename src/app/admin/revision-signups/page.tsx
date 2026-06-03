@@ -267,6 +267,75 @@ export default function RevisionSignupsPage() {
     setExpandedAtt(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
 
+  function attSection(stu: AttStudent): string {
+    if (stu.subjects.includes('JC')) return 'JC';
+    const em = stu.subjects.includes('EM'), am = stu.subjects.includes('AM');
+    if (em && am) return 'EMAM';
+    if (em) return 'EM';
+    if (am) return 'AM';
+    return 'OTHER';
+  }
+
+  function renderAttCard(stu: AttStudent) {
+    const expanded = expandedAtt.has(stu.id);
+    const sm = stu.summary;
+    return (
+      <div key={stu.id} className="rs-card">
+        <div className="rs-card-top" style={{ cursor: 'pointer' }} onClick={() => toggleExpand(stu.id)}>
+          <div className="rs-card-name">{stu.name} <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 400 }}>{stu.subjects.join(' + ')}</span></div>
+          <div className="rs-att-summary">
+            <span className="rs-att-pill green" title="Attended">✓ {sm.attended}</span>
+            <span className="rs-att-pill red" title="Missed">✗ {sm.missed}</span>
+            <span className="rs-att-pill blue" title="Made up">↻ {sm.madeUp}</span>
+            {sm.outstanding > 0 && <span className="rs-att-pill amber" title="Outstanding makeups">⚠ {sm.outstanding}</span>}
+            <span className="rs-att-caret">{expanded ? '▴' : '▾'}</span>
+          </div>
+        </div>
+        {expanded && (
+          <div className="rs-att-sessions">
+            {stu.sessions.map(s => (
+              <div key={s.lessonId} className="rs-att-row">
+                <div className="rs-att-when">
+                  <span className="rs-att-date">{fmtDate(s.date)}</span>
+                  <span className="rs-att-subj">{s.subjectLabel} · {s.time}</span>
+                </div>
+                <div className="rs-att-actions">
+                  {s.status === 'Completed' && (
+                    <>
+                      <span className="rs-att-status done">✓ Attended</span>
+                      <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
+                    </>
+                  )}
+                  {s.status === 'Absent' && (
+                    <>
+                      {s.makeup ? (
+                        <span className="rs-att-status madeup">↻ Made up: {s.makeup.slotLabel || ''} {fmtDate(s.makeup.date)}
+                          <button className="rs-att-undo" onClick={() => removeMakeup(s.lessonId)}>✕</button>
+                        </span>
+                      ) : (
+                        <>
+                          <span className="rs-att-status missed">✗ Missed</span>
+                          <button className="rs-att-makeup" onClick={() => openMakeup(s, stu.id)}>＋ Log makeup</button>
+                          <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
+                        </>
+                      )}
+                    </>
+                  )}
+                  {(s.status === 'Scheduled' || (s.status !== 'Completed' && s.status !== 'Absent')) && (
+                    <>
+                      <button className="rs-att-btn green" onClick={() => markSession(s.lessonId, 'Completed')}>✓ Attended</button>
+                      <button className="rs-att-btn red" onClick={() => markSession(s.lessonId, 'Absent')}>✗ Missed</button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Filter
   const filtered = students.filter(s => {
     if (filter === 'All') return true;
@@ -663,63 +732,19 @@ export default function RevisionSignupsPage() {
           {!attLoading && !attError && attData && attData.students.length === 0 && (
             <div className="rs-empty">No signed-up students yet.</div>
           )}
-          {!attLoading && !attError && attData && attData.students.map(stu => {
-            const expanded = expandedAtt.has(stu.id);
-            const sm = stu.summary;
+          {!attLoading && !attError && attData && ([
+            { key: 'EM',    label: 'Sec 4 · E Math only' },
+            { key: 'EMAM',  label: 'Sec 4 · E Math + A Math' },
+            { key: 'AM',    label: 'Sec 4 · A Math only' },
+            { key: 'JC',    label: 'JC2 · H2 Math' },
+            { key: 'OTHER', label: 'Other' },
+          ] as const).map(sec => {
+            const group = attData.students.filter(s => attSection(s) === sec.key);
+            if (!group.length) return null;
             return (
-              <div key={stu.id} className="rs-card">
-                <div className="rs-card-top" style={{ cursor: 'pointer' }} onClick={() => toggleExpand(stu.id)}>
-                  <div className="rs-card-name">{stu.name} <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 400 }}>{stu.subjects.join(' + ')}</span></div>
-                  <div className="rs-att-summary">
-                    <span className="rs-att-pill green" title="Attended">✓ {sm.attended}</span>
-                    <span className="rs-att-pill red" title="Missed">✗ {sm.missed}</span>
-                    <span className="rs-att-pill blue" title="Made up">↻ {sm.madeUp}</span>
-                    {sm.outstanding > 0 && <span className="rs-att-pill amber" title="Outstanding makeups">⚠ {sm.outstanding}</span>}
-                    <span className="rs-att-caret">{expanded ? '▴' : '▾'}</span>
-                  </div>
-                </div>
-
-                {expanded && (
-                  <div className="rs-att-sessions">
-                    {stu.sessions.map(s => (
-                      <div key={s.lessonId} className="rs-att-row">
-                        <div className="rs-att-when">
-                          <span className="rs-att-date">{fmtDate(s.date)}</span>
-                          <span className="rs-att-subj">{s.subjectLabel} · {s.time}</span>
-                        </div>
-                        <div className="rs-att-actions">
-                          {s.status === 'Completed' && (
-                            <>
-                              <span className="rs-att-status done">✓ Attended</span>
-                              <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
-                            </>
-                          )}
-                          {s.status === 'Absent' && (
-                            <>
-                              {s.makeup ? (
-                                <span className="rs-att-status madeup">↻ Made up: {s.makeup.slotLabel || ''} {fmtDate(s.makeup.date)}
-                                  <button className="rs-att-undo" onClick={() => removeMakeup(s.lessonId)}>✕</button>
-                                </span>
-                              ) : (
-                                <>
-                                  <span className="rs-att-status missed">✗ Missed</span>
-                                  <button className="rs-att-makeup" onClick={() => openMakeup(s, stu.id)}>＋ Log makeup</button>
-                                  <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
-                                </>
-                              )}
-                            </>
-                          )}
-                          {(s.status === 'Scheduled' || (s.status !== 'Completed' && s.status !== 'Absent')) && (
-                            <>
-                              <button className="rs-att-btn green" onClick={() => markSession(s.lessonId, 'Completed')}>✓ Attended</button>
-                              <button className="rs-att-btn red" onClick={() => markSession(s.lessonId, 'Absent')}>✗ Missed</button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div key={sec.key} className="rs-att-section">
+                <div className="rs-att-section-head">{sec.label} <span className="rs-att-section-count">{group.length}</span></div>
+                {group.map(stu => renderAttCard(stu))}
               </div>
             );
           })}
@@ -1554,6 +1579,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rs-viewtab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; }
 
 /* ── Attendance ── */
+.rs-att-section { margin-bottom: 18px; }
+.rs-att-section-head {
+  font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase;
+  letter-spacing: 0.04em; padding: 4px 2px 10px; display: flex; align-items: center; gap: 8px;
+}
+.rs-att-section-count {
+  font-size: 11px; font-weight: 700; color: #6b7280; background: #f1f5f9;
+  border-radius: 10px; padding: 1px 8px;
+}
 .rs-att-summary { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 .rs-att-pill {
   font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 10px; white-space: nowrap;
