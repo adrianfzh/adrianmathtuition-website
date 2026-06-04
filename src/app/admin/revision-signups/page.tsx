@@ -733,8 +733,8 @@ export default function RevisionSignupsPage() {
 
       {/* View tabs */}
       <div className="rs-viewtabs">
-        <button className={`rs-viewtab${viewMode === 'signups' ? ' active' : ''}`} onClick={() => setViewMode('signups')}>Sign-ups</button>
         <button className={`rs-viewtab${viewMode === 'attendance' ? ' active' : ''}`} onClick={() => setViewMode('attendance')}>Attendance</button>
+        <button className={`rs-viewtab${viewMode === 'signups' ? ' active' : ''}`} onClick={() => setViewMode('signups')}>Sign-ups</button>
       </div>
 
       {viewMode === 'signups' && (<>
