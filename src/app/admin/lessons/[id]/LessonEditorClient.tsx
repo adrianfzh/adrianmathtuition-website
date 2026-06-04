@@ -1811,8 +1811,17 @@ export default function LessonEditorClient() {
           await storePatchCard(c.id, { section_name: c.section_name, content_kind: c.content_kind, card_title: c.card_title, content: c.content, marks: c.marks });
         }
       }
-      // Restore UI state + per-section order.
-      setCards(entry.cards.map(c => ({ ...c })));
+      // Restore UI state + per-section order. Keep the bank/editor panel open: if the selected
+      // card survives the undo, keep it selected; otherwise fall back to a card in the same
+      // section (or any remaining card) rather than deselecting (which would close the panel).
+      const restored = entry.cards.map(c => ({ ...c }));
+      const selStillExists = selectedId != null && restored.some(c => c.id === selectedId);
+      if (!selStillExists) {
+        const gone = cur.find(c => c.id === selectedId);
+        const fallback = (gone && restored.find(c => c.section_name === gone.section_name)) || restored[0];
+        if (fallback) setSelectedId(fallback.id);
+      }
+      setCards(restored);
       const bySection = new Map<string, Card[]>();
       for (const c of entry.cards) { const a = bySection.get(c.section_name) ?? []; a.push(c); bySection.set(c.section_name, a); }
       for (const [, list] of bySection) { list.sort((a, b) => a.order_index - b.order_index); await storeReorderCards(list.map(c => c.id)); }
@@ -1836,6 +1845,8 @@ export default function LessonEditorClient() {
       const t = e.target as HTMLElement | null;
       const tag = t?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t?.isContentEditable) return;
+      // Only act if there's a structural action to undo — otherwise leave the keypress alone.
+      if (undoStack.current.length === 0) return;
       e.preventDefault();
       void runUndoRef.current();
     };
