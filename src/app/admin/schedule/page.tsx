@@ -223,6 +223,17 @@ function crossLevelBadge(studentLevel: string, slotLevel: string): string | null
   return studentIsJC !== slotIsJC ? studentLevel.toUpperCase() : null;
 }
 
+// True if a slot is the same JC/Sec category as the student (Mixed/Adhoc/unknown
+// count as available to everyone). Used to sort the revision-makeup slot picker.
+function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
+  const stu = (studentLevel || '').toLowerCase();
+  const sl = (slotLevel || '').toLowerCase();
+  if (!sl || sl === 'mixed' || sl === 'adhoc') return true;
+  const slJC = sl.startsWith('jc'), slSec = sl.startsWith('sec');
+  if (!slJC && !slSec) return true;
+  return stu.startsWith('jc') === slJC;
+}
+
 const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Regular:     { bg: '#f8fafc',  text: '#1e293b', border: '#e2e8f0' },
   Rescheduled: { bg: '#eff6ff',  text: '#1d4ed8', border: '#bfdbfe' },
@@ -1250,6 +1261,8 @@ export default function SchedulePage() {
   const [addSlotModal, setAddSlotModal] = useState<{ slot: Slot; studentId: string; studentSearch: string; startDate: string } | null>(null);
   const [addSlotSubmitting, setAddSlotSubmitting] = useState(false);
   const [absentModal, setAbsentModal] = useState<AbsentDeleteState | null>(null);
+  // Reschedule a June-holiday Revision Sprint lesson to a regular slot (makeup).
+  const [revReschedule, setRevReschedule] = useState<{ lesson: EnrichedLesson; date: string; slotId: string; saving: boolean } | null>(null);
   const [deleteModal, setDeleteModal] = useState<AbsentDeleteState | null>(null);
   const [editNotesModal, setEditNotesModal] = useState<{ lesson: EnrichedLesson; notes: string } | null>(null);
   const [examDetailModal, setExamDetailModal] = useState<{ studentId: string; studentName: string; exams: any[] | null } | null>(null);
@@ -2072,6 +2085,29 @@ export default function SchedulePage() {
     }
   }
 
+  // Reschedule a Revision Sprint lesson → create a makeup at a regular slot and
+  // mark the original Absent (same action as the Attendance tab's "Log makeup").
+  async function submitRevReschedule() {
+    if (!revReschedule || !revReschedule.date || !revReschedule.slotId) return;
+    const { lesson, date, slotId } = revReschedule;
+    if (!lesson.studentId) { showToast('error', 'No student on this lesson'); return; }
+    setRevReschedule({ ...revReschedule, saving: true });
+    try {
+      const res = await fetch('/api/admin-revision-attendance', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'makeup', lessonId: lesson.id, studentId: lesson.studentId, date, slotId }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setRevReschedule(null);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
+      showToast('success', 'Revision lesson rescheduled');
+    } catch (e: unknown) {
+      setRevReschedule(r => r && { ...r, saving: false });
+      showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Failed to reschedule');
+    }
+  }
+
   // Mark an existing Absent lesson back to Completed
   async function handleMarkPresent(lesson: EnrichedLesson) {
     setActionSheet(null);
@@ -2226,6 +2262,8 @@ export default function SchedulePage() {
                           style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid #fecaca', background: '#fef2f2', color: '#dc2626', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✗</button>
                         <button onClick={() => handleDirectStatus(l, 'Completed')} title="Mark attended"
                           style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a', fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✓</button>
+                        <button onClick={() => setRevReschedule({ lesson: l, date: '', slotId: '', saving: false })} title="Reschedule to a regular slot (makeup)"
+                          style={{ height: 20, padding: '0 6px', borderRadius: 4, border: '1px solid #a5f3fc', background: '#ecfeff', color: '#0e7490', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 2 }}>↻ Reschedule</button>
                       </>
                     )}
                     {l.status === 'Completed' && (
@@ -2940,6 +2978,61 @@ export default function SchedulePage() {
                 <button className="btn-cancel" onClick={() => setAddSlotModal(null)} disabled={addSlotSubmitting}>Cancel</button>
                 <button className="btn-primary" onClick={submitAddWeeklySlot} disabled={addSlotSubmitting || !addSlotModal.studentId}>
                   {addSlotSubmitting ? 'Adding…' : 'Add weekly slot'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule a Revision Sprint lesson → makeup at a regular slot */}
+      {revReschedule && (
+        <div className="modal-overlay" onClick={() => !revReschedule.saving && setRevReschedule(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div><div className="modal-name">Reschedule revision lesson</div></div>
+              <button className="modal-close" onClick={() => setRevReschedule(null)} disabled={revReschedule.saving}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>
+                {revReschedule.lesson.studentName}{revReschedule.lesson.revisionLabel ? ` · ${revReschedule.lesson.revisionLabel}` : ''} · {formatExamDate(revReschedule.lesson.date)}
+              </div>
+
+              <div className="form-group">
+                <span className="form-label">New date</span>
+                <input type="date" className="modal-input" value={revReschedule.date}
+                  onChange={e => setRevReschedule({ ...revReschedule, date: e.target.value })} />
+              </div>
+
+              <div className="form-group" style={{ marginTop: 12 }}>
+                <span className="form-label">Slot (same-level first; any timing allowed)</span>
+                <select className="modal-select" value={revReschedule.slotId}
+                  onChange={e => setRevReschedule({ ...revReschedule, slotId: e.target.value })}>
+                  <option value="">Select a slot…</option>
+                  {(() => {
+                    const lvl = revReschedule.lesson.studentLevel || '';
+                    const all = (data?.slots ?? []).slice().sort((a, b) => a.dayNum - b.dayNum || a.time.localeCompare(b.time));
+                    const same = all.filter(s => sameLevelSlot(lvl, s.level));
+                    const other = all.filter(s => !sameLevelSlot(lvl, s.level));
+                    const opt = (s: Slot) => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>;
+                    return (
+                      <>
+                        {same.length > 0 && <optgroup label={`Same level${lvl ? ` (${lvl})` : ''}`}>{same.map(opt)}</optgroup>}
+                        {other.length > 0 && <optgroup label="Other slots">{other.map(opt)}</optgroup>}
+                      </>
+                    );
+                  })()}
+                </select>
+              </div>
+
+              <div style={{ marginTop: 10, fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
+                Creates an <strong>Additional</strong> makeup lesson at the chosen slot, marks this revision lesson <strong>Absent</strong>, and links them. It will show here with a 🏖 Revision makeup badge. (Silent — no parent message.)
+              </div>
+
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setRevReschedule(null)} disabled={revReschedule.saving}>Cancel</button>
+                <button className="btn-primary" onClick={submitRevReschedule} disabled={revReschedule.saving || !revReschedule.date || !revReschedule.slotId}>
+                  {revReschedule.saving ? 'Rescheduling…' : 'Reschedule'}
                 </button>
               </div>
             </div>

@@ -74,6 +74,17 @@ function fmtDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
+// True if a slot is in the same JC/Sec category as the student (Mixed/Adhoc or
+// unknown slot levels count as available to everyone).
+function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
+  const stu = (studentLevel || '').toLowerCase();
+  const sl = (slotLevel || '').toLowerCase();
+  if (!sl || sl === 'mixed' || sl === 'adhoc') return true;
+  const slJC = sl.startsWith('jc'), slSec = sl.startsWith('sec');
+  if (!slJC && !slSec) return true;
+  return stu.startsWith('jc') === slJC;
+}
+
 // ── WhatsApp reminder message ──────────────────────────────────────────────────
 
 function generateWhatsAppMsg(student: Student): string {
@@ -149,7 +160,7 @@ export default function RevisionSignupsPage() {
   const [attLoading, setAttLoading] = useState(false);
   const [attError, setAttError] = useState('');
   const [expandedAtt, setExpandedAtt] = useState<Set<string>>(new Set());
-  const [makeupModal, setMakeupModal] = useState<{ lessonId: string; studentId: string; label: string; date: string; slotId: string } | null>(null);
+  const [makeupModal, setMakeupModal] = useState<{ lessonId: string; studentId: string; label: string; date: string; slotId: string; level: string } | null>(null);
   const [makeupSaving, setMakeupSaving] = useState(false);
   const [editTopics, setEditTopics] = useState<{ lessonId: string; value: string } | null>(null);
 
@@ -270,8 +281,8 @@ export default function RevisionSignupsPage() {
     });
   }
 
-  function openMakeup(s: AttSession, studentId: string) {
-    setMakeupModal({ lessonId: s.lessonId, studentId, label: `${s.subjectLabel} · ${s.date}`, date: '', slotId: '' });
+  function openMakeup(s: AttSession, studentId: string, level: string) {
+    setMakeupModal({ lessonId: s.lessonId, studentId, label: `${s.subjectLabel} · ${s.date}`, date: '', slotId: '', level });
   }
 
   async function submitMakeup() {
@@ -408,7 +419,7 @@ export default function RevisionSignupsPage() {
                       ) : (
                         <>
                           <span className="rs-att-status missed">✗ Missed</span>
-                          <button className="rs-att-makeup" onClick={() => openMakeup(s, stu.id)}>＋ Log makeup</button>
+                          <button className="rs-att-makeup" onClick={() => openMakeup(s, stu.id, stu.level)}>＋ Log makeup</button>
                           <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
                         </>
                       )}
@@ -418,6 +429,7 @@ export default function RevisionSignupsPage() {
                     <>
                       <button className="rs-att-btn green" onClick={() => markSession(s.lessonId, 'Completed')}>✓ Attended</button>
                       <button className="rs-att-btn red" onClick={() => markSession(s.lessonId, 'Absent')}>✗ Missed</button>
+                      <button className="rs-att-makeup" title="Reschedule this lesson (logs a makeup and marks it missed)" onClick={() => openMakeup(s, stu.id, stu.level)}>↻ Reschedule</button>
                     </>
                   )}
                 </div>
@@ -855,11 +867,29 @@ export default function RevisionSignupsPage() {
             <label className="rs-mk-label">Makeup date</label>
             <input type="date" className="rs-mk-input" value={makeupModal.date}
               onChange={e => setMakeupModal({ ...makeupModal, date: e.target.value })} />
-            <label className="rs-mk-label" style={{ marginTop: 10 }}>Slot (any regular timing)</label>
+            <label className="rs-mk-label" style={{ marginTop: 10 }}>Slot (same-level first; any timing allowed)</label>
             <select className="rs-mk-input" value={makeupModal.slotId}
               onChange={e => setMakeupModal({ ...makeupModal, slotId: e.target.value })}>
               <option value="">Select a slot…</option>
-              {(attData?.slots ?? []).map(sl => <option key={sl.id} value={sl.id}>{sl.label} ({sl.level})</option>)}
+              {(() => {
+                const slots = attData?.slots ?? [];
+                const same = slots.filter(sl => sameLevelSlot(makeupModal.level, sl.level));
+                const other = slots.filter(sl => !sameLevelSlot(makeupModal.level, sl.level));
+                return (
+                  <>
+                    {same.length > 0 && (
+                      <optgroup label={`Same level${makeupModal.level ? ` (${makeupModal.level})` : ''}`}>
+                        {same.map(sl => <option key={sl.id} value={sl.id}>{sl.label} ({sl.level})</option>)}
+                      </optgroup>
+                    )}
+                    {other.length > 0 && (
+                      <optgroup label="Other slots">
+                        {other.map(sl => <option key={sl.id} value={sl.id}>{sl.label} ({sl.level})</option>)}
+                      </optgroup>
+                    )}
+                  </>
+                );
+              })()}
             </select>
             <div className="rs-dialog-actions" style={{ marginTop: 16 }}>
               <button className="rs-btn-ghost" onClick={() => setMakeupModal(null)} disabled={makeupSaving}>Cancel</button>
