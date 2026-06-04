@@ -246,8 +246,11 @@ export async function POST(req: NextRequest) {
         const addWindowEnd = formatDate(today);
         const prevInvoiceDate = new Date(today.getFullYear(), today.getMonth() - 1, 15);
         const addWindowStart = formatDate(prevInvoiceDate);
+        // NB: exclude June-holiday "Revision makeup" lessons — they are makeups for
+        // an already-paid Revision Sprint session, so they must NOT be billed again
+        // (even though they're Type='Additional' so they show on the schedule).
         const additionalFormula = encodeURIComponent(
-          `AND({Student}='${studentId}',{Type}='Additional',{Status}='Completed',{Date}>='${addWindowStart}',{Date}<='${addWindowEnd}')`
+          `AND({Student}='${studentId}',{Type}='Additional',{Status}='Completed',{Date}>='${addWindowStart}',{Date}<='${addWindowEnd}',NOT(FIND('Revision makeup',{Notes})))`
         );
         const additionalData = await at('Lessons', `?filterByFormula=${additionalFormula}&sort[0][field]=Date&sort[0][direction]=asc`);
         const additionalLessons = additionalData.records || [];

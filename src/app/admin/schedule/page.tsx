@@ -2108,6 +2108,44 @@ export default function SchedulePage() {
     }
   }
 
+  // Undo a regular reschedule: delete the moved (Rescheduled) lesson — the delete
+  // endpoint restores the source lesson to Scheduled/Absent and clears the link.
+  async function handleUndoReschedule(lesson: EnrichedLesson) {
+    setActionSheet(null);
+    if (!confirm('Undo this reschedule? The moved lesson is removed and the original is restored to its slot.')) return;
+    try {
+      const res = await fetch('/api/admin-schedule/delete', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonId: lesson.id, action: 'delete', notify: false }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed');
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
+      showToast('success', '✓ Reschedule undone');
+    } catch (e: unknown) {
+      showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Failed to undo');
+    }
+  }
+
+  // Undo a Revision Sprint makeup: delete the makeup chip + revert the linked
+  // revision lesson (to Scheduled). Driven by the makeup lesson's id.
+  async function handleUndoRevisionMakeup(lesson: EnrichedLesson) {
+    setActionSheet(null);
+    if (!confirm('Undo this revision reschedule? The makeup is removed and the holiday lesson goes back to its original date.')) return;
+    try {
+      const res = await fetch('/api/admin-revision-attendance', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unmakeup', makeupId: lesson.id }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
+      showToast('success', '✓ Revision reschedule undone');
+    } catch (e: unknown) {
+      showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Failed to undo');
+    }
+  }
+
   // Mark an existing Absent lesson back to Completed
   async function handleMarkPresent(lesson: EnrichedLesson) {
     setActionSheet(null);
@@ -2624,6 +2662,12 @@ export default function SchedulePage() {
               window.open(`/admin/progress?date=${actionSheet.date}&lesson=${actionSheet.lesson.id}`, '_blank');
               setActionSheet(null);
             }}>📊 Log progress</button>
+            {actionSheet.lesson.revisionMakeup && (
+              <button className="action-btn" onClick={() => handleUndoRevisionMakeup(actionSheet.lesson)}>↩ Undo revision reschedule</button>
+            )}
+            {actionSheet.lesson.type === 'Rescheduled' && (
+              <button className="action-btn" onClick={() => handleUndoReschedule(actionSheet.lesson)}>↩ Undo reschedule</button>
+            )}
             <button className="action-btn" onClick={() => {
               setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: false, showPickers: true });
               setShowAllRescheduleSlots(false);

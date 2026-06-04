@@ -80,16 +80,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, makeupId: makeup.id });
     }
 
+    // Undo a makeup. Accept EITHER the revision lessonId (Attendance tab) OR the
+    // makeupId (the Additional chip on /admin/schedule). Either way: delete the
+    // makeup lesson, and revert the linked revision lesson to Scheduled.
+    // Undo a makeup. Accept EITHER the revision lessonId (Attendance tab) OR the
+    // makeupId (the Additional chip on /admin/schedule). Either way: delete the
+    // makeup lesson and unlink. When undone from the schedule (makeupId path), the
+    // original was rescheduled-ahead so revert it to Scheduled; from the Attendance
+    // tab (lessonId path) it was genuinely missed, so leave it Absent.
     if (body.action === 'unmakeup') {
-      const { lessonId } = body;
-      if (!lessonId) return NextResponse.json({ error: 'lessonId required' }, { status: 400 });
-      const rev = await airtableRequest('Lessons', `/${lessonId}`);
-      const makeupId = rev.fields['Rescheduled Lesson ID']?.[0];
+      let { lessonId } = body;
+      const { makeupId: makeupIdIn } = body;
+      let makeupId: string | undefined;
+      let revertToScheduled = false;
+
+      if (makeupIdIn && !lessonId) {
+        revertToScheduled = true;
+        // Find the Revision Sprint lesson whose Rescheduled Lesson ID points here.
+        // (Can't filter linked-record by id in a formula — match in JS.)
+        const revs = await airtableRequestAll('Lessons',
+          `?filterByFormula=${encodeURIComponent(`AND({Type}='Revision Sprint',{Status}='Absent')`)}&fields[]=Rescheduled Lesson ID`);
+        const match = (revs.records || []).find((r: any) => r.fields['Rescheduled Lesson ID']?.[0] === makeupIdIn);
+        lessonId = match?.id;
+        makeupId = makeupIdIn;
+      }
+
+      if (!lessonId) {
+        // No linked revision lesson found — at least remove the orphan makeup.
+        if (makeupIdIn) await airtableRequest('Lessons', `/${makeupIdIn}`, { method: 'DELETE' }).catch(() => {});
+        return NextResponse.json({ success: true });
+      }
+
+      if (!makeupId) {
+        const rev = await airtableRequest('Lessons', `/${lessonId}`);
+        makeupId = rev.fields['Rescheduled Lesson ID']?.[0];
+      }
       if (makeupId) {
         await airtableRequest('Lessons', `/${makeupId}`, { method: 'DELETE' }).catch(() => {});
       }
       await airtableRequest('Lessons', `/${lessonId}`, {
-        method: 'PATCH', body: JSON.stringify({ fields: { 'Rescheduled Lesson ID': [] } }),
+        method: 'PATCH',
+        body: JSON.stringify({ fields: { 'Rescheduled Lesson ID': [], ...(revertToScheduled ? { Status: 'Scheduled' } : {}) } }),
       });
       return NextResponse.json({ success: true });
     }
