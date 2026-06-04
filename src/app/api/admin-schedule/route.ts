@@ -206,6 +206,9 @@ export async function GET(req: NextRequest) {
         const slot = slots.find((s: any) => s.id === sid);
         return slot?.time ?? '';
       })(),
+      // A makeup created for a missed June-holiday revision lesson (Additional
+      // lesson at a regular Sec slot) — flagged so the chip can say so.
+      revisionMakeup: /revision makeup/i.test(rawNote),
       progressLogged: r.fields['Progress Logged'] === true,
     };
   });

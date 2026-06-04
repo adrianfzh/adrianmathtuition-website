@@ -30,6 +30,7 @@ interface AttSession {
   subjectLabel: string;
   time: string;
   status: string;
+  assignmentSubmitted: boolean;
   makeup: { lessonId: string; date: string; slotLabel: string } | null;
 }
 interface AttStudent {
@@ -229,6 +230,22 @@ export default function RevisionSignupsPage() {
     await fetchAttendance();
   }
 
+  async function markAssignment(lessonId: string, submitted: boolean) {
+    // Optimistic — flip the checkbox immediately, then persist.
+    setAttData(prev => prev && {
+      ...prev,
+      students: prev.students.map(stu => ({
+        ...stu,
+        sessions: stu.sessions.map(s => s.lessonId === lessonId ? { ...s, assignmentSubmitted: submitted } : s),
+      })),
+    });
+    await fetch('/api/admin-revision-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      body: JSON.stringify({ action: 'assignment', lessonId, submitted }),
+    });
+  }
+
   function openMakeup(s: AttSession, studentId: string) {
     setMakeupModal({ lessonId: s.lessonId, studentId, label: `${s.subjectLabel} · ${s.date}`, date: '', slotId: '' });
   }
@@ -300,6 +317,11 @@ export default function RevisionSignupsPage() {
                   <span className="rs-att-subj">{s.subjectLabel} · {s.time}</span>
                 </div>
                 <div className="rs-att-actions">
+                  <label className="rs-att-hw" title="Assignment handed up?">
+                    <input type="checkbox" checked={s.assignmentSubmitted}
+                      onChange={e => markAssignment(s.lessonId, e.target.checked)} />
+                    <span>HW{s.assignmentSubmitted ? ' ✓' : ''}</span>
+                  </label>
                   {s.status === 'Completed' && (
                     <>
                       <span className="rs-att-status done">✓ Attended</span>
@@ -1608,6 +1630,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rs-att-date { font-size: 13px; font-weight: 600; color: #111827; }
 .rs-att-subj { font-size: 12px; color: #6b7280; }
 .rs-att-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rs-att-hw {
+  display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  padding: 3px 7px; border-radius: 7px; border: 1px solid #e5e7eb; background: #fff;
+  user-select: none;
+}
+.rs-att-hw input { cursor: pointer; margin: 0; accent-color: #15803d; }
+.rs-att-hw:has(input:checked) { color: #15803d; border-color: #bbf7d0; background: #f0fdf4; }
 .rs-att-btn {
   font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 7px;
   border: 1px solid; cursor: pointer; background: #fff;

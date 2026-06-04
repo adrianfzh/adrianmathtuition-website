@@ -40,6 +40,7 @@ interface Lesson {
   revisionLabel?: string;
   revisionSubject?: string;
   revisionTime?: string;
+  revisionMakeup?: boolean;
 }
 
 interface Student {
@@ -1028,7 +1029,9 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
         {/* Line 2 (web only): type-tag + small attendance buttons on the same row */}
         {!isTouch && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 2, flexWrap: 'wrap' }}>
-            {lesson.type !== 'Regular' && !isFaded && (
+            {lesson.revisionMakeup && !isFaded ? (
+              <span className="type-tag" style={{ background: '#ccfbf1', color: '#0f766e', borderColor: '#99f6e4' }} title="Makeup for a missed June holiday revision lesson">🏖 Revision makeup</span>
+            ) : lesson.type !== 'Regular' && !isFaded && (
               <span className="type-tag">{lesson.type}</span>
             )}
             {!isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && lesson.status === 'Scheduled' && (
@@ -1057,7 +1060,9 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
           </div>
         )}
         {/* Mobile only: type-tag on its own line */}
-        {isTouch && lesson.type !== 'Regular' && !isFaded && (
+        {isTouch && lesson.revisionMakeup && !isFaded ? (
+          <span className="type-tag" style={{ display: 'inline-block', marginTop: 1, background: '#ccfbf1', color: '#0f766e', borderColor: '#99f6e4' }} title="Makeup for a missed June holiday revision lesson">🏖 Revision makeup</span>
+        ) : isTouch && lesson.type !== 'Regular' && !isFaded && (
           <span className="type-tag" style={{ display: 'inline-block', marginTop: 1 }}>{lesson.type}</span>
         )}
         {/* Faded status sub-lines */}

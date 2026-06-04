@@ -33,6 +33,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    // Toggle whether the assignment for this revision lesson was handed up.
+    // Stored on the existing 'Homework Returned' field ('Yes' = handed up, blank = not).
+    if (body.action === 'assignment') {
+      const { lessonId, submitted } = body;
+      if (!lessonId) return NextResponse.json({ error: 'lessonId required' }, { status: 400 });
+      await airtableRequest('Lessons', `/${lessonId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ fields: { 'Homework Returned': submitted ? 'Yes' : null } }),
+      });
+      return NextResponse.json({ success: true });
+    }
+
     if (body.action === 'makeup') {
       const { lessonId, studentId, date, slotId } = body;
       if (!lessonId || !studentId || !date || !slotId) {
@@ -128,7 +140,7 @@ export async function GET(req: NextRequest) {
   // 3. All Revision Sprint lessons, grouped by student
   const revLessons = await airtableRequestAll(
     'Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Type}='Revision Sprint'`)}&fields[]=Student&fields[]=Date&fields[]=Status&fields[]=Rescheduled Lesson ID`
+    `?filterByFormula=${encodeURIComponent(`{Type}='Revision Sprint'`)}&fields[]=Student&fields[]=Date&fields[]=Status&fields[]=Rescheduled Lesson ID&fields[]=Homework Returned`
   );
   const revByStudent: Record<string, any[]> = {};
   for (const r of revLessons.records) {
@@ -184,6 +196,7 @@ export async function GET(req: NextRequest) {
           subjectLabel: SUBJECT_META[subj]?.label || subj,
           time: SUBJECT_META[subj]?.time || '',
           status: lesson.fields['Status'] || 'Scheduled',
+          assignmentSubmitted: lesson.fields['Homework Returned'] === 'Yes',
           makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]) } : null,
         });
       }
@@ -196,6 +209,7 @@ export async function GET(req: NextRequest) {
       sessions.push({
         lessonId: l.id, date: l.fields['Date'] || '', subject: '?', subjectLabel: 'Revision', time: '',
         status: l.fields['Status'] || 'Scheduled',
+        assignmentSubmitted: l.fields['Homework Returned'] === 'Yes',
         makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]) } : null,
       });
     }
