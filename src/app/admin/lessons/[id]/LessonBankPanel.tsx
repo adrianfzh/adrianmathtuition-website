@@ -146,9 +146,16 @@ function getSolutionImageUrls(raw: string | null | undefined): string[] {
   }
 }
 
+// remark-math mis-pairs `$` around escaped-dollar currency (`$\$32000$`), swallowing the prose
+// between two amounts into an italic run-together span. Convert a self-contained currency span to
+// plain escaped text `\$<number>` (renders as a literal $) so remark-math never pairs those `$`.
+function fixCurrencyDollars(text: string): string {
+  return text.replace(/\$\\\$([0-9][0-9.,\s]*)\$/g, (_m, num: string) => '\\$' + num);
+}
+
 function renderInlineImagesInText(text: string | null | undefined): string {
   if (!text) return '';
-  return text.replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
+  return fixCurrencyDollars(text).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
     const cleaned = url.trim();
     if (!isPlausibleFilename(cleaned)) return '';
     return `<img src="${toStorageUrl(cleaned)}" alt="" style="max-width:100%;display:block;margin:6px 0" />`;

@@ -181,6 +181,17 @@ function wrapBlockImages(md: string): string {
   return md.replace(/^[ \t]*(<img\b[^>]*?>)[ \t]*$/gim, '<div>$1</div>');
 }
 
+// remark-math (the editor preview's math parser) mishandles escaped-dollar currency written as a
+// self-contained math span like `$\$32000$`: it mis-pairs the `$` delimiters and swallows the prose
+// between two currency amounts (renders it as italic run-together math). KaTeX auto-render (the
+// question-bank viewer) handles `\$` fine, so this is a preview-only quirk. Fix: convert a
+// self-contained currency span `$\$<number>$` into plain escaped text `\$<number>` (markdown renders
+// `\$` as a literal $), so remark-math never has to pair those delimiters. Render-time only — the
+// stored content is untouched. Real math spans ($V$, $V=A(1.25)^{kt}$, …) are left alone.
+function fixCurrencyDollars(md: string): string {
+  return md.replace(/\$\\\$([0-9][0-9.,\s]*)\$/g, (_m, num: string) => '\\$' + num);
+}
+
 // Rewrite the width of the Nth <img> in the markdown source (used by drag-to-resize in the preview).
 // Sets an explicit pixel width and removes max-width so the chosen size sticks.
 function setImgWidthInMarkdown(md: string, index: number, widthPx: number): string {
@@ -1313,7 +1324,7 @@ function EditorPanel({
           </div>
           <div ref={previewRef} onClick={onPreviewClick} className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
             <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}>
-              {wrapBlockImages(aiPreviewContent ?? previewContent)}
+              {wrapBlockImages(fixCurrencyDollars(aiPreviewContent ?? previewContent))}
             </ReactMarkdown>
           </div>
         </div>

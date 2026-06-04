@@ -50,12 +50,31 @@ async function fetchImagePara(url: string): Promise<Paragraph | null> {
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
+    const mime = res.headers.get('content-type') || 'image/png';
     const buf = await res.arrayBuffer();
-    // Cap display width ~360px; keep aspect via a fixed reasonable box (docx needs explicit dims).
+    // Read the image's natural dimensions so we keep its aspect ratio (docx needs explicit px).
+    const { w, h } = await naturalSize(buf, mime);
+    const MAX_W = 360;
+    const scale = w > MAX_W ? MAX_W / w : 1;
+    const width = Math.max(1, Math.round(w * scale));
+    const height = Math.max(1, Math.round(h * scale));
     return new Paragraph({
-      children: [new ImageRun({ data: buf, transformation: { width: 320, height: 220 } } as ConstructorParameters<typeof ImageRun>[0])],
+      children: [new ImageRun({ data: buf, transformation: { width, height } } as ConstructorParameters<typeof ImageRun>[0])],
     });
   } catch { return null; }
+}
+
+// Decode an image blob just enough to read its intrinsic width/height (browser-only).
+function naturalSize(buf: ArrayBuffer, mime: string): Promise<{ w: number; h: number }> {
+  return new Promise((resolve) => {
+    try {
+      const url = URL.createObjectURL(new Blob([buf], { type: mime }));
+      const img = new Image();
+      img.onload = () => { const w = img.naturalWidth || 320; const h = img.naturalHeight || 220; URL.revokeObjectURL(url); resolve({ w, h }); };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve({ w: 320, h: 220 }); };
+      img.src = url;
+    } catch { resolve({ w: 320, h: 220 }); }
+  });
 }
 
 // Render one content block (markdown paragraphs) into docx Paragraphs, fetching any images.
