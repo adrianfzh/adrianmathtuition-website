@@ -45,14 +45,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Toggle whether the assignment for this revision lesson was handed up.
-    // Stored on the existing 'Homework Returned' field ('Yes' = handed up, blank = not).
+    // Set the homework state for this revision lesson on 'Homework Returned':
+    //   value 'Yes' = handed up, 'No' = not handed up, '' = clear/unset.
+    // (Back-compat: a boolean `submitted` still maps to 'Yes'/clear.)
     if (body.action === 'assignment') {
-      const { lessonId, submitted } = body;
+      const { lessonId, value, submitted } = body;
       if (!lessonId) return NextResponse.json({ error: 'lessonId required' }, { status: 400 });
+      const v = value !== undefined ? value : (submitted ? 'Yes' : '');
       await airtableRequest('Lessons', `/${lessonId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ fields: { 'Homework Returned': submitted ? 'Yes' : null } }),
+        body: JSON.stringify({ fields: { 'Homework Returned': v || null } }),
       });
       return NextResponse.json({ success: true });
     }
@@ -105,6 +107,43 @@ const SUBJECT_DATES: Record<string, string[]> = {
   AM: ['2026-06-02', '2026-06-05', '2026-06-09', '2026-06-12', '2026-06-16', '2026-06-19', '2026-06-23', '2026-06-26'],
   JC: ['2026-06-01', '2026-06-04', '2026-06-08', '2026-06-11', '2026-06-15', '2026-06-18', '2026-06-22', '2026-06-25'],
 };
+// Topic schedule per subject+date — mirrors the public /june-revision/{sec4,jc2}
+// pages. Used to auto-fill each session's topics when none are set manually.
+const SCHEDULE_TOPICS: Record<string, Record<string, string>> = {
+  EM: {
+    '2026-06-02': 'Algebra + Indices',
+    '2026-06-05': 'Coordinate Geometry + Graphs',
+    '2026-06-09': 'Trigonometry + Congruency & Similarity',
+    '2026-06-12': 'Circle Properties + Circular Measure',
+    '2026-06-16': 'Mensuration + Real World Qns',
+    '2026-06-19': 'Number Patterns + Proportion + Polygons',
+  },
+  AM: {
+    '2026-06-02': 'Quadratic Functions + Surds',
+    '2026-06-05': 'Indices & Logarithms',
+    '2026-06-09': 'Coordinate Geometry & Circles',
+    '2026-06-12': 'Linear Law + Binomial Theorem',
+    '2026-06-16': 'Polynomials & Partial Fractions + Plane Geometry',
+    '2026-06-19': 'Trigonometry',
+    '2026-06-23': 'Differentiation and Applications',
+    '2026-06-26': 'Integration and Applications',
+  },
+  JC: {
+    '2026-06-01': 'Graphing Techniques + Functions',
+    '2026-06-04': 'APGP + Series & Sequences',
+    '2026-06-08': 'Differentiation Techniques and Applications',
+    '2026-06-11': 'Integration Techniques and Applications + Differential Equations',
+    '2026-06-15': 'Vectors',
+    '2026-06-18': 'Complex Numbers + P&C',
+    '2026-06-22': 'Probability + DRV',
+    '2026-06-25': 'Binomial + Normal + Sampling Distributions',
+  },
+};
+function scheduledTopics(subj: string, date: string): string[] {
+  const raw = SCHEDULE_TOPICS[subj]?.[date];
+  return raw ? raw.split(/\s*\+\s*/).map(t => t.trim()).filter(Boolean) : [];
+}
+
 const SUBJECT_META: Record<string, { label: string; time: string }> = {
   EM: { label: 'E Math', time: '10am–12pm' },
   AM: { label: 'A Math', time: '1–3pm' },
@@ -220,8 +259,9 @@ export async function GET(req: NextRequest) {
           subjectLabel: SUBJECT_META[subj]?.label || subj,
           time: SUBJECT_META[subj]?.time || '',
           status: lesson.fields['Status'] || 'Scheduled',
+          hw: lesson.fields['Homework Returned'] || '',
           assignmentSubmitted: lesson.fields['Homework Returned'] === 'Yes',
-          topics: parseTopics(lesson.fields),
+          topics: (() => { const m = parseTopics(lesson.fields); return m.length ? m : scheduledTopics(subj, date); })(),
           makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]) } : null,
         });
       }
@@ -234,6 +274,7 @@ export async function GET(req: NextRequest) {
       sessions.push({
         lessonId: l.id, date: l.fields['Date'] || '', subject: '?', subjectLabel: 'Revision', time: '',
         status: l.fields['Status'] || 'Scheduled',
+        hw: l.fields['Homework Returned'] || '',
         assignmentSubmitted: l.fields['Homework Returned'] === 'Yes',
         topics: parseTopics(l.fields),
         makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]) } : null,

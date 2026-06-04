@@ -30,6 +30,7 @@ interface AttSession {
   subjectLabel: string;
   time: string;
   status: string;
+  hw: string;                 // 'Yes' | 'No' | ''
   assignmentSubmitted: boolean;
   topics: string[];
   makeup: { lessonId: string; date: string; slotLabel: string } | null;
@@ -252,19 +253,20 @@ export default function RevisionSignupsPage() {
     });
   }
 
-  async function markAssignment(lessonId: string, submitted: boolean) {
-    // Optimistic — flip the checkbox immediately, then persist.
+  // HW state toggle: 'Yes' (handed up) / 'No' (not handed up) / '' (unset).
+  async function markHw(lessonId: string, value: string) {
     setAttData(prev => prev && {
       ...prev,
       students: prev.students.map(stu => ({
         ...stu,
-        sessions: stu.sessions.map(s => s.lessonId === lessonId ? { ...s, assignmentSubmitted: submitted } : s),
+        sessions: stu.sessions.map(s => s.lessonId === lessonId
+          ? { ...s, hw: value, assignmentSubmitted: value === 'Yes' } : s),
       })),
     });
     await fetch('/api/admin-revision-attendance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
-      body: JSON.stringify({ action: 'assignment', lessonId, submitted }),
+      body: JSON.stringify({ action: 'assignment', lessonId, value }),
     });
   }
 
@@ -384,11 +386,13 @@ export default function RevisionSignupsPage() {
                   )}
                 </div>
                 <div className="rs-att-actions">
-                  <label className="rs-att-hw" title="Assignment handed up?">
-                    <input type="checkbox" checked={s.assignmentSubmitted}
-                      onChange={e => markAssignment(s.lessonId, e.target.checked)} />
-                    <span>HW{s.assignmentSubmitted ? ' ✓' : ''}</span>
-                  </label>
+                  <div className="rs-att-hw" title="Assignment handed up?">
+                    <span className="rs-att-hw-lbl">HW</span>
+                    <button className={`rs-att-hw-tog yes${s.hw === 'Yes' ? ' on' : ''}`} title="Handed up"
+                      onClick={() => markHw(s.lessonId, s.hw === 'Yes' ? '' : 'Yes')}>✓</button>
+                    <button className={`rs-att-hw-tog no${s.hw === 'No' ? ' on' : ''}`} title="Not handed up"
+                      onClick={() => markHw(s.lessonId, s.hw === 'No' ? '' : 'No')}>✗</button>
+                  </div>
                   {s.status === 'Completed' && (
                     <>
                       <span className="rs-att-status done">✓ Attended</span>
@@ -1732,14 +1736,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   border: 1px solid #93c5fd; border-radius: 6px; outline: none; color: #111827;
 }
 .rs-att-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.rs-att-hw {
-  display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
-  font-size: 11px; font-weight: 600; color: #6b7280;
-  padding: 3px 7px; border-radius: 7px; border: 1px solid #e5e7eb; background: #fff;
-  user-select: none;
+.rs-att-hw { display: inline-flex; align-items: center; gap: 3px; user-select: none; }
+.rs-att-hw-lbl { font-size: 11px; font-weight: 700; color: #94a3b8; margin-right: 1px; }
+.rs-att-hw-tog {
+  width: 22px; height: 22px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff;
+  font-size: 12px; font-weight: 800; cursor: pointer; color: #cbd5e1; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
 }
-.rs-att-hw input { cursor: pointer; margin: 0; accent-color: #15803d; }
-.rs-att-hw:has(input:checked) { color: #15803d; border-color: #bbf7d0; background: #f0fdf4; }
+.rs-att-hw-tog.yes:hover { border-color: #bbf7d0; color: #16a34a; }
+.rs-att-hw-tog.no:hover  { border-color: #fecaca; color: #dc2626; }
+.rs-att-hw-tog.yes.on { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.rs-att-hw-tog.no.on  { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
 .rs-att-btn {
   font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 7px;
   border: 1px solid; cursor: pointer; background: #fff;
