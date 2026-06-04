@@ -226,8 +226,10 @@ function computeDiff(original: string, updated: string): DiffLine[] {
 
 // ── AI Quick actions ─────────────────────────────────────────────────────────
 
+const GENERATE_SOLUTIONS_INSTRUCTION = `Add a full worked solution to this card. Preserve every labelled part — if the input has (a), (b), (i), (ii), keep them all and solve each. Style: match the lesson worked-example style. Use **Step 1.**, **Solution:** etc. Use $\\begin{aligned}...\\end{aligned}$ for chained equations. Speak to the student in second person. If a per-part solution already exists, leave it intact.`;
+
 const QUICK_ACTIONS = [
-  { label: 'Generate solutions', instruction: `Add a full worked solution to this card. Preserve every labelled part — if the input has (a), (b), (i), (ii), keep them all and solve each. Style: match the lesson worked-example style. Use **Step 1.**, **Solution:** etc. Use $\\begin{aligned}...\\end{aligned}$ for chained equations. Speak to the student in second person. If a per-part solution already exists, leave it intact.` },
+  { label: 'Generate solutions', instruction: GENERATE_SOLUTIONS_INSTRUCTION },
   { label: 'Make clearer', instruction: 'Rewrite for clarity. Same content, same answer, but cleaner phrasing.' },
   { label: 'Format nicely', instruction: 'Improve the formatting and readability ONLY. Keep ALL existing content — every example, formula, value, line and labelled part. Do not delete, shorten, reword the maths, or remove anything. Just improve layout: clear bold headers/labels, sensible line breaks and spacing, put each formula on its own line with $$...$$ where it helps, and use bullet points or short lines where they make it easier to scan.' },
   { label: 'Shorten ~30%', instruction: 'Shorten by roughly 30%. Drop filler, keep every algebra step.' },
@@ -1553,6 +1555,8 @@ export default function LessonEditorClient() {
   const [newSectionOpen, setNewSectionOpen] = useState(false);
   // UI-only "empty" sections (lesson-level) — sections with no cards yet, kept locally until a card is added.
   const [localSections, setLocalSections] = useState<string[]>([]);
+  // Batch "generate solutions for practice cards missing one" progress (null = idle).
+  const [batchSol, setBatchSol] = useState<{ done: number; total: number; failed: number } | null>(null);
 
   // ── Undo (structural actions: delete / reorder / move / add) ──────────────
   // Snapshot the card-state before each structural action; Ctrl/Cmd+Z restores it and reconciles
@@ -1655,6 +1659,30 @@ export default function LessonEditorClient() {
     setSelectedId(null);
     setSavedAt(new Date());
   }, []);
+
+  // One-click: generate worked solutions for every practice card that doesn't already have one.
+  const generateMissingSolutions = useCallback(async () => {
+    if (!lesson || batchSol) return;
+    const targets = cards.filter(c => c.content_kind === 'practice' && !practiceHasSolution(c.content));
+    if (targets.length === 0) { showToast('All practice cards already have solutions.'); return; }
+    if (!window.confirm(`Generate solutions for ${targets.length} practice card${targets.length > 1 ? 's' : ''} missing one? This calls the AI per card and may take a moment.`)) return;
+    setBatchSol({ done: 0, total: targets.length, failed: 0 });
+    let done = 0, failed = 0;
+    for (const card of targets) {
+      try {
+        const newContent = await generateSolutionForCard(card, lesson, pw.current);
+        if (newContent) {
+          await storePatchCard(card.id, { content: newContent });
+          setCards(prev => prev.map(c => c.id === card.id ? { ...c, content: newContent } : c));
+        }
+      } catch { failed++; }
+      done++;
+      setBatchSol({ done, total: targets.length, failed });
+    }
+    setSavedAt(new Date());
+    setBatchSol(null);
+    showToast(failed ? `Done — ${done - failed} generated, ${failed} failed` : `Generated solutions for ${done} card${done > 1 ? 's' : ''}`);
+  }, [cards, lesson, batchSol]);
 
   // Create a new (empty) lesson-level section and append it to the saved order.
   const createSection = useCallback((name: string) => {
@@ -1955,6 +1983,12 @@ export default function LessonEditorClient() {
           className="px-3 py-1 bg-blue-700 hover:bg-blue-800 rounded text-xs font-medium"
         >⬇ DOCX</button>
         <button
+          onClick={generateMissingSolutions}
+          disabled={!!batchSol}
+          title="Generate worked solutions for any practice cards that don't have one yet"
+          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 rounded text-xs font-medium disabled:opacity-50"
+        >{batchSol ? `Generating ${batchSol.done}/${batchSol.total}…` : '✨ Fill solutions'}</button>
+        <button
           onClick={() => deleteLesson(id, pw.current, router)}
           className="px-2 py-1 hover:bg-rose-700/40 rounded text-xs"
           title="Delete lesson"
@@ -2048,6 +2082,54 @@ export default function LessonEditorClient() {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 // (The old `api()` helper was removed when this component was migrated to the offline
 // store in lib/offline/store.ts — every mutation now flows through there.)
+
+// Heuristic: does a practice card already contain worked-solution content? We look for the
+// markers our templates/AI use (Working:, Solution:, Answer:, Step) or a "---" divider that the
+// bank template inserts before the solution block. If none present, it's "missing a solution".
+function practiceHasSolution(content: string | null): boolean {
+  const c = (content ?? '').trim();
+  if (!c) return false;
+  return /(^|\n)\s*-{3,}\s*(\n|$)/.test(c)
+    || /\*\*\s*(Working|Solution|Answer|Step\s*1)\b/i.test(c)
+    || /\b(Solution|Answer)\s*:/i.test(c);
+}
+
+// Run the AI "generate solutions" route for one card and return the full generated content.
+// Reuses the same SSE endpoint the editor's quick action uses.
+async function generateSolutionForCard(card: Card, lesson: Lesson, pw: string): Promise<string> {
+  const res = await fetch('/api/edit-cards-ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      instruction: GENERATE_SOLUTIONS_INSTRUCTION,
+      currentTitle: card.card_title ?? '',
+      currentContent: card.content ?? '',
+      level: lesson.level,
+      topic: lesson.topics?.[0] ?? '',
+      subgroupName: card.section_name || 'Practice',
+      subgroupDescription: `Lesson section "${card.section_name}". Topics: ${(lesson.topics ?? []).join(', ')}.`,
+      content_kind: 'practice',
+      password: pw,
+    }),
+  });
+  if (!res.ok) { const j = await res.json().catch(() => ({} as { error?: string })); throw new Error(j.error || `HTTP ${res.status}`); }
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let buf = '', result = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const parts = buf.split('\n\n'); buf = parts.pop() ?? '';
+    for (const part of parts) {
+      if (!part.startsWith('data: ')) continue;
+      const data = JSON.parse(part.slice(6));
+      if (data.error) throw new Error(data.error);
+      if (data.chunk) result += data.chunk;
+    }
+  }
+  return result.trim();
+}
 
 async function generatePDF(lessonId: string, pw: string, name: string) {
   try {
