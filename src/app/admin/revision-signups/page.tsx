@@ -143,7 +143,7 @@ export default function RevisionSignupsPage() {
   const [filter, setFilter] = useState<FilterChip>('No Response');
 
   // View tab + Attendance state
-  const [viewMode, setViewMode] = useState<'signups' | 'attendance'>('signups');
+  const [viewMode, setViewMode] = useState<'signups' | 'attendance'>('attendance');
   const [attData, setAttData] = useState<{ students: AttStudent[]; slots: AttSlot[] } | null>(null);
   const [attLoading, setAttLoading] = useState(false);
   const [attError, setAttError] = useState('');
@@ -315,6 +315,21 @@ export default function RevisionSignupsPage() {
     return 'OTHER';
   }
 
+  function pipClass(s: AttSession): string {
+    if (s.status === 'Completed') return 'done';
+    if (s.status === 'Absent') return s.makeup ? 'madeup' : 'missed';
+    return 'scheduled';
+  }
+  function pipLabel(s: AttSession): string {
+    if (s.status === 'Completed') return 'Attended';
+    if (s.status === 'Absent') return s.makeup ? `Made up: ${s.makeup.slotLabel} ${fmtDate(s.makeup.date)}` : 'Missed';
+    return 'Scheduled';
+  }
+  function shortDate(date: string): string {
+    const p = date.split('-');
+    return p.length === 3 ? `${+p[2]}/${+p[1]}` : date;
+  }
+
   function renderAttCard(stu: AttStudent) {
     const expanded = expandedAtt.has(stu.id);
     const sm = stu.summary;
@@ -330,6 +345,17 @@ export default function RevisionSignupsPage() {
             <span className="rs-att-caret">{expanded ? '▴' : '▾'}</span>
           </div>
         </div>
+        {!expanded && stu.sessions.length > 0 && (
+          <div className="rs-att-pips" onClick={() => toggleExpand(stu.id)}>
+            {stu.sessions.map(s => (
+              <span key={s.lessonId} className={`rs-att-pip ${pipClass(s)}`}
+                title={`${fmtDate(s.date)} · ${s.subjectLabel} · ${pipLabel(s)}${s.topics.length ? '\n' + s.topics.join(', ') : ''}${s.assignmentSubmitted ? '\nHW handed up' : ''}`}>
+                {shortDate(s.date)}
+                {s.assignmentSubmitted && <span className="rs-att-pip-hw">✓</span>}
+              </span>
+            ))}
+          </div>
+        )}
         {expanded && (
           <div className="rs-att-sessions">
             {stu.sessions.map(s => (
@@ -1649,14 +1675,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
    doesn't stretch its row-mates). Collapses responsively on narrow screens. */
 .rs-att-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
   align-items: start;
 }
-@media (max-width: 1100px) { .rs-att-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 820px)  { .rs-att-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px)  { .rs-att-grid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .rs-att-grid { grid-template-columns: 1fr; } }
 .rs-att-grid .rs-card { margin-bottom: 0; }
+/* Collapsed-card session pips — one chip per session, colour = status. */
+.rs-att-pips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; cursor: pointer; }
+.rs-att-pip {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 7px;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.rs-att-pip.done      { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+.rs-att-pip.missed    { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.rs-att-pip.madeup    { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.rs-att-pip.scheduled { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; }
+.rs-att-pip-hw { font-size: 9px; opacity: 0.85; }
 .rs-att-section-head {
   font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase;
   letter-spacing: 0.04em; padding: 4px 2px 10px; display: flex; align-items: center; gap: 8px;
