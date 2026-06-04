@@ -507,7 +507,7 @@ export function LessonBankPanel({
             value={search}
             onChange={e => setSearch(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') runSearch(); }}
-            placeholder={topics.length === 0 ? 'Add topics to enable bank' : mode === 'smart' ? 'Describe it, e.g. conics hyperbola' : 'Search question text…'}
+            placeholder={topics.length === 0 ? 'Add topics to enable bank' : mode === 'smart' ? 'Describe it, e.g. conics hyperbola' : 'Search text or school…'}
             disabled={topics.length === 0}
             className="flex-1 min-w-0 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
           />

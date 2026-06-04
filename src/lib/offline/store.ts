@@ -187,7 +187,9 @@ function genId(): string {
 export async function addCard(input: NewCardInput): Promise<LocalCard> {
   const id = input.id ?? genId();
   const existing = await listCardsForLesson(input.lesson_id);
-  const peers = existing.filter((c) => c.content_kind === input.content_kind && c.section_name === input.section_name);
+  // Section-first model: order_index is per-SECTION across all kinds, so a new card lands at the
+  // end of its section regardless of kind (R/E/P).
+  const peers = existing.filter((c) => c.section_name === input.section_name);
   const order_index = peers.length === 0 ? 0 : Math.max(...peers.map((c) => c.order_index)) + 1;
   const card: LocalCard = {
     id,

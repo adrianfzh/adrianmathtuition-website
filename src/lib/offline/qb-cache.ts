@@ -221,7 +221,10 @@ export async function queryLocalBank(opts: CacheQueryOpts): Promise<CachedQuesti
     if (opts.hasImage === 'false' && r.has_image) return false;
     if (diffs.size > 0 && (!r.difficulty || !diffs.has(r.difficulty))) return false;
     if (opts.exam && r.exam_type !== opts.exam) return false;
-    if (search && !(r.question_text ?? '').toLowerCase().includes(search)) return false;
+    if (search) {
+      const hay = `${r.question_text ?? ''} ${r.school ?? ''} ${r.source_file ?? ''}`.toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
     return true;
   });
   // Stable sort: school, year DESC, paper, question_number

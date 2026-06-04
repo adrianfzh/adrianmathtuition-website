@@ -51,7 +51,11 @@ export async function GET(req: NextRequest) {
   const difficulties = difficultyCsv ? difficultyCsv.split(',').map(s => s.trim()).filter(Boolean) : [];
   if (difficulties.length > 0) qQuery = qQuery.in('difficulty', difficulties);
 
-  if (search) qQuery = qQuery.ilike('question_text', `%${search}%`);
+  // Search matches question text OR school OR source filename (so you can search by school).
+  if (search) {
+    const esc = search.replace(/[%,()]/g, ' ');
+    qQuery = qQuery.or(`question_text.ilike.%${esc}%,school.ilike.%${esc}%,source_file.ilike.%${esc}%`);
+  }
 
   const { data: questions, error, count } = await qQuery;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
