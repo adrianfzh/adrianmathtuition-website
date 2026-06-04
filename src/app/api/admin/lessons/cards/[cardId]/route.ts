@@ -23,6 +23,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ cardId: s
   if (typeof body.source_question_id === 'string' || body.source_question_id === null) {
     patch.source_question_id = body.source_question_id;
   }
+  if (typeof body.is_advanced === 'boolean') patch.is_advanced = body.is_advanced;
 
   const supa = getSupabaseAdmin();
   const { data, error } = await supa.from('lesson_cards').update(patch).eq('id', cardId).select().single();

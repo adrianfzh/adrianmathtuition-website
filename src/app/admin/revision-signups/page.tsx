@@ -31,6 +31,7 @@ interface AttSession {
   time: string;
   status: string;
   assignmentSubmitted: boolean;
+  topics: string[];
   makeup: { lessonId: string; date: string; slotLabel: string } | null;
 }
 interface AttStudent {
@@ -149,6 +150,7 @@ export default function RevisionSignupsPage() {
   const [expandedAtt, setExpandedAtt] = useState<Set<string>>(new Set());
   const [makeupModal, setMakeupModal] = useState<{ lessonId: string; studentId: string; label: string; date: string; slotId: string } | null>(null);
   const [makeupSaving, setMakeupSaving] = useState(false);
+  const [editTopics, setEditTopics] = useState<{ lessonId: string; value: string } | null>(null);
 
   // Sign-up dialog
   const [signupStudent, setSignupStudent] = useState<Student | null>(null);
@@ -228,6 +230,26 @@ export default function RevisionSignupsPage() {
       body: JSON.stringify({ action: 'mark', lessonId, status }),
     });
     await fetchAttendance();
+  }
+
+  async function saveTopics() {
+    if (!editTopics) return;
+    const { lessonId, value } = editTopics;
+    const topics = value.split(/[,\n]/).map(t => t.trim()).filter(Boolean);
+    // Optimistic update of the visible chips.
+    setAttData(prev => prev && {
+      ...prev,
+      students: prev.students.map(stu => ({
+        ...stu,
+        sessions: stu.sessions.map(s => s.lessonId === lessonId ? { ...s, topics } : s),
+      })),
+    });
+    setEditTopics(null);
+    await fetch('/api/admin-revision-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      body: JSON.stringify({ action: 'topics', lessonId, topics: value }),
+    });
   }
 
   async function markAssignment(lessonId: string, submitted: boolean) {
@@ -315,6 +337,25 @@ export default function RevisionSignupsPage() {
                 <div className="rs-att-when">
                   <span className="rs-att-date">{fmtDate(s.date)}</span>
                   <span className="rs-att-subj">{s.subjectLabel} · {s.time}</span>
+                  {editTopics?.lessonId === s.lessonId ? (
+                    <input
+                      className="rs-att-topic-input" autoFocus
+                      value={editTopics.value}
+                      placeholder="Topics (comma-separated)"
+                      onChange={e => setEditTopics({ lessonId: s.lessonId, value: e.target.value })}
+                      onBlur={saveTopics}
+                      onKeyDown={e => { if (e.key === 'Enter') saveTopics(); if (e.key === 'Escape') setEditTopics(null); }}
+                    />
+                  ) : (
+                    <span
+                      className="rs-att-topics" title="Click to edit topics covered"
+                      onClick={() => setEditTopics({ lessonId: s.lessonId, value: s.topics.join(', ') })}
+                    >
+                      {s.topics.length > 0
+                        ? s.topics.map((t, i) => <span key={i} className="rs-att-topic">{t}</span>)
+                        : <span className="rs-att-topic-add">+ topics</span>}
+                    </span>
+                  )}
                 </div>
                 <div className="rs-att-actions">
                   <label className="rs-att-hw" title="Assignment handed up?">
@@ -766,7 +807,9 @@ export default function RevisionSignupsPage() {
             return (
               <div key={sec.key} className="rs-att-section">
                 <div className="rs-att-section-head">{sec.label} <span className="rs-att-section-count">{group.length}</span></div>
-                {group.map(stu => renderAttCard(stu))}
+                <div className="rs-att-grid">
+                  {group.map(stu => renderAttCard(stu))}
+                </div>
               </div>
             );
           })}
@@ -1602,6 +1645,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* ── Attendance ── */
 .rs-att-section { margin-bottom: 18px; }
+/* Web: 4-column card grid; cards keep their own height (an expanded card
+   doesn't stretch its row-mates). Collapses responsively on narrow screens. */
+.rs-att-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 1100px) { .rs-att-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 820px)  { .rs-att-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px)  { .rs-att-grid { grid-template-columns: 1fr; } }
+.rs-att-grid .rs-card { margin-bottom: 0; }
 .rs-att-section-head {
   font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase;
   letter-spacing: 0.04em; padding: 4px 2px 10px; display: flex; align-items: center; gap: 8px;
@@ -1629,6 +1684,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rs-att-when { display: flex; flex-direction: column; min-width: 0; }
 .rs-att-date { font-size: 13px; font-weight: 600; color: #111827; }
 .rs-att-subj { font-size: 12px; color: #6b7280; }
+.rs-att-topics { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; cursor: pointer; }
+.rs-att-topic {
+  font-size: 10px; font-weight: 600; color: #0369a1; background: #f0f9ff;
+  border: 1px solid #e0f2fe; border-radius: 8px; padding: 1px 6px; line-height: 1.4;
+}
+.rs-att-topic-add { font-size: 10px; font-weight: 600; color: #94a3b8; font-style: italic; }
+.rs-att-topics:hover .rs-att-topic-add { color: #0369a1; }
+.rs-att-topic-input {
+  margin-top: 3px; width: 100%; font-size: 11px; padding: 3px 6px;
+  border: 1px solid #93c5fd; border-radius: 6px; outline: none; color: #111827;
+}
 .rs-att-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .rs-att-hw {
   display: inline-flex; align-items: center; gap: 4px; cursor: pointer;

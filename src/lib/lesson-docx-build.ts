@@ -13,7 +13,7 @@ import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } 
 export type DocxLesson = { name: string; level: string; description?: string | null; topics?: string[]; section_order?: string[] };
 export type DocxCard = {
   id: string; content_kind: 'refresher' | 'worked_example' | 'practice';
-  section_name: string; card_title: string | null; content: string | null; marks: number | null; order_index: number;
+  section_name: string; card_title: string | null; content: string | null; marks: number | null; is_advanced?: boolean; order_index: number;
 };
 
 const ANSWER_BROWN = '843C0C';
@@ -82,7 +82,11 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   const all = [...new Set(cards.map(c => c.section_name || 'Default'))];
   const known = order.filter(s => all.includes(s));
   const sections = [...known, ...all.filter(s => !known.includes(s)).sort()];
-  const cardsOf = (sec: string) => cards.filter(c => (c.section_name || 'Default') === sec).sort((a, b) => a.order_index - b.order_index);
+  // Advanced practice sinks below regular cards within its section.
+  const advRank = (c: DocxCard) => (c.content_kind === 'practice' && c.is_advanced ? 1 : 0);
+  const cardsOf = (sec: string) => cards
+    .filter(c => (c.section_name || 'Default') === sec)
+    .sort((a, b) => (advRank(a) - advRank(b)) || (a.order_index - b.order_index));
 
   const practiceOrdered = sections.flatMap(sec => cardsOf(sec).filter(c => c.content_kind === 'practice'));
   const practiceNum = new Map<string, number>();
@@ -99,7 +103,13 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   // Sections
   for (const sec of sections) {
     body.push(new Paragraph({ text: sec, heading: HeadingLevel.HEADING_1, spacing: { before: 240, after: 120 }, border: { bottom: { color: '1F2937', size: 8, style: BorderStyle.SINGLE, space: 2 } } }));
-    for (const c of cardsOf(sec)) {
+    const secCards = cardsOf(sec);
+    const firstAdvIdx = secCards.findIndex(c => c.content_kind === 'practice' && c.is_advanced);
+    for (let ci = 0; ci < secCards.length; ci++) {
+      const c = secCards[ci];
+      if (ci === firstAdvIdx) {
+        body.push(new Paragraph({ spacing: { before: 160, after: 60 }, children: [new TextRun({ text: 'Advanced practice', bold: true, color: 'B45309' })] }));
+      }
       if (c.content_kind === 'refresher') {
         if (c.card_title) body.push(new Paragraph({ spacing: { before: 80 }, children: [new TextRun({ text: c.card_title, bold: true })] }));
         for (const p of await contentParagraphs(c.content, reg)) body.push(p);
@@ -127,7 +137,11 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   if (practiceOrdered.length > 0) {
     body.push(new Paragraph({ text: 'Practice — Solutions', heading: HeadingLevel.HEADING_1, pageBreakBefore: true, spacing: { after: 120 } }));
     for (const c of practiceOrdered) {
-      body.push(new Paragraph({ spacing: { before: 120 }, children: [new TextRun({ text: `${practiceNum.get(c.id)}. `, bold: true }), ...inlineRuns(c.card_title ?? '', reg, { bold: true })] }));
+      body.push(new Paragraph({ spacing: { before: 120 }, children: [
+        new TextRun({ text: `${practiceNum.get(c.id)}. `, bold: true }),
+        ...inlineRuns(c.card_title ?? '', reg, { bold: true }),
+        ...(c.is_advanced ? [new TextRun({ text: '  [Advanced]', bold: true, color: 'B45309' })] : []),
+      ] }));
       for (const p of await contentParagraphs(c.content, reg, { color: ANSWER_BROWN })) body.push(p);
     }
   }

@@ -33,6 +33,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    // Set the topics covered in this revision lesson (freeform, comma-separated).
+    // Stored on 'Topics Free Text'; the GET merges it with any 'Topics Covered'.
+    if (body.action === 'topics') {
+      const { lessonId, topics } = body;
+      if (!lessonId) return NextResponse.json({ error: 'lessonId required' }, { status: 400 });
+      await airtableRequest('Lessons', `/${lessonId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ fields: { 'Topics Free Text': (topics || '').trim() } }),
+      });
+      return NextResponse.json({ success: true });
+    }
+
     // Toggle whether the assignment for this revision lesson was handed up.
     // Stored on the existing 'Homework Returned' field ('Yes' = handed up, blank = not).
     if (body.action === 'assignment') {
@@ -101,6 +113,18 @@ const SUBJECT_META: Record<string, { label: string; time: string }> = {
 // Order subjects are assigned in (matters for shared dates)
 const SUBJECT_ORDER = ['EM', 'AM', 'JC'];
 
+// Topics Covered (JSON array of canonical names) + Topics Free Text (comma list).
+function parseTopics(fields: any): string[] {
+  const out: string[] = [];
+  try {
+    const arr = JSON.parse(fields['Topics Covered'] || '[]');
+    if (Array.isArray(arr)) out.push(...arr.map((t: any) => String(t).trim()).filter(Boolean));
+  } catch { /* ignore malformed */ }
+  const free = (fields['Topics Free Text'] || '').trim();
+  if (free) out.push(...free.split(/[,\n]/).map((s: string) => s.trim()).filter(Boolean));
+  return [...new Set(out)];
+}
+
 function subjectsFromLineItems(raw: string): string[] {
   let items: { description?: string }[] = [];
   try { items = JSON.parse(raw || '[]'); } catch { /* ignore */ }
@@ -140,7 +164,7 @@ export async function GET(req: NextRequest) {
   // 3. All Revision Sprint lessons, grouped by student
   const revLessons = await airtableRequestAll(
     'Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Type}='Revision Sprint'`)}&fields[]=Student&fields[]=Date&fields[]=Status&fields[]=Rescheduled Lesson ID&fields[]=Homework Returned`
+    `?filterByFormula=${encodeURIComponent(`{Type}='Revision Sprint'`)}&fields[]=Student&fields[]=Date&fields[]=Status&fields[]=Rescheduled Lesson ID&fields[]=Homework Returned&fields[]=Topics Covered&fields[]=Topics Free Text`
   );
   const revByStudent: Record<string, any[]> = {};
   for (const r of revLessons.records) {
@@ -197,6 +221,7 @@ export async function GET(req: NextRequest) {
           time: SUBJECT_META[subj]?.time || '',
           status: lesson.fields['Status'] || 'Scheduled',
           assignmentSubmitted: lesson.fields['Homework Returned'] === 'Yes',
+          topics: parseTopics(lesson.fields),
           makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]) } : null,
         });
       }
@@ -210,6 +235,7 @@ export async function GET(req: NextRequest) {
         lessonId: l.id, date: l.fields['Date'] || '', subject: '?', subjectLabel: 'Revision', time: '',
         status: l.fields['Status'] || 'Scheduled',
         assignmentSubmitted: l.fields['Homework Returned'] === 'Yes',
+        topics: parseTopics(l.fields),
         makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]) } : null,
       });
     }

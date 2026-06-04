@@ -43,6 +43,7 @@ export interface LocalCard {
   card_title: string | null;
   content: string | null;
   marks: number | null;
+  is_advanced?: boolean;
   order_index: number;
   updated_at: string;
   _dirty?: boolean;

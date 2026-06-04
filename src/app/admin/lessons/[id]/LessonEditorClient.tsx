@@ -69,6 +69,7 @@ interface Card {
   card_title: string | null;
   content: string | null;
   marks: number | null;
+  is_advanced?: boolean;
   order_index: number;
 }
 
@@ -322,6 +323,9 @@ function SortableCardRow({
       <span className="text-slate-400 text-xs w-4 shrink-0">{displayIndex}.</span>
       <span className={`text-[10px] font-bold w-4 text-center rounded border shrink-0 ${KIND_CHIP[card.content_kind].cls}`} title={KIND_CHIP[card.content_kind].short}>{KIND_CHIP[card.content_kind].icon}</span>
       <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug truncate">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
+      {card.content_kind === 'practice' && card.is_advanced && (
+        <span className="text-[9px] font-bold text-orange-700 bg-orange-100 border border-orange-200 px-1 rounded shrink-0" title="Advanced practice">ADV</span>
+      )}
       {card.content_kind === 'practice' && card.marks != null && (
         <span className="text-[10px] text-slate-400 bg-slate-100 px-1 rounded shrink-0">{card.marks}m</span>
       )}
@@ -961,6 +965,7 @@ function EditorPanel({
   const [marks, setMarks] = useState<string>(initialCard.marks?.toString() ?? '');
   const [sectionName, setSectionName] = useState(initialCard.section_name);
   const [kind, setKind] = useState<ContentKind>(initialCard.content_kind);
+  const [isAdvanced, setIsAdvanced] = useState<boolean>(initialCard.is_advanced ?? false);
   const [contentHistory, setContentHistory] = useState<string[]>([]);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [previewContent, setPreviewContent] = useState(initialCard.content ?? '');
@@ -997,6 +1002,8 @@ function EditorPanel({
     };
     const m = parseInt(marks, 10);
     if (kind === 'practice' && !isNaN(m)) patch.marks = m;
+    // Advanced only applies to practice; clear it otherwise so a kind-change drops the flag.
+    patch.is_advanced = kind === 'practice' ? isAdvanced : false;
     if (pendingSourceQuestionId) patch.source_question_id = pendingSourceQuestionId;
     try {
       // Local-first via store; the sync engine ships it to the server (immediately when
@@ -1007,7 +1014,7 @@ function EditorPanel({
       if (pendingSourceQuestionId) setPendingSourceQuestionId(null);
       setTimeout(() => setSaveStatus(s => s === 'saved' ? 'idle' : s), 2000);
     } catch { setSaveStatus('error'); }
-  }, [cardId, title, content, marks, sectionName, kind, onSaved, pendingSourceQuestionId]);
+  }, [cardId, title, content, marks, sectionName, kind, isAdvanced, onSaved, pendingSourceQuestionId]);
 
   const scheduleSave = useCallback(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -1019,7 +1026,7 @@ function EditorPanel({
     if (isFirstRender.current) { isFirstRender.current = false; return; }
     scheduleSave();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, content, marks, sectionName, kind]);
+  }, [title, content, marks, sectionName, kind, isAdvanced]);
 
   // Keep the Bank-drop title/content/source-id in sync if the user drops one in.
   const handleBankDropOnEditor = useCallback((q: BankQuestion) => {
@@ -1226,6 +1233,12 @@ function EditorPanel({
                 onChange={(e) => setMarks(e.target.value)}
                 min={0}
               />
+            </label>
+          )}
+          {kind === 'practice' && (
+            <label className="flex items-center gap-1.5 text-orange-700" title="Advanced practice questions are placed after the regular ones in the PDF/DOCX">
+              <input type="checkbox" checked={isAdvanced} onChange={(e) => setIsAdvanced(e.target.checked)} />
+              Advanced
             </label>
           )}
           {initialCard.source_question_id && <span className="text-blue-500">🔗 from bank</span>}
@@ -2057,7 +2070,7 @@ async function downloadDocx(lesson: Lesson, cards: Card[]) {
     const { buildLessonDocx } = await import('@/lib/lesson-docx-build');
     const blob = await buildLessonDocx(
       { name: lesson.name, level: lesson.level, description: lesson.description, topics: lesson.topics, section_order: lesson.section_order },
-      cards.map(c => ({ id: c.id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, order_index: c.order_index })),
+      cards.map(c => ({ id: c.id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, is_advanced: c.is_advanced, order_index: c.order_index })),
     );
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

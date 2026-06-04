@@ -15,6 +15,7 @@ interface Card {
   card_title: string | null;
   content: string | null;
   marks: number | null;
+  is_advanced?: boolean;
   order_index: number;
 }
 
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     supa.from('lessons').select('*').eq('id', id).maybeSingle(),
     supa
       .from('lesson_cards')
-      .select('id, content_kind, section_name, card_title, content, marks, order_index')
+      .select('id, content_kind, section_name, card_title, content, marks, is_advanced, order_index')
       .eq('lesson_id', id)
       .order('content_kind').order('section_name').order('order_index'),
   ]);
@@ -68,10 +69,15 @@ function renderLessonHTML(lesson: { name: string; level: string; topics: string[
   const allSecs = [...new Set(cards.map(c => c.section_name || 'Default'))];
   const known = order.filter(s => allSecs.includes(s));
   const sections = [...known, ...allSecs.filter(s => !known.includes(s)).sort()];
-  const cardsOf = (sec: string) => cards.filter(c => (c.section_name || 'Default') === sec).sort((a, b) => a.order_index - b.order_index);
+  // Within a section: keep manual order, but advanced practice always sinks below non-advanced
+  // (so the printed sheet reads "regular practice, then advanced practice").
+  const advRank = (c: Card) => (c.content_kind === 'practice' && c.is_advanced ? 1 : 0);
+  const cardsOf = (sec: string) => cards
+    .filter(c => (c.section_name || 'Default') === sec)
+    .sort((a, b) => (advRank(a) - advRank(b)) || (a.order_index - b.order_index));
 
   // Practice questions in lesson (section → order) sequence — numbered consistently across the
-  // body, the Answers list, and the Solutions list.
+  // body and the Solutions list. (cardsOf already pushes advanced practice last per section.)
   const practiceOrdered = sections.flatMap(sec => cardsOf(sec).filter(c => c.content_kind === 'practice'));
   const practiceNum = new Map<string, number>();
   practiceOrdered.forEach((c, i) => practiceNum.set(c.id, i + 1));
@@ -142,6 +148,8 @@ function renderLessonHTML(lesson: { name: string; level: string; topics: string[
   .answer-row .qnum { display: inline-block; min-width: 30pt; font-weight: 600; }
   .solution-block { page-break-inside: avoid; margin-bottom: 14pt; padding-bottom: 8pt; border-bottom: 1pt dotted #d1d5db; }
   .solution-block .qnum { font-weight: 700; margin-bottom: 4pt; }
+  .adv-label { font-size: 11pt; color: #b45309; margin: 12pt 0 4pt; font-weight: 700; }
+  .adv-tag { font-size: 8pt; color: #b45309; border: 0.5pt solid #f59e0b; border-radius: 3pt; padding: 0 3pt; vertical-align: middle; }
 
   /* KaTeX fixes */
   .katex { font-size: 1em !important; }
@@ -160,11 +168,19 @@ function renderLessonHTML(lesson: { name: string; level: string; topics: string[
 </div>
 
 <!-- Lesson sections (in order; cards rendered by their kind) -->
-${sections.map((sec, si) => `
+${sections.map((sec, si) => {
+  const list = cardsOf(sec);
+  const firstAdvIdx = list.findIndex(c => c.content_kind === 'practice' && c.is_advanced);
+  const inner = list.map((c, i) => {
+    const label = (i === firstAdvIdx) ? '<h3 class="adv-label">Advanced practice</h3>' : '';
+    return label + renderCard(c);
+  }).join('');
+  return `
 <div class="section${si === 0 ? ' section-first' : ''}">
   <h2>${escapeHtml(sec)}</h2>
-  ${cardsOf(sec).map(renderCard).join('')}
-</div>`).join('')}
+  ${inner}
+</div>`;
+}).join('')}
 
 ${practiceOrdered.length > 0 ? `
 <!-- Practice — Solutions (collected at the back; refreshers & worked examples excluded) -->
@@ -172,7 +188,7 @@ ${practiceOrdered.length > 0 ? `
   <h2>Practice — Solutions</h2>
   ${practiceOrdered.map(c => `
     <div class="solution-block">
-      <div class="qnum">${practiceNum.get(c.id)}. ${escapeHtml(c.card_title ?? '')}</div>
+      <div class="qnum">${practiceNum.get(c.id)}. ${escapeHtml(c.card_title ?? '')}${c.is_advanced ? ' <span class="adv-tag">ADV</span>' : ''}</div>
       <div>${mdToHtml(c.content ?? '')}</div>
     </div>`).join('')}
 </div>` : ''}

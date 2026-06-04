@@ -192,9 +192,11 @@ For when an adjustment must land on a month whose invoice doesn't exist yet (e.g
 
 Tracks revision-lesson attendance + makeups for signed-up students. Revision lessons (`Type='Revision Sprint'`) were created with only `{Student, Date}` — no subject/time — so the **subject/session label (EM 10am–12pm / AM 1–3pm / H2 2–5pm) is derived at read time** from the student's signed-up subjects (parsed from the Revision Sprint invoice line items) + the fixed sprint date schedule. EM dates ⊂ AM dates, so EM+AM students get two records on shared dates, assigned deterministically (sorted by record id).
 
-- **GET** → per student: sessions (date · subject · time · status · `assignmentSubmitted`) + linked makeup + summary (attended/missed/madeUp/outstanding).
+- **GET** → per student: sessions (date · subject · time · status · `assignmentSubmitted` · `topics[]`) + linked makeup + summary (attended/missed/madeUp/outstanding). `topics` merges `Topics Covered` (JSON) + `Topics Free Text` (comma list).
 - **POST** `{action:'mark', lessonId, status}` — set a revision lesson's Status.
 - **POST** `{action:'assignment', lessonId, submitted}` — toggle "assignment handed up" for a revision lesson. Stored on the existing **`Homework Returned`** field (`'Yes'` = handed up, blank = not) — no new field. UI: a per-session **HW checkbox** on the Attendance tab (optimistic toggle).
+- **POST** `{action:'topics', lessonId, topics}` — set topics covered (freeform, comma-separated) on **`Topics Free Text`**. UI: click the topic chips (or "+ topics") beside the session date to edit inline.
+- **Attendance tab layout**: student cards render in a responsive grid (4 cols web → 3 → 2 → 1 on narrow screens), grouped by subject section.
 - **POST** `{action:'makeup', lessonId, studentId, date, slotId}` — **the "reschedule a missed June-holiday lesson" action**: creates a makeup lesson at any active regular slot (`Type='Additional'`, Notes `'Revision makeup'`), marks the revision lesson `Absent`, links them via `Rescheduled Lesson ID`. (`Makeup` is NOT a valid Lessons Type — options are Regular/Rescheduled/Additional/Trial/Revision Sprint — so makeups use `Additional`.) The makeup then shows on `/admin/schedule` at that slot with a teal **🏖 Revision makeup** chip badge (schedule route flags it via `revisionMakeup` = Notes matches `/revision makeup/i`).
 - **POST** `{action:'unmakeup', lessonId}` — deletes the makeup lesson + clears the link.
 

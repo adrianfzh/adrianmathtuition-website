@@ -32,13 +32,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     if (existing) return NextResponse.json({ card: existing });
   }
 
-  // Compute next order_index in this (lesson, content_kind, section_name)
+  // Compute next order_index per SECTION (across all kinds — section-first model, so a new card
+  // lands at the end of its section regardless of R/E/P).
   const sectionName = (typeof body.section_name === 'string' && body.section_name) || defaultSectionFor(body.content_kind as string);
   const { data: maxRow } = await supa
     .from('lesson_cards')
     .select('order_index')
     .eq('lesson_id', lessonId)
-    .eq('content_kind', body.content_kind)
     .eq('section_name', sectionName)
     .order('order_index', { ascending: false })
     .limit(1)
@@ -54,6 +54,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     card_title: body.card_title ?? null,
     content: body.content ?? null,
     marks: typeof body.marks === 'number' ? body.marks : null,
+    is_advanced: body.is_advanced === true,
     order_index: nextIdx,
   };
   if (clientId) insert.id = clientId;
