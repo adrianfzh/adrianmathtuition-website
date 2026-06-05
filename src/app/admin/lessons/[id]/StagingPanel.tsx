@@ -1,13 +1,14 @@
-// Staging workspace — full-screen 3-panel curation surface:
+// Staging workspace — full-screen, resizable 3-panel curation surface:
 //   Bank (live search) → Pool (candidates) → Keep (shortlist).
-// Drag a bank result into Pool (copies it in), drag between Pool↔Keep (moves). Keep cards get a
-// section + R/E/P choice; "Add all" pushes every Keep card into the lesson then clears Keep.
+// Bank cards: ☆ Stage OR native-drag straight into a Pool/Keep pane. Pool↔Keep: dnd-kit drag of
+// whole cards (with a DragOverlay preview). Keep cards: R/E/P + section + Send; "Add all" sends all.
 // Backed by the localStorage staging store (client-only, survives reload, this computer).
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  DndContext, closestCorners, PointerSensor, useSensor, useSensors, useDroppable, type DragEndEvent,
+  DndContext, closestCorners, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay,
+  type DragEndEvent, type DragStartEvent,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -24,6 +25,8 @@ const KIND_BTN: Record<StageKind, { label: string; on: string; off: string }> = 
   practice: { label: 'P', on: 'bg-orange-600 text-white border-orange-600', off: 'border-orange-200 bg-orange-50 text-orange-700' },
 };
 
+const WIDTHS_KEY = 'lesson_staging_widths_v1';
+
 function StagedCard({ item, sections, onSend }: {
   item: StagedItem;
   sections: string[];
@@ -35,14 +38,15 @@ function StagedCard({ item, sections, onSend }: {
   const kind = item.kind ?? 'worked_example';
   const noDrag = { onPointerDown: (e: React.PointerEvent) => e.stopPropagation() };
   const isKeep = item.pane === 'keep';
+  const [sent, setSent] = useState(false);
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}
       className={`rounded border cursor-grab active:cursor-grabbing ${item.rejected ? 'border-red-200 bg-red-50/40 opacity-60' : 'border-slate-200 bg-white'}`}>
       <div className="flex items-center gap-2 px-2 py-1 border-b border-slate-100 bg-slate-50/60">
         <span className="text-slate-400 select-none" title="Drag this card">⠿</span>
         <span className="font-mono text-[11px] text-slate-600 truncate flex-1">{item.q.school} {item.q.year} P{item.q.paper} Q{item.q.question_number}</span>
-        <button {...noDrag} onClick={() => toggleReject(item.q.id)} title={item.rejected ? 'Un-reject' : 'Reject'} className={`text-[10px] px-1.5 py-0.5 rounded border ${item.rejected ? 'bg-white text-slate-500 border-slate-300' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'}`}>{item.rejected ? '↺' : '✕'}</button>
-        <button {...noDrag} onClick={() => removeStaged(item.q.id)} title="Remove from staging" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑</button>
+        <button {...noDrag} onClick={() => toggleReject(item.q.id)} title={item.rejected ? 'Un-reject (bring back)' : 'Reject — hide from view (kept, reversible)'} className={`text-[10px] px-1.5 py-0.5 rounded border ${item.rejected ? 'bg-white text-slate-500 border-slate-300' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'}`}>{item.rejected ? '↺ unreject' : '✕ reject'}</button>
+        <button {...noDrag} onClick={() => removeStaged(item.q.id)} title="Remove from staging entirely (delete from tray)" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑 remove</button>
       </div>
       <div className="p-1.5">
         <BankQuestionCard q={item.q} draggable={false} />
@@ -58,7 +62,10 @@ function StagedCard({ item, sections, onSend }: {
               {sections.length === 0 && <option value="Default">Default</option>}
               {sections.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            {onSend && <button onClick={() => onSend(item.q, kind, section)} className="ml-auto text-[10px] px-2 py-0.5 rounded bg-slate-700 text-white hover:bg-slate-800">Send →</button>}
+            {onSend && <button
+              onClick={() => { onSend(item.q, kind, section); setSent(true); setTimeout(() => removeStaged(item.q.id), 500); }}
+              className={`ml-auto text-[10px] px-2 py-0.5 rounded text-white ${sent ? 'bg-emerald-600' : 'bg-slate-700 hover:bg-slate-800'}`}
+            >{sent ? '✓ sent' : 'Send →'}</button>}
           </div>
         )}
       </div>
@@ -66,25 +73,62 @@ function StagedCard({ item, sections, onSend }: {
   );
 }
 
-function Pane({ title, pane, items, sections, hint, onSend }: {
+function Pane({ title, pane, items, sections, hint, onSend, style }: {
   title: string; pane: StagePane; items: StagedItem[]; sections: string[]; hint: string;
   onSend?: (q: BankQuestion, kind: StageKind, section: string) => void;
+  style?: React.CSSProperties;
 }) {
-  const { setNodeRef } = useDroppable({ id: `pane-${pane}`, data: { pane } });
+  const { setNodeRef, isOver } = useDroppable({ id: `pane-${pane}`, data: { pane } });
+  const [bankOver, setBankOver] = useState(false);
+  // Accept native HTML5 drops from the Bank list (bank cards set application/x-bank-question).
+  function onDrop(e: React.DragEvent) {
+    const payload = e.dataTransfer.getData('application/x-bank-question');
+    if (!payload) return;
+    e.preventDefault();
+    setBankOver(false);
+    try {
+      const q = JSON.parse(payload) as BankQuestion;
+      addToStaging(q);
+      if (pane === 'keep') setPane(q.id, 'keep');
+    } catch { /* ignore */ }
+  }
   return (
-    <div className="flex-1 min-w-0 flex flex-col border border-slate-200 rounded bg-slate-50/40">
+    <div className="min-w-0 flex flex-col border border-slate-200 rounded bg-slate-50/40" style={style}>
       <div className="px-3 py-2 border-b border-slate-200 flex items-center gap-2 shrink-0">
         <span className="text-xs font-semibold text-slate-700">{title}</span>
         <span className="text-[11px] text-slate-400">{items.length}</span>
         <span className="ml-auto text-[10px] text-slate-400">{hint}</span>
       </div>
-      <div ref={setNodeRef} className="flex-1 overflow-y-auto p-2 space-y-2 min-h-[120px]">
+      <div
+        ref={setNodeRef}
+        onDragOver={(e) => { if (e.dataTransfer.types.includes('application/x-bank-question')) { e.preventDefault(); setBankOver(true); } }}
+        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setBankOver(false); }}
+        onDrop={onDrop}
+        className={`flex-1 overflow-y-auto p-2 space-y-2 min-h-[120px] ${(isOver || bankOver) ? 'outline outline-2 outline-dashed outline-blue-400 bg-blue-50/40' : ''}`}
+      >
         <SortableContext items={items.map(i => i.q.id)} strategy={verticalListSortingStrategy}>
           {items.map(item => <StagedCard key={item.q.id} item={item} sections={sections} onSend={onSend} />)}
         </SortableContext>
         {items.length === 0 && <p className="text-[11px] text-slate-400 italic text-center py-6">Drag questions here</p>}
       </div>
     </div>
+  );
+}
+
+// Vertical drag handle between columns.
+function Divider({ onDrag }: { onDrag: (dx: number) => void }) {
+  return (
+    <div
+      onPointerDown={(e) => {
+        e.preventDefault();
+        let last = e.clientX;
+        const onMove = (ev: PointerEvent) => { onDrag(ev.clientX - last); last = ev.clientX; };
+        const up = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', up); };
+        window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', up);
+      }}
+      className="w-1.5 shrink-0 cursor-col-resize bg-slate-200 hover:bg-blue-400 rounded"
+      title="Drag to resize"
+    />
   );
 }
 
@@ -98,7 +142,20 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
 }) {
   const [items, setItems] = useState<StagedItem[]>(() => getStaged());
   const [showRejected, setShowRejected] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   useEffect(() => subscribeStaging(() => setItems(getStaged())), []);
+
+  // Column widths (px for bank + pool; keep takes the rest). Persisted.
+  const [bankW, setBankW] = useState(340);
+  const [poolW, setPoolW] = useState(420);
+  useEffect(() => {
+    try { const s = JSON.parse(localStorage.getItem(WIDTHS_KEY) || '{}'); if (s.bankW) setBankW(s.bankW); if (s.poolW) setPoolW(s.poolW); } catch { /* ignore */ }
+  }, []);
+  const persist = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function saveWidths(b: number, p: number) {
+    if (persist.current) clearTimeout(persist.current);
+    persist.current = setTimeout(() => { try { localStorage.setItem(WIDTHS_KEY, JSON.stringify({ bankW: b, poolW: p })); } catch { /* ignore */ } }, 300);
+  }
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -106,6 +163,7 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
   const pool = visible.filter(i => i.pane === 'pool');
   const keep = visible.filter(i => i.pane === 'keep');
   const rejectedCount = items.filter(i => i.rejected).length;
+  const activeItem = activeId ? items.find(i => i.q.id === activeId) : null;
 
   function paneOf(id: string): StagePane | null {
     if (id === 'pane-pool') return 'pool';
@@ -114,6 +172,7 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
   }
 
   function handleDragEnd(e: DragEndEvent) {
+    setActiveId(null);
     const { active, over } = e;
     if (!over) return;
     const activeId = String(active.id);
@@ -141,7 +200,7 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
     <div className="fixed inset-0 z-[70] bg-white flex flex-col">
       <div className="px-4 py-2.5 border-b border-slate-200 flex items-center gap-3 bg-slate-50 shrink-0">
         <span className="text-sm font-semibold text-slate-800">🗂 Staging workspace</span>
-        <span className="text-[11px] text-slate-400">Bank → drag into Pool → drag keepers into Keep → set R/E/P + section → Add all.</span>
+        <span className="text-[11px] text-slate-400">Bank → Pool → Keep. ✕ reject = hide (reversible) · 🗑 remove = delete from tray.</span>
         <span className="ml-auto flex items-center gap-2">
           <label className="text-[11px] text-slate-500 flex items-center gap-1"><input type="checkbox" checked={showRejected} onChange={e => setShowRejected(e.target.checked)} />show rejected ({rejectedCount})</label>
           {rejectedCount > 0 && <button onClick={clearRejected} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear rejected</button>}
@@ -150,11 +209,11 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
           <button onClick={onClose} className="text-[11px] px-2 py-1 bg-slate-800 text-white rounded hover:bg-slate-700">Done</button>
         </span>
       </div>
-      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-        <div className="flex-1 min-h-0 flex gap-3 p-3">
-          {/* Left: live Bank search — ☆ Stage drops a copy into Pool */}
-          <div className="w-[340px] shrink-0 flex flex-col border border-slate-200 rounded overflow-hidden">
-            <div className="px-3 py-2 border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 shrink-0">Bank — search &amp; ☆ Stage</div>
+      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={(e: DragStartEvent) => setActiveId(String(e.active.id))} onDragEnd={handleDragEnd} onDragCancel={() => setActiveId(null)}>
+        <div className="flex-1 min-h-0 flex gap-0 p-3">
+          {/* Left: live Bank — ☆ Stage adds to Pool, or native-drag a card into Pool/Keep */}
+          <div className="shrink-0 flex flex-col border border-slate-200 rounded overflow-hidden" style={{ width: bankW }}>
+            <div className="px-3 py-2 border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 shrink-0">Bank — search, ☆ Stage or drag →</div>
             <div className="flex-1 min-h-0">
               <LessonBankPanel
                 level={level}
@@ -165,9 +224,19 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
               />
             </div>
           </div>
-          <Pane title="Pool — candidates" pane="pool" items={pool} sections={sections} hint="drag right to shortlist →" />
-          <Pane title="Keep — shortlist" pane="keep" items={keep} sections={sections} hint="set R/E/P + section" onSend={onInsert} />
+          <Divider onDrag={(dx) => setBankW(w => { const n = Math.max(220, Math.min(700, w + dx)); saveWidths(n, poolW); return n; })} />
+          <Pane title="Pool — candidates" pane="pool" items={pool} sections={sections} hint="drag right to shortlist →" style={{ width: poolW }} />
+          <Divider onDrag={(dx) => setPoolW(w => { const n = Math.max(260, w + dx); saveWidths(bankW, n); return n; })} />
+          <Pane title="Keep — shortlist" pane="keep" items={keep} sections={sections} hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }} />
         </div>
+        <DragOverlay>
+          {activeItem ? (
+            <div className="rounded border border-blue-400 bg-white shadow-lg p-1.5 text-xs max-w-[420px]">
+              <div className="font-mono text-[11px] text-slate-600 mb-1">{activeItem.q.school} {activeItem.q.year} P{activeItem.q.paper} Q{activeItem.q.question_number}</div>
+              <BankQuestionCard q={activeItem.q} draggable={false} />
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );
