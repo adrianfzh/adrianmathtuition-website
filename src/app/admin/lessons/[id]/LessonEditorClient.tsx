@@ -1353,6 +1353,8 @@ function EditorPanel({
                 auth={auth}
                 activeTab={rightTab}
                 onTabChange={onRightTabChange}
+                onStage={(q) => addToStaging(q)}
+                isStaged={(qid) => storeIsStaged(qid)}
                 aiContent={
                   <AISidebar
                     cardId={cardId}
@@ -1570,6 +1572,10 @@ export default function LessonEditorClient() {
   const [localSections, setLocalSections] = useState<string[]>([]);
   // Batch "generate solutions for practice cards missing one" progress (null = idle).
   const [batchSol, setBatchSol] = useState<{ done: number; total: number; failed: number } | null>(null);
+  // Staging workspace overlay + live count badge.
+  const [stagingOpen, setStagingOpen] = useState(false);
+  const [stageCount, setStageCount] = useState(0);
+  useEffect(() => { setStageCount(stagedCount()); return subscribeStaging(() => setStageCount(stagedCount())); }, []);
 
   // ── Undo (structural actions: delete / reorder / move / add) ──────────────
   // Snapshot the card-state before each structural action; Ctrl/Cmd+Z restores it and reconciles
@@ -1719,6 +1725,20 @@ export default function LessonEditorClient() {
     await Promise.all(toRename.map(c => storePatchCard(c.id, { section_name: newName })));
     setSavedAt(new Date());
   }, [cards, lesson]);
+
+  // Send a staged question into a lesson section as a card of the chosen kind (reuses addCard;
+  // the bank template carries the question's stored solution/answer).
+  const sendStagedToLesson = useCallback(async (q: BankQuestion, kind: ContentKind, section: string) => {
+    const { title: tplTitle, content: tplContent } = buildBankWorkedExampleTemplate(q);
+    await addCard(kind, {
+      section_name: section || DEFAULT_SECTION[kind],
+      card_title: tplTitle,
+      content: tplContent,
+      source_question_id: q.id,
+      marks: kind === 'practice' ? q.total_marks ?? null : null,
+    });
+    showToast(`Added to "${section}"`);
+  }, [addCard]);
 
   // Delete a lesson-level section. If it still has cards, confirm and delete them too.
   const handleDeleteSection = useCallback(async (name: string) => {
@@ -2013,6 +2033,11 @@ export default function LessonEditorClient() {
           className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 rounded text-xs font-medium disabled:opacity-50"
         >{batchSol ? `Generating ${batchSol.done}/${batchSol.total}…` : '✨ Fill solutions'}</button>
         <button
+          onClick={() => setStagingOpen(true)}
+          title="Open the staging workspace to sift candidate questions"
+          className="px-3 py-1 bg-slate-600 hover:bg-slate-700 rounded text-xs font-medium"
+        >🗂 Staging{stageCount > 0 ? ` (${stageCount})` : ''}</button>
+        <button
           onClick={() => deleteLesson(id, pw.current, router)}
           className="px-2 py-1 hover:bg-rose-700/40 rounded text-xs"
           title="Delete lesson"
@@ -2097,6 +2122,14 @@ export default function LessonEditorClient() {
           existingSections={sectionList}
           onClose={() => setNewSectionOpen(false)}
           onCreated={createSection}
+        />
+      )}
+
+      {stagingOpen && (
+        <StagingPanel
+          onClose={() => setStagingOpen(false)}
+          onInsert={(q, kind, section) => void sendStagedToLesson(q, kind, section)}
+          sections={sectionList}
         />
       )}
     </div>
