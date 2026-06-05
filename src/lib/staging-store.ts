@@ -6,11 +6,14 @@
 import type { BankQuestion } from '@/app/admin/lessons/[id]/LessonBankPanel';
 
 export type StagePane = 'pool' | 'keep';
+export type StageKind = 'refresher' | 'worked_example' | 'practice';
 export interface StagedItem {
   q: BankQuestion;
   pane: StagePane;
   rejected: boolean;
   order: number; // sort order within its pane
+  kind?: StageKind; // chosen R/E/P for a Keep card ('Add all' uses this; defaults to worked_example)
+  section?: string; // chosen target lesson section for a Keep card
 }
 
 const KEY = 'lesson_staging_v1';
@@ -77,6 +80,22 @@ export function toggleReject(id: string): void {
 export function reorderPane(pane: StagePane, orderedIds: string[]): void {
   const rank = new Map(orderedIds.map((id, idx) => [id, idx]));
   save(load().map(i => (i.pane === pane && rank.has(i.q.id)) ? { ...i, order: rank.get(i.q.id)! } : i));
+}
+
+export function setKind(id: string, kind: StageKind): void {
+  save(load().map(i => i.q.id === id ? { ...i, kind } : i));
+}
+
+export function setSection(id: string, section: string): void {
+  save(load().map(i => i.q.id === id ? { ...i, section } : i));
+}
+
+export function getKeep(): StagedItem[] {
+  return load().filter(i => i.pane === 'keep' && !i.rejected).sort((a, b) => a.order - b.order);
+}
+
+export function clearKeep(): void {
+  save(load().filter(i => i.pane !== 'keep'));
 }
 
 export function clearStaging(): void { save([]); }

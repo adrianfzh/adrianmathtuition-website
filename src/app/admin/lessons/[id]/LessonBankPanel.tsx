@@ -730,7 +730,7 @@ export function BankQuestionCard({
       {markdown && (
         <div
           className="prose prose-sm prose-slate max-w-none text-[12px] leading-snug bank-q-prose"
-          onMouseDown={(e) => e.stopPropagation()}
+          onMouseDown={draggable ? (e) => e.stopPropagation() : undefined}
         >
           <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, rehypeKatex]}>
             {markdown}

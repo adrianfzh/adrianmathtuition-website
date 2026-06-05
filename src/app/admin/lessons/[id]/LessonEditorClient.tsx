@@ -2130,6 +2130,9 @@ export default function LessonEditorClient() {
           onClose={() => setStagingOpen(false)}
           onInsert={(q, kind, section) => void sendStagedToLesson(q, kind, section)}
           sections={sectionList}
+          level={lesson.level}
+          topics={lesson.topics}
+          auth={pw.current}
         />
       )}
     </div>
