@@ -643,6 +643,7 @@ export function BankQuestionCard({
   onInsert,
   onStage,
   staged,
+  draggable = true,
 }: {
   q: BankQuestion;
   onDragStart?: () => void;
@@ -650,6 +651,7 @@ export function BankQuestionCard({
   onInsert?: (q: BankQuestion, kind: 'refresher' | 'worked_example' | 'practice') => void;
   onStage?: (q: BankQuestion) => void;
   staged?: boolean;
+  draggable?: boolean;
 }) {
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const difficulty = q.difficulty ?? 'Standard';
@@ -701,15 +703,15 @@ export function BankQuestionCard({
 
   return (
     <div
-      draggable
-      onDragStart={(e) => {
+      draggable={draggable}
+      onDragStart={draggable ? (e) => {
         e.dataTransfer.setData('application/x-bank-question', JSON.stringify(q));
         e.dataTransfer.setData('text/plain', tag);
         e.dataTransfer.effectAllowed = 'copy';
         onDragStart?.();
-      }}
-      onDragEnd={() => onDragEnd?.()}
-      className="border border-slate-200 rounded p-2 bg-white hover:border-blue-400 hover:shadow-sm cursor-grab active:cursor-grabbing text-xs space-y-1.5"
+      } : undefined}
+      onDragEnd={draggable ? () => onDragEnd?.() : undefined}
+      className={`border border-slate-200 rounded p-2 bg-white hover:border-blue-400 hover:shadow-sm text-xs space-y-1.5 ${draggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
     >
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="font-mono text-slate-700 font-medium">{tag}</span>

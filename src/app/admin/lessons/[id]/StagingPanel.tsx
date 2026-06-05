@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent,
+  DndContext, closestCorners, PointerSensor, useSensor, useSensors, useDroppable, type DragEndEvent,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -23,7 +23,7 @@ function SortableStaged({ item, onInsert, sections }: {
   onInsert: (q: BankQuestion, kind: Kind, section: string) => void;
   sections: string[];
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.q.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.q.id, data: { pane: item.pane } });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
   const [section, setSection] = useState(sections[0] ?? 'Default');
   return (
@@ -35,7 +35,7 @@ function SortableStaged({ item, onInsert, sections }: {
         <button onClick={() => removeStaged(item.q.id)} title="Remove from staging" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑</button>
       </div>
       <div className="p-1.5">
-        <BankQuestionCard q={item.q} />
+        <BankQuestionCard q={item.q} draggable={false} />
         <div className="flex items-center gap-1 mt-1 flex-wrap">
           <span className="text-[10px] text-slate-400">→ lesson:</span>
           <select value={section} onChange={e => setSection(e.target.value)} className="text-[10px] border border-slate-300 rounded px-1 py-px max-w-[140px]">
@@ -56,8 +56,8 @@ function Pane({ title, pane, items, onInsert, sections, hint }: {
   onInsert: (q: BankQuestion, kind: Kind, section: string) => void;
   sections: string[]; hint: string;
 }) {
-  // Droppable target id = the pane name (so dropping on an empty pane still moves the card here).
-  const { setNodeRef } = useSortable({ id: `pane-${pane}`, data: { pane } });
+  // Droppable target = the whole pane (so dropping on empty space still moves the card here).
+  const { setNodeRef } = useDroppable({ id: `pane-${pane}`, data: { pane } });
   return (
     <div className="flex-1 min-w-0 flex flex-col border border-slate-200 rounded bg-slate-50/40">
       <div className="px-3 py-2 border-b border-slate-200 flex items-center gap-2">
@@ -137,7 +137,7 @@ export function StagingPanel({ onClose, onInsert, sections }: {
             Nothing staged yet.<br />In the Bank panel, click <strong className="mx-1">☆ Stage</strong> on questions to collect candidates here.
           </div>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
             <div className="flex-1 min-h-0 flex gap-3 p-3">
               <Pane title="Pool — candidates" pane="pool" items={pool} onInsert={onInsert} sections={sections} hint="drag right to shortlist →" />
               <Pane title="Keep — shortlist" pane="keep" items={keep} onInsert={onInsert} sections={sections} hint="← back to pool" />
