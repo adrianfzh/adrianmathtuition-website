@@ -57,7 +57,14 @@ export async function loadLesson(lessonId: string): Promise<LoadResult | null> {
         await replaceCardsForLesson(lessonId, cards);
         return { lesson, cards, source: 'network' };
       }
-      if (res.status === 404) return null;
+      // 404: the server may simply not have this lesson YET — a just-created lesson is added to
+      // IndexedDB optimistically and its create mutation syncs shortly after. So fall through to the
+      // local cache rather than declaring it missing (fixes "Lesson not found" right after create).
+      if (res.status === 404) {
+        const local = await getLesson(lessonId);
+        if (local) return { lesson: local, cards: await listCardsForLesson(lessonId), source: 'cache' };
+        return null;
+      }
     } catch { /* fall through to cache */ }
   }
   const lesson = await getLesson(lessonId);
