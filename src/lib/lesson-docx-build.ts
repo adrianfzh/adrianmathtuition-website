@@ -7,7 +7,7 @@
 
 import {
   Document, Packer, Paragraph, TextRun, ImageRun, HeadingLevel, AlignmentType, BorderStyle,
-  TabStopType, convertMillimetersToTwip, LevelFormat,
+  TabStopType, convertMillimetersToTwip, LevelFormat, LevelSuffix,
 } from 'docx';
 import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } from './lesson-docx';
 
@@ -22,16 +22,18 @@ function normalizeMarks(s: string): string {
 // We build numbering definitions on the fly: one shared "questions" decimal list, plus a UNIQUE
 // per-question subpart list (so subparts restart at (i)/(a) for each question). Word then maintains
 // these numbers (renumber on insert/delete in Word).
-type NumLevel = { level: number; format: LevelFormat; text: string; alignment: typeof AlignmentType[keyof typeof AlignmentType] };
+type NumRun = { bold?: boolean; color?: string };
+type NumLevel = { level: number; format: LevelFormat; text: string; alignment: typeof AlignmentType[keyof typeof AlignmentType]; run?: NumRun };
 type NumConfig = { reference: string; levels: NumLevel[] };
 
-function lvl(format: LevelFormat, text: string): NumLevel[] {
-  return [{ level: 0, format, text, alignment: AlignmentType.LEFT }];
+function lvl(format: LevelFormat, text: string, run?: NumRun): NumLevel[] {
+  return [{ level: 0, format, text, alignment: AlignmentType.LEFT, run }];
 }
 
-// Detect a leading subpart label like "(i)", "(a)", "(1)" → returns {label, rest} or null.
+// Detect a leading subpart label like "(i)", "(a)", "(1)" — tolerating bold wrappers (**(i)**) that
+// appear in worked-solution working steps. Returns {token, rest} or null.
 function parseSubpartLabel(line: string): { token: string; rest: string } | null {
-  const m = line.match(/^\(([a-z]{1,3}|\d{1,2})\)\s*(.*)$/i);
+  const m = line.match(/^\*{0,2}\(([a-z]{1,3}|\d{1,2})\)\*{0,2}\s*(.*)$/i);
   if (!m) return null;
   return { token: m[1], rest: m[2] };
 }
@@ -40,6 +42,23 @@ function subpartFormat(token: string): LevelFormat {
   if (/^\d+$/.test(token)) return LevelFormat.DECIMAL;
   if (/^[ivxl]+$/i.test(token) && /[ivxl]/i.test(token)) return LevelFormat.LOWER_ROMAN;
   return LevelFormat.LOWER_LETTER;
+}
+function romanToInt(s: string): number {
+  const map: Record<string, number> = { i: 1, v: 5, x: 10, l: 50, c: 100, d: 500, m: 1000 };
+  const t = s.toLowerCase(); let total = 0;
+  for (let i = 0; i < t.length; i++) {
+    const cur = map[t[i]] || 0, next = map[t[i + 1]] || 0;
+    total += cur < next ? -cur : cur;
+  }
+  return total;
+}
+// Ordinal value of a subpart token, used to detect a sequence reset (question parts → working parts).
+function tokenRank(token: string): number {
+  const t = token.toLowerCase();
+  if (/^\d+$/.test(t)) return parseInt(t, 10);
+  if (/^[ivxl]+$/.test(t)) return romanToInt(t);
+  let n = 0; for (const ch of t) { if (ch < 'a' || ch > 'z') return 0; n = n * 26 + (ch.charCodeAt(0) - 96); }
+  return n;
 }
 
 export type DocxLesson = { name: string; level: string; description?: string | null; topics?: string[]; section_order?: string[] };
@@ -129,12 +148,19 @@ async function contentParagraphs(
   // each can right-tab its trailing marks to 15.5 cm.
   const lines = text.split(/\n/).map(l => l.trim()).filter(l => l && l !== '---');
   let reportedFmt = false;
+  // Auto-numbered subpart lists restart per sequence: when a label's ordinal is <= the previous one
+  // (e.g. question parts (i)-(iv) end, then the working steps start again at (i)), bump the Word
+  // numbering INSTANCE so the count restarts at (i)/(a)/1.
+  let instance = 0, prevRank = 0; let seenSub = false;
   for (const line of lines) {
     const sub = opts.subpartRef ? parseSubpartLabel(line) : null;
     if (sub) {
       if (!reportedFmt) { opts.onSubpartFormat?.(subpartFormat(sub.token)); reportedFmt = true; }
+      const rank = tokenRank(sub.token);
+      if (!seenSub || rank <= prevRank) instance++;
+      seenSub = true; prevRank = rank;
       out.push(new Paragraph({
-        numbering: { reference: opts.subpartRef!, level: 0 },
+        numbering: { reference: opts.subpartRef!, level: 0, instance },
         children: inlineRuns(sub.rest, reg, { ...opts, marksTab: true }),
         tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
         spacing: { after: 80 },
@@ -172,17 +198,22 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   const practiceNum = new Map<string, number>();
   practiceOrdered.forEach((c, i) => practiceNum.set(c.id, i + 1));
 
+  // Every worked-example + practice card gets its own auto-numbered subpart list.
+  const numberedCards = sections.flatMap(sec => cardsOf(sec)).filter(c => c.content_kind === 'worked_example' || c.content_kind === 'practice');
+  const hasExamples = numberedCards.some(c => c.content_kind === 'worked_example');
+
   // Word numbering definitions accumulated during the build.
   const numConfigs: NumConfig[] = [
     // Shared question list (1. 2. 3. …) used by every practice question header.
     { reference: 'questions', levels: lvl(LevelFormat.DECIMAL, '%1.') },
   ];
-  // Subpart format chosen per-question once we see its first label; default lower-roman.
+  // Shared worked-example list ("Example 1", "Example 2" …) — bold blue, auto-renumbering.
+  if (hasExamples) numConfigs.push({ reference: 'examples', levels: lvl(LevelFormat.DECIMAL, 'Example %1', { bold: true, color: '1D4ED8' }) });
+  // Subpart format chosen per-card once we see its first label; default lower-roman.
   const subpartFmt = new Map<string, LevelFormat>();
   const subpartRefFor = (cardId: string) => `sub-${cardId}`;
-  for (const c of practiceOrdered) numConfigs.push({ reference: subpartRefFor(c.id), levels: lvl(LevelFormat.LOWER_ROMAN, '(%1)') });
+  for (const c of numberedCards) numConfigs.push({ reference: subpartRefFor(c.id), levels: lvl(LevelFormat.LOWER_ROMAN, '(%1)') });
 
-  let exampleNo = 0;
   const body: Paragraph[] = [];
 
   // Cover
@@ -222,10 +253,16 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
           body.push(new Paragraph({ spacing: { after: 60 }, border: { bottom: { color: '9CA3AF', size: 4, style: BorderStyle.DASHED, space: 1 } }, children: [new TextRun({ text: '' })] }));
         }
       } else {
-        // worked example — numbered "Example N"
-        exampleNo++;
-        body.push(new Paragraph({ spacing: { before: 160 }, children: [new TextRun({ text: `Example ${exampleNo}${c.card_title ? ' — ' + c.card_title : ''}`, bold: true, color: '1D4ED8' })] }));
-        for (const p of await contentParagraphs(c.content, reg)) body.push(p);
+        // worked example — "Example N" via a Word auto-list, subparts auto-numbered too.
+        body.push(new Paragraph({
+          numbering: { reference: 'examples', level: 0 },
+          spacing: { before: 160 },
+          children: c.card_title ? [new TextRun({ text: `— ${c.card_title}`, bold: true, color: '1D4ED8' })] : [],
+        }));
+        for (const p of await contentParagraphs(c.content, reg, {
+          subpartRef: subpartRefFor(c.id),
+          onSubpartFormat: (f) => subpartFmt.set(c.id, f),
+        })) body.push(p);
       }
     }
   }
@@ -258,8 +295,8 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
       config: numConfigs.map(cfg => ({
         reference: cfg.reference,
         levels: cfg.levels.map(l => ({
-          level: l.level, format: l.format, text: l.text, alignment: l.alignment,
-          style: { paragraph: { indent: { left: convertMillimetersToTwip(l.level === 0 ? 8 : 16), hanging: convertMillimetersToTwip(6) } } },
+          level: l.level, format: l.format, text: l.text, alignment: l.alignment, suffix: LevelSuffix.SPACE,
+          style: { ...(l.run ? { run: l.run } : {}), paragraph: { indent: { left: convertMillimetersToTwip(l.level === 0 ? 8 : 16), hanging: convertMillimetersToTwip(6) } } },
         })),
       })),
     },

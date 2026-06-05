@@ -284,13 +284,14 @@ const customCollision: CollisionDetection = (args) => {
 // ── Sortable card row ────────────────────────────────────────────────────────
 
 function SortableCardRow({
-  card, displayIndex, isSelected, onSelect, onBankDrop,
+  card, displayIndex, isSelected, onSelect, onBankDrop, onQuickDelete,
 }: {
   card: Card;
   displayIndex: number;
   isSelected: boolean;
   onSelect: (id: string) => void;
   onBankDrop?: (q: BankQuestion, anchorCard: Card, position: 'above' | 'below') => void;
+  onQuickDelete?: (card: Card) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
@@ -330,7 +331,7 @@ function SortableCardRow({
           onBankDrop(q, card, pos);
         } catch (err) { console.error('bank drop parse failed', err); }
       }}
-      className={`relative flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:bg-slate-50'} ${animateIn ? 'card-section-entry' : ''} ${bankHover ? 'ring-2 ring-blue-200' : ''}`}
+      className={`group relative flex items-center gap-2 px-3 py-2 rounded cursor-pointer border transition-colors ${isSelected ? 'bg-blue-50 border-blue-300' : 'bg-white border-slate-200 hover:bg-slate-50'} ${animateIn ? 'card-section-entry' : ''} ${bankHover ? 'ring-2 ring-blue-200' : ''}`}
     >
       {bankHover === 'above' && <div className="absolute -top-1 left-0 right-0 h-1 bg-blue-500 rounded-full pointer-events-none" />}
       {bankHover === 'below' && <div className="absolute -bottom-1 left-0 right-0 h-1 bg-blue-500 rounded-full pointer-events-none" />}
@@ -346,6 +347,13 @@ function SortableCardRow({
       )}
       {card.source_question_id && (
         <span className="text-[10px] text-blue-500 shrink-0" title="From bank">🔗</span>
+      )}
+      {onQuickDelete && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onQuickDelete(card); }}
+          className="shrink-0 text-slate-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity text-sm leading-none px-1"
+          title="Delete card (Ctrl/Cmd+Z to undo)"
+        >🗑</button>
       )}
     </div>
   );
@@ -1477,6 +1485,7 @@ function SectionFlow({
   onAddCard,
   onRenameSection,
   onDeleteSection,
+  onQuickDeleteCard,
 }: {
   cards: Card[];
   sections: string[];                 // lesson-level ordered section names
@@ -1488,6 +1497,7 @@ function SectionFlow({
   onAddCard: (section: string, kind: ContentKind) => void;
   onRenameSection: (oldName: string, newName: string) => void;
   onDeleteSection: (name: string) => void;
+  onQuickDeleteCard: (card: Card) => void;
 }) {
   const isCardDrag = !!activeId && !String(activeId).startsWith('sec-hdr-');
 
@@ -1528,6 +1538,7 @@ function SectionFlow({
                             isSelected={selectedId === card.id}
                             onSelect={onSelectCard}
                             onBankDrop={onBankDropOnList}
+                            onQuickDelete={onQuickDeleteCard}
                           />
                         ))}
                       </div>
@@ -1645,8 +1656,8 @@ export default function LessonEditorClient() {
     if (updated) { setLesson(updated as unknown as Lesson); setSavedAt(new Date()); }
   }
 
-  const addCard = useCallback(async (kind: ContentKind, extra: Partial<Card> = {}) => {
-    pushUndo('Add card');
+  const addCard = useCallback(async (kind: ContentKind, extra: Partial<Card> = {}, opts: { skipUndo?: boolean } = {}) => {
+    if (!opts.skipUndo) pushUndo('Add card');
     const section = extra.section_name ?? DEFAULT_SECTION[kind];
     const created = await storeAddCard({
       lesson_id: id,
@@ -1677,6 +1688,15 @@ export default function LessonEditorClient() {
     setCards(prev => prev.filter(c => c.id !== cardId));
     setSelectedId(null);
     setSavedAt(new Date());
+  }, []);
+
+  // Delete a card straight from the list (no need to open it). Undoable with Ctrl/Cmd+Z.
+  const handleQuickDeleteCard = useCallback(async (card: Card) => {
+    pushUndo('Delete card');
+    setCards(prev => prev.filter(c => c.id !== card.id));
+    setSelectedId(prev => (prev === card.id ? null : prev));
+    setSavedAt(new Date());
+    await storeDeleteCard(card.id);
   }, []);
 
   // One-click: generate worked solutions for every practice card that doesn't already have one.
@@ -1738,6 +1758,24 @@ export default function LessonEditorClient() {
       marks: kind === 'practice' ? q.total_marks ?? null : null,
     });
     showToast(`Added to "${section}"`);
+  }, [addCard]);
+
+  // Add a whole shortlist at once, undoable in a SINGLE Ctrl+Z (one snapshot before the batch,
+  // then each card added with skipUndo so it doesn't stack N entries).
+  const sendStagedBatch = useCallback(async (batch: { q: BankQuestion; kind: ContentKind; section: string }[]) => {
+    if (batch.length === 0) return;
+    pushUndo(`Add ${batch.length} question${batch.length > 1 ? 's' : ''}`);
+    for (const b of batch) {
+      const { title: tplTitle, content: tplContent } = buildBankWorkedExampleTemplate(b.q);
+      await addCard(b.kind, {
+        section_name: b.section || DEFAULT_SECTION[b.kind],
+        card_title: tplTitle,
+        content: tplContent,
+        source_question_id: b.q.id,
+        marks: b.kind === 'practice' ? b.q.total_marks ?? null : null,
+      }, { skipUndo: true });
+    }
+    showToast(`Added ${batch.length} question${batch.length > 1 ? 's' : ''}`);
   }, [addCard]);
 
   // Delete a lesson-level section. If it still has cards, confirm and delete them too.
@@ -2071,6 +2109,7 @@ export default function LessonEditorClient() {
                 onAddCard={(section, kind) => addCard(kind, { section_name: section })}
                 onRenameSection={handleRenameSection}
                 onDeleteSection={handleDeleteSection}
+                onQuickDeleteCard={handleQuickDeleteCard}
               />
             </div>
             <DragOverlay modifiers={[restrictToVerticalAxis]}>
@@ -2129,6 +2168,7 @@ export default function LessonEditorClient() {
         <StagingPanel
           onClose={() => setStagingOpen(false)}
           onInsert={(q, kind, section) => void sendStagedToLesson(q, kind, section)}
+          onInsertBatch={(batch) => void sendStagedBatch(batch)}
           sections={sectionList}
           level={lesson.level}
           topics={lesson.topics}

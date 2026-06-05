@@ -132,9 +132,10 @@ function Divider({ onDrag }: { onDrag: (dx: number) => void }) {
   );
 }
 
-export function StagingPanel({ onClose, onInsert, sections, level, topics, auth }: {
+export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level, topics, auth }: {
   onClose: () => void;
   onInsert: (q: BankQuestion, kind: StageKind, section: string) => void;
+  onInsertBatch?: (items: { q: BankQuestion; kind: StageKind; section: string }[]) => void;
   sections: string[];
   level: string;
   topics: string[];
@@ -191,8 +192,9 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
   function addAll() {
     const keepers = getKeep();
     if (keepers.length === 0) return;
-    if (!confirm(`Add all ${keepers.length} shortlisted question${keepers.length > 1 ? 's' : ''} to the lesson?`)) return;
-    for (const it of keepers) onInsert(it.q, it.kind ?? 'worked_example', it.section ?? sections[0] ?? 'Default');
+    const batch = keepers.map(it => ({ q: it.q, kind: it.kind ?? 'worked_example' as StageKind, section: it.section ?? sections[0] ?? 'Default' }));
+    if (onInsertBatch) onInsertBatch(batch);
+    else for (const b of batch) onInsert(b.q, b.kind, b.section);
     clearKeep();
   }
 
