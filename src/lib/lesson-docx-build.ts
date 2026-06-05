@@ -140,13 +140,19 @@ function naturalSize(buf: ArrayBuffer, mime: string): Promise<{ w: number; h: nu
 async function contentParagraphs(
   content: string | null,
   reg: OmmlRegistry,
-  opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void } = {},
+  opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void; dropLeadingTitle?: string } = {},
 ): Promise<Paragraph[]> {
   const out: Paragraph[] = [];
   const { text, urls } = extractImages(content ?? '');
   // Each non-empty LINE becomes its own paragraph so labelled parts ((i), (ii)…) stay separated and
   // each can right-tab its trailing marks to 15.5 cm.
   const lines = text.split(/\n/).map(l => l.trim()).filter(l => l && l !== '---');
+  // Drop a leading line that just repeats the card title (the bank template emits "**School Year PxQy**"
+  // as the first content line, which the heading already shows).
+  if (opts.dropLeadingTitle && lines.length) {
+    const norm = (s: string) => s.replace(/^\*+|\*+$/g, '').trim();
+    if (norm(lines[0]) === opts.dropLeadingTitle.trim()) lines.shift();
+  }
   let reportedFmt = false;
   // Auto-numbered subpart lists restart per sequence: when a label's ordinal is <= the previous one
   // (e.g. question parts (i)-(iv) end, then the working steps start again at (i)), bump the Word
@@ -229,12 +235,15 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
     const firstAdvIdx = secCards.findIndex(c => c.content_kind === 'practice' && c.is_advanced);
     for (let ci = 0; ci < secCards.length; ci++) {
       const c = secCards[ci];
+      // Skip placeholder cards with neither a title nor content (e.g. a blank "Untitled" card) so they
+      // don't burn an "Example N" number on an empty line.
+      if (!(c.card_title || '').trim() && !(c.content || '').trim()) continue;
       if (ci === firstAdvIdx) {
         body.push(new Paragraph({ spacing: { before: 160, after: 60 }, children: [new TextRun({ text: 'Advanced practice', bold: true, color: 'B45309' })] }));
       }
       if (c.content_kind === 'refresher') {
         if (c.card_title) body.push(new Paragraph({ spacing: { before: 80 }, children: [new TextRun({ text: c.card_title, bold: true })] }));
-        for (const p of await contentParagraphs(c.content, reg)) body.push(p);
+        for (const p of await contentParagraphs(c.content, reg, { dropLeadingTitle: c.card_title ?? '' })) body.push(p);
       } else if (c.content_kind === 'practice') {
         // Question number is a real Word list (auto-renumbers in Word). Title + marks on same line.
         body.push(new Paragraph({
@@ -246,6 +255,7 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
         for (const p of await contentParagraphs(c.content, reg, {
           subpartRef: subpartRefFor(c.id),
           onSubpartFormat: (f) => subpartFmt.set(c.id, f),
+          dropLeadingTitle: c.card_title ?? '',
         })) body.push(p);
         // Writing space ~ marks lines (min 3, cap 12).
         const lines = Math.min(12, Math.max(3, c.marks ?? 3));
@@ -262,6 +272,7 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
         for (const p of await contentParagraphs(c.content, reg, {
           subpartRef: subpartRefFor(c.id),
           onSubpartFormat: (f) => subpartFmt.set(c.id, f),
+          dropLeadingTitle: c.card_title ?? '',
         })) body.push(p);
       }
     }
