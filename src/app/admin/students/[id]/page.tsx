@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
 
 function getCookie(name: string): string {
   if (typeof document === 'undefined') return '';
@@ -89,6 +90,9 @@ export default function StudentProfilePage() {
   const [contact, setContact] = useState<Contact | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
   const [examForm, setExamForm] = useState<{ examType: string; examDate: string; topics: string; noExam: boolean; saving: boolean } | null>(null);
+  // Phase 3: progress history + lesson modal
+  const [history, setHistory] = useState<{ id: string; date: string; type: string; status: string; topicsCovered: string; mood: string; progressLogged: boolean }[]>([]);
+  const [lessonModal, setLessonModal] = useState<LessonModalLesson | null>(null);
 
   function showToast(kind: 'ok' | 'err', msg: string) {
     setToast({ kind, msg });
@@ -105,6 +109,13 @@ export default function StudentProfilePage() {
     finally { setLoading(false); }
   }, [studentId]);
 
+  const fetchHistory = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/progress/students/${studentId}/lessons`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      if (res.ok) setHistory(((await res.json()).lessons || []).filter((l: any) => l.status === 'Completed' || l.progressLogged));
+    } catch { /* non-fatal */ }
+  }, [studentId]);
+
   async function verify(pw: string) {
     setAuthLoading(true);
     try {
@@ -119,7 +130,7 @@ export default function StudentProfilePage() {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
     if (pw) { savedPw.current = pw; verify(pw); }
   }, []);
-  useEffect(() => { if (authed && studentId) fetchProfile(); }, [authed, studentId, fetchProfile]);
+  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); } }, [authed, studentId, fetchProfile, fetchHistory]);
 
   async function submitSwitch() {
     if (!switchModal || !switchModal.date || !switchModal.newSlotId) return;
@@ -343,11 +354,27 @@ export default function StudentProfilePage() {
                       {l.status !== 'Absent' && <button title="Mark absent" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => markStatus(l, 'Absent')}>✗</button>}
                       {(l.status === 'Completed' || l.status === 'Absent') && <button title="Undo" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => markStatus(l, 'Scheduled')}>↺</button>}
                       {canReschedule && <button title="Reschedule" style={iconBtn('#1d4ed8', '#bfdbfe')} disabled={busy} onClick={() => setReschedModal({ lesson: l, date: '', slotId: '', saving: false })}>🔄</button>}
+                      {l.type !== 'Revision Sprint' && <button title="Log progress" style={iconBtn('#7c3aed', '#e9d5ff')} disabled={busy} onClick={() => setLessonModal({ id: l.id, studentId, studentName: s.name, date: l.date, slotId: l.slotId, type: l.type })}>📝</button>}
                       <button title="Cancel lesson" style={iconBtn('#b91c1c', '#fecaca')} disabled={busy} onClick={() => cancelLesson(l)}>🗑</button>
                     </div>
                   </div>
                 );
               })}
+            </Section>
+
+            {/* Progress history — click to log/edit progress */}
+            <Section title="Progress history" action={<a href={`/admin/progress?student=${s.id}`} style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Timeline →</a>}>
+              {history.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No logged lessons yet.</div>}
+              {history.slice(0, 12).map(h => (
+                <button key={h.id} onClick={() => setLessonModal({ id: h.id, studentId, studentName: s.name, date: h.date, slotId: null, type: h.type })}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, width: '100%', background: 'none', border: 'none', borderBottomStyle: 'solid', cursor: 'pointer', textAlign: 'left' }}>
+                  <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(h.date)}</span>
+                  <span style={{ flex: 1, minWidth: 0, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.topicsCovered || <span style={{ color: '#cbd5e1' }}>—</span>}</span>
+                  {h.mood && <span style={{ fontSize: 15 }}>{h.mood.split(' ')[0]}</span>}
+                  {h.progressLogged && <span title="Progress logged" style={{ color: '#16a34a', fontSize: 12 }}>●</span>}
+                  <span style={{ color: '#a78bfa', fontSize: 12 }}>📝</span>
+                </button>
+              ))}
             </Section>
 
             {/* Exams */}
@@ -491,6 +518,17 @@ export default function StudentProfilePage() {
             </button>
           </div>
         </ModalShell>
+      )}
+
+      {/* Shared progress-logging modal */}
+      {lessonModal && (
+        <LessonModal
+          lesson={lessonModal}
+          password={savedPw.current}
+          slots={(data?.slots ?? []).map(sl => ({ id: sl.id, time: sl.label }))}
+          onClose={() => { setLessonModal(null); fetchHistory(); fetchProfile(); }}
+          onProgressLogged={() => { /* refreshed on close */ }}
+        />
       )}
 
       {toast && (
