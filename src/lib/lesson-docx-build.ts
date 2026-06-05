@@ -200,25 +200,23 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
     .filter(c => (c.section_name || 'Default') === sec)
     .sort((a, b) => (advRank(a) - advRank(b)) || (a.order_index - b.order_index));
 
-  const practiceOrdered = sections.flatMap(sec => cardsOf(sec).filter(c => c.content_kind === 'practice'));
-  const practiceNum = new Map<string, number>();
-  practiceOrdered.forEach((c, i) => practiceNum.set(c.id, i + 1));
-
-  // Every worked-example + practice card gets its own auto-numbered subpart list.
-  const numberedCards = sections.flatMap(sec => cardsOf(sec)).filter(c => c.content_kind === 'worked_example' || c.content_kind === 'practice');
-  const hasExamples = numberedCards.some(c => c.content_kind === 'worked_example');
+  // Every non-empty card (refresher / worked example / practice) is a "main question" and gets a
+  // single running number 1, 2, 3 … across the whole lesson; subparts (i)(ii) nest under each.
+  const isEmptyCard = (c: DocxCard) => !(c.card_title || '').trim() && !(c.content || '').trim();
+  const orderedCards = sections.flatMap(sec => cardsOf(sec)).filter(c => !isEmptyCard(c));
+  const mainNum = new Map<string, number>();
+  orderedCards.forEach((c, i) => mainNum.set(c.id, i + 1));
+  const practiceOrdered = orderedCards.filter(c => c.content_kind === 'practice');
 
   // Word numbering definitions accumulated during the build.
   const numConfigs: NumConfig[] = [
-    // Shared question list (1. 2. 3. …) used by every practice question header.
-    { reference: 'questions', levels: lvl(LevelFormat.DECIMAL, '%1.') },
+    // Single running question list (1. 2. 3. …) shared by every card's main heading.
+    { reference: 'questions', levels: lvl(LevelFormat.DECIMAL, '%1.', { bold: true }) },
   ];
-  // Shared worked-example list ("Example 1", "Example 2" …) — bold blue, auto-renumbering.
-  if (hasExamples) numConfigs.push({ reference: 'examples', levels: lvl(LevelFormat.DECIMAL, 'Example %1', { bold: true, color: '1D4ED8' }) });
   // Subpart format chosen per-card once we see its first label; default lower-roman.
   const subpartFmt = new Map<string, LevelFormat>();
   const subpartRefFor = (cardId: string) => `sub-${cardId}`;
-  for (const c of numberedCards) numConfigs.push({ reference: subpartRefFor(c.id), levels: lvl(LevelFormat.LOWER_ROMAN, '(%1)') });
+  for (const c of orderedCards) numConfigs.push({ reference: subpartRefFor(c.id), levels: lvl(LevelFormat.LOWER_ROMAN, '(%1)') });
 
   const body: Paragraph[] = [];
 
@@ -235,45 +233,34 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
     const firstAdvIdx = secCards.findIndex(c => c.content_kind === 'practice' && c.is_advanced);
     for (let ci = 0; ci < secCards.length; ci++) {
       const c = secCards[ci];
-      // Skip placeholder cards with neither a title nor content (e.g. a blank "Untitled" card) so they
-      // don't burn an "Example N" number on an empty line.
-      if (!(c.card_title || '').trim() && !(c.content || '').trim()) continue;
+      // Skip placeholder cards with neither a title nor content (e.g. a blank "Untitled" card).
+      if (isEmptyCard(c)) continue;
       if (ci === firstAdvIdx) {
         body.push(new Paragraph({ spacing: { before: 160, after: 60 }, children: [new TextRun({ text: 'Advanced practice', bold: true, color: 'B45309' })] }));
       }
-      if (c.content_kind === 'refresher') {
-        if (c.card_title) body.push(new Paragraph({ spacing: { before: 80 }, children: [new TextRun({ text: c.card_title, bold: true })] }));
-        for (const p of await contentParagraphs(c.content, reg, { dropLeadingTitle: c.card_title ?? '' })) body.push(p);
-      } else if (c.content_kind === 'practice') {
-        // Question number is a real Word list (auto-renumbers in Word). Title + marks on same line.
-        body.push(new Paragraph({
-          numbering: { reference: 'questions', level: 0 },
-          spacing: { before: 160 },
-          tabStops: c.marks ? [{ type: TabStopType.RIGHT, position: MARKS_TAB }] : undefined,
-          children: [...inlineRuns(c.card_title ?? '', reg, { bold: true }), ...(c.marks ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : [])],
-        }));
-        for (const p of await contentParagraphs(c.content, reg, {
-          subpartRef: subpartRefFor(c.id),
-          onSubpartFormat: (f) => subpartFmt.set(c.id, f),
-          dropLeadingTitle: c.card_title ?? '',
-        })) body.push(p);
+      // Every card is a numbered main question (running 1, 2, 3 … via a Word auto-list, continuous
+      // across sections). Practice cards add right-tabbed marks + writing space below.
+      const isPractice = c.content_kind === 'practice';
+      body.push(new Paragraph({
+        numbering: { reference: 'questions', level: 0 },
+        spacing: { before: 160 },
+        tabStops: (isPractice && c.marks) ? [{ type: TabStopType.RIGHT, position: MARKS_TAB }] : undefined,
+        children: [
+          ...inlineRuns(c.card_title ?? '', reg, { bold: true }),
+          ...((isPractice && c.marks) ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : []),
+        ],
+      }));
+      for (const p of await contentParagraphs(c.content, reg, {
+        subpartRef: subpartRefFor(c.id),
+        onSubpartFormat: (f) => subpartFmt.set(c.id, f),
+        dropLeadingTitle: c.card_title ?? '',
+      })) body.push(p);
+      if (isPractice) {
         // Writing space ~ marks lines (min 3, cap 12).
         const lines = Math.min(12, Math.max(3, c.marks ?? 3));
         for (let i = 0; i < lines; i++) {
           body.push(new Paragraph({ spacing: { after: 60 }, border: { bottom: { color: '9CA3AF', size: 4, style: BorderStyle.DASHED, space: 1 } }, children: [new TextRun({ text: '' })] }));
         }
-      } else {
-        // worked example — "Example N" via a Word auto-list, subparts auto-numbered too.
-        body.push(new Paragraph({
-          numbering: { reference: 'examples', level: 0 },
-          spacing: { before: 160 },
-          children: c.card_title ? [new TextRun({ text: `— ${c.card_title}`, bold: true, color: '1D4ED8' })] : [],
-        }));
-        for (const p of await contentParagraphs(c.content, reg, {
-          subpartRef: subpartRefFor(c.id),
-          onSubpartFormat: (f) => subpartFmt.set(c.id, f),
-          dropLeadingTitle: c.card_title ?? '',
-        })) body.push(p);
       }
     }
   }
@@ -284,11 +271,11 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
     body.push(new Paragraph({ text: 'Practice — Solutions', heading: HeadingLevel.HEADING_1, pageBreakBefore: true, spacing: { after: 120 } }));
     for (const c of practiceOrdered) {
       body.push(new Paragraph({ spacing: { before: 120 }, children: [
-        new TextRun({ text: `${practiceNum.get(c.id)}. `, bold: true }),
+        new TextRun({ text: `${mainNum.get(c.id)}. `, bold: true }),
         ...inlineRuns(c.card_title ?? '', reg, { bold: true }),
         ...(c.is_advanced ? [new TextRun({ text: '  [Advanced]', bold: true, color: 'B45309' })] : []),
       ] }));
-      for (const p of await contentParagraphs(c.content, reg, { color: ANSWER_BROWN })) body.push(p);
+      for (const p of await contentParagraphs(c.content, reg, { color: ANSWER_BROWN, dropLeadingTitle: c.card_title ?? '' })) body.push(p);
     }
   }
 
