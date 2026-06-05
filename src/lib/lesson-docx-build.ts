@@ -14,13 +14,13 @@ import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } 
 // Marks right-tab position (15.5 cm from left margin).
 const MARKS_TAB = convertMillimetersToTwip(155);
 
-// ── Auto-numbering indents (all in mm — tweak here to taste) ──
+// ── Auto-numbering indents (in TWIPS, 567 ≈ 1 cm — tweak here to taste) ──
 // `textIndent` = where the body text starts (Word's "Indent at"); the number sits a `hang` to its
-// left (Word's "Aligned at" = textIndent − hang). Main questions hug the margin; subparts nest one
-// step in under the question text.
+// left (Word's "Aligned at" = textIndent − hang). Values copied from Adrian's house worksheet:
+// main "1." number at the margin, text at 0.63 cm; subparts "(i)/(a)" number at 0.63 cm, text 1.26 cm.
 const NUM_INDENT = {
-  main: { textIndent: 7, hang: 7 },  // "1." → number at 0 mm, text at 7 mm
-  sub: { textIndent: 14, hang: 7 },  // "(i)" → number at 7 mm, text at 14 mm
+  main: { textIndent: 360, hang: 360 }, // "1."  → number @ 0 cm,   text @ 0.63 cm
+  sub: { textIndent: 717, hang: 360 },  // "(i)" → number @ 0.63 cm, text @ 1.26 cm
 };
 // Normalise mark brackets: [2m] / [ 2 m ] → [2].
 function normalizeMarks(s: string): string {
@@ -305,7 +305,7 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
           reference: cfg.reference,
           levels: cfg.levels.map(l => ({
             level: l.level, format: l.format, text: l.text, alignment: l.alignment, suffix: LevelSuffix.SPACE,
-            style: { ...(l.run ? { run: l.run } : {}), paragraph: { indent: { left: convertMillimetersToTwip(ind.textIndent), hanging: convertMillimetersToTwip(ind.hang) } } },
+            style: { ...(l.run ? { run: l.run } : {}), paragraph: { indent: { left: ind.textIndent, hanging: ind.hang } } },
           })),
         };
       }),
