@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-06-05T12:14:32.322Z
+// Last synced: 2026-06-05T13:13:14.028Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'

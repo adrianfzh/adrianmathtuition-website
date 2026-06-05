@@ -83,11 +83,12 @@ export async function GET(req: NextRequest) {
       noExam: r.fields['No Exam'] === true,
     }));
 
-  // Recent invoices (last ~6 by created/month) — match student in JS
+  // Invoices for this student — match in JS
   const invData = await airtableRequestAll('Invoices',
     `?fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Status&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Invoice Type&fields[]=PDF URL&sort[0][field]=Month&sort[0][direction]=desc`);
-  const invoices = invData.records
-    .filter((r: any) => r.fields['Student']?.[0] === id)
+  const studentInvoices = invData.records.filter((r: any) => r.fields['Student']?.[0] === id);
+  const studentInvoiceIds = new Set(studentInvoices.map((r: any) => r.id));
+  const invoices = studentInvoices
     .slice(0, 6)
     .map((r: any) => ({
       id: r.id,
@@ -99,6 +100,25 @@ export async function GET(req: NextRequest) {
       invoiceType: r.fields['Invoice Type'] || 'Regular',
       pdfUrl: r.fields['PDF URL'] || '',
     }));
+
+  // Every invoice PDF actually emailed to this student (from EmailLog archive).
+  // Match EmailLog rows whose Related Invoice belongs to this student and which
+  // carry a PDF URL — that's the exact PDF that was sent.
+  let sentInvoices: any[] = [];
+  try {
+    const logs = await airtableRequestAll('EmailLog',
+      `?filterByFormula=${encodeURIComponent(`NOT({PDF URL}='')`)}&fields[]=Related Invoice&fields[]=Subject&fields[]=Sent At&fields[]=To Email&fields[]=Status&fields[]=PDF URL&sort[0][field]=Sent At&sort[0][direction]=desc`);
+    sentInvoices = (logs.records || [])
+      .filter((r: any) => studentInvoiceIds.has(r.fields['Related Invoice']?.[0]))
+      .map((r: any) => ({
+        id: r.id,
+        subject: r.fields['Subject'] || '',
+        sentAt: r.fields['Sent At'] || '',
+        toEmail: r.fields['To Email'] || '',
+        status: r.fields['Status'] || '',
+        pdfUrl: r.fields['PDF URL'] || '',
+      }));
+  } catch { /* EmailLog optional */ }
 
   // Active slot list for the switch/add pickers
   const slots = slotsData.records
@@ -120,6 +140,7 @@ export async function GET(req: NextRequest) {
     upcoming,
     exams,
     invoices,
+    sentInvoices,
     slots,
   });
 }

@@ -31,19 +31,32 @@ function fmtDate(iso: string): string {
 function money(n: number | null): string {
   return n == null ? '—' : `$${Number(n).toLocaleString()}`;
 }
+// Slot labels are "Monday 3-5pm" — the first word is the weekday.
+function weekdayName(label: string): string { return (label || '').trim().split(/\s+/)[0]; }
 
 interface Enrollment { enrollmentId: string; slotId: string | null; slotLabel: string; slotLevel: string; ratePerLesson: number | null; rateType: string; }
 interface UpLesson { id: string; date: string; slotId: string | null; slotLabel: string; type: string; status: string; }
 interface Exam { id: string; examType: string; examDate: string; testedTopics: string; noExam: boolean; }
 interface Invoice { id: string; month: string; finalAmount: number | null; amountPaid: number | null; isPaid: boolean; status: string; invoiceType: string; pdfUrl: string; }
+interface SentInvoice { id: string; subject: string; sentAt: string; toEmail: string; status: string; pdfUrl: string; }
 interface SlotOpt { id: string; label: string; level: string; }
+interface Contact { name: string; parentName: string; parentEmail: string; parentContact?: string; studentContact?: string; }
 interface Profile {
   student: { id: string; name: string; level: string; subjects: string[]; subjectLevel: string; status: string; juneRevision: string };
   enrollments: Enrollment[];
   upcoming: UpLesson[];
   exams: Exam[];
   invoices: Invoice[];
+  sentInvoices: SentInvoice[];
   slots: SlotOpt[];
+}
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+function weekdayOf(iso: string): string { return iso ? DAY_NAMES[new Date(iso + 'T00:00:00').getDay()] : ''; }
+function fmtDateTime(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -69,6 +82,13 @@ export default function StudentProfilePage() {
   // Slot-management modals
   const [switchModal, setSwitchModal] = useState<{ enr: Enrollment; date: string; newSlotId: string; saving: boolean } | null>(null);
   const [addModal, setAddModal] = useState<{ slotId: string; date: string; saving: boolean } | null>(null);
+  // Phase 2: lesson actions
+  const [reschedModal, setReschedModal] = useState<{ lesson: UpLesson; date: string; slotId: string; saving: boolean } | null>(null);
+  const [busyLesson, setBusyLesson] = useState('');
+  // Phase 4: contact + exam quick-add
+  const [contact, setContact] = useState<Contact | null>(null);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [examForm, setExamForm] = useState<{ examType: string; examDate: string; topics: string; noExam: boolean; saving: boolean } | null>(null);
 
   function showToast(kind: 'ok' | 'err', msg: string) {
     setToast({ kind, msg });
@@ -141,6 +161,90 @@ export default function StudentProfilePage() {
     }
   }
 
+  // ── Phase 2: lesson actions ─────────────────────────────────────────────────
+  async function markStatus(lesson: UpLesson, status: 'Completed' | 'Absent' | 'Scheduled') {
+    setBusyLesson(lesson.id);
+    try {
+      const res = await fetch(`/api/admin/progress/lessons?id=${lesson.id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: { Status: status } }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setData(d => d && { ...d, upcoming: d.upcoming.map(l => l.id === lesson.id ? { ...l, status } : l) });
+    } catch { showToast('err', 'Failed to update status'); }
+    finally { setBusyLesson(''); }
+  }
+
+  async function cancelLesson(lesson: UpLesson) {
+    if (!confirm(`Cancel the ${fmtDate(lesson.date)} lesson? This removes it from the schedule.`)) return;
+    setBusyLesson(lesson.id);
+    try {
+      const res = await fetch('/api/admin-schedule/delete', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonId: lesson.id, action: 'delete', notify: false }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed');
+      showToast('ok', 'Lesson cancelled');
+      await fetchProfile();
+    } catch (e: unknown) { showToast('err', e instanceof Error ? e.message.slice(0, 80) : 'Failed'); }
+    finally { setBusyLesson(''); }
+  }
+
+  async function submitReschedule() {
+    if (!reschedModal || !reschedModal.date || !reschedModal.slotId) return;
+    setReschedModal({ ...reschedModal, saving: true });
+    try {
+      const res = await fetch('/api/admin-schedule/reschedule', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonId: reschedModal.lesson.id, newDate: reschedModal.date, newSlotId: reschedModal.slotId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setReschedModal(null);
+      showToast('ok', 'Lesson rescheduled');
+      await fetchProfile();
+    } catch (e: unknown) {
+      setReschedModal(m => m && { ...m, saving: false });
+      showToast('err', e instanceof Error ? e.message.slice(0, 90) : 'Failed');
+    }
+  }
+
+  // ── Phase 4: contact + exam quick-add ───────────────────────────────────────
+  async function loadContact() {
+    setContactLoading(true);
+    try {
+      const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      if (res.ok) setContact(await res.json());
+    } catch { showToast('err', 'Failed to load contact'); }
+    finally { setContactLoading(false); }
+  }
+
+  async function submitExam() {
+    if (!examForm || !examForm.examType) return;
+    setExamForm({ ...examForm, saving: true });
+    try {
+      const res = await fetch('/api/admin-schedule/quick-add-exam', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId, examType: examForm.examType, noExam: examForm.noExam,
+          examDate: examForm.noExam ? null : (examForm.examDate || null),
+          testedTopics: examForm.noExam ? '' : examForm.topics,
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed');
+      setExamForm(null);
+      showToast('ok', 'Exam saved');
+      await fetchProfile();
+    } catch (e: unknown) {
+      setExamForm(m => m && { ...m, saving: false });
+      showToast('err', e instanceof Error ? e.message.slice(0, 90) : 'Failed');
+    }
+  }
+
   // ── Auth gate ──────────────────────────────────────────────────────────────
   if (!authed) {
     return (
@@ -189,6 +293,18 @@ export default function StudentProfilePage() {
                 {s.subjectLevel && <Field label="Subject level" value={s.subjectLevel} />}
                 {s.juneRevision && <Field label="June revision" value={s.juneRevision} />}
               </div>
+              <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
+                {!contact ? (
+                  <button style={btnGhost} onClick={loadContact} disabled={contactLoading}>{contactLoading ? 'Loading…' : '👤 Show contact'}</button>
+                ) : (
+                  <div style={{ fontSize: 13, color: '#374151', display: 'flex', flexWrap: 'wrap', gap: '4px 18px' }}>
+                    {contact.parentName && <span><span style={{ color: '#9ca3af' }}>Parent:</span> {contact.parentName}</span>}
+                    {contact.parentEmail && <span><span style={{ color: '#9ca3af' }}>Email:</span> {contact.parentEmail}</span>}
+                    {contact.parentContact && <span><span style={{ color: '#9ca3af' }}>Parent ☎:</span> {contact.parentContact}</span>}
+                    {contact.studentContact && <span><span style={{ color: '#9ca3af' }}>Student ☎:</span> {contact.studentContact}</span>}
+                  </div>
+                )}
+              </div>
               <div style={{ marginTop: 10 }}>
                 <a href={`/admin/progress?student=${s.id}`} style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none', marginRight: 16 }}>📊 Progress timeline →</a>
                 <a href="/admin/schedule" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>🗓 Schedule →</a>
@@ -209,32 +325,45 @@ export default function StudentProfilePage() {
               ))}
             </Section>
 
-            {/* Upcoming lessons (read-only in v1) */}
+            {/* Upcoming lessons with inline actions */}
             <Section title="Upcoming lessons">
               {data.upcoming.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>None scheduled.</div>}
-              {data.upcoming.map(l => (
-                <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
-                  <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(l.date)}</span>
-                  <span style={{ flex: 1, color: '#6b7280' }}>{l.slotLabel}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: TYPE_COLORS[l.type] || '#475569' }}>{l.type}</span>
-                  {l.status !== 'Scheduled' && <span style={{ fontSize: 11, color: '#94a3b8' }}>{l.status}</span>}
-                </div>
-              ))}
-              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 8 }}>Inline reschedule / mark attendance — coming next.</div>
+              {data.upcoming.map(l => {
+                const busy = busyLesson === l.id;
+                const canReschedule = l.type !== 'Revision Sprint' && !!l.slotId;
+                return (
+                  <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, flexWrap: 'wrap', opacity: busy ? 0.5 : 1 }}>
+                    <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(l.date)}</span>
+                    <span style={{ flex: 1, minWidth: 80, color: '#6b7280' }}>{l.slotLabel}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: TYPE_COLORS[l.type] || '#475569' }}>{l.type}</span>
+                    {l.status === 'Completed' && <span style={{ fontSize: 11, color: '#15803d', fontWeight: 700 }}>✓ Attended</span>}
+                    {l.status === 'Absent' && <span style={{ fontSize: 11, color: '#dc2626', fontWeight: 700 }}>✗ Absent</span>}
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {l.status !== 'Completed' && <button title="Mark present" style={iconBtn('#16a34a', '#bbf7d0')} disabled={busy} onClick={() => markStatus(l, 'Completed')}>✓</button>}
+                      {l.status !== 'Absent' && <button title="Mark absent" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => markStatus(l, 'Absent')}>✗</button>}
+                      {(l.status === 'Completed' || l.status === 'Absent') && <button title="Undo" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => markStatus(l, 'Scheduled')}>↺</button>}
+                      {canReschedule && <button title="Reschedule" style={iconBtn('#1d4ed8', '#bfdbfe')} disabled={busy} onClick={() => setReschedModal({ lesson: l, date: '', slotId: '', saving: false })}>🔄</button>}
+                      <button title="Cancel lesson" style={iconBtn('#b91c1c', '#fecaca')} disabled={busy} onClick={() => cancelLesson(l)}>🗑</button>
+                    </div>
+                  </div>
+                );
+              })}
             </Section>
 
             {/* Exams */}
-            {data.exams.length > 0 && (
-              <Section title="Exams">
-                {data.exams.map(ex => (
-                  <div key={ex.id} style={{ padding: '7px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
+            <Section title="Exams" action={<button style={btnGhost} onClick={() => setExamForm({ examType: '', examDate: '', topics: '', noExam: false, saving: false })}>＋ Add / update</button>}>
+              {data.exams.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No exams recorded.</div>}
+              {data.exams.map(ex => (
+                <div key={ex.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
+                  <div style={{ flex: 1 }}>
                     <span style={{ fontWeight: 600, color: '#111' }}>{ex.examType}</span>
                     {' · '}<span style={{ color: '#6b7280' }}>{ex.noExam ? 'No exam' : (ex.examDate ? fmtDate(ex.examDate) : 'date TBC')}</span>
                     {ex.testedTopics && <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{ex.testedTopics}</div>}
                   </div>
-                ))}
-              </Section>
-            )}
+                  <button style={btnGhost} onClick={() => setExamForm({ examType: ex.examType, examDate: ex.examDate || '', topics: ex.testedTopics || '', noExam: ex.noExam, saving: false })}>Edit</button>
+                </div>
+              ))}
+            </Section>
 
             {/* Invoices */}
             <Section title="Recent invoices" action={<a href="/admin/invoices" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>All →</a>}>
@@ -245,6 +374,20 @@ export default function StudentProfilePage() {
                   <span style={{ flex: 1, color: '#6b7280' }}>{money(inv.finalAmount)}{inv.invoiceType && inv.invoiceType !== 'Regular' ? ` · ${inv.invoiceType}` : ''}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: inv.isPaid ? '#15803d' : '#b45309' }}>{inv.isPaid ? 'Paid' : (inv.status || 'Unpaid')}</span>
                   {inv.pdfUrl && <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#1d4ed8', textDecoration: 'none' }}>📄</a>}
+                </div>
+              ))}
+            </Section>
+
+            {/* Every invoice PDF actually emailed to this student */}
+            <Section title={`Sent invoice PDFs (${data.sentInvoices.length})`}>
+              {data.sentInvoices.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No invoice emails on record.</div>}
+              {data.sentInvoices.map(si => (
+                <div key={si.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{si.subject || '(invoice email)'}</div>
+                    <div style={{ fontSize: 12, color: '#9ca3af' }}>{fmtDateTime(si.sentAt)}{si.toEmail ? ` · ${si.toEmail}` : ''}{si.status && si.status !== 'sent' ? ` · ${si.status}` : ''}</div>
+                  </div>
+                  {si.pdfUrl && <a href={si.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none', whiteSpace: 'nowrap' }}>📄 View PDF</a>}
                 </div>
               ))}
             </Section>
@@ -288,6 +431,63 @@ export default function StudentProfilePage() {
             <button style={btnCancel} onClick={() => setAddModal(null)} disabled={addModal.saving}>Cancel</button>
             <button style={btnPrimary} onClick={submitAddSlot} disabled={addModal.saving || !addModal.slotId}>
               {addModal.saving ? 'Adding…' : 'Add slot'}
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Reschedule modal (one-off move) */}
+      {reschedModal && (() => {
+        const dayName = weekdayOf(reschedModal.date);
+        const daySlots = (data?.slots ?? []).filter(sl => dayName && weekdayName(sl.label) === dayName);
+        return (
+          <ModalShell title="Reschedule lesson" onClose={() => !reschedModal.saving && setReschedModal(null)}>
+            <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>From <strong>{fmtDate(reschedModal.lesson.date)} · {reschedModal.lesson.slotLabel}</strong></div>
+            <Label>New date</Label>
+            <input type="date" style={input} value={reschedModal.date} onChange={e => setReschedModal({ ...reschedModal, date: e.target.value, slotId: '' })} />
+            <Label style={{ marginTop: 12 }}>New slot{dayName ? ` on ${dayName}` : ''}</Label>
+            {!reschedModal.date ? (
+              <div style={{ fontSize: 12.5, color: '#94a3b8', padding: '6px 2px' }}>Pick a date first to see that day&apos;s slots.</div>
+            ) : daySlots.length === 0 ? (
+              <div style={{ fontSize: 12.5, color: '#94a3b8', padding: '6px 2px' }}>No active slots on {dayName}.</div>
+            ) : (
+              <SlotSelect slots={daySlots} studentLevel={s?.level || ''} excludeId={null}
+                value={reschedModal.slotId} onChange={v => setReschedModal({ ...reschedModal, slotId: v })} />
+            )}
+            <div style={modalActions}>
+              <button style={btnCancel} onClick={() => setReschedModal(null)} disabled={reschedModal.saving}>Cancel</button>
+              <button style={btnPrimary} onClick={submitReschedule} disabled={reschedModal.saving || !reschedModal.date || !reschedModal.slotId}>
+                {reschedModal.saving ? 'Rescheduling…' : 'Reschedule'}
+              </button>
+            </div>
+          </ModalShell>
+        );
+      })()}
+
+      {/* Exam quick-add / edit */}
+      {examForm && (
+        <ModalShell title="Add / update exam" onClose={() => !examForm.saving && setExamForm(null)}>
+          <Label>Exam type</Label>
+          <select style={input} value={examForm.examType} onChange={e => setExamForm({ ...examForm, examType: e.target.value })}>
+            <option value="">Select…</option>
+            {['WA1', 'WA2', 'WA3', 'EOY', 'Prelim', 'Promo', 'Mid-Year', 'Final'].map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '12px 0', fontSize: 14, color: '#374151' }}>
+            <input type="checkbox" checked={examForm.noExam} onChange={e => setExamForm({ ...examForm, noExam: e.target.checked })} />
+            No exam this period
+          </label>
+          {!examForm.noExam && (
+            <>
+              <Label>Exam date</Label>
+              <input type="date" style={input} value={examForm.examDate} onChange={e => setExamForm({ ...examForm, examDate: e.target.value })} />
+              <Label style={{ marginTop: 12 }}>Tested topics (comma-separated)</Label>
+              <input style={input} value={examForm.topics} placeholder="e.g. Differentiation, Vectors" onChange={e => setExamForm({ ...examForm, topics: e.target.value })} />
+            </>
+          )}
+          <div style={modalActions}>
+            <button style={btnCancel} onClick={() => setExamForm(null)} disabled={examForm.saving}>Cancel</button>
+            <button style={btnPrimary} onClick={submitExam} disabled={examForm.saving || !examForm.examType}>
+              {examForm.saving ? 'Saving…' : 'Save exam'}
             </button>
           </div>
         </ModalShell>
@@ -351,3 +551,6 @@ const btnGhost: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: '#
 const btnPrimary: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#fff', background: '#1e3a5f', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
 const btnCancel: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#475569', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
 const modalActions: React.CSSProperties = { display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 };
+function iconBtn(color: string, border: string): React.CSSProperties {
+  return { width: 26, height: 26, borderRadius: 6, border: `1px solid ${border}`, background: '#fff', color, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 0 };
+}

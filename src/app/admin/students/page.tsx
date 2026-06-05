@@ -103,17 +103,61 @@ export default function StudentsPage() {
             (!q || s.name.toLowerCase().includes(q))
           );
           if (!filtered.length) return <div style={{ textAlign: 'center', color: '#9ca3af', padding: 40 }}>No students found.</div>;
+
+          const card = (s: { id: string; name: string; level: string; subjects: string[] }) => (
+            <a key={s.id} href={`/admin/students/${s.id}`}
+              style={{ display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>{s.name}</div>
+              <div style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>
+                {s.level}{Array.isArray(s.subjects) && s.subjects.length ? ` · ${s.subjects.join(', ')}` : ''}
+              </div>
+            </a>
+          );
+          const grid = (list: typeof filtered) => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>{list.map(card)}</div>
+          );
+
+          // Subject sub-group for Sec 3/4: EM+AM, EM only, AM only, Other
+          const subjGroup = (s: { subjects: string[] }) => {
+            const subs = Array.isArray(s.subjects) ? s.subjects : [];
+            const em = subs.includes('E Math'), am = subs.includes('A Math');
+            if (em && am) return 'E Math + A Math';
+            if (em) return 'E Math only';
+            if (am) return 'A Math only';
+            return 'Other';
+          };
+          const SUBJ_ORDER = ['E Math + A Math', 'E Math only', 'A Math only', 'Other'];
+          const LEVEL_ORDER = ['Sec 1', 'Sec 2', 'Sec 3', 'Sec 4', 'Sec 5', 'JC1', 'JC2'];
+          const SUBGROUPED = new Set(['Sec 3', 'Sec 4']);
+
+          const levels = LEVEL_ORDER.filter(l => filtered.some(s => s.level === l));
+          const extraLevels = [...new Set(filtered.map(s => s.level).filter(l => !LEVEL_ORDER.includes(l)))];
+
           return (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
-              {filtered.map(s => (
-                <a key={s.id} href={`/admin/students/${s.id}`}
-                  style={{ display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>{s.name}</div>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>
-                    {s.level}{Array.isArray(s.subjects) && s.subjects.length ? ` · ${s.subjects.join(', ')}` : ''}
+            <div>
+              {[...levels, ...extraLevels].map(level => {
+                const inLevel = filtered.filter(s => s.level === level);
+                return (
+                  <div key={level} style={{ marginBottom: 22 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: '#1e3a5f', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {level}
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', background: '#eef2f7', borderRadius: 10, padding: '1px 8px' }}>{inLevel.length}</span>
+                    </div>
+                    {SUBGROUPED.has(level)
+                      ? SUBJ_ORDER.map(sg => {
+                          const inSub = inLevel.filter(s => subjGroup(s) === sg);
+                          if (!inSub.length) return null;
+                          return (
+                            <div key={sg} style={{ marginBottom: 12 }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.03em', margin: '4px 0 8px' }}>{sg} <span style={{ color: '#cbd5e1' }}>· {inSub.length}</span></div>
+                              {grid(inSub)}
+                            </div>
+                          );
+                        })
+                      : grid(inLevel)}
                   </div>
-                </a>
-              ))}
+                );
+              })}
             </div>
           );
         })()}
