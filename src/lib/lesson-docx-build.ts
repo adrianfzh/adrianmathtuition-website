@@ -13,6 +13,15 @@ import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } 
 
 // Marks right-tab position (15.5 cm from left margin).
 const MARKS_TAB = convertMillimetersToTwip(155);
+
+// ── Auto-numbering indents (all in mm — tweak here to taste) ──
+// `textIndent` = where the body text starts (Word's "Indent at"); the number sits a `hang` to its
+// left (Word's "Aligned at" = textIndent − hang). Main questions hug the margin; subparts nest one
+// step in under the question text.
+const NUM_INDENT = {
+  main: { textIndent: 7, hang: 7 },  // "1." → number at 0 mm, text at 7 mm
+  sub: { textIndent: 14, hang: 7 },  // "(i)" → number at 7 mm, text at 14 mm
+};
 // Normalise mark brackets: [2m] / [ 2 m ] → [2].
 function normalizeMarks(s: string): string {
   return s.replace(/\[\s*(\d+)\s*m\s*\]/gi, '[$1]');
@@ -290,13 +299,16 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
 
   const doc = new Document({
     numbering: {
-      config: numConfigs.map(cfg => ({
-        reference: cfg.reference,
-        levels: cfg.levels.map(l => ({
-          level: l.level, format: l.format, text: l.text, alignment: l.alignment, suffix: LevelSuffix.SPACE,
-          style: { ...(l.run ? { run: l.run } : {}), paragraph: { indent: { left: convertMillimetersToTwip(l.level === 0 ? 8 : 16), hanging: convertMillimetersToTwip(6) } } },
-        })),
-      })),
+      config: numConfigs.map(cfg => {
+        const ind = cfg.reference.startsWith('sub-') ? NUM_INDENT.sub : NUM_INDENT.main;
+        return {
+          reference: cfg.reference,
+          levels: cfg.levels.map(l => ({
+            level: l.level, format: l.format, text: l.text, alignment: l.alignment, suffix: LevelSuffix.SPACE,
+            style: { ...(l.run ? { run: l.run } : {}), paragraph: { indent: { left: convertMillimetersToTwip(ind.textIndent), hanging: convertMillimetersToTwip(ind.hang) } } },
+          })),
+        };
+      }),
     },
     sections: [{ properties: {}, children: body }],
   });
