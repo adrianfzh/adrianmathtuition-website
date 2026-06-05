@@ -265,6 +265,8 @@ export function LessonBankPanel({
   auth,
   onDragQuestion,
   onInsert,
+  onStage,
+  isStaged,
 }: {
   level: string;
   topics: string[];
@@ -272,6 +274,10 @@ export function LessonBankPanel({
   onDragQuestion?: (q: BankQuestion | null) => void;
   /** Quick-insert (button) — drops a card into a specific kind. */
   onInsert?: (q: BankQuestion, kind: 'refresher' | 'worked_example' | 'practice') => void;
+  /** Add a question to the staging tray. */
+  onStage?: (q: BankQuestion) => void;
+  /** Whether a given question id is already staged (for button state). */
+  isStaged?: (id: string) => boolean;
 }) {
   // Identity of the current lesson scope — cache is only reused when this matches.
   ensureCacheLoaded(); // hydrate the module cache from localStorage on first use (survives reload)
@@ -615,6 +621,8 @@ export function LessonBankPanel({
             onDragStart={() => onDragQuestion?.(q)}
             onDragEnd={() => onDragQuestion?.(null)}
             onInsert={onInsert}
+            onStage={onStage}
+            staged={isStaged?.(q.id)}
           />
         ))}
         {!loading && committed.mode !== 'smart' && questions.length < total && (
@@ -628,16 +636,20 @@ export function LessonBankPanel({
   );
 }
 
-function BankQuestionCard({
+export function BankQuestionCard({
   q,
   onDragStart,
   onDragEnd,
   onInsert,
+  onStage,
+  staged,
 }: {
   q: BankQuestion;
   onDragStart?: () => void;
   onDragEnd?: () => void;
   onInsert?: (q: BankQuestion, kind: 'refresher' | 'worked_example' | 'practice') => void;
+  onStage?: (q: BankQuestion) => void;
+  staged?: boolean;
 }) {
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const difficulty = q.difficulty ?? 'Standard';
@@ -731,20 +743,26 @@ function BankQuestionCard({
         </div>
       )}
 
-      {onInsert && (
+      {(onInsert || onStage) && (
         <div className="flex gap-1 pt-1 border-t border-slate-100">
-          <button
+          {onInsert && <button
             onClick={(e) => { e.stopPropagation(); onInsert(q, 'refresher'); }}
             className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100"
-          >+ RF</button>
-          <button
+          >+ RF</button>}
+          {onInsert && <button
             onClick={(e) => { e.stopPropagation(); onInsert(q, 'worked_example'); }}
             className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded hover:bg-blue-100"
-          >+ WE</button>
-          <button
+          >+ WE</button>}
+          {onInsert && <button
             onClick={(e) => { e.stopPropagation(); onInsert(q, 'practice'); }}
             className="text-[10px] px-2 py-0.5 bg-orange-50 text-orange-700 border border-orange-200 rounded hover:bg-orange-100"
-          >+ Pr</button>
+          >+ Pr</button>}
+          {onStage && <button
+            onClick={(e) => { e.stopPropagation(); onStage(q); }}
+            disabled={staged}
+            title={staged ? 'Already in staging' : 'Add to staging tray'}
+            className="ml-auto text-[10px] px-2 py-0.5 bg-slate-50 text-slate-600 border border-slate-200 rounded hover:bg-slate-100 disabled:opacity-40"
+          >{staged ? '☆ staged' : '☆ Stage'}</button>}
         </div>
       )}
     </div>
@@ -761,6 +779,8 @@ export function LessonRightPanel({
   aiContent,
   onInsert,
   onDragQuestion,
+  onStage,
+  isStaged,
 }: {
   level: string;
   topics: string[];
@@ -770,6 +790,8 @@ export function LessonRightPanel({
   aiContent: React.ReactNode;
   onInsert?: (q: BankQuestion, kind: 'refresher' | 'worked_example' | 'practice') => void;
   onDragQuestion?: (q: BankQuestion | null) => void;
+  onStage?: (q: BankQuestion) => void;
+  isStaged?: (id: string) => boolean;
 }) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -796,6 +818,8 @@ export function LessonRightPanel({
             auth={auth}
             onInsert={onInsert}
             onDragQuestion={onDragQuestion}
+            onStage={onStage}
+            isStaged={isStaged}
           />
         )}
       </div>

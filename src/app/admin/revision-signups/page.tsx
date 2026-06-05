@@ -866,31 +866,42 @@ export default function RevisionSignupsPage() {
             <div className="rs-dialog-sub">Missed: {makeupModal.label}</div>
             <label className="rs-mk-label">Makeup date</label>
             <input type="date" className="rs-mk-input" value={makeupModal.date}
-              onChange={e => setMakeupModal({ ...makeupModal, date: e.target.value })} />
-            <label className="rs-mk-label" style={{ marginTop: 10 }}>Slot (same-level first; any timing allowed)</label>
-            <select className="rs-mk-input" value={makeupModal.slotId}
-              onChange={e => setMakeupModal({ ...makeupModal, slotId: e.target.value })}>
-              <option value="">Select a slot…</option>
-              {(() => {
-                const slots = attData?.slots ?? [];
-                const same = slots.filter(sl => sameLevelSlot(makeupModal.level, sl.level));
-                const other = slots.filter(sl => !sameLevelSlot(makeupModal.level, sl.level));
-                return (
-                  <>
-                    {same.length > 0 && (
-                      <optgroup label={`Same level${makeupModal.level ? ` (${makeupModal.level})` : ''}`}>
-                        {same.map(sl => <option key={sl.id} value={sl.id}>{sl.label} ({sl.level})</option>)}
-                      </optgroup>
-                    )}
-                    {other.length > 0 && (
-                      <optgroup label="Other slots">
-                        {other.map(sl => <option key={sl.id} value={sl.id}>{sl.label} ({sl.level})</option>)}
-                      </optgroup>
-                    )}
-                  </>
-                );
-              })()}
-            </select>
+              onChange={e => setMakeupModal({ ...makeupModal, date: e.target.value, slotId: '' })} />
+            {(() => {
+              const dayName = makeupModal.date
+                ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date(makeupModal.date + 'T00:00:00').getDay()]
+                : '';
+              const daySlots = (attData?.slots ?? []).filter(sl => dayName && sl.dayName === dayName);
+              const same = daySlots.filter(sl => sameLevelSlot(makeupModal.level, sl.level));
+              const other = daySlots.filter(sl => !sameLevelSlot(makeupModal.level, sl.level));
+              return (
+                <>
+                  <label className="rs-mk-label" style={{ marginTop: 10 }}>
+                    Slot{dayName ? ` on ${dayName}` : ''} (same-level first)
+                  </label>
+                  {!makeupModal.date ? (
+                    <div className="rs-mk-hint">Pick a makeup date first to see that day&apos;s slots.</div>
+                  ) : daySlots.length === 0 ? (
+                    <div className="rs-mk-hint">No active slots on {dayName}. Try another date.</div>
+                  ) : (
+                    <select className="rs-mk-input" value={makeupModal.slotId}
+                      onChange={e => setMakeupModal({ ...makeupModal, slotId: e.target.value })}>
+                      <option value="">Select a slot…</option>
+                      {same.length > 0 && (
+                        <optgroup label={`Same level${makeupModal.level ? ` (${makeupModal.level})` : ''}`}>
+                          {same.map(sl => <option key={sl.id} value={sl.id}>{sl.label} ({sl.level})</option>)}
+                        </optgroup>
+                      )}
+                      {other.length > 0 && (
+                        <optgroup label="Other slots">
+                          {other.map(sl => <option key={sl.id} value={sl.id}>{sl.label} ({sl.level})</option>)}
+                        </optgroup>
+                      )}
+                    </select>
+                  )}
+                </>
+              );
+            })()}
             <div className="rs-dialog-actions" style={{ marginTop: 16 }}>
               <button className="rs-btn-ghost" onClick={() => setMakeupModal(null)} disabled={makeupSaving}>Cancel</button>
               <button className="rs-btn-primary" onClick={submitMakeup} disabled={makeupSaving || !makeupModal.date || !makeupModal.slotId}>
@@ -1804,4 +1815,5 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   font-size: 14px; color: #111; box-sizing: border-box; outline: none;
 }
 .rs-mk-input:focus { border-color: #1e3a5f; }
+.rs-mk-hint { font-size: 12.5px; color: #94a3b8; padding: 6px 2px; line-height: 1.4; }
 `;

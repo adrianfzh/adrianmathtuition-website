@@ -31,6 +31,8 @@ import 'katex/dist/katex.min.css';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { renderDesmosPng } from '@/lib/desmos';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
+import { StagingPanel } from './StagingPanel';
+import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging } from '@/lib/staging-store';
 import {
   loadLesson as storeLoadLesson,
   saveLessonMeta as storeSaveLessonMeta,
