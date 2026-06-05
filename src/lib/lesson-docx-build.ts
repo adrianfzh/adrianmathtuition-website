@@ -304,7 +304,7 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
         return {
           reference: cfg.reference,
           levels: cfg.levels.map(l => ({
-            level: l.level, format: l.format, text: l.text, alignment: l.alignment, suffix: LevelSuffix.SPACE,
+            level: l.level, format: l.format, text: l.text, alignment: l.alignment, suffix: LevelSuffix.TAB,
             style: { ...(l.run ? { run: l.run } : {}), paragraph: { indent: { left: ind.textIndent, hanging: ind.hang } } },
           })),
         };
