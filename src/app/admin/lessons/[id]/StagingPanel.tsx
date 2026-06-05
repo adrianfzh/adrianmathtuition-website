@@ -45,7 +45,7 @@ function StagedCard({ item, sections, onSend }: {
       <div className="flex items-center gap-2 px-2 py-1 border-b border-slate-100 bg-slate-50/60">
         <span className="text-slate-400 select-none" title="Drag this card">⠿</span>
         <span className="font-mono text-[11px] text-slate-600 truncate flex-1">{item.q.school} {item.q.year} P{item.q.paper} Q{item.q.question_number}</span>
-        <button {...noDrag} onClick={() => toggleReject(item.q.id)} title={item.rejected ? 'Un-reject (bring back)' : 'Reject — hide from view (kept, reversible)'} className={`text-[10px] px-1.5 py-0.5 rounded border ${item.rejected ? 'bg-white text-slate-500 border-slate-300' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'}`}>{item.rejected ? '↺ unreject' : '✕ reject'}</button>
+        <button {...noDrag} onClick={() => toggleReject(item.q.id)} title={item.rejected ? 'Unhide (bring back)' : 'Hide from view (kept in tray, reversible)'} className={`text-[10px] px-1.5 py-0.5 rounded border ${item.rejected ? 'bg-white text-slate-500 border-slate-300' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'}`}>{item.rejected ? '↺ unhide' : '✕ hide'}</button>
         <button {...noDrag} onClick={() => removeStaged(item.q.id)} title="Remove from staging entirely (delete from tray)" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑 remove</button>
       </div>
       <div className="p-1.5">
@@ -88,8 +88,8 @@ function Pane({ title, pane, items, sections, hint, onSend, style }: {
     setBankOver(false);
     try {
       const q = JSON.parse(payload) as BankQuestion;
-      addToStaging(q);
-      if (pane === 'keep') setPane(q.id, 'keep');
+      addToStaging(q);       // no-op if already staged
+      setPane(q.id, pane);   // ALWAYS move it to the dropped pane (so a re-drag of an already-staged card still lands)
     } catch { /* ignore */ }
   }
   return (
@@ -200,10 +200,10 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
     <div className="fixed inset-0 z-[70] bg-white flex flex-col">
       <div className="px-4 py-2.5 border-b border-slate-200 flex items-center gap-3 bg-slate-50 shrink-0">
         <span className="text-sm font-semibold text-slate-800">🗂 Staging workspace</span>
-        <span className="text-[11px] text-slate-400">Bank → Pool → Keep. ✕ reject = hide (reversible) · 🗑 remove = delete from tray.</span>
+        <span className="text-[11px] text-slate-400">Bank → Pool → Keep. ✕ hide (reversible) · 🗑 remove = delete from tray.</span>
         <span className="ml-auto flex items-center gap-2">
-          <label className="text-[11px] text-slate-500 flex items-center gap-1"><input type="checkbox" checked={showRejected} onChange={e => setShowRejected(e.target.checked)} />show rejected ({rejectedCount})</label>
-          {rejectedCount > 0 && <button onClick={clearRejected} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear rejected</button>}
+          <label className="text-[11px] text-slate-500 flex items-center gap-1"><input type="checkbox" checked={showRejected} onChange={e => setShowRejected(e.target.checked)} />show hidden ({rejectedCount})</label>
+          {rejectedCount > 0 && <button onClick={clearRejected} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear hidden</button>}
           <button onClick={() => { if (confirm('Clear the entire staging tray?')) clearStaging(); }} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear all</button>
           <button onClick={addAll} disabled={keep.length === 0} className="text-[11px] px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-40 font-medium">＋ Add all to lesson ({keep.length})</button>
           <button onClick={onClose} className="text-[11px] px-2 py-1 bg-slate-800 text-white rounded hover:bg-slate-700">Done</button>

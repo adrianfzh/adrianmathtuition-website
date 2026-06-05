@@ -1142,7 +1142,7 @@ export default function SchedulePage() {
         if (!res.ok) throw new Error(json.error || 'Switch failed');
         setRescheduleModal(null);
         await fetchSchedule(monday, savedPw.current);
-        showToast('success', `✓ Switched to ${json.newSlotName} from ${json.switchDate} — ${json.cancelled} lessons cancelled, ${json.created} created`);
+        showToast('success', `✓ Switched to ${json.newSlotName} from ${json.switchDate} — ${json.cancelled} cancelled, ${json.created} created${json.adjustment ? ` · ${json.adjustment > 0 ? '+' : ''}$${json.adjustment} ${json.adjustmentMonth} adjustment` : ''}`);
       } else {
         const res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',

@@ -144,7 +144,10 @@ export default function StudentProfilePage() {
       const json = await res.json();
       if (!res.ok || json.success === false) throw new Error(json.error || (json.errors || []).join('; ') || 'Failed');
       setSwitchModal(null);
-      showToast('ok', `Switched to ${json.newSlotName} (${json.created} lessons created)`);
+      const adj = json.adjustment
+        ? ` · ${json.adjustment > 0 ? '+' : ''}$${json.adjustment} ${json.adjustmentMonth} adjustment`
+        : '';
+      showToast('ok', `Switched to ${json.newSlotName} (${json.created} lessons)${adj}`);
       await fetchProfile();
     } catch (e: unknown) {
       setSwitchModal(m => m && { ...m, saving: false });
