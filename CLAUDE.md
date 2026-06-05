@@ -34,7 +34,8 @@ Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/ro
 - `admin/schedule/page.tsx` — lesson management calendar. See [/admin/schedule](#adminschedule--lesson-management) below.
 - `admin/progress/page.tsx` — read-only student timeline. See [/admin/progress](#adminprogress--student-timeline) below.
 - `admin/invoices/page.tsx` — invoice management dashboard (was `/admin` before restructure)
-- `admin/students/page.tsx` — stub page, links out to Airtable
+- `admin/students/page.tsx` — **student directory**: searchable + level-filtered list, links into each profile
+- `admin/students/[id]/page.tsx` — **student profile hub** (Phase 1): header (level/subjects/status), **Weekly slots** with 🔀 Switch slot + ＋ Add slot (reuses `/api/admin-schedule/switch` + `/add-weekly-slot`), and read-only Upcoming lessons / Exams / Recent invoices. Data from `/api/admin/student-profile?id=`. Phases 2–4 (inline lesson actions, embedded progress/LessonModal, exam quick-add) pending. Contact lazy-loaded via `student-contact`.
 - `admin/mark/page.tsx` — AI batch marking landing page (tabs + upload flow)
 - `admin/mark/batch/[batchId]/page.tsx` — batch detail page
 - `admin/edit-notes/page.tsx` — revision notes editor with editor mode toggle

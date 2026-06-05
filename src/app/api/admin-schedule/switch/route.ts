@@ -18,19 +18,27 @@ const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { lessonId: string; newSlotId: string; switchDate: string };
+  let body: { lessonId?: string; studentId?: string; oldSlotId?: string; newSlotId: string; switchDate: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const { lessonId, newSlotId, switchDate } = body;
-  if (!lessonId || !newSlotId || !switchDate) {
-    return NextResponse.json({ error: 'lessonId, newSlotId and switchDate required' }, { status: 400 });
+  if (!newSlotId || !switchDate || (!lessonId && (!body.studentId || !body.oldSlotId))) {
+    return NextResponse.json({ error: 'newSlotId, switchDate and (lessonId OR studentId+oldSlotId) required' }, { status: 400 });
   }
 
-  // ── Resolve student + old slot from lesson ──────────────────────────────────
-  const lesson = await airtableRequest('Lessons', `/${lessonId}`);
-  const studentId: string = lesson.fields['Student']?.[0];
-  const oldSlotId: string = lesson.fields['Slot']?.[0];
-  if (!studentId || !oldSlotId) return NextResponse.json({ error: 'Lesson missing student or slot' }, { status: 400 });
+  // ── Resolve student + old slot ──────────────────────────────────────────────
+  // From the lesson (calendar flow), or directly from the body (profile-page flow).
+  let studentId: string;
+  let oldSlotId: string;
+  if (lessonId) {
+    const lesson = await airtableRequest('Lessons', `/${lessonId}`);
+    studentId = lesson.fields['Student']?.[0];
+    oldSlotId = lesson.fields['Slot']?.[0];
+    if (!studentId || !oldSlotId) return NextResponse.json({ error: 'Lesson missing student or slot' }, { status: 400 });
+  } else {
+    studentId = body.studentId!;
+    oldSlotId = body.oldSlotId!;
+  }
 
   // ── Resolve new slot details ────────────────────────────────────────────────
   const newSlot = await airtableRequest('Slots', `/${newSlotId}`);

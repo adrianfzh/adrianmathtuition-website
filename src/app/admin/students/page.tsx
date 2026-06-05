@@ -21,6 +21,20 @@ export default function StudentsPage() {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const savedPw = useRef('');
+  const [students, setStudents] = useState<{ id: string; name: string; level: string; subjects: string[] }[]>([]);
+  const [listLoading, setListLoading] = useState(false);
+  const [query, setQuery] = useState('');
+  const [levelFilter, setLevelFilter] = useState('All');
+
+  useEffect(() => {
+    if (!authed) return;
+    setListLoading(true);
+    fetch('/api/admin/progress/students', { headers: { Authorization: `Bearer ${savedPw.current}` } })
+      .then(r => r.json())
+      .then(d => setStudents(d.students || []))
+      .catch(() => {})
+      .finally(() => setListLoading(false));
+  }, [authed]);
 
   useEffect(() => {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
@@ -70,17 +84,46 @@ export default function StudentsPage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 620, margin: '0 auto', padding: '32px 16px', textAlign: 'center' }}>
-        <div style={{ fontSize: 56, marginBottom: 16 }}>🎓</div>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111', margin: '0 0 12px' }}>Coming soon</h2>
-        <p style={{ fontSize: 14, color: '#6b7280', maxWidth: 380, margin: '0 auto 32px', lineHeight: 1.6 }}>
-          Student records, enrollment management, and bulk actions will live here.
-          For now, edit students directly in Airtable.
-        </p>
-        <a href={AIRTABLE_URL} target="_blank" rel="noopener noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#1e3a5f', color: '#fff', textDecoration: 'none', borderRadius: 12, padding: '14px 24px', fontSize: 15, fontWeight: 600 }}>
-          Open Airtable Students table ↗
-        </a>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '16px' }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search students…"
+            style={{ flex: 1, minWidth: 180, border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 14px', fontSize: 15, outline: 'none' }} />
+          <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)}
+            style={{ border: '1px solid #e5e7eb', borderRadius: 10, padding: '10px 12px', fontSize: 14, background: '#fff' }}>
+            {['All', 'Sec 1', 'Sec 2', 'Sec 3', 'Sec 4', 'Sec 5', 'JC1', 'JC2'].map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
+        </div>
+
+        {listLoading && <div style={{ textAlign: 'center', color: '#9ca3af', padding: 40 }}>Loading…</div>}
+
+        {!listLoading && (() => {
+          const q = query.trim().toLowerCase();
+          const filtered = students.filter(s =>
+            (levelFilter === 'All' || s.level === levelFilter) &&
+            (!q || s.name.toLowerCase().includes(q))
+          );
+          if (!filtered.length) return <div style={{ textAlign: 'center', color: '#9ca3af', padding: 40 }}>No students found.</div>;
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+              {filtered.map(s => (
+                <a key={s.id} href={`/admin/students/${s.id}`}
+                  style={{ display: 'block', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 16px', textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>{s.name}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>
+                    {s.level}{Array.isArray(s.subjects) && s.subjects.length ? ` · ${s.subjects.join(', ')}` : ''}
+                  </div>
+                </a>
+              ))}
+            </div>
+          );
+        })()}
+
+        <div style={{ textAlign: 'center', marginTop: 28 }}>
+          <a href={AIRTABLE_URL} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 13, color: '#9ca3af', textDecoration: 'none' }}>
+            Open Airtable Students table ↗
+          </a>
+        </div>
       </div>
     </div>
   );
