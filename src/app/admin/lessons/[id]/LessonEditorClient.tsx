@@ -32,7 +32,7 @@ import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { renderDesmosPng } from '@/lib/desmos';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
 import { StagingPanel } from './StagingPanel';
-import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging } from '@/lib/staging-store';
+import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging, removeStaged, setPane as setStagePane, setKind as setStageKind, setSection as setStageSection, type StageKind } from '@/lib/staging-store';
 import {
   loadLesson as storeLoadLesson,
   saveLessonMeta as storeSaveLessonMeta,
@@ -1593,8 +1593,14 @@ export default function LessonEditorClient() {
   // the offline store (re-adds deleted cards, re-deletes added ones, re-patches/reorders).
   const cardsRef = useRef<Card[]>([]); cardsRef.current = cards;
   const lessonRef = useRef<Lesson | null>(null); lessonRef.current = lesson;
-  const undoStack = useRef<{ label: string; cards: Card[]; sectionOrder: string[] }[]>([]);
+  type Snapshot = { label: string; cards: Card[]; sectionOrder: string[] };
+  const undoStack = useRef<Snapshot[]>([]);
+  const redoStack = useRef<Snapshot[]>([]);
   const [undoTop, setUndoTop] = useState<string | null>(null);
+  const [redoTop, setRedoTop] = useState<string | null>(null);
+  // Remembers the bank question behind each card added from staging, so undo can drop it back into
+  // the staging Keep pane (and redo can pull it back out).
+  const stagedCardMeta = useRef<Map<string, { q: BankQuestion; kind: StageKind; section: string }>>(new Map());
 
   // Layout (localStorage)
   const [listWidth, setListWidth] = useState(DEFAULT_LAYOUT.listWidth);
@@ -1750,13 +1756,14 @@ export default function LessonEditorClient() {
   // the bank template carries the question's stored solution/answer).
   const sendStagedToLesson = useCallback(async (q: BankQuestion, kind: ContentKind, section: string) => {
     const { title: tplTitle, content: tplContent } = buildBankWorkedExampleTemplate(q);
-    await addCard(kind, {
+    const created = await addCard(kind, {
       section_name: section || DEFAULT_SECTION[kind],
       card_title: tplTitle,
       content: tplContent,
       source_question_id: q.id,
       marks: kind === 'practice' ? q.total_marks ?? null : null,
     });
+    if (created) stagedCardMeta.current.set(created.id, { q, kind: kind as StageKind, section: section || DEFAULT_SECTION[kind] });
     showToast(`Added to "${section}"`);
   }, [addCard]);
 
@@ -1767,13 +1774,14 @@ export default function LessonEditorClient() {
     pushUndo(`Add ${batch.length} question${batch.length > 1 ? 's' : ''}`);
     for (const b of batch) {
       const { title: tplTitle, content: tplContent } = buildBankWorkedExampleTemplate(b.q);
-      await addCard(b.kind, {
+      const created = await addCard(b.kind, {
         section_name: b.section || DEFAULT_SECTION[b.kind],
         card_title: tplTitle,
         content: tplContent,
         source_question_id: b.q.id,
         marks: b.kind === 'practice' ? b.q.total_marks ?? null : null,
       }, { skipUndo: true });
+      if (created) stagedCardMeta.current.set(created.id, { q: b.q, kind: b.kind as StageKind, section: b.section || DEFAULT_SECTION[b.kind] });
     }
     showToast(`Added ${batch.length} question${batch.length > 1 ? 's' : ''}`);
   }, [addCard]);
@@ -1852,74 +1860,112 @@ export default function LessonEditorClient() {
   }
 
   // Capture the pre-action card-state so it can be restored. Reads via refs so it's always fresh,
-  // even when called from a memoized handler.
+  // even when called from a memoized handler. A brand-new action invalidates the redo stack.
   function pushUndo(label: string) {
     undoStack.current.push({ label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order) });
     if (undoStack.current.length > 25) undoStack.current.shift();
+    redoStack.current = [];
+    setRedoTop(null);
     setUndoTop(label);
+  }
+
+  // Reconcile the offline store + UI to match a captured snapshot. Cards present now but absent in
+  // the snapshot are deleted (and, if they came from staging, dropped back into the Keep pane);
+  // cards in the snapshot but missing now are re-added (and pulled back out of staging).
+  async function applySnapshot(entry: Snapshot) {
+    const cur = cardsRef.current;
+    const snapById = new Map(entry.cards.map(c => [c.id, c]));
+    const curById = new Map(cur.map(c => [c.id, c]));
+    // Re-add cards that are in the snapshot but gone now — restore with their original id.
+    for (const c of entry.cards) {
+      if (!curById.has(c.id)) {
+        await storeAddCard({ id: c.id, lesson_id: id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, source_question_id: c.source_question_id, source_card_id: c.source_card_id });
+        const meta = stagedCardMeta.current.get(c.id);
+        if (meta) removeStaged(meta.q.id); // back in the lesson → out of staging
+      }
+    }
+    // Delete cards that exist now but aren't in the snapshot.
+    for (const c of cur) {
+      if (!snapById.has(c.id)) {
+        await storeDeleteCard(c.id);
+        const meta = stagedCardMeta.current.get(c.id);
+        if (meta) { addToStaging(meta.q); setStagePane(meta.q.id, 'keep'); setStageKind(meta.q.id, meta.kind); setStageSection(meta.q.id, meta.section); }
+      }
+    }
+    // Re-patch changed fields (section/kind/title/content/marks).
+    for (const c of entry.cards) {
+      const cu = curById.get(c.id);
+      if (cu && (cu.section_name !== c.section_name || cu.content_kind !== c.content_kind || cu.card_title !== c.card_title || cu.content !== c.content || cu.marks !== c.marks)) {
+        await storePatchCard(c.id, { section_name: c.section_name, content_kind: c.content_kind, card_title: c.card_title, content: c.content, marks: c.marks });
+      }
+    }
+    // Restore UI state + per-section order. Keep the bank/editor panel open: if the selected card
+    // survives, keep it selected; otherwise fall back to a card in the same section (or any card).
+    const restored = entry.cards.map(c => ({ ...c }));
+    const selStillExists = selectedId != null && restored.some(c => c.id === selectedId);
+    if (!selStillExists) {
+      const gone = cur.find(c => c.id === selectedId);
+      const fallback = (gone && restored.find(c => c.section_name === gone.section_name)) || restored[0];
+      if (fallback) setSelectedId(fallback.id);
+    }
+    setCards(restored);
+    const bySection = new Map<string, Card[]>();
+    for (const c of entry.cards) { const a = bySection.get(c.section_name) ?? []; a.push(c); bySection.set(c.section_name, a); }
+    for (const [, list] of bySection) { list.sort((a, b) => a.order_index - b.order_index); await storeReorderCards(list.map(c => c.id)); }
+    if (JSON.stringify(asOrder(lessonRef.current?.section_order)) !== JSON.stringify(entry.sectionOrder)) {
+      void saveLessonMeta({ section_order: entry.sectionOrder });
+    }
+    setSavedAt(new Date());
   }
 
   async function runUndo() {
     const entry = undoStack.current.pop();
     setUndoTop(undoStack.current[undoStack.current.length - 1]?.label ?? null);
     if (!entry) return;
-    const cur = cardsRef.current;
-    const snapById = new Map(entry.cards.map(c => [c.id, c]));
-    const curById = new Map(cur.map(c => [c.id, c]));
-    try {
-      // Re-add cards that were deleted (in snapshot, gone now) — restore with their original id.
-      for (const c of entry.cards) {
-        if (!curById.has(c.id)) {
-          await storeAddCard({ id: c.id, lesson_id: id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, source_question_id: c.source_question_id, source_card_id: c.source_card_id });
-        }
-      }
-      // Delete cards that were added since the snapshot.
-      for (const c of cur) if (!snapById.has(c.id)) await storeDeleteCard(c.id);
-      // Re-patch changed fields (section/kind/title/content/marks).
-      for (const c of entry.cards) {
-        const cu = curById.get(c.id);
-        if (cu && (cu.section_name !== c.section_name || cu.content_kind !== c.content_kind || cu.card_title !== c.card_title || cu.content !== c.content || cu.marks !== c.marks)) {
-          await storePatchCard(c.id, { section_name: c.section_name, content_kind: c.content_kind, card_title: c.card_title, content: c.content, marks: c.marks });
-        }
-      }
-      // Restore UI state + per-section order. Keep the bank/editor panel open: if the selected
-      // card survives the undo, keep it selected; otherwise fall back to a card in the same
-      // section (or any remaining card) rather than deselecting (which would close the panel).
-      const restored = entry.cards.map(c => ({ ...c }));
-      const selStillExists = selectedId != null && restored.some(c => c.id === selectedId);
-      if (!selStillExists) {
-        const gone = cur.find(c => c.id === selectedId);
-        const fallback = (gone && restored.find(c => c.section_name === gone.section_name)) || restored[0];
-        if (fallback) setSelectedId(fallback.id);
-      }
-      setCards(restored);
-      const bySection = new Map<string, Card[]>();
-      for (const c of entry.cards) { const a = bySection.get(c.section_name) ?? []; a.push(c); bySection.set(c.section_name, a); }
-      for (const [, list] of bySection) { list.sort((a, b) => a.order_index - b.order_index); await storeReorderCards(list.map(c => c.id)); }
-      if (JSON.stringify(asOrder(lessonRef.current?.section_order)) !== JSON.stringify(entry.sectionOrder)) {
-        void saveLessonMeta({ section_order: entry.sectionOrder });
-      }
-      setSavedAt(new Date());
-      showToast(`Undone: ${entry.label}`);
-    } catch {
-      loadLesson();
-    }
+    // Snapshot the CURRENT state so redo can re-apply it.
+    redoStack.current.push({ label: entry.label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order) });
+    if (redoStack.current.length > 25) redoStack.current.shift();
+    setRedoTop(entry.label);
+    try { await applySnapshot(entry); showToast(`Undone: ${entry.label}`); }
+    catch { loadLesson(); }
+  }
+
+  async function runRedo() {
+    const entry = redoStack.current.pop();
+    setRedoTop(redoStack.current[redoStack.current.length - 1]?.label ?? null);
+    if (!entry) return;
+    undoStack.current.push({ label: entry.label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order) });
+    if (undoStack.current.length > 25) undoStack.current.shift();
+    setUndoTop(entry.label);
+    try { await applySnapshot(entry); showToast(`Redone: ${entry.label}`); }
+    catch { loadLesson(); }
   }
 
   // Global Ctrl/Cmd+Z → structural undo, but only when not typing in a field (the markdown
   // editor handles its own content undo).
   const runUndoRef = useRef<() => void>(() => {});
   runUndoRef.current = runUndo;
+  const runRedoRef = useRef<() => void>(() => {});
+  runRedoRef.current = runRedo;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || e.shiftKey || (e.key !== 'z' && e.key !== 'Z')) return;
+      if (!(e.metaKey || e.ctrlKey)) return;
       const t = e.target as HTMLElement | null;
       const tag = t?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t?.isContentEditable) return;
-      // Only act if there's a structural action to undo — otherwise leave the keypress alone.
-      if (undoStack.current.length === 0) return;
-      e.preventDefault();
-      void runUndoRef.current();
+      const key = e.key.toLowerCase();
+      const isRedo = (key === 'z' && e.shiftKey) || key === 'y';
+      const isUndo = key === 'z' && !e.shiftKey;
+      // Only act if there's a matching action — otherwise leave the keypress alone.
+      if (isRedo) {
+        if (redoStack.current.length === 0) return;
+        e.preventDefault();
+        void runRedoRef.current();
+      } else if (isUndo) {
+        if (undoStack.current.length === 0) return;
+        e.preventDefault();
+        void runUndoRef.current();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -2055,6 +2101,12 @@ export default function LessonEditorClient() {
           title={undoTop ? `Undo: ${undoTop} (Ctrl/Cmd+Z)` : 'Nothing to undo'}
           className="px-2 py-1 rounded text-xs hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent"
         >↩ Undo</button>
+        <button
+          onClick={() => void runRedo()}
+          disabled={!redoTop}
+          title={redoTop ? `Redo: ${redoTop} (Ctrl/Cmd+Shift+Z)` : 'Nothing to redo'}
+          className="px-2 py-1 rounded text-xs hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent"
+        >↪ Redo</button>
         <button
           onClick={() => generatePDF(id, pw.current, lesson.name)}
           className="px-3 py-1 bg-rose-600 hover:bg-rose-700 rounded text-xs font-medium"
