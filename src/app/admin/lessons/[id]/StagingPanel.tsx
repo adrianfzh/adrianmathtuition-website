@@ -26,17 +26,26 @@ function SortableStaged({ item, onInsert, sections }: {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.q.id, data: { pane: item.pane } });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
   const [section, setSection] = useState(sections[0] ?? 'Default');
+  // Whole card is the drag handle. Interactive controls (buttons, select) stopPropagation on
+  // pointerdown so clicking them doesn't start a drag.
+  const noDrag = { onPointerDown: (e: React.PointerEvent) => e.stopPropagation() };
   return (
-    <div ref={setNodeRef} style={style} className={`rounded border ${item.rejected ? 'border-red-200 bg-red-50/40 opacity-60' : 'border-slate-200 bg-white'}`}>
+    <div
+      ref={setNodeRef}
+      style={{ ...style, touchAction: 'none' }}
+      {...attributes}
+      {...listeners}
+      className={`rounded border cursor-grab active:cursor-grabbing ${item.rejected ? 'border-red-200 bg-red-50/40 opacity-60' : 'border-slate-200 bg-white'}`}
+    >
       <div className="flex items-center gap-2 px-2 py-1 border-b border-slate-100 bg-slate-50/60">
-        <span {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-slate-400 select-none" title="Drag to move / reorder" style={{ touchAction: 'none' }}>⠿</span>
+        <span className="text-slate-400 select-none" title="Drag anywhere on this card to move / reorder">⠿</span>
         <span className="font-mono text-[11px] text-slate-600 truncate flex-1">{item.q.school} {item.q.year} P{item.q.paper} Q{item.q.question_number}</span>
-        <button onClick={() => toggleReject(item.q.id)} title={item.rejected ? 'Un-reject' : 'Reject'} className={`text-[10px] px-1.5 py-0.5 rounded border ${item.rejected ? 'bg-white text-slate-500 border-slate-300' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'}`}>{item.rejected ? '↺' : '✕'}</button>
-        <button onClick={() => removeStaged(item.q.id)} title="Remove from staging" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑</button>
+        <button {...noDrag} onClick={() => toggleReject(item.q.id)} title={item.rejected ? 'Un-reject' : 'Reject'} className={`text-[10px] px-1.5 py-0.5 rounded border ${item.rejected ? 'bg-white text-slate-500 border-slate-300' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'}`}>{item.rejected ? '↺' : '✕'}</button>
+        <button {...noDrag} onClick={() => removeStaged(item.q.id)} title="Remove from staging" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑</button>
       </div>
       <div className="p-1.5">
         <BankQuestionCard q={item.q} draggable={false} />
-        <div className="flex items-center gap-1 mt-1 flex-wrap">
+        <div className="flex items-center gap-1 mt-1 flex-wrap" {...noDrag}>
           <span className="text-[10px] text-slate-400">→ lesson:</span>
           <select value={section} onChange={e => setSection(e.target.value)} className="text-[10px] border border-slate-300 rounded px-1 py-px max-w-[140px]">
             {sections.length === 0 && <option value="Default">Default</option>}
