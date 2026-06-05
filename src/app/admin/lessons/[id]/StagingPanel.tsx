@@ -229,7 +229,7 @@ export function StagingPanel({ onClose, onInsert, sections, level, topics, auth 
           <Divider onDrag={(dx) => setPoolW(w => { const n = Math.max(260, w + dx); saveWidths(bankW, n); return n; })} />
           <Pane title="Keep — shortlist" pane="keep" items={keep} sections={sections} hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }} />
         </div>
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeItem ? (
             <div className="rounded border border-blue-400 bg-white shadow-lg p-1.5 text-xs max-w-[420px]">
               <div className="font-mono text-[11px] text-slate-600 mb-1">{activeItem.q.school} {activeItem.q.year} P{activeItem.q.paper} Q{activeItem.q.question_number}</div>

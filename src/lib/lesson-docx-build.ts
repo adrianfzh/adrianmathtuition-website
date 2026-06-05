@@ -7,8 +7,40 @@
 
 import {
   Document, Packer, Paragraph, TextRun, ImageRun, HeadingLevel, AlignmentType, BorderStyle,
+  TabStopType, convertMillimetersToTwip, LevelFormat,
 } from 'docx';
 import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } from './lesson-docx';
+
+// Marks right-tab position (15.5 cm from left margin).
+const MARKS_TAB = convertMillimetersToTwip(155);
+// Normalise mark brackets: [2m] / [ 2 m ] → [2].
+function normalizeMarks(s: string): string {
+  return s.replace(/\[\s*(\d+)\s*m\s*\]/gi, '[$1]');
+}
+
+// ── Word auto-numbering config accumulator ──
+// We build numbering definitions on the fly: one shared "questions" decimal list, plus a UNIQUE
+// per-question subpart list (so subparts restart at (i)/(a) for each question). Word then maintains
+// these numbers (renumber on insert/delete in Word).
+type NumLevel = { level: number; format: LevelFormat; text: string; alignment: typeof AlignmentType[keyof typeof AlignmentType] };
+type NumConfig = { reference: string; levels: NumLevel[] };
+
+function lvl(format: LevelFormat, text: string): NumLevel[] {
+  return [{ level: 0, format, text, alignment: AlignmentType.LEFT }];
+}
+
+// Detect a leading subpart label like "(i)", "(a)", "(1)" → returns {label, rest} or null.
+function parseSubpartLabel(line: string): { token: string; rest: string } | null {
+  const m = line.match(/^\(([a-z]{1,3}|\d{1,2})\)\s*(.*)$/i);
+  if (!m) return null;
+  return { token: m[1], rest: m[2] };
+}
+// Choose a Word numbering format from a sample subpart token.
+function subpartFormat(token: string): LevelFormat {
+  if (/^\d+$/.test(token)) return LevelFormat.DECIMAL;
+  if (/^[ivxl]+$/i.test(token) && /[ivxl]/i.test(token)) return LevelFormat.LOWER_ROMAN;
+  return LevelFormat.LOWER_LETTER;
+}
 
 export type DocxLesson = { name: string; level: string; description?: string | null; topics?: string[]; section_order?: string[] };
 export type DocxCard = {
@@ -27,9 +59,16 @@ function extractImages(md: string): { text: string; urls: string[] } {
 
 // Inline markdown (bold **…**) + math ($…$) → docx TextRuns. Math becomes a placeholder TextRun
 // whose text is later swapped for OMML by injectOmmlIntoDocxBuffer.
-function inlineRuns(text: string, reg: OmmlRegistry, opts: { color?: string; bold?: boolean } = {}): TextRun[] {
+function inlineRuns(text: string, reg: OmmlRegistry, opts: { color?: string; bold?: boolean; marksTab?: boolean } = {}): TextRun[] {
+  let src = normalizeMarks(text);
+  let trailingMarks: string | null = null;
+  // If the line ends with a [N] marks bracket, peel it off to push to a right tab stop.
+  if (opts.marksTab) {
+    const m = src.match(/\s*(\[\d+\])\s*$/);
+    if (m) { trailingMarks = m[1]; src = src.slice(0, m.index).trimEnd(); }
+  }
   const runs: TextRun[] = [];
-  for (const part of splitMathInline(text)) {
+  for (const part of splitMathInline(src)) {
     if (part.type === 'math') {
       const omml = latexToOMML(part.value, { displayMode: part.displayMode, color: opts.color ?? null });
       runs.push(new TextRun({ text: reg.token(omml), color: opts.color }));
@@ -43,6 +82,7 @@ function inlineRuns(text: string, reg: OmmlRegistry, opts: { color?: string; bol
       }
     }
   }
+  if (trailingMarks) runs.push(new TextRun({ text: `\t${trailingMarks}`, color: opts.color }));
   return runs;
 }
 
@@ -78,13 +118,34 @@ function naturalSize(buf: ArrayBuffer, mime: string): Promise<{ w: number; h: nu
 }
 
 // Render one content block (markdown paragraphs) into docx Paragraphs, fetching any images.
-async function contentParagraphs(content: string | null, reg: OmmlRegistry, opts: { color?: string } = {}): Promise<Paragraph[]> {
+async function contentParagraphs(
+  content: string | null,
+  reg: OmmlRegistry,
+  opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void } = {},
+): Promise<Paragraph[]> {
   const out: Paragraph[] = [];
   const { text, urls } = extractImages(content ?? '');
-  const blocks = text.split(/\n\n+/).map(b => b.trim()).filter(Boolean);
-  for (const b of blocks) {
-    if (b === '---') continue;
-    out.push(new Paragraph({ children: inlineRuns(b.replace(/\n/g, ' '), reg, opts), spacing: { after: 120 } }));
+  // Each non-empty LINE becomes its own paragraph so labelled parts ((i), (ii)…) stay separated and
+  // each can right-tab its trailing marks to 15.5 cm.
+  const lines = text.split(/\n/).map(l => l.trim()).filter(l => l && l !== '---');
+  let reportedFmt = false;
+  for (const line of lines) {
+    const sub = opts.subpartRef ? parseSubpartLabel(line) : null;
+    if (sub) {
+      if (!reportedFmt) { opts.onSubpartFormat?.(subpartFormat(sub.token)); reportedFmt = true; }
+      out.push(new Paragraph({
+        numbering: { reference: opts.subpartRef!, level: 0 },
+        children: inlineRuns(sub.rest, reg, { ...opts, marksTab: true }),
+        tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
+        spacing: { after: 80 },
+      }));
+    } else {
+      out.push(new Paragraph({
+        children: inlineRuns(line, reg, { ...opts, marksTab: true }),
+        tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
+        spacing: { after: 80 },
+      }));
+    }
   }
   for (const u of urls) {
     const p = await fetchImagePara(u);
@@ -111,6 +172,17 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   const practiceNum = new Map<string, number>();
   practiceOrdered.forEach((c, i) => practiceNum.set(c.id, i + 1));
 
+  // Word numbering definitions accumulated during the build.
+  const numConfigs: NumConfig[] = [
+    // Shared question list (1. 2. 3. …) used by every practice question header.
+    { reference: 'questions', levels: lvl(LevelFormat.DECIMAL, '%1.') },
+  ];
+  // Subpart format chosen per-question once we see its first label; default lower-roman.
+  const subpartFmt = new Map<string, LevelFormat>();
+  const subpartRefFor = (cardId: string) => `sub-${cardId}`;
+  for (const c of practiceOrdered) numConfigs.push({ reference: subpartRefFor(c.id), levels: lvl(LevelFormat.LOWER_ROMAN, '(%1)') });
+
+  let exampleNo = 0;
   const body: Paragraph[] = [];
 
   // Cover
@@ -133,26 +205,33 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
         if (c.card_title) body.push(new Paragraph({ spacing: { before: 80 }, children: [new TextRun({ text: c.card_title, bold: true })] }));
         for (const p of await contentParagraphs(c.content, reg)) body.push(p);
       } else if (c.content_kind === 'practice') {
-        const n = practiceNum.get(c.id) ?? 0;
+        // Question number is a real Word list (auto-renumbers in Word). Title + marks on same line.
         body.push(new Paragraph({
+          numbering: { reference: 'questions', level: 0 },
           spacing: { before: 160 },
-          children: [new TextRun({ text: `${n}. `, bold: true }), ...inlineRuns(c.card_title ?? '', reg, { bold: true }), ...(c.marks ? [new TextRun({ text: `   [${c.marks}]`, bold: true, color: '6B7280' })] : [])],
+          tabStops: c.marks ? [{ type: TabStopType.RIGHT, position: MARKS_TAB }] : undefined,
+          children: [...inlineRuns(c.card_title ?? '', reg, { bold: true }), ...(c.marks ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : [])],
         }));
-        for (const p of await contentParagraphs(c.content, reg)) body.push(p);
+        for (const p of await contentParagraphs(c.content, reg, {
+          subpartRef: subpartRefFor(c.id),
+          onSubpartFormat: (f) => subpartFmt.set(c.id, f),
+        })) body.push(p);
         // Writing space ~ marks lines (min 3, cap 12).
         const lines = Math.min(12, Math.max(3, c.marks ?? 3));
         for (let i = 0; i < lines; i++) {
           body.push(new Paragraph({ spacing: { after: 60 }, border: { bottom: { color: '9CA3AF', size: 4, style: BorderStyle.DASHED, space: 1 } }, children: [new TextRun({ text: '' })] }));
         }
       } else {
-        // worked example
-        body.push(new Paragraph({ spacing: { before: 160 }, children: [new TextRun({ text: c.card_title ?? 'Worked example', bold: true, color: '1D4ED8' })] }));
+        // worked example — numbered "Example N"
+        exampleNo++;
+        body.push(new Paragraph({ spacing: { before: 160 }, children: [new TextRun({ text: `Example ${exampleNo}${c.card_title ? ' — ' + c.card_title : ''}`, bold: true, color: '1D4ED8' })] }));
         for (const p of await contentParagraphs(c.content, reg)) body.push(p);
       }
     }
   }
 
-  // Practice solutions at the back
+  // Practice solutions at the back — keep the SAME displayed numbers as the questions (typed, not a
+  // list, so they match even though questions use an auto-list).
   if (practiceOrdered.length > 0) {
     body.push(new Paragraph({ text: 'Practice — Solutions', heading: HeadingLevel.HEADING_1, pageBreakBefore: true, spacing: { after: 120 } }));
     for (const c of practiceOrdered) {
@@ -165,7 +244,25 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
     }
   }
 
+  // Apply the chosen per-question subpart format (detected from the typed labels).
+  for (const cfg of numConfigs) {
+    if (cfg.reference.startsWith('sub-')) {
+      const cardId = cfg.reference.slice(4);
+      const f = subpartFmt.get(cardId);
+      if (f) cfg.levels = lvl(f, f === LevelFormat.DECIMAL ? '%1.' : '(%1)');
+    }
+  }
+
   const doc = new Document({
+    numbering: {
+      config: numConfigs.map(cfg => ({
+        reference: cfg.reference,
+        levels: cfg.levels.map(l => ({
+          level: l.level, format: l.format, text: l.text, alignment: l.alignment,
+          style: { paragraph: { indent: { left: convertMillimetersToTwip(l.level === 0 ? 8 : 16), hanging: convertMillimetersToTwip(6) } } },
+        })),
+      })),
+    },
     sections: [{ properties: {}, children: body }],
   });
   const blob = await Packer.toBlob(doc);
