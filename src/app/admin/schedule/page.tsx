@@ -599,6 +599,8 @@ export default function SchedulePage() {
   const [absentModal, setAbsentModal] = useState<AbsentDeleteState | null>(null);
   // Reschedule a June-holiday Revision Sprint lesson to a regular slot (makeup).
   const [revReschedule, setRevReschedule] = useState<{ lesson: EnrichedLesson; date: string; slotId: string; saving: boolean } | null>(null);
+  // Convert a trial student → enrolment: collect details, generate a signup link.
+  const [trialEnrol, setTrialEnrol] = useState<{ lesson: EnrichedLesson; trialName: string; level: string; subjects: string[]; subjectLevel: string; slotId: string; startDate: string; url: string; generating: boolean } | null>(null);
   const [deleteModal, setDeleteModal] = useState<AbsentDeleteState | null>(null);
   const [editNotesModal, setEditNotesModal] = useState<{ lesson: EnrichedLesson; notes: string } | null>(null);
   const [examDetailModal, setExamDetailModal] = useState<{ studentId: string; studentName: string; exams: any[] | null } | null>(null);
@@ -1482,6 +1484,35 @@ export default function SchedulePage() {
     }
   }
 
+  // Generate the signup link to convert a trial student into an enrolled one.
+  async function generateTrialLink() {
+    if (!trialEnrol) return;
+    if (!trialEnrol.level || trialEnrol.subjects.length === 0 || !trialEnrol.slotId) {
+      showToast('error', 'Pick level, subject(s) and slot first'); return;
+    }
+    setTrialEnrol({ ...trialEnrol, generating: true });
+    try {
+      const res = await fetch('/api/admin-schedule/trial-signup-link', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trialLessonId: trialEnrol.lesson.id,
+          level: trialEnrol.level,
+          subjects: trialEnrol.subjects,
+          subjectLevel: trialEnrol.subjectLevel || undefined,
+          slotId: trialEnrol.slotId,
+          startDate: trialEnrol.startDate || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setTrialEnrol(t => t && { ...t, url: json.url, generating: false });
+    } catch (e: unknown) {
+      setTrialEnrol(t => t && { ...t, generating: false });
+      showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Failed');
+    }
+  }
+
   // Mark an existing Absent lesson back to Completed
   async function handleMarkPresent(lesson: EnrichedLesson) {
     setActionSheet(null);
@@ -1994,6 +2025,13 @@ export default function SchedulePage() {
               <div className="action-sheet-title">{actionSheet.lesson.studentName}</div>
               <div className="action-sheet-sub">{formatDateSlot(actionSheet.date, actionSheet.slotId)}</div>
             </div>
+            {actionSheet.lesson.type === 'Trial' && (
+              <button className="action-btn" style={{ color: '#15803d', fontWeight: 700 }} onClick={() => {
+                const tl = actionSheet.lesson;
+                setTrialEnrol({ lesson: tl, trialName: tl.studentName, level: '', subjects: [], subjectLevel: '', slotId: tl.slotId || '', startDate: '', url: '', generating: false });
+                setActionSheet(null);
+              }}>🎓 Convert to enrolment</button>
+            )}
             <button className="action-btn" onClick={() => {
               window.open(`/admin/progress?date=${actionSheet.date}&lesson=${actionSheet.lesson.id}`, '_blank');
               setActionSheet(null);
@@ -2009,11 +2047,13 @@ export default function SchedulePage() {
               setShowAllRescheduleSlots(false);
               setModalError(''); setActionSheet(null);
             }}>🔄 Reschedule</button>
-            <button className="action-btn" onClick={() => {
-              setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: false, showPickers: true, switchMode: true });
-              setShowAllRescheduleSlots(false);
-              setModalError(''); setActionSheet(null);
-            }}>🔀 Switch slot</button>
+            {actionSheet.lesson.type !== 'Trial' && (
+              <button className="action-btn" onClick={() => {
+                setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: false, showPickers: true, switchMode: true });
+                setShowAllRescheduleSlots(false);
+                setModalError(''); setActionSheet(null);
+              }}>🔀 Switch slot</button>
+            )}
             {actionSheet.lesson.status !== 'Completed' && (
               <button className="action-btn" onClick={() => { setActionSheet(null); handleMarkPresent(actionSheet.lesson); }}>✅ Mark present</button>
             )}
@@ -2415,6 +2455,83 @@ export default function SchedulePage() {
                   {revReschedule.saving ? 'Rescheduling…' : 'Reschedule'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Convert trial → enrolment: generate a signup link */}
+      {trialEnrol && (
+        <div className="modal-overlay" onClick={() => !trialEnrol.generating && setTrialEnrol(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div><div className="modal-name">Convert to enrolment</div><div className="modal-type">{trialEnrol.trialName}</div></div>
+              <button className="modal-close" onClick={() => setTrialEnrol(null)} disabled={trialEnrol.generating}>✕</button>
+            </div>
+            <div className="modal-body">
+              {!trialEnrol.url ? (
+                <>
+                  <div className="form-group">
+                    <span className="form-label">Level</span>
+                    <select className="modal-select" value={trialEnrol.level} onChange={e => setTrialEnrol({ ...trialEnrol, level: e.target.value })}>
+                      <option value="">Select…</option>
+                      {['Sec 1', 'Sec 2', 'Sec 3', 'Sec 4', 'Sec 5', 'JC1', 'JC2'].map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginTop: 12 }}>
+                    <span className="form-label">Subject(s)</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+                      {['E Math', 'A Math', 'H2 Math', 'H1 Math', 'Math'].map(subj => {
+                        const on = trialEnrol.subjects.includes(subj);
+                        return (
+                          <button key={subj} type="button"
+                            onClick={() => setTrialEnrol({ ...trialEnrol, subjects: on ? trialEnrol.subjects.filter(s => s !== subj) : [...trialEnrol.subjects, subj] })}
+                            style={{ fontSize: 13, fontWeight: 600, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}`, background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569' }}>
+                            {subj}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="form-group" style={{ marginTop: 12 }}>
+                    <span className="form-label">Subject level (optional)</span>
+                    <select className="modal-select" value={trialEnrol.subjectLevel} onChange={e => setTrialEnrol({ ...trialEnrol, subjectLevel: e.target.value })}>
+                      <option value="">—</option>
+                      {['G1', 'G2', 'G3', 'IP', 'H1', 'H2'].map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginTop: 12 }}>
+                    <span className="form-label">Enrolment slot</span>
+                    <select className="modal-select" value={trialEnrol.slotId} onChange={e => setTrialEnrol({ ...trialEnrol, slotId: e.target.value })}>
+                      <option value="">Select a slot…</option>
+                      {sortedSlots.map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginTop: 12 }}>
+                    <span className="form-label">First lesson date (optional)</span>
+                    <input type="date" className="modal-input" value={trialEnrol.startDate} onChange={e => setTrialEnrol({ ...trialEnrol, startDate: e.target.value })} />
+                  </div>
+                  <div className="modal-actions">
+                    <button className="btn-cancel" onClick={() => setTrialEnrol(null)} disabled={trialEnrol.generating}>Cancel</button>
+                    <button className="btn-primary" onClick={generateTrialLink} disabled={trialEnrol.generating || !trialEnrol.level || trialEnrol.subjects.length === 0 || !trialEnrol.slotId}>
+                      {trialEnrol.generating ? 'Generating…' : 'Generate signup link'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 13, color: '#15803d', fontWeight: 600, marginBottom: 8 }}>✓ Signup link ready — send it to the parent (valid 24h)</div>
+                  <input readOnly className="modal-input" value={trialEnrol.url} onFocus={e => e.currentTarget.select()} style={{ fontSize: 12 }} />
+                  <div className="modal-actions">
+                    <button className="btn-cancel" onClick={() => setTrialEnrol(null)}>Close</button>
+                    <a className="btn-primary" href={trialEnrol.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>Open</a>
+                    <button className="btn-primary" onClick={() => { navigator.clipboard?.writeText(trialEnrol.url); showToast('success', 'Link copied'); }}>Copy link</button>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 8, lineHeight: 1.5 }}>
+                    When the parent submits the form, the system creates their Student record, enrolment, first invoice and recurring lessons — and links this trial lesson to them.
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

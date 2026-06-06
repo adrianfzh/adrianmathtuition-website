@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-06-06T10:05:43.155Z
+// Last synced: 2026-06-06T13:56:06.115Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -359,6 +359,9 @@ export const SCHEMA = {
       "Slot": {
         "type": "multipleRecordLinks",
         "linkedTable": "Slots"
+      },
+      "Billing Month": {
+        "type": "singleLineText"
       },
       "Date": {
         "type": "date"
