@@ -2108,6 +2108,12 @@ export default function LessonEditorClient() {
           className="px-2 py-1 rounded text-xs hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent"
         >↪ Redo</button>
         <button
+          onClick={generateMissingSolutions}
+          disabled={!!batchSol}
+          title="Generate worked solutions for any practice cards that don't have one yet"
+          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 rounded text-xs font-medium disabled:opacity-50"
+        >{batchSol ? `Generating ${batchSol.done}/${batchSol.total}…` : '✨ Fill solutions'}</button>
+        <button
           onClick={() => generatePDF(id, pw.current, lesson.name)}
           className="px-3 py-1 bg-rose-600 hover:bg-rose-700 rounded text-xs font-medium"
         >📄 Generate PDF</button>
@@ -2116,12 +2122,6 @@ export default function LessonEditorClient() {
           title="Download as Word (.docx) with editable equations"
           className="px-3 py-1 bg-blue-700 hover:bg-blue-800 rounded text-xs font-medium"
         >⬇ DOCX</button>
-        <button
-          onClick={generateMissingSolutions}
-          disabled={!!batchSol}
-          title="Generate worked solutions for any practice cards that don't have one yet"
-          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 rounded text-xs font-medium disabled:opacity-50"
-        >{batchSol ? `Generating ${batchSol.done}/${batchSol.total}…` : '✨ Fill solutions'}</button>
         <button
           onClick={() => setStagingOpen(true)}
           title="Open the staging workspace to sift candidate questions"
