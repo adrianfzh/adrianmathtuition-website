@@ -11,7 +11,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
-import { getOfflineSettings, queryLocalBank } from '@/lib/offline/qb-cache';
+import { getOfflineSettings, queryLocalBank, syncEnabledLevels } from '@/lib/offline/qb-cache';
 
 export type BankQuestion = {
   id: string;
@@ -106,25 +106,26 @@ function isPlausibleFilename(s: unknown): s is string {
 }
 
 function getStemImageRecords(q: BankQuestion): StemImageRecord[] {
-  if (!q.image_url) return [];
-  const raw = q.image_url.trim();
-  if (!raw || raw === '[]') return [];
-  let parsed: unknown;
-  try {
-    parsed = raw.startsWith('[') ? JSON.parse(raw) : raw;
-  } catch {
-    parsed = raw;
-  }
-  const arr = Array.isArray(parsed) ? parsed : [parsed];
   const records: StemImageRecord[] = [];
-  for (const entry of arr) {
-    if (typeof entry === 'string' && isPlausibleFilename(entry)) {
-      records.push({ url: entry, pos: 'after' });
-    } else if (entry && typeof entry === 'object' && 'url' in entry && isPlausibleFilename((entry as { url: unknown }).url)) {
-      const e = entry as { url: string; pos?: string };
-      records.push({ url: e.url, pos: e.pos === 'before' ? 'before' : 'after' });
+  const raw = (q.image_url ?? '').trim();
+  if (raw && raw !== '[]') {
+    let parsed: unknown;
+    try {
+      parsed = raw.startsWith('[') ? JSON.parse(raw) : raw;
+    } catch {
+      parsed = raw;
+    }
+    const arr = Array.isArray(parsed) ? parsed : [parsed];
+    for (const entry of arr) {
+      if (typeof entry === 'string' && isPlausibleFilename(entry)) {
+        records.push({ url: entry, pos: 'after' });
+      } else if (entry && typeof entry === 'object' && 'url' in entry && isPlausibleFilename((entry as { url: unknown }).url)) {
+        const e = entry as { url: string; pos?: string };
+        records.push({ url: e.url, pos: e.pos === 'before' ? 'before' : 'after' });
+      }
     }
   }
+  // Fallback: legacy rows whose only image records live in `images` (even when image_url is NULL).
   if (records.length === 0 && q.images && q.images.length > 0) {
     for (const img of q.images) {
       if (isPlausibleFilename(img?.filename)) records.push({ url: img.filename, pos: 'after' });
@@ -416,6 +417,11 @@ export function LessonBankPanel({
 
       // Keyword browse while offline mode is on → read the synced local cache.
       if (offlineModeOn && !cSmart) {
+        // Pull a quick delta first so fresh edits (e.g. a diagram just uploaded in the question
+        // viewer) appear. The sync is updated_at-cursored, so it's near-instant when nothing changed;
+        // if we're genuinely offline it fails silently and we serve the cache as before.
+        try { await syncEnabledLevels(); } catch { /* offline — use what we have */ }
+        if (cancelled) return;
         const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit });
         if (cancelled) return;
         if (local.length === 0) {
