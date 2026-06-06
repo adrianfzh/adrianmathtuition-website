@@ -191,7 +191,9 @@ function wrapBlockImages(md: string): string {
 // `\$` as a literal $), so remark-math never has to pair those delimiters. Render-time only — the
 // stored content is untouched. Real math spans ($V$, $V=A(1.25)^{kt}$, …) are left alone.
 function fixCurrencyDollars(md: string): string {
-  return md.replace(/\$\\\$([0-9][0-9.,\s]*)\$/g, (_m, num: string) => '\\$' + num);
+  // Numeric amounts ($\$20$) AND short variable amounts ($\$k$, $\$N$) — both are currency spans,
+  // not real math, and both derail remark-math's `$` pairing for the rest of the line.
+  return md.replace(/\$\\\$([0-9][0-9.,\s]*|[A-Za-z][A-Za-z0-9]{0,3})\$/g, (_m, amt: string) => '\\$' + amt);
 }
 
 // Rewrite the width of the Nth <img> in the markdown source (used by drag-to-resize in the preview).

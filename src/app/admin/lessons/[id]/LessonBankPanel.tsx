@@ -150,7 +150,9 @@ function getSolutionImageUrls(raw: string | null | undefined): string[] {
 // between two amounts into an italic run-together span. Convert a self-contained currency span to
 // plain escaped text `\$<number>` (renders as a literal $) so remark-math never pairs those `$`.
 function fixCurrencyDollars(text: string): string {
-  return text.replace(/\$\\\$([0-9][0-9.,\s]*)\$/g, (_m, num: string) => '\\$' + num);
+  // Numeric amounts ($\$20$) AND short variable amounts ($\$k$, $\$N$) — both are currency spans,
+  // not real math, and both derail remark-math's `$` pairing for the rest of the line.
+  return text.replace(/\$\\\$([0-9][0-9.,\s]*|[A-Za-z][A-Za-z0-9]{0,3})\$/g, (_m, amt: string) => '\\$' + amt);
 }
 
 function renderInlineImagesInText(text: string | null | undefined): string {
