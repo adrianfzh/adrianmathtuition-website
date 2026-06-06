@@ -2,6 +2,7 @@ import { createHmac } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram, sendTelegramWithButtons } from '@/lib/telegram';
+import { billingMonthOf } from '@/lib/lesson-generation';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -529,6 +530,7 @@ export async function POST(request: NextRequest) {
                     Slot: slotIds,
                     Date: iso,
                     Status: isHoliday ? 'Cancelled' : 'Scheduled',
+                    'Billing Month': billingMonthOf(iso),
                     ...(isHoliday && { Notes: 'Public Holiday' }),
                   }}),
                 });

@@ -4,6 +4,7 @@ import {
   verifyAdminAuth,
   countLessonsInSlot,
 } from '@/lib/schedule-helpers';
+import { billingMonthOf } from '@/lib/lesson-generation';
 
 export const runtime = 'nodejs';
 
@@ -78,6 +79,9 @@ export async function POST(req: NextRequest) {
         Type: type,
         Status: 'Scheduled',
         Notes: notes || '',
+        // Additional/Makeup belong to their own month; revision makeups stay blank
+        // (already-paid, excluded from billing).
+        ...(/revision makeup/i.test(notes || '') ? {} : { 'Billing Month': billingMonthOf(date) }),
       };
     }
 

@@ -20,6 +20,13 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 function addDays(d: Date, n: number): Date { const r = new Date(d); r.setUTCDate(r.getUTCDate() + n); return r; }
 function isoDate(d: Date): string { return d.toISOString().split('T')[0]; }
 
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// "June 2026" from a YYYY-MM-DD string — the month a freshly-generated lesson belongs to.
+export function billingMonthOf(dateStr: string): string {
+  const p = (dateStr || '').split('-');
+  return p.length === 3 ? `${MONTH_NAMES[+p[1] - 1]} ${p[0]}` : '';
+}
+
 export interface GenerateOpts {
   studentId: string;
   slotId: string;
@@ -76,6 +83,7 @@ export async function generateRegularLessonsForSlot(opts: GenerateOpts): Promise
         Slot: [slotId],
         Date: dateStr,
         Status: isHoliday ? 'Cancelled' : 'Scheduled',
+        'Billing Month': billingMonthOf(dateStr),   // new lessons belong to their own month
       };
       if (isHoliday) fields['Notes'] = 'Public Holiday';
       else if (isFirst && firstNote) fields['Notes'] = firstNote;

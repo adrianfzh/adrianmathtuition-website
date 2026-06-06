@@ -8,6 +8,7 @@ import {
   verifyAdminAuth,
   countLessonsInSlot,
 } from '@/lib/schedule-helpers';
+import { billingMonthOf } from '@/lib/lesson-generation';
 
 export const runtime = 'nodejs';
 
@@ -88,6 +89,9 @@ export async function POST(req: NextRequest) {
           Type: 'Rescheduled',
           Status: 'Scheduled',
           Notes: notes || (origDateFormatted ? `Rescheduled from ${origDateFormatted}` : ''),
+          // Carry over the original lesson's billing month so a moved lesson stays
+          // owned by the month it was originally scheduled/billed in.
+          'Billing Month': origFields['Billing Month'] || billingMonthOf(origDate),
         },
       }),
     });
