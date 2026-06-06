@@ -719,6 +719,7 @@ export function BankQuestionCard({
     >
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="font-mono text-slate-700 font-medium">{tag}</span>
+        {q.exam_type ? <span className="text-[10px] px-1.5 py-px rounded bg-indigo-100 text-indigo-700 font-medium" title="Exam type">{q.exam_type}</span> : null}
         <span className={`text-[10px] px-1.5 py-px rounded ${difficulty === 'Standard' ? 'bg-slate-100 text-slate-600' : difficulty === 'Advanced' ? 'bg-amber-100 text-amber-700' : difficulty === 'Challenging' ? 'bg-orange-100 text-orange-700' : 'bg-purple-100 text-purple-700'}`}>
           {difficulty.slice(0, 3)}
         </span>
