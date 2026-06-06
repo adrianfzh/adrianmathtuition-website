@@ -80,6 +80,23 @@ function Pane({ title, pane, items, sections, hint, onSend, style }: {
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `pane-${pane}`, data: { pane } });
   const [bankOver, setBankOver] = useState(false);
+  // Persist + restore this pane's scroll position across refresh (localStorage, debounced).
+  const scrollEl = useRef<HTMLDivElement | null>(null);
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    try {
+      const v = Number(localStorage.getItem(`lesson_staging_scroll_${pane}`));
+      if (v > 0 && scrollEl.current) scrollEl.current.scrollTop = v;
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  function onPaneScroll(e: React.UIEvent<HTMLDivElement>) {
+    const top = e.currentTarget.scrollTop;
+    if (scrollTimer.current) clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(() => {
+      try { localStorage.setItem(`lesson_staging_scroll_${pane}`, String(top)); } catch { /* ignore */ }
+    }, 300);
+  }
   // Accept native HTML5 drops from the Bank list (bank cards set application/x-bank-question).
   function onDrop(e: React.DragEvent) {
     const payload = e.dataTransfer.getData('application/x-bank-question');
@@ -109,7 +126,8 @@ function Pane({ title, pane, items, sections, hint, onSend, style }: {
         <span className="ml-auto text-[10px] text-slate-400">{hint}</span>
       </div>
       <div
-        ref={setNodeRef}
+        ref={(el) => { setNodeRef(el); scrollEl.current = el; }}
+        onScroll={onPaneScroll}
         onDragOver={(e) => { if (e.dataTransfer.types.includes('application/x-bank-question')) { e.preventDefault(); setBankOver(true); } }}
         onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setBankOver(false); }}
         onDrop={onDrop}

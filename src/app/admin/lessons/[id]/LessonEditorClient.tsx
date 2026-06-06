@@ -1585,8 +1585,11 @@ export default function LessonEditorClient() {
   const [localSections, setLocalSections] = useState<string[]>([]);
   // Batch "generate solutions for practice cards missing one" progress (null = idle).
   const [batchSol, setBatchSol] = useState<{ done: number; total: number; failed: number } | null>(null);
-  // Staging workspace overlay + live count badge.
+  // Staging workspace overlay + live count badge. Open/closed survives a page refresh so you come
+  // back to the workspace where you left it.
   const [stagingOpen, setStagingOpen] = useState(false);
+  useEffect(() => { try { if (localStorage.getItem('lesson_staging_open') === '1') setStagingOpen(true); } catch { /* ignore */ } }, []);
+  useEffect(() => { try { localStorage.setItem('lesson_staging_open', stagingOpen ? '1' : '0'); } catch { /* ignore */ } }, [stagingOpen]);
   const [stageCount, setStageCount] = useState(0);
   useEffect(() => { setStageCount(stagedCount()); return subscribeStaging(() => setStageCount(stagedCount())); }, []);
 

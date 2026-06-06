@@ -63,8 +63,17 @@ type BankCache = {
 };
 let bankCache: BankCache | null = null;
 // Scroll position of the results list, kept across the card-switch remount so the bank panel
-// stays parked on the question you were looking at instead of jumping back to the top.
+// stays parked on the question you were looking at instead of jumping back to the top. Persisted
+// to localStorage (debounced) so a full page refresh ALSO restores the position.
 let bankScroll: { lessonKey: string; top: number } = { lessonKey: '', top: 0 };
+const BANK_SCROLL_LS_KEY = 'lesson_bank_scroll_v1';
+let scrollSaveTimer: ReturnType<typeof setTimeout> | null = null;
+function persistScroll() {
+  if (scrollSaveTimer) clearTimeout(scrollSaveTimer);
+  scrollSaveTimer = setTimeout(() => {
+    try { window.localStorage.setItem(BANK_SCROLL_LS_KEY, JSON.stringify(bankScroll)); } catch { /* non-fatal */ }
+  }, 300);
+}
 
 // Persist the cache to localStorage so a full page reload restores the LAST search (query +
 // results) instead of falling back to the default topic listing — and without re-spending tokens.
@@ -78,6 +87,10 @@ function ensureCacheLoaded() {
     const raw = window.localStorage.getItem(BANK_CACHE_LS_KEY);
     if (raw) bankCache = JSON.parse(raw) as BankCache;
   } catch { /* ignore corrupt/old payloads */ }
+  try {
+    const s = window.localStorage.getItem(BANK_SCROLL_LS_KEY);
+    if (s) bankScroll = JSON.parse(s) as { lessonKey: string; top: number };
+  } catch { /* ignore */ }
 }
 function persistCache() {
   if (typeof window === 'undefined') return;
@@ -501,6 +514,7 @@ export function LessonBankPanel({
     const q = search.trim();
     if (mode === 'smart' && !q) return; // nothing to rank
     bankScroll = { lessonKey, top: 0 };          // a fresh search starts at the top
+    persistScroll();
     listRef.current?.scrollTo({ top: 0 });
     setLimit(100);
     setCommitted({ query: q, mode, aiModel });
@@ -510,6 +524,7 @@ export function LessonBankPanel({
     setSearch('');
     setMode('keyword');
     bankScroll = { lessonKey, top: 0 };
+    persistScroll();
     listRef.current?.scrollTo({ top: 0 });
     setLimit(100);
     setCommitted({ query: '', mode: 'keyword', aiModel });
@@ -678,7 +693,7 @@ export function LessonBankPanel({
 
       <div
         ref={listRef}
-        onScroll={e => { bankScroll = { lessonKey, top: e.currentTarget.scrollTop }; }}
+        onScroll={e => { bankScroll = { lessonKey, top: e.currentTarget.scrollTop }; persistScroll(); }}
         className="flex-1 overflow-y-auto px-2 py-2 space-y-1.5 min-h-0"
       >
         {error && <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2">{error}</div>}
