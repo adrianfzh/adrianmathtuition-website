@@ -300,6 +300,17 @@ export function LessonBankPanel({
   // Exam-type filter (JC only — its papers are Promo/MY/Prelim). Client-side display filter.
   const isJC = ['JC', 'JC1', 'JC2'].includes(level);
   const [exam, setExam] = useState<string>(hit?.exam ?? 'any');
+  // Topic include/exclude (client-side, over the lesson's own topics). Include can be ALL (must have
+  // every picked topic) or ANY (at least one). Exclude removes questions carrying any picked topic.
+  const [includeTopics, setIncludeTopics] = useState<Set<string>>(new Set());
+  const [excludeTopics, setExcludeTopics] = useState<Set<string>>(new Set());
+  const [includeMode, setIncludeMode] = useState<'all' | 'any'>('all');
+  const [topicFilterOpen, setTopicFilterOpen] = useState(false);
+  // Browsing-only image scale for previews (display preference, persisted locally; never touches the DB).
+  const [imgScale, setImgScale] = useState<number>(() => {
+    try { const v = Number(localStorage.getItem('lesson_bank_img_scale')); return v >= 20 && v <= 100 ? v : 100; } catch { return 100; }
+  });
+  useEffect(() => { try { localStorage.setItem('lesson_bank_img_scale', String(imgScale)); } catch { /* ignore */ } }, [imgScale]);
   // How many rows to fetch for keyword/local browsing. "Load more" raises it. Resets on new search.
   const [limit, setLimit] = useState(100);
   const [questions, setQuestions] = useState<BankQuestion[]>(hit?.results ?? []);
@@ -335,8 +346,16 @@ export function LessonBankPanel({
     if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
     if (year !== 'any') list = list.filter(q => String(q.year) === year);
     if (exam !== 'any') list = list.filter(q => (q.exam_type ?? '') === exam);
+    const inc = [...includeTopics], exc = [...excludeTopics];
+    if (inc.length > 0) {
+      list = list.filter(q => {
+        const t = q.topics ?? [];
+        return includeMode === 'all' ? inc.every(x => t.includes(x)) : inc.some(x => t.includes(x));
+      });
+    }
+    if (exc.length > 0) list = list.filter(q => { const t = q.topics ?? []; return !exc.some(x => t.includes(x)); });
     return list;
-  }, [questions, difficulties, hasImage, year, exam]);
+  }, [questions, difficulties, hasImage, year, exam, includeTopics, excludeTopics, includeMode]);
 
   // Read current filters at fetch-time without putting them in the fetch effect's deps.
   const filtersRef = useRef({ hasImage, difficulties, year, exam });
@@ -498,8 +517,25 @@ export function LessonBankPanel({
     });
   }
 
+  // A topic chip cycles neutral → include (green) → exclude (red) → neutral.
+  function cycleTopic(t: string) {
+    const inInc = includeTopics.has(t), inExc = excludeTopics.has(t);
+    if (!inInc && !inExc) {
+      setIncludeTopics(s => { const n = new Set(s); n.add(t); return n; });
+    } else if (inInc) {
+      setIncludeTopics(s => { const n = new Set(s); n.delete(t); return n; });
+      setExcludeTopics(s => { const n = new Set(s); n.add(t); return n; });
+    } else {
+      setExcludeTopics(s => { const n = new Set(s); n.delete(t); return n; });
+    }
+  }
+  function clearTopicFilter() { setIncludeTopics(new Set()); setExcludeTopics(new Set()); }
+  const topicFilterCount = includeTopics.size + excludeTopics.size;
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* Browsing-only image scaling for previews (overrides the inline max-width:100% on each img). */}
+      {imgScale < 100 && <style>{`.bank-q-prose img{max-width:${imgScale}% !important;height:auto}`}</style>}
       <div className="shrink-0 border-b border-slate-200 bg-slate-50 px-3 py-2 space-y-1.5">
         <div className="flex items-center gap-1.5 text-xs text-slate-600">
           <span className="font-medium">{level}</span>·
@@ -589,7 +625,42 @@ export function LessonBankPanel({
               </select>
             </>
           )}
+          <span className="text-slate-400 ml-2" title="Scale all preview images (browsing only — not saved to the question)">Img:</span>
+          <input type="range" min={20} max={100} step={10} value={imgScale} onChange={e => setImgScale(Number(e.target.value))} title={`Preview images at ${imgScale}%`} className="w-16 align-middle accent-blue-600" />
+          <span className="text-slate-400 w-8 tabular-nums">{imgScale}%</span>
         </div>
+
+        {topics.length > 1 && (
+          <div className="text-[10px]">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setTopicFilterOpen(o => !o)}
+                className={`px-1.5 py-px rounded border ${topicFilterCount > 0 ? 'bg-blue-100 border-blue-400 text-blue-700' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+              >Topic filter{topicFilterCount > 0 ? ` (${topicFilterCount})` : ''} {topicFilterOpen ? '▴' : '▾'}</button>
+              {includeTopics.size > 1 && (
+                <span className="flex items-center gap-0.5">
+                  <button onClick={() => setIncludeMode('all')} className={`px-1.5 py-px rounded border ${includeMode === 'all' ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`} title="Must have ALL the green topics">All</button>
+                  <button onClick={() => setIncludeMode('any')} className={`px-1.5 py-px rounded border ${includeMode === 'any' ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`} title="Has ANY of the green topics">Any</button>
+                </span>
+              )}
+              {topicFilterCount > 0 && <button onClick={clearTopicFilter} className="text-slate-400 hover:text-slate-700 underline">clear</button>}
+            </div>
+            {topicFilterOpen && (
+              <div className="mt-1 flex flex-wrap gap-1">
+                <span className="text-slate-400 self-center">Click: <span className="text-emerald-700">include</span> → <span className="text-red-600">exclude</span> → off</span>
+                {topics.map(t => {
+                  const inc = includeTopics.has(t), exc = excludeTopics.has(t);
+                  const cls = inc ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : exc ? 'bg-red-100 border-red-400 text-red-700 line-through' : 'border-slate-300 text-slate-500 hover:bg-slate-100';
+                  return (
+                    <button key={t} onClick={() => cycleTopic(t)} className={`px-1.5 py-px rounded border ${cls}`} title={t}>
+                      {inc ? '✓ ' : exc ? '✕ ' : ''}{t}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
         <div className="text-[10px] text-slate-400 flex items-center gap-2">
           <span>{loading ? (committedSmart ? 'Claude is reading…' : 'Loading…') : `${total} found · showing ${displayed.length}`}</span>
           {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
