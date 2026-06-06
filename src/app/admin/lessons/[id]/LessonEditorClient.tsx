@@ -191,9 +191,11 @@ function wrapBlockImages(md: string): string {
 // `\$` as a literal $), so remark-math never has to pair those delimiters. Render-time only — the
 // stored content is untouched. Real math spans ($V$, $V=A(1.25)^{kt}$, …) are left alone.
 function fixCurrencyDollars(md: string): string {
-  // Numeric amounts ($\$20$) AND short variable amounts ($\$k$, $\$N$) — both are currency spans,
-  // not real math, and both derail remark-math's `$` pairing for the rest of the line.
-  return md.replace(/\$\\\$([0-9][0-9.,\s]*|[A-Za-z][A-Za-z0-9]{0,3})\$/g, (_m, amt: string) => '\\$' + amt);
+  // House style writes currency as a math span starting with an escaped dollar: $\$20$, $\$k$,
+  // $\$8{,}250$, $\$(x+2)$. remark-math mis-pairs the inner `\$` and swallows the following prose
+  // as run-together math. Rewrite the leading `\$` to \textdollar (no `$` character at all) so the
+  // span pairs cleanly and still renders as real math (KaTeX shows \textdollar as "$").
+  return md.replace(/\$\\\$([^$]*?)\$/g, (_m, body: string) => `$\\textdollar ${body}$`);
 }
 
 // Rewrite the width of the Nth <img> in the markdown source (used by drag-to-resize in the preview).

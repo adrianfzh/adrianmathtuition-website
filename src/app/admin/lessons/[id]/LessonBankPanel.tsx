@@ -164,9 +164,11 @@ function getSolutionImageUrls(raw: string | null | undefined): string[] {
 // between two amounts into an italic run-together span. Convert a self-contained currency span to
 // plain escaped text `\$<number>` (renders as a literal $) so remark-math never pairs those `$`.
 function fixCurrencyDollars(text: string): string {
-  // Numeric amounts ($\$20$) AND short variable amounts ($\$k$, $\$N$) — both are currency spans,
-  // not real math, and both derail remark-math's `$` pairing for the rest of the line.
-  return text.replace(/\$\\\$([0-9][0-9.,\s]*|[A-Za-z][A-Za-z0-9]{0,3})\$/g, (_m, amt: string) => '\\$' + amt);
+  // House style writes currency as a math span starting with an escaped dollar: $\$20$, $\$k$,
+  // $\$8{,}250$, $\$(x+2)$. remark-math mis-pairs the inner `\$` and swallows the following prose
+  // as run-together math. Rewrite the leading `\$` to \textdollar (no `$` character at all) so the
+  // span pairs cleanly and still renders as real math (KaTeX shows \textdollar as "$").
+  return text.replace(/\$\\\$([^$]*?)\$/g, (_m, body: string) => `$\\textdollar ${body}$`);
 }
 
 function renderInlineImagesInText(text: string | null | undefined): string {
@@ -313,6 +315,7 @@ export function LessonBankPanel({
   const [hasImage, setHasImage] = useState<'any' | 'true' | 'false'>(hit?.hasImage ?? 'any');
   const [difficulties, setDifficulties] = useState<Set<Difficulty>>(new Set(hit?.difficulties ?? []));
   const [year, setYear] = useState<string>(hit?.year ?? 'any');
+  const [school, setSchool] = useState<string>('any');
   // Exam-type filter (JC only — its papers are Promo/MY/Prelim). Client-side display filter.
   const isJC = ['JC', 'JC1', 'JC2'].includes(level);
   const [exam, setExam] = useState<string>(hit?.exam ?? 'any');
@@ -354,6 +357,13 @@ export function LessonBankPanel({
     return Array.from(ys).sort((a, b) => b - a);
   }, [questions]);
 
+  // Distinct schools in the current result set — populates the School dropdown.
+  const availableSchools = useMemo(() => {
+    const ss = new Set<string>();
+    for (const q of questions) if (q.school) ss.add(q.school);
+    return Array.from(ss).sort();
+  }, [questions]);
+
   // Difficulty/image/year are client-side display filters over the fetched set — they NEVER trigger
   // a fetch (so changing them can't spend AI tokens). `displayed` is what the list renders.
   const displayed = useMemo(() => {
@@ -361,6 +371,7 @@ export function LessonBankPanel({
     if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
     if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
     if (year !== 'any') list = list.filter(q => String(q.year) === year);
+    if (school !== 'any') list = list.filter(q => q.school === school);
     if (exam !== 'any') list = list.filter(q => (q.exam_type ?? '') === exam);
     const inc = [...includeTopics], exc = [...excludeTopics];
     if (inc.length > 0) {
@@ -636,6 +647,11 @@ export function LessonBankPanel({
           <select value={year} onChange={e => setYear(e.target.value)} className="border border-slate-300 rounded px-1 py-px text-[10px]">
             <option value="any">Any</option>
             {availableYears.map(y => <option key={y} value={String(y)}>{y}</option>)}
+          </select>
+          <span className="text-slate-400 ml-2">School:</span>
+          <select value={school} onChange={e => setSchool(e.target.value)} className="border border-slate-300 rounded px-1 py-px text-[10px] max-w-[90px]">
+            <option value="any">Any</option>
+            {availableSchools.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           {isJC && (
             <>
