@@ -37,6 +37,7 @@ function weekdayName(label: string): string { return (label || '').trim().split(
 
 interface Enrollment { enrollmentId: string; slotId: string | null; slotLabel: string; slotLevel: string; ratePerLesson: number | null; rateType: string; }
 interface UpLesson { id: string; date: string; slotId: string | null; slotLabel: string; type: string; status: string; }
+interface AttRow { id: string; date: string; monthLabel: string; type: string; status: string; rescheduledToDate: string; slotLabel: string; }
 interface Exam { id: string; examType: string; examDate: string; testedTopics: string; noExam: boolean; }
 interface Invoice { id: string; month: string; finalAmount: number | null; amountPaid: number | null; isPaid: boolean; status: string; invoiceType: string; pdfUrl: string; }
 interface SentInvoice { id: string; subject: string; sentAt: string; toEmail: string; status: string; pdfUrl: string; }
@@ -46,6 +47,7 @@ interface Profile {
   student: { id: string; name: string; level: string; subjects: string[]; subjectLevel: string; status: string; juneRevision: string };
   enrollments: Enrollment[];
   upcoming: UpLesson[];
+  attendance: AttRow[];
   exams: Exam[];
   invoices: Invoice[];
   sentInvoices: SentInvoice[];
@@ -363,6 +365,51 @@ export default function StudentProfilePage() {
                   </div>
                 );
               })}
+            </Section>
+
+            {/* Attendance — grouped by month, merged reschedules, missed in red */}
+            <Section title="Attendance">
+              {data.attendance.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No lessons on record.</div>}
+              {(() => {
+                // Group the (already newest-first) rows by month label, preserving order.
+                const groups: { label: string; rows: AttRow[] }[] = [];
+                for (const r of data.attendance) {
+                  let g = groups.find(x => x.label === r.monthLabel);
+                  if (!g) { g = { label: r.monthLabel, rows: [] }; groups.push(g); }
+                  g.rows.push(r);
+                }
+                return groups.map(g => {
+                  const done = g.rows.filter(r => r.status === 'Completed').length;
+                  const missed = g.rows.filter(r => r.status === 'Absent').length;
+                  return (
+                    <div key={g.label} style={{ marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 6px' }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f' }}>{g.label}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: '#15803d' }}>{done} attended</span>
+                        {missed > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626' }}>· {missed} missed</span>}
+                      </div>
+                      {g.rows.slice().sort((a, b) => a.date.localeCompare(b.date)).map(r => {
+                        const isMissed = r.status === 'Absent';
+                        const isDone = r.status === 'Completed';
+                        const isCancelled = r.status === 'Cancelled' || r.status === 'Cancelled - Prorated';
+                        const color = isMissed ? '#dc2626' : isDone ? '#15803d' : isCancelled ? '#94a3b8' : '#475569';
+                        return (
+                          <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #f6f7f9', fontSize: 13.5 }}>
+                            <span style={{ width: 96, fontWeight: 600, color: isMissed ? '#dc2626' : '#111' }}>{fmtDate(r.date)}</span>
+                            <span style={{ flex: 1, minWidth: 0, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {r.slotLabel}
+                              {r.rescheduledToDate && <span style={{ color: '#1d4ed8' }}> → {fmtDate(r.rescheduledToDate)}</span>}
+                            </span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color }}>
+                              {isDone ? '✓ Attended' : isMissed ? '✗ Missed' : isCancelled ? 'Cancelled' : r.rescheduledToDate ? 'Rescheduled' : r.status}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                });
+              })()}
             </Section>
 
             {/* Progress history — click to log/edit progress */}

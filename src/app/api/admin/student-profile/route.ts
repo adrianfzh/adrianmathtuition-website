@@ -52,10 +52,15 @@ export async function GET(req: NextRequest) {
 
   // Upcoming lessons (from today) — filter by date in Airtable, match student in JS
   const today = localToday();
+  // Fetch a window (past 6 months → all future) so attendance history + upcoming
+  // both come from one query, and reschedule destinations are included.
+  const windowStart = (() => { const d = new Date(today + 'T00:00:00'); d.setMonth(d.getMonth() - 6); return d.toISOString().slice(0, 10); })();
   const lessonsData = await airtableRequestAll('Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Date}>='${today}'`)}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&sort[0][field]=Date&sort[0][direction]=asc`);
-  const upcoming = lessonsData.records
-    .filter((r: any) => r.fields['Student']?.[0] === id && r.fields['Status'] !== 'Cancelled')
+    `?filterByFormula=${encodeURIComponent(`{Date}>='${windowStart}'`)}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&sort[0][field]=Date&sort[0][direction]=asc`);
+  const mine = lessonsData.records.filter((r: any) => r.fields['Student']?.[0] === id);
+
+  const upcoming = mine
+    .filter((r: any) => (r.fields['Date'] || '') >= today && r.fields['Status'] !== 'Cancelled' && r.fields['Status'] !== 'Rescheduled')
     .slice(0, 12)
     .map((r: any) => {
       const slotId = r.fields['Slot']?.[0] || null;
@@ -69,6 +74,40 @@ export async function GET(req: NextRequest) {
         status: r.fields['Status'] || 'Scheduled',
       };
     });
+
+  // ── Attendance (merged reschedules) ──────────────────────────────────────────
+  // Each row = one logical lesson, attributed to its ORIGINAL date/month. A
+  // rescheduled lesson is shown once (under its original date) with the final
+  // destination date + the final outcome status — so a May lesson moved to June
+  // stays under May, not June.
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthLabel = (d: string) => { const p = d.split('-'); return p.length === 3 ? `${MONTHS[+p[1] - 1]} ${p[0]}` : 'Unknown'; };
+  const byId: Record<string, any> = Object.fromEntries(mine.map((r: any) => [r.id, r]));
+  const destinationIds = new Set<string>();
+  for (const r of mine) for (const did of (r.fields['Rescheduled Lesson ID'] || [])) destinationIds.add(did);
+  const attendance = mine
+    .filter((r: any) => !destinationIds.has(r.id))                 // skip lessons shown via their origin
+    .filter((r: any) => r.fields['Type'] !== 'Trial')
+    .map((r: any) => {
+      // Trace the reschedule chain to the final lesson (the real outcome).
+      let cur = r, guard = 0;
+      while (cur.fields['Status'] === 'Rescheduled' && cur.fields['Rescheduled Lesson ID']?.[0] && byId[cur.fields['Rescheduled Lesson ID'][0]] && guard < 12) {
+        cur = byId[cur.fields['Rescheduled Lesson ID'][0]]; guard++;
+      }
+      const moved = cur.id !== r.id;
+      const slotId = r.fields['Slot']?.[0] || null;
+      const sf = slotId ? slotById[slotId] : null;
+      return {
+        id: r.id,
+        date: r.fields['Date'] || '',
+        monthLabel: monthLabel(r.fields['Date'] || ''),
+        type: r.fields['Type'] || 'Regular',
+        status: cur.fields['Status'] || 'Scheduled',            // final outcome
+        rescheduledToDate: moved ? (cur.fields['Date'] || '') : '',
+        slotLabel: sf ? slotLabel(sf) : (r.fields['Type'] === 'Revision Sprint' ? 'Revision' : ''),
+      };
+    })
+    .sort((a: any, b: any) => b.date.localeCompare(a.date));     // newest first
 
   // Exams for this student
   const examsData = await airtableRequestAll('Exams',
@@ -138,6 +177,7 @@ export async function GET(req: NextRequest) {
     },
     enrollments,
     upcoming,
+    attendance,
     exams,
     invoices,
     sentInvoices,

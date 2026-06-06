@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-06-05T13:13:14.028Z
+// Last synced: 2026-06-06T06:44:19.130Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -521,7 +521,8 @@ export const SCHEMA = {
         "options": [
           "Regular",
           "Enrollment",
-          "Revision Sprint"
+          "Revision Sprint",
+          "Adjustment"
         ]
       },
       "Status": {
