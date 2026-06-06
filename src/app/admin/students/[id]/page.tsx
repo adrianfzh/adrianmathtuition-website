@@ -178,22 +178,8 @@ export default function StudentProfilePage() {
   }
 
   // ── Phase 2: lesson actions ─────────────────────────────────────────────────
-  async function markStatus(lesson: UpLesson, status: 'Completed' | 'Absent' | 'Scheduled') {
-    setBusyLesson(lesson.id);
-    try {
-      const res = await fetch(`/api/admin/progress/lessons?id=${lesson.id}`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fields: { Status: status } }),
-      });
-      if (!res.ok) throw new Error('Failed');
-      setData(d => d && { ...d, upcoming: d.upcoming.map(l => l.id === lesson.id ? { ...l, status } : l) });
-    } catch { showToast('err', 'Failed to update status'); }
-    finally { setBusyLesson(''); }
-  }
-
-  // Set a lesson's status from the Attendance section (Completed / Absent /
-  // Cancelled - Prorated [= not coming] / Scheduled). Targets the outcome lesson.
+  // Set a lesson's status (Completed / Absent / Cancelled - Prorated [= not
+  // coming] / Scheduled). Targets the outcome lesson; updates both sections.
   async function setAttStatus(lessonId: string, status: string) {
     setBusyLesson(lessonId);
     setData(d => d && {
@@ -374,10 +360,12 @@ export default function StudentProfilePage() {
                     <span style={{ fontSize: 11, fontWeight: 700, color: TYPE_COLORS[l.type] || '#475569' }}>{l.type}</span>
                     {l.status === 'Completed' && <span style={{ fontSize: 11, color: '#15803d', fontWeight: 700 }}>✓ Attended</span>}
                     {l.status === 'Absent' && <span style={{ fontSize: 11, color: '#dc2626', fontWeight: 700 }}>✗ Absent</span>}
+                    {l.status === 'Cancelled - Prorated' && <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>⊘ Not coming</span>}
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {l.status !== 'Completed' && <button title="Mark present" style={iconBtn('#16a34a', '#bbf7d0')} disabled={busy} onClick={() => markStatus(l, 'Completed')}>✓</button>}
-                      {l.status !== 'Absent' && <button title="Mark absent" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => markStatus(l, 'Absent')}>✗</button>}
-                      {(l.status === 'Completed' || l.status === 'Absent') && <button title="Undo" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => markStatus(l, 'Scheduled')}>↺</button>}
+                      {l.status !== 'Completed' && <button title="Mark present" style={iconBtn('#16a34a', '#bbf7d0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Completed')}>✓</button>}
+                      {l.status !== 'Absent' && <button title="Mark absent" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => setAttStatus(l.id, 'Absent')}>✗</button>}
+                      {l.status !== 'Cancelled - Prorated' && <button title="Not coming (not billed)" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Cancelled - Prorated')}>⊘</button>}
+                      {l.status !== 'Scheduled' && <button title="Reset to scheduled" style={iconBtn('#94a3b8', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Scheduled')}>↺</button>}
                       {canReschedule && <button title="Reschedule" style={iconBtn('#1d4ed8', '#bfdbfe')} disabled={busy} onClick={() => setReschedModal({ lesson: l, date: '', slotId: '', saving: false })}>🔄</button>}
                       {l.type !== 'Revision Sprint' && <button title="Log progress" style={iconBtn('#7c3aed', '#e9d5ff')} disabled={busy} onClick={() => setLessonModal({ id: l.id, studentId, studentName: s.name, date: l.date, slotId: l.slotId, type: l.type })}>📝</button>}
                       <button title="Cancel lesson" style={iconBtn('#b91c1c', '#fecaca')} disabled={busy} onClick={() => cancelLesson(l)}>🗑</button>

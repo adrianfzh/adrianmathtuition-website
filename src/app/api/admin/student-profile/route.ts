@@ -108,6 +108,9 @@ export async function GET(req: NextRequest) {
         slotLabel: sf ? slotLabel(sf) : (r.fields['Type'] === 'Revision Sprint' ? 'Revision' : ''),
       };
     })
+    // Attendance = lessons that have already happened (effective date before today).
+    // Anything today-or-later lives in the Upcoming section instead.
+    .filter((r: any) => (r.rescheduledToDate || r.date) < today)
     .sort((a: any, b: any) => b.date.localeCompare(a.date));     // newest first
 
   // Exams for this student
