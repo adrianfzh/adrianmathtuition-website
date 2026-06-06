@@ -99,6 +99,7 @@ export async function GET(req: NextRequest) {
       const sf = slotId ? slotById[slotId] : null;
       return {
         id: r.id,
+        outcomeLessonId: cur.id,                                // the lesson whose Status to PATCH when marking
         date: r.fields['Date'] || '',
         monthLabel: monthLabel(r.fields['Date'] || ''),
         type: r.fields['Type'] || 'Regular',

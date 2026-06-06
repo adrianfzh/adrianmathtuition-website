@@ -37,7 +37,7 @@ function weekdayName(label: string): string { return (label || '').trim().split(
 
 interface Enrollment { enrollmentId: string; slotId: string | null; slotLabel: string; slotLevel: string; ratePerLesson: number | null; rateType: string; }
 interface UpLesson { id: string; date: string; slotId: string | null; slotLabel: string; type: string; status: string; }
-interface AttRow { id: string; date: string; monthLabel: string; type: string; status: string; rescheduledToDate: string; slotLabel: string; }
+interface AttRow { id: string; outcomeLessonId: string; date: string; monthLabel: string; type: string; status: string; rescheduledToDate: string; slotLabel: string; }
 interface Exam { id: string; examType: string; examDate: string; testedTopics: string; noExam: boolean; }
 interface Invoice { id: string; month: string; finalAmount: number | null; amountPaid: number | null; isPaid: boolean; status: string; invoiceType: string; pdfUrl: string; }
 interface SentInvoice { id: string; subject: string; sentAt: string; toEmail: string; status: string; pdfUrl: string; }
@@ -189,6 +189,26 @@ export default function StudentProfilePage() {
       if (!res.ok) throw new Error('Failed');
       setData(d => d && { ...d, upcoming: d.upcoming.map(l => l.id === lesson.id ? { ...l, status } : l) });
     } catch { showToast('err', 'Failed to update status'); }
+    finally { setBusyLesson(''); }
+  }
+
+  // Set a lesson's status from the Attendance section (Completed / Absent /
+  // Cancelled - Prorated [= not coming] / Scheduled). Targets the outcome lesson.
+  async function setAttStatus(lessonId: string, status: string) {
+    setBusyLesson(lessonId);
+    setData(d => d && {
+      ...d,
+      attendance: d.attendance.map(a => a.outcomeLessonId === lessonId ? { ...a, status } : a),
+      upcoming: d.upcoming.map(u => u.id === lessonId ? { ...u, status } : u),
+    });
+    try {
+      const res = await fetch(`/api/admin/progress/lessons?id=${lessonId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: { Status: status } }),
+      });
+      if (!res.ok) throw new Error('Failed');
+    } catch { showToast('err', 'Failed to update'); fetchProfile(); }
     finally { setBusyLesson(''); }
   }
 
@@ -381,28 +401,42 @@ export default function StudentProfilePage() {
                 return groups.map(g => {
                   const done = g.rows.filter(r => r.status === 'Completed').length;
                   const missed = g.rows.filter(r => r.status === 'Absent').length;
+                  const notComing = g.rows.filter(r => r.status === 'Cancelled - Prorated').length;
                   return (
                     <div key={g.label} style={{ marginBottom: 14 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 6px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f' }}>{g.label}</span>
                         <span style={{ fontSize: 11, fontWeight: 700, color: '#15803d' }}>{done} attended</span>
                         {missed > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626' }}>· {missed} missed</span>}
+                        {notComing > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8' }}>· {notComing} not coming</span>}
                       </div>
                       {g.rows.slice().sort((a, b) => a.date.localeCompare(b.date)).map(r => {
                         const isMissed = r.status === 'Absent';
                         const isDone = r.status === 'Completed';
-                        const isCancelled = r.status === 'Cancelled' || r.status === 'Cancelled - Prorated';
+                        const isOptOut = r.status === 'Cancelled - Prorated';
+                        const isCancelled = r.status === 'Cancelled' || isOptOut;
                         const color = isMissed ? '#dc2626' : isDone ? '#15803d' : isCancelled ? '#94a3b8' : '#475569';
+                        const busy = busyLesson === r.outcomeLessonId;
+                        const lid = r.outcomeLessonId;
+                        const markable = r.status !== 'Rescheduled';
                         return (
-                          <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #f6f7f9', fontSize: 13.5 }}>
+                          <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #f6f7f9', fontSize: 13.5, flexWrap: 'wrap', opacity: busy ? 0.5 : 1 }}>
                             <span style={{ width: 96, fontWeight: 600, color: isMissed ? '#dc2626' : '#111' }}>{fmtDate(r.date)}</span>
-                            <span style={{ flex: 1, minWidth: 0, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ flex: 1, minWidth: 70, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {r.slotLabel}
                               {r.rescheduledToDate && <span style={{ color: '#1d4ed8' }}> → {fmtDate(r.rescheduledToDate)}</span>}
                             </span>
-                            <span style={{ fontSize: 12, fontWeight: 700, color }}>
-                              {isDone ? '✓ Attended' : isMissed ? '✗ Missed' : isCancelled ? 'Cancelled' : r.rescheduledToDate ? 'Rescheduled' : r.status}
+                            <span style={{ fontSize: 12, fontWeight: 700, color, minWidth: 78, textAlign: 'right' }}>
+                              {isDone ? '✓ Attended' : isMissed ? '✗ Missed' : isOptOut ? 'Not coming' : isCancelled ? 'Cancelled' : r.rescheduledToDate ? 'Rescheduled' : r.status}
                             </span>
+                            {markable && (
+                              <div style={{ display: 'flex', gap: 3 }}>
+                                {!isDone && <button title="Attended" style={iconBtn('#16a34a', '#bbf7d0')} disabled={busy} onClick={() => setAttStatus(lid, 'Completed')}>✓</button>}
+                                {!isMissed && <button title="Missed" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => setAttStatus(lid, 'Absent')}>✗</button>}
+                                {!isOptOut && <button title="Not coming (not billed)" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(lid, 'Cancelled - Prorated')}>⊘</button>}
+                                {r.status !== 'Scheduled' && <button title="Reset to scheduled" style={iconBtn('#94a3b8', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(lid, 'Scheduled')}>↺</button>}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
