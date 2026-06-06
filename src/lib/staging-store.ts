@@ -72,6 +72,26 @@ export function setPane(id: string, pane: StagePane): void {
   save(items.map(i => i.q.id === id ? { ...i, pane, order: maxOrder + 1 } : i));
 }
 
+// Move an item into a pane AT a specific position: directly before `beforeId`, or appended when
+// `beforeId` is null/not found. Rewrites the destination pane's order 0..N.
+export function setPaneAt(id: string, pane: StagePane, beforeId: string | null): void {
+  const items = load();
+  if (!items.some(i => i.q.id === id)) return;
+  const destIds = items
+    .filter(i => i.pane === pane && i.q.id !== id)
+    .sort((a, b) => a.order - b.order)
+    .map(i => i.q.id);
+  let idx = beforeId ? destIds.indexOf(beforeId) : -1;
+  if (idx === -1) idx = destIds.length;
+  destIds.splice(idx, 0, id);
+  const rank = new Map(destIds.map((qid, i) => [qid, i]));
+  save(items.map(i => {
+    if (i.q.id === id) return { ...i, pane, order: rank.get(id)! };
+    if (i.pane === pane && rank.has(i.q.id)) return { ...i, order: rank.get(i.q.id)! };
+    return i;
+  }));
+}
+
 export function toggleReject(id: string): void {
   save(load().map(i => i.q.id === id ? { ...i, rejected: !i.rejected } : i));
 }

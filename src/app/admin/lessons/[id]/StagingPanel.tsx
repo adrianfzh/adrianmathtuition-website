@@ -14,7 +14,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } 
 import { CSS } from '@dnd-kit/utilities';
 import { LessonBankPanel, BankQuestionCard, type BankQuestion } from './LessonBankPanel';
 import {
-  getStaged, subscribeStaging, removeStaged, setPane, toggleReject, reorderPane, setKind, setSection,
+  getStaged, subscribeStaging, removeStaged, setPaneAt, toggleReject, reorderPane, setKind, setSection,
   clearStaging, clearRejected, getKeep, clearKeep, isStaged, addToStaging,
   type StagedItem, type StagePane, type StageKind,
 } from '@/lib/staging-store';
@@ -40,7 +40,7 @@ function StagedCard({ item, sections, onSend }: {
   const isKeep = item.pane === 'keep';
   const [sent, setSent] = useState(false);
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} data-qid={item.q.id}
       className={`rounded border cursor-grab active:cursor-grabbing ${item.rejected ? 'border-red-200 bg-red-50/40 opacity-60' : 'border-slate-200 bg-white'}`}>
       <div className="flex items-center gap-2 px-2 py-1 border-b border-slate-100 bg-slate-50/60">
         <span className="text-slate-400 select-none" title="Drag this card">⠿</span>
@@ -89,7 +89,16 @@ function Pane({ title, pane, items, sections, hint, onSend, style }: {
     try {
       const q = JSON.parse(payload) as BankQuestion;
       addToStaging(q);       // no-op if already staged
-      setPane(q.id, pane);   // ALWAYS move it to the dropped pane (so a re-drag of an already-staged card still lands)
+      // Insert AT the drop position: the first card whose vertical midpoint is below the cursor
+      // becomes the card we insert before; none → append at the bottom.
+      const cards = Array.from((e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[data-qid]'));
+      let beforeId: string | null = null;
+      for (const el of cards) {
+        if (el.dataset.qid === q.id) continue;
+        const r = el.getBoundingClientRect();
+        if (e.clientY < r.top + r.height / 2) { beforeId = el.dataset.qid ?? null; break; }
+      }
+      setPaneAt(q.id, pane, beforeId);
     } catch { /* ignore */ }
   }
   return (
@@ -182,7 +191,12 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
     const from = items.find(i => i.q.id === activeId)?.pane;
     const to = paneOf(overId);
     if (!from || !to) return;
-    if (from !== to) { setPane(activeId, to); return; }
+    if (from !== to) {
+      // Dropped over a specific card in the other pane → land right there; over empty space → append.
+      const overIsCard = overId !== 'pane-pool' && overId !== 'pane-keep';
+      setPaneAt(activeId, to, overIsCard ? overId : null);
+      return;
+    }
     const inPane = items.filter(i => i.pane === from).sort((a, b) => a.order - b.order).map(i => i.q.id);
     const oi = inPane.indexOf(activeId), ni = inPane.indexOf(overId);
     if (oi === -1 || ni === -1) return;
