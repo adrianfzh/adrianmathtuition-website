@@ -195,13 +195,15 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
     };
     const sub: string[] = [];
     for (const p of q.parts as PartLike[]) {
-      if (!p?.label) continue;
+      if (!p) continue;
       const marks = p.marks ? ` [${p.marks}m]` : '';
       const lines: string[] = [];
       const beforeImg = partImageHtml(p.image_url);
       const afterImg = partImageHtml(p.image_url_after);
       if (beforeImg) lines.push(beforeImg);
-      lines.push(`(${p.label}) ${renderInlineImagesInText(p.text)}${marks}`);
+      // Stem-only questions are stored as a single unlabeled part — emit its text with no "(label)".
+      const label = p.label ? `(${p.label}) ` : '';
+      if (label || (p.text && p.text.trim())) lines.push(`${label}${renderInlineImagesInText(p.text)}${marks}`);
       if (afterImg) lines.push(afterImg);
       sub.push(lines.join('\n\n'));
 
@@ -678,12 +680,14 @@ export function BankQuestionCard({
 
     if (parts && parts.length > 0) {
       for (const p of parts) {
-        if (!p?.label) continue;
+        if (!p) continue;
         const marks = p.marks ? ` _[${p.marks}m]_` : '';
         const beforeImg = partImageHtml(p.image_url);
         const afterImg = partImageHtml(p.image_url_after);
         if (beforeImg) lines.push(beforeImg);
-        lines.push(`**(${p.label})** ${renderInlineImagesInText(p.text)}${marks}`);
+        // Stem-only questions are stored as a single unlabeled part — render its text with no "(label)".
+        const label = p.label ? `**(${p.label})** ` : '';
+        if (label || (p.text && p.text.trim())) lines.push(`${label}${renderInlineImagesInText(p.text)}${marks}`);
         if (afterImg) lines.push(afterImg);
         if (Array.isArray(p.subparts)) {
           for (const sp of p.subparts) {
