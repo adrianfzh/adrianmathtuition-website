@@ -876,6 +876,29 @@ export function BankQuestionCard({
     return bits.length > 0 ? bits.join('  ·  ') : null;
   }, [q]);
 
+  // Compiled worked solution (top-level + per-part/subpart + solution images), shown on demand.
+  const [showSol, setShowSol] = useState(false);
+  const solutionMd = useMemo(() => {
+    type PS = { label?: string; solution?: string; solution_image?: string; subparts?: Array<{ label?: string; solution?: string; solution_image?: string }> };
+    const bits: string[] = [];
+    if (q.solution && String(q.solution).trim()) bits.push(renderInlineImagesInText(q.solution));
+    for (const p of (Array.isArray(q.parts) ? (q.parts as PS[]) : [])) {
+      if (!p) continue;
+      if (p.solution && p.solution.trim()) bits.push(`${p.label ? `**(${p.label})** ` : ''}${renderInlineImagesInText(p.solution)}`);
+      const pi = partImageHtml(p.solution_image);
+      if (pi) bits.push(pi);
+      for (const sp of (Array.isArray(p.subparts) ? p.subparts : [])) {
+        if (sp?.solution && sp.solution.trim()) bits.push(`**(${p.label ?? ''})(${sp.label ?? ''})** ${renderInlineImagesInText(sp.solution)}`);
+        const spi = partImageHtml(sp?.solution_image);
+        if (spi) bits.push(spi);
+      }
+    }
+    for (const u of getSolutionImageUrls(q.solution_images)) {
+      bits.push(`<img src="${toStorageUrl(u)}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
+    }
+    return bits.length > 0 ? bits.join('\n\n') : null;
+  }, [q]);
+
   return (
     <div
       draggable={draggable}
@@ -926,6 +949,22 @@ export function BankQuestionCard({
           <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, rehypeKatex]}>
             {`**Answer:** ${answerMd}`}
           </ReactMarkdown>
+        </div>
+      )}
+
+      {solutionMd && (
+        <div onMouseDown={draggable ? (e) => e.stopPropagation() : undefined}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowSol(s => !s); }}
+            className="text-[10px] px-1.5 py-0.5 rounded border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100"
+          >{showSol ? '▾ Hide solution' : '▸ Show solution'}</button>
+          {showSol && (
+            <div className="mt-1 text-[11px] bg-amber-50/50 border border-amber-200 rounded px-2 py-1 prose prose-sm prose-slate max-w-none leading-snug bank-q-prose">
+              <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, rehypeKatex]}>
+                {solutionMd}
+              </ReactMarkdown>
+            </div>
+          )}
         </div>
       )}
 
