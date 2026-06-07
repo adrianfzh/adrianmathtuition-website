@@ -32,6 +32,7 @@ export type BankQuestion = {
   difficulty: string | null;
   source_file: string | null;
   exam_type?: string | null;
+  level?: string | null;
   usage_count: number;
   subgroup_links: { id: number; name: string; isPrimary: boolean }[];
 };
@@ -372,7 +373,12 @@ export function LessonBankPanel({
     if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
     if (year !== 'any') list = list.filter(q => String(q.year) === year);
     if (school !== 'any') list = list.filter(q => q.school === school);
-    if (exam !== 'any') list = list.filter(q => (q.exam_type ?? '') === exam);
+    if (exam !== 'any') {
+      // 'MY:JC1' style values pin BOTH exam type and level; plain values match exam type only.
+      // Rows from an older offline cache may lack `level` — let those through rather than hide them.
+      const [exType, exLevel] = exam.split(':');
+      list = list.filter(q => (q.exam_type ?? '') === exType && (!exLevel || !q.level || q.level === exLevel));
+    }
     const inc = [...includeTopics], exc = [...excludeTopics];
     if (inc.length > 0) {
       list = list.filter(q => {
@@ -658,9 +664,11 @@ export function LessonBankPanel({
               <span className="text-slate-400 ml-2">Exam:</span>
               <select value={exam} onChange={e => setExam(e.target.value)} className="border border-slate-300 rounded px-1 py-px text-[10px]">
                 <option value="any">Any</option>
-                <option value="Promo">Promo</option>
-                <option value="MY">MY</option>
-                <option value="Prelim">Prelim</option>
+                <option value="Promo">Promo (JC1)</option>
+                <option value="MY:JC1">MY (JC1)</option>
+                <option value="MY:JC2">MY (JC2)</option>
+                <option value="MY">MY (both)</option>
+                <option value="Prelim">Prelim (JC2)</option>
               </select>
             </>
           )}
@@ -829,7 +837,11 @@ export function BankQuestionCard({
     >
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="font-mono text-slate-700 font-medium">{tag}</span>
-        {q.exam_type ? <span className="text-[10px] px-1.5 py-px rounded bg-indigo-100 text-indigo-700 font-medium" title="Exam type">{q.exam_type}</span> : null}
+        {q.exam_type ? (
+          <span className="text-[10px] px-1.5 py-px rounded bg-indigo-100 text-indigo-700 font-medium" title="Exam type (level)">
+            {(q.level === 'JC1' || q.level === 'JC2') ? `${q.level} ` : ''}{q.exam_type}
+          </span>
+        ) : null}
         <span className={`text-[10px] px-1.5 py-px rounded ${difficulty === 'Standard' ? 'bg-slate-100 text-slate-600' : difficulty === 'Advanced' ? 'bg-amber-100 text-amber-700' : difficulty === 'Challenging' ? 'bg-orange-100 text-orange-700' : 'bg-purple-100 text-purple-700'}`}>
           {difficulty.slice(0, 3)}
         </span>

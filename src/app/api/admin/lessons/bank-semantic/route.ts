@@ -38,7 +38,7 @@ const POOL_CAP = 600;
 const SNIPPET_CHARS = 360;
 
 const FULL_COLUMNS =
-  'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type';
+  'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type, level';
 
 type PartLike = { label?: string; text?: string; subparts?: Array<{ label?: string; text?: string }> };
 

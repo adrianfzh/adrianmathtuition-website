@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     let q = supa
       .from('questions')
       .select(
-        'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type',
+        'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type, level',
         { count: 'exact' },
       )
       .overlaps('topics', topics);
