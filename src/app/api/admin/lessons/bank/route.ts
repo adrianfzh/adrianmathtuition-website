@@ -14,7 +14,9 @@ export async function GET(req: NextRequest) {
   const hasImage = searchParams.get('hasImage'); // 'true' | 'false' | null
   const difficultyCsv = searchParams.get('difficulty') ?? '';
   const exam = (searchParams.get('exam') ?? '').trim(); // Promo | MY | Prelim | '' (JC only)
-  const limit = Math.min(Number(searchParams.get('limit') ?? 100), 500);
+  // Cap generously — "Load more" refetches the whole list with a growing limit, so this must be
+  // able to exceed the largest topic-scope in the bank (currently ~1k rows for a wide JC scope).
+  const limit = Math.min(Number(searchParams.get('limit') ?? 100), 3000);
   const offset = Number(searchParams.get('offset') ?? 0);
 
   if (!level || !topicsParam) return NextResponse.json({ error: 'level and topics required' }, { status: 400 });
@@ -28,39 +30,51 @@ export async function GET(req: NextRequest) {
 
   const supa = getSupabaseAdmin();
 
-  // questions.topics is text[] — match any question whose topics array overlaps with the lesson's topics.
-  let qQuery = supa
-    .from('questions')
-    .select(
-      'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type',
-      { count: 'exact' },
-    )
-    .overlaps('topics', topics);
-  qQuery = isJC ? qQuery.in('level', JC_FAMILY) : qQuery.eq('level', level);
-  if (isJC && exam) qQuery = qQuery.eq('exam_type', exam);
-  qQuery = qQuery
-    .order('school', { ascending: true })
-    .order('year', { ascending: false })
-    .order('paper', { ascending: true })
-    .order('question_number', { ascending: true })
-    .range(offset, offset + limit - 1);
-
-  if (hasImage === 'true') qQuery = qQuery.eq('has_image', true);
-  if (hasImage === 'false') qQuery = qQuery.eq('has_image', false);
-
   const difficulties = difficultyCsv ? difficultyCsv.split(',').map(s => s.trim()).filter(Boolean) : [];
-  if (difficulties.length > 0) qQuery = qQuery.in('difficulty', difficulties);
 
-  // Search matches question text OR school OR source filename (so you can search by school).
-  if (search) {
-    const esc = search.replace(/[%,()]/g, ' ');
-    qQuery = qQuery.or(`question_text.ilike.%${esc}%,school.ilike.%${esc}%,source_file.ilike.%${esc}%`);
+  // questions.topics is text[] — match any question whose topics array overlaps with the lesson's topics.
+  // Queries are single-use, so build a fresh one per page.
+  const buildQuery = (from: number, to: number) => {
+    let q = supa
+      .from('questions')
+      .select(
+        'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type',
+        { count: 'exact' },
+      )
+      .overlaps('topics', topics);
+    q = isJC ? q.in('level', JC_FAMILY) : q.eq('level', level);
+    if (isJC && exam) q = q.eq('exam_type', exam);
+    if (hasImage === 'true') q = q.eq('has_image', true);
+    if (hasImage === 'false') q = q.eq('has_image', false);
+    if (difficulties.length > 0) q = q.in('difficulty', difficulties);
+    // Search matches question text OR school OR source filename (so you can search by school).
+    if (search) {
+      const esc = search.replace(/[%,()]/g, ' ');
+      q = q.or(`question_text.ilike.%${esc}%,school.ilike.%${esc}%,source_file.ilike.%${esc}%`);
+    }
+    return q
+      .order('school', { ascending: true })
+      .order('year', { ascending: false })
+      .order('paper', { ascending: true })
+      .order('question_number', { ascending: true })
+      .range(from, to);
+  };
+
+  // PostgREST caps a single response (~1000 rows) regardless of the requested range, so page
+  // through in chunks until we have `limit` rows or run out.
+  const PAGE = 1000;
+  type Row = Record<string, unknown> & { id: string };
+  let qList: Row[] = [];
+  let count: number | null = null;
+  for (let from = offset; from < offset + limit; from += PAGE) {
+    const to = Math.min(from + PAGE, offset + limit) - 1;
+    const { data, error, count: c } = await buildQuery(from, to);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (c != null) count = c;
+    qList = qList.concat((data ?? []) as Row[]);
+    if (!data || data.length < (to - from + 1)) break; // ran out of rows
   }
 
-  const { data: questions, error, count } = await qQuery;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  const qList = questions ?? [];
   if (qList.length === 0) return NextResponse.json({ questions: [], total: count ?? 0 });
 
   // Best-effort usage counts via the bulk function used by edit-cards. If the RPC isn't available
