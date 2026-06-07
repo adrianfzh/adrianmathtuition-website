@@ -860,6 +860,22 @@ export function BankQuestionCard({
     return lines.join('\n\n');
   }, [q, parts]);
 
+  // Compiled answer (top-level + per-part/subpart) rendered as real math — most questions keep
+  // their answers on the parts, not the top-level field.
+  const answerMd = useMemo(() => {
+    type PA = { label?: string; answer?: string; subparts?: Array<{ label?: string; answer?: string }> };
+    const bits: string[] = [];
+    if (q.answer && String(q.answer).trim()) bits.push(fixCurrencyDollars(String(q.answer)));
+    for (const p of (Array.isArray(q.parts) ? (q.parts as PA[]) : [])) {
+      if (!p) continue;
+      if (p.answer && p.answer.trim()) bits.push(`${p.label ? `**(${p.label})** ` : ''}${fixCurrencyDollars(p.answer)}`);
+      for (const sp of (Array.isArray(p.subparts) ? p.subparts : [])) {
+        if (sp?.answer && sp.answer.trim()) bits.push(`**(${p.label ?? ''})(${sp.label ?? ''})** ${fixCurrencyDollars(sp.answer)}`);
+      }
+    }
+    return bits.length > 0 ? bits.join('  ·  ') : null;
+  }, [q]);
+
   return (
     <div
       draggable={draggable}
@@ -902,10 +918,14 @@ export function BankQuestionCard({
         </div>
       )}
 
-      {q.answer && (
-        <div className="text-[11px] flex items-center gap-1.5">
-          <span className="text-slate-400 font-medium">Answer:</span>
-          <code className="bg-green-50 border border-green-200 text-green-800 px-1.5 py-px rounded">{String(q.answer).slice(0, 80)}</code>
+      {answerMd && (
+        <div
+          className="text-[11px] bg-green-50/70 border border-green-200 rounded px-2 py-1 prose prose-sm prose-slate max-w-none leading-snug bank-q-prose"
+          onMouseDown={draggable ? (e) => e.stopPropagation() : undefined}
+        >
+          <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, rehypeKatex]}>
+            {`**Answer:** ${answerMd}`}
+          </ReactMarkdown>
         </div>
       )}
 
