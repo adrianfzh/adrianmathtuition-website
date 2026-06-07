@@ -96,13 +96,6 @@ function extractAnswer(content: string | null): { body: string; answer: string |
   return { body, answer: answer || null };
 }
 
-// Pull <img src="…"> URLs out of a content block and return [textWithoutImgTags, urls].
-function extractImages(md: string): { text: string; urls: string[] } {
-  const urls: string[] = [];
-  const text = md.replace(/<img\b[^>]*?src="([^"]+)"[^>]*>/gi, (_m, u: string) => { urls.push(u); return ''; });
-  return { text, urls };
-}
-
 // Inline markdown (bold **…**) + math ($…$) → docx TextRuns. Math becomes a placeholder TextRun
 // whose text is later swapped for OMML by injectOmmlIntoDocxBuffer.
 function inlineRuns(text: string, reg: OmmlRegistry, opts: { color?: string; bold?: boolean; marksTab?: boolean } = {}): TextRun[] {
@@ -164,51 +157,72 @@ function naturalSize(buf: ArrayBuffer, mime: string): Promise<{ w: number; h: nu
 }
 
 // Render one content block (markdown paragraphs) into docx Paragraphs, fetching any images.
+// Images render AT THEIR POSITION in the content (not collected at the end), and a failed download
+// leaves a visible grey "[image unavailable: …]" placeholder instead of silently disappearing.
 async function contentParagraphs(
   content: string | null,
   reg: OmmlRegistry,
   opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void; dropLeadingTitle?: string } = {},
 ): Promise<Paragraph[]> {
   const out: Paragraph[] = [];
-  const { text, urls } = extractImages(content ?? '');
-  // Each non-empty LINE becomes its own paragraph so labelled parts ((i), (ii)…) stay separated and
-  // each can right-tab its trailing marks to 15.5 cm.
-  const lines = text.split(/\n/).map(l => l.trim()).filter(l => l && l !== '---');
-  // Drop a leading line that just repeats the card title (the bank template emits "**School Year PxQy**"
-  // as the first content line, which the heading already shows).
-  if (opts.dropLeadingTitle && lines.length) {
-    const norm = (s: string) => s.replace(/^\*+|\*+$/g, '').trim();
-    if (norm(lines[0]) === opts.dropLeadingTitle.trim()) lines.shift();
+  const src = content ?? '';
+
+  // Ordered tokens: text chunks and <img> URLs, preserving document order.
+  const tokens: Array<{ kind: 'text'; value: string } | { kind: 'img'; url: string }> = [];
+  const imgRe = /<img\b[^>]*?src="([^"]+)"[^>]*>/gi;
+  let last = 0; let m: RegExpExecArray | null;
+  while ((m = imgRe.exec(src))) {
+    if (m.index > last) tokens.push({ kind: 'text', value: src.slice(last, m.index) });
+    tokens.push({ kind: 'img', url: m[1] });
+    last = m.index + m[0].length;
   }
+  if (last < src.length) tokens.push({ kind: 'text', value: src.slice(last) });
+
   let reportedFmt = false;
   // Auto-numbered subpart lists restart per sequence: when a label's ordinal is <= the previous one
   // (e.g. question parts (i)-(iv) end, then the working steps start again at (i)), bump the Word
-  // numbering INSTANCE so the count restarts at (i)/(a)/1.
+  // numbering INSTANCE so the count restarts at (i)/(a)/1. State persists across image tokens.
   let instance = 0, prevRank = 0; let seenSub = false;
-  for (const line of lines) {
-    const sub = opts.subpartRef ? parseSubpartLabel(line) : null;
-    if (sub) {
-      if (!reportedFmt) { opts.onSubpartFormat?.(subpartFormat(sub.token)); reportedFmt = true; }
-      const rank = tokenRank(sub.token);
-      if (!seenSub || rank <= prevRank) instance++;
-      seenSub = true; prevRank = rank;
-      out.push(new Paragraph({
-        numbering: { reference: opts.subpartRef!, level: 0, instance },
-        children: inlineRuns(sub.rest, reg, { ...opts, marksTab: true }),
-        tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
+  // Drop a leading line that just repeats the card title (the bank template emits "**School Year
+  // PxQy**" as the first content line, which the heading already shows).
+  let titleChecked = !opts.dropLeadingTitle;
+
+  for (const tok of tokens) {
+    if (tok.kind === 'img') {
+      const p = await fetchImagePara(tok.url);
+      out.push(p ?? new Paragraph({
         spacing: { after: 80 },
+        children: [new TextRun({ text: `[image unavailable: ${tok.url.split('/').pop() ?? tok.url}]`, italics: true, color: '999999' })],
       }));
-    } else {
-      out.push(new Paragraph({
-        children: inlineRuns(line, reg, { ...opts, marksTab: true }),
-        tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
-        spacing: { after: 80 },
-      }));
+      continue;
     }
-  }
-  for (const u of urls) {
-    const p = await fetchImagePara(u);
-    if (p) out.push(p);
+    const lines = tok.value.split(/\n/).map(l => l.trim()).filter(l => l && l !== '---');
+    for (const line of lines) {
+      if (!titleChecked) {
+        titleChecked = true;
+        const norm = (s: string) => s.replace(/^\*+|\*+$/g, '').trim();
+        if (norm(line) === opts.dropLeadingTitle!.trim()) continue;
+      }
+      const sub = opts.subpartRef ? parseSubpartLabel(line) : null;
+      if (sub) {
+        if (!reportedFmt) { opts.onSubpartFormat?.(subpartFormat(sub.token)); reportedFmt = true; }
+        const rank = tokenRank(sub.token);
+        if (!seenSub || rank <= prevRank) instance++;
+        seenSub = true; prevRank = rank;
+        out.push(new Paragraph({
+          numbering: { reference: opts.subpartRef!, level: 0, instance },
+          children: inlineRuns(sub.rest, reg, { ...opts, marksTab: true }),
+          tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
+          spacing: { after: 80 },
+        }));
+      } else {
+        out.push(new Paragraph({
+          children: inlineRuns(line, reg, { ...opts, marksTab: true }),
+          tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
+          spacing: { after: 80 },
+        }));
+      }
+    }
   }
   return out;
 }
