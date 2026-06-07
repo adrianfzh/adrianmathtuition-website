@@ -877,18 +877,21 @@ export function BankQuestionCard({
   }, [q]);
 
   // Compiled worked solution (top-level + per-part/subpart + solution images), shown on demand.
+  // Solutions store one working step per `\n` line; markdown collapses single newlines, so convert
+  // them to hard line breaks ("  \n") to keep each step on its own line.
   const [showSol, setShowSol] = useState(false);
   const solutionMd = useMemo(() => {
+    const steps = (s: string) => renderInlineImagesInText(s).split('\n').map(l => l.trim()).filter(Boolean).join('  \n');
     type PS = { label?: string; solution?: string; solution_image?: string; subparts?: Array<{ label?: string; solution?: string; solution_image?: string }> };
     const bits: string[] = [];
-    if (q.solution && String(q.solution).trim()) bits.push(renderInlineImagesInText(q.solution));
+    if (q.solution && String(q.solution).trim()) bits.push(steps(q.solution));
     for (const p of (Array.isArray(q.parts) ? (q.parts as PS[]) : [])) {
       if (!p) continue;
-      if (p.solution && p.solution.trim()) bits.push(`${p.label ? `**(${p.label})** ` : ''}${renderInlineImagesInText(p.solution)}`);
+      if (p.solution && p.solution.trim()) bits.push(`${p.label ? `**(${p.label})**  \n` : ''}${steps(p.solution)}`);
       const pi = partImageHtml(p.solution_image);
       if (pi) bits.push(pi);
       for (const sp of (Array.isArray(p.subparts) ? p.subparts : [])) {
-        if (sp?.solution && sp.solution.trim()) bits.push(`**(${p.label ?? ''})(${sp.label ?? ''})** ${renderInlineImagesInText(sp.solution)}`);
+        if (sp?.solution && sp.solution.trim()) bits.push(`**(${p.label ?? ''})(${sp.label ?? ''})**  \n${steps(sp.solution)}`);
         const spi = partImageHtml(sp?.solution_image);
         if (spi) bits.push(spi);
       }
@@ -959,7 +962,7 @@ export function BankQuestionCard({
             className="text-[10px] px-1.5 py-0.5 rounded border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100"
           >{showSol ? '▾ Hide solution' : '▸ Show solution'}</button>
           {showSol && (
-            <div className="mt-1 text-[11px] bg-amber-50/50 border border-amber-200 rounded px-2 py-1 prose prose-sm prose-slate max-w-none leading-snug bank-q-prose">
+            <div className="mt-1 text-[12px] bg-amber-50/50 border border-amber-200 rounded px-2.5 py-1.5 prose prose-sm prose-slate max-w-none leading-relaxed bank-q-prose">
               <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, rehypeKatex]}>
                 {solutionMd}
               </ReactMarkdown>
