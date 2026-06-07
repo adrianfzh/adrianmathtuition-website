@@ -32,7 +32,7 @@ import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { renderDesmosPng } from '@/lib/desmos';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
 import { StagingPanel } from './StagingPanel';
-import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging, removeStaged, setPane as setStagePane, setKind as setStageKind, setSection as setStageSection, type StageKind } from '@/lib/staging-store';
+import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging, removeStaged, setPane as setStagePane, setKind as setStageKind, setSection as setStageSection, setStagingScope, type StageKind } from '@/lib/staging-store';
 import {
   loadLesson as storeLoadLesson,
   saveLessonMeta as storeSaveLessonMeta,
@@ -195,7 +195,7 @@ function fixCurrencyDollars(md: string): string {
   // $\$8{,}250$, $\$(x+2)$. remark-math mis-pairs the inner `\$` and swallows the following prose
   // as run-together math. Rewrite the leading `\$` to \textdollar (no `$` character at all) so the
   // span pairs cleanly and still renders as real math (KaTeX shows \textdollar as "$").
-  return md.replace(/\$\\\$([^$]*?)\$/g, (_m, body: string) => `$\\textdollar ${body}$`);
+  return md.replace(/\$\\\$([^$]*?)\$/g, (_m, body: string) => `$\\text{\\textdollar}${body}$`);
 }
 
 // Rewrite the width of the Nth <img> in the markdown source (used by drag-to-resize in the preview).
@@ -1446,26 +1446,37 @@ function LessonHeader({ lesson, onSave }: { lesson: Lesson; onSave: (patch: Part
             + Add topic
           </button>
         </div>
-        {pickerOpen && <TopicPicker level={lesson.level} selected={lesson.topics} onPick={t => { onSave({ topics: [...lesson.topics, t] }); setPickerOpen(false); }} />}
+        {pickerOpen && (
+          <TopicPicker
+            level={lesson.level}
+            selected={lesson.topics}
+            onPick={t => onSave({ topics: lesson.topics.includes(t) ? lesson.topics.filter(x => x !== t) : [...lesson.topics, t] })}
+            onDone={() => setPickerOpen(false)}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function TopicPicker({ level, selected, onPick }: { level: string; selected: string[]; onPick: (t: string) => void }) {
+function TopicPicker({ level, selected, onPick, onDone }: { level: string; selected: string[]; onPick: (t: string) => void; onDone: () => void }) {
   const cats = getTopicsForPaperLevel(level);
   return (
     <div className="bg-slate-50 border border-slate-200 rounded p-3 max-h-72 overflow-y-auto">
+      <div className="flex items-center mb-2">
+        <span className="text-[11px] text-slate-400">Click topics to add or remove — pick as many as you like.</span>
+        <button onClick={onDone} className="ml-auto text-xs px-3 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700">Done</button>
+      </div>
       {cats.map(cat => (
         <div key={cat.label} className="mb-2">
           <div className="text-xs font-semibold text-slate-600 mb-1">{cat.label}</div>
           <div className="flex flex-wrap gap-1">
             {cat.topics.map(t => {
-              const dis = selected.includes(t);
+              const on = selected.includes(t);
               return (
-                <button key={t} disabled={dis} onClick={() => onPick(t)}
-                        className={`text-xs px-2 py-0.5 rounded ${dis ? 'bg-slate-200 text-slate-400' : 'bg-white border border-slate-300 hover:border-emerald-500 hover:text-emerald-700'}`}>
-                  {t}
+                <button key={t} onClick={() => onPick(t)}
+                        className={`text-xs px-2 py-0.5 rounded border ${on ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-300 hover:border-emerald-500 hover:text-emerald-700'}`}>
+                  {on ? '✓ ' : ''}{t}
                 </button>
               );
             })}
@@ -1587,6 +1598,10 @@ export default function LessonEditorClient() {
   const [localSections, setLocalSections] = useState<string[]>([]);
   // Batch "generate solutions for practice cards missing one" progress (null = idle).
   const [batchSol, setBatchSol] = useState<{ done: number; total: number; failed: number } | null>(null);
+  // Each lesson has its OWN staging tray — scope the store to this lesson before any reads below.
+  // Idempotent, so calling it during render is safe; it must run before StagingPanel/getStaged().
+  setStagingScope(id);
+
   // Staging workspace overlay + live count badge. Open/closed survives a page refresh so you come
   // back to the workspace where you left it.
   const [stagingOpen, setStagingOpen] = useState(false);

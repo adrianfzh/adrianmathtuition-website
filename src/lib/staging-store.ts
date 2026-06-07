@@ -16,17 +16,39 @@ export interface StagedItem {
   section?: string; // chosen target lesson section for a Keep card
 }
 
-const KEY = 'lesson_staging_v1';
+const KEY_BASE = 'lesson_staging_v1';
 type Listener = () => void;
 const listeners = new Set<Listener>();
 
+// The tray is scoped PER LESSON: each lesson id gets its own localStorage key. The editor calls
+// setStagingScope(lessonId) before any store reads. The pre-scoping global tray (plain KEY_BASE)
+// is adopted once into the first lesson opened after this upgrade, so nothing shortlisted is lost.
+let scopeKey = KEY_BASE;
 let cache: StagedItem[] | null = null;
+
+export function setStagingScope(lessonId: string | null): void {
+  const next = lessonId ? `${KEY_BASE}:${lessonId}` : KEY_BASE;
+  if (next === scopeKey) return;
+  scopeKey = next;
+  cache = null;
+  if (typeof window !== 'undefined' && lessonId) {
+    try {
+      const scoped = window.localStorage.getItem(scopeKey);
+      const legacy = window.localStorage.getItem(KEY_BASE);
+      if ((!scoped || scoped === '[]') && legacy && legacy !== '[]') {
+        window.localStorage.setItem(scopeKey, legacy);   // adopt the old global tray
+        window.localStorage.removeItem(KEY_BASE);
+      }
+    } catch { /* ignore */ }
+  }
+  listeners.forEach(l => { try { l(); } catch { /* ignore */ } });
+}
 
 function load(): StagedItem[] {
   if (cache) return cache;
   if (typeof window === 'undefined') return [];
   try {
-    const raw = window.localStorage.getItem(KEY);
+    const raw = window.localStorage.getItem(scopeKey);
     cache = raw ? (JSON.parse(raw) as StagedItem[]) : [];
   } catch { cache = []; }
   return cache!;
@@ -34,7 +56,7 @@ function load(): StagedItem[] {
 
 function save(items: StagedItem[]) {
   cache = items;
-  try { window.localStorage.setItem(KEY, JSON.stringify(items)); } catch { /* quota — non-fatal */ }
+  try { window.localStorage.setItem(scopeKey, JSON.stringify(items)); } catch { /* quota — non-fatal */ }
   listeners.forEach(l => { try { l(); } catch { /* ignore */ } });
 }
 
@@ -90,6 +112,16 @@ export function setPaneAt(id: string, pane: StagePane, beforeId: string | null):
     if (i.pane === pane && rank.has(i.q.id)) return { ...i, order: rank.get(i.q.id)! };
     return i;
   }));
+}
+
+// Move EVERY item from one pane to the other, preserving their relative order, appended after the
+// destination's existing items. Hidden (rejected) items move too.
+export function moveAllToPane(from: StagePane, to: StagePane): void {
+  const items = load();
+  let next = items.filter(i => i.pane === to).reduce((m, i) => Math.max(m, i.order), -1) + 1;
+  const order = new Map(items.filter(i => i.pane === from).sort((a, b) => a.order - b.order).map(i => [i.q.id, next++] as const));
+  if (order.size === 0) return;
+  save(items.map(i => order.has(i.q.id) ? { ...i, pane: to, order: order.get(i.q.id)! } : i));
 }
 
 export function toggleReject(id: string): void {
