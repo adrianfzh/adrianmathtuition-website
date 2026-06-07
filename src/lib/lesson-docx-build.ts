@@ -76,6 +76,8 @@ export type DocxCard = {
   section_name: string; card_title: string | null; content: string | null; marks: number | null; is_advanced?: boolean; order_index: number;
   /** Bank source tag, e.g. "2023/JC2/Prelim/ACJC/P1/Q8" — printed bold in brackets after the question number. */
   source_tag?: string | null;
+  /** Compiled answer from the bank — used when the card content itself has no "**Answer:**" line. */
+  source_answer?: string | null;
 };
 
 const ANSWER_BROWN = '843C0C';
@@ -308,7 +310,10 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
       // Practice questions show ONLY the question + final ANSWER per house style (JC: red
       // "Answer: …"; Sec: right-aligned orange "[Ans: …]"). The working is stripped here and
       // appears in the "Practice — Solutions" section at the back instead.
-      const { body: rawBody, answer } = isPractice ? extractAnswer(c.content) : { body: c.content ?? '', answer: null };
+      const { body: rawBody, answer: contentAnswer } = isPractice ? extractAnswer(c.content) : { body: c.content ?? '', answer: null };
+      // Cards created before the answer-line fix have no "**Answer:**" in their content — fall back
+      // to the answer compiled fresh from the bank at export time.
+      const answer = contentAnswer ?? (isPractice ? c.source_answer ?? null : null);
       const cBody = isPractice ? splitWorking(rawBody).question : rawBody;
       for (const p of await contentParagraphs(cBody, reg, {
         subpartRef: subpartRefFor(c.id),
@@ -352,7 +357,8 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
         ...(c.is_advanced ? [new TextRun({ text: '  [Advanced]', bold: true, color: 'B45309' })] : []),
       ] }));
       // Show the WORKING here (the question itself already appeared in the body of the doc).
-      const { body: solBody, answer: solAnswer } = extractAnswer(c.content);
+      const { body: solBody, answer: extractedAns } = extractAnswer(c.content);
+      const solAnswer = extractedAns ?? c.source_answer ?? null;
       const { question: solQuestion, working } = splitWorking(solBody);
       const solContent = working ?? solQuestion;
       for (const p of await contentParagraphs(solContent, reg, { color: ANSWER_BROWN, dropLeadingTitle: c.card_title ?? '' })) body.push(p);

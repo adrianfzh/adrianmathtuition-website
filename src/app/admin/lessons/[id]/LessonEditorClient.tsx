@@ -2349,15 +2349,17 @@ async function downloadDocx(lesson: Lesson, cards: Card[], auth: string) {
     // Source tags for bank-linked cards: [2023/JC2/Prelim/ACJC/P1/Q8]. Cosmetic — export proceeds
     // without them if the lookup fails.
     const tagById = new Map<string, string>();
+    const answerById = new Map<string, string>();
     const srcIds = [...new Set(cards.map(c => c.source_question_id).filter(Boolean))] as string[];
     if (srcIds.length > 0) {
       try {
         const res = await fetch(`/api/admin/lessons/question-meta?ids=${srcIds.join(',')}`, { headers: { Authorization: `Bearer ${auth}` } });
         if (res.ok) {
-          const j = await res.json() as { questions?: { id: string; school: string; year: number; paper: string; question_number: string; level: string | null; exam_type: string | null }[] };
+          const j = await res.json() as { questions?: { id: string; school: string; year: number; paper: string; question_number: string; level: string | null; exam_type: string | null; answer: string | null }[] };
           for (const q of j.questions ?? []) {
             const bits = [q.year, q.level, q.exam_type, q.school, `P${q.paper}`, `Q${q.question_number}`].filter(Boolean);
             tagById.set(q.id, bits.join('/'));
+            if (q.answer) answerById.set(q.id, q.answer);
           }
         }
       } catch { /* ignore — fall back to card titles */ }
@@ -2369,6 +2371,7 @@ async function downloadDocx(lesson: Lesson, cards: Card[], auth: string) {
         id: c.id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title,
         content: c.content, marks: c.marks, is_advanced: c.is_advanced, order_index: c.order_index,
         source_tag: c.source_question_id ? tagById.get(c.source_question_id) ?? null : null,
+        source_answer: c.source_question_id ? answerById.get(c.source_question_id) ?? null : null,
       })),
     );
     const url = URL.createObjectURL(blob);
