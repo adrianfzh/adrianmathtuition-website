@@ -74,6 +74,8 @@ export type DocxLesson = { name: string; level: string; description?: string | n
 export type DocxCard = {
   id: string; content_kind: 'refresher' | 'worked_example' | 'practice';
   section_name: string; card_title: string | null; content: string | null; marks: number | null; is_advanced?: boolean; order_index: number;
+  /** Bank source tag, e.g. "2023/JC2/Prelim/ACJC/P1/Q8" — printed bold in brackets after the question number. */
+  source_tag?: string | null;
 };
 
 const ANSWER_BROWN = '843C0C';
@@ -237,8 +239,8 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
 
   // Word numbering definitions accumulated during the build.
   const numConfigs: NumConfig[] = [
-    // Single running question list (1. 2. 3. …) shared by every card's main heading.
-    { reference: 'questions', levels: lvl(LevelFormat.DECIMAL, '%1.', { bold: true }) },
+    // Single running question list (1. 2. 3. …) shared by every card's main heading (not bold).
+    { reference: 'questions', levels: lvl(LevelFormat.DECIMAL, '%1.') },
   ];
   // Subpart format chosen per-card once we see its first label; default lower-roman.
   const subpartFmt = new Map<string, LevelFormat>();
@@ -268,12 +270,16 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
       // Every card is a numbered main question (running 1, 2, 3 … via a Word auto-list, continuous
       // across sections). Practice cards add right-tabbed marks + writing space below.
       const isPractice = c.content_kind === 'practice';
+      // Heading: plain auto-number + BOLD bracketed source tag ([2023/JC2/Prelim/ACJC/P1/Q8]);
+      // manual cards without a bank source fall back to their card title.
       body.push(new Paragraph({
         numbering: { reference: 'questions', level: 0 },
         spacing: { before: 160 },
         tabStops: (isPractice && c.marks) ? [{ type: TabStopType.RIGHT, position: MARKS_TAB }] : undefined,
         children: [
-          ...inlineRuns(c.card_title ?? '', reg, { bold: true }),
+          ...(c.source_tag
+            ? [new TextRun({ text: `[${c.source_tag}]`, bold: true })]
+            : inlineRuns(c.card_title ?? '', reg, { bold: true })),
           ...((isPractice && c.marks) ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : []),
         ],
       }));
@@ -315,8 +321,10 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
     body.push(new Paragraph({ text: 'Practice — Solutions', heading: HeadingLevel.HEADING_1, pageBreakBefore: true, spacing: { after: 120 } }));
     for (const c of practiceOrdered) {
       body.push(new Paragraph({ spacing: { before: 120 }, children: [
-        new TextRun({ text: `${mainNum.get(c.id)}. `, bold: true }),
-        ...inlineRuns(c.card_title ?? '', reg, { bold: true }),
+        new TextRun({ text: `${mainNum.get(c.id)}. ` }),
+        ...(c.source_tag
+          ? [new TextRun({ text: `[${c.source_tag}]`, bold: true })]
+          : inlineRuns(c.card_title ?? '', reg, { bold: true })),
         ...(c.is_advanced ? [new TextRun({ text: '  [Advanced]', bold: true, color: 'B45309' })] : []),
       ] }));
       for (const p of await contentParagraphs(c.content, reg, { color: ANSWER_BROWN, dropLeadingTitle: c.card_title ?? '' })) body.push(p);

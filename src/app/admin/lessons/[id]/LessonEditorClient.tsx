@@ -191,11 +191,15 @@ function wrapBlockImages(md: string): string {
 // `\$` as a literal $), so remark-math never has to pair those delimiters. Render-time only — the
 // stored content is untouched. Real math spans ($V$, $V=A(1.25)^{kt}$, …) are left alone.
 function fixCurrencyDollars(md: string): string {
-  // House style writes currency as a math span starting with an escaped dollar: $\$20$, $\$k$,
-  // $\$8{,}250$, $\$(x+2)$. remark-math mis-pairs the inner `\$` and swallows the following prose
-  // as run-together math. Rewrite the leading `\$` to \textdollar (no `$` character at all) so the
-  // span pairs cleanly and still renders as real math (KaTeX shows \textdollar as "$").
-  return md.replace(/\$\\\$([^$]*?)\$/g, (_m, body: string) => `$\\text{\\textdollar}${body}$`);
+  // House style writes currency inside math with an escaped dollar: $\$20$, $\$k$, $\$8{,}250$,
+  // $\$100900(1.009)^{n-1} - \$90810$. remark-math doesn't honour the escape and mis-pairs the
+  // `$`s, swallowing prose as run-together math. Rewrite EVERY `\$` inside a math span to
+  // \text{\textdollar} (no `$` character at all) so the span pairs cleanly and still renders as
+  // real math. The span matcher is escape-aware so an interior `\$` doesn't end the span.
+  return md.replace(/\$((?:\\.|[^$\\])*)\$/g, (m, body: string) => {
+    if (!body.includes('\\$')) return m; // ordinary math — leave untouched
+    return `$${body.replace(/\\\$/g, '\\text{\\textdollar}')}$`;
+  });
 }
 
 // Rewrite the width of the Nth <img> in the markdown source (used by drag-to-resize in the preview).
@@ -2140,7 +2144,7 @@ export default function LessonEditorClient() {
           className="px-3 py-1 bg-rose-600 hover:bg-rose-700 rounded text-xs font-medium"
         >📄 Generate PDF</button>
         <button
-          onClick={() => downloadDocx(lesson, cards)}
+          onClick={() => downloadDocx(lesson, cards, pw.current)}
           title="Download as Word (.docx) with editable equations"
           className="px-3 py-1 bg-blue-700 hover:bg-blue-800 rounded text-xs font-medium"
         >⬇ DOCX</button>
@@ -2321,12 +2325,32 @@ async function generatePDF(lessonId: string, pw: string, name: string) {
 }
 
 // Build the lesson .docx in-browser (native Word/OMML equations) and download it.
-async function downloadDocx(lesson: Lesson, cards: Card[]) {
+async function downloadDocx(lesson: Lesson, cards: Card[], auth: string) {
   try {
+    // Source tags for bank-linked cards: [2023/JC2/Prelim/ACJC/P1/Q8]. Cosmetic — export proceeds
+    // without them if the lookup fails.
+    const tagById = new Map<string, string>();
+    const srcIds = [...new Set(cards.map(c => c.source_question_id).filter(Boolean))] as string[];
+    if (srcIds.length > 0) {
+      try {
+        const res = await fetch(`/api/admin/lessons/question-meta?ids=${srcIds.join(',')}`, { headers: { Authorization: `Bearer ${auth}` } });
+        if (res.ok) {
+          const j = await res.json() as { questions?: { id: string; school: string; year: number; paper: string; question_number: string; level: string | null; exam_type: string | null }[] };
+          for (const q of j.questions ?? []) {
+            const bits = [q.year, q.level, q.exam_type, q.school, `P${q.paper}`, `Q${q.question_number}`].filter(Boolean);
+            tagById.set(q.id, bits.join('/'));
+          }
+        }
+      } catch { /* ignore — fall back to card titles */ }
+    }
     const { buildLessonDocx } = await import('@/lib/lesson-docx-build');
     const blob = await buildLessonDocx(
       { name: lesson.name, level: lesson.level, description: lesson.description, topics: lesson.topics, section_order: lesson.section_order },
-      cards.map(c => ({ id: c.id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, is_advanced: c.is_advanced, order_index: c.order_index })),
+      cards.map(c => ({
+        id: c.id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title,
+        content: c.content, marks: c.marks, is_advanced: c.is_advanced, order_index: c.order_index,
+        source_tag: c.source_question_id ? tagById.get(c.source_question_id) ?? null : null,
+      })),
     );
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
