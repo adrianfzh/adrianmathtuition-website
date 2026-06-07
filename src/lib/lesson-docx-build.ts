@@ -298,6 +298,8 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   }
 
   const doc = new Document({
+    // House style: 9.5 pt body text (docx sizes are half-points). Headings keep their own sizes.
+    styles: { default: { document: { run: { size: 19 } } } },
     numbering: {
       config: numConfigs.map(cfg => {
         const ind = cfg.reference.startsWith('sub-') ? NUM_INDENT.sub : NUM_INDENT.main;
@@ -310,7 +312,16 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
         };
       }),
     },
-    sections: [{ properties: {}, children: body }],
+    sections: [{
+      // House page layout: top 2 cm, bottom 0.8 cm, left/right 2.5 cm.
+      properties: { page: { margin: {
+        top: convertMillimetersToTwip(20),
+        bottom: convertMillimetersToTwip(8),
+        left: convertMillimetersToTwip(25),
+        right: convertMillimetersToTwip(25),
+      } } },
+      children: body,
+    }],
   });
   const blob = await Packer.toBlob(doc);
   const arrayBuffer = await blob.arrayBuffer();
