@@ -304,7 +304,8 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
   }
   if (ansBits.length > 0) {
     out.push('---');
-    out.push(`**Answer:** ${ansBits.join('  ')}`);
+    // One answer part per line so the export can list them under "Answer:".
+    out.push(ansBits.length === 1 ? `**Answer:** ${ansBits[0]}` : `**Answer:**\n${ansBits.join('\n')}`);
   }
 
   return { title, content: out.join('\n\n') };

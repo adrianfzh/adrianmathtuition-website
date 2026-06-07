@@ -16,7 +16,7 @@ function compiledAnswer(answer: string | null, parts: unknown): string | null {
       if (sp?.answer && sp.answer.trim()) bits.push(`(${p.label ?? ''})(${sp.label ?? ''}) ${sp.answer.trim()}`);
     }
   }
-  return bits.length > 0 ? bits.join('  ') : null;
+  return bits.length > 0 ? bits.join('\n') : null; // one part per line
 }
 
 export async function GET(req: NextRequest) {

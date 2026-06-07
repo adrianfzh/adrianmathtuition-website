@@ -101,7 +101,10 @@ function extractAnswer(content: string | null): { body: string; answer: string |
   const lines = content.split('\n');
   const idx = lines.findIndex(l => /^\s*\*\*Answer:?\*\*/i.test(l.trim()));
   if (idx === -1) return { body: content, answer: null };
-  const answer = lines.slice(idx).join(' ').replace(/^\s*\*\*Answer:?\*\*\s*/i, '').trim();
+  // Preserve line breaks — multi-part answers list one part per line.
+  const ansLines = lines.slice(idx);
+  ansLines[0] = ansLines[0].replace(/^\s*\*\*Answer:?\*\*\s*/i, '');
+  const answer = ansLines.map(l => l.trim()).filter(Boolean).join('\n');
   const body = lines.slice(0, idx).join('\n');
   return { body, answer: answer || null };
 }
@@ -321,16 +324,30 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
         dropLeadingTitle: c.card_title ?? '',
       })) body.push(p);
       if (isPractice && answer) {
+        const ansParts = answer.split('\n').map(s => s.trim()).filter(Boolean);
         if (isJCDoc) {
-          body.push(new Paragraph({
-            spacing: { before: 40, after: 80 },
-            children: [new TextRun({ text: 'Answer: ', bold: true, color: JC_ANSWER_RED }), ...inlineRuns(answer, reg, { color: JC_ANSWER_RED })],
-          }));
+          if (ansParts.length > 1) {
+            // Multi-part: "Answer:" heading, then one labelled part per line (indented like subparts).
+            body.push(new Paragraph({ spacing: { before: 40 }, children: [new TextRun({ text: 'Answer:', bold: true, color: JC_ANSWER_RED })] }));
+            for (let ai = 0; ai < ansParts.length; ai++) {
+              body.push(new Paragraph({
+                indent: { left: NUM_INDENT.sub.textIndent },
+                spacing: { after: ai === ansParts.length - 1 ? 80 : 20 },
+                children: inlineRuns(ansParts[ai], reg, { color: JC_ANSWER_RED }),
+              }));
+            }
+          } else {
+            body.push(new Paragraph({
+              spacing: { before: 40, after: 80 },
+              children: [new TextRun({ text: 'Answer: ', bold: true, color: JC_ANSWER_RED }), ...inlineRuns(ansParts[0] ?? '', reg, { color: JC_ANSWER_RED })],
+            }));
+          }
         } else {
+          // Sec house style stays a single right-aligned bracket line.
           body.push(new Paragraph({
             alignment: AlignmentType.RIGHT,
             spacing: { before: 40, after: 80 },
-            children: [new TextRun({ text: '[Ans: ', color: SEC_ANSWER_ORANGE }), ...inlineRuns(answer, reg, { color: SEC_ANSWER_ORANGE }), new TextRun({ text: ']', color: SEC_ANSWER_ORANGE })],
+            children: [new TextRun({ text: '[Ans: ', color: SEC_ANSWER_ORANGE }), ...inlineRuns(ansParts.join('  '), reg, { color: SEC_ANSWER_ORANGE }), new TextRun({ text: ']', color: SEC_ANSWER_ORANGE })],
           }));
         }
       }
@@ -363,10 +380,18 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
       const solContent = working ?? solQuestion;
       for (const p of await contentParagraphs(solContent, reg, { color: ANSWER_BROWN, dropLeadingTitle: c.card_title ?? '' })) body.push(p);
       if (solAnswer) {
-        body.push(new Paragraph({ spacing: { before: 40, after: 80 }, children: [
-          new TextRun({ text: 'Answer: ', bold: true, color: ANSWER_BROWN }),
-          ...inlineRuns(solAnswer, reg, { color: ANSWER_BROWN }),
-        ] }));
+        const ansParts = solAnswer.split('\n').map(s => s.trim()).filter(Boolean);
+        if (ansParts.length > 1) {
+          body.push(new Paragraph({ spacing: { before: 40 }, children: [new TextRun({ text: 'Answer:', bold: true, color: ANSWER_BROWN })] }));
+          for (const ap of ansParts) {
+            body.push(new Paragraph({ indent: { left: NUM_INDENT.sub.textIndent }, spacing: { after: 20 }, children: inlineRuns(ap, reg, { color: ANSWER_BROWN }) }));
+          }
+        } else {
+          body.push(new Paragraph({ spacing: { before: 40, after: 80 }, children: [
+            new TextRun({ text: 'Answer: ', bold: true, color: ANSWER_BROWN }),
+            ...inlineRuns(ansParts[0] ?? '', reg, { color: ANSWER_BROWN }),
+          ] }));
+        }
       }
     }
   }

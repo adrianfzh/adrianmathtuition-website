@@ -2357,7 +2357,8 @@ async function downloadDocx(lesson: Lesson, cards: Card[], auth: string) {
         if (res.ok) {
           const j = await res.json() as { questions?: { id: string; school: string; year: number; paper: string; question_number: string; level: string | null; exam_type: string | null; answer: string | null }[] };
           for (const q of j.questions ?? []) {
-            const bits = [q.year, q.level, q.exam_type, q.school, `P${q.paper}`, `Q${q.question_number}`].filter(Boolean);
+            const examDisp = q.exam_type === 'MY' ? 'MYE' : q.exam_type; // house naming
+            const bits = [q.year, q.level, examDisp, q.school, `P${q.paper}`, `Q${q.question_number}`].filter(Boolean);
             tagById.set(q.id, bits.join('/'));
             if (q.answer) answerById.set(q.id, q.answer);
           }
