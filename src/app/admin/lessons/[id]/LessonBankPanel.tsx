@@ -740,7 +740,10 @@ export function LessonBankPanel({
           </div>
         )}
         <div className="text-[10px] text-slate-400 flex items-center gap-2">
-          <span>{loading ? (committedSmart ? 'Claude is reading…' : 'Loading…') : `${total} found · showing ${displayed.length}`}</span>
+          <span>{loading ? (committedSmart ? 'Claude is reading…' : 'Loading…')
+            : (displayed.length !== questions.length
+              ? `${displayed.length} match your filters · filtering ${questions.length} loaded of ${total} in topic scope`
+              : `${total} found · showing ${displayed.length}`)}</span>
           {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
           {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">not synced</span>}
         </div>
