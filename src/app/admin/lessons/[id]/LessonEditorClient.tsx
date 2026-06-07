@@ -291,8 +291,10 @@ const customCollision: CollisionDetection = (args) => {
 
 // ── Sortable card row ────────────────────────────────────────────────────────
 
+const KIND_CYCLE: Record<ContentKind, ContentKind> = { refresher: 'worked_example', worked_example: 'practice', practice: 'refresher' };
+
 function SortableCardRow({
-  card, displayIndex, isSelected, onSelect, onBankDrop, onQuickDelete,
+  card, displayIndex, isSelected, onSelect, onBankDrop, onQuickDelete, onQuickKind,
 }: {
   card: Card;
   displayIndex: number;
@@ -300,6 +302,7 @@ function SortableCardRow({
   onSelect: (id: string) => void;
   onBankDrop?: (q: BankQuestion, anchorCard: Card, position: 'above' | 'below') => void;
   onQuickDelete?: (card: Card) => void;
+  onQuickKind?: (card: Card, kind: ContentKind) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
@@ -345,7 +348,11 @@ function SortableCardRow({
       {bankHover === 'below' && <div className="absolute -bottom-1 left-0 right-0 h-1 bg-blue-500 rounded-full pointer-events-none" />}
       <span {...attributes} {...listeners} onClick={(e) => e.stopPropagation()} className="text-slate-300 cursor-grab active:cursor-grabbing select-none shrink-0" title="Drag to reorder">⠿</span>
       <span className="text-slate-400 text-xs w-4 shrink-0">{displayIndex}.</span>
-      <span className={`text-[10px] font-bold w-4 text-center rounded border shrink-0 ${KIND_CHIP[card.content_kind].cls}`} title={KIND_CHIP[card.content_kind].short}>{KIND_CHIP[card.content_kind].icon}</span>
+      <button
+        onClick={(e) => { e.stopPropagation(); onQuickKind?.(card, KIND_CYCLE[card.content_kind]); }}
+        className={`text-[10px] font-bold w-4 text-center rounded border shrink-0 cursor-pointer hover:ring-1 hover:ring-blue-400 ${KIND_CHIP[card.content_kind].cls}`}
+        title={`${KIND_CHIP[card.content_kind].short} — click to change to ${KIND_CHIP[KIND_CYCLE[card.content_kind]].short}`}
+      >{KIND_CHIP[card.content_kind].icon}</button>
       <span className="flex-1 text-sm text-slate-800 min-w-0 leading-snug truncate">{card.card_title || <em className="text-slate-400">Untitled</em>}</span>
       {card.content_kind === 'practice' && card.is_advanced && (
         <span className="text-[9px] font-bold text-orange-700 bg-orange-100 border border-orange-200 px-1 rounded shrink-0" title="Advanced practice">ADV</span>
@@ -1505,6 +1512,7 @@ function SectionFlow({
   onRenameSection,
   onDeleteSection,
   onQuickDeleteCard,
+  onQuickKindCard,
 }: {
   cards: Card[];
   sections: string[];                 // lesson-level ordered section names
@@ -1517,6 +1525,7 @@ function SectionFlow({
   onRenameSection: (oldName: string, newName: string) => void;
   onDeleteSection: (name: string) => void;
   onQuickDeleteCard: (card: Card) => void;
+  onQuickKindCard: (card: Card, kind: ContentKind) => void;
 }) {
   const isCardDrag = !!activeId && !String(activeId).startsWith('sec-hdr-');
 
@@ -1558,6 +1567,7 @@ function SectionFlow({
                             onSelect={onSelectCard}
                             onBankDrop={onBankDropOnList}
                             onQuickDelete={onQuickDeleteCard}
+                            onQuickKind={onQuickKindCard}
                           />
                         ))}
                       </div>
@@ -1729,6 +1739,14 @@ export default function LessonEditorClient() {
     setSelectedId(prev => (prev === card.id ? null : prev));
     setSavedAt(new Date());
     await storeDeleteCard(card.id);
+  }, []);
+
+  // Change a card's kind (R/E/P) straight from the list badge. Undoable with Ctrl/Cmd+Z.
+  const handleQuickKindCard = useCallback(async (card: Card, kind: ContentKind) => {
+    pushUndo('Change card kind');
+    setCards(prev => prev.map(c => (c.id === card.id ? { ...c, content_kind: kind } : c)));
+    setSavedAt(new Date());
+    await storePatchCard(card.id, { content_kind: kind });
   }, []);
 
   // One-click: generate worked solutions for every practice card that doesn't already have one.
@@ -2188,6 +2206,7 @@ export default function LessonEditorClient() {
                 onRenameSection={handleRenameSection}
                 onDeleteSection={handleDeleteSection}
                 onQuickDeleteCard={handleQuickDeleteCard}
+                onQuickKindCard={handleQuickKindCard}
               />
             </div>
             <DragOverlay modifiers={[restrictToVerticalAxis]}>
