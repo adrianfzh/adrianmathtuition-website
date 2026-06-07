@@ -165,11 +165,15 @@ function getSolutionImageUrls(raw: string | null | undefined): string[] {
 // between two amounts into an italic run-together span. Convert a self-contained currency span to
 // plain escaped text `\$<number>` (renders as a literal $) so remark-math never pairs those `$`.
 function fixCurrencyDollars(text: string): string {
-  // House style writes currency as a math span starting with an escaped dollar: $\$20$, $\$k$,
-  // $\$8{,}250$, $\$(x+2)$. remark-math mis-pairs the inner `\$` and swallows the following prose
-  // as run-together math. Rewrite the leading `\$` to \textdollar (no `$` character at all) so the
-  // span pairs cleanly and still renders as real math (KaTeX shows \textdollar as "$").
-  return text.replace(/\$\\\$([^$]*?)\$/g, (_m, body: string) => `$\\text{\\textdollar}${body}$`);
+  // House style writes currency inside math with an escaped dollar: $\$20$, $\$k$, $\$8{,}250$,
+  // $\$100900(1.009)^{n-1} - \$90810$. remark-math doesn't honour the escape and mis-pairs the
+  // `$`s, swallowing prose as run-together math. Rewrite EVERY `\$` inside a math span to
+  // \text{\textdollar} (no `$` character at all) so the span pairs cleanly and still renders as
+  // real math. The span matcher is escape-aware so an interior `\$` doesn't end the span.
+  return text.replace(/\$((?:\\.|[^$\\])*)\$/g, (m, body: string) => {
+    if (!body.includes('\\$')) return m; // ordinary math — leave untouched
+    return `$${body.replace(/\\\$/g, '\\text{\\textdollar}')}$`;
+  });
 }
 
 function renderInlineImagesInText(text: string | null | undefined): string {
@@ -198,10 +202,16 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
   const stemBefore = stemRecords.filter(r => r.pos === 'before');
   const stemAfter = stemRecords.filter(r => r.pos === 'after');
 
+  // Stem-only questions (no parts) carry their marks ONLY in total_marks — append them to the stem
+  // so the exported question still shows "[3m]".
+  const partsForMarks = Array.isArray(q.parts) ? (q.parts as Array<{ label?: string; text?: string }>) : [];
+  const hasPartContent = partsForMarks.some(p => p && (p.label || (p.text && p.text.trim())));
+  const stemMarks = !hasPartContent && q.total_marks ? ` [${q.total_marks}m]` : '';
+
   for (const r of stemBefore) {
     out.push(`<img src="${toStorageUrl(r.url)}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
   }
-  if (q.question_text) out.push(renderInlineImagesInText(q.question_text));
+  if (q.question_text) out.push(renderInlineImagesInText(q.question_text) + stemMarks);
   for (const r of stemAfter) {
     out.push(`<img src="${toStorageUrl(r.url)}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
   }
@@ -791,7 +801,10 @@ export function BankQuestionCard({
     for (const r of stemBefore) {
       lines.push(`<img src="${toStorageUrl(r.url)}" alt="" style="max-width:100%;display:block;margin:6px auto" />`);
     }
-    if (q.question_text) lines.push(renderInlineImagesInText(q.question_text));
+    // Stem-only questions carry their marks ONLY in total_marks — show them on the stem.
+    const hasPartContent = (parts ?? []).some(p => p && (p.label || (p.text && p.text.trim())));
+    const stemMarks = !hasPartContent && q.total_marks ? ` _[${q.total_marks}m]_` : '';
+    if (q.question_text) lines.push(renderInlineImagesInText(q.question_text) + stemMarks);
     for (const r of stemAfter) {
       lines.push(`<img src="${toStorageUrl(r.url)}" alt="" style="max-width:100%;display:block;margin:6px auto" />`);
     }
