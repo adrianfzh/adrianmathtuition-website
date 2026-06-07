@@ -77,6 +77,22 @@ export type DocxCard = {
 };
 
 const ANSWER_BROWN = '843C0C';
+// House answer colours: JC practice answers are red; Sec practice answers are the orange-brown
+// used in Adrian's Sec worksheets (right-aligned "[Ans: …]").
+const JC_ANSWER_RED = 'FF0000';
+const SEC_ANSWER_ORANGE = '833C0B';
+
+// Split a card's content into body + the trailing "**Answer:** …" line(s) (the bank template puts
+// the answer last, after a `---`). Returns the answer text without the marker.
+function extractAnswer(content: string | null): { body: string; answer: string | null } {
+  if (!content) return { body: '', answer: null };
+  const lines = content.split('\n');
+  const idx = lines.findIndex(l => /^\s*\*\*Answer:?\*\*/i.test(l.trim()));
+  if (idx === -1) return { body: content, answer: null };
+  const answer = lines.slice(idx).join(' ').replace(/^\s*\*\*Answer:?\*\*\s*/i, '').trim();
+  const body = lines.slice(0, idx).join('\n');
+  return { body, answer: answer || null };
+}
 
 // Pull <img src="…"> URLs out of a content block and return [textWithoutImgTags, urls].
 function extractImages(md: string): { text: string; urls: string[] } {
@@ -197,6 +213,8 @@ async function contentParagraphs(
 
 export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Promise<Blob> {
   const reg = new OmmlRegistry();
+  // JC lessons style answers differently from Sec/AM/EM lessons (house convention).
+  const isJCDoc = ['JC', 'JC1', 'JC2'].includes(lesson.level);
 
   // Section order (saved order first, then any new sections alphabetical).
   const order = Array.isArray(lesson.section_order) ? lesson.section_order : [];
@@ -229,8 +247,8 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
 
   const body: Paragraph[] = [];
 
-  // Cover
-  body.push(new Paragraph({ text: lesson.name, heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER, spacing: { after: 120 } }));
+  // Cover — house style: bold, centred, 12 pt title.
+  body.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 120 }, children: [new TextRun({ text: lesson.name, bold: true, size: 24 })] }));
   body.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: lesson.level, bold: true })] }));
   if (lesson.description) body.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: lesson.description, italics: true })] }));
   if (lesson.topics?.length) body.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 240 }, children: [new TextRun({ text: 'Topics: ' + lesson.topics.join(' · '), size: 20, color: '666666' })] }));
@@ -259,11 +277,28 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
           ...((isPractice && c.marks) ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : []),
         ],
       }));
-      for (const p of await contentParagraphs(c.content, reg, {
+      // Practice questions show their final ANSWER per house style (JC: red "Answer: …" after the
+      // question; Sec: right-aligned orange "[Ans: …]"). The answer line is peeled off the content.
+      const { body: cBody, answer } = isPractice ? extractAnswer(c.content) : { body: c.content ?? '', answer: null };
+      for (const p of await contentParagraphs(cBody, reg, {
         subpartRef: subpartRefFor(c.id),
         onSubpartFormat: (f) => subpartFmt.set(c.id, f),
         dropLeadingTitle: c.card_title ?? '',
       })) body.push(p);
+      if (isPractice && answer) {
+        if (isJCDoc) {
+          body.push(new Paragraph({
+            spacing: { before: 40, after: 80 },
+            children: [new TextRun({ text: 'Answer: ', bold: true, color: JC_ANSWER_RED }), ...inlineRuns(answer, reg, { color: JC_ANSWER_RED })],
+          }));
+        } else {
+          body.push(new Paragraph({
+            alignment: AlignmentType.RIGHT,
+            spacing: { before: 40, after: 80 },
+            children: [new TextRun({ text: '[Ans: ', color: SEC_ANSWER_ORANGE }), ...inlineRuns(answer, reg, { color: SEC_ANSWER_ORANGE }), new TextRun({ text: ']', color: SEC_ANSWER_ORANGE })],
+          }));
+        }
+      }
       if (isPractice) {
         // Writing space ~ marks lines (min 3, cap 12).
         const lines = Math.min(12, Math.max(3, c.marks ?? 3));
@@ -298,8 +333,13 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   }
 
   const doc = new Document({
-    // House style: 9.5 pt body text (docx sizes are half-points). Headings keep their own sizes.
-    styles: { default: { document: { run: { size: 19 } } } },
+    // House style: Times New Roman, 9.5 pt body text (docx sizes are half-points).
+    styles: {
+      default: {
+        document: { run: { size: 19, font: 'Times New Roman' } },
+        heading1: { run: { font: 'Times New Roman' } },
+      },
+    },
     numbering: {
       config: numConfigs.map(cfg => {
         const ind = cfg.reference.startsWith('sub-') ? NUM_INDENT.sub : NUM_INDENT.main;
