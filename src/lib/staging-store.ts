@@ -31,6 +31,7 @@ export function setStagingScope(lessonId: string | null): void {
   if (next === scopeKey) return;
   scopeKey = next;
   cache = null;
+  undoStack = [];
   if (typeof window !== 'undefined' && lessonId) {
     try {
       const scoped = window.localStorage.getItem(scopeKey);
@@ -60,6 +61,20 @@ function save(items: StagedItem[]) {
   listeners.forEach(l => { try { l(); } catch { /* ignore */ } });
 }
 
+// ── Undo (session-only, per scope) ── snapshot the tray before each mutation; Ctrl/Cmd+Z restores.
+let undoStack: StagedItem[][] = [];
+function snap() {
+  undoStack.push(load().map(i => ({ ...i })));
+  if (undoStack.length > 30) undoStack.shift();
+}
+export function undoStaging(): boolean {
+  const prev = undoStack.pop();
+  if (!prev) return false;
+  save(prev);
+  return true;
+}
+export function stagingUndoCount(): number { return undoStack.length; }
+
 export function subscribeStaging(fn: Listener): () => void {
   listeners.add(fn);
   return () => { listeners.delete(fn); };
@@ -80,16 +95,19 @@ export function isStaged(id: string): boolean {
 export function addToStaging(q: BankQuestion): void {
   const items = load();
   if (items.some(i => i.q.id === q.id)) return; // already staged
+  snap();
   const maxOrder = items.filter(i => i.pane === 'pool').reduce((m, i) => Math.max(m, i.order), -1);
   save([...items, { q, pane: 'pool', rejected: false, order: maxOrder + 1 }]);
 }
 
 export function removeStaged(id: string): void {
+  snap();
   save(load().filter(i => i.q.id !== id));
 }
 
 export function setPane(id: string, pane: StagePane): void {
   const items = load();
+  snap();
   const maxOrder = items.filter(i => i.pane === pane).reduce((m, i) => Math.max(m, i.order), -1);
   save(items.map(i => i.q.id === id ? { ...i, pane, order: maxOrder + 1 } : i));
 }
@@ -99,6 +117,7 @@ export function setPane(id: string, pane: StagePane): void {
 export function setPaneAt(id: string, pane: StagePane, beforeId: string | null): void {
   const items = load();
   if (!items.some(i => i.q.id === id)) return;
+  snap();
   const destIds = items
     .filter(i => i.pane === pane && i.q.id !== id)
     .sort((a, b) => a.order - b.order)
@@ -121,25 +140,40 @@ export function moveAllToPane(from: StagePane, to: StagePane): void {
   let next = items.filter(i => i.pane === to).reduce((m, i) => Math.max(m, i.order), -1) + 1;
   const order = new Map(items.filter(i => i.pane === from).sort((a, b) => a.order - b.order).map(i => [i.q.id, next++] as const));
   if (order.size === 0) return;
+  snap();
   save(items.map(i => order.has(i.q.id) ? { ...i, pane: to, order: order.get(i.q.id)! } : i));
 }
 
 export function toggleReject(id: string): void {
+  snap();
   save(load().map(i => i.q.id === id ? { ...i, rejected: !i.rejected } : i));
 }
 
 // Rewrite order within a pane from an ordered id list.
 export function reorderPane(pane: StagePane, orderedIds: string[]): void {
+  snap();
   const rank = new Map(orderedIds.map((id, idx) => [id, idx]));
   save(load().map(i => (i.pane === pane && rank.has(i.q.id)) ? { ...i, order: rank.get(i.q.id)! } : i));
 }
 
 export function setKind(id: string, kind: StageKind): void {
+  snap();
   save(load().map(i => i.q.id === id ? { ...i, kind } : i));
 }
 
 export function setSection(id: string, section: string): void {
+  snap();
   save(load().map(i => i.q.id === id ? { ...i, section } : i));
+}
+
+// Bulk versions — set the kind/section for EVERY card in a pane in one go (single undo step).
+export function setKindAll(pane: StagePane, kind: StageKind): void {
+  snap();
+  save(load().map(i => i.pane === pane ? { ...i, kind } : i));
+}
+export function setSectionAll(pane: StagePane, section: string): void {
+  snap();
+  save(load().map(i => i.pane === pane ? { ...i, section } : i));
 }
 
 export function getKeep(): StagedItem[] {
@@ -147,8 +181,11 @@ export function getKeep(): StagedItem[] {
 }
 
 export function clearKeep(): void {
+  snap();
   save(load().filter(i => i.pane !== 'keep'));
 }
 
-export function clearStaging(): void { save([]); }
-export function clearRejected(): void { save(load().filter(i => !i.rejected)); }
+export function clearStaging(): void { snap();
+  save([]); }
+export function clearRejected(): void { snap();
+  save(load().filter(i => !i.rejected)); }

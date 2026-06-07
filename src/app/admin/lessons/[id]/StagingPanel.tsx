@@ -15,7 +15,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { LessonBankPanel, BankQuestionCard, type BankQuestion } from './LessonBankPanel';
 import {
   getStaged, subscribeStaging, removeStaged, setPaneAt, moveAllToPane, toggleReject, reorderPane, setKind, setSection,
-  clearStaging, clearRejected, getKeep, clearKeep, isStaged, addToStaging,
+  clearStaging, clearRejected, getKeep, clearKeep, isStaged, addToStaging, undoStaging, stagingUndoCount,
+  setKindAll, setSectionAll,
   type StagedItem, type StagePane, type StageKind,
 } from '@/lib/staging-store';
 
@@ -175,6 +176,21 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
   const [activeId, setActiveId] = useState<string | null>(null);
   useEffect(() => subscribeStaging(() => setItems(getStaged())), []);
 
+  // Ctrl/Cmd+Z while the workspace is open → undo the last TRAY action (drag in, move, hide, …).
+  // Registered in the CAPTURE phase so a successful tray undo swallows the event before the
+  // editor's lesson-undo handler sees it; with nothing to undo it falls through to the editor
+  // (which handles e.g. undoing a "Send →" by restoring the card to the tray).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.shiftKey || e.key.toLowerCase() !== 'z') return;
+      const t = e.target as HTMLElement | null;
+      if (t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.isContentEditable) return;
+      if (undoStaging()) { e.preventDefault(); e.stopPropagation(); }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
+
   // Column widths (px for bank + pool; keep takes the rest). Persisted.
   const [bankW, setBankW] = useState(340);
   const [poolW, setPoolW] = useState(420);
@@ -239,6 +255,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
         <span className="text-[11px] text-slate-400">Bank → Pool → Keep. ✕ hide (reversible) · 🗑 remove = delete from tray.</span>
         <span className="ml-auto flex items-center gap-2">
           <label className="text-[11px] text-slate-500 flex items-center gap-1"><input type="checkbox" checked={showRejected} onChange={e => setShowRejected(e.target.checked)} />show hidden ({rejectedCount})</label>
+          <button onClick={() => undoStaging()} disabled={stagingUndoCount() === 0} title="Undo the last tray action (Ctrl/Cmd+Z)" className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40">↩ Undo</button>
           {rejectedCount > 0 && <button onClick={clearRejected} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear hidden</button>}
           <button onClick={() => { if (confirm('Clear the entire staging tray?')) clearStaging(); }} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear all</button>
           <button onClick={addAll} disabled={keep.length === 0} className="text-[11px] px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-40 font-medium">＋ Add all to lesson ({keep.length})</button>
@@ -274,6 +291,21 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
               <>
                 <button onClick={() => moveAllToPane('keep', 'pool')} title="Move every shortlisted card back to the Pool" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-100">← all to pool</button>
                 <button onClick={() => { if (confirm(`Remove all ${keep.length} shortlisted question${keep.length > 1 ? 's' : ''} from the tray?`)) clearKeep(); }} title="Delete every shortlisted card from the tray" className="text-[10px] px-1.5 py-0.5 rounded border border-red-200 text-red-600 bg-red-50 hover:bg-red-100">clear</button>
+                <span className="flex items-center gap-1 ml-2" title="Apply to ALL shortlisted cards at once">
+                  <span className="text-[10px] text-slate-400">all as</span>
+                  {(['refresher', 'worked_example', 'practice'] as StageKind[]).map(k => (
+                    <button key={k} onClick={() => setKindAll('keep', k)} title={`Set every shortlisted card to ${KIND_BTN[k].label}`} className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${KIND_BTN[k].off} hover:ring-1 hover:ring-slate-400`}>{KIND_BTN[k].label}</button>
+                  ))}
+                  <span className="text-[10px] text-slate-400">in</span>
+                  <select
+                    defaultValue=""
+                    onChange={e => { if (e.target.value) { setSectionAll('keep', e.target.value); e.currentTarget.value = ''; } }}
+                    className="text-[10px] border border-slate-300 rounded px-1 py-px max-w-[120px]"
+                  >
+                    <option value="" disabled>section…</option>
+                    {sections.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </span>
               </>
             )}
           />
