@@ -14,7 +14,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } 
 import { CSS } from '@dnd-kit/utilities';
 import { LessonBankPanel, BankQuestionCard, type BankQuestion } from './LessonBankPanel';
 import {
-  getStaged, subscribeStaging, removeStaged, setPaneAt, toggleReject, reorderPane, setKind, setSection,
+  getStaged, subscribeStaging, removeStaged, setPaneAt, moveAllToPane, toggleReject, reorderPane, setKind, setSection,
   clearStaging, clearRejected, getKeep, clearKeep, isStaged, addToStaging,
   type StagedItem, type StagePane, type StageKind,
 } from '@/lib/staging-store';
@@ -73,10 +73,11 @@ function StagedCard({ item, sections, onSend }: {
   );
 }
 
-function Pane({ title, pane, items, sections, hint, onSend, style }: {
+function Pane({ title, pane, items, sections, hint, onSend, style, headerActions }: {
   title: string; pane: StagePane; items: StagedItem[]; sections: string[]; hint: string;
   onSend?: (q: BankQuestion, kind: StageKind, section: string) => void;
   style?: React.CSSProperties;
+  headerActions?: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `pane-${pane}`, data: { pane } });
   const [bankOver, setBankOver] = useState(false);
@@ -123,6 +124,7 @@ function Pane({ title, pane, items, sections, hint, onSend, style }: {
       <div className="px-3 py-2 border-b border-slate-200 flex items-center gap-2 shrink-0">
         <span className="text-xs font-semibold text-slate-700">{title}</span>
         <span className="text-[11px] text-slate-400">{items.length}</span>
+        {headerActions}
         <span className="ml-auto text-[10px] text-slate-400">{hint}</span>
       </div>
       <div
@@ -259,9 +261,22 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
             </div>
           </div>
           <Divider onDrag={(dx) => setBankW(w => { const n = Math.max(220, Math.min(700, w + dx)); saveWidths(n, poolW); return n; })} />
-          <Pane title="Pool — candidates" pane="pool" items={pool} sections={sections} hint="drag right to shortlist →" style={{ width: poolW }} />
+          <Pane
+            title="Pool — candidates" pane="pool" items={pool} sections={sections} hint="drag right to shortlist →" style={{ width: poolW }}
+            headerActions={pool.length > 0 && (
+              <button onClick={() => moveAllToPane('pool', 'keep')} title="Move every Pool card into the shortlist" className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">shortlist all →</button>
+            )}
+          />
           <Divider onDrag={(dx) => setPoolW(w => { const n = Math.max(260, w + dx); saveWidths(bankW, n); return n; })} />
-          <Pane title="Keep — shortlist" pane="keep" items={keep} sections={sections} hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }} />
+          <Pane
+            title="Keep — shortlist" pane="keep" items={keep} sections={sections} hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }}
+            headerActions={keep.length > 0 && (
+              <>
+                <button onClick={() => moveAllToPane('keep', 'pool')} title="Move every shortlisted card back to the Pool" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-100">← all to pool</button>
+                <button onClick={() => { if (confirm(`Remove all ${keep.length} shortlisted question${keep.length > 1 ? 's' : ''} from the tray?`)) clearKeep(); }} title="Delete every shortlisted card from the tray" className="text-[10px] px-1.5 py-0.5 rounded border border-red-200 text-red-600 bg-red-50 hover:bg-red-100">clear</button>
+              </>
+            )}
+          />
         </div>
         <DragOverlay dropAnimation={null}>
           {activeItem ? (

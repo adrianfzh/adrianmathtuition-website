@@ -168,7 +168,7 @@ function fixCurrencyDollars(text: string): string {
   // $\$8{,}250$, $\$(x+2)$. remark-math mis-pairs the inner `\$` and swallows the following prose
   // as run-together math. Rewrite the leading `\$` to \textdollar (no `$` character at all) so the
   // span pairs cleanly and still renders as real math (KaTeX shows \textdollar as "$").
-  return text.replace(/\$\\\$([^$]*?)\$/g, (_m, body: string) => `$\\textdollar ${body}$`);
+  return text.replace(/\$\\\$([^$]*?)\$/g, (_m, body: string) => `$\\text{\\textdollar}${body}$`);
 }
 
 function renderInlineImagesInText(text: string | null | undefined): string {
