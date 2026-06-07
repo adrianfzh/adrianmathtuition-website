@@ -282,9 +282,29 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
     out.push('**Working:**');
     out.push(solBits.join('\n\n'));
   }
-  if (q.answer) {
+  // Compile the answer line from the top-level answer AND per-part/subpart answers — many bank
+  // questions store answers only on their parts (no top-level answer).
+  type PartAnswer = { label?: string; answer?: string; subparts?: Array<{ label?: string; answer?: string }> };
+  const ansBits: string[] = [];
+  if (q.answer && String(q.answer).trim()) ansBits.push(renderInlineImagesInText(q.answer));
+  if (Array.isArray(q.parts)) {
+    for (const p of q.parts as PartAnswer[]) {
+      if (!p) continue;
+      if (p.answer && String(p.answer).trim()) {
+        ansBits.push(`${p.label ? `(${p.label}) ` : ''}${renderInlineImagesInText(p.answer)}`);
+      }
+      if (Array.isArray(p.subparts)) {
+        for (const sp of p.subparts) {
+          if (sp?.answer && String(sp.answer).trim()) {
+            ansBits.push(`(${p.label ?? ''})(${sp.label ?? ''}) ${renderInlineImagesInText(sp.answer)}`);
+          }
+        }
+      }
+    }
+  }
+  if (ansBits.length > 0) {
     out.push('---');
-    out.push(`**Answer:** ${q.answer}`);
+    out.push(`**Answer:** ${ansBits.join('  ')}`);
   }
 
   return { title, content: out.join('\n\n') };
