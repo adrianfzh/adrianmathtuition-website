@@ -311,6 +311,65 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
   return { title, content: out.join('\n\n') };
 }
 
+// ── Single-question DOCX export ──
+// Builds a one-question .docx in house style. With generateSolution=true the AI authors a worked
+// solution first (used for the file only — NOT saved to the question bank).
+const SOLVE_INSTRUCTION = `Add a full worked solution to this card. Preserve every labelled part — if the input has (a), (b), (i), (ii), keep them all and solve each. Put the working under a line "**Working:**". Use $\\begin{aligned}...\\end{aligned}$ for chained equations. Keep the original question text intact above the working.`;
+
+export async function downloadQuestionDocx(q: BankQuestion, auth: string, generateSolution: boolean): Promise<void> {
+  const { title, content } = buildBankWorkedExampleTemplate(q);
+  let fullContent = content;
+  if (generateSolution) {
+    const res = await fetch('/api/edit-cards-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        instruction: SOLVE_INSTRUCTION,
+        currentTitle: title,
+        currentContent: content,
+        level: q.level ?? 'JC',
+        topic: q.topics?.[0] ?? '',
+        subgroupName: 'Single question export',
+        subgroupDescription: `One-off DOCX export. Topics: ${(q.topics ?? []).join(', ')}.`,
+        content_kind: 'practice',
+        password: auth,
+      }),
+    });
+    if (!res.ok) { const j = await res.json().catch(() => ({} as { error?: string })); throw new Error(j.error || `HTTP ${res.status}`); }
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', result = '';
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const parts = buf.split('\n\n'); buf = parts.pop() ?? '';
+      for (const part of parts) {
+        if (!part.startsWith('data: ')) continue;
+        const data = JSON.parse(part.slice(6)) as { error?: string; chunk?: string };
+        if (data.error) throw new Error(data.error);
+        if (data.chunk) result += data.chunk;
+      }
+    }
+    if (result.trim()) fullContent = result.trim();
+  }
+  const examDisp = q.exam_type === 'MY' ? 'MYE' : q.exam_type;
+  const sourceTag = [q.year, q.level, examDisp, q.school, `P${q.paper}`, `Q${q.question_number}`].filter(Boolean).join('/');
+  const { buildLessonDocx } = await import('@/lib/lesson-docx-build');
+  const blob = await buildLessonDocx(
+    { name: title, level: q.level ?? 'JC', description: null, topics: q.topics ?? [], section_order: ['Question'] },
+    [{
+      id: q.id, content_kind: 'worked_example', section_name: 'Question', card_title: title,
+      content: fullContent, marks: q.total_marks ?? null, order_index: 0, source_tag: sourceTag,
+    }],
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${title.replace(/[^a-z0-9-]+/gi, '_')}.docx`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export function LessonBankPanel({
   level,
   topics,
@@ -777,6 +836,7 @@ export function LessonBankPanel({
             onInsert={onInsert}
             onStage={onStage}
             staged={isStaged?.(q.id)}
+            auth={auth}
           />
         ))}
         {!loading && committed.mode !== 'smart' && questions.length < total && (
@@ -798,6 +858,7 @@ export function BankQuestionCard({
   onStage,
   staged,
   draggable = true,
+  auth,
 }: {
   q: BankQuestion;
   onDragStart?: () => void;
@@ -806,9 +867,12 @@ export function BankQuestionCard({
   onStage?: (q: BankQuestion) => void;
   staged?: boolean;
   draggable?: boolean;
+  /** Admin auth — enables the per-question DOCX download (+ AI solve when no solution exists). */
+  auth?: string;
 }) {
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const difficulty = q.difficulty ?? 'Standard';
+  const [dl, setDl] = useState<'idle' | 'busy' | 'solving'>('idle');
   type PartLike = {
     label?: string; text?: string; marks?: number;
     image_url?: string; image_url_after?: string;
@@ -971,8 +1035,32 @@ export function BankQuestionCard({
         </div>
       )}
 
-      {(onInsert || onStage) && (
+      {(onInsert || onStage || auth) && (
         <div className="flex gap-1 pt-1 border-t border-slate-100">
+          {auth && (
+            <button
+              onClick={async (e) => {
+                e.stopPropagation(); setDl('busy');
+                try { await downloadQuestionDocx(q, auth, false); } catch (err) { alert('DOCX failed: ' + (err as Error).message); }
+                setDl('idle');
+              }}
+              disabled={dl !== 'idle'}
+              title="Download just this question as a .docx (native Word equations)"
+              className="text-[10px] px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded hover:bg-indigo-100 disabled:opacity-50"
+            >{dl === 'busy' ? '…' : '⬇ DOCX'}</button>
+          )}
+          {auth && !solutionMd && (
+            <button
+              onClick={async (e) => {
+                e.stopPropagation(); setDl('solving');
+                try { await downloadQuestionDocx(q, auth, true); } catch (err) { alert('Solve failed: ' + (err as Error).message); }
+                setDl('idle');
+              }}
+              disabled={dl !== 'idle'}
+              title="No solution in the bank — the AI writes the working, then downloads the .docx (not saved to the bank)"
+              className="text-[10px] px-2 py-0.5 bg-violet-50 text-violet-700 border border-violet-200 rounded hover:bg-violet-100 disabled:opacity-50"
+            >{dl === 'solving' ? '✨ Solving…' : '✨ Solve & ⬇'}</button>
+          )}
           {onInsert && <button
             onClick={(e) => { e.stopPropagation(); onInsert(q, 'refresher'); }}
             className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded hover:bg-emerald-100"
