@@ -84,6 +84,14 @@ const ANSWER_BROWN = '843C0C';
 const JC_ANSWER_RED = 'FF0000';
 const SEC_ANSWER_ORANGE = '833C0B';
 
+// Split content into question vs working at the bank template's "**Working:**" divider.
+function splitWorking(content: string): { question: string; working: string | null } {
+  const lines = content.split('\n');
+  const idx = lines.findIndex(l => /^\*{0,2}\s*Working\s*:?\s*\*{0,2}$/i.test(l.trim()));
+  if (idx === -1) return { question: content, working: null };
+  return { question: lines.slice(0, idx).join('\n'), working: lines.slice(idx + 1).join('\n') };
+}
+
 // Split a card's content into body + the trailing "**Answer:** …" line(s) (the bank template puts
 // the answer last, after a `---`). Returns the answer text without the marker.
 function extractAnswer(content: string | null): { body: string; answer: string | null } {
@@ -297,9 +305,11 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
           ...((isPractice && c.marks) ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : []),
         ],
       }));
-      // Practice questions show their final ANSWER per house style (JC: red "Answer: …" after the
-      // question; Sec: right-aligned orange "[Ans: …]"). The answer line is peeled off the content.
-      const { body: cBody, answer } = isPractice ? extractAnswer(c.content) : { body: c.content ?? '', answer: null };
+      // Practice questions show ONLY the question + final ANSWER per house style (JC: red
+      // "Answer: …"; Sec: right-aligned orange "[Ans: …]"). The working is stripped here and
+      // appears in the "Practice — Solutions" section at the back instead.
+      const { body: rawBody, answer } = isPractice ? extractAnswer(c.content) : { body: c.content ?? '', answer: null };
+      const cBody = isPractice ? splitWorking(rawBody).question : rawBody;
       for (const p of await contentParagraphs(cBody, reg, {
         subpartRef: subpartRefFor(c.id),
         onSubpartFormat: (f) => subpartFmt.set(c.id, f),
@@ -341,7 +351,17 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
           : inlineRuns(c.card_title ?? '', reg, { bold: true })),
         ...(c.is_advanced ? [new TextRun({ text: '  [Advanced]', bold: true, color: 'B45309' })] : []),
       ] }));
-      for (const p of await contentParagraphs(c.content, reg, { color: ANSWER_BROWN, dropLeadingTitle: c.card_title ?? '' })) body.push(p);
+      // Show the WORKING here (the question itself already appeared in the body of the doc).
+      const { body: solBody, answer: solAnswer } = extractAnswer(c.content);
+      const { question: solQuestion, working } = splitWorking(solBody);
+      const solContent = working ?? solQuestion;
+      for (const p of await contentParagraphs(solContent, reg, { color: ANSWER_BROWN, dropLeadingTitle: c.card_title ?? '' })) body.push(p);
+      if (solAnswer) {
+        body.push(new Paragraph({ spacing: { before: 40, after: 80 }, children: [
+          new TextRun({ text: 'Answer: ', bold: true, color: ANSWER_BROWN }),
+          ...inlineRuns(solAnswer, reg, { color: ANSWER_BROWN }),
+        ] }));
+      }
     }
   }
 
