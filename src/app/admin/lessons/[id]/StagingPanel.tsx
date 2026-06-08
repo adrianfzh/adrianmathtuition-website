@@ -187,6 +187,9 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
     setKindMode(v => {
       const n = !v;
       try { localStorage.setItem('lesson_staging_kind_mode', n ? '1' : '0'); } catch { /* ignore */ }
+      // Turning the mode ON applies it immediately: every Pool card becomes E, every Keep card P —
+      // so cards staged earlier (or moved while the mode was off) match the pane they sit in.
+      if (n) { setKindAll('pool', 'worked_example'); setKindAll('keep', 'practice'); }
       return n;
     });
   }
@@ -255,13 +258,24 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
     reorderPane(from, arrayMove(inPane, oi, ni));
   }
 
+  // How many cards "Add all" would send: in Pool=E/Keep=P mode BOTH panes go (pane decides the
+  // kind); otherwise only the Keep shortlist goes (per-card kind).
+  const addAllCount = kindMode ? items.filter(i => !i.rejected).length : items.filter(i => i.pane === 'keep' && !i.rejected).length;
+
   function addAll() {
-    const keepers = getKeep();
-    if (keepers.length === 0) return;
-    const batch = keepers.map(it => ({ q: it.q, kind: it.kind ?? 'worked_example' as StageKind, section: it.section ?? sections[0] ?? 'Default' }));
+    const sec = (it: StagedItem) => it.section ?? sections[0] ?? 'Default';
+    const batch = kindMode
+      ? [
+          ...items.filter(i => i.pane === 'pool' && !i.rejected).sort((a, b) => a.order - b.order)
+            .map(it => ({ q: it.q, kind: 'worked_example' as StageKind, section: sec(it) })),
+          ...items.filter(i => i.pane === 'keep' && !i.rejected).sort((a, b) => a.order - b.order)
+            .map(it => ({ q: it.q, kind: 'practice' as StageKind, section: sec(it) })),
+        ]
+      : getKeep().map(it => ({ q: it.q, kind: it.kind ?? 'worked_example' as StageKind, section: sec(it) }));
+    if (batch.length === 0) return;
     if (onInsertBatch) onInsertBatch(batch);
     else for (const b of batch) onInsert(b.q, b.kind, b.section);
-    clearKeep();
+    if (kindMode) clearStaging(); else clearKeep();
   }
 
   return (
@@ -278,7 +292,12 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
           <button onClick={() => undoStaging()} disabled={stagingUndoCount() === 0} title="Undo the last tray action (Ctrl/Cmd+Z)" className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40">↩ Undo</button>
           {rejectedCount > 0 && <button onClick={clearRejected} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear hidden</button>}
           <button onClick={() => { if (confirm('Clear the entire staging tray?')) clearStaging(); }} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear all</button>
-          <button onClick={addAll} disabled={keep.length === 0} className="text-[11px] px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-40 font-medium">＋ Add all to lesson ({keep.length})</button>
+          <button
+            onClick={addAll}
+            disabled={addAllCount === 0}
+            title={kindMode ? 'Adds BOTH panes: Pool cards as Examples, Keep cards as Practice' : 'Adds the Keep shortlist (per-card R/E/P)'}
+            className="text-[11px] px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-40 font-medium"
+          >＋ Add all to lesson ({addAllCount})</button>
           <button onClick={onClose} className="text-[11px] px-2 py-1 bg-slate-800 text-white rounded hover:bg-slate-700">Done</button>
         </span>
       </div>
