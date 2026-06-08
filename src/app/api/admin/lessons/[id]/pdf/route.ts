@@ -69,9 +69,9 @@ function renderLessonHTML(lesson: { name: string; level: string; topics: string[
   const allSecs = [...new Set(cards.map(c => c.section_name || 'Default'))];
   const known = order.filter(s => allSecs.includes(s));
   const sections = [...known, ...allSecs.filter(s => !known.includes(s)).sort()];
-  // Within a section: keep manual order, but advanced practice always sinks below non-advanced
-  // (so the printed sheet reads "regular practice, then advanced practice").
-  const advRank = (c: Card) => (c.content_kind === 'practice' && c.is_advanced ? 1 : 0);
+  // Within a section: refreshers/examples first, then practice, then advanced practice
+  // (so the printed sheet reads "teaching content, regular practice, advanced practice").
+  const advRank = (c: Card) => (c.content_kind === 'practice' ? (c.is_advanced ? 2 : 1) : 0);
   const cardsOf = (sec: string) => cards
     .filter(c => (c.section_name || 'Default') === sec)
     .sort((a, b) => (advRank(a) - advRank(b)) || (a.order_index - b.order_index));

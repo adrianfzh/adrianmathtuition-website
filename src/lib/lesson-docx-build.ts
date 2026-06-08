@@ -250,8 +250,8 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   const all = [...new Set(cards.map(c => c.section_name || 'Default'))];
   const known = order.filter(s => all.includes(s));
   const sections = [...known, ...all.filter(s => !known.includes(s)).sort()];
-  // Advanced practice sinks below regular cards within its section.
-  const advRank = (c: DocxCard) => (c.content_kind === 'practice' && c.is_advanced ? 1 : 0);
+  // Within a section: refreshers/examples first, practice below them, advanced practice last.
+  const advRank = (c: DocxCard) => (c.content_kind === 'practice' ? (c.is_advanced ? 2 : 1) : 0);
   const cardsOf = (sec: string) => cards
     .filter(c => (c.section_name || 'Default') === sec)
     .sort((a, b) => (advRank(a) - advRank(b)) || (a.order_index - b.order_index));

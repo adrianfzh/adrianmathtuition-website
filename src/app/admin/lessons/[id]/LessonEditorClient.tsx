@@ -293,6 +293,12 @@ const customCollision: CollisionDetection = (args) => {
 
 const KIND_CYCLE: Record<ContentKind, ContentKind> = { refresher: 'worked_example', worked_example: 'practice', practice: 'refresher' };
 
+// Display order within a section: refreshers/examples first, practice below them, advanced practice
+// last; order_index breaks ties within each band. Used by BOTH rendering and drag-reorder so the
+// list never disagrees with itself.
+const kindRank = (c: Card) => (c.content_kind === 'practice' ? (c.is_advanced ? 2 : 1) : 0);
+const sectionSort = (a: Card, b: Card) => (kindRank(a) - kindRank(b)) || (a.order_index - b.order_index);
+
 function SortableCardRow({
   card, displayIndex, isSelected, onSelect, onBankDrop, onQuickDelete, onQuickKind,
 }: {
@@ -1545,7 +1551,7 @@ function SectionFlow({
         <div className="space-y-3">
           <SortableContext items={sections.map(s => `sec-hdr-${SEC}-${s}`)} strategy={verticalListSortingStrategy}>
             {sections.map(sectionName => {
-              const sectionCards = cards.filter(c => c.section_name === sectionName).sort((a, b) => a.order_index - b.order_index);
+              const sectionCards = cards.filter(c => c.section_name === sectionName).sort(sectionSort);
               return (
                 <SortableSectionWrapper
                   key={sectionName}
@@ -2055,7 +2061,7 @@ export default function LessonEditorClient() {
     if (!isCrossSection) {
       // Reorder within the same section (cards keep their kind).
       if (overIdStr.startsWith('sec-hdr-')) return;
-      const sectionCards = cards.filter(c => c.section_name === srcSection).sort((a, b) => a.order_index - b.order_index);
+      const sectionCards = cards.filter(c => c.section_name === srcSection).sort(sectionSort);
       const oi = sectionCards.findIndex(c => c.id === activeIdStr);
       const ni = sectionCards.findIndex(c => c.id === overIdStr);
       if (oi === -1 || ni === -1) return;
