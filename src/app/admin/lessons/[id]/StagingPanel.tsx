@@ -5,7 +5,7 @@
 // Backed by the localStorage staging store (client-only, survives reload, this computer).
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext, closestCorners, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay,
   type DragEndEvent, type DragStartEvent,
@@ -15,7 +15,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { LessonBankPanel, BankQuestionCard, type BankQuestion } from './LessonBankPanel';
 import {
   getStaged, subscribeStaging, removeStaged, setPaneAt, moveAllToPane, toggleReject, reorderPane, setKind, setSection,
-  clearStaging, clearRejected, getKeep, clearKeep, isStaged, addToStaging, undoStaging, stagingUndoCount,
+  clearStaging, clearRejected, getKeep, clearKeep, isStaged, addToStaging,
+  undoStaging, redoStaging, stagingUndoTopSeq, stagingRedoTopSeq, clearStagingNoSnap, clearKeepNoSnap,
   setKindAll, setSectionAll,
   type StagedItem, type StagePane, type StageKind,
 } from '@/lib/staging-store';
@@ -168,10 +169,14 @@ function Divider({ onDrag }: { onDrag: (dx: number) => void }) {
   );
 }
 
-export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level, topics, auth }: {
+export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, onRedoLesson, lessonUndoTopSeq, lessonRedoTopSeq, sections, level, topics, auth }: {
   onClose: () => void;
   onInsert: (q: BankQuestion, kind: StageKind, section: string) => void;
   onInsertBatch?: (items: { q: BankQuestion; kind: StageKind; section: string }[]) => void;
+  onUndoLesson?: () => void;
+  onRedoLesson?: () => void;
+  lessonUndoTopSeq?: () => number;
+  lessonRedoTopSeq?: () => number;
   sections: string[];
   level: string;
   topics: string[];
@@ -197,20 +202,40 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
     });
   }
 
-  // Ctrl/Cmd+Z while the workspace is open → undo the last TRAY action (drag in, move, hide, …).
-  // Registered in the CAPTURE phase so a successful tray undo swallows the event before the
-  // editor's lesson-undo handler sees it; with nothing to undo it falls through to the editor
-  // (which handles e.g. undoing a "Send →" by restoring the card to the tray).
+  // Unified undo/redo across BOTH stacks (tray actions + lesson actions like "Add all"). Each action
+  // is stamped with a shared monotonic seq, so we act on whichever stack holds the most recent one.
+  const doUndo = useCallback(() => {
+    const traySeq = stagingUndoTopSeq();
+    const lessonSeq = lessonUndoTopSeq ? lessonUndoTopSeq() : -1;
+    if (traySeq < 0 && lessonSeq < 0) return false;
+    if (lessonSeq > traySeq) { onUndoLesson?.(); return true; }
+    return undoStaging();
+  }, [onUndoLesson, lessonUndoTopSeq]);
+  const doRedo = useCallback(() => {
+    const traySeq = stagingRedoTopSeq();
+    const lessonSeq = lessonRedoTopSeq ? lessonRedoTopSeq() : -1;
+    if (traySeq < 0 && lessonSeq < 0) return false;
+    if (lessonSeq > traySeq) { onRedoLesson?.(); return true; }
+    return redoStaging();
+  }, [onRedoLesson, lessonRedoTopSeq]);
+  // Force a re-render after an action so the Undo/Redo buttons' disabled state refreshes.
+  const [, force] = useState(0);
+  useEffect(() => subscribeStaging(() => force(n => n + 1)), []);
+
+  // Ctrl/Cmd+Z = undo, Ctrl/Cmd+Shift+Z (or Ctrl+Y) = redo, while the workspace is open. Capture
+  // phase so a handled key doesn't also hit the editor's own global handler.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || e.shiftKey || e.key.toLowerCase() !== 'z') return;
+      if (!(e.metaKey || e.ctrlKey)) return;
       const t = e.target as HTMLElement | null;
       if (t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.isContentEditable) return;
-      if (undoStaging()) { e.preventDefault(); e.stopPropagation(); }
+      const key = e.key.toLowerCase();
+      if (key === 'z' && !e.shiftKey) { if (doUndo()) { e.preventDefault(); e.stopPropagation(); } }
+      else if ((key === 'z' && e.shiftKey) || key === 'y') { if (doRedo()) { e.preventDefault(); e.stopPropagation(); } }
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, []);
+  }, [doUndo, doRedo]);
 
   // Column widths (px for bank + pool; keep takes the rest). Persisted.
   const [bankW, setBankW] = useState(340);
@@ -276,9 +301,12 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
         ]
       : getKeep().map(it => ({ q: it.q, kind: it.kind ?? 'worked_example' as StageKind, section: sec(it) }));
     if (batch.length === 0) return;
-    if (onInsertBatch) onInsertBatch(batch);
-    else for (const b of batch) onInsert(b.q, b.kind, b.section);
-    if (kindMode) clearStaging(); else clearKeep();
+    if (onInsertBatch) {
+      onInsertBatch(batch); // the editor clears the tray itself (carried on its single undo entry)
+    } else {
+      for (const b of batch) onInsert(b.q, b.kind, b.section);
+      if (kindMode) clearStagingNoSnap(); else clearKeepNoSnap();
+    }
   }
 
   return (
@@ -292,7 +320,8 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
             title="When ON: anything dropped into the middle pane becomes a worked Example (E), anything dropped into the right pane becomes Practice (P). OFF = set kinds manually."
           ><input type="checkbox" checked={kindMode} onChange={toggleKindMode} />Pool=E · Keep=P</label>
           <label className="text-[11px] text-slate-500 flex items-center gap-1"><input type="checkbox" checked={showRejected} onChange={e => setShowRejected(e.target.checked)} />show hidden ({rejectedCount})</label>
-          <button onClick={() => undoStaging()} disabled={stagingUndoCount() === 0} title="Undo the last tray action (Ctrl/Cmd+Z)" className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40">↩ Undo</button>
+          <button onClick={doUndo} disabled={stagingUndoTopSeq() < 0 && (lessonUndoTopSeq ? lessonUndoTopSeq() : -1) < 0} title="Undo the last action (Ctrl/Cmd+Z)" className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40">↩ Undo</button>
+          <button onClick={doRedo} disabled={stagingRedoTopSeq() < 0 && (lessonRedoTopSeq ? lessonRedoTopSeq() : -1) < 0} title="Redo (Ctrl/Cmd+Shift+Z)" className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40">↪ Redo</button>
           {rejectedCount > 0 && <button onClick={clearRejected} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear hidden</button>}
           <button onClick={() => { if (confirm('Clear the entire staging tray?')) clearStaging(); }} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear all</button>
           <button

@@ -32,6 +32,7 @@ export function setStagingScope(lessonId: string | null): void {
   scopeKey = next;
   cache = null;
   undoStack = [];
+  redoStack = [];
   if (typeof window !== 'undefined' && lessonId) {
     try {
       const scoped = window.localStorage.getItem(scopeKey);
@@ -61,19 +62,42 @@ function save(items: StagedItem[]) {
   listeners.forEach(l => { try { l(); } catch { /* ignore */ } });
 }
 
-// ── Undo (session-only, per scope) ── snapshot the tray before each mutation; Ctrl/Cmd+Z restores.
-let undoStack: StagedItem[][] = [];
+// ── Undo / redo (session-only, per scope) ── snapshot the tray before each mutation. A shared
+// monotonic counter lets the staging UI dispatch to whichever stack (tray vs lesson) was most
+// recent, so a single Undo button reverses the latest action wherever it happened.
+let actionSeq = 0;
+export function nextActionSeq(): number { return ++actionSeq; }
+type TraySnap = { items: StagedItem[]; seq: number };
+let undoStack: TraySnap[] = [];
+let redoStack: TraySnap[] = [];
 function snap() {
-  undoStack.push(load().map(i => ({ ...i })));
+  undoStack.push({ items: load().map(i => ({ ...i })), seq: nextActionSeq() });
   if (undoStack.length > 30) undoStack.shift();
+  redoStack = []; // a fresh action invalidates redo
 }
 export function undoStaging(): boolean {
   const prev = undoStack.pop();
   if (!prev) return false;
-  save(prev);
+  redoStack.push({ items: load().map(i => ({ ...i })), seq: nextActionSeq() });
+  save(prev.items);
   return true;
 }
-export function stagingUndoCount(): number { return undoStack.length; }
+export function redoStaging(): boolean {
+  const next = redoStack.pop();
+  if (!next) return false;
+  undoStack.push({ items: load().map(i => ({ ...i })), seq: nextActionSeq() });
+  save(next.items);
+  return true;
+}
+export function stagingUndoTopSeq(): number { return undoStack.length ? undoStack[undoStack.length - 1].seq : -1; }
+export function stagingRedoTopSeq(): number { return redoStack.length ? redoStack[redoStack.length - 1].seq : -1; }
+
+// Replace the whole tray wholesale, no snapshot — used by the editor's undo/redo to restore the exact
+// pre-/post-"Add all" tray (both Pool and Keep), since that snapshot rides on the LESSON undo entry.
+export function replaceStaging(items: StagedItem[]): void { save(items.map(i => ({ ...i }))); }
+// Clear the tray WITHOUT a tray-undo snapshot — used by "Add all" (the lesson undo carries the tray).
+export function clearStagingNoSnap(): void { save([]); }
+export function clearKeepNoSnap(): void { save(load().filter(i => i.pane !== 'keep')); }
 
 export function subscribeStaging(fn: Listener): () => void {
   listeners.add(fn);

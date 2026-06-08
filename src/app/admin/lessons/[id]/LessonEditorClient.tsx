@@ -32,7 +32,7 @@ import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { renderDesmosPng } from '@/lib/desmos';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
 import { StagingPanel } from './StagingPanel';
-import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging, removeStaged, setPane as setStagePane, setKind as setStageKind, setSection as setStageSection, setStagingScope, type StageKind } from '@/lib/staging-store';
+import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging, removeStaged, setPane as setStagePane, setKind as setStageKind, setSection as setStageSection, setStagingScope, nextActionSeq, getStaged as getStagedItems, replaceStaging, clearStagingNoSnap, type StageKind, type StagedItem } from '@/lib/staging-store';
 import {
   loadLesson as storeLoadLesson,
   saveLessonMeta as storeSaveLessonMeta,
@@ -1637,7 +1637,7 @@ export default function LessonEditorClient() {
   // the offline store (re-adds deleted cards, re-deletes added ones, re-patches/reorders).
   const cardsRef = useRef<Card[]>([]); cardsRef.current = cards;
   const lessonRef = useRef<Lesson | null>(null); lessonRef.current = lesson;
-  type Snapshot = { label: string; cards: Card[]; sectionOrder: string[] };
+  type Snapshot = { label: string; cards: Card[]; sectionOrder: string[]; seq?: number; trayBefore?: StagedItem[] };
   const undoStack = useRef<Snapshot[]>([]);
   const redoStack = useRef<Snapshot[]>([]);
   const [undoTop, setUndoTop] = useState<string | null>(null);
@@ -1823,18 +1823,21 @@ export default function LessonEditorClient() {
   // then each card added with skipUndo so it doesn't stack N entries).
   const sendStagedBatch = useCallback(async (batch: { q: BankQuestion; kind: ContentKind; section: string }[]) => {
     if (batch.length === 0) return;
-    pushUndo(`Add ${batch.length} question${batch.length > 1 ? 's' : ''}`);
+    // Capture the WHOLE tray (both panes) before adding + clearing, so a single undo restores the
+    // exact pre-Add-all state: cards removed from the lesson AND Pool/Keep refilled as they were.
+    const trayBefore = getStagedItems();
+    pushUndo(`Add ${batch.length} question${batch.length > 1 ? 's' : ''}`, { trayBefore });
     for (const b of batch) {
       const { title: tplTitle, content: tplContent } = buildBankWorkedExampleTemplate(b.q);
-      const created = await addCard(b.kind, {
+      await addCard(b.kind, {
         section_name: b.section || DEFAULT_SECTION[b.kind],
         card_title: tplTitle,
         content: tplContent,
         source_question_id: b.q.id,
         marks: b.kind === 'practice' ? b.q.total_marks ?? null : null,
       }, { skipUndo: true });
-      if (created) stagedCardMeta.current.set(created.id, { q: b.q, kind: b.kind as StageKind, section: b.section || DEFAULT_SECTION[b.kind] });
     }
+    clearStagingNoSnap(); // empty the tray; the undo entry's trayBefore restores it
     showToast(`Added ${batch.length} question${batch.length > 1 ? 's' : ''}`);
   }, [addCard]);
 
@@ -1913,8 +1916,10 @@ export default function LessonEditorClient() {
 
   // Capture the pre-action card-state so it can be restored. Reads via refs so it's always fresh,
   // even when called from a memoized handler. A brand-new action invalidates the redo stack.
-  function pushUndo(label: string) {
-    undoStack.current.push({ label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order) });
+  // `trayBefore` (optional) snapshots the staging tray so an action like "Add all" can be undone
+  // atomically — cards removed from the lesson AND the exact Pool/Keep tray restored.
+  function pushUndo(label: string, opts: { trayBefore?: StagedItem[] } = {}) {
+    undoStack.current.push({ label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order), seq: nextActionSeq(), trayBefore: opts.trayBefore });
     if (undoStack.current.length > 25) undoStack.current.shift();
     redoStack.current = [];
     setRedoTop(null);
@@ -1936,12 +1941,15 @@ export default function LessonEditorClient() {
         if (meta) removeStaged(meta.q.id); // back in the lesson → out of staging
       }
     }
-    // Delete cards that exist now but aren't in the snapshot.
+    // Delete cards that exist now but aren't in the snapshot. When the entry carries a full tray
+    // snapshot (Add all), we restore the tray wholesale below, so skip the per-card meta restore.
     for (const c of cur) {
       if (!snapById.has(c.id)) {
         await storeDeleteCard(c.id);
-        const meta = stagedCardMeta.current.get(c.id);
-        if (meta) { addToStaging(meta.q); setStagePane(meta.q.id, 'keep'); setStageKind(meta.q.id, meta.kind); setStageSection(meta.q.id, meta.section); }
+        if (entry.trayBefore === undefined) {
+          const meta = stagedCardMeta.current.get(c.id);
+          if (meta) { addToStaging(meta.q); setStagePane(meta.q.id, 'keep'); setStageKind(meta.q.id, meta.kind); setStageSection(meta.q.id, meta.section); }
+        }
       }
     }
     // Re-patch changed fields (section/kind/title/content/marks).
@@ -1967,6 +1975,8 @@ export default function LessonEditorClient() {
     if (JSON.stringify(asOrder(lessonRef.current?.section_order)) !== JSON.stringify(entry.sectionOrder)) {
       void saveLessonMeta({ section_order: entry.sectionOrder });
     }
+    // Restore the exact tray captured with this entry (Add all undo/redo) — both Pool and Keep.
+    if (entry.trayBefore !== undefined) replaceStaging(entry.trayBefore);
     setSavedAt(new Date());
   }
 
@@ -1974,8 +1984,8 @@ export default function LessonEditorClient() {
     const entry = undoStack.current.pop();
     setUndoTop(undoStack.current[undoStack.current.length - 1]?.label ?? null);
     if (!entry) return;
-    // Snapshot the CURRENT state so redo can re-apply it.
-    redoStack.current.push({ label: entry.label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order) });
+    // Snapshot the CURRENT state so redo can re-apply it (carry the current tray if this entry tracks one).
+    redoStack.current.push({ label: entry.label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order), seq: nextActionSeq(), trayBefore: entry.trayBefore !== undefined ? getStagedItems() : undefined });
     if (redoStack.current.length > 25) redoStack.current.shift();
     setRedoTop(entry.label);
     try { await applySnapshot(entry); showToast(`Undone: ${entry.label}`); }
@@ -1986,12 +1996,16 @@ export default function LessonEditorClient() {
     const entry = redoStack.current.pop();
     setRedoTop(redoStack.current[redoStack.current.length - 1]?.label ?? null);
     if (!entry) return;
-    undoStack.current.push({ label: entry.label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order) });
+    undoStack.current.push({ label: entry.label, cards: cardsRef.current.map(c => ({ ...c })), sectionOrder: asOrder(lessonRef.current?.section_order), seq: nextActionSeq(), trayBefore: entry.trayBefore !== undefined ? getStagedItems() : undefined });
     if (undoStack.current.length > 25) undoStack.current.shift();
     setUndoTop(entry.label);
     try { await applySnapshot(entry); showToast(`Redone: ${entry.label}`); }
     catch { loadLesson(); }
   }
+
+  // Exposed so the staging overlay can drive lesson undo/redo (and pick the most recent across stacks).
+  const lessonUndoTopSeq = () => undoStack.current[undoStack.current.length - 1]?.seq ?? -1;
+  const lessonRedoTopSeq = () => redoStack.current[redoStack.current.length - 1]?.seq ?? -1;
 
   // Global Ctrl/Cmd+Z → structural undo, but only when not typing in a field (the markdown
   // editor handles its own content undo).
@@ -2274,6 +2288,10 @@ export default function LessonEditorClient() {
           onClose={() => setStagingOpen(false)}
           onInsert={(q, kind, section) => void sendStagedToLesson(q, kind, section)}
           onInsertBatch={(batch) => void sendStagedBatch(batch)}
+          onUndoLesson={() => void runUndo()}
+          onRedoLesson={() => void runRedo()}
+          lessonUndoTopSeq={lessonUndoTopSeq}
+          lessonRedoTopSeq={lessonRedoTopSeq}
           sections={sectionList}
           level={lesson.level}
           topics={lesson.topics}
