@@ -841,9 +841,10 @@ export function LessonBankPanel({
         ))}
         {!loading && committed.mode !== 'smart' && questions.length < total && (
           <button
-            onClick={() => setLimit(l => l + 100)}
+            onClick={() => setLimit(Math.min(total, 3000))}
             className="w-full text-xs py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
-          >Load {Math.min(100, total - questions.length)} more ({questions.length} of {total})</button>
+            title="Fetch the rest of the topic scope in one go (so filters can see everything)"
+          >Load all {total - questions.length} remaining ({questions.length} of {total} loaded)</button>
         )}
       </div>
     </div>

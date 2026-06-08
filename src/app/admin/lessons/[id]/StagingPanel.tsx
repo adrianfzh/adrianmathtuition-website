@@ -38,7 +38,6 @@ function StagedCard({ item, sections, onSend }: {
   const section = item.section ?? sections[0] ?? 'Default';
   const kind = item.kind ?? 'worked_example';
   const noDrag = { onPointerDown: (e: React.PointerEvent) => e.stopPropagation() };
-  const isKeep = item.pane === 'keep';
   const [sent, setSent] = useState(false);
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} data-qid={item.q.id}
@@ -51,8 +50,8 @@ function StagedCard({ item, sections, onSend }: {
       </div>
       <div className="p-1.5">
         <BankQuestionCard q={item.q} draggable={false} />
-        {isKeep && (
-          <div className="flex items-center gap-1 mt-1.5 flex-wrap" {...noDrag}>
+        {/* R/E/P + section on BOTH panes (pre-classify in the Pool); Send → only where onSend is wired (Keep). */}
+        <div className="flex items-center gap-1 mt-1.5 flex-wrap" {...noDrag}>
             <span className="text-[10px] text-slate-400">as</span>
             {(['refresher', 'worked_example', 'practice'] as StageKind[]).map(k => (
               <button key={k} onClick={() => setKind(item.q.id, k)}
@@ -68,7 +67,6 @@ function StagedCard({ item, sections, onSend }: {
               className={`ml-auto text-[10px] px-2 py-0.5 rounded text-white ${sent ? 'bg-emerald-600' : 'bg-slate-700 hover:bg-slate-800'}`}
             >{sent ? '✓ sent' : 'Send →'}</button>}
           </div>
-        )}
       </div>
     </div>
   );
