@@ -28,10 +28,11 @@ const KIND_BTN: Record<StageKind, { label: string; on: string; off: string }> = 
 
 const WIDTHS_KEY = 'lesson_staging_widths_v1';
 
-function StagedCard({ item, sections, onSend }: {
+function StagedCard({ item, sections, onSend, auth }: {
   item: StagedItem;
   sections: string[];
   onSend?: (q: BankQuestion, kind: StageKind, section: string) => void;
+  auth?: string;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.q.id, data: { pane: item.pane } });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, touchAction: 'none' as const };
@@ -49,7 +50,7 @@ function StagedCard({ item, sections, onSend }: {
         <button {...noDrag} onClick={() => removeStaged(item.q.id)} title="Remove from staging entirely (delete from tray)" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑 remove</button>
       </div>
       <div className="p-1.5">
-        <BankQuestionCard q={item.q} draggable={false} />
+        <BankQuestionCard q={item.q} draggable={false} auth={auth} />
         {/* R/E/P + section on BOTH panes (pre-classify in the Pool); Send → only where onSend is wired (Keep). */}
         <div className="flex items-center gap-1 mt-1.5 flex-wrap" {...noDrag}>
             <span className="text-[10px] text-slate-400">as</span>
@@ -72,13 +73,14 @@ function StagedCard({ item, sections, onSend }: {
   );
 }
 
-function Pane({ title, pane, items, sections, hint, onSend, style, headerActions, autoKind }: {
+function Pane({ title, pane, items, sections, hint, onSend, style, headerActions, autoKind, auth }: {
   title: string; pane: StagePane; items: StagedItem[]; sections: string[]; hint: string;
   onSend?: (q: BankQuestion, kind: StageKind, section: string) => void;
   style?: React.CSSProperties;
   headerActions?: React.ReactNode;
   /** When set, anything dropped into this pane is auto-assigned this kind (Pool=E / Keep=P mode). */
   autoKind?: StageKind;
+  auth?: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `pane-${pane}`, data: { pane } });
   const [bankOver, setBankOver] = useState(false);
@@ -138,7 +140,7 @@ function Pane({ title, pane, items, sections, hint, onSend, style, headerActions
         className={`flex-1 overflow-y-auto p-2 space-y-2 min-h-[120px] ${(isOver || bankOver) ? 'outline outline-2 outline-dashed outline-blue-400 bg-blue-50/40' : ''}`}
       >
         <SortableContext items={items.map(i => i.q.id)} strategy={verticalListSortingStrategy}>
-          {items.map(item => <StagedCard key={item.q.id} item={item} sections={sections} onSend={onSend} />)}
+          {items.map(item => <StagedCard key={item.q.id} item={item} sections={sections} onSend={onSend} auth={auth} />)}
         </SortableContext>
         {items.length === 0 && <p className="text-[11px] text-slate-400 italic text-center py-6">Drag questions here</p>}
       </div>
@@ -298,7 +300,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
           <Divider onDrag={(dx) => setBankW(w => { const n = Math.max(220, Math.min(700, w + dx)); saveWidths(n, poolW); return n; })} />
           <Pane
             title={kindMode ? 'Pool — examples (E)' : 'Pool — candidates'} pane="pool" items={pool} sections={sections}
-            hint="drag right to shortlist →" style={{ width: poolW }}
+            hint="drag right to shortlist →" style={{ width: poolW }} auth={auth}
             autoKind={kindMode ? 'worked_example' : undefined}
             headerActions={pool.length > 0 && (
               <button onClick={() => { moveAllToPane('pool', 'keep'); if (kindMode) setKindAll('keep', 'practice'); }} title="Move every Pool card into the shortlist" className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">shortlist all →</button>
@@ -307,7 +309,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
           <Divider onDrag={(dx) => setPoolW(w => { const n = Math.max(260, w + dx); saveWidths(bankW, n); return n; })} />
           <Pane
             title={kindMode ? 'Keep — practice (P)' : 'Keep — shortlist'} pane="keep" items={keep} sections={sections}
-            hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }}
+            hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }} auth={auth}
             autoKind={kindMode ? 'practice' : undefined}
             headerActions={keep.length > 0 && (
               <>
