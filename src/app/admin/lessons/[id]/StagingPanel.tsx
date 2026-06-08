@@ -28,11 +28,13 @@ const KIND_BTN: Record<StageKind, { label: string; on: string; off: string }> = 
 
 const WIDTHS_KEY = 'lesson_staging_widths_v1';
 
-function StagedCard({ item, sections, onSend, auth }: {
+function StagedCard({ item, sections, onSend, auth, autoKind }: {
   item: StagedItem;
   sections: string[];
   onSend?: (q: BankQuestion, kind: StageKind, section: string) => void;
   auth?: string;
+  /** Pane-enforced kind (Pool=E / Keep=P mode) — Send uses this over the card's chip. */
+  autoKind?: StageKind;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.q.id, data: { pane: item.pane } });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, touchAction: 'none' as const };
@@ -64,7 +66,8 @@ function StagedCard({ item, sections, onSend, auth }: {
               {sections.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             {onSend && <button
-              onClick={() => { onSend(item.q, kind, section); setSent(true); setTimeout(() => removeStaged(item.q.id), 500); }}
+              onClick={() => { onSend(item.q, autoKind ?? kind, section); setSent(true); setTimeout(() => removeStaged(item.q.id), 500); }}
+              title={autoKind ? `Send to the lesson as ${KIND_BTN[autoKind].label} (pane mode)` : 'Send to the lesson with the chosen R/E/P + section'}
               className={`ml-auto text-[10px] px-2 py-0.5 rounded text-white ${sent ? 'bg-emerald-600' : 'bg-slate-700 hover:bg-slate-800'}`}
             >{sent ? '✓ sent' : 'Send →'}</button>}
           </div>
@@ -140,7 +143,7 @@ function Pane({ title, pane, items, sections, hint, onSend, style, headerActions
         className={`flex-1 overflow-y-auto p-2 space-y-2 min-h-[120px] ${(isOver || bankOver) ? 'outline outline-2 outline-dashed outline-blue-400 bg-blue-50/40' : ''}`}
       >
         <SortableContext items={items.map(i => i.q.id)} strategy={verticalListSortingStrategy}>
-          {items.map(item => <StagedCard key={item.q.id} item={item} sections={sections} onSend={onSend} auth={auth} />)}
+          {items.map(item => <StagedCard key={item.q.id} item={item} sections={sections} onSend={onSend} auth={auth} autoKind={autoKind} />)}
         </SortableContext>
         {items.length === 0 && <p className="text-[11px] text-slate-400 italic text-center py-6">Drag questions here</p>}
       </div>
@@ -319,7 +322,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
           <Divider onDrag={(dx) => setBankW(w => { const n = Math.max(220, Math.min(700, w + dx)); saveWidths(n, poolW); return n; })} />
           <Pane
             title={kindMode ? 'Pool — examples (E)' : 'Pool — candidates'} pane="pool" items={pool} sections={sections}
-            hint="drag right to shortlist →" style={{ width: poolW }} auth={auth}
+            hint="drag right to shortlist →" style={{ width: poolW }} auth={auth} onSend={onInsert}
             autoKind={kindMode ? 'worked_example' : undefined}
             headerActions={pool.length > 0 && (
               <button onClick={() => { moveAllToPane('pool', 'keep'); if (kindMode) setKindAll('keep', 'practice'); }} title="Move every Pool card into the shortlist" className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">shortlist all →</button>

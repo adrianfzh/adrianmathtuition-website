@@ -415,7 +415,18 @@ export function LessonBankPanel({
   const [includeTopics, setIncludeTopics] = useState<Set<string>>(new Set());
   const [excludeTopics, setExcludeTopics] = useState<Set<string>>(new Set());
   const [includeMode, setIncludeMode] = useState<'all' | 'any'>('all');
-  const [topicFilterOpen, setTopicFilterOpen] = useState(false);
+  // Topic chips visible by default; collapsing is remembered.
+  const [topicFilterOpen, setTopicFilterOpen] = useState(true);
+  useEffect(() => {
+    try { const v = localStorage.getItem('lesson_bank_topic_filter_open'); if (v !== null) setTopicFilterOpen(v === '1'); } catch { /* ignore */ }
+  }, []);
+  function toggleTopicFilterOpen() {
+    setTopicFilterOpen(o => {
+      const n = !o;
+      try { localStorage.setItem('lesson_bank_topic_filter_open', n ? '1' : '0'); } catch { /* ignore */ }
+      return n;
+    });
+  }
   // Browsing-only image scale for previews (display preference, persisted locally; never touches the DB).
   const [imgScale, setImgScale] = useState<number>(() => {
     try { const v = Number(localStorage.getItem('lesson_bank_img_scale')); return v >= 20 && v <= 100 ? v : 100; } catch { return 100; }
@@ -771,7 +782,7 @@ export function LessonBankPanel({
           <div className="text-[10px]">
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setTopicFilterOpen(o => !o)}
+                onClick={toggleTopicFilterOpen}
                 className={`px-1.5 py-px rounded border ${topicFilterCount > 0 ? 'bg-blue-100 border-blue-400 text-blue-700' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
               >Topic filter{topicFilterCount > 0 ? ` (${topicFilterCount})` : ''} {topicFilterOpen ? '▴' : '▾'}</button>
               {includeTopics.size > 1 && (

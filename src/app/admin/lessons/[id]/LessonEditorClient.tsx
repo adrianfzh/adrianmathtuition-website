@@ -101,7 +101,9 @@ function asOrder(v: unknown): string[] {
 // Lesson-level ordered section list: saved order first, then any new sections alphabetically.
 function orderedSections(cards: Card[], local: string[], order: unknown): string[] {
   const ord = asOrder(order);
-  const all = [...new Set([...cards.map(c => c.section_name).filter(Boolean), ...local])];
+  // Include names saved in section_order even when they have no cards yet — an empty section you
+  // created stays visible across reloads until you delete it.
+  const all = [...new Set([...cards.map(c => c.section_name).filter(Boolean), ...local, ...ord])];
   const known = ord.filter(s => all.includes(s));
   const rest = all.filter(s => !known.includes(s)).sort();
   return [...known, ...rest];
