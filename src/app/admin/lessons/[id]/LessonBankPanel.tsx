@@ -176,9 +176,20 @@ function fixCurrencyDollars(text: string): string {
   });
 }
 
+// Render guard for malformed source: a line with an ODD number of unescaped `$` has a stray/missing
+// delimiter (a data artifact), which makes remark-math greedily italicise everything after it. Strip
+// that line's single `$` so it renders as plain readable text instead of a garbled blob. Balanced
+// lines (real math) are untouched; `$$` display delimiters count as two, so they're unaffected.
+function balanceDollars(text: string): string {
+  return text.split('\n').map(line => {
+    const singles = (line.match(/(?<!\\)\$/g) || []).length;
+    return singles % 2 === 1 ? line.replace(/(?<!\\)\$/g, '') : line;
+  }).join('\n');
+}
+
 function renderInlineImagesInText(text: string | null | undefined): string {
   if (!text) return '';
-  return fixCurrencyDollars(text).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
+  return balanceDollars(fixCurrencyDollars(text)).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
     const cleaned = url.trim();
     if (!isPlausibleFilename(cleaned)) return '';
     return `<img src="${toStorageUrl(cleaned)}" alt="" style="max-width:100%;display:block;margin:6px 0" />`;

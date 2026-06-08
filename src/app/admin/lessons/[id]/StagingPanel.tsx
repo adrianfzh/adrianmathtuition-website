@@ -15,8 +15,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { LessonBankPanel, BankQuestionCard, type BankQuestion } from './LessonBankPanel';
 import {
   getStaged, subscribeStaging, removeStaged, setPaneAt, moveAllToPane, toggleReject, reorderPane, setKind, setSection,
-  clearStaging, clearRejected, getKeep, clearKeep, isStaged, addToStaging,
-  undoStaging, redoStaging, stagingUndoTopSeq, stagingRedoTopSeq, clearStagingNoSnap, clearKeepNoSnap,
+  clearStaging, clearRejected, clearKeep, isStaged, addToStaging,
+  undoStaging, redoStaging, stagingUndoTopSeq, stagingRedoTopSeq,
   setKindAll, setSectionAll,
   type StagedItem, type StagePane, type StageKind,
 } from '@/lib/staging-store';
@@ -286,28 +286,30 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
     reorderPane(from, arrayMove(inPane, oi, ni));
   }
 
-  // How many cards "Add all" would send: in Pool=E/Keep=P mode BOTH panes go (pane decides the
-  // kind); otherwise only the Keep shortlist goes (per-card kind).
-  const addAllCount = kindMode ? items.filter(i => !i.rejected).length : items.filter(i => i.pane === 'keep' && !i.rejected).length;
-
-  function addAll() {
-    const sec = (it: StagedItem) => it.section ?? sections[0] ?? 'Default';
-    const batch = kindMode
-      ? [
-          ...items.filter(i => i.pane === 'pool' && !i.rejected).sort((a, b) => a.order - b.order)
-            .map(it => ({ q: it.q, kind: 'worked_example' as StageKind, section: sec(it) })),
-          ...items.filter(i => i.pane === 'keep' && !i.rejected).sort((a, b) => a.order - b.order)
-            .map(it => ({ q: it.q, kind: 'practice' as StageKind, section: sec(it) })),
-        ]
-      : getKeep().map(it => ({ q: it.q, kind: it.kind ?? 'worked_example' as StageKind, section: sec(it) }));
+  // Build the {q,kind,section} batch for a set of panes. In Pool=E/Keep=P mode the pane decides the
+  // kind; otherwise the card's own R/E/P chip does.
+  const sec = (it: StagedItem) => it.section ?? sections[0] ?? 'Default';
+  function batchFor(panes: StagePane[]) {
+    return panes.flatMap(p =>
+      items.filter(i => i.pane === p && !i.rejected).sort((a, b) => a.order - b.order)
+        .map(it => ({ q: it.q, kind: (kindMode ? (p === 'pool' ? 'worked_example' : 'practice') : (it.kind ?? 'worked_example')) as StageKind, section: sec(it) })),
+    );
+  }
+  function sendBatch(batch: { q: BankQuestion; kind: StageKind; section: string }[]) {
     if (batch.length === 0) return;
     if (onInsertBatch) {
-      onInsertBatch(batch); // the editor clears the tray itself (carried on its single undo entry)
+      onInsertBatch(batch); // editor adds + removes exactly these from the tray (single undo)
     } else {
-      for (const b of batch) onInsert(b.q, b.kind, b.section);
-      if (kindMode) clearStagingNoSnap(); else clearKeepNoSnap();
+      for (const b of batch) { onInsert(b.q, b.kind, b.section); removeStaged(b.q.id); }
     }
   }
+  // Counts for the three add buttons.
+  const poolCount = items.filter(i => i.pane === 'pool' && !i.rejected).length;
+  const keepCount = items.filter(i => i.pane === 'keep' && !i.rejected).length;
+  const addAllCount = poolCount + keepCount;
+  const addPool = () => sendBatch(batchFor(['pool']));
+  const addKeep = () => sendBatch(batchFor(['keep']));
+  const addAll = () => sendBatch(batchFor(['pool', 'keep']));
 
   return (
     <div className="fixed inset-0 z-[70] bg-white flex flex-col">
@@ -354,7 +356,27 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
             hint="drag right to shortlist →" style={{ width: poolW }} auth={auth} onSend={onInsert}
             autoKind={kindMode ? 'worked_example' : undefined}
             headerActions={pool.length > 0 && (
-              <button onClick={() => { moveAllToPane('pool', 'keep'); if (kindMode) setKindAll('keep', 'practice'); }} title="Move every Pool card into the shortlist" className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">shortlist all →</button>
+              <>
+                <button onClick={addPool} title={`Add all ${poolCount} Pool question${poolCount > 1 ? 's' : ''} to the lesson`} className="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-medium">＋ add {poolCount} to lesson</button>
+                <button onClick={() => { moveAllToPane('pool', 'keep'); if (kindMode) setKindAll('keep', 'practice'); }} title="Move every Pool card into the shortlist" className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">shortlist all →</button>
+                {!kindMode && (
+                  <span className="flex items-center gap-1 ml-1" title="Apply to ALL Pool cards at once">
+                    <span className="text-[10px] text-slate-400">all as</span>
+                    {(['refresher', 'worked_example', 'practice'] as StageKind[]).map(k => (
+                      <button key={k} onClick={() => setKindAll('pool', k)} title={`Set every Pool card to ${KIND_BTN[k].label}`} className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${KIND_BTN[k].off} hover:ring-1 hover:ring-slate-400`}>{KIND_BTN[k].label}</button>
+                    ))}
+                  </span>
+                )}
+                <select
+                  defaultValue=""
+                  onChange={e => { if (e.target.value) { setSectionAll('pool', e.target.value); e.currentTarget.value = ''; } }}
+                  title="Set the section for every Pool card"
+                  className="text-[10px] border border-slate-300 rounded px-1 py-px max-w-[120px] ml-1"
+                >
+                  <option value="" disabled>all in section…</option>
+                  {sections.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </>
             )}
           />
           <Divider onDrag={(dx) => setPoolW(w => { const n = Math.max(260, w + dx); saveWidths(bankW, n); return n; })} />
@@ -364,6 +386,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
             autoKind={kindMode ? 'practice' : undefined}
             headerActions={keep.length > 0 && (
               <>
+                <button onClick={addKeep} title={`Add all ${keepCount} shortlisted question${keepCount > 1 ? 's' : ''} to the lesson`} className="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-medium">＋ add {keepCount} to lesson</button>
                 <button onClick={() => { moveAllToPane('keep', 'pool'); if (kindMode) setKindAll('pool', 'worked_example'); }} title="Move every shortlisted card back to the Pool" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-100">← all to pool</button>
                 <button onClick={() => { if (confirm(`Remove all ${keep.length} shortlisted question${keep.length > 1 ? 's' : ''} from the tray?`)) clearKeep(); }} title="Delete every shortlisted card from the tray" className="text-[10px] px-1.5 py-0.5 rounded border border-red-200 text-red-600 bg-red-50 hover:bg-red-100">clear</button>
                 <span className="flex items-center gap-1 ml-2" title="Apply to ALL shortlisted cards at once">

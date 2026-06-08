@@ -32,7 +32,7 @@ import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { renderDesmosPng } from '@/lib/desmos';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
 import { StagingPanel } from './StagingPanel';
-import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging, removeStaged, setPane as setStagePane, setKind as setStageKind, setSection as setStageSection, setStagingScope, nextActionSeq, getStaged as getStagedItems, replaceStaging, clearStagingNoSnap, type StageKind, type StagedItem } from '@/lib/staging-store';
+import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging, removeStaged, setPane as setStagePane, setKind as setStageKind, setSection as setStageSection, setStagingScope, nextActionSeq, getStaged as getStagedItems, replaceStaging, type StageKind, type StagedItem } from '@/lib/staging-store';
 import {
   loadLesson as storeLoadLesson,
   saveLessonMeta as storeSaveLessonMeta,
@@ -202,6 +202,15 @@ function fixCurrencyDollars(md: string): string {
     if (!body.includes('\\$')) return m; // ordinary math — leave untouched
     return `$${body.replace(/\\\$/g, '\\text{\\textdollar}')}$`;
   });
+}
+
+// Render guard for malformed source: strip the `$` on any line with an odd (unbalanced) count, so a
+// stray delimiter can't make remark-math italicise the rest of the block. See LessonBankPanel.
+function balanceDollars(md: string): string {
+  return md.split('\n').map(line => {
+    const singles = (line.match(/(?<!\\)\$/g) || []).length;
+    return singles % 2 === 1 ? line.replace(/(?<!\\)\$/g, '') : line;
+  }).join('\n');
 }
 
 // Rewrite the width of the Nth <img> in the markdown source (used by drag-to-resize in the preview).
@@ -1357,7 +1366,7 @@ function EditorPanel({
           </div>
           <div ref={previewRef} onClick={onPreviewClick} className="flex-1 overflow-y-auto px-4 py-3 bg-white prose prose-sm max-w-none border-r border-slate-200">
             <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}>
-              {wrapBlockImages(fixCurrencyDollars(aiPreviewContent ?? previewContent))}
+              {wrapBlockImages(balanceDollars(fixCurrencyDollars(aiPreviewContent ?? previewContent)))}
             </ReactMarkdown>
           </div>
         </div>
@@ -1837,7 +1846,10 @@ export default function LessonEditorClient() {
         marks: b.kind === 'practice' ? b.q.total_marks ?? null : null,
       }, { skipUndo: true });
     }
-    clearStagingNoSnap(); // empty the tray; the undo entry's trayBefore restores it
+    // Remove ONLY the added questions from the tray (so a per-pane add leaves the other pane intact);
+    // the undo entry's trayBefore still restores the full tray.
+    const addedIds = new Set(batch.map(b => b.q.id));
+    replaceStaging(trayBefore.filter(it => !addedIds.has(it.q.id)));
     showToast(`Added ${batch.length} question${batch.length > 1 ? 's' : ''}`);
   }, [addCard]);
 
