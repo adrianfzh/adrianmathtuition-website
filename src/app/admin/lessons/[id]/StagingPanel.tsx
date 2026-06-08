@@ -72,11 +72,13 @@ function StagedCard({ item, sections, onSend }: {
   );
 }
 
-function Pane({ title, pane, items, sections, hint, onSend, style, headerActions }: {
+function Pane({ title, pane, items, sections, hint, onSend, style, headerActions, autoKind }: {
   title: string; pane: StagePane; items: StagedItem[]; sections: string[]; hint: string;
   onSend?: (q: BankQuestion, kind: StageKind, section: string) => void;
   style?: React.CSSProperties;
   headerActions?: React.ReactNode;
+  /** When set, anything dropped into this pane is auto-assigned this kind (Pool=E / Keep=P mode). */
+  autoKind?: StageKind;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `pane-${pane}`, data: { pane } });
   const [bankOver, setBankOver] = useState(false);
@@ -116,6 +118,7 @@ function Pane({ title, pane, items, sections, hint, onSend, style, headerActions
         if (e.clientY < r.top + r.height / 2) { beforeId = el.dataset.qid ?? null; break; }
       }
       setPaneAt(q.id, pane, beforeId);
+      if (autoKind) setKind(q.id, autoKind);
     } catch { /* ignore */ }
   }
   return (
@@ -174,6 +177,18 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
   const [activeId, setActiveId] = useState<string | null>(null);
   useEffect(() => subscribeStaging(() => setItems(getStaged())), []);
 
+  // "Pool=E · Keep=P" mode: when ON, dropping into a pane auto-assigns the kind (middle pane =
+  // worked examples, right pane = practice). OFF = kinds are set manually (default). Persisted.
+  const [kindMode, setKindMode] = useState(false);
+  useEffect(() => { try { setKindMode(localStorage.getItem('lesson_staging_kind_mode') === '1'); } catch { /* ignore */ } }, []);
+  function toggleKindMode() {
+    setKindMode(v => {
+      const n = !v;
+      try { localStorage.setItem('lesson_staging_kind_mode', n ? '1' : '0'); } catch { /* ignore */ }
+      return n;
+    });
+  }
+
   // Ctrl/Cmd+Z while the workspace is open → undo the last TRAY action (drag in, move, hide, …).
   // Registered in the CAPTURE phase so a successful tray undo swallows the event before the
   // editor's lesson-undo handler sees it; with nothing to undo it falls through to the editor
@@ -229,6 +244,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
       // Dropped over a specific card in the other pane → land right there; over empty space → append.
       const overIsCard = overId !== 'pane-pool' && overId !== 'pane-keep';
       setPaneAt(activeId, to, overIsCard ? overId : null);
+      if (kindMode) setKind(activeId, to === 'pool' ? 'worked_example' : 'practice');
       return;
     }
     const inPane = items.filter(i => i.pane === from).sort((a, b) => a.order - b.order).map(i => i.q.id);
@@ -252,6 +268,10 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
         <span className="text-sm font-semibold text-slate-800">🗂 Staging workspace</span>
         <span className="text-[11px] text-slate-400">Bank → Pool → Keep. ✕ hide (reversible) · 🗑 remove = delete from tray.</span>
         <span className="ml-auto flex items-center gap-2">
+          <label
+            className={`text-[11px] flex items-center gap-1 px-1.5 py-0.5 rounded border ${kindMode ? 'bg-blue-50 border-blue-300 text-blue-700' : 'border-transparent text-slate-500'}`}
+            title="When ON: anything dropped into the middle pane becomes a worked Example (E), anything dropped into the right pane becomes Practice (P). OFF = set kinds manually."
+          ><input type="checkbox" checked={kindMode} onChange={toggleKindMode} />Pool=E · Keep=P</label>
           <label className="text-[11px] text-slate-500 flex items-center gap-1"><input type="checkbox" checked={showRejected} onChange={e => setShowRejected(e.target.checked)} />show hidden ({rejectedCount})</label>
           <button onClick={() => undoStaging()} disabled={stagingUndoCount() === 0} title="Undo the last tray action (Ctrl/Cmd+Z)" className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-40">↩ Undo</button>
           {rejectedCount > 0 && <button onClick={clearRejected} className="text-[11px] px-2 py-1 border border-slate-300 rounded hover:bg-slate-100">Clear hidden</button>}
@@ -277,17 +297,21 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, sections, level
           </div>
           <Divider onDrag={(dx) => setBankW(w => { const n = Math.max(220, Math.min(700, w + dx)); saveWidths(n, poolW); return n; })} />
           <Pane
-            title="Pool — candidates" pane="pool" items={pool} sections={sections} hint="drag right to shortlist →" style={{ width: poolW }}
+            title={kindMode ? 'Pool — examples (E)' : 'Pool — candidates'} pane="pool" items={pool} sections={sections}
+            hint="drag right to shortlist →" style={{ width: poolW }}
+            autoKind={kindMode ? 'worked_example' : undefined}
             headerActions={pool.length > 0 && (
-              <button onClick={() => moveAllToPane('pool', 'keep')} title="Move every Pool card into the shortlist" className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">shortlist all →</button>
+              <button onClick={() => { moveAllToPane('pool', 'keep'); if (kindMode) setKindAll('keep', 'practice'); }} title="Move every Pool card into the shortlist" className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">shortlist all →</button>
             )}
           />
           <Divider onDrag={(dx) => setPoolW(w => { const n = Math.max(260, w + dx); saveWidths(bankW, n); return n; })} />
           <Pane
-            title="Keep — shortlist" pane="keep" items={keep} sections={sections} hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }}
+            title={kindMode ? 'Keep — practice (P)' : 'Keep — shortlist'} pane="keep" items={keep} sections={sections}
+            hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }}
+            autoKind={kindMode ? 'practice' : undefined}
             headerActions={keep.length > 0 && (
               <>
-                <button onClick={() => moveAllToPane('keep', 'pool')} title="Move every shortlisted card back to the Pool" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-100">← all to pool</button>
+                <button onClick={() => { moveAllToPane('keep', 'pool'); if (kindMode) setKindAll('pool', 'worked_example'); }} title="Move every shortlisted card back to the Pool" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-100">← all to pool</button>
                 <button onClick={() => { if (confirm(`Remove all ${keep.length} shortlisted question${keep.length > 1 ? 's' : ''} from the tray?`)) clearKeep(); }} title="Delete every shortlisted card from the tray" className="text-[10px] px-1.5 py-0.5 rounded border border-red-200 text-red-600 bg-red-50 hover:bg-red-100">clear</button>
                 <span className="flex items-center gap-1 ml-2" title="Apply to ALL shortlisted cards at once">
                   <span className="text-[10px] text-slate-400">all as</span>
