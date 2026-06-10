@@ -121,18 +121,23 @@ function renderTextAndLatex(el: HTMLElement, text: string) {
     .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
     .replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
 
+  // Stash KaTeX output behind placeholders: its SVG path data contains
+  // newlines, and the \n→<br> pass would corrupt it (invisible √ radicals).
+  const mathChunks: string[] = [];
+  const stash = (rendered: string) => `${mathChunks.push(rendered) - 1}`;
   if (typeof window !== 'undefined' && window.katex) {
     html = html.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
-      try { return window.katex.renderToString(math, { displayMode: true, throwOnError: false }); }
+      try { return stash(window.katex.renderToString(math, { displayMode: true, throwOnError: false })); }
       catch { return `$$${math}$$`; }
     });
     html = html.replace(/(?<!\$)\$([^$\n]{1,200}?)\$(?!\$)/g, (_, math) => {
-      try { return window.katex.renderToString(math, { displayMode: false, throwOnError: false }); }
+      try { return stash(window.katex.renderToString(math, { displayMode: false, throwOnError: false })); }
       catch { return `$${math}$`; }
     });
   }
 
   html = html.replace(/\n/g, '<br>');
+  html = html.replace(/(\d+)/g, (_, i) => mathChunks[+i]);
   el.innerHTML = html;
 }
 

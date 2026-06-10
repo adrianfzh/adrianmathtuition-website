@@ -125,18 +125,24 @@ function renderToElement(el: HTMLDivElement, text: string) {
     .replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
       '<span style="font-weight:700;display:block;margin-top:14px;color:hsl(40,80%,42%);font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">$1</span>');
 
+  // Stash KaTeX output behind placeholders: its SVG path data contains
+  // newlines, and the \n→<br> pass below would corrupt it (a <br> inside
+  // path d="..." makes √ radicals and stretchy braces invisible).
+  const mathChunks: string[] = [];
+  const stash = (rendered: string) => `${mathChunks.push(rendered) - 1}`;
   if (typeof window !== 'undefined' && window.katex) {
     html = html.replace(/\$\$([^$]+?)\$\$/g, (_, math) => {
-      try { return window.katex.renderToString(math, { displayMode: true, throwOnError: false }); }
+      try { return stash(window.katex.renderToString(math, { displayMode: true, throwOnError: false })); }
       catch { return `$$${math}$$`; }
     });
     html = html.replace(/(?<!\$)\$([^$]{1,2000}?)\$(?!\$)/g, (_, math) => {
-      try { return window.katex.renderToString(math, { displayMode: false, throwOnError: false }); }
+      try { return stash(window.katex.renderToString(math, { displayMode: false, throwOnError: false })); }
       catch { return `$${math}$`; }
     });
   }
 
   html = html.replace(/\n/g, '<br>');
+  html = html.replace(/(\d+)/g, (_, i) => mathChunks[+i]);
   el.innerHTML = html;
 }
 
