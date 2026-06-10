@@ -491,7 +491,9 @@ export function LessonBankPanel({
     if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
     if (year !== 'any') list = list.filter(q => String(q.year) === year);
     if (school !== 'any') list = list.filter(q => q.school === school);
-    if (exam !== 'any') {
+    // The Exam select only RENDERS for JC levels — never let a leftover value filter
+    // invisibly on Sec/EM/AM lessons where the control is hidden.
+    if (exam !== 'any' && isJC) {
       // 'MY:JC1' style values pin BOTH exam type and level; plain values match exam type only.
       // Rows from an older offline cache may lack `level` — let those through rather than hide them.
       const [exType, exLevel] = exam.split(':');
@@ -506,7 +508,7 @@ export function LessonBankPanel({
     }
     if (exc.length > 0) list = list.filter(q => { const t = q.topics ?? []; return !exc.some(x => t.includes(x)); });
     return list;
-  }, [questions, difficulties, hasImage, year, exam, includeTopics, excludeTopics, includeMode]);
+  }, [questions, difficulties, hasImage, year, exam, isJC, school, includeTopics, excludeTopics, includeMode]);
 
   // Read current filters at fetch-time without putting them in the fetch effect's deps.
   const filtersRef = useRef({ hasImage, difficulties, year, exam });
@@ -826,11 +828,33 @@ export function LessonBankPanel({
             )}
           </div>
         )}
-        <div className="text-[10px] text-slate-400 flex items-center gap-2">
+        <div className="text-[10px] text-slate-400 flex items-center gap-2 flex-wrap">
           <span>{loading ? (committedSmart ? 'Claude is reading…' : 'Loading…')
             : (displayed.length !== questions.length
               ? `${displayed.length} match your filters · filtering ${questions.length} loaded of ${total} in topic scope`
               : `${total} found · showing ${displayed.length}`)}</span>
+          {!loading && displayed.length === 0 && questions.length > 0 && (
+            <span className="text-amber-700">
+              hidden by: {[
+                difficulties.size > 0 && `difficulty (${[...difficulties].map(d => d.slice(0, 3)).join('/')})`,
+                hasImage !== 'any' && `image=${hasImage === 'true' ? 'yes' : 'no'}`,
+                year !== 'any' && `year=${year}`,
+                school !== 'any' && `school=${school}`,
+                exam !== 'any' && isJC && `exam=${exam}`,
+                includeTopics.size > 0 && `topic include (${includeTopics.size})`,
+                excludeTopics.size > 0 && `topic exclude (${excludeTopics.size})`,
+              ].filter(Boolean).join(', ') || 'unknown filter'}
+              {' '}
+              <button
+                onClick={() => {
+                  setDifficulties(new Set()); setHasImage('any'); setYear('any');
+                  setSchool('any'); setExam('any');
+                  setIncludeTopics(new Set()); setExcludeTopics(new Set());
+                }}
+                className="underline text-blue-600 hover:text-blue-800"
+              >reset filters</button>
+            </span>
+          )}
           {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
           {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">not synced</span>}
         </div>

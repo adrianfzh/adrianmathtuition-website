@@ -153,7 +153,9 @@ export default function LessonsListPage() {
                 {levelKeys.map(level => (
                   <div key={level}>
                     <div className="flex items-baseline gap-2 mb-2 px-1">
-                      <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">{level}</span>
+                      <span className={`text-xs font-semibold uppercase tracking-wider ${
+                        { EM: 'text-emerald-700', AM: 'text-blue-700', JC: 'text-violet-700', JC1: 'text-violet-700', JC2: 'text-violet-700', S1: 'text-amber-700', S2: 'text-rose-700' }[level] ?? 'text-slate-600'
+                      }`}>{level}</span>
                       <span className="text-[11px] text-slate-400">{groups[level].length} lesson{groups[level].length === 1 ? '' : 's'}</span>
                     </div>
                     <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={(e) => reorderLevel(level, e)}>
@@ -187,6 +189,20 @@ export default function LessonsListPage() {
   );
 }
 
+// Per-level badge colours so EM / AM / JC scan apart at a glance.
+const LEVEL_BADGE: Record<string, string> = {
+  EM: 'bg-emerald-100 text-emerald-800',
+  AM: 'bg-blue-100 text-blue-800',
+  JC: 'bg-violet-100 text-violet-800',
+  JC1: 'bg-violet-100 text-violet-800',
+  JC2: 'bg-violet-100 text-violet-800',
+  S1: 'bg-amber-100 text-amber-800',
+  S2: 'bg-rose-100 text-rose-800',
+};
+function levelBadgeCls(level: string): string {
+  return LEVEL_BADGE[level] ?? 'bg-slate-100 text-slate-700';
+}
+
 // ── Draggable lesson row (handle reorders; the card itself still navigates) ──
 function SortableLessonRow({ lesson: l, dragDisabled }: { lesson: LocalLesson; dragDisabled: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: l.id, disabled: dragDisabled });
@@ -204,7 +220,7 @@ function SortableLessonRow({ lesson: l, dragDisabled }: { lesson: LocalLesson; d
         className="flex-1 min-w-0 block bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:shadow-sm transition px-4 py-3">
         <div className="flex items-center gap-3">
           <span className="font-semibold text-slate-800">{l.name}</span>
-          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded font-medium">{l.level}</span>
+          <span className={`px-2 py-0.5 text-xs rounded font-medium ${levelBadgeCls(l.level)}`}>{l.level}</span>
           {l._dirty && <span className="text-[10px] px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded font-medium" title="Created locally; syncs when you reconnect">queued</span>}
           <span className="flex-1" />
           <span className="text-xs text-slate-400">{new Date(l.updated_at).toLocaleDateString()}</span>
