@@ -157,7 +157,25 @@ async function replay(m: MutationRow): Promise<void> {
 
 const MAX_ATTEMPTS = 5;
 
-/** Drain the queue if online. Coalesces concurrent kicks via _kickedAgain. */
+// The entity/entities a mutation touches — used to keep per-entity ordering when we
+// skip a backed-off mutation (everything behind it for the SAME entity must also wait,
+// but mutations for other entities flow past freely).
+function entityKeys(m: MutationRow): string[] {
+  switch (m.kind) {
+    case 'lesson_add': return [`lesson:${(m.payload as { lesson: { id: string } }).lesson.id}`];
+    case 'lesson_patch': return [`lesson:${(m.payload as { lessonId: string }).lessonId}`];
+    case 'card_add': return [`card:${(m.payload as { card: { id: string } }).card.id}`];
+    case 'card_patch':
+    case 'card_delete': return [`card:${(m.payload as { cardId: string }).cardId}`];
+    case 'cards_reorder': return ((m.payload as { orderedIds: string[] }).orderedIds ?? []).map((id) => `card:${id}`);
+    default: return ['*'];
+  }
+}
+
+/** Drain the queue if online. Coalesces concurrent kicks via _kickedAgain.
+ *  Failures no longer sleep inline: the failing mutation gets a `next_attempt_at`
+ *  backoff deadline and is skipped (along with later mutations for the same entity)
+ *  until it's due, so one poisoned mutation can't stall the rest of the queue. */
 export async function kickSync(): Promise<void> {
   if (typeof window === 'undefined') return;
   if (!navigator.onLine) {
@@ -171,9 +189,17 @@ export async function kickSync(): Promise<void> {
     do {
       _kickedAgain = false;
       const pending = await listPendingMutations();
+      const blocked = new Set<string>();
+      const now = Date.now();
       for (const m of pending) {
         if (!navigator.onLine) break;
         if (m.id == null) continue;
+        const keys = entityKeys(m);
+        if (keys.some((k) => blocked.has(k))) continue;       // preserve per-entity order
+        if (m.next_attempt_at && m.next_attempt_at > now) {   // not due yet — skip, don't sleep
+          keys.forEach((k) => blocked.add(k));
+          continue;
+        }
         try {
           await updateMutation(m.id, { status: 'syncing', attempts: m.attempts + 1, last_error: undefined });
           await replay(m);
@@ -182,11 +208,13 @@ export async function kickSync(): Promise<void> {
           const msg = e instanceof Error ? e.message : String(e);
           const newStatus: MutationRow['status'] =
             (m.attempts + 1) >= MAX_ATTEMPTS ? 'failed' : 'pending';
-          await updateMutation(m.id, { status: newStatus, last_error: msg });
+          await updateMutation(m.id, {
+            status: newStatus,
+            last_error: msg,
+            next_attempt_at: Date.now() + Math.min(30_000, 1000 * Math.pow(2, m.attempts)),
+          });
           emit({ lastError: msg });
-          // Backoff before continuing
-          const ms = Math.min(30_000, 1000 * Math.pow(2, m.attempts));
-          await new Promise((r) => setTimeout(r, ms));
+          keys.forEach((k) => blocked.add(k));
         }
       }
     } while (_kickedAgain && navigator.onLine);

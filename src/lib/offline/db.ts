@@ -67,6 +67,9 @@ export interface MutationRow {
   status: MutationStatus;
   attempts: number;
   last_error?: string;
+  /** Backoff deadline (ms epoch). The drain skips mutations that aren't due yet instead of
+   *  sleeping inline, so one failing mutation can't stall the whole queue. */
+  next_attempt_at?: number;
 }
 
 let _dbPromise: Promise<IDBDatabase> | null = null;
@@ -237,6 +240,33 @@ export async function replaceCardsForLesson(
 
 export async function enqueueMutation(m: Omit<MutationRow, 'id'>): Promise<number> {
   return withStore('mutations', 'readwrite', async (s) => {
+    // Coalesce bursts: the editor autosaves on a 500ms debounce, so a typing session
+    // produces many card_patch rows for the SAME card. Replaying each one is a separate
+    // sequential HTTP round trip (slow on Vercel cold starts). If the newest queued
+    // mutation is a still-pending patch for the same entity, merge into it instead.
+    if (m.kind === 'card_patch' || m.kind === 'lesson_patch') {
+      const idKey = m.kind === 'card_patch' ? 'cardId' : 'lessonId';
+      const all = (await reqAsPromise(s.getAll())) as MutationRow[];
+      const last = all.sort((a, b) => (a.id ?? 0) - (b.id ?? 0)).pop();
+      if (
+        last && last.id != null && last.kind === m.kind && last.status === 'pending' &&
+        (last.payload as Record<string, unknown>)[idKey] === (m.payload as Record<string, unknown>)[idKey]
+      ) {
+        const merged: MutationRow = {
+          ...last,
+          payload: {
+            ...last.payload,
+            patch: {
+              ...(last.payload.patch as Record<string, unknown>),
+              ...(m.payload.patch as Record<string, unknown>),
+            },
+          },
+          created_at: m.created_at,
+        };
+        await reqAsPromise(s.put(merged));
+        return last.id;
+      }
+    }
     const key = await reqAsPromise(s.add(m));
     return key as number;
   });
