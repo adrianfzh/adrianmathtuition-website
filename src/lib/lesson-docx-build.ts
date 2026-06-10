@@ -6,7 +6,7 @@
 'use client';
 
 import {
-  Document, Packer, Paragraph, TextRun, ImageRun, HeadingLevel, AlignmentType, BorderStyle,
+  Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType, BorderStyle,
   TabStopType, convertMillimetersToTwip, LevelFormat, LevelSuffix,
 } from 'docx';
 import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } from './lesson-docx';
@@ -284,7 +284,12 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
 
   // Sections
   for (const sec of sections) {
-    body.push(new Paragraph({ text: sec, heading: HeadingLevel.HEADING_1, spacing: { before: 240, after: 120 }, border: { bottom: { color: '1F2937', size: 8, style: BorderStyle.SINGLE, space: 2 } } }));
+    // Section title — house style: 20 pt bold, centred (docx sizes are half-points).
+    body.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 240, after: 120 },
+      children: [new TextRun({ text: sec, bold: true, size: 40 })],
+    }));
     const secCards = cardsOf(sec);
     const firstAdvIdx = secCards.findIndex(c => c.content_kind === 'practice' && c.is_advanced);
     for (let ci = 0; ci < secCards.length; ci++) {
@@ -364,7 +369,12 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   // Practice solutions at the back — keep the SAME displayed numbers as the questions (typed, not a
   // list, so they match even though questions use an auto-list).
   if (practiceOrdered.length > 0) {
-    body.push(new Paragraph({ text: 'Practice — Solutions', heading: HeadingLevel.HEADING_1, pageBreakBefore: true, spacing: { after: 120 } }));
+    body.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      pageBreakBefore: true,
+      spacing: { after: 120 },
+      children: [new TextRun({ text: 'Practice — Solutions', bold: true, size: 40 })],
+    }));
     for (const c of practiceOrdered) {
       body.push(new Paragraph({ spacing: { before: 120 }, children: [
         new TextRun({ text: `${mainNum.get(c.id)}. ` }),
