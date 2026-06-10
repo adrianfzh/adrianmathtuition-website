@@ -4,6 +4,13 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* Tailwind preflight sets svg { display: block }, which collapses KaTeX's
+   SVG-drawn glyphs (√ radicals, \underbrace, stretchy arrows) out of the line.
+   Restore KaTeX's expected inline behaviour. */
+.katex svg {
+  display: inline;
+}
+
 @theme {
   /* Colors */
   --color-navy: hsl(220, 60%, 20%);
