@@ -180,8 +180,14 @@ function fixCurrencyDollars(text: string): string {
 // delimiter (a data artifact), which makes remark-math greedily italicise everything after it. Strip
 // that line's single `$` so it renders as plain readable text instead of a garbled blob. Balanced
 // lines (real math) are untouched; `$$` display delimiters count as two, so they're unaffected.
+// Also closes a display block that opens `$$` but never closes on its own line (an import artifact:
+// some marking-scheme solutions dropped the trailing `$$`). An unclosed `$$` line has an EVEN single-$
+// count so the odd-count guard misses it, and remark-math's math-flow parser then swallows everything
+// up to the next `$$` — across paragraph breaks — into one giant failing KaTeX node (the "red blob").
 function balanceDollars(text: string): string {
   return text.split('\n').map(line => {
+    const t = line.trimEnd();
+    if (t.startsWith('$$') && t.length > 2 && !t.slice(2).includes('$$')) return t + '$$';
     const singles = (line.match(/(?<!\\)\$/g) || []).length;
     return singles % 2 === 1 ? line.replace(/(?<!\\)\$/g, '') : line;
   }).join('\n');

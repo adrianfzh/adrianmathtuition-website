@@ -206,8 +206,14 @@ function fixCurrencyDollars(md: string): string {
 
 // Render guard for malformed source: strip the `$` on any line with an odd (unbalanced) count, so a
 // stray delimiter can't make remark-math italicise the rest of the block. See LessonBankPanel.
+// Also closes a display block that opens `$$` but never closes on its own line (an import artifact:
+// some marking-scheme solutions dropped the trailing `$$`). An unclosed `$$` line has an EVEN single-$
+// count so the odd-count guard misses it, and remark-math's math-flow parser then swallows everything
+// up to the next `$$` — across paragraph breaks — into one giant failing KaTeX node (the "red blob").
 function balanceDollars(md: string): string {
   return md.split('\n').map(line => {
+    const t = line.trimEnd();
+    if (t.startsWith('$$') && t.length > 2 && !t.slice(2).includes('$$')) return t + '$$';
     const singles = (line.match(/(?<!\\)\$/g) || []).length;
     return singles % 2 === 1 ? line.replace(/(?<!\\)\$/g, '') : line;
   }).join('\n');
