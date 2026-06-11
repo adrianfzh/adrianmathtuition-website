@@ -140,10 +140,18 @@ function inlineRuns(text: string, reg: OmmlRegistry, opts: { color?: string; bol
 
 async function fetchImagePara(url: string): Promise<Paragraph | null> {
   try {
-    const res = await fetch(url);
+    let res = await fetch(url);
+    // The lessons service worker used to serve question images as OPAQUE (no-cors)
+    // responses — status 0, empty body — which read as failures here even though the
+    // file exists. Retry with a cache-busting query so the request misses the SW's
+    // image cache and hits the network with proper CORS.
+    if (!res.ok || res.type === 'opaque') {
+      res = await fetch(url + (url.includes('?') ? '&' : '?') + 'docx=1', { mode: 'cors', cache: 'reload' });
+    }
     if (!res.ok) return null;
     const mime = res.headers.get('content-type') || 'image/png';
     const buf = await res.arrayBuffer();
+    if (buf.byteLength === 0) return null;
     // Read the image's natural dimensions so we keep its aspect ratio (docx needs explicit px).
     const { w, h } = await naturalSize(buf, mime);
     const MAX_W = 360;

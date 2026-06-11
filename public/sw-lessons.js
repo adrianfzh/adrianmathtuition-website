@@ -15,7 +15,9 @@
  */
 
 const CACHE_PREFIX = 'adrianmath-lessons-';
-const CACHE_VERSION = 'v2';
+// v3: image cache previously stored opaque (no-cors) responses, which render in <img>
+// but break the DOCX export's fetch() (status 0, empty body). Bump clears them.
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
 const IMG_CACHE_NAME = CACHE_PREFIX + 'images-' + CACHE_VERSION;
 
@@ -70,25 +72,32 @@ self.addEventListener('fetch', (event) => {
     event.respondWith((async () => {
       const cache = await caches.open(IMG_CACHE_NAME);
       const cached = await cache.match(req);
-      if (cached) {
-        // Opportunistically refresh; ignore failures (e.g. offline).
-        fetch(req).then((res) => {
-          if (res && (res.ok || res.type === 'opaque')) {
-            cache.put(req, res.clone()).catch(() => {});
-          }
+      // An OPAQUE cached response (from a no-cors fetch, status 0) renders fine in
+      // <img> but is useless to the page's fetch() — the DOCX export reads it as a
+      // failure. Only serve an opaque hit when the request itself is no-cors.
+      if (cached && (cached.type !== 'opaque' || req.mode === 'no-cors')) {
+        // Opportunistically refresh with a proper CORS fetch (the bucket sends
+        // Access-Control-Allow-Origin: *), upgrading any old opaque entry.
+        fetch(req.url, { mode: 'cors' }).then((res) => {
+          if (res && res.ok) cache.put(req, res.clone()).catch(() => {});
         }).catch(() => {});
         return cached;
       }
       try {
-        // mode: 'no-cors' lets us cache even when CORS headers aren't set —
-        // we get an opaque response, which the browser still renders into <img>.
-        const fresh = await fetch(req, { mode: 'no-cors' });
-        if (fresh && (fresh.ok || fresh.type === 'opaque')) {
+        const fresh = await fetch(req.url, { mode: 'cors' });
+        if (fresh && fresh.ok) {
           cache.put(req, fresh.clone()).catch(() => {});
+          return fresh;
         }
-        return fresh;
+        throw new Error('cors fetch not ok');
       } catch {
-        return new Response('', { status: 504 });
+        // Last resort: an opaque fetch still lets <img> render (it just can't
+        // satisfy a page fetch()). Don't cache it — a later CORS success should win.
+        try {
+          return await fetch(req, { mode: 'no-cors' });
+        } catch {
+          return cached || new Response('', { status: 504 });
+        }
       }
     })());
     return;
