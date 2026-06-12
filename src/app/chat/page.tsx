@@ -176,6 +176,26 @@ function formatMessage(text: string): string {
   return text;
 }
 
+/* ── image lightbox: click any chat image to view it enlarged ── */
+function openLightbox(src: string) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:200;background:rgba(10,15,30,0.88);display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn 0.15s ease;padding:24px;';
+  const big = document.createElement('img');
+  big.src = src;
+  big.style.cssText = 'max-width:96vw;max-height:94vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);object-fit:contain;';
+  overlay.appendChild(big);
+  const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+  overlay.addEventListener('click', close);
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(overlay);
+}
+
+function makeImageZoomable(img: HTMLImageElement) {
+  img.style.cursor = 'zoom-in';
+  img.addEventListener('click', () => openLightbox(img.src));
+}
+
 /* ── autoResize helper ── */
 function autoResize(el: HTMLTextAreaElement | null) {
   if (!el) return;
@@ -664,6 +684,7 @@ export default function ChatPage() {
       const img = document.createElement('img');
       img.src = imageDataUrl;
       img.style.cssText = 'max-width:240px;border-radius:10px;display:block;margin-bottom:8px;border:1px solid rgba(255,255,255,0.2);';
+      makeImageZoomable(img);
       bubble.appendChild(img);
     }
 
@@ -883,6 +904,7 @@ export default function ChatPage() {
               img.src = parsed.graph;
               img.alt = 'Graph';
               img.style.cssText = 'max-width:100%;margin-top:12px;border-radius:8px;display:block;';
+              makeImageZoomable(img);
               streamDiv.parentElement?.appendChild(img);
               continue;
             }
