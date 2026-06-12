@@ -13,7 +13,7 @@
 
 import { useMemo, useState } from 'react';
 import type { BankQuestion } from './LessonBankPanel';
-import { addToStaging, setPane, setKind, setSection } from '@/lib/staging-store';
+import { addToStaging, setPane, setKind, setSection, setConcept } from '@/lib/staging-store';
 
 interface PickExample {
   question_id: string; concept: string; parts: string[] | null;
@@ -123,6 +123,7 @@ export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStag
       setPane(sq.id, 'pool');
       setKind(sq.id, 'worked_example');
       setSection(sq.id, p.concept);
+      setConcept(sq.id, p.concept);
       n++;
     });
     proposal.practice.forEach((p, i) => {
@@ -134,6 +135,7 @@ export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStag
       setPane(sq.id, 'keep');
       setKind(sq.id, 'practice');
       setSection(sq.id, p.concepts?.[0] ?? 'Practice');
+      if (p.concepts?.length) setConcept(sq.id, p.concepts.join(' · '));
       n++;
     });
     saveRejected(lessonKey, rejected);

@@ -174,6 +174,7 @@ export interface NewCardInput {
   content?: string | null;
   marks?: number | null;
   is_advanced?: boolean;
+  concept?: string | null;
   source_question_id?: string | null;
   source_card_id?: string | null;
 }
@@ -210,6 +211,7 @@ export async function addCard(input: NewCardInput): Promise<LocalCard> {
     content: input.content ?? '',
     marks: input.marks ?? null,
     is_advanced: input.is_advanced ?? false,
+    concept: input.concept ?? null,
     order_index,
     updated_at: nowISO(),
     _dirty: true,
@@ -222,7 +224,8 @@ export async function addCard(input: NewCardInput): Promise<LocalCard> {
       card: {
         id, content_kind: card.content_kind, section_name: card.section_name,
         card_title: card.card_title ?? '', content: card.content ?? '',
-        marks: card.marks, is_advanced: card.is_advanced, source_question_id: card.source_question_id,
+        marks: card.marks, is_advanced: card.is_advanced, concept: card.concept ?? null,
+        source_question_id: card.source_question_id,
         source_card_id: card.source_card_id,
       },
     },

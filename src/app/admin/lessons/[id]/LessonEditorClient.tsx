@@ -72,6 +72,7 @@ interface Card {
   content: string | null;
   marks: number | null;
   is_advanced?: boolean;
+  concept?: string | null;
   order_index: number;
 }
 
@@ -1843,7 +1844,7 @@ export default function LessonEditorClient() {
 
   // Send a staged question into a lesson section as a card of the chosen kind (reuses addCard;
   // the bank template carries the question's stored solution/answer).
-  const sendStagedToLesson = useCallback(async (q: BankQuestion, kind: ContentKind, section: string) => {
+  const sendStagedToLesson = useCallback(async (q: BankQuestion, kind: ContentKind, section: string, concept?: string) => {
     const { title: tplTitle, content: tplContent } = buildBankWorkedExampleTemplate(q);
     const created = await addCard(kind, {
       section_name: section || DEFAULT_SECTION[kind],
@@ -1851,6 +1852,7 @@ export default function LessonEditorClient() {
       content: tplContent,
       source_question_id: q.id,
       marks: kind === 'practice' ? q.total_marks ?? null : null,
+      concept: concept || null,
     });
     if (created) stagedCardMeta.current.set(created.id, { q, kind: kind as StageKind, section: section || DEFAULT_SECTION[kind] });
     showToast(`Added to "${section}"`);
@@ -1858,7 +1860,7 @@ export default function LessonEditorClient() {
 
   // Add a whole shortlist at once, undoable in a SINGLE Ctrl+Z (one snapshot before the batch,
   // then each card added with skipUndo so it doesn't stack N entries).
-  const sendStagedBatch = useCallback(async (batch: { q: BankQuestion; kind: ContentKind; section: string }[]) => {
+  const sendStagedBatch = useCallback(async (batch: { q: BankQuestion; kind: ContentKind; section: string; concept?: string }[]) => {
     if (batch.length === 0) return;
     // Capture the WHOLE tray (both panes) before adding + clearing, so a single undo restores the
     // exact pre-Add-all state: cards removed from the lesson AND Pool/Keep refilled as they were.
@@ -1872,6 +1874,7 @@ export default function LessonEditorClient() {
         content: tplContent,
         source_question_id: b.q.id,
         marks: b.kind === 'practice' ? b.q.total_marks ?? null : null,
+        concept: b.concept || null,
       }, { skipUndo: true });
     }
     // Remove ONLY the added questions from the tray (so a per-pane add leaves the other pane intact);
@@ -1976,7 +1979,7 @@ export default function LessonEditorClient() {
     // Re-add cards that are in the snapshot but gone now — restore with their original id.
     for (const c of entry.cards) {
       if (!curById.has(c.id)) {
-        await storeAddCard({ id: c.id, lesson_id: id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, source_question_id: c.source_question_id, source_card_id: c.source_card_id });
+        await storeAddCard({ id: c.id, lesson_id: id, content_kind: c.content_kind, section_name: c.section_name, card_title: c.card_title, content: c.content, marks: c.marks, concept: c.concept ?? null, source_question_id: c.source_question_id, source_card_id: c.source_card_id });
         const meta = stagedCardMeta.current.get(c.id);
         if (meta) removeStaged(meta.q.id); // back in the lesson → out of staging
       }
@@ -2326,7 +2329,7 @@ export default function LessonEditorClient() {
       {stagingOpen && (
         <StagingPanel
           onClose={() => setStagingOpen(false)}
-          onInsert={(q, kind, section) => void sendStagedToLesson(q, kind, section)}
+          onInsert={(q, kind, section, concept) => void sendStagedToLesson(q, kind, section, concept)}
           onInsertBatch={(batch) => void sendStagedBatch(batch)}
           onUndoLesson={() => void runUndo()}
           onRedoLesson={() => void runRedo()}

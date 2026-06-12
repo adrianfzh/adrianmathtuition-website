@@ -44,6 +44,7 @@ export interface LocalCard {
   content: string | null;
   marks: number | null;
   is_advanced?: boolean;
+  concept?: string | null; // checklist concept (from "Propose lesson") — survives section renames
   order_index: number;
   updated_at: string;
   _dirty?: boolean;

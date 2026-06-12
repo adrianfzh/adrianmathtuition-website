@@ -14,6 +14,7 @@ export interface StagedItem {
   order: number; // sort order within its pane
   kind?: StageKind; // chosen R/E/P for a Keep card ('Add all' uses this; defaults to worked_example)
   section?: string; // chosen target lesson section for a Keep card
+  concept?: string; // checklist concept (set by "Propose lesson") — carried onto the card, survives section renames
 }
 
 const KEY_BASE = 'lesson_staging_v1';
@@ -188,6 +189,11 @@ export function setKind(id: string, kind: StageKind): void {
 export function setSection(id: string, section: string): void {
   snap();
   save(load().map(i => i.q.id === id ? { ...i, section } : i));
+}
+
+export function setConcept(id: string, concept: string): void {
+  snap();
+  save(load().map(i => i.q.id === id ? { ...i, concept } : i));
 }
 
 // Bulk versions — set the kind/section for EVERY card in a pane in one go (single undo step).

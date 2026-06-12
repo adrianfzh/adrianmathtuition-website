@@ -32,7 +32,7 @@ const WIDTHS_KEY = 'lesson_staging_widths_v1';
 function StagedCard({ item, sections, onSend, auth, autoKind }: {
   item: StagedItem;
   sections: string[];
-  onSend?: (q: BankQuestion, kind: StageKind, section: string) => void;
+  onSend?: (q: BankQuestion, kind: StageKind, section: string, concept?: string) => void;
   auth?: string;
   /** Pane-enforced kind (Pool=E / Keep=P mode) — Send uses this over the card's chip. */
   autoKind?: StageKind;
@@ -48,7 +48,10 @@ function StagedCard({ item, sections, onSend, auth, autoKind }: {
       className={`rounded border cursor-grab active:cursor-grabbing ${item.rejected ? 'border-red-200 bg-red-50/40 opacity-60' : 'border-slate-200 bg-white'}`}>
       <div className="flex items-center gap-2 px-2 py-1 border-b border-slate-100 bg-slate-50/60">
         <span className="text-slate-400 select-none" title="Drag this card">⠿</span>
-        <span className="font-mono text-[11px] text-slate-600 truncate flex-1">{item.q.school} {item.q.year} P{item.q.paper} Q{item.q.question_number}</span>
+        <span className="font-mono text-[11px] text-slate-600 truncate flex-1">
+          {item.q.school} {item.q.year} P{item.q.paper} Q{item.q.question_number}
+          {item.concept && <span className="ml-1.5 font-sans text-[10px] px-1 py-px bg-blue-50 text-blue-700 border border-blue-200 rounded" title={item.concept}>{item.concept.length > 36 ? item.concept.slice(0, 34) + '…' : item.concept}</span>}
+        </span>
         <button {...noDrag} onClick={() => toggleReject(item.q.id)} title={item.rejected ? 'Unhide (bring back)' : 'Hide from view (kept in tray, reversible)'} className={`text-[10px] px-1.5 py-0.5 rounded border ${item.rejected ? 'bg-white text-slate-500 border-slate-300' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'}`}>{item.rejected ? '↺ unhide' : '✕ hide'}</button>
         <button {...noDrag} onClick={() => removeStaged(item.q.id)} title="Remove from staging entirely (delete from tray)" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑 remove</button>
       </div>
@@ -67,7 +70,7 @@ function StagedCard({ item, sections, onSend, auth, autoKind }: {
               {sections.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             {onSend && <button
-              onClick={() => { onSend(item.q, autoKind ?? kind, section); setSent(true); setTimeout(() => removeStaged(item.q.id), 500); }}
+              onClick={() => { onSend(item.q, autoKind ?? kind, section, item.concept); setSent(true); setTimeout(() => removeStaged(item.q.id), 500); }}
               title={autoKind ? `Send to the lesson as ${KIND_BTN[autoKind].label} (pane mode)` : 'Send to the lesson with the chosen R/E/P + section'}
               className={`ml-auto text-[10px] px-2 py-0.5 rounded text-white ${sent ? 'bg-emerald-600' : 'bg-slate-700 hover:bg-slate-800'}`}
             >{sent ? '✓ sent' : 'Send →'}</button>}
@@ -79,7 +82,7 @@ function StagedCard({ item, sections, onSend, auth, autoKind }: {
 
 function Pane({ title, pane, items, sections, hint, onSend, style, headerActions, autoKind, auth }: {
   title: string; pane: StagePane; items: StagedItem[]; sections: string[]; hint: string;
-  onSend?: (q: BankQuestion, kind: StageKind, section: string) => void;
+  onSend?: (q: BankQuestion, kind: StageKind, section: string, concept?: string) => void;
   style?: React.CSSProperties;
   headerActions?: React.ReactNode;
   /** When set, anything dropped into this pane is auto-assigned this kind (Pool=E / Keep=P mode). */
@@ -171,8 +174,8 @@ function Divider({ onDrag }: { onDrag: (dx: number) => void }) {
 
 export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, onRedoLesson, lessonUndoTopSeq, lessonRedoTopSeq, sections, level, topics, auth }: {
   onClose: () => void;
-  onInsert: (q: BankQuestion, kind: StageKind, section: string) => void;
-  onInsertBatch?: (items: { q: BankQuestion; kind: StageKind; section: string }[]) => void;
+  onInsert: (q: BankQuestion, kind: StageKind, section: string, concept?: string) => void;
+  onInsertBatch?: (items: { q: BankQuestion; kind: StageKind; section: string; concept?: string }[]) => void;
   onUndoLesson?: () => void;
   onRedoLesson?: () => void;
   lessonUndoTopSeq?: () => number;
@@ -292,15 +295,15 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
   function batchFor(panes: StagePane[]) {
     return panes.flatMap(p =>
       items.filter(i => i.pane === p && !i.rejected).sort((a, b) => a.order - b.order)
-        .map(it => ({ q: it.q, kind: (kindMode ? (p === 'pool' ? 'worked_example' : 'practice') : (it.kind ?? 'worked_example')) as StageKind, section: sec(it) })),
+        .map(it => ({ q: it.q, kind: (kindMode ? (p === 'pool' ? 'worked_example' : 'practice') : (it.kind ?? 'worked_example')) as StageKind, section: sec(it), concept: it.concept })),
     );
   }
-  function sendBatch(batch: { q: BankQuestion; kind: StageKind; section: string }[]) {
+  function sendBatch(batch: { q: BankQuestion; kind: StageKind; section: string; concept?: string }[]) {
     if (batch.length === 0) return;
     if (onInsertBatch) {
       onInsertBatch(batch); // editor adds + removes exactly these from the tray (single undo)
     } else {
-      for (const b of batch) { onInsert(b.q, b.kind, b.section); removeStaged(b.q.id); }
+      for (const b of batch) { onInsert(b.q, b.kind, b.section, b.concept); removeStaged(b.q.id); }
     }
   }
   // Counts for the three add buttons.

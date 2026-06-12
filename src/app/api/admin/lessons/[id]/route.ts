@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     supa.from('lessons').select('*').eq('id', id).maybeSingle(),
     supa
       .from('lesson_cards')
-      .select('id, source_card_id, source_question_id, content_kind, section_name, card_title, content, marks, order_index, is_advanced, updated_at')
+      .select('id, source_card_id, source_question_id, content_kind, section_name, card_title, content, marks, order_index, is_advanced, concept, updated_at')
       .eq('lesson_id', id)
       .order('content_kind', { ascending: true })
       .order('order_index', { ascending: true }),

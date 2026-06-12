@@ -55,6 +55,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     content: body.content ?? null,
     marks: typeof body.marks === 'number' ? body.marks : null,
     is_advanced: body.is_advanced === true,
+    concept: (typeof body.concept === 'string' && body.concept) || null,
     order_index: nextIdx,
   };
   if (clientId) insert.id = clientId;

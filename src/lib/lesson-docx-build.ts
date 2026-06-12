@@ -96,7 +96,7 @@ function tokenRank(token: string): number {
 export type DocxLesson = { name: string; level: string; description?: string | null; topics?: string[]; section_order?: string[] };
 export type DocxCard = {
   id: string; content_kind: 'refresher' | 'worked_example' | 'practice';
-  section_name: string; card_title: string | null; content: string | null; marks: number | null; is_advanced?: boolean; order_index: number;
+  section_name: string; card_title: string | null; content: string | null; marks: number | null; is_advanced?: boolean; concept?: string | null; order_index: number;
   /** Bank source tag, e.g. "2023/JC2/Prelim/ACJC/P1/Q8" — printed bold in brackets after the question number. */
   source_tag?: string | null;
   /** Compiled answer from the bank — used when the card content itself has no "**Answer:**" line. */
@@ -346,15 +346,17 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
           ...((isPractice && c.marks) ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : []),
         ],
       }));
-      // Concept tag — sections staged via "Propose lesson" are named after checklist concepts;
-      // print the concept on each question so it stays visible when reading the doc linearly.
-      // Skipped for generic section names where the tag would carry no information.
+      // Concept tag — prefer the card's own concept field (set by "Propose lesson" staging; survives
+      // section renames). Fall back to a concept-like section name for cards staged before the field
+      // existed. Generic section names carry no information and are skipped.
       const secName = (c.section_name || '').trim();
-      if (secName && !GENERIC_SECTIONS.has(secName.toLowerCase())) {
+      const concept = (c.concept || '').trim()
+        || (secName && !GENERIC_SECTIONS.has(secName.toLowerCase()) ? secName : '');
+      if (concept) {
         body.push(new Paragraph({
           indent: { left: NUM_INDENT.main.textIndent },
           spacing: { after: 40 },
-          children: [new TextRun({ text: `Concept: ${secName}`, italics: true, size: 18, color: '6B7280' })],
+          children: [new TextRun({ text: `Concept: ${concept}`, italics: true, size: 18, color: '6B7280' })],
         }));
       }
       // Practice questions show ONLY the question + final ANSWER per house style (JC: red

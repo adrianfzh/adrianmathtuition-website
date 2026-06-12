@@ -115,7 +115,7 @@ async function replay(m: MutationRow): Promise<void> {
     case 'card_add': {
       const { lessonId, card } = m.payload as {
         lessonId: string;
-        card: { id: string; content_kind: string; section_name: string; card_title: string; content: string; marks: number | null; is_advanced?: boolean; source_question_id: string | null; source_card_id: string | null };
+        card: { id: string; content_kind: string; section_name: string; card_title: string; content: string; marks: number | null; is_advanced?: boolean; concept?: string | null; source_question_id: string | null; source_card_id: string | null };
       };
       const res = await apiFetch(`/api/admin/lessons/${lessonId}/cards`, {
         method: 'POST', body: JSON.stringify(card),
