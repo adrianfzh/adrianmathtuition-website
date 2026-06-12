@@ -7,7 +7,7 @@
 
 import {
   Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType, BorderStyle,
-  TabStopType, convertMillimetersToTwip, LevelFormat, LevelSuffix,
+  TabStopType, convertMillimetersToTwip, LevelFormat, LevelSuffix, ShadingType,
 } from 'docx';
 import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } from './lesson-docx';
 
@@ -26,8 +26,6 @@ const NUM_INDENT = {
 function normalizeMarks(s: string): string {
   return s.replace(/\[\s*(\d+)\s*m\s*\]/gi, '[$1]');
 }
-// Section names that are NOT concepts — no per-question "Concept:" tag for these.
-const GENERIC_SECTIONS = new Set(['default', 'refreshers', 'worked examples', 'practice', 'examples', 'opus', 'fable']);
 // Inline math spanning multiple lines (`$\begin{pmatrix}` / rows / `\end{pmatrix}…$`, an import
 // artifact in some 2025 JC papers) — the per-line math splitter would miss the span and emit raw
 // LaTeX text. Join the span onto one line first; OMML conversion handles single-line pmatrix fine.
@@ -206,7 +204,7 @@ function naturalSize(buf: ArrayBuffer, mime: string): Promise<{ w: number; h: nu
 async function contentParagraphs(
   content: string | null,
   reg: OmmlRegistry,
-  opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void; dropLeadingTitle?: string } = {},
+  opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void; dropLeadingTitle?: string; shadeFill?: string } = {},
 ): Promise<Paragraph[]> {
   const out: Paragraph[] = [];
   const src = joinMultilineMath(content ?? '');
@@ -247,6 +245,18 @@ async function contentParagraphs(
         const norm = (s: string) => s.replace(/^\*+|\*+$/g, '').trim();
         if (norm(line) === opts.dropLeadingTitle!.trim()) continue;
       }
+      const shading = opts.shadeFill ? { type: ShadingType.CLEAR, fill: opts.shadeFill } : undefined;
+      // Markdown bullet lines ("- x" / "* x") → bulleted paragraph with a hanging indent.
+      const bullet = /^[-*]\s+(.*)$/.exec(line);
+      if (bullet) {
+        out.push(new Paragraph({
+          indent: { left: NUM_INDENT.main.textIndent, hanging: 180 },
+          children: [new TextRun({ text: '•  ', color: opts.color }), ...inlineRuns(bullet[1], reg, opts)],
+          spacing: { after: 40 },
+          shading,
+        }));
+        continue;
+      }
       const sub = opts.subpartRef ? parseSubpartLabel(line) : null;
       if (sub) {
         if (!reportedFmt) { opts.onSubpartFormat?.(subpartFormat(sub.token)); reportedFmt = true; }
@@ -258,12 +268,14 @@ async function contentParagraphs(
           children: inlineRuns(sub.rest, reg, { ...opts, marksTab: true }),
           tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
           spacing: { after: 80 },
+          shading,
         }));
       } else {
         out.push(new Paragraph({
           children: inlineRuns(line, reg, { ...opts, marksTab: true }),
           tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
           spacing: { after: 80 },
+          shading,
         }));
       }
     }
@@ -271,7 +283,12 @@ async function contentParagraphs(
   return out;
 }
 
-export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Promise<Blob> {
+export async function buildLessonDocx(
+  lesson: DocxLesson,
+  cards: DocxCard[],
+  options: { practiceSolutions?: boolean } = {},
+): Promise<Blob> {
+  const { practiceSolutions = true } = options;
   const reg = new OmmlRegistry();
   // JC lessons style answers differently from Sec/AM/EM lessons (house convention).
   const isJCDoc = ['JC', 'JC1', 'JC2'].includes(lesson.level);
@@ -287,12 +304,14 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
     .filter(c => (c.section_name || 'Default') === sec)
     .sort((a, b) => (advRank(a) - advRank(b)) || (a.order_index - b.order_index));
 
-  // Every non-empty card (refresher / worked example / practice) is a "main question" and gets a
-  // single running number 1, 2, 3 … across the whole lesson; subparts (i)(ii) nest under each.
+  // Every non-empty example/practice card is a "main question" and gets a single running number
+  // 1, 2, 3 … across the whole lesson; subparts (i)(ii) nest under each. REFRESHER cards (technique
+  // recaps) are reference boxes, NOT questions — they render unnumbered so the question count
+  // matches what the student actually attempts.
   const isEmptyCard = (c: DocxCard) => !(c.card_title || '').trim() && !(c.content || '').trim();
   const orderedCards = sections.flatMap(sec => cardsOf(sec)).filter(c => !isEmptyCard(c));
   const mainNum = new Map<string, number>();
-  orderedCards.forEach((c, i) => mainNum.set(c.id, i + 1));
+  orderedCards.filter(c => c.content_kind !== 'refresher').forEach((c, i) => mainNum.set(c.id, i + 1));
   const practiceOrdered = orderedCards.filter(c => c.content_kind === 'practice');
 
   // Word numbering definitions accumulated during the build.
@@ -330,11 +349,27 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
       if (ci === firstAdvIdx) {
         body.push(new Paragraph({ spacing: { before: 160, after: 60 }, children: [new TextRun({ text: 'Advanced practice', bold: true, color: 'B45309' })] }));
       }
-      // Every card is a numbered main question (running 1, 2, 3 … via a Word auto-list, continuous
-      // across sections). Practice cards add right-tabbed marks + writing space below.
       const isPractice = c.content_kind === 'practice';
-      // Heading: plain auto-number + BOLD bracketed source tag ([2023/JC2/Prelim/ACJC/P1/Q8]);
-      // manual cards without a bank source fall back to their card title.
+      const isRefresher = c.content_kind === 'refresher';
+      if (isRefresher) {
+        // Technique-recap box: unnumbered bold title + shaded content block — visually a
+        // reference box, not a question.
+        body.push(new Paragraph({
+          spacing: { before: 160, after: 40 },
+          shading: { type: ShadingType.CLEAR, fill: 'EEF2FF' },
+          border: { top: { color: 'C7D2FE', size: 6, style: BorderStyle.SINGLE, space: 2 } },
+          children: inlineRuns(c.card_title || 'Technique recap', reg, { bold: true }),
+        }));
+        for (const p of await contentParagraphs(c.content, reg, {
+          dropLeadingTitle: c.card_title ?? '',
+          shadeFill: 'EEF2FF',
+        })) body.push(p);
+        continue;
+      }
+      // Every example/practice card is a numbered main question (running 1, 2, 3 … via a Word
+      // auto-list, continuous across sections). Practice cards add right-tabbed marks + writing
+      // space below. Heading: plain auto-number + BOLD bracketed source tag; manual cards without
+      // a bank source fall back to their card title.
       body.push(new Paragraph({
         numbering: { reference: 'questions', level: 0 },
         spacing: { before: 160 },
@@ -346,17 +381,19 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
           ...((isPractice && c.marks) ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : []),
         ],
       }));
-      // Concept tag — prefer the card's own concept field (set by "Propose lesson" staging; survives
-      // section renames). Fall back to a concept-like section name for cards staged before the field
-      // existed. Generic section names carry no information and are skipped.
+      // Concept tag — only from the card's own concept field, and only the parts that ADD
+      // information beyond the section title (a card in its own concept's section needs no tag;
+      // a multi-concept practice question shows just its OTHER concepts).
       const secName = (c.section_name || '').trim();
-      const concept = (c.concept || '').trim()
-        || (secName && !GENERIC_SECTIONS.has(secName.toLowerCase()) ? secName : '');
-      if (concept) {
+      const conceptBits = (c.concept || '').split('·').map(s => s.trim()).filter(s => s && s !== secName);
+      if (conceptBits.length > 0) {
         body.push(new Paragraph({
           indent: { left: NUM_INDENT.main.textIndent },
           spacing: { after: 40 },
-          children: [new TextRun({ text: `Concept: ${concept}`, italics: true, size: 18, color: '6B7280' })],
+          children: [new TextRun({
+            text: `${(c.concept || '').includes(secName) && secName ? 'Also covers' : 'Concept'}: ${conceptBits.join(' · ')}`,
+            italics: true, size: 18, color: '6B7280',
+          })],
         }));
       }
       // Practice questions show ONLY the question + final ANSWER per house style (JC: red
@@ -411,8 +448,9 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
   }
 
   // Practice solutions at the back — keep the SAME displayed numbers as the questions (typed, not a
-  // list, so they match even though questions use an auto-list).
-  if (practiceOrdered.length > 0) {
+  // list, so they match even though questions use an auto-list). Notes-style exports omit this
+  // section entirely (practice shows answers only; workings generated on demand).
+  if (practiceSolutions && practiceOrdered.length > 0) {
     body.push(new Paragraph({
       alignment: AlignmentType.CENTER,
       pageBreakBefore: true,

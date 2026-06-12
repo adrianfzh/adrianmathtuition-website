@@ -28,13 +28,16 @@ For EACH concept write a compact recap box in markdown:
 **Watch out**
 - 1-3 specific mistakes students actually make on THIS concept (sign slips, wrong formula variant, missing case) — grounded in the example question where one is given
 
+Where an example question is given, ALSO write "pointers" for it — 2-3 bullets a teacher would annotate next to the worked solution: the key move at each stage ("dot both sides with $\\mathbf{b}$ to kill the unknown"), and the step where students slip. Specific to THAT question, not generic advice.
+
 Rules:
 - Terse and exam-focused, like a teacher's board summary. NO introductions, NO "in this section".
 - ALL math in $...$ (inline) — never bare LaTeX, never \\( \\) delimiters, never $$ display blocks.
-- Keep each recap under ~120 words.
+- Use ONLY plain LaTeX commands: \\frac, \\sqrt, \\overrightarrow, \\mathbf, \\cdot, \\times, \\lambda etc., ^ and _. NEVER spacing macros (\\:, \\,, \\;, \\quad), NEVER \\text{} wrappers, NEVER \\mid (write | directly).
+- Keep each recap under ~120 words; pointers under ~60 words.
 
 OUTPUT — return ONLY a JSON object, no fences, no commentary:
-{"recaps":[{"concept":"<exactly the concept string given>","content":"<markdown>"}]}
+{"recaps":[{"concept":"<exactly the concept string given>","content":"<markdown>","example_pointers":"<markdown bullets, or omit when no example was given>"}]}
 The output must be STRICTLY valid JSON — inside JSON strings every LaTeX backslash must be escaped as \\\\ (e.g. "\\\\frac{a}{b}") and newlines as \\n.`;
 
 export async function POST(req: NextRequest) {
@@ -83,7 +86,7 @@ export async function POST(req: NextRequest) {
   }
 
   const recaps = (Array.isArray(parsed.recaps) ? parsed.recaps : [])
-    .filter((r): r is { concept: string; content: string } =>
+    .filter((r): r is { concept: string; content: string; example_pointers?: string } =>
       !!r && typeof (r as { concept?: unknown }).concept === 'string' && typeof (r as { content?: unknown }).content === 'string');
   console.log(`[notes-recaps] model=${model} in=${msg.usage?.input_tokens} out=${msg.usage?.output_tokens} recaps=${recaps.length}/${concepts.length}`);
 

@@ -852,7 +852,9 @@ export function LessonBankPanel({
       });
       const json = await res.json();
       if (!res.ok) throw new Error((json.error || `HTTP ${res.status}`) + (json.raw ? ` — starts: ${String(json.raw).slice(0, 160)}` : ''));
-      const recapByConcept = new Map((json.recaps as Array<{ concept: string; content: string }>).map(r => [r.concept, r.content]));
+      const recapRows = json.recaps as Array<{ concept: string; content: string; example_pointers?: string }>;
+      const recapByConcept = new Map(recapRows.map(r => [r.concept, r.content]));
+      const pointersByConcept = new Map(recapRows.filter(r => r.example_pointers?.trim()).map(r => [r.concept, r.example_pointers!.trim()]));
 
       setNotesBusy('Assembling DOCX…');
       const srcTag = (q: BankQuestion) => {
@@ -866,9 +868,15 @@ export function LessonBankPanel({
       for (const concept of picks.concepts) {
         const recap = recapByConcept.get(concept);
         if (recap) cards.push({ id: `recap-${idx}`, content_kind: 'refresher', section_name: concept, card_title: 'Technique recap', content: recap, marks: null, order_index: idx++ });
+        let firstExample = true;
         for (const e of picks.examples.filter(x => x.concept === concept)) {
           const { title, content } = buildBankWorkedExampleTemplate(e.q);
-          cards.push({ id: `ex-${idx}`, content_kind: 'worked_example', section_name: concept, card_title: title, content, marks: null, order_index: idx++, source_tag: srcTag(e.q), concept });
+          // Teacher-style annotations: the recap call returns per-example pointers — append them
+          // to the FIRST example of the concept (the one the pointers were written for).
+          const pointers = firstExample ? pointersByConcept.get(concept) : undefined;
+          firstExample = false;
+          const fullContent = pointers ? `${content}\n\n**💡 Pointers**\n${pointers}` : content;
+          cards.push({ id: `ex-${idx}`, content_kind: 'worked_example', section_name: concept, card_title: title, content: fullContent, marks: null, order_index: idx++, source_tag: srcTag(e.q) });
         }
         for (const p of picks.practice.filter(x => (x.concepts[0] ?? MORE) === concept)) {
           const { title, content } = buildBankWorkedExampleTemplate(p.q);
@@ -886,6 +894,7 @@ export function LessonBankPanel({
       const blob = await buildLessonDocx(
         { name: lessonName, level, description: null, topics, section_order: [...picks.concepts, MORE] },
         cards,
+        { practiceSolutions: false }, // notes show answers only — workings generated on demand later
       );
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
