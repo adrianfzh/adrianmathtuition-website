@@ -57,7 +57,8 @@ OUTPUT — return ONLY a JSON object, no fences, no commentary:
  "suggestedConcepts":["..."],
  "gaps":[{"concept":"...","note":"..."}]}
 Use ONLY question_ids from the candidate list, copied EXACTLY as given after "id=" (the full id string, NOT the # index number). Use ONLY part labels that exist on that question.
-BOTH arrays are required: "examples" AND "practice" must each be non-empty — a proposal without practice picks is invalid (every concept needs practice coverage or a gap entry).`;
+BOTH arrays are required: "examples" AND "practice" must each be non-empty — a proposal without practice picks is invalid (every concept needs practice coverage or a gap entry).
+The output must be STRICTLY valid JSON: write rationale/note strings in plain words WITHOUT LaTeX backslash commands (say "the fraction setup", not "\\frac setup").`;
 
 type PartLike = { label?: string; text?: string; marks?: number; solution?: string; subparts?: PartLike[] };
 
@@ -138,9 +139,21 @@ export async function POST(req: NextRequest) {
   if (jsonStart === -1 || jsonEnd <= jsonStart) {
     return NextResponse.json({ error: 'AI returned no JSON', raw: text.slice(0, 500) }, { status: 502 });
   }
-  let proposal: Record<string, unknown>;
-  try { proposal = JSON.parse(text.slice(jsonStart, jsonEnd + 1)); }
-  catch { return NextResponse.json({ error: 'AI returned invalid JSON', raw: text.slice(0, 500) }, { status: 502 }); }
+  const jsonStr = text.slice(jsonStart, jsonEnd + 1);
+  const tryParse = (s: string): Record<string, unknown> | null => {
+    try { return JSON.parse(s) as Record<string, unknown>; } catch { return null; }
+  };
+  // The model often writes LaTeX inside rationale/gap strings ("\frac", "\(", "\dfrac") — those
+  // backslashes are invalid JSON escapes and break JSON.parse. Repair pass: double any backslash
+  // that does not start a valid JSON escape; final pass also strips trailing commas.
+  const escFixed = jsonStr.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+  const proposal = tryParse(jsonStr)
+    ?? tryParse(escFixed)
+    ?? tryParse(escFixed.replace(/,\s*([}\]])/g, '$1'));
+  if (!proposal) {
+    console.error(`[propose] invalid JSON from ${model}: ${jsonStr.slice(0, 300)}`);
+    return NextResponse.json({ error: 'AI returned invalid JSON (even after escape repair)', raw: text.slice(0, 500) }, { status: 502 });
+  }
 
   // Validate ids and part labels against the real questions; drop anything bogus.
   const byId = new Map(qs.map(q => [q.id as string, q]));

@@ -188,12 +188,36 @@ function fixCurrencyDollars(text: string): string {
 // count so the odd-count guard misses it, and remark-math's math-flow parser then swallows everything
 // up to the next `$$` — across paragraph breaks — into one giant failing KaTeX node (the "red blob").
 function balanceDollars(text: string): string {
-  return asText(text).split('\n').map(line => {
+  return joinMultilineMath(asText(text)).split('\n').map(line => {
     const t = line.trimEnd();
     if (t.startsWith('$$') && t.length > 2 && !t.slice(2).includes('$$')) return t + '$$';
     const singles = (line.match(/(?<!\\)\$/g) || []).length;
     return singles % 2 === 1 ? line.replace(/(?<!\\)\$/g, '') : line;
   }).join('\n');
+}
+
+// Inline math that SPANS lines — `$\mathbf{r} = \begin{pmatrix}` / rows / `\end{pmatrix}…$`, an
+// import artifact seen in CJC 2025 — can't be parsed by remark-math (inline `$…$` must stay on one
+// line), and the odd-$ guard above would strip its delimiters, leaving raw LaTeX. Join such spans
+// onto one line first (KaTeX renders single-line pmatrix fine). A stray `$` that never closes
+// within the lookahead window is left alone for the odd-$ guard to neutralise.
+function joinMultilineMath(text: string): string {
+  const singles = (s: string) => (s.match(/(?<!\\)\$/g) || []).length;
+  const lines = text.split('\n');
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.includes('$$') || singles(line) % 2 === 0) { out.push(line); continue; }
+    let j = i + 1, parity = 1, closed = false;
+    for (; j < lines.length && j <= i + 12; j++) {
+      if (lines[j].includes('$$')) break;
+      parity = (parity + singles(lines[j])) % 2;
+      if (parity === 0) { closed = true; break; }
+    }
+    if (closed) { out.push(lines.slice(i, j + 1).join(' ')); i = j; }
+    else out.push(line);
+  }
+  return out.join('\n');
 }
 
 // Coerce malformed jsonb values (an import once stored a part's `text` as an ARRAY,
@@ -746,7 +770,7 @@ export function LessonBankPanel({
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+      if (!res.ok) throw new Error((json.error || `HTTP ${res.status}`) + (json.raw ? ` — starts: ${String(json.raw).slice(0, 160)}` : ''));
       setProposalCandidates(candidates);
       setProposal(json as Proposal);
     } catch (e) {

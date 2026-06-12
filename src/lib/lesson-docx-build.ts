@@ -28,6 +28,27 @@ function normalizeMarks(s: string): string {
 }
 // Section names that are NOT concepts — no per-question "Concept:" tag for these.
 const GENERIC_SECTIONS = new Set(['default', 'refreshers', 'worked examples', 'practice', 'examples', 'opus', 'fable']);
+// Inline math spanning multiple lines (`$\begin{pmatrix}` / rows / `\end{pmatrix}…$`, an import
+// artifact in some 2025 JC papers) — the per-line math splitter would miss the span and emit raw
+// LaTeX text. Join the span onto one line first; OMML conversion handles single-line pmatrix fine.
+function joinMultilineMath(text: string): string {
+  const singles = (s: string) => (s.match(/(?<!\\)\$/g) || []).length;
+  const lines = text.split('\n');
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.includes('$$') || singles(line) % 2 === 0) { out.push(line); continue; }
+    let j = i + 1, parity = 1, closed = false;
+    for (; j < lines.length && j <= i + 12; j++) {
+      if (lines[j].includes('$$')) break;
+      parity = (parity + singles(lines[j])) % 2;
+      if (parity === 0) { closed = true; break; }
+    }
+    if (closed) { out.push(lines.slice(i, j + 1).join(' ')); i = j; }
+    else out.push(line);
+  }
+  return out.join('\n');
+}
 
 // ── Word auto-numbering config accumulator ──
 // We build numbering definitions on the fly: one shared "questions" decimal list, plus a UNIQUE
@@ -188,7 +209,7 @@ async function contentParagraphs(
   opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void; dropLeadingTitle?: string } = {},
 ): Promise<Paragraph[]> {
   const out: Paragraph[] = [];
-  const src = content ?? '';
+  const src = joinMultilineMath(content ?? '');
 
   // Ordered tokens: text chunks and <img> URLs, preserving document order.
   const tokens: Array<{ kind: 'text'; value: string } | { kind: 'img'; url: string }> = [];
