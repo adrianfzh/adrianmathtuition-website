@@ -28,6 +28,14 @@ export interface Proposal {
   examples: PickExample[];
   practice: PickPractice[];
   gaps: Array<{ concept: string; note: string }>;
+  meta?: {
+    model?: string;
+    input_tokens?: number | null;
+    output_tokens?: number | null;
+    dropped_examples?: number;
+    dropped_practice?: number;
+    raw_practice_count?: number;
+  };
 }
 
 const rejectedKey = (lessonKey: string) => `lesson_proposal_rejected:${lessonKey}`;
@@ -154,8 +162,34 @@ export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStag
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 p-5 text-sm" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-bold text-base">✨ Proposed lesson</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700">✕</button>
+          <span className="flex items-center gap-2">
+            {proposal.meta?.model && (
+              <span className="text-[10px] text-slate-400" title={`${proposal.meta.input_tokens ?? '?'} in / ${proposal.meta.output_tokens ?? '?'} out tokens`}>
+                {proposal.meta.model.includes('fable') ? 'Fable' : 'Opus'}
+              </span>
+            )}
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-700">✕</button>
+          </span>
         </div>
+
+        {/* Diagnostics: empty/dropped practice means the model misbehaved, not that no practice exists. */}
+        {(proposal.practice.length === 0 || (proposal.meta?.dropped_practice ?? 0) > 0 || (proposal.meta?.dropped_examples ?? 0) > 0) && (
+          <div className="mb-3 text-[11px] text-red-800 bg-red-50 border border-red-200 rounded px-2 py-1">
+            {proposal.practice.length === 0 && (
+              <div>⚠ The AI returned <b>no usable practice picks</b>
+                {(proposal.meta?.raw_practice_count ?? 0) > 0
+                  ? ` — it proposed ${proposal.meta?.raw_practice_count} but none matched real question ids (model error).`
+                  : ' — the practice list came back empty.'} Re-run the proposal; this should be rare.
+              </div>
+            )}
+            {(proposal.meta?.dropped_practice ?? 0) > 0 && proposal.practice.length > 0 && (
+              <div>⚠ {proposal.meta?.dropped_practice} practice pick(s) referenced invalid question ids and were dropped.</div>
+            )}
+            {(proposal.meta?.dropped_examples ?? 0) > 0 && (
+              <div>⚠ {proposal.meta?.dropped_examples} example pick(s) referenced invalid question ids and were dropped.</div>
+            )}
+          </div>
+        )}
 
         {/* Concept coverage */}
         <div className="mb-3 p-2 bg-slate-50 border border-slate-200 rounded">

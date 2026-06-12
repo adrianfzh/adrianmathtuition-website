@@ -56,7 +56,8 @@ OUTPUT — return ONLY a JSON object, no fences, no commentary:
  "practice":[{"question_id":"...","concepts":["..."],"parts":null,"previously_rejected":false}],
  "suggestedConcepts":["..."],
  "gaps":[{"concept":"...","note":"..."}]}
-Use ONLY question_ids from the candidate list. Use ONLY part labels that exist on that question.`;
+Use ONLY question_ids from the candidate list, copied EXACTLY as given after "id=" (the full id string, NOT the # index number). Use ONLY part labels that exist on that question.
+BOTH arrays are required: "examples" AND "practice" must each be non-empty — a proposal without practice picks is invalid (every concept needs practice coverage or a gap entry).`;
 
 type PartLike = { label?: string; text?: string; marks?: number; solution?: string; subparts?: PartLike[] };
 
@@ -116,7 +117,7 @@ export async function POST(req: NextRequest) {
   const client = new Anthropic();
   const msg = await client.messages.create({
     model,
-    max_tokens: 8000,
+    max_tokens: 16000,
     system: SYSTEM,
     messages: [{
       role: 'user',
@@ -125,6 +126,13 @@ export async function POST(req: NextRequest) {
   });
 
   const text = msg.content.filter(b => b.type === 'text').map(b => (b as { text: string }).text).join('');
+  // Surface truncation instead of silently returning a half-parsed proposal (a response cut at
+  // max_tokens usually loses the practice array — it comes after examples in the output format).
+  if (msg.stop_reason === 'max_tokens') {
+    return NextResponse.json({
+      error: `AI response was cut off at the token limit (${msg.usage?.output_tokens} output tokens) — try fewer candidates or re-run`,
+    }, { status: 502 });
+  }
   const jsonStart = text.indexOf('{');
   const jsonEnd = text.lastIndexOf('}');
   if (jsonStart === -1 || jsonEnd <= jsonStart) {
@@ -144,11 +152,12 @@ export async function POST(req: NextRequest) {
     }
     return out;
   };
-  const cleanPicks = <T extends { question_id?: string; parts?: string[] | null }>(arr: unknown): T[] => {
+  const dropped: Record<string, number> = { examples: 0, practice: 0 };
+  const cleanPicks = <T extends { question_id?: string; parts?: string[] | null }>(arr: unknown, which: string): T[] => {
     if (!Array.isArray(arr)) return [];
     return (arr as T[]).filter(p => {
       const q = p?.question_id ? byId.get(p.question_id) : undefined;
-      if (!q) return false;
+      if (!q) { dropped[which]++; return false; }
       if (Array.isArray(p.parts) && p.parts.length > 0) {
         const labels = partLabels(q as Record<string, unknown>);
         p.parts = p.parts.filter(l => labels.has(l));
@@ -158,11 +167,25 @@ export async function POST(req: NextRequest) {
     });
   };
 
+  const examples = cleanPicks(proposal.examples, 'examples');
+  const practice = cleanPicks(proposal.practice, 'practice');
+  const rawPractice = Array.isArray(proposal.practice) ? proposal.practice.length : 0;
+  console.log(`[propose] model=${model} in=${msg.usage?.input_tokens} out=${msg.usage?.output_tokens} ` +
+    `examples=${examples.length}(-${dropped.examples}) practice=${practice.length}(-${dropped.practice}, raw=${rawPractice})`);
+
   return NextResponse.json({
     concepts: checklist,
     suggestedConcepts: Array.isArray(proposal.suggestedConcepts) ? proposal.suggestedConcepts : [],
-    examples: cleanPicks(proposal.examples),
-    practice: cleanPicks(proposal.practice),
+    examples,
+    practice,
     gaps: Array.isArray(proposal.gaps) ? proposal.gaps : [],
+    meta: {
+      model,
+      input_tokens: msg.usage?.input_tokens ?? null,
+      output_tokens: msg.usage?.output_tokens ?? null,
+      dropped_examples: dropped.examples,
+      dropped_practice: dropped.practice,
+      raw_practice_count: rawPractice,
+    },
   });
 }
