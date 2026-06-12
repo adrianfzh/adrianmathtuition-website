@@ -865,7 +865,7 @@ export default function ChatPage() {
       // prefix (all completed paragraphs, re-rendered only when a paragraph
       // completes) and a short live tail (re-rendered every frame, cheap) — so
       // the per-frame cost stays constant however long the answer gets.
-      const TYPE_CPS = 80;
+      const TYPE_CPS = 50;
       let displayedLen = 0;
       let typerRAF: number | null = null;
       let typerLastTs = 0;
