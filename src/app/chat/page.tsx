@@ -106,8 +106,25 @@ const CoordAxesIcon = () => (
   </svg>
 );
 
+/* ── trim unclosed math during streaming so raw LaTeX never flashes ── */
+function trimUnclosedMath(t: string): string {
+  // Unclosed display math: odd number of $$ delimiters → hold back from the last $$
+  const dd = t.split('$$');
+  if (dd.length % 2 === 0) t = dd.slice(0, -1).join('$$');
+  // Unclosed inline math: odd count of single $ outside $$ pairs → hold back from the last $
+  const singles = t.replace(/\$\$[\s\S]*?\$\$/g, '').match(/\$/g) || [];
+  if (singles.length % 2 === 1) t = t.slice(0, t.lastIndexOf('$'));
+  // Unclosed backtick segment (converted to math later in the pipeline)
+  const ticks = t.match(/`/g) || [];
+  if (ticks.length % 2 === 1) t = t.slice(0, t.lastIndexOf('`'));
+  // Hold back a partially-streamed trailing CONFIDENCE tag (stripped fully on final render)
+  t = t.replace(/\n\s*CONF[A-Z]*\s*:?\s*[A-Z]*\s*$/, '');
+  return t;
+}
+
 /* ── renderToElement (KaTeX inline render) ── */
-function renderToElement(el: HTMLDivElement, text: string) {
+function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
+  if (streaming) text = trimUnclosedMath(text);
   text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
 
@@ -143,6 +160,7 @@ function renderToElement(el: HTMLDivElement, text: string) {
 
   html = html.replace(/\n/g, '<br>');
   html = html.replace(/(\d+)/g, (_, i) => mathChunks[+i]);
+  if (streaming) html += '<span class="stream-caret">▍</span>';
   el.innerHTML = html;
 }
 
@@ -614,7 +632,7 @@ export default function ChatPage() {
       renderTimerRef.current = requestAnimationFrame(() => {
         renderTimerRef.current = null;
         if (pendingRenderRef.current) {
-          renderToElement(pendingRenderRef.current.el, pendingRenderRef.current.text);
+          renderToElement(pendingRenderRef.current.el, pendingRenderRef.current.text, true);
           pendingRenderRef.current = null;
         }
         if (!userHasScrolledUp) {
@@ -686,6 +704,16 @@ export default function ChatPage() {
       <span class="tdot" style="width:7px;height:7px;border-radius:50%;background:hsl(220,10%,46%);display:inline-block;animation:tdot 1.2s 0.4s infinite;opacity:0.4;"></span>
     </div>`;
     inner.appendChild(group);
+    // Adaptive thinking can delay the first token 10-30s — after 6s, tell the
+    // student the bot is thinking rather than looking frozen. No-op if the
+    // typing bubble is already gone.
+    setTimeout(() => {
+      const bubble = document.getElementById('typingBubble');
+      if (bubble && !document.getElementById('thinkingLabel')) {
+        bubble.insertAdjacentHTML('beforeend',
+          '<span id="thinkingLabel" style="margin-left:8px;font-size:13px;color:hsl(220,10%,46%);">🧠 thinking…</span>');
+      }
+    }, 6000);
     scrollToBottom();
   }, []);
 
@@ -1062,6 +1090,8 @@ export default function ChatPage() {
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes flyoutIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
         .message-bubble .katex { font-size:1.05em; }
+        .stream-caret { display:inline-block; color:hsl(220,40%,40%); animation: caretBlink 1s steps(1) infinite; margin-left:1px; }
+        @keyframes caretBlink { 0%,60% { opacity:1; } 61%,100% { opacity:0; } }
         .message-bubble .katex-display { margin:12px 0; overflow-x:auto; }
         .message-bubble strong { font-weight:600; }
         .menu-formula-btn:hover { background: hsl(220,40%,95%) !important; border-color: hsl(220,30%,82%) !important; }
