@@ -815,6 +815,7 @@ export default function ChatPage() {
 
       removeTypingFromDOM();
       const streamDiv = addStreamingMessage();
+      const streamStartedAt = Date.now();
       let fullText = '';
       let sawDone = false;
 
@@ -843,12 +844,16 @@ export default function ChatPage() {
             }
 
             // Image-question progress: server streams internally (buffered for
-            // verification) and reports stages so the wait never looks frozen
+            // verification) and reports stages so the wait never looks frozen.
+            // Elapsed seconds tick on every event so the screen is visibly alive.
             if (parsed.status) {
               if (!fullText) {
+                const secs = Math.round((Date.now() - streamStartedAt) / 1000);
                 const label = parsed.status === 'writing'
-                  ? `✍️ writing the solution…${parsed.chars ? ` <span style="opacity:0.6;">(${parsed.chars} chars)</span>` : ''}`
-                  : '🔍 double-checking the answer…';
+                  ? `✍️ writing the solution…${parsed.chars ? ` <span style="opacity:0.6;">(${parsed.chars} chars · ${secs}s)</span>` : ''}`
+                  : parsed.status === 'checking'
+                    ? `🔍 double-checking the answer… <span style="opacity:0.6;">(${secs}s)</span>`
+                    : `🧠 thinking hard about this one… <span style="opacity:0.6;">(${secs}s)</span>`;
                 streamDiv.innerHTML = `<em style="color:hsl(220,10%,46%);font-size:0.95em;">${label}</em>`;
               }
               continue;
