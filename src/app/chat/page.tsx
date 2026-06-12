@@ -860,7 +860,7 @@ export default function ChatPage() {
       // Client-side typewriter: received text accumulates in fullText (buffer);
       // a rAF loop reveals it at a constant chars/sec rate regardless of how
       // bursty network delivery is — this is how frontier chat UIs stay smooth.
-      const TYPE_CPS = 300;
+      const TYPE_CPS = 180;
       let displayedLen = 0;
       let typerRAF: number | null = null;
       let typerLastTs = 0;
