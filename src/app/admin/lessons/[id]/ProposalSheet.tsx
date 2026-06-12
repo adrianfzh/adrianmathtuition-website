@@ -58,7 +58,7 @@ function partLabelsOf(q: BankQuestion): string[] {
 }
 
 /** A copy of the bank question keeping only the chosen part labels (and recomputed marks). */
-function subsetQuestion(q: BankQuestion, picked: string[] | null): BankQuestion {
+export function subsetQuestion(q: BankQuestion, picked: string[] | null): BankQuestion {
   if (!picked || picked.length === 0) return q;
   const keep = new Set(picked);
   const parts = ((q.parts ?? []) as PartLike[])
@@ -81,12 +81,21 @@ function tagOf(q: BankQuestion): string {
   return `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
 }
 
-export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStaged }: {
+/** Accepted picks handed to the notes builder (questions already subset to the chosen parts). */
+export interface AcceptedPicks {
+  examples: Array<{ q: BankQuestion; concept: string }>;
+  practice: Array<{ q: BankQuestion; concepts: string[] }>;
+  concepts: string[]; // section order: checklist + suggested, only those used by a pick
+}
+
+export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStaged, onBuildNotes }: {
   proposal: Proposal;
   candidates: BankQuestion[];
   lessonKey: string;
   onClose: () => void;
   onStaged: (n: number) => void;
+  /** When provided, shows a "Stage + build notes" button that also hands the accepted picks back. */
+  onBuildNotes?: (picks: AcceptedPicks) => void;
 }) {
   const byId = useMemo(() => new Map(candidates.map(q => [q.id, q])), [candidates]);
   // accepted state per pick (keyed by index within its list) + editable part selections
@@ -111,9 +120,10 @@ export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStag
     set(get.map((v, j) => j === i ? (next.length === all.length ? null : next) : v));
   }
 
-  function stageAccepted() {
+  function stageAccepted(buildNotes = false) {
     let n = 0;
     const rejected: string[] = loadRejected(lessonKey);
+    const picks: AcceptedPicks = { examples: [], practice: [], concepts: [] };
     proposal.examples.forEach((p, i) => {
       const q = byId.get(p.question_id);
       if (!q) return;
@@ -124,6 +134,7 @@ export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStag
       setKind(sq.id, 'worked_example');
       setSection(sq.id, p.concept);
       setConcept(sq.id, p.concept);
+      picks.examples.push({ q: sq, concept: p.concept });
       n++;
     });
     proposal.practice.forEach((p, i) => {
@@ -136,11 +147,16 @@ export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStag
       setKind(sq.id, 'practice');
       setSection(sq.id, p.concepts?.[0] ?? 'Practice');
       if (p.concepts?.length) setConcept(sq.id, p.concepts.join(' · '));
+      picks.practice.push({ q: sq, concepts: p.concepts ?? [] });
       n++;
     });
+    // Section order: checklist order first, then suggested — keep only concepts a pick uses.
+    const used = new Set([...picks.examples.map(e => e.concept), ...picks.practice.flatMap(p => p.concepts)]);
+    picks.concepts = allConcepts.filter(c => used.has(c));
     saveRejected(lessonKey, rejected);
     onStaged(n);
     onClose();
+    if (buildNotes && onBuildNotes) onBuildNotes(picks);
   }
 
   const renderPartBoxes = (list: 'ex' | 'pr', i: number, q: BankQuestion, picked: string[] | null) => {
@@ -264,9 +280,16 @@ export function ProposalSheet({ proposal, candidates, lessonKey, onClose, onStag
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={onClose} className="px-3 py-1.5 text-xs border border-slate-300 rounded text-slate-600 hover:bg-slate-50">Cancel</button>
           <button
-            onClick={stageAccepted}
+            onClick={() => stageAccepted(false)}
             className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 font-medium"
           >Stage accepted ({exAccept.filter(Boolean).length + prAccept.filter(Boolean).length})</button>
+          {onBuildNotes && (
+            <button
+              onClick={() => stageAccepted(true)}
+              title="Stage the accepted picks AND generate the recap boxes + notes DOCX in one go"
+              className="px-3 py-1.5 text-xs bg-violet-600 text-white rounded hover:bg-violet-700 font-medium"
+            >📘 Stage + build notes</button>
+          )}
         </div>
       </div>
     </div>

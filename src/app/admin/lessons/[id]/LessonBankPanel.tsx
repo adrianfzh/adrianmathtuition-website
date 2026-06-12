@@ -12,7 +12,8 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { getOfflineSettings, queryLocalBank, syncEnabledLevels } from '@/lib/offline/qb-cache';
-import { ProposalSheet, loadRejected, type Proposal } from './ProposalSheet';
+import { ProposalSheet, loadRejected, subsetQuestion, type Proposal, type AcceptedPicks } from './ProposalSheet';
+import type { DocxCard } from '@/lib/lesson-docx-build';
 
 export type BankQuestion = {
   id: string;
@@ -754,29 +755,147 @@ export function LessonBankPanel({
   function clearTopicFilter() { setIncludeTopics(new Set()); setExcludeTopics(new Set()); }
   const topicFilterCount = includeTopics.size + excludeTopics.size;
 
-  async function runPropose() {
-    if (displayed.length === 0 || proposing) return;
-    setProposing(true); setProposeError(null);
+  async function fetchProposal(): Promise<{ prop: Proposal; candidates: BankQuestion[] }> {
     const candidates = displayed;            // snapshot the current filtered pool
+    const res = await fetch('/api/admin/lessons/propose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+      body: JSON.stringify({
+        level, topics,
+        questionIds: candidates.map(q => q.id),
+        rejectedIds: loadRejected(lessonKey),
+        model: proposeModel,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error((json.error || `HTTP ${res.status}`) + (json.raw ? ` — starts: ${String(json.raw).slice(0, 160)}` : ''));
+    return { prop: json as Proposal, candidates };
+  }
+
+  async function runPropose() {
+    if (displayed.length === 0 || proposing || notesBusy) return;
+    setProposing(true); setProposeError(null);
     try {
-      const res = await fetch('/api/admin/lessons/propose', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
-        body: JSON.stringify({
-          level, topics,
-          questionIds: candidates.map(q => q.id),
-          rejectedIds: loadRejected(lessonKey),
-          model: proposeModel,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error((json.error || `HTTP ${res.status}`) + (json.raw ? ` — starts: ${String(json.raw).slice(0, 160)}` : ''));
+      const { prop, candidates } = await fetchProposal();
       setProposalCandidates(candidates);
-      setProposal(json as Proposal);
+      setProposal(prop);
     } catch (e) {
       setProposeError(e instanceof Error ? e.message : 'Proposal failed');
     } finally {
       setProposing(false);
+    }
+  }
+
+  // ── One-shot notes DOCX: propose → (optional review pause) → recap boxes → download ──
+  const [notesBusy, setNotesBusy] = useState<string | null>(null);
+  const [notesReview, setNotesReview] = useState<boolean>(() => {
+    try { return typeof window !== 'undefined' && localStorage.getItem('lesson_notes_review') === '1'; } catch { return false; }
+  });
+  // When the review pause is on, the ProposalSheet's "Stage + build notes" continues the run.
+  const [notesAfterReview, setNotesAfterReview] = useState(false);
+  function toggleNotesReview() {
+    setNotesReview(v => {
+      try { localStorage.setItem('lesson_notes_review', v ? '0' : '1'); } catch { /* ignore */ }
+      return !v;
+    });
+  }
+
+  async function runBuildNotes() {
+    if (displayed.length === 0 || proposing || notesBusy) return;
+    setProposeError(null);
+    setNotesBusy('1/2 Choosing examples & practice…');
+    try {
+      const { prop, candidates } = await fetchProposal();
+      if (notesReview) {
+        // Pause at the review sheet — its "📘 Stage + build notes" button resumes the pipeline.
+        setProposalCandidates(candidates);
+        setProposal(prop);
+        setNotesAfterReview(true);
+        setNotesBusy(null);
+        return;
+      }
+      const byId = new Map(candidates.map(q => [q.id, q]));
+      const picks: AcceptedPicks = { examples: [], practice: [], concepts: [] };
+      for (const p of prop.examples) {
+        const q = byId.get(p.question_id);
+        if (q) picks.examples.push({ q: subsetQuestion(q, p.parts), concept: p.concept });
+      }
+      for (const p of prop.practice) {
+        const q = byId.get(p.question_id);
+        if (q) picks.practice.push({ q: subsetQuestion(q, p.parts), concepts: p.concepts ?? [] });
+      }
+      const all = [...prop.concepts, ...prop.suggestedConcepts];
+      const used = new Set([...picks.examples.map(e => e.concept), ...picks.practice.flatMap(x => x.concepts)]);
+      picks.concepts = all.filter(c => used.has(c));
+      await buildNotesFromPicks(picks);
+    } catch (e) {
+      setProposeError(e instanceof Error ? e.message : 'Notes build failed');
+      setNotesBusy(null);
+    }
+  }
+
+  async function buildNotesFromPicks(picks: AcceptedPicks) {
+    try {
+      setNotesBusy('2/2 Writing technique recaps…');
+      const briefOf = (q: BankQuestion): string =>
+        buildBankWorkedExampleTemplate(q).content.replace(/<img[^>]*>/g, '[diagram]').slice(0, 6000);
+      const res = await fetch('/api/admin/lessons/notes-recaps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({
+          level, topics, model: proposeModel,
+          concepts: picks.concepts,
+          examples: picks.examples.map(e => ({ concept: e.concept, brief: briefOf(e.q) })),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error((json.error || `HTTP ${res.status}`) + (json.raw ? ` — starts: ${String(json.raw).slice(0, 160)}` : ''));
+      const recapByConcept = new Map((json.recaps as Array<{ concept: string; content: string }>).map(r => [r.concept, r.content]));
+
+      setNotesBusy('Assembling DOCX…');
+      const srcTag = (q: BankQuestion) => {
+        const examDisp = q.exam_type === 'MY' ? 'MYE' : q.exam_type;
+        return [q.year, q.level, examDisp, q.school, `P${q.paper}`, `Q${q.question_number}`].filter(Boolean).join('/');
+      };
+      const cards: DocxCard[] = [];
+      let idx = 0;
+      const MORE = 'More practice';
+      const sectioned = new Set(picks.concepts);
+      for (const concept of picks.concepts) {
+        const recap = recapByConcept.get(concept);
+        if (recap) cards.push({ id: `recap-${idx}`, content_kind: 'refresher', section_name: concept, card_title: 'Technique recap', content: recap, marks: null, order_index: idx++ });
+        for (const e of picks.examples.filter(x => x.concept === concept)) {
+          const { title, content } = buildBankWorkedExampleTemplate(e.q);
+          cards.push({ id: `ex-${idx}`, content_kind: 'worked_example', section_name: concept, card_title: title, content, marks: null, order_index: idx++, source_tag: srcTag(e.q), concept });
+        }
+        for (const p of picks.practice.filter(x => (x.concepts[0] ?? MORE) === concept)) {
+          const { title, content } = buildBankWorkedExampleTemplate(p.q);
+          cards.push({ id: `pr-${idx}`, content_kind: 'practice', section_name: concept, card_title: title, content, marks: p.q.total_marks ?? null, order_index: idx++, source_tag: srcTag(p.q), concept: p.concepts.join(' · ') });
+        }
+      }
+      // Practice whose primary concept has no section of its own.
+      for (const p of picks.practice.filter(x => !sectioned.has(x.concepts[0] ?? MORE))) {
+        const { title, content } = buildBankWorkedExampleTemplate(p.q);
+        cards.push({ id: `pr-${idx}`, content_kind: 'practice', section_name: MORE, card_title: title, content, marks: p.q.total_marks ?? null, order_index: idx++, source_tag: srcTag(p.q), concept: p.concepts.join(' · ') });
+      }
+
+      const { buildLessonDocx } = await import('@/lib/lesson-docx-build');
+      const lessonName = `${level} Revision — ${topics.join(' & ')}`;
+      const blob = await buildLessonDocx(
+        { name: lessonName, level, description: null, topics, section_order: [...picks.concepts, MORE] },
+        cards,
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${lessonName.replace(/[^a-z0-9-]+/gi, '_')}.docx`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setProposeError(e instanceof Error ? e.message : 'Notes build failed');
+    } finally {
+      setNotesBusy(null);
+      setNotesAfterReview(false);
     }
   }
 
@@ -968,10 +1087,20 @@ export function LessonBankPanel({
           </span>
           <button
             onClick={runPropose}
-            disabled={proposing || displayed.length === 0}
+            disabled={proposing || !!notesBusy || displayed.length === 0}
             title="Claude reads the questions currently matching your filters and proposes the example/practice split per concept — you review before anything is staged"
             className="text-[10px] px-2 py-0.5 rounded border border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100 disabled:opacity-40 font-medium"
           >{proposing ? '✨ Reading questions…' : `✨ Propose lesson (${displayed.length})`}</button>
+          <button
+            onClick={runBuildNotes}
+            disabled={proposing || !!notesBusy || displayed.length === 0}
+            title="One shot: propose picks → write per-concept technique recaps (formulas, method, watch-outs) → download a production-ready notes DOCX"
+            className="text-[10px] px-2 py-0.5 rounded bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-40 font-medium"
+          >{notesBusy ?? '📘 Notes DOCX'}</button>
+          <label className="text-[10px] text-slate-500 flex items-center gap-1 cursor-pointer" title="Pause at the review sheet to tick/untick picks before the recaps + DOCX are generated">
+            <input type="checkbox" checked={notesReview} onChange={toggleNotesReview} />
+            review first
+          </label>
         </div>
         {proposeError && (
           <div className="text-[10px] text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">{proposeError}</div>
@@ -1029,8 +1158,9 @@ export function LessonBankPanel({
           proposal={proposal}
           candidates={proposalCandidates}
           lessonKey={lessonKey}
-          onClose={() => setProposal(null)}
+          onClose={() => { setProposal(null); setNotesAfterReview(false); }}
           onStaged={() => { /* staging panel updates via its own subscription */ }}
+          onBuildNotes={notesAfterReview ? (picks) => void buildNotesFromPicks(picks) : undefined}
         />
       )}
     </div>
