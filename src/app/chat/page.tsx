@@ -158,6 +158,18 @@ function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
     });
   }
 
+  // Markdown pipe tables → HTML tables. Runs AFTER math is stashed (so pipes
+  // inside math like P(A|B) can't break cells) and BEFORE the newline→<br> pass.
+  html = html.replace(/(^|\n)((?:\|[^\n]*\|[ \t]*\n)\|[ \t:|-]+\|[ \t]*\n(?:\|[^\n]*\|[ \t]*(?:\n|$))+)/g, (_m, lead, tbl) => {
+    const rows = tbl.trim().split('\n');
+    const cells = (r: string) => r.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim());
+    const th = cells(rows[0]).map(c =>
+      `<th style="border:1px solid hsl(220,15%,84%);padding:6px 12px;background:hsl(220,30%,96%);text-align:left;font-weight:600;">${c}</th>`).join('');
+    const body = rows.slice(2).map(r =>
+      '<tr>' + cells(r).map(c => `<td style="border:1px solid hsl(220,15%,84%);padding:6px 12px;">${c}</td>`).join('') + '</tr>').join('');
+    return `${lead}<table style="border-collapse:collapse;margin:10px 0;font-size:0.95em;max-width:100%;"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;
+  });
+
   html = html.replace(/\n/g, '<br>');
   html = html.replace(/(\d+)/g, (_, i) => mathChunks[+i]);
   if (streaming) html += '<span class="stream-caret">▍</span>';
