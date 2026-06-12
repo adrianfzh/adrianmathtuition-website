@@ -102,6 +102,8 @@ function persistCache() {
 }
 
 const DIFFICULTIES = ['Standard', 'Advanced', 'Challenging', 'Bonus'] as const;
+// How many question cards to mount per "Show more" page (see renderCap below).
+const RENDER_CAP_STEP = 40;
 type Difficulty = typeof DIFFICULTIES[number];
 
 const STORAGE_BUCKET = 'https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/';
@@ -485,6 +487,13 @@ export function LessonBankPanel({
 
   // Difficulty/image/year are client-side display filters over the fetched set — they NEVER trigger
   // a fetch (so changing them can't spend AI tokens). `displayed` is what the list renders.
+  // Render at most this many cards at once — each card is a heavy ReactMarkdown+KaTeX
+  // tree, and mounting 100+ in a single synchronous render can hang or crash the tab
+  // (seen when switching the Year filter onto a large set). "Show more" pages it.
+  const [renderCap, setRenderCap] = useState(RENDER_CAP_STEP);
+  useEffect(() => { setRenderCap(RENDER_CAP_STEP); },
+    [questions, difficulties, hasImage, year, school, exam, includeTopics, excludeTopics, includeMode]);
+
   const displayed = useMemo(() => {
     let list = questions;
     if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
@@ -879,7 +888,7 @@ export function LessonBankPanel({
               : questions.length > 0 ? 'No questions match the current filters.' : 'No matching questions.'}
           </div>
         )}
-        {displayed.map(q => (
+        {displayed.slice(0, renderCap).map(q => (
           <BankQuestionCard
             key={q.id}
             q={q}
@@ -891,6 +900,13 @@ export function LessonBankPanel({
             auth={auth}
           />
         ))}
+        {displayed.length > renderCap && (
+          <button
+            onClick={() => setRenderCap(c => c + RENDER_CAP_STEP)}
+            className="w-full text-xs py-1.5 border border-blue-300 rounded text-blue-700 bg-blue-50 hover:bg-blue-100"
+            title="Render the next batch of matching questions"
+          >Show {Math.min(RENDER_CAP_STEP, displayed.length - renderCap)} more ({renderCap} of {displayed.length} shown)</button>
+        )}
         {!loading && committed.mode !== 'smart' && questions.length < total && (
           <button
             onClick={() => setLimit(Math.min(total, 3000))}
