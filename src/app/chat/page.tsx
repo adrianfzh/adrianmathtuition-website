@@ -841,6 +841,18 @@ export default function ChatPage() {
               continue;
             }
 
+            // Image-question progress: server streams internally (buffered for
+            // verification) and reports stages so the wait never looks frozen
+            if (parsed.status) {
+              if (!fullText) {
+                const label = parsed.status === 'writing'
+                  ? `✍️ writing the solution…${parsed.chars ? ` <span style="opacity:0.6;">(${parsed.chars} chars)</span>` : ''}`
+                  : '🔍 double-checking the answer…';
+                streamDiv.innerHTML = `<em style="color:hsl(220,10%,46%);font-size:0.95em;">${label}</em>`;
+              }
+              continue;
+            }
+
             if (parsed.chunk) {
               fullText += parsed.chunk;
               scheduleRender(streamDiv, fullText);
