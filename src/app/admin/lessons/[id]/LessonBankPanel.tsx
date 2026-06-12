@@ -503,6 +503,14 @@ export function LessonBankPanel({
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [proposalCandidates, setProposalCandidates] = useState<BankQuestion[]>([]);
   const [proposeError, setProposeError] = useState<string | null>(null);
+  // Model toggle for Propose lesson — persisted; 'opus' is half the API cost of 'fable'.
+  const [proposeModel, setProposeModel] = useState<'opus' | 'fable'>(() => {
+    try { return typeof window !== 'undefined' && localStorage.getItem('lesson_propose_model') === 'fable' ? 'fable' : 'opus'; } catch { return 'opus'; }
+  });
+  function pickProposeModel(m: 'opus' | 'fable') {
+    setProposeModel(m);
+    try { localStorage.setItem('lesson_propose_model', m); } catch { /* ignore */ }
+  }
 
   // Render at most this many cards at once — each card is a heavy ReactMarkdown+KaTeX
   // tree, and mounting 100+ in a single synchronous render can hang or crash the tab
@@ -515,7 +523,11 @@ export function LessonBankPanel({
     let list = questions;
     if (difficulties.size > 0) list = list.filter(q => difficulties.has((q.difficulty ?? 'Standard') as Difficulty));
     if (hasImage !== 'any') list = list.filter(q => (hasImage === 'true' ? q.has_image : !q.has_image));
-    if (year !== 'any') list = list.filter(q => String(q.year) === year);
+    if (year !== 'any') {
+      // `year` may be a CSV of years (multi-select chips), e.g. "2024,2025".
+      const ys = new Set(year.split(','));
+      list = list.filter(q => ys.has(String(q.year)));
+    }
     if (school !== 'any') list = list.filter(q => q.school === school);
     // The Exam select only RENDERS for JC levels — never let a leftover value filter
     // invisibly on Sec/EM/AM lessons where the control is hidden.
@@ -730,6 +742,7 @@ export function LessonBankPanel({
           level, topics,
           questionIds: candidates.map(q => q.id),
           rejectedIds: loadRejected(lessonKey),
+          model: proposeModel,
         }),
       });
       const json = await res.json();
@@ -821,10 +834,22 @@ export function LessonBankPanel({
             <option value="false">No</option>
           </select>
           <span className="text-slate-400 ml-2">Year:</span>
-          <select value={year} onChange={e => setYear(e.target.value)} className="border border-slate-300 rounded px-1 py-px text-[10px]">
-            <option value="any">Any</option>
-            {availableYears.map(y => <option key={y} value={String(y)}>{y}</option>)}
-          </select>
+          {availableYears.map(y => {
+            const ys = year === 'any' ? new Set<string>() : new Set(year.split(','));
+            const on = ys.has(String(y));
+            return (
+              <button
+                key={y}
+                onClick={() => {
+                  const next = new Set(ys);
+                  if (on) next.delete(String(y)); else next.add(String(y));
+                  setYear(next.size === 0 ? 'any' : [...next].sort().join(','));
+                }}
+                title={on ? `Showing ${y} — click to remove` : `Click to include ${y} (multi-select)`}
+                className={`px-1.5 py-px rounded border tabular-nums ${on ? 'bg-blue-100 border-blue-400 text-blue-700' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+              >{String(y).slice(2)}</button>
+            );
+          })}
           <span className="text-slate-400 ml-2">School:</span>
           <select value={school} onChange={e => setSchool(e.target.value)} className="border border-slate-300 rounded px-1 py-px text-[10px] max-w-[90px]">
             <option value="any">Any</option>
@@ -908,11 +933,20 @@ export function LessonBankPanel({
           )}
           {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
           {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">not synced</span>}
+          <span className="ml-auto inline-flex rounded border border-violet-200 overflow-hidden" title="Model for Propose lesson — Fable is stronger but 2× the API cost">
+            {(['opus', 'fable'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => pickProposeModel(m)}
+                className={`text-[10px] px-1.5 py-0.5 ${proposeModel === m ? 'bg-violet-600 text-white' : 'bg-white text-violet-600 hover:bg-violet-50'}`}
+              >{m === 'opus' ? 'Opus' : 'Fable'}</button>
+            ))}
+          </span>
           <button
             onClick={runPropose}
             disabled={proposing || displayed.length === 0}
             title="Claude reads the questions currently matching your filters and proposes the example/practice split per concept — you review before anything is staged"
-            className="ml-auto text-[10px] px-2 py-0.5 rounded border border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100 disabled:opacity-40 font-medium"
+            className="text-[10px] px-2 py-0.5 rounded border border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100 disabled:opacity-40 font-medium"
           >{proposing ? '✨ Reading questions…' : `✨ Propose lesson (${displayed.length})`}</button>
         </div>
         {proposeError && (

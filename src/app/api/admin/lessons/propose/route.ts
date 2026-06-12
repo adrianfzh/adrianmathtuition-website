@@ -8,6 +8,7 @@
 //   level: string, topics: string[],
 //   questionIds: string[],          // candidate pool — the client's current filtered bank list
 //   rejectedIds?: string[],         // previously rejected; still considered but flagged
+//   model?: 'opus' | 'fable',       // which Claude model curates (default opus)
 // }
 // Returns: {
 //   concepts: string[],             // checklist used (from lesson_concepts, merged across topics)
@@ -77,9 +78,10 @@ function questionBrief(q: Record<string, unknown>, idx: number): string {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  let body: { level?: string; topics?: string[]; questionIds?: string[]; rejectedIds?: string[] };
+  let body: { level?: string; topics?: string[]; questionIds?: string[]; rejectedIds?: string[]; model?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'bad json' }, { status: 400 }); }
   const { level, topics, questionIds, rejectedIds = [] } = body;
+  const model = body.model === 'fable' ? 'claude-fable-5' : 'claude-opus-4-8';
   if (!level || !Array.isArray(topics) || topics.length === 0 || !Array.isArray(questionIds) || questionIds.length === 0) {
     return NextResponse.json({ error: 'level, topics, questionIds required' }, { status: 400 });
   }
@@ -113,7 +115,7 @@ export async function POST(req: NextRequest) {
 
   const client = new Anthropic();
   const msg = await client.messages.create({
-    model: 'claude-opus-4-8',
+    model,
     max_tokens: 8000,
     system: SYSTEM,
     messages: [{
