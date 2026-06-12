@@ -865,8 +865,9 @@ export default function ChatPage() {
       // prefix (all completed paragraphs, re-rendered only when a paragraph
       // completes) and a short live tail (re-rendered every frame, cheap) — so
       // the per-frame cost stays constant however long the answer gets.
-      const TYPE_CPS = 50;
+      const TYPE_CPS = 30;
       let displayedLen = 0;
+      let lastShownLen = -1;
       let typerRAF: number | null = null;
       let typerLastTs = 0;
       let stablePrefix = '';
@@ -891,16 +892,24 @@ export default function ChatPage() {
         displayedLen = Math.min(fullText.length, displayedLen + ((ts - typerLastTs) / 1000) * cps);
         typerLastTs = ts;
         const caughtUp = displayedLen >= fullText.length;
-        const { stable, tail } = ensureStreamLayers();
-        const shown = fullText.slice(0, Math.floor(displayedLen));
-        const cut = shown.lastIndexOf('\n\n');
-        const prefix = cut === -1 ? '' : shown.slice(0, cut + 2);
-        const tailText = cut === -1 ? shown : shown.slice(cut + 2);
-        if (prefix !== stablePrefix) { renderToElement(stable, prefix); stablePrefix = prefix; }
-        renderToElement(tail, tailText, true); // short tail → cheap → every frame (60fps)
-        if (!userHasScrolledUp) {
-          const scroll = chatScrollRef.current;
-          if (scroll) { isProgrammaticScroll = true; scroll.scrollTop = scroll.scrollHeight; requestAnimationFrame(() => { isProgrammaticScroll = false; }); }
+        // Render + autoscroll ONLY when new characters were revealed this frame.
+        // Without this gate, the caught-up-but-waiting phase (e.g. while the graph
+        // generates) re-rendered and force-scrolled every frame — the user
+        // couldn't scroll up at all during graph generation.
+        const shownLen = Math.floor(displayedLen);
+        if (shownLen !== lastShownLen) {
+          lastShownLen = shownLen;
+          const { stable, tail } = ensureStreamLayers();
+          const shown = fullText.slice(0, shownLen);
+          const cut = shown.lastIndexOf('\n\n');
+          const prefix = cut === -1 ? '' : shown.slice(0, cut + 2);
+          const tailText = cut === -1 ? shown : shown.slice(cut + 2);
+          if (prefix !== stablePrefix) { renderToElement(stable, prefix); stablePrefix = prefix; }
+          renderToElement(tail, tailText, true); // short tail → cheap per frame
+          if (!userHasScrolledUp) {
+            const scroll = chatScrollRef.current;
+            if (scroll) { isProgrammaticScroll = true; scroll.scrollTop = scroll.scrollHeight; requestAnimationFrame(() => { isProgrammaticScroll = false; }); }
+          }
         }
         if (caughtUp && sawDone) {
           typerRAF = null;
