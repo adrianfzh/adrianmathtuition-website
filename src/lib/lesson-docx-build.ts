@@ -26,6 +26,8 @@ const NUM_INDENT = {
 function normalizeMarks(s: string): string {
   return s.replace(/\[\s*(\d+)\s*m\s*\]/gi, '[$1]');
 }
+// Section names that are NOT concepts — no per-question "Concept:" tag for these.
+const GENERIC_SECTIONS = new Set(['default', 'refreshers', 'worked examples', 'practice', 'examples', 'opus', 'fable']);
 
 // ── Word auto-numbering config accumulator ──
 // We build numbering definitions on the fly: one shared "questions" decimal list, plus a UNIQUE
@@ -323,6 +325,17 @@ export async function buildLessonDocx(lesson: DocxLesson, cards: DocxCard[]): Pr
           ...((isPractice && c.marks) ? [new TextRun({ text: `\t[${c.marks}]`, bold: true, color: '6B7280' })] : []),
         ],
       }));
+      // Concept tag — sections staged via "Propose lesson" are named after checklist concepts;
+      // print the concept on each question so it stays visible when reading the doc linearly.
+      // Skipped for generic section names where the tag would carry no information.
+      const secName = (c.section_name || '').trim();
+      if (secName && !GENERIC_SECTIONS.has(secName.toLowerCase())) {
+        body.push(new Paragraph({
+          indent: { left: NUM_INDENT.main.textIndent },
+          spacing: { after: 40 },
+          children: [new TextRun({ text: `Concept: ${secName}`, italics: true, size: 18, color: '6B7280' })],
+        }));
+      }
       // Practice questions show ONLY the question + final ANSWER per house style (JC: red
       // "Answer: …"; Sec: right-aligned orange "[Ans: …]"). The working is stripped here and
       // appears in the "Practice — Solutions" section at the back instead.
