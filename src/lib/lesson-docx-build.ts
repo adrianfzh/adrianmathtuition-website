@@ -14,6 +14,16 @@ import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } 
 // Marks right-tab position (15.5 cm from left margin).
 const MARKS_TAB = convertMillimetersToTwip(155);
 
+// Box border for worked examples (house notes style: examples sit in a thin box). Word merges
+// CONSECUTIVE paragraphs with identical pBdr settings into ONE continuous box, so applying this
+// to every paragraph of an example (heading + content + images) renders a single frame.
+const EXAMPLE_BORDER = {
+  top: { color: '64748B', size: 6, style: BorderStyle.SINGLE, space: 4 },
+  bottom: { color: '64748B', size: 6, style: BorderStyle.SINGLE, space: 4 },
+  left: { color: '64748B', size: 6, style: BorderStyle.SINGLE, space: 8 },
+  right: { color: '64748B', size: 6, style: BorderStyle.SINGLE, space: 8 },
+} as const;
+
 // ── Auto-numbering indents (in TWIPS, 567 ≈ 1 cm — tweak here to taste) ──
 // `textIndent` = where the body text starts (Word's "Indent at"); the number sits a `hang` to its
 // left (Word's "Aligned at" = textIndent − hang). Values copied from Adrian's house worksheet:
@@ -159,7 +169,7 @@ function inlineRuns(text: string, reg: OmmlRegistry, opts: { color?: string; bol
   return runs;
 }
 
-async function fetchImagePara(url: string): Promise<Paragraph | null> {
+async function fetchImagePara(url: string, border?: typeof EXAMPLE_BORDER): Promise<Paragraph | null> {
   try {
     let res = await fetch(url);
     // The lessons service worker used to serve question images as OPAQUE (no-cors)
@@ -180,6 +190,7 @@ async function fetchImagePara(url: string): Promise<Paragraph | null> {
     const width = Math.max(1, Math.round(w * scale));
     const height = Math.max(1, Math.round(h * scale));
     return new Paragraph({
+      border,
       children: [new ImageRun({ data: buf, transformation: { width, height } } as ConstructorParameters<typeof ImageRun>[0])],
     });
   } catch { return null; }
@@ -204,8 +215,9 @@ function naturalSize(buf: ArrayBuffer, mime: string): Promise<{ w: number; h: nu
 async function contentParagraphs(
   content: string | null,
   reg: OmmlRegistry,
-  opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void; dropLeadingTitle?: string; shadeFill?: string } = {},
+  opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void; dropLeadingTitle?: string; shadeFill?: string; box?: boolean } = {},
 ): Promise<Paragraph[]> {
+  const border = opts.box ? EXAMPLE_BORDER : undefined;
   const out: Paragraph[] = [];
   const src = joinMultilineMath(content ?? '');
 
@@ -231,9 +243,10 @@ async function contentParagraphs(
 
   for (const tok of tokens) {
     if (tok.kind === 'img') {
-      const p = await fetchImagePara(tok.url);
+      const p = await fetchImagePara(tok.url, border);
       out.push(p ?? new Paragraph({
         spacing: { after: 80 },
+        border,
         children: [new TextRun({ text: `[image unavailable: ${tok.url.split('/').pop() ?? tok.url}]`, italics: true, color: '999999' })],
       }));
       continue;
@@ -254,6 +267,7 @@ async function contentParagraphs(
           children: [new TextRun({ text: '•  ', color: opts.color }), ...inlineRuns(bullet[1], reg, opts)],
           spacing: { after: 40 },
           shading,
+          border,
         }));
         continue;
       }
@@ -269,6 +283,7 @@ async function contentParagraphs(
           tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
           spacing: { after: 80 },
           shading,
+          border,
         }));
       } else {
         out.push(new Paragraph({
@@ -276,6 +291,7 @@ async function contentParagraphs(
           tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
           spacing: { after: 80 },
           shading,
+          border,
         }));
       }
     }
@@ -370,9 +386,13 @@ export async function buildLessonDocx(
       // auto-list, continuous across sections). Practice cards add right-tabbed marks + writing
       // space below. Heading: plain auto-number + BOLD bracketed source tag; manual cards without
       // a bank source fall back to their card title.
+      // House notes style: worked examples sit inside a continuous thin box (identical pBdr on
+      // every paragraph of the card → Word draws one frame around the lot).
+      const isExample = c.content_kind === 'worked_example';
       body.push(new Paragraph({
         numbering: { reference: 'questions', level: 0 },
         spacing: { before: 160 },
+        border: isExample ? EXAMPLE_BORDER : undefined,
         tabStops: (isPractice && c.marks) ? [{ type: TabStopType.RIGHT, position: MARKS_TAB }] : undefined,
         children: [
           ...(c.source_tag
@@ -390,6 +410,7 @@ export async function buildLessonDocx(
         body.push(new Paragraph({
           indent: { left: NUM_INDENT.main.textIndent },
           spacing: { after: 40 },
+          border: isExample ? EXAMPLE_BORDER : undefined, // keep the example box continuous
           children: [new TextRun({
             text: `${(c.concept || '').includes(secName) && secName ? 'Also covers' : 'Concept'}: ${conceptBits.join(' · ')}`,
             italics: true, size: 18, color: '6B7280',
@@ -408,6 +429,7 @@ export async function buildLessonDocx(
         subpartRef: subpartRefFor(c.id),
         onSubpartFormat: (f) => subpartFmt.set(c.id, f),
         dropLeadingTitle: c.card_title ?? '',
+        box: isExample,
       })) body.push(p);
       if (isPractice && answer) {
         const ansParts = answer.split('\n').map(s => s.trim()).filter(Boolean);
