@@ -12,6 +12,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { getOfflineSettings, queryLocalBank, syncEnabledLevels } from '@/lib/offline/qb-cache';
+import { ProposalSheet, loadRejected, type Proposal } from './ProposalSheet';
 
 export type BankQuestion = {
   id: string;
@@ -172,7 +173,7 @@ function fixCurrencyDollars(text: string): string {
   // `$`s, swallowing prose as run-together math. Rewrite EVERY `\$` inside a math span to
   // \text{\textdollar} (no `$` character at all) so the span pairs cleanly and still renders as
   // real math. The span matcher is escape-aware so an interior `\$` doesn't end the span.
-  return text.replace(/\$((?:\\.|[^$\\])*)\$/g, (m, body: string) => {
+  return asText(text).replace(/\$((?:\\.|[^$\\])*)\$/g, (m, body: string) => {
     if (!body.includes('\\$')) return m; // ordinary math — leave untouched
     return `$${body.replace(/\\\$/g, '\\text{\\textdollar}')}$`;
   });
@@ -187,7 +188,7 @@ function fixCurrencyDollars(text: string): string {
 // count so the odd-count guard misses it, and remark-math's math-flow parser then swallows everything
 // up to the next `$$` — across paragraph breaks — into one giant failing KaTeX node (the "red blob").
 function balanceDollars(text: string): string {
-  return text.split('\n').map(line => {
+  return asText(text).split('\n').map(line => {
     const t = line.trimEnd();
     if (t.startsWith('$$') && t.length > 2 && !t.slice(2).includes('$$')) return t + '$$';
     const singles = (line.match(/(?<!\\)\$/g) || []).length;
@@ -195,9 +196,18 @@ function balanceDollars(text: string): string {
   }).join('\n');
 }
 
+// Coerce malformed jsonb values (an import once stored a part's `text` as an ARRAY,
+// which made `.replace`/`.split` throw inside render and killed the whole tab).
+function asText(v: unknown): string {
+  if (typeof v === 'string') return v;
+  if (Array.isArray(v)) return v.map(x => asText(x)).join('\n');
+  if (v == null) return '';
+  return String(v);
+}
+
 function renderInlineImagesInText(text: string | null | undefined): string {
   if (!text) return '';
-  return balanceDollars(fixCurrencyDollars(text)).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
+  return balanceDollars(fixCurrencyDollars(asText(text))).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
     const cleaned = url.trim();
     if (!isPlausibleFilename(cleaned)) return '';
     return `<img src="${toStorageUrl(cleaned)}" alt="" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:6px 0" />`;
@@ -487,6 +497,13 @@ export function LessonBankPanel({
 
   // Difficulty/image/year are client-side display filters over the fetched set — they NEVER trigger
   // a fetch (so changing them can't spend AI tokens). `displayed` is what the list renders.
+  // ✨ Propose lesson — AI reads the current filtered candidates and proposes the
+  // example/practice split per concept checklist; reviewed in ProposalSheet.
+  const [proposing, setProposing] = useState(false);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [proposalCandidates, setProposalCandidates] = useState<BankQuestion[]>([]);
+  const [proposeError, setProposeError] = useState<string | null>(null);
+
   // Render at most this many cards at once — each card is a heavy ReactMarkdown+KaTeX
   // tree, and mounting 100+ in a single synchronous render can hang or crash the tab
   // (seen when switching the Year filter onto a large set). "Show more" pages it.
@@ -701,6 +718,31 @@ export function LessonBankPanel({
   function clearTopicFilter() { setIncludeTopics(new Set()); setExcludeTopics(new Set()); }
   const topicFilterCount = includeTopics.size + excludeTopics.size;
 
+  async function runPropose() {
+    if (displayed.length === 0 || proposing) return;
+    setProposing(true); setProposeError(null);
+    const candidates = displayed;            // snapshot the current filtered pool
+    try {
+      const res = await fetch('/api/admin/lessons/propose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        body: JSON.stringify({
+          level, topics,
+          questionIds: candidates.map(q => q.id),
+          rejectedIds: loadRejected(lessonKey),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+      setProposalCandidates(candidates);
+      setProposal(json as Proposal);
+    } catch (e) {
+      setProposeError(e instanceof Error ? e.message : 'Proposal failed');
+    } finally {
+      setProposing(false);
+    }
+  }
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Browsing-only image scaling for previews (overrides the inline max-width:100% on each img). */}
@@ -866,7 +908,16 @@ export function LessonBankPanel({
           )}
           {source === 'local' && <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">📦 cache</span>}
           {source === 'unavailable' && <span className="text-amber-700 bg-amber-50 border border-amber-200 px-1 rounded">not synced</span>}
+          <button
+            onClick={runPropose}
+            disabled={proposing || displayed.length === 0}
+            title="Claude reads the questions currently matching your filters and proposes the example/practice split per concept — you review before anything is staged"
+            className="ml-auto text-[10px] px-2 py-0.5 rounded border border-violet-300 text-violet-700 bg-violet-50 hover:bg-violet-100 disabled:opacity-40 font-medium"
+          >{proposing ? '✨ Reading questions…' : `✨ Propose lesson (${displayed.length})`}</button>
         </div>
+        {proposeError && (
+          <div className="text-[10px] text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">{proposeError}</div>
+        )}
       </div>
 
       <div
@@ -915,6 +966,15 @@ export function LessonBankPanel({
           >Load all {total - questions.length} remaining ({questions.length} of {total} loaded)</button>
         )}
       </div>
+      {proposal && (
+        <ProposalSheet
+          proposal={proposal}
+          candidates={proposalCandidates}
+          lessonKey={lessonKey}
+          onClose={() => setProposal(null)}
+          onStaged={() => { /* staging panel updates via its own subscription */ }}
+        />
+      )}
     </div>
   );
 }
