@@ -847,12 +847,25 @@ export default function ChatPage() {
       const renderStatusLabel = () => {
         if (fullText || !lastStatus) { stopStatusTicker(); return; }
         const secs = Math.round((Date.now() - streamStartedAt) / 1000);
-        const label = lastStatus.status === 'writing'
-          ? `✍️ writing the solution…${lastStatus.chars ? ` <span style="opacity:0.6;">(${lastStatus.chars} chars · ${secs}s)</span>` : ''}`
+        // Only rebuild the DOM when the stage changes — rebuilding every second
+        // would restart the jumping-dots animation and look janky.
+        const existing = streamDiv.querySelector('.st-label') as HTMLElement | null;
+        if (existing && existing.dataset.status === lastStatus.status) {
+          const secsEl = streamDiv.querySelector('.st-secs');
+          if (secsEl) secsEl.textContent = `${secs}s`;
+          return;
+        }
+        const text = lastStatus.status === 'writing'
+          ? '✍️ writing solution'
           : lastStatus.status === 'checking'
-            ? `🔍 double-checking the answer… <span style="opacity:0.6;">(${secs}s)</span>`
-            : `🧠 thinking hard about this one… <span style="opacity:0.6;">(${secs}s)</span>`;
-        streamDiv.innerHTML = `<em style="color:hsl(220,10%,46%);font-size:0.95em;">${label}</em>`;
+            ? '🔍 double-checking'
+            : '💭 thinking hard';
+        const dot = (delay: string) =>
+          `<span style="width:5px;height:5px;border-radius:50%;background:hsl(220,10%,46%);display:inline-block;animation:tdot 1.2s ${delay} infinite;opacity:0.4;"></span>`;
+        streamDiv.innerHTML =
+          `<em class="st-label" data-status="${lastStatus.status}" style="color:hsl(220,10%,46%);font-size:0.95em;display:inline-flex;align-items:center;gap:4px;">` +
+          `${text}&nbsp;${dot('0s')}${dot('0.2s')}${dot('0.4s')}` +
+          `&nbsp;<span class="st-secs" style="opacity:0.55;font-size:0.85em;">${secs}s</span></em>`;
       };
 
       const reader = res.body!.getReader();
