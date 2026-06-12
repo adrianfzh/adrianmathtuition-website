@@ -795,6 +795,7 @@ export default function ChatPage() {
 
     setIsLoading(true);
     addTypingToDOM();
+    let stopStatusTickerRef: (() => void) | null = null;
 
     try {
       const isTelegramWebview = /Telegram/i.test(navigator.userAgent);
@@ -839,6 +840,20 @@ export default function ChatPage() {
       const streamStartedAt = Date.now();
       let fullText = '';
       let sawDone = false;
+      let lastStatus: { status: string; chars?: number } | null = null;
+      let statusTicker: ReturnType<typeof setInterval> | null = null;
+      const stopStatusTicker = () => { if (statusTicker) { clearInterval(statusTicker); statusTicker = null; } };
+      stopStatusTickerRef = stopStatusTicker;
+      const renderStatusLabel = () => {
+        if (fullText || !lastStatus) { stopStatusTicker(); return; }
+        const secs = Math.round((Date.now() - streamStartedAt) / 1000);
+        const label = lastStatus.status === 'writing'
+          ? `✍️ writing the solution…${lastStatus.chars ? ` <span style="opacity:0.6;">(${lastStatus.chars} chars · ${secs}s)</span>` : ''}`
+          : lastStatus.status === 'checking'
+            ? `🔍 double-checking the answer… <span style="opacity:0.6;">(${secs}s)</span>`
+            : `🧠 thinking hard about this one… <span style="opacity:0.6;">(${secs}s)</span>`;
+        streamDiv.innerHTML = `<em style="color:hsl(220,10%,46%);font-size:0.95em;">${label}</em>`;
+      };
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -866,21 +881,19 @@ export default function ChatPage() {
 
             // Image-question progress: server streams internally (buffered for
             // verification) and reports stages so the wait never looks frozen.
-            // Elapsed seconds tick on every event so the screen is visibly alive.
+            // A 1s client-side ticker keeps the elapsed time counting smoothly
+            // between server events (which arrive every ~1.5-5s).
             if (parsed.status) {
               if (!fullText) {
-                const secs = Math.round((Date.now() - streamStartedAt) / 1000);
-                const label = parsed.status === 'writing'
-                  ? `✍️ writing the solution…${parsed.chars ? ` <span style="opacity:0.6;">(${parsed.chars} chars · ${secs}s)</span>` : ''}`
-                  : parsed.status === 'checking'
-                    ? `🔍 double-checking the answer… <span style="opacity:0.6;">(${secs}s)</span>`
-                    : `🧠 thinking hard about this one… <span style="opacity:0.6;">(${secs}s)</span>`;
-                streamDiv.innerHTML = `<em style="color:hsl(220,10%,46%);font-size:0.95em;">${label}</em>`;
+                lastStatus = { status: parsed.status, chars: parsed.chars };
+                renderStatusLabel();
+                if (!statusTicker) statusTicker = setInterval(renderStatusLabel, 1000);
               }
               continue;
             }
 
             if (parsed.chunk) {
+              stopStatusTicker();
               fullText += parsed.chunk;
               scheduleRender(streamDiv, fullText);
             }
@@ -911,6 +924,7 @@ export default function ChatPage() {
 
             if (parsed.done) {
               sawDone = true;
+              stopStatusTicker();
               if (renderTimerRef.current) { cancelAnimationFrame(renderTimerRef.current); renderTimerRef.current = null; }
               renderToElement(streamDiv, fullText);
             }
@@ -921,6 +935,7 @@ export default function ChatPage() {
       // Stream ended without a done event → server restarted or connection
       // dropped mid-answer. Never leave a stale status label hanging.
       if (!sawDone && !fullText) {
+        stopStatusTicker();
         streamDiv.innerHTML = '<em style="color:hsl(0,50%,45%);">⚠️ Connection lost while solving — please send your question again.</em>';
         scrollToBottom();
         return;
@@ -937,6 +952,7 @@ export default function ChatPage() {
       removeTypingFromDOM();
       showError('Network error. Please check your connection.');
     } finally {
+      stopStatusTickerRef?.();
       setIsLoading(false);
       fixedInputRef.current?.focus();
     }
