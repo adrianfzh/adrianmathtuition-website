@@ -557,10 +557,12 @@ export function LessonBankPanel({
     // The Exam select only RENDERS for JC levels — never let a leftover value filter
     // invisibly on Sec/EM/AM lessons where the control is hidden.
     if (exam !== 'any' && isJC) {
-      // 'MY:JC1' style values pin BOTH exam type and level; plain values match exam type only.
-      // Rows from an older offline cache may lack `level` — let those through rather than hide them.
-      const [exType, exLevel] = exam.split(':');
-      list = list.filter(q => (q.exam_type ?? '') === exType && (!exLevel || !q.level || q.level === exLevel));
+      // CSV multi-select; each token is 'Promo' | 'Prelim' | 'MY:JC1' style. 'MY:JC1' pins BOTH
+      // exam type and level; plain tokens match exam type only. A question matches if ANY selected
+      // token matches. Rows from an older offline cache may lack `level` — let those through.
+      const toks = exam.split(',').map(t => t.split(':') as [string, string?]);
+      list = list.filter(q => toks.some(([exType, exLevel]) =>
+        (q.exam_type ?? '') === exType && (!exLevel || !q.level || q.level === exLevel)));
     }
     const inc = [...includeTopics], exc = [...excludeTopics];
     if (inc.length > 0) {
@@ -1001,14 +1003,23 @@ export function LessonBankPanel({
           {isJC && (
             <>
               <span className="text-slate-400 ml-2">Exam:</span>
-              <select value={exam} onChange={e => setExam(e.target.value)} className="border border-slate-300 rounded px-1 py-px text-[10px]">
-                <option value="any">Any</option>
-                <option value="Promo">Promo (JC1)</option>
-                <option value="MY:JC1">MY (JC1)</option>
-                <option value="MY:JC2">MY (JC2)</option>
-                <option value="MY">MY (both)</option>
-                <option value="Prelim">Prelim (JC2)</option>
-              </select>
+              {([['Promo', 'Promo'], ['MY:JC1', 'MY J1'], ['MY:JC2', 'MY J2'], ['Prelim', 'Prelim']] as const).map(([v, label]) => {
+                // CSV multi-select like the Year chips; legacy single values ('MY' = both MYs) expand on first toggle.
+                const cur = exam === 'any' ? new Set<string>() : new Set(exam === 'MY' ? ['MY:JC1', 'MY:JC2'] : exam.split(','));
+                const on = cur.has(v);
+                return (
+                  <button
+                    key={v}
+                    onClick={() => {
+                      const next = new Set(cur);
+                      if (on) next.delete(v); else next.add(v);
+                      setExam(next.size === 0 ? 'any' : [...next].sort().join(','));
+                    }}
+                    title={on ? `Showing ${label} — click to remove` : `Click to include ${label} (multi-select)`}
+                    className={`px-1.5 py-px rounded border ${on ? 'bg-blue-100 border-blue-400 text-blue-700' : 'border-slate-300 text-slate-500 hover:bg-slate-100'}`}
+                  >{label}</button>
+                );
+              })}
             </>
           )}
           <span className="text-slate-400 ml-2" title="Scale all preview images (browsing only — not saved to the question)">Img:</span>
