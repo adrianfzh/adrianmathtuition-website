@@ -200,13 +200,13 @@ function renderInlineImagesInText(text: string | null | undefined): string {
   return balanceDollars(fixCurrencyDollars(text)).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
     const cleaned = url.trim();
     if (!isPlausibleFilename(cleaned)) return '';
-    return `<img src="${toStorageUrl(cleaned)}" alt="" style="max-width:100%;display:block;margin:6px 0" />`;
+    return `<img src="${toStorageUrl(cleaned)}" alt="" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:6px 0" />`;
   });
 }
 
 function partImageHtml(path: string | null | undefined): string {
   if (!isPlausibleFilename(path)) return '';
-  return `<img src="${toStorageUrl(path)}" alt="" style="max-width:100%;display:block;margin:6px 0" />`;
+  return `<img src="${toStorageUrl(path)}" alt="" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:6px 0" />`;
 }
 
 /** Build the markdown content for a "full template" drop from a bank question. */
@@ -228,11 +228,11 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
   const stemMarks = !hasPartContent && q.total_marks ? ` [${q.total_marks}m]` : '';
 
   for (const r of stemBefore) {
-    out.push(`<img src="${toStorageUrl(r.url)}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
+    out.push(`<img src="${toStorageUrl(r.url)}" alt="diagram" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:8px 0" />`);
   }
   if (q.question_text) out.push(renderInlineImagesInText(q.question_text) + stemMarks);
   for (const r of stemAfter) {
-    out.push(`<img src="${toStorageUrl(r.url)}" alt="diagram" style="max-width:100%;display:block;margin:8px 0" />`);
+    out.push(`<img src="${toStorageUrl(r.url)}" alt="diagram" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:8px 0" />`);
   }
 
   if (Array.isArray(q.parts) && q.parts.length > 0) {
@@ -279,7 +279,7 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
   const solBits: string[] = [];
   if (q.solution) solBits.push(renderInlineImagesInText(q.solution));
   for (const u of getSolutionImageUrls(q.solution_images)) {
-    solBits.push(`<img src="${toStorageUrl(u)}" alt="solution diagram" style="max-width:100%;display:block;margin:6px 0" />`);
+    solBits.push(`<img src="${toStorageUrl(u)}" alt="solution diagram" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:6px 0" />`);
   }
   if (Array.isArray(q.parts)) {
     for (const p of q.parts as PartSolution[]) {
@@ -956,14 +956,14 @@ export function BankQuestionCard({
     const stemAfter = stemRecords.filter(r => r.pos === 'after');
 
     for (const r of stemBefore) {
-      lines.push(`<img src="${toStorageUrl(r.url)}" alt="" style="max-width:100%;display:block;margin:6px auto" />`);
+      lines.push(`<img src="${toStorageUrl(r.url)}" alt="" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:6px auto" />`);
     }
     // Stem-only questions carry their marks ONLY in total_marks — show them on the stem.
     const hasPartContent = (parts ?? []).some(p => p && (p.label || (p.text && p.text.trim())));
     const stemMarks = !hasPartContent && q.total_marks ? ` _[${q.total_marks}m]_` : '';
     if (q.question_text) lines.push(renderInlineImagesInText(q.question_text) + stemMarks);
     for (const r of stemAfter) {
-      lines.push(`<img src="${toStorageUrl(r.url)}" alt="" style="max-width:100%;display:block;margin:6px auto" />`);
+      lines.push(`<img src="${toStorageUrl(r.url)}" alt="" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:6px auto" />`);
     }
 
     if (parts && parts.length > 0) {
@@ -1030,7 +1030,7 @@ export function BankQuestionCard({
       }
     }
     for (const u of getSolutionImageUrls(q.solution_images)) {
-      bits.push(`<img src="${toStorageUrl(u)}" alt="" style="max-width:100%;display:block;margin:6px 0" />`);
+      bits.push(`<img src="${toStorageUrl(u)}" alt="" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:6px 0" />`);
     }
     return bits.length > 0 ? bits.join('\n\n') : null;
   }, [q]);
@@ -1038,6 +1038,10 @@ export function BankQuestionCard({
   return (
     <div
       draggable={draggable}
+      // Offscreen cards skip layout, paint AND image decoding — without this, a long
+      // list of 300-DPI diagram scans decodes hundreds of MB of bitmaps at once and
+      // can crash the tab (seen with the 2024 Linear Law set).
+      style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 320px' }}
       onDragStart={draggable ? (e) => {
         e.dataTransfer.setData('application/x-bank-question', JSON.stringify(q));
         e.dataTransfer.setData('text/plain', tag);
