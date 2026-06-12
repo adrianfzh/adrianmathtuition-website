@@ -808,6 +808,7 @@ export default function ChatPage() {
     setIsLoading(true);
     addTypingToDOM();
     let stopStatusTickerRef: (() => void) | null = null;
+    let typerFinalizeRef: (() => void) | null = null;
 
     try {
       const isTelegramWebview = /Telegram/i.test(navigator.userAgent);
@@ -856,6 +857,38 @@ export default function ChatPage() {
       let statusTicker: ReturnType<typeof setInterval> | null = null;
       const stopStatusTicker = () => { if (statusTicker) { clearInterval(statusTicker); statusTicker = null; } };
       stopStatusTickerRef = stopStatusTicker;
+      // Client-side typewriter: received text accumulates in fullText (buffer);
+      // a rAF loop reveals it at a constant chars/sec rate regardless of how
+      // bursty network delivery is — this is how frontier chat UIs stay smooth.
+      const TYPE_CPS = 300;
+      let displayedLen = 0;
+      let typerRAF: number | null = null;
+      let typerLastTs = 0;
+      let typerLastRender = 0;
+      const typerFrame = (ts: number) => {
+        if (!typerLastTs) typerLastTs = ts;
+        displayedLen = Math.min(fullText.length, displayedLen + ((ts - typerLastTs) / 1000) * TYPE_CPS);
+        typerLastTs = ts;
+        const caughtUp = displayedLen >= fullText.length;
+        if (ts - typerLastRender > 45 || caughtUp) {
+          typerLastRender = ts;
+          renderToElement(streamDiv, fullText.slice(0, Math.floor(displayedLen)), true);
+          if (!userHasScrolledUp) {
+            const scroll = chatScrollRef.current;
+            if (scroll) { isProgrammaticScroll = true; scroll.scrollTop = scroll.scrollHeight; requestAnimationFrame(() => { isProgrammaticScroll = false; }); }
+          }
+        }
+        if (caughtUp && sawDone) {
+          typerRAF = null;
+          renderToElement(streamDiv, fullText); // final render: full text, no caret
+          return;
+        }
+        typerRAF = requestAnimationFrame(typerFrame);
+      };
+      const startTyper = () => { if (typerRAF === null) { typerLastTs = 0; typerRAF = requestAnimationFrame(typerFrame); } };
+      // On any abnormal exit (network error, stream end without done), let the
+      // typer finish revealing whatever arrived, then stop — never loop forever.
+      typerFinalizeRef = () => { sawDone = true; startTyper(); };
       const renderStatusLabel = () => {
         if (fullText || !lastStatus) { stopStatusTicker(); return; }
         const secs = Math.round((Date.now() - streamStartedAt) / 1000);
@@ -900,6 +933,7 @@ export default function ChatPage() {
 
             if (parsed.verify) {
               fullText = '';
+              displayedLen = 0;
               streamDiv.innerHTML = '<em>🔄 Verifying answer...</em>';
               continue;
             }
@@ -920,7 +954,7 @@ export default function ChatPage() {
             if (parsed.chunk) {
               stopStatusTicker();
               fullText += parsed.chunk;
-              scheduleRender(streamDiv, fullText);
+              startTyper();
             }
 
             if (parsed.graphLoading === true) {
@@ -950,8 +984,9 @@ export default function ChatPage() {
             if (parsed.done) {
               sawDone = true;
               stopStatusTicker();
-              if (renderTimerRef.current) { cancelAnimationFrame(renderTimerRef.current); renderTimerRef.current = null; }
-              renderToElement(streamDiv, fullText);
+              // Don't render immediately — the typewriter finishes revealing the
+              // buffer and its final frame does the clean full render.
+              startTyper();
             }
           } catch { /* ignore parse errors */ }
         }
@@ -978,6 +1013,7 @@ export default function ChatPage() {
       showError('Network error. Please check your connection.');
     } finally {
       stopStatusTickerRef?.();
+      typerFinalizeRef?.();
       setIsLoading(false);
       fixedInputRef.current?.focus();
     }
