@@ -816,6 +816,7 @@ export default function ChatPage() {
       removeTypingFromDOM();
       const streamDiv = addStreamingMessage();
       let fullText = '';
+      let sawDone = false;
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -882,11 +883,20 @@ export default function ChatPage() {
             }
 
             if (parsed.done) {
+              sawDone = true;
               if (renderTimerRef.current) { cancelAnimationFrame(renderTimerRef.current); renderTimerRef.current = null; }
               renderToElement(streamDiv, fullText);
             }
           } catch { /* ignore parse errors */ }
         }
+      }
+
+      // Stream ended without a done event → server restarted or connection
+      // dropped mid-answer. Never leave a stale status label hanging.
+      if (!sawDone && !fullText) {
+        streamDiv.innerHTML = '<em style="color:hsl(0,50%,45%);">⚠️ Connection lost while solving — please send your question again.</em>';
+        scrollToBottom();
+        return;
       }
 
       conversationHistoryRef.current.push({ role: 'user', content: text || '[image]' });
