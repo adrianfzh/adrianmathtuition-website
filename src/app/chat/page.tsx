@@ -160,7 +160,7 @@ function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
 
   // Markdown pipe tables → HTML tables. Runs AFTER math is stashed (so pipes
   // inside math like P(A|B) can't break cells) and BEFORE the newline→<br> pass.
-  html = html.replace(/(^|\n)((?:\|[^\n]*\|[ \t]*\n)\|[ \t:|-]+\|[ \t]*\n(?:\|[^\n]*\|[ \t]*(?:\n|$))+)/g, (_m, lead, tbl) => {
+  html = html.replace(/(^|\n)((?:\|[^\n]*\|[ \t]*\n)\|[ \t:|-]+\|[ \t]*\n(?:\|[^\n]*\|[ \t]*(?:\n|$))+)/g, (_m, lead: string, tbl: string) => {
     const rows = tbl.trim().split('\n');
     const cells = (r: string) => r.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim());
     const th = cells(rows[0]).map(c =>
