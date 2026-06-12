@@ -858,29 +858,53 @@ export default function ChatPage() {
       const stopStatusTicker = () => { if (statusTicker) { clearInterval(statusTicker); statusTicker = null; } };
       stopStatusTickerRef = stopStatusTicker;
       // Client-side typewriter: received text accumulates in fullText (buffer);
-      // a rAF loop reveals it at a constant chars/sec rate regardless of how
-      // bursty network delivery is — this is how frontier chat UIs stay smooth.
-      const TYPE_CPS = 100;
+      // a rAF loop reveals it at a steady chars/sec rate regardless of how bursty
+      // network delivery is. SMOOTHNESS: re-rendering the whole message through
+      // KaTeX every tick gets slower as the answer grows (visible stutter + math
+      // re-typeset flicker). Instead the message renders in TWO layers — a stable
+      // prefix (all completed paragraphs, re-rendered only when a paragraph
+      // completes) and a short live tail (re-rendered every frame, cheap) — so
+      // the per-frame cost stays constant however long the answer gets.
+      const TYPE_CPS = 110;
       let displayedLen = 0;
       let typerRAF: number | null = null;
       let typerLastTs = 0;
-      let typerLastRender = 0;
+      let stablePrefix = '';
+      const ensureStreamLayers = (): { stable: HTMLDivElement; tail: HTMLDivElement } => {
+        let stable = streamDiv.querySelector<HTMLDivElement>(':scope > .stream-stable');
+        let tail = streamDiv.querySelector<HTMLDivElement>(':scope > .stream-tail');
+        if (!stable || !tail) {
+          streamDiv.innerHTML = '';
+          stable = document.createElement('div'); stable.className = 'stream-stable';
+          tail = document.createElement('div'); tail.className = 'stream-tail';
+          streamDiv.appendChild(stable); streamDiv.appendChild(tail);
+          stablePrefix = ' '; // force a prefix re-render after the layers were rebuilt
+        }
+        return { stable, tail };
+      };
       const typerFrame = (ts: number) => {
         if (!typerLastTs) typerLastTs = ts;
-        displayedLen = Math.min(fullText.length, displayedLen + ((ts - typerLastTs) / 1000) * TYPE_CPS);
+        // Adaptive catch-up: when the buffer runs far ahead (fast model / slow reveal),
+        // speed up instead of trailing the stream by tens of seconds.
+        const backlog = fullText.length - displayedLen;
+        const cps = backlog > 1200 ? 480 : backlog > 400 ? 240 : TYPE_CPS;
+        displayedLen = Math.min(fullText.length, displayedLen + ((ts - typerLastTs) / 1000) * cps);
         typerLastTs = ts;
         const caughtUp = displayedLen >= fullText.length;
-        if (ts - typerLastRender > 45 || caughtUp) {
-          typerLastRender = ts;
-          renderToElement(streamDiv, fullText.slice(0, Math.floor(displayedLen)), true);
-          if (!userHasScrolledUp) {
-            const scroll = chatScrollRef.current;
-            if (scroll) { isProgrammaticScroll = true; scroll.scrollTop = scroll.scrollHeight; requestAnimationFrame(() => { isProgrammaticScroll = false; }); }
-          }
+        const { stable, tail } = ensureStreamLayers();
+        const shown = fullText.slice(0, Math.floor(displayedLen));
+        const cut = shown.lastIndexOf('\n\n');
+        const prefix = cut === -1 ? '' : shown.slice(0, cut + 2);
+        const tailText = cut === -1 ? shown : shown.slice(cut + 2);
+        if (prefix !== stablePrefix) { renderToElement(stable, prefix); stablePrefix = prefix; }
+        renderToElement(tail, tailText, true); // short tail → cheap → every frame (60fps)
+        if (!userHasScrolledUp) {
+          const scroll = chatScrollRef.current;
+          if (scroll) { isProgrammaticScroll = true; scroll.scrollTop = scroll.scrollHeight; requestAnimationFrame(() => { isProgrammaticScroll = false; }); }
         }
         if (caughtUp && sawDone) {
           typerRAF = null;
-          renderToElement(streamDiv, fullText); // final render: full text, no caret
+          renderToElement(streamDiv, fullText); // final render: full text, single layer, no caret
           return;
         }
         typerRAF = requestAnimationFrame(typerFrame);
