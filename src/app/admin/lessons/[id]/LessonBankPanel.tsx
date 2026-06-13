@@ -189,7 +189,7 @@ function fixCurrencyDollars(text: string): string {
 // count so the odd-count guard misses it, and remark-math's math-flow parser then swallows everything
 // up to the next `$$` — across paragraph breaks — into one giant failing KaTeX node (the "red blob").
 function balanceDollars(text: string): string {
-  return joinMultilineMath(asText(text)).split('\n').map(line => {
+  return collapseInlineMathNewlines(asText(text)).split('\n').map(line => {
     const t = line.trimEnd();
     if (t.startsWith('$$') && t.length > 2 && !t.slice(2).includes('$$')) return t + '$$';
     const singles = (line.match(/(?<!\\)\$/g) || []).length;
@@ -198,27 +198,16 @@ function balanceDollars(text: string): string {
 }
 
 // Inline math that SPANS lines — `$\mathbf{r} = \begin{pmatrix}` / rows / `\end{pmatrix}…$`, an
-// import artifact seen in CJC 2025 — can't be parsed by remark-math (inline `$…$` must stay on one
-// line), and the odd-$ guard above would strip its delimiters, leaving raw LaTeX. Join such spans
-// onto one line first (KaTeX renders single-line pmatrix fine). A stray `$` that never closes
-// within the lookahead window is left alone for the odd-$ guard to neutralise.
-function joinMultilineMath(text: string): string {
-  const singles = (s: string) => (s.match(/(?<!\\)\$/g) || []).length;
-  const lines = text.split('\n');
-  const out: string[] = [];
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.includes('$$') || singles(line) % 2 === 0) { out.push(line); continue; }
-    let j = i + 1, parity = 1, closed = false;
-    for (; j < lines.length && j <= i + 12; j++) {
-      if (lines[j].includes('$$')) break;
-      parity = (parity + singles(lines[j])) % 2;
-      if (parity === 0) { closed = true; break; }
-    }
-    if (closed) { out.push(lines.slice(i, j + 1).join(' ')); i = j; }
-    else out.push(line);
-  }
-  return out.join('\n');
+// import artifact (matrices/vectors stored with literal newlines) — can't be parsed by remark-math
+// (inline `$…$` must stay on one line) and dumps raw LaTeX. Collapse newlines INSIDE every inline
+// span to spaces (KaTeX renders single-line pmatrix fine). Each `$…$` pair is matched independently,
+// so it handles several interleaved multiline spans in one field. `$$…$$` display blocks (newlines
+// legitimate) are split out first and left untouched.
+function collapseInlineMathNewlines(text: string): string {
+  return text.split(/(\$\$[\s\S]*?\$\$)/).map((seg, i) => {
+    if (i % 2 === 1) return seg; // a $$…$$ display block — keep as-is
+    return seg.replace(/\$([^$]*?)\$/g, (m, body: string) => body.includes('\n') ? '$' + body.replace(/\s*\n\s*/g, ' ') + '$' : m);
+  }).join('');
 }
 
 // Coerce malformed jsonb values (an import once stored a part's `text` as an ARRAY,
