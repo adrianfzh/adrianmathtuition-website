@@ -427,7 +427,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
         )}
         {lesson.status === 'Absent' && (
           <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 600, color: '#dc2626' }}>
-            Absent — no reschedule yet
+            no reschedule yet
           </span>
         )}
         {!isFaded && lesson.examDate === 'NO_EXAM' && (
