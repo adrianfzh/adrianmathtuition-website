@@ -36,6 +36,7 @@ interface Lesson {
   notes: string;
   rescheduledToDate?: string;
   rescheduledToSlotTime?: string;
+  rescheduledToStatus?: string;
   progressLogged?: boolean;
   revisionLabel?: string;
   revisionSubject?: string;
@@ -414,14 +415,20 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
         )}
         {/* Faded status sub-lines */}
         {isRescheduledAway && (
-          <span style={{ display: 'block', fontSize: 10, opacity: 0.55, marginTop: 2 }}>
+          <span style={{
+            display: 'block', fontSize: 10, marginTop: 2, fontWeight: 600,
+            // green if the destination lesson is already completed, blue if still upcoming
+            color: lesson.rescheduledToStatus === 'Completed' ? '#16a34a' : '#2563eb',
+          }}>
             {lesson.rescheduledToDate
-              ? `→ ${formatExamDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}`
-              : 'rescheduled'}
+              ? `Rescheduled → ${formatExamDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}`
+              : 'Rescheduled'}
           </span>
         )}
         {lesson.status === 'Absent' && (
-          <span style={{ display: 'block', fontSize: 10, opacity: 0.55, marginTop: 2 }}>Absent</span>
+          <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 600, color: '#dc2626' }}>
+            Absent — no reschedule yet
+          </span>
         )}
         {!isFaded && lesson.examDate === 'NO_EXAM' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 1 }}>no upcoming exam</span>
@@ -3063,7 +3070,7 @@ body {
 }
 .lesson-chip[role="button"] { cursor: pointer; }
 .lesson-chip[role="button"]:hover { opacity: 0.8; }
-.lesson-chip.absent { opacity: 0.6; }
+.lesson-chip.absent { opacity: 0.8; }
 .absent-name { text-decoration: line-through; color: #94a3b8; }
 .trial-badge { font-size: 14px; }
 .type-tag {

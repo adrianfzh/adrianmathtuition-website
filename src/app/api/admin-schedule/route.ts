@@ -71,17 +71,21 @@ export async function GET(req: NextRequest) {
   // Fetch dates for the new (rescheduled-to) lessons, if any
   let rescheduledDatesById: Record<string, string> = {};
   let rescheduledSlotById: Record<string, string> = {};
+  let rescheduledStatusById: Record<string, string> = {};
   if (rescheduledNewIds.length) {
     const formula = `OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
     const newLessons = await fetchAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Date&fields[]=Slot`
+      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Date&fields[]=Slot&fields[]=Status`
     );
     rescheduledDatesById = Object.fromEntries(
       newLessons.map((r: any) => [r.id, r.fields['Date'] ?? ''])
     );
     rescheduledSlotById = Object.fromEntries(
       newLessons.map((r: any) => [r.id, r.fields['Slot']?.[0] ?? ''])
+    );
+    rescheduledStatusById = Object.fromEntries(
+      newLessons.map((r: any) => [r.id, r.fields['Status'] ?? ''])
     );
   }
 
@@ -206,6 +210,8 @@ export async function GET(req: NextRequest) {
         const slot = slots.find((s: any) => s.id === sid);
         return slot?.time ?? '';
       })(),
+      // Status of the destination lesson — drives green (Completed) vs blue (upcoming)
+      rescheduledToStatus: rescheduledNewId ? (rescheduledStatusById[rescheduledNewId] ?? '') : '',
       // A makeup created for a missed June-holiday revision lesson (Additional
       // lesson at a regular Sec slot) — flagged so the chip can say so.
       revisionMakeup: /revision makeup/i.test(rawNote),
