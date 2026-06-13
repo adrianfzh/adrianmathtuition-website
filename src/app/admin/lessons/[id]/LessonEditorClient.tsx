@@ -1579,7 +1579,7 @@ function SectionFlow({
     <div className="mt-1">
       <div className="flex items-center gap-1 px-1 py-1.5">
         <span className="text-xs font-semibold flex-1 text-slate-600">Sections <span className="font-normal text-slate-400">({sections.length})</span></span>
-        <button onClick={onAddSection} className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50 shrink-0" title="Add a new section">+ Section</button>
+        <button onClick={onAddSection} className="text-xs px-2 py-0.5 border border-slate-300 rounded hover:bg-slate-50 shrink-0" title="Add a new section (Ctrl/Cmd+Shift+S)">+ Section</button>
       </div>
 
       {sections.length === 0 ? (
@@ -2063,6 +2063,8 @@ export default function LessonEditorClient() {
       const tag = t?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t?.isContentEditable) return;
       const key = e.key.toLowerCase();
+      // Ctrl/Cmd+Shift+S → open the New Section dialog (fast section creation).
+      if (key === 's' && e.shiftKey) { e.preventDefault(); setNewSectionOpen(true); return; }
       const isRedo = (key === 'z' && e.shiftKey) || key === 'y';
       const isUndo = key === 'z' && !e.shiftKey;
       // Only act if there's a matching action — otherwise leave the keypress alone.
