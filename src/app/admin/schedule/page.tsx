@@ -63,6 +63,7 @@ interface ScheduleData {
   slots: Slot[];
   enrollmentsBySlot: Record<string, string[]>;
   lessons: Lesson[];
+  cancelledLessons?: { studentId: string | null; date: string; slotId: string | null; notes: string }[];
   students: Record<string, Student>;
   activeExamType?: string | null;
   examsByStudent?: Record<string, string | null>;
@@ -472,7 +473,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
 function DroppableLessonSlot({
   id, lessons, onChipTap, onAddClick, onExamDateClick, onStudentClick,
   onMarkPresent, onMarkAbsent, onUndo,
-  ghostStudents, onGhostTap, savingStudents, activeExamType, slotLevel,
+  ghostStudents, cancelledStudents, onGhostTap, savingStudents, activeExamType, slotLevel,
 }: {
   id: string;
   lessons: EnrichedLesson[];
@@ -485,12 +486,14 @@ function DroppableLessonSlot({
   onMarkAbsent?: (lesson: EnrichedLesson) => void;
   onUndo?: (lesson: EnrichedLesson) => void;
   ghostStudents?: { id: string; name: string }[];
+  cancelledStudents?: { id: string; name: string; reason: string }[];
   onGhostTap?: (studentId: string, studentName: string) => void;
   savingStudents?: Set<string>;
   activeExamType?: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const ghosts = ghostStudents ?? [];
+  const cancelled = cancelledStudents ?? [];
   return (
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
@@ -512,7 +515,19 @@ function DroppableLessonSlot({
             }
           </div>
         ))}
-        {lessons.length === 0 && ghosts.length === 0 && (
+        {/* Cancelled lessons (e.g. moved to Revision Sprint) — faded, NOT markable */}
+        {cancelled.map(s => (
+          <div
+            key={s.id}
+            className="lesson-chip absent"
+            style={{ background: '#f8fafc', borderColor: '#e2e8f0', display: 'flex', alignItems: 'center', gap: 6 }}
+            title={`Regular lesson cancelled (${s.reason}) — not attending this slot`}
+          >
+            <div style={{ flex: 1, minWidth: 0, textDecoration: 'line-through', color: '#94a3b8' }}>{s.name}</div>
+            <span style={{ fontSize: 10, fontWeight: 600, color: '#64748b', flexShrink: 0 }}>Cancelled · {s.reason}</span>
+          </div>
+        ))}
+        {lessons.length === 0 && ghosts.length === 0 && cancelled.length === 0 && (
           <button className="add-hint" onClick={onAddClick}>No lessons — tap + to add</button>
         )}
       </div>
@@ -1655,6 +1670,21 @@ export default function SchedulePage() {
     });
     const presentCount = visibleLessons.filter(l => l.status === 'Completed').length;
 
+    // Enrolled students whose lesson for THIS date+slot was cancelled (e.g.
+    // June regular lesson cancelled for a Revision Sprint). Shown as a faded,
+    // non-markable chip — NOT a "tap to mark" ghost. Reason derived from notes.
+    const cancelledHere = (data?.cancelledLessons ?? []).filter(
+      c => c.date === dateStr && c.slotId === slot.id && c.studentId
+    );
+    const cancelledStudents = (!isFuture ? cancelledHere : []).map(c => ({
+      id: c.studentId as string,
+      name: data?.students[c.studentId as string]?.name ?? 'Unknown',
+      reason: /revision/i.test(c.notes) ? 'on revision'
+        : /holiday/i.test(c.notes) ? 'holiday'
+        : 'cancelled',
+    }));
+    const cancelledStudentIds = new Set(cancelledHere.map(c => c.studentId));
+
     // Ghost chips: enrolled students with no lesson record for this date.
     // Only relevant for today and yesterday (not future, not older past days).
     const enrolledIds = data?.enrollmentsBySlot?.[slot.id] ?? [];
@@ -1666,7 +1696,7 @@ export default function SchedulePage() {
       const dateAbsentIds = absentStudentsByDate[dateStr] ?? new Set<string>();
       const visibleStudentIds = new Set(visibleLessons.map(l => l.studentId).filter(Boolean));
       ghostStudents = enrolledIds
-        .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id) && !dateAbsentIds.has(id))
+        .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id) && !dateAbsentIds.has(id) && !cancelledStudentIds.has(id))
         .map(id => ({ id, name: data?.students[id]?.name ?? 'Unknown' }));
     }
 
@@ -1690,6 +1720,7 @@ export default function SchedulePage() {
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={handleExamDateClick}
           ghostStudents={ghostStudents}
+          cancelledStudents={cancelledStudents}
           onStudentClick={(lesson) => {
             // Trial lessons have no linked student — open full progress page instead
             if (!lesson.studentId || lesson.type === 'Trial') {

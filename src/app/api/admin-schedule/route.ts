@@ -46,11 +46,13 @@ export async function GET(req: NextRequest) {
   // Use exclusive upper bound (+1 day) because Airtable coerces Date to
   // datetime midnight, so <= '2026-04-26' stops before the day's lessons.
   const weekEndExclusive = isoDate(addDays(sunday, 1));
-  // Lessons tab shows all lessons for the week except voided ones:
-  // - Includes Status='Rescheduled' (shown as faded chip on past days with a "→ date" indicator)
-  // - Excludes Status='Cancelled' (lesson cancelled, no longer happening)
-  // - Includes Status='Absent' — shown as dimmed chips so past slots stay visible
-  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<'${weekEndExclusive}',{Status}!='Cancelled')`;
+  // Lessons tab shows all lessons for the week. Cancelled lessons are fetched
+  // too (then split out below) so the UI can show a faded "Cancelled" chip for
+  // an enrolled student instead of a misleading "tap to mark" ghost — e.g. a
+  // student whose June regular lesson was cancelled for a Revision Sprint.
+  // - Includes Status='Rescheduled' (faded chip with a "→ date" indicator)
+  // - Includes Status='Absent' — dimmed chips so past slots stay visible
+  const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<'${weekEndExclusive}')`;
 
   // Fetch slots, enrollments, and lessons in parallel
   const [slotsData, enrollmentsData, lessonsData] = await Promise.all([
@@ -62,8 +64,20 @@ export async function GET(req: NextRequest) {
     ),
   ]);
 
+  // Split out cancelled lessons — they don't belong in the main lessons array
+  // (which the grid renders), but the UI needs them to replace ghost chips.
+  const activeLessonRecs = lessonsData.filter((r: any) => r.fields['Status'] !== 'Cancelled');
+  const cancelledLessons = lessonsData
+    .filter((r: any) => r.fields['Status'] === 'Cancelled')
+    .map((r: any) => ({
+      studentId: r.fields['Student']?.[0] || null,
+      date: r.fields['Date'] || '',
+      slotId: r.fields['Slot']?.[0] || null,
+      notes: r.fields['Notes'] || '',
+    }));
+
   // Collect rescheduled-lesson IDs so we can look up the new lesson's date
-  const rescheduledNewIds = lessonsData
+  const rescheduledNewIds = activeLessonRecs
     .filter((r: any) => r.fields['Status'] === 'Rescheduled')
     .map((r: any) => r.fields['Rescheduled Lesson ID']?.[0])
     .filter(Boolean) as string[];
@@ -188,7 +202,7 @@ export async function GET(req: NextRequest) {
     return /\d{1,2}[:.]\d{2}|(?:early|late|delay|arriv|leav|start|end|finish|cancel|\d+\s*(?:min|hr|hour)|half[\s-]?hour)/i.test(note);
   }
 
-  const lessons = lessonsData.map((r: any) => {
+  const lessons = activeLessonRecs.map((r: any) => {
     const rawNote: string = r.fields['Notes'] || '';
     const type: string = r.fields['Type'] || 'Regular';
     // Trial lessons store the student name in Notes — preserve the full value.
@@ -305,6 +319,7 @@ export async function GET(req: NextRequest) {
     slots,
     enrollmentsBySlot,
     lessons,
+    cancelledLessons,
     students: studentsById,
     activeExamType,
     examsByStudent,
