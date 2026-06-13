@@ -14,6 +14,10 @@ import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } 
 // Marks right-tab position (15.5 cm from left margin).
 const MARKS_TAB = convertMillimetersToTwip(155);
 
+// Master switch for the worked-example box. OFF = no frame around examples (set true to bring the
+// "house notes" thin box back).
+const BOX_WORKED_EXAMPLES = false;
+
 // Box border for worked examples (house notes style: examples sit in a thin box). Word merges
 // CONSECUTIVE paragraphs with identical pBdr settings into ONE continuous box, so applying this
 // to every paragraph of an example (heading + content + images) renders a single frame.
@@ -217,7 +221,7 @@ async function contentParagraphs(
   reg: OmmlRegistry,
   opts: { color?: string; subpartRef?: string; onSubpartFormat?: (f: LevelFormat) => void; dropLeadingTitle?: string; shadeFill?: string; box?: boolean } = {},
 ): Promise<Paragraph[]> {
-  const border = opts.box ? EXAMPLE_BORDER : undefined;
+  const border = (opts.box && BOX_WORKED_EXAMPLES) ? EXAMPLE_BORDER : undefined;
   const out: Paragraph[] = [];
   const src = joinMultilineMath(content ?? '');
 
@@ -392,7 +396,7 @@ export async function buildLessonDocx(
       body.push(new Paragraph({
         numbering: { reference: 'questions', level: 0 },
         spacing: { before: 160 },
-        border: isExample ? EXAMPLE_BORDER : undefined,
+        border: (isExample && BOX_WORKED_EXAMPLES) ? EXAMPLE_BORDER : undefined,
         tabStops: (isPractice && c.marks) ? [{ type: TabStopType.RIGHT, position: MARKS_TAB }] : undefined,
         children: [
           ...(c.source_tag
@@ -410,7 +414,7 @@ export async function buildLessonDocx(
         body.push(new Paragraph({
           indent: { left: NUM_INDENT.main.textIndent },
           spacing: { after: 40 },
-          border: isExample ? EXAMPLE_BORDER : undefined, // keep the example box continuous
+          border: (isExample && BOX_WORKED_EXAMPLES) ? EXAMPLE_BORDER : undefined, // keep the example box continuous
           children: [new TextRun({
             text: `${(c.concept || '').includes(secName) && secName ? 'Also covers' : 'Concept'}: ${conceptBits.join(' · ')}`,
             italics: true, size: 18, color: '6B7280',
