@@ -864,18 +864,42 @@ export default function SchedulePage() {
     return lessonMap[`${isoDate(date)}__${slotId}`] || [];
   }
 
+  // All slots by id — used to recover a stray lesson's intended time/level when
+  // its linked slot belongs to a different weekday than the lesson's date.
+  const slotById: Record<string, Slot> = {};
+  if (data) for (const s of data.slots) slotById[s.id] = s;
+
   // ── Render day column ────────────────────────────────────────────────────────
   function renderDaySlots(dayIndex: number) {
     const day = DAYS[dayIndex];
     const date = weekDates[dayIndex];
+    const dateStr = isoDate(date);
     const slots = slotsByDay[day] || [];
-    const isToday = isoDate(date) === isoDate(new Date());
+    const isToday = dateStr === isoDate(new Date());
 
-    if (slots.length === 0) {
+    // ── Stray lessons: dated THIS day but linked to a slot that isn't drawn on
+    // this day (its slot belongs to another weekday, or is inactive). Without
+    // this, such a lesson lands in no date×slot cell and silently vanishes
+    // (e.g. a Friday-dated lesson linked to a Monday slot). Re-place each into
+    // this day's slot with the same time+level; if none matches, list it as
+    // "unplaced" so it's never lost.
+    const drawnSlotIds = new Set(slots.map(s => s.id));
+    const straysBySlot: Record<string, Lesson[]> = {};
+    const unplacedStrays: Lesson[] = [];
+    for (const l of (data?.lessons || [])) {
+      if (l.date !== dateStr || !l.slotId || drawnSlotIds.has(l.slotId)) continue;
+      if (l.status === 'Cancelled') continue;
+      const orig = slotById[l.slotId];
+      const match = orig ? slots.find(s => s.time === orig.time && s.level === orig.level) : null;
+      if (match) (straysBySlot[match.id] ||= []).push(l);
+      else unplacedStrays.push(l);
+    }
+
+    if (slots.length === 0 && unplacedStrays.length === 0) {
       return <div className="no-slots">No lessons</div>;
     }
 
-    return slots.map(slot => {
+    const slotCards = slots.map(slot => {
       const lessons = getLessonsForSlot(date, slot.id);
       const enrolledIds: string[] = data?.enrollmentsBySlot?.[slot.id] || [];
 
@@ -897,8 +921,11 @@ export default function SchedulePage() {
           .filter(([, l]) => l.status === 'Absent' || l.status === 'Cancelled')
           .map(([id]) => id)
       );
+      // Re-placed stray lessons for this slot (date/slot-day mismatch — see above)
+      const slotStrays = straysBySlot[slot.id] || [];
       const present = (enrolledIds.length - absentIds.size) +
-        extraLessons.filter(l => l.status !== 'Absent' && l.status !== 'Cancelled').length;
+        extraLessons.filter(l => l.status !== 'Absent' && l.status !== 'Cancelled').length +
+        slotStrays.filter(l => l.status !== 'Absent' && l.status !== 'Cancelled').length;
       const total = slot.capacity;
 
       return (
@@ -957,13 +984,66 @@ export default function SchedulePage() {
                 </div>
               );
             })}
-            {enrolledIds.length === 0 && extraLessons.length === 0 && (
+            {/* Re-placed stray lessons (date/slot-day mismatch) — flagged with ⚠ */}
+            {slotStrays.map(lesson => {
+              const isAbsent = lesson.status === 'Absent' || lesson.status === 'Cancelled';
+              const style = getTypeStyle(lesson.type, lesson.status);
+              const isTrial = lesson.type === 'Trial';
+              const student = lesson.studentId ? data?.students[lesson.studentId] : null;
+              const displayName = student?.name || (isTrial ? getTrialName(lesson.notes) : 'Unknown');
+              const origSlot = lesson.slotId ? slotById[lesson.slotId] : null;
+              return (
+                <div
+                  key={lesson.id}
+                  className={`lesson-chip ${isAbsent ? 'absent' : ''}`}
+                  style={{ background: style.bg, color: style.text, borderColor: style.border }}
+                  onClick={lesson.studentId ? () => openStudentModal(lesson.studentId!, lesson.type) : undefined}
+                  role={lesson.studentId ? 'button' : undefined}
+                  title={`⚠ This lesson is dated ${dateStr} but linked to a ${origSlot ? origSlot.dayName + ' ' + origSlot.time : 'different'} slot. Showing it here by matching time — fix the slot link to clear the warning.`}
+                >
+                  <span style={{ marginRight: 4 }}>⚠</span>
+                  {isTrial && <span className="trial-badge">🆕</span>}
+                  <span className={isAbsent ? 'absent-name' : ''}>{displayName}</span>
+                  {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
+                  {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
+                </div>
+              );
+            })}
+            {enrolledIds.length === 0 && extraLessons.length === 0 && slotStrays.length === 0 && (
               <span className="enrolled-hint">No students enrolled</span>
             )}
           </div>
         </div>
       );
     });
+
+    // Fallback: strays with no matching slot on this day — never silently drop them
+    if (unplacedStrays.length === 0) return slotCards;
+    return [
+      ...slotCards,
+      <div key="unplaced" className="slot-card" style={{ borderColor: '#fca5a5' }}>
+        <div className="slot-header">
+          <div className="slot-meta"><span className="slot-time">⚠ Unplaced lessons</span></div>
+        </div>
+        <div className="lesson-list">
+          {unplacedStrays.map(lesson => {
+            const student = lesson.studentId ? data?.students[lesson.studentId] : null;
+            const displayName = student?.name || getTrialName(lesson.notes) || 'Unknown';
+            const origSlot = lesson.slotId ? slotById[lesson.slotId] : null;
+            return (
+              <div key={lesson.id} className="lesson-chip"
+                onClick={lesson.studentId ? () => openStudentModal(lesson.studentId!, lesson.type) : undefined}
+                role={lesson.studentId ? 'button' : undefined}
+                title={`Dated ${dateStr}, linked to ${origSlot ? origSlot.dayName + ' ' + origSlot.time : 'an unknown'} slot — no matching slot on this day. Fix the slot link.`}>
+                <span style={{ marginRight: 4 }}>⚠</span>
+                <span>{displayName}</span>
+                {origSlot && <span className="type-tag">{origSlot.time}</span>}
+              </div>
+            );
+          })}
+        </div>
+      </div>,
+    ];
   }
 
   // ── Roster slot card (enrollment-only, no lesson overlays) ──────────────────
