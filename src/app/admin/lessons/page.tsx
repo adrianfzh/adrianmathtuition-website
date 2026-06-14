@@ -78,7 +78,7 @@ export default function LessonsListPage() {
 
   // Custom level order: most-used levels first (Adrian's business is mostly EM + AM + JC),
   // then S2/S1 at the bottom. Unknown levels go after everything else.
-  const LEVEL_ORDER: Record<string, number> = { EM: 0, AM: 1, JC: 2, S2: 3, S1: 4 };
+  const LEVEL_ORDER: Record<string, number> = { EM: 0, EM_NA: 0.3, S3_EM: 0.6, AM: 1, S3_AM: 1.5, JC: 2, JC1: 2.1, JC2: 2.2, S2: 3, S1: 4 };
   const filtered = filter
     ? lessons.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.level.toLowerCase().includes(filter.toLowerCase()))
     : lessons;
@@ -288,7 +288,10 @@ function NewLessonModal({ onClose, onCreated }: {
               className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="AM">AM — O-Level A Math</option>
+              <option value="S3_AM">AM (S3) — Sec 3 A Math</option>
               <option value="EM">EM — O-Level E Math</option>
+              <option value="EM_NA">EM (NA) — N(A) E Math</option>
+              <option value="S3_EM">EM (S3) — Sec 3 E Math</option>
               <option value="JC">JC — H2 Mathematics</option>
               <option value="S1">S1 — Secondary 1</option>
               <option value="S2">S2 — Secondary 2</option>

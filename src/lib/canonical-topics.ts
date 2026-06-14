@@ -337,9 +337,14 @@ export function getTopicsForLevel(level: string): TopicCategory[] {
  */
 export function getTopicsForPaperLevel(level: string): TopicCategory[] {
   switch (level.toUpperCase()) {
-    case 'AM': return A_MATH_EXAM_TOPICS;
-    case 'EM': return E_MATH_EXAM_TOPICS;
-    case 'JC': return JC_TOPICS;
+    case 'AM':
+    case 'S3_AM': return A_MATH_EXAM_TOPICS;     // Additional Math (Sec 3 + Sec 4 share the topic list)
+    case 'EM':
+    case 'EM_NA':
+    case 'S3_EM': return E_MATH_EXAM_TOPICS;     // Elementary Math family (NA + Sec 3 + Sec 4)
+    case 'JC':
+    case 'JC1':
+    case 'JC2': return JC_TOPICS;                // H2 Math family
     case 'S1': return S1_EXAM_TOPICS;
     case 'S2': return S2_EXAM_TOPICS;
     default: return [];
