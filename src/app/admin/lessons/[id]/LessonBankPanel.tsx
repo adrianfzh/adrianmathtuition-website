@@ -413,6 +413,37 @@ export async function downloadQuestionDocx(q: BankQuestion, auth: string, genera
   URL.revokeObjectURL(url);
 }
 
+// Export a whole set of questions to ONE .docx (e.g. all of a staging pane) without touching a
+// lesson. Each item keeps its chosen R/E/P kind; the shared lesson-docx builder handles the rest
+// (numbering, examples inline, practice with answer + writing space, source tags).
+export async function downloadQuestionsDocx(
+  items: { q: BankQuestion; kind: 'refresher' | 'worked_example' | 'practice'; section?: string }[],
+  level: string,
+  filename: string,
+): Promise<void> {
+  if (items.length === 0) return;
+  const cards = items.map((it, i) => {
+    const { title, content } = buildBankWorkedExampleTemplate(it.q);
+    const examDisp = it.q.exam_type === 'MY' ? 'MYE' : it.q.exam_type;
+    const sourceTag = [it.q.year, it.q.level, examDisp, it.q.school, `P${it.q.paper}`, `Q${it.q.question_number}`].filter(Boolean).join('/');
+    return {
+      id: it.q.id, content_kind: it.kind, section_name: it.section || 'Questions', card_title: title,
+      content, marks: it.kind === 'practice' ? it.q.total_marks ?? null : null, order_index: i, source_tag: sourceTag,
+    };
+  });
+  const sectionOrder = [...new Set(cards.map(c => c.section_name))];
+  const { buildLessonDocx } = await import('@/lib/lesson-docx-build');
+  const blob = await buildLessonDocx(
+    { name: filename, level: level || 'JC', description: null, topics: [], section_order: sectionOrder },
+    cards,
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${filename.replace(/[^a-z0-9-]+/gi, '_')}.docx`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export function LessonBankPanel({
   level,
   topics,

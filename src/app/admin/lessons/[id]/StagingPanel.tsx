@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { LessonBankPanel, BankQuestionCard, type BankQuestion } from './LessonBankPanel';
+import { LessonBankPanel, BankQuestionCard, downloadQuestionsDocx, type BankQuestion } from './LessonBankPanel';
 import {
   getStaged, subscribeStaging, removeStaged, setPaneAt, moveAllToPane, toggleReject, reorderPane, setKind, setSection,
   clearStaging, clearRejected, clearKeep, isStaged, addToStaging,
@@ -314,6 +314,17 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
   const addKeep = () => sendBatch(batchFor(['keep']));
   const addAll = () => sendBatch(batchFor(['pool', 'keep']));
 
+  // Export a pane's questions straight to a .docx (no lesson involved).
+  const [exporting, setExporting] = useState<StagePane | null>(null);
+  async function exportPane(pane: StagePane) {
+    const batch = batchFor([pane]);
+    if (batch.length === 0) return;
+    setExporting(pane);
+    try { await downloadQuestionsDocx(batch, level, pane === 'pool' ? 'Pool questions' : 'Shortlist questions'); }
+    catch (e) { alert('DOCX export failed: ' + (e as Error).message); }
+    finally { setExporting(null); }
+  }
+
   return (
     <div className="fixed inset-0 z-[70] bg-white flex flex-col">
       <div className="px-4 py-2.5 border-b border-slate-200 flex items-center gap-3 bg-slate-50 shrink-0">
@@ -361,6 +372,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
             headerActions={pool.length > 0 && (
               <>
                 <button onClick={addPool} title={`Add all ${poolCount} Pool question${poolCount > 1 ? 's' : ''} to the lesson`} className="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-medium">＋ add {poolCount} to lesson</button>
+                <button onClick={() => exportPane('pool')} disabled={!!exporting} title="Export all Pool questions straight to a .docx (no lesson)" className="text-[10px] px-2 py-0.5 rounded border border-indigo-300 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50">{exporting === 'pool' ? '…' : '⬇ DOCX'}</button>
                 <button onClick={() => { moveAllToPane('pool', 'keep'); if (kindMode) setKindAll('keep', 'practice'); }} title="Move every Pool card into the shortlist" className="text-[10px] px-1.5 py-0.5 rounded border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100">shortlist all →</button>
                 {!kindMode && (
                   <span className="flex items-center gap-1 ml-1" title="Apply to ALL Pool cards at once">
@@ -390,6 +402,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
             headerActions={keep.length > 0 && (
               <>
                 <button onClick={addKeep} title={`Add all ${keepCount} shortlisted question${keepCount > 1 ? 's' : ''} to the lesson`} className="text-[10px] px-2 py-0.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-medium">＋ add {keepCount} to lesson</button>
+                <button onClick={() => exportPane('keep')} disabled={!!exporting} title="Export all shortlisted questions straight to a .docx (no lesson)" className="text-[10px] px-2 py-0.5 rounded border border-indigo-300 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50">{exporting === 'keep' ? '…' : '⬇ DOCX'}</button>
                 <button onClick={() => { moveAllToPane('keep', 'pool'); if (kindMode) setKindAll('pool', 'worked_example'); }} title="Move every shortlisted card back to the Pool" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-100">← all to pool</button>
                 <button onClick={() => { if (confirm(`Remove all ${keep.length} shortlisted question${keep.length > 1 ? 's' : ''} from the tray?`)) clearKeep(); }} title="Delete every shortlisted card from the tray" className="text-[10px] px-1.5 py-0.5 rounded border border-red-200 text-red-600 bg-red-50 hover:bg-red-100">clear</button>
                 <span className="flex items-center gap-1 ml-2" title="Apply to ALL shortlisted cards at once">
