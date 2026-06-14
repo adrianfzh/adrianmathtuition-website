@@ -180,21 +180,24 @@ function fixCurrencyDollars(text: string): string {
   });
 }
 
-// Render guard for malformed source: a line with an ODD number of unescaped `$` has a stray/missing
-// delimiter (a data artifact), which makes remark-math greedily italicise everything after it. Strip
-// that line's single `$` so it renders as plain readable text instead of a garbled blob. Balanced
-// lines (real math) are untouched; `$$` display delimiters count as two, so they're unaffected.
-// Also closes a display block that opens `$$` but never closes on its own line (an import artifact:
-// some marking-scheme solutions dropped the trailing `$$`). An unclosed `$$` line has an EVEN single-$
-// count so the odd-count guard misses it, and remark-math's math-flow parser then swallows everything
-// up to the next `$$` — across paragraph breaks — into one giant failing KaTeX node (the "red blob").
+// Render guard for malformed source. Operates on the text OUTSIDE matched `$$…$$` display blocks
+// (those — multi-line arrays/matrices included — are kept verbatim and never touched). In the
+// non-display text: a line with an ODD number of unescaped `$` has a stray delimiter that would make
+// remark-math italicise the rest, so strip that line's `$`. And a non-display segment containing an
+// UNMATCHED `$$` (opens but the close was dropped — an import artifact) gets a closing `$$` appended.
+// (Earlier this `$$`-closing ran per line and wrongly closed the OPENING line of every valid
+// multi-line display block; scoping it to non-display segments fixes that.)
 function balanceDollars(text: string): string {
-  return collapseInlineMathNewlines(asText(text)).split('\n').map(line => {
-    const t = line.trimEnd();
-    if (t.startsWith('$$') && t.length > 2 && !t.slice(2).includes('$$')) return t + '$$';
-    const singles = (line.match(/(?<!\\)\$/g) || []).length;
-    return singles % 2 === 1 ? line.replace(/(?<!\\)\$/g, '') : line;
-  }).join('\n');
+  const segs = collapseInlineMathNewlines(asText(text)).split(/(\$\$[\s\S]*?\$\$)/);
+  return segs.map((seg, i) => {
+    if (i % 2 === 1) return seg; // matched $$…$$ display block — leave alone
+    let out = seg.split('\n').map(line => {
+      const singles = (line.match(/(?<!\\)\$/g) || []).length;
+      return singles % 2 === 1 ? line.replace(/(?<!\\)\$/g, '') : line;
+    }).join('\n');
+    if (((out.match(/\$\$/g) || []).length) % 2 === 1) out += '$$'; // truly-unclosed $$ → close it
+    return out;
+  }).join('');
 }
 
 // Inline math that SPANS lines — `$\mathbf{r} = \begin{pmatrix}` / rows / `\end{pmatrix}…$`, an
