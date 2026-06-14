@@ -729,6 +729,39 @@ export default function AdminPage() {
       input?.focus();
     }
 
+    // --- Sort helpers: level → day (Mon→Sun) → earliest start time ---
+    const LEVEL_RANK: Record<string, number> = { S1: 1, S2: 2, S3: 3, S4: 4, JC1: 5, JC2: 6 };
+    function normLevel(raw: string): string {
+      return String(raw || '').trim().replace(/^(Sec|sec)\s*/i, 'S').replace(/^(JC|jc)\s*/i, 'JC').toUpperCase().replace(/\s+/g, '');
+    }
+    function levelRank(inv: any): number { return LEVEL_RANK[normLevel(inv.studentLevel)] || 99; }
+    const DAY_IDX: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+    function parseSlot(dayLabel: string): { day: number; start: number } {
+      if (!dayLabel) return { day: 99, start: 9999 };
+      const m = String(dayLabel).trim().match(/^([A-Za-z]{3})\s+(.*)$/);
+      if (!m) return { day: 99, start: 9999 };
+      const day = DAY_IDX[m[1]] || 99;
+      const tm = m[2].match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*-\s*\d{1,2}(?::\d{2})?\s*(am|pm)?/i);
+      let start = 9999;
+      if (tm) {
+        let h = parseInt(tm[1]); const min = parseInt(tm[2] || '0');
+        const suf = (tm[3] || tm[4] || '').toLowerCase();
+        if (suf === 'pm' && h < 12) h += 12;
+        if (suf === 'am' && h === 12) h = 0;
+        start = h * 60 + min;
+      }
+      return { day, start };
+    }
+    function slotKey(inv: any): { day: number; start: number } {
+      const items = Array.isArray(inv.lineItems) ? inv.lineItems.filter((x: any) => x && x.day) : [];
+      let best = { day: 99, start: 9999 };
+      for (const it of items) {
+        const s = parseSlot(it.day);
+        if (s.day < best.day || (s.day === best.day && s.start < best.start)) best = s;
+      }
+      return best;
+    }
+
     function renderAll() {
       updateSummary();
       const container = document.getElementById('invoices-container') as HTMLElement;
@@ -754,8 +787,12 @@ export default function AdminPage() {
       }
 
       const sorted = [...visible].sort((a: any, b: any) => {
-        if (a.status === b.status) return a.studentName.localeCompare(b.studentName);
-        return a.status === 'Draft' ? -1 : 1;
+        const lr = levelRank(a) - levelRank(b);
+        if (lr !== 0) return lr;
+        const sa = slotKey(a), sb = slotKey(b);
+        if (sa.day !== sb.day) return sa.day - sb.day;
+        if (sa.start !== sb.start) return sa.start - sb.start;
+        return a.studentName.localeCompare(b.studentName);
       });
 
       container.innerHTML = sorted.map((inv: any) => renderCard(inv)).join('');
@@ -965,6 +1002,33 @@ export default function AdminPage() {
           ${aliases.length ? '+ Add name' : '+ Set payee name'}
         </button>`;
 
+      // Inline amount-paid (Sent invoices): edit paid amount at a glance, full-paid checkbox.
+      const inlineOut = (inv.finalAmount - (inv.amountPaid || 0));
+      const inlinePaidHtml = isSent ? `
+        <div class="inline-paid" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:13px;">
+          <span style="color:#64748b;font-weight:600;">💵 Paid $</span>
+          <input type="number" id="inpaid-amt-${inv.id}" step="0.01" min="0" value="${(inv.amountPaid || 0).toFixed(2)}"
+            style="width:92px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:14px;" oninput="onInlinePaidInput('${inv.id}')">
+          <span style="color:#94a3b8;">/ $${inv.finalAmount.toFixed(2)}</span>
+          <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;color:#15803d;font-weight:600;">
+            <input type="checkbox" id="inpaid-full-${inv.id}" ${inv.isPaid ? 'checked' : ''} onchange="onInlineFullToggle('${inv.id}')"> Full
+          </label>
+          <span id="inpaid-out-${inv.id}" style="color:#b45309;font-weight:600;">${inlineOut > 0.001 && (inv.amountPaid || 0) > 0 ? `$${inlineOut.toFixed(2)} outstanding` : ''}</span>
+          <button class="btn btn-save" style="padding:5px 12px;" onclick="saveInlinePaid('${inv.id}')">✓ Save</button>
+        </div>` : '';
+
+      // Quick edit: prorate to N lessons, or add N additional lessons (one-field shortcuts).
+      const quickEditHtml = `
+        <div class="quick-edit" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:#475569;">
+          <span style="font-weight:600;">⚡ Quick:</span>
+          <span>Prorate to <input type="number" id="qe-prorate-${inv.id}" min="0" placeholder="${inv.lessonsCount}"
+            style="width:56px;padding:5px 7px;border:1.5px solid #e2e8f0;border-radius:6px;"> lessons
+            <button class="btn" style="padding:4px 10px;" onclick="applyProrate('${inv.id}')">Apply</button></span>
+          <span>+<input type="number" id="qe-add-${inv.id}" min="0" placeholder="0"
+            style="width:48px;padding:5px 7px;border:1.5px solid #e2e8f0;border-radius:6px;"> add'l @ $${inv.ratePerLesson.toFixed(0)}
+            <button class="btn" style="padding:4px 10px;" onclick="applyAdditional('${inv.id}')">Apply</button></span>
+        </div>`;
+
       return `
         <div class="invoice-card${cardClass}" id="card-${inv.id}">
           <div class="card-body">
@@ -985,6 +1049,8 @@ export default function AdminPage() {
               ${adjLine}
               <div class="final-amount">$${inv.finalAmount.toFixed(2)}</div>
               ${paymentBadge}
+              ${inlinePaidHtml}
+              ${quickEditHtml}
             </div>
             ${notesHtml}
             ${actionsHtml}
@@ -1599,6 +1665,119 @@ export default function AdminPage() {
         updateSummary();
       } catch (err: any) {
         alert('Failed to save payment: ' + err.message);
+      }
+    }
+
+    function onInlinePaidInput(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const amt = parseFloat((document.getElementById(`inpaid-amt-${id}`) as HTMLInputElement)?.value) || 0;
+      const fullBox = document.getElementById(`inpaid-full-${id}`) as HTMLInputElement;
+      if (fullBox) fullBox.checked = amt >= inv.finalAmount && amt > 0;
+      const out = document.getElementById(`inpaid-out-${id}`);
+      const remaining = inv.finalAmount - amt;
+      if (out) out.innerHTML = (amt > 0 && remaining > 0.001) ? `$${remaining.toFixed(2)} outstanding` : '';
+    }
+
+    function onInlineFullToggle(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const fullBox = document.getElementById(`inpaid-full-${id}`) as HTMLInputElement;
+      const amtInput = document.getElementById(`inpaid-amt-${id}`) as HTMLInputElement;
+      if (fullBox?.checked && amtInput) amtInput.value = inv.finalAmount.toFixed(2);
+      onInlinePaidInput(id);
+    }
+
+    async function saveInlinePaid(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const fullBox = document.getElementById(`inpaid-full-${id}`) as HTMLInputElement;
+      let amount = parseFloat((document.getElementById(`inpaid-amt-${id}`) as HTMLInputElement)?.value) || 0;
+      if (fullBox?.checked) amount = inv.finalAmount;
+      const isPaid = fullBox?.checked || amount >= inv.finalAmount;
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': amount, 'Is Paid': isPaid } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        inv.amountPaid = amount;
+        inv.isPaid = isPaid;
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.outerHTML = renderCard(inv);
+        updateSummary();
+      } catch (err: any) {
+        alert('Failed to save payment: ' + err.message);
+      }
+    }
+
+    async function applyProrate(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const raw = (document.getElementById(`qe-prorate-${id}`) as HTMLInputElement)?.value;
+      const n = parseInt(raw);
+      if (raw === '' || isNaN(n) || n < 0) { alert('Enter the number of lessons to prorate to.'); return; }
+      const rate = inv.ratePerLesson || 0;
+      const existing = (Array.isArray(inv.lineItems) ? inv.lineItems : []).find((x: any) => x && x.day) || {};
+      const day = existing.day || '';
+      const desc = existing.description || `${inv.studentLevel || ''} — ${inv.month}`;
+      const lineItems = Array.from({ length: n }, () => ({ day, description: desc }));
+      const baseAmount = n * rate;
+      const extraTotal = (Array.isArray(inv.lineItemsExtra) ? inv.lineItemsExtra : [])
+        .reduce((s: number, e: any) => s + (parseFloat(e.amount) || 0), 0);
+      const finalAmount = baseAmount + (inv.adjustmentAmount || 0) + extraTotal;
+      const note = `Prorated to ${n} lesson${n !== 1 ? 's' : ''} attended (${n} × $${rate.toFixed(2)} = $${baseAmount.toFixed(2)})`;
+      const autoNotes = inv.autoNotes ? `${inv.autoNotes}\n\n${note}` : note;
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, fields: {
+            'Lessons Count': n, 'Line Items': JSON.stringify(lineItems),
+            'Final Amount': finalAmount, 'Auto Notes': autoNotes,
+          } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        inv.lessonsCount = n; inv.baseAmount = baseAmount; inv.finalAmount = finalAmount;
+        inv.lineItems = lineItems; inv.autoNotes = autoNotes;
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.outerHTML = renderCard(inv);
+        updateSummary();
+      } catch (err: any) {
+        alert('Failed to prorate: ' + err.message);
+      }
+    }
+
+    async function applyAdditional(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      const raw = (document.getElementById(`qe-add-${id}`) as HTMLInputElement)?.value;
+      const n = parseInt(raw);
+      if (raw === '' || isNaN(n) || n <= 0) { alert('Enter the number of additional lessons to add.'); return; }
+      const rate = inv.ratePerLesson || 0;
+      const addAmt = n * rate;
+      const newAdj = (inv.adjustmentAmount || 0) + addAmt;
+      const adjNote = `Additional lessons: ${n} × $${rate.toFixed(2)}`;
+      const adjustmentNotes = inv.adjustmentNotes ? `${inv.adjustmentNotes}; ${adjNote}` : adjNote;
+      const extraTotal = (Array.isArray(inv.lineItemsExtra) ? inv.lineItemsExtra : [])
+        .reduce((s: number, e: any) => s + (parseFloat(e.amount) || 0), 0);
+      const finalAmount = (inv.baseAmount || 0) + newAdj + extraTotal;
+      try {
+        const res = await fetch('/api/admin-invoices', {
+          method: 'PATCH',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ recordId: id, fields: {
+            'Adjustment Amount': newAdj, 'Adjustment Notes': adjustmentNotes, 'Final Amount': finalAmount,
+          } }),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        inv.adjustmentAmount = newAdj; inv.adjustmentNotes = adjustmentNotes; inv.finalAmount = finalAmount;
+        const card = document.getElementById(`card-${id}`);
+        if (card) card.outerHTML = renderCard(inv);
+        updateSummary();
+      } catch (err: any) {
+        alert('Failed to add lessons: ' + err.message);
       }
     }
 
@@ -2403,6 +2582,11 @@ export default function AdminPage() {
     w.showPartialInput = showPartialInput;
     w.updatePaymentPreview = updatePaymentPreview;
     w.savePartialPayment = savePartialPayment;
+    w.onInlinePaidInput = onInlinePaidInput;
+    w.onInlineFullToggle = onInlineFullToggle;
+    w.saveInlinePaid = saveInlinePaid;
+    w.applyProrate = applyProrate;
+    w.applyAdditional = applyAdditional;
     w.editAlias = editAlias;
     w.cancelAlias = cancelAlias;
     w.saveAlias = saveAlias;
@@ -2427,6 +2611,7 @@ export default function AdminPage() {
         'sendAllApproved','toggleRecordPayment',
         'markReferralCashPaid','onPaymentFilter','onLevelFilter','sendFilteredApproved','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
+        'onInlinePaidInput','onInlineFullToggle','saveInlinePaid','applyProrate','applyAdditional',
         'editAlias','cancelAlias','saveAlias','removeAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
         'deleteInvoice','previewEmail','closeEmailPreview','saveCustomMessage','resetCustomMessage',
