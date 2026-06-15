@@ -2684,16 +2684,24 @@ export default function SchedulePage() {
               <div className="form-group">
                 <span className="form-label">Date</span>
                 <input type="date" className="modal-input" value={addModal.date}
-                  onChange={e => setAddModal(m => m ? { ...m, date: e.target.value } : null)} />
+                  onChange={e => setAddModal(m => m ? { ...m, date: e.target.value, slotId: '' } : null)} />
               </div>
-              {/* Slot */}
+              {/* Slot — scoped to the selected date's weekday */}
               <div className="form-group">
                 <span className="form-label">Slot</span>
-                <select className="modal-select" value={addModal.slotId}
-                  onChange={e => setAddModal(m => m ? { ...m, slotId: e.target.value } : null)}>
-                  <option value="">Select slot…</option>
-                  {data?.slots.map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
-                </select>
+                {(() => {
+                  const dayName = addModal.date
+                    ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(addModal.date + 'T00:00:00').getDay()]
+                    : null;
+                  const daySlots = (data?.slots ?? []).filter(s => !dayName || s.dayName === dayName);
+                  return (
+                    <select className="modal-select" value={addModal.slotId}
+                      onChange={e => setAddModal(m => m ? { ...m, slotId: e.target.value } : null)}>
+                      <option value="">{!addModal.date ? 'Pick a date first…' : daySlots.length ? 'Select slot…' : `No slots on ${dayName}`}</option>
+                      {daySlots.map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
+                    </select>
+                  );
+                })()}
               </div>
               {/* Student search (Additional/Makeup) */}
               {addModal.type !== 'Trial' && (
