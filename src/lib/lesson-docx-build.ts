@@ -225,13 +225,17 @@ async function contentParagraphs(
   const out: Paragraph[] = [];
   const src = joinMultilineMath(content ?? '');
 
-  // Ordered tokens: text chunks and <img> URLs, preserving document order.
-  const tokens: Array<{ kind: 'text'; value: string } | { kind: 'img'; url: string }> = [];
-  const imgRe = /<img\b[^>]*?src="([^"]+)"[^>]*>/gi;
+  // Ordered tokens: text chunks, <img> URLs, and $$…$$ DISPLAY-math blocks (which may span lines,
+  // e.g. `$$\begin{aligned}…\\…\end{aligned}$$`). Display blocks must be pulled out BEFORE the
+  // per-line split below, or the `$$` never pairs and the LaTeX prints raw. Each becomes a centred
+  // OMML equation. Inline `$…$` stays inside the text tokens (handled by inlineRuns).
+  const tokens: Array<{ kind: 'text'; value: string } | { kind: 'img'; url: string } | { kind: 'dmath'; latex: string }> = [];
+  const blockRe = /<img\b[^>]*?src="([^"]+)"[^>]*>|\$\$([\s\S]+?)\$\$/gi;
   let last = 0; let m: RegExpExecArray | null;
-  while ((m = imgRe.exec(src))) {
+  while ((m = blockRe.exec(src))) {
     if (m.index > last) tokens.push({ kind: 'text', value: src.slice(last, m.index) });
-    tokens.push({ kind: 'img', url: m[1] });
+    if (m[1] !== undefined) tokens.push({ kind: 'img', url: m[1] });
+    else tokens.push({ kind: 'dmath', latex: m[2] });
     last = m.index + m[0].length;
   }
   if (last < src.length) tokens.push({ kind: 'text', value: src.slice(last) });
@@ -252,6 +256,17 @@ async function contentParagraphs(
         spacing: { after: 80 },
         border,
         children: [new TextRun({ text: `[image unavailable: ${tok.url.split('/').pop() ?? tok.url}]`, italics: true, color: '999999' })],
+      }));
+      continue;
+    }
+    if (tok.kind === 'dmath') {
+      // Centred display equation (OMML). Handles \begin{aligned}, \tfrac, etc. via KaTeX→MathML→OMML.
+      const omml = latexToOMML(tok.latex.trim(), { displayMode: true, color: opts.color ?? null });
+      out.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 40, after: 80 },
+        border,
+        children: [new TextRun({ text: reg.token(omml), color: opts.color })],
       }));
       continue;
     }

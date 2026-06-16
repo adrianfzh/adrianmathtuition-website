@@ -397,7 +397,21 @@ export async function downloadQuestionDocx(q: BankQuestion, auth: string, genera
         if (data.chunk) result += data.chunk;
       }
     }
-    if (result.trim()) fullContent = result.trim();
+    if (result.trim()) {
+      fullContent = result.trim();
+      // Persist the generated WORKING to the bank (top-level solution, tagged ai_opus) so it's stored
+      // like every other question's solution. Take the text after the "**Working:**" marker; the
+      // endpoint refuses to overwrite an existing solution. Best-effort — never blocks the download.
+      const wm = fullContent.split(/\n?\s*\*\*Working:?\*\*\s*\n?/i);
+      const working = (wm.length > 1 ? wm.slice(1).join('\n').trim() : fullContent);
+      try {
+        await fetch('/api/admin/lessons/save-solution', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+          body: JSON.stringify({ id: q.id, solution: working }),
+        });
+      } catch { /* ignore — the .docx still downloads */ }
+    }
   }
   const examDisp = q.exam_type === 'MY' ? 'MYE' : q.exam_type;
   const sourceTag = [q.year, q.level, examDisp, q.school, `P${q.paper}`, `Q${q.question_number}`].filter(Boolean).join('/');
@@ -1421,7 +1435,7 @@ export function BankQuestionCard({
                 setDl('idle');
               }}
               disabled={dl !== 'idle'}
-              title="No solution in the bank — the AI writes the working, then downloads the .docx (not saved to the bank)"
+              title="No solution in the bank — the AI writes the working, saves it to the question bank (tagged AI), and downloads the .docx"
               className="text-[10px] px-2 py-0.5 bg-violet-50 text-violet-700 border border-violet-200 rounded hover:bg-violet-100 disabled:opacity-50"
             >{dl === 'solving' ? '✨ Solving…' : '✨ Solve & ⬇'}</button>
           )}
