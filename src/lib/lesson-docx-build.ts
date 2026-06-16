@@ -260,10 +260,12 @@ async function contentParagraphs(
       continue;
     }
     if (tok.kind === 'dmath') {
-      // Centred display equation (OMML). Handles \begin{aligned}, \tfrac, etc. via KaTeX→MathML→OMML.
+      // Left-aligned, indented display equation (OMML). Handles \begin{aligned}, \tfrac, etc.
+      // via KaTeX→MathML→OMML. Left+indent reads as a clean column in worked solutions.
       const omml = latexToOMML(tok.latex.trim(), { displayMode: true, color: opts.color ?? null });
       out.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
+        alignment: AlignmentType.LEFT,
+        indent: { left: 482 },
         spacing: { before: 40, after: 80 },
         border,
         children: [new TextRun({ text: reg.token(omml), color: opts.color })],
