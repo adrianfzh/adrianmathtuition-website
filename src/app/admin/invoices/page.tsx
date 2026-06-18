@@ -1517,6 +1517,15 @@ export default function AdminPage() {
         const data = await res.json();
         const logs: any[] = Array.isArray(data.sentInvoices) ? data.sentInvoices : [];
         const allInv: any[] = Array.isArray(data.invoices) ? data.invoices : [];
+        // Sort invoices chronologically (newest first). The API sorts by the "Month" TEXT field,
+        // which orders alphabetically (April, August, July…), not by date — so re-sort here.
+        const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+        const monthKey = (m: string) => {
+          const [name, yr] = String(m || '').toLowerCase().split(/\s+/);
+          const mi = MONTHS.indexOf(name);
+          return (parseInt(yr) || 0) * 12 + (mi < 0 ? -1 : mi);
+        };
+        allInv.sort((a: any, b: any) => monthKey(b.month) - monthKey(a.month));
         const sectionTitle = (txt: string) =>
           `<div style="font-size:12px;font-weight:700;color:#7e22ce;text-transform:uppercase;letter-spacing:.04em;margin:14px 4px 8px;">${txt}</div>`;
 
