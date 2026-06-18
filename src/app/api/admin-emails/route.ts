@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
+import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -67,20 +68,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Log entry missing To/Subject/Body' }, { status: 400 });
     }
 
-    // Re-attach the exact PDF that was originally sent (archived on the log), so
-    // a resent invoice goes out WITH its invoice — not body-only.
+    // Invoice/receipt emails MUST carry a PDF — never resend them body-only.
+    const typeL = (type || '').toLowerCase();
+    const isReceipt = typeL.includes('receipt');
+    const isInvoice = typeL === 'invoice' || typeL === 'amended_invoice';
+    const requiresPdf = isReceipt || isInvoice || !!pdfUrl;
+    const fname = (subject.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'invoice') + '.pdf';
+
     let attachments: { filename: string; content: string }[] | undefined;
+    // 1. Prefer the exact PDF originally sent (archived on the log row).
     if (pdfUrl) {
       try {
         const pdfResp = await fetch(pdfUrl);
         if (pdfResp.ok) {
           const buf = Buffer.from(await pdfResp.arrayBuffer());
-          const fname = (subject.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'invoice') + '.pdf';
           attachments = [{ filename: fname, content: buf.toString('base64') }];
         }
       } catch (e: any) {
         console.error('[admin-emails] resend PDF fetch failed:', e?.message);
       }
+    }
+    // 2. Invoice with no usable archived PDF (e.g. the original send failed to
+    //    attach) — fall back to the invoice's current PDF, regenerating if needed.
+    //    Receipts can't be reconstructed here (no payment context), so they rely
+    //    solely on the archived PDF above.
+    if (requiresPdf && !attachments && isInvoice && relatedInvoice) {
+      try {
+        const inv = await airtableRequest('Invoices', `/${relatedInvoice}`);
+        const sid = inv.fields['Student']?.[0];
+        let studentName = '';
+        if (sid) {
+          const stu = await airtableRequest('Students', `/${sid}`).catch(() => null);
+          studentName = stu?.fields?.['Student Name'] || '';
+        }
+        let buf: Buffer | null = null;
+        const cur = inv.fields['PDF URL'] as string | undefined;
+        if (cur) { const r = await fetch(cur); if (r.ok) buf = Buffer.from(await r.arrayBuffer()); }
+        if (!buf) { const g = await generateAndStoreInvoicePdf(inv, studentName); buf = g.buffer; }
+        if (buf) attachments = [{ filename: fname, content: buf.toString('base64') }];
+      } catch (e: any) {
+        console.error('[admin-emails] invoice PDF regeneration failed:', e?.message);
+      }
+    }
+    // 3. HARD RULE: refuse to resend an invoice/receipt with no PDF attached.
+    if (requiresPdf && !attachments) {
+      return NextResponse.json(
+        { error: 'Cannot resend — this email requires a PDF and none could be attached. Regenerate the invoice PDF first, then retry.' },
+        { status: 502 },
+      );
     }
 
     const sendRes = await fetch('https://api.resend.com/emails', {

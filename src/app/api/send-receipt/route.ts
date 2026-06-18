@@ -198,8 +198,19 @@ export async function POST(req: NextRequest) {
       const filename = `AdrianMathTuition-Receipt-${studentName.replace(/\s+/g, '-')}-${month.replace(/[\s–]/g, '-')}.pdf`;
       pdfAttachment = { filename, content: pdfBuffer.toString('base64') };
     } catch (pdfErr: any) {
-      console.error('[send-receipt] PDF generation failed (continuing without attachment):', pdfErr.message);
+      console.error('[send-receipt] PDF generation failed:', pdfErr.message);
     }
+  }
+
+  // HARD RULE: a receipt must carry its PDF. If generation failed, do NOT send a
+  // body-only receipt — abort so it can be retried, never delivered without the PDF.
+  // (Correction emails intentionally have no PDF and are exempt.)
+  if (!correction && !pdfAttachment) {
+    console.error('[send-receipt] aborting — receipt PDF unavailable, refusing to send without attachment');
+    return NextResponse.json(
+      { error: 'Receipt PDF could not be generated — email not sent (receipts are never sent without their PDF). Please retry.' },
+      { status: 502 },
+    );
   }
 
   // Send via Resend
