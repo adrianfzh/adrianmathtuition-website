@@ -569,6 +569,7 @@ export default function AdminPage() {
     let selectedMonth = '';
     let searchQuery = '';
     let paymentFilter = '';
+    let statusFilter = '';
     const selectedLevels = new Set<string>();
     let currentPreviewId = '';
 
@@ -741,6 +742,9 @@ export default function AdminPage() {
           return true;
         });
       }
+      if (statusFilter) {
+        out = out.filter((i: any) => i.status === statusFilter);
+      }
       if (searchQuery) {
         const q = searchQuery;
         out = out.filter((i: any) => {
@@ -750,6 +754,11 @@ export default function AdminPage() {
         });
       }
       return out;
+    }
+
+    function onStatusFilter(val: string) {
+      statusFilter = val;
+      renderAll();
     }
 
     function onPaymentFilter(val: string) {
@@ -2737,6 +2746,7 @@ export default function AdminPage() {
     w.markReferralCashPaid = markReferralCashPaid;
     w.cancelDeferred = cancelDeferred;
     w.onPaymentFilter = onPaymentFilter;
+    w.onStatusFilter = onStatusFilter;
     w.onLevelPillToggle = onLevelPillToggle;
     w.sendFilteredApproved = sendFilteredApproved;
     w.toggleAutoSendPause = toggleAutoSendPause;
@@ -2776,7 +2786,7 @@ export default function AdminPage() {
         'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
-        'markReferralCashPaid','onPaymentFilter','onLevelFilter','sendFilteredApproved','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
+        'markReferralCashPaid','onPaymentFilter','onStatusFilter','onLevelFilter','sendFilteredApproved','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'onInlinePaidInput','onInlineFullToggle','saveInlinePaid','applyProrate','applyAdditional',
         'editAlias','cancelAlias','saveAlias','removeAlias',
@@ -2837,6 +2847,13 @@ export default function AdminPage() {
             <option value="unpaid">Unpaid</option>
             <option value="partial">Partially paid</option>
             <option value="paid">Fully paid</option>
+          </select>
+          <select id="status-filter" onChange={(e) => (window as any).onStatusFilter(e.target.value)}
+            style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px', fontSize: 13, background: 'white', cursor: 'pointer' }}>
+            <option value="">All statuses</option>
+            <option value="Draft">Draft (not approved)</option>
+            <option value="Approved">Approved</option>
+            <option value="Sent">Sent</option>
           </select>
           <div id="level-pills" style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
             {['S1','S2','S3','S4','JC1','JC2'].map((lvl: string) => (
