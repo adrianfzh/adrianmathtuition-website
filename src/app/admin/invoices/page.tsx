@@ -2296,6 +2296,47 @@ export default function AdminPage() {
       finally { btn.disabled = false; }
     }
 
+    async function loadJuneRevisionState() {
+      try {
+        const res = await fetch('/api/admin-invoices/june-revision-mode', { headers: authHeaders() });
+        const data = await res.json();
+        updateJuneRevisionBtn(data.enabled);
+      } catch { /* non-fatal */ }
+    }
+
+    function updateJuneRevisionBtn(enabled: boolean) {
+      const btn = document.getElementById('btn-june-revision') as HTMLButtonElement | null;
+      if (!btn) return;
+      if (enabled) {
+        btn.textContent = '📚 June Revision Mode: ON — click to turn off';
+        btn.style.background = '#eff6ff'; btn.style.borderColor = '#93c5fd'; btn.style.color = '#1d4ed8';
+      } else {
+        btn.textContent = '📚 June Revision Mode: off — click to turn on';
+        btn.style.background = '#f9fafb'; btn.style.borderColor = '#d1d5db'; btn.style.color = '#6b7280';
+      }
+    }
+
+    async function toggleJuneRevisionMode() {
+      const btn = document.getElementById('btn-june-revision') as HTMLButtonElement | null;
+      if (!btn) return;
+      const currentlyOn = btn.textContent?.includes(': ON');
+      const newEnabled = !currentlyOn;
+      if (!confirm(`${newEnabled ? 'Turn ON' : 'Turn OFF'} June Revision Mode?\n\n${newEnabled ? 'When generating June, students marked "Signed Up" for the revision sprint will be SKIPPED for a regular invoice (they get their revision invoice instead).' : 'June will bill all students normally (regular invoices).'}`)) return;
+      btn.disabled = true;
+      const prevText = btn.textContent;
+      btn.textContent = 'Saving…';
+      try {
+        const res = await fetch('/api/admin-invoices/june-revision-mode', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ enabled: newEnabled }),
+        });
+        const data = await res.json();
+        updateJuneRevisionBtn(data.enabled);
+      } catch { if (prevText) btn.textContent = prevText; }
+      finally { btn.disabled = false; }
+    }
+
     async function sendFilteredApproved() {
       const visible = filteredInvoices();
       const approvedIds = visible.filter((i: any) => i.status === 'Approved').map((i: any) => i.id);
@@ -2762,6 +2803,7 @@ export default function AdminPage() {
     w.onLevelPillToggle = onLevelPillToggle;
     w.sendFilteredApproved = sendFilteredApproved;
     w.toggleAutoSendPause = toggleAutoSendPause;
+    w.toggleJuneRevisionMode = toggleJuneRevisionMode;
     w.sendReminder = sendReminder;
     w.toggleReceiptForm = toggleReceiptForm;
     w.openReceiptPreview = openReceiptPreview;
@@ -2789,6 +2831,7 @@ export default function AdminPage() {
 
     init();
     loadAutoSendPauseState();
+    loadJuneRevisionState();
     loadReferralStatus();
     loadDeferredPending();
 
@@ -2798,7 +2841,7 @@ export default function AdminPage() {
         'removeLineItem','updateCalc','generateInvoices',
         'regenerateAllPDFs','downloadAllPDFs','regenerateInvoice','sendInvoice',
         'sendAllApproved','toggleRecordPayment',
-        'markReferralCashPaid','onPaymentFilter','onStatusFilter','onLevelFilter','sendFilteredApproved','toggleAutoSendPause','sendReminder','toggleReceiptForm','openReceiptPreview',
+        'markReferralCashPaid','onPaymentFilter','onStatusFilter','onLevelFilter','sendFilteredApproved','toggleAutoSendPause','toggleJuneRevisionMode','sendReminder','toggleReceiptForm','openReceiptPreview',
         'markFullPaid','showPartialInput','updatePaymentPreview','savePartialPayment',
         'onInlinePaidInput','onInlineFullToggle','saveInlinePaid','applyProrate','applyAdditional',
         'editAlias','cancelAlias','saveAlias','removeAlias',
@@ -2886,6 +2929,7 @@ export default function AdminPage() {
           <button className="btn-generate" id="btn-send-filtered" onClick={() => (window as any).sendFilteredApproved()} style={{ background: '#f0fdf4', borderColor: '#86efac', color: '#15803d' }}>📤 Send Filtered Approved</button>
           <a className="btn-generate" href="/admin/emails" style={{ textDecoration: 'none', background: '#fdf4ff', borderColor: '#e9d5ff', color: '#7e22ce' }}>📨 Email Log</a>
           <button className="btn-generate" id="btn-pause-autosend" onClick={() => (window as any).toggleAutoSendPause()} style={{ background: '#fef2f2', borderColor: '#fca5a5', color: '#dc2626' }}>⏸ Auto-send on 15th: checking…</button>
+          <button className="btn-generate" id="btn-june-revision" onClick={() => (window as any).toggleJuneRevisionMode()} style={{ background: '#f9fafb', borderColor: '#d1d5db', color: '#6b7280' }}>📚 June Revision Mode: checking…</button>
           <button className="btn-refresh" onClick={() => (window as any).loadInvoices()}>🔄 Refresh</button>
           <button className="btn-refresh" onClick={() => (window as any).logout()}>🚪 Log out</button>
         </div>

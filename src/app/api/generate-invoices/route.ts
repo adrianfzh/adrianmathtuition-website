@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
 
     const [studentsData, slotsData, existingInvoicesData, prevMonthInvoicesData] = await Promise.all([
       studentIds.length
-        ? airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Level&fields[]=Status&fields[]=Parent Email&fields[]=Parent Name&fields[]=Subject Level&fields[]=Subjects`)
+        ? airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Level&fields[]=Status&fields[]=Parent Email&fields[]=Parent Name&fields[]=Subject Level&fields[]=Subjects&fields[]=June Revision ${invoiceMonth.year}`)
         : Promise.resolve({ records: [] }),
       slotIds.length
         ? airtableRequestAll('Slots', `?filterByFormula=OR(${slotIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)
@@ -186,6 +186,19 @@ export async function POST(req: NextRequest) {
       console.warn(`[generate-invoices] SKIP ${name}: ${reason}`);
     };
 
+    // June Revision Mode (toggle in Settings): when ON, students who signed up for the
+    // June revision sprint are billed via their revision invoice (created by the sign-up
+    // flow), so we SKIP their regular June invoice here. Per-year field: "June Revision <year>".
+    const isJune = invoiceMonth.month === 6;
+    let juneRevisionMode = false;
+    if (isJune) {
+      const rs = await airtableRequestAll('Settings',
+        `?filterByFormula=${encodeURIComponent(`{Setting Name}='june_revision_mode'`)}`
+      ).catch(() => ({ records: [] }));
+      juneRevisionMode = rs.records?.[0]?.fields?.['Value'] === 'true';
+      console.log(`[generate-invoices] June Revision Mode: ${juneRevisionMode ? 'ON' : 'off'}`);
+    }
+
     for (const studentId in enrollmentsByStudent) {
       const studentEnrollments = enrollmentsByStudent[studentId];
       const student = studentsById[studentId];
@@ -200,6 +213,13 @@ export async function POST(req: NextRequest) {
           skipped += studentEnrollments.length;
           // Not surfaced in skipReasons — this is the normal "already has
           // an invoice for this month" case and is expected.
+          continue;
+        }
+
+        // June Revision Mode: signed-up students get a revision invoice instead of a regular one.
+        if (isJune && juneRevisionMode && student.fields[`June Revision ${invoiceMonth.year}`] === 'Signed Up') {
+          skipped += studentEnrollments.length;
+          recordSkip(studentId, 'June revision sprint — billed via revision invoice (regular skipped)');
           continue;
         }
 

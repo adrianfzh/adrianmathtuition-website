@@ -358,6 +358,8 @@ export async function POST(req: NextRequest) {
 
   try {
     let invoiceRecords: any[];
+    // Conservative auto-send: invoices the classifier holds back for manual review (cron only).
+    let heldForReview: any[] = [];
     // True cron: called by Vercel scheduler (x-vercel-cron header) or CRON_SECRET
     // Manual send from admin UI uses ADMIN_PASSWORD — pause flag should NOT block it
     const cronSecret = process.env.CRON_SECRET;
@@ -384,16 +386,68 @@ export async function POST(req: NextRequest) {
         }).catch(() => {});
         return NextResponse.json({ sent: 0, failed: 0, errors: [], paused: true });
       }
-      // Scope to current invoice month only so stale Approved
-      // rows from previous cycles don't get re-sent automatically.
+      // Scope to current invoice month only so stale rows from previous
+      // cycles don't get re-sent automatically.
       const invoiceMonth = getInvoiceMonth();
-      const formula = `AND({Status}='Approved',{Month}='${invoiceMonth.label}')`;
+      const formula = `AND(OR({Status}='Draft',{Status}='Approved'),{Month}='${invoiceMonth.label}')`;
       const data = await airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(formula)}`);
-      invoiceRecords = data.records || [];
+      const candidates: any[] = data.records || [];
+
+      // CONSERVATIVE AUTO-SEND CLASSIFIER
+      // A "clean" invoice — plain regular lessons, nothing unusual — auto-sends.
+      // Anything with a carry-over, adjustment, credit/$0, proration note, first-invoice
+      // welcome, or a custom email message is HELD and flagged to Telegram for review.
+      const isCleanRegular = (r: any): boolean => {
+        const f = r.fields || {};
+        if ((f['Invoice Type'] || 'Regular') !== 'Regular') return false;   // revision sprints etc.
+        if (!(Number(f['Final Amount']) > 0)) return false;                 // $0 / negative / missing
+        if (Number(f['Adjustment Amount'] || 0) !== 0) return false;        // any adjustment
+        const extra = (f['Line Items Extra'] || '').trim();
+        if (extra && extra !== '[]') return false;                          // carry-overs, credits, referrals
+        if ((f['Auto Notes'] || '').trim()) return false;                   // proration / first-invoice / special notes
+        if ((f['Custom Email Message'] || '').trim()) return false;         // bespoke email
+        return true;
+      };
+      invoiceRecords = candidates.filter(isCleanRegular);
+      heldForReview = candidates.filter(r => !isCleanRegular(r));
+      console.log(`[send-invoices] cron classifier: ${invoiceRecords.length} clean → auto-send, ${heldForReview.length} held for review`);
     }
 
+    // Flag the invoices the classifier held back, so Adrian can review + send them with a tap.
+    const flagHeld = async (monthLabel: string) => {
+      if (!notify || !heldForReview.length) return;
+      const heldIds = [...new Set(heldForReview.map((r) => r.fields['Student']?.[0]).filter(Boolean))] as string[];
+      const heldStudents: Record<string, string> = {};
+      if (heldIds.length) {
+        const hs = await airtableRequestAll('Students',
+          `?filterByFormula=OR(${heldIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name`
+        ).catch(() => ({ records: [] }));
+        for (const r of hs.records) heldStudents[r.id] = r.fields['Student Name'];
+      }
+      const reason = (f: any): string => {
+        if ((f['Invoice Type'] || 'Regular') !== 'Regular') return 'revision sprint';
+        if (Number(f['Final Amount']) <= 0) return Number(f['Final Amount']) < 0 ? 'credit balance' : '$0';
+        if (Number(f['Adjustment Amount'] || 0) !== 0) return 'adjustment';
+        const ex = (f['Line Items Extra'] || '').trim();
+        if (ex && ex !== '[]') return 'carry-over / credit';
+        if (/first invoice/i.test(f['Auto Notes'] || '')) return 'first invoice';
+        if ((f['Auto Notes'] || '').trim()) return 'proration / note';
+        if ((f['Custom Email Message'] || '').trim()) return 'custom email';
+        return 'review';
+      };
+      const heldLines = heldForReview
+        .map((r) => `• ${heldStudents[r.fields['Student']?.[0]] || '?'} — $${r.fields['Final Amount'] ?? '?'} (${reason(r.fields)})`)
+        .join('\n');
+      await sendTelegram(
+        `\u{1F6A9} <b>Held for review</b> — ${monthLabel}\n\n` +
+          `${heldForReview.length} invoice(s) were NOT auto-sent (non-routine). ` +
+          `Review + send them from /admin/invoices:\n\n${heldLines}`
+      ).catch(() => {});
+    };
+
     if (!invoiceRecords.length) {
-      return NextResponse.json({ sent: 0, failed: 0, errors: [] });
+      await flagHeld(getInvoiceMonth().label);
+      return NextResponse.json({ sent: 0, failed: 0, errors: [], held: heldForReview.length });
     }
 
     const studentIds = [
@@ -642,7 +696,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length, sentDetails });
+    // Flag the invoices the classifier held back, so Adrian can review + send them with a tap.
+    await flagHeld(currentMonth);
+
+    return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length, sentDetails, held: heldForReview.length });
   } catch (err: any) {
     console.error('[send-invoices] Unhandled error:', err);
     return NextResponse.json({ error: 'Internal server error', details: err.message }, { status: 500 });
