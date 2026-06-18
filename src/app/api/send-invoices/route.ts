@@ -27,7 +27,7 @@ function buildEmailHtml(invoice: {
 }) {
   // One-time apology for the delayed July 2026 batch (was due to go out 18 June). Remove after July.
   const delayApology = invoice.month === 'July 2026'
-    ? `<p>Our sincere apologies for the delay — this ${invoice.month} invoice was due to be sent on 18 June.</p>\n    `
+    ? `<p>My sincere apologies for the delay — this ${invoice.month} invoice was due to be sent on 15 June.</p>\n    `
     : '';
   return `
     <p>Dear Parent/Student,</p>
