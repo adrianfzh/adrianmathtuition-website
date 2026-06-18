@@ -192,16 +192,26 @@ export async function POST(req: NextRequest) {
     );
     const regularInvoices = await airtableRequestAll(
       'Invoices',
-      `?filterByFormula=${regularFormula}&fields[]=Student&fields[]=Status&fields[]=Adjustment%20Notes`
+      `?filterByFormula=${regularFormula}&fields[]=Student&fields[]=Status&fields[]=Adjustment%20Notes&fields[]=Line%20Items%20Extra`
     );
 
     const regularInvoice = regularInvoices.records.find(
       (r: { fields: Record<string, unknown[]> }) => r.fields['Student']?.[0] === studentId
     );
 
+    // If the regular invoice we're voiding carried a referral credit, capture it so
+    // we can move it onto the revision invoice — otherwise the referrer loses the
+    // credit they earned when their regular invoice is voided.
+    let carriedReferralCredits: Array<{ description: string; amount: number }> = [];
     if (regularInvoice) {
       originalInvoiceId = regularInvoice.id;
       originalInvoiceStatus = (regularInvoice.fields['Status'] as string) || 'Draft';
+      try {
+        const extras = JSON.parse((regularInvoice.fields['Line Items Extra'] as unknown as string) || '[]');
+        carriedReferralCredits = (Array.isArray(extras) ? extras : []).filter(
+          (e: { description?: string }) => typeof e?.description === 'string' && /referral reward/i.test(e.description)
+        );
+      } catch { /* no extras */ }
       const noteText = `Original status: ${originalInvoiceStatus}; voided for revision sign-up on ${today}`;
       await airtableRequest('Invoices', `/${originalInvoiceId}`, {
         method: 'PATCH',
@@ -215,6 +225,8 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Step 3: Create revision sprint invoice ────────────────────────────────
+    // Move any referral credit from the voided regular invoice onto this one so it isn't lost.
+    const referralCreditTotal = carriedReferralCredits.reduce((s, e) => s + (Number(e.amount) || 0), 0);
     const revisionInvoice = await airtableRequest('Invoices', '', {
       method: 'POST',
       body: JSON.stringify({
@@ -226,8 +238,13 @@ export async function POST(req: NextRequest) {
           'Issue Date': today,
           'Due Date': '2026-06-01',
           'Line Items': JSON.stringify(lineItems),
-          'Final Amount': total,
+          ...(carriedReferralCredits.length ? { 'Line Items Extra': JSON.stringify(carriedReferralCredits) } : {}),
+          'Final Amount': total + referralCreditTotal,
           'Lessons Count': totalLessons,
+          ...(carriedReferralCredits.length ? {
+            'Auto Notes': 'Referral credit carried from voided regular invoice: ' +
+              carriedReferralCredits.map((e) => `${e.description} ($${e.amount})`).join('; '),
+          } : {}),
         },
       }),
     });

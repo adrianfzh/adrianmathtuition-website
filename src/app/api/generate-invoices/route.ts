@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
         ? airtableRequestAll('Slots', `?filterByFormula=OR(${slotIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)
         : Promise.resolve({ records: [] }),
       airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${invoiceMonth.label}'`)}`),
-      airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${prevMonthLabel}'`)}&fields[]=Student&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Status`),
+      airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${prevMonthLabel}'`)}&fields[]=Student&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Status&fields[]=Invoice Type&fields[]=Lessons Count&fields[]=Rate Per Lesson&fields[]=Adjustment Amount&fields[]=Adjustment Notes&fields[]=Line Items Extra`),
     ]);
     console.log(`[generate-invoices] Students: ${studentsData.records.length}, Slots: ${slotsData.records.length}, Existing ${invoiceMonth.label}: ${existingInvoicesData.records.length}, Previous ${prevMonthLabel}: ${prevMonthInvoicesData.records.length}`);
 
@@ -324,8 +324,8 @@ export async function POST(req: NextRequest) {
         // remember which ones we carried so we can mark them "settled here" after this invoice is created.
         const prevInvoices = prevInvoicesByStudent[studentId] || [];
         const carryOverLineItems: any[] = [];
-        let carryOverNotes = '';
         const carriedFromIds: string[] = [];
+        const carryNoteParts: string[] = [];
         let prevOutstanding = 0;
         for (const pInv of prevInvoices) {
           const finalAmt = pInv.fields['Final Amount'] || 0;
@@ -333,7 +333,30 @@ export async function POST(req: NextRequest) {
           const isPaid = pInv.fields['Is Paid'] || false;
           // If Is Paid is ticked, treat as fully settled regardless of Amount Paid field.
           const out = isPaid ? 0 : Math.max(0, finalAmt - amountPaid);
-          if (out > 0) { prevOutstanding += out; carriedFromIds.push(pInv.id); }
+          if (out <= 0) continue;
+          prevOutstanding += out;
+          carriedFromIds.push(pInv.id);
+
+          // Itemised breakdown of this carried month: regular lessons + any added items,
+          // so the admin can see at a glance what the outstanding is made of.
+          const ptype = (pInv.fields['Invoice Type'] || 'Regular') as string;
+          const lc = pInv.fields['Lessons Count'] || 0;
+          const rate = pInv.fields['Rate Per Lesson'] || 0;
+          const adj = pInv.fields['Adjustment Amount'] || 0;
+          const adjNotes = (pInv.fields['Adjustment Notes'] || '').toString();
+          let pExtras: any[] = [];
+          try { pExtras = JSON.parse(pInv.fields['Line Items Extra'] || '[]'); } catch { /* ignore */ }
+          const lines: string[] = [];
+          if (ptype === 'Revision Sprint') {
+            lines.push(`  \u2022 Revision Sprint = $${finalAmt.toFixed(2)}`);
+          } else {
+            if (lc > 0) lines.push(`  \u2022 ${lc} regular lesson${lc !== 1 ? 's' : ''} \u00d7 $${Number(rate).toFixed(2)} = $${(lc * rate).toFixed(2)}`);
+            if (adj) lines.push(`  \u2022 ${adjNotes || 'Adjustment'} = $${Number(adj).toFixed(2)}`);
+            for (const e of pExtras) lines.push(`  \u2022 ${e.description} = $${Number(e.amount).toFixed(2)}`);
+          }
+          if (amountPaid > 0) lines.push(`  \u2022 Less amount paid: \u2212$${amountPaid.toFixed(2)}`);
+          const header = `${prevMonthLabel}${ptype !== 'Regular' ? ` (${ptype})` : ''} \u2014 outstanding $${out.toFixed(2)}:`;
+          carryNoteParts.push(`${header}\n${lines.join('\n')}`);
         }
         if (prevOutstanding > 0) {
           prevOutstanding = parseFloat(prevOutstanding.toFixed(2));
@@ -341,8 +364,8 @@ export async function POST(req: NextRequest) {
             description: `Outstanding balance \u2014 ${prevMonthLabel}`,
             amount: prevOutstanding,
           });
-          carryOverNotes = `${prevMonthLabel} outstanding of ${prevOutstanding.toFixed(2)} carried forward.`;
         }
+        const carryOverNotes = carryNoteParts.join('\n\n');
 
         const carryOverTotal = carryOverLineItems.reduce((sum: number, item: any) => sum + item.amount, 0);
         const totalFinalAmount = finalAmount + carryOverTotal;
