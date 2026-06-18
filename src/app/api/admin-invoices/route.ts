@@ -31,7 +31,8 @@ export async function GET(req: NextRequest) {
   // Paginate — Airtable caps each page at 100, so without this the admin
   // view silently omits invoices past the first 100 (same bug that hid
   // Zane/Xavier/Lucas from generate-invoices).
-  const formula = encodeURIComponent(`OR({Status}='Draft',{Status}='Approved',{Status}='Sent')`);
+  // Include 'Paid' as a safety net so a stray non-standard status can never hide an invoice from the dashboard.
+  const formula = encodeURIComponent(`OR({Status}='Draft',{Status}='Approved',{Status}='Sent',{Status}='Paid')`);
   const invoicesData = await airtableRequestAll(
     'Invoices',
     `?filterByFormula=${formula}&sort[0][field]=Student&sort[0][direction]=asc`

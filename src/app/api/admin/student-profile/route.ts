@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
   const studentInvoices = invData.records.filter((r: any) => r.fields['Student']?.[0] === id);
   const studentInvoiceIds = new Set(studentInvoices.map((r: any) => r.id));
   const invoices = studentInvoices
-    .slice(0, 6)
+    .slice(0, 24)
     .map((r: any) => ({
       id: r.id,
       month: r.fields['Month'] || '',

@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
         ? airtableRequestAll('Slots', `?filterByFormula=OR(${slotIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)
         : Promise.resolve({ records: [] }),
       airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${invoiceMonth.label}'`)}`),
-      airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${prevMonthLabel}'`)}&fields[]=Student&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid`),
+      airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(`{Month}='${prevMonthLabel}'`)}&fields[]=Student&fields[]=Final Amount&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Status`),
     ]);
     console.log(`[generate-invoices] Students: ${studentsData.records.length}, Slots: ${slotsData.records.length}, Existing ${invoiceMonth.label}: ${existingInvoicesData.records.length}, Previous ${prevMonthLabel}: ${prevMonthInvoicesData.records.length}`);
 
@@ -151,11 +151,14 @@ export async function POST(req: NextRequest) {
     const existingStudentIds = new Set(
       existingInvoicesData.records.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)
     );
-    // Index previous-month invoices by student record ID (filter in JS — Airtable can't filter linked records by ID in formulas)
-    const prevInvoiceByStudent: Record<string, any> = {};
+    // Index previous-month invoices by student record ID (filter in JS — Airtable can't filter linked records by ID in formulas).
+    // Collect ALL non-Voided prior invoices per student (a revision student can have a voided regular + a sent revision invoice;
+    // skipping Voided stops us carrying a cancelled amount, and summing handles multiple live invoices).
+    const prevInvoicesByStudent: Record<string, any[]> = {};
     for (const r of prevMonthInvoicesData.records || []) {
       const sid = r.fields['Student']?.[0];
-      if (sid) prevInvoiceByStudent[sid] = r;
+      if (!sid || r.fields['Status'] === 'Voided') continue;
+      (prevInvoicesByStudent[sid] = prevInvoicesByStudent[sid] || []).push(r);
     }
 
     // Group enrollments by student
@@ -317,29 +320,28 @@ export async function POST(req: NextRequest) {
 
         // Carry-over balance from previous month — batch-fetched above, looked up by student ID in JS
         // (Airtable can't filter linked record fields by ID in formulas; see CLAUDE.md)
-        const prevInvoice = prevInvoiceByStudent[studentId] || null;
-
+        // Sum outstanding across ALL non-voided prior invoices (revision students may have several);
+        // remember which ones we carried so we can mark them "settled here" after this invoice is created.
+        const prevInvoices = prevInvoicesByStudent[studentId] || [];
         const carryOverLineItems: any[] = [];
         let carryOverNotes = '';
-        if (prevInvoice) {
-          const finalAmt = prevInvoice.fields['Final Amount'] || 0;
-          const amountPaid = prevInvoice.fields['Amount Paid'] || 0;
-          const isPaid = prevInvoice.fields['Is Paid'] || false;
-          // If Is Paid is ticked, treat as fully settled regardless of Amount Paid field
-          // (Amount Paid may be $0 if payment was recorded via the Airtable checkbox directly
-          // rather than through the admin UI, which always writes both fields together).
-          const outstanding = isPaid ? 0 : Math.max(0, finalAmt - amountPaid);
-          if (outstanding > 0) {
-            carryOverLineItems.push({
-              description: `Outstanding balance \u2014 ${prevMonthLabel}`,
-              amount: parseFloat(outstanding.toFixed(2)),
-            });
-            carryOverNotes =
-              `${prevMonthLabel} invoice breakdown:\n` +
-              `  Invoice amount: ${finalAmt.toFixed(2)}\n` +
-              `  Amount paid: ${amountPaid.toFixed(2)}\n` +
-              `  Outstanding: ${outstanding.toFixed(2)}`;
-          }
+        const carriedFromIds: string[] = [];
+        let prevOutstanding = 0;
+        for (const pInv of prevInvoices) {
+          const finalAmt = pInv.fields['Final Amount'] || 0;
+          const amountPaid = pInv.fields['Amount Paid'] || 0;
+          const isPaid = pInv.fields['Is Paid'] || false;
+          // If Is Paid is ticked, treat as fully settled regardless of Amount Paid field.
+          const out = isPaid ? 0 : Math.max(0, finalAmt - amountPaid);
+          if (out > 0) { prevOutstanding += out; carriedFromIds.push(pInv.id); }
+        }
+        if (prevOutstanding > 0) {
+          prevOutstanding = parseFloat(prevOutstanding.toFixed(2));
+          carryOverLineItems.push({
+            description: `Outstanding balance \u2014 ${prevMonthLabel}`,
+            amount: prevOutstanding,
+          });
+          carryOverNotes = `${prevMonthLabel} outstanding of ${prevOutstanding.toFixed(2)} carried forward.`;
         }
 
         const carryOverTotal = carryOverLineItems.reduce((sum: number, item: any) => sum + item.amount, 0);
@@ -367,6 +369,22 @@ export async function POST(req: NextRequest) {
           method: 'POST',
           body: JSON.stringify({ fields: invoiceFields }),
         });
+
+        // Mark each prior invoice whose balance we just carried forward as settled —
+        // its outstanding now lives on this new invoice, so it shouldn't also show as owing.
+        for (const pid of carriedFromIds) {
+          try {
+            await at('Invoices', `/${pid}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ fields: {
+                'Is Paid': true,
+                'Auto Notes': `Carried forward to ${invoiceMonth.label} invoice — settled there.`,
+              } }),
+            });
+          } catch (e: any) {
+            console.error('[generate-invoices] carry-forward settle failed:', e?.message);
+          }
+        }
 
         // Generate and upload PDF in production only
         if (process.env.VERCEL === '1') {

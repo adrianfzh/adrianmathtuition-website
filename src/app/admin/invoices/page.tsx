@@ -310,19 +310,25 @@ body {
 .referral-badge { display: inline-block; font-size: 15px; margin-left: 6px; cursor: default; }
 .email-preview-panel {
   position: fixed;
-  top: 0; left: 0; bottom: 0;
-  width: 460px;
+  top: 0; right: 0; bottom: 0;
+  width: 420px;
   max-width: 100vw;
   background: white;
-  border-right: 1px solid #e2e8f0;
-  box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+  border-left: 1px solid #e2e8f0;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
   z-index: 200;
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%);
+  transform: translateX(100%);
   transition: transform 0.25s ease;
 }
 .email-preview-panel.open { transform: translateX(0); }
+/* Side-by-side: when the panel is open, shrink the page's right padding so the
+   invoice list stays fully visible to the left of the panel (not covered). */
+body.email-panel-open .content { padding-right: 440px; transition: padding-right 0.25s ease; }
+@media (max-width: 900px) {
+  body.email-panel-open .content { padding-right: 20px; }
+}
 .email-preview-header {
   display: flex;
   align-items: center;
@@ -332,6 +338,61 @@ body {
   flex-shrink: 0;
 }
 .email-preview-header h2 { font-size: 18px; font-weight: 700; color: #0f172a; }
+/* Tab switcher at the top of the panel */
+.email-panel-tabs {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.email-panel-tab {
+  flex: 1;
+  padding: 12px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.email-panel-tab:hover { background: #f1f5f9; }
+.email-panel-tab.active { color: #7e22ce; border-bottom-color: #7e22ce; background: white; }
+.email-panel-mode { display: none; flex: 1; flex-direction: column; min-height: 0; }
+.email-panel-mode.active { display: flex; }
+/* Email logs list */
+.email-logs-list { flex: 1; overflow-y: auto; padding: 12px 16px 20px; }
+.email-log-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+.email-log-date { font-size: 13px; font-weight: 600; color: #0f172a; }
+.email-log-subject { font-size: 14px; color: #334155; margin: 4px 0 6px; line-height: 1.4; }
+.email-log-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+.email-log-status { display: inline-block; padding: 2px 9px; border-radius: 9999px; font-weight: 600; }
+.email-log-status.sent, .email-log-status.delivered { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.email-log-status.failed, .email-log-status.bounced { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+.email-log-status.other { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+.email-log-pdf { color: #1d4ed8; text-decoration: none; font-weight: 600; }
+.email-log-pdf:hover { text-decoration: underline; }
+.email-logs-empty { font-size: 14px; color: #94a3b8; text-align: center; padding: 40px 16px; }
+.email-preview-pdf-link {
+  padding: 10px 20px 0;
+  flex-shrink: 0;
+}
+.email-preview-pdf-link a {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d4ed8;
+  text-decoration: none;
+}
+.email-preview-pdf-link a:hover { text-decoration: underline; }
 .btn-close-preview {
   background: none; border: none; font-size: 22px; cursor: pointer;
   color: #94a3b8; padding: 4px 8px; border-radius: 6px; line-height: 1;
@@ -902,6 +963,7 @@ export default function AdminPage() {
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
+            <button class="btn btn-preview-email" onclick="openEmailLogs('${inv.id}')">\uD83D\uDCCB Email Logs</button>
             ${sentPdfBtn}
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
@@ -914,6 +976,7 @@ export default function AdminPage() {
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
+            <button class="btn btn-preview-email" onclick="openEmailLogs('${inv.id}')">\uD83D\uDCCB Email Logs</button>
             ${sentPdfBtn}
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
@@ -926,6 +989,7 @@ export default function AdminPage() {
           <div class="card-actions" id="actions-${inv.id}">
             <button class="btn btn-preview" onclick="previewPdf('${inv.id}')">\uD83D\uDC41 Preview PDF</button>
             <button class="btn btn-preview-email" onclick="previewEmail('${inv.id}')">\uD83D\uDCE7 Preview Email</button>
+            <button class="btn btn-preview-email" onclick="openEmailLogs('${inv.id}')">\uD83D\uDCCB Email Logs</button>
             ${sentPdfBtn}
             <button class="btn btn-gen-pdf" id="gen-btn-${inv.id}" onclick="regenerateInvoice('${inv.id}')">\u267B\uFE0F Regenerate Invoice</button>
             <button class="btn btn-amend" onclick="toggleAmend('${inv.id}')">\u270F\uFE0F Amend</button>
@@ -1353,18 +1417,42 @@ export default function AdminPage() {
       }
     }
 
+    // Show the panel, switch to a given tab, and remember which invoice is open.
+    function openEmailPanel(id: string, tab: 'preview' | 'logs') {
+      currentPreviewId = id;
+      const panel = document.getElementById('email-preview-panel') as HTMLElement;
+      if (panel) panel.classList.add('open');
+      document.body.classList.add('email-panel-open');
+      switchEmailPanelTab(tab);
+    }
+
+    function switchEmailPanelTab(tab: 'preview' | 'logs') {
+      ['preview', 'logs'].forEach((t) => {
+        const tabBtn = document.getElementById(`email-tab-${t}`);
+        const modeEl = document.getElementById(`email-mode-${t}`);
+        if (tabBtn) tabBtn.classList.toggle('active', t === tab);
+        if (modeEl) modeEl.classList.toggle('active', t === tab);
+      });
+      if (tab === 'logs' && currentPreviewId) loadEmailLogs(currentPreviewId);
+    }
+
     async function previewEmail(id: string) {
       const inv = invoices.find((i: any) => i.id === id);
       if (!inv) return;
-      currentPreviewId = id;
-      const panel = document.getElementById('email-preview-panel') as HTMLElement;
+      openEmailPanel(id, 'preview');
       const subjectEl = document.getElementById('email-preview-subject') as HTMLElement;
       const textarea = document.getElementById('email-preview-textarea') as HTMLTextAreaElement;
-      if (!panel || !subjectEl || !textarea) return;
+      const pdfLinkEl = document.getElementById('email-preview-pdf-link') as HTMLElement;
+      if (!subjectEl || !textarea) return;
       const hasCustom = !!(inv.customEmailMessage && inv.customEmailMessage.trim());
-      panel.classList.add('open');
       subjectEl.innerHTML = 'Loading preview…';
       textarea.value = '';
+      // Link to the invoice PDF that will be attached to this outgoing email.
+      if (pdfLinkEl) {
+        pdfLinkEl.innerHTML = inv.pdfUrl
+          ? `<a href="${escAttr(inv.pdfUrl)}" target="_blank" rel="noreferrer">📎 View attached invoice PDF ↗</a>`
+          : '<span style="font-size:13px;color:#94a3b8;">No PDF generated yet for this invoice.</span>';
+      }
       updateEmailPreviewStatus(hasCustom);
 
       // Fetch the EXACT email the server would send (welcome / amended / June /
@@ -1392,7 +1480,75 @@ export default function AdminPage() {
     function closeEmailPreview() {
       const panel = document.getElementById('email-preview-panel');
       if (panel) panel.classList.remove('open');
+      document.body.classList.remove('email-panel-open');
       currentPreviewId = '';
+    }
+
+    // Open the panel straight onto the Logs tab for an invoice's student.
+    function openEmailLogs(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      if (!inv) return;
+      openEmailPanel(id, 'logs');
+    }
+
+    function emailLogStatusClass(status: string): string {
+      const s = (status || '').toLowerCase();
+      if (s.includes('sent') || s.includes('deliver')) return 'sent';
+      if (s.includes('fail') || s.includes('bounce') || s.includes('error')) return 'failed';
+      return 'other';
+    }
+
+    // Load ALL emails ever sent for THIS invoice's student (from the EmailLog
+    // archive via the student-profile endpoint's sentInvoices array).
+    async function loadEmailLogs(id: string) {
+      const inv = invoices.find((i: any) => i.id === id);
+      const listEl = document.getElementById('email-logs-list') as HTMLElement;
+      if (!listEl) return;
+      if (!inv || !inv.studentId) {
+        listEl.innerHTML = '<div class="email-logs-empty">No linked student for this invoice.</div>';
+        return;
+      }
+      listEl.innerHTML = '<div class="email-logs-empty">Loading email logs…</div>';
+      try {
+        const res = await fetch(`/api/admin/student-profile?id=${encodeURIComponent(inv.studentId)}`, {
+          headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+        const logs: any[] = Array.isArray(data.sentInvoices) ? data.sentInvoices : [];
+        const allInv: any[] = Array.isArray(data.invoices) ? data.invoices : [];
+        const sectionTitle = (txt: string) =>
+          `<div style="font-size:12px;font-weight:700;color:#7e22ce;text-transform:uppercase;letter-spacing:.04em;margin:14px 4px 8px;">${txt}</div>`;
+
+        // All invoice PDFs (from the invoice records — includes invoices emailed before EmailLog logging existed)
+        const invoiceRows = allInv.length ? allInv.map((iv: any) => {
+          const pdf = iv.pdfUrl
+            ? `<a class="email-log-pdf" href="${escAttr(iv.pdfUrl)}" target="_blank" rel="noreferrer">📄 PDF ↗</a>`
+            : '<span class="email-log-status">no PDF</span>';
+          return `<div class="email-log-row">
+              <div class="email-log-subject">${escHtml(iv.month || '')} — ${escHtml(iv.invoiceType || 'Regular')} ($${(iv.finalAmount || 0)})</div>
+              <div class="email-log-meta"><span class="email-log-status">${escHtml(iv.status || '')}</span>${pdf}</div>
+            </div>`;
+        }).join('') : '<div class="email-logs-empty">No invoices on record.</div>';
+
+        // Emails actually sent (EmailLog archive — exact PDF that was emailed; only from ~mid-May 2026)
+        const sentRows = logs.length ? logs.map((log: any) => {
+          const dateStr = log.sentAt ? formatSentAt(log.sentAt) : '(no date)';
+          const statusClass = emailLogStatusClass(log.status);
+          const pdfLink = log.pdfUrl
+            ? `<a class="email-log-pdf" href="${escAttr(log.pdfUrl)}" target="_blank" rel="noreferrer">📄 View PDF ↗</a>`
+            : '';
+          return `<div class="email-log-row">
+              <div class="email-log-date">${escHtml(dateStr)}</div>
+              <div class="email-log-subject">${escHtml(log.subject || '(no subject)')}</div>
+              <div class="email-log-meta"><span class="email-log-status ${statusClass}">${escHtml(log.status || 'Sent')}</span>${pdfLink}</div>
+            </div>`;
+        }).join('') : '<div class="email-logs-empty">No emails logged (older invoices were emailed before logging began — see invoice PDFs above).</div>';
+
+        listEl.innerHTML = sectionTitle('🧾 All invoice PDFs') + invoiceRows + sectionTitle('📧 Emails actually sent') + sentRows;
+      } catch (err: any) {
+        listEl.innerHTML = `<div class="email-logs-empty">Failed to load logs: ${escHtml(err.message || 'error')}</div>`;
+      }
     }
 
     async function saveCustomMessage() {
@@ -2597,6 +2753,8 @@ export default function AdminPage() {
     w.closeEmailPreview = closeEmailPreview;
     w.saveCustomMessage = saveCustomMessage;
     w.resetCustomMessage = resetCustomMessage;
+    w.openEmailLogs = openEmailLogs;
+    w.switchEmailPanelTab = switchEmailPanelTab;
 
     init();
     loadAutoSendPauseState();
@@ -2615,6 +2773,7 @@ export default function AdminPage() {
         'editAlias','cancelAlias','saveAlias','removeAlias',
         'updateBulkButtonLabels','approveAllDrafts','unapproveAllApproved',
         'deleteInvoice','previewEmail','closeEmailPreview','saveCustomMessage','resetCustomMessage',
+        'openEmailLogs','switchEmailPanelTab',
       ].forEach(fn => delete (window as any)[fn]);
     };
   }, []);
@@ -2725,23 +2884,37 @@ export default function AdminPage() {
         <div id="invoices-container"></div>
       </div>
 
-      {/* Email preview side panel */}
+      {/* Email side panel — Preview / Logs tabs (true right-side, side-by-side) */}
       <div id="email-preview-panel" className="email-preview-panel">
         <div className="email-preview-header">
-          <h2>📧 Email Preview</h2>
+          <h2>📧 Email</h2>
           <button className="btn-close-preview" onClick={() => (window as any).closeEmailPreview()}>✕</button>
         </div>
-        <div className="email-preview-subject" id="email-preview-subject"></div>
-        <div className="email-preview-status default" id="email-preview-status">📋 Default template</div>
-        <textarea
-          className="email-preview-textarea"
-          id="email-preview-textarea"
-          placeholder="Email body..."
-          rows={16}
-        />
-        <div className="email-preview-actions">
-          <button id="btn-save-email" className="btn btn-save" onClick={() => (window as any).saveCustomMessage()}>💾 Save Custom Message</button>
-          <button id="btn-reset-email" className="btn btn-cancel" onClick={() => (window as any).resetCustomMessage()}>↩️ Reset to Default</button>
+        <div className="email-panel-tabs">
+          <button id="email-tab-preview" className="email-panel-tab active" onClick={() => (window as any).switchEmailPanelTab('preview')}>✉️ Email preview</button>
+          <button id="email-tab-logs" className="email-panel-tab" onClick={() => (window as any).switchEmailPanelTab('logs')}>📋 Email logs</button>
+        </div>
+
+        {/* Preview mode */}
+        <div id="email-mode-preview" className="email-panel-mode active">
+          <div className="email-preview-subject" id="email-preview-subject"></div>
+          <div className="email-preview-status default" id="email-preview-status">📋 Default template</div>
+          <div className="email-preview-pdf-link" id="email-preview-pdf-link"></div>
+          <textarea
+            className="email-preview-textarea"
+            id="email-preview-textarea"
+            placeholder="Email body..."
+            rows={16}
+          />
+          <div className="email-preview-actions">
+            <button id="btn-save-email" className="btn btn-save" onClick={() => (window as any).saveCustomMessage()}>💾 Save Custom Message</button>
+            <button id="btn-reset-email" className="btn btn-cancel" onClick={() => (window as any).resetCustomMessage()}>↩️ Reset to Default</button>
+          </div>
+        </div>
+
+        {/* Logs mode */}
+        <div id="email-mode-logs" className="email-panel-mode">
+          <div className="email-logs-list" id="email-logs-list"></div>
         </div>
       </div>
 
