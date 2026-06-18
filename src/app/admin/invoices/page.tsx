@@ -2336,6 +2336,7 @@ export default function AdminPage() {
       let totalSent = 0;
       let totalFailed = 0;
       const allErrors: any[] = [];
+      const allSentDetails: any[] = [];
 
       try {
         for (let b = 0; b < batches.length; b++) {
@@ -2343,7 +2344,8 @@ export default function AdminPage() {
           const res = await fetch('/api/send-invoices', {
             method: 'POST',
             headers: authHeaders({ 'Content-Type': 'application/json' }),
-            body: JSON.stringify({ recordIds: batches[b] }),
+            // notify:false \u2192 suppress per-batch Telegram; we post ONE consolidated summary below.
+            body: JSON.stringify({ recordIds: batches[b], notify: false }),
           });
           if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -2353,7 +2355,17 @@ export default function AdminPage() {
           totalSent += data.sent || 0;
           totalFailed += data.failed || 0;
           if (data.errors) allErrors.push(...data.errors);
+          if (data.sentDetails) allSentDetails.push(...data.sentDetails);
         }
+
+        // One consolidated Telegram summary for the whole bulk send (non-critical).
+        try {
+          await fetch('/api/send-invoices', {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ summary: { sent: totalSent, failed: totalFailed, errors: allErrors, sentDetails: allSentDetails, month: approvedInvoices[0]?.month } }),
+          });
+        } catch { /* summary is non-critical */ }
 
         if (totalSent > 0 && totalFailed === 0) {
           resultBanner.className = 'result-banner success';

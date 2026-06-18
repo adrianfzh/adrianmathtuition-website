@@ -268,6 +268,24 @@ export async function POST(req: NextRequest) {
   let body: any = {};
   try { body = await req.json(); } catch { /* no body */ }
   const { recordId: singleRecordId, recordIds } = body;
+  const notify = body.notify !== false; // per-batch Telegram summary; client bulk-send sets false
+
+  // Consolidated-summary mode (used by "Send All Approved"): post ONE Telegram summary
+  // for a whole bulk send from aggregated client data — no invoices are sent here.
+  if (body.summary) {
+    const sm = body.summary;
+    const sentLines = (sm.sentDetails || [])
+      .map((d: any) => `• ${d.studentName} (${d.month})${d.isFirstInvoice ? ' \u{1F195} New student' : ''}`).join('\n');
+    const failedLines = (sm.errors || [])
+      .map((e: any) => `• ${e.studentName ?? e.invoiceId}: ${e.error}`).join('\n');
+    await sendTelegram(
+      `${(sm.failed || 0) > 0 ? '⚠️ <b>Invoices — DELIVERY ISSUES</b>' : '✅ <b>Invoices delivered</b>'} — ${sm.month || getInvoiceMonth().label}\n\n` +
+        `Delivered: ${sm.sent || 0} | Not delivered: ${sm.failed || 0}` +
+        (sentLines ? `\n\n${sentLines}` : '') +
+        ((sm.failed || 0) > 0 ? `\n\n⚠️ NOT delivered (fix + resend):\n${failedLines}` : '\n\nAll invoices delivered successfully.')
+    );
+    return NextResponse.json({ ok: true, summaryPosted: true });
+  }
 
   // ── Preview mode: build the email for ONE invoice and RETURN it (no send) ──
   // Used by the bot's "Review & Send" flow so the admin sees the exact message
@@ -612,16 +630,19 @@ export async function POST(req: NextRequest) {
     const sentLines = sentDetails
       .map((d) => `• ${d.studentName} (${d.month})${d.isFirstInvoice ? ' \u{1F195} New student' : ''}`)
       .join('\n');
-    await sendTelegram(
-      `${failedCount > 0 ? '\u26a0\ufe0f <b>Invoices \u2014 DELIVERY ISSUES</b>' : '\u2705 <b>Invoices delivered</b>'} \u2014 ${currentMonth}\n\n` +
-        `Delivered: ${sentCount} | Not delivered: ${failedCount}` +
-        (sentLines ? `\n\n${sentLines}` : '') +
-        (failedCount > 0
-          ? `\n\n\u26a0\ufe0f NOT delivered (fix + resend):\n${failedLines}`
-          : '\n\nAll invoices delivered successfully.')
-    );
+    // Skipped when notify=false (bulk "Send All Approved" posts ONE consolidated summary at the end).
+    if (notify) {
+      await sendTelegram(
+        `${failedCount > 0 ? '\u26a0\ufe0f <b>Invoices \u2014 DELIVERY ISSUES</b>' : '\u2705 <b>Invoices delivered</b>'} \u2014 ${currentMonth}\n\n` +
+          `Delivered: ${sentCount} | Not delivered: ${failedCount}` +
+          (sentLines ? `\n\n${sentLines}` : '') +
+          (failedCount > 0
+            ? `\n\n\u26a0\ufe0f NOT delivered (fix + resend):\n${failedLines}`
+            : '\n\nAll invoices delivered successfully.')
+      );
+    }
 
-    return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length });
+    return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length, sentDetails });
   } catch (err: any) {
     console.error('[send-invoices] Unhandled error:', err);
     return NextResponse.json({ error: 'Internal server error', details: err.message }, { status: 500 });
