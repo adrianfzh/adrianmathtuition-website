@@ -18,7 +18,9 @@ const CNY_DATES = [
   '2027-02-06', '2027-02-07',
 ];
 const NO_LESSON_DATES = [...CNY_DATES, '2026-12-25', '2027-12-25'];
-const PRORATION_MONTHS = [10, 11, 12];
+// Prorated months bill by actual attendance (Completed lessons), generated in arrears.
+// June (6) = holiday month (flexible attendance / revision sprint); Oct–Dec = year-end taper.
+const PRORATION_MONTHS = [6, 10, 11, 12];
 
 function isProratedMonth(monthNum: number) {
   return PRORATION_MONTHS.includes(monthNum);
