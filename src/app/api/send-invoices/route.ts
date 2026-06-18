@@ -25,9 +25,13 @@ function buildEmailHtml(invoice: {
   dueDate: string;
   paymentRef: string;
 }) {
+  // One-time apology for the delayed July 2026 batch (was due to go out 18 June). Remove after July.
+  const delayApology = invoice.month === 'July 2026'
+    ? `<p>Our sincere apologies for the delay — this ${invoice.month} invoice was due to be sent on 18 June.</p>\n    `
+    : '';
   return `
     <p>Dear Parent/Student,</p>
-    <p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — <strong>$${invoice.finalAmount}</strong>, due by <strong>${invoice.dueDate}</strong>.</p>
+    ${delayApology}<p>Please find attached the invoice for ${invoice.studentName} for ${invoice.month} — <strong>$${invoice.finalAmount}</strong>, due by <strong>${invoice.dueDate}</strong>.</p>
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
     <p>Please feel free to reach out if you have any questions.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
