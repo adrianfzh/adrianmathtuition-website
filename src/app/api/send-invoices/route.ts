@@ -462,21 +462,26 @@ export async function POST(req: NextRequest) {
 
     const pdfBuffers = await Promise.all(
       invoiceRecords.map(async (record: any) => {
+        const studentName = studentsById[record.fields['Student']?.[0]]?.['Student Name'] || '';
         const pdfUrl = record.fields['PDF URL'];
-        if (pdfUrl) return downloadPdf(pdfUrl);
-        // No blob PDF yet (e.g. a signup invoice — its PDF lives only as an
-        // Airtable attachment). Generate one now so the email never goes out
-        // without its invoice, and so it gets archived. Also updates the
-        // in-memory record so the post-send archive step picks up the new URL.
-        try {
-          const studentName = studentsById[record.fields['Student']?.[0]]?.['Student Name'] || '';
-          const { buffer, url } = await generateAndStoreInvoicePdf(record, studentName);
-          record.fields['PDF URL'] = url;
-          return buffer;
-        } catch (e: any) {
-          console.error('[send-invoices] inline PDF generation failed:', e?.message);
-          return null;
+        if (pdfUrl) {
+          try { return await downloadPdf(pdfUrl); }
+          catch (e: any) { console.error(`[send-invoices] stored PDF download failed for ${studentName}, regenerating:`, e?.message); }
         }
+        // No usable blob PDF (signup invoice, or download failed). Generate one
+        // now so the email never goes out without its invoice, and so it gets
+        // archived. RETRY once — Blob writes occasionally fail transiently under
+        // the parallel load of a bulk send (this caused silent no-attachment sends).
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            const { buffer, url } = await generateAndStoreInvoicePdf(record, studentName);
+            record.fields['PDF URL'] = url;
+            return buffer;
+          } catch (e: any) {
+            console.error(`[send-invoices] inline PDF generation failed (attempt ${attempt}/2) for ${studentName}:`, e?.message);
+          }
+        }
+        return null;
       })
     );
 
@@ -486,12 +491,22 @@ export async function POST(req: NextRequest) {
 
     const emails: any[] = [];
     const invoiceMap = new Map<string, any>();
+    // Invoices whose PDF could not be produced — we refuse to email an invoice
+    // with no attachment (silent empty sends), and surface these as failures.
+    const pdfFailures: { invoiceId: string; studentName: string; error: string }[] = [];
 
     for (let i = 0; i < invoiceRecords.length; i++) {
       const invoiceRecord = invoiceRecords[i];
       const studentId = invoiceRecord.fields['Student']?.[0];
       const student = studentsById[studentId];
       if (!student) continue;
+
+      // Never send an invoice email without its PDF — flag it for manual fix + resend instead.
+      if (!pdfBuffers[i]) {
+        console.error(`[send-invoices] NOT sending ${student['Student Name']} — PDF unavailable after retry`);
+        pdfFailures.push({ invoiceId: invoiceRecord.id, studentName: student['Student Name'], error: 'PDF could not be generated — not sent (avoids empty-attachment email)' });
+        continue;
+      }
 
       const invoice = {
         id: invoiceRecord.id,
@@ -566,7 +581,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (!emails.length) {
-      return NextResponse.json({ sent: 0, failed: 0, errors: [] });
+      // Could still have PDF failures (every invoice failed to render) — surface them.
+      if (pdfFailures.length) {
+        await sendTelegram(
+          `⚠️ <b>Invoices NOT sent — PDF errors</b>\n\n` +
+            pdfFailures.map((p) => `• ${p.studentName}: ${p.error}`).join('\n') +
+            `\n\nRegenerate the PDF from /admin/invoices, then resend.`
+        ).catch(() => {});
+      }
+      return NextResponse.json({ sent: 0, failed: pdfFailures.length, errors: pdfFailures });
     }
 
     let sentCount = 0;
@@ -677,6 +700,12 @@ export async function POST(req: NextRequest) {
         }).catch(() => {});
       }
       await new Promise((resolve) => setTimeout(resolve, 600));
+    }
+
+    // Invoices we refused to send because their PDF couldn't be built count as failures.
+    if (pdfFailures.length) {
+      failedCount += pdfFailures.length;
+      errors.push(...pdfFailures);
     }
 
     const currentMonth = emails[0]?.subject?.match(/for (.+) \u2013/)?.[1] ?? getInvoiceMonth().label;
