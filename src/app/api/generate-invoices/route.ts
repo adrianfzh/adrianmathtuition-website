@@ -477,21 +477,30 @@ export async function POST(req: NextRequest) {
             let matchedReferrer: any = null;
             let matchConfidence = 'none';
 
+            // Score every candidate by shared name-words and pick the UNIQUE best match.
+            // (The old first-shared-word-wins logic mis-resolved partial names on common
+            // surnames — e.g. "Abel Tan" → "Kiara Tan" instead of "Abel Tan Zhi Yi".)
+            const referrerWords = referrerNameLower.split(/\s+/).filter((w: string) => w.length > 1);
+            let bestScore = 0, runnerUp = 0;
             for (const s of allActiveStudents.records) {
               const name = ((s.fields['Student Name'] || '') as string).toLowerCase();
               if (name === referrerNameLower) {
-                matchedReferrer = s;
-                matchConfidence = 'exact';
-                break;
+                matchedReferrer = s; matchConfidence = 'exact'; bestScore = 99; break;
               }
-              if (!matchedReferrer) {
-                const referrerWords = referrerNameLower.split(/\s+/);
-                const nameWords = name.split(/\s+/);
-                const sharedWords = referrerWords.filter((w: string) => w.length > 1 && nameWords.includes(w));
-                if (sharedWords.length >= 1) {
-                  matchedReferrer = s;
-                  matchConfidence = 'fuzzy';
-                }
+              const nameWords = name.split(/\s+/);
+              const shared = referrerWords.filter((w: string) => nameWords.includes(w)).length;
+              if (shared > bestScore) { runnerUp = bestScore; bestScore = shared; matchedReferrer = s; }
+              else if (shared > runnerUp) { runnerUp = shared; }
+            }
+            // Confidence gate: accept only a clear winner — exact, or every given-name word matched,
+            // or >=2 shared words — that strictly beats the runner-up. Otherwise leave unmatched so it
+            // surfaces for manual review rather than crediting the wrong person on a shared surname.
+            if (matchConfidence !== 'exact') {
+              const allWordsMatched = bestScore >= 1 && bestScore === referrerWords.length;
+              if (matchedReferrer && bestScore > runnerUp && (allWordsMatched || bestScore >= 2)) {
+                matchConfidence = 'fuzzy';
+              } else {
+                matchedReferrer = null; matchConfidence = 'none';
               }
             }
 
