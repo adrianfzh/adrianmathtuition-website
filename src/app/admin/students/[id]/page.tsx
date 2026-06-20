@@ -390,12 +390,14 @@ export default function StudentProfilePage() {
                   const done = g.rows.filter(r => r.status === 'Completed').length;
                   const missed = g.rows.filter(r => r.status === 'Absent').length;
                   const notComing = g.rows.filter(r => r.status === 'Cancelled - Prorated').length;
+                  const rescheduled = g.rows.filter(r => !!r.rescheduledToDate).length;
                   return (
                     <div key={g.label} style={{ marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 6px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f' }}>{g.label}</span>
                         <span style={{ fontSize: 11, fontWeight: 700, color: '#15803d' }}>{done} attended</span>
                         {missed > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626' }}>· {missed} missed</span>}
+                        {rescheduled > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#1d4ed8' }}>· {rescheduled} rescheduled</span>}
                         {notComing > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8' }}>· {notComing} not coming</span>}
                       </div>
                       {g.rows.slice().sort((a, b) => a.date.localeCompare(b.date)).map(r => {
@@ -403,7 +405,11 @@ export default function StudentProfilePage() {
                         const isDone = r.status === 'Completed';
                         const isOptOut = r.status === 'Cancelled - Prorated';
                         const isCancelled = r.status === 'Cancelled' || isOptOut;
-                        const color = isMissed ? '#dc2626' : isDone ? '#15803d' : isCancelled ? '#94a3b8' : '#475569';
+                        // `status` is already the reschedule chain's final outcome, so a moved-
+                        // and-attended lesson is green, moved-and-missed red, moved-but-unheld
+                        // blue (pending). `moved` adds the ↻ marker, matching the revision page.
+                        const moved = !!r.rescheduledToDate;
+                        const color = isMissed ? '#dc2626' : isDone ? '#15803d' : isCancelled ? '#94a3b8' : moved ? '#1d4ed8' : '#475569';
                         const busy = busyLesson === r.outcomeLessonId;
                         const lid = r.outcomeLessonId;
                         const markable = r.status !== 'Rescheduled';
@@ -415,7 +421,12 @@ export default function StudentProfilePage() {
                               {r.rescheduledToDate && <span style={{ color: '#1d4ed8' }}> → {fmtDate(r.rescheduledToDate)}</span>}
                             </span>
                             <span style={{ fontSize: 12, fontWeight: 700, color, minWidth: 78, textAlign: 'right' }}>
-                              {isDone ? '✓ Attended' : isMissed ? '✗ Missed' : isOptOut ? 'Not coming' : isCancelled ? 'Cancelled' : r.rescheduledToDate ? 'Rescheduled' : r.status}
+                              {isDone ? `✓ Attended${moved ? ' ↻' : ''}`
+                                : isMissed ? `✗ Missed${moved ? ' ↻' : ''}`
+                                : isOptOut ? 'Not coming'
+                                : isCancelled ? 'Cancelled'
+                                : moved ? '↻ Rescheduled'
+                                : r.status}
                             </span>
                             {markable && (
                               <div style={{ display: 'flex', gap: 3 }}>

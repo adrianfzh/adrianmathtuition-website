@@ -567,7 +567,7 @@ export default function SchedulePage() {
     return d === 0 ? 6 : d - 1; // default to today's day-of-week
   });
 
-  const [modal, setModal] = useState<{ student: StudentContact; lessonType: string } | null>(null);
+  const [modal, setModal] = useState<{ student: StudentContact; lessonType: string; studentId: string } | null>(null);
   const [lessonModal, setLessonModal] = useState<EnrichedLesson | null>(null);
   const [contactCache, setContactCache] = useState<Record<string, StudentContact>>({});
   const [contactLoading, setContactLoading] = useState(false);
@@ -1447,11 +1447,11 @@ export default function SchedulePage() {
   async function openStudentModal(studentId: string, lessonType: string) {
     const cached = contactCache[studentId];
     if (cached) {
-      setModal({ student: cached, lessonType });
+      setModal({ student: cached, lessonType, studentId });
       return;
     }
     const name = data?.students[studentId]?.name || '';
-    setModal({ student: { name, parentName: '', parentEmail: '' }, lessonType });
+    setModal({ student: { name, parentName: '', parentEmail: '' }, lessonType, studentId });
     setContactLoading(true);
     try {
       const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`, {
@@ -2015,6 +2015,10 @@ export default function SchedulePage() {
                 <div className="modal-type" style={{ color: TYPE_COLORS[modal.lessonType]?.text || '#64748b' }}>
                   {modal.lessonType} Lesson
                 </div>
+                <a href={`/admin/students/${modal.studentId}`}
+                  style={{ display: 'inline-block', marginTop: 6, fontSize: 13, fontWeight: 700, color: '#1d4ed8', textDecoration: 'none' }}>
+                  Open full profile →
+                </a>
               </div>
               <button className="modal-close" onClick={() => setModal(null)}>✕</button>
             </div>
