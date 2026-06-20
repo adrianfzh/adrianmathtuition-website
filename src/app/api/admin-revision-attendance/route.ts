@@ -195,6 +195,26 @@ function parseTopics(fields: any): string[] {
   return [...new Set(out)];
 }
 
+// Classify a revision lesson's real outcome, folding in its makeup's status.
+//   attended             — present on the day
+//   rescheduled_attended — missed the day, but the makeup was attended  → counts as done (green)
+//   rescheduled_pending  — missed the day, makeup booked but not yet held → blue
+//   rescheduled_missed   — missed the day AND missed the makeup          → red
+//   missed               — missed, no makeup booked                      → red
+//   scheduled            — upcoming / not yet marked                     → grey
+function sessionOutcome(status: string, makeup: { status?: string } | null): string {
+  if (status === 'Completed') return 'attended';
+  if (status === 'Absent') {
+    if (makeup) {
+      if (makeup.status === 'Completed') return 'rescheduled_attended';
+      if (makeup.status === 'Absent') return 'rescheduled_missed';
+      return 'rescheduled_pending';
+    }
+    return 'missed';
+  }
+  return 'scheduled';
+}
+
 function subjectsFromLineItems(raw: string): string[] {
   let items: { description?: string }[] = [];
   try { items = JSON.parse(raw || '[]'); } catch { /* ignore */ }
@@ -220,16 +240,26 @@ export async function GET(req: NextRequest) {
   const signedUpIds = new Set(signedUp.map((r: any) => r.id));
   if (!signedUp.length) return NextResponse.json({ students: [], slots: [] });
 
-  // 2. Subjects per student (from the Revision Sprint invoice line items)
+  // 2. Subjects per student (from the Revision Sprint invoice line items).
+  //    Prefer a live invoice, but fall back to a Voided one — a student whose
+  //    revision invoice was voided (e.g. consolidated into a final invoice, like a
+  //    discontinuing student) still attends the sprint and must keep their subject
+  //    grouping rather than dropping into "Other".
   const invData = await airtableRequestAll(
     'Invoices',
-    `?filterByFormula=${encodeURIComponent(`AND({Invoice Type}='Revision Sprint',{Status}!='Voided')`)}&fields[]=Student&fields[]=Line Items`
+    `?filterByFormula=${encodeURIComponent(`{Invoice Type}='Revision Sprint'`)}&fields[]=Student&fields[]=Line Items&fields[]=Status`
   );
   const subjectsByStudent: Record<string, string[]> = {};
+  const voidedSubjects: Record<string, string[]> = {};
   for (const r of invData.records) {
     const sid = r.fields['Student']?.[0];
-    if (sid) subjectsByStudent[sid] = subjectsFromLineItems(r.fields['Line Items'] || '');
+    if (!sid) continue;
+    const subs = subjectsFromLineItems(r.fields['Line Items'] || '');
+    if (!subs.length) continue;
+    if (r.fields['Status'] === 'Voided') { if (!voidedSubjects[sid]) voidedSubjects[sid] = subs; }
+    else subjectsByStudent[sid] = subs;
   }
+  for (const sid in voidedSubjects) if (!subjectsByStudent[sid]) subjectsByStudent[sid] = voidedSubjects[sid];
 
   // 3. All Revision Sprint lessons, grouped by student
   const revLessons = await airtableRequestAll(
@@ -293,7 +323,7 @@ export async function GET(req: NextRequest) {
           hw: lesson.fields['Homework Returned'] || '',
           assignmentSubmitted: lesson.fields['Homework Returned'] === 'Yes',
           topics: (() => { const m = parseTopics(lesson.fields); return m.length ? m : scheduledTopics(subj, date); })(),
-          makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]) } : null,
+          makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]), status: mk['Status'] || '' } : null,
         });
       }
     }
@@ -308,21 +338,29 @@ export async function GET(req: NextRequest) {
         hw: l.fields['Homework Returned'] || '',
         assignmentSubmitted: l.fields['Homework Returned'] === 'Yes',
         topics: parseTopics(l.fields),
-        makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]) } : null,
+        makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]), status: mk['Status'] || '' } : null,
       });
     }
     sessions.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
 
-    const attended = sessions.filter(s => s.status === 'Completed').length;
-    const missed = sessions.filter(s => s.status === 'Absent').length;
-    const madeUp = sessions.filter(s => s.status === 'Absent' && s.makeup).length;
+    // Per-session outcome — distinguishes a rescheduled lesson that was attended
+    // (its makeup is Completed) from one whose makeup is still pending or also missed.
+    for (const s of sessions) s.outcome = sessionOutcome(s.status, s.makeup);
+
+    // Green (done) = attended directly OR rescheduled-and-attended.
+    // Red (not attended) = missed outright OR rescheduled-but-makeup-also-missed.
+    const attended = sessions.filter(s => s.outcome === 'attended' || s.outcome === 'rescheduled_attended').length;
+    const missed = sessions.filter(s => s.outcome === 'missed' || s.outcome === 'rescheduled_missed').length;
+    const rescheduled = sessions.filter(s => !!s.makeup).length;        // any lesson that was rescheduled
+    const pending = sessions.filter(s => s.outcome === 'rescheduled_pending').length;
     return {
       id: sid,
       name: stu.fields['Student Name'] || '',
       level: stu.fields['Level'] || '',
       subjects,
       sessions,
-      summary: { total: sessions.length, attended, missed, madeUp, outstanding: missed - madeUp },
+      // outstanding = not attended and no successful/upcoming makeup → still needs action.
+      summary: { total: sessions.length, attended, missed, rescheduled, madeUp: rescheduled, pending, outstanding: sessions.filter(s => s.outcome === 'missed' || s.outcome === 'rescheduled_missed').length },
     };
   });
 

@@ -33,7 +33,8 @@ interface AttSession {
   hw: string;                 // 'Yes' | 'No' | ''
   assignmentSubmitted: boolean;
   topics: string[];
-  makeup: { lessonId: string; date: string; slotLabel: string } | null;
+  makeup: { lessonId: string; date: string; slotLabel: string; status?: string } | null;
+  outcome?: string;   // attended | rescheduled_attended | rescheduled_pending | rescheduled_missed | missed | scheduled
 }
 interface AttStudent {
   id: string;
@@ -41,7 +42,7 @@ interface AttStudent {
   level: string;
   subjects: string[];
   sessions: AttSession[];
-  summary: { total: number; attended: number; missed: number; madeUp: number; outstanding: number };
+  summary: { total: number; attended: number; missed: number; madeUp: number; rescheduled?: number; pending?: number; outstanding: number };
 }
 interface AttSlot { id: string; dayName: string; time: string; level: string; label: string; }
 
@@ -328,15 +329,36 @@ export default function RevisionSignupsPage() {
     return 'OTHER';
   }
 
-  function pipClass(s: AttSession): string {
-    if (s.status === 'Completed') return 'done';
-    if (s.status === 'Absent') return s.makeup ? 'madeup' : 'missed';
-    return 'scheduled';
+  function pipOutcome(s: AttSession): string {
+    return s.outcome
+      || (s.status === 'Completed' ? 'attended'
+        : s.status === 'Absent' ? (s.makeup ? 'rescheduled_pending' : 'missed')
+        : 'scheduled');
   }
+  // Colour: green = done (attended, incl. rescheduled-and-attended); red = not
+  // attended; blue = rescheduled with makeup still pending; grey = upcoming.
+  function pipClass(s: AttSession): string {
+    switch (pipOutcome(s)) {
+      case 'attended':
+      case 'rescheduled_attended': return 'done';
+      case 'rescheduled_pending':  return 'pending';
+      case 'missed':
+      case 'rescheduled_missed':   return 'missed';
+      default:                     return 'scheduled';
+    }
+  }
+  // The little ↻ arrow marks any lesson that was rescheduled, whatever the outcome.
+  function pipRescheduled(s: AttSession): boolean { return !!s.makeup; }
   function pipLabel(s: AttSession): string {
-    if (s.status === 'Completed') return 'Attended';
-    if (s.status === 'Absent') return s.makeup ? `Made up: ${s.makeup.slotLabel} ${fmtDate(s.makeup.date)}` : 'Missed';
-    return 'Scheduled';
+    const mk = s.makeup ? `${s.makeup.slotLabel} ${fmtDate(s.makeup.date)}`.trim() : '';
+    switch (pipOutcome(s)) {
+      case 'attended':             return 'Attended';
+      case 'rescheduled_attended': return `Rescheduled & attended → ${mk}`;
+      case 'rescheduled_pending':  return `Rescheduled → makeup ${mk} (pending)`;
+      case 'rescheduled_missed':   return `Rescheduled but makeup missed → ${mk}`;
+      case 'missed':               return 'Missed';
+      default:                     return 'Scheduled';
+    }
   }
   function shortDate(date: string): string {
     const p = date.split('-');
@@ -351,19 +373,20 @@ export default function RevisionSignupsPage() {
         <div className="rs-card-top" style={{ cursor: 'pointer' }} onClick={() => toggleExpand(stu.id)}>
           <div className="rs-card-name">{stu.name} <span style={{ fontSize: 12, color: '#9ca3af', fontWeight: 400 }}>{stu.subjects.join(' + ')}</span></div>
           <div className="rs-att-summary">
-            <span className="rs-att-pill green" title="Attended">✓ {sm.attended}</span>
-            <span className="rs-att-pill red" title="Missed">✗ {sm.missed}</span>
-            <span className="rs-att-pill blue" title="Made up">↻ {sm.madeUp}</span>
-            {sm.outstanding > 0 && <span className="rs-att-pill amber" title="Outstanding makeups">⚠ {sm.outstanding}</span>}
+            <span className="rs-att-pill green" title="Attended (incl. rescheduled & attended)">✓ {sm.attended}</span>
+            <span className="rs-att-pill red" title="Not attended">✗ {sm.missed}</span>
+            <span className="rs-att-pill blue" title="Rescheduled">↻ {sm.madeUp}</span>
+            {sm.outstanding > 0 && <span className="rs-att-pill amber" title="Not attended, no successful makeup">⚠ {sm.outstanding}</span>}
             <span className="rs-att-caret">{expanded ? '▴' : '▾'}</span>
           </div>
         </div>
         {!expanded && stu.sessions.length > 0 && (
           <div className="rs-att-pips" onClick={() => toggleExpand(stu.id)}>
             {stu.sessions.map(s => (
-              <span key={s.lessonId} className={`rs-att-pip ${pipClass(s)}`}
+              <span key={s.lessonId} className={`rs-att-pip ${pipClass(s)}${pipRescheduled(s) ? ' resch' : ''}`}
                 title={`${fmtDate(s.date)} · ${s.subjectLabel} · ${pipLabel(s)}${s.topics.length ? '\n' + s.topics.join(', ') : ''}${s.assignmentSubmitted ? '\nHW handed up' : ''}`}>
                 {shortDate(s.date)}
+                {pipRescheduled(s) && <span className="rs-att-pip-resch" title="Rescheduled">↻</span>}
                 {s.assignmentSubmitted && <span className="rs-att-pip-hw">✓</span>}
               </span>
             ))}
@@ -413,7 +436,10 @@ export default function RevisionSignupsPage() {
                   {s.status === 'Absent' && (
                     <>
                       {s.makeup ? (
-                        <span className="rs-att-status madeup">↻ Made up: {s.makeup.slotLabel || ''} {fmtDate(s.makeup.date)}
+                        <span className={`rs-att-status ${pipClass(s)}`}>
+                          {pipOutcome(s) === 'rescheduled_attended' ? '✓ Rescheduled & attended'
+                            : pipOutcome(s) === 'rescheduled_missed' ? '✗ Rescheduled, makeup missed'
+                            : '↻ Rescheduled'}: {s.makeup.slotLabel || ''} {fmtDate(s.makeup.date)}
                           <button className="rs-att-undo" onClick={() => removeMakeup(s.lessonId)}>✕</button>
                         </span>
                       ) : (
@@ -1736,7 +1762,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rs-att-pip.done      { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
 .rs-att-pip.missed    { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
 .rs-att-pip.madeup    { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.rs-att-pip.pending   { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
 .rs-att-pip.scheduled { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; }
+/* Rescheduled marker: small ↻ on the pill, regardless of outcome colour. A
+   dashed border reinforces "this lesson was moved" at a glance. */
+.rs-att-pip.resch { border-style: dashed; }
+.rs-att-pip-resch { font-size: 9px; font-weight: 700; opacity: 0.9; margin-left: 1px; }
 .rs-att-pip-hw { font-size: 9px; opacity: 0.85; }
 .rs-att-section-head {
   font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase;
@@ -1800,6 +1831,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rs-att-status.done { color: #15803d; }
 .rs-att-status.missed { color: #dc2626; }
 .rs-att-status.madeup { color: #1d4ed8; }
+.rs-att-status.pending { color: #1d4ed8; }
 .rs-att-makeup {
   font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 7px;
   border: 1px solid #93c5fd; background: #eff6ff; color: #1d4ed8; cursor: pointer;
