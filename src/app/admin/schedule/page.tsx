@@ -215,6 +215,20 @@ const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> 
   Cancelled:   { bg: '#f1f5f9',  text: '#94a3b8', border: '#e2e8f0' },
 };
 
+// Small 👤 link on each student chip → opens that student's full profile page.
+// stopPropagation so tapping it doesn't fire the chip's contact-popup / drag.
+function ProfileIconLink({ studentId }: { studentId: string }) {
+  return (
+    <a
+      href={`/admin/students/${studentId}`}
+      onClick={e => e.stopPropagation()}
+      onPointerDown={e => e.stopPropagation()}
+      title="Open full profile"
+      style={{ marginLeft: 'auto', paddingLeft: 6, textDecoration: 'none', fontSize: 12, lineHeight: 1, opacity: 0.65, flexShrink: 0 }}
+    >👤</a>
+  );
+}
+
 function getTypeStyle(type: string, status: string) {
   // Lessons that have "happened but moved/missed" should look muted regardless of original type
   if (status === 'Absent' || status === 'Cancelled' || status === 'Rescheduled') return TYPE_COLORS.Absent;
@@ -974,6 +988,7 @@ export default function SchedulePage() {
                   <span className={isAbsent ? 'absent-name' : ''}>{student?.name || studentId}</span>
                   {type !== 'Regular' && !isAbsent && <span className="type-tag">{type}</span>}
                   {isAbsent && <span className="type-tag absent-tag">{lesson?.status}</span>}
+                  <ProfileIconLink studentId={studentId} />
                 </div>
               );
             })}
@@ -996,6 +1011,7 @@ export default function SchedulePage() {
                   <span className={isAbsent ? 'absent-name' : ''}>{displayName}</span>
                   {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
                   {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
+                  {lesson.studentId && <ProfileIconLink studentId={lesson.studentId} />}
                 </div>
               );
             })}
@@ -1021,6 +1037,7 @@ export default function SchedulePage() {
                   <span className={isAbsent ? 'absent-name' : ''}>{displayName}</span>
                   {lesson.type !== 'Regular' && !isAbsent && <span className="type-tag">{lesson.type}</span>}
                   {isAbsent && <span className="type-tag absent-tag">{lesson.status}</span>}
+                  {lesson.studentId && <ProfileIconLink studentId={lesson.studentId} />}
                 </div>
               );
             })}
@@ -1091,7 +1108,8 @@ export default function SchedulePage() {
                 onClick={() => openStudentModal(studentId, 'Regular')}
                 role="button"
               >
-                {student?.name || studentId}
+                <span>{student?.name || studentId}</span>
+                <ProfileIconLink studentId={studentId} />
               </div>
             );
           })}
