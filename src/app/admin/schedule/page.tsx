@@ -2165,6 +2165,12 @@ export default function SchedulePage() {
               <div className="action-sheet-title">{actionSheet.lesson.studentName}</div>
               <div className="action-sheet-sub">{formatDateSlot(actionSheet.date, actionSheet.slotId)}</div>
             </div>
+            {actionSheet.lesson.studentId && (
+              <button className="action-btn" style={{ color: '#1d4ed8', fontWeight: 700 }} onClick={() => {
+                window.open(`/admin/students/${actionSheet.lesson.studentId}`, '_blank');
+                setActionSheet(null);
+              }}>👤 Open full profile</button>
+            )}
             {actionSheet.lesson.type === 'Trial' && (
               <button className="action-btn" style={{ color: '#15803d', fontWeight: 700 }} onClick={() => {
                 const tl = actionSheet.lesson;
