@@ -828,6 +828,14 @@ export default function LessonModal({
             {saveStatus === 'error' && <span style={{ color: '#dc2626' }}>⚠ Save failed{saveError ? `: ${saveError}` : ''}</span>}
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {lesson.studentId && (
+              <a
+                href={`/admin/students/${lesson.studentId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="lm-full-link"
+              >👤 Full profile</a>
+            )}
             <a
               href={`/admin/progress?date=${lesson.date}&lesson=${lesson.id}`}
               target="_blank"
