@@ -16,10 +16,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const data = await airtableRequest(
-      'Students',
-      `/${studentId}?fields[]=Student Name&fields[]=Parent Name&fields[]=Parent Email&fields[]=Parent Contact&fields[]=Student Contact`
-    );
+    // NB: Airtable's single-record GET does NOT accept `fields[]` (that's list-only);
+    // passing it returns "parameter validation failed". Fetch the whole record instead.
+    const data = await airtableRequest('Students', `/${studentId}`);
     return NextResponse.json({
       name: data.fields?.['Student Name'] || '',
       parentName: data.fields?.['Parent Name'] || '',
