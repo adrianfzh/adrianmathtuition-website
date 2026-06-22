@@ -209,6 +209,7 @@ const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> 
   Rescheduled: { bg: '#eff6ff',  text: '#1d4ed8', border: '#bfdbfe' },
   Trial:       { bg: '#f0fdf4',  text: '#15803d', border: '#bbf7d0' },
   Makeup:      { bg: '#fff7ed',  text: '#c2410c', border: '#fed7aa' },
+  'Revision Makeup': { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa' },
   Additional:  { bg: '#faf5ff',  text: '#7c3aed', border: '#e9d5ff' },
   'Revision Sprint': { bg: '#ecfeff', text: '#0e7490', border: '#a5f3fc' },
   Absent:      { bg: '#f1f5f9',  text: '#94a3b8', border: '#e2e8f0' },

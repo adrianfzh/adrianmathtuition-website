@@ -66,7 +66,7 @@ function fmtDateTime(iso: string): string {
 
 const TYPE_COLORS: Record<string, string> = {
   Regular: '#475569', Rescheduled: '#1d4ed8', Additional: '#7c3aed',
-  Trial: '#15803d', 'Revision Sprint': '#0e7490',
+  Trial: '#15803d', 'Revision Sprint': '#0e7490', 'Revision Makeup': '#c2410c',
 };
 
 // Effective outcome of an attendance row. `status` is already the traced final

@@ -27,13 +27,6 @@ interface TrendPoint {
   models: DayModelStat[];
 }
 interface TopicCount  { topic: string; count: number }
-interface Question {
-  id: string; timestamp: string; username: string;
-  caption: string; response: string; model: string;
-  confidence: string; rating: string; timeTaken: number | null;
-  topic: string; hasImage: boolean; cost: number;
-}
-
 const MODEL_COLOURS: Record<string, string> = {
   'Claude Sonnet 4.6':         '#7c3aed',
   'Claude Opus 4.6':           '#b45309',
@@ -53,8 +46,6 @@ export default function AnalyticsDashboard() {
   const [analysis, setAnalysis] = useState('');
   const [analysing, setAnalysing] = useState(false);
   const [analysisDays, setAnalysisDays] = useState(1);
-  const [search, setSearch]     = useState('');
-  const [expandedQ, setExpandedQ] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const load = useCallback(() => {
@@ -92,11 +83,6 @@ export default function AnalyticsDashboard() {
   }
 
   const maxTrend = data ? Math.max(...(data.trend || []).map((t: TrendPoint) => t.count), 1) : 1;
-  const filteredQs: Question[] = (data?.questions || []).filter((q: Question) =>
-    !search || q.caption.toLowerCase().includes(search.toLowerCase()) ||
-    q.username.toLowerCase().includes(search.toLowerCase()) ||
-    q.topic.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <div style={{ maxWidth: 1000, margin: '0 auto', padding: '24px 16px', fontFamily: 'system-ui, sans-serif' }}>
@@ -391,54 +377,10 @@ export default function AnalyticsDashboard() {
             )}
           </div>
 
-          {/* Question log */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '16px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>
-                Question log <span style={{ fontWeight: 400, color: '#94a3b8' }}>({data.totalQuestions} total, showing {filteredQs.length})</span>
-              </div>
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search…"
-                style={{ marginLeft: 'auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: '5px 10px', fontSize: 13, width: 180 }}
-              />
-            </div>
-            <div>
-              {filteredQs.map((q: Question) => {
-                const expanded = expandedQ === q.id;
-                const ts = q.timestamp ? new Date(new Date(q.timestamp).getTime() + 8*3600_000)
-                  .toLocaleString('en-SG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '?';
-                return (
-                  <div
-                    key={q.id}
-                    style={{ borderBottom: '1px solid #f1f5f9', padding: '10px 0', cursor: 'pointer' }}
-                    onClick={() => setExpandedQ(expanded ? null : q.id)}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 11, color: '#94a3b8', whiteSpace: 'nowrap', minWidth: 90 }}>{ts}</span>
-                      {q.hasImage && <span title="Image question" style={{ fontSize: 11 }}>🖼</span>}
-                      <span style={{ fontSize: 12, color: '#475569', flex: 1, minWidth: 0 }}>{q.caption || '(no text)'}</span>
-                      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                        {q.topic && <span style={{ fontSize: 11, background: '#f1f5f9', color: '#64748b', padding: '1px 6px', borderRadius: 4 }}>{q.topic}</span>}
-                        <span style={{ fontSize: 11, color: modelColour(q.model), fontWeight: 600 }}>{q.model.replace('Claude ', 'C-').replace('Gemini ', 'G-').replace('GPT-', 'GPT-')}</span>
-                        {q.timeTaken != null && <span style={{ fontSize: 11, color: '#94a3b8' }}>{q.timeTaken}s</span>}
-                        {q.confidence === 'LOW' && <span style={{ fontSize: 11, background: '#fef3c7', color: '#b45309', padding: '1px 5px', borderRadius: 4 }}>LOW</span>}
-                      </div>
-                    </div>
-                    {expanded && (
-                      <div style={{ marginTop: 8, padding: '10px 12px', background: '#f8fafc', borderRadius: 6, fontSize: 12, color: '#334155', lineHeight: 1.5 }}>
-                        <div style={{ fontWeight: 600, marginBottom: 4 }}>Response:</div>
-                        <div style={{ whiteSpace: 'pre-wrap' }}>{q.response}</div>
-                        {q.cost > 0 && <div style={{ marginTop: 6, color: '#94a3b8' }}>Cost: ${q.cost.toFixed(5)}</div>}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              {filteredQs.length === 0 && <div style={{ color: '#94a3b8', textAlign: 'center', padding: 20 }}>No questions found</div>}
-            </div>
+          {/* Per-question log moved to Bot Analytics (cost + response time live there now) */}
+          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '16px 20px', fontSize: 13, color: '#64748b' }}>
+            Per-question log — with cost &amp; response time — now lives in{' '}
+            <a href="/admin/bot-analytics" style={{ color: '#1d4ed8', textDecoration: 'none', fontWeight: 600 }}>Bot Analytics →</a>
           </div>
         </>
       )}

@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         body: JSON.stringify({ fields: {
           Student: [studentId], Slot: [slotId], Date: date,
-          Type: 'Additional', Status: 'Scheduled', Notes: 'Revision makeup',
+          Type: 'Revision Makeup', Status: 'Scheduled', Notes: 'Revision makeup',
           'Is Revision Makeup': true,
         }}),
       });

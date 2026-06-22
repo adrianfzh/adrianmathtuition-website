@@ -576,6 +576,7 @@ export default function BotAnalytics() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 11, marginBottom: 3, gap: 4 }}>
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
                       <span style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+                        {q.timeTaken ? <span title="response time" style={{ color: '#94a3b8' }}>{(q.timeTaken / 1000).toFixed(1)}s</span> : null}
                         {(q.tokensIn || q.tokensOut) ? <span title={`${q.tokensIn || 0} in / ${q.tokensOut || 0} out · ${q.modelUsed || ''}`} style={{ fontFamily: 'monospace', color: '#0f766e', fontWeight: 600 }}>${costFor(q.tokensIn || 0, q.tokensOut || 0, q.modelUsed).toFixed(3)}</span> : null}
                         {q.status && q.status !== 'New' && statusBadge(q.status)}
                         {confBadge(q.confidence)}
