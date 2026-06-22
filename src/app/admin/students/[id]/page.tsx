@@ -67,6 +67,26 @@ const TYPE_COLORS: Record<string, string> = {
   Trial: '#15803d', 'Revision Sprint': '#0e7490',
 };
 
+// Effective outcome of an attendance row. `status` is already the traced final
+// outcome of any reschedule chain; `rescheduledToDate` (moved) adds the ↻.
+type OutKind = 'done' | 'missed' | 'pending' | 'notcoming' | 'cancelled' | 'scheduled';
+function rowOutcome(r: AttRow): { kind: OutKind; moved: boolean } {
+  const moved = !!r.rescheduledToDate;
+  if (r.status === 'Completed') return { kind: 'done', moved };
+  if (r.status === 'Absent') return { kind: 'missed', moved };
+  if (r.status === 'Cancelled - Prorated') return { kind: 'notcoming', moved };
+  if (r.status === 'Cancelled') return { kind: 'cancelled', moved };
+  if (moved) return { kind: 'pending', moved };          // rescheduled, makeup not yet held
+  return { kind: 'scheduled', moved };
+}
+function pipColors(kind: OutKind): { bg: string; fg: string } {
+  if (kind === 'done') return { bg: '#E1F5EE', fg: '#0F6E56' };
+  if (kind === 'missed') return { bg: '#FCEBEB', fg: '#A32D2D' };
+  if (kind === 'pending') return { bg: '#E6F1FB', fg: '#185FA5' };
+  return { bg: '#F1EFE8', fg: '#5F5E5A' };                 // notcoming / cancelled / scheduled
+}
+function dayNum(iso: string): number { return +(iso.split('-')[2] || 0); }
+
 export default function StudentProfilePage() {
   const params = useParams();
   const studentId = (Array.isArray(params.id) ? params.id[0] : params.id) || '';
@@ -88,6 +108,7 @@ export default function StudentProfilePage() {
   // Phase 2: lesson actions
   const [reschedModal, setReschedModal] = useState<{ lesson: UpLesson; date: string; slotId: string; saving: boolean } | null>(null);
   const [busyLesson, setBusyLesson] = useState('');
+  const [openMonths, setOpenMonths] = useState<Set<string>>(new Set());   // attendance months expanded to detail
   // Phase 4: contact + exam quick-add
   const [contact, setContact] = useState<Contact | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
@@ -377,71 +398,125 @@ export default function StudentProfilePage() {
 
             {/* Attendance — grouped by month, merged reschedules, missed in red */}
             <Section title="Attendance">
-              {data.attendance.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No lessons on record.</div>}
-              {(() => {
-                // Group the (already newest-first) rows by month label, preserving order.
+              {data.attendance.length === 0 ? (
+                <div style={{ color: '#9ca3af', fontSize: 14 }}>No lessons on record.</div>
+              ) : (() => {
+                const rows = data.attendance;
+                const kindOf = (r: AttRow) => rowOutcome(r).kind;
+                const done = rows.filter(r => kindOf(r) === 'done').length;
+                const missed = rows.filter(r => kindOf(r) === 'missed').length;
+                const madeUp = rows.filter(r => kindOf(r) === 'done' && !!r.rescheduledToDate).length;
+                const denom = done + missed;                    // lessons that were actually due
+                const rate = denom ? Math.round((done / denom) * 100) : null;
+                const next = data.upcoming?.[0];
+                const chip = (bg: string, fg: string): React.CSSProperties => ({ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, padding: '3px 9px', borderRadius: 8, background: bg, color: fg });
+                // Group newest-first (rows already sorted that way).
                 const groups: { label: string; rows: AttRow[] }[] = [];
-                for (const r of data.attendance) {
+                for (const r of rows) {
                   let g = groups.find(x => x.label === r.monthLabel);
                   if (!g) { g = { label: r.monthLabel, rows: [] }; groups.push(g); }
                   g.rows.push(r);
                 }
-                return groups.map(g => {
-                  const done = g.rows.filter(r => r.status === 'Completed').length;
-                  const missed = g.rows.filter(r => r.status === 'Absent').length;
-                  const notComing = g.rows.filter(r => r.status === 'Cancelled - Prorated').length;
-                  const rescheduled = g.rows.filter(r => !!r.rescheduledToDate).length;
-                  return (
-                    <div key={g.label} style={{ marginBottom: 14 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 6px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f' }}>{g.label}</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#15803d' }}>{done} attended</span>
-                        {missed > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626' }}>· {missed} missed</span>}
-                        {rescheduled > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#1d4ed8' }}>· {rescheduled} rescheduled</span>}
-                        {notComing > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8' }}>· {notComing} not coming</span>}
+                const pipTitle = (r: AttRow, k: OutKind) =>
+                  k === 'done' ? `Attended${r.rescheduledToDate ? ' (made up ' + fmtDate(r.rescheduledToDate) + ')' : ''}`
+                  : k === 'missed' ? `Missed${r.rescheduledToDate ? ' (makeup also missed)' : ''}`
+                  : k === 'pending' ? `Rescheduled → ${fmtDate(r.rescheduledToDate)} (pending)`
+                  : k === 'notcoming' ? 'Not coming' : k === 'cancelled' ? 'Cancelled' : 'Scheduled';
+                return (
+                  <>
+                    {/* Summary — this-term rate + breakdown + next lesson */}
+                    <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: 12, padding: '12px 14px', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 26, fontWeight: 800, color: '#0f172a' }}>{rate === null ? '—' : rate + '%'}</span>
+                        <span style={{ fontSize: 12.5, color: '#64748b' }}>this term · {done} of {denom} effectively attended</span>
                       </div>
-                      {g.rows.slice().sort((a, b) => a.date.localeCompare(b.date)).map(r => {
-                        const isMissed = r.status === 'Absent';
-                        const isDone = r.status === 'Completed';
-                        const isOptOut = r.status === 'Cancelled - Prorated';
-                        const isCancelled = r.status === 'Cancelled' || isOptOut;
-                        // `status` is already the reschedule chain's final outcome, so a moved-
-                        // and-attended lesson is green, moved-and-missed red, moved-but-unheld
-                        // blue (pending). `moved` adds the ↻ marker, matching the revision page.
-                        const moved = !!r.rescheduledToDate;
-                        const color = isMissed ? '#dc2626' : isDone ? '#15803d' : isCancelled ? '#94a3b8' : moved ? '#1d4ed8' : '#475569';
-                        const busy = busyLesson === r.outcomeLessonId;
-                        const lid = r.outcomeLessonId;
-                        const markable = r.status !== 'Rescheduled';
-                        return (
-                          <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #f6f7f9', fontSize: 13.5, flexWrap: 'wrap', opacity: busy ? 0.5 : 1 }}>
-                            <span style={{ width: 96, fontWeight: 600, color: isMissed ? '#dc2626' : '#111' }}>{fmtDate(r.date)}</span>
-                            <span style={{ flex: 1, minWidth: 70, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {r.slotLabel}
-                              {r.rescheduledToDate && <span style={{ color: '#1d4ed8' }}> → {fmtDate(r.rescheduledToDate)}</span>}
-                            </span>
-                            <span style={{ fontSize: 12, fontWeight: 700, color, minWidth: 78, textAlign: 'right' }}>
-                              {isDone ? `✓ Attended${moved ? ' ↻' : ''}`
-                                : isMissed ? `✗ Missed${moved ? ' ↻' : ''}`
-                                : isOptOut ? 'Not coming'
-                                : isCancelled ? 'Cancelled'
-                                : moved ? '↻ Rescheduled'
-                                : r.status}
-                            </span>
-                            {markable && (
-                              <div style={{ display: 'flex', gap: 3 }}>
-                                {!isDone && <button title="Attended" style={iconBtn('#16a34a', '#bbf7d0')} disabled={busy} onClick={() => setAttStatus(lid, 'Completed')}>✓</button>}
-                                {!isMissed && <button title="Missed" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => setAttStatus(lid, 'Absent')}>✗</button>}
-                                {!isOptOut && <button title="Not coming (not billed)" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(lid, 'Cancelled - Prorated')}>⊘</button>}
-                                {r.status !== 'Scheduled' && <button title="Reset to scheduled" style={iconBtn('#94a3b8', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(lid, 'Scheduled')}>↺</button>}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        <span style={chip('#E1F5EE', '#0F6E56')}>✓ {done} attended</span>
+                        {madeUp > 0 && <span style={chip('#E6F1FB', '#185FA5')}>↻ {madeUp} made up</span>}
+                        {missed > 0 && <span style={chip('#FCEBEB', '#A32D2D')}>✗ {missed} missed</span>}
+                      </div>
+                      {next && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: '#475569', borderTop: '0.5px solid #e2e8f0', paddingTop: 8, marginTop: 10 }}>
+                          <span style={{ color: '#94a3b8' }}>Next lesson</span>
+                          <span style={{ fontWeight: 700, marginLeft: 'auto' }}>{fmtDate(next.date)} · {next.slotLabel}</span>
+                        </div>
+                      )}
                     </div>
-                  );
-                });
+
+                    {/* Month strips — collapsed by default, tap to expand to detail */}
+                    {groups.map(g => {
+                      const open = openMonths.has(g.label);
+                      const gdone = g.rows.filter(r => kindOf(r) === 'done').length;
+                      const gmiss = g.rows.filter(r => kindOf(r) === 'missed').length;
+                      const gresch = g.rows.filter(r => !!r.rescheduledToDate).length;
+                      const sorted = g.rows.slice().sort((a, b) => a.date.localeCompare(b.date));
+                      return (
+                        <div key={g.label} style={{ marginBottom: 12 }}>
+                          <button
+                            onClick={() => setOpenMonths(prev => { const n = new Set(prev); n.has(g.label) ? n.delete(g.label) : n.add(g.label); return n; })}
+                            style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: 'none', border: 'none', padding: '2px 0', cursor: 'pointer', textAlign: 'left', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 13.5, fontWeight: 800, color: '#1e3a5f' }}>{g.label}</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: '#15803d' }}>{gdone} attended</span>
+                            {gmiss > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626' }}>· {gmiss} missed</span>}
+                            {gresch > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: '#1d4ed8' }}>· {gresch} resch.</span>}
+                            <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>{open ? '▴' : '▾'}</span>
+                          </button>
+
+                          {/* Pip strip (always visible) */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '8px 0 2px' }}>
+                            {sorted.map(r => {
+                              const o = rowOutcome(r); const pc = pipColors(o.kind);
+                              return (
+                                <span key={r.id} title={`${fmtDate(r.date)} · ${pipTitle(r, o.kind)}`}
+                                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 32, borderRadius: 7, fontSize: 15, fontWeight: 700, background: pc.bg, color: pc.fg, ...(o.moved ? { border: '1.5px dashed #185FA5' } : {}) }}>
+                                  {dayNum(r.date)}
+                                </span>
+                              );
+                            })}
+                          </div>
+
+                          {/* Detail rows (only when expanded) */}
+                          {open && sorted.map(r => {
+                            const isMissed = r.status === 'Absent';
+                            const isDone = r.status === 'Completed';
+                            const isOptOut = r.status === 'Cancelled - Prorated';
+                            const isCancelled = r.status === 'Cancelled' || isOptOut;
+                            const moved = !!r.rescheduledToDate;
+                            const color = isMissed ? '#dc2626' : isDone ? '#15803d' : isCancelled ? '#94a3b8' : moved ? '#1d4ed8' : '#475569';
+                            const busy = busyLesson === r.outcomeLessonId;
+                            const lid = r.outcomeLessonId;
+                            const markable = r.status !== 'Rescheduled';
+                            return (
+                              <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid #f6f7f9', fontSize: 13.5, flexWrap: 'wrap', opacity: busy ? 0.5 : 1 }}>
+                                <span style={{ width: 96, fontWeight: 600, color: isMissed ? '#dc2626' : '#111' }}>{fmtDate(r.date)}</span>
+                                <span style={{ flex: 1, minWidth: 70, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {r.slotLabel}
+                                  {r.rescheduledToDate && <span style={{ color: '#1d4ed8' }}> → {fmtDate(r.rescheduledToDate)}</span>}
+                                </span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color, minWidth: 78, textAlign: 'right' }}>
+                                  {isDone ? `✓ Attended${moved ? ' ↻' : ''}`
+                                    : isMissed ? `✗ Missed${moved ? ' ↻' : ''}`
+                                    : isOptOut ? 'Not coming'
+                                    : isCancelled ? 'Cancelled'
+                                    : moved ? '↻ Rescheduled'
+                                    : r.status}
+                                </span>
+                                {markable && (
+                                  <div style={{ display: 'flex', gap: 3 }}>
+                                    {!isDone && <button title="Attended" style={iconBtn('#16a34a', '#bbf7d0')} disabled={busy} onClick={() => setAttStatus(lid, 'Completed')}>✓</button>}
+                                    {!isMissed && <button title="Missed" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => setAttStatus(lid, 'Absent')}>✗</button>}
+                                    {!isOptOut && <button title="Not coming (not billed)" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(lid, 'Cancelled - Prorated')}>⊘</button>}
+                                    {r.status !== 'Scheduled' && <button title="Reset to scheduled" style={iconBtn('#94a3b8', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(lid, 'Scheduled')}>↺</button>}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </>
+                );
               })()}
             </Section>
 
