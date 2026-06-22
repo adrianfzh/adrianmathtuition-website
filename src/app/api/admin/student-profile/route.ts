@@ -59,6 +59,13 @@ export async function GET(req: NextRequest) {
     `?filterByFormula=${encodeURIComponent(`{Date}>='${windowStart}'`)}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&sort[0][field]=Date&sort[0][direction]=asc`);
   const mine = lessonsData.records.filter((r: any) => r.fields['Student']?.[0] === id);
 
+  // A makeup lesson = a reschedule destination OR a revision makeup. Computed up
+  // front so both the upcoming list and the attendance rows can flag/label them.
+  const destinationIds = new Set<string>();
+  const origByDest: Record<string, any> = {};
+  for (const r of mine) for (const did of (r.fields['Rescheduled Lesson ID'] || [])) { destinationIds.add(did); origByDest[did] = r; }
+  const isMakeup = (r: any) => destinationIds.has(r.id) || r.fields['Is Revision Makeup'] === true;
+
   const upcoming = mine
     .filter((r: any) => (r.fields['Date'] || '') >= today && r.fields['Status'] !== 'Cancelled' && r.fields['Status'] !== 'Rescheduled')
     .slice(0, 12)
@@ -72,6 +79,7 @@ export async function GET(req: NextRequest) {
         slotLabel: sf ? slotLabel(sf) : (r.fields['Type'] === 'Revision Sprint' ? 'Revision Sprint' : ''),
         type: r.fields['Type'] || 'Regular',
         status: r.fields['Status'] || 'Scheduled',
+        isMakeup: isMakeup(r),
       };
     });
 
@@ -83,12 +91,7 @@ export async function GET(req: NextRequest) {
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const monthLabel = (d: string) => { const p = d.split('-'); return p.length === 3 ? `${MONTHS[+p[1] - 1]} ${p[0]}` : 'Unknown'; };
   const byId: Record<string, any> = Object.fromEntries(mine.map((r: any) => [r.id, r]));
-  // Makeup lessons = reschedule destinations OR revision makeups. They live in the
-  // faded second row; the lesson they cover (origByDest) is shown in the main row.
-  const destinationIds = new Set<string>();
-  const origByDest: Record<string, any> = {};
-  for (const r of mine) for (const did of (r.fields['Rescheduled Lesson ID'] || [])) { destinationIds.add(did); origByDest[did] = r; }
-  const isMakeup = (r: any) => destinationIds.has(r.id) || r.fields['Is Revision Makeup'] === true;
+  // (destinationIds / origByDest / isMakeup computed above, before `upcoming`.)
   // Strip covers history through the END of the current month, so the current
   // month always shows its full set (incl. not-yet-happened lessons as grey boxes).
   const endOfMonth = (() => { const d = new Date(today + 'T00:00:00'); return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().slice(0, 10); })();
