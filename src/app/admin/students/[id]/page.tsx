@@ -37,7 +37,7 @@ function weekdayName(label: string): string { return (label || '').trim().split(
 
 interface Enrollment { enrollmentId: string; slotId: string | null; slotLabel: string; slotLevel: string; ratePerLesson: number | null; rateType: string; }
 interface UpLesson { id: string; date: string; slotId: string | null; slotLabel: string; type: string; status: string; }
-interface AttRow { id: string; outcomeLessonId: string; date: string; monthLabel: string; type: string; status: string; rescheduledToDate: string; slotLabel: string; }
+interface AttRow { id: string; outcomeLessonId: string; date: string; monthLabel: string; type: string; status: string; rescheduledToDate: string; slotLabel: string; notes: string; }
 interface MakeupRow { id: string; date: string; monthLabel: string; status: string; slotLabel: string; makeupForDate: string; isRevision: boolean; }
 interface Exam { id: string; examType: string; examDate: string; testedTopics: string; noExam: boolean; }
 interface Invoice { id: string; month: string; finalAmount: number | null; amountPaid: number | null; isPaid: boolean; status: string; invoiceType: string; pdfUrl: string; }
@@ -417,6 +417,22 @@ export default function StudentProfilePage() {
                       )}
                     </div>
 
+                    {/* Legend */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 10.5, color: '#94a3b8', margin: '0 0 12px' }}>
+                      {[
+                        { c: '#5DCAA5', t: 'attended / made up' },
+                        { c: '#85B7EB', t: 'makeup pending' },
+                        { c: '#F09595', t: 'missed' },
+                      ].map(x => (
+                        <span key={x.t} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ width: 10, height: 10, borderRadius: 3, background: x.c, display: 'inline-block' }} />{x.t}
+                        </span>
+                      ))}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ width: 10, height: 10, borderRadius: 3, border: '1.5px dashed #185FA5', display: 'inline-block' }} />dashed = was rescheduled
+                      </span>
+                    </div>
+
                     {/* Month strips — collapsed by default, tap to expand to detail */}
                     {groups.map(g => {
                       const open = openMonths.has(g.label);
@@ -440,35 +456,63 @@ export default function StudentProfilePage() {
                           {gmiss > 0 && (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#FCEBEB', color: '#A32D2D', fontSize: 11, fontWeight: 700, borderRadius: 6, padding: '3px 8px', margin: '6px 0 2px' }}>⚠ {gmiss} to make up</div>
                           )}
-                          {/* Main lessons row (regular / additional / revision) */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '8px 0 2px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 10, color: '#94a3b8', width: 46, flexShrink: 0 }}>lessons</span>
-                            {sorted.map(r => {
-                              const o = rowOutcome(r); const pc = pipColors(o.kind);
-                              return (
-                                <span key={r.id} title={`${fmtDate(r.date)} · ${pipTitle(r, o.kind)}`}
-                                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 32, borderRadius: 7, fontSize: 15, fontWeight: 700, background: pc.bg, color: pc.fg, ...(o.moved ? { border: '1.5px dashed #185FA5' } : {}) }}>
-                                  {dayNum(r.date)}
-                                </span>
-                              );
-                            })}
-                          </div>
-                          {/* Makeups row (faded) — the makeup lessons that land in this month */}
+                          {/* Main lessons row — real lessons only (cancelled go to their own row below) */}
+                          {(() => {
+                            const main = sorted.filter(r => { const k = kindOf(r); return k !== 'cancelled' && k !== 'notcoming'; });
+                            if (!main.length) return null;
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '8px 0 2px', flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: 10, color: '#94a3b8', width: 46, flexShrink: 0 }}>lessons</span>
+                                {main.map(r => {
+                                  const o = rowOutcome(r); const pc = pipColors(o.kind);
+                                  return (
+                                    <span key={r.id} title={`${fmtDate(r.date)} · ${pipTitle(r, o.kind)}`}
+                                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 32, borderRadius: 7, fontSize: 15, fontWeight: 700, background: pc.bg, color: pc.fg, ...(o.moved ? { border: '1.5px dashed #185FA5' } : {}) }}>
+                                      {dayNum(r.date)}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
+                          {/* Makeups row — each shows which lesson it covers */}
                           {(() => {
                             const mks = (data.makeups || []).filter(m => m.monthLabel === g.label).sort((a, b) => a.date.localeCompare(b.date));
                             if (!mks.length) return null;
                             return (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '2px 0', flexWrap: 'wrap' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '2px 0', flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: 10, color: '#94a3b8', width: 46, flexShrink: 0 }}>makeups</span>
                                 {mks.map(m => {
                                   const pc = m.status === 'Completed' ? { bg: '#E1F5EE', fg: '#0F6E56' } : m.status === 'Absent' ? { bg: '#FCEBEB', fg: '#A32D2D' } : { bg: '#E6F1FB', fg: '#185FA5' };
                                   return (
-                                    <span key={m.id} title={`Makeup ${fmtDate(m.date)}${m.makeupForDate ? ' · for ' + fmtDate(m.makeupForDate) : ''}${m.isRevision ? ' · revision' : ''} · ${m.status === 'Completed' ? 'done' : m.status.toLowerCase()}`}
-                                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 26, borderRadius: 6, fontSize: 13, fontWeight: 700, background: pc.bg, color: pc.fg, opacity: 0.6 }}>
-                                      {dayNum(m.date)}
+                                    <span key={m.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                      <span title={`Makeup ${fmtDate(m.date)}${m.isRevision ? ' · revision' : ''} · ${m.status === 'Completed' ? 'done' : m.status.toLowerCase()}`}
+                                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 26, borderRadius: 6, fontSize: 13, fontWeight: 700, background: pc.bg, color: pc.fg, opacity: 0.75 }}>
+                                        {dayNum(m.date)}
+                                      </span>
+                                      {m.makeupForDate && <span style={{ fontSize: 10, color: '#94a3b8' }}>for {fmtDate(m.makeupForDate)}</span>}
                                     </span>
                                   );
                                 })}
+                              </div>
+                            );
+                          })()}
+                          {/* Cancelled row — info only, muted, with reason */}
+                          {(() => {
+                            const reasonOf = (n: string) => (n || '').replace(/^cancelled\s*[—-]\s*/i, '').trim();
+                            const canc = sorted.filter(r => { const k = kindOf(r); return k === 'cancelled' || k === 'notcoming'; });
+                            if (!canc.length) return null;
+                            const reasons = [...new Set(canc.map(r => reasonOf(r.notes)).filter(Boolean))];
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '2px 0', flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: 10, color: '#cbd5e1', width: 46, flexShrink: 0 }}>cancelled</span>
+                                {canc.map(r => (
+                                  <span key={r.id} title={`${fmtDate(r.date)}${reasonOf(r.notes) ? ' · ' + reasonOf(r.notes) : ''}`}
+                                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 24, borderRadius: 6, fontSize: 12, fontWeight: 600, background: '#f8fafc', color: '#cbd5e1', textDecoration: 'line-through' }}>
+                                    {dayNum(r.date)}
+                                  </span>
+                                ))}
+                                {reasons.length > 0 && <span style={{ fontSize: 10, color: '#cbd5e1' }}>{reasons.join(', ')}</span>}
                               </div>
                             );
                           })()}

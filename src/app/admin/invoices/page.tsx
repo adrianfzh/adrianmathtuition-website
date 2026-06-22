@@ -2891,6 +2891,7 @@ export default function AdminPage() {
 
       <div className="header">
         <div className="header-left">
+          <a href="/admin" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 600, display: 'inline-block', marginBottom: 6 }}>‹ Admin</a>
           <h1>📋 Invoice Review</h1>
           <p>Review and approve draft invoices before sending</p>
         </div>

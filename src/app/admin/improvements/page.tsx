@@ -84,6 +84,7 @@ export default function ImprovementsDashboard() {
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px', fontFamily: 'sans-serif' }}>
+      <a href="/admin" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 600, display: 'inline-block', marginBottom: 12 }}>‹ Admin</a>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Improvements Dashboard</h1>
       <p style={{ color: '#64748b', marginBottom: 24, fontSize: 14 }}>
         Suggestion clusters from the evaluator · approve to append rule to prompt_additions.txt

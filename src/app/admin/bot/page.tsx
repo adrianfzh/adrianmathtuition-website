@@ -17,6 +17,9 @@ function Divider({ label }: { label: string }) {
 export default function BotCombinedPage() {
   return (
     <div>
+      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '12px 16px 0' }}>
+        <a href="/admin" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>‹ Admin</a>
+      </div>
       <Divider label="Metrics" />
       <MetricsPage />
       <Divider label="API usage" />

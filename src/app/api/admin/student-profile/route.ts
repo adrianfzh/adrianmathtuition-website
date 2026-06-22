@@ -115,6 +115,7 @@ export async function GET(req: NextRequest) {
         status: cur.fields['Status'] || 'Scheduled',            // final outcome
         rescheduledToDate: moved ? (cur.fields['Date'] || '') : '',
         slotLabel: sf ? slotLabel(sf) : (r.fields['Type'] === 'Revision Sprint' ? 'Revision' : ''),
+        notes: (r.fields['Notes'] || '') as string,             // cancellation reason etc.
       };
     })
     .sort((a: any, b: any) => b.date.localeCompare(a.date));     // newest first
