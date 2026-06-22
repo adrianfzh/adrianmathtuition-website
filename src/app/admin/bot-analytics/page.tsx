@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { costFor } from '@/lib/model-pricing';
 
 // KaTeX web renderer — loads KaTeX from CDN once and renders math in a div
 function WebMathRenderer({ text }: { text: string }) {
@@ -80,6 +81,7 @@ type Question = {
   id: string; timestamp: string; studentName: string; chatId: string;
   caption: string; aiResponse: string; modelUsed: string; topic: string;
   timeTaken: number | null; confidence: string; status: string; imageUrl?: string;
+  tokensIn?: number; tokensOut?: number;
   suggestions: { id: string; issue: string; suggestion: string; status: string }[];
   // enriched client-side
   flagReason?: 'negative_feedback' | 'low_confidence' | 'confusion_followup' | 'admin_forced' | 'multiple';
@@ -574,6 +576,7 @@ export default function BotAnalytics() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 11, marginBottom: 3, gap: 4 }}>
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
                       <span style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+                        {(q.tokensIn || q.tokensOut) ? <span title={`${q.tokensIn || 0} in / ${q.tokensOut || 0} out · ${q.modelUsed || ''}`} style={{ fontFamily: 'monospace', color: '#0f766e', fontWeight: 600 }}>${costFor(q.tokensIn || 0, q.tokensOut || 0, q.modelUsed).toFixed(3)}</span> : null}
                         {q.status && q.status !== 'New' && statusBadge(q.status)}
                         {confBadge(q.confidence)}
                         {q.timestamp ? new Date(q.timestamp).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'}) : ''}

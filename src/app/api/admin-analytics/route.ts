@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
+import { costFor } from '@/lib/model-pricing';
 
 export const runtime = 'nodejs';
 
@@ -9,43 +10,8 @@ function checkAuth(req: NextRequest) {
   return req.headers.get('authorization') === `Bearer ${pw}`;
 }
 
-// USD per 1M tokens. Keyed by BASE model name (suffixes like " (web)", " (regen)",
-// " (jStat)", " (verified)" are stripped before lookup).
-const PRICING: Record<string, { in: number; out: number }> = {
-  'Claude Opus 4.8':       { in: 15.00, out: 75.00 },
-  'Claude Opus 4.6':       { in: 15.00, out: 75.00 },
-  'Claude Sonnet 4.6':     { in: 3.00,  out: 15.00 },
-  'Claude Haiku':          { in: 0.80,  out: 4.00  },
-  'Gemini 3.1 Flash-Lite': { in: 0.25,  out: 1.50  },
-  'Gemini 3.1 Pro':        { in: 1.25,  out: 10.00 },
-  'GPT-5.4':               { in: 2.50,  out: 15.00 },
-  'DeepSeek V4 Pro':       { in: 0.27,  out: 1.10  },
-  'Kimi':                  { in: 0.60,  out: 2.50  },
-};
-
-// Resolve a logged model name (which may carry path/purpose suffixes, e.g.
-// "Claude Opus 4.8 (web) (verified)") to its per-1M pricing. Falls back to the
-// model FAMILY by keyword so a new variant never silently costs $0.
-function priceForModel(model: string): { in: number; out: number } {
-  let base = model.trim();
-  while (/\s*\([^)]*\)\s*$/.test(base)) base = base.replace(/\s*\([^)]*\)\s*$/, '').trim();
-  if (PRICING[base]) return PRICING[base];
-  const lc = base.toLowerCase();
-  if (lc.includes('opus')) return { in: 15.00, out: 75.00 };
-  if (lc.includes('sonnet')) return { in: 3.00, out: 15.00 };
-  if (lc.includes('haiku')) return { in: 0.80, out: 4.00 };
-  if (lc.includes('gemini') && lc.includes('pro')) return { in: 1.25, out: 10.00 };
-  if (lc.includes('gemini')) return { in: 0.25, out: 1.50 };
-  if (lc.includes('gpt')) return { in: 2.50, out: 15.00 };
-  if (lc.includes('deepseek')) return { in: 0.27, out: 1.10 };
-  if (lc.includes('kimi')) return { in: 0.60, out: 2.50 };
-  return { in: 0, out: 0 };
-}
-
 function costForRecord(r: any): number {
-  const p = priceForModel(r.fields['Model Used'] || '');
-  return (r.fields['Tokens In'] || 0) / 1e6 * p.in
-       + (r.fields['Tokens Out'] || 0) / 1e6 * p.out;
+  return costFor(r.fields['Tokens In'] || 0, r.fields['Tokens Out'] || 0, r.fields['Model Used'] || '');
 }
 
 export async function GET(req: NextRequest) {
