@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({ fields: {
           Student: [studentId], Slot: [slotId], Date: date,
           Type: 'Additional', Status: 'Scheduled', Notes: 'Revision makeup',
+          'Is Revision Makeup': true,
         }}),
       });
       // 2. Mark the revision lesson Rescheduled (NOT Absent) + link to the makeup.

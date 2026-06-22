@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     fetchAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot`),
     fetchAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Progress Logged`
+      `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Progress Logged&fields[]=Is Revision Makeup`
     ),
   ]);
 
@@ -228,7 +228,7 @@ export async function GET(req: NextRequest) {
       rescheduledToStatus: rescheduledNewId ? (rescheduledStatusById[rescheduledNewId] ?? '') : '',
       // A makeup created for a missed June-holiday revision lesson (Additional
       // lesson at a regular Sec slot) — flagged so the chip can say so.
-      revisionMakeup: /revision makeup/i.test(rawNote),
+      revisionMakeup: r.fields['Is Revision Makeup'] === true || /revision makeup/i.test(rawNote),
       progressLogged: r.fields['Progress Logged'] === true,
     };
   });
