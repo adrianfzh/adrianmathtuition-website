@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -528,6 +528,8 @@ export function LessonBankPanel({
   const [questions, setQuestions] = useState<BankQuestion[]>(hit?.results ?? []);
   const [total, setTotal] = useState(hit?.total ?? 0);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false); // background stale-while-revalidate in flight
+  const revalidating = useRef(false);
   const [error, setError] = useState<string | null>(null);
   // Lets us reuse the cache on the FIRST effect run (mount / card-switch remount) but force a real
   // fetch on any later run (i.e. when the user explicitly clicks Search).
@@ -626,6 +628,44 @@ export function LessonBankPanel({
     }
   }, [hasImage, difficulties, year, exam, lessonKey]);
 
+  // Background re-fetch of the CURRENT keyword browse, replacing stale cached results so DB edits
+  // (e.g. a fixed table) appear without the user clearing any cache. Keyword-only: never re-runs a
+  // Smart search (that would spend AI tokens). Silent — uses `refreshing`, not the full spinner.
+  const backgroundRevalidate = useCallback(async () => {
+    if (!level || topics.length === 0) return;
+    if (committed.mode === 'smart') return;       // never auto-spend AI tokens
+    if (revalidating.current) return;
+    revalidating.current = true; setRefreshing(true);
+    const cQuery = committed.query.trim();
+    const sig = JSON.stringify({ k: lessonKey, q: cQuery, m: 'kw' });
+    try {
+      const settings = await getOfflineSettings();
+      const offlineModeOn = settings.enabled && settings.levels.includes(level);
+      let list: BankQuestion[]; let tot: number; let src: Source;
+      if (offlineModeOn) {
+        try { await syncEnabledLevels(); } catch { /* offline */ }
+        const local = await queryLocalBank({ level, topics, search: cQuery || undefined, limit });
+        list = local as unknown as BankQuestion[]; tot = local.length; src = 'local';
+      } else {
+        const params = new URLSearchParams();
+        params.set('level', level); params.set('topics', topics.join(','));
+        if (cQuery) params.set('q', cQuery); params.set('limit', String(limit));
+        const res = await fetch(`/api/admin/lessons/bank?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
+        if (!res.ok) return;
+        const json = await res.json();
+        list = json.questions ?? []; tot = json.total ?? list.length; src = 'server';
+      }
+      setSource(src); setQuestions(list); setTotal(tot);
+      bankCache = {
+        lessonKey, sig, search: committed.query, mode: committed.mode, aiModel: committed.aiModel,
+        hasImage: filtersRef.current.hasImage, difficulties: Array.from(filtersRef.current.difficulties),
+        year: filtersRef.current.year, exam: filtersRef.current.exam, results: list, total: tot, source: src,
+      };
+      persistCache();
+    } catch { /* keep existing results on any failure */ }
+    finally { revalidating.current = false; setRefreshing(false); }
+  }, [level, topics, lessonKey, committed, auth, limit]);
+
   // Fetch is driven ONLY by `committed` (set on Search click / Enter) and level/topics.
   useEffect(() => {
     if (!level || topics.length === 0) {
@@ -643,6 +683,7 @@ export function LessonBankPanel({
     if (firstRun.current && bankCache && bankCache.lessonKey === lessonKey && bankCache.sig === sig) {
       setSource(bankCache.source); setQuestions(bankCache.results); setTotal(bankCache.total); setError(null);
       firstRun.current = false;
+      if (!cSmart) void backgroundRevalidate(); // show cache instantly, refresh from server behind it
       return;
     }
     firstRun.current = false;
@@ -983,6 +1024,12 @@ export function LessonBankPanel({
             title="Run the search"
             className={`px-2.5 py-1 text-xs rounded text-white disabled:opacity-40 ${dirty ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-400 hover:bg-slate-500'}`}
           >Search</button>
+          <button
+            onClick={() => void backgroundRevalidate()}
+            disabled={topics.length === 0 || refreshing || committed.mode === 'smart'}
+            title="Refresh from the database (pulls the latest edits; keyword browse only)"
+            className="px-2 py-1 text-xs rounded border border-slate-300 text-slate-500 hover:bg-slate-100 disabled:opacity-40"
+          >{refreshing ? '↻…' : '↻'}</button>
           <button
             onClick={clearSearch}
             disabled={topics.length === 0}
