@@ -150,6 +150,7 @@ export default function AdminHub() {
 // ── Data ───────────────────────────────────────────────────────────────────────
 
 const LAUNCHERS = [
+  { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
   { emoji: '📅', title: 'Schedule',  sub: 'Weekly lessons · drag to reschedule', href: '/admin/schedule'  },
   { emoji: '✏️', title: 'Progress',  sub: 'Student history · mastery timeline',   href: '/admin/progress'  },
