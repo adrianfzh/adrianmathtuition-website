@@ -72,10 +72,12 @@ export async function POST(req: NextRequest) {
           Type: 'Additional', Status: 'Scheduled', Notes: 'Revision makeup',
         }}),
       });
-      // 2. Mark the missed revision lesson Absent + link to the makeup
+      // 2. Mark the revision lesson Rescheduled (NOT Absent) + link to the makeup.
+      //    Consistent with regular reschedules — its real outcome is read from the
+      //    makeup's status, so it never shows a misleading red "Absent" once made up.
       await airtableRequest('Lessons', `/${lessonId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ fields: { Status: 'Absent', 'Rescheduled Lesson ID': [makeup.id] } }),
+        body: JSON.stringify({ fields: { Status: 'Rescheduled', 'Rescheduled Lesson ID': [makeup.id] } }),
       });
       return NextResponse.json({ success: true, makeupId: makeup.id });
     }
@@ -99,7 +101,7 @@ export async function POST(req: NextRequest) {
         // Find the Revision Sprint lesson whose Rescheduled Lesson ID points here.
         // (Can't filter linked-record by id in a formula — match in JS.)
         const revs = await airtableRequestAll('Lessons',
-          `?filterByFormula=${encodeURIComponent(`AND({Type}='Revision Sprint',{Status}='Absent')`)}&fields[]=Rescheduled Lesson ID`);
+          `?filterByFormula=${encodeURIComponent(`AND({Type}='Revision Sprint',OR({Status}='Rescheduled',{Status}='Absent'))`)}&fields[]=Rescheduled Lesson ID`);
         const match = (revs.records || []).find((r: any) => r.fields['Rescheduled Lesson ID']?.[0] === makeupIdIn);
         lessonId = match?.id;
         makeupId = makeupIdIn;
@@ -118,9 +120,12 @@ export async function POST(req: NextRequest) {
       if (makeupId) {
         await airtableRequest('Lessons', `/${makeupId}`, { method: 'DELETE' }).catch(() => {});
       }
+      // Lesson was 'Rescheduled' while a makeup existed; on undo set it explicitly:
+      // reschedule-ahead (schedule path) → back to Scheduled; genuinely-missed
+      // (attendance path) → Absent.
       await airtableRequest('Lessons', `/${lessonId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ fields: { 'Rescheduled Lesson ID': [], ...(revertToScheduled ? { Status: 'Scheduled' } : {}) } }),
+        body: JSON.stringify({ fields: { 'Rescheduled Lesson ID': [], Status: revertToScheduled ? 'Scheduled' : 'Absent' } }),
       });
       return NextResponse.json({ success: true });
     }
@@ -204,14 +209,16 @@ function parseTopics(fields: any): string[] {
 //   scheduled            — upcoming / not yet marked                     → grey
 function sessionOutcome(status: string, makeup: { status?: string } | null): string {
   if (status === 'Completed') return 'attended';
-  if (status === 'Absent') {
+  // 'Rescheduled' (current) OR legacy 'Absent'-with-makeup: outcome comes from the makeup.
+  if (status === 'Rescheduled' || (status === 'Absent' && makeup)) {
     if (makeup) {
       if (makeup.status === 'Completed') return 'rescheduled_attended';
       if (makeup.status === 'Absent') return 'rescheduled_missed';
       return 'rescheduled_pending';
     }
-    return 'missed';
+    return 'rescheduled_pending';   // rescheduled but makeup record missing (edge)
   }
+  if (status === 'Absent') return 'missed';
   return 'scheduled';
 }
 

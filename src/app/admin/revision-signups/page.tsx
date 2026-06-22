@@ -427,31 +427,26 @@ export default function RevisionSignupsPage() {
                     <button className={`rs-att-hw-tog no${s.hw === 'No' ? ' on' : ''}`} title="Not handed up"
                       onClick={() => markHw(s.lessonId, s.hw === 'No' ? '' : 'No')}>✗</button>
                   </div>
-                  {s.status === 'Completed' && (
+                  {s.status === 'Completed' ? (
                     <>
                       <span className="rs-att-status done">✓ Attended</span>
                       <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
                     </>
-                  )}
-                  {s.status === 'Absent' && (
+                  ) : s.makeup ? (
+                    // Rescheduled (or legacy Absent-with-makeup): show the makeup's outcome, not action buttons.
+                    <span className={`rs-att-status ${pipClass(s)}`}>
+                      {pipOutcome(s) === 'rescheduled_attended' ? '✓ Rescheduled & attended'
+                        : pipOutcome(s) === 'rescheduled_missed' ? '✗ Rescheduled, makeup missed'
+                        : '↻ Rescheduled'}: {s.makeup.slotLabel || ''} {fmtDate(s.makeup.date)}
+                      <button className="rs-att-undo" onClick={() => removeMakeup(s.lessonId)}>✕</button>
+                    </span>
+                  ) : s.status === 'Absent' ? (
                     <>
-                      {s.makeup ? (
-                        <span className={`rs-att-status ${pipClass(s)}`}>
-                          {pipOutcome(s) === 'rescheduled_attended' ? '✓ Rescheduled & attended'
-                            : pipOutcome(s) === 'rescheduled_missed' ? '✗ Rescheduled, makeup missed'
-                            : '↻ Rescheduled'}: {s.makeup.slotLabel || ''} {fmtDate(s.makeup.date)}
-                          <button className="rs-att-undo" onClick={() => removeMakeup(s.lessonId)}>✕</button>
-                        </span>
-                      ) : (
-                        <>
-                          <span className="rs-att-status missed">✗ Missed</span>
-                          <button className="rs-att-makeup" onClick={() => openMakeup(s, stu.id, stu.level)}>＋ Log makeup</button>
-                          <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
-                        </>
-                      )}
+                      <span className="rs-att-status missed">✗ Missed</span>
+                      <button className="rs-att-makeup" onClick={() => openMakeup(s, stu.id, stu.level)}>＋ Log makeup</button>
+                      <button className="rs-att-undo" onClick={() => markSession(s.lessonId, 'Scheduled')}>undo</button>
                     </>
-                  )}
-                  {(s.status === 'Scheduled' || (s.status !== 'Completed' && s.status !== 'Absent')) && (
+                  ) : (
                     <>
                       <button className="rs-att-btn green" onClick={() => markSession(s.lessonId, 'Completed')}>✓ Attended</button>
                       <button className="rs-att-btn red" onClick={() => markSession(s.lessonId, 'Absent')}>✗ Missed</button>
