@@ -38,6 +38,7 @@ function weekdayName(label: string): string { return (label || '').trim().split(
 interface Enrollment { enrollmentId: string; slotId: string | null; slotLabel: string; slotLevel: string; ratePerLesson: number | null; rateType: string; }
 interface UpLesson { id: string; date: string; slotId: string | null; slotLabel: string; type: string; status: string; }
 interface AttRow { id: string; outcomeLessonId: string; date: string; monthLabel: string; type: string; status: string; rescheduledToDate: string; slotLabel: string; }
+interface MakeupRow { id: string; date: string; monthLabel: string; status: string; slotLabel: string; makeupForDate: string; isRevision: boolean; }
 interface Exam { id: string; examType: string; examDate: string; testedTopics: string; noExam: boolean; }
 interface Invoice { id: string; month: string; finalAmount: number | null; amountPaid: number | null; isPaid: boolean; status: string; invoiceType: string; pdfUrl: string; }
 interface SentInvoice { id: string; subject: string; sentAt: string; toEmail: string; status: string; pdfUrl: string; }
@@ -48,6 +49,7 @@ interface Profile {
   enrollments: Enrollment[];
   upcoming: UpLesson[];
   attendance: AttRow[];
+  makeups: MakeupRow[];
   exams: Exam[];
   invoices: Invoice[];
   sentInvoices: SentInvoice[];
@@ -368,34 +370,6 @@ export default function StudentProfilePage() {
               ))}
             </Section>
 
-            {/* Upcoming lessons with inline actions */}
-            <Section title="Upcoming lessons">
-              {data.upcoming.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>None scheduled.</div>}
-              {data.upcoming.map(l => {
-                const busy = busyLesson === l.id;
-                const canReschedule = l.type !== 'Revision Sprint' && !!l.slotId;
-                return (
-                  <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, flexWrap: 'wrap', opacity: busy ? 0.5 : 1 }}>
-                    <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(l.date)}</span>
-                    <span style={{ flex: 1, minWidth: 80, color: '#6b7280' }}>{l.slotLabel}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: TYPE_COLORS[l.type] || '#475569' }}>{l.type}</span>
-                    {l.status === 'Completed' && <span style={{ fontSize: 11, color: '#15803d', fontWeight: 700 }}>✓ Attended</span>}
-                    {l.status === 'Absent' && <span style={{ fontSize: 11, color: '#dc2626', fontWeight: 700 }}>✗ Absent</span>}
-                    {l.status === 'Cancelled - Prorated' && <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>⊘ Not coming</span>}
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      {l.status !== 'Completed' && <button title="Mark present" style={iconBtn('#16a34a', '#bbf7d0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Completed')}>✓</button>}
-                      {l.status !== 'Absent' && <button title="Mark absent" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => setAttStatus(l.id, 'Absent')}>✗</button>}
-                      {l.status !== 'Cancelled - Prorated' && <button title="Not coming (not billed)" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Cancelled - Prorated')}>⊘</button>}
-                      {l.status !== 'Scheduled' && <button title="Reset to scheduled" style={iconBtn('#94a3b8', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Scheduled')}>↺</button>}
-                      {canReschedule && <button title="Reschedule" style={iconBtn('#1d4ed8', '#bfdbfe')} disabled={busy} onClick={() => setReschedModal({ lesson: l, date: '', slotId: '', saving: false })}>🔄</button>}
-                      {l.type !== 'Revision Sprint' && <button title="Log progress" style={iconBtn('#7c3aed', '#e9d5ff')} disabled={busy} onClick={() => setLessonModal({ id: l.id, studentId, studentName: s.name, date: l.date, slotId: l.slotId, type: l.type })}>📝</button>}
-                      <button title="Cancel lesson" style={iconBtn('#b91c1c', '#fecaca')} disabled={busy} onClick={() => cancelLesson(l)}>🗑</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </Section>
-
             {/* Attendance — grouped by month, merged reschedules, missed in red */}
             <Section title="Attendance">
               {data.attendance.length === 0 ? (
@@ -462,8 +436,13 @@ export default function StudentProfilePage() {
                             <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>{open ? '▴' : '▾'}</span>
                           </button>
 
-                          {/* Pip strip (always visible) */}
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '8px 0 2px' }}>
+                          {/* Make-up-needed callout — red boxes are missed lessons not yet rescheduled */}
+                          {gmiss > 0 && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#FCEBEB', color: '#A32D2D', fontSize: 11, fontWeight: 700, borderRadius: 6, padding: '3px 8px', margin: '6px 0 2px' }}>⚠ {gmiss} to make up</div>
+                          )}
+                          {/* Main lessons row (regular / additional / revision) */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '8px 0 2px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 10, color: '#94a3b8', width: 46, flexShrink: 0 }}>lessons</span>
                             {sorted.map(r => {
                               const o = rowOutcome(r); const pc = pipColors(o.kind);
                               return (
@@ -474,6 +453,25 @@ export default function StudentProfilePage() {
                               );
                             })}
                           </div>
+                          {/* Makeups row (faded) — the makeup lessons that land in this month */}
+                          {(() => {
+                            const mks = (data.makeups || []).filter(m => m.monthLabel === g.label).sort((a, b) => a.date.localeCompare(b.date));
+                            if (!mks.length) return null;
+                            return (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '2px 0', flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: 10, color: '#94a3b8', width: 46, flexShrink: 0 }}>makeups</span>
+                                {mks.map(m => {
+                                  const pc = m.status === 'Completed' ? { bg: '#E1F5EE', fg: '#0F6E56' } : m.status === 'Absent' ? { bg: '#FCEBEB', fg: '#A32D2D' } : { bg: '#E6F1FB', fg: '#185FA5' };
+                                  return (
+                                    <span key={m.id} title={`Makeup ${fmtDate(m.date)}${m.makeupForDate ? ' · for ' + fmtDate(m.makeupForDate) : ''}${m.isRevision ? ' · revision' : ''} · ${m.status === 'Completed' ? 'done' : m.status.toLowerCase()}`}
+                                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 26, borderRadius: 6, fontSize: 13, fontWeight: 700, background: pc.bg, color: pc.fg, opacity: 0.6 }}>
+                                      {dayNum(m.date)}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
 
                           {/* Detail rows (only when expanded) */}
                           {open && sorted.map(r => {
@@ -518,6 +516,34 @@ export default function StudentProfilePage() {
                   </>
                 );
               })()}
+            </Section>
+
+            {/* Upcoming lessons with inline actions */}
+            <Section title="Upcoming lessons">
+              {data.upcoming.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>None scheduled.</div>}
+              {data.upcoming.map(l => {
+                const busy = busyLesson === l.id;
+                const canReschedule = l.type !== 'Revision Sprint' && !!l.slotId;
+                return (
+                  <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, flexWrap: 'wrap', opacity: busy ? 0.5 : 1 }}>
+                    <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(l.date)}</span>
+                    <span style={{ flex: 1, minWidth: 80, color: '#6b7280' }}>{l.slotLabel}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: TYPE_COLORS[l.type] || '#475569' }}>{l.type}</span>
+                    {l.status === 'Completed' && <span style={{ fontSize: 11, color: '#15803d', fontWeight: 700 }}>✓ Attended</span>}
+                    {l.status === 'Absent' && <span style={{ fontSize: 11, color: '#dc2626', fontWeight: 700 }}>✗ Absent</span>}
+                    {l.status === 'Cancelled - Prorated' && <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 700 }}>⊘ Not coming</span>}
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {l.status !== 'Completed' && <button title="Mark present" style={iconBtn('#16a34a', '#bbf7d0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Completed')}>✓</button>}
+                      {l.status !== 'Absent' && <button title="Mark absent" style={iconBtn('#dc2626', '#fecaca')} disabled={busy} onClick={() => setAttStatus(l.id, 'Absent')}>✗</button>}
+                      {l.status !== 'Cancelled - Prorated' && <button title="Not coming (not billed)" style={iconBtn('#64748b', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Cancelled - Prorated')}>⊘</button>}
+                      {l.status !== 'Scheduled' && <button title="Reset to scheduled" style={iconBtn('#94a3b8', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Scheduled')}>↺</button>}
+                      {canReschedule && <button title="Reschedule" style={iconBtn('#1d4ed8', '#bfdbfe')} disabled={busy} onClick={() => setReschedModal({ lesson: l, date: '', slotId: '', saving: false })}>🔄</button>}
+                      {l.type !== 'Revision Sprint' && <button title="Log progress" style={iconBtn('#7c3aed', '#e9d5ff')} disabled={busy} onClick={() => setLessonModal({ id: l.id, studentId, studentName: s.name, date: l.date, slotId: l.slotId, type: l.type })}>📝</button>}
+                      <button title="Cancel lesson" style={iconBtn('#b91c1c', '#fecaca')} disabled={busy} onClick={() => cancelLesson(l)}>🗑</button>
+                    </div>
+                  </div>
+                );
+              })}
             </Section>
 
             {/* Progress history — click to log/edit progress */}
