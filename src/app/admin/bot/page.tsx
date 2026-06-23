@@ -20,12 +20,12 @@ export default function BotCombinedPage() {
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '12px 16px 0' }}>
         <a href="/admin" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>‹ Admin</a>
       </div>
+      <Divider label="Bot analytics" />
+      <BotAnalytics />
       <Divider label="Metrics" />
       <MetricsPage />
       <Divider label="API usage" />
       <AnalyticsDashboard />
-      <Divider label="Analytics" />
-      <BotAnalytics />
     </div>
   );
 }
