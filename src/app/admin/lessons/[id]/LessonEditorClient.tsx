@@ -1460,7 +1460,7 @@ function EditorPanel({
 
 // ── Lesson header (name, description, topics) ────────────────────────────────
 
-function LessonHeader({ lesson, onSave }: { lesson: Lesson; onSave: (patch: Partial<Lesson>) => void }) {
+function LessonHeader({ lesson, onSave, stageCount, onOpenStaging }: { lesson: Lesson; onSave: (patch: Partial<Lesson>) => void; stageCount: number; onOpenStaging: () => void }) {
   const [name, setName] = useState(lesson.name);
   const [desc, setDesc] = useState(lesson.description ?? '');
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -1502,6 +1502,11 @@ function LessonHeader({ lesson, onSave }: { lesson: Lesson; onSave: (patch: Part
           <button onClick={() => setPickerOpen(o => !o)} className="text-xs px-2 py-0.5 border border-dashed border-slate-400 rounded text-slate-600 hover:border-emerald-500 hover:text-emerald-700">
             + Add topic
           </button>
+          <button
+            onClick={onOpenStaging}
+            title="Open the staging workspace to sift candidate questions"
+            className="text-xs px-2 py-0.5 ml-auto bg-slate-600 hover:bg-slate-700 text-white rounded font-medium"
+          >🗂 Staging{stageCount > 0 ? ` (${stageCount})` : ''}</button>
         </div>
         {pickerOpen && (
           <TopicPicker
@@ -2234,11 +2239,6 @@ export default function LessonEditorClient() {
           className="px-3 py-1 bg-blue-700 hover:bg-blue-800 rounded text-xs font-medium"
         >⬇ DOCX</button>
         <button
-          onClick={() => setStagingOpen(true)}
-          title="Open the staging workspace to sift candidate questions"
-          className="px-3 py-1 bg-slate-600 hover:bg-slate-700 rounded text-xs font-medium"
-        >🗂 Staging{stageCount > 0 ? ` (${stageCount})` : ''}</button>
-        <button
           onClick={() => deleteLesson(id, pw.current, router)}
           className="px-2 py-1 hover:bg-rose-700/40 rounded text-xs"
           title="Delete lesson"
@@ -2246,7 +2246,7 @@ export default function LessonEditorClient() {
       </div>
 
       {/* Lesson metadata */}
-      <LessonHeader lesson={lesson} onSave={saveLessonMeta} />
+      <LessonHeader lesson={lesson} onSave={saveLessonMeta} stageCount={stageCount} onOpenStaging={() => setStagingOpen(true)} />
 
       {/* Toast */}
       {toast && (
