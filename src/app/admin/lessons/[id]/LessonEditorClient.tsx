@@ -1492,6 +1492,11 @@ function LessonHeader({ lesson, onSave, stageCount, onOpenStaging }: { lesson: L
           className="w-full px-2 py-1 text-xs text-slate-600 border border-transparent hover:border-slate-300 focus:border-blue-400 rounded"
         />
         <div className="flex items-start gap-2 flex-wrap">
+          <button
+            onClick={onOpenStaging}
+            title="Open the staging workspace to sift candidate questions"
+            className="text-xs px-2 py-0.5 bg-slate-600 hover:bg-slate-700 text-white rounded font-medium"
+          >🗂 Staging{stageCount > 0 ? ` (${stageCount})` : ''}</button>
           <span className="text-xs text-slate-500 mt-1">Topics:</span>
           {lesson.topics.map(t => (
             <span key={t} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded flex items-center gap-1">
@@ -1502,11 +1507,6 @@ function LessonHeader({ lesson, onSave, stageCount, onOpenStaging }: { lesson: L
           <button onClick={() => setPickerOpen(o => !o)} className="text-xs px-2 py-0.5 border border-dashed border-slate-400 rounded text-slate-600 hover:border-emerald-500 hover:text-emerald-700">
             + Add topic
           </button>
-          <button
-            onClick={onOpenStaging}
-            title="Open the staging workspace to sift candidate questions"
-            className="text-xs px-2 py-0.5 ml-auto bg-slate-600 hover:bg-slate-700 text-white rounded font-medium"
-          >🗂 Staging{stageCount > 0 ? ` (${stageCount})` : ''}</button>
         </div>
         {pickerOpen && (
           <TopicPicker
