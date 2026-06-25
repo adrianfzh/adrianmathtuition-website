@@ -31,6 +31,7 @@ interface AttSession {
   time: string;
   status: string;
   hw: string;                 // 'Yes' | 'No' | ''
+  hwNote: string;             // free-text note, e.g. "partial — only Q1–5"
   assignmentSubmitted: boolean;
   topics: string[];
   makeup: { lessonId: string; date: string; slotLabel: string; status?: string } | null;
@@ -164,6 +165,7 @@ export default function RevisionSignupsPage() {
   const [makeupModal, setMakeupModal] = useState<{ lessonId: string; studentId: string; label: string; date: string; slotId: string; level: string } | null>(null);
   const [makeupSaving, setMakeupSaving] = useState(false);
   const [editTopics, setEditTopics] = useState<{ lessonId: string; value: string } | null>(null);
+  const [editHwNote, setEditHwNote] = useState<{ lessonId: string; value: string } | null>(null);
 
   // Sign-up dialog
   const [signupStudent, setSignupStudent] = useState<Student | null>(null);
@@ -279,6 +281,25 @@ export default function RevisionSignupsPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
       body: JSON.stringify({ action: 'assignment', lessonId, value }),
+    });
+  }
+
+  // Free-text HW note (e.g. "partial — only Q1–5"), stored on Homework Returned Reason.
+  async function saveHwNote() {
+    if (!editHwNote) return;
+    const { lessonId, value } = editHwNote;
+    setAttData(prev => prev && {
+      ...prev,
+      students: prev.students.map(stu => ({
+        ...stu,
+        sessions: stu.sessions.map(s => s.lessonId === lessonId ? { ...s, hwNote: value.trim() } : s),
+      })),
+    });
+    setEditHwNote(null);
+    await fetch('/api/admin-revision-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      body: JSON.stringify({ action: 'hwnote', lessonId, note: value }),
     });
   }
 
@@ -426,6 +447,20 @@ export default function RevisionSignupsPage() {
                       onClick={() => markHw(s.lessonId, s.hw === 'Yes' ? '' : 'Yes')}>✓</button>
                     <button className={`rs-att-hw-tog no${s.hw === 'No' ? ' on' : ''}`} title="Not handed up"
                       onClick={() => markHw(s.lessonId, s.hw === 'No' ? '' : 'No')}>✗</button>
+                    {editHwNote?.lessonId === s.lessonId ? (
+                      <input className="rs-att-hwnote-input" autoFocus
+                        value={editHwNote.value}
+                        placeholder="e.g. partial — only Q1–5"
+                        onChange={e => setEditHwNote({ lessonId: s.lessonId, value: e.target.value })}
+                        onBlur={saveHwNote}
+                        onKeyDown={e => { if (e.key === 'Enter') saveHwNote(); if (e.key === 'Escape') setEditHwNote(null); }} />
+                    ) : s.hwNote ? (
+                      <button className="rs-att-hwnote" title="Edit HW note"
+                        onClick={() => setEditHwNote({ lessonId: s.lessonId, value: s.hwNote })}>📝 {s.hwNote}</button>
+                    ) : (
+                      <button className="rs-att-hwnote-add" title="Add a note (e.g. partial homework)"
+                        onClick={() => setEditHwNote({ lessonId: s.lessonId, value: '' })}>+ note</button>
+                    )}
                   </div>
                   {s.status === 'Completed' ? (
                     <>
@@ -1814,6 +1849,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rs-att-hw-tog.no:hover  { border-color: #fecaca; color: #dc2626; }
 .rs-att-hw-tog.yes.on { background: #f0fdf4; border-color: #86efac; color: #15803d; }
 .rs-att-hw-tog.no.on  { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+.rs-att-hwnote, .rs-att-hwnote-add {
+  font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 6px; cursor: pointer;
+  border: 1px solid #e5e7eb; background: #fff; max-width: 180px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.rs-att-hwnote { color: #b45309; border-color: #fde68a; background: #fffbeb; }
+.rs-att-hwnote-add { color: #94a3b8; font-style: italic; }
+.rs-att-hwnote-add:hover { color: #b45309; border-color: #fde68a; }
+.rs-att-hwnote-input {
+  font-size: 11px; padding: 3px 7px; border: 1px solid #fbbf24; border-radius: 6px;
+  outline: none; color: #111; width: 170px;
+}
 .rs-att-btn {
   font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 7px;
   border: 1px solid; cursor: pointer; background: #fff;

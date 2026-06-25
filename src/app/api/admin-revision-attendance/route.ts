@@ -59,6 +59,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    // Free-text note about the homework hand-up (e.g. "partial — only Q1–5").
+    // Stored on the existing 'Homework Returned Reason' field.
+    if (body.action === 'hwnote') {
+      const { lessonId, note } = body;
+      if (!lessonId) return NextResponse.json({ error: 'lessonId required' }, { status: 400 });
+      await airtableRequest('Lessons', `/${lessonId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ fields: { 'Homework Returned Reason': (note || '').trim() } }),
+      });
+      return NextResponse.json({ success: true });
+    }
+
     if (body.action === 'makeup') {
       const { lessonId, studentId, date, slotId } = body;
       if (!lessonId || !studentId || !date || !slotId) {
@@ -272,7 +284,7 @@ export async function GET(req: NextRequest) {
   // 3. All Revision Sprint lessons, grouped by student
   const revLessons = await airtableRequestAll(
     'Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Type}='Revision Sprint'`)}&fields[]=Student&fields[]=Date&fields[]=Status&fields[]=Rescheduled Lesson ID&fields[]=Homework Returned&fields[]=Topics Covered&fields[]=Topics Free Text`
+    `?filterByFormula=${encodeURIComponent(`{Type}='Revision Sprint'`)}&fields[]=Student&fields[]=Date&fields[]=Status&fields[]=Rescheduled Lesson ID&fields[]=Homework Returned&fields[]=Homework Returned Reason&fields[]=Topics Covered&fields[]=Topics Free Text`
   );
   const revByStudent: Record<string, any[]> = {};
   for (const r of revLessons.records) {
@@ -329,6 +341,7 @@ export async function GET(req: NextRequest) {
           time: SUBJECT_META[subj]?.time || '',
           status: lesson.fields['Status'] || 'Scheduled',
           hw: lesson.fields['Homework Returned'] || '',
+          hwNote: lesson.fields['Homework Returned Reason'] || '',
           assignmentSubmitted: lesson.fields['Homework Returned'] === 'Yes',
           topics: (() => { const m = parseTopics(lesson.fields); return m.length ? m : scheduledTopics(subj, date); })(),
           makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]), status: mk['Status'] || '' } : null,
@@ -344,6 +357,7 @@ export async function GET(req: NextRequest) {
         lessonId: l.id, date: l.fields['Date'] || '', subject: '?', subjectLabel: 'Revision', time: '',
         status: l.fields['Status'] || 'Scheduled',
         hw: l.fields['Homework Returned'] || '',
+        hwNote: l.fields['Homework Returned Reason'] || '',
         assignmentSubmitted: l.fields['Homework Returned'] === 'Yes',
         topics: parseTopics(l.fields),
         makeup: mk ? { lessonId: makeupLinkId, date: mk['Date'] || '', slotLabel: slotLabel(mk['Slot']?.[0]), status: mk['Status'] || '' } : null,
