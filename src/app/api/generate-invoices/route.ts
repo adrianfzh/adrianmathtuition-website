@@ -341,58 +341,15 @@ export async function POST(req: NextRequest) {
           });
         });
 
-        // Carry-over balance from previous month — batch-fetched above, looked up by student ID in JS
-        // (Airtable can't filter linked record fields by ID in formulas; see CLAUDE.md)
-        // Sum outstanding across ALL non-voided prior invoices (revision students may have several);
-        // remember which ones we carried so we can mark them "settled here" after this invoice is created.
-        const prevInvoices = prevInvoicesByStudent[studentId] || [];
+        // ── Per-month model (was: carry-forward) ────────────────────────
+        // Each invoice carries ONLY its own month. Prior unpaid months stay open as
+        // their own invoices and are shown together at render time (consolidated PDF
+        // + admin view) — NOT rolled into this invoice. No lump line, no settling
+        // of prior invoices, no carry note. carryOverLineItems stays [] so the
+        // downstream PDF/tracking code needs no change.
         const carryOverLineItems: any[] = [];
-        const carriedFromIds: string[] = [];
-        const carryNoteParts: string[] = [];
-        let prevOutstanding = 0;
-        for (const pInv of prevInvoices) {
-          const finalAmt = pInv.fields['Final Amount'] || 0;
-          const amountPaid = pInv.fields['Amount Paid'] || 0;
-          const isPaid = pInv.fields['Is Paid'] || false;
-          // If Is Paid is ticked, treat as fully settled regardless of Amount Paid field.
-          const out = isPaid ? 0 : Math.max(0, finalAmt - amountPaid);
-          if (out <= 0) continue;
-          prevOutstanding += out;
-          carriedFromIds.push(pInv.id);
-
-          // Itemised breakdown of this carried month: regular lessons + any added items,
-          // so the admin can see at a glance what the outstanding is made of.
-          const ptype = (pInv.fields['Invoice Type'] || 'Regular') as string;
-          const lc = pInv.fields['Lessons Count'] || 0;
-          const rate = pInv.fields['Rate Per Lesson'] || 0;
-          const adj = pInv.fields['Adjustment Amount'] || 0;
-          const adjNotes = (pInv.fields['Adjustment Notes'] || '').toString();
-          let pExtras: any[] = [];
-          try { pExtras = JSON.parse(pInv.fields['Line Items Extra'] || '[]'); } catch { /* ignore */ }
-          const lines: string[] = [];
-          if (ptype === 'Revision Sprint') {
-            lines.push(`  \u2022 Revision Sprint = $${finalAmt.toFixed(2)}`);
-          } else {
-            if (lc > 0) lines.push(`  \u2022 ${lc} regular lesson${lc !== 1 ? 's' : ''} \u00d7 $${Number(rate).toFixed(2)} = $${(lc * rate).toFixed(2)}`);
-            if (adj) lines.push(`  \u2022 ${adjNotes || 'Adjustment'} = $${Number(adj).toFixed(2)}`);
-            for (const e of pExtras) lines.push(`  \u2022 ${e.description} = $${Number(e.amount).toFixed(2)}`);
-          }
-          if (amountPaid > 0) lines.push(`  \u2022 Less amount paid: \u2212$${amountPaid.toFixed(2)}`);
-          const header = `${prevMonthLabel}${ptype !== 'Regular' ? ` (${ptype})` : ''} \u2014 outstanding $${out.toFixed(2)}:`;
-          carryNoteParts.push(`${header}\n${lines.join('\n')}`);
-        }
-        if (prevOutstanding > 0) {
-          prevOutstanding = parseFloat(prevOutstanding.toFixed(2));
-          carryOverLineItems.push({
-            description: `Outstanding balance \u2014 ${prevMonthLabel}`,
-            amount: prevOutstanding,
-          });
-        }
-        const carryOverNotes = carryNoteParts.join('\n\n');
-
-        const carryOverTotal = carryOverLineItems.reduce((sum: number, item: any) => sum + item.amount, 0);
-        const totalFinalAmount = finalAmount + carryOverTotal;
-        const autoNotes = carryOverNotes.trim();
+        const totalFinalAmount = finalAmount;
+        const autoNotes = '';
 
         const invoiceFields: Record<string, any> = {
           'Student': [studentId],
@@ -416,21 +373,6 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({ fields: invoiceFields }),
         });
 
-        // Mark each prior invoice whose balance we just carried forward as settled —
-        // its outstanding now lives on this new invoice, so it shouldn't also show as owing.
-        for (const pid of carriedFromIds) {
-          try {
-            await at('Invoices', `/${pid}`, {
-              method: 'PATCH',
-              body: JSON.stringify({ fields: {
-                'Is Paid': true,
-                'Auto Notes': `Carried forward to ${invoiceMonth.label} invoice — settled there.`,
-              } }),
-            });
-          } catch (e: any) {
-            console.error('[generate-invoices] carry-forward settle failed:', e?.message);
-          }
-        }
 
         // Generate and upload PDF in production only
         if (process.env.VERCEL === '1') {
