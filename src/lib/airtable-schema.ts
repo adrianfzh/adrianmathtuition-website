@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-06-17T13:41:49.322Z
+// Last synced: 2026-06-26T11:38:57.280Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -373,7 +373,8 @@ export const SCHEMA = {
           "Rescheduled",
           "Additional",
           "Trial",
-          "Revision Sprint"
+          "Revision Sprint",
+          "Revision Makeup"
         ]
       },
       "Status": {
@@ -404,10 +405,13 @@ export const SCHEMA = {
       "Rescheduled Slot": {
         "type": "multipleLookupValues"
       },
+      "Is Revision Makeup": {
+        "type": "checkbox"
+      },
       "Charge Override": {
         "type": "currency"
       },
-      "From field: Rescheduled To": {
+      "Makeup For": {
         "type": "multipleRecordLinks",
         "linkedTable": "Lessons"
       },

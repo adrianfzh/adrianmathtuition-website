@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
+import { applyPriorBalance } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -119,6 +120,9 @@ export async function GET(req: NextRequest) {
     lineItemsExtra: (() => { try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; } })(),
     registerUrl: buildRegisterUrl(studentId),
   };
+
+  // Consolidated view: append the student's other open months as previous balance.
+  await applyPriorBalance(invoiceData, studentId, storedMonth);
 
   let pdfBuffer: Buffer;
   try {

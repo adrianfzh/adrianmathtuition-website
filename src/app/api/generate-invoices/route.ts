@@ -4,6 +4,7 @@ import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram } from '@/lib/telegram';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { getInvoiceMonth } from '@/lib/invoice-month';
+import { applyPriorBalance } from '@/lib/invoice-consolidate';
 
 const DAY_ABBREV: Record<string, string> = {
   Sunday: 'Sun', Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
@@ -396,6 +397,7 @@ export async function POST(req: NextRequest) {
               lineItemsExtra: carryOverLineItems,
               registerUrl: buildRegisterUrl(studentId),
             };
+            await applyPriorBalance(invoiceData, studentId);
             const pdfBuffer = await generateInvoicePDF(invoiceData);
             const uploadRes = await fetch(
               `https://content.airtableapi.com/v0/${AIRTABLE_BASE_ID}/Invoices/${createdRecord.id}/uploadAttachment`,
