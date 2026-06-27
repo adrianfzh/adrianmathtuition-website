@@ -80,7 +80,7 @@ function getAuth(): string {
 type Question = {
   id: string; timestamp: string; studentName: string; chatId: string;
   caption: string; aiResponse: string; modelUsed: string; topic: string;
-  timeTaken: number | null; confidence: string; status: string; imageUrl?: string;
+  timeTaken: number | null; confidence: string; status: string; imageUrl?: string; isAdminUpload?: boolean;
   tokensIn?: number; tokensOut?: number;
   suggestions: { id: string; issue: string; suggestion: string; status: string }[];
   // enriched client-side
@@ -199,7 +199,7 @@ export default function BotAnalytics() {
     return `since=${encodeURIComponent(midnightSGT(d - 1))}`; // last N days
   }
   const [loading, setLoading]       = useState(true);
-  const [qTab, setQTab]             = useState<'flagged' | 'all'>('flagged');
+  const [qTab, setQTab]             = useState<'flagged' | 'all' | 'mine'>('flagged');
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
   const [selected, setSelected]     = useState<Question | null>(null);
   const [opusOpen, setOpusOpen]     = useState(false);
@@ -363,9 +363,10 @@ export default function BotAnalytics() {
     if (selected?.id === id) setSelected(null);
   }
 
-  const flagged = questions.filter(q => q.flagReason && !dismissed.has(q.id));
-  const allVisible = questions.filter(q => !dismissed.has(q.id));
-  const displayList = qTab === 'flagged' ? flagged : allVisible;
+  const flagged = questions.filter(q => q.flagReason && !dismissed.has(q.id) && !q.isAdminUpload);
+  const allVisible = questions.filter(q => !dismissed.has(q.id) && !q.isAdminUpload);
+  const myUploads = questions.filter(q => q.isAdminUpload && !dismissed.has(q.id));
+  const displayList = qTab === 'mine' ? myUploads : qTab === 'flagged' ? flagged : allVisible;
   const totalClusters = batches.reduce((s, b) => s + b.clusters.length, 0);
 
   function confBadge(conf: string) {
@@ -542,13 +543,13 @@ export default function BotAnalytics() {
             {/* Questions section */}
             <div style={{ padding: '12px 16px 0' }}>
               <div style={{ display: 'flex', gap: 0, marginBottom: 10, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
-                {(['flagged', 'all'] as const).map(tab => (
+                {(['flagged', 'all', 'mine'] as const).map(tab => (
                   <button key={tab} onClick={() => setQTab(tab)} style={{
                     flex: 1, padding: '7px 0', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
                     background: qTab === tab ? '#1e3a5f' : 'transparent',
                     color: qTab === tab ? '#fff' : '#64748b',
                   }}>
-                    {tab === 'flagged' ? `🔴 Flagged (${flagged.length})` : `All (${allVisible.length})`}
+                    {tab === 'flagged' ? `🔴 Flagged (${flagged.length})` : tab === 'all' ? `All (${allVisible.length})` : `📤 Mine (${myUploads.length})`}
                   </button>
                 ))}
               </div>
@@ -576,7 +577,7 @@ export default function BotAnalytics() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 11, marginBottom: 3, gap: 4 }}>
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
                       <span style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
-                        {q.timeTaken ? <span title="response time" style={{ color: '#94a3b8' }}>{(q.timeTaken / 1000).toFixed(1)}s</span> : null}
+                        {q.timeTaken ? <span title="response time" style={{ color: '#94a3b8' }}>{q.timeTaken.toFixed(1)}s</span> : null}
                         {(q.tokensIn || q.tokensOut) ? <span title={`${q.tokensIn || 0} in / ${q.tokensOut || 0} out · ${q.modelUsed || ''}`} style={{ fontFamily: 'monospace', color: '#0f766e', fontWeight: 600 }}>${costFor(q.tokensIn || 0, q.tokensOut || 0, q.modelUsed).toFixed(3)}</span> : null}
                         {q.status && q.status !== 'New' && statusBadge(q.status)}
                         {confBadge(q.confidence)}
