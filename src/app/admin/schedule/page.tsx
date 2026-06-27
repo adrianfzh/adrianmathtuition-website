@@ -653,6 +653,10 @@ export default function SchedulePage() {
   const [upcomingLessons, setUpcomingLessons] = useState<{ id: string; date: string; slotId: string | null }[]>([]);
   const [upcomingLessonsLoading, setUpcomingLessonsLoading] = useState(false);
   const [upcomingLessonsError, setUpcomingLessonsError] = useState('');
+  // Revision Makeup flow — the student's June Revision Sprint sessions (date · subject · topics)
+  const [revSessions, setRevSessions] = useState<{ lessonId: string; date: string; subjectLabel: string; time: string; topics: string[]; status: string; outcome: string; hasMakeup: boolean }[]>([]);
+  const [revSessionsLoading, setRevSessionsLoading] = useState(false);
+  const [revSessionsError, setRevSessionsError] = useState('');
   const [savingAttendance, setSavingAttendance] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
@@ -1359,6 +1363,32 @@ export default function SchedulePage() {
     }
   }
 
+  async function fetchRevSessions(studentId: string) {
+    setRevSessions([]);
+    setRevSessionsError('');
+    setRevSessionsLoading(true);
+    try {
+      const res = await fetch(`/api/admin-revision-attendance?studentId=${studentId}`, {
+        headers: { Authorization: `Bearer ${savedPw.current}` },
+      });
+      if (!res.ok) { setRevSessionsError(`Error ${res.status} loading revision lessons`); return; }
+      const json = await res.json();
+      const stu = (json.students ?? [])[0];
+      const sessions = (stu?.sessions ?? []).map((s: any) => ({
+        lessonId: s.lessonId, date: s.date, subjectLabel: s.subjectLabel, time: s.time,
+        topics: s.topics ?? [], status: s.status, outcome: s.outcome, hasMakeup: !!s.makeup,
+      }));
+      // Only offer lessons that aren't already made up (no linked makeup yet).
+      const open = sessions.filter((s: any) => !s.hasMakeup);
+      setRevSessions(open);
+      if (!sessions.length) setRevSessionsError('No June Revision Sprint sessions found for this student');
+    } catch {
+      setRevSessionsError('Network error loading revision lessons');
+    } finally {
+      setRevSessionsLoading(false);
+    }
+  }
+
   async function handleConfirmAdd() {
     if (!addModal) return;
     setSubmitting(true); setModalError('');
@@ -1388,7 +1418,24 @@ export default function SchedulePage() {
         return;
       }
 
-      // Additional / Trial → add route
+      // Revision Makeup linked to a specific Revision Sprint session → reuse the
+      // tested attendance makeup action (creates the Revision Makeup lesson, marks
+      // the original Rescheduled, and links them). Unlinked → standalone via /add.
+      if (addModal.type === 'Revision Makeup' && addModal.linkedLessonId) {
+        const res = await fetch('/api/admin-revision-attendance', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'makeup', lessonId: addModal.linkedLessonId, studentId: addModal.studentId, date: addModal.date, slotId: addModal.slotId }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed');
+        setAddModal(null);
+        await fetchSchedule(monday, savedPw.current);
+        showToast('success', '✓ Revision makeup scheduled');
+        return;
+      }
+
+      // Additional / Trial / standalone Revision Makeup → add route
       const body: Record<string, any> = { type: addModal.type, date: addModal.date, slotId: addModal.slotId, notes: addModal.notes || undefined };
       if (addModal.type === 'Trial') { body.trialStudentName = addModal.trialStudentName; }
       else { body.studentId = addModal.studentId; body.notify = addModal.notify; }
@@ -2702,6 +2749,7 @@ export default function SchedulePage() {
                     setAddModal(m => m ? { ...m, type: t, studentId: '', studentSearch: '', linkedLessonId: '' } : null);
                     setAbsentLessons([]); setAbsentLessonsError('');
                     setUpcomingLessons([]); setUpcomingLessonsError('');
+                    setRevSessions([]); setRevSessionsError('');
                   }}>
                   <option value="Makeup">Makeup</option>
                   <option value="Rescheduled">Rescheduled</option>
@@ -2745,6 +2793,7 @@ export default function SchedulePage() {
                           setAddModal(m => m ? { ...m, studentId: '', studentSearch: '', linkedLessonId: '' } : null);
                           setAbsentLessons([]); setAbsentLessonsError('');
                           setUpcomingLessons([]); setUpcomingLessonsError('');
+                          setRevSessions([]); setRevSessionsError('');
                         }}>change</button>
                     </div>
                   ) : (
@@ -2763,6 +2812,7 @@ export default function SchedulePage() {
                                   setAddModal(m => m ? { ...m, studentId: id, studentSearch: '' } : null);
                                   if (addModal.type === 'Makeup') fetchAbsentLessons(id);
                                   if (addModal.type === 'Rescheduled') fetchUpcomingLessons(id);
+                                  if (addModal.type === 'Revision Makeup') fetchRevSessions(id);
                                 }}>
                                 {s.name}
                               </button>
@@ -2827,6 +2877,50 @@ export default function SchedulePage() {
                         );
                       })}
                     </select>
+                  )}
+                </div>
+              )}
+
+              {/* Revision lesson picker — Revision Makeup only, shown after a student is selected */}
+              {addModal.type === 'Revision Makeup' && addModal.studentId && (
+                <div className="form-group">
+                  <span className="form-label">Revision lesson being made up</span>
+                  {revSessionsLoading ? (
+                    <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0' }}>Loading revision sessions…</div>
+                  ) : revSessionsError ? (
+                    <div style={{ fontSize: 13, color: '#dc2626', padding: '8px 0' }}>{revSessionsError}</div>
+                  ) : revSessions.length === 0 ? (
+                    <div style={{ fontSize: 13, color: '#94a3b8', padding: '8px 0' }}>No un-made-up revision sessions — you can still add a standalone makeup.</div>
+                  ) : (
+                    <>
+                      <select className="modal-select" value={addModal.linkedLessonId}
+                        onChange={e => setAddModal(m => m ? { ...m, linkedLessonId: e.target.value } : null)}>
+                        <option value="">— Standalone (not linked to a session) —</option>
+                        {revSessions.map(s => {
+                          const d = new Date(s.date + 'T00:00:00');
+                          const dateLabel = d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
+                          const miss = s.outcome === 'missed' || s.outcome === 'rescheduled_missed' || s.status === 'Absent';
+                          return (
+                            <option key={s.lessonId} value={s.lessonId}>
+                              {dateLabel} · {s.subjectLabel}{s.time ? ` ${s.time}` : ''}{miss ? ' · ⚠ missed' : ''}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      {/* Topics of the selected session, for confirmation */}
+                      {(() => {
+                        const sel = revSessions.find(s => s.lessonId === addModal.linkedLessonId);
+                        if (!sel) return null;
+                        return (
+                          <div style={{ fontSize: 12.5, color: '#475569', marginTop: 6, lineHeight: 1.45 }}>
+                            <strong>{sel.subjectLabel}</strong>{sel.time ? ` · ${sel.time}` : ''}
+                            {sel.topics.length > 0
+                              ? <> — topics: {sel.topics.join(', ')}</>
+                              : <> — no topics recorded for this date</>}
+                          </div>
+                        );
+                      })()}
+                    </>
                   )}
                 </div>
               )}

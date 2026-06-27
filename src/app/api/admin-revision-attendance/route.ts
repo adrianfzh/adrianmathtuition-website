@@ -251,6 +251,10 @@ function subjectsFromLineItems(raw: string): string[] {
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Optional: scope the response to one student (used by the /admin/schedule
+  // "Revision Makeup" picker, which only needs that student's sessions).
+  const onlyStudentId = new URL(req.url).searchParams.get('studentId');
+
   // 1. Signed-up students
   const studentsData = await airtableRequestAll(
     'Students',
@@ -395,5 +399,6 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => a.label.localeCompare(b.label));
 
   students.sort((a, b) => a.name.localeCompare(b.name));
-  return NextResponse.json({ students, slots });
+  const out = onlyStudentId ? students.filter((s) => s.id === onlyStudentId) : students;
+  return NextResponse.json({ students: out, slots });
 }
