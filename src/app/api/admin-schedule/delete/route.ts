@@ -38,37 +38,41 @@ export async function POST(req: NextRequest) {
 
     // 2. Perform action
     if (action === 'delete') {
-      await airtableRequest('Lessons', `/${lessonId}`, { method: 'DELETE' });
-
-      // If this lesson is a Rescheduled type, unlink the source lesson and
-      // restore its status: 'Absent' for past lessons (it was absent and needed
-      // a makeup), 'Scheduled' for future lessons (it was just being moved).
+      // If this is a Rescheduled lesson, find its SOURCE lesson BEFORE deleting —
+      // once the lesson is gone Airtable auto-clears the link from the source, so
+      // searching afterwards finds nothing. Also: a linked-record field can't be
+      // filtered by record id in a formula (ARRAYJOIN returns the linked record's
+      // DISPLAY NAME, not recXXX — see CLAUDE.md), so fetch candidates and match
+      // the record id in JS.
+      let sourceToRestore: any = null;
       if (lessonType === 'Rescheduled') {
         try {
-          const formula = encodeURIComponent(
-            `FIND('${lessonId}', ARRAYJOIN({Rescheduled Lesson ID})) > 0`
-          );
-          const sources = await airtableRequestAll(
+          const candidates = await airtableRequestAll(
             'Lessons',
-            `?filterByFormula=${formula}&fields[]=Status&fields[]=Date&fields[]=Rescheduled+Lesson+ID`
+            `?filterByFormula=${encodeURIComponent(`NOT({Rescheduled Lesson ID}='')`)}&fields[]=Status&fields[]=Date&fields[]=Rescheduled Lesson ID`
           );
+          sourceToRestore = candidates.records.find(
+            (r: any) => (r.fields['Rescheduled Lesson ID'] || []).includes(lessonId)
+          ) || null;
+        } catch (findErr) {
+          console.error('[delete] Find source lesson error (non-fatal):', findErr);
+        }
+      }
+
+      await airtableRequest('Lessons', `/${lessonId}`, { method: 'DELETE' });
+
+      // Restore the source: 'Absent' for past lessons (it was absent and needed a
+      // makeup), 'Scheduled' for future lessons (it was just being moved).
+      if (sourceToRestore) {
+        try {
           const today = new Date().toISOString().slice(0, 10);
-          await Promise.all(
-            sources.records.map((r: any) => {
-              const restoreStatus = (r.fields['Date'] ?? '') < today ? 'Absent' : 'Scheduled';
-              return airtableRequest('Lessons', `/${r.id}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  fields: {
-                    Status: restoreStatus,
-                    'Rescheduled Lesson ID': [],
-                  },
-                }),
-              });
-            })
-          );
-        } catch (unlinkErr) {
-          console.error('[delete] Unlink source lesson error (non-fatal):', unlinkErr);
+          const restoreStatus = (sourceToRestore.fields['Date'] ?? '') < today ? 'Absent' : 'Scheduled';
+          await airtableRequest('Lessons', `/${sourceToRestore.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ fields: { Status: restoreStatus, 'Rescheduled Lesson ID': [] } }),
+          });
+        } catch (restoreErr) {
+          console.error('[delete] Restore source lesson error (non-fatal):', restoreErr);
         }
       }
     } else {
