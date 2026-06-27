@@ -160,6 +160,7 @@ const LAUNCHERS = [
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '📚', title: 'Flashcard decks', sub: 'Browse swipe decks · level → topic', href: '/admin/cards-preview' },
   { emoji: '🎓', title: 'Teaching decks',  sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
+  { emoji: '🧮', title: 'Calculator',      sub: 'TI-84 CE · graphing calculator',      href: '/calculator'          },
 ];
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
