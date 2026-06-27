@@ -44,29 +44,35 @@ export async function POST(req: NextRequest) {
       // filtered by record id in a formula (ARRAYJOIN returns the linked record's
       // DISPLAY NAME, not recXXX — see CLAUDE.md), so fetch candidates and match
       // the record id in JS.
+      // Find the SOURCE lesson that points to this one — ANY type. A regular
+      // reschedule's destination is Type 'Rescheduled'; a revision makeup's
+      // destination is Type 'Revision Makeup'/'Additional'. Either way, deleting
+      // it should restore the original. So we don't gate on the deleted lesson's
+      // own type — we just look for whoever links to it.
       let sourceToRestore: any = null;
-      if (lessonType === 'Rescheduled') {
-        try {
-          const candidates = await airtableRequestAll(
-            'Lessons',
-            `?filterByFormula=${encodeURIComponent(`NOT({Rescheduled Lesson ID}='')`)}&fields[]=Status&fields[]=Date&fields[]=Rescheduled Lesson ID`
-          );
-          sourceToRestore = candidates.records.find(
-            (r: any) => (r.fields['Rescheduled Lesson ID'] || []).includes(lessonId)
-          ) || null;
-        } catch (findErr) {
-          console.error('[delete] Find source lesson error (non-fatal):', findErr);
-        }
+      try {
+        const candidates = await airtableRequestAll(
+          'Lessons',
+          `?filterByFormula=${encodeURIComponent(`NOT({Rescheduled Lesson ID}='')`)}&fields[]=Status&fields[]=Date&fields[]=Type&fields[]=Rescheduled Lesson ID`
+        );
+        sourceToRestore = candidates.records.find(
+          (r: any) => (r.fields['Rescheduled Lesson ID'] || []).includes(lessonId)
+        ) || null;
+      } catch (findErr) {
+        console.error('[delete] Find source lesson error (non-fatal):', findErr);
       }
 
       await airtableRequest('Lessons', `/${lessonId}`, { method: 'DELETE' });
 
-      // Restore the source: 'Absent' for past lessons (it was absent and needed a
-      // makeup), 'Scheduled' for future lessons (it was just being moved).
+      // Restore the source. Revision-sprint lessons were rescheduled-ahead → back
+      // to 'Scheduled' even if the date has passed. Otherwise: 'Absent' for a past
+      // lesson (it was absent and needed a makeup), 'Scheduled' for a future one.
       if (sourceToRestore) {
         try {
           const today = new Date().toISOString().slice(0, 10);
-          const restoreStatus = (sourceToRestore.fields['Date'] ?? '') < today ? 'Absent' : 'Scheduled';
+          const restoreStatus = sourceToRestore.fields['Type'] === 'Revision Sprint'
+            ? 'Scheduled'
+            : ((sourceToRestore.fields['Date'] ?? '') < today ? 'Absent' : 'Scheduled');
           await airtableRequest('Lessons', `/${sourceToRestore.id}`, {
             method: 'PATCH',
             body: JSON.stringify({ fields: { Status: restoreStatus, 'Rescheduled Lesson ID': [] } }),
