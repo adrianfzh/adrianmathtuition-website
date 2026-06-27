@@ -184,6 +184,9 @@ is relevant, return {"matches":[]}.`;
   return NextResponse.json({
     questions: out,
     total: out.length,
+    // True size of the lesson's topic scope (level∩topics), independent of how many the AI picked.
+    // The panel uses this as the "in topic scope" denominator so Smart mode doesn't report "60 of 60".
+    scopeTotal: count ?? out.length,
     model: modelKey,
     pool: candidates.length,
     truncated: (count ?? 0) > candidates.length,

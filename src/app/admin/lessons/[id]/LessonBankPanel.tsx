@@ -741,7 +741,9 @@ export function LessonBankPanel({
           }
           const json = await res.json();
           if (cancelled) return;
-          commit((json.questions ?? []) as BankQuestion[], (json.questions ?? []).length, 'server');
+          // Loaded = the AI's picks; denominator = the true topic-scope count (scopeTotal), so the
+          // footer reads "N loaded of <scope>" rather than a misleading "60 of 60".
+          commit((json.questions ?? []) as BankQuestion[], json.scopeTotal ?? (json.questions ?? []).length, 'server');
           return;
         }
 
