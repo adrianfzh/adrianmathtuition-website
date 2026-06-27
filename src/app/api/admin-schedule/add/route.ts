@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   let body: {
-    type: 'Additional' | 'Makeup' | 'Trial';
+    type: 'Additional' | 'Makeup' | 'Trial' | 'Revision Makeup';
     date: string;
     slotId: string;
     studentId?: string;
@@ -33,32 +33,36 @@ export async function POST(req: NextRequest) {
   if (!type || !date || !slotId) {
     return NextResponse.json({ error: 'type, date, and slotId are required' }, { status: 400 });
   }
-  if ((type === 'Additional' || type === 'Makeup') && !studentId) {
-    return NextResponse.json({ error: 'studentId is required for Additional and Makeup' }, { status: 400 });
+  if ((type === 'Additional' || type === 'Makeup' || type === 'Revision Makeup') && !studentId) {
+    return NextResponse.json({ error: 'studentId is required for Additional, Makeup and Revision Makeup' }, { status: 400 });
   }
   if (type === 'Trial' && !trialStudentName) {
     return NextResponse.json({ error: 'trialStudentName is required for Trial' }, { status: 400 });
   }
 
   try {
-    // 1. Fetch target slot + capacity check
+    // 1. Fetch target slot + capacity check.
+    // Revision makeups skip the capacity check (mirrors the dedicated
+    // Attendance-tab / Revision-Sprint-chip reschedule flow, which has none).
     const slotRec = await airtableRequest('Slots', `/${slotId}`);
     const slotFields = slotRec.fields;
-    const makeupCapacity: number | null = slotFields['Makeup Capacity'] ?? null;
+    if (type !== 'Revision Makeup') {
+      const makeupCapacity: number | null = slotFields['Makeup Capacity'] ?? null;
 
-    if (makeupCapacity == null) {
-      return NextResponse.json(
-        { error: 'Target slot has no Makeup Capacity set' },
-        { status: 400 }
-      );
-    }
+      if (makeupCapacity == null) {
+        return NextResponse.json(
+          { error: 'Target slot has no Makeup Capacity set' },
+          { status: 400 }
+        );
+      }
 
-    const currentCount = await countLessonsInSlot(slotId, date);
-    if (currentCount >= makeupCapacity) {
-      return NextResponse.json(
-        { error: 'Slot full', currentCount, capacity: makeupCapacity },
-        { status: 409 }
-      );
+      const currentCount = await countLessonsInSlot(slotId, date);
+      if (currentCount >= makeupCapacity) {
+        return NextResponse.json(
+          { error: 'Slot full', currentCount, capacity: makeupCapacity },
+          { status: 409 }
+        );
+      }
     }
 
     // 2. Build lesson fields by type
@@ -70,6 +74,19 @@ export async function POST(req: NextRequest) {
         Type: 'Trial',
         Status: 'Scheduled',
         Notes: `Trial student: ${trialStudentName}${notes ? ' | ' + notes : ''}`,
+      };
+    } else if (type === 'Revision Makeup') {
+      // Makeup for an already-paid June Revision Sprint lesson: real
+      // Type='Revision Makeup' + Is Revision Makeup flag → shows the teal
+      // 🏖 badge on the schedule and is EXCLUDED from billing (no Billing Month).
+      lessonFields = {
+        Student: [studentId!],
+        Slot: [slotId],
+        Date: date,
+        Type: 'Revision Makeup',
+        Status: 'Scheduled',
+        Notes: notes && notes.trim() ? notes : 'Revision makeup',
+        'Is Revision Makeup': true,
       };
     } else {
       lessonFields = {

@@ -95,7 +95,7 @@ interface ActionSheetState {
   slotId: string;
 }
 interface AddModalState {
-  type: 'Makeup' | 'Rescheduled' | 'Additional' | 'Trial';
+  type: 'Makeup' | 'Rescheduled' | 'Additional' | 'Trial' | 'Revision Makeup';
   date: string;
   slotId: string;
   studentId: string;
@@ -2706,6 +2706,7 @@ export default function SchedulePage() {
                   <option value="Makeup">Makeup</option>
                   <option value="Rescheduled">Rescheduled</option>
                   <option value="Additional">Additional</option>
+                  <option value="Revision Makeup">Revision Makeup (not billed)</option>
                   <option value="Trial">Trial</option>
                 </select>
               </div>
@@ -2846,8 +2847,14 @@ export default function SchedulePage() {
                   value={addModal.notes}
                   onChange={e => setAddModal(m => m ? { ...m, notes: e.target.value } : null)} />
               </div>
-              {/* Notify (Additional/Makeup only) */}
-              {addModal.type !== 'Trial' && (
+              {/* Revision Makeup hint — silent, not billed */}
+              {addModal.type === 'Revision Makeup' && (
+                <div style={{ fontSize: 12.5, color: '#0f766e', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 8, padding: '8px 10px', lineHeight: 1.45 }}>
+                  Creates a <strong>🏖 Revision Makeup</strong> lesson (already paid in the Revision Sprint, so <strong>not billed</strong> again). Silent — no parent message.
+                </div>
+              )}
+              {/* Notify (Additional/Makeup only — Revision Makeup is always silent) */}
+              {addModal.type !== 'Trial' && addModal.type !== 'Revision Makeup' && (
                 <label className="check-row">
                   <input type="checkbox" checked={addModal.notify}
                     onChange={e => setAddModal(m => m ? { ...m, notify: e.target.checked } : null)} />
