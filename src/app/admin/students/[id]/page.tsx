@@ -44,6 +44,8 @@ interface Invoice { id: string; month: string; finalAmount: number | null; amoun
 interface SentInvoice { id: string; subject: string; sentAt: string; toEmail: string; status: string; pdfUrl: string; }
 interface SlotOpt { id: string; label: string; level: string; }
 interface Contact { name: string; parentName: string; parentEmail: string; parentContact?: string; studentContact?: string; }
+interface MonthPayment { month: string; charge: number; paid: number; open: number; status: 'paid' | 'partial' | 'open' | 'nil'; invoices: { id: string; type: string; pdfUrl: string }[]; }
+interface PaymentSummary { months: MonthPayment[]; totalCharged: number; totalPaid: number; outstanding: number; credit: number; }
 interface Profile {
   student: { id: string; name: string; level: string; subjects: string[]; subjectLevel: string; status: string; juneRevision: string };
   enrollments: Enrollment[];
@@ -52,6 +54,7 @@ interface Profile {
   makeups: MakeupRow[];
   exams: Exam[];
   invoices: Invoice[];
+  payments: PaymentSummary;
   sentInvoices: SentInvoice[];
   slots: SlotOpt[];
 }
@@ -619,6 +622,56 @@ export default function StudentProfilePage() {
                   <button style={btnGhost} onClick={() => setExamForm({ examType: ex.examType, examDate: ex.examDate || '', topics: ex.testedTopics || '', noExam: ex.noExam, saving: false })}>Edit</button>
                 </div>
               ))}
+            </Section>
+
+            {/* Payment records — true per-month outstanding (own-month charge with
+                the carry-forward lump stripped, payments re-attributed oldest-first). */}
+            <Section title="Payment records">
+              {(() => {
+                const p = data.payments;
+                if (!p || p.months.length === 0) return <div style={{ color: '#9ca3af', fontSize: 14 }}>No invoices on record.</div>;
+                const STAT: Record<string, { label: string; bg: string; fg: string }> = {
+                  paid:    { label: '✅ Paid',    bg: '#dcfce7', fg: '#15803d' },
+                  partial: { label: '🟡 Partial', bg: '#fef9c3', fg: '#a16207' },
+                  open:    { label: '🔴 Unpaid',  bg: '#fee2e2', fg: '#b91c1c' },
+                  nil:     { label: '— $0',       bg: '#f1f5f9', fg: '#64748b' },
+                };
+                return (
+                  <>
+                    {/* Outstanding banner */}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', padding: '4px 0 12px' }}>
+                      <span style={{ fontSize: 13, color: '#64748b' }}>Outstanding</span>
+                      <span style={{ fontSize: 26, fontWeight: 800, color: p.outstanding > 0.005 ? '#b91c1c' : '#15803d' }}>{money(p.outstanding)}</span>
+                      {p.credit > 0.005 && <span style={{ fontSize: 13, fontWeight: 700, color: '#15803d' }}>+{money(p.credit)} credit</span>}
+                      <span style={{ marginLeft: 'auto', fontSize: 12, color: '#94a3b8' }}>
+                        billed {money(p.totalCharged)} · paid {money(p.totalPaid)}
+                      </span>
+                    </div>
+                    {/* Per-month rows, newest first */}
+                    {[...p.months].reverse().map(m => {
+                      const s = STAT[m.status] || STAT.open;
+                      const pdf = m.invoices.find(i => i.pdfUrl)?.pdfUrl || '';
+                      return (
+                        <div key={m.month} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
+                          <span style={{ width: 96, fontWeight: 600, color: '#111' }}>{m.month.replace(/ (20\d\d)$/, " '$1").replace(" '20", " '")}</span>
+                          <span style={{ width: 120, color: '#6b7280', fontSize: 13 }}>
+                            charge {money(m.charge)}
+                            {m.status === 'partial' && <span style={{ color: '#a16207' }}> · paid {money(m.paid)}</span>}
+                          </span>
+                          <span style={{ flex: 1, fontWeight: 700, color: m.open > 0.005 ? '#b91c1c' : '#94a3b8' }}>
+                            {m.open > 0.005 ? `owes ${money(m.open)}` : ''}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: s.fg, background: s.bg, padding: '2px 8px', borderRadius: 999 }}>{s.label}</span>
+                          {pdf && <a href={pdf} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#1d4ed8', textDecoration: 'none' }}>📄</a>}
+                        </div>
+                      );
+                    })}
+                    <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 8, lineHeight: 1.45 }}>
+                      Per-month view: each month shows its own charge; payments are applied oldest-first. Independent of how invoices were bundled.
+                    </div>
+                  </>
+                );
+              })()}
             </Section>
 
             {/* Invoices */}

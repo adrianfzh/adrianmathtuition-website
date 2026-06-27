@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
+import { computePerMonthPayments } from '@/lib/invoice-payments';
 
 export const runtime = 'nodejs';
 
@@ -155,9 +156,10 @@ export async function GET(req: NextRequest) {
       noExam: r.fields['No Exam'] === true,
     }));
 
-  // Invoices for this student — match in JS
+  // Invoices for this student — match in JS. `Line Items Extra` is needed to
+  // strip the carry-forward lump when computing the true per-month breakdown.
   const invData = await airtableRequestAll('Invoices',
-    `?fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Status&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Invoice Type&fields[]=PDF URL&sort[0][field]=Month&sort[0][direction]=desc`);
+    `?fields[]=Student&fields[]=Month&fields[]=Final Amount&fields[]=Status&fields[]=Amount Paid&fields[]=Is Paid&fields[]=Invoice Type&fields[]=PDF URL&fields[]=Line Items Extra&sort[0][field]=Month&sort[0][direction]=desc`);
   const studentInvoices = invData.records.filter((r: any) => r.fields['Student']?.[0] === id);
   const studentInvoiceIds = new Set(studentInvoices.map((r: any) => r.id));
   const invoices = studentInvoices
@@ -172,6 +174,22 @@ export async function GET(req: NextRequest) {
       invoiceType: r.fields['Invoice Type'] || 'Regular',
       pdfUrl: r.fields['PDF URL'] || '',
     }));
+
+  // True per-month payment breakdown (own-month charge + oldest-first payment
+  // allocation) — correct regardless of the carry-forward lump mess.
+  const payments = computePerMonthPayments(
+    studentInvoices.map((r: any) => ({
+      id: r.id,
+      month: r.fields['Month'] || '',
+      finalAmount: r.fields['Final Amount'] ?? null,
+      amountPaid: r.fields['Amount Paid'] ?? null,
+      isPaid: r.fields['Is Paid'] === true,
+      status: r.fields['Status'] || '',
+      invoiceType: r.fields['Invoice Type'] || 'Regular',
+      lineItemsExtra: r.fields['Line Items Extra'] || '',
+      pdfUrl: r.fields['PDF URL'] || '',
+    })),
+  );
 
   // Every invoice PDF actually emailed to this student (from EmailLog archive).
   // Match EmailLog rows whose Related Invoice belongs to this student and which
@@ -214,6 +232,7 @@ export async function GET(req: NextRequest) {
     makeups,
     exams,
     invoices,
+    payments,
     sentInvoices,
     slots,
   });
