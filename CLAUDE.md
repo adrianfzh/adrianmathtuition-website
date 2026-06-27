@@ -63,7 +63,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 ### Admin schedule
 - `admin-schedule/route.ts` — weekly calendar data (GET `?week=YYYY-MM-DD`)
 - `admin-schedule/reschedule/route.ts` — create Rescheduled lesson + mark original
-- `admin-schedule/add/route.ts` — create Additional/Makeup/Trial with capacity check
+- `admin-schedule/add/route.ts` — create Additional/Makeup/Trial/Revision Makeup (Revision Makeup skips the capacity check + sets `Is Revision Makeup`, no Billing Month)
 - `admin-schedule/delete/route.ts` — hard-delete or mark Absent
 - `admin-schedule/attendance/route.ts` — update lesson Status (Completed/Absent/Cancelled etc.)
 - `admin-schedule/lesson-context/route.ts` — load progress fields + prev lesson + exam info for LessonModal
@@ -193,16 +193,16 @@ For when an adjustment must land on a month whose invoice doesn't exist yet (e.g
 
 Tracks revision-lesson attendance + makeups for signed-up students. Revision lessons (`Type='Revision Sprint'`) were created with only `{Student, Date}` — no subject/time — so the **subject/session label (EM 10am–12pm / AM 1–3pm / H2 2–5pm) is derived at read time** from the student's signed-up subjects (parsed from the Revision Sprint invoice line items) + the fixed sprint date schedule. EM dates ⊂ AM dates, so EM+AM students get two records on shared dates, assigned deterministically (sorted by record id).
 
-- **GET** → per student: sessions (date · subject · time · status · `assignmentSubmitted` · `topics[]`) + linked makeup + summary (attended/missed/madeUp/outstanding). `topics` merges `Topics Covered` (JSON) + `Topics Free Text` (comma list).
+- **GET** → per student: sessions (date · subject · time · status · `assignmentSubmitted` · `topics[]`) + linked makeup + summary (attended/missed/madeUp/outstanding). `topics` merges `Topics Covered` (JSON) + `Topics Free Text` (comma list). Optional **`?studentId=recXXX`** scopes the response to one student (used by the `/admin/schedule` Revision Makeup session picker).
 - **POST** `{action:'mark', lessonId, status}` — set a revision lesson's Status.
 - **POST** `{action:'assignment', lessonId, value}` — set HW state on **`Homework Returned`**: `'Yes'` = handed up, `'No'` = not handed up, `''` = clear. (Back-compat: boolean `submitted` → `'Yes'`/clear.) UI: per-session **✓ / ✗ toggle** on the Attendance tab (optimistic).
 - **POST** `{action:'hwnote', lessonId, note}` — free-text HW note (e.g. "partial — only Q1–5") stored on **`Homework Returned Reason`**. UI: a **"+ note" / 📝 chip** beside the HW ✓/✗ toggle on the Attendance tab (click-to-edit inline, optimistic). For tracking partial hand-ups.
 - **POST** `{action:'topics', lessonId, topics}` — set topics covered (freeform, comma-separated) on **`Topics Free Text`**. UI: click the topic chips (or "+ topics") beside the session date to edit inline. When no manual topics are set, sessions **default to the published schedule** (`SCHEDULE_TOPICS` in the route, mirroring `/june-revision/sec4` + `/jc2`), split into chips on `+`.
 - **Attendance tab layout**: student cards render in a responsive grid (4 cols web → 3 → 2 → 1 on narrow screens), grouped by subject section.
-- **POST** `{action:'makeup', lessonId, studentId, date, slotId}` — **the "reschedule a missed (or known-to-be-missed) June-holiday lesson" action**: creates a makeup lesson at any active regular slot (`Type='Additional'`, Notes `'Revision makeup'`), marks the revision lesson `Absent`, links them via `Rescheduled Lesson ID`. (`Makeup` is NOT a valid Lessons Type — options are Regular/Rescheduled/Additional/Trial/Revision Sprint — so makeups use `Additional`.) The makeup then shows on `/admin/schedule` at that slot with a teal **🏖 Revision makeup** chip badge (schedule route flags it via `revisionMakeup` = Notes matches `/revision makeup/i`).
-  - **Where to trigger it:** (a) Attendance tab — **＋ Log makeup** on a *Missed* session, or **↻ Reschedule** on a *Scheduled* session (reschedule one you know will be missed; the action marks it Absent + creates the makeup in one step). (b) `/admin/schedule` — a **↻ Reschedule** button on each *Scheduled* Revision Sprint chip opens the same date+slot dialog (auth via `savedPw`, refetches the week).
+- **POST** `{action:'makeup', lessonId, studentId, date, slotId}` — **the "reschedule a missed (or known-to-be-missed) June-holiday lesson" action**: creates a makeup lesson at any active regular slot with a real **`Type='Revision Makeup'`** + **`Is Revision Makeup=true`** flag (Notes `'Revision makeup'`), marks the **original revision lesson `Rescheduled`** (NOT `Absent` — its outcome is read from the makeup's status), and links them via `Rescheduled Lesson ID`. (Both `Revision Makeup` Type and the `Is Revision Makeup` checkbox now exist on the Lessons table — the older "makeups borrow `Type='Additional'`" workaround is gone.) The makeup then shows on `/admin/schedule` at that slot with a teal **🏖 Revision makeup** chip badge (schedule route flags it via `revisionMakeup` = `Is Revision Makeup` true OR Notes matches `/revision makeup/i`).
+  - **Where to trigger it:** (a) Attendance tab — **＋ Log makeup** on a *Missed* session, or **↻ Reschedule** on a *Scheduled* session (reschedule one you know will be missed; the action marks it Rescheduled + creates the makeup in one step). (b) `/admin/schedule` — a **↻ Reschedule** button on each *Scheduled* Revision Sprint chip opens the same date+slot dialog (auth via `savedPw`, refetches the week). (c) `/admin/schedule` **Add lesson → "Revision Makeup (not billed)"** type — pick the student, then a **session picker** (date · subject · time · ⚠ missed, with the selected session's topics shown) lists their Revision Sprint sessions (from `/api/admin-revision-attendance?studentId=`); selecting one routes through this same `action:'makeup'` endpoint, or leaving it on "— Standalone —" creates an unlinked makeup via `/api/admin-schedule/add` (which also accepts `type='Revision Makeup'`, skips the capacity check, sets `Is Revision Makeup` + no Billing Month). The picker only offers sessions not already made up.
   - **Slot picker** groups the student's same JC/Sec-level slots first (`sameLevelSlot()`), with all other slots still selectable under "Other slots". No capacity check.
-  - **Billing:** the makeup is `Type='Additional'` (so it shows on the schedule + gets the bot day-before reminder), BUT `generate-invoices` **excludes `Notes` matching `Revision makeup`** from the Additional-lesson billing query — the Revision Sprint was already paid, so the makeup is NOT billed again. **Any new "don't bill this Additional lesson" case must add the same Notes exclusion.**
+  - **Billing:** the makeup is `Type='Revision Makeup'`, so it's already outside `generate-invoices`'s Additional-lesson billing query (which only counts `Type='Additional'`); that query **also** explicitly excludes `Is Revision Makeup` (with the `Notes`-matching `Revision makeup` as a legacy safety net) — the Revision Sprint was already paid, so the makeup is NOT billed again. **Any new "don't bill this lesson" case must keep it out of the Additional query and/or add the same exclusion.**
 - **POST** `{action:'unmakeup', lessonId}` OR `{action:'unmakeup', makeupId}` — undo a makeup: deletes the makeup lesson + unlinks. `lessonId` (Attendance-tab ✕) leaves the revision lesson `Absent`; `makeupId` (schedule undo) reverts it to `Scheduled` (it was rescheduled-ahead, not truly missed). On `/admin/schedule`, the makeup chip's action sheet shows **↩ Undo revision reschedule**; a regular `Rescheduled` chip shows **↩ Undo reschedule** (calls `/api/admin-schedule/delete` which restores the source lesson).
 
 Sign-ups tab: Sign-up (`/api/admin-revision-signup`) does: (1) mark Student `June Revision 2026='Signed Up'`, (2) void the regular June invoice, (3) create a `Revision Sprint` invoice, (4) create `Revision Sprint` lesson records on the sprint dates, (5) **soft-cancel the student's June `Regular` lessons** (they don't attend normal weekly lessons in June). Revert (`/api/admin-revision-revert`) undoes all of it, including restoring those regular lessons.
@@ -216,6 +216,8 @@ Sign-ups tab: Sign-up (`/api/admin-revision-signup`) does: (1) mark Student `Jun
 **All admin web UI actions are silent** — no Telegram messages sent when admin uses the website.
 
 Students/parents are notified via the bot's day-before reminder cron (`runDayBeforeReminders` in `flows.js`), which automatically picks up Rescheduled/Additional/Makeup/Trial lesson records. Same-day or next-day reschedules won't reach that cron in time — admin should message manually.
+
+> ⚠ **Unverified:** revision makeups are now `Type='Revision Makeup'` (previously `Additional`). Confirm `runDayBeforeReminders` in the Fly.io bot includes `Revision Makeup` in its type filter, or those makeups won't get the automatic day-before reminder.
 
 ## Airtable Schema — MANDATORY pre-coding check
 
@@ -272,7 +274,7 @@ Two-tab interface, cookie-auth protected (30-day), PWA-ready.
 
 ### Tabs
 
-- **Lessons** (default) — editable calendar. Shows Regular/Rescheduled/Makeup/Additional/Trial lesson records. Drag-to-reschedule, tap-to-action-sheet, per-slot [+] button, floating FAB.
+- **Lessons** (default) — editable calendar. Shows Regular/Rescheduled/Makeup/Additional/Trial/Revision Makeup lesson records. Drag-to-reschedule, tap-to-action-sheet, per-slot [+] button, floating FAB.
 - **Roster** — read-only slot enrollment view (which students are in which weekly slot).
 
 Tab choice persists in `localStorage` (key: `schedule_view_mode`).
@@ -310,7 +312,7 @@ Regular weekly lessons exist as individual `Lessons` records. Three things creat
 |---|---|---|
 | `/api/admin-schedule` | GET | Weekly data: slots + lessons + students + exam info |
 | `/api/admin-schedule/reschedule` | POST | New Rescheduled lesson + mark original |
-| `/api/admin-schedule/add` | POST | Create Additional/Makeup/Trial with capacity check |
+| `/api/admin-schedule/add` | POST | Create Additional/Makeup/Trial/Revision Makeup (Revision Makeup: no capacity check, `Is Revision Makeup`, not billed) |
 | `/api/admin-schedule/add-weekly-slot` | POST | Create an Active Enrollment + generate 9 weeks of Regular lessons (Roster tab [+] button) |
 | `/api/admin-schedule/switch` | POST | Permanent slot switch: delete future old-slot lessons + generate 9 weeks on new slot + update enrollment |
 | `/api/admin-schedule/delete` | POST | Hard-delete or mark Absent |
