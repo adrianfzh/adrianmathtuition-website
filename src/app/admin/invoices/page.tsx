@@ -2183,6 +2183,43 @@ export default function AdminPage() {
       } catch { /* non-fatal */ }
     }
 
+    async function loadPaymentsOverview() {
+      try {
+        const res = await fetch('/api/admin-invoices/payments-overview', { headers: authHeaders() });
+        const data = await res.json();
+        const el = document.getElementById('payments-overview');
+        if (!el) return;
+        const families = (data.families || []) as any[];
+        if (!families.length) { el.innerHTML = ''; return; }
+
+        const STAT: Record<string, string> = { paid: '#15803d', partial: '#a16207', open: '#b91c1c', nil: '#94a3b8' };
+        const grand = '$' + (data.grandOutstanding || 0).toFixed(2);
+
+        let rows = '';
+        for (const fam of families) {
+          const chips = (fam.openMonths || []).map((m: any) => {
+            const mo = (m.month || '').replace(/ 20(\d\d)$/, " '$1");
+            const col = STAT[m.status] || '#b91c1c';
+            return `<span style="display:inline-block;background:#fff;border:1px solid #fecaca;border-radius:999px;padding:1px 8px;margin:2px 4px 2px 0;font-size:12px;color:${col};font-weight:600;">${escHtml(mo)} $${(m.open).toFixed(2)}</span>`;
+          }).join('');
+          rows += `<div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #fee2e2;">
+            <a href="/admin/students/${fam.studentId}" style="min-width:150px;font-weight:600;color:#0f172a;text-decoration:none;">${escHtml(fam.name)}</a>
+            <span style="min-width:78px;font-weight:800;color:#b91c1c;">$${(fam.outstanding).toFixed(2)}</span>
+            <span style="flex:1;">${chips}</span>
+          </div>`;
+        }
+
+        el.innerHTML = `<details style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:10px 16px;margin-bottom:16px;">
+          <summary style="cursor:pointer;font-weight:700;color:#b91c1c;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px;">
+            💰 Outstanding by student — ${data.familyCount} families owe ${grand}
+            <span style="margin-left:auto;font-size:12px;font-weight:500;color:#94a3b8;">click to expand · per-month</span>
+          </summary>
+          <div style="margin-top:10px;">${rows}</div>
+          <div style="font-size:11.5px;color:#94a3b8;margin-top:8px;line-height:1.45;">True per-month outstanding — own-month charge with the carry-forward lump stripped, payments applied oldest-first. Click a name for the full record.</div>
+        </details>`;
+      } catch { /* non-fatal */ }
+    }
+
     async function loadDeferredPending() {
       try {
         const res = await fetch('/api/admin-invoices/deferred-pending', { headers: authHeaders() });
@@ -2834,6 +2871,7 @@ export default function AdminPage() {
     loadJuneRevisionState();
     loadReferralStatus();
     loadDeferredPending();
+    loadPaymentsOverview();
 
     return () => {
       ['submitPassword','logout','loadInvoices','onMonthFilter','onSearchChange','clearSearch','toggleTotal','previewPdf',
@@ -2937,6 +2975,7 @@ export default function AdminPage() {
       </div>
 
       <div className="content">
+        <div id="payments-overview"></div>
         <div id="deferred-pending-banner"></div>
         <div id="referral-status-banner"></div>
         <div className="search-bar">
