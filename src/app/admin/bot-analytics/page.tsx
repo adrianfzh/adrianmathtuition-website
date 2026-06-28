@@ -421,7 +421,7 @@ export default function BotAnalytics() {
         </select>
         <button onClick={load} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 13 }}>↻ Refresh</button>
         <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>
-          {questions.length} questions · {flagged.length} flagged · {totalClusters} clusters
+          {allVisible.length} questions · {flagged.length} flagged · {totalClusters} clusters
         </span>
       </div>
 
