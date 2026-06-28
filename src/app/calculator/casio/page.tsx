@@ -305,8 +305,8 @@ export default function CasioPage() {
         .lp .gfrac .gbox { width: 13px; height: 6px; border: 1.5px solid #f4f4f4; border-radius: 1px; }
         .lp .gfrac .gbar { width: 17px; height: 2px; background: #f4f4f4; margin: 1.5px 0; }
         .lp .gsvg { display: block; }
-        .lp .gpow { display: inline-flex; align-items: flex-end; }
-        .lp .gpow .gsupbox { display: inline-block; width: 8px; height: 8px; border: 1.5px solid #f4f4f4; border-radius: 1px; margin-left: 1.5px; margin-bottom: 6px; }
+        .lp .gpow { display: inline-flex; align-items: flex-start; }
+        .lp .gpow .gsupbox { display: inline-block; width: 8px; height: 8px; background: #f4f4f4; border-radius: 1px; margin-left: 1.5px; margin-top: 1px; }
       `}</style>
     </div>
   );
