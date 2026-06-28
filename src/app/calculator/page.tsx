@@ -5,8 +5,9 @@
 //  Phase B: Y= editor, WINDOW, GRAPH (canvas), ZOOM menu, TRACE.
 // Mobile-first, exam-faithful key behaviour. STAT/TABLE/CALC (Phase C–D) stubbed.
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { evaluate, compile, type AngleMode, type EvalCtx } from '@/lib/ti84/engine';
+import { evaluate, compile, formatTI, type AngleMode, type EvalCtx } from '@/lib/ti84/engine';
 import { findZero, findExtremum, findIntersect, derivative, integral, type F } from '@/lib/ti84/calc';
+import { oneVarStats, twoVarStats } from '@/lib/ti84/stats';
 
 type Act = { ins: string } | { cmd: string };
 interface Key { id: string; p: string; s?: string; a?: string; cls: 'kb' | 'kw' | 'kg' | 'k2' | 'ka'; n: Act; sa?: Act; aa?: Act; }
@@ -25,7 +26,7 @@ const ROWS: Key[][] = [
     k('math', 'math', 'kb', { cmd: 'soon' }, { s: 'test', a: 'A', aa: { ins: 'A' } }),
     k('apps', 'apps', 'kb', { cmd: 'soon' }, { s: 'angle', a: 'B', aa: { ins: 'B' } }),
     k('prgm', 'prgm', 'kb', { cmd: 'soon' }, { s: 'draw', a: 'C', aa: { ins: 'C' } }),
-    k('vars', 'vars', 'kb', { cmd: 'soon' }, { s: 'distr' }),
+    k('vars', 'vars', 'kb', { cmd: 'soon' }, { s: 'distr', sa: { cmd: 'distr' } }),
     k('clear', 'clear', 'kg', { cmd: 'clear' }),
   ],
   [
@@ -72,7 +73,8 @@ const ROWS: Key[][] = [
   ],
 ];
 
-type Screen = 'home' | 'yeq' | 'window' | 'graph' | 'tblset' | 'table';
+type Screen = 'home' | 'yeq' | 'window' | 'graph' | 'tblset' | 'table' | 'statedit' | 'statresult';
+const DISTR_FNS = ['normalpdf', 'normalcdf', 'invNorm', 'binompdf', 'binomcdf', 'poissonpdf', 'poissoncdf'];
 interface HistItem { input: string; output: string; err?: boolean; }
 
 type CalcOp = 'value' | 'zero' | 'min' | 'max' | 'intersect' | 'dydx' | 'integral';
@@ -125,6 +127,13 @@ export default function CalculatorPage() {
   const [calcVals, setCalcVals] = useState<number[]>([]);
   const [calcCurves, setCalcCurves] = useState<number[]>([]);
   const [calcResult, setCalcResult] = useState<{ text: string; x: number; y: number } | null>(null);
+  // STAT
+  const [lists, setLists] = useState<string[][]>([[], [], []]); // L1, L2, L3
+  const [listSel, setListSel] = useState(0);
+  const [rowSel, setRowSel] = useState(0);
+  const [statMenu, setStatMenu] = useState(false);
+  const [distrMenu, setDistrMenu] = useState(false);
+  const [statResult, setStatResult] = useState<{ title: string; rows: [string, string][] } | null>(null);
 
   const screenRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -145,14 +154,19 @@ export default function CalculatorPage() {
 
   // ── active edit buffer (home entry / Y= line / WINDOW field) ──
   const bufVal = (): string => screen === 'home' ? entry : screen === 'yeq' ? yfns[ySel]
-    : screen === 'window' ? win[WINKEYS[winSel]] : screen === 'tblset' ? (tblSel === 0 ? tbl.start : tbl.step) : '';
+    : screen === 'window' ? win[WINKEYS[winSel]] : screen === 'tblset' ? (tblSel === 0 ? tbl.start : tbl.step)
+    : screen === 'statedit' ? (lists[listSel][rowSel] ?? '') : '';
   const bufSet = (fn: (s: string) => string) => {
     if (screen === 'home') setEntry(fn);
     else if (screen === 'yeq') setYfns((a) => a.map((v, i) => i === ySel ? fn(v) : v));
     else if (screen === 'window') setWin((w) => ({ ...w, [WINKEYS[winSel]]: fn(w[WINKEYS[winSel]]) }));
     else if (screen === 'tblset') setTbl((t) => tblSel === 0 ? { ...t, start: fn(t.start) } : { ...t, step: fn(t.step) });
+    else if (screen === 'statedit') setLists((ls) => ls.map((col, ci) => {
+      if (ci !== listSel) return col;
+      const nc = [...col]; while (nc.length <= rowSel) nc.push(''); nc[rowSel] = fn(nc[rowSel] ?? ''); return nc;
+    }));
   };
-  const editable = screen === 'home' || screen === 'yeq' || screen === 'window' || screen === 'tblset';
+  const editable = screen === 'home' || screen === 'yeq' || screen === 'window' || screen === 'tblset' || screen === 'statedit';
 
   const insert = (text: string) => {
     const c = cursor; bufSet((s) => s.slice(0, c) + text + s.slice(c)); setCursor(c + text.length); setRecall(null);
@@ -188,6 +202,44 @@ export default function CalculatorPage() {
     const xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10);
     return xmin + (traceI / (TRACE_STEPS - 1)) * (xmax - xmin);
   }, [winNum, traceI]);
+
+  const listNums = (i: number): number[] => {
+    const out: number[] = [];
+    for (const s of lists[i]) { if (!s.trim()) continue; const r = evaluate(s, ctx()); if (r.ok) out.push(r.value); }
+    return out;
+  };
+
+  const startStat = (kind: 'edit' | '1var' | '2var' | 'linreg') => {
+    setStatMenu(false);
+    const sf = formatTI;
+    if (kind === 'edit') { setScreen('statedit'); setListSel(0); setRowSel(0); setCursor((lists[0][0] ?? '').length); return; }
+    if (kind === '1var') {
+      const ov = oneVarStats(listNums(0));
+      if (!ov) { showToast('L1 is empty'); return; }
+      setStatResult({ title: '1-Var Stats (L1)', rows: [
+        ['x̄', sf(ov.mean)], ['Σx', sf(ov.sumx)], ['Σx²', sf(ov.sumx2)], ['Sx', sf(ov.Sx)], ['σx', sf(ov.sigmax)],
+        ['n', String(ov.n)], ['minX', sf(ov.min)], ['Q1', sf(ov.q1)], ['Med', sf(ov.med)], ['Q3', sf(ov.q3)], ['maxX', sf(ov.max)],
+      ] });
+      setScreen('statresult'); return;
+    }
+    const tv = twoVarStats(listNums(0), listNums(1));
+    if (!tv) { showToast('Need L1 & L2 (≥2 points)'); return; }
+    if (kind === '2var') setStatResult({ title: '2-Var Stats (L1,L2)', rows: [
+      ['x̄', sf(tv.two.xbar)], ['Σx', sf(tv.two.sumx)], ['Σx²', sf(tv.two.sumx2)], ['ȳ', sf(tv.two.ybar)],
+      ['Σy', sf(tv.two.sumy)], ['Σy²', sf(tv.two.sumy2)], ['Σxy', sf(tv.two.sumxy)], ['Sx', sf(tv.two.Sx)], ['Sy', sf(tv.two.Sy)], ['n', String(tv.two.n)],
+    ] });
+    else setStatResult({ title: 'LinReg  y=ax+b', rows: [
+      ['a', sf(tv.reg.a)], ['b', sf(tv.reg.b)], ['r²', sf(tv.reg.r2)], ['r', sf(tv.reg.r)],
+    ] });
+    setScreen('statresult');
+  };
+
+  const distrInsert = (name: string) => {
+    setDistrMenu(false);
+    const text = name + '(';
+    const ne = entry + text;
+    setEntry(ne); setCursor(ne.length); setScreen('home');
+  };
 
   const startCalc = (op: CalcOp) => {
     setCalcMenu(false);
@@ -260,6 +312,7 @@ export default function CalculatorPage() {
           else if (screen === 'yeq') { const n = Math.min(ySel + 1, NY - 1); setYSel(n); setCursor(yfns[n].length); }
           else if (screen === 'window') { const n = Math.min(winSel + 1, WINKEYS.length - 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
           else if (screen === 'tblset') { const n = Math.min(tblSel + 1, 1); setTblSel(n); setCursor((n === 0 ? tbl.start : tbl.step).length); }
+          else if (screen === 'statedit') { setRowSel((r) => r + 1); setCursor(0); }
           break;
         case 'entry': { const last = [...hist].reverse().find((h) => !h.err); if (last) { setEntry(last.input); setCursor(last.input.length); } break; }
         case 'clear':
@@ -270,10 +323,12 @@ export default function CalculatorPage() {
         case 'del': if (editable && cursor > 0) { bufSet((s) => s.slice(0, cursor - 1) + s.slice(cursor)); setCursor((c) => c - 1); } break;
         case 'left':
           if (screen === 'graph' && traceOn) setTraceI((i) => Math.max(0, i - 1));
+          else if (screen === 'statedit') { const n = Math.max(0, listSel - 1); setListSel(n); setCursor((lists[n][rowSel] ?? '').length); }
           else setCursor((c) => Math.max(0, c - 1));
           break;
         case 'right':
           if (screen === 'graph' && traceOn) setTraceI((i) => Math.min(TRACE_STEPS - 1, i + 1));
+          else if (screen === 'statedit') { const n = Math.min(2, listSel + 1); setListSel(n); setCursor((lists[n][rowSel] ?? '').length); }
           else setCursor((c) => Math.min(bufVal().length, c + 1));
           break;
         case 'up':
@@ -282,6 +337,7 @@ export default function CalculatorPage() {
           else if (screen === 'window') { const n = Math.max(0, winSel - 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
           else if (screen === 'tblset') { setTblSel(0); setCursor(tbl.start.length); }
           else if (screen === 'table') setTblRow((r) => r - 1);
+          else if (screen === 'statedit') { const n = Math.max(0, rowSel - 1); setRowSel(n); setCursor((lists[listSel][n] ?? '').length); }
           else if (screen === 'graph' && traceOn) setTraceFn((f) => nextFn(yfns, f, -1));
           break;
         case 'down':
@@ -290,6 +346,7 @@ export default function CalculatorPage() {
           else if (screen === 'window') { const n = Math.min(WINKEYS.length - 1, winSel + 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
           else if (screen === 'tblset') { setTblSel(1); setCursor(tbl.step.length); }
           else if (screen === 'table') setTblRow((r) => r + 1);
+          else if (screen === 'statedit') { const n = rowSel + 1; setRowSel(n); setCursor((lists[listSel][n] ?? '').length); }
           else if (screen === 'graph' && traceOn) setTraceFn((f) => nextFn(yfns, f, 1));
           break;
         case 'yeq': setScreen('yeq'); setCursor(yfns[ySel].length); break;
@@ -300,6 +357,8 @@ export default function CalculatorPage() {
         case 'tblset': setScreen('tblset'); setTblSel(0); setCursor(tbl.start.length); break;
         case 'table': setScreen('table'); break;
         case 'calc': setCalcMenu(true); break;
+        case 'statmenu': setStatMenu(true); break;
+        case 'distr': setDistrMenu(true); break;
         case 'sto': if (editable) { insert('→'); setAlpha(true); keepAlpha = true; } break;
         case 'on': setScreen('home'); setEntry(''); setCursor(0); break;
         case 'quit': setScreen('home'); setModeMenu(false); setZoomMenu(false); break;
@@ -311,7 +370,7 @@ export default function CalculatorPage() {
     setSec(false);
     if (!keepAlpha) setAlpha(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sec, alpha, screen, editable, entry, cursor, hist, recall, doEnter, yfns, ySel, win, winSel, traceOn, traceFn, traceI, firstFn, showToast, tbl, tblSel, calcOp, calcStep, calcVals, calcCurves, cursorX, Fof, winNum]);
+  }, [sec, alpha, screen, editable, entry, cursor, hist, recall, doEnter, yfns, ySel, win, winSel, traceOn, traceFn, traceI, firstFn, showToast, tbl, tblSel, calcOp, calcStep, calcVals, calcCurves, cursorX, Fof, winNum, lists, listSel, rowSel]);
 
   // ── graph drawing ──
   useEffect(() => {
@@ -492,6 +551,34 @@ export default function CalculatorPage() {
                 </div>
               );
             })()}
+
+            {screen === 'statedit' && (() => {
+              const maxLen = Math.max(1, ...lists.map((l) => l.length));
+              const rowsN = Math.max(maxLen + 1, rowSel + 2);
+              return (
+                <div className="tbl">
+                  <div className="trow thead"><span className="tc rc">&nbsp;</span>{[0, 1, 2].map((i) => <span key={i} className={`tc ${i === listSel ? 'csel' : ''}`}>L{i + 1}</span>)}</div>
+                  {Array.from({ length: rowsN }, (_, r) => (
+                    <div key={r} className="trow">
+                      <span className="tc rc">{r + 1}</span>
+                      {[0, 1, 2].map((i) => (
+                        <span key={i} className={`tc ${i === listSel && r === rowSel ? 'cellsel' : ''}`}>
+                          {i === listSel && r === rowSel ? <Caret s={lists[i][r] ?? ''} c={cursor} /> : (lists[i][r] ?? '')}
+                        </span>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {screen === 'statresult' && statResult && (<>
+              <div className="status">{statResult.title}</div>
+              {statResult.rows.map(([kk, vv], i) => (
+                <div key={i} className="srow"><span className="slab">{kk}</span><span className="sval">{vv}</span></div>
+              ))}
+              <div className="hint">2nd · quit (or any screen key) to exit</div>
+            </>)}
           </div>
 
           {modeMenu && (
@@ -534,6 +621,31 @@ export default function CalculatorPage() {
               </div>
             </div>
           )}
+          {statMenu && (
+            <div className="overlay" onClick={() => setStatMenu(false)}>
+              <div className="ov" onClick={(e) => e.stopPropagation()}>
+                <div className="ov-title">STAT</div>
+                <div className="zgrid">
+                  <button onClick={() => startStat('edit')}>1: Edit lists</button>
+                  <button onClick={() => startStat('1var')}>1-Var Stats</button>
+                  <button onClick={() => startStat('2var')}>2-Var Stats</button>
+                  <button onClick={() => startStat('linreg')}>LinReg(ax+b)</button>
+                  <button onClick={() => setStatMenu(false)}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
+          {distrMenu && (
+            <div className="overlay" onClick={() => setDistrMenu(false)}>
+              <div className="ov" onClick={(e) => e.stopPropagation()}>
+                <div className="ov-title">DISTR</div>
+                <div className="zgrid">
+                  {DISTR_FNS.map((n) => <button key={n} onClick={() => distrInsert(n)}>{n}(</button>)}
+                  <button onClick={() => setDistrMenu(false)}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
           {toast && <div className="toast">{toast}</div>}
         </div>
 
@@ -552,7 +664,7 @@ export default function CalculatorPage() {
           <div style={{ gridArea: 's1c3' }}><Btn def={k('del', 'del', 'kb', { cmd: 'del' }, { s: 'ins' })} /></div>
           <div style={{ gridArea: 's2c1' }}><Btn def={k('alpha', 'alpha', 'ka', { cmd: 'alpha' }, { s: 'A-lock' })} /></div>
           <div style={{ gridArea: 's2c2' }}><Btn def={k('X', 'x,T,θ,n', 'kb', { ins: 'X' })} /></div>
-          <div style={{ gridArea: 's2c3' }}><Btn def={k('stat', 'stat', 'kb', { cmd: 'soon' }, { s: 'list' })} /></div>
+          <div style={{ gridArea: 's2c3' }}><Btn def={k('stat', 'stat', 'kb', { cmd: 'statmenu' }, { s: 'list' })} /></div>
           <div className="dpad" style={{ gridArea: 'dpad' }}>
             <button className="ar up" onClick={() => press(k('up', '', 'kg', { cmd: 'up' }))}>▲</button>
             <button className="ar left" onClick={() => press(k('left', '', 'kg', { cmd: 'left' }))}>◀</button>
@@ -597,6 +709,12 @@ export default function CalculatorPage() {
         .trow.thead { font-weight: 700; border-bottom: 1.5px solid #9aa3ad; }
         .tc { flex: 1; padding: 2px 4px; text-align: right; border-left: 1px solid #d6dccf; overflow: hidden; white-space: nowrap; }
         .tc:first-child { border-left: none; }
+        .tc.rc { flex: 0 0 24px; text-align: center; color: #6b7682; }
+        .tc.csel { background: #cfe0c0; }
+        .tc.cellsel { background: #d6e7c8; }
+        .srow { display: flex; font-size: 14px; padding: 2px 2px; border-bottom: 1px solid #e3e8dc; }
+        .slab { width: 76px; font-weight: 700; }
+        .sval { flex: 1; word-break: break-all; }
         .graphWrap { position: relative; height: 100%; }
         .cv { width: 100%; height: 100%; display: block; border-radius: 2px; }
         .traceBar { position: absolute; left: 0; bottom: 0; right: 0; background: rgba(238,240,232,.92); font-size: 12px; font-weight: 700; padding: 2px 4px; }

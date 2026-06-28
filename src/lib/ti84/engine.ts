@@ -27,10 +27,25 @@ type TokType = 'num' | 'const' | 'ans' | 'var' | 'func' | 'lp' | 'rp' | 'comma'
   | 'plus' | 'minus' | 'mul' | 'div' | 'pow' | 'sq' | 'inv';
 interface Tok { t: TokType; v?: number | string; }
 
-const FUNCS = ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'sin', 'cos', 'tan', 'log', 'ln', '√'];
+import { normalcdf, normalpdf, invNorm, binompdf, binomcdf, poissonpdf, poissoncdf } from './stats';
+
+const FUNCS = ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'normalcdf', 'normalpdf', 'invNorm', 'binompdf', 'binomcdf', 'poissonpdf', 'poissoncdf', 'sin', 'cos', 'tan', 'log', 'ln', '√'];
 const FUNC_MAP: Record<string, string> = {
   'sin⁻¹': 'asin', 'cos⁻¹': 'acos', 'tan⁻¹': 'atan',
   sin: 'sin', cos: 'cos', tan: 'tan', log: 'log10', ln: 'ln', '√': 'sqrt',
+  normalcdf: 'normalcdf', normalpdf: 'normalpdf', invNorm: 'invNorm',
+  binompdf: 'binompdf', binomcdf: 'binomcdf', poissonpdf: 'poissonpdf', poissoncdf: 'poissoncdf',
+};
+
+// Multi-argument (statistical) functions with optional-arg defaults.
+const MULTI: Record<string, { min: number; max: number; fn: (a: number[]) => number }> = {
+  normalpdf: { min: 1, max: 3, fn: (a) => normalpdf(a[0], a[1] ?? 0, a[2] ?? 1) },
+  normalcdf: { min: 2, max: 4, fn: (a) => normalcdf(a[0], a[1], a[2] ?? 0, a[3] ?? 1) },
+  invNorm: { min: 1, max: 3, fn: (a) => invNorm(a[0], a[1] ?? 0, a[2] ?? 1) },
+  binompdf: { min: 3, max: 3, fn: (a) => binompdf(a[0], a[1], a[2]) },
+  binomcdf: { min: 3, max: 3, fn: (a) => binomcdf(a[0], a[1], a[2]) },
+  poissonpdf: { min: 2, max: 2, fn: (a) => poissonpdf(a[0], a[1]) },
+  poissoncdf: { min: 2, max: 2, fn: (a) => poissoncdf(a[0], a[1]) },
 };
 
 class CalcError extends Error {}
@@ -79,6 +94,13 @@ function tokenize(s: string): Tok[] {
     throw new CalcError('SYNTAX');
   }
   return toks;
+}
+
+function dispatch(name: string, vals: number[], angle: AngleMode): number {
+  const m = MULTI[name];
+  if (m) { if (vals.length < m.min || vals.length > m.max) throw new CalcError('ARGUMENT'); return m.fn(vals); }
+  if (vals.length !== 1) throw new CalcError('ARGUMENT');
+  return applyFunc(name, vals[0], angle);
 }
 
 function applyFunc(name: string, x: number, angle: AngleMode): number {
@@ -173,10 +195,18 @@ class Parser {
       case 'lp': { const n = this.expr(); if (this.peek()?.t === 'rp') this.next(); return n; }
       case 'func': {
         const name = t.v as string;
-        let arg: EvalNode;
-        if (this.peek()?.t === 'lp') { this.next(); arg = this.expr(); if (this.peek()?.t === 'rp') this.next(); }
-        else arg = this.power();
-        return (c) => applyFunc(name, arg(c), c.angle);
+        const args: EvalNode[] = [];
+        if (this.peek()?.t === 'lp') {
+          this.next();
+          if (this.peek()?.t !== 'rp') {
+            args.push(this.expr());
+            while (this.peek()?.t === 'comma') { this.next(); args.push(this.expr()); }
+          }
+          if (this.peek()?.t === 'rp') this.next();
+        } else {
+          args.push(this.power());
+        }
+        return (c) => dispatch(name, args.map((a) => a(c)), c.angle);
       }
       default: throw new CalcError('SYNTAX');
     }
@@ -218,7 +248,7 @@ export function evaluate(input: string, ctx: EvalCtx): EvalResult {
   const c = compile(input);
   if (!c.ok) return c;
   let value: number;
-  try { value = c.fn(ctx); } catch { return { ok: false, error: 'SYNTAX' }; }
+  try { value = c.fn(ctx); } catch (e) { return { ok: false, error: e instanceof CalcError ? e.message : 'SYNTAX' }; }
   if (Number.isNaN(value)) return { ok: false, error: 'NONREAL ANS' };
   if (!isFinite(value)) return { ok: false, error: 'DIVIDE BY 0' };
   return { ok: true, value, display: formatTI(value) };
