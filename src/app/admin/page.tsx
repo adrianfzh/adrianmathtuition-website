@@ -19,6 +19,23 @@ const CalcIcon = (
   </svg>
 );
 
+// Black Casio fx-97SG X style icon for the Casio launcher tile.
+const CasioIcon = (
+  <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="4" y="2" width="16" height="20" rx="2.6" fill="#1b1c1e" stroke="#000" strokeWidth="0.7" />
+    <rect x="6.1" y="3.9" width="11.8" height="5.2" rx="0.8" fill="#c4d2bb" />
+    <circle cx="7.7" cy="12.3" r="1.05" fill="#e8942f" />
+    <circle cx="12" cy="12.3" r="1.05" fill="#9aa0a8" />
+    <circle cx="16.3" cy="12.3" r="1.05" fill="#9aa0a8" />
+    <circle cx="7.7" cy="15.7" r="1.05" fill="#9aa0a8" />
+    <circle cx="12" cy="15.7" r="1.05" fill="#9aa0a8" />
+    <circle cx="16.3" cy="15.7" r="1.05" fill="#d8b24e" />
+    <circle cx="7.7" cy="19.1" r="1.05" fill="#9aa0a8" />
+    <circle cx="12" cy="19.1" r="1.05" fill="#9aa0a8" />
+    <circle cx="16.3" cy="19.1" r="1.05" fill="#9aa0a8" />
+  </svg>
+);
+
 function shortModelName(raw: string): string {
   const isFollowUp = /follow.?up/i.test(raw);
   const base = raw
@@ -176,7 +193,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
   { emoji: '🧮', title: 'TI-84',           sub: 'TI-84 CE · graphing calculator',      href: '/calculator', icon: CalcIcon },
-  { emoji: '🧮', title: 'Casio fx-97SG X',  sub: 'ClassWiz · scientific calculator',     href: '/calculator/casio', icon: CalcIcon },
+  { emoji: '🧮', title: 'Casio fx-97SG X',  sub: 'ClassWiz · scientific calculator',     href: '/calculator/casio', icon: CasioIcon },
   { emoji: '🎓', title: 'Teaching decks',  sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
   { emoji: '📚', title: 'Flashcard decks', sub: 'Browse swipe decks · level → topic', href: '/admin/cards-preview' },
 ];
