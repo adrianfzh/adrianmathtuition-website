@@ -24,18 +24,24 @@ export type CompileResult = { ok: true; fn: EvalNode } | { ok: false; error: str
 
 // ── tokenizer ────────────────────────────────────────────────────────────────
 type TokType = 'num' | 'const' | 'ans' | 'var' | 'func' | 'lp' | 'rp' | 'comma'
-  | 'plus' | 'minus' | 'mul' | 'div' | 'pow' | 'sq' | 'inv';
+  | 'plus' | 'minus' | 'mul' | 'div' | 'pow' | 'sq' | 'inv' | 'fact';
 interface Tok { t: TokType; v?: number | string; }
 
 import { normalcdf, normalpdf, invNorm, binompdf, binomcdf, poissonpdf, poissoncdf } from './stats';
 
-const FUNCS = ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'normalcdf', 'normalpdf', 'invNorm', 'binompdf', 'binomcdf', 'poissonpdf', 'poissoncdf', 'sin', 'cos', 'tan', 'log', 'ln', '√'];
+const FUNCS = ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'normalcdf', 'normalpdf', 'invNorm', 'binompdf', 'binomcdf', 'poissonpdf', 'poissoncdf', 'nPr', 'nCr', 'abs', '∛', 'sin', 'cos', 'tan', 'log', 'ln', '√'];
 const FUNC_MAP: Record<string, string> = {
   'sin⁻¹': 'asin', 'cos⁻¹': 'acos', 'tan⁻¹': 'atan',
-  sin: 'sin', cos: 'cos', tan: 'tan', log: 'log10', ln: 'ln', '√': 'sqrt',
+  sin: 'sin', cos: 'cos', tan: 'tan', log: 'log10', ln: 'ln', '√': 'sqrt', '∛': 'cbrt', abs: 'abs',
   normalcdf: 'normalcdf', normalpdf: 'normalpdf', invNorm: 'invNorm',
   binompdf: 'binompdf', binomcdf: 'binomcdf', poissonpdf: 'poissonpdf', poissoncdf: 'poissoncdf',
+  nPr: 'nPr', nCr: 'nCr',
 };
+
+function factorial(n: number): number {
+  if (n < 0 || !Number.isInteger(n)) throw new CalcError('DOMAIN');
+  let r = 1; for (let i = 2; i <= n; i++) r *= i; return r;
+}
 
 // Multi-argument (statistical) functions with optional-arg defaults.
 const MULTI: Record<string, { min: number; max: number; fn: (a: number[]) => number }> = {
@@ -46,6 +52,8 @@ const MULTI: Record<string, { min: number; max: number; fn: (a: number[]) => num
   binomcdf: { min: 3, max: 3, fn: (a) => binomcdf(a[0], a[1], a[2]) },
   poissonpdf: { min: 2, max: 2, fn: (a) => poissonpdf(a[0], a[1]) },
   poissoncdf: { min: 2, max: 2, fn: (a) => poissoncdf(a[0], a[1]) },
+  nPr: { min: 2, max: 2, fn: (a) => factorial(a[0]) / factorial(a[0] - a[1]) },
+  nCr: { min: 2, max: 2, fn: (a) => factorial(a[0]) / (factorial(a[1]) * factorial(a[0] - a[1])) },
 };
 
 class CalcError extends Error {}
@@ -82,6 +90,7 @@ function tokenize(s: string): Tok[] {
     if (c === 'e') { toks.push({ t: 'const', v: Math.E }); i++; continue; }
     if (s.startsWith('⁻¹', i)) { toks.push({ t: 'inv' }); i += 2; continue; }
     if (c === '²') { toks.push({ t: 'sq' }); i++; continue; }
+    if (c === '!') { toks.push({ t: 'fact' }); i++; continue; }
     if ((c >= 'A' && c <= 'Z') || c === 'θ') { toks.push({ t: 'var', v: c }); i++; continue; }
     if (c === '(') { toks.push({ t: 'lp' }); i++; continue; }
     if (c === ')') { toks.push({ t: 'rp' }); i++; continue; }
@@ -116,6 +125,8 @@ function applyFunc(name: string, x: number, angle: AngleMode): number {
     case 'log10': return Math.log10(x);
     case 'ln': return Math.log(x);
     case 'sqrt': return Math.sqrt(x);
+    case 'cbrt': return Math.cbrt(x);
+    case 'abs': return Math.abs(x);
     default: throw new CalcError('SYNTAX');
   }
 }
@@ -180,6 +191,7 @@ class Parser {
       const t = this.peek();
       if (t?.t === 'sq') { this.next(); const b = node; node = (c) => { const v = b(c); return v * v; }; }
       else if (t?.t === 'inv') { this.next(); const b = node; node = (c) => 1 / b(c); }
+      else if (t?.t === 'fact') { this.next(); const b = node; node = (c) => factorial(b(c)); }
       else break;
     }
     return node;
