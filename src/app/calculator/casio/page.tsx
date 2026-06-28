@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 import { evaluate, type AngleMode, type EvalCtx } from '@/lib/ti84/engine';
 import { parseNatural, type DNode } from '@/lib/ti84/natural';
+import EquationSolver from '../EquationSolver';
 
 type Act = { ins: string } | { cmd: string };
 type Cls = 'k' | 'ac';
@@ -131,6 +132,8 @@ export default function CasioPage() {
   const [vars] = useState<Record<string, number>>({});
   const [recall, setRecall] = useState<number | null>(null);
   const [setup, setSetup] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showEqn, setShowEqn] = useState(false);
   const [toast, setToast] = useState('');
   const screenRef = useRef<HTMLDivElement>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -165,7 +168,7 @@ export default function CasioPage() {
       case 'right': setCursor((c) => Math.min(entry.length, c + 1)); break;
       case 'up': { const ins = hist.map((x) => x.input); if (ins.length) { const i = recall === null ? ins.length - 1 : Math.max(0, recall - 1); setRecall(i); setEntry(ins[i]); setCursor(ins[i].length); } break; }
       case 'down': { const ins = hist.map((x) => x.input); if (recall !== null) { const i = recall + 1; if (i >= ins.length) { setRecall(null); setEntry(''); setCursor(0); } else { setRecall(i); setEntry(ins[i]); setCursor(ins[i].length); } } break; }
-      case 'menu': showToast('Statistics / Table / Equation modes — coming soon'); break;
+      case 'menu': setMenuOpen(true); break;
       case 'setup': setSetup(true); break;
       case 'on': setEntry(''); setCursor(0); break;
       case 'soon': showToast('Not in this version yet'); break;
@@ -216,14 +219,21 @@ export default function CasioPage() {
             ))}
             <div className="entry"><Natural nodes={parseNatural(entry)} /><span className="caret" /></div>
           </div>
-          {setup && (
-            <div className="overlay" onClick={() => setSetup(false)}>
+          {(setup || menuOpen) && (
+            <div className="overlay" onClick={() => { setSetup(false); setMenuOpen(false); }}>
               <div className="ov" onClick={(e) => e.stopPropagation()}>
-                <div className="ov-t">SETUP</div>
+                <div className="ov-t">{menuOpen ? 'MENU' : 'SETUP'}</div>
+                {menuOpen && (
+                  <div className="mlist">
+                    <button onClick={() => setMenuOpen(false)}>1: Calculate</button>
+                    <button onClick={() => { setMenuOpen(false); setShowEqn(true); }}>2: Equation (solve)</button>
+                  </div>
+                )}
                 <div className="ov-r"><span>Angle</span>
-                  <button className={angle === 'DEG' ? 'on' : ''} onClick={() => { setAngle('DEG'); setSetup(false); }}>Degree</button>
-                  <button className={angle === 'RAD' ? 'on' : ''} onClick={() => { setAngle('RAD'); setSetup(false); }}>Radian</button>
+                  <button className={angle === 'DEG' ? 'on' : ''} onClick={() => setAngle('DEG')}>Degree</button>
+                  <button className={angle === 'RAD' ? 'on' : ''} onClick={() => setAngle('RAD')}>Radian</button>
                 </div>
+                <button className="ov-done" onClick={() => { setSetup(false); setMenuOpen(false); }}>Done</button>
               </div>
             </div>
           )}
@@ -258,6 +268,8 @@ export default function CasioPage() {
         <div className="ngrid">{NROWS.flat().map((key) => <Btn key={key.id} def={key} />)}</div>
       </div>
 
+      {showEqn && <EquationSolver title="Equation — solve / factorise" accent="#357a2c" onClose={() => setShowEqn(false)} />}
+
       <style jsx>{`
         .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #d9dbde; padding: 50px 10px 12px; box-sizing: border-box; }
         .backBtn, .switchBtn { position: fixed; top: 10px; z-index: 50; color: #fff; font: 600 13px/1 Arial; text-decoration: none; padding: 9px 13px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
@@ -286,6 +298,9 @@ export default function CasioPage() {
         .ov-r { display: flex; align-items: center; gap: 6px; font-size: 13px; } .ov-r span { width: 48px; }
         .ov-r button { flex: 1; padding: 7px; border: 1px solid #6e7a68; background: #e8efe2; border-radius: 4px; font: 12px monospace; }
         .ov-r button.on { background: #16201a; color: #c4d2bb; }
+        .mlist { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .mlist button { padding: 9px 10px; border: 1px solid #6e7a68; background: #e8efe2; border-radius: 4px; font: 13px monospace; text-align: left; }
+        .ov-done { margin-top: 10px; width: 100%; padding: 8px; border: none; background: #16201a; color: #c4d2bb; border-radius: 4px; font: 12px monospace; }
         .toast { position: absolute; left: 12px; right: 12px; bottom: 14px; background: rgba(5,8,5,.92); color: #fff; font: 12px/1.3 Arial; padding: 8px 10px; border-radius: 7px; text-align: center; }
 
         .ctrl { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: 18px 6px 16px; }

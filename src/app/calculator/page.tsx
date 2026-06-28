@@ -8,6 +8,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { evaluate, compile, formatTI, type AngleMode, type EvalCtx } from '@/lib/ti84/engine';
 import { findZero, findExtremum, findIntersect, derivative, integral, type F } from '@/lib/ti84/calc';
 import { oneVarStats, twoVarStats } from '@/lib/ti84/stats';
+import EquationSolver from './EquationSolver';
 
 type Act = { ins: string } | { cmd: string };
 interface Key { id: string; p: string; s?: string; a?: string; cls: 'kb' | 'kw' | 'kg' | 'k2' | 'ka'; n: Act; sa?: Act; aa?: Act; }
@@ -24,7 +25,7 @@ const GRAPH_ROW: Key[] = [
 const ROWS: Key[][] = [
   [
     k('math', 'math', 'kb', { cmd: 'mathmenu' }, { s: 'test', a: 'A', aa: { ins: 'A' } }),
-    k('apps', 'apps', 'kb', { cmd: 'soon' }, { s: 'angle', a: 'B', aa: { ins: 'B' } }),
+    k('apps', 'apps', 'kb', { cmd: 'apps' }, { s: 'angle', a: 'B', aa: { ins: 'B' } }),
     k('prgm', 'prgm', 'kb', { cmd: 'soon' }, { s: 'draw', a: 'C', aa: { ins: 'C' } }),
     k('vars', 'vars', 'kb', { cmd: 'soon' }, { s: 'distr', sa: { cmd: 'distr' } }),
     k('clear', 'clear', 'kg', { cmd: 'clear' }),
@@ -117,6 +118,7 @@ export default function CalculatorPage() {
   const [recall, setRecall] = useState<number | null>(null);
   const [modeMenu, setModeMenu] = useState(false);
   const [mathMenu, setMathMenu] = useState(false);
+  const [showApps, setShowApps] = useState(false);
   const [zoomMenu, setZoomMenu] = useState(false);
   const [toast, setToast] = useState('');
   // graphing
@@ -378,6 +380,7 @@ export default function CalculatorPage() {
         case 'quit': setScreen('home'); setModeMenu(false); setZoomMenu(false); setMathMenu(false); break;
         case 'modemenu': setModeMenu(true); break;
         case 'mathmenu': setMathMenu(true); break;
+        case 'apps': setShowApps(true); break;
         case 'soon': showToast('MATH / APPS / PRGM / VARS menus — not part of the JC build'); break;
         default: break;
       }
@@ -722,6 +725,8 @@ export default function CalculatorPage() {
 
         <div className="foot"><span className="ti">TI</span> TEXAS INSTRUMENTS</div>
       </div>
+
+      {showApps && <EquationSolver title="PlySmlt2 — Equation Solver" accent="#2f6cab" onClose={() => setShowApps(false)} />}
 
       <style jsx>{`
         .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #e9eaec; padding: 10px; box-sizing: border-box; }
