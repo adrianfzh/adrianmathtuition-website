@@ -223,19 +223,19 @@ export default function CasioPage() {
           background-color: #1a1b1d; background-image: radial-gradient(rgba(255,255,255,.045) 0.5px, transparent 0.7px); background-size: 3px 3px;
           border: 1px solid #0c0c0d; box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06); }
         .head { display: flex; align-items: baseline; justify-content: space-between; }
-        .brand { font: 800 19px Arial; letter-spacing: .5px; color: #f0f0f0; }
-        .model { font: 700 14px Arial; color: #d8d8d8; }
-        .classwiz { text-align: center; font: 700 11px Arial; letter-spacing: 6px; color: #c76b86; margin: 1px 0 12px; padding-left: 6px; }
+        .brand { font: 800 24px Arial; letter-spacing: .5px; color: #f2f2f2; }
+        .model { font: 700 17px Arial; color: #dcdcdc; }
+        .classwiz { text-align: center; font: 700 13px Arial; letter-spacing: 7px; color: #c76b86; margin: 2px 0 14px; padding-left: 7px; }
         .bezel { position: relative; background: #0e0f10; border-radius: 8px; padding: 12px 12px 14px; box-shadow: inset 0 2px 6px rgba(0,0,0,.8); border: 1px solid #2a2b2d; }
         .lcd { background: #c4d2bb; border-radius: 2px; height: 132px; overflow-y: auto; padding: 5px 8px; font-family: 'Consolas','SF Mono',monospace; color: #16201a; }
         .status { display: flex; gap: 6px; font-size: 9px; font-weight: 700; color: #2f3d30; border-bottom: 1px solid #a7b89e; padding-bottom: 2px; margin-bottom: 3px; }
         .status .up { margin-left: auto; }
         .hi { margin-bottom: 2px; }
-        .hi-in { font-size: 13px; color: #475247; }
-        .hi-out { font-size: 20px; font-weight: 700; text-align: right; line-height: 1.1; }
-        .hi-out.err { color: #a01818; font-size: 14px; }
-        .entry { font-size: 16px; word-break: break-all; min-height: 20px; }
-        .caret { display: inline-block; width: 2px; height: 16px; background: #16201a; animation: blink 1s steps(1) infinite; vertical-align: -2px; }
+        .hi-in { font-size: 14px; color: #475247; }
+        .hi-out { font-size: 23px; font-weight: 700; text-align: right; line-height: 1.1; }
+        .hi-out.err { color: #a01818; font-size: 15px; }
+        .entry { font-size: 18px; word-break: break-all; min-height: 22px; }
+        .caret { display: inline-block; width: 2px; height: 18px; background: #16201a; animation: blink 1s steps(1) infinite; vertical-align: -3px; }
         @keyframes blink { 50% { opacity: 0; } }
         .overlay { position: absolute; inset: 12px; background: rgba(5,8,5,.55); display: flex; align-items: center; justify-content: center; border-radius: 2px; }
         .ov { background: #c4d2bb; border: 2px solid #16201a; border-radius: 4px; padding: 10px 12px; width: 86%; font-family: monospace; color: #16201a; }
@@ -248,9 +248,9 @@ export default function CasioPage() {
         .ctrl { display: flex; align-items: center; justify-content: space-between; margin: 18px 6px 16px; }
         .cgroup { display: flex; gap: 18px; }
         .rwrap { display: flex; flex-direction: column; align-items: center; }
-        .rlab { font: 700 9px Arial; line-height: 1.1; }
-        .rlab2 { font: 700 7px Arial; color: #e8942f; line-height: 1; }
-        .round { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #000; background: radial-gradient(circle at 50% 35%, #4a4c50, #232427); box-shadow: 0 2px 3px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.12); cursor: pointer; margin-top: 3px; -webkit-tap-highlight-color: transparent; }
+        .rlab { font: 700 11px Arial; line-height: 1.1; }
+        .rlab2 { font: 700 8px Arial; color: #e8942f; line-height: 1; }
+        .round { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #000; background: radial-gradient(circle at 50% 35%, #4a4c50, #232427); box-shadow: 0 2px 3px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.12); cursor: pointer; margin-top: 4px; -webkit-tap-highlight-color: transparent; }
         .round:active { filter: brightness(1.2); }
         .cpad { position: relative; width: 98px; height: 56px; border-radius: 28px; background: radial-gradient(circle at 50% 38%, #3c3e42, #1c1d20); border: 1px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.08); }
         .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #4e5054, #232427); box-shadow: 0 1px 1px rgba(255,255,255,.1), inset 0 1px 2px rgba(0,0,0,.55); }
@@ -260,21 +260,22 @@ export default function CasioPage() {
         .ar.left { left: 4px; top: 50%; transform: translateY(-50%); }
         .ar.right { right: 4px; top: 50%; transform: translateY(-50%); }
 
-        .fgrid { display: grid; grid-template-columns: repeat(6,1fr); column-gap: 6px; row-gap: 15px; margin-bottom: 14px; }
-        .ngrid { display: grid; grid-template-columns: repeat(5,1fr); column-gap: 8px; row-gap: 13px; }
+        .fgrid { display: grid; grid-template-columns: repeat(6,1fr); column-gap: 6px; row-gap: 17px; margin-bottom: 16px; }
+        .ngrid { display: grid; grid-template-columns: repeat(5,1fr); column-gap: 8px; row-gap: 16px; }
         .gap { }
       `}</style>
       <style jsx global>{`
-        .ck { position: relative; width: 100%; aspect-ratio: 1.5/1; min-height: 34px; border-radius: 6px; border: 1px solid #000; cursor: pointer; padding: 0; overflow: visible;
-          background: linear-gradient(#46484c,#27292c 62%,#1f2023); box-shadow: 0 2px 0 #0a0a0b, 0 3px 4px rgba(0,0,0,.4); -webkit-tap-highlight-color: transparent; transition: transform .04s, filter .05s; }
-        .ngrid .ck { aspect-ratio: 1.65/1; min-height: 40px; }
+        .ck { position: relative; width: 100%; aspect-ratio: 1.42/1; min-height: 38px; border-radius: 7px; border: 1px solid #000; cursor: pointer; padding: 0; overflow: visible;
+          background: linear-gradient(#4a4c50,#27292c 62%,#1f2023); box-shadow: 0 2px 0 #0a0a0b, 0 3px 4px rgba(0,0,0,.4); -webkit-tap-highlight-color: transparent; transition: transform .04s, filter .05s; }
+        .ngrid .ck { aspect-ratio: 1.55/1; min-height: 46px; }
         .ck:active { transform: translateY(1px); filter: brightness(1.15); box-shadow: 0 1px 0 #0a0a0b; }
         .ck.ac { background: linear-gradient(#d8b24e,#b98a2c 62%,#a87d27); }
-        .ck .lp { display: flex; align-items: center; justify-content: center; height: 100%; font-weight: 700; color: #f4f4f4; font-size: clamp(9px,3vw,14px); }
-        .ck.ac .lp { color: #2a2206; }
-        .ck .ls, .ck .la { position: absolute; top: -11px; font-size: 8.5px; font-weight: 700; line-height: 1; white-space: nowrap; }
-        .ck .ls { left: 0; color: #e8942f; }
-        .ck .la { right: 0; color: #d05a6e; }
+        .ck .lp { display: flex; align-items: center; justify-content: center; height: 100%; font-weight: 700; color: #f4f4f4; font-size: clamp(11px,3.6vw,16px); }
+        .ngrid .ck .lp { font-size: clamp(15px,4.6vw,21px); }
+        .ck.ac .lp { color: #2a2206; font-size: clamp(12px,3.6vw,16px); }
+        .ck .ls, .ck .la { position: absolute; top: -12px; font-size: 9.5px; font-weight: 700; line-height: 1; white-space: nowrap; }
+        .ck .ls { left: 1px; color: #e8942f; }
+        .ck .la { right: 1px; color: #d05a6e; }
         .ck.hot { outline: 2px solid #ffce6b; outline-offset: 1px; }
       `}</style>
     </div>
