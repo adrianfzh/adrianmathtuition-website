@@ -9,6 +9,7 @@ import { evaluate, compile, formatTI, type AngleMode, type EvalCtx } from '@/lib
 import { findZero, findExtremum, findIntersect, derivative, integral, type F } from '@/lib/ti84/calc';
 import { oneVarStats, twoVarStats } from '@/lib/ti84/stats';
 import EquationSolver from './EquationSolver';
+import RealEmulator from './RealEmulator';
 
 type Act = { ins: string } | { cmd: string };
 interface Key { id: string; p: string; s?: string; a?: string; cls: 'kb' | 'kw' | 'kg' | 'k2' | 'ka'; n: Act; sa?: Act; aa?: Act; }
@@ -139,6 +140,7 @@ export default function CalculatorPage() {
   const [mathMenu, setMathMenu] = useState(false);
   const [mathTab, setMathTab] = useState<string>('MATH');
   const [showApps, setShowApps] = useState(false);
+  const [realEmu, setRealEmu] = useState(false);
   const [zoomMenu, setZoomMenu] = useState(false);
   const [toast, setToast] = useState('');
   // graphing
@@ -520,6 +522,7 @@ export default function CalculatorPage() {
     <div className="wrap">
       <a className="backBtn" href="/admin">‹ Back</a>
       <a className="switchBtn" href="/calculator/casio">⇄ Casio</a>
+      <button className="realBtn" onClick={() => setRealEmu(true)}>▶ Real TI-84</button>
       <div className="calc">
         <div className="head"><div className="model">TI-84 Plus CE</div><div className="py">PYTHON</div></div>
 
@@ -747,6 +750,7 @@ export default function CalculatorPage() {
       </div>
 
       {showApps && <EquationSolver title="PlySmlt2 — Equation Solver" accent="#2f6cab" onClose={() => setShowApps(false)} />}
+      {realEmu && <RealEmulator title="TI-84 Plus CE — real emulator" url="https://www.ti84-online.com/" alts={[{ label: 'tcalc', url: 'https://tcalc.edu.tpglit.ch/' }, { label: 'jsTIfied', url: 'https://www.cemetech.net/projects/jstified/' }]} onClose={() => setRealEmu(false)} />}
 
       <style jsx>{`
         .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #e9eaec; padding: 10px; box-sizing: border-box; }
@@ -755,6 +759,9 @@ export default function CalculatorPage() {
           box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
         .backBtn { left: 10px; background: rgba(20,22,26,.86); }
         .switchBtn { right: 10px; background: rgba(40,70,120,.92); }
+        .realBtn { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 50; border: none; color: #fff;
+          font: 600 13px/1 'Helvetica Neue',Arial,sans-serif; padding: 9px 13px; border-radius: 999px; cursor: pointer;
+          background: rgba(40,110,60,.94); box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
         .backBtn:active { background: #000; }
         .calc { width: 100%; max-width: 420px; background: linear-gradient(#fdfdfc,#e8e8e4); border: 1px solid #d3d3cf; border-radius: 30px; padding: 14px 16px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.22); box-sizing: border-box; }
         .head { text-align: center; margin-bottom: 8px; }

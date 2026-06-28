@@ -201,6 +201,7 @@ export default function CasioPage() {
     <div className="wrap">
       <a className="backBtn" href="/admin">‹ Back</a>
       <a className="switchBtn" href="/calculator">TI-84 ⇄</a>
+      <a className="realBtn" href="https://edu.casio.com/intl/software/emulators/classwiz-cpnet/" target="_blank" rel="noopener noreferrer">▶ Real ClassWiz ↗</a>
       <div className="calc">
         <div className="head">
           <span className="brand">CASIO</span>
@@ -274,6 +275,7 @@ export default function CasioPage() {
         .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #d9dbde; padding: 50px 10px 12px; box-sizing: border-box; }
         .backBtn, .switchBtn { position: fixed; top: 10px; z-index: 50; color: #fff; font: 600 13px/1 Arial; text-decoration: none; padding: 9px 13px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
         .backBtn { left: 10px; background: rgba(20,22,26,.86); } .switchBtn { right: 10px; background: rgba(40,70,120,.92); }
+        .realBtn { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 50; color: #fff; text-decoration: none; font: 600 13px/1 Arial; padding: 9px 13px; border-radius: 999px; background: rgba(40,110,60,.94); box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
         .calc { width: 100%; max-width: 420px; border-radius: 18px 18px 14px 14px; padding: 16px 16px 22px; box-sizing: border-box;
           background-color: #1a1b1d; background-image: radial-gradient(rgba(255,255,255,.07) 0.6px, transparent 0.9px); background-size: 3.5px 3.5px;
           border: 1px solid #0c0c0d; box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06); }
