@@ -5,12 +5,12 @@
 // ALPHA modifiers, DEG/RAD (SETUP), π/e/Ans, factorial, abs, nPr/nCr, roots,
 // and an S⇔D decimal⇔fraction toggle. Natural-display rendering and the MENU
 // modes (Statistics / Table / Equation) are follow-ups. Mobile-first.
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 import { evaluate, type AngleMode, type EvalCtx } from '@/lib/ti84/engine';
 
 type Act = { ins: string } | { cmd: string };
 type Cls = 'k' | 'ac';
-interface Key { id: string; p: string; s?: string; a?: string; cls: Cls; n: Act; sa?: Act; aa?: Act; }
+interface Key { id: string; p: string; s?: string; a?: string; b?: string; cls: Cls; n: Act; sa?: Act; aa?: Act; }
 const k = (id: string, p: string, n: Act, o: Partial<Key> = {}): Key => ({ id, p, cls: o.cls ?? 'k', n, ...o });
 
 // Function block — 6 columns (F0 has a gap under the cursor pad).
@@ -23,16 +23,16 @@ const F0: (Key | null)[] = [
 ];
 const FROWS: Key[][] = [
   [
-    k('frac', '▭/▭', { ins: '/' }),
-    k('sqrt', '√▢', { ins: '√(' }, { s: '∛', sa: { ins: '∛(' } }),
-    k('sq', 'x²', { ins: '²' }),
-    k('powr', 'x▪', { ins: '^' }),
-    k('log', 'log', { ins: 'log(' }, { s: '10ˣ', sa: { ins: '10^(' } }),
-    k('ln', 'ln', { ins: 'ln(' }, { s: 'eˣ', sa: { ins: 'e^(' } }),
+    k('frac', 'frac', { ins: '/' }),
+    k('sqrt', 'sqrt', { ins: '√(' }, { s: '∛', sa: { ins: '∛(' } }),
+    k('sq', 'x²', { ins: '²' }, { b: 'DEC' }),
+    k('powr', 'powr', { ins: '^' }, { b: 'HEX' }),
+    k('log', 'log', { ins: 'log(' }, { s: '10ˣ', sa: { ins: '10^(' }, b: 'BIN' }),
+    k('ln', 'ln', { ins: 'ln(' }, { s: 'eˣ', sa: { ins: 'e^(' }, b: 'OCT' }),
   ],
   [
     k('neg', '(−)', { ins: '−' }, { a: 'A', aa: { ins: 'A' } }),
-    k('dms', '°’”', { cmd: 'soon' }, { a: 'B', aa: { ins: 'B' } }),
+    k('dms', '° ′ ″', { cmd: 'soon' }, { a: 'B', aa: { ins: 'B' } }),
     k('inv', 'x⁻¹', { ins: '⁻¹' }, { a: 'C', aa: { ins: 'C' } }),
     k('sin', 'sin', { ins: 'sin(' }, { s: 'sin⁻¹', sa: { ins: 'sin⁻¹(' }, a: 'D', aa: { ins: 'D' } }),
     k('cos', 'cos', { ins: 'cos(' }, { s: 'cos⁻¹', sa: { ins: 'cos⁻¹(' }, a: 'E', aa: { ins: 'E' } }),
@@ -69,6 +69,15 @@ const NROWS: Key[][] = [
 ];
 
 interface HistItem { input: string; dec: string; frac: string | null; showFrac: boolean; err?: boolean; }
+
+// Custom key glyphs that plain text can't render (stacked fraction, radical with
+// overline, x with a boxed exponent).
+function primaryGlyph(id: string, p: string): ReactNode {
+  if (id === 'frac') return <span className="gfrac"><span className="gbox" /><span className="gbar" /><span className="gbox" /></span>;
+  if (id === 'sqrt') return <span className="gsqrt"><span className="grad">√</span><span className="gradbox" /></span>;
+  if (id === 'powr') return <span className="gpow">x<span className="gsupbox" /></span>;
+  return p;
+}
 
 function toFraction(x: number): string | null {
   if (!isFinite(x) || Number.isInteger(x)) return null;
@@ -141,8 +150,9 @@ export default function CasioPage() {
     return (
       <button className={`ck ${def.cls} ${hot ? 'hot' : ''}`} onClick={() => press(def)}>
         {def.s && <span className="ls">{def.s}</span>}
+        {def.b && <span className="lb">{def.b}</span>}
         {def.a && <span className="la">{def.a}</span>}
-        <span className="lp">{def.p}</span>
+        <span className="lp">{primaryGlyph(def.id, def.p)}</span>
       </button>
     );
   };
@@ -194,11 +204,11 @@ export default function CasioPage() {
             <Round id="alpha" label="ALPHA" color="#d8444f" n={{ cmd: 'alpha' }} />
           </div>
           <div className="cpad">
+            <button className="seg sup" onClick={() => press(k('up', '', { cmd: 'up' }))}>▲</button>
+            <button className="seg sdown" onClick={() => press(k('down', '', { cmd: 'down' }))}>▼</button>
+            <button className="seg sleft" onClick={() => press(k('left', '', { cmd: 'left' }))}>◀</button>
+            <button className="seg sright" onClick={() => press(k('right', '', { cmd: 'right' }))}>▶</button>
             <span className="cpadc" />
-            <button className="ar up" onClick={() => press(k('up', '', { cmd: 'up' }))}>▲</button>
-            <button className="ar down" onClick={() => press(k('down', '', { cmd: 'down' }))}>▼</button>
-            <button className="ar left" onClick={() => press(k('left', '', { cmd: 'left' }))}>◀</button>
-            <button className="ar right" onClick={() => press(k('right', '', { cmd: 'right' }))}>▶</button>
           </div>
           <div className="cgroup">
             <Round id="menu" label="MENU" color="#eee" s="SETUP" n={{ cmd: 'menu' }} sa={{ cmd: 'setup' }} />
@@ -254,13 +264,14 @@ export default function CasioPage() {
           background: radial-gradient(circle at 50% 28%, #7c8088 0%, #474a50 42%, #1b1d20 100%);
           box-shadow: 0 2px 5px rgba(0,0,0,.7), inset 0 2px 2px rgba(255,255,255,.34), inset 0 -3px 4px rgba(0,0,0,.55); }
         .round:active { filter: brightness(1.25); }
-        .cpad { position: relative; width: 104px; height: 58px; border-radius: 29px; border: none; background: radial-gradient(ellipse at 50% 32%, #4c4f55, #232529 55%, #16171a); box-shadow: 0 2px 5px rgba(0,0,0,.65), inset 0 2px 2px rgba(255,255,255,.2), inset 0 -3px 4px rgba(0,0,0,.5); }
-        .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #7a7e85, #2a2c30); box-shadow: 0 1px 2px rgba(0,0,0,.5), inset 0 1.5px 2px rgba(255,255,255,.28), inset 0 -2px 3px rgba(0,0,0,.5); }
-        .ar { position: absolute; border: none; background: transparent; color: #e2e2e2; font-size: 11px; line-height: 1; padding: 3px; cursor: pointer; z-index: 1; -webkit-tap-highlight-color: transparent; }
-        .ar.up { top: 1px; left: 50%; transform: translateX(-50%); }
-        .ar.down { bottom: 1px; left: 50%; transform: translateX(-50%); }
-        .ar.left { left: 4px; top: 50%; transform: translateY(-50%); }
-        .ar.right { right: 4px; top: 50%; transform: translateY(-50%); }
+        .cpad { position: relative; width: 112px; height: 62px; border-radius: 31px; border: 1px solid #000; background: radial-gradient(ellipse at 50% 50%, #0f1012, #050506); box-shadow: 0 2px 5px rgba(0,0,0,.6), inset 0 1px 2px rgba(0,0,0,.9); }
+        .seg { position: absolute; border: none; cursor: pointer; color: #e4e4e4; font-size: 10px; display: flex; -webkit-tap-highlight-color: transparent; }
+        .seg:active { filter: brightness(1.3); }
+        .sup { inset: 2px 2px 50% 2px; clip-path: polygon(24% 0, 76% 0, 58% 100%, 42% 100%); background: linear-gradient(#585b61, #2d2f34); align-items: flex-start; justify-content: center; padding-top: 3px; border-radius: 30px 30px 0 0; }
+        .sdown { inset: 50% 2px 2px 2px; clip-path: polygon(42% 0, 58% 0, 76% 100%, 24% 100%); background: linear-gradient(#2d2f34, #585b61); align-items: flex-end; justify-content: center; padding-bottom: 3px; border-radius: 0 0 30px 30px; }
+        .sleft { inset: 2px 50% 2px 2px; clip-path: polygon(0 24%, 100% 42%, 100% 58%, 0 76%); background: linear-gradient(90deg, #585b61, #2d2f34); align-items: center; justify-content: flex-start; padding-left: 6px; border-radius: 30px 0 0 30px; }
+        .sright { inset: 2px 2px 2px 50%; clip-path: polygon(100% 24%, 0 42%, 0 58%, 100% 76%); background: linear-gradient(90deg, #2d2f34, #585b61); align-items: center; justify-content: flex-end; padding-right: 6px; border-radius: 0 30px 30px 0; }
+        .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 28px; height: 28px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 50% 30%, #7a7e85, #232529); box-shadow: 0 1px 2px rgba(0,0,0,.6), inset 0 1.5px 2px rgba(255,255,255,.3), inset 0 -2px 3px rgba(0,0,0,.5); z-index: 2; }
 
         .fgrid { display: grid; grid-template-columns: repeat(6,1fr); column-gap: 6px; row-gap: 17px; margin-bottom: 16px; }
         .ngrid { display: grid; grid-template-columns: repeat(5,1fr); column-gap: 8px; row-gap: 16px; }
@@ -278,7 +289,17 @@ export default function CasioPage() {
         .ck .ls, .ck .la { position: absolute; top: -12px; font-size: 9.5px; font-weight: 700; line-height: 1; white-space: nowrap; }
         .ck .ls { left: 1px; color: #e8942f; }
         .ck .la { right: 1px; color: #d8444f; }
+        .ck .lb { position: absolute; top: -12px; right: 1px; font-size: 9px; font-weight: 700; line-height: 1; white-space: nowrap; color: #46a4e6; }
         .ck.hot { outline: 2px solid #ffce6b; outline-offset: 1px; }
+        /* custom key glyphs */
+        .lp .gfrac { display: inline-flex; flex-direction: column; align-items: center; }
+        .lp .gfrac .gbox { width: 13px; height: 6px; border: 1.5px solid #f4f4f4; border-radius: 1px; }
+        .lp .gfrac .gbar { width: 17px; height: 2px; background: #f4f4f4; margin: 1.5px 0; }
+        .lp .gsqrt { display: inline-flex; align-items: flex-start; }
+        .lp .gsqrt .grad { font-size: 16px; line-height: 1; }
+        .lp .gsqrt .gradbox { display: inline-block; width: 12px; height: 9px; border: 1.5px solid #f4f4f4; border-radius: 0 1px 1px 0; margin-left: -1px; margin-top: 1px; }
+        .lp .gpow { display: inline-flex; align-items: flex-start; }
+        .lp .gpow .gsupbox { display: inline-block; width: 8px; height: 8px; border: 1.5px solid #f4f4f4; border-radius: 1px; margin-left: 1.5px; margin-top: -1px; }
       `}</style>
     </div>
   );
