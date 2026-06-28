@@ -189,17 +189,21 @@ export default function CasioPage() {
 
         {/* control cluster */}
         <div className="ctrl">
-          <Round id="shift" label="SHIFT" color="#e8942f" n={{ cmd: 'shift' }} />
-          <Round id="alpha" label="ALPHA" color="#d05a6e" n={{ cmd: 'alpha' }} />
+          <div className="cgroup">
+            <Round id="shift" label="SHIFT" color="#e8942f" n={{ cmd: 'shift' }} />
+            <Round id="alpha" label="ALPHA" color="#d05a6e" n={{ cmd: 'alpha' }} />
+          </div>
           <div className="cpad">
+            <span className="cpadc" />
             <button className="ar up" onClick={() => press(k('up', '', { cmd: 'up' }))}>▲</button>
+            <button className="ar down" onClick={() => press(k('down', '', { cmd: 'down' }))}>▼</button>
             <button className="ar left" onClick={() => press(k('left', '', { cmd: 'left' }))}>◀</button>
             <button className="ar right" onClick={() => press(k('right', '', { cmd: 'right' }))}>▶</button>
-            <button className="ar down" onClick={() => press(k('down', '', { cmd: 'down' }))}>▼</button>
-            <span className="cpadc" />
           </div>
-          <Round id="menu" label="MENU" color="#eee" s="SETUP" n={{ cmd: 'menu' }} sa={{ cmd: 'setup' }} />
-          <Round id="on" label="ON" color="#eee" n={{ cmd: 'on' }} />
+          <div className="cgroup">
+            <Round id="menu" label="MENU" color="#eee" s="SETUP" n={{ cmd: 'menu' }} sa={{ cmd: 'setup' }} />
+            <Round id="on" label="ON" color="#eee" n={{ cmd: 'on' }} />
+          </div>
         </div>
 
         {/* function block (6 cols) */}
@@ -241,16 +245,20 @@ export default function CasioPage() {
         .ov-r button.on { background: #16201a; color: #c4d2bb; }
         .toast { position: absolute; left: 12px; right: 12px; bottom: 14px; background: rgba(5,8,5,.92); color: #fff; font: 12px/1.3 Arial; padding: 8px 10px; border-radius: 7px; text-align: center; }
 
-        .ctrl { display: grid; grid-template-columns: repeat(5,1fr); align-items: center; margin: 16px 0 14px; gap: 4px; }
+        .ctrl { display: flex; align-items: center; justify-content: space-between; margin: 18px 6px 16px; }
+        .cgroup { display: flex; gap: 18px; }
         .rwrap { display: flex; flex-direction: column; align-items: center; }
         .rlab { font: 700 9px Arial; line-height: 1.1; }
         .rlab2 { font: 700 7px Arial; color: #e8942f; line-height: 1; }
         .round { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #000; background: radial-gradient(circle at 50% 35%, #4a4c50, #232427); box-shadow: 0 2px 3px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.12); cursor: pointer; margin-top: 3px; -webkit-tap-highlight-color: transparent; }
         .round:active { filter: brightness(1.2); }
-        .cpad { position: relative; width: 92px; height: 60px; margin: 0 auto; border-radius: 30px; background: radial-gradient(circle at 50% 40%, #3a3c40, #1e1f22); border: 1px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,.5); justify-self: center; }
-        .cpadc { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; transform: translate(-50%,-50%); border-radius: 50%; background: radial-gradient(circle at 50% 35%, #4c4e52, #232427); box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
-        .ar { position: absolute; border: none; background: transparent; color: #d8d8d8; font-size: 11px; width: 30%; height: 44%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .ar.up { top: 0; left: 35%; } .ar.down { bottom: 0; left: 35%; } .ar.left { left: 2%; top: 28%; } .ar.right { right: 2%; top: 28%; }
+        .cpad { position: relative; width: 98px; height: 56px; border-radius: 28px; background: radial-gradient(circle at 50% 38%, #3c3e42, #1c1d20); border: 1px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.08); }
+        .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #4e5054, #232427); box-shadow: 0 1px 1px rgba(255,255,255,.1), inset 0 1px 2px rgba(0,0,0,.55); }
+        .ar { position: absolute; border: none; background: transparent; color: #cccccc; font-size: 10px; line-height: 1; padding: 3px; cursor: pointer; z-index: 1; -webkit-tap-highlight-color: transparent; }
+        .ar.up { top: 1px; left: 50%; transform: translateX(-50%); }
+        .ar.down { bottom: 1px; left: 50%; transform: translateX(-50%); }
+        .ar.left { left: 4px; top: 50%; transform: translateY(-50%); }
+        .ar.right { right: 4px; top: 50%; transform: translateY(-50%); }
 
         .fgrid { display: grid; grid-template-columns: repeat(6,1fr); column-gap: 6px; row-gap: 15px; margin-bottom: 14px; }
         .ngrid { display: grid; grid-template-columns: repeat(5,1fr); column-gap: 8px; row-gap: 13px; }
