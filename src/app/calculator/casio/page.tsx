@@ -191,7 +191,7 @@ export default function CasioPage() {
         <div className="ctrl">
           <div className="cgroup">
             <Round id="shift" label="SHIFT" color="#e8942f" n={{ cmd: 'shift' }} />
-            <Round id="alpha" label="ALPHA" color="#d05a6e" n={{ cmd: 'alpha' }} />
+            <Round id="alpha" label="ALPHA" color="#d8444f" n={{ cmd: 'alpha' }} />
           </div>
           <div className="cpad">
             <span className="cpadc" />
@@ -216,7 +216,7 @@ export default function CasioPage() {
       </div>
 
       <style jsx>{`
-        .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #d9dbde; padding: 10px; box-sizing: border-box; }
+        .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #d9dbde; padding: 50px 10px 12px; box-sizing: border-box; }
         .backBtn, .switchBtn { position: fixed; top: 10px; z-index: 50; color: #fff; font: 600 13px/1 Arial; text-decoration: none; padding: 9px 13px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
         .backBtn { left: 10px; background: rgba(20,22,26,.86); } .switchBtn { right: 10px; background: rgba(40,70,120,.92); }
         .calc { width: 100%; max-width: 420px; border-radius: 18px 18px 14px 14px; padding: 16px 16px 22px; box-sizing: border-box;
@@ -250,7 +250,7 @@ export default function CasioPage() {
         .rwrap { display: flex; flex-direction: column; align-items: center; }
         .rlab { font: 700 11px Arial; line-height: 1.1; }
         .rlab2 { font: 700 8px Arial; color: #e8942f; line-height: 1; }
-        .round { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #000; background: radial-gradient(circle at 50% 35%, #4a4c50, #232427); box-shadow: 0 2px 3px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.12); cursor: pointer; margin-top: 4px; -webkit-tap-highlight-color: transparent; }
+        .round { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #0c0d0e; background: radial-gradient(circle at 50% 32%, #5e6268, #26282c); box-shadow: 0 2px 3px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.2); cursor: pointer; margin-top: 4px; -webkit-tap-highlight-color: transparent; }
         .round:active { filter: brightness(1.2); }
         .cpad { position: relative; width: 98px; height: 56px; border-radius: 28px; background: radial-gradient(circle at 50% 38%, #3c3e42, #1c1d20); border: 1px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.08); }
         .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #4e5054, #232427); box-shadow: 0 1px 1px rgba(255,255,255,.1), inset 0 1px 2px rgba(0,0,0,.55); }
@@ -265,8 +265,8 @@ export default function CasioPage() {
         .gap { }
       `}</style>
       <style jsx global>{`
-        .ck { position: relative; width: 100%; aspect-ratio: 1.42/1; min-height: 38px; border-radius: 7px; border: 1px solid #000; cursor: pointer; padding: 0; overflow: visible;
-          background: linear-gradient(#4a4c50,#27292c 62%,#1f2023); box-shadow: 0 2px 0 #0a0a0b, 0 3px 4px rgba(0,0,0,.4); -webkit-tap-highlight-color: transparent; transition: transform .04s, filter .05s; }
+        .ck { position: relative; width: 100%; aspect-ratio: 1.42/1; min-height: 38px; border-radius: 7px; border: 1px solid #0c0d0e; cursor: pointer; padding: 0; overflow: visible;
+          background: linear-gradient(#565a60,#3a3d42 48%,#2b2e32); box-shadow: 0 2px 0 #101113, 0 3px 5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.16); -webkit-tap-highlight-color: transparent; transition: transform .04s, filter .05s; }
         .ngrid .ck { aspect-ratio: 1.55/1; min-height: 46px; }
         .ck:active { transform: translateY(1px); filter: brightness(1.15); box-shadow: 0 1px 0 #0a0a0b; }
         .ck.ac { background: linear-gradient(#d8b24e,#b98a2c 62%,#a87d27); }
@@ -275,7 +275,7 @@ export default function CasioPage() {
         .ck.ac .lp { color: #2a2206; font-size: clamp(12px,3.6vw,16px); }
         .ck .ls, .ck .la { position: absolute; top: -12px; font-size: 9.5px; font-weight: 700; line-height: 1; white-space: nowrap; }
         .ck .ls { left: 1px; color: #e8942f; }
-        .ck .la { right: 1px; color: #d05a6e; }
+        .ck .la { right: 1px; color: #d8444f; }
         .ck.hot { outline: 2px solid #ffce6b; outline-offset: 1px; }
       `}</style>
     </div>
