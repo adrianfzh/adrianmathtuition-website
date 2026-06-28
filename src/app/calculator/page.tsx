@@ -1,26 +1,24 @@
 'use client';
 
-// Phase A — TI-84 Plus CE style scientific calculator (home screen).
-// Mobile-first, exam-faithful key behaviour. Graphing/TABLE/STAT (Phase B–D)
-// keys are present but show a "coming soon" hint for now.
+// TI-84 Plus CE style calculator.
+//  Phase A: home-screen scientific calculator.
+//  Phase B: Y= editor, WINDOW, GRAPH (canvas), ZOOM menu, TRACE.
+// Mobile-first, exam-faithful key behaviour. STAT/TABLE/CALC (Phase C–D) stubbed.
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { evaluate, type AngleMode } from '@/lib/ti84/engine';
+import { evaluate, compile, type AngleMode, type EvalCtx } from '@/lib/ti84/engine';
 
 type Act = { ins: string } | { cmd: string };
 interface Key { id: string; p: string; s?: string; a?: string; cls: 'kb' | 'kw' | 'kg' | 'k2' | 'ka'; n: Act; sa?: Act; aa?: Act; }
-
-// Helper to build a key record.
 const k = (id: string, p: string, cls: Key['cls'], n: Act, opts: Partial<Key> = {}): Key => ({ id, p, cls, n, ...opts });
 
 const GRAPH_ROW: Key[] = [
-  k('y=', 'y=', 'kg', { cmd: 'soon' }, { s: 'stat plot' }),
-  k('window', 'window', 'kg', { cmd: 'soon' }, { s: 'tblset' }),
-  k('zoom', 'zoom', 'kg', { cmd: 'soon' }, { s: 'format' }),
-  k('trace', 'trace', 'kg', { cmd: 'soon' }, { s: 'calc' }),
-  k('graph', 'graph', 'kg', { cmd: 'soon' }, { s: 'table' }),
+  k('y=', 'y=', 'kg', { cmd: 'yeq' }, { s: 'stat plot' }),
+  k('window', 'window', 'kg', { cmd: 'win' }, { s: 'tblset' }),
+  k('zoom', 'zoom', 'kg', { cmd: 'zoom' }, { s: 'format' }),
+  k('trace', 'trace', 'kg', { cmd: 'trace' }, { s: 'calc' }),
+  k('graph', 'graph', 'kg', { cmd: 'graph' }, { s: 'table' }),
 ];
 
-// Main 7×5 grid + the two special rows handled separately.
 const ROWS: Key[][] = [
   [
     k('math', 'math', 'kb', { cmd: 'soon' }, { s: 'test', a: 'A', aa: { ins: 'A' } }),
@@ -73,9 +71,17 @@ const ROWS: Key[][] = [
   ],
 ];
 
+type Screen = 'home' | 'yeq' | 'window' | 'graph';
 interface HistItem { input: string; output: string; err?: boolean; }
+const NY = 6; // Y1..Y6
+const WINKEYS = ['Xmin', 'Xmax', 'Xscl', 'Ymin', 'Ymax', 'Yscl'] as const;
+type WinKey = typeof WINKEYS[number];
+const DEFAULT_WIN: Record<WinKey, string> = { Xmin: '-10', Xmax: '10', Xscl: '1', Ymin: '-10', Ymax: '10', Yscl: '1' };
+const PLOT_COLORS = ['#1f5fc0', '#d8232a', '#111111', '#b5179e', '#2e7d32', '#e67e22'];
+const TRACE_STEPS = 132;
 
 export default function CalculatorPage() {
+  const [screen, setScreen] = useState<Screen>('home');
   const [entry, setEntry] = useState('');
   const [cursor, setCursor] = useState(0);
   const [sec, setSec] = useState(false);
@@ -86,23 +92,46 @@ export default function CalculatorPage() {
   const [vars, setVars] = useState<Record<string, number>>({});
   const [recall, setRecall] = useState<number | null>(null);
   const [modeMenu, setModeMenu] = useState(false);
+  const [zoomMenu, setZoomMenu] = useState(false);
   const [toast, setToast] = useState('');
+  // graphing
+  const [yfns, setYfns] = useState<string[]>(Array(NY).fill(''));
+  const [ySel, setYSel] = useState(0);
+  const [win, setWin] = useState<Record<WinKey, string>>({ ...DEFAULT_WIN });
+  const [winSel, setWinSel] = useState(0);
+  const [traceOn, setTraceOn] = useState(false);
+  const [traceFn, setTraceFn] = useState(0);
+  const [traceI, setTraceI] = useState(Math.floor(TRACE_STEPS / 2));
+
   const screenRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => { screenRef.current?.scrollTo(0, screenRef.current.scrollHeight); }, [hist, entry, cursor]);
+  const ctx = useCallback((extra?: Record<string, number>): EvalCtx => ({ angle, ans, vars: { ...vars, ...extra } }), [angle, ans, vars]);
+  const winNum = useCallback((key: WinKey, fb: number): number => {
+    const r = evaluate(win[key], ctx()); return r.ok ? r.value : fb;
+  }, [win, ctx]);
 
   const showToast = useCallback((m: string) => {
     setToast(m);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(''), 1600);
+    toastTimer.current = setTimeout(() => setToast(''), 1800);
   }, []);
 
-  const insert = useCallback((text: string) => {
-    setEntry((e) => e.slice(0, cursor) + text + e.slice(cursor));
-    setCursor((c) => c + text.length);
-    setRecall(null);
-  }, [cursor]);
+  useEffect(() => { if (screen === 'home') screenRef.current?.scrollTo(0, screenRef.current.scrollHeight); }, [hist, entry, cursor, screen]);
+
+  // ── active edit buffer (home entry / Y= line / WINDOW field) ──
+  const bufVal = (): string => screen === 'home' ? entry : screen === 'yeq' ? yfns[ySel] : screen === 'window' ? win[WINKEYS[winSel]] : '';
+  const bufSet = (fn: (s: string) => string) => {
+    if (screen === 'home') setEntry(fn);
+    else if (screen === 'yeq') setYfns((a) => a.map((v, i) => i === ySel ? fn(v) : v));
+    else if (screen === 'window') setWin((w) => ({ ...w, [WINKEYS[winSel]]: fn(w[WINKEYS[winSel]]) }));
+  };
+  const editable = screen === 'home' || screen === 'yeq' || screen === 'window';
+
+  const insert = (text: string) => {
+    const c = cursor; bufSet((s) => s.slice(0, c) + text + s.slice(c)); setCursor(c + text.length); setRecall(null);
+  };
 
   const doEnter = useCallback(() => {
     const line = entry.trim();
@@ -110,7 +139,7 @@ export default function CalculatorPage() {
     let expr = line, target: string | null = null;
     const arrow = line.indexOf('→');
     if (arrow >= 0) { expr = line.slice(0, arrow); target = line.slice(arrow + 1).trim(); }
-    const res = evaluate(expr, { angle, ans, vars });
+    const res = evaluate(expr, ctx());
     if (res.ok) {
       if (target && /^[A-Zθ]$/.test(target)) setVars((v) => ({ ...v, [target!]: res.value }));
       setAns(res.value);
@@ -119,69 +148,168 @@ export default function CalculatorPage() {
       setHist((h) => [...h, { input: line, output: 'ERR: ' + res.error, err: true }]);
     }
     setEntry(''); setCursor(0); setRecall(null);
-  }, [entry, angle, ans, vars]);
+  }, [entry, ctx]);
+
+  const firstFn = useCallback(() => { const i = yfns.findIndex((f) => f.trim()); return i < 0 ? 0 : i; }, [yfns]);
+
+  const applyZoom = (kind: string) => {
+    const W = canvasRef.current?.clientWidth || 300, H = canvasRef.current?.clientHeight || 200;
+    let xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10), ymin = winNum('Ymin', -10), ymax = winNum('Ymax', 10);
+    const set = (a: number, b: number, c: number, d: number, xs = '1', ys = '1') =>
+      setWin({ Xmin: trim(a), Xmax: trim(b), Xscl: xs, Ymin: trim(c), Ymax: trim(d), Yscl: ys });
+    if (kind === 'std') set(-10, 10, -10, 10);
+    else if (kind === 'dec') set(-4.7, 4.7, -3.1, 3.1);
+    else if (kind === 'trig') { const x = angle === 'DEG' ? 360 : 2 * Math.PI; set(-x, x, -4, 4, angle === 'DEG' ? '90' : trim(Math.PI / 2), '1'); }
+    else if (kind === 'in' || kind === 'out') {
+      const f = kind === 'in' ? 0.25 : 4, cx = (xmin + xmax) / 2, cy = (ymin + ymax) / 2;
+      const hx = (xmax - xmin) / 2 * f, hy = (ymax - ymin) / 2 * f;
+      set(cx - hx, cx + hx, cy - hy, cy + hy, win.Xscl, win.Yscl);
+    } else if (kind === 'sq') {
+      const cx = (xmin + xmax) / 2, perY = H / (ymax - ymin), spanX = W / perY;
+      set(cx - spanX / 2, cx + spanX / 2, ymin, ymax, win.Xscl, win.Yscl);
+    } else if (kind === 'fit') {
+      let lo = Infinity, hi = -Infinity;
+      for (const f of yfns) { if (!f.trim()) continue; const cp = compile(f); if (!cp.ok) continue;
+        for (let i = 0; i <= 100; i++) { const x = xmin + (i / 100) * (xmax - xmin); const y = cp.fn(ctx({ X: x }));
+          if (isFinite(y)) { lo = Math.min(lo, y); hi = Math.max(hi, y); } } }
+      if (lo < hi) { const pad = (hi - lo) * 0.1 || 1; set(xmin, xmax, lo - pad, hi + pad, win.Xscl, win.Yscl); }
+    }
+    setZoomMenu(false); setScreen('graph'); setTraceOn(false);
+  };
 
   const press = useCallback((key: Key) => {
-    // modifier keys toggle
     if (key.id === '2nd') { setSec((s) => !s); setAlpha(false); return; }
     if (key.id === 'alpha') { setAlpha((a) => !a); setSec(false); return; }
-
     const act: Act = sec ? (key.sa ?? key.n) : alpha ? (key.aa ?? key.n) : key.n;
     let keepAlpha = false;
 
     if ('ins' in act) {
-      insert(act.ins);
+      if (editable) insert(act.ins);
     } else {
       switch (act.cmd) {
-        case 'enter': doEnter(); break;
-        case 'entry': {
-          const last = [...hist].reverse().find((h) => !h.err);
-          if (last) { setEntry(last.input); setCursor(last.input.length); }
+        case 'enter':
+          if (screen === 'home') doEnter();
+          else if (screen === 'yeq') { const n = Math.min(ySel + 1, NY - 1); setYSel(n); setCursor(yfns[n].length); }
+          else if (screen === 'window') { const n = Math.min(winSel + 1, WINKEYS.length - 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
           break;
-        }
+        case 'entry': { const last = [...hist].reverse().find((h) => !h.err); if (last) { setEntry(last.input); setCursor(last.input.length); } break; }
         case 'clear':
-          if (entry) { setEntry(''); setCursor(0); }
-          else setHist([]);
+          if (screen === 'home') { if (entry) { setEntry(''); setCursor(0); } else setHist([]); }
+          else { bufSet(() => ''); setCursor(0); }
           break;
-        case 'del':
-          if (cursor > 0) { setEntry((e) => e.slice(0, cursor - 1) + e.slice(cursor)); setCursor((c) => c - 1); }
+        case 'del': if (editable && cursor > 0) { bufSet((s) => s.slice(0, cursor - 1) + s.slice(cursor)); setCursor((c) => c - 1); } break;
+        case 'left':
+          if (screen === 'graph' && traceOn) setTraceI((i) => Math.max(0, i - 1));
+          else setCursor((c) => Math.max(0, c - 1));
           break;
-        case 'left': setCursor((c) => Math.max(0, c - 1)); break;
-        case 'right': setCursor((c) => Math.min(entry.length, c + 1)); break;
-        case 'up': {
-          const inputs = hist.map((h) => h.input);
-          if (!inputs.length) break;
-          const idx = recall === null ? inputs.length - 1 : Math.max(0, recall - 1);
-          setRecall(idx); setEntry(inputs[idx]); setCursor(inputs[idx].length);
+        case 'right':
+          if (screen === 'graph' && traceOn) setTraceI((i) => Math.min(TRACE_STEPS - 1, i + 1));
+          else setCursor((c) => Math.min(bufVal().length, c + 1));
           break;
-        }
-        case 'down': {
-          const inputs = hist.map((h) => h.input);
-          if (recall === null) break;
-          const idx = recall + 1;
-          if (idx >= inputs.length) { setRecall(null); setEntry(''); setCursor(0); }
-          else { setRecall(idx); setEntry(inputs[idx]); setCursor(inputs[idx].length); }
+        case 'up':
+          if (screen === 'home') { const ins = hist.map((h) => h.input); if (ins.length) { const idx = recall === null ? ins.length - 1 : Math.max(0, recall - 1); setRecall(idx); setEntry(ins[idx]); setCursor(ins[idx].length); } }
+          else if (screen === 'yeq') { const n = Math.max(0, ySel - 1); setYSel(n); setCursor(yfns[n].length); }
+          else if (screen === 'window') { const n = Math.max(0, winSel - 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
+          else if (screen === 'graph' && traceOn) setTraceFn((f) => nextFn(yfns, f, -1));
           break;
-        }
-        case 'sto': insert('→'); setAlpha(true); keepAlpha = true; break;
+        case 'down':
+          if (screen === 'home') { const ins = hist.map((h) => h.input); if (recall !== null) { const idx = recall + 1; if (idx >= ins.length) { setRecall(null); setEntry(''); setCursor(0); } else { setRecall(idx); setEntry(ins[idx]); setCursor(ins[idx].length); } } }
+          else if (screen === 'yeq') { const n = Math.min(NY - 1, ySel + 1); setYSel(n); setCursor(yfns[n].length); }
+          else if (screen === 'window') { const n = Math.min(WINKEYS.length - 1, winSel + 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
+          else if (screen === 'graph' && traceOn) setTraceFn((f) => nextFn(yfns, f, 1));
+          break;
+        case 'yeq': setScreen('yeq'); setCursor(yfns[ySel].length); break;
+        case 'win': setScreen('window'); setWinSel(0); setCursor(win.Xmin.length); break;
+        case 'graph': setScreen('graph'); setTraceOn(false); break;
+        case 'trace': setScreen('graph'); setTraceOn(true); setTraceFn(firstFn()); setTraceI(Math.floor(TRACE_STEPS / 2)); break;
+        case 'zoom': setZoomMenu(true); break;
+        case 'sto': if (editable) { insert('→'); setAlpha(true); keepAlpha = true; } break;
+        case 'on': setScreen('home'); setEntry(''); setCursor(0); break;
+        case 'quit': setScreen('home'); setModeMenu(false); setZoomMenu(false); break;
         case 'modemenu': setModeMenu(true); break;
-        case 'quit': setModeMenu(false); break;
-        case 'on': setEntry(''); setCursor(0); break;
-        case 'soon': showToast('Graphing & tables — coming in the next phase'); break;
+        case 'soon': showToast('Coming in a later phase (STAT/CALC/MATRIX)'); break;
         default: break;
       }
     }
     setSec(false);
     if (!keepAlpha) setAlpha(false);
-  }, [sec, alpha, insert, doEnter, hist, entry, cursor, recall, showToast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sec, alpha, screen, editable, entry, cursor, hist, recall, doEnter, yfns, ySel, win, winSel, traceOn, firstFn, showToast]);
 
-  const DEL: Key = k('del', 'del', 'kb', { cmd: 'del' }, { s: 'ins' });
-  const MODE: Key = k('mode', 'mode', 'kb', { cmd: 'modemenu' }, { s: 'quit', sa: { cmd: 'quit' } });
+  // ── graph drawing ──
+  useEffect(() => {
+    if (screen !== 'graph') return;
+    const cv = canvasRef.current; if (!cv) return;
+    const cssW = cv.clientWidth, cssH = cv.clientHeight;
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
+    const g = cv.getContext('2d'); if (!g) return;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, cssW, cssH); g.fillStyle = '#fff'; g.fillRect(0, 0, cssW, cssH);
+
+    const xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10), ymin = winNum('Ymin', -10), ymax = winNum('Ymax', 10);
+    const xscl = winNum('Xscl', 1), yscl = winNum('Yscl', 1);
+    if (!(xmax > xmin) || !(ymax > ymin)) { g.fillStyle = '#b00'; g.font = '12px monospace'; g.fillText('ERR: WINDOW RANGE', 10, 20); return; }
+    const sx = (x: number) => (x - xmin) / (xmax - xmin) * cssW;
+    const sy = (y: number) => cssH - (y - ymin) / (ymax - ymin) * cssH;
+
+    // gridlines
+    g.strokeStyle = '#dfe4ea'; g.lineWidth = 1; g.beginPath();
+    if (xscl > 0 && (xmax - xmin) / xscl < 60) for (let x = Math.ceil(xmin / xscl) * xscl; x <= xmax; x += xscl) { g.moveTo(sx(x), 0); g.lineTo(sx(x), cssH); }
+    if (yscl > 0 && (ymax - ymin) / yscl < 60) for (let y = Math.ceil(ymin / yscl) * yscl; y <= ymax; y += yscl) { g.moveTo(0, sy(y)); g.lineTo(cssW, sy(y)); }
+    g.stroke();
+    // axes
+    g.strokeStyle = '#5a6675'; g.lineWidth = 1.2; g.beginPath();
+    if (xmin <= 0 && xmax >= 0) { g.moveTo(sx(0), 0); g.lineTo(sx(0), cssH); }
+    if (ymin <= 0 && ymax >= 0) { g.moveTo(0, sy(0)); g.lineTo(cssW, sy(0)); }
+    g.stroke();
+
+    // plots
+    const N = Math.max(cssW, 200);
+    yfns.forEach((f, fi) => {
+      if (!f.trim()) return;
+      const cp = compile(f); if (!cp.ok) return;
+      g.strokeStyle = PLOT_COLORS[fi % PLOT_COLORS.length]; g.lineWidth = 2; g.beginPath();
+      let pen = false;
+      for (let i = 0; i <= N; i++) {
+        const x = xmin + (i / N) * (xmax - xmin);
+        let y: number; try { y = cp.fn(ctx({ X: x })); } catch { y = NaN; }
+        if (!isFinite(y)) { pen = false; continue; }
+        const py = sy(y);
+        if (py < -cssH * 2 || py > cssH * 3) { pen = false; continue; }
+        if (!pen) { g.moveTo(sx(x), py); pen = true; } else g.lineTo(sx(x), py);
+      }
+      g.stroke();
+    });
+
+    // trace cursor
+    if (traceOn) {
+      const f = yfns[traceFn];
+      if (f && f.trim()) {
+        const cp = compile(f);
+        if (cp.ok) {
+          const x = xmin + (traceI / (TRACE_STEPS - 1)) * (xmax - xmin);
+          const y = cp.fn(ctx({ X: x }));
+          if (isFinite(y)) {
+            g.strokeStyle = '#444'; g.lineWidth = 1; g.beginPath();
+            g.moveTo(sx(x), 0); g.lineTo(sx(x), cssH); g.moveTo(0, sy(y)); g.lineTo(cssW, sy(y)); g.stroke();
+            g.fillStyle = PLOT_COLORS[traceFn % PLOT_COLORS.length];
+            g.beginPath(); g.arc(sx(x), sy(y), 4, 0, 7); g.fill();
+          }
+        }
+      }
+    }
+  }, [screen, yfns, win, traceOn, traceFn, traceI, ctx, winNum]);
+
   const STATUS = `NORMAL FLOAT AUTO REAL ${angle === 'RAD' ? 'RADIAN' : 'DEGREE'} MP`;
 
+  const Caret = ({ s, c }: { s: string; c: number }) => (
+    <><span>{s.slice(0, c)}</span><span className="caret" /><span>{s.slice(c)}</span></>
+  );
+
   const Btn = ({ def, bare }: { def: Key; bare?: boolean }) => {
-    const showSec = sec && (def.s !== undefined);
-    const showAlp = alpha && (def.a !== undefined);
+    const showSec = sec && def.s !== undefined;
+    const showAlp = alpha && def.a !== undefined;
     return (
       <button className={`key ${def.cls} ${showSec ? 'hot2' : ''} ${showAlp ? 'hota' : ''}`} onClick={() => press(def)}>
         {!bare && def.s && <span className="lblS">{def.s}</span>}
@@ -191,45 +319,95 @@ export default function CalculatorPage() {
     );
   };
 
+  // trace readout
+  let traceTxt = '';
+  if (screen === 'graph' && traceOn) {
+    const f = yfns[traceFn];
+    if (f && f.trim()) {
+      const cp = compile(f);
+      const xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10);
+      const x = xmin + (traceI / (TRACE_STEPS - 1)) * (xmax - xmin);
+      const y = cp.ok ? cp.fn(ctx({ X: x })) : NaN;
+      traceTxt = `Y${traceFn + 1}  X=${fmtShort(x)}  Y=${isFinite(y) ? fmtShort(y) : '—'}`;
+    } else traceTxt = 'No function to trace';
+  }
+
   return (
     <div className="wrap">
       <div className="calc">
-        <div className="head">
-          <div className="model">TI-84 Plus CE</div>
-          <div className="py">PYTHON</div>
-        </div>
+        <div className="head"><div className="model">TI-84 Plus CE</div><div className="py">PYTHON</div></div>
 
-        {/* screen */}
         <div className="bezel">
           <div className="lcd" ref={screenRef}>
-            <div className="status">{STATUS}</div>
-            {hist.map((h, i) => (
-              <div key={i} className="histItem">
-                <div className="hi-in">{h.input}</div>
-                <div className={`hi-out ${h.err ? 'hi-err' : ''}`}>{h.output}</div>
+            {screen === 'home' && (<>
+              <div className="status">{STATUS}</div>
+              {hist.map((h, i) => (
+                <div key={i} className="histItem"><div className="hi-in">{h.input}</div><div className={`hi-out ${h.err ? 'hi-err' : ''}`}>{h.output}</div></div>
+              ))}
+              <div className="entryLine"><Caret s={entry} c={cursor} /></div>
+            </>)}
+
+            {screen === 'yeq' && (<>
+              <div className="status">Plot1  Plot2  Plot3</div>
+              {yfns.map((f, i) => (
+                <div key={i} className={`yrow ${i === ySel ? 'sel' : ''}`}>
+                  <span className="ysw" style={{ background: PLOT_COLORS[i % PLOT_COLORS.length] }} />
+                  <span className="ylab">Y{i + 1}=</span>
+                  <span className="yexpr">{i === ySel ? <Caret s={f} c={cursor} /> : f}</span>
+                </div>
+              ))}
+            </>)}
+
+            {screen === 'window' && (<>
+              <div className="status">WINDOW</div>
+              {WINKEYS.map((kk, i) => (
+                <div key={kk} className={`wrow ${i === winSel ? 'sel' : ''}`}>
+                  <span className="wlab">{kk}=</span>
+                  <span className="wval">{i === winSel ? <Caret s={win[kk]} c={cursor} /> : win[kk]}</span>
+                </div>
+              ))}
+            </>)}
+
+            {screen === 'graph' && (
+              <div className="graphWrap">
+                <canvas ref={canvasRef} className="cv" />
+                {traceOn && <div className="traceBar">{traceTxt}</div>}
               </div>
-            ))}
-            <div className="entryLine">
-              <span>{entry.slice(0, cursor)}</span><span className="caret" /><span>{entry.slice(cursor)}</span>
-            </div>
+            )}
           </div>
+
           {modeMenu && (
-            <div className="modeMenu" onClick={() => setModeMenu(false)}>
-              <div className="mm" onClick={(e) => e.stopPropagation()}>
-                <div className="mm-title">MODE</div>
-                <div className="mm-row">
-                  <span>ANGLE</span>
+            <div className="overlay" onClick={() => setModeMenu(false)}>
+              <div className="ov" onClick={(e) => e.stopPropagation()}>
+                <div className="ov-title">MODE</div>
+                <div className="ov-row"><span>ANGLE</span>
                   <button className={angle === 'RAD' ? 'on' : ''} onClick={() => setAngle('RAD')}>RADIAN</button>
                   <button className={angle === 'DEG' ? 'on' : ''} onClick={() => setAngle('DEG')}>DEGREE</button>
                 </div>
-                <button className="mm-close" onClick={() => setModeMenu(false)}>Done (2nd · quit)</button>
+                <button className="ov-close" onClick={() => setModeMenu(false)}>Done</button>
+              </div>
+            </div>
+          )}
+          {zoomMenu && (
+            <div className="overlay" onClick={() => setZoomMenu(false)}>
+              <div className="ov" onClick={(e) => e.stopPropagation()}>
+                <div className="ov-title">ZOOM</div>
+                <div className="zgrid">
+                  <button onClick={() => applyZoom('std')}>ZStandard</button>
+                  <button onClick={() => applyZoom('dec')}>ZDecimal</button>
+                  <button onClick={() => applyZoom('in')}>Zoom In</button>
+                  <button onClick={() => applyZoom('out')}>Zoom Out</button>
+                  <button onClick={() => applyZoom('sq')}>ZSquare</button>
+                  <button onClick={() => applyZoom('trig')}>ZTrig</button>
+                  <button onClick={() => applyZoom('fit')}>ZoomFit</button>
+                  <button onClick={() => setZoomMenu(false)}>Cancel</button>
+                </div>
               </div>
             </div>
           )}
           {toast && <div className="toast">{toast}</div>}
         </div>
 
-        {/* graph key row */}
         <div className="grow">
           {GRAPH_ROW.map((g, i) => (
             <div className="fcell" key={g.id}>
@@ -239,11 +417,10 @@ export default function CalculatorPage() {
           ))}
         </div>
 
-        {/* special rows + dpad */}
         <div className="pad">
           <div style={{ gridArea: 's1c1' }}><Btn def={k('2nd', '2nd', 'k2', { cmd: 'second' })} /></div>
-          <div style={{ gridArea: 's1c2' }}><Btn def={MODE} /></div>
-          <div style={{ gridArea: 's1c3' }}><Btn def={DEL} /></div>
+          <div style={{ gridArea: 's1c2' }}><Btn def={k('mode', 'mode', 'kb', { cmd: 'modemenu' }, { s: 'quit', sa: { cmd: 'quit' } })} /></div>
+          <div style={{ gridArea: 's1c3' }}><Btn def={k('del', 'del', 'kb', { cmd: 'del' }, { s: 'ins' })} /></div>
           <div style={{ gridArea: 's2c1' }}><Btn def={k('alpha', 'alpha', 'ka', { cmd: 'alpha' }, { s: 'A-lock' })} /></div>
           <div style={{ gridArea: 's2c2' }}><Btn def={k('X', 'x,T,θ,n', 'kb', { ins: 'X' })} /></div>
           <div style={{ gridArea: 's2c3' }}><Btn def={k('stat', 'stat', 'kb', { cmd: 'soon' }, { s: 'list' })} /></div>
@@ -255,100 +432,83 @@ export default function CalculatorPage() {
           </div>
         </div>
 
-        {/* main grid */}
         <div className="grid">
-          {ROWS.flat().map((key) => (
-            <div className="cell" key={key.id}><Btn def={key} /></div>
-          ))}
+          {ROWS.flat().map((key) => (<div className="cell" key={key.id}><Btn def={key} /></div>))}
         </div>
 
         <div className="foot"><span className="ti">TI</span> TEXAS INSTRUMENTS</div>
       </div>
 
       <style jsx>{`
-        .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start;
-          background: #e9eaec; padding: 10px; box-sizing: border-box; }
-        .calc { width: 100%; max-width: 420px; background: linear-gradient(#fdfdfc,#e8e8e4);
-          border: 1px solid #d3d3cf; border-radius: 30px; padding: 14px 16px 18px;
-          box-shadow: 0 10px 30px rgba(0,0,0,.22); box-sizing: border-box; }
+        .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #e9eaec; padding: 10px; box-sizing: border-box; }
+        .calc { width: 100%; max-width: 420px; background: linear-gradient(#fdfdfc,#e8e8e4); border: 1px solid #d3d3cf; border-radius: 30px; padding: 14px 16px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.22); box-sizing: border-box; }
         .head { text-align: center; margin-bottom: 8px; }
         .model { font: 700 17px/1 'Helvetica Neue',Arial,sans-serif; color: #1a1a1a; }
         .py { font: 9px/1 Arial; letter-spacing: 3px; color: #777; margin-top: 3px; }
-
-        .bezel { position: relative; background: linear-gradient(#34373c,#0b0c0f);
-          border-radius: 14px; padding: 12px; box-shadow: inset 0 2px 6px rgba(0,0,0,.6); }
-        .lcd { background: #eef0e8; border-radius: 3px; height: 230px; overflow-y: auto;
-          padding: 6px 8px; font-family: 'Consolas','SF Mono',monospace; color: #1a1f26;
-          -webkit-overflow-scrolling: touch; }
-        .status { font-size: 9px; font-weight: 700; white-space: nowrap; overflow: hidden;
-          border-bottom: 1px solid #c9cfc6; padding-bottom: 2px; margin-bottom: 4px; }
+        .bezel { position: relative; background: linear-gradient(#34373c,#0b0c0f); border-radius: 14px; padding: 12px; box-shadow: inset 0 2px 6px rgba(0,0,0,.6); }
+        .lcd { background: #eef0e8; border-radius: 3px; height: 236px; overflow-y: auto; padding: 6px 8px; font-family: 'Consolas','SF Mono',monospace; color: #1a1f26; -webkit-overflow-scrolling: touch; }
+        .status { font-size: 9px; font-weight: 700; white-space: nowrap; overflow: hidden; border-bottom: 1px solid #c9cfc6; padding-bottom: 2px; margin-bottom: 4px; }
         .histItem { margin-bottom: 2px; }
-        .hi-in { font-size: 14px; }
-        .hi-out { font-size: 15px; font-weight: 700; text-align: right; }
-        .hi-err { color: #b00; }
+        .hi-in { font-size: 14px; } .hi-out { font-size: 15px; font-weight: 700; text-align: right; } .hi-err { color: #b00; }
         .entryLine { font-size: 15px; word-break: break-all; min-height: 18px; }
-        .caret { display: inline-block; width: 7px; height: 15px; margin: 0 -1px; vertical-align: -2px;
-          background: #1a1f26; animation: blink 1s steps(1) infinite; }
+        .caret { display: inline-block; width: 7px; height: 15px; margin: 0 -1px; vertical-align: -2px; background: #1a1f26; animation: blink 1s steps(1) infinite; }
         @keyframes blink { 50% { opacity: 0; } }
-
-        .modeMenu { position: absolute; inset: 12px; background: rgba(20,22,26,.6);
-          display: flex; align-items: center; justify-content: center; border-radius: 3px; }
-        .mm { background: #eef0e8; border: 2px solid #1a1f26; border-radius: 4px; padding: 10px 12px;
-          width: 86%; font-family: monospace; color: #1a1f26; }
-        .mm-title { font-weight: 700; text-align: center; border-bottom: 1px solid #1a1f26; margin-bottom: 8px; }
-        .mm-row { display: flex; align-items: center; gap: 6px; font-size: 13px; }
-        .mm-row span { width: 52px; }
-        .mm-row button { flex: 1; padding: 6px; border: 1px solid #8a8f86; background: #fff; border-radius: 4px;
-          font-family: monospace; font-size: 12px; }
-        .mm-row button.on { background: #1a1f26; color: #eef0e8; }
-        .mm-close { margin-top: 10px; width: 100%; padding: 7px; border: none; background: #1a1f26;
-          color: #eef0e8; border-radius: 4px; font-family: monospace; font-size: 12px; }
-        .toast { position: absolute; left: 12px; right: 12px; bottom: 16px; background: rgba(20,22,26,.9);
-          color: #fff; font: 12px/1.3 Arial; padding: 8px 10px; border-radius: 7px; text-align: center; }
-
+        .yrow, .wrow { display: flex; align-items: center; font-size: 14px; padding: 1px 2px; border-radius: 2px; }
+        .yrow.sel, .wrow.sel { background: #d6e7c8; }
+        .ysw { width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; flex: none; }
+        .ylab { font-weight: 700; } .yexpr, .wval { word-break: break-all; }
+        .wlab { width: 56px; font-weight: 700; }
+        .graphWrap { position: relative; height: 100%; }
+        .cv { width: 100%; height: 100%; display: block; border-radius: 2px; }
+        .traceBar { position: absolute; left: 0; bottom: 0; right: 0; background: rgba(238,240,232,.92); font-size: 12px; font-weight: 700; padding: 2px 4px; }
+        .overlay { position: absolute; inset: 12px; background: rgba(20,22,26,.55); display: flex; align-items: center; justify-content: center; border-radius: 3px; }
+        .ov { background: #eef0e8; border: 2px solid #1a1f26; border-radius: 4px; padding: 10px 12px; width: 88%; font-family: monospace; color: #1a1f26; }
+        .ov-title { font-weight: 700; text-align: center; border-bottom: 1px solid #1a1f26; margin-bottom: 8px; }
+        .ov-row { display: flex; align-items: center; gap: 6px; font-size: 13px; } .ov-row span { width: 52px; }
+        .ov-row button { flex: 1; padding: 6px; border: 1px solid #8a8f86; background: #fff; border-radius: 4px; font: 12px monospace; }
+        .ov-row button.on { background: #1a1f26; color: #eef0e8; }
+        .ov-close { margin-top: 10px; width: 100%; padding: 7px; border: none; background: #1a1f26; color: #eef0e8; border-radius: 4px; font: 12px monospace; }
+        .zgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .zgrid button { padding: 8px; border: 1px solid #8a8f86; background: #fff; border-radius: 4px; font: 12px monospace; }
+        .toast { position: absolute; left: 12px; right: 12px; bottom: 16px; background: rgba(20,22,26,.9); color: #fff; font: 12px/1.3 Arial; padding: 8px 10px; border-radius: 7px; text-align: center; }
         .grow { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; margin: 12px 0 8px; }
         .fcell { display: flex; flex-direction: column; }
         .flab { height: 11px; text-align: center; white-space: nowrap; }
-        .fs { font-size: 8px; color: #2f6cab; font-weight: 600; }
-        .ffk { font-size: 7px; color: #8a8d90; }
-
-        .pad { display: grid; gap: 7px; margin-bottom: 7px;
-          grid-template-columns: repeat(5,1fr);
-          grid-template-areas: 's1c1 s1c2 s1c3 dpad dpad' 's2c1 s2c2 s2c3 dpad dpad'; }
-        .dpad { position: relative; background: linear-gradient(#dde0e2,#b0b4b6); border: 1px solid #9ca0a2;
-          border-radius: 50%; aspect-ratio: 1; align-self: center; justify-self: center; width: 86%;
-          box-shadow: 0 1px 2px rgba(0,0,0,.35); }
-        .ar { position: absolute; border: none; background: transparent; color: #2a2a2a; font-size: 12px;
-          width: 34%; height: 34%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .ar.up { top: 2%; left: 33%; } .ar.down { bottom: 2%; left: 33%; }
-        .ar.left { left: 2%; top: 33%; } .ar.right { right: 2%; top: 33%; }
-
+        .fs { font-size: 8px; color: #2f6cab; font-weight: 600; } .ffk { font-size: 7px; color: #8a8d90; }
+        .pad { display: grid; gap: 7px; margin-bottom: 7px; grid-template-columns: repeat(5,1fr); grid-template-areas: 's1c1 s1c2 s1c3 dpad dpad' 's2c1 s2c2 s2c3 dpad dpad'; }
+        .dpad { position: relative; background: linear-gradient(#dde0e2,#b0b4b6); border: 1px solid #9ca0a2; border-radius: 50%; aspect-ratio: 1; align-self: center; justify-self: center; width: 86%; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
+        .ar { position: absolute; border: none; background: transparent; color: #2a2a2a; font-size: 12px; width: 34%; height: 34%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .ar.up { top: 2%; left: 33%; } .ar.down { bottom: 2%; left: 33%; } .ar.left { left: 2%; top: 33%; } .ar.right { right: 2%; top: 33%; }
         .grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; }
         .cell { display: block; }
+        .foot { text-align: center; margin-top: 12px; font: 700 10px Arial; color: #3a3a3a; letter-spacing: .4px; }
+        .ti { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: #c01722; color: #fff; font-size: 7px; margin-right: 5px; vertical-align: middle; }
       `}</style>
       <style jsx global>{`
-        .key { position: relative; width: 100%; aspect-ratio: 1.7/1; min-height: 40px; border-radius: 8px;
-          border: 0.5px solid #0f0f11; cursor: pointer; padding: 0; overflow: visible;
-          box-shadow: 0 1.4px 2px rgba(0,0,0,.42); -webkit-tap-highlight-color: transparent;
-          font-family: 'Helvetica Neue',Arial,sans-serif; transition: transform .04s, filter .04s; }
+        .key { position: relative; width: 100%; aspect-ratio: 1.7/1; min-height: 40px; border-radius: 8px; border: 0.5px solid #0f0f11; cursor: pointer; padding: 0; overflow: visible; box-shadow: 0 1.4px 2px rgba(0,0,0,.42); -webkit-tap-highlight-color: transparent; font-family: 'Helvetica Neue',Arial,sans-serif; transition: transform .04s, filter .04s; }
         .key:active { transform: translateY(1px); filter: brightness(.9); }
         .key.kb { background: linear-gradient(#46464b,#1c1c1f 60%,#242427); }
         .key.kw { background: linear-gradient(#ffffff,#e6e6e2); border-color: #cfcfcb; }
         .key.kg { background: linear-gradient(#dde0e2,#b0b4b6); border-color: #9ca0a2; }
         .key.k2 { background: linear-gradient(#5a93cf,#235488); border-color: #1d4773; }
         .key.ka { background: linear-gradient(#6cbb5b,#347626); border-color: #2a6121; }
-        .key .lblP { display: flex; align-items: center; justify-content: center; height: 100%;
-          font-weight: 700; font-size: 14px; }
+        .key .lblP { display: flex; align-items: center; justify-content: center; height: 100%; font-weight: 700; font-size: clamp(9px,3.2vw,14px); }
         .key.kb .lblP, .key.k2 .lblP, .key.ka .lblP { color: #fff; }
         .key.kw .lblP, .key.kg .lblP { color: #1b1b1b; }
-        .key .lblP { font-size: clamp(9px, 3.2vw, 14px); }
-        .key .lblS, .key .lblA { position: absolute; top: -10px; font-size: 9.5px; font-weight: 600;
-          line-height: 1; white-space: nowrap; opacity: .95; }
-        .key .lblS { left: 1px; color: #2f6cab; }
-        .key .lblA { right: 1px; color: #3f8a34; }
-        .key.hot2 .lblS { background: #2f6cab; color: #fff; border-radius: 3px; padding: 1px 2px; top: -10px; }
-        .key.hota .lblA { background: #3f8a34; color: #fff; border-radius: 3px; padding: 1px 2px; top: -10px; }
+        .key .lblS, .key .lblA { position: absolute; top: -10px; font-size: 9.5px; font-weight: 600; line-height: 1; white-space: nowrap; opacity: .95; }
+        .key .lblS { left: 1px; color: #2f6cab; } .key .lblA { right: 1px; color: #3f8a34; }
+        .key.hot2 .lblS { background: #2f6cab; color: #fff; border-radius: 3px; padding: 1px 2px; }
+        .key.hota .lblA { background: #3f8a34; color: #fff; border-radius: 3px; padding: 1px 2px; }
       `}</style>
     </div>
   );
+}
+
+function trim(n: number): string { return parseFloat(n.toFixed(6)).toString(); }
+function fmtShort(n: number): string { return parseFloat(n.toPrecision(6)).toString(); }
+function nextFn(yfns: string[], cur: number, dir: number): number {
+  const idxs = yfns.map((f, i) => f.trim() ? i : -1).filter((i) => i >= 0);
+  if (!idxs.length) return cur;
+  const pos = idxs.indexOf(cur);
+  return idxs[(pos + dir + idxs.length) % idxs.length] ?? idxs[0];
 }
