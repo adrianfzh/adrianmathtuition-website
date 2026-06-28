@@ -88,6 +88,25 @@ const MODE_ROWS: { key: string; def: number; opts: string[] }[] = [
   { key: 'screen', def: 0, opts: ['FULL', 'HORIZ', 'G-T'] },
 ];
 
+// MATH menu — tabbed numbered list, like the real TI-84 CE.
+const MATH_TABS = ['MATH', 'NUM', 'PRB'] as const;
+const MATH_ITEMS: Record<string, { n: number; label: string; ins: string }[]> = {
+  MATH: [
+    { n: 1, label: '►Frac', ins: '►Frac' },
+    { n: 2, label: '³', ins: '^3' },
+    { n: 3, label: '³√(', ins: '∛(' },
+    { n: 4, label: '√(', ins: '√(' },
+  ],
+  NUM: [
+    { n: 1, label: 'abs(', ins: 'abs(' },
+  ],
+  PRB: [
+    { n: 2, label: 'nPr', ins: 'nPr(' },
+    { n: 3, label: 'nCr', ins: 'nCr(' },
+    { n: 4, label: '! (factorial)', ins: '!' },
+  ],
+};
+
 type CalcOp = 'value' | 'zero' | 'min' | 'max' | 'intersect' | 'dydx' | 'integral';
 const CALC_OPS: { id: CalcOp; label: string; prompts: string[] }[] = [
   { id: 'value', label: 'value', prompts: ['X=?'] },
@@ -118,6 +137,7 @@ export default function CalculatorPage() {
   const [recall, setRecall] = useState<number | null>(null);
   const [modeMenu, setModeMenu] = useState(false);
   const [mathMenu, setMathMenu] = useState(false);
+  const [mathTab, setMathTab] = useState<string>('MATH');
   const [showApps, setShowApps] = useState(false);
   const [zoomMenu, setZoomMenu] = useState(false);
   const [toast, setToast] = useState('');
@@ -602,40 +622,40 @@ export default function CalculatorPage() {
 
           {modeMenu && (
             <div className="overlay" onClick={() => setModeMenu(false)}>
-              <div className="ov" onClick={(e) => e.stopPropagation()} style={{ width: '94%', fontFamily: 'Consolas,monospace', textAlign: 'left' }}>
-                <div className="ov-title">MODE</div>
-                <div style={{ lineHeight: 1.8, fontSize: 13 }}>
+              <div className="timenu" onClick={(e) => e.stopPropagation()}>
+                <div className="ti-title">MODE</div>
+                <div className="modelist">
                   {MODE_ROWS.map((row, ri) => (
-                    <div key={ri}>
+                    <div key={ri} className="moderow">
                       {row.opts.map((opt, oi) => {
                         const sel = row.key === 'angle' ? (opt === (angle === 'RAD' ? 'RADIAN' : 'DEGREE')) : oi === row.def;
                         const clickable = row.key === 'angle';
                         return (
-                          <span key={oi} onClick={clickable ? () => setAngle(opt === 'RADIAN' ? 'RAD' : 'DEG') : undefined}
-                            style={{ padding: '1px 4px', marginRight: 5, borderRadius: 2, cursor: clickable ? 'pointer' : 'default', background: sel ? '#1a1f26' : 'transparent', color: sel ? '#eef0e8' : '#1a1f26' }}>{opt}</span>
+                          <span key={oi} className={`modeopt ${sel ? 'sel' : ''}`} style={{ cursor: clickable ? 'pointer' : 'default' }}
+                            onClick={clickable ? () => setAngle(opt === 'RADIAN' ? 'RAD' : 'DEG') : undefined}>{opt}</span>
                         );
                       })}
                     </div>
                   ))}
                 </div>
-                <button className="ov-close" onClick={() => setModeMenu(false)}>Done (2nd · quit)</button>
+                <button className="ti-done" onClick={() => setModeMenu(false)}>Done (2nd · quit)</button>
               </div>
             </div>
           )}
           {mathMenu && (
             <div className="overlay" onClick={() => setMathMenu(false)}>
-              <div className="ov" onClick={(e) => e.stopPropagation()}>
-                <div className="ov-title">MATH</div>
-                <div className="zgrid">
-                  <button onClick={() => { insert('►Frac'); setMathMenu(false); }}>▸Frac</button>
-                  <button onClick={() => { insert('^3'); setMathMenu(false); }}>³ cube</button>
-                  <button onClick={() => { insert('∛('); setMathMenu(false); }}>³√(</button>
-                  <button onClick={() => { insert('abs('); setMathMenu(false); }}>abs(</button>
-                  <button onClick={() => { insert('nPr('); setMathMenu(false); }}>nPr(</button>
-                  <button onClick={() => { insert('nCr('); setMathMenu(false); }}>nCr(</button>
-                  <button onClick={() => { insert('!'); setMathMenu(false); }}>! factorial</button>
-                  <button onClick={() => setMathMenu(false)}>Cancel</button>
+              <div className="timenu" onClick={(e) => e.stopPropagation()}>
+                <div className="ti-tabs">
+                  {MATH_TABS.map((t) => (
+                    <button key={t} className={mathTab === t ? 'on' : ''} onClick={() => setMathTab(t)}>{t}</button>
+                  ))}
                 </div>
+                <div className="ti-list">
+                  {MATH_ITEMS[mathTab].map((it) => (
+                    <button key={it.n} onClick={() => { insert(it.ins); setMathMenu(false); }}>{it.n}: {it.label}</button>
+                  ))}
+                </div>
+                <button className="ti-done" onClick={() => setMathMenu(false)}>quit</button>
               </div>
             </div>
           )}
@@ -776,6 +796,20 @@ export default function CalculatorPage() {
         .ov-row button.on { background: #1a1f26; color: #eef0e8; }
         .ov-close { margin-top: 10px; width: 100%; padding: 7px; border: none; background: #1a1f26; color: #eef0e8; border-radius: 4px; font: 12px monospace; }
         .zgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        /* full-screen TI menus (MATH / MODE) */
+        .timenu { position: absolute; inset: 0; background: #eef0e8; color: #1a1f26; font-family: 'Consolas','SF Mono',monospace; display: flex; flex-direction: column; padding: 8px 10px; box-sizing: border-box; overflow: auto; }
+        .ti-title { font-weight: 700; text-align: center; border-bottom: 1.5px solid #1a1f26; padding-bottom: 3px; margin-bottom: 6px; }
+        .ti-tabs { display: flex; border-bottom: 2px solid #1a1f26; margin-bottom: 6px; }
+        .ti-tabs button { flex: 1; padding: 6px 2px; border: none; background: transparent; font: 700 13px monospace; color: #1a1f26; cursor: pointer; }
+        .ti-tabs button.on { background: #1a1f26; color: #eef0e8; border-radius: 3px 3px 0 0; }
+        .ti-list { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+        .ti-list button { text-align: left; padding: 8px 8px; border: none; background: transparent; font: 14px monospace; color: #1a1f26; border-radius: 3px; cursor: pointer; }
+        .ti-list button:active { background: #cdd8c0; }
+        .ti-done { margin-top: 8px; padding: 8px; border: none; background: #1a1f26; color: #eef0e8; border-radius: 4px; font: 12px monospace; cursor: pointer; }
+        .modelist { flex: 1; font-size: 14px; line-height: 1.95; }
+        .moderow { white-space: nowrap; }
+        .modeopt { padding: 1px 5px; margin-right: 4px; border-radius: 2px; }
+        .modeopt.sel { background: #1a1f26; color: #eef0e8; }
         .zgrid button { padding: 8px; border: 1px solid #8a8f86; background: #fff; border-radius: 4px; font: 12px monospace; }
         .toast { position: absolute; left: 12px; right: 12px; bottom: 16px; background: rgba(20,22,26,.9); color: #fff; font: 12px/1.3 Arial; padding: 8px 10px; border-radius: 7px; text-align: center; }
         .grow { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; margin: 12px 0 15px; }
