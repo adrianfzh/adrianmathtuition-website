@@ -23,7 +23,7 @@ const GRAPH_ROW: Key[] = [
 
 const ROWS: Key[][] = [
   [
-    k('math', 'math', 'kb', { cmd: 'soon' }, { s: 'test', a: 'A', aa: { ins: 'A' } }),
+    k('math', 'math', 'kb', { cmd: 'mathmenu' }, { s: 'test', a: 'A', aa: { ins: 'A' } }),
     k('apps', 'apps', 'kb', { cmd: 'soon' }, { s: 'angle', a: 'B', aa: { ins: 'B' } }),
     k('prgm', 'prgm', 'kb', { cmd: 'soon' }, { s: 'draw', a: 'C', aa: { ins: 'C' } }),
     k('vars', 'vars', 'kb', { cmd: 'soon' }, { s: 'distr', sa: { cmd: 'distr' } }),
@@ -77,6 +77,16 @@ type Screen = 'home' | 'yeq' | 'window' | 'graph' | 'tblset' | 'table' | 'stated
 const DISTR_FNS = ['normalpdf', 'normalcdf', 'invNorm', 'binompdf', 'binomcdf', 'poissonpdf', 'poissoncdf'];
 interface HistItem { input: string; output: string; err?: boolean; }
 
+// TI-84 MODE screen rows (only ANGLE is wired; the rest are faithful display).
+const MODE_ROWS: { key: string; def: number; opts: string[] }[] = [
+  { key: 'num', def: 0, opts: ['NORMAL', 'SCI', 'ENG'] },
+  { key: 'float', def: 0, opts: ['FLOAT', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] },
+  { key: 'angle', def: 0, opts: ['RADIAN', 'DEGREE'] },
+  { key: 'graph', def: 0, opts: ['FUNC', 'PAR', 'POL', 'SEQ'] },
+  { key: 'cplx', def: 0, opts: ['REAL', 'a+bi', 're^θi'] },
+  { key: 'screen', def: 0, opts: ['FULL', 'HORIZ', 'G-T'] },
+];
+
 type CalcOp = 'value' | 'zero' | 'min' | 'max' | 'intersect' | 'dydx' | 'integral';
 const CALC_OPS: { id: CalcOp; label: string; prompts: string[] }[] = [
   { id: 'value', label: 'value', prompts: ['X=?'] },
@@ -106,6 +116,7 @@ export default function CalculatorPage() {
   const [vars, setVars] = useState<Record<string, number>>({});
   const [recall, setRecall] = useState<number | null>(null);
   const [modeMenu, setModeMenu] = useState(false);
+  const [mathMenu, setMathMenu] = useState(false);
   const [zoomMenu, setZoomMenu] = useState(false);
   const [toast, setToast] = useState('');
   // graphing
@@ -176,13 +187,16 @@ export default function CalculatorPage() {
     const line = entry.trim();
     if (!line) return;
     let expr = line, target: string | null = null;
-    const arrow = line.indexOf('→');
-    if (arrow >= 0) { expr = line.slice(0, arrow); target = line.slice(arrow + 1).trim(); }
+    let toFrac = false;
+    if (expr.endsWith('►Frac')) { toFrac = true; expr = expr.slice(0, -5); }
+    const arrow = expr.indexOf('→');
+    if (arrow >= 0) { target = expr.slice(arrow + 1).trim(); expr = expr.slice(0, arrow); }
     const res = evaluate(expr, ctx());
     if (res.ok) {
       if (target && /^[A-Zθ]$/.test(target)) setVars((v) => ({ ...v, [target!]: res.value }));
       setAns(res.value);
-      setHist((h) => [...h, { input: line, output: res.display }]);
+      const out = toFrac ? (toFraction(res.value) ?? res.display) : res.display;
+      setHist((h) => [...h, { input: line, output: out }]);
     } else {
       setHist((h) => [...h, { input: line, output: 'ERR: ' + res.error, err: true }]);
     }
@@ -361,8 +375,9 @@ export default function CalculatorPage() {
         case 'distr': setDistrMenu(true); break;
         case 'sto': if (editable) { insert('→'); setAlpha(true); keepAlpha = true; } break;
         case 'on': setScreen('home'); setEntry(''); setCursor(0); break;
-        case 'quit': setScreen('home'); setModeMenu(false); setZoomMenu(false); break;
+        case 'quit': setScreen('home'); setModeMenu(false); setZoomMenu(false); setMathMenu(false); break;
         case 'modemenu': setModeMenu(true); break;
+        case 'mathmenu': setMathMenu(true); break;
         case 'soon': showToast('MATH / APPS / PRGM / VARS menus — not part of the JC build'); break;
         default: break;
       }
@@ -584,13 +599,40 @@ export default function CalculatorPage() {
 
           {modeMenu && (
             <div className="overlay" onClick={() => setModeMenu(false)}>
-              <div className="ov" onClick={(e) => e.stopPropagation()}>
+              <div className="ov" onClick={(e) => e.stopPropagation()} style={{ width: '94%', fontFamily: 'Consolas,monospace', textAlign: 'left' }}>
                 <div className="ov-title">MODE</div>
-                <div className="ov-row"><span>ANGLE</span>
-                  <button className={angle === 'RAD' ? 'on' : ''} onClick={() => setAngle('RAD')}>RADIAN</button>
-                  <button className={angle === 'DEG' ? 'on' : ''} onClick={() => setAngle('DEG')}>DEGREE</button>
+                <div style={{ lineHeight: 1.8, fontSize: 13 }}>
+                  {MODE_ROWS.map((row, ri) => (
+                    <div key={ri}>
+                      {row.opts.map((opt, oi) => {
+                        const sel = row.key === 'angle' ? (opt === (angle === 'RAD' ? 'RADIAN' : 'DEGREE')) : oi === row.def;
+                        const clickable = row.key === 'angle';
+                        return (
+                          <span key={oi} onClick={clickable ? () => setAngle(opt === 'RADIAN' ? 'RAD' : 'DEG') : undefined}
+                            style={{ padding: '1px 4px', marginRight: 5, borderRadius: 2, cursor: clickable ? 'pointer' : 'default', background: sel ? '#1a1f26' : 'transparent', color: sel ? '#eef0e8' : '#1a1f26' }}>{opt}</span>
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
-                <button className="ov-close" onClick={() => setModeMenu(false)}>Done</button>
+                <button className="ov-close" onClick={() => setModeMenu(false)}>Done (2nd · quit)</button>
+              </div>
+            </div>
+          )}
+          {mathMenu && (
+            <div className="overlay" onClick={() => setMathMenu(false)}>
+              <div className="ov" onClick={(e) => e.stopPropagation()}>
+                <div className="ov-title">MATH</div>
+                <div className="zgrid">
+                  <button onClick={() => { insert('►Frac'); setMathMenu(false); }}>▸Frac</button>
+                  <button onClick={() => { insert('^3'); setMathMenu(false); }}>³ cube</button>
+                  <button onClick={() => { insert('∛('); setMathMenu(false); }}>³√(</button>
+                  <button onClick={() => { insert('abs('); setMathMenu(false); }}>abs(</button>
+                  <button onClick={() => { insert('nPr('); setMathMenu(false); }}>nPr(</button>
+                  <button onClick={() => { insert('nCr('); setMathMenu(false); }}>nCr(</button>
+                  <button onClick={() => { insert('!'); setMathMenu(false); }}>! factorial</button>
+                  <button onClick={() => setMathMenu(false)}>Cancel</button>
+                </div>
               </div>
             </div>
           )}
@@ -764,6 +806,15 @@ export default function CalculatorPage() {
   );
 }
 
+function toFraction(x: number): string | null {
+  if (!isFinite(x) || Number.isInteger(x)) return null;
+  const sign = x < 0 ? '-' : ''; const v = Math.abs(x);
+  let h1 = 1, h0 = 0, k1 = 0, k0 = 1, b = v, n = 0;
+  do { const a = Math.floor(b); [h0, h1] = [h1, a * h1 + h0]; [k0, k1] = [k1, a * k1 + k0]; const d = b - a; if (d < 1e-12) break; b = 1 / d; }
+  while (++n < 40 && k1 < 1e6 && Math.abs(v - h1 / k1) > v * 1e-12);
+  if (k1 < 2 || k1 > 100000 || Math.abs(v - h1 / k1) > 1e-9) return null;
+  return `${sign}${h1}/${k1}`;
+}
 function trim(n: number): string { return parseFloat(n.toFixed(6)).toString(); }
 function fmtShort(n: number): string { return parseFloat(n.toPrecision(6)).toString(); }
 function nextFn(yfns: string[], cur: number, dir: number): number {
