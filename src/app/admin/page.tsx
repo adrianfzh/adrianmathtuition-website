@@ -178,6 +178,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '📚', title: 'Flashcard decks', sub: 'Browse swipe decks · level → topic', href: '/admin/cards-preview' },
   { emoji: '🎓', title: 'Teaching decks',  sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
   { emoji: '🧮', title: 'Calculator',      sub: 'TI-84 CE · graphing calculator',      href: '/calculator', icon: CalcIcon },
+  { emoji: '🧮', title: 'Casio fx-97SG X',  sub: 'ClassWiz · scientific calculator',     href: '/calculator/casio', icon: CalcIcon },
 ];
 
 // ── CSS ────────────────────────────────────────────────────────────────────────

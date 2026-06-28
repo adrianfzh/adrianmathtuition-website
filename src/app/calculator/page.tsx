@@ -481,6 +481,7 @@ export default function CalculatorPage() {
   return (
     <div className="wrap">
       <a className="backBtn" href="/admin">‹ Back</a>
+      <a className="switchBtn" href="/calculator/casio">⇄ Casio</a>
       <div className="calc">
         <div className="head"><div className="model">TI-84 Plus CE</div><div className="py">PYTHON</div></div>
 
@@ -682,9 +683,11 @@ export default function CalculatorPage() {
 
       <style jsx>{`
         .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #e9eaec; padding: 10px; box-sizing: border-box; }
-        .backBtn { position: fixed; top: 10px; left: 10px; z-index: 50; background: rgba(20,22,26,.86); color: #fff;
+        .backBtn, .switchBtn { position: fixed; top: 10px; z-index: 50; color: #fff;
           font: 600 13px/1 'Helvetica Neue',Arial,sans-serif; text-decoration: none; padding: 9px 13px; border-radius: 999px;
           box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
+        .backBtn { left: 10px; background: rgba(20,22,26,.86); }
+        .switchBtn { right: 10px; background: rgba(40,70,120,.92); }
         .backBtn:active { background: #000; }
         .calc { width: 100%; max-width: 420px; background: linear-gradient(#fdfdfc,#e8e8e4); border: 1px solid #d3d3cf; border-radius: 30px; padding: 14px 16px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.22); box-sizing: border-box; }
         .head { text-align: center; margin-bottom: 8px; }
