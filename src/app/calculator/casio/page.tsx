@@ -74,7 +74,12 @@ interface HistItem { input: string; dec: string; frac: string | null; showFrac: 
 // overline, x with a boxed exponent).
 function primaryGlyph(id: string, p: string): ReactNode {
   if (id === 'frac') return <span className="gfrac"><span className="gbox" /><span className="gbar" /><span className="gbox" /></span>;
-  if (id === 'sqrt') return <span className="gsqrt"><span className="grad">√</span><span className="gradbox" /></span>;
+  if (id === 'sqrt') return (
+    <svg className="gsvg" width="24" height="16" viewBox="0 0 24 16" aria-hidden="true">
+      <path d="M1.5 9.5 L5 13.5 L8.5 2.5 L22.5 2.5" fill="none" stroke="#f4f4f4" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+      <rect x="11" y="5" width="9.5" height="7.5" fill="none" stroke="#f4f4f4" strokeWidth="1.3" />
+    </svg>
+  );
   if (id === 'powr') return <span className="gpow">x<span className="gsupbox" /></span>;
   return p;
 }
@@ -210,7 +215,7 @@ export default function CasioPage() {
             <button className="seg sright" onClick={() => press(k('right', '', { cmd: 'right' }))}>▶</button>
             <span className="cpadc" />
           </div>
-          <div className="cgroup">
+          <div className="cgroup right">
             <Round id="menu" label="MENU" color="#eee" s="SETUP" n={{ cmd: 'menu' }} sa={{ cmd: 'setup' }} />
             <Round id="on" label="ON" color="#eee" n={{ cmd: 'on' }} />
           </div>
@@ -255,29 +260,33 @@ export default function CasioPage() {
         .ov-r button.on { background: #16201a; color: #c4d2bb; }
         .toast { position: absolute; left: 12px; right: 12px; bottom: 14px; background: rgba(5,8,5,.92); color: #fff; font: 12px/1.3 Arial; padding: 8px 10px; border-radius: 7px; text-align: center; }
 
-        .ctrl { display: flex; align-items: center; justify-content: space-between; margin: 18px 6px 16px; }
-        .cgroup { display: flex; gap: 18px; }
-        .rwrap { display: flex; flex-direction: column; align-items: center; }
-        .rlab { font: 700 11px Arial; line-height: 1.1; }
-        .rlab2 { font: 700 8px Arial; color: #e8942f; line-height: 1; }
-        .round { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; margin-top: 5px; -webkit-tap-highlight-color: transparent;
-          background: radial-gradient(circle at 50% 28%, #7c8088 0%, #474a50 42%, #1b1d20 100%);
-          box-shadow: 0 2px 5px rgba(0,0,0,.7), inset 0 2px 2px rgba(255,255,255,.34), inset 0 -3px 4px rgba(0,0,0,.55); }
-        .round:active { filter: brightness(1.25); }
-        .cpad { position: relative; width: 112px; height: 62px; border-radius: 31px; border: 1px solid #000; background: radial-gradient(ellipse at 50% 50%, #0f1012, #050506); box-shadow: 0 2px 5px rgba(0,0,0,.6), inset 0 1px 2px rgba(0,0,0,.9); }
-        .seg { position: absolute; border: none; cursor: pointer; color: #e4e4e4; font-size: 10px; display: flex; -webkit-tap-highlight-color: transparent; }
-        .seg:active { filter: brightness(1.3); }
-        .sup { inset: 2px 2px 50% 2px; clip-path: polygon(24% 0, 76% 0, 58% 100%, 42% 100%); background: linear-gradient(#585b61, #2d2f34); align-items: flex-start; justify-content: center; padding-top: 3px; border-radius: 30px 30px 0 0; }
-        .sdown { inset: 50% 2px 2px 2px; clip-path: polygon(42% 0, 58% 0, 76% 100%, 24% 100%); background: linear-gradient(#2d2f34, #585b61); align-items: flex-end; justify-content: center; padding-bottom: 3px; border-radius: 0 0 30px 30px; }
-        .sleft { inset: 2px 50% 2px 2px; clip-path: polygon(0 24%, 100% 42%, 100% 58%, 0 76%); background: linear-gradient(90deg, #585b61, #2d2f34); align-items: center; justify-content: flex-start; padding-left: 6px; border-radius: 30px 0 0 30px; }
-        .sright { inset: 2px 2px 2px 50%; clip-path: polygon(100% 24%, 0 42%, 0 58%, 100% 76%); background: linear-gradient(90deg, #2d2f34, #585b61); align-items: center; justify-content: flex-end; padding-right: 6px; border-radius: 0 30px 30px 0; }
-        .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 28px; height: 28px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 50% 30%, #7a7e85, #232529); box-shadow: 0 1px 2px rgba(0,0,0,.6), inset 0 1.5px 2px rgba(255,255,255,.3), inset 0 -2px 3px rgba(0,0,0,.5); z-index: 2; }
+        .ctrl { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: 18px 6px 16px; }
+        .cgroup { display: flex; gap: 20px; }
+        .cgroup.right { justify-self: end; }
+        .cpad { position: relative; width: 110px; height: 58px; border-radius: 29px; border: 1px solid #0a0b0c; justify-self: center;
+          background: radial-gradient(ellipse at 50% 30%, #5c5f65, #36383d 58%, #1f2124);
+          box-shadow: 0 2px 5px rgba(0,0,0,.6), inset 0 2px 2px rgba(255,255,255,.18), inset 0 -3px 4px rgba(0,0,0,.5); }
+        .seg { position: absolute; border: none; background: transparent; color: #d8d8d8; font-size: 11px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+        .seg:active { color: #fff; }
+        .sup { top: 0; left: 50%; transform: translateX(-50%); width: 38%; height: 40%; align-items: flex-start; padding-top: 3px; }
+        .sdown { bottom: 0; left: 50%; transform: translateX(-50%); width: 38%; height: 40%; align-items: flex-end; padding-bottom: 3px; }
+        .sleft { left: 0; top: 50%; transform: translateY(-50%); width: 32%; height: 60%; justify-content: flex-start; padding-left: 6px; }
+        .sright { right: 0; top: 50%; transform: translateY(-50%); width: 32%; height: 60%; justify-content: flex-end; padding-right: 6px; }
+        .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 26px; height: 26px; border-radius: 50%; pointer-events: none; z-index: 2;
+          background: radial-gradient(circle at 50% 30%, #6e7178, #232529); box-shadow: 0 1px 1px rgba(0,0,0,.4), inset 0 1.5px 2px rgba(255,255,255,.26), inset 0 -2px 3px rgba(0,0,0,.5); }
 
         .fgrid { display: grid; grid-template-columns: repeat(6,1fr); column-gap: 6px; row-gap: 17px; margin-bottom: 16px; }
         .ngrid { display: grid; grid-template-columns: repeat(5,1fr); column-gap: 8px; row-gap: 16px; }
         .gap { }
       `}</style>
       <style jsx global>{`
+        .rwrap { display: flex; flex-direction: column; align-items: center; }
+        .rlab { font: 700 11px Arial,sans-serif; line-height: 1.1; }
+        .rlab2 { font: 700 8px Arial,sans-serif; color: #e8942f; line-height: 1; }
+        .round { width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; margin-top: 5px; -webkit-tap-highlight-color: transparent;
+          background: radial-gradient(circle at 50% 28%, #7c8088 0%, #474a50 42%, #1b1d20 100%);
+          box-shadow: 0 2px 5px rgba(0,0,0,.7), inset 0 2px 2px rgba(255,255,255,.34), inset 0 -3px 4px rgba(0,0,0,.55); }
+        .round:active { filter: brightness(1.25); }
         .ck { position: relative; width: 100%; aspect-ratio: 1.42/1; min-height: 38px; border-radius: 7px; border: 1px solid #0c0d0e; cursor: pointer; padding: 0; overflow: visible;
           background: linear-gradient(#54565b,#3d3f44 46%,#313338); box-shadow: 0 2px 0 #131416, 0 3px 5px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.12); -webkit-tap-highlight-color: transparent; transition: transform .04s, filter .05s; }
         .ngrid .ck { aspect-ratio: 1.55/1; min-height: 46px; }
@@ -295,11 +304,9 @@ export default function CasioPage() {
         .lp .gfrac { display: inline-flex; flex-direction: column; align-items: center; }
         .lp .gfrac .gbox { width: 13px; height: 6px; border: 1.5px solid #f4f4f4; border-radius: 1px; }
         .lp .gfrac .gbar { width: 17px; height: 2px; background: #f4f4f4; margin: 1.5px 0; }
-        .lp .gsqrt { display: inline-flex; align-items: flex-start; }
-        .lp .gsqrt .grad { font-size: 16px; line-height: 1; }
-        .lp .gsqrt .gradbox { display: inline-block; width: 12px; height: 9px; border: 1.5px solid #f4f4f4; border-radius: 0 1px 1px 0; margin-left: -1px; margin-top: 1px; }
-        .lp .gpow { display: inline-flex; align-items: flex-start; }
-        .lp .gpow .gsupbox { display: inline-block; width: 8px; height: 8px; border: 1.5px solid #f4f4f4; border-radius: 1px; margin-left: 1.5px; margin-top: -1px; }
+        .lp .gsvg { display: block; }
+        .lp .gpow { display: inline-flex; align-items: flex-end; }
+        .lp .gpow .gsupbox { display: inline-block; width: 8px; height: 8px; border: 1.5px solid #f4f4f4; border-radius: 1px; margin-left: 1.5px; margin-bottom: 6px; }
       `}</style>
     </div>
   );
