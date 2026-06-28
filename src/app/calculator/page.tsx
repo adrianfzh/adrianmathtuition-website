@@ -363,7 +363,7 @@ export default function CalculatorPage() {
         case 'on': setScreen('home'); setEntry(''); setCursor(0); break;
         case 'quit': setScreen('home'); setModeMenu(false); setZoomMenu(false); break;
         case 'modemenu': setModeMenu(true); break;
-        case 'soon': showToast('Coming in a later phase (STAT/CALC/MATRIX)'); break;
+        case 'soon': showToast('MATH / APPS / PRGM / VARS menus — not part of the JC build'); break;
         default: break;
       }
     }

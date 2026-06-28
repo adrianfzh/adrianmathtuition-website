@@ -7,6 +7,7 @@
 // modes (Statistics / Table / Equation) are follow-ups. Mobile-first.
 import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 import { evaluate, type AngleMode, type EvalCtx } from '@/lib/ti84/engine';
+import { parseNatural, type DNode } from '@/lib/ti84/natural';
 
 type Act = { ins: string } | { cmd: string };
 type Cls = 'k' | 'ac';
@@ -72,6 +73,31 @@ interface HistItem { input: string; dec: string; frac: string | null; showFrac: 
 
 // Custom key glyphs that plain text can't render (stacked fraction, radical with
 // overline, x with a boxed exponent).
+// Recursive natural-display renderer (textbook 2D math).
+function Natural({ nodes }: { nodes: DNode[] }): ReactNode {
+  return <>{nodes.map((n, i) => <NNode key={i} n={n} />)}</>;
+}
+function NNode({ n }: { n: DNode }): ReactNode {
+  switch (n.t) {
+    case 'txt': return <span className="ntx">{n.v}</span>;
+    case 'frac': return (
+      <span className="nfrac"><span className="nnum"><Natural nodes={n.num} /></span><span className="nbar" /><span className="nden"><Natural nodes={n.den} /></span></span>
+    );
+    case 'pow': return (
+      <span className="npow"><span className="nbase"><Natural nodes={n.base} /></span><span className="nexp"><Natural nodes={n.exp} /></span></span>
+    );
+    case 'sqrt': return (
+      <span className="nsqrt"><span className="nradinner"><Natural nodes={n.inner} /></span></span>
+    );
+    case 'grp': return (
+      <span className="ngrp"><span className="npar">(</span><Natural nodes={n.inner} /><span className="npar">)</span></span>
+    );
+    case 'fn': return (
+      <span className="nfn"><span className="nfname">{n.name}</span><span className="npar">(</span><Natural nodes={n.inner} /><span className="npar">)</span></span>
+    );
+  }
+}
+
 function primaryGlyph(id: string, p: string): ReactNode {
   if (id === 'frac') return <span className="gfrac"><span className="gbox" /><span className="gbar" /><span className="gbox" /></span>;
   if (id === 'sqrt') return (
@@ -149,7 +175,6 @@ export default function CasioPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shift, alpha, cursor, entry, hist, recall, ctx]);
 
-  const Caret = ({ s, c }: { s: string; c: number }) => (<><span>{s.slice(0, c)}</span><span className="caret" /><span>{s.slice(c)}</span></>);
   const Btn = ({ def }: { def: Key }) => {
     const hot = (shift && def.s) || (alpha && def.a);
     return (
@@ -184,9 +209,12 @@ export default function CasioPage() {
           <div className="lcd" ref={screenRef}>
             <div className="status"><span>{angle === 'DEG' ? 'D' : 'R'}</span><span>{shift ? '⇧' : alpha ? 'α' : ''}</span><span className="up">▲</span></div>
             {hist.map((h, i) => (
-              <div key={i} className="hi"><div className="hi-in">{h.input}</div><div className={`hi-out ${h.err ? 'err' : ''}`}>{h.showFrac && h.frac ? h.frac : h.dec}</div></div>
+              <div key={i} className="hi">
+                <div className="hi-in"><Natural nodes={parseNatural(h.input)} /></div>
+                <div className={`hi-out ${h.err ? 'err' : ''}`}>{h.err ? h.dec : (h.showFrac && h.frac ? <Natural nodes={parseNatural(h.frac)} /> : h.dec)}</div>
+              </div>
             ))}
-            <div className="entry"><Caret s={entry} c={cursor} /></div>
+            <div className="entry"><Natural nodes={parseNatural(entry)} /><span className="caret" /></div>
           </div>
           {setup && (
             <div className="overlay" onClick={() => setSetup(false)}>
@@ -246,10 +274,10 @@ export default function CasioPage() {
         .status { display: flex; gap: 6px; font-size: 9px; font-weight: 700; color: #2f3d30; border-bottom: 1px solid #a7b89e; padding-bottom: 2px; margin-bottom: 3px; }
         .status .up { margin-left: auto; }
         .hi { margin-bottom: 2px; }
-        .hi-in { font-size: 14px; color: #475247; }
-        .hi-out { font-size: 23px; font-weight: 700; text-align: right; line-height: 1.1; }
+        .hi-in { display: flex; align-items: center; flex-wrap: wrap; font-size: 14px; color: #475247; }
+        .hi-out { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; font-size: 23px; font-weight: 700; line-height: 1.1; }
         .hi-out.err { color: #a01818; font-size: 15px; }
-        .entry { font-size: 18px; word-break: break-all; min-height: 22px; }
+        .entry { display: flex; align-items: center; flex-wrap: wrap; font-size: 18px; min-height: 24px; }
         .caret { display: inline-block; width: 2px; height: 18px; background: #16201a; animation: blink 1s steps(1) infinite; vertical-align: -3px; }
         @keyframes blink { 50% { opacity: 0; } }
         .overlay { position: absolute; inset: 12px; background: rgba(5,8,5,.55); display: flex; align-items: center; justify-content: center; border-radius: 2px; }
@@ -307,6 +335,18 @@ export default function CasioPage() {
         .lp .gsvg { display: block; }
         .lp .gpow { display: inline-flex; align-items: flex-start; }
         .lp .gpow .gsupbox { display: inline-block; width: 6px; height: 6px; background: #f4f4f4; border-radius: 1px; margin-left: 1.5px; margin-top: 1px; }
+        /* natural (textbook) display */
+        .ntx { white-space: pre; }
+        .nfrac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 1.5px; }
+        .nnum, .nden { padding: 0 3px; font-size: 0.82em; line-height: 1.08; text-align: center; }
+        .nbar { align-self: stretch; height: 0; border-top: 1.4px solid currentColor; margin: 1px 0; }
+        .npow { display: inline-flex; align-items: flex-start; }
+        .npow .nexp { font-size: 0.62em; line-height: 1; position: relative; top: -0.35em; margin-left: 0.5px; }
+        .nsqrt { display: inline-flex; align-items: flex-start; }
+        .nsqrt::before { content: '√'; line-height: 1; margin-right: -1px; }
+        .nsqrt .nradinner { border-top: 1.4px solid currentColor; padding: 1px 3px 0 1px; margin-top: 0.16em; }
+        .ngrp, .nfn { display: inline-flex; align-items: center; }
+        .npar { font-size: 1.05em; }
       `}</style>
     </div>
   );
