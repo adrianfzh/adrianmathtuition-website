@@ -220,7 +220,7 @@ export default function CasioPage() {
         .backBtn, .switchBtn { position: fixed; top: 10px; z-index: 50; color: #fff; font: 600 13px/1 Arial; text-decoration: none; padding: 9px 13px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
         .backBtn { left: 10px; background: rgba(20,22,26,.86); } .switchBtn { right: 10px; background: rgba(40,70,120,.92); }
         .calc { width: 100%; max-width: 420px; border-radius: 18px 18px 14px 14px; padding: 16px 16px 22px; box-sizing: border-box;
-          background-color: #1a1b1d; background-image: radial-gradient(rgba(255,255,255,.045) 0.5px, transparent 0.7px); background-size: 3px 3px;
+          background-color: #1a1b1d; background-image: radial-gradient(rgba(255,255,255,.07) 0.6px, transparent 0.9px); background-size: 3.5px 3.5px;
           border: 1px solid #0c0c0d; box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06); }
         .head { display: flex; align-items: baseline; justify-content: space-between; }
         .brand { font: 800 24px Arial; letter-spacing: .5px; color: #f2f2f2; }
@@ -250,11 +250,13 @@ export default function CasioPage() {
         .rwrap { display: flex; flex-direction: column; align-items: center; }
         .rlab { font: 700 11px Arial; line-height: 1.1; }
         .rlab2 { font: 700 8px Arial; color: #e8942f; line-height: 1; }
-        .round { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #0c0d0e; background: radial-gradient(circle at 50% 32%, #5e6268, #26282c); box-shadow: 0 2px 3px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.2); cursor: pointer; margin-top: 4px; -webkit-tap-highlight-color: transparent; }
-        .round:active { filter: brightness(1.2); }
-        .cpad { position: relative; width: 98px; height: 56px; border-radius: 28px; background: radial-gradient(circle at 50% 38%, #3c3e42, #1c1d20); border: 1px solid #000; box-shadow: 0 2px 4px rgba(0,0,0,.55), inset 0 1px 1px rgba(255,255,255,.08); }
-        .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #4e5054, #232427); box-shadow: 0 1px 1px rgba(255,255,255,.1), inset 0 1px 2px rgba(0,0,0,.55); }
-        .ar { position: absolute; border: none; background: transparent; color: #cccccc; font-size: 10px; line-height: 1; padding: 3px; cursor: pointer; z-index: 1; -webkit-tap-highlight-color: transparent; }
+        .round { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; margin-top: 5px; -webkit-tap-highlight-color: transparent;
+          background: radial-gradient(circle at 50% 28%, #7c8088 0%, #474a50 42%, #1b1d20 100%);
+          box-shadow: 0 2px 5px rgba(0,0,0,.7), inset 0 2px 2px rgba(255,255,255,.34), inset 0 -3px 4px rgba(0,0,0,.55); }
+        .round:active { filter: brightness(1.25); }
+        .cpad { position: relative; width: 104px; height: 58px; border-radius: 29px; border: none; background: radial-gradient(ellipse at 50% 32%, #4c4f55, #232529 55%, #16171a); box-shadow: 0 2px 5px rgba(0,0,0,.65), inset 0 2px 2px rgba(255,255,255,.2), inset 0 -3px 4px rgba(0,0,0,.5); }
+        .cpadc { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #7a7e85, #2a2c30); box-shadow: 0 1px 2px rgba(0,0,0,.5), inset 0 1.5px 2px rgba(255,255,255,.28), inset 0 -2px 3px rgba(0,0,0,.5); }
+        .ar { position: absolute; border: none; background: transparent; color: #e2e2e2; font-size: 11px; line-height: 1; padding: 3px; cursor: pointer; z-index: 1; -webkit-tap-highlight-color: transparent; }
         .ar.up { top: 1px; left: 50%; transform: translateX(-50%); }
         .ar.down { bottom: 1px; left: 50%; transform: translateX(-50%); }
         .ar.left { left: 4px; top: 50%; transform: translateY(-50%); }
@@ -266,7 +268,7 @@ export default function CasioPage() {
       `}</style>
       <style jsx global>{`
         .ck { position: relative; width: 100%; aspect-ratio: 1.42/1; min-height: 38px; border-radius: 7px; border: 1px solid #0c0d0e; cursor: pointer; padding: 0; overflow: visible;
-          background: linear-gradient(#565a60,#3a3d42 48%,#2b2e32); box-shadow: 0 2px 0 #101113, 0 3px 5px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.16); -webkit-tap-highlight-color: transparent; transition: transform .04s, filter .05s; }
+          background: linear-gradient(#54565b,#3d3f44 46%,#313338); box-shadow: 0 2px 0 #131416, 0 3px 5px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.12); -webkit-tap-highlight-color: transparent; transition: transform .04s, filter .05s; }
         .ngrid .ck { aspect-ratio: 1.55/1; min-height: 46px; }
         .ck:active { transform: translateY(1px); filter: brightness(1.15); box-shadow: 0 1px 0 #0a0a0b; }
         .ck.ac { background: linear-gradient(#d8b24e,#b98a2c 62%,#a87d27); }
