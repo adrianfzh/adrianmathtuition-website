@@ -45,3 +45,4 @@ next-env.d.ts
 _*.mjs
 *.tmp
 __deltest.tmp
+scripts/migration-snapshot-*.json

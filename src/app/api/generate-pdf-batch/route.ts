@@ -3,6 +3,7 @@ import { put } from '@vercel/blob';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
+import { applyPriorBalance } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -80,6 +81,8 @@ export async function POST(req: NextRequest) {
         lineItemsExtra: (() => { try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; } })(),
         registerUrl: buildRegisterUrl(studentId),
       };
+
+      await applyPriorBalance(invoiceData, studentId);
 
       const pdfBuffer = await generateInvoicePDF(invoiceData);
 

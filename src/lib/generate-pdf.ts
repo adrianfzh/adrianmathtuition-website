@@ -173,15 +173,25 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
   }
   html = html.replace(/\{\{LINE_ITEMS_ROWS\}\}/g, lineItemsRows);
 
-  // Extra line items rows
+  // Extra line items rows. Items flagged previousBalance (other open months under
+  // the per-month model) get a "Previous balance" section header before the first
+  // one + an "unpaid" tag; other extras (e.g. credits) render plainly.
   let extraLineItemsRows = '';
   if (invoiceData.lineItemsExtra?.length) {
+    let prevHeaderEmitted = false;
     extraLineItemsRows = invoiceData.lineItemsExtra.map((item) => {
       const amount = parseFloat(String(item.amount)) || 0;
       const sign = amount >= 0 ? '' : '-';
+      const isPrev = (item as any).previousBalance === true;
+      let headerRow = '';
+      if (isPrev && !prevHeaderEmitted) {
+        prevHeaderEmitted = true;
+        headerRow = `<tr><td colspan="4" style="padding:12px 0 2px;font-size:10px;letter-spacing:0.05em;color:#94a3b8;font-weight:600;">PREVIOUS BALANCE</td></tr>`;
+      }
+      const unpaidTag = isPrev ? ` <span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:1px 6px;border-radius:5px;margin-left:6px;">unpaid</span>` : '';
       const slotCell = item.slot ? `<span class="slot-pill">${item.slot}</span>` : '';
       const lessonsCell = item.lessons ? `<span class="lessons-badge">${item.lessons}</span>` : '';
-      return `<tr><td><div class="desc-main">${item.description || 'Additional Item'}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>${sign}$${Math.abs(amount).toFixed(2)}</td></tr>`;
+      return `${headerRow}<tr><td><div class="desc-main">${item.description || 'Additional Item'}${unpaidTag}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>${sign}$${Math.abs(amount).toFixed(2)}</td></tr>`;
     }).join('');
   }
   html = html.replace(/\{\{EXTRA_LINE_ITEMS_ROWS\}\}/g, extraLineItemsRows);

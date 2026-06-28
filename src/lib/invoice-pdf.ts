@@ -7,6 +7,7 @@ import { put } from '@vercel/blob';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { airtableRequest } from '@/lib/airtable';
+import { applyPriorBalance } from '@/lib/invoice-consolidate';
 
 export async function generateAndStoreInvoicePdf(
   invoiceRecord: { id: string; fields: Record<string, any> },
@@ -37,6 +38,9 @@ export async function generateAndStoreInvoicePdf(
     lineItemsExtra,
     registerUrl: studentId ? buildRegisterUrl(studentId) : '',
   };
+
+  // Consolidated view: pull in the student's other open months as previous balance.
+  await applyPriorBalance(invoiceData, studentId);
 
   const buffer = await generateInvoicePDF(invoiceData);
   const blob = await put(
