@@ -1,6 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
+
+// Mini calculator icon for the launcher (replaces the abacus emoji).
+const CalcIcon = (
+  <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="4" y="2" width="16" height="20" rx="2.6" fill="#f4f4f1" stroke="#c9c9c4" strokeWidth="0.8" />
+    <rect x="6.2" y="4" width="11.6" height="5.4" rx="1" fill="#16241a" />
+    <circle cx="7.8" cy="13" r="1.05" fill="#2f6cab" />
+    <circle cx="12" cy="13" r="1.05" fill="#3a3a3d" />
+    <circle cx="16.2" cy="13" r="1.05" fill="#47993d" />
+    <circle cx="7.8" cy="16.4" r="1.05" fill="#3a3a3d" />
+    <circle cx="12" cy="16.4" r="1.05" fill="#3a3a3d" />
+    <circle cx="16.2" cy="16.4" r="1.05" fill="#3a3a3d" />
+    <circle cx="7.8" cy="19.8" r="1.05" fill="#3a3a3d" />
+    <circle cx="12" cy="19.8" r="1.05" fill="#3a3a3d" />
+    <circle cx="16.2" cy="19.8" r="1.05" fill="#c79a2e" />
+  </svg>
+);
 
 function shortModelName(raw: string): string {
   const isFollowUp = /follow.?up/i.test(raw);
@@ -132,9 +149,9 @@ export default function AdminHub() {
 
           {/* Launcher grid */}
           <div className="launcher-grid">
-            {LAUNCHERS.map(({ emoji, title, sub, href }) => (
+            {LAUNCHERS.map(({ emoji, title, sub, href, icon }) => (
               <a key={href} href={href} className="launcher-card">
-                <div className="launcher-emoji">{emoji}</div>
+                <div className="launcher-emoji">{icon ?? emoji}</div>
                 <div className="launcher-title">{title}</div>
                 <div className="launcher-sub">{sub}</div>
               </a>
@@ -149,7 +166,7 @@ export default function AdminHub() {
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 
-const LAUNCHERS = [
+const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon?: ReactNode }[] = [
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
   { emoji: '📅', title: 'Schedule',  sub: 'Weekly lessons · drag to reschedule', href: '/admin/schedule'  },
@@ -160,7 +177,7 @@ const LAUNCHERS = [
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '📚', title: 'Flashcard decks', sub: 'Browse swipe decks · level → topic', href: '/admin/cards-preview' },
   { emoji: '🎓', title: 'Teaching decks',  sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
-  { emoji: '🧮', title: 'Calculator',      sub: 'TI-84 CE · graphing calculator',      href: '/calculator'          },
+  { emoji: '🧮', title: 'Calculator',      sub: 'TI-84 CE · graphing calculator',      href: '/calculator', icon: CalcIcon },
 ];
 
 // ── CSS ────────────────────────────────────────────────────────────────────────

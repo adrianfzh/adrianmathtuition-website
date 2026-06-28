@@ -179,13 +179,13 @@ export default function CalculatorPage() {
   const MODE: Key = k('mode', 'mode', 'kb', { cmd: 'modemenu' }, { s: 'quit', sa: { cmd: 'quit' } });
   const STATUS = `NORMAL FLOAT AUTO REAL ${angle === 'RAD' ? 'RADIAN' : 'DEGREE'} MP`;
 
-  const Btn = ({ def }: { def: Key }) => {
+  const Btn = ({ def, bare }: { def: Key; bare?: boolean }) => {
     const showSec = sec && (def.s !== undefined);
     const showAlp = alpha && (def.a !== undefined);
     return (
       <button className={`key ${def.cls} ${showSec ? 'hot2' : ''} ${showAlp ? 'hota' : ''}`} onClick={() => press(def)}>
-        {def.s && <span className="lblS">{def.s}</span>}
-        {def.a && <span className="lblA">{def.a}</span>}
+        {!bare && def.s && <span className="lblS">{def.s}</span>}
+        {!bare && def.a && <span className="lblA">{def.a}</span>}
         <span className="lblP">{def.p}</span>
       </button>
     );
@@ -231,10 +231,10 @@ export default function CalculatorPage() {
 
         {/* graph key row */}
         <div className="grow">
-          {GRAPH_ROW.map((g) => (
+          {GRAPH_ROW.map((g, i) => (
             <div className="fcell" key={g.id}>
-              <div className="flab"><span className="fs">{g.s}</span></div>
-              <Btn def={g} />
+              <div className="flab"><span className="fs">{g.s}</span> <span className="ffk">f{i + 1}</span></div>
+              <Btn def={g} bare />
             </div>
           ))}
         </div>
@@ -308,8 +308,9 @@ export default function CalculatorPage() {
 
         .grow { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; margin: 12px 0 8px; }
         .fcell { display: flex; flex-direction: column; }
-        .flab { height: 9px; text-align: center; }
-        .fs { font-size: 6.5px; color: #2f6cab; }
+        .flab { height: 11px; text-align: center; white-space: nowrap; }
+        .fs { font-size: 8px; color: #2f6cab; font-weight: 600; }
+        .ffk { font-size: 7px; color: #8a8d90; }
 
         .pad { display: grid; gap: 7px; margin-bottom: 7px;
           grid-template-columns: repeat(5,1fr);
@@ -341,8 +342,8 @@ export default function CalculatorPage() {
         .key.kb .lblP, .key.k2 .lblP, .key.ka .lblP { color: #fff; }
         .key.kw .lblP, .key.kg .lblP { color: #1b1b1b; }
         .key .lblP { font-size: clamp(9px, 3.2vw, 14px); }
-        .key .lblS, .key .lblA { position: absolute; top: -9px; font-size: 8px; font-weight: 600;
-          line-height: 1; white-space: nowrap; opacity: .92; }
+        .key .lblS, .key .lblA { position: absolute; top: -10px; font-size: 9.5px; font-weight: 600;
+          line-height: 1; white-space: nowrap; opacity: .95; }
         .key .lblS { left: 1px; color: #2f6cab; }
         .key .lblA { right: 1px; color: #3f8a34; }
         .key.hot2 .lblS { background: #2f6cab; color: #fff; border-radius: 3px; padding: 1px 2px; top: -10px; }
