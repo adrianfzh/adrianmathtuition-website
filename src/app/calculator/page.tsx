@@ -6,6 +6,7 @@
 // Mobile-first, exam-faithful key behaviour. STAT/TABLE/CALC (Phase C–D) stubbed.
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { evaluate, compile, type AngleMode, type EvalCtx } from '@/lib/ti84/engine';
+import { findZero, findExtremum, findIntersect, derivative, integral, type F } from '@/lib/ti84/calc';
 
 type Act = { ins: string } | { cmd: string };
 interface Key { id: string; p: string; s?: string; a?: string; cls: 'kb' | 'kw' | 'kg' | 'k2' | 'ka'; n: Act; sa?: Act; aa?: Act; }
@@ -13,10 +14,10 @@ const k = (id: string, p: string, cls: Key['cls'], n: Act, opts: Partial<Key> = 
 
 const GRAPH_ROW: Key[] = [
   k('y=', 'y=', 'kg', { cmd: 'yeq' }, { s: 'stat plot' }),
-  k('window', 'window', 'kg', { cmd: 'win' }, { s: 'tblset' }),
+  k('window', 'window', 'kg', { cmd: 'win' }, { s: 'tblset', sa: { cmd: 'tblset' } }),
   k('zoom', 'zoom', 'kg', { cmd: 'zoom' }, { s: 'format' }),
-  k('trace', 'trace', 'kg', { cmd: 'trace' }, { s: 'calc' }),
-  k('graph', 'graph', 'kg', { cmd: 'graph' }, { s: 'table' }),
+  k('trace', 'trace', 'kg', { cmd: 'trace' }, { s: 'calc', sa: { cmd: 'calc' } }),
+  k('graph', 'graph', 'kg', { cmd: 'graph' }, { s: 'table', sa: { cmd: 'table' } }),
 ];
 
 const ROWS: Key[][] = [
@@ -71,8 +72,19 @@ const ROWS: Key[][] = [
   ],
 ];
 
-type Screen = 'home' | 'yeq' | 'window' | 'graph';
+type Screen = 'home' | 'yeq' | 'window' | 'graph' | 'tblset' | 'table';
 interface HistItem { input: string; output: string; err?: boolean; }
+
+type CalcOp = 'value' | 'zero' | 'min' | 'max' | 'intersect' | 'dydx' | 'integral';
+const CALC_OPS: { id: CalcOp; label: string; prompts: string[] }[] = [
+  { id: 'value', label: 'value', prompts: ['X=?'] },
+  { id: 'zero', label: 'zero', prompts: ['Left Bound?', 'Right Bound?', 'Guess?'] },
+  { id: 'min', label: 'minimum', prompts: ['Left Bound?', 'Right Bound?', 'Guess?'] },
+  { id: 'max', label: 'maximum', prompts: ['Left Bound?', 'Right Bound?', 'Guess?'] },
+  { id: 'intersect', label: 'intersect', prompts: ['First curve?', 'Second curve?', 'Guess?'] },
+  { id: 'dydx', label: 'dy/dx', prompts: ['X=?'] },
+  { id: 'integral', label: '∫f(x)dx', prompts: ['Lower Limit?', 'Upper Limit?'] },
+];
 const NY = 6; // Y1..Y6
 const WINKEYS = ['Xmin', 'Xmax', 'Xscl', 'Ymin', 'Ymax', 'Yscl'] as const;
 type WinKey = typeof WINKEYS[number];
@@ -102,6 +114,17 @@ export default function CalculatorPage() {
   const [traceOn, setTraceOn] = useState(false);
   const [traceFn, setTraceFn] = useState(0);
   const [traceI, setTraceI] = useState(Math.floor(TRACE_STEPS / 2));
+  // TABLE
+  const [tbl, setTbl] = useState<{ start: string; step: string }>({ start: '0', step: '1' });
+  const [tblSel, setTblSel] = useState(0);   // 0 = TblStart, 1 = ΔTbl
+  const [tblRow, setTblRow] = useState(0);   // scroll offset
+  // CALC
+  const [calcMenu, setCalcMenu] = useState(false);
+  const [calcOp, setCalcOp] = useState<CalcOp | null>(null);
+  const [calcStep, setCalcStep] = useState(0);
+  const [calcVals, setCalcVals] = useState<number[]>([]);
+  const [calcCurves, setCalcCurves] = useState<number[]>([]);
+  const [calcResult, setCalcResult] = useState<{ text: string; x: number; y: number } | null>(null);
 
   const screenRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -121,13 +144,15 @@ export default function CalculatorPage() {
   useEffect(() => { if (screen === 'home') screenRef.current?.scrollTo(0, screenRef.current.scrollHeight); }, [hist, entry, cursor, screen]);
 
   // ── active edit buffer (home entry / Y= line / WINDOW field) ──
-  const bufVal = (): string => screen === 'home' ? entry : screen === 'yeq' ? yfns[ySel] : screen === 'window' ? win[WINKEYS[winSel]] : '';
+  const bufVal = (): string => screen === 'home' ? entry : screen === 'yeq' ? yfns[ySel]
+    : screen === 'window' ? win[WINKEYS[winSel]] : screen === 'tblset' ? (tblSel === 0 ? tbl.start : tbl.step) : '';
   const bufSet = (fn: (s: string) => string) => {
     if (screen === 'home') setEntry(fn);
     else if (screen === 'yeq') setYfns((a) => a.map((v, i) => i === ySel ? fn(v) : v));
     else if (screen === 'window') setWin((w) => ({ ...w, [WINKEYS[winSel]]: fn(w[WINKEYS[winSel]]) }));
+    else if (screen === 'tblset') setTbl((t) => tblSel === 0 ? { ...t, start: fn(t.start) } : { ...t, step: fn(t.step) });
   };
-  const editable = screen === 'home' || screen === 'yeq' || screen === 'window';
+  const editable = screen === 'home' || screen === 'yeq' || screen === 'window' || screen === 'tblset';
 
   const insert = (text: string) => {
     const c = cursor; bufSet((s) => s.slice(0, c) + text + s.slice(c)); setCursor(c + text.length); setRecall(null);
@@ -151,6 +176,25 @@ export default function CalculatorPage() {
   }, [entry, ctx]);
 
   const firstFn = useCallback(() => { const i = yfns.findIndex((f) => f.trim()); return i < 0 ? 0 : i; }, [yfns]);
+
+  // Compile Yn into a real x→y function with the current context baked in.
+  const Fof = useCallback((idx: number): F | null => {
+    const f = yfns[idx]; if (!f || !f.trim()) return null;
+    const cp = compile(f); if (!cp.ok) return null;
+    return (x: number) => cp.fn(ctx({ X: x }));
+  }, [yfns, ctx]);
+
+  const cursorX = useCallback(() => {
+    const xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10);
+    return xmin + (traceI / (TRACE_STEPS - 1)) * (xmax - xmin);
+  }, [winNum, traceI]);
+
+  const startCalc = (op: CalcOp) => {
+    setCalcMenu(false);
+    if (yfns.every((f) => !f.trim())) { showToast('Enter a function in Y= first'); return; }
+    setCalcOp(op); setCalcStep(0); setCalcVals([]); setCalcCurves([]); setCalcResult(null);
+    setScreen('graph'); setTraceOn(true); setTraceFn(firstFn()); setTraceI(Math.floor(TRACE_STEPS / 2));
+  };
 
   const applyZoom = (kind: string) => {
     const W = canvasRef.current?.clientWidth || 300, H = canvasRef.current?.clientHeight || 200;
@@ -188,12 +232,38 @@ export default function CalculatorPage() {
     } else {
       switch (act.cmd) {
         case 'enter':
+          if (screen === 'graph' && calcOp) {
+            const op = CALC_OPS.find((o) => o.id === calcOp)!;
+            if (calcOp === 'intersect' && calcStep < 2) { setCalcCurves((cv) => [...cv, traceFn]); setCalcStep((s) => s + 1); break; }
+            const x = cursorX();
+            if (calcStep < op.prompts.length - 1) { setCalcVals((v) => [...v, x]); setCalcStep((s) => s + 1); break; }
+            const vals = [...calcVals, x];
+            const xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10);
+            let r: { text: string; x: number; y: number } | null = null;
+            if (calcOp === 'intersect') {
+              const f = Fof(calcCurves[0]), g = Fof(calcCurves[1]);
+              if (f && g) { const it = findIntersect(f, g, xmin, xmax, x); r = { text: `intersect  X=${fmtShort(it.x)}  Y=${fmtShort(it.y)}`, x: it.x, y: it.y }; }
+            } else {
+              const f = Fof(traceFn);
+              if (f) {
+                if (calcOp === 'value') r = { text: `X=${fmtShort(vals[0])}  Y=${fmtShort(f(vals[0]))}`, x: vals[0], y: f(vals[0]) };
+                else if (calcOp === 'zero') { const z = findZero(f, vals[0], vals[1], vals[2]); r = { text: `zero  X=${fmtShort(z)}  Y=0`, x: z, y: f(z) }; }
+                else if (calcOp === 'min' || calcOp === 'max') { const e = findExtremum(f, vals[0], vals[1], calcOp); r = { text: `${calcOp === 'min' ? 'minimum' : 'maximum'}  X=${fmtShort(e.x)}  Y=${fmtShort(e.y)}`, x: e.x, y: e.y }; }
+                else if (calcOp === 'dydx') { const d = derivative(f, vals[0]); r = { text: `dy/dx=${fmtShort(d)}`, x: vals[0], y: f(vals[0]) }; }
+                else if (calcOp === 'integral') { const I = integral(f, vals[0], vals[1]); r = { text: `∫f(x)dx=${fmtShort(I)}`, x: vals[1], y: f(vals[1]) }; }
+              }
+            }
+            setCalcResult(r); setCalcOp(null); setCalcStep(0);
+            break;
+          }
           if (screen === 'home') doEnter();
           else if (screen === 'yeq') { const n = Math.min(ySel + 1, NY - 1); setYSel(n); setCursor(yfns[n].length); }
           else if (screen === 'window') { const n = Math.min(winSel + 1, WINKEYS.length - 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
+          else if (screen === 'tblset') { const n = Math.min(tblSel + 1, 1); setTblSel(n); setCursor((n === 0 ? tbl.start : tbl.step).length); }
           break;
         case 'entry': { const last = [...hist].reverse().find((h) => !h.err); if (last) { setEntry(last.input); setCursor(last.input.length); } break; }
         case 'clear':
+          if (screen === 'graph' && calcOp) { setCalcOp(null); setCalcStep(0); setCalcResult(null); break; }
           if (screen === 'home') { if (entry) { setEntry(''); setCursor(0); } else setHist([]); }
           else { bufSet(() => ''); setCursor(0); }
           break;
@@ -210,12 +280,16 @@ export default function CalculatorPage() {
           if (screen === 'home') { const ins = hist.map((h) => h.input); if (ins.length) { const idx = recall === null ? ins.length - 1 : Math.max(0, recall - 1); setRecall(idx); setEntry(ins[idx]); setCursor(ins[idx].length); } }
           else if (screen === 'yeq') { const n = Math.max(0, ySel - 1); setYSel(n); setCursor(yfns[n].length); }
           else if (screen === 'window') { const n = Math.max(0, winSel - 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
+          else if (screen === 'tblset') { setTblSel(0); setCursor(tbl.start.length); }
+          else if (screen === 'table') setTblRow((r) => r - 1);
           else if (screen === 'graph' && traceOn) setTraceFn((f) => nextFn(yfns, f, -1));
           break;
         case 'down':
           if (screen === 'home') { const ins = hist.map((h) => h.input); if (recall !== null) { const idx = recall + 1; if (idx >= ins.length) { setRecall(null); setEntry(''); setCursor(0); } else { setRecall(idx); setEntry(ins[idx]); setCursor(ins[idx].length); } } }
           else if (screen === 'yeq') { const n = Math.min(NY - 1, ySel + 1); setYSel(n); setCursor(yfns[n].length); }
           else if (screen === 'window') { const n = Math.min(WINKEYS.length - 1, winSel + 1); setWinSel(n); setCursor(win[WINKEYS[n]].length); }
+          else if (screen === 'tblset') { setTblSel(1); setCursor(tbl.step.length); }
+          else if (screen === 'table') setTblRow((r) => r + 1);
           else if (screen === 'graph' && traceOn) setTraceFn((f) => nextFn(yfns, f, 1));
           break;
         case 'yeq': setScreen('yeq'); setCursor(yfns[ySel].length); break;
@@ -223,6 +297,9 @@ export default function CalculatorPage() {
         case 'graph': setScreen('graph'); setTraceOn(false); break;
         case 'trace': setScreen('graph'); setTraceOn(true); setTraceFn(firstFn()); setTraceI(Math.floor(TRACE_STEPS / 2)); break;
         case 'zoom': setZoomMenu(true); break;
+        case 'tblset': setScreen('tblset'); setTblSel(0); setCursor(tbl.start.length); break;
+        case 'table': setScreen('table'); break;
+        case 'calc': setCalcMenu(true); break;
         case 'sto': if (editable) { insert('→'); setAlpha(true); keepAlpha = true; } break;
         case 'on': setScreen('home'); setEntry(''); setCursor(0); break;
         case 'quit': setScreen('home'); setModeMenu(false); setZoomMenu(false); break;
@@ -234,7 +311,7 @@ export default function CalculatorPage() {
     setSec(false);
     if (!keepAlpha) setAlpha(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sec, alpha, screen, editable, entry, cursor, hist, recall, doEnter, yfns, ySel, win, winSel, traceOn, firstFn, showToast]);
+  }, [sec, alpha, screen, editable, entry, cursor, hist, recall, doEnter, yfns, ySel, win, winSel, traceOn, traceFn, traceI, firstFn, showToast, tbl, tblSel, calcOp, calcStep, calcVals, calcCurves, cursorX, Fof, winNum]);
 
   // ── graph drawing ──
   useEffect(() => {
@@ -299,7 +376,14 @@ export default function CalculatorPage() {
         }
       }
     }
-  }, [screen, yfns, win, traceOn, traceFn, traceI, ctx, winNum]);
+
+    // CALC result marker
+    if (calcResult && isFinite(calcResult.x) && isFinite(calcResult.y)) {
+      g.strokeStyle = '#111'; g.lineWidth = 1; g.beginPath();
+      g.moveTo(sx(calcResult.x), 0); g.lineTo(sx(calcResult.x), cssH); g.stroke();
+      g.fillStyle = '#111'; g.beginPath(); g.arc(sx(calcResult.x), sy(calcResult.y), 4.5, 0, 7); g.fill();
+    }
+  }, [screen, yfns, win, traceOn, traceFn, traceI, calcResult, ctx, winNum]);
 
   const STATUS = `NORMAL FLOAT AUTO REAL ${angle === 'RAD' ? 'RADIAN' : 'DEGREE'} MP`;
 
@@ -319,21 +403,25 @@ export default function CalculatorPage() {
     );
   };
 
-  // trace readout
+  // graph status bar — CALC result, CALC prompt, or TRACE readout
   let traceTxt = '';
-  if (screen === 'graph' && traceOn) {
-    const f = yfns[traceFn];
-    if (f && f.trim()) {
-      const cp = compile(f);
-      const xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10);
-      const x = xmin + (traceI / (TRACE_STEPS - 1)) * (xmax - xmin);
-      const y = cp.ok ? cp.fn(ctx({ X: x })) : NaN;
-      traceTxt = `Y${traceFn + 1}  X=${fmtShort(x)}  Y=${isFinite(y) ? fmtShort(y) : '—'}`;
-    } else traceTxt = 'No function to trace';
+  if (screen === 'graph') {
+    if (calcResult) traceTxt = calcResult.text;
+    else if (calcOp) {
+      const op = CALC_OPS.find((o) => o.id === calcOp)!;
+      const prompt = op.prompts[calcStep];
+      if (calcOp === 'intersect' && calcStep < 2) traceTxt = `${op.label} · ${prompt} Y${traceFn + 1} (↑↓ change · ENTER)`;
+      else traceTxt = `${op.label} · ${prompt}  X=${fmtShort(cursorX())}`;
+    } else if (traceOn) {
+      const f = yfns[traceFn];
+      if (f && f.trim()) { const cp = compile(f); const y = cp.ok ? cp.fn(ctx({ X: cursorX() })) : NaN; traceTxt = `Y${traceFn + 1}  X=${fmtShort(cursorX())}  Y=${isFinite(y) ? fmtShort(y) : '—'}`; }
+      else traceTxt = 'No function to trace';
+    }
   }
 
   return (
     <div className="wrap">
+      <a className="backBtn" href="/admin">‹ Back</a>
       <div className="calc">
         <div className="head"><div className="model">TI-84 Plus CE</div><div className="py">PYTHON</div></div>
 
@@ -371,9 +459,39 @@ export default function CalculatorPage() {
             {screen === 'graph' && (
               <div className="graphWrap">
                 <canvas ref={canvasRef} className="cv" />
-                {traceOn && <div className="traceBar">{traceTxt}</div>}
+                {traceTxt && <div className="traceBar">{traceTxt}</div>}
               </div>
             )}
+
+            {screen === 'tblset' && (<>
+              <div className="status">TABLE SETUP</div>
+              <div className={`wrow ${tblSel === 0 ? 'sel' : ''}`}><span className="wlab">TblStart=</span><span className="wval">{tblSel === 0 ? <Caret s={tbl.start} c={cursor} /> : tbl.start}</span></div>
+              <div className={`wrow ${tblSel === 1 ? 'sel' : ''}`}><span className="wlab">&#916;Tbl=</span><span className="wval">{tblSel === 1 ? <Caret s={tbl.step} c={cursor} /> : tbl.step}</span></div>
+              <div className="hint">Set start &amp; step, then 2nd · table</div>
+            </>)}
+
+            {screen === 'table' && (() => {
+              const rs = evaluate(tbl.start, ctx()); const rt = evaluate(tbl.step, ctx());
+              const start = rs.ok ? rs.value : 0;
+              const step = rt.ok ? rt.value : 1;
+              const defined = yfns.map((f, i) => ({ f, i })).filter((o) => o.f.trim()).slice(0, 3);
+              const ROWS_N = 8;
+              return (
+                <div className="tbl">
+                  <div className="trow thead"><span className="tc">X</span>{defined.map((o) => <span key={o.i} className="tc">Y{o.i + 1}</span>)}</div>
+                  {Array.from({ length: ROWS_N }, (_, r) => {
+                    const xv = start + (tblRow + r) * step;
+                    return (
+                      <div key={r} className="trow">
+                        <span className="tc">{fmtShort(xv)}</span>
+                        {defined.map((o) => { const cp = compile(o.f); const y = cp.ok ? cp.fn(ctx({ X: xv })) : NaN; return <span key={o.i} className="tc">{isFinite(y) ? fmtShort(y) : 'ERR'}</span>; })}
+                      </div>
+                    );
+                  })}
+                  {defined.length === 0 && <div className="hint">No functions in Y=</div>}
+                </div>
+              );
+            })()}
           </div>
 
           {modeMenu && (
@@ -401,6 +519,17 @@ export default function CalculatorPage() {
                   <button onClick={() => applyZoom('trig')}>ZTrig</button>
                   <button onClick={() => applyZoom('fit')}>ZoomFit</button>
                   <button onClick={() => setZoomMenu(false)}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
+          {calcMenu && (
+            <div className="overlay" onClick={() => setCalcMenu(false)}>
+              <div className="ov" onClick={(e) => e.stopPropagation()}>
+                <div className="ov-title">CALCULATE</div>
+                <div className="zgrid">
+                  {CALC_OPS.map((o, i) => <button key={o.id} onClick={() => startCalc(o.id)}>{i + 1}: {o.label}</button>)}
+                  <button onClick={() => setCalcMenu(false)}>Cancel</button>
                 </div>
               </div>
             </div>
@@ -441,6 +570,10 @@ export default function CalculatorPage() {
 
       <style jsx>{`
         .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #e9eaec; padding: 10px; box-sizing: border-box; }
+        .backBtn { position: fixed; top: 10px; left: 10px; z-index: 50; background: rgba(20,22,26,.86); color: #fff;
+          font: 600 13px/1 'Helvetica Neue',Arial,sans-serif; text-decoration: none; padding: 9px 13px; border-radius: 999px;
+          box-shadow: 0 2px 8px rgba(0,0,0,.28); -webkit-tap-highlight-color: transparent; }
+        .backBtn:active { background: #000; }
         .calc { width: 100%; max-width: 420px; background: linear-gradient(#fdfdfc,#e8e8e4); border: 1px solid #d3d3cf; border-radius: 30px; padding: 14px 16px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.22); box-sizing: border-box; }
         .head { text-align: center; margin-bottom: 8px; }
         .model { font: 700 17px/1 'Helvetica Neue',Arial,sans-serif; color: #1a1a1a; }
@@ -457,7 +590,13 @@ export default function CalculatorPage() {
         .yrow.sel, .wrow.sel { background: #d6e7c8; }
         .ysw { width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; flex: none; }
         .ylab { font-weight: 700; } .yexpr, .wval { word-break: break-all; }
-        .wlab { width: 56px; font-weight: 700; }
+        .wlab { width: 64px; font-weight: 700; }
+        .hint { font-size: 11px; color: #5a6675; margin-top: 8px; }
+        .tbl { font-size: 13px; }
+        .trow { display: flex; border-bottom: 1px solid #d6dccf; }
+        .trow.thead { font-weight: 700; border-bottom: 1.5px solid #9aa3ad; }
+        .tc { flex: 1; padding: 2px 4px; text-align: right; border-left: 1px solid #d6dccf; overflow: hidden; white-space: nowrap; }
+        .tc:first-child { border-left: none; }
         .graphWrap { position: relative; height: 100%; }
         .cv { width: 100%; height: 100%; display: block; border-radius: 2px; }
         .traceBar { position: absolute; left: 0; bottom: 0; right: 0; background: rgba(238,240,232,.92); font-size: 12px; font-weight: 700; padding: 2px 4px; }
@@ -471,15 +610,15 @@ export default function CalculatorPage() {
         .zgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .zgrid button { padding: 8px; border: 1px solid #8a8f86; background: #fff; border-radius: 4px; font: 12px monospace; }
         .toast { position: absolute; left: 12px; right: 12px; bottom: 16px; background: rgba(20,22,26,.9); color: #fff; font: 12px/1.3 Arial; padding: 8px 10px; border-radius: 7px; text-align: center; }
-        .grow { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; margin: 12px 0 8px; }
+        .grow { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; margin: 12px 0 15px; }
         .fcell { display: flex; flex-direction: column; }
         .flab { height: 11px; text-align: center; white-space: nowrap; }
         .fs { font-size: 8px; color: #2f6cab; font-weight: 600; } .ffk { font-size: 7px; color: #8a8d90; }
-        .pad { display: grid; gap: 7px; margin-bottom: 7px; grid-template-columns: repeat(5,1fr); grid-template-areas: 's1c1 s1c2 s1c3 dpad dpad' 's2c1 s2c2 s2c3 dpad dpad'; }
+        .pad { display: grid; column-gap: 7px; row-gap: 15px; margin-bottom: 15px; grid-template-columns: repeat(5,1fr); grid-template-areas: 's1c1 s1c2 s1c3 dpad dpad' 's2c1 s2c2 s2c3 dpad dpad'; }
         .dpad { position: relative; background: linear-gradient(#dde0e2,#b0b4b6); border: 1px solid #9ca0a2; border-radius: 50%; aspect-ratio: 1; align-self: center; justify-self: center; width: 86%; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
         .ar { position: absolute; border: none; background: transparent; color: #2a2a2a; font-size: 12px; width: 34%; height: 34%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .ar.up { top: 2%; left: 33%; } .ar.down { bottom: 2%; left: 33%; } .ar.left { left: 2%; top: 33%; } .ar.right { right: 2%; top: 33%; }
-        .grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; }
+        .grid { display: grid; grid-template-columns: repeat(5,1fr); column-gap: 7px; row-gap: 15px; }
         .cell { display: block; }
         .foot { text-align: center; margin-top: 12px; font: 700 10px Arial; color: #3a3a3a; letter-spacing: .4px; }
         .ti { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: #c01722; color: #fff; font-size: 7px; margin-right: 5px; vertical-align: middle; }
@@ -495,7 +634,7 @@ export default function CalculatorPage() {
         .key .lblP { display: flex; align-items: center; justify-content: center; height: 100%; font-weight: 700; font-size: clamp(9px,3.2vw,14px); }
         .key.kb .lblP, .key.k2 .lblP, .key.ka .lblP { color: #fff; }
         .key.kw .lblP, .key.kg .lblP { color: #1b1b1b; }
-        .key .lblS, .key .lblA { position: absolute; top: -10px; font-size: 9.5px; font-weight: 600; line-height: 1; white-space: nowrap; opacity: .95; }
+        .key .lblS, .key .lblA { position: absolute; top: -12px; font-size: 9.5px; font-weight: 600; line-height: 1; white-space: nowrap; opacity: .95; }
         .key .lblS { left: 1px; color: #2f6cab; } .key .lblA { right: 1px; color: #3f8a34; }
         .key.hot2 .lblS { background: #2f6cab; color: #fff; border-radius: 3px; padding: 1px 2px; }
         .key.hota .lblA { background: #3f8a34; color: #fff; border-radius: 3px; padding: 1px 2px; }
