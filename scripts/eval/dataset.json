@@ -1,0 +1,10 @@
+[
+  { "id": "loan-scheme-b", "question": "A $4500 stereo is bought under Scheme B: a 20% down payment, with the remaining balance charged 6% per annum simple interest over 2 years, repaid in equal monthly instalments. Find the monthly repayment.", "expected": "$168" },
+  { "id": "compound-half-yearly", "question": "$22000 is invested at 1.88% per annum, compounded half-yearly, for 6 years. Find the final amount, to the nearest cent.", "expected": "$24614.01" },
+  { "id": "solve-rate", "question": "Given 8137.51 = 7000(1 + R/200)^8, find R correct to 3 significant figures (R is a percentage per annum).", "expected": "3.80" },
+  { "id": "exact-sin", "question": "Find the exact value of sin(2*pi/3).", "expected": "sqrt(3)/2" },
+  { "id": "diff-15x", "question": "Differentiate 15x with respect to x.", "expected": "15" },
+  { "id": "quadratic-roots", "question": "Solve x^2 - 5x + 6 = 0.", "expected": "x = 2 or x = 3" },
+  { "id": "index-simplify", "question": "Simplify (81 x^4)^(-3/4), giving your answer with positive indices.", "expected": "1/(27 x^3)" },
+  { "id": "trig-equation", "question": "Solve 2 sin x = sqrt(2) for 0 <= x <= 2*pi, giving exact answers.", "expected": "x = pi/4 or x = 3*pi/4" }
+]

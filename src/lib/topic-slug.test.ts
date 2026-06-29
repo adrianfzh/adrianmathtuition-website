@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { topicSlug } from './topic-slug';
 
 const cases: [string, string][] = [
@@ -11,10 +12,8 @@ const cases: [string, string][] = [
   ['Logarithms (Log Laws)', 'logarithms-log-laws'],
 ];
 
-for (const [input, expected] of cases) {
-  const result = topicSlug(input);
-  if (result !== expected) {
-    throw new Error(`topicSlug(${JSON.stringify(input)}) = ${JSON.stringify(result)}, want ${JSON.stringify(expected)}`);
-  }
-}
-console.log('All topicSlug tests passed');
+describe('topicSlug', () => {
+  it.each(cases)('slugs %j → %j', (input, expected) => {
+    expect(topicSlug(input)).toBe(expected);
+  });
+});
