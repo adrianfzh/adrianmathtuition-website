@@ -160,7 +160,7 @@ ${notesContext}`;
       await sendEvent({ visuals, subtopics });
 
       const stream = client.messages.stream({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-opus-4-8',
         max_tokens: 1500,
         system: systemPrompt,
         messages,

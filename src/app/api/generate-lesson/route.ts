@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-opus-4-8',
       max_tokens: 8000,
       system: LESSON_SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userPrompt }],
