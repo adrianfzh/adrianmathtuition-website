@@ -121,9 +121,23 @@ export default function TodoPage() {
           <a href="/admin" style={{ textDecoration: 'none', color: '#6b7280', fontSize: 14, fontWeight: 600 }}>‹ Admin</a>
           <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, color: '#111' }}>✅ To-Do</h1>
         </div>
-        <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 16px' }}>
+        <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 12px' }}>
           The build-test-fix <code>/loop</code> works these top-to-bottom — open items first, oldest at the top.
         </p>
+
+        <details style={{ marginBottom: 18, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12 }}>
+          <summary style={{ cursor: 'pointer', padding: '12px 14px', fontSize: 14, fontWeight: 700, color: '#1e3a5f' }}>▶ How to run these with the loop</summary>
+          <div style={{ padding: '0 14px 14px', fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
+            <p style={{ margin: '0 0 8px' }}>In your local Claude Code session (rooted in <code>~/dev</code>), paste:</p>
+            <pre style={{ background: '#0f172a', color: '#e2e8f0', borderRadius: 8, padding: '10px 12px', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: '0 0 10px' }}>/loop take the next open task from the Todos table, implement it, run npm test until it passes, then mark it Done; stop when no open tasks remain</pre>
+            <p style={{ margin: '0 0 6px' }}><strong>What happens:</strong> it does the top open task → runs <code>npm test</code> to prove it works → ticks it Done here → moves to the next.</p>
+            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+              <li>Keep tasks <strong>small and specific</strong> — one focused change each.</li>
+              <li><code>npm test</code> is the safety net: a task isn&apos;t ticked off until the tests pass, so broken work can&apos;t sneak through.</li>
+              <li>Watch the first task, then let it run. <strong>Review the changes before you deploy</strong> — the loop doesn&apos;t push to production on its own.</li>
+            </ul>
+          </div>
+        </details>
 
         {apiError && (
           <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 12, padding: '12px 14px', fontSize: 13, marginBottom: 16 }}>
