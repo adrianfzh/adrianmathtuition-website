@@ -411,7 +411,7 @@ Read-only student history view. Cookie-auth protected (same 30-day session), PWA
 - Revision page formatting improvements
 - Chat page smart scroll
 - Add image support for revision notes (diagrams from DOCX files)
-- **Broken:** the revision lesson player (`src/app/revise/[topic]/[subtopic]/[subsubtopic]/lesson/page.tsx`) fetches `/api/revision?slug=`, but **no `src/app/api/revision/route.ts` exists** → it always falls to "not found". Either restore the route (lessonData from Supabase `lesson_content`) or retire the page if superseded by worked-examples swipe cards.
+- ~~Revision lesson player + LessonPlayer~~ — **removed** (orphaned; backing `/api/revision` was retired in `9856906`, page was never linked; worked-examples swipe cards superseded it)
 
 ## AI Marking PNG Renderer
 
