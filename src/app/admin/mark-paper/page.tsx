@@ -87,7 +87,7 @@ function FileDrop({ label, accept, multiple, count, primaryName, onFiles, hint }
       >
         <div style={{ fontSize: 26, marginBottom: 6 }}>{multiple ? '🖼️' : '📄'}</div>
         {count > 0
-          ? <div style={{ fontWeight: 600, color: '#0f172a' }}>{multiple ? `${count} photo${count > 1 ? 's' : ''} selected — drop more or click to replace` : primaryName}</div>
+          ? <div style={{ fontWeight: 600, color: '#0f172a' }}>{multiple ? `${count} photo${count > 1 ? 's' : ''} added — drop or click to add more` : primaryName}</div>
           : <div style={{ color: '#475569' }}>Drag &amp; drop here, or <span style={{ color: '#2563eb', fontWeight: 600 }}>click to browse</span></div>}
         {hint && <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>{hint}</div>}
       </div>
@@ -115,12 +115,40 @@ export default function MarkPaperPage() {
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
+  const [converting, setConverting] = useState(false);
 
   const authHeaders = { Authorization: `Bearer ${getAuth()}`, 'Content-Type': 'application/json' };
 
-  function onPickImages(arr: File[]) {
-    setImages(arr);
-    setImgPreviews(arr.map((f) => URL.createObjectURL(f)));
+  // iPhone photos are HEIC, which browsers can't render or canvas-process — convert to JPEG first.
+  async function normalizeImage(f: File): Promise<File> {
+    const isHeic = /heic|heif/i.test(f.type) || /\.hei[cf]$/i.test(f.name);
+    if (!isHeic) return f;
+    try {
+      const heic2any = (await import('heic2any')).default as (opts: { blob: Blob; toType?: string; quality?: number }) => Promise<Blob | Blob[]>;
+      const out = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.9 });
+      const blob = Array.isArray(out) ? out[0] : out;
+      return new File([blob], f.name.replace(/\.hei[cf]$/i, '.jpg'), { type: 'image/jpeg' });
+    } catch {
+      return f; // conversion failed — fall through (may still error downstream)
+    }
+  }
+
+  // Append picked photos (so you can build the set up incrementally), converting HEIC first.
+  async function onPickImages(arr: File[]) {
+    if (!arr.length) return;
+    setConverting(true);
+    try {
+      const normalized = await Promise.all(arr.map(normalizeImage));
+      setImages((prev) => [...prev, ...normalized]);
+      setImgPreviews((prev) => [...prev, ...normalized.map((f) => URL.createObjectURL(f))]);
+    } finally {
+      setConverting(false);
+    }
+  }
+
+  function removeImage(idx: number) {
+    setImgPreviews((prev) => { const u = prev[idx]; if (u) URL.revokeObjectURL(u); return prev.filter((_, j) => j !== idx); });
+    setImages((prev) => prev.filter((_, j) => j !== idx));
   }
 
   async function propose() {
@@ -195,19 +223,24 @@ export default function MarkPaperPage() {
           multiple
           count={images.length}
           primaryName={null}
-          onFiles={(fs) => { const imgs = fs.filter((f) => f.type.startsWith('image/')); if (imgs.length) onPickImages(imgs); }}
-          hint="JPG / PNG · drop several at once"
+          onFiles={(fs) => { const imgs = fs.filter((f) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(f.name)); if (imgs.length) onPickImages(imgs); }}
+          hint="JPG / PNG / HEIC · drop several · click to add more"
         />
         {imgPreviews.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
             {imgPreviews.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={i} src={src} alt={`working ${i + 1}`} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+              <div key={i} style={{ position: 'relative', width: 72, height: 72 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt={`working ${i + 1}`} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                <button onClick={() => removeImage(i)} aria-label={`Remove photo ${i + 1}`}
+                  style={{ position: 'absolute', top: -7, right: -7, width: 20, height: 20, borderRadius: '50%', border: '2px solid #fff', background: '#111827', color: '#fff', fontSize: 12, lineHeight: '15px', cursor: 'pointer', padding: 0 }}>×</button>
+              </div>
             ))}
           </div>
         )}
+        {converting && <div style={{ marginTop: 8, fontSize: 13, color: '#2563eb' }}>Converting photos…</div>}
         <div style={{ marginTop: 14 }}>
-          <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={propose}>
+          <button style={{ ...btn, opacity: (busy || converting) ? 0.6 : 1 }} disabled={busy || converting} onClick={propose}>
             {phase === 'proposing' ? 'Analysing…' : 'Analyse & match'}
           </button>
           <span style={{ color: '#6b7280', marginLeft: 10, fontSize: 13 }}>Reading the paper and matching each photo (≈1 min).</span>

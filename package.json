@@ -22,6 +22,7 @@
     "@vercel/blob": "^2.3.2",
     "docx": "^7.8.2",
     "framer-motion": "^12.38.0",
+    "heic2any": "^0.0.4",
     "jszip": "^3.10.1",
     "katex": "^0.16.45",
     "next": "16.2.2",
