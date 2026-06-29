@@ -114,6 +114,7 @@ export default function MarkPaperPage() {
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   const authHeaders = { Authorization: `Bearer ${getAuth()}`, 'Content-Type': 'application/json' };
 
@@ -247,10 +248,10 @@ export default function MarkPaperPage() {
             const flagged = (m?.confidence || 'high') === 'low';
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderTop: i ? '1px solid #f3f4f6' : 'none' }}>
-                {imgPreviews[i] && (
+                {imgPreviews[i]
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={imgPreviews[i]} alt={`w${i}`} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb' }} />
-                )}
+                  ? <img src={imgPreviews[i]!} alt={`Photo ${i + 1}`} title="Click to enlarge" onClick={() => setLightbox(imgPreviews[i]!)} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'zoom-in', flexShrink: 0 }} />
+                  : <div style={{ width: 48, height: 48, borderRadius: 6, border: '1px solid #e5e7eb', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#94a3b8', textAlign: 'center', flexShrink: 0 }}>no preview</div>}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13 }}>
                     Photo {i + 1}
@@ -311,6 +312,13 @@ export default function MarkPaperPage() {
       {usage && (
         <div style={{ color: '#6b7280', fontSize: 12 }}>
           💰 ${(usage.costUsd ?? 0).toFixed(4)} · ⏱ {usage.timeSec ?? 0}s · {(usage.inputTokens ?? 0) + (usage.outputTokens ?? 0)} tokens
+        </div>
+      )}
+
+      {lightbox && (
+        <div onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out', padding: 20 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={lightbox} alt="enlarged working" style={{ maxWidth: '95%', maxHeight: '95%', objectFit: 'contain', borderRadius: 8 }} />
         </div>
       )}
     </div>
