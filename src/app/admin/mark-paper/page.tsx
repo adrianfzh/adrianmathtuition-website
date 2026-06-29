@@ -44,9 +44,6 @@ async function fileToUpload(file: File, maxEdge = 1600, quality = 0.85): Promise
   }
 }
 
-type Question = { number: string; question_text: string; total_marks?: number | null; parts?: unknown[]; has_diagram?: boolean };
-type Working = { photo_index?: number; region?: string | null; detected_label?: string | null; final_answer?: string | null; transcription_confidence?: string };
-type Match = { working_index: number; question_number: string | null; confidence: string; used_label?: boolean; reason?: string };
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string;
@@ -58,7 +55,6 @@ type Usage = { costUsd?: number; timeSec?: number; inputTokens?: number; outputT
 
 const card: CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, marginBottom: 16 };
 const btn: CSSProperties = { padding: '10px 18px', borderRadius: 8, border: 'none', background: '#111827', color: '#fff', fontWeight: 600, cursor: 'pointer' };
-const conf = (c?: string) => (c === 'low' ? '#b91c1c' : c === 'medium' ? '#b45309' : '#15803d');
 
 // Drag-and-drop / click-to-browse upload zone.
 function FileDrop({ label, accept, multiple, count, primaryName, onFiles, hint }: {
@@ -100,13 +96,7 @@ function FileDrop({ label, accept, multiple, count, primaryName, onFiles, hint }
 export default function MarkPaperPage() {
   const [pdf, setPdf] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
-  const [pdfB64, setPdfB64] = useState('');
   const [imgPreviews, setImgPreviews] = useState<(string | null)[]>([]);
-
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [workings, setWorkings] = useState<Working[]>([]);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [mapping, setMapping] = useState<(string | null)[]>([]);
 
   const [results, setResults] = useState<Result[] | null>(null);
   const [totals, setTotals] = useState<{ awarded: number; max: number } | null>(null);
@@ -148,60 +138,25 @@ export default function MarkPaperPage() {
     setImages((prev) => prev.filter((_, j) => j !== idx));
   }
 
-  async function propose() {
+  // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
+  async function markPaper() {
     if (!pdf || images.length === 0) { setError('Add a question PDF and at least one working photo.'); return; }
-    setError(''); setPhase('proposing'); setResults(null); setTotals(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked(null);
     try {
       const pdfBase64 = await pdfToBase64(pdf);
-      setPdfB64(pdfBase64);
       const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
-      const r = await fetch('/api/admin/mark-paper', {
+      const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'propose', pdfBase64, images: imgs }),
+        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs }),
       });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || 'Analyse failed');
-      setQuestions(d.questions || []);
-      setWorkings(d.workings || []);
-      setMatches(d.matches || []);
-      setMapping((d.workings || []).map((_: unknown, i: number) => {
-        const m = (d.matches || []).find((mm: Match) => mm.working_index === i);
-        return m ? m.question_number : null;
-      }));
-      setUsage(d.usage || null);
-      setPhase('proposed');
-    } catch (e) { setError((e as Error).message); setPhase('idle'); }
-  }
-
-  async function mark() {
-    setError(''); setPhase('marking');
-    try {
-      const map = mapping.map((qn, i) => {
-        const m = matches.find((mm) => mm.working_index === i);
-        return { working_index: i, question_number: qn, confidence: m?.confidence || 'high', used_label: m?.used_label };
-      });
-      const r = await fetch('/api/admin/mark-paper', {
-        method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'mark', pdfBase64: pdfB64, questions, workings, mapping: map }),
-      });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || 'Marking failed');
+      const d = await resp.json();
+      if (!resp.ok) throw new Error(d.error || 'Marking failed');
       setResults(d.results || []);
       setTotals(d.totals || null);
       setUnattempted(d.unattempted_questions || []);
-      // Accumulate onto the propose-phase usage so the total cost reflects BOTH phases.
-      setUsage((prev) => {
-        if (!d.usage) return prev;
-        if (!prev) return d.usage;
-        return {
-          costUsd: (prev.costUsd || 0) + (d.usage.costUsd || 0),
-          timeSec: (prev.timeSec || 0) + (d.usage.timeSec || 0),
-          inputTokens: (prev.inputTokens || 0) + (d.usage.inputTokens || 0),
-          outputTokens: (prev.outputTokens || 0) + (d.usage.outputTokens || 0),
-        };
-      });
+      setUsage(d.usage || null);
       setPhase('done');
-    } catch (e) { setError((e as Error).message); setPhase('proposed'); }
+    } catch (e) { setError((e as Error).message); setPhase('idle'); }
   }
 
   // Render the marked typeset output: PDF (>1 image) or a single image (1 image).
@@ -227,7 +182,7 @@ export default function MarkPaperPage() {
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Mark a paper</h1>
-      <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the question paper (PDF) and the student&rsquo;s working (photos). The marker matches each photo to a question — confirm the matches, then mark.</p>
+      <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the question paper (PDF) and the student&rsquo;s working (photos), then Mark. The marker reads each photo against the paper and marks every question it finds — no manual matching.</p>
 
       {error && <div style={{ ...card, borderColor: '#fca5a5', background: '#fef2f2', color: '#b91c1c' }}>{error}</div>}
 
@@ -266,56 +221,14 @@ export default function MarkPaperPage() {
           </div>
         )}
         <div style={{ marginTop: 14 }}>
-          <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={propose}>
-            {phase === 'proposing' ? 'Analysing…' : 'Analyse & match'}
+          <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={markPaper}>
+            {phase === 'marking' ? 'Marking…' : 'Mark paper'}
           </button>
-          <span style={{ color: '#6b7280', marginLeft: 10, fontSize: 13 }}>Reading the paper and matching each photo (≈1 min).</span>
+          <span style={{ color: '#6b7280', marginLeft: 10, fontSize: 13 }}>Reads each photo against the paper and marks every question it finds (≈1–2 min).</span>
         </div>
       </div>
 
-      {/* Mapping confirmation */}
-      {phase !== 'idle' && phase !== 'proposing' && workings.length > 0 && (
-        <div style={card}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Confirm the matches</h2>
-          <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>Flagged rows were unlabelled or ambiguous — check those especially.</p>
-          {workings.map((w, i) => {
-            const m = matches.find((mm) => mm.working_index === i);
-            const flagged = (m?.confidence || 'high') === 'low';
-            const pi = w.photo_index ?? i;
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderTop: i ? '1px solid #f3f4f6' : 'none' }}>
-                {imgPreviews[pi]
-                  // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={imgPreviews[pi]!} alt={`Photo ${pi + 1}`} title="Click to enlarge" onClick={() => setLightbox(imgPreviews[pi]!)} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'zoom-in', flexShrink: 0 }} />
-                  : <div style={{ width: 48, height: 48, borderRadius: 6, border: '1px solid #e5e7eb', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#94a3b8', textAlign: 'center', flexShrink: 0 }}>no preview</div>}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13 }}>
-                    Photo {pi + 1}
-                    {w.region ? <span style={{ color: '#94a3b8' }}> · {w.region}</span> : null}
-                    {w.detected_label ? <> · label “{w.detected_label}”</> : <span style={{ color: '#b45309' }}> · no label</span>}
-                    {w.final_answer ? <span style={{ color: '#6b7280' }}> · ans: {String(w.final_answer).slice(0, 40)}</span> : null}
-                  </div>
-                  {m?.reason && <div style={{ fontSize: 12, color: conf(m.confidence) }}>{flagged ? '⚠ ' : ''}{m.reason}</div>}
-                </div>
-                <select
-                  value={mapping[i] ?? ''}
-                  onChange={(e) => setMapping((prev) => prev.map((v, j) => (j === i ? (e.target.value || null) : v)))}
-                  style={{ padding: '6px 8px', borderRadius: 6, border: `1px solid ${flagged ? '#fca5a5' : '#d1d5db'}`, minWidth: 120 }}
-                >
-                  <option value="">— none —</option>
-                  {questions.map((q) => <option key={q.number} value={q.number}>Q{q.number}</option>)}
-                </select>
-              </div>
-            );
-          })}
-          <div style={{ marginTop: 14 }}>
-            <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={mark}>
-              {phase === 'marking' ? 'Marking…' : 'Mark it'}
-            </button>
-            <span style={{ color: '#6b7280', marginLeft: 10, fontSize: 13 }}>Solves &amp; marks each matched question (a few minutes).</span>
-          </div>
-        </div>
-      )}
+      {/* (matching/confirm step removed — direct marking marks every photo against the PDF) */}
 
       {/* Results */}
       {phase === 'done' && results && (
