@@ -24,25 +24,24 @@ function readDataUrl(file: File): Promise<string> {
 async function pdfToBase64(file: File): Promise<string> {
   return (await readDataUrl(file)).split(',')[1] || '';
 }
-// Downscale photos client-side so the upload stays well under Vercel's request limit.
-async function imageToBase64(file: File, maxEdge = 1600, quality = 0.85): Promise<{ base64: string; mediaType: string }> {
-  const dataUrl = await readDataUrl(file);
-  const img = await new Promise<HTMLImageElement>((res, rej) => {
-    const i = new Image();
-    i.onload = () => res(i);
-    i.onerror = rej;
-    i.src = dataUrl;
-  });
-  let { width, height } = img;
-  const scale = Math.min(1, maxEdge / Math.max(width, height));
-  width = Math.round(width * scale);
-  height = Math.round(height * scale);
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
-  const out = canvas.toDataURL('image/jpeg', quality);
-  return { base64: out.split(',')[1] || '', mediaType: 'image/jpeg' };
+// Build the upload payload for one image. Downscale via canvas when the browser can
+// decode it (keeps the payload small); otherwise — HEIC on Chrome — send the raw bytes
+// and let the server (sharp) convert. Never reject a photo here.
+async function fileToUpload(file: File, maxEdge = 1600, quality = 0.85): Promise<{ base64: string; mediaType: string }> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, maxEdge / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d')!.drawImage(bmp, 0, 0, w, h);
+    bmp.close?.();
+    const out = canvas.toDataURL('image/jpeg', quality);
+    return { base64: out.split(',')[1] || '', mediaType: 'image/jpeg' };
+  } catch {
+    const dataUrl = await readDataUrl(file);
+    return { base64: dataUrl.split(',')[1] || '', mediaType: file.type || 'image/heic' };
+  }
 }
 
 type Question = { number: string; question_text: string; total_marks?: number | null; parts?: unknown[]; has_diagram?: boolean };
@@ -101,7 +100,7 @@ export default function MarkPaperPage() {
   const [pdf, setPdf] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
   const [pdfB64, setPdfB64] = useState('');
-  const [imgPreviews, setImgPreviews] = useState<string[]>([]);
+  const [imgPreviews, setImgPreviews] = useState<(string | null)[]>([]);
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [workings, setWorkings] = useState<Working[]>([]);
@@ -115,49 +114,25 @@ export default function MarkPaperPage() {
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
-  const [converting, setConverting] = useState(false);
 
   const authHeaders = { Authorization: `Bearer ${getAuth()}`, 'Content-Type': 'application/json' };
 
-  // Can the browser natively decode this as an image? (JPEG/PNG/WebP everywhere; HEIC only on Safari.)
+  // Can the browser natively decode this for a preview? (JPEG/PNG/WebP everywhere; HEIC only on Safari.)
   async function canDecode(f: Blob): Promise<boolean> {
     try { const b = await createImageBitmap(f); b.close?.(); return true; } catch { return false; }
   }
 
-  // Normalise a picked file. If the browser can't decode it (e.g. HEIC on Chrome),
-  // convert to JPEG; anything still unreadable is rejected with a reason (no broken thumbnails).
-  async function normalizeImage(f: File): Promise<{ file?: File; error?: string }> {
-    if (await canDecode(f)) return { file: f };
-    try {
-      const mod = await import('heic2any');
-      const heic2any = ((mod as { default?: unknown }).default || mod) as (o: { blob: Blob; toType?: string; quality?: number }) => Promise<Blob | Blob[]>;
-      const out = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.9 });
-      const blob = Array.isArray(out) ? out[0] : out;
-      const jpeg = new File([blob], f.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
-      if (await canDecode(jpeg)) return { file: jpeg };
-      return { error: `${f.name}: converted but still unreadable` };
-    } catch (e) {
-      return { error: `${f.name}: couldn't convert (${(e as Error)?.message || 'HEIC decode failed'})` };
-    }
-  }
-
-  // Append readable photos; surface any that couldn't be read instead of showing them broken.
+  // Accept all picked photos (HEIC included). Preview those the browser can decode; the rest
+  // still upload and get converted on the server. Appends, so you can build the set up.
   async function onPickImages(arr: File[]) {
     if (!arr.length) return;
-    setConverting(true);
     setError('');
-    try {
-      const results = await Promise.all(arr.map(normalizeImage));
-      const good = results.map((r) => r.file).filter((f): f is File => !!f);
-      const errs = results.map((r) => r.error).filter((e): e is string => !!e);
-      if (good.length) {
-        setImages((prev) => [...prev, ...good]);
-        setImgPreviews((prev) => [...prev, ...good.map((f) => URL.createObjectURL(f))]);
-      }
-      if (errs.length) setError(`Couldn't read ${errs.length} photo${errs.length > 1 ? 's' : ''}: ${errs.join(' · ')}. Re-take as JPEG or screenshot it.`);
-    } finally {
-      setConverting(false);
-    }
+    const withPreview = await Promise.all(arr.map(async (f) => ({
+      file: f,
+      url: (await canDecode(f)) ? URL.createObjectURL(f) : null,
+    })));
+    setImages((prev) => [...prev, ...withPreview.map((w) => w.file)]);
+    setImgPreviews((prev) => [...prev, ...withPreview.map((w) => w.url)]);
   }
 
   function removeImage(idx: number) {
@@ -171,7 +146,7 @@ export default function MarkPaperPage() {
     try {
       const pdfBase64 = await pdfToBase64(pdf);
       setPdfB64(pdfBase64);
-      const imgs = await Promise.all(images.map((f) => imageToBase64(f)));
+      const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
       const r = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({ phase: 'propose', pdfBase64, images: imgs }),
@@ -244,17 +219,18 @@ export default function MarkPaperPage() {
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
             {imgPreviews.map((src, i) => (
               <div key={i} style={{ position: 'relative', width: 72, height: 72 }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={`working ${i + 1}`} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                {src
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={src} alt={`working ${i + 1}`} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                  : <div style={{ width: 72, height: 72, borderRadius: 6, border: '1px solid #e5e7eb', background: '#f1f5f9', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#475569', textAlign: 'center', gap: 2 }}><span style={{ fontSize: 18 }}>🖼️</span>HEIC<br />converts on<br />upload</div>}
                 <button onClick={() => removeImage(i)} aria-label={`Remove photo ${i + 1}`}
                   style={{ position: 'absolute', top: -7, right: -7, width: 20, height: 20, borderRadius: '50%', border: '2px solid #fff', background: '#111827', color: '#fff', fontSize: 12, lineHeight: '15px', cursor: 'pointer', padding: 0 }}>×</button>
               </div>
             ))}
           </div>
         )}
-        {converting && <div style={{ marginTop: 8, fontSize: 13, color: '#2563eb' }}>Converting photos…</div>}
         <div style={{ marginTop: 14 }}>
-          <button style={{ ...btn, opacity: (busy || converting) ? 0.6 : 1 }} disabled={busy || converting} onClick={propose}>
+          <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={propose}>
             {phase === 'proposing' ? 'Analysing…' : 'Analyse & match'}
           </button>
           <span style={{ color: '#6b7280', marginLeft: 10, fontSize: 13 }}>Reading the paper and matching each photo (≈1 min).</span>
