@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, type CSSProperties } from 'react';
 
 // ── auth (same cookie scheme as the other admin pages) ──────────────────────
 function getCookie(name: string): string {
@@ -117,6 +117,10 @@ export default function MarkPaperPage() {
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   const authHeaders = { Authorization: `Bearer ${getAuth()}`, 'Content-Type': 'application/json' };
+
+  // Not logged in (e.g. opened this page directly in a browser without the admin cookie)
+  // → send to the admin hub to log in, instead of failing with a bare "unauthorized".
+  useEffect(() => { if (!getAuth()) window.location.href = '/admin'; }, []);
 
   // Can the browser natively decode this for a preview? (JPEG/PNG/WebP everywhere; HEIC only on Safari.)
   async function canDecode(f: Blob): Promise<boolean> {
