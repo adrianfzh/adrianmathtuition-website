@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit Circle → Sine &amp; Cosine</title>
+<style>
+  :root{
+    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
+    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C;
+    --grid:#e2daccc; --line:#cfc6b6;
+    --panel:#fbf8f1; --panelb:#e7ded0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Georgia","Times New Roman",serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  header{padding:18px 20px 6px}
+  h1{font-size:19px; font-weight:600; margin:0; letter-spacing:.2px}
+  .sub{font-size:13px; color:var(--muted); margin-top:3px}
+  .stage{position:relative; flex:1 1 auto; min-height:340px}
+  canvas{display:block; width:100%; height:100%; touch-action:none; cursor:grab}
+  canvas.drag{cursor:grabbing}
+  .readout{
+    position:absolute; top:12px; left:12px;
+    background:var(--panel); border:1px solid var(--panelb);
+    border-radius:10px; padding:9px 12px;
+    font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    font-size:12.5px; line-height:1.55; color:var(--ink);
+    box-shadow:0 1px 0 rgba(0,0,0,.03);
+  }
+  .readout .k{color:var(--muted)}
+  .readout .s{color:var(--rose)} .readout .c{color:var(--teal)}
+  .hint{position:absolute; bottom:10px; right:12px; font-size:11.5px; color:var(--muted); font-family:ui-monospace,monospace}
+  .controls{
+    display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px;
+    padding:12px 18px 18px; border-top:1px solid var(--line);
+    background:linear-gradient(var(--bg),var(--bg));
+  }
+  .grp{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink)}
+  .grp label{font-size:12px; color:var(--muted)}
+  button{
+    font:inherit; font-size:13px; color:var(--ink); background:var(--panel);
+    border:1px solid var(--panelb); border-radius:8px; padding:7px 13px; cursor:pointer;
+  }
+  button:hover{border-color:var(--muted)}
+  button:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
+  .seg{display:inline-flex; border:1px solid var(--panelb); border-radius:8px; overflow:hidden}
+  .seg button{border:none; border-right:1px solid var(--panelb); border-radius:0; background:var(--panel)}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--ink); color:var(--bg)}
+  input[type=range]{accent-color:var(--orange); cursor:pointer}
+  input[type=range].theta{width:170px}
+  input[type=range].speed{width:96px}
+  .play{min-width:78px; font-weight:600}
+  @media (max-width:560px){
+    .readout{font-size:11.5px; padding:7px 9px}
+    input[type=range].theta{width:130px}
+  }
+</style>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<header>
+  <h1>Unit circle, unwrapped — sin &amp; cos as two shadows of one point</h1>
+  <div class="sub">A point rotates on the circle. Its height traces sin(x); its depth traces cos(x). One revolution = one full period. Drag the scene to orbit.</div>
+</header>
+
+<div class="stage">
+  <canvas id="cv"></canvas>
+  <div class="readout" id="ro"></div>
+  <div class="hint">drag to orbit</div>
+</div>
+
+<div class="controls">
+  <button id="play" class="play">Pause</button>
+  <div class="grp"><label>Speed</label><input type="range" class="speed" id="speed" min="0.15" max="2.2" step="0.05" value="0.8"></div>
+  <div class="grp"><label>θ</label><input type="range" class="theta" id="theta" min="0" max="360" step="0.5" value="0"></div>
+  <div class="grp">
+    <label>Show</label>
+    <div class="seg" id="mode">
+      <button data-m="both" class="on">Both</button>
+      <button data-m="sin">sin</button>
+      <button data-m="cos">cos</button>
+    </div>
+  </div>
+  <div class="grp">
+    <label>Style</label>
+    <div class="seg" id="pal">
+      <button data-p="flow" class="on">Warm</button>
+      <button data-p="house">Cool</button>
+    </div>
+  </div>
+  <button id="reset">Reset view</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const ro  = document.getElementById('ro');
+
+  // ---- palettes -------------------------------------------------------
+  const PAL = {
+    flow:  {bg:'#F4EFE6', ink:'#2b2b2b', muted:'#9b9081',
+            rose:'#BC5A6E', teal:'#2E7C8F', orange:'#D8693C',
+            grid:'#e6ddcd', line:'#cdc4b3'},
+    house: {bg:'#FBFAF7', ink:'#1a1a1a', muted:'#9aa0a6',
+            rose:'#185FA5', teal:'#C2410C', orange:'#185FA5',
+            grid:'#ececec', line:'#dddddd'}
+  };
+  let P = PAL.flow;
+
+  // ---- state ----------------------------------------------------------
+  const TAU = Math.PI*2;
+  const Xmax = 6.0;              // unrolled length for one period
+  const xScale = Xmax / TAU;     // angle -> x
+  let theta = 0;                 // current angle (radians)
+  let playing = true;
+  let speed = 0.8;               // rad per second baseline * factor
+  let mode = 'both';
+  let az = -0.62, el = 0.30;     // camera azimuth / elevation (radians)
+  const az0 = -0.62, el0 = 0.30;
+
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    playing = false;
+  }
+
+  // ---- sizing ---------------------------------------------------------
+  let W=0,H=0,DPR=1;
+  function resize(){
+    const r = cv.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio||1, 2.5);
+    W = r.width; H = r.height;
+    cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize', resize);
+
+  // ---- projection -----------------------------------------------------
+  // rotate about Y (az) then about X (el), orthographic.
+  function base(x,y,z){
+    const ca=Math.cos(az), sa=Math.sin(az);
+    const rx = x*ca + z*sa;
+    const rz = -x*sa + z*ca;
+    const ce=Math.cos(el), se=Math.sin(el);
+    const ry2 = y*ce - rz*se;
+    const rz2 = y*se + rz*ce;
+    return {x:rx, y:ry2, z:rz2};
+  }
+  let scale=80, ox=0, oy=0;
+  function fit(){
+    // fit using a generous bounding box incl. axis arrows & labels
+    const xs=[-0.3, Xmax+1.05], ys=[-1.2, 1.32], zs=[-1.05,1.05];
+    let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+    for(const X of xs) for(const Y of ys) for(const Z of zs){
+      const b=base(X,Y,Z);
+      if(b.x<minX)minX=b.x; if(b.x>maxX)maxX=b.x;
+      if(b.y<minY)minY=b.y; if(b.y>maxY)maxY=b.y;
+    }
+    const pad=0.9;
+    const sx=(W*pad)/(maxX-minX), sy=(H*pad)/(maxY-minY);
+    scale=Math.min(sx,sy);
+    ox = W/2 - scale*(minX+maxX)/2;
+    oy = H/2 + scale*(minY+maxY)/2;
+  }
+  function S(x,y,z){ const b=base(x,y,z); return {x:ox+scale*b.x, y:oy-scale*b.y, z:b.z}; }
+
+  // ---- drawing helpers ------------------------------------------------
+  function line(a,b,color,w,al){
+    ctx.globalAlpha=al==null?1:al; ctx.strokeStyle=color; ctx.lineWidth=w||1;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+  function L(p1,p2,color,w,al){ line(S(p1[0],p1[1],p1[2]), S(p2[0],p2[1],p2[2]), color,w,al); }
+  function dot(p,r,color){ const s=S(p[0],p[1],p[2]); ctx.fillStyle=color; ctx.beginPath(); ctx.arc(s.x,s.y,r,0,TAU); ctx.fill(); }
+
+  function arrow(a,b,color,w){
+    const A=S(a[0],a[1],a[2]), B=S(b[0],b[1],b[2]);
+    line(A,B,color,w,1);
+    const ang=Math.atan2(B.y-A.y,B.x-A.x), hl=9;
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.moveTo(B.x,B.y);
+    ctx.lineTo(B.x-hl*Math.cos(ang-0.4), B.y-hl*Math.sin(ang-0.4));
+    ctx.lineTo(B.x-hl*Math.cos(ang+0.4), B.y-hl*Math.sin(ang+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function gridFace(corner, uVec, vVec, nu, nv){
+    // draw a light grid on a planar face
+    for(let i=0;i<=nu;i++){
+      const t=i/nu;
+      const a=[corner[0]+uVec[0]*t, corner[1]+uVec[1]*t, corner[2]+uVec[2]*t];
+      const b=[a[0]+vVec[0], a[1]+vVec[1], a[2]+vVec[2]];
+      L(a,b,P.grid,1,1);
+    }
+    for(let j=0;j<=nv;j++){
+      const t=j/nv;
+      const a=[corner[0]+vVec[0]*t, corner[1]+vVec[1]*t, corner[2]+vVec[2]*t];
+      const b=[a[0]+uVec[0], a[1]+uVec[1], a[2]+uVec[2]];
+      L(a,b,P.grid,1,1);
+    }
+  }
+
+  function text3(p, str, color, size, align){
+    const s=S(p[0],p[1],p[2]);
+    ctx.fillStyle=color; ctx.font='italic '+size+'px Georgia, serif';
+    ctx.textAlign=align||'left'; ctx.textBaseline='middle';
+    ctx.fillText(str, s.x, s.y);
+    ctx.textAlign='left';
+  }
+
+  // ---- scene ----------------------------------------------------------
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    fit();
+
+    // background faces' grids (left wall x=0, back wall z=1, floor y=-1)
+    gridFace([0,-1,-1],[0,2,0],[0,0,2], 8, 8);      // left wall (circle sits here)
+    gridFace([0,-1,1],[Xmax,0,0],[0,2,0], 12, 8);   // back wall (sin)
+    gridFace([0,-1,-1],[Xmax,0,0],[0,0,2], 12, 8);  // floor (cos)
+
+    // box edges
+    const ed=P.line;
+    // verticals & frame of the crate
+    L([0,-1,-1],[0,1,-1],ed,1.2,.9); L([0,-1,1],[0,1,1],ed,1.2,.9);
+    L([Xmax,-1,-1],[Xmax,1,-1],ed,1,.5); L([Xmax,-1,1],[Xmax,1,1],ed,1,.5);
+    L([0,1,-1],[0,1,1],ed,1.2,.9); L([0,-1,-1],[0,-1,1],ed,1.2,.9);
+    L([0,1,-1],[Xmax,1,-1],ed,1,.5); L([0,1,1],[Xmax,1,1],ed,1,.5);
+    L([0,-1,-1],[Xmax,-1,-1],ed,1,.5); L([0,-1,1],[Xmax,-1,1],ed,1,.5);
+
+    // axes (always shown for context)
+    arrow([0,0,1],[Xmax+0.9,0,1], P.ink, 1.4);      // sin x-axis (back wall mid height)
+    arrow([0,-1,0],[Xmax+0.9,-1,0], P.ink, 1.4);    // cos x-axis (floor)
+    text3([Xmax+0.15,1.05,1],'sin(x)', P.rose, 20, 'left');
+    text3([Xmax+0.2,-1,0.18],'cos(x)', P.teal, 18, 'left');
+
+    const xc = theta*xScale;
+    const showS = (mode==='both'||mode==='sin');
+    const showC = (mode==='both'||mode==='cos');
+    const stepPhi = TAU/72;
+
+    // ---- cos wave on the floor (draw first, it's lowest) ----
+    if(showC){
+      for(let phi=0; phi<=theta+1e-9; phi+=stepPhi){
+        const x=phi*xScale, c=Math.cos(phi);
+        L([x,-1,0],[x,-1,c], P.teal, 2.0, .92);
+      }
+      dot([xc,-1,Math.cos(theta)], 4.0, P.teal);
+    }
+
+    // ---- the circle on the left wall (y-z plane at x=0) ----
+    // circle outline
+    ctx.globalAlpha=1; ctx.strokeStyle=P.orange; ctx.lineWidth=1.8;
+    ctx.beginPath();
+    for(let i=0;i<=96;i++){
+      const a=i/96*TAU; const s=S(0, Math.sin(a), Math.cos(a));
+      if(i===0)ctx.moveTo(s.x,s.y); else ctx.lineTo(s.x,s.y);
+    }
+    ctx.stroke();
+    // diameters
+    L([0,-1,0],[0,1,0], P.line,1,.8);
+    L([0,0,-1],[0,0,1], P.line,1,.8);
+
+    // angle sector (from +z toward P)
+    const rA=0.34;
+    ctx.fillStyle=P.orange; ctx.globalAlpha=.22;
+    ctx.beginPath();
+    const c0=S(0,0,0); ctx.moveTo(c0.x,c0.y);
+    for(let a=0;a<=theta+1e-9;a+=Math.max(TAU/240,theta/40)){
+      const s=S(0, rA*Math.sin(a), rA*Math.cos(a)); ctx.lineTo(s.x,s.y);
+    }
+    const sEnd=S(0, rA*Math.sin(theta), rA*Math.cos(theta)); ctx.lineTo(sEnd.x,sEnd.y);
+    ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+
+    const sinT=Math.sin(theta), cosT=Math.cos(theta);
+
+    // solid right triangle: O -> (0,0,cosT) -> P
+    // base = cos (along cos axis), height = sin, hypotenuse = radius
+    (function(){
+      const O=S(0,0,0), Fz=S(0,0,cosT), Pp=S(0,sinT,cosT);
+      ctx.beginPath(); ctx.moveTo(O.x,O.y); ctx.lineTo(Fz.x,Fz.y); ctx.lineTo(Pp.x,Pp.y); ctx.closePath();
+      ctx.fillStyle=P.orange; ctx.globalAlpha=.26; ctx.fill(); ctx.globalAlpha=1;
+    })();
+    // triangle sides (always drawn so the shape stays complete)
+    L([0,0,0],[0,0,cosT], P.teal, 2.8, .98);        // cos base
+    L([0,0,cosT],[0,sinT,cosT], P.rose, 2.8, .98);  // sin height
+    L([0,0,0],[0,sinT,cosT], P.ink, 1.8, .95);      // radius / hypotenuse
+
+    // ---- guide connectors (faint) ----
+    if(showS) L([0,sinT,cosT],[xc,sinT,1], P.ink, 1, .28);
+    if(showC) L([0,sinT,cosT],[xc,-1,cosT], P.ink, 1, .28);
+
+    // ---- sin wave on the back wall (draw above circle) ----
+    if(showS){
+      for(let phi=0; phi<=theta+1e-9; phi+=stepPhi){
+        const x=phi*xScale, sv=Math.sin(phi);
+        L([x,0,1],[x,sv,1], P.rose, 2.0, .92);
+      }
+      dot([xc,sinT,1], 4.0, P.rose);
+    }
+
+    // rotating point (on top)
+    dot([0,sinT,cosT], 5.2, P.ink);
+    dot([0,sinT,cosT], 3.0, P.orange);
+
+    // readout
+    const deg=(theta*180/Math.PI)%360;
+    ro.innerHTML =
+      '<span class="k">θ</span> = '+deg.toFixed(1)+'°  ('+theta.toFixed(2)+' rad)<br>'+
+      '<span class="s">sin θ</span> = '+sinT.toFixed(3)+'<br>'+
+      '<span class="c">cos θ</span> = '+cosT.toFixed(3);
+  }
+
+  // ---- loop -----------------------------------------------------------
+  let last=performance.now();
+  function frame(now){
+    const dt=Math.min((now-last)/1000, 0.05); last=now;
+    if(playing){
+      theta += speed*dt;
+      if(theta>=TAU) theta -= TAU;
+      thetaEl.value = (theta*180/Math.PI).toFixed(1);
+    }
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  // ---- controls -------------------------------------------------------
+  const playBtn=document.getElementById('play');
+  const speedEl=document.getElementById('speed');
+  const thetaEl=document.getElementById('theta');
+  const modeBox=document.getElementById('mode');
+  const palBox=document.getElementById('pal');
+  const resetBtn=document.getElementById('reset');
+
+  playBtn.addEventListener('click', ()=>{ playing=!playing; playBtn.textContent=playing?'Pause':'Play'; });
+  speedEl.addEventListener('input', e=>{ speed=parseFloat(e.target.value); });
+  thetaEl.addEventListener('input', e=>{ playing=false; playBtn.textContent='Play'; theta=parseFloat(e.target.value)*Math.PI/180; });
+  modeBox.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    mode=b.dataset.m;
+    [...modeBox.children].forEach(c=>c.classList.toggle('on', c===b));
+  });
+  palBox.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    P = PAL[b.dataset.p];
+    [...palBox.children].forEach(c=>c.classList.toggle('on', c===b));
+    document.documentElement.style.setProperty('--bg', P.bg);
+    document.documentElement.style.setProperty('--ink', P.ink);
+    document.documentElement.style.setProperty('--muted', P.muted);
+    document.documentElement.style.setProperty('--rose', P.rose);
+    document.documentElement.style.setProperty('--teal', P.teal);
+    document.documentElement.style.setProperty('--orange', P.orange);
+    document.documentElement.style.setProperty('--line', P.line);
+    document.documentElement.style.setProperty('--grid', P.grid);
+    document.body.style.background=P.bg;
+  });
+  resetBtn.addEventListener('click', ()=>{ az=az0; el=el0; });
+
+  // orbit (pointer drag)
+  let dragging=false, px=0, py=0;
+  cv.addEventListener('pointerdown', e=>{ dragging=true; px=e.clientX; py=e.clientY; cv.classList.add('drag'); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e=>{
+    if(!dragging)return;
+    az += (e.clientX-px)*0.008;
+    el += (e.clientY-py)*0.008;
+    el = Math.max(-0.05, Math.min(0.9, el));
+    px=e.clientX; py=e.clientY;
+  });
+  function endDrag(){ dragging=false; cv.classList.remove('drag'); }
+  cv.addEventListener('pointerup', endDrag);
+  cv.addEventListener('pointercancel', endDrag);
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

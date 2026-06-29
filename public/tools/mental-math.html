@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mental Math Sprint</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1419; --bg-elev: #1a2028; --bg-elev-2: #232b35;
+    --text: #e8eef5; --text-dim: #8b9bab; --border: #2a3440;
+    --accent: #4cc2ff; --good: #51cf66; --bad: #ff6b6b;
+  }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh; -webkit-font-smoothing: antialiased;
+  }
+  body { padding: 24px; }
+  .container { max-width: 600px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
+
+  .card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 26px;
+  }
+  .card h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); font-weight: 500; margin-bottom: 12px;
+  }
+  .opt-row {
+    display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .opt {
+    flex: 1; min-width: 100px;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 12px; border-radius: 8px;
+    cursor: pointer; transition: 0.15s; text-align: center; font-size: 14px;
+  }
+  .opt:hover { color: var(--text); }
+  .opt.active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600;
+  }
+  .start-btn {
+    width: 100%; padding: 14px;
+    background: var(--accent); color: var(--bg); border: none;
+    border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
+  }
+  .start-btn:hover { opacity: 0.9; }
+
+  .quiz-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; font-size: 14px;
+  }
+  .timer {
+    font-family: ui-monospace, monospace; font-size: 32px; font-weight: 700;
+    color: var(--accent);
+  }
+  .timer.warn { color: var(--bad); }
+  .stats-mini {
+    display: flex; gap: 14px; color: var(--text-dim); font-family: ui-monospace, monospace;
+    font-size: 14px;
+  }
+  .stats-mini .ok { color: var(--good); font-size: 18px; font-weight: 700; }
+  .quiz-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 30px; text-align: center;
+  }
+  .question {
+    font-size: 36px; font-weight: 600; margin: 12px 0 24px;
+    min-height: 80px; display: flex; align-items: center; justify-content: center;
+    line-height: 1.2;
+  }
+  .answer-input {
+    width: 100%; padding: 16px;
+    background: var(--bg-elev-2); border: 2px solid var(--border);
+    color: var(--text); border-radius: 8px;
+    font-size: 28px; text-align: center; font-family: ui-monospace, monospace;
+    transition: 0.15s;
+  }
+  .answer-input:focus { outline: none; border-color: var(--accent); }
+  .answer-input.correct { border-color: var(--good); background: rgba(81,207,102,0.1); }
+  .answer-input.wrong { border-color: var(--bad); background: rgba(255,107,107,0.1); }
+  .hint {
+    font-size: 12px; color: var(--text-dim); margin-top: 10px;
+  }
+
+  .skip-btn {
+    margin-top: 16px; background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border); padding: 8px 18px;
+    border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .skip-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .results-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 30px; text-align: center;
+  }
+  .big-score {
+    font-size: 56px; font-weight: 700; line-height: 1; margin: 12px 0;
+    color: var(--good);
+  }
+  .results-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin: 24px 0;
+  }
+  .result-stat {
+    background: var(--bg-elev-2); padding: 14px; border-radius: 8px;
+  }
+  .result-stat .l { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .result-stat .v { font-size: 22px; font-weight: 600; margin-top: 4px; font-family: ui-monospace, monospace; }
+  .restart-btn {
+    background: var(--accent); color: var(--bg); border: none;
+    padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer;
+    font-size: 15px;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<div class="container">
+  <header>
+    <h1>Mental Math Sprint</h1>
+    <p class="subtitle">Type your answer and press Enter — auto-advances on correct</p>
+  </header>
+
+  <!-- Setup -->
+  <div class="card" id="setup">
+    <h3>Topic</h3>
+    <div class="opt-row" data-group="topic">
+      <div class="opt active" data-val="mixed">Mixed</div>
+      <div class="opt" data-val="fractions">Fractions</div>
+      <div class="opt" data-val="percentages">Percentages</div>
+      <div class="opt" data-val="indices">Indices</div>
+    </div>
+    <h3>Time limit</h3>
+    <div class="opt-row" data-group="time">
+      <div class="opt active" data-val="60">60 s</div>
+      <div class="opt" data-val="120">2 min</div>
+      <div class="opt" data-val="180">3 min</div>
+    </div>
+    <button class="start-btn" id="start-btn">Start sprint</button>
+  </div>
+
+  <!-- Quiz -->
+  <div id="quiz" class="hidden">
+    <div class="quiz-bar">
+      <div class="stats-mini">
+        <span><span class="ok" id="m-correct">0</span> correct</span>
+        <span>·</span>
+        <span><span id="m-total">0</span> total</span>
+      </div>
+      <div class="timer" id="timer">1:00</div>
+    </div>
+    <div class="quiz-card">
+      <div class="question" id="q-text">—</div>
+      <input type="text" class="answer-input" id="answer-input" placeholder="Your answer…" autocomplete="off">
+      <div class="hint" id="hint">Press Enter to submit, or Tab to skip</div>
+      <button class="skip-btn" id="skip-btn">Skip</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="hidden">
+    <div class="results-card">
+      <h2 style="font-size: 18px; color: var(--text-dim); font-weight: 500;">Sprint complete</h2>
+      <div class="big-score" id="r-score">0</div>
+      <div style="color: var(--text-dim); font-size: 14px;">questions correct</div>
+      <div class="results-grid">
+        <div class="result-stat"><div class="l">Accuracy</div><div class="v" id="r-acc">—</div></div>
+        <div class="result-stat"><div class="l">Per question</div><div class="v" id="r-pace">—</div></div>
+        <div class="result-stat"><div class="l">Skipped</div><div class="v" id="r-skip">0</div></div>
+      </div>
+      <button class="restart-btn" id="restart-btn">Try again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+
+// Generators return { question (string), answers (array of acceptable strings) }
+function genFraction() {
+  const type = pick(['add', 'mult', 'simplify', 'mixed']);
+  if (type === 'add') {
+    const dens = [2, 3, 4, 5, 6, 8];
+    const d1 = pick(dens), d2 = pick(dens);
+    const n1 = rand(1, d1 - 1), n2 = rand(1, d2 - 1);
+    const lcm = (d1 * d2) / gcd(d1, d2);
+    const num = n1 * (lcm / d1) + n2 * (lcm / d2);
+    const g = gcd(num, lcm);
+    const sn = num / g, sd = lcm / g;
+    const q = `${n1}/${d1} + ${n2}/${d2} = ?`;
+    return { question: q, answers: simpFracAnswers(sn, sd) };
+  }
+  if (type === 'mult') {
+    const d1 = rand(2, 6), d2 = rand(2, 6);
+    const n1 = rand(1, d1 - 1), n2 = rand(1, d2 - 1);
+    const num = n1 * n2, den = d1 * d2;
+    const g = gcd(num, den);
+    const sn = num / g, sd = den / g;
+    const q = `${n1}/${d1} × ${n2}/${d2} = ?`;
+    return { question: q, answers: simpFracAnswers(sn, sd) };
+  }
+  if (type === 'simplify') {
+    const sn = rand(2, 7), sd = rand(8, 16);
+    if (sn >= sd) return genFraction();
+    const factor = pick([2, 3, 4]);
+    const num = sn * factor, den = sd * factor;
+    const g = gcd(num, den);
+    const an = num / g, ad = den / g;
+    const q = `Simplify ${num}/${den} to lowest terms`;
+    return { question: q, answers: simpFracAnswers(an, ad) };
+  }
+  // decimal to fraction
+  const choices = [
+    [0.25, 1, 4], [0.5, 1, 2], [0.75, 3, 4],
+    [0.2, 1, 5], [0.4, 2, 5], [0.6, 3, 5], [0.8, 4, 5],
+    [0.125, 1, 8], [0.375, 3, 8], [0.625, 5, 8], [0.875, 7, 8],
+    [0.1, 1, 10], [0.3, 3, 10]
+  ];
+  const [d, n, dn] = pick(choices);
+  return { question: `Express ${d} as a fraction in simplest form`, answers: simpFracAnswers(n, dn) };
+}
+
+function simpFracAnswers(num, den) {
+  // Allow "n/d", decimal equivalent, "n / d"
+  const ans = [];
+  ans.push(`${num}/${den}`);
+  ans.push(`${num} / ${den}`);
+  // Decimal
+  const dec = num / den;
+  ans.push(dec.toString());
+  if (Math.abs(dec - parseFloat(dec.toFixed(3))) < 1e-9) {
+    ans.push(dec.toFixed(3).replace(/\.?0+$/, ''));
+  }
+  if (den === 1) ans.push(num.toString());
+  return ans;
+}
+
+function genPercent() {
+  const type = pick(['of', 'inc', 'dec', 'find']);
+  if (type === 'of') {
+    const pct = pick([10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 90]);
+    const base = pick([20, 40, 50, 60, 80, 100, 120, 150, 200, 250, 400, 500]);
+    const ans = (pct * base) / 100;
+    return { question: `What is ${pct}% of ${base}?`, answers: [ans.toString()] };
+  }
+  if (type === 'inc') {
+    const pct = pick([10, 20, 25, 50]);
+    const base = pick([40, 60, 80, 100, 120, 200, 400]);
+    const ans = base * (1 + pct/100);
+    return { question: `Increase ${base} by ${pct}%`, answers: [ans.toString()] };
+  }
+  if (type === 'dec') {
+    const pct = pick([10, 20, 25, 50]);
+    const base = pick([40, 80, 100, 120, 200, 400]);
+    const ans = base * (1 - pct/100);
+    return { question: `Decrease ${base} by ${pct}%`, answers: [ans.toString()] };
+  }
+  // What % of a is b?
+  const factors = [[1,2,50],[1,4,25],[3,4,75],[1,5,20],[2,5,40],[3,5,60],[1,10,10],[3,10,30],[1,8,12.5]];
+  const [n, d, p] = pick(factors);
+  const a = pick([20, 40, 60, 80, 100, 200]);
+  const part = (n / d) * a;
+  if (Math.abs(part - Math.round(part)) > 0.01) return genPercent();
+  return { question: `${Math.round(part)} is what % of ${a}?`, answers: [p.toString(), p + '%'] };
+}
+
+function genIndex() {
+  const type = pick(['power', 'prod', 'quot', 'neg', 'frac']);
+  if (type === 'power') {
+    const base = pick([2, 3, 4, 5]);
+    const exp = base === 2 ? rand(2, 8) : base === 3 ? rand(2, 5) : base === 4 ? rand(2, 4) : rand(2, 3);
+    return { question: `${base}^${exp} = ?`, answers: [Math.pow(base, exp).toString()] };
+  }
+  if (type === 'prod') {
+    const a = rand(2, 5), b = rand(2, 5);
+    return { question: `Simplify x^${a} × x^${b}`, answers: [`x^${a+b}`, `x^{${a+b}}`] };
+  }
+  if (type === 'quot') {
+    const a = rand(5, 9), b = rand(2, 4);
+    return { question: `Simplify x^${a} ÷ x^${b}`, answers: [`x^${a-b}`, `x^{${a-b}}`] };
+  }
+  if (type === 'neg') {
+    const base = pick([2, 3, 4, 5]);
+    const exp = rand(1, 3);
+    const ans = 1 / Math.pow(base, exp);
+    const den = Math.pow(base, exp);
+    return {
+      question: `${base}^(−${exp}) = ?`,
+      answers: [`1/${den}`, `1 / ${den}`, ans.toString(), ans.toFixed(4).replace(/\.?0+$/, '')]
+    };
+  }
+  // fractional power: 4^(1/2), 8^(1/3), 9^(1/2), 27^(1/3)
+  const cases = [[4,2,2],[9,2,3],[16,2,4],[25,2,5],[36,2,6],[8,3,2],[27,3,3],[64,3,4]];
+  const [base, root, ans] = pick(cases);
+  return { question: `${base}^(1/${root}) = ?`, answers: [ans.toString()] };
+}
+
+function generateQuestion(topic) {
+  let t = topic;
+  if (t === 'mixed') t = pick(['fractions', 'percentages', 'indices']);
+  if (t === 'fractions') return genFraction();
+  if (t === 'percentages') return genPercent();
+  return genIndex();
+}
+
+function normalize(str) {
+  return str.trim().toLowerCase().replace(/\s+/g, '').replace(/\^\{(\d+)\}/g, '^$1');
+}
+
+function checkAnswer(input, answers) {
+  const inp = normalize(input);
+  return answers.some(a => normalize(a) === inp);
+}
+
+// State
+const settings = { topic: 'mixed', time: 60 };
+let timeLeft, timerInterval, currentQ, stats;
+
+// Setup option toggling
+document.querySelectorAll('.opt-row').forEach(row => {
+  const group = row.dataset.group;
+  row.querySelectorAll('.opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      row.querySelectorAll('.opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      const v = opt.dataset.val;
+      settings[group] = group === 'time' ? parseInt(v) : v;
+    });
+  });
+});
+
+const input = document.getElementById('answer-input');
+
+document.getElementById('start-btn').addEventListener('click', startQuiz);
+document.getElementById('restart-btn').addEventListener('click', () => {
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('setup').classList.remove('hidden');
+});
+document.getElementById('skip-btn').addEventListener('click', () => skipQuestion());
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    submitAnswer();
+  } else if (e.key === 'Tab') {
+    e.preventDefault();
+    skipQuestion();
+  }
+});
+
+function startQuiz() {
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  timeLeft = settings.time;
+  stats = { correct: 0, wrong: 0, total: 0, skipped: 0 };
+  updateStats();
+  updateTimer();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(tick, 1000);
+  nextQuestion();
+}
+
+function tick() {
+  timeLeft--;
+  updateTimer();
+  if (timeLeft <= 0) endQuiz();
+}
+
+function updateTimer() {
+  const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+  const t = document.getElementById('timer');
+  t.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  t.classList.toggle('warn', timeLeft <= 10);
+}
+
+function updateStats() {
+  document.getElementById('m-correct').textContent = stats.correct;
+  document.getElementById('m-total').textContent = stats.total;
+}
+
+function nextQuestion() {
+  currentQ = generateQuestion(settings.topic);
+  document.getElementById('q-text').textContent = currentQ.question;
+  input.value = '';
+  input.classList.remove('correct', 'wrong');
+  input.focus();
+}
+
+function submitAnswer() {
+  if (timeLeft <= 0) return;
+  if (!input.value.trim()) return;
+  stats.total++;
+  if (checkAnswer(input.value, currentQ.answers)) {
+    stats.correct++;
+    input.classList.add('correct');
+    setTimeout(() => { if (timeLeft > 0) nextQuestion(); }, 200);
+  } else {
+    stats.wrong++;
+    input.classList.add('wrong');
+    // Show correct answer briefly
+    document.getElementById('hint').textContent = `Answer: ${currentQ.answers[0]}`;
+    setTimeout(() => {
+      document.getElementById('hint').textContent = 'Press Enter to submit, or Tab to skip';
+      if (timeLeft > 0) nextQuestion();
+    }, 1100);
+  }
+  updateStats();
+}
+
+function skipQuestion() {
+  if (timeLeft <= 0) return;
+  stats.skipped++;
+  document.getElementById('hint').textContent = `Was: ${currentQ.answers[0]}`;
+  setTimeout(() => {
+    document.getElementById('hint').textContent = 'Press Enter to submit, or Tab to skip';
+    if (timeLeft > 0) nextQuestion();
+  }, 700);
+}
+
+function endQuiz() {
+  clearInterval(timerInterval);
+  document.getElementById('quiz').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('r-score').textContent = stats.correct;
+  const acc = stats.total === 0 ? 0 : Math.round(100 * stats.correct / stats.total);
+  document.getElementById('r-acc').textContent = acc + '%';
+  const pace = stats.total === 0 ? '—' : (settings.time / stats.total).toFixed(1) + 's';
+  document.getElementById('r-pace').textContent = pace;
+  document.getElementById('r-skip').textContent = stats.skipped;
+}
+</script>
+</body>
+</html>

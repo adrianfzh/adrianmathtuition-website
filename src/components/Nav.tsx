@@ -8,6 +8,13 @@ export default function Nav() {
           <span className="font-display font-bold text-[18px] md:text-lg tracking-tight text-navy">ADRIAN&apos;S</span>
           <span className="text-muted-foreground text-sm md:text-[14px]">math tuition</span>
         </div>
+        <div className="flex items-center gap-4 md:gap-6">
+        <Link
+          href="/tools"
+          className="text-navy text-[13px] md:text-sm font-semibold hover:text-amber-dark transition-colors"
+        >
+          Tools
+        </Link>
         <a
           href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson"
           target="_blank"
@@ -19,6 +26,7 @@ export default function Nav() {
           </svg>
           <span>Book Free Trial</span>
         </a>
+        </div>
       </div>
     </nav>
   );

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculus Drill</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1419; --bg-elev: #1a2028; --bg-elev-2: #232b35;
+    --text: #e8eef5; --text-dim: #8b9bab; --border: #2a3440;
+    --accent: #4cc2ff; --good: #51cf66; --bad: #ff6b6b;
+  }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh; -webkit-font-smoothing: antialiased;
+  }
+  body { padding: 24px; }
+  .container { max-width: 760px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
+
+  /* Setup screen */
+  .setup-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 26px;
+  }
+  .setup-card h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); font-weight: 500; margin-bottom: 12px;
+  }
+  .opt-row {
+    display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .opt {
+    flex: 1; min-width: 100px;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 12px; border-radius: 8px;
+    cursor: pointer; transition: 0.15s; text-align: center; font-size: 14px;
+  }
+  .opt:hover { color: var(--text); }
+  .opt.active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600;
+  }
+  .start-btn {
+    width: 100%; padding: 14px; margin-top: 8px;
+    background: var(--accent); color: var(--bg); border: none;
+    border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
+  }
+  .start-btn:hover { opacity: 0.9; }
+
+  /* Quiz screen */
+  .quiz-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; font-size: 14px;
+  }
+  .timer {
+    font-family: ui-monospace, monospace; font-size: 28px; font-weight: 700;
+    color: var(--accent);
+  }
+  .timer.warn { color: var(--bad); }
+  .stats-mini {
+    display: flex; gap: 16px; color: var(--text-dim); font-family: ui-monospace, monospace;
+  }
+  .stats-mini .ok { color: var(--good); }
+  .stats-mini .bad { color: var(--bad); }
+  .quiz-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px; text-align: center;
+  }
+  .question-text {
+    color: var(--text-dim); font-size: 14px; margin-bottom: 12px;
+  }
+  .question-expr {
+    font-size: 28px; padding: 16px 0 24px; min-height: 80px;
+  }
+  .options {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;
+  }
+  @media (max-width: 580px) { .options { grid-template-columns: 1fr; } }
+  .option {
+    background: var(--bg-elev-2); border: 2px solid var(--border);
+    color: var(--text); padding: 16px; border-radius: 8px; cursor: pointer;
+    transition: 0.15s; font-size: 18px; min-height: 60px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .option:hover { border-color: var(--accent); }
+  .option.correct { border-color: var(--good); background: rgba(81,207,102,0.1); }
+  .option.wrong { border-color: var(--bad); background: rgba(255,107,107,0.1); }
+  .option:disabled { cursor: default; }
+
+  /* Results */
+  .results-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 30px; text-align: center;
+  }
+  .big-score {
+    font-size: 56px; font-weight: 700; line-height: 1; margin: 12px 0;
+  }
+  .results-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin: 24px 0;
+  }
+  .result-stat {
+    background: var(--bg-elev-2); padding: 14px; border-radius: 8px;
+  }
+  .result-stat .l { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .result-stat .v { font-size: 22px; font-weight: 600; margin-top: 4px; font-family: ui-monospace, monospace; }
+  .restart-btn {
+    background: var(--accent); color: var(--bg); border: none;
+    padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer;
+    font-size: 15px;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<div class="container">
+  <header>
+    <h1>Calculus Drill</h1>
+    <p class="subtitle">Timed differentiation and integration practice — randomized, instant feedback</p>
+  </header>
+
+  <!-- Setup -->
+  <div class="setup-card" id="setup">
+    <h3>Mode</h3>
+    <div class="opt-row" data-group="mode">
+      <div class="opt active" data-val="diff">Differentiate</div>
+      <div class="opt" data-val="int">Integrate</div>
+      <div class="opt" data-val="mixed">Mixed</div>
+    </div>
+    <h3>Difficulty</h3>
+    <div class="opt-row" data-group="level">
+      <div class="opt active" data-val="basic">Basic</div>
+      <div class="opt" data-val="inter">Intermediate</div>
+      <div class="opt" data-val="adv">Advanced</div>
+    </div>
+    <h3>Time limit</h3>
+    <div class="opt-row" data-group="time">
+      <div class="opt" data-val="60">60 s</div>
+      <div class="opt active" data-val="120">2 min</div>
+      <div class="opt" data-val="300">5 min</div>
+    </div>
+    <button class="start-btn" id="start-btn">Start drill</button>
+  </div>
+
+  <!-- Quiz -->
+  <div id="quiz" class="hidden">
+    <div class="quiz-bar">
+      <div class="stats-mini">
+        <span><span class="ok" id="m-correct">0</span> correct</span>
+        <span><span class="bad" id="m-wrong">0</span> wrong</span>
+        <span><span id="m-total">0</span> total</span>
+      </div>
+      <div class="timer" id="timer">2:00</div>
+    </div>
+    <div class="quiz-card">
+      <div class="question-text" id="q-prompt">Differentiate with respect to x:</div>
+      <div class="question-expr" id="q-expr"></div>
+      <div class="options" id="options"></div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="hidden">
+    <div class="results-card">
+      <h2 style="font-size: 18px; color: var(--text-dim); font-weight: 500;">Time's up!</h2>
+      <div class="big-score" id="r-score">0%</div>
+      <div class="results-grid">
+        <div class="result-stat"><div class="l">Correct</div><div class="v" id="r-correct" style="color: var(--good);">0</div></div>
+        <div class="result-stat"><div class="l">Wrong</div><div class="v" id="r-wrong" style="color: var(--bad);">0</div></div>
+        <div class="result-stat"><div class="l">Avg time</div><div class="v" id="r-avg">—</div></div>
+      </div>
+      <button class="restart-btn" id="restart-btn">Try again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- Question generators ----
+
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function nz(min, max) { let v = rand(min, max); while (v === 0) v = rand(min, max); return v; }
+
+// Each generator returns { latex, answer (latex), distractors (array of latex strings) }
+function genDiffBasic() {
+  const type = pick(['power', 'polynomial', 'sum']);
+  if (type === 'power') {
+    const n = nz(2, 6);
+    const a = nz(2, 8);
+    const exprL = `${a}x^{${n}}`;
+    const ansL = `${a*n}x^{${n-1}}`;
+    const dist = [
+      `${a*n}x^{${n}}`,        // forgot to lower power
+      `${a}x^{${n-1}}`,         // forgot coefficient
+      `${a*(n-1)}x^{${n-1}}`,   // multiplied by n-1 instead of n
+    ];
+    return { latex: exprL, answer: ansL, distractors: dist };
+  }
+  if (type === 'polynomial') {
+    const a = nz(2, 5), b = nz(2, 6), c = nz(2, 9);
+    const n1 = rand(2, 4), n2 = rand(1, 3);
+    const expr = `${a}x^{${n1}} + ${b}x^{${n2}} + ${c}`;
+    const ans = `${a*n1}x^{${n1-1}} + ${b*n2 === 1 ? '' : b*n2}x${n2-1 === 1 ? '' : n2-1 === 0 ? '' : '^{'+(n2-1)+'}'}`;
+    // Simplify display
+    const t1 = `${a*n1}x^{${n1-1}}`;
+    let t2;
+    if (n2 === 1) t2 = `${b}`;
+    else t2 = `${b*n2}x${n2-1 === 1 ? '' : '^{'+(n2-1)+'}'}`;
+    const ansClean = t1 + ' + ' + t2;
+    const dist = [
+      `${a*n1}x^{${n1-1}} + ${b*n2}x^{${n2}}`,
+      `${a*n1}x^{${n1-1}} + ${b*n2}x^{${n2-1}} + ${c}`,
+      `${a*(n1-1)}x^{${n1-1}} + ${b*(n2-1)}x^{${n2-1}}`
+    ];
+    return { latex: expr, answer: ansClean, distractors: dist };
+  }
+  // sum of two power terms
+  const a = nz(2, 6), b = nz(2, 6);
+  const n1 = rand(3, 5), n2 = rand(2, 4);
+  const expr = `${a}x^{${n1}} - ${b}x^{${n2}}`;
+  const ans = `${a*n1}x^{${n1-1}} - ${b*n2}x^{${n2-1}}`;
+  const dist = [
+    `${a*n1}x^{${n1}} - ${b*n2}x^{${n2}}`,
+    `${a}x^{${n1-1}} - ${b}x^{${n2-1}}`,
+    `${a*n1}x^{${n1-1}} + ${b*n2}x^{${n2-1}}`
+  ];
+  return { latex: expr, answer: ans, distractors: dist };
+}
+
+function genDiffInter() {
+  const type = pick(['trig', 'exp', 'ln', 'sqrt']);
+  if (type === 'trig') {
+    const fn = pick(['sin', 'cos']);
+    const a = nz(2, 6), b = nz(2, 5);
+    const expr = `${a}\\${fn}(${b}x)`;
+    let ans, dist;
+    if (fn === 'sin') {
+      ans = `${a*b}\\cos(${b}x)`;
+      dist = [`${a*b}\\sin(${b}x)`, `-${a*b}\\cos(${b}x)`, `${a}\\cos(${b}x)`];
+    } else {
+      ans = `-${a*b}\\sin(${b}x)`;
+      dist = [`${a*b}\\sin(${b}x)`, `-${a*b}\\cos(${b}x)`, `-${a}\\sin(${b}x)`];
+    }
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  if (type === 'exp') {
+    const a = nz(2, 6), k = nz(2, 4);
+    const expr = `${a}e^{${k}x}`;
+    const ans = `${a*k}e^{${k}x}`;
+    const dist = [`${a}e^{${k}x}`, `${a*k}e^{${k-1}x}`, `${a/k}e^{${k}x}`];
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  if (type === 'ln') {
+    const a = nz(2, 8);
+    const expr = `${a}\\ln(x)`;
+    const ans = `\\frac{${a}}{x}`;
+    const dist = [`\\frac{1}{${a}x}`, `\\frac{${a}}{x^2}`, `${a}x`];
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  // sqrt: d/dx sqrt(x) = 1/(2 sqrt x); for a*sqrt(x) = a x^(1/2), deriv = (a/2) x^(-1/2) = a/(2 sqrt x)
+  const a = nz(2, 6) * 2; // even so the answer is clean
+  const expr = `${a}\\sqrt{x}`;
+  const ans = `\\frac{${a/2}}{\\sqrt{x}}`;
+  const dist = [`\\frac{${a}}{\\sqrt{x}}`, `\\frac{${a/2}}{2\\sqrt{x}}`, `\\frac{1}{${a/2}\\sqrt{x}}`];
+  return { latex: expr, answer: ans, distractors: dist };
+}
+
+function genDiffAdv() {
+  const type = pick(['chain', 'product']);
+  if (type === 'chain') {
+    // (ax+b)^n -> n a (ax+b)^(n-1)
+    const a = nz(2, 4), b = nz(1, 5), n = rand(3, 5);
+    const expr = `(${a}x + ${b})^{${n}}`;
+    const ans = `${n*a}(${a}x + ${b})^{${n-1}}`;
+    const dist = [
+      `${n}(${a}x + ${b})^{${n-1}}`,
+      `${a}(${a}x + ${b})^{${n-1}}`,
+      `${n*a}(${a}x + ${b})^{${n}}`
+    ];
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  // product: x * sin x or x^2 * e^x
+  const which = pick([1, 2]);
+  if (which === 1) {
+    const a = nz(2, 5);
+    const expr = `${a}x\\sin(x)`;
+    const ans = `${a}\\sin(x) + ${a}x\\cos(x)`;
+    const dist = [
+      `${a}\\cos(x)`,
+      `${a}x\\cos(x)`,
+      `${a}\\sin(x) - ${a}x\\cos(x)`
+    ];
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  const expr = `x^2 e^x`;
+  const ans = `2xe^x + x^2 e^x`;
+  const dist = [`2xe^x`, `x^2 e^x`, `2xe^{x-1}`];
+  return { latex: expr, answer: ans, distractors: dist };
+}
+
+function genIntBasic() {
+  const n = rand(2, 5);
+  const a = nz(2, 6) * (n+1); // multiple of n+1 for clean integration
+  const expr = `${a}x^{${n}}`;
+  const ans = `\\frac{${a}}{${n+1}}x^{${n+1}} + C`;
+  const dist = [
+    `${a*(n+1)}x^{${n+1}} + C`,
+    `\\frac{${a}}{${n}}x^{${n+1}} + C`,
+    `${a}x^{${n+1}} + C`
+  ];
+  // Simplify if a/(n+1) is integer
+  const coef = a / (n+1);
+  let cleanAns;
+  if (Math.abs(coef - Math.round(coef)) < 0.001) {
+    const c = Math.round(coef);
+    cleanAns = c === 1 ? `x^{${n+1}} + C` : `${c}x^{${n+1}} + C`;
+  } else {
+    cleanAns = ans;
+  }
+  return { latex: expr, answer: cleanAns, distractors: dist };
+}
+
+function genIntInter() {
+  const type = pick(['trig', 'exp', 'recip', 'linear']);
+  if (type === 'trig') {
+    const fn = pick(['sin', 'cos']);
+    const a = nz(2, 5), k = nz(2, 4);
+    const expr = `${a}\\${fn}(${k}x)`;
+    let ans, dist;
+    if (fn === 'sin') {
+      ans = `-\\frac{${a}}{${k}}\\cos(${k}x) + C`;
+      dist = [
+        `\\frac{${a}}{${k}}\\cos(${k}x) + C`,
+        `-${a*k}\\cos(${k}x) + C`,
+        `\\frac{${a}}{${k}}\\sin(${k}x) + C`
+      ];
+    } else {
+      ans = `\\frac{${a}}{${k}}\\sin(${k}x) + C`;
+      dist = [
+        `-\\frac{${a}}{${k}}\\sin(${k}x) + C`,
+        `${a*k}\\sin(${k}x) + C`,
+        `\\frac{${a}}{${k}}\\cos(${k}x) + C`
+      ];
+    }
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  if (type === 'exp') {
+    const a = nz(2, 6), k = nz(2, 4);
+    const expr = `${a}e^{${k}x}`;
+    const ans = `\\frac{${a}}{${k}}e^{${k}x} + C`;
+    const dist = [
+      `${a*k}e^{${k}x} + C`,
+      `\\frac{${a}}{${k+1}}e^{${k+1}x} + C`,
+      `${a}e^{${k}x} + C`
+    ];
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  if (type === 'recip') {
+    const a = nz(2, 8);
+    const expr = `\\frac{${a}}{x}`;
+    const ans = `${a}\\ln|x| + C`;
+    const dist = [
+      `\\frac{${a}}{x^2} + C`,
+      `-\\frac{${a}}{x^2} + C`,
+      `\\frac{1}{${a}}\\ln|x| + C`
+    ];
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  // (ax+b)^n
+  const a = nz(2, 4), b = nz(1, 4), n = rand(2, 4);
+  const expr = `(${a}x + ${b})^{${n}}`;
+  const ans = `\\frac{1}{${a*(n+1)}}(${a}x + ${b})^{${n+1}} + C`;
+  const dist = [
+    `\\frac{1}{${n+1}}(${a}x + ${b})^{${n+1}} + C`,
+    `\\frac{${a}}{${n+1}}(${a}x + ${b})^{${n+1}} + C`,
+    `\\frac{1}{${a*(n+1)}}(${a}x + ${b})^{${n}} + C`
+  ];
+  return { latex: expr, answer: ans, distractors: dist };
+}
+
+function genIntAdv() {
+  // Definite integrals or trickier substitutions
+  const type = pick(['definite', 'rational']);
+  if (type === 'definite') {
+    // ∫_0^a (k x^n) dx
+    const k = nz(2, 5), n = rand(1, 3), upper = rand(2, 4);
+    const expr = `\\int_0^{${upper}} ${k}x^{${n}} \\, dx`;
+    const val = k * Math.pow(upper, n+1) / (n+1);
+    const ans = (Math.abs(val - Math.round(val)) < 0.01) ? Math.round(val).toString() : val.toFixed(2);
+    const dist = [
+      (k * Math.pow(upper, n) / n).toFixed(0),
+      (val * 2).toFixed(0),
+      ((k+1) * Math.pow(upper, n+1) / (n+1)).toFixed(0)
+    ];
+    return { latex: expr, answer: ans, distractors: dist };
+  }
+  // ∫ 1/(ax+b) dx
+  const a = nz(2, 5), b = nz(1, 5);
+  const expr = `\\frac{1}{${a}x + ${b}}`;
+  const ans = `\\frac{1}{${a}}\\ln|${a}x + ${b}| + C`;
+  const dist = [
+    `\\ln|${a}x + ${b}| + C`,
+    `\\frac{1}{${a}}\\ln|x| + C`,
+    `-\\frac{1}{(${a}x + ${b})^2} + C`
+  ];
+  return { latex: expr, answer: ans, distractors: dist };
+}
+
+function generateQuestion(mode, level) {
+  let m = mode;
+  if (m === 'mixed') m = Math.random() < 0.5 ? 'diff' : 'int';
+  let q;
+  if (m === 'diff') {
+    if (level === 'basic') q = genDiffBasic();
+    else if (level === 'inter') q = genDiffInter();
+    else q = genDiffAdv();
+    q.prompt = 'Differentiate with respect to x:';
+  } else {
+    if (level === 'basic') q = genIntBasic();
+    else if (level === 'inter') q = genIntInter();
+    else q = genIntAdv();
+    q.prompt = 'Find the integral:';
+    q.latex = `\\int ${q.latex} \\, dx`;
+    if (q.latex.includes('\\int_0')) q.latex = q.latex.replace(/^\\int /, '');
+  }
+  // Shuffle options
+  const allOpts = [q.answer, ...q.distractors];
+  // Remove dupes
+  const unique = [...new Set(allOpts)];
+  while (unique.length < 4) unique.push(unique[0] + ' '); // placeholder
+  for (let i = unique.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [unique[i], unique[j]] = [unique[j], unique[i]];
+  }
+  q.options = unique.slice(0, 4);
+  q.correctIndex = unique.indexOf(q.answer);
+  return q;
+}
+
+// ---- Game state ----
+const settings = { mode: 'diff', level: 'basic', time: 120 };
+let timeLeft, timerInterval, currentQ, stats, qStartTime;
+
+// Setup option toggling
+document.querySelectorAll('.opt-row').forEach(row => {
+  const group = row.dataset.group;
+  row.querySelectorAll('.opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      row.querySelectorAll('.opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      const v = opt.dataset.val;
+      settings[group] = group === 'time' ? parseInt(v) : v;
+    });
+  });
+});
+
+document.getElementById('start-btn').addEventListener('click', startQuiz);
+document.getElementById('restart-btn').addEventListener('click', () => {
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('setup').classList.remove('hidden');
+});
+
+function startQuiz() {
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  timeLeft = settings.time;
+  stats = { correct: 0, wrong: 0, total: 0, totalTime: 0 };
+  updateStats();
+  updateTimer();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(tick, 1000);
+  nextQuestion();
+}
+
+function tick() {
+  timeLeft--;
+  updateTimer();
+  if (timeLeft <= 0) endQuiz();
+}
+
+function updateTimer() {
+  const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+  const t = document.getElementById('timer');
+  t.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  t.classList.toggle('warn', timeLeft <= 10);
+}
+
+function updateStats() {
+  document.getElementById('m-correct').textContent = stats.correct;
+  document.getElementById('m-wrong').textContent = stats.wrong;
+  document.getElementById('m-total').textContent = stats.total;
+}
+
+function nextQuestion() {
+  currentQ = generateQuestion(settings.mode, settings.level);
+  qStartTime = Date.now();
+  document.getElementById('q-prompt').textContent = currentQ.prompt;
+  const expr = document.getElementById('q-expr');
+  if (window.katex) {
+    try { katex.render(currentQ.latex, expr, { throwOnError: false, displayMode: true }); }
+    catch { expr.textContent = currentQ.latex; }
+  } else expr.textContent = currentQ.latex;
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  currentQ.options.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    if (window.katex) {
+      try { katex.render(opt, div, { throwOnError: false }); }
+      catch { div.textContent = opt; }
+    } else div.textContent = opt;
+    div.addEventListener('click', () => answer(i, div));
+    opts.appendChild(div);
+  });
+}
+
+function answer(idx, el) {
+  if (timeLeft <= 0) return;
+  const isCorrect = idx === currentQ.correctIndex;
+  stats.total++;
+  stats.totalTime += (Date.now() - qStartTime);
+  if (isCorrect) {
+    stats.correct++;
+    el.classList.add('correct');
+  } else {
+    stats.wrong++;
+    el.classList.add('wrong');
+    // Briefly highlight the correct one
+    document.querySelectorAll('.option')[currentQ.correctIndex].classList.add('correct');
+  }
+  updateStats();
+  // Disable further clicks
+  document.querySelectorAll('.option').forEach(o => o.style.pointerEvents = 'none');
+  setTimeout(() => {
+    if (timeLeft > 0) nextQuestion();
+  }, isCorrect ? 350 : 950);
+}
+
+function endQuiz() {
+  clearInterval(timerInterval);
+  document.getElementById('quiz').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+  const pct = stats.total === 0 ? 0 : Math.round(100 * stats.correct / stats.total);
+  const score = document.getElementById('r-score');
+  score.textContent = pct + '%';
+  score.style.color = pct >= 75 ? 'var(--good)' : pct >= 50 ? 'var(--accent)' : 'var(--bad)';
+  document.getElementById('r-correct').textContent = stats.correct;
+  document.getElementById('r-wrong').textContent = stats.wrong;
+  const avg = stats.total === 0 ? '—' : (stats.totalTime / stats.total / 1000).toFixed(1) + 's';
+  document.getElementById('r-avg').textContent = avg;
+}
+</script>
+</body>
+</html>

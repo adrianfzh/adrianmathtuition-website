@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curve Sketching Pad</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1419; --bg-elev: #1a2028; --bg-elev-2: #232b35;
+    --text: #e8eef5; --text-dim: #8b9bab; --border: #2a3440;
+    --accent: #4cc2ff; --good: #51cf66; --warn: #ffa94d; --bad: #ff6b6b;
+    --user: #4cc2ff; --truth: #ffd43b;
+  }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh; -webkit-font-smoothing: antialiased;
+  }
+  body { padding: 24px; }
+  .container { max-width: 1280px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
+  .layout {
+    display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
+  }
+  @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+  .canvas-wrap {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+  }
+  .question {
+    text-align: center; padding: 14px 0; font-size: 22px;
+    border-bottom: 1px solid var(--border); margin-bottom: 12px;
+    min-height: 60px;
+  }
+  .canvas-holder {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 10 / 7;
+    background: var(--bg);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block; cursor: crosshair;
+    touch-action: none;
+  }
+  .toolbar {
+    display: flex; gap: 8px; justify-content: center; margin-top: 12px;
+  }
+  .panel {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+  }
+  .panel h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); font-weight: 500; margin-bottom: 12px;
+  }
+  .features { font-size: 13px; line-height: 1.6; }
+  .features li {
+    list-style: none; padding: 5px 0; padding-left: 18px; position: relative;
+    color: var(--text);
+  }
+  .features li::before {
+    content: '•'; position: absolute; left: 4px; color: var(--accent);
+  }
+  .btn {
+    background: var(--accent); color: var(--bg); border: none;
+    padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: 0.15s; flex: 1;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn.secondary {
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .btn.secondary:hover { color: var(--text); border-color: var(--accent); }
+  .score-box {
+    margin-top: 16px; padding: 16px; border-radius: 8px; text-align: center;
+    background: var(--bg-elev-2); display: none;
+  }
+  .score-box.shown { display: block; }
+  .score-num {
+    font-size: 42px; font-weight: 700; line-height: 1;
+    margin-bottom: 8px;
+  }
+  .score-label { color: var(--text-dim); font-size: 13px; margin-bottom: 12px; }
+  .score-feedback {
+    font-size: 13px; color: var(--text); text-align: left;
+    line-height: 1.5;
+  }
+  .legend {
+    display: flex; justify-content: center; gap: 20px; margin-top: 10px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 22px; height: 3px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<div class="container">
+  <header>
+    <h1>Curve Sketching Pad</h1>
+    <p class="subtitle">Read the problem, sketch the curve on the grid, then submit to see how close you got</p>
+  </header>
+  <div class="layout">
+    <div class="canvas-wrap">
+      <div class="question" id="question"></div>
+      <div class="canvas-holder">
+        <canvas id="canvas"></canvas>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="swatch" style="background: var(--user)"></div> Your sketch</div>
+        <div class="legend-item"><div class="swatch" style="background: var(--truth)"></div> Actual curve</div>
+      </div>
+      <div class="toolbar">
+        <button class="btn secondary" id="clear-btn">Clear sketch</button>
+        <button class="btn" id="submit-btn">Submit</button>
+        <button class="btn secondary" id="next-btn">Next problem →</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Key features to identify</h3>
+      <ul class="features" id="features"></ul>
+      <div class="score-box" id="score-box">
+        <div class="score-num" id="score-num">—</div>
+        <div class="score-label">accuracy</div>
+        <div class="score-feedback" id="score-feedback"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  'use strict';
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let W = 800, H = 560;
+
+  const problems = [
+    {
+      id: 'cubic1',
+      latex: 'y = x^3 - 3x',
+      fn: x => x**3 - 3*x,
+      xRange: [-3, 3], yRange: [-4, 4],
+      features: [
+        'Cubic — turning points at (−1, 2) and (1, −2)',
+        'x-intercepts: 0, ±√3 ≈ ±1.73',
+        'y-intercept: 0',
+        'As x → ∞, y → ∞ (and vice versa)'
+      ]
+    },
+    {
+      id: 'recip',
+      latex: 'y = \\frac{1}{x - 1} + 2',
+      fn: x => Math.abs(x - 1) < 0.001 ? NaN : 1/(x-1) + 2,
+      xRange: [-3, 5], yRange: [-3, 7],
+      features: [
+        'Vertical asymptote at x = 1',
+        'Horizontal asymptote at y = 2',
+        'No x-intercept above asymptote, one below at x = 1/2',
+        'Two branches: top-right and bottom-left of asymptotes'
+      ]
+    },
+    {
+      id: 'oblique',
+      latex: 'y = \\frac{x^2 + 1}{x}',
+      fn: x => Math.abs(x) < 0.001 ? NaN : (x*x + 1) / x,
+      xRange: [-4, 4], yRange: [-6, 6],
+      features: [
+        'Vertical asymptote at x = 0',
+        'Oblique asymptote y = x (since y = x + 1/x)',
+        'Turning points at (±1, ±2)',
+        'No real intercepts'
+      ]
+    },
+    {
+      id: 'modulus',
+      latex: 'y = |x - 2| - 1',
+      fn: x => Math.abs(x - 2) - 1,
+      xRange: [-2, 6], yRange: [-2, 5],
+      features: [
+        'V-shape with vertex at (2, −1)',
+        'x-intercepts at x = 1 and x = 3',
+        'y-intercept at y = 1',
+        'Two straight-line segments (slopes ±1)'
+      ]
+    },
+    {
+      id: 'exponential',
+      latex: 'y = 2 - e^{-x}',
+      fn: x => 2 - Math.exp(-x),
+      xRange: [-2, 4], yRange: [-6, 3],
+      features: [
+        'Horizontal asymptote y = 2 as x → ∞',
+        'y → −∞ as x → −∞',
+        'x-intercept at x = ln 2 ≈ 0.693',
+        'y-intercept at y = 1',
+        'Always increasing'
+      ]
+    },
+    {
+      id: 'log',
+      latex: 'y = \\ln(x + 2)',
+      fn: x => x > -2 ? Math.log(x + 2) : NaN,
+      xRange: [-3, 5], yRange: [-4, 3],
+      features: [
+        'Vertical asymptote at x = −2',
+        'x-intercept at x = −1',
+        'y-intercept at y = ln 2 ≈ 0.693',
+        'Always increasing (concave down)'
+      ]
+    },
+    {
+      id: 'parabola',
+      latex: 'y = -(x-1)^2 + 4',
+      fn: x => -(x-1)**2 + 4,
+      xRange: [-3, 5], yRange: [-5, 5],
+      features: [
+        'Inverted parabola with vertex at (1, 4)',
+        'x-intercepts at x = −1 and x = 3',
+        'y-intercept at y = 3',
+        'Maximum value: 4'
+      ]
+    },
+    {
+      id: 'rational2',
+      latex: 'y = \\frac{2x}{x^2 - 1}',
+      fn: x => Math.abs(x*x - 1) < 0.001 ? NaN : 2*x / (x*x - 1),
+      xRange: [-4, 4], yRange: [-5, 5],
+      features: [
+        'Vertical asymptotes at x = ±1',
+        'Horizontal asymptote at y = 0',
+        'x-intercept and y-intercept at origin',
+        'Three branches separated by asymptotes',
+        'Odd symmetry through origin'
+      ]
+    }
+  ];
+
+  let currentProblem = problems[0];
+  let userPath = [];
+  let drawing = false;
+  let submitted = false;
+
+  function setupCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const cssW = rect.width > 50 ? rect.width : 800;
+    const cssH = rect.height > 50 ? rect.height : 560;
+    W = cssW;
+    H = cssH;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+  }
+
+  function m2c(x, y) {
+    const [xMin, xMax] = currentProblem.xRange;
+    const [yMin, yMax] = currentProblem.yRange;
+    return [
+      ((x - xMin) / (xMax - xMin)) * W,
+      H - ((y - yMin) / (yMax - yMin)) * H
+    ];
+  }
+  function c2m(cx, cy) {
+    const [xMin, xMax] = currentProblem.xRange;
+    const [yMin, yMax] = currentProblem.yRange;
+    return [
+      xMin + (cx / W) * (xMax - xMin),
+      yMin + ((H - cy) / H) * (yMax - yMin)
+    ];
+  }
+
+  function drawGrid() {
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    const [xMin, xMax] = currentProblem.xRange;
+    const [yMin, yMax] = currentProblem.yRange;
+    for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+      const [cx] = m2c(x, 0);
+      ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+    }
+    for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+      const [, cy] = m2c(0, y);
+      ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+    }
+  }
+
+  function drawAxes() {
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1.5;
+    const [, y0] = m2c(0, 0);
+    const [x0] = m2c(0, 0);
+    if (y0 >= 0 && y0 <= H) {
+      ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(W, y0); ctx.stroke();
+    }
+    if (x0 >= 0 && x0 <= W) {
+      ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, H); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(232,238,245,0.7)';
+    ctx.font = '11px ui-monospace, monospace';
+    const [xMin, xMax] = currentProblem.xRange;
+    const [yMin, yMax] = currentProblem.yRange;
+    ctx.textAlign = 'center';
+    for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+      if (x === 0) continue;
+      const [cx] = m2c(x, 0);
+      const labelY = (y0 >= 0 && y0 <= H - 14) ? y0 + 14 : H - 4;
+      ctx.fillText(x.toString().replace('-', '−'), cx, labelY);
+    }
+    ctx.textAlign = 'right';
+    for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+      if (y === 0) continue;
+      const [, cy] = m2c(0, y);
+      const labelX = (x0 >= 22 && x0 <= W) ? x0 - 6 : 22;
+      ctx.fillText(y.toString().replace('-', '−'), labelX, cy + 4);
+    }
+  }
+
+  function drawTrueCurve() {
+    ctx.strokeStyle = 'rgba(255, 217, 61, 0.9)';
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    const [xMin, xMax] = currentProblem.xRange;
+    const [yMin, yMax] = currentProblem.yRange;
+    const samples = 1500;
+    const step = (xMax - xMin) / samples;
+    let inPath = false;
+    let prevY = null;
+    ctx.beginPath();
+    for (let i = 0; i <= samples; i++) {
+      const x = xMin + i * step;
+      const y = currentProblem.fn(x);
+      if (!isFinite(y)) { inPath = false; prevY = null; continue; }
+      if (prevY !== null && Math.abs(y - prevY) > (yMax - yMin) * 0.7) inPath = false;
+      if (y < yMin - 1 || y > yMax + 1) { inPath = false; prevY = y; continue; }
+      const [cx, cy] = m2c(x, y);
+      if (!inPath) { ctx.moveTo(cx, cy); inPath = true; }
+      else ctx.lineTo(cx, cy);
+      prevY = y;
+    }
+    ctx.stroke();
+  }
+
+  function drawUserPath() {
+    if (userPath.length < 2) return;
+    ctx.strokeStyle = '#4cc2ff';
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    const [cx0, cy0] = m2c(userPath[0].x, userPath[0].y);
+    ctx.moveTo(cx0, cy0);
+    for (let i = 1; i < userPath.length; i++) {
+      const [cx, cy] = m2c(userPath[i].x, userPath[i].y);
+      ctx.lineTo(cx, cy);
+    }
+    ctx.stroke();
+  }
+
+  function render() {
+    if (!currentProblem) return;
+    ctx.clearRect(0, 0, W, H);
+    drawGrid();
+    drawAxes();
+    if (submitted) drawTrueCurve();
+    drawUserPath();
+  }
+
+  function loadProblem(p) {
+    currentProblem = p;
+    userPath = [];
+    submitted = false;
+    document.getElementById('score-box').classList.remove('shown');
+    const q = document.getElementById('question');
+    if (window.katex) {
+      try { katex.render(p.latex, q, { throwOnError: false, displayMode: true }); }
+      catch { q.textContent = p.latex; }
+    } else {
+      q.textContent = p.latex;
+    }
+    const ul = document.getElementById('features');
+    ul.innerHTML = '';
+    p.features.forEach(f => {
+      const li = document.createElement('li');
+      li.textContent = f;
+      ul.appendChild(li);
+    });
+    render();
+  }
+
+  function pickProblem() {
+    let next;
+    do {
+      next = problems[Math.floor(Math.random() * problems.length)];
+    } while (currentProblem && next.id === currentProblem.id && problems.length > 1);
+    loadProblem(next);
+  }
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    return [x, y];
+  }
+  function startDraw(e) {
+    e.preventDefault();
+    if (submitted) return;
+    drawing = true;
+    userPath = [];
+    const [cx, cy] = getPos(e);
+    const [mx, my] = c2m(cx, cy);
+    userPath.push({ x: mx, y: my });
+    render();
+  }
+  function continueDraw(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    const [cx, cy] = getPos(e);
+    const [mx, my] = c2m(cx, cy);
+    userPath.push({ x: mx, y: my });
+    render();
+  }
+  function endDraw() { drawing = false; }
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', continueDraw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+  canvas.addEventListener('touchstart', startDraw, { passive: false });
+  canvas.addEventListener('touchmove', continueDraw, { passive: false });
+  canvas.addEventListener('touchend', endDraw);
+
+  function gradeSketch() {
+    if (userPath.length < 5) {
+      return { score: 0, feedback: 'Sketch first, then submit. Drag across the grid to draw.' };
+    }
+    const sortedByX = [...userPath].sort((a, b) => a.x - b.x);
+    const [xMin, xMax] = currentProblem.xRange;
+    const [yMin, yMax] = currentProblem.yRange;
+    const yScale = yMax - yMin;
+    let totalErr = 0, count = 0;
+    for (const pt of userPath) {
+      const trueY = currentProblem.fn(pt.x);
+      if (!isFinite(trueY)) continue;
+      if (trueY < yMin - 1 || trueY > yMax + 1) continue;
+      const err = Math.abs(pt.y - trueY) / yScale;
+      totalErr += Math.min(err, 0.5);
+      count++;
+    }
+    if (count === 0) return { score: 0, feedback: 'Your sketch didn\'t cover the curve\'s domain. Try again.' };
+    const xs = sortedByX.map(p => p.x);
+    const covered = xs[xs.length - 1] - xs[0];
+    const xRange = xMax - xMin;
+    const coverFrac = covered / xRange;
+    const meanErr = totalErr / count;
+    let score = Math.round(100 * (1 - meanErr / 0.3));
+    if (score < 0) score = 0;
+    if (score > 100) score = 100;
+    if (coverFrac < 0.7) score = Math.round(score * coverFrac / 0.7);
+    let feedback;
+    if (score >= 85) feedback = '✓ Excellent! Your sketch closely matches the actual curve. Compare it to the yellow overlay to see any small discrepancies.';
+    else if (score >= 65) feedback = 'Good attempt. The general shape is right but check turning points, asymptotes, and intercepts against the yellow curve.';
+    else if (score >= 40) feedback = 'You\'ve got the rough idea. Look at the yellow overlay — pay attention to where the curve crosses axes and any asymptotes.';
+    else if (score > 0) feedback = 'The shape is off. Re-read the key features and study the yellow overlay carefully before trying again.';
+    else feedback = 'Try sketching across the full x-range, checking each key feature listed above.';
+    if (coverFrac < 0.7) feedback += ' (Tip: try to draw across more of the x-range.)';
+    return { score, feedback };
+  }
+
+  document.getElementById('submit-btn').addEventListener('click', () => {
+    const { score, feedback } = gradeSketch();
+    submitted = true;
+    const scoreBox = document.getElementById('score-box');
+    const scoreNum = document.getElementById('score-num');
+    const scoreFb = document.getElementById('score-feedback');
+    scoreNum.textContent = score + '%';
+    scoreNum.style.color = score >= 75 ? 'var(--good)' : score >= 50 ? 'var(--warn)' : 'var(--bad)';
+    scoreFb.textContent = feedback;
+    scoreBox.classList.add('shown');
+    render();
+  });
+  document.getElementById('clear-btn').addEventListener('click', () => {
+    userPath = [];
+    submitted = false;
+    document.getElementById('score-box').classList.remove('shown');
+    render();
+  });
+  document.getElementById('next-btn').addEventListener('click', pickProblem);
+
+  let resizeScheduled = false;
+  function scheduleResize() {
+    if (resizeScheduled) return;
+    resizeScheduled = true;
+    requestAnimationFrame(() => {
+      resizeScheduled = false;
+      setupCanvas();
+      render();
+    });
+  }
+  if (window.ResizeObserver) {
+    new ResizeObserver(scheduleResize).observe(canvas.parentElement);
+  } else {
+    window.addEventListener('resize', scheduleResize);
+  }
+
+  function init() {
+    setupCanvas();
+    pickProblem();
+    if (!window.katex) {
+      const checkKatex = setInterval(() => {
+        if (window.katex) {
+          clearInterval(checkKatex);
+          loadProblem(currentProblem);
+        }
+      }, 100);
+      setTimeout(() => clearInterval(checkKatex), 3000);
+    }
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    requestAnimationFrame(init);
+  } else {
+    window.addEventListener('DOMContentLoaded', () => requestAnimationFrame(init));
+  }
+})();
+</script>
+</body>
+</html>

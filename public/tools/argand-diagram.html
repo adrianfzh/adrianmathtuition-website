@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Argand Diagram & Complex Numbers</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1419; --bg-elev: #1a2028; --bg-elev-2: #232b35;
+    --text: #e8eef5; --text-dim: #8b9bab; --border: #2a3440;
+    --accent: #4cc2ff; --c-z1: #4cc2ff; --c-z2: #ffd43b; --c-result: #ff6b9d;
+  }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh; -webkit-font-smoothing: antialiased;
+  }
+  body { padding: 24px; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
+  .op-row {
+    display: flex; justify-content: center; gap: 8px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .op-btn {
+    background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 9px 18px; border-radius: 8px; font-size: 14px; cursor: pointer;
+    transition: all 0.15s; min-width: 80px;
+  }
+  .op-btn:hover { color: var(--text); }
+  .op-btn.active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600;
+  }
+  .layout {
+    display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
+  }
+  @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+  .canvas-wrap {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+  }
+  canvas { width: 100%; display: block; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+  .panel {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+  }
+  .panel h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); font-weight: 500; margin-bottom: 12px;
+  }
+  .z-block { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .z-block:last-child { border-bottom: none; padding-bottom: 0; }
+  .z-title {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    font-size: 14px; font-weight: 600;
+  }
+  .z-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .z-line { padding: 4px 0; font-size: 13px; font-family: ui-monospace, monospace; }
+  .z-line .label { color: var(--text-dim); display: inline-block; min-width: 70px; }
+  .z-line .val { color: var(--text); }
+  .explain {
+    margin-top: 14px; padding: 12px; background: var(--bg-elev-2);
+    border-radius: 8px; font-size: 13px; color: var(--text-dim); line-height: 1.5;
+  }
+  .explain strong { color: var(--accent); }
+  .input-row {
+    display: flex; gap: 6px; margin-bottom: 8px; align-items: center;
+  }
+  .input-row label { font-size: 12px; color: var(--text-dim); width: 22px; }
+  .input-row input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 5px 8px; border-radius: 4px; font-family: ui-monospace, monospace;
+    font-size: 13px; width: 50px;
+  }
+  .input-row input:focus { outline: none; border-color: var(--accent); }
+  .reset-btn {
+    width: 100%; margin-top: 12px; background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border); padding: 8px; border-radius: 6px; cursor: pointer;
+    font-size: 13px; transition: all 0.15s;
+  }
+  .reset-btn:hover { color: var(--text); border-color: var(--accent); }
+</style>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<div class="container">
+  <header>
+    <h1>Argand Diagram & Complex Numbers</h1>
+    <p class="subtitle">Drag z₁ (cyan) and z₂ (yellow) to see complex operations geometrically</p>
+  </header>
+  <div class="op-row">
+    <button class="op-btn active" data-op="add">z₁ + z₂</button>
+    <button class="op-btn" data-op="sub">z₁ − z₂</button>
+    <button class="op-btn" data-op="mul">z₁ × z₂</button>
+    <button class="op-btn" data-op="div">z₁ ÷ z₂</button>
+    <button class="op-btn" data-op="conj1">z̄₁</button>
+    <button class="op-btn" data-op="conj2">z̄₂</button>
+  </div>
+  <div class="layout">
+    <div class="canvas-wrap">
+      <canvas id="canvas"></canvas>
+    </div>
+    <div class="panel">
+      <div class="z-block">
+        <div class="z-title"><div class="z-dot" style="background:var(--c-z1)"></div>z₁</div>
+        <div class="input-row">
+          <label>Re</label><input type="number" id="z1-re" step="0.5" value="2">
+          <label>Im</label><input type="number" id="z1-im" step="0.5" value="1">
+        </div>
+        <div class="z-line"><span class="label">Cartesian</span><span class="val" id="z1-cart">2 + 1i</span></div>
+        <div class="z-line"><span class="label">Modulus</span><span class="val" id="z1-mod">2.236</span></div>
+        <div class="z-line"><span class="label">Argument</span><span class="val" id="z1-arg">0.464</span></div>
+      </div>
+      <div class="z-block">
+        <div class="z-title"><div class="z-dot" style="background:var(--c-z2)"></div>z₂</div>
+        <div class="input-row">
+          <label>Re</label><input type="number" id="z2-re" step="0.5" value="1">
+          <label>Im</label><input type="number" id="z2-im" step="0.5" value="2">
+        </div>
+        <div class="z-line"><span class="label">Cartesian</span><span class="val" id="z2-cart">1 + 2i</span></div>
+        <div class="z-line"><span class="label">Modulus</span><span class="val" id="z2-mod">2.236</span></div>
+        <div class="z-line"><span class="label">Argument</span><span class="val" id="z2-arg">1.107</span></div>
+      </div>
+      <div class="z-block">
+        <div class="z-title"><div class="z-dot" style="background:var(--c-result)"></div>Result</div>
+        <div class="z-line"><span class="label">Cartesian</span><span class="val" id="r-cart">3 + 3i</span></div>
+        <div class="z-line"><span class="label">Modulus</span><span class="val" id="r-mod">4.243</span></div>
+        <div class="z-line"><span class="label">Argument</span><span class="val" id="r-arg">0.785</span></div>
+      </div>
+      <div class="explain" id="explain"></div>
+      <button class="reset-btn" id="reset">Reset</button>
+    </div>
+  </div>
+</div>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+const xMin = -6, xMax = 6, yMin = -5, yMax = 5;
+
+let z1 = { re: 2, im: 1 };
+let z2 = { re: 1, im: 2 };
+let op = 'add';
+let dragging = null;
+
+function setupCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  W = Math.min(rect.width - 32, 880);
+  H = Math.round(W * (yMax - yMin) / (xMax - xMin));
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+}
+
+function m2c(x, y) {
+  return [
+    ((x - xMin) / (xMax - xMin)) * W,
+    H - ((y - yMin) / (yMax - yMin)) * H
+  ];
+}
+function c2m(cx, cy) {
+  return [
+    xMin + (cx / W) * (xMax - xMin),
+    yMin + ((H - cy) / H) * (yMax - yMin)
+  ];
+}
+
+function compute() {
+  const { re: a, im: b } = z1;
+  const { re: c, im: d } = z2;
+  switch (op) {
+    case 'add': return { re: a + c, im: b + d };
+    case 'sub': return { re: a - c, im: b - d };
+    case 'mul': return { re: a*c - b*d, im: a*d + b*c };
+    case 'div': {
+      const den = c*c + d*d;
+      if (den < 1e-9) return { re: NaN, im: NaN };
+      return { re: (a*c + b*d) / den, im: (b*c - a*d) / den };
+    }
+    case 'conj1': return { re: a, im: -b };
+    case 'conj2': return { re: c, im: -d };
+  }
+}
+
+function modArg(z) {
+  const m = Math.sqrt(z.re*z.re + z.im*z.im);
+  const arg = Math.atan2(z.im, z.re);
+  return { mod: m, arg };
+}
+
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+    const [cx] = m2c(x, 0);
+    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+  }
+  for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+    const [, cy] = m2c(0, y);
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  }
+}
+
+function drawAxes() {
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1.5;
+  const [, y0] = m2c(0, 0);
+  const [x0] = m2c(0, 0);
+  ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(W, y0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, H); ctx.stroke();
+
+  ctx.fillStyle = 'rgba(232,238,245,0.6)';
+  ctx.font = '12px ui-monospace, monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('Re', W - 6, y0 - 6);
+  ctx.textAlign = 'left';
+  ctx.fillText('Im', x0 + 6, 14);
+  ctx.textAlign = 'center';
+  for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
+    if (x === 0) continue;
+    const [cx] = m2c(x, 0);
+    ctx.fillText(x.toString().replace('-', '−'), cx, y0 + 14);
+  }
+  ctx.textAlign = 'right';
+  for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
+    if (y === 0) continue;
+    const [, cy] = m2c(0, y);
+    ctx.fillText(y.toString().replace('-', '−'), x0 - 6, cy + 4);
+  }
+}
+
+function drawArrow(from, to, color, width = 2.5) {
+  const [x1, y1] = m2c(from.re, from.im);
+  const [x2, y2] = m2c(to.re, to.im);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = width;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  // Arrowhead
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const headLen = 10;
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - headLen * Math.cos(angle - 0.4), y2 - headLen * Math.sin(angle - 0.4));
+  ctx.lineTo(x2 - headLen * Math.cos(angle + 0.4), y2 - headLen * Math.sin(angle + 0.4));
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawPoint(z, color, label, fontSize = 14) {
+  const [cx, cy] = m2c(z.re, z.im);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(15,20,25,0.8)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  if (label) {
+    ctx.fillStyle = color;
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.fillText(label, cx + 12, cy - 8);
+  }
+}
+
+function drawHelpers(result) {
+  // For add: show parallelogram
+  if (op === 'add') {
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 5]);
+    const [x1, y1] = m2c(z1.re, z1.im);
+    const [x2, y2] = m2c(z2.re, z2.im);
+    const [xr, yr] = m2c(result.re, result.im);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1); ctx.lineTo(xr, yr);
+    ctx.moveTo(x2, y2); ctx.lineTo(xr, yr);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  if (op === 'sub') {
+    // Show -z2 dashed and z1 + (-z2) construction
+    ctx.strokeStyle = 'rgba(255,212,59,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 5]);
+    const [x0, y0] = m2c(0, 0);
+    const [xn, yn] = m2c(-z2.re, -z2.im);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0); ctx.lineTo(xn, yn);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  if (op === 'mul' || op === 'div') {
+    // Show argument arc for visualization
+    const a1 = Math.atan2(z1.im, z1.re);
+    const a2 = Math.atan2(z2.im, z2.re);
+    const ar = Math.atan2(result.im, result.re);
+    const [cx, cy] = m2c(0, 0);
+    ctx.strokeStyle = 'rgba(255,107,157,0.4)';
+    ctx.lineWidth = 2;
+    const r = 30;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, -ar, 0, ar > 0);
+    ctx.stroke();
+  }
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  drawGrid();
+  drawAxes();
+  const result = compute();
+
+  drawHelpers(result);
+
+  // Vectors from origin
+  drawArrow({ re: 0, im: 0 }, z1, 'var(--c-z1)'.replace('var(--c-z1)', '#4cc2ff'));
+  drawArrow({ re: 0, im: 0 }, z2, '#ffd43b');
+  if (isFinite(result.re)) {
+    drawArrow({ re: 0, im: 0 }, result, '#ff6b9d', 3);
+  }
+
+  drawPoint(z1, '#4cc2ff', 'z₁');
+  drawPoint(z2, '#ffd43b', 'z₂');
+  if (isFinite(result.re)) drawPoint(result, '#ff6b9d', 'z');
+
+  updatePanel(result);
+}
+
+function fmt(z) {
+  const re = parseFloat(z.re.toFixed(3));
+  const im = parseFloat(z.im.toFixed(3));
+  if (!isFinite(re)) return '— (undefined)';
+  if (Math.abs(im) < 0.001) return re.toString();
+  if (Math.abs(re) < 0.001) return (im === 1 ? '' : im === -1 ? '-' : im) + 'i';
+  const sign = im >= 0 ? '+' : '−';
+  const imAbs = Math.abs(im);
+  const imStr = imAbs === 1 ? '' : imAbs;
+  return `${re} ${sign} ${imStr}i`;
+}
+
+function fmtArg(rad) {
+  if (!isFinite(rad)) return '—';
+  // Try to identify nice fractions of pi
+  const ratio = rad / Math.PI;
+  for (const den of [1, 2, 3, 4, 6]) {
+    const num = ratio * den;
+    if (Math.abs(num - Math.round(num)) < 0.02) {
+      const n = Math.round(num);
+      if (n === 0) return '0';
+      const sign = n < 0 ? '−' : '';
+      const nAbs = Math.abs(n);
+      const numStr = nAbs === 1 ? 'π' : nAbs + 'π';
+      return den === 1 ? `${sign}${numStr}` : `${sign}${numStr}/${den}`;
+    }
+  }
+  return rad.toFixed(3);
+}
+
+function updatePanel(result) {
+  const z1ma = modArg(z1);
+  const z2ma = modArg(z2);
+  const rma = modArg(result);
+
+  document.getElementById('z1-cart').textContent = fmt(z1);
+  document.getElementById('z1-mod').textContent = z1ma.mod.toFixed(3);
+  document.getElementById('z1-arg').textContent = `${fmtArg(z1ma.arg)} (${z1ma.arg.toFixed(3)})`;
+
+  document.getElementById('z2-cart').textContent = fmt(z2);
+  document.getElementById('z2-mod').textContent = z2ma.mod.toFixed(3);
+  document.getElementById('z2-arg').textContent = `${fmtArg(z2ma.arg)} (${z2ma.arg.toFixed(3)})`;
+
+  document.getElementById('r-cart').textContent = fmt(result);
+  document.getElementById('r-mod').textContent = isFinite(rma.mod) ? rma.mod.toFixed(3) : '—';
+  document.getElementById('r-arg').textContent = isFinite(rma.arg) ? `${fmtArg(rma.arg)} (${rma.arg.toFixed(3)})` : '—';
+
+  // Sync inputs
+  document.getElementById('z1-re').value = z1.re;
+  document.getElementById('z1-im').value = z1.im;
+  document.getElementById('z2-re').value = z2.re;
+  document.getElementById('z2-im').value = z2.im;
+
+  // Explanation
+  const explain = document.getElementById('explain');
+  const explanations = {
+    add: '<strong>Addition</strong> works like vector addition: components add separately. Geometrically, z₁ + z₂ is the diagonal of the parallelogram with sides z₁ and z₂.',
+    sub: '<strong>Subtraction</strong> = z₁ + (−z₂). The vector −z₂ is z₂ reflected through the origin.',
+    mul: `<strong>Multiplication</strong>: moduli <em>multiply</em>, arguments <em>add</em>. |z₁z₂| = |z₁| · |z₂| = ${z1ma.mod.toFixed(2)} × ${z2ma.mod.toFixed(2)} = ${(z1ma.mod * z2ma.mod).toFixed(2)}. arg(z₁z₂) = ${fmtArg(z1ma.arg)} + ${fmtArg(z2ma.arg)}.`,
+    div: `<strong>Division</strong>: moduli <em>divide</em>, arguments <em>subtract</em>. |z₁/z₂| = |z₁| / |z₂| = ${z1ma.mod.toFixed(2)} / ${z2ma.mod.toFixed(2)} = ${(z1ma.mod / z2ma.mod).toFixed(2)}.`,
+    conj1: '<strong>Conjugate of z₁</strong>: reflect z₁ in the real axis. Same modulus, negated argument.',
+    conj2: '<strong>Conjugate of z₂</strong>: reflect z₂ in the real axis. Same modulus, negated argument.'
+  };
+  explain.innerHTML = explanations[op];
+}
+
+// Mouse / touch interactions
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+  return [x, y];
+}
+function hitTest(cx, cy) {
+  const r = 16;
+  const [x1, y1] = m2c(z1.re, z1.im);
+  if (Math.hypot(cx - x1, cy - y1) < r) return 'z1';
+  const [x2, y2] = m2c(z2.re, z2.im);
+  if (Math.hypot(cx - x2, cy - y2) < r) return 'z2';
+  return null;
+}
+function startDrag(e) {
+  e.preventDefault();
+  const [cx, cy] = getPos(e);
+  const hit = hitTest(cx, cy);
+  if (hit) {
+    dragging = hit;
+    canvas.classList.add('dragging');
+  }
+}
+function moveDrag(e) {
+  if (!dragging) return;
+  e.preventDefault();
+  const [cx, cy] = getPos(e);
+  const [mx, my] = c2m(cx, cy);
+  // Snap to 0.5
+  const snapped = { re: Math.round(mx * 2) / 2, im: Math.round(my * 2) / 2 };
+  if (dragging === 'z1') z1 = snapped;
+  else if (dragging === 'z2') z2 = snapped;
+  render();
+}
+function endDrag() {
+  dragging = null;
+  canvas.classList.remove('dragging');
+}
+
+canvas.addEventListener('mousedown', startDrag);
+canvas.addEventListener('mousemove', moveDrag);
+canvas.addEventListener('mouseup', endDrag);
+canvas.addEventListener('mouseleave', endDrag);
+canvas.addEventListener('touchstart', startDrag, { passive: false });
+canvas.addEventListener('touchmove', moveDrag, { passive: false });
+canvas.addEventListener('touchend', endDrag);
+
+// Numeric inputs
+['z1-re', 'z1-im', 'z2-re', 'z2-im'].forEach(id => {
+  document.getElementById(id).addEventListener('input', e => {
+    const v = parseFloat(e.target.value) || 0;
+    if (id === 'z1-re') z1.re = v;
+    else if (id === 'z1-im') z1.im = v;
+    else if (id === 'z2-re') z2.re = v;
+    else z2.im = v;
+    render();
+  });
+});
+
+// Op buttons
+document.querySelectorAll('.op-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.op-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    op = btn.dataset.op;
+    render();
+  });
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  z1 = { re: 2, im: 1 }; z2 = { re: 1, im: 2 };
+  render();
+});
+
+window.addEventListener('resize', () => { setupCanvas(); render(); });
+setupCanvas();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Vector & Plane Visualizer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1419; --bg-elev: #1a2028; --bg-elev-2: #232b35;
+    --text: #e8eef5; --text-dim: #8b9bab; --border: #2a3440;
+    --accent: #4cc2ff; --c-v1: #4cc2ff; --c-v2: #ffd43b;
+    --c-sum: #51cf66; --c-cross: #ff6b9d; --c-plane: #b197fc;
+  }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh; -webkit-font-smoothing: antialiased;
+  }
+  body { padding: 24px; }
+  .container { max-width: 1280px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
+  .layout {
+    display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
+  }
+  @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+  #canvas-wrap {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; aspect-ratio: 1.4 / 1;
+    position: relative; min-height: 480px;
+  }
+  #canvas-wrap canvas { width: 100% !important; height: 100% !important; display: block; }
+  .hint {
+    position: absolute; bottom: 10px; left: 10px;
+    color: var(--text-dim); font-size: 12px;
+    background: rgba(15,20,25,0.7); padding: 6px 10px; border-radius: 6px;
+    pointer-events: none;
+  }
+  .panel {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+  }
+  .panel h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); font-weight: 500; margin-bottom: 12px;
+  }
+  .v-block { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .v-title {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    font-size: 14px; font-weight: 600;
+  }
+  .v-dot { width: 12px; height: 4px; border-radius: 2px; }
+  .input-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+  }
+  .input-grid label {
+    display: flex; flex-direction: column; gap: 3px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  .input-grid input {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 5px 8px; border-radius: 4px; font-family: ui-monospace, monospace;
+    font-size: 13px; width: 100%;
+  }
+  .input-grid input:focus { outline: none; border-color: var(--accent); }
+  .toggle-list { margin-bottom: 14px; }
+  .toggle-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; font-size: 13px;
+  }
+  .toggle-row .label { display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .toggle-row .swatch { width: 12px; height: 4px; border-radius: 2px; }
+  .switch {
+    position: relative; width: 36px; height: 20px;
+    background: var(--border); border-radius: 10px; cursor: pointer; transition: 0.15s;
+  }
+  .switch::after {
+    content: ''; position: absolute; left: 2px; top: 2px;
+    width: 16px; height: 16px; background: var(--text-dim); border-radius: 50%; transition: 0.15s;
+  }
+  .switch.on { background: var(--accent); }
+  .switch.on::after { left: 18px; background: var(--bg); }
+  .stats {
+    background: var(--bg-elev-2); border-radius: 8px; padding: 12px;
+  }
+  .stat-row {
+    display: flex; justify-content: space-between; padding: 5px 0;
+    font-size: 13px;
+  }
+  .stat-row .lbl { color: var(--text-dim); }
+  .stat-row .val { color: var(--text); font-family: ui-monospace, monospace; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<div class="container">
+  <header>
+    <h1>3D Vector & Plane Visualizer</h1>
+    <p class="subtitle">Drag to rotate · scroll to zoom · adjust components below</p>
+  </header>
+  <div class="layout">
+    <div id="canvas-wrap">
+      <div class="hint">Left-drag: orbit · Right-drag: pan · Scroll: zoom</div>
+    </div>
+    <div class="panel">
+      <h3>Vectors</h3>
+      <div class="v-block">
+        <div class="v-title"><div class="v-dot" style="background:var(--c-v1)"></div>Vector v₁</div>
+        <div class="input-grid">
+          <label>x<input type="number" id="v1-x" step="0.5" value="3"></label>
+          <label>y<input type="number" id="v1-y" step="0.5" value="0"></label>
+          <label>z<input type="number" id="v1-z" step="0.5" value="0"></label>
+        </div>
+      </div>
+      <div class="v-block">
+        <div class="v-title"><div class="v-dot" style="background:var(--c-v2)"></div>Vector v₂</div>
+        <div class="input-grid">
+          <label>x<input type="number" id="v2-x" step="0.5" value="0"></label>
+          <label>y<input type="number" id="v2-y" step="0.5" value="2"></label>
+          <label>z<input type="number" id="v2-z" step="0.5" value="2"></label>
+        </div>
+      </div>
+      <h3>Show</h3>
+      <div class="toggle-list">
+        <div class="toggle-row">
+          <div class="label"><div class="swatch" style="background:var(--c-sum)"></div>Sum (v₁+v₂)</div>
+          <div class="switch" data-toggle="sum"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="label"><div class="swatch" style="background:var(--c-cross)"></div>Cross (v₁×v₂)</div>
+          <div class="switch" data-toggle="cross"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="label"><div class="swatch" style="background:var(--c-plane)"></div>Plane span</div>
+          <div class="switch" data-toggle="plane"></div>
+        </div>
+      </div>
+      <h3>Computed</h3>
+      <div class="stats">
+        <div class="stat-row"><span class="lbl">|v₁|</span><span class="val" id="s-mag1">3.000</span></div>
+        <div class="stat-row"><span class="lbl">|v₂|</span><span class="val" id="s-mag2">2.828</span></div>
+        <div class="stat-row"><span class="lbl">v₁ · v₂ (dot)</span><span class="val" id="s-dot">0.000</span></div>
+        <div class="stat-row"><span class="lbl">|v₁ × v₂|</span><span class="val" id="s-crossmag">8.485</span></div>
+        <div class="stat-row"><span class="lbl">Angle</span><span class="val" id="s-angle">90.0°</span></div>
+        <div class="stat-row"><span class="lbl">v₁ × v₂</span><span class="val" id="s-cross">(0, −6, 6)</span></div>
+        <div class="stat-row"><span class="lbl">v₁ + v₂</span><span class="val" id="s-sum">(3, 2, 2)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const wrap = document.getElementById('canvas-wrap');
+const scene = new THREE.Scene();
+scene.background = null;
+
+const w0 = wrap.clientWidth, h0 = wrap.clientHeight;
+const camera = new THREE.PerspectiveCamera(45, w0 / h0, 0.1, 1000);
+camera.position.set(8, 7, 9);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(w0, h0);
+renderer.setPixelRatio(window.devicePixelRatio);
+wrap.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// Lighting (for any future MeshStandard objects, currently using Basic)
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const dir = new THREE.DirectionalLight(0xffffff, 0.5);
+dir.position.set(5, 8, 5);
+scene.add(dir);
+
+// Grid on xz-plane
+const grid = new THREE.GridHelper(10, 10, 0x2a3440, 0x1a2028);
+scene.add(grid);
+
+// World axes (custom colored)
+function makeAxisLine(dir, color, length = 5) {
+  const points = [
+    new THREE.Vector3(-length, 0, 0).multiplyScalar(dir === 'x' ? 1 : 0),
+    new THREE.Vector3(length, 0, 0).multiplyScalar(dir === 'x' ? 1 : 0)
+  ];
+  if (dir === 'y') {
+    points[0].set(0, -length, 0); points[1].set(0, length, 0);
+  } else if (dir === 'z') {
+    points[0].set(0, 0, -length); points[1].set(0, 0, length);
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(points);
+  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.6 });
+  return new THREE.Line(geo, mat);
+}
+scene.add(makeAxisLine('x', 0xff5555));
+scene.add(makeAxisLine('y', 0x55ff55));
+scene.add(makeAxisLine('z', 0x5599ff));
+
+// Axis labels via sprites
+function makeLabel(text, color = '#ffffff', scale = 0.6) {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 64;
+  const cx = c.getContext('2d');
+  cx.fillStyle = color;
+  cx.font = 'bold 50px sans-serif';
+  cx.textAlign = 'center';
+  cx.textBaseline = 'middle';
+  cx.fillText(text, 64, 32);
+  const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.LinearFilter;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+  const sp = new THREE.Sprite(mat);
+  sp.scale.set(scale * 2, scale, 1);
+  return sp;
+}
+const xL = makeLabel('x', '#ff8888'); xL.position.set(5.4, 0, 0); scene.add(xL);
+const yL = makeLabel('y', '#88ff88'); yL.position.set(0, 5.4, 0); scene.add(yL);
+const zL = makeLabel('z', '#88ccff'); zL.position.set(0, 0, 5.4); scene.add(zL);
+
+// Vector storage
+const state = {
+  v1: new THREE.Vector3(3, 0, 0),
+  v2: new THREE.Vector3(0, 2, 2),
+  showSum: false,
+  showCross: false,
+  showPlane: false
+};
+
+// Dynamic objects
+const dynamic = new THREE.Group();
+scene.add(dynamic);
+
+function clearDynamic() {
+  while (dynamic.children.length) {
+    const obj = dynamic.children[0];
+    dynamic.remove(obj);
+    if (obj.geometry) obj.geometry.dispose();
+    if (obj.material) {
+      if (obj.material.map) obj.material.map.dispose();
+      obj.material.dispose();
+    }
+  }
+}
+
+function addArrow(vec, color) {
+  if (vec.length() < 0.001) return;
+  const dir = vec.clone().normalize();
+  const length = vec.length();
+  const arrow = new THREE.ArrowHelper(dir, new THREE.Vector3(0, 0, 0), length, color, 0.35, 0.18);
+  arrow.line.material.linewidth = 3;
+  dynamic.add(arrow);
+  return arrow;
+}
+
+function addLabel(text, position, colorHex) {
+  const colorStr = '#' + colorHex.toString(16).padStart(6, '0');
+  const sp = makeLabel(text, colorStr, 0.45);
+  sp.position.copy(position).multiplyScalar(1.08);
+  dynamic.add(sp);
+}
+
+function addPlane(v1, v2, color) {
+  const normal = new THREE.Vector3().crossVectors(v1, v2);
+  if (normal.length() < 0.001) return; // colinear
+  normal.normalize();
+  const size = 8;
+  const geo = new THREE.PlaneGeometry(size, size);
+  const mat = new THREE.MeshBasicMaterial({
+    color, transparent: true, opacity: 0.18, side: THREE.DoubleSide
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  // Orient: PlaneGeometry's normal is +Z, want it to be along `normal`
+  const q = new THREE.Quaternion();
+  q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
+  mesh.quaternion.copy(q);
+  dynamic.add(mesh);
+
+  // Wireframe outline for clarity
+  const edges = new THREE.EdgesGeometry(geo);
+  const lineMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5 });
+  const line = new THREE.LineSegments(edges, lineMat);
+  line.quaternion.copy(q);
+  dynamic.add(line);
+}
+
+function update() {
+  clearDynamic();
+  const { v1, v2, showSum, showCross, showPlane } = state;
+
+  if (showPlane) addPlane(v1, v2, 0xb197fc);
+
+  addArrow(v1, 0x4cc2ff);
+  addArrow(v2, 0xffd43b);
+  if (v1.length() > 0.01) addLabel('v₁', v1, 0x4cc2ff);
+  if (v2.length() > 0.01) addLabel('v₂', v2, 0xffd43b);
+
+  if (showSum) {
+    const s = new THREE.Vector3().addVectors(v1, v2);
+    addArrow(s, 0x51cf66);
+    if (s.length() > 0.01) addLabel('v₁+v₂', s, 0x51cf66);
+  }
+  if (showCross) {
+    const c = new THREE.Vector3().crossVectors(v1, v2);
+    if (c.length() > 0.01) {
+      addArrow(c, 0xff6b9d);
+      addLabel('v₁×v₂', c, 0xff6b9d);
+    }
+  }
+
+  updateStats();
+}
+
+function updateStats() {
+  const v1 = state.v1, v2 = state.v2;
+  const m1 = v1.length(), m2 = v2.length();
+  const dot = v1.dot(v2);
+  const cross = new THREE.Vector3().crossVectors(v1, v2);
+  const cMag = cross.length();
+  const cosA = (m1 > 0 && m2 > 0) ? dot / (m1 * m2) : 0;
+  const angle = Math.acos(Math.max(-1, Math.min(1, cosA))) * 180 / Math.PI;
+  const sum = new THREE.Vector3().addVectors(v1, v2);
+
+  document.getElementById('s-mag1').textContent = m1.toFixed(3);
+  document.getElementById('s-mag2').textContent = m2.toFixed(3);
+  document.getElementById('s-dot').textContent = dot.toFixed(3);
+  document.getElementById('s-crossmag').textContent = cMag.toFixed(3);
+  document.getElementById('s-angle').textContent = (m1 < 0.001 || m2 < 0.001) ? '—' : angle.toFixed(1) + '°';
+  document.getElementById('s-cross').textContent = `(${cross.x.toFixed(2)}, ${cross.y.toFixed(2)}, ${cross.z.toFixed(2)})`.replace(/-/g, '−');
+  document.getElementById('s-sum').textContent = `(${sum.x.toFixed(2)}, ${sum.y.toFixed(2)}, ${sum.z.toFixed(2)})`.replace(/-/g, '−');
+}
+
+// Inputs
+['v1-x', 'v1-y', 'v1-z', 'v2-x', 'v2-y', 'v2-z'].forEach(id => {
+  const inp = document.getElementById(id);
+  inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value) || 0;
+    const [vec, axis] = id.split('-');
+    state[vec][axis] = v;
+    update();
+  });
+});
+
+// Toggle switches
+document.querySelectorAll('.switch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    const key = sw.dataset.toggle;
+    sw.classList.toggle('on');
+    if (key === 'sum') state.showSum = sw.classList.contains('on');
+    if (key === 'cross') state.showCross = sw.classList.contains('on');
+    if (key === 'plane') state.showPlane = sw.classList.contains('on');
+    update();
+  });
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+update();
+</script>
+</body>
+</html>

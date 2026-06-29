@@ -192,6 +192,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
+  { emoji: '📐', title: 'Math Tools',      sub: 'Interactive visualisers · graphs · drills', href: '/tools' },
   { emoji: '🧮', title: 'TI-84',           sub: 'TI-84 CE · graphing calculator',      href: '/calculator', icon: CalcIcon },
   { emoji: '🧮', title: 'Casio fx-97SG X',  sub: 'ClassWiz · scientific calculator',     href: '/calculator/casio', icon: CasioIcon },
   { emoji: '🎓', title: 'Teaching decks',  sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
