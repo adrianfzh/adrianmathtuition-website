@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type CSSProperties } from 'react';
+import { useState, useRef, type CSSProperties } from 'react';
 
 // ── auth (same cookie scheme as the other admin pages) ──────────────────────
 function getCookie(name: string): string {
@@ -60,6 +60,43 @@ const card: CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', b
 const btn: CSSProperties = { padding: '10px 18px', borderRadius: 8, border: 'none', background: '#111827', color: '#fff', fontWeight: 600, cursor: 'pointer' };
 const conf = (c?: string) => (c === 'low' ? '#b91c1c' : c === 'medium' ? '#b45309' : '#15803d');
 
+// Drag-and-drop / click-to-browse upload zone.
+function FileDrop({ label, accept, multiple, count, primaryName, onFiles, hint }: {
+  label: string; accept: string; multiple: boolean; count: number;
+  primaryName: string | null; onFiles: (files: File[]) => void; hint?: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [drag, setDrag] = useState(false);
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{label}</label>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click(); }}
+        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={(e) => { e.preventDefault(); setDrag(false); onFiles(Array.from(e.dataTransfer.files)); }}
+        style={{
+          border: `2px dashed ${drag ? '#2563eb' : '#cbd5e1'}`,
+          background: drag ? '#eff6ff' : '#f8fafc',
+          borderRadius: 12, padding: '22px 16px', textAlign: 'center', cursor: 'pointer',
+          transition: 'background 0.12s, border-color 0.12s',
+        }}
+      >
+        <div style={{ fontSize: 26, marginBottom: 6 }}>{multiple ? '🖼️' : '📄'}</div>
+        {count > 0
+          ? <div style={{ fontWeight: 600, color: '#0f172a' }}>{multiple ? `${count} photo${count > 1 ? 's' : ''} selected — drop more or click to replace` : primaryName}</div>
+          : <div style={{ color: '#475569' }}>Drag &amp; drop here, or <span style={{ color: '#2563eb', fontWeight: 600 }}>click to browse</span></div>}
+        {hint && <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>{hint}</div>}
+      </div>
+      <input ref={inputRef} type="file" accept={accept} multiple={multiple} style={{ display: 'none' }}
+        onChange={(e) => onFiles(e.target.files ? Array.from(e.target.files) : [])} />
+    </div>
+  );
+}
+
 export default function MarkPaperPage() {
   const [pdf, setPdf] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
@@ -81,8 +118,7 @@ export default function MarkPaperPage() {
 
   const authHeaders = { Authorization: `Bearer ${getAuth()}`, 'Content-Type': 'application/json' };
 
-  function onPickImages(files: FileList | null) {
-    const arr = files ? Array.from(files) : [];
+  function onPickImages(arr: File[]) {
     setImages(arr);
     setImgPreviews(arr.map((f) => URL.createObjectURL(f)));
   }
@@ -144,11 +180,24 @@ export default function MarkPaperPage() {
 
       {/* Upload */}
       <div style={card}>
-        <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Question paper (PDF)</label>
-        <input type="file" accept="application/pdf" onChange={(e) => setPdf(e.target.files?.[0] || null)} />
-        <div style={{ height: 14 }} />
-        <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Student working (photos — one or more)</label>
-        <input type="file" accept="image/*" multiple onChange={(e) => onPickImages(e.target.files)} />
+        <FileDrop
+          label="Question paper (PDF)"
+          accept="application/pdf"
+          multiple={false}
+          count={pdf ? 1 : 0}
+          primaryName={pdf?.name || null}
+          onFiles={(fs) => setPdf(fs.find((f) => f.type === 'application/pdf') || fs[0] || null)}
+          hint="One PDF file"
+        />
+        <FileDrop
+          label="Student working (photos — one or more)"
+          accept="image/*"
+          multiple
+          count={images.length}
+          primaryName={null}
+          onFiles={(fs) => { const imgs = fs.filter((f) => f.type.startsWith('image/')); if (imgs.length) onPickImages(imgs); }}
+          hint="JPG / PNG · drop several at once"
+        />
         {imgPreviews.length > 0 && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
             {imgPreviews.map((src, i) => (
