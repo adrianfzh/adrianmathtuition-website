@@ -360,6 +360,8 @@ export async function POST(req: NextRequest) {
           'Adjustment Amount': additionalAmount,
           ...(additionalAmount > 0 ? { 'Adjustment Notes': `Additional lessons: ${additionalCount} \u00d7 ${ratePerLesson}` } : {}),
           'Final Amount': totalFinalAmount,
+          // Nothing owed (e.g. fully offset by a credit) → mark paid, not "Unpaid".
+          'Is Paid': totalFinalAmount <= 0.005,
           'Line Items': JSON.stringify(lineItemsForInvoice),
           'Line Items Extra': carryOverLineItems.length > 0 ? JSON.stringify(carryOverLineItems) : '',
           'Invoice Type': 'Regular',
@@ -526,6 +528,8 @@ export async function POST(req: NextRequest) {
                   body: JSON.stringify({ fields: {
                     'Line Items Extra': JSON.stringify(existingExtra),
                     'Final Amount': newFinalAmount,
+                    // Credit fully offsets the invoice → nothing owed → mark paid.
+                    ...(newFinalAmount <= 0.005 ? { 'Is Paid': true } : {}),
                     'Auto Notes': referralNote,
                   }}),
                 });

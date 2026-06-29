@@ -135,6 +135,11 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Missing recordId or fields' }, { status: 400 });
   }
 
+  // Nothing owed (Final Amount set to $0 — e.g. fully offset by a credit) → mark paid.
+  if (fields['Final Amount'] !== undefined && Number(fields['Final Amount']) <= 0.005) {
+    fields['Is Paid'] = true;
+  }
+
   try {
     const updated = await airtableRequest('Invoices', `/${recordId}`, {
       method: 'PATCH',
