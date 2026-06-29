@@ -189,7 +189,17 @@ export default function MarkPaperPage() {
       setResults(d.results || []);
       setTotals(d.totals || null);
       setUnattempted(d.unattempted_questions || []);
-      setUsage(d.usage || null);
+      // Accumulate onto the propose-phase usage so the total cost reflects BOTH phases.
+      setUsage((prev) => {
+        if (!d.usage) return prev;
+        if (!prev) return d.usage;
+        return {
+          costUsd: (prev.costUsd || 0) + (d.usage.costUsd || 0),
+          timeSec: (prev.timeSec || 0) + (d.usage.timeSec || 0),
+          inputTokens: (prev.inputTokens || 0) + (d.usage.inputTokens || 0),
+          outputTokens: (prev.outputTokens || 0) + (d.usage.outputTokens || 0),
+        };
+      });
       setPhase('done');
     } catch (e) { setError((e as Error).message); setPhase('proposed'); }
   }
