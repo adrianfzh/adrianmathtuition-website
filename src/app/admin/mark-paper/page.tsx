@@ -45,7 +45,7 @@ async function fileToUpload(file: File, maxEdge = 1600, quality = 0.85): Promise
 }
 
 type Question = { number: string; question_text: string; total_marks?: number | null; parts?: unknown[]; has_diagram?: boolean };
-type Working = { detected_label?: string | null; final_answer?: string | null; transcription_confidence?: string };
+type Working = { photo_index?: number; region?: string | null; detected_label?: string | null; final_answer?: string | null; transcription_confidence?: string };
 type Match = { working_index: number; question_number: string | null; confidence: string; used_label?: boolean; reason?: string };
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
 type Result = {
@@ -250,15 +250,17 @@ export default function MarkPaperPage() {
           {workings.map((w, i) => {
             const m = matches.find((mm) => mm.working_index === i);
             const flagged = (m?.confidence || 'high') === 'low';
+            const pi = w.photo_index ?? i;
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderTop: i ? '1px solid #f3f4f6' : 'none' }}>
-                {imgPreviews[i]
+                {imgPreviews[pi]
                   // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={imgPreviews[i]!} alt={`Photo ${i + 1}`} title="Click to enlarge" onClick={() => setLightbox(imgPreviews[i]!)} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'zoom-in', flexShrink: 0 }} />
+                  ? <img src={imgPreviews[pi]!} alt={`Photo ${pi + 1}`} title="Click to enlarge" onClick={() => setLightbox(imgPreviews[pi]!)} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e7eb', cursor: 'zoom-in', flexShrink: 0 }} />
                   : <div style={{ width: 48, height: 48, borderRadius: 6, border: '1px solid #e5e7eb', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#94a3b8', textAlign: 'center', flexShrink: 0 }}>no preview</div>}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13 }}>
-                    Photo {i + 1}
+                    Photo {pi + 1}
+                    {w.region ? <span style={{ color: '#94a3b8' }}> · {w.region}</span> : null}
                     {w.detected_label ? <> · label “{w.detected_label}”</> : <span style={{ color: '#b45309' }}> · no label</span>}
                     {w.final_answer ? <span style={{ color: '#6b7280' }}> · ans: {String(w.final_answer).slice(0, 40)}</span> : null}
                   </div>
