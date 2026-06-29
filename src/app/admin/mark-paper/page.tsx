@@ -119,28 +119,42 @@ export default function MarkPaperPage() {
 
   const authHeaders = { Authorization: `Bearer ${getAuth()}`, 'Content-Type': 'application/json' };
 
-  // iPhone photos are HEIC, which browsers can't render or canvas-process — convert to JPEG first.
-  async function normalizeImage(f: File): Promise<File> {
-    const isHeic = /heic|heif/i.test(f.type) || /\.hei[cf]$/i.test(f.name);
-    if (!isHeic) return f;
+  // Can the browser natively decode this as an image? (JPEG/PNG/WebP everywhere; HEIC only on Safari.)
+  async function canDecode(f: Blob): Promise<boolean> {
+    try { const b = await createImageBitmap(f); b.close?.(); return true; } catch { return false; }
+  }
+
+  // Normalise a picked file. If the browser can't decode it (e.g. HEIC on Chrome),
+  // convert to JPEG; anything still unreadable is rejected with a reason (no broken thumbnails).
+  async function normalizeImage(f: File): Promise<{ file?: File; error?: string }> {
+    if (await canDecode(f)) return { file: f };
     try {
-      const heic2any = (await import('heic2any')).default as (opts: { blob: Blob; toType?: string; quality?: number }) => Promise<Blob | Blob[]>;
+      const mod = await import('heic2any');
+      const heic2any = ((mod as { default?: unknown }).default || mod) as (o: { blob: Blob; toType?: string; quality?: number }) => Promise<Blob | Blob[]>;
       const out = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.9 });
       const blob = Array.isArray(out) ? out[0] : out;
-      return new File([blob], f.name.replace(/\.hei[cf]$/i, '.jpg'), { type: 'image/jpeg' });
-    } catch {
-      return f; // conversion failed — fall through (may still error downstream)
+      const jpeg = new File([blob], f.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+      if (await canDecode(jpeg)) return { file: jpeg };
+      return { error: `${f.name}: converted but still unreadable` };
+    } catch (e) {
+      return { error: `${f.name}: couldn't convert (${(e as Error)?.message || 'HEIC decode failed'})` };
     }
   }
 
-  // Append picked photos (so you can build the set up incrementally), converting HEIC first.
+  // Append readable photos; surface any that couldn't be read instead of showing them broken.
   async function onPickImages(arr: File[]) {
     if (!arr.length) return;
     setConverting(true);
+    setError('');
     try {
-      const normalized = await Promise.all(arr.map(normalizeImage));
-      setImages((prev) => [...prev, ...normalized]);
-      setImgPreviews((prev) => [...prev, ...normalized.map((f) => URL.createObjectURL(f))]);
+      const results = await Promise.all(arr.map(normalizeImage));
+      const good = results.map((r) => r.file).filter((f): f is File => !!f);
+      const errs = results.map((r) => r.error).filter((e): e is string => !!e);
+      if (good.length) {
+        setImages((prev) => [...prev, ...good]);
+        setImgPreviews((prev) => [...prev, ...good.map((f) => URL.createObjectURL(f))]);
+      }
+      if (errs.length) setError(`Couldn't read ${errs.length} photo${errs.length > 1 ? 's' : ''}: ${errs.join(' · ')}. Re-take as JPEG or screenshot it.`);
     } finally {
       setConverting(false);
     }
