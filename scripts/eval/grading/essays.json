@@ -1,0 +1,30 @@
+[
+  {
+    "id": "globalisation-weak",
+    "question": "Do the benefits of globalisation outweigh the costs?",
+    "expectedScore": 11,
+    "_note": "PLACEHOLDER band. Replace expectedScore with YOUR actual mark. Weak: short, undeveloped, frequent errors.",
+    "essay": "Globalisation is good for the world. It help economy grow and create many jobs for people. For example, many companies open factories in poor countries which give them money. However some people loses their jobs because of competition. Also pollution is a problem from factories. In conclusion globalisation is mostly good thing for everyone and we should support it."
+  },
+  {
+    "id": "technology-mid",
+    "question": "Has technology made our lives better?",
+    "expectedScore": 17,
+    "_note": "PLACEHOLDER. Mid: some development and examples, but generalised, with several language errors.",
+    "essay": "Technology has changed our lives in many ways, and in my opinion it has mostly made them better. Firstly, communication is much easier now. In the past, people had to write letters and wait for weeks, but today we can message family overseas instantly through apps like WhatsApp. This helps people stay connected even when they are far apart. Secondly, technology has improved education. Students can now learn from videos and websites, not just textbooks, which makes difficult topics easier to understand. However, there are also some downsides. Many people spend too much time on their phones and this affect their sleep and their face-to-face relationships. Despite these problems, I believe the benefits are bigger than the costs, so technology has made our lives better overall."
+  },
+  {
+    "id": "social-media-strong",
+    "question": "Is social media doing more harm than good to young people?",
+    "expectedScore": 24,
+    "_note": "PLACEHOLDER. Strong: clear stance, developed argument, specific examples, mostly accurate language.",
+    "essay": "Social media is often blamed for the anxieties of a generation, yet to dismiss it as purely harmful is to ignore the genuine connection and opportunity it affords. While its dangers are real, I would argue that for young people, social media does more good than harm when used deliberately. Its most obvious benefit is access. A teenager in a small town can now learn coding from a creator in California, follow the work of scientists, or find a community of others who share a niche interest in a way that was impossible a generation ago. This democratisation of knowledge and belonging is profound, particularly for those who feel isolated in their immediate surroundings. Critics will rightly point to the mental-health toll: the curated perfection of others' lives breeds comparison and inadequacy. This is a serious harm, but it is a harm of misuse rather than of the medium itself. The same platform that fuels comparison also hosts movements for mental-health awareness and bodies of support. The decisive factor, then, is not the technology but the literacy with which it is used. If young people are taught to curate their feeds and question what they see, social media becomes a tool rather than a trap. On balance, its capacity to connect and empower outweighs its potential to harm."
+  },
+  {
+    "id": "reading-weakmid",
+    "question": "Should reading still be encouraged in a world of screens?",
+    "expectedScore": 14,
+    "_note": "PLACEHOLDER. Weak-mid: relevant points but repetitive and thin, with errors.",
+    "essay": "Reading is very important and should be encourage even today. Many people think that because we have screens and videos, reading books is not needed anymore. But I disagree with this. Reading helps to improve your vocabulary and your imagination. When you read a book, you imagine the characters and the places in your own mind. Videos do not let you do this because everything is shown to you already. Also, reading can help you in your exams because you learn many new words and how to write properly. Screens are good for some things like watching news and learning, but reading is still important and we should not stop doing it. So in conclusion, reading should still be encourage in the world of screens today."
+  }
+]

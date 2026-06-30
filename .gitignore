@@ -48,3 +48,4 @@ __deltest.tmp
 scripts/migration-snapshot-*.json
 scripts/split-april-snapshot-*.json
 scripts/split-april-created-*.json
+reference/

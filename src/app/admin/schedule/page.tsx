@@ -630,6 +630,10 @@ export default function SchedulePage() {
   const [rescheduleModal, setRescheduleModal] = useState<RescheduleState | null>(null);
   const [showAllRescheduleSlots, setShowAllRescheduleSlots] = useState(false);
   const [actionSheet, setActionSheet] = useState<ActionSheetState | null>(null);
+  // Topics of the original missed revision session, shown when a 🏖 Revision makeup
+  // chip's action sheet is open. Fetched on demand from the attendance route (which
+  // derives topics incl. the published-schedule default). null = none/loading.
+  const [revMakeupInfo, setRevMakeupInfo] = useState<{ subjectLabel: string; date: string; topics: string[] } | null | 'loading'>(null);
   const [addModal, setAddModal] = useState<AddModalState | null>(null);
   const [addSlotModal, setAddSlotModal] = useState<{ slot: Slot; studentId: string; studentSearch: string; startDate: string } | null>(null);
   const [addSlotSubmitting, setAddSlotSubmitting] = useState(false);
@@ -771,6 +775,27 @@ export default function SchedulePage() {
       fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
     }
   }, [authed, mondayISO, fetchSchedule]);
+
+  // When a Revision makeup chip's action sheet opens, fetch the original missed
+  // session's topics (matched by makeup.lessonId === this chip's lesson id).
+  useEffect(() => {
+    const lesson = actionSheet?.lesson;
+    if (!lesson?.revisionMakeup || !lesson.studentId) { setRevMakeupInfo(null); return; }
+    let cancelled = false;
+    setRevMakeupInfo('loading');
+    fetch(`/api/admin-revision-attendance?studentId=${lesson.studentId}`, {
+      headers: { Authorization: `Bearer ${savedPw.current}` },
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return;
+        const sessions = d.students?.[0]?.sessions || [];
+        const match = sessions.find((s: any) => s.makeup?.lessonId === lesson.id);
+        setRevMakeupInfo(match ? { subjectLabel: match.subjectLabel || 'Revision', date: match.date || '', topics: match.topics || [] } : null);
+      })
+      .catch(() => { if (!cancelled) setRevMakeupInfo(null); });
+    return () => { cancelled = true; };
+  }, [actionSheet]);
 
   // Navigation helpers — track source so auto-scroll effect knows whether to move the strip
   function setActiveDateFromArrow(d: Date) { lastChangeSource.current = 'arrow'; setActiveDate(d); }
@@ -2230,6 +2255,24 @@ export default function SchedulePage() {
               window.open(`/admin/progress?date=${actionSheet.date}&lesson=${actionSheet.lesson.id}`, '_blank');
               setActionSheet(null);
             }}>📊 Log progress</button>
+            {actionSheet.lesson.revisionMakeup && (
+              <div style={{ padding: '10px 16px', borderTop: '1px solid #f1f5f9', fontSize: 13 }}>
+                <div style={{ color: '#0f766e', fontWeight: 700, marginBottom: 4 }}>
+                  🏖 Makeup for missed revision{revMakeupInfo && revMakeupInfo !== 'loading' && (revMakeupInfo.subjectLabel || revMakeupInfo.date) ? ` · ${revMakeupInfo.subjectLabel}${revMakeupInfo.date ? ` (${formatExamDate(revMakeupInfo.date)})` : ''}` : ''}
+                </div>
+                {revMakeupInfo === 'loading' ? (
+                  <div style={{ color: '#94a3b8' }}>Loading topics…</div>
+                ) : revMakeupInfo && revMakeupInfo.topics.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {revMakeupInfo.topics.map((t, i) => (
+                      <span key={i} style={{ background: '#ccfbf1', color: '#0f766e', border: '1px solid #99f6e4', borderRadius: 999, padding: '2px 9px', fontSize: 12 }}>{t}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ color: '#94a3b8' }}>No topics recorded for that session.</div>
+                )}
+              </div>
+            )}
             {actionSheet.lesson.revisionMakeup && (
               <button className="action-btn" onClick={() => handleUndoRevisionMakeup(actionSheet.lesson)}>↩ Undo revision reschedule</button>
             )}
