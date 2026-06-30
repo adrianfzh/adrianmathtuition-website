@@ -149,8 +149,11 @@ export default function MarkPaperPage() {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs }),
       });
-      const d = await resp.json();
-      if (!resp.ok) throw new Error(d.error || 'Marking failed');
+      const raw = await resp.text();
+      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; usage?: Usage; error?: string };
+      try { d = raw ? JSON.parse(raw) : {}; }
+      catch { throw new Error(`The marker didn't return a result (status ${resp.status}) — it likely timed out. Try marking fewer photos at once.`); }
+      if (!resp.ok) throw new Error(d.error || `Marking failed (status ${resp.status})`);
       setResults(d.results || []);
       setTotals(d.totals || null);
       setUnattempted(d.unattempted_questions || []);
