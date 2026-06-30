@@ -104,6 +104,7 @@ export default function MarkPaperPage() {
   const [usage, setUsage] = useState<Usage | null>(null);
   const [marked, setMarked] = useState<{ url: string; kind: string } | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
@@ -114,6 +115,14 @@ export default function MarkPaperPage() {
   // Not logged in (e.g. opened this page directly in a browser without the admin cookie)
   // → send to the admin hub to log in, instead of failing with a bare "unauthorized".
   useEffect(() => { if (!getAuth()) window.location.href = '/admin'; }, []);
+
+  // Lifetime paper-marking cost metrics.
+  useEffect(() => {
+    if (!getAuth()) return;
+    fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'stats' }) })
+      .then((r) => (r.ok ? r.json() : null)).then((d) => d && setStats(d)).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Can the browser natively decode this for a preview? (JPEG/PNG/WebP everywhere; HEIC only on Safari.)
   async function canDecode(f: Blob): Promise<boolean> {
@@ -193,6 +202,15 @@ export default function MarkPaperPage() {
       <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the question paper (PDF) and the student&rsquo;s working (photos), then Mark. The marker reads each photo against the paper and marks every question it finds — no manual matching.</p>
 
       {error && <div style={{ ...card, borderColor: '#fca5a5', background: '#fef2f2', color: '#b91c1c' }}>{error}</div>}
+
+      {stats && stats.count > 0 && (
+        <div style={{ ...card, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'baseline', background: '#f8fafc' }}>
+          <span style={{ fontWeight: 700 }}>📊 Marking cost</span>
+          <span style={{ fontSize: 13, color: '#374151' }}>
+            last {stats.count} papers · ${stats.totalCost.toFixed(2)} total · <strong>${stats.avgCost.toFixed(3)}/paper</strong> avg · {stats.avgTime.toFixed(0)}s avg
+          </span>
+        </div>
+      )}
 
       {/* Upload */}
       <div style={card}>
