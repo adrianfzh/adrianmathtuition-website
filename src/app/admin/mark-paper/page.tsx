@@ -214,6 +214,7 @@ export default function MarkPaperPage() {
       const payload = {
         results: (results || []).map((r) => ({ question_number: r.question_number, marking_output: r.marking_output })),
         annotated_photos: annotatedPhotos,
+        totals,
         student: { name: '', level: '' },
         multi: images.length > 1,
         mode,

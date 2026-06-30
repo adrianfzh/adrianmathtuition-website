@@ -67,7 +67,7 @@ async function addCoverPage(
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string }[]; student?: { name?: string; level?: string }; multi?: boolean; mode?: string };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string }[]; totals?: { awarded: number; max: number }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const mode = body.mode === 'photos' ? 'photos' : 'full';   // 'photos' = annotated originals only (no typeset)
@@ -123,10 +123,12 @@ export async function POST(req: NextRequest) {
     const page = pdfDoc.addPage([img.width, img.height]);
     page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
   }
-  const totalAwarded = pngs.reduce((s, p) => s + p.awarded, 0);
-  const totalMax = pngs.reduce((s, p) => s + p.max, 0);
+  // Cover data from the marking results (works even in photos mode, where there are no typeset pages).
+  const coverQs = results.map(r => ({ label: String(r.question_number), awarded: r.marking_output!.marks?.awarded ?? 0, max: r.marking_output!.marks?.max ?? 0 }));
+  const totalAwarded = body.totals?.awarded ?? coverQs.reduce((s, q) => s + q.awarded, 0);
+  const totalMax = body.totals?.max ?? coverQs.reduce((s, q) => s + q.max, 0);
   try {
-    await addCoverPage(pdfDoc, { studentName: student.name, studentLevel: student.level, questions: pngs.map(p => ({ label: p.label, awarded: p.awarded, max: p.max })), totalAwarded, totalMax });
+    await addCoverPage(pdfDoc, { studentName: student.name, studentLevel: student.level, questions: coverQs, totalAwarded, totalMax });
   } catch (e) {
     console.error('[mark-paper-pdf] cover page failed:', (e as Error).message);
   }
