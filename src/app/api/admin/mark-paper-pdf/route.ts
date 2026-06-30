@@ -67,7 +67,7 @@ async function addCoverPage(
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; student?: { name?: string; level?: string }; multi?: boolean };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string }[]; student?: { name?: string; level?: string }; multi?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const results = (body.results || []).filter(r => r.marking_output && Array.isArray(r.marking_output.lines));
@@ -87,19 +87,37 @@ export async function POST(req: NextRequest) {
       console.error('[mark-paper-pdf] render failed for', r.question_number, (e as Error).message);
     }
   }
-  if (!pngs.length) return NextResponse.json({ error: 'All renders failed' }, { status: 500 });
+  // Fetch the annotated ORIGINAL photos (PNGs from Blob) — these go in the PDF first.
+  const annotated: { photo_index: number; buf: Buffer }[] = [];
+  for (const ap of (body.annotated_photos || [])) {
+    try {
+      const r = await fetch(ap.url);
+      if (r.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r.arrayBuffer()) });
+    } catch (e) { console.error('[mark-paper-pdf] fetch annotated failed', (e as Error).message); }
+  }
+  annotated.sort((a, b) => a.photo_index - b.photo_index);
+
+  if (!pngs.length && !annotated.length) return NextResponse.json({ error: 'Nothing to render' }, { status: 500 });
 
   const id = ts.replace(/[:.]/g, '-');
-  const single = !body.multi && pngs.length === 1;
+  const single = !body.multi && pngs.length === 1 && annotated.length === 0;
 
   if (single) {
     const blob = await put(`mark-paper/${id}.png`, pngs[0].buf, { access: 'public', contentType: 'image/png', allowOverwrite: true });
     return NextResponse.json({ url: blob.url, kind: 'image', totalAwarded: pngs[0].awarded, totalMax: pngs[0].max });
   }
 
-  // Assemble a PDF in question-number order + cover page.
+  // Assemble a PDF: annotated original photos first, then typeset sheets (question order), + cover.
   pngs.sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
   const pdfDoc = await PDFDocument.create();
+  for (const a of annotated) {
+    try {
+      let img;
+      try { img = await pdfDoc.embedJpg(a.buf); } catch { img = await pdfDoc.embedPng(a.buf); }
+      const page = pdfDoc.addPage([img.width, img.height]);
+      page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+    } catch (e) { console.error('[mark-paper-pdf] embed annotated failed', (e as Error).message); }
+  }
   for (const p of pngs) {
     const img = await pdfDoc.embedPng(p.buf);
     const page = pdfDoc.addPage([img.width, img.height]);

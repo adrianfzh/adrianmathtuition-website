@@ -105,6 +105,7 @@ export default function MarkPaperPage() {
   const [marked, setMarked] = useState<{ url: string; kind: string } | null>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
+  const [annotatedPhotos, setAnnotatedPhotos] = useState<{ photo_index: number; url: string }[]>([]);
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
@@ -159,7 +160,7 @@ export default function MarkPaperPage() {
         body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs }),
       });
       const raw = await resp.text();
-      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; usage?: Usage; error?: string };
+      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string }[]; usage?: Usage; error?: string };
       try { d = raw ? JSON.parse(raw) : {}; }
       catch {
         const hint = resp.status === 413
@@ -171,6 +172,7 @@ export default function MarkPaperPage() {
       setResults(d.results || []);
       setTotals(d.totals || null);
       setUnattempted(d.unattempted_questions || []);
+      setAnnotatedPhotos(d.annotated_photos || []);
       setUsage(d.usage || null);
       setPhase('done');
     } catch (e) { setError((e as Error).message); setPhase('idle'); }
@@ -183,6 +185,7 @@ export default function MarkPaperPage() {
     try {
       const payload = {
         results: results.map((r) => ({ question_number: r.question_number, marking_output: r.marking_output })),
+        annotated_photos: annotatedPhotos,
         student: { name: '', level: '' },
         multi: images.length > 1,
       };
