@@ -67,18 +67,18 @@ async function addCoverPage(
 export async function POST(req: NextRequest) {
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string }[]; student?: { name?: string; level?: string }; multi?: boolean };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string }[]; student?: { name?: string; level?: string }; multi?: boolean; mode?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
+  const mode = body.mode === 'photos' ? 'photos' : 'full';   // 'photos' = annotated originals only (no typeset)
   const results = (body.results || []).filter(r => r.marking_output && Array.isArray(r.marking_output.lines));
-  if (!results.length) return NextResponse.json({ error: 'No marking output to render' }, { status: 400 });
 
   const student = { name: body.student?.name || '', level: body.student?.level || '' };
   const ts = new Date().toISOString();
 
-  // Render each question to a typeset PNG (sequential — shared Puppeteer browser).
+  // Render each question to a typeset PNG (skipped in photos-only mode).
   const pngs: { label: string; buf: Buffer; awarded: number; max: number }[] = [];
-  for (const r of results) {
+  if (mode !== 'photos') for (const r of results) {
     const mo = r.marking_output!;
     try {
       const buf = await renderMarkingPNG({ marking: mo, student, timestamp: ts });

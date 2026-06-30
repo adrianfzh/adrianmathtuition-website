@@ -179,15 +179,16 @@ export default function MarkPaperPage() {
   }
 
   // Render the marked typeset output: PDF (>1 image) or a single image (1 image).
-  async function generateMarked() {
-    if (!results?.length) return;
+  async function generateMarked(mode: 'full' | 'photos' = 'full') {
+    if (mode === 'photos' ? !annotatedPhotos.length : !results?.length) return;
     setGenerating(true); setMarked(null); setError('');
     try {
       const payload = {
-        results: results.map((r) => ({ question_number: r.question_number, marking_output: r.marking_output })),
+        results: (results || []).map((r) => ({ question_number: r.question_number, marking_output: r.marking_output })),
         annotated_photos: annotatedPhotos,
         student: { name: '', level: '' },
         multi: images.length > 1,
+        mode,
       };
       const resp = await fetch('/api/admin/mark-paper-pdf', { method: 'POST', headers: authHeaders, body: JSON.stringify(payload) });
       const d = await resp.json();
@@ -286,15 +287,20 @@ export default function MarkPaperPage() {
             <div style={{ fontSize: 13, color: '#6b7280', marginTop: 10 }}>Not attempted: {unattempted.map((n) => `Q${n}`).join(', ')}</div>
           )}
           <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <button style={{ ...btn, opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={generateMarked}>
-              {generating ? 'Generating…' : (images.length > 1 ? '📄 Generate marked PDF' : '🖼️ Generate marked image')}
+            <button style={{ ...btn, opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('full')}>
+              {generating ? 'Generating…' : '📄 Marked PDF (full)'}
             </button>
+            {annotatedPhotos.length > 0 && (
+              <button style={{ ...btn, background: '#374151', opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('photos')}>
+                🖼️ Annotated images PDF
+              </button>
+            )}
             {marked && (
               <a href={marked.url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 600 }}>
-                Open marked {marked.kind === 'pdf' ? 'PDF' : 'image'} ↗
+                Open {marked.kind === 'pdf' ? 'PDF' : 'image'} ↗
               </a>
             )}
-            <span style={{ color: '#6b7280', fontSize: 13 }}>Typeset sheet with ✓/✗ on each step (≈{Math.max(1, (results?.length || 1))}× a few sec).</span>
+            <span style={{ color: '#6b7280', fontSize: 13 }}>Full = typeset + annotated photos · Images = annotated originals only.</span>
           </div>
         </div>
       )}
