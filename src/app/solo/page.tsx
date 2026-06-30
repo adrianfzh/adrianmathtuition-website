@@ -3,8 +3,17 @@
 import { useState, useRef } from 'react';
 import { segment, type Ann } from '@/lib/learn/segment';
 
+// UI list only; the server (resolveGradingModel in lib/learn/prompts) is the
+// authoritative allowlist. Kept inline so the grading prompts aren't pulled into
+// the client bundle. Must stay in sync with GRADING_MODELS there.
+const GRADING_MODELS = [
+  { id: 'claude-opus-4-8', label: 'Opus 4.8 (default)' },
+  { id: 'claude-sonnet-5', label: 'Sonnet 5 (test)' },
+] as const;
+
 type Feedback = {
   mode: 'english' | 'math';
+  model?: string;
   overall: { band: string | null; score: number | null; outOf: number | null; summary: string };
   rubric: { criterion: string; band: string; comment: string }[];
   annotations: Ann[];
@@ -20,6 +29,7 @@ export default function SoloPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fb, setFb] = useState<Feedback | null>(null);
+  const [model, setModel] = useState<string>(GRADING_MODELS[0].id);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function pickImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -33,7 +43,7 @@ export default function SoloPage() {
   async function grade() {
     setLoading(true); setError(''); setFb(null);
     try {
-      const body: any = { mode, question };
+      const body: any = { mode, question, model };
       if (mode === 'english') body.text = essay; else body.image = image;
       const r = await fetch('/api/learn/grade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const d = await r.json();
@@ -61,6 +71,15 @@ export default function SoloPage() {
               {label}
             </button>
           ))}
+        </div>
+
+        {/* Grading model picker — for A/B testing a candidate model against the default */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
+          <span style={{ fontSize: 12, color: '#8a93a0' }}>Marker model</span>
+          <select value={model} onChange={e => { setModel(e.target.value); setFb(null); }}
+            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #dce1e8', background: '#fff', color: '#3a4250', fontSize: 13, cursor: 'pointer' }}>
+            {GRADING_MODELS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: fb ? '1fr 1fr' : '1fr', gap: 20, alignItems: 'start' }}>
@@ -109,7 +128,10 @@ export default function SoloPage() {
           {fb && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ background: '#13203a', color: '#fff', borderRadius: 16, padding: 18 }}>
-                <div style={{ fontSize: 13, opacity: 0.7, fontWeight: 600, letterSpacing: 0.4, textTransform: 'uppercase' }}>Your feedback</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: 13, opacity: 0.7, fontWeight: 600, letterSpacing: 0.4, textTransform: 'uppercase' }}>Your feedback</div>
+                  {fb.model && <div style={{ fontSize: 11, opacity: 0.6 }}>marked by {GRADING_MODELS.find(m => m.id === fb.model)?.label || fb.model}</div>}
+                </div>
                 <div style={{ fontSize: 24, fontWeight: 800, margin: '4px 0 6px' }}>
                   {fb.overall.score != null ? `${fb.overall.score}${fb.overall.outOf ? ' / ' + fb.overall.outOf : ''}` : ''}
                   {fb.overall.band ? <span style={{ fontSize: 16, opacity: 0.85, marginLeft: 8 }}>{fb.overall.band}</span> : ''}

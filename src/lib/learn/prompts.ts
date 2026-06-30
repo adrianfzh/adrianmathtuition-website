@@ -6,6 +6,19 @@
 
 export const GRADING_MODEL = process.env.LEARN_GRADING_MODEL || 'claude-opus-4-8';
 
+// Models the grader may be asked to run, exposed as a picker on /solo so you can
+// A/B a candidate against the default. Keep this allowlist tight — the route only
+// honours a client-supplied model if it's in here (otherwise it ignores it).
+export const GRADING_MODELS = [
+  { id: 'claude-opus-4-8', label: 'Opus 4.8 (default)' },
+  { id: 'claude-sonnet-5', label: 'Sonnet 5 (test)' },
+] as const;
+
+export function resolveGradingModel(requested?: string): string {
+  if (requested && GRADING_MODELS.some((m) => m.id === requested)) return requested;
+  return GRADING_MODEL;
+}
+
 export const JSON_SHAPE = `Return ONLY a JSON object (no prose, no markdown fences) of this exact shape:
 {
   "mode": "english" | "math",

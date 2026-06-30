@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { GRADING_MODEL, MATH_SYSTEM } from '@/lib/learn/prompts';
+import { resolveGradingModel, MATH_SYSTEM } from '@/lib/learn/prompts';
 import { parseJson } from '@/lib/learn/parse';
 import { getRubric, buildEnglishSystem } from '@/lib/learn/rubric';
 
@@ -10,7 +10,7 @@ export const maxDuration = 60;
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: NextRequest) {
-  let body: { mode?: string; text?: string; image?: string; level?: string; paper?: string; essayType?: string; question?: string };
+  let body: { mode?: string; text?: string; image?: string; level?: string; paper?: string; essayType?: string; question?: string; model?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'bad body' }, { status: 400 }); }
 
   const mode = body.mode === 'math' ? 'math' : 'english';
@@ -33,9 +33,10 @@ export async function POST(req: NextRequest) {
     content.push({ type: 'text', text: `${ctx}Here is my writing:\n\n${body.text.trim()}` });
   }
 
+  const model = resolveGradingModel(body.model);
   try {
     const resp = await anthropic.messages.create({
-      model: GRADING_MODEL,
+      model,
       max_tokens: 3500,
       system,
       messages: [{ role: 'user', content }],
@@ -46,6 +47,7 @@ export async function POST(req: NextRequest) {
     try { parsed = parseJson(raw); }
     catch { return NextResponse.json({ error: 'Could not parse feedback', raw: raw.slice(0, 400) }, { status: 502 }); }
     parsed.mode = mode;
+    parsed.model = model;
     return NextResponse.json(parsed);
   } catch (err: any) {
     console.error('[learn/grade]', err?.message);
