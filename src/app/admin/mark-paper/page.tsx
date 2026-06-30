@@ -340,11 +340,11 @@ export default function MarkPaperPage() {
           )}
           <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button style={{ ...btn, opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('full')}>
-              {generating ? 'Generating…' : '📄 Marked PDF (full)'}
+              {generating ? 'Generating…' : '📄 Generate full PDF'}
             </button>
             {annotatedPhotos.length > 0 && (
               <button style={{ ...btn, background: '#374151', opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('photos')}>
-                🖼️ Annotated images PDF
+                {generating ? '…' : '🖼️ Generate images PDF'}
               </button>
             )}
             {marked && (
@@ -352,7 +352,7 @@ export default function MarkPaperPage() {
                 Open {marked.kind === 'pdf' ? 'PDF' : 'image'} ↗
               </a>
             )}
-            <span style={{ color: '#6b7280', fontSize: 13 }}>Full = typeset + annotated photos · Images = annotated originals only.</span>
+            <span style={{ color: '#6b7280', fontSize: 13 }}>Each click builds a fresh PDF (a few sec). Full = typeset + annotated photos · Images = annotated originals only.</span>
           </div>
         </div>
       )}
