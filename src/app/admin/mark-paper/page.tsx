@@ -52,7 +52,7 @@ type Result = {
   marking_output?: unknown;
   review_recommended?: boolean; review_reasons?: string[];
 };
-type Usage = { costUsd?: number; timeSec?: number; inputTokens?: number; outputTokens?: number };
+type Usage = { costUsd?: number; timeSec?: number; inputTokens?: number; outputTokens?: number; model?: string };
 
 const card: CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, marginBottom: 16 };
 const btn: CSSProperties = { padding: '10px 18px', borderRadius: 8, border: 'none', background: '#111827', color: '#fff', fontWeight: 600, cursor: 'pointer' };
@@ -109,6 +109,7 @@ export default function MarkPaperPage() {
   const [annotatedPhotos, setAnnotatedPhotos] = useState<{ photo_index: number; url: string }[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
   const [recentRuns, setRecentRuns] = useState<Run[]>([]);
+  const [markModel, setMarkModel] = useState<'opus' | 'sonnet'>('opus');
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
@@ -183,7 +184,7 @@ export default function MarkPaperPage() {
       const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf.name }),
+        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf.name, model: markModel }),
       });
       const raw = await resp.text();
       let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string }[]; run_id?: string | null; usage?: Usage; error?: string };
@@ -303,11 +304,23 @@ export default function MarkPaperPage() {
             ))}
           </div>
         )}
-        <div style={{ marginTop: 14 }}>
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={markPaper}>
             {phase === 'marking' ? 'Marking…' : 'Mark paper'}
           </button>
-          <span style={{ color: '#6b7280', marginLeft: 10, fontSize: 13 }}>Reads each photo against the paper and marks every question it finds (≈1–2 min).</span>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#374151' }}>
+            <span>Model:</span>
+            <select
+              value={markModel}
+              onChange={(e) => setMarkModel(e.target.value as 'opus' | 'sonnet')}
+              disabled={busy}
+              style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
+            >
+              <option value="opus">Opus 4.8 (default)</option>
+              <option value="sonnet">Sonnet 5</option>
+            </select>
+          </label>
+          <span style={{ color: '#6b7280', fontSize: 13 }}>Reads each photo against the paper and marks every question it finds (≈1–2 min).</span>
         </div>
       </div>
 
@@ -360,7 +373,7 @@ export default function MarkPaperPage() {
 
       {usage && (
         <div style={{ color: '#6b7280', fontSize: 12 }}>
-          💰 ${(usage.costUsd ?? 0).toFixed(4)} · ⏱ {usage.timeSec ?? 0}s · {(usage.inputTokens ?? 0) + (usage.outputTokens ?? 0)} tokens
+          💰 ${(usage.costUsd ?? 0).toFixed(4)} · ⏱ {usage.timeSec ?? 0}s · {(usage.inputTokens ?? 0) + (usage.outputTokens ?? 0)} tokens{usage.model ? ` · 🧠 ${usage.model}` : ''}
         </div>
       )}
 

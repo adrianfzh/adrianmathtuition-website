@@ -1,0 +1,22 @@
+name: CI
+
+# Lint + test gate. Runs on every push to main and on PRs. This is the
+# visibility/history layer; the blocking guardrail before a prod push is the
+# local pre-push hook (.husky/pre-push). Build/typecheck happens on Vercel.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test

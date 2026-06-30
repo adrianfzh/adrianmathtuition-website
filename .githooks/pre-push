@@ -1,0 +1,13 @@
+#!/bin/sh
+# Blocking pre-push gate: tests must pass before anything reaches main (= prod).
+# Type errors are already caught by Vercel's build, so this only runs the suite
+# Vercel never runs. Bypass in an emergency with:  git push --no-verify
+echo "▶ pre-push: running test suite…"
+npm test --silent
+status=$?
+if [ $status -ne 0 ]; then
+  echo "✗ Tests failed — push aborted. Fix the suite, or bypass with: git push --no-verify"
+  exit 1
+fi
+echo "✓ Tests passed — pushing."
+exit 0
