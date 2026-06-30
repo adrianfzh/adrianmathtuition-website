@@ -45,6 +45,7 @@ async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -106,6 +107,8 @@ export default function MarkPaperPage() {
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
   const [annotatedPhotos, setAnnotatedPhotos] = useState<{ photo_index: number; url: string }[]>([]);
+  const [runId, setRunId] = useState<string | null>(null);
+  const [recentRuns, setRecentRuns] = useState<Run[]>([]);
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
@@ -117,13 +120,36 @@ export default function MarkPaperPage() {
   // → send to the admin hub to log in, instead of failing with a bare "unauthorized".
   useEffect(() => { if (!getAuth()) window.location.href = '/admin'; }, []);
 
-  // Lifetime paper-marking cost metrics.
-  useEffect(() => {
+  // Lifetime cost metrics + recent runs (for the history list). Re-callable after mark/generate.
+  async function loadStats() {
     if (!getAuth()) return;
-    fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'stats' }) })
-      .then((r) => (r.ok ? r.json() : null)).then((d) => d && setStats(d)).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    try {
+      const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'stats' }) });
+      if (!r.ok) return;
+      const d = await r.json();
+      setStats(d);
+      setRecentRuns(d.runs || []);
+    } catch { /* ignore */ }
+  }
+  useEffect(() => { loadStats(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+
+  // Load a stored run back into the page so its PDFs can be regenerated (no re-mark).
+  async function loadRun(id: string) {
+    setError('');
+    try {
+      const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'run', id }) });
+      const d = await r.json();
+      if (!r.ok || !d.run) throw new Error(d.error || 'Could not load that run');
+      const rj = d.run.result_json || {};
+      setResults(rj.results || []);
+      setTotals(rj.totals || null);
+      setAnnotatedPhotos(rj.annotated_photos || []);
+      setUnattempted([]);
+      setRunId(d.run.id);
+      setMarked(null);
+      setPhase('done');
+    } catch (e) { setError((e as Error).message); }
+  }
 
   // Can the browser natively decode this for a preview? (JPEG/PNG/WebP everywhere; HEIC only on Safari.)
   async function canDecode(f: Blob): Promise<boolean> {
@@ -157,10 +183,10 @@ export default function MarkPaperPage() {
       const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs }),
+        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf.name }),
       });
       const raw = await resp.text();
-      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string }[]; usage?: Usage; error?: string };
+      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string }[]; run_id?: string | null; usage?: Usage; error?: string };
       try { d = raw ? JSON.parse(raw) : {}; }
       catch {
         const hint = resp.status === 413
@@ -173,8 +199,10 @@ export default function MarkPaperPage() {
       setTotals(d.totals || null);
       setUnattempted(d.unattempted_questions || []);
       setAnnotatedPhotos(d.annotated_photos || []);
+      setRunId(d.run_id || null);
       setUsage(d.usage || null);
       setPhase('done');
+      loadStats();
     } catch (e) { setError((e as Error).message); setPhase('idle'); }
   }
 
@@ -194,6 +222,11 @@ export default function MarkPaperPage() {
       const d = await resp.json();
       if (!resp.ok) throw new Error(d.error || 'Generate failed');
       setMarked({ url: d.url, kind: d.kind });
+      // Attach the generated PDF to its run so it shows as a one-click download in history.
+      if (runId && d.url) {
+        fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'link-pdf', id: runId, url: d.url, kind: mode }) })
+          .then(() => loadStats()).catch(() => {});
+      }
     } catch (e) { setError((e as Error).message); }
     finally { setGenerating(false); }
   }
@@ -214,6 +247,25 @@ export default function MarkPaperPage() {
             last {stats.count} papers · ${stats.totalCost.toFixed(2)} total · <strong>${stats.avgCost.toFixed(3)}/paper</strong> avg · {stats.avgTime.toFixed(0)}s avg
           </span>
         </div>
+      )}
+
+      {recentRuns.length > 0 && (
+        <details style={card}>
+          <summary style={{ fontWeight: 700, cursor: 'pointer' }}>🗂️ Recent marked papers ({recentRuns.length})</summary>
+          <div style={{ marginTop: 8 }}>
+            {recentRuns.map((run) => (
+              <div key={run.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
+                <span style={{ color: '#6b7280', minWidth: 120 }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{run.paper_name || 'Paper'}</span>
+                <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
+                <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
+                {run.pdf_url && <a href={run.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
+                {run.photos_pdf_url && <a href={run.photos_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
+                <button onClick={() => loadRun(run.id)} style={{ ...btn, padding: '4px 10px', fontSize: 12 }}>Load</button>
+              </div>
+            ))}
+          </div>
+        </details>
       )}
 
       {/* Upload */}
