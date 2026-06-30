@@ -27,7 +27,7 @@ async function pdfToBase64(file: File): Promise<string> {
 // Build the upload payload for one image. Downscale via canvas when the browser can
 // decode it (keeps the payload small); otherwise — HEIC on Chrome — send the raw bytes
 // and let the server (sharp) convert. Never reject a photo here.
-async function fileToUpload(file: File, maxEdge = 1600, quality = 0.85): Promise<{ base64: string; mediaType: string }> {
+async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise<{ base64: string; mediaType: string }> {
   try {
     const bmp = await createImageBitmap(file);
     const scale = Math.min(1, maxEdge / Math.max(bmp.width, bmp.height));
@@ -152,7 +152,12 @@ export default function MarkPaperPage() {
       const raw = await resp.text();
       let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; usage?: Usage; error?: string };
       try { d = raw ? JSON.parse(raw) : {}; }
-      catch { throw new Error(`The marker didn't return a result (status ${resp.status}) — it likely timed out. Try marking fewer photos at once.`); }
+      catch {
+        const hint = resp.status === 413
+          ? 'the upload is too large for the server — try fewer photos, or a smaller PDF'
+          : 'it likely timed out — try fewer photos at once';
+        throw new Error(`The marker didn't return a result (status ${resp.status}) — ${hint}.`);
+      }
       if (!resp.ok) throw new Error(d.error || `Marking failed (status ${resp.status})`);
       setResults(d.results || []);
       setTotals(d.totals || null);
