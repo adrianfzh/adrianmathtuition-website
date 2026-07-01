@@ -16,7 +16,9 @@ Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Ta
 
 **`main` = production** (auto-deploys to Vercel prod). **`dev` = preview** (auto-deploys to a Vercel preview URL, NOT prod). Work never lands on `main` without an explicit go-ahead.
 
-**On any turn where I change code, auto commit + push to `dev` at the end of that turn — no need for the user to say "push".** This ships to the preview URL (stable per-branch alias: `adrianmathtuition-website-git-dev-adrianmathtuition-1201s-projects.vercel.app`), so the user can eyeball the change without touching production.
+**On any turn where I change code, auto commit + push to `dev` at the end of that turn — no need for the user to say "push".** Pushing to `dev` does NOT deploy anything (this Vercel project only auto-deploys the production branch). To give the user something to look at, after pushing to `dev` run **`vercel deploy --yes`** (preview, NOT `--prod`) and share the returned preview URL. The preview is fully isolated from prod; Sentry is off there (env vars are Production-scoped).
+
+> Optional nicety: enabling "preview deployments for all branches" in Vercel → Settings → Git would auto-build a **stable** `…-git-dev-…vercel.app` URL on every `dev` push, removing the manual `vercel deploy` step. Not enabled currently.
 
 - Only when code/files actually changed. Pure-discussion or read-only turns → no commit, no push.
 - Always run the build/typecheck first; never push a broken build. The pre-push hook (`.githooks/pre-push`) runs the test suite and blocks the push on failure.
