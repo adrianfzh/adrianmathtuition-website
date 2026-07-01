@@ -9,7 +9,7 @@
 // Metric: % of exemplars graded within ±3 marks (~1 band) of your mark, + mean
 // absolute error. Exit 0 if it clears EVAL_TARGET, else 1 (so it gates).
 import fs from 'node:fs';
-import { ENGLISH_SYSTEM } from '../../../src/lib/learn/prompts.ts';
+import { buildEnglishSystem, ENGLISH_SYSTEM } from '../../../src/lib/learn/prompts.ts';
 
 const ROOT = new URL('../../../', import.meta.url).pathname;
 const env = Object.fromEntries(
@@ -21,14 +21,35 @@ const MODEL = process.env.EVAL_MODEL || 'claude-opus-4-8';
 const TARGET = Number(process.env.EVAL_TARGET || '75'); // % within ±3 marks
 const TOL = Number(process.env.EVAL_TOL || '3');         // marks tolerance ≈ 1 band
 
+// Build the SAME system prompt production uses: fetch the live rubric from
+// Supabase (mirrors getRubric's default query) and run it through the exact
+// buildEnglishSystem the /solo route calls — so this eval measures real grading,
+// including examiner-notes edits. Falls back to ENGLISH_SYSTEM if unavailable.
+async function loadSystem() {
+  const SUP = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
+  const SK = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!SUP || !SK) return { system: ENGLISH_SYSTEM, src: 'ENGLISH_SYSTEM (no Supabase creds)' };
+  try {
+    const q = `${SUP}/rest/v1/rubrics?select=*&level=eq.${encodeURIComponent('O-Level')}&subject=eq.English&paper=eq.${encodeURIComponent('Continuous Writing')}&order=version.desc&limit=1`;
+    const r = await fetch(q, { headers: { apikey: SK, Authorization: `Bearer ${SK}` } });
+    const rows = await r.json();
+    const rubric = Array.isArray(rows) ? rows[0] : null;
+    if (!rubric?.criteria?.length) return { system: ENGLISH_SYSTEM, src: 'ENGLISH_SYSTEM (no rubric found)' };
+    return { system: buildEnglishSystem(rubric), src: `live rubric ${rubric.id.slice(0, 8)} (${(rubric.grading_notes || '').length} chars notes)` };
+  } catch (e) {
+    return { system: ENGLISH_SYSTEM, src: `ENGLISH_SYSTEM (rubric fetch failed: ${String(e.message).slice(0, 40)})` };
+  }
+}
+
 const essays = JSON.parse(fs.readFileSync(new URL('./essays.json', import.meta.url), 'utf8'));
+const { system: SYSTEM, src: SYSTEM_SRC } = await loadSystem();
 
 async function grade(question, essay) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
     body: JSON.stringify({
-      model: MODEL, max_tokens: 3500, system: ENGLISH_SYSTEM,
+      model: MODEL, max_tokens: 3500, system: SYSTEM,
       messages: [{ role: 'user', content: `Essay question / prompt: ${question}\n\nHere is my writing:\n\n${essay}` }],
     }),
   });
@@ -39,7 +60,8 @@ async function grade(question, essay) {
   return Number(obj?.overall?.score);
 }
 
-console.log(`\n  Grading eval — MODEL=${MODEL}  (±${TOL} marks ≈ 1 band, target ${TARGET}%)\n`);
+console.log(`\n  Grading eval — MODEL=${MODEL}  (±${TOL} marks ≈ 1 band, target ${TARGET}%)`);
+console.log(`  prompt: ${SYSTEM_SRC}\n`);
 let within = 0, sumErr = 0, n = 0;
 for (const e of essays) {
   try {
