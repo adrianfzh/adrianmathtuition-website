@@ -12,15 +12,26 @@ Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Ta
 - `vercel --prod` — deploy to production (or auto-deploys from git push)
 - `vercel env pull .env.local` — pull env vars for local dev
 
-## Auto commit + push policy
+## Auto commit + push policy — dev-first, promote to prod on approval
 
-**On any turn where I change code, auto commit + push to `main` at the end of that turn — no need for the user to say "push".** Pushing to `main` auto-deploys to Vercel production.
+**`main` = production** (auto-deploys to Vercel prod). **`dev` = preview** (auto-deploys to a Vercel preview URL, NOT prod). Work never lands on `main` without an explicit go-ahead.
+
+**On any turn where I change code, auto commit + push to `dev` at the end of that turn — no need for the user to say "push".** This ships to the preview URL (stable per-branch alias: `adrianmathtuition-website-git-dev-adrianmathtuition-1201s-projects.vercel.app`), so the user can eyeball the change without touching production.
 
 - Only when code/files actually changed. Pure-discussion or read-only turns → no commit, no push.
-- Always run the build/typecheck first; never push a broken build.
+- Always run the build/typecheck first; never push a broken build. The pre-push hook (`.githooks/pre-push`) runs the test suite and blocks the push on failure.
 - The advisory pre-push review hook (`.claude/settings.json`) still runs on every push.
 - The user can say **"don't push"** (or "hold off") to skip auto-push for that turn.
 - Write a real, descriptive commit message (not "auto"); end with the `Co-Authored-By` trailer.
+
+**Promote to production** only when the user explicitly says so — e.g. **"promote"**, **"ship it"**, **"to prod"**, **"push to prod"**. To promote: fast-forward `main` to `dev` and push `main`:
+```
+git checkout main && git merge --ff-only dev && git push origin main && git checkout dev
+```
+This keeps history linear (`dev` is always at or ahead of `main`). If `--ff-only` fails (main moved independently), rebase `dev` onto `main` first, then promote. After promoting, keep working on `dev`.
+
+- **Hotfix exception:** if the user says something is broken in prod and wants it fixed *now*, it's fine to commit to `dev` and promote in the same turn — but still say so, don't silently push to `main`.
+- Rollback is `git revert` on `main` + push, or Vercel → Deployments → promote a previous build.
 
 ## Architecture
 
