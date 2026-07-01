@@ -3,14 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram, sendTelegramWithButtons } from '@/lib/telegram';
 import { billingMonthOf } from '@/lib/lesson-generation';
+import { NO_LESSON_DATES } from '@/lib/holidays';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
-
-const CNY_DATES = [
-  '2026-02-17', '2026-02-18',
-  '2027-02-06', '2027-02-07',
-];
-const NO_LESSON_DATES = [...CNY_DATES, '2026-12-25', '2027-12-25'];
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 

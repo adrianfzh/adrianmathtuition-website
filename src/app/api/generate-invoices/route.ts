@@ -5,6 +5,7 @@ import { sendTelegram } from '@/lib/telegram';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
+import { NO_LESSON_DATES } from '@/lib/holidays';
 
 const DAY_ABBREV: Record<string, string> = {
   Sunday: 'Sun', Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
@@ -14,11 +15,6 @@ const DAY_ABBREV: Record<string, string> = {
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-const CNY_DATES = [
-  '2026-02-17', '2026-02-18',
-  '2027-02-06', '2027-02-07',
-];
-const NO_LESSON_DATES = [...CNY_DATES, '2026-12-25', '2027-12-25'];
 // Prorated months bill by actual attendance (Completed lessons), generated in arrears.
 // June (6) = holiday month (flexible attendance / revision sprint); Oct–Dec = year-end taper.
 const PRORATION_MONTHS = [6, 10, 11, 12];

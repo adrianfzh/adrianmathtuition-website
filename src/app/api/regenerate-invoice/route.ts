@@ -3,6 +3,7 @@ import { put } from '@vercel/blob';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
+import { NO_LESSON_DATES } from '@/lib/holidays';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -115,7 +116,6 @@ export async function POST(req: NextRequest) {
       // First invoice: use the same date math as signup so the regenerated line
       // items always match the auto notes. No Airtable query needed — just iterate
       // dates from enrollment start to end of invoice month.
-      const NO_LESSON_DATES = ['2026-02-17','2026-02-18','2027-02-06','2027-02-07','2026-12-25','2027-12-25'];
       const start = new Date(enrollStartDate + 'T00:00:00Z');
       const end   = new Date(lastDayStr + 'T00:00:00Z');
       lineItems = [];

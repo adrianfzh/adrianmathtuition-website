@@ -2,19 +2,11 @@
 // flows. Creates weekly Regular lessons for a student in a slot, deduping
 // against existing records and marking public holidays as Cancelled.
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { NO_LESSON_DATES } from '@/lib/holidays';
 
-// No-lesson dates — policy is lessons run as usual on public holidays EXCEPT
-// Chinese New Year and Christmas Day. Must stay in sync with the bot's
-// NO_LESSON_DATES (lib/helpers.js) and the Terms page ("Lessons run as usual
-// on public holidays"). Do NOT re-add general SG public holidays here.
-export const NO_LESSON_DATES: string[] = [
-  // Chinese New Year
-  '2026-02-17', '2026-02-18',
-  '2027-02-06', '2027-02-07',
-  '2028-01-26', '2028-01-27',
-  // Christmas Day
-  '2026-12-25', '2027-12-25', '2028-12-25',
-];
+// Re-exported so existing importers (slot-switch, add-weekly-slot) keep working.
+// Canonical list lives in @/lib/holidays.
+export { NO_LESSON_DATES };
 
 // Default horizon for one-shot generation (matches signup's 9 weeks). The bot's
 // weekly cron keeps extending lessons beyond this for all active enrollments.
