@@ -109,6 +109,22 @@ export default function PracticePage() {
     finally { setSolLoading(false); }
   }
 
+  // Admin test harness for Stage 2 generation (not part of the student flow).
+  const [gen, setGen] = useState<any>(null);
+  const [genLoading, setGenLoading] = useState(false);
+  async function testGenerate() {
+    if (!topic) return;
+    setGenLoading(true); setGen(null);
+    try {
+      const r = await fetch('/api/portal/practice/generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        body: JSON.stringify({ level, topic, maxRetries: 1, cache: false }),
+      });
+      setGen(await r.json());
+    } catch { setGen({ ok: false, error: 'connection error' }); }
+    finally { setGenLoading(false); }
+  }
+
   if (!authed) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-4">
@@ -156,7 +172,32 @@ export default function PracticePage() {
           className="bg-slate-800 text-white rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
           {q || exhausted ? 'Restart topic' : 'Start'}
         </button>
+        <button onClick={testGenerate} disabled={!topic || genLoading} title="Admin: generate + code-verify one question (Stage 2)"
+          className="bg-white border border-violet-300 text-violet-700 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-40">
+          {genLoading ? 'Generating…' : '🧪 Test generate'}
+        </button>
       </div>
+
+      {/* Stage 2 generation test result (admin) */}
+      {gen && (
+        <div className={`border rounded-2xl p-5 mb-5 ${gen.ok ? 'bg-violet-50 border-violet-200' : 'bg-rose-50 border-rose-200'}`}>
+          <div className="flex justify-between items-center mb-2 text-xs">
+            <span className="font-bold uppercase tracking-wide text-slate-500">🧪 Generated (test){gen.ms ? ` · ${(gen.ms / 1000).toFixed(0)}s` : ''}{typeof gen.attempts === 'number' ? ` · ${gen.attempts} attempt${gen.attempts === 1 ? '' : 's'}` : ''}</span>
+            <span className={`font-bold ${gen.ok ? 'text-violet-700' : 'text-rose-600'}`}>{gen.ok ? '✓ VERIFIED' : '✗ REJECTED'}</span>
+          </div>
+          {gen.ok ? (
+            <>
+              <div className="prose prose-sm max-w-none text-slate-800"><ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{gen.question?.question || ''}</ReactMarkdown></div>
+              <div className="mt-3 text-sm text-slate-700"><b>Answer:</b> {gen.question?.answer}</div>
+              <div className="mt-1 text-xs text-emerald-700">code-computed: {gen.verify?.computedAnswer} · wellPosed:{String(gen.verify?.wellPosed)} matches:{String(gen.verify?.matches)}</div>
+              {gen.question?.solution && <details className="mt-2 text-sm text-slate-600"><summary className="cursor-pointer text-slate-500">solution</summary><div className="prose prose-sm max-w-none mt-1"><ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{gen.question.solution}</ReactMarkdown></div></details>}
+            </>
+          ) : (
+            <div className="text-sm text-rose-700">{gen.reason || gen.error || 'failed'}{gen.lastVerify ? ` — computed ${gen.lastVerify.computedAnswer} vs claimed (mismatch); ${gen.lastVerify.reason || ''}` : ''}</div>
+          )}
+          <div className="mt-3 text-[11px] text-slate-400">Not saved to the bank (test mode). Not shown to students.</div>
+        </div>
+      )}
 
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
       {loading && <p className="text-sm text-slate-400">Finding a question…</p>}
