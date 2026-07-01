@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -30,7 +30,18 @@ const REHYPE = [rehypeRaw, rehypeKatex];
 
 type Question = { id: string; markdown: string; marks: number | null; source: string | null; hasSolution: boolean };
 
+// Admin-only during testing — reuses the existing admin-password cookie. Swap for
+// portal student auth once /app auth lands (see PORTAL.md).
+function getCookie(n: string) { if (typeof document === 'undefined') return ''; const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${n}=([^;]*)`)); return m ? decodeURIComponent(m[1]) : ''; }
+function setCookie(n: string, v: string, d: number) { document.cookie = `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + d * 864e5).toUTCString()}; path=/; SameSite=Strict`; }
+
 export default function PracticePage() {
+  const [password, setPassword] = useState('');
+  const [authed, setAuthed] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const savedPw = useRef('');
+
   const [level, setLevel] = useState('AM');
   const [topics, setTopics] = useState<{ topic: string; n: number }[]>([]);
   const [topic, setTopic] = useState('');
@@ -45,21 +56,32 @@ export default function PracticePage() {
   const [solution, setSolution] = useState<string | null>(null);
   const [solLoading, setSolLoading] = useState(false);
 
-  // Load topics when level changes
+  // Admin gate (testing only) — check saved cookie on mount
+  useEffect(() => { const pw = getCookie('admin_pw') || getCookie('schedule_pw'); if (pw) { savedPw.current = pw; verify(pw); } }, []);
+  async function verify(pw: string) {
+    setAuthLoading(true);
+    try {
+      const r = await fetch('/api/portal/practice/topics?auth=check', { headers: { Authorization: `Bearer ${pw}` } });
+      if (r.ok) { savedPw.current = pw; setCookie('admin_pw', pw, 30); setAuthed(true); } else setAuthError('Incorrect password');
+    } catch { setAuthError('Connection error'); } finally { setAuthLoading(false); }
+  }
+
+  // Load topics when level changes (once authed)
   useEffect(() => {
+    if (!authed) return;
     setLoadingTopics(true); setTopic(''); setTopics([]); setQ(null); setExhausted(false);
-    fetch(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`)
+    fetch(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`, { headers: { Authorization: `Bearer ${savedPw.current}` } })
       .then((r) => r.json())
       .then((d) => setTopics(d.topics || []))
       .catch(() => setError('Could not load topics'))
       .finally(() => setLoadingTopics(false));
-  }, [level]);
+  }, [level, authed]);
 
   const fetchNext = useCallback(async (excludeIds: string[]) => {
     setLoading(true); setError(''); setSolution(null); setExhausted(false);
     try {
       const r = await fetch('/api/portal/practice/next', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
         body: JSON.stringify({ level, topic, exclude: excludeIds }),
       });
       const d = await r.json();
@@ -80,11 +102,32 @@ export default function PracticePage() {
     if (!q) return;
     setSolLoading(true);
     try {
-      const r = await fetch(`/api/portal/practice/solution?id=${q.id}`);
+      const r = await fetch(`/api/portal/practice/solution?id=${q.id}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
       const d = await r.json();
       setSolution(r.ok ? d.markdown : '_Could not load the solution._');
     } catch { setSolution('_Could not load the solution._'); }
     finally { setSolLoading(false); }
+  }
+
+  if (!authed) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center p-4">
+        <div className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-7 text-center">
+          <div className="text-3xl mb-2">🔒</div>
+          <h1 className="text-lg font-bold text-slate-800">Practice (testing)</h1>
+          <p className="text-xs text-slate-400 mb-5">Admin password required — not open to students yet.</p>
+          <form onSubmit={(e) => { e.preventDefault(); setAuthError(''); verify(password); }}>
+            <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setAuthError(''); }} placeholder="Admin password" autoFocus
+              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm mb-2" />
+            {authError && <p className="text-xs text-red-500 mb-2">{authError}</p>}
+            <button type="submit" disabled={authLoading || !password}
+              className="w-full bg-slate-800 text-white rounded-lg py-2.5 text-sm font-semibold disabled:opacity-40">
+              {authLoading ? 'Checking…' : 'Enter'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
   }
 
   return (
