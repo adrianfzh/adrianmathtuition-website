@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   // Fetch from Supabase (live state) and Airtable (finalization fields) in parallel
   const atFormula = encodeURIComponent(`{Batch ID}="${batchId}"`);
   const [sbResult, atResult] = await Promise.allSettled([
-    getSupabase().from('marking_batches').select('*').eq('id', batchId).single(),
+    getSupabaseAdmin().from('marking_batches').select('*').eq('id', batchId).single(),
     airtableRequestAll('Batches', `?filterByFormula=${atFormula}&maxRecords=1`),
   ]);
 

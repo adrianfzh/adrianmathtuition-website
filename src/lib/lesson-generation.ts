@@ -3,12 +3,17 @@
 // against existing records and marking public holidays as Cancelled.
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 
-// Public holidays — no lessons on these dates (full 2026 SG list).
+// No-lesson dates — policy is lessons run as usual on public holidays EXCEPT
+// Chinese New Year and Christmas Day. Must stay in sync with the bot's
+// NO_LESSON_DATES (lib/helpers.js) and the Terms page ("Lessons run as usual
+// on public holidays"). Do NOT re-add general SG public holidays here.
 export const NO_LESSON_DATES: string[] = [
-  '2026-01-01', '2026-01-29', '2026-01-30',
-  '2026-03-28', '2026-04-03', '2026-05-01',
-  '2026-05-12', '2026-06-06', '2026-08-09',
-  '2026-10-20', '2026-11-09', '2026-12-25',
+  // Chinese New Year
+  '2026-02-17', '2026-02-18',
+  '2027-02-06', '2027-02-07',
+  '2028-01-26', '2028-01-27',
+  // Christmas Day
+  '2026-12-25', '2027-12-25', '2028-12-25',
 ];
 
 // Default horizon for one-shot generation (matches signup's 9 weeks). The bot's

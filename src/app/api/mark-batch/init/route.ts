@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { airtableRequestAll } from '@/lib/airtable';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -144,7 +144,7 @@ async function enqueueBatch({
   imageUrls: string[] | null;
 }): Promise<NextResponse> {
   // Insert into Supabase with status='queued'
-  const supabase = getSupabase();
+  const supabase = getSupabaseAdmin();
   const { error: sbErr } = await supabase.from('marking_batches').insert({
     id: batchId,
     student_name: studentName,

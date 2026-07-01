@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { put } from '@vercel/blob';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
 
   // Supabase — always try first (authoritative)
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabaseAdmin();
     const { data: sbRow } = await supabase
       .from('marking_batches')
       .select('student_name, created_at, detection_json')
@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
 
   if (annotatedUrls.length === 0) {
     try {
-      const supabase = getSupabase();
+      const supabase = getSupabaseAdmin();
       const { data: sbRow } = await supabase
         .from('marking_batches')
         .select('marking_json')
@@ -307,7 +307,7 @@ export async function POST(req: NextRequest) {
   // ── Update Supabase (authoritative state) ────────────────────────────────
 
   try {
-    const supabase = getSupabase();
+    const supabase = getSupabaseAdmin();
     await supabase.from('marking_batches').update({
       status: 'finalized',
       final_pdf_url: blob.url,

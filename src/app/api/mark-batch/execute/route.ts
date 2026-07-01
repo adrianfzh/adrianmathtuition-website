@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   if (!batchId) return NextResponse.json({ error: 'batchId is required' }, { status: 400 });
 
   // Verify batch exists in Supabase and is in a markable state
-  const supabase = getSupabase();
+  const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('marking_batches')
     .select('status')

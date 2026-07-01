@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
-import { getSupabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
   // ── Fetch batch from Supabase ─────────────────────────────────────────────
 
-  const supabase = getSupabase();
+  const supabase = getSupabaseAdmin();
   const { data: sbRow } = await supabase
     .from('marking_batches')
     .select('final_pdf_url, student_name, marking_json, detection_json, status')
