@@ -125,6 +125,41 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     finally { setDeletingId(null); }
   }
 
+  // ── Replace PDF (keeps title/level/link; swaps the file in place) ────────────
+  const [replacingId, setReplacingId] = useState<string | null>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
+  const replaceTargetId = useRef<string | null>(null);
+  function startReplace(id: string) {
+    replaceTargetId.current = id;
+    replaceInputRef.current?.click();
+  }
+  async function onReplaceFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    const id = replaceTargetId.current;
+    if (replaceInputRef.current) replaceInputRef.current.value = '';
+    if (!file || !id) return;
+    setReplacingId(id);
+    try {
+      const tokenRes = await fetch(
+        `/api/admin-notes/upload-token?level=${encodeURIComponent(uploadLevel)}&filename=${encodeURIComponent(file.name)}`,
+        { headers: { Authorization: `Bearer ${pw}` } });
+      if (!tokenRes.ok) throw new Error('token');
+      const { token, pathname } = await tokenRes.json();
+      const blob = await put(pathname, file, {
+        access: 'public', token, multipart: file.size > 5 * 1024 * 1024, contentType: 'application/pdf',
+      });
+      const res = await fetch(`/api/admin-notes/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` },
+        body: JSON.stringify({ blobUrl: blob.url, blobPathname: blob.pathname }),
+      });
+      if (!res.ok) throw new Error('patch');
+      showToast('Replaced ✓');
+      fetchNotes();
+    } catch { showToast('Replace failed'); }
+    finally { setReplacingId(null); replaceTargetId.current = null; }
+  }
+
   // ── Upload ───────────────────────────────────────────────────────────────────
   function onFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -205,6 +240,9 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
       <style>{css}</style>
       <div className="nl-wrap" onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false); }} onDrop={onDrop}>
 
+        {/* Hidden input for Replace-PDF */}
+        <input ref={replaceInputRef} type="file" accept="application/pdf" style={{ display: 'none' }} onChange={onReplaceFileSelected} />
+
         {/* Header */}
         <div className="nl-header">
           <a href="/admin/notes" className="nl-back">← Notes</a>
@@ -249,17 +287,21 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                     </div>
                   ) : editMode ? (
                     <div className="nl-card nl-card-edit">
+                      <div className="nl-card-top"><span className="nl-doc-badge">PDF</span></div>
                       <span className="nl-card-text">{note.title}</span>
                       <div className="nl-edit-actions">
-                        <button className="nl-action-btn" onClick={() => startRename(note)}>✏️</button>
-                        <button className="nl-action-btn nl-delete-btn" onClick={() => handleDelete(note.id)} disabled={deletingId === note.id}>
+                        <button className="nl-action-btn" title="Rename" onClick={() => startRename(note)}>✏️</button>
+                        <button className="nl-action-btn" title="Replace PDF" onClick={() => startReplace(note.id)} disabled={replacingId === note.id}>{replacingId === note.id ? '⏳' : '🔄'}</button>
+                        <button className="nl-action-btn nl-delete-btn" title="Delete" onClick={() => handleDelete(note.id)} disabled={deletingId === note.id}>
                           {deletingId === note.id ? '…' : '🗑'}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <button className="nl-card" onClick={() => window.open(note.pdfUrl, '_blank')}>
+                      <div className="nl-card-top"><span className="nl-doc-badge">PDF</span></div>
                       <span className="nl-card-text">{note.title}</span>
+                      <span className="nl-card-hint">Tap to open &middot; print</span>
                     </button>
                   )}
                 </div>
@@ -365,43 +407,48 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 }
 .nl-error { color: #ef4444; }
 
-/* Notes grid — 2 columns */
+/* Notes grid — responsive document tiles */
 .nl-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
   margin-bottom: 32px;
 }
 .nl-card-wrap { position: relative; }
 
-/* Note card — tap to print */
+/* Note card — tap to open + print */
 .nl-card {
-  display: flex; align-items: center; justify-content: center;
-  min-height: 80px; padding: 14px 12px;
-  background: #fff; border-radius: 12px;
-  border: 2px solid #e5e7eb;
-  text-decoration: none;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.1s;
-  text-align: center;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 9px;
+  min-height: 118px; padding: 16px 15px;
+  background: #fff; border-radius: 16px;
+  border: 1px solid #e6e9ef;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+  cursor: pointer; text-align: left;
   width: 100%; font-family: inherit; /* button reset */
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
-.nl-card:active { background: #eff6ff; border-color: #1e3a5f; }
-@media (hover: hover) { .nl-card:hover { border-color: #1e3a5f; background: #f8faff; } }
-.nl-card-text {
-  font-size: 14px; font-weight: 600; color: #111827; line-height: 1.35;
+.nl-card:active { transform: translateY(0); background: #f8faff; }
+@media (hover: hover) { .nl-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(30,58,95,0.10); border-color: #cdd7e5; } }
+
+.nl-card-top { display: flex; width: 100%; align-items: center; }
+.nl-doc-badge {
+  font-size: 10px; font-weight: 800; letter-spacing: .5px; color: #fff;
+  background: #dc2626; padding: 3px 7px; border-radius: 6px; line-height: 1;
 }
+.nl-card-text { font-size: 14.5px; font-weight: 700; color: #13203a; line-height: 1.3; flex: 1; }
+.nl-card-hint { font-size: 11px; color: #98a2b3; font-weight: 500; }
 
 /* Edit-mode card */
 .nl-card-edit {
-  display: flex; flex-direction: column; align-items: stretch;
-  min-height: 80px; padding: 12px;
-  background: #fff; border-radius: 12px;
-  border: 2px solid #fbbf24;
-  gap: 8px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  min-height: 118px; padding: 14px;
+  background: #fff; border-radius: 16px;
+  border: 1px solid #fcd34d;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+  gap: 9px;
 }
 .nl-card-edit .nl-card-text { font-size: 13px; color: #374151; flex: 1; }
-.nl-edit-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.nl-edit-actions { display: flex; gap: 6px; justify-content: flex-start; width: 100%; margin-top: auto; }
 .nl-action-btn {
   background: #f3f4f6; border: none; border-radius: 6px;
   cursor: pointer; font-size: 15px; padding: 4px 8px;

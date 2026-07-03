@@ -40,13 +40,35 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const { title } = await req.json();
-  if (!title?.trim()) return NextResponse.json({ error: 'Title required' }, { status: 400 });
+  const { title, blobUrl, blobPathname } = await req.json().catch(() => ({}));
+
+  const fields: Record<string, string> = {};
+  if (typeof title === 'string' && title.trim()) fields['Title'] = title.trim();
+
+  // Replace-the-PDF: swap PDF URL + Blob Pathname in place, then clean up the old blob.
+  let oldPathname: string | undefined;
+  if (blobUrl && blobPathname) {
+    try {
+      const rec: AirtableRecord = await airtableRequest('PrintNotes', `/${id}`);
+      oldPathname = rec.fields['Blob Pathname'];
+    } catch { /* best-effort cleanup only */ }
+    fields['PDF URL'] = blobUrl;
+    fields['Blob Pathname'] = blobPathname;
+    fields['Uploaded At'] = new Date().toISOString();
+  }
+
+  if (Object.keys(fields).length === 0) {
+    return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
+  }
 
   await airtableRequest('PrintNotes', `/${id}`, {
     method: 'PATCH',
-    body: JSON.stringify({ fields: { Title: title.trim() } }),
+    body: JSON.stringify({ fields }),
   });
+
+  if (oldPathname && oldPathname !== blobPathname) {
+    try { await del(oldPathname); } catch (e) { console.warn('[admin-notes] old blob delete failed:', e); }
+  }
 
   return NextResponse.json({ success: true });
 }
