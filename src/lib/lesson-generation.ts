@@ -29,7 +29,7 @@ export interface GenerateOpts {
   slotId: string;
   startDate: string;            // ISO (YYYY-MM-DD), inclusive
   weeksAhead?: number;          // default DEFAULT_WEEKS_AHEAD
-  markFirstAsRescheduled?: boolean; // first real lesson → Type 'Rescheduled' (switch flow)
+  noteFirstLesson?: boolean;    // tag the first real lesson with firstNote (switch flow) — stays Type 'Regular'
   firstNote?: string;           // Notes on that first lesson
 }
 
@@ -40,7 +40,7 @@ export interface GenerateOpts {
  * created dates.
  */
 export async function generateRegularLessonsForSlot(opts: GenerateOpts): Promise<{ created: number; dates: string[] }> {
-  const { studentId, slotId, startDate, weeksAhead = DEFAULT_WEEKS_AHEAD, markFirstAsRescheduled = false, firstNote } = opts;
+  const { studentId, slotId, startDate, weeksAhead = DEFAULT_WEEKS_AHEAD, noteFirstLesson = false, firstNote } = opts;
 
   const slot = await airtableRequest('Slots', `/${slotId}`);
   const dayRaw = (slot.fields['Day'] || '').replace(/^\d+\s+/, '').trim();
@@ -72,10 +72,11 @@ export async function generateRegularLessonsForSlot(opts: GenerateOpts): Promise
     const dateStr = isoDate(d);
     if (!existingKeys.has(`${dateStr}|${slotId}`)) {
       const isHoliday = NO_LESSON_DATES.includes(dateStr);
-      const isFirst = markFirstAsRescheduled && !firstRealMarked && !isHoliday;
+      const isFirst = noteFirstLesson && !firstRealMarked && !isHoliday;
       if (isFirst) firstRealMarked = true;
       const fields: Record<string, any> = {
-        Type: isFirst ? 'Rescheduled' : 'Regular',
+        // First lesson after a switch stays Regular; the note (below) marks it.
+        Type: 'Regular',
         Student: [studentId],
         Slot: [slotId],
         Date: dateStr,

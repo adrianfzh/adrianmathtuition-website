@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       slotId: newSlotId,
       startDate: switchDate,
       weeksAhead: DEFAULT_WEEKS_AHEAD,
-      markFirstAsRescheduled: true,
+      noteFirstLesson: true,
       firstNote: `Switched from ${oldSlotName} to ${newSlotName} (first lesson after switch). w.e.f ${new Date(switchDate + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}`,
     });
     results.created = created;
