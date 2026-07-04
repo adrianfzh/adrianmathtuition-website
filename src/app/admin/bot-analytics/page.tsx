@@ -367,6 +367,21 @@ export default function BotAnalytics() {
   const allVisible = questions.filter(q => !dismissed.has(q.id) && !q.isAdminUpload);
   const myUploads = questions.filter(q => q.isAdminUpload && !dismissed.has(q.id));
   const displayList = qTab === 'mine' ? myUploads : qTab === 'flagged' ? flagged : allVisible;
+
+  // Group adjacent turns of the same conversation (same chatId + <30min gap) into
+  // threads. displayList is newest-first, so a conversation's turns are adjacent.
+  const threadGroups = (() => {
+    const groups: { chatId: string; turns: Question[] }[] = [];
+    for (const q of displayList) {
+      const last = groups[groups.length - 1];
+      const prev = last?.turns[last.turns.length - 1];
+      const sameChat = !!last && last.chatId === (q.chatId || '');
+      const close = !!prev && Math.abs(new Date(prev.timestamp).getTime() - new Date(q.timestamp).getTime()) <= 1_800_000;
+      if (last && sameChat && close) last.turns.push(q);
+      else groups.push({ chatId: q.chatId || '', turns: [q] });
+    }
+    return groups;
+  })();
   const totalClusters = batches.reduce((s, b) => s + b.clusters.length, 0);
 
   function confBadge(conf: string) {
@@ -562,37 +577,55 @@ export default function BotAnalytics() {
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px' }}>
-              {displayList.map(q => {
-                const isSelected = selected?.id === q.id;
-                return (
-                  <div key={q.id}
-                    onClick={() => selectQuestion(q)}
-                    style={{
-                      background: isSelected ? '#eff6ff' : '#fff',
-                      borderRadius: 8, padding: '10px 14px', marginBottom: 6,
-                      borderLeft: `3px solid ${q.flagReason ? '#f59e0b' : '#e2e8f0'}`,
-                      cursor: 'pointer', transition: 'background 0.1s',
-                      outline: isSelected ? '2px solid #3b82f6' : 'none',
-                    }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 11, marginBottom: 3, gap: 4 }}>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
-                      <span style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
-                        {q.timeTaken ? <span title="response time" style={{ color: '#94a3b8' }}>{q.timeTaken.toFixed(1)}s</span> : null}
-                        {(q.tokensIn || q.tokensOut) ? <span title={`${q.tokensIn || 0} in / ${q.tokensOut || 0} out · ${q.modelUsed || ''}`} style={{ fontFamily: 'monospace', color: '#0f766e', fontWeight: 600 }}>${costFor(q.tokensIn || 0, q.tokensOut || 0, q.modelUsed).toFixed(3)}</span> : null}
-                        {q.status && q.status !== 'New' && statusBadge(q.status)}
-                        {confBadge(q.confidence)}
-                        {q.timestamp ? new Date(q.timestamp).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'}) : ''}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                      {q.imageUrl && <img src={q.imageUrl} alt="" style={{ width: isMobile ? 52 : 36, height: isMobile ? 52 : 36, objectFit: 'cover', borderRadius: 6, flexShrink: 0, border: '1px solid #e2e8f0' }} />}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        {q.caption && <div style={{ fontSize: isMobile ? 14 : 13, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: isMobile ? 2 : 1, WebkitBoxOrient: 'vertical' as const }}>{q.caption}</div>}
-                        {!q.caption && q.imageUrl && <div style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>📷 image question</div>}
-                        {q.aiResponse && <div style={{ fontSize: isMobile ? 12 : 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 3 }}>→ {q.aiResponse.slice(0, 100)}</div>}
+              {threadGroups.map((group, gi) => {
+                const cards = group.turns.map(q => {
+                  const isSelected = selected?.id === q.id;
+                  return (
+                    <div key={q.id}
+                      onClick={() => selectQuestion(q)}
+                      style={{
+                        background: isSelected ? '#eff6ff' : '#fff',
+                        borderRadius: 8, padding: '10px 14px', marginBottom: 6,
+                        borderLeft: `3px solid ${q.flagReason ? '#f59e0b' : '#e2e8f0'}`,
+                        cursor: 'pointer', transition: 'background 0.1s',
+                        outline: isSelected ? '2px solid #3b82f6' : 'none',
+                      }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 11, marginBottom: 3, gap: 4 }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
+                        <span style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
+                          {q.timeTaken ? <span title="response time" style={{ color: '#94a3b8' }}>{q.timeTaken.toFixed(1)}s</span> : null}
+                          {(q.tokensIn || q.tokensOut) ? <span title={`${q.tokensIn || 0} in / ${q.tokensOut || 0} out · ${q.modelUsed || ''}`} style={{ fontFamily: 'monospace', color: '#0f766e', fontWeight: 600 }}>${costFor(q.tokensIn || 0, q.tokensOut || 0, q.modelUsed).toFixed(3)}</span> : null}
+                          {q.status && q.status !== 'New' && statusBadge(q.status)}
+                          {confBadge(q.confidence)}
+                          {q.timestamp ? new Date(q.timestamp).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'}) : ''}
+                        </span>
                       </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        {q.imageUrl && <img src={q.imageUrl} alt="" style={{ width: isMobile ? 52 : 36, height: isMobile ? 52 : 36, objectFit: 'cover', borderRadius: 6, flexShrink: 0, border: '1px solid #e2e8f0' }} />}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          {q.caption && <div style={{ fontSize: isMobile ? 14 : 13, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: isMobile ? 2 : 1, WebkitBoxOrient: 'vertical' as const }}>{q.caption}</div>}
+                          {!q.caption && q.imageUrl && <div style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>📷 image question</div>}
+                          {q.aiResponse && <div style={{ fontSize: isMobile ? 12 : 11, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 3 }}>→ {q.aiResponse.slice(0, 100)}</div>}
+                        </div>
+                      </div>
+                      {flagBadge(q)}
                     </div>
-                    {flagBadge(q)}
+                  );
+                });
+                // Single-turn "conversations" render as a plain card (no thread chrome).
+                if (group.turns.length < 2) return <div key={group.turns[0].id}>{cards}</div>;
+                const label = String(group.chatId).startsWith('web')
+                  ? 'Web chat'
+                  : (group.turns[0].studentName && group.turns[0].studentName !== 'unknown' ? group.turns[0].studentName : `Chat ${String(group.chatId).slice(0, 8)}`);
+                const ts = group.turns.map(t => t.timestamp).filter(Boolean);
+                const range = ts.length ? `${new Date(ts[ts.length - 1]).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' })}–${new Date(ts[0]).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' })}` : '';
+                return (
+                  <div key={`thread-${gi}`} style={{ marginBottom: 8, border: '1px solid #dbe3ec', borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px', background: '#eef3f8', fontSize: 11, fontWeight: 700, color: '#475569' }}>
+                      <span>💬 {label} · {group.turns.length} turns</span>
+                      <span style={{ color: '#94a3b8', fontWeight: 500 }}>{range}</span>
+                    </div>
+                    <div style={{ padding: '6px 8px 1px', background: '#f8fafc', borderLeft: '3px solid #cbd5e1' }}>{cards}</div>
                   </div>
                 );
               })}
