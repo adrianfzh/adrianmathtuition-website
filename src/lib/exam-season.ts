@@ -9,7 +9,7 @@ export interface ExamWindow {
 export const EXAM_WINDOWS: ExamWindow[] = [
   { type: 'WA1', start: '02-01', end: '03-15' },
   { type: 'WA2', start: '04-01', end: '05-29' },
-  { type: 'WA3', start: '07-15', end: '09-05' },
+  { type: 'WA3', start: '07-01', end: '09-05' },
   { type: 'EOY', start: '09-20', end: '11-10' },
 ];
 
