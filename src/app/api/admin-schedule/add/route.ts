@@ -14,13 +14,14 @@ export async function POST(req: NextRequest) {
   }
 
   let body: {
-    type: 'Additional' | 'Makeup' | 'Trial' | 'Revision Makeup';
+    type: 'Additional' | 'Makeup' | 'Trial' | 'Revision Makeup' | 'Ad-hoc';
     date: string;
     slotId: string;
     studentId?: string;
     trialStudentName?: string;
     notes?: string;
     linkedLessonId?: string;
+    chargeOverride?: number;
   };
   try {
     body = await req.json();
@@ -28,16 +29,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { type, date, slotId, studentId, trialStudentName, notes, linkedLessonId } = body;
+  const { type, date, slotId, studentId, trialStudentName, notes, linkedLessonId, chargeOverride } = body;
 
   if (!type || !date || !slotId) {
     return NextResponse.json({ error: 'type, date, and slotId are required' }, { status: 400 });
   }
-  if ((type === 'Additional' || type === 'Makeup' || type === 'Revision Makeup') && !studentId) {
-    return NextResponse.json({ error: 'studentId is required for Additional, Makeup and Revision Makeup' }, { status: 400 });
+  if ((type === 'Additional' || type === 'Makeup' || type === 'Revision Makeup' || type === 'Ad-hoc') && !studentId) {
+    return NextResponse.json({ error: 'studentId is required for this lesson type' }, { status: 400 });
   }
   if (type === 'Trial' && !trialStudentName) {
     return NextResponse.json({ error: 'trialStudentName is required for Trial' }, { status: 400 });
+  }
+  if (type === 'Ad-hoc' && !(Number(chargeOverride) > 0)) {
+    return NextResponse.json({ error: 'chargeOverride (> 0) is required for Ad-hoc lessons' }, { status: 400 });
   }
 
   try {
@@ -46,7 +50,9 @@ export async function POST(req: NextRequest) {
     // Attendance-tab / Revision-Sprint-chip reschedule flow, which has none).
     const slotRec = await airtableRequest('Slots', `/${slotId}`);
     const slotFields = slotRec.fields;
-    if (type !== 'Revision Makeup') {
+    // Ad-hoc = a deliberately-scheduled one-off billable session; skip the makeup
+    // capacity check (like Revision Makeup) so it's never blocked by a full slot.
+    if (type !== 'Revision Makeup' && type !== 'Ad-hoc') {
       const makeupCapacity: number | null = slotFields['Makeup Capacity'] ?? null;
 
       if (makeupCapacity == null) {
@@ -88,6 +94,19 @@ export async function POST(req: NextRequest) {
         Notes: notes && notes.trim() ? notes : 'Revision makeup',
         'Is Revision Makeup': true,
       };
+    } else if (type === 'Ad-hoc') {
+      // One-off billable session for an unenrolled student. Charge is stored
+      // per-lesson (Charge Override). NO Billing Month at creation — billed on
+      // demand via /api/admin/bill-adhoc, which sets Billing Month + Source Invoice.
+      lessonFields = {
+        Student: [studentId!],
+        Slot: [slotId],
+        Date: date,
+        Type: 'Ad-hoc',
+        Status: 'Scheduled',
+        'Charge Override': Number(chargeOverride),
+        Notes: notes || '',
+      };
     } else {
       lessonFields = {
         Student: [studentId!],
@@ -105,7 +124,8 @@ export async function POST(req: NextRequest) {
     // 3. Create lesson
     const newLesson = await airtableRequest('Lessons', '', {
       method: 'POST',
-      body: JSON.stringify({ fields: lessonFields }),
+      // typecast so the new 'Ad-hoc' Type select option is created on first write.
+      body: JSON.stringify({ fields: lessonFields, ...(type === 'Ad-hoc' ? { typecast: true } : {}) }),
     });
     const lessonId: string = newLesson.id;
 
