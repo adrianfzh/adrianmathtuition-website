@@ -132,6 +132,17 @@ function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
   text = text.replace(/\\begin\{matrix\}/g, '\\begin{pmatrix}');
   text = text.replace(/\\end\{matrix\}/g, '\\end{pmatrix}');
 
+  // Fix 2: UNDELIMITED LaTeX environments — the bot sometimes emits
+  // \begin{pmatrix}...\end{pmatrix} with no $ delimiters at all, and the KaTeX
+  // pass below only renders $-delimited math, so students saw raw LaTeX code.
+  // Wrap bare environments in $$...$$ — but only OUTSIDE existing math spans,
+  // so already-delimited ones aren't double-wrapped. (Split keeps $-spans at
+  // odd indices; we only rewrite the even, non-math segments.)
+  const BARE_ENV = /\\begin\{(pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|align\*?|gathered)\}[\s\S]*?\\end\{\1\}/g;
+  text = text
+    .split(/(\$\$[\s\S]*?\$\$|\$[^$\n]*?\$)/)
+    .map((seg, i) => (i % 2 === 1 ? seg : seg.replace(BARE_ENV, (m) => `$$${m}$$`)))
+    .join('');
 
   // Fix 3: escaped dollar signs (\$123) → plain dollar ($123) so currency renders correctly
   text = text.replace(/\\\$(\d)/g, '$$$1');
