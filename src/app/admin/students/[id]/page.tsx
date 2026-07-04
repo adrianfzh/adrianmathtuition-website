@@ -121,6 +121,8 @@ export default function StudentProfilePage() {
   // Phase 3: progress history + lesson modal
   const [history, setHistory] = useState<{ id: string; date: string; type: string; status: string; topicsCovered: string; mood: string; progressLogged: boolean }[]>([]);
   const [lessonModal, setLessonModal] = useState<LessonModalLesson | null>(null);
+  const [tab, setTab] = useState<'overview' | 'billing'>('overview');
+  const [glance, setGlance] = useState<Glance | null>(null);
 
   function showToast(kind: 'ok' | 'err', msg: string) {
     setToast({ kind, msg });
@@ -144,6 +146,13 @@ export default function StudentProfilePage() {
     } catch { /* non-fatal */ }
   }, [studentId]);
 
+  const fetchGlance = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/progress/students/${studentId}/at-a-glance`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      if (res.ok) { const j = await res.json(); setGlance(j?.error ? null : j); }
+    } catch { /* non-fatal */ }
+  }, [studentId]);
+
   async function verify(pw: string) {
     setAuthLoading(true);
     try {
@@ -158,7 +167,7 @@ export default function StudentProfilePage() {
     const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
     if (pw) { savedPw.current = pw; verify(pw); }
   }, []);
-  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); } }, [authed, studentId, fetchProfile, fetchHistory]);
+  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); fetchGlance(); } }, [authed, studentId, fetchProfile, fetchHistory, fetchGlance]);
 
   async function submitSwitch() {
     if (!switchModal || !switchModal.date || !switchModal.newSlotId) return;
@@ -359,8 +368,26 @@ export default function StudentProfilePage() {
               </div>
             </Section>
 
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+              {(['overview', 'billing'] as const).map(t => (
+                <button key={t} onClick={() => setTab(t)}
+                  style={{
+                    flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer',
+                    border: tab === t ? '1px solid #1d4ed8' : '1px solid #e5e7eb',
+                    background: tab === t ? '#eff6ff' : '#fff',
+                    color: tab === t ? '#1d4ed8' : '#64748b',
+                  }}>
+                  {t === 'overview' ? '⭐ Overview' : '💳 Billing & Slots'}
+                </button>
+              ))}
+            </div>
+
+            {/* ── Overview: at a glance ── */}
+            <AtAGlanceSection glance={glance} show={tab === 'overview'} />
+
             {/* Enrollments / slots */}
-            <Section title="Weekly slots" action={<button style={btnGhost} onClick={() => setAddModal({ slotId: '', date: '', saving: false })}>＋ Add slot</button>}>
+            <Section title="Weekly slots" show={tab === 'billing'} action={<button style={btnGhost} onClick={() => setAddModal({ slotId: '', date: '', saving: false })}>＋ Add slot</button>}>
               {data.enrollments.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No active enrollments.</div>}
               {data.enrollments.map(e => (
                 <div key={e.enrollmentId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
@@ -374,7 +401,7 @@ export default function StudentProfilePage() {
             </Section>
 
             {/* Attendance — grouped by month, merged reschedules, missed in red */}
-            <Section title="Attendance">
+            <Section title="Attendance" show={tab === 'billing'}>
               {data.attendance.length === 0 ? (
                 <div style={{ color: '#9ca3af', fontSize: 14 }}>No lessons on record.</div>
               ) : (() => {
@@ -567,7 +594,7 @@ export default function StudentProfilePage() {
             </Section>
 
             {/* Upcoming lessons with inline actions */}
-            <Section title="Upcoming lessons">
+            <Section title="Upcoming lessons" show={tab === 'billing'}>
               {data.upcoming.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>None scheduled.</div>}
               {data.upcoming.map(l => {
                 const busy = busyLesson === l.id;
@@ -595,7 +622,7 @@ export default function StudentProfilePage() {
             </Section>
 
             {/* Progress history — click to log/edit progress */}
-            <Section title="Progress history" action={<a href={`/admin/progress?student=${s.id}`} style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Timeline →</a>}>
+            <Section title="Progress history" show={tab === 'overview'} action={<a href={`/admin/progress?student=${s.id}`} style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Timeline →</a>}>
               {history.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No logged lessons yet.</div>}
               {history.slice(0, 12).map(h => (
                 <button key={h.id} onClick={() => setLessonModal({ id: h.id, studentId, studentName: s.name, date: h.date, slotId: null, type: h.type })}
@@ -610,7 +637,7 @@ export default function StudentProfilePage() {
             </Section>
 
             {/* Exams */}
-            <Section title="Exams" action={<button style={btnGhost} onClick={() => setExamForm({ examType: '', examDate: '', topics: '', noExam: false, saving: false })}>＋ Add / update</button>}>
+            <Section title="Exams" show={tab === 'overview'} action={<button style={btnGhost} onClick={() => setExamForm({ examType: '', examDate: '', topics: '', noExam: false, saving: false })}>＋ Add / update</button>}>
               {data.exams.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No exams recorded.</div>}
               {data.exams.map(ex => (
                 <div key={ex.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
@@ -626,7 +653,7 @@ export default function StudentProfilePage() {
 
             {/* Payment records — true per-month outstanding (own-month charge with
                 the carry-forward lump stripped, payments re-attributed oldest-first). */}
-            <Section title="Payment records">
+            <Section title="Payment records" show={tab === 'billing'}>
               {(() => {
                 const p = data.payments;
                 if (!p || p.months.length === 0) return <div style={{ color: '#9ca3af', fontSize: 14 }}>No invoices on record.</div>;
@@ -823,7 +850,8 @@ export default function StudentProfilePage() {
 }
 
 // ── Small presentational helpers ──────────────────────────────────────────────
-function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
+function Section({ title, action, children, show = true }: { title: string; action?: React.ReactNode; children: React.ReactNode; show?: boolean }) {
+  if (!show) return null;
   return (
     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: 16, marginBottom: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -836,6 +864,81 @@ function Section({ title, action, children }: { title: string; action?: React.Re
 }
 function Field({ label, value }: { label: string; value: string }) {
   return <div><span style={{ color: '#9ca3af' }}>{label}:</span> <span style={{ color: '#111', fontWeight: 600 }}>{value || '—'}</span></div>;
+}
+
+interface GlanceExam { id: string; examType: string; customName: string; examDate: string; testedTopics: string; resultScore: number | null; resultTotal: number | null; resultGrade: string; noExam: boolean; }
+interface Glance {
+  upcomingExam: GlanceExam | null;
+  exams: GlanceExam[];
+  weakTopics: { topic: string; missed: number }[];
+  stats: { submissionsMarked: number; submissionsWrong: number };
+}
+function glanceExamLabel(e: GlanceExam): string { return e.customName?.trim() || e.examType || 'Exam'; }
+
+function AtAGlanceSection({ glance, show }: { glance: Glance | null; show: boolean }) {
+  if (!show) return null;
+  const g = glance;
+  const withResults = (g?.exams || []).filter(e => e.resultScore != null && e.resultTotal);
+  return (
+    <Section title="At a glance">
+      {!g ? (
+        <div style={{ color: '#9ca3af', fontSize: 14 }}>Loading…</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Next exam */}
+          {g.upcomingExam && (
+            <div>
+              <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, marginBottom: 3 }}>NEXT EXAM</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>
+                {glanceExamLabel(g.upcomingExam)} · {g.upcomingExam.examDate ? fmtDate(g.upcomingExam.examDate) : ''}
+              </div>
+              {g.upcomingExam.testedTopics && <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 2 }}>Tests: {g.upcomingExam.testedTopics}</div>}
+            </div>
+          )}
+          {/* Work on next */}
+          <div>
+            <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, marginBottom: 6 }}>WORK ON NEXT</div>
+            {g.weakTopics.length === 0 ? (
+              <div style={{ fontSize: 13.5, color: '#9ca3af' }}>
+                {g.stats.submissionsMarked === 0 ? 'No marked submissions yet — weak topics appear here as work is marked.' : 'No wrong answers recorded. 🎉'}
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {g.weakTopics.map(w => (
+                    <span key={w.topic} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fef2f2', color: '#b91c1c', fontSize: 12.5, fontWeight: 500, padding: '3px 10px', borderRadius: 999 }}>
+                      {w.topic}
+                      <span style={{ background: '#fee2e2', color: '#dc2626', fontSize: 10.5, fontWeight: 700, padding: '0 6px', borderRadius: 999 }}>{w.missed}</span>
+                    </span>
+                  ))}
+                </div>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>From {g.stats.submissionsWrong} wrong of {g.stats.submissionsMarked} marked · number = times missed.</div>
+              </>
+            )}
+          </div>
+          {/* Exam results */}
+          {withResults.length > 0 && (
+            <div>
+              <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, marginBottom: 6 }}>EXAM RESULTS</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {withResults.map(e => {
+                  const pct = e.resultTotal ? Math.round((e.resultScore! / e.resultTotal) * 100) : null;
+                  const color = pct == null ? '#475569' : pct >= 70 ? '#059669' : pct >= 50 ? '#d97706' : '#dc2626';
+                  return (
+                    <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5 }}>
+                      <span style={{ fontWeight: 600, color: '#374151', width: 90, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{glanceExamLabel(e)}</span>
+                      <span style={{ fontSize: 12, color: '#9ca3af', width: 78, flexShrink: 0 }}>{e.examDate ? fmtDate(e.examDate) : ''}</span>
+                      <span style={{ marginLeft: 'auto', fontWeight: 700, color }}>{e.resultScore}/{e.resultTotal}{pct != null ? ` · ${pct}%` : ''}{e.resultGrade ? ` · ${e.resultGrade}` : ''}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Section>
+  );
 }
 function Label({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 5, ...style }}>{children}</div>;
