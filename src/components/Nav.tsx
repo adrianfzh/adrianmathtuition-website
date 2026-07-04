@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 export default function Nav() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-border">
@@ -9,12 +7,6 @@ export default function Nav() {
           <span className="text-muted-foreground text-sm md:text-[14px]">math tuition</span>
         </div>
         <div className="flex items-center gap-4 md:gap-6">
-        <Link
-          href="/tools"
-          className="text-navy text-[13px] md:text-sm font-semibold hover:text-amber-dark transition-colors"
-        >
-          Tools
-        </Link>
         <a
           href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson"
           target="_blank"
