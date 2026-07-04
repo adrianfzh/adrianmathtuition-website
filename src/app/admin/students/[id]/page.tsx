@@ -363,7 +363,6 @@ export default function StudentProfilePage() {
                 )}
               </div>
               <div style={{ marginTop: 10 }}>
-                <a href={`/admin/progress?student=${s.id}`} style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none', marginRight: 16 }}>📊 Progress timeline →</a>
                 <a href="/admin/schedule" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>🗓 Schedule →</a>
               </div>
             </Section>
@@ -622,7 +621,7 @@ export default function StudentProfilePage() {
             </Section>
 
             {/* Progress history — click to log/edit progress */}
-            <Section title="Progress history" show={tab === 'overview'} action={<a href={`/admin/progress?student=${s.id}`} style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Timeline →</a>}>
+            <Section title="Progress history" show={tab === 'overview'}>
               {history.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No logged lessons yet.</div>}
               {history.slice(0, 12).map(h => (
                 <button key={h.id} onClick={() => setLessonModal({ id: h.id, studentId, studentName: s.name, date: h.date, slotId: null, type: h.type })}
