@@ -11,9 +11,17 @@ function WebMathRenderer({ text }: { text: string }) {
       if (!ref.current) return;
       const w = window as any;
       if (w.renderMathInElement) {
+        // Bare LaTeX environments (no $ delimiters) never get rendered by the
+        // delimiter-based pass — wrap them in $$...$$ first, only outside
+        // existing math spans (mirrors the /chat renderToElement fix).
+        const BARE_ENV = /\\begin\{(pmatrix|bmatrix|Bmatrix|vmatrix|Vmatrix|cases|aligned|align\*?|gathered)\}[\s\S]*?\\end\{\1\}/g;
+        const wrapped = text
+          .split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g)
+          .map((seg, i) => (i % 2 === 1 ? seg : seg.replace(BARE_ENV, (m) => `$$${m}$$`)))
+          .join('');
         // Replace newlines with <br> ONLY outside math delimiters so that
         // \begin{pmatrix}-3\\5\end{pmatrix} isn't corrupted before KaTeX runs.
-        const safeHtml = text
+        const safeHtml = wrapped
           .split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g)
           .map((chunk, i) => i % 2 === 0
             ? chunk.replace(/\n/g, '<br>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
