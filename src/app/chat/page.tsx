@@ -586,6 +586,10 @@ export default function ChatPage() {
   const messagesInnerRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const conversationHistoryRef = useRef<HistoryEntry[]>([]);
+  // Per-conversation id (one per page load) so bot analytics can thread web turns.
+  // Sent as chatId; the bot stores it in Questions."Chat ID" (webchat.js). Prefixed
+  // "web-" so it's distinct from Telegram numeric chat ids.
+  const sessionIdRef = useRef<string>('');
   const renderTimerRef = useRef<number | null>(null);
   const pendingRenderRef = useRef<Slot | null>(null);
   const dragCounterRef = useRef(0);
@@ -812,9 +816,13 @@ export default function ChatPage() {
 
     try {
       const isTelegramWebview = /Telegram/i.test(navigator.userAgent);
+      if (!sessionIdRef.current) {
+        sessionIdRef.current = 'web-' + (globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
+      }
       const body: Record<string, unknown> = {
         history: conversationHistoryRef.current,
         source: isTelegramWebview ? 'telegram-webview' : 'website',
+        chatId: sessionIdRef.current,
       };
 
       if (capturedFile) {
