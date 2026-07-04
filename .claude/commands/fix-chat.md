@@ -9,13 +9,14 @@ Fix this chat issue on adrianmathtuition.com: $ARGUMENTS
 - Page layout/CSS, KaTeX not rendering, image upload broken
 - SSE stream not displaying, "Verifying..." stuck, mobile issues
 
-**Backend (needs bot repo fix — output a Claude Code prompt for bot repo instead):**
+**Backend (needs bot repo fix — the bot repo is at `~/Desktop/adrianmath-telegram-math-bot`; fix it there via its `/fix-bot` command, or output a prompt for it):**
 - Wrong AI response, timeout, CORS error, jStat wrong, graph sketching broken
 
 ## Step 2: If frontend
-1. Read `chat.html` — find the relevant section
-2. SSE events: `{ chunk }`, `{ verify: true }`, `{ done: true }`
-3. API endpoint: `https://adrianmath-bot.fly.dev/api/chat`
-4. KaTeX CDN must be loaded, LaTeX must be valid
-5. Image: `handleFile()` → base64 → POST body
-6. Fix, commit `fix: <description>`, push (Vercel auto-deploys)
+
+1. Read `src/app/chat/page.tsx` — the whole chat UI is this one client component
+2. Endpoint: `https://adrianmath-telegram-math-bot.fly.dev/api/chat` (fetch + `res.body.getReader()` streaming, ~line 840)
+3. Stream events: `{ chunk }`, `{ verify: true }` (shows "🔄 Verifying..."), `{ done: true }`
+4. KaTeX loads via `next/script`; `window.renderMathInElement` must exist before rendering; LaTeX must be valid
+5. Image path: file input → base64 → POST body
+6. Fix, run the build, commit `fix: <description>`, push (Vercel auto-deploys)
