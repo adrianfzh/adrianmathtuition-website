@@ -103,6 +103,31 @@ export default function StudentProfilePage() {
   const savedPw = useRef('');
 
   const [data, setData] = useState<Profile | null>(null);
+  // Ad-hoc billing: un-billed Completed Ad-hoc lessons → one Draft invoice on demand.
+  const [adhoc, setAdhoc] = useState<{ lessons: { id: string; date: string; charge: number }[]; total: number } | null>(null);
+  const [adhocBilling, setAdhocBilling] = useState(false);
+  async function loadAdhoc() {
+    try {
+      const r = await fetch(`/api/admin/bill-adhoc?studentId=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      if (r.ok) setAdhoc(await r.json());
+    } catch { /* non-fatal */ }
+  }
+  async function billAdhoc() {
+    if (adhocBilling) return;
+    setAdhocBilling(true);
+    try {
+      const r = await fetch('/api/admin/bill-adhoc', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        body: JSON.stringify({ studentId }),
+      });
+      const d = await r.json();
+      if (!r.ok) { showToast('err', d.error || 'Failed to bill'); return; }
+      showToast('ok', `Draft invoice created — ${d.count} session(s), $${d.total}`);
+      loadAdhoc();
+    } catch { showToast('err', 'Failed to bill'); }
+    finally { setAdhocBilling(false); }
+  }
+  useEffect(() => { if (authed && studentId) loadAdhoc(); /* eslint-disable-next-line */ }, [authed, studentId]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
@@ -699,6 +724,22 @@ export default function StudentProfilePage() {
                 );
               })()}
             </Section>
+
+            {/* Ad-hoc lessons ready to bill (Completed, not yet invoiced) */}
+            {adhoc && adhoc.lessons.length > 0 && (
+              <Section title="Ad-hoc lessons to bill">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: 14, color: '#374151' }}>
+                    <b>{adhoc.lessons.length}</b> completed session{adhoc.lessons.length === 1 ? '' : 's'} · <b>{money(adhoc.total)}</b>
+                    <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{adhoc.lessons.map(l => l.date).join(', ')}</div>
+                  </div>
+                  <button onClick={billAdhoc} disabled={adhocBilling}
+                    style={{ background: '#a21caf', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', opacity: adhocBilling ? 0.5 : 1 }}>
+                    {adhocBilling ? 'Billing…' : 'Create draft invoice'}
+                  </button>
+                </div>
+              </Section>
+            )}
 
             {/* Invoices */}
             <Section title="Recent invoices" action={<a href="/admin/invoices" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>All →</a>}>
