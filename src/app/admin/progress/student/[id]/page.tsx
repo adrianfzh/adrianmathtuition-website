@@ -180,6 +180,96 @@ function TimelineTab({ lessons }: { lessons: Lesson[] }) {
   );
 }
 
+// ─── At a glance ─────────────────────────────────────────────────────────────
+
+interface GlanceExam {
+  id: string; examType: string; customName: string; examDate: string;
+  testedTopics: string; resultScore: number | null; resultTotal: number | null;
+  resultGrade: string; noExam: boolean;
+}
+interface Glance {
+  upcomingExam: GlanceExam | null;
+  exams: GlanceExam[];
+  weakTopics: { topic: string; missed: number }[];
+  stats: { submissionsMarked: number; submissionsWrong: number };
+}
+
+function examLabel(e: GlanceExam): string {
+  return e.customName?.trim() || e.examType || 'Exam';
+}
+
+function AtAGlance({ glance }: { glance: Glance }) {
+  const { upcomingExam, exams, weakTopics, stats } = glance;
+  const withResults = exams.filter(e => e.resultScore != null && e.resultTotal);
+  return (
+    <div className="mb-4 space-y-3">
+      <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">At a glance</h2>
+
+      {/* Upcoming exam */}
+      {upcomingExam && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Next exam</div>
+          <div className="text-sm font-semibold text-slate-900">
+            {examLabel(upcomingExam)} · {formatDate(upcomingExam.examDate)}
+          </div>
+          {upcomingExam.testedTopics && (
+            <div className="text-xs text-slate-500 mt-1 leading-relaxed">Tests: {upcomingExam.testedTopics}</div>
+          )}
+        </div>
+      )}
+
+      {/* Work on next — weak topics from marked submissions */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Work on next</div>
+        {weakTopics.length === 0 ? (
+          <p className="text-sm text-slate-400">
+            {stats.submissionsMarked === 0
+              ? 'No marked submissions yet — weak topics will appear here as work is marked.'
+              : 'No wrong answers recorded. 🎉'}
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-2">
+              {weakTopics.map(w => (
+                <span key={w.topic}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
+                  {w.topic}
+                  <span className="px-1.5 rounded-full bg-rose-100 text-rose-600 text-[10px] font-semibold">{w.missed}</span>
+                </span>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-2">
+              From {stats.submissionsWrong} wrong of {stats.submissionsMarked} marked submission(s) · number = times missed.
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* Exam results */}
+      {withResults.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Exam results</div>
+          <div className="space-y-2">
+            {withResults.map(e => {
+              const pct = e.resultTotal ? Math.round((e.resultScore! / e.resultTotal) * 100) : null;
+              const color = pct == null ? 'text-slate-600' : pct >= 70 ? 'text-emerald-600' : pct >= 50 ? 'text-amber-600' : 'text-rose-600';
+              return (
+                <div key={e.id} className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-slate-700 w-24 shrink-0 truncate">{examLabel(e)}</span>
+                  <span className="text-xs text-slate-400 w-20 shrink-0">{e.examDate ? formatDate(e.examDate) : ''}</span>
+                  <span className={`ml-auto font-semibold ${color}`}>
+                    {e.resultScore}/{e.resultTotal}{pct != null ? ` · ${pct}%` : ''}{e.resultGrade ? ` · ${e.resultGrade}` : ''}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -194,6 +284,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
   const [student, setStudent] = useState<Student | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [glance, setGlance] = useState<Glance | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -240,9 +331,11 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
     Promise.all([
       fetch(`/api/admin/progress/students`, { headers }).then(r => r.json()),
       fetch(`/api/admin/progress/students/${id}/lessons`, { headers }).then(r => r.json()),
-    ]).then(([studentsJson, lessonsJson]) => {
+      fetch(`/api/admin/progress/students/${id}/at-a-glance`, { headers }).then(r => r.json()),
+    ]).then(([studentsJson, lessonsJson, glanceJson]) => {
       setStudent(studentsJson.students?.find((s: Student) => s.id === id) ?? null);
       setLessons(lessonsJson.lessons ?? []);
+      setGlance(glanceJson?.error ? null : glanceJson);
     }).finally(() => setLoading(false));
   }, [authed, id]);
 
@@ -312,7 +405,10 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
       <div className="max-w-lg mx-auto px-4 pt-4">
         {loading
           ? <p className="text-sm text-slate-400 text-center py-12">Loading…</p>
-          : <TimelineTab lessons={lessons} />
+          : <>
+              {glance && <AtAGlance glance={glance} />}
+              <TimelineTab lessons={lessons} />
+            </>
         }
       </div>
     </div>
