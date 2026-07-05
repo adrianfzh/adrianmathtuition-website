@@ -109,7 +109,8 @@ export async function POST(req: NextRequest) {
       startDate: switchDate,
       weeksAhead: DEFAULT_WEEKS_AHEAD,
       noteFirstLesson: true,
-      firstNote: `Switched from ${oldSlotName} to ${newSlotName} (first lesson after switch). w.e.f ${new Date(switchDate + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}`,
+      // w.e.f = the date the switch is registered (today, SGT), not the first-lesson date.
+      firstNote: `Switched from ${oldSlotName} to ${newSlotName} (first lesson after switch). w.e.f ${new Date(Date.now() + 8 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })}`,
     });
     results.created = created;
   } catch (err: any) {
