@@ -132,6 +132,27 @@ export default function StudentProfilePage() {
   const [error, setError] = useState('');
   const [toast, setToast] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
 
+  // Discontinue student — one atomic action: end Active enrollments, delete future
+  // Scheduled Regular lessons, set Inactive; reports live invoices for review.
+  const [discModal, setDiscModal] = useState<{ date: string; saving: boolean } | null>(null);
+  const [discResult, setDiscResult] = useState<{ enrollmentsEnded: number; lessonsDeleted: number; invoicesToReview: { id: string; month: string; status: string; amount: number }[] } | null>(null);
+  async function discontinue() {
+    if (!discModal || discModal.saving) return;
+    setDiscModal({ ...discModal, saving: true });
+    try {
+      const r = await fetch('/api/admin/student-discontinue', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        body: JSON.stringify({ studentId, effectiveDate: discModal.date }),
+      });
+      const d = await r.json();
+      if (!r.ok) { showToast('err', d.error || 'Discontinue failed'); setDiscModal({ ...discModal, saving: false }); return; }
+      setDiscResult(d);
+      setDiscModal(null);
+      showToast('ok', `Discontinued — ${d.enrollmentsEnded} enrollment(s) ended, ${d.lessonsDeleted} future lesson(s) removed`);
+      fetchProfile();
+    } catch { showToast('err', 'Discontinue failed'); setDiscModal(prev => prev ? { ...prev, saving: false } : prev); }
+  }
+
   // Slot-management modals
   const [switchModal, setSwitchModal] = useState<{ enr: Enrollment; date: string; newSlotId: string; saving: boolean } | null>(null);
   const [addModal, setAddModal] = useState<{ slotId: string; date: string; saving: boolean } | null>(null);
@@ -387,10 +408,29 @@ export default function StudentProfilePage() {
                   </div>
                 )}
               </div>
-              <div style={{ marginTop: 10 }}>
+              <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <a href="/admin/schedule" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>🗓 Schedule →</a>
+                {s.status !== 'Inactive' && (
+                  <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), saving: false })}
+                    style={{ fontSize: 12, fontWeight: 600, color: '#b91c1c', background: '#fff', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
+                    ⏹ Discontinue…
+                  </button>
+                )}
               </div>
             </Section>
+
+            {/* Discontinue result — invoices needing review */}
+            {discResult && discResult.invoicesToReview.length > 0 && (
+              <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 12, padding: 14, marginBottom: 14, fontSize: 13 }}>
+                <div style={{ fontWeight: 700, color: '#92400e', marginBottom: 6 }}>⚠️ Invoices to review (not auto-voided)</div>
+                {discResult.invoicesToReview.map(inv => (
+                  <div key={inv.id} style={{ color: '#78350f', padding: '2px 0' }}>
+                    {inv.month} — ${inv.amount} — <b>{inv.status}</b>{inv.status === 'Sent' ? ' (parent has this — consider messaging them)' : ''}
+                  </div>
+                ))}
+                <a href="/admin/invoices" style={{ fontSize: 12.5, color: '#1d4ed8' }}>Review in Invoices →</a>
+              </div>
+            )}
 
             {/* Tabs */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -793,6 +833,30 @@ export default function StudentProfilePage() {
       )}
 
       {/* Add weekly slot modal */}
+      {discModal && (
+        <ModalShell title="Discontinue student" onClose={() => !discModal.saving && setDiscModal(null)}>
+          <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 1.5 }}>
+            Ends <strong>{s?.name}</strong>&apos;s lessons in one step. Pick the first day with <strong>no more regular lessons</strong>.
+          </div>
+          <Label>No regular lessons from</Label>
+          <input type="date" style={input} value={discModal.date} onChange={e => setDiscModal({ ...discModal, date: e.target.value })} />
+          <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 12, lineHeight: 1.7, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px' }}>
+            This will:<br />
+            • End all <b>Active enrollments</b> (End Date = day before)<br />
+            • Delete future <b>Scheduled Regular</b> lessons from that date<br />
+            • Set the student to <b>Inactive</b><br />
+            • List any live invoices from that month for your review (not auto-voided)<br />
+            <span style={{ color: '#16a34a' }}>Makeup / rescheduled lessons and history are kept.</span>
+          </div>
+          <div style={modalActions}>
+            <button style={btnCancel} onClick={() => setDiscModal(null)} disabled={discModal.saving}>Cancel</button>
+            <button style={{ ...btnPrimary, background: '#b91c1c' }} onClick={discontinue} disabled={discModal.saving || !discModal.date}>
+              {discModal.saving ? 'Discontinuing…' : 'Discontinue'}
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
       {addModal && (
         <ModalShell title="Add weekly slot" onClose={() => !addModal.saving && setAddModal(null)}>
           <Label>Slot</Label>
