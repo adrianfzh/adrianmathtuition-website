@@ -50,6 +50,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Original lesson has no student' }, { status: 400 });
     }
 
+    // No-op guard: rescheduling onto the lesson's own slot + date would just create
+    // a pointless duplicate pair (original marked Rescheduled + identical new lesson).
+    if (origSlotId === newSlotId && origDate === newDate) {
+      return NextResponse.json(
+        { error: 'Same slot and date as the original lesson — nothing to change' },
+        { status: 400 }
+      );
+    }
+
     // 2. Fetch target slot
     const targetSlot = await airtableRequest('Slots', `/${newSlotId}`);
     const targetFields = targetSlot.fields;
