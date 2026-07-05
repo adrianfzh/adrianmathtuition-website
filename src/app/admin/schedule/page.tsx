@@ -95,7 +95,7 @@ interface ActionSheetState {
   slotId: string;
 }
 interface AddModalState {
-  type: 'Makeup' | 'Rescheduled' | 'Additional' | 'Trial' | 'Revision Makeup';
+  type: 'Makeup' | 'Rescheduled' | 'Additional' | 'Trial' | 'Revision Makeup' | 'Ad-hoc';
   date: string;
   slotId: string;
   studentId: string;
@@ -105,6 +105,10 @@ interface AddModalState {
   notify: boolean;
   /** Makeup: the Absent lesson being made up. Rescheduled: the Scheduled lesson being moved. */
   linkedLessonId: string;
+  /** Ad-hoc only: per-lesson charge + inline new-student fields. */
+  charge?: string;
+  newLevel?: string;
+  newEmail?: string;
 }
 interface AbsentDeleteState {
   lesson: EnrichedLesson;
@@ -211,6 +215,7 @@ const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> 
   Makeup:      { bg: '#fff7ed',  text: '#c2410c', border: '#fed7aa' },
   'Revision Makeup': { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa' },
   Additional:  { bg: '#faf5ff',  text: '#7c3aed', border: '#e9d5ff' },
+  'Ad-hoc':    { bg: '#fdf4ff',  text: '#a21caf', border: '#f5d0fe' },
   'Revision Sprint': { bg: '#ecfeff', text: '#0e7490', border: '#a5f3fc' },
   Absent:      { bg: '#f1f5f9',  text: '#94a3b8', border: '#e2e8f0' },
   Cancelled:   { bg: '#f1f5f9',  text: '#94a3b8', border: '#e2e8f0' },
@@ -635,6 +640,41 @@ export default function SchedulePage() {
   // derives topics incl. the published-schedule default). null = none/loading.
   const [revMakeupInfo, setRevMakeupInfo] = useState<{ subjectLabel: string; date: string; topics: string[] } | null | 'loading'>(null);
   const [addModal, setAddModal] = useState<AddModalState | null>(null);
+  // Ad-hoc lesson support: all students (for reselecting unenrolled ones) + inline create.
+  const [allStudents, setAllStudents] = useState<{ id: string; name: string; level: string }[]>([]);
+  const [creatingStudent, setCreatingStudent] = useState(false);
+  async function loadAllStudents() {
+    if (allStudents.length) return;
+    try {
+      const r = await fetch('/api/admin/progress/students', { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const d = await r.json();
+      setAllStudents((d.students || []).map((s: { id: string; name: string; level: string }) => ({ id: s.id, name: s.name, level: s.level })));
+    } catch { /* non-fatal */ }
+  }
+  async function prefillCharge(level: string) {
+    try {
+      const r = await fetch(`/api/admin/rate?level=${encodeURIComponent(level)}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const d = await r.json();
+      if (d.rate != null) setAddModal(m => m ? { ...m, charge: String(d.rate) } : null);
+    } catch { /* keep manual */ }
+  }
+  async function createAdhocStudent(name: string) {
+    const level = addModal?.newLevel || '';
+    if (!name.trim() || !level || creatingStudent) { if (!level) setModalError('Pick a level for the new student'); return; }
+    setCreatingStudent(true); setModalError('');
+    try {
+      const r = await fetch('/api/admin/students/create', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        body: JSON.stringify({ name: name.trim(), level, email: addModal?.newEmail || undefined }),
+      });
+      const d = await r.json();
+      if (!r.ok) { setModalError(d.error || 'Could not create student'); return; }
+      setAllStudents(prev => [{ id: d.id, name: d.name, level }, ...prev]);
+      setAddModal(m => m ? { ...m, studentId: d.id, studentSearch: '' } : null);
+      prefillCharge(level);
+    } catch { setModalError('Could not create student'); }
+    finally { setCreatingStudent(false); }
+  }
   const [addSlotModal, setAddSlotModal] = useState<{ slot: Slot; studentId: string; studentSearch: string; startDate: string } | null>(null);
   const [addSlotSubmitting, setAddSlotSubmitting] = useState(false);
   const [absentModal, setAbsentModal] = useState<AbsentDeleteState | null>(null);
@@ -1421,6 +1461,7 @@ export default function SchedulePage() {
       if (addModal.type === 'Trial' && !addModal.trialStudentName) { setModalError('Enter trial student name'); setSubmitting(false); return; }
       if (addModal.type !== 'Trial' && !addModal.studentId) { setModalError('Select a student'); setSubmitting(false); return; }
       if (!addModal.date || !addModal.slotId) { setModalError('Select a date and slot'); setSubmitting(false); return; }
+      if (addModal.type === 'Ad-hoc' && !(Number(addModal.charge) > 0)) { setModalError('Enter a charge for the session'); setSubmitting(false); return; }
 
       // Makeup + Rescheduled → reschedule route (links new lesson to original)
       if (addModal.type === 'Makeup' || addModal.type === 'Rescheduled') {
@@ -1464,6 +1505,7 @@ export default function SchedulePage() {
       const body: Record<string, any> = { type: addModal.type, date: addModal.date, slotId: addModal.slotId, notes: addModal.notes || undefined };
       if (addModal.type === 'Trial') { body.trialStudentName = addModal.trialStudentName; }
       else { body.studentId = addModal.studentId; body.notify = addModal.notify; }
+      if (addModal.type === 'Ad-hoc') body.chargeOverride = Number(addModal.charge);
       const res = await fetch('/api/admin-schedule/add', {
         method: 'POST',
         headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
@@ -2793,11 +2835,13 @@ export default function SchedulePage() {
                     setAbsentLessons([]); setAbsentLessonsError('');
                     setUpcomingLessons([]); setUpcomingLessonsError('');
                     setRevSessions([]); setRevSessionsError('');
+                    if (t === 'Ad-hoc') loadAllStudents();
                   }}>
                   <option value="Makeup">Makeup</option>
                   <option value="Rescheduled">Rescheduled</option>
                   <option value="Additional">Additional</option>
                   <option value="Revision Makeup">Revision Makeup (not billed)</option>
+                  <option value="Ad-hoc">Ad-hoc (billable)</option>
                   <option value="Trial">Trial</option>
                 </select>
               </div>
@@ -2825,7 +2869,7 @@ export default function SchedulePage() {
                 })()}
               </div>
               {/* Student search (Additional/Makeup) */}
-              {addModal.type !== 'Trial' && (
+              {addModal.type !== 'Trial' && addModal.type !== 'Ad-hoc' && (
                 <div className="form-group">
                   <span className="form-label">Student</span>
                   {addModal.studentId ? (
@@ -2865,6 +2909,66 @@ export default function SchedulePage() {
                     </>
                   )}
                 </div>
+              )}
+
+              {/* Ad-hoc: search ALL students + inline create + per-session charge */}
+              {addModal.type === 'Ad-hoc' && (
+                <>
+                  <div className="form-group">
+                    <span className="form-label">Student (unenrolled ok)</span>
+                    {addModal.studentId ? (
+                      <div className="student-selected">
+                        ✓ {allStudents.find(s => s.id === addModal.studentId)?.name ?? data?.students[addModal.studentId]?.name ?? addModal.studentId}
+                        <button style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 12 }}
+                          onClick={() => setAddModal(m => m ? { ...m, studentId: '', studentSearch: '', charge: '' } : null)}>change</button>
+                      </div>
+                    ) : (
+                      <>
+                        <input type="text" className="modal-input" placeholder="Search, or type a new name…"
+                          value={addModal.studentSearch}
+                          onChange={e => setAddModal(m => m ? { ...m, studentSearch: e.target.value } : null)} />
+                        {addModal.studentSearch && (() => {
+                          const q = addModal.studentSearch.toLowerCase();
+                          const matches = allStudents.filter(s => s.name.toLowerCase().includes(q)).slice(0, 6);
+                          return (
+                            <div className="student-search-results">
+                              {matches.map(s => (
+                                <button key={s.id} className="student-result"
+                                  onClick={() => { setAddModal(m => m ? { ...m, studentId: s.id, studentSearch: '' } : null); prefillCharge(s.level); }}>
+                                  {s.name} <span style={{ color: '#94a3b8', fontSize: 11 }}>· {s.level}</span>
+                                </button>
+                              ))}
+                              <div style={{ borderTop: matches.length ? '1px solid #f1f5f9' : 'none', padding: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                <div style={{ fontSize: 12, color: '#64748b' }}>➕ New student “<b>{addModal.studentSearch}</b>”</div>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                  <select className="modal-select" style={{ flex: 1 }} value={addModal.newLevel || ''}
+                                    onChange={e => setAddModal(m => m ? { ...m, newLevel: e.target.value } : null)}>
+                                    <option value="">Level…</option>
+                                    {['Sec 1', 'Sec 2', 'Sec 3', 'Sec 4', 'Sec 5', 'JC1', 'JC2'].map(l => <option key={l} value={l}>{l}</option>)}
+                                  </select>
+                                  <input type="email" className="modal-input" style={{ flex: 1.6 }} placeholder="Parent email (optional)"
+                                    value={addModal.newEmail || ''} onChange={e => setAddModal(m => m ? { ...m, newEmail: e.target.value } : null)} />
+                                </div>
+                                <button disabled={creatingStudent || !addModal.newLevel} onClick={() => createAdhocStudent(addModal.studentSearch)}
+                                  style={{ background: '#1e3a5f', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: (creatingStudent || !addModal.newLevel) ? 0.5 : 1 }}>
+                                  {creatingStudent ? 'Creating…' : 'Create + select'}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </>
+                    )}
+                  </div>
+                  {addModal.studentId && (
+                    <div className="form-group">
+                      <span className="form-label">Charge for this session ($)</span>
+                      <input type="number" className="modal-input" placeholder="e.g. 60" min="0" step="1"
+                        value={addModal.charge || ''} onChange={e => setAddModal(m => m ? { ...m, charge: e.target.value } : null)} />
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>Prefilled from the level rate — edit as needed. Billed on demand from the student’s profile.</div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Missed lesson picker — Makeup only, shown after a student is selected */}

@@ -1185,7 +1185,7 @@ function LessonCardRow({
           <div className="flex items-center gap-2 flex-wrap">
             <button
               className={`font-semibold text-[15px] hover:underline ${isDimmed ? 'text-neutral-400' : open ? 'text-white' : 'text-neutral-900'}`}
-              onClick={e => { e.stopPropagation(); router.push(`/admin/progress/student/${data.studentId}`); }}
+              onClick={e => { e.stopPropagation(); router.push(`/admin/students/${data.studentId}`); }}
             >
               {data.studentName || 'Unknown Student'}
             </button>

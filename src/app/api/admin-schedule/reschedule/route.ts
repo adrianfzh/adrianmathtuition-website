@@ -50,6 +50,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Original lesson has no student' }, { status: 400 });
     }
 
+    // No-op guard: rescheduling onto the lesson's own slot + date would just create
+    // a pointless duplicate pair (original marked Rescheduled + identical new lesson).
+    if (origSlotId === newSlotId && origDate === newDate) {
+      return NextResponse.json(
+        { error: 'Same slot and date as the original lesson — nothing to change' },
+        { status: 400 }
+      );
+    }
+
     // 2. Fetch target slot
     const targetSlot = await airtableRequest('Slots', `/${newSlotId}`);
     const targetFields = targetSlot.fields;
@@ -78,23 +87,31 @@ export async function POST(req: NextRequest) {
         })
       : origDate;
 
-    // 4. Create new lesson
-    const newLesson = await airtableRequest('Lessons', '', {
-      method: 'POST',
-      body: JSON.stringify({
-        fields: {
-          Student: [origStudentId],
-          Slot: [newSlotId],
-          Date: newDate,
-          Type: 'Rescheduled',
-          Status: 'Scheduled',
-          Notes: notes || (origDateFormatted ? `Rescheduled from ${origDateFormatted}` : ''),
-          // Carry over the original lesson's billing month so a moved lesson stays
-          // owned by the month it was originally scheduled/billed in.
-          'Billing Month': origFields['Billing Month'] || billingMonthOf(origDate),
-        },
-      }),
-    });
+    // 4. Create new lesson. A replacement for an Absent lesson is a makeup —
+    // recorded via the 'Is Makeup' checkbox (Type stays 'Rescheduled'). The write
+    // is retried without the field if the checkbox doesn't exist in Airtable yet.
+    const isMakeup = origFields['Status'] === 'Absent';
+    const newFields: Record<string, any> = {
+      Student: [origStudentId],
+      Slot: [newSlotId],
+      Date: newDate,
+      Type: 'Rescheduled',
+      Status: 'Scheduled',
+      Notes: notes || (origDateFormatted ? `${isMakeup ? 'Makeup for' : 'Rescheduled from'} ${origDateFormatted}` : ''),
+      // Carry over the original lesson's billing month so a moved lesson stays
+      // owned by the month it was originally scheduled/billed in.
+      'Billing Month': origFields['Billing Month'] || billingMonthOf(origDate),
+      'Is Makeup': isMakeup,
+    };
+    let newLesson;
+    try {
+      newLesson = await airtableRequest('Lessons', '', { method: 'POST', body: JSON.stringify({ fields: newFields }) });
+    } catch (e: any) {
+      if (/UNKNOWN_FIELD_NAME|Is Makeup/i.test(e?.message || '')) {
+        delete newFields['Is Makeup'];
+        newLesson = await airtableRequest('Lessons', '', { method: 'POST', body: JSON.stringify({ fields: newFields }) });
+      } else { throw e; }
+    }
     const newLessonId: string = newLesson.id;
 
     // 5. Patch original lesson — only update Status and link, leave Notes untouched
