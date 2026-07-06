@@ -5,6 +5,7 @@ import { sendTelegram, sendTelegramWithButtons } from '@/lib/telegram';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { buildPreviewInvoiceUrl } from '@/lib/invoice-preview-url';
+import { sendWelcomeEmail } from '@/lib/welcome-email';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -556,6 +557,27 @@ export async function POST(request: NextRequest) {
       } catch (tgError) {
         console.error('[signup] Telegram notification failed (non-fatal):', (tgError as Error).message);
       }
+    }
+
+    // Step 8: Welcome email to the parent (non-fatal)
+    try {
+      let slotLabel = '';
+      if (slotIds.length > 0) {
+        const slotRecord = await at('Slots', `/${slotIds[0]}`);
+        const dayRaw = (slotRecord.fields?.['Day'] || '').replace(/^\d+\s+/, '').trim();
+        const slotTime = (slotRecord.fields?.['Time'] || '').trim();
+        slotLabel = `${dayRaw} ${slotTime}`.trim();
+      }
+      const welcome = await sendWelcomeEmail({
+        parentName: sanitize(parentName),
+        parentEmail: sanitize(parentEmail),
+        studentName: sanitize(studentName),
+        slotLabel,
+        startDate: String(startDate),
+      });
+      if (!welcome.sent) console.error('[signup] Welcome email not sent:', welcome.error);
+    } catch (welcomeErr) {
+      console.error('[signup] Welcome email failed (non-fatal):', (welcomeErr as Error).message);
     }
 
     return NextResponse.json({
