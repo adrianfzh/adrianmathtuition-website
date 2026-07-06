@@ -81,6 +81,12 @@ Numbered list in chat, one block per question: rendered question text (markdown+
 
 Any number of questions can go into one worksheet; a typical set is 2–3 worked examples followed by 5–8 practice questions on the same skill, easiest first.
 
+**Arrangement:** after roles are assigned, confirm the order — restate the set as an ordered list ("WE1: #4, WE2: #1, then practice: #2, #6, #3, #7 — reorder?") and let Adrian shuffle by replying with a new order. Default order if he doesn't care: worked examples easiest-first, then practice easiest-first. (Drag-and-drop arrangement lives in the `/admin/worksheet-builder` web page; in chat, numbered reordering is the equivalent.)
+
+**Options to confirm before generating** (ask once, as one line, with defaults):
+- **Generated diagrams for explanations?** default **off** — QB question images are always embedded, but AI-drawn explanation diagrams only when enabled.
+- **Output format:** `docx` (default) / `pdf` / `both`.
+
 ## Step 5 — Build the physical worksheet (primary output)
 
 Assemble one document and produce it with the `anthropic-skills:create-worksheet` skill:
@@ -90,14 +96,18 @@ Assemble one document and produce it with the `anthropic-skills:create-worksheet
 3. **Practice section** — practice picks printed as questions only (with marks and answer space). 
 4. **Answers page** — final answers (and brief solutions if Adrian wants) on a separate last page.
 
+Formatting conventions (annotated worked examples inline, right-aligned orange `[Ans: ...]` under each practice question, diagram rules, docx→pdf via `docx2pdf`) are defined in the `create-worksheet` skill — follow its "Worked-Example Sections" and "Output Modes" sections.
+
+**Where the output goes:** save finished files to `~/Desktop/AdrianMath/worksheets/<YYYY-MM-DD>-<level>-<topic-slug>/` (create the folder). In Cowork also copy to `/mnt/user-data/outputs/` so Adrian gets a download card.
+
 Then log the export:
 
 ```sql
 INSERT INTO worksheet_exports (title, subtitle, level, mode, format, question_ids, question_count, total_marks, template_id)
-VALUES ('<title>', '<subtitle>', '<LEVEL>', 'mixed', 'docx', ARRAY[<uuids>]::uuid[], <n>, <sum marks>, NULL);
+VALUES ('<title>', '<subtitle>', '<LEVEL>', 'mixed', '<docx|pdf|both>', ARRAY[<uuids>]::uuid[], <n>, <sum marks>, NULL);
 ```
 
-If the job came from /admin/todo, mark the todo Done (Step 0).
+If the job came from /admin/todo, PATCH the todo to `Status='Done'` and write the **full output file path(s)** into `Notes` — that's where Adrian finds the result later.
 
 ## Step 6 — Optional portal publishing (only when Adrian explicitly asks)
 
