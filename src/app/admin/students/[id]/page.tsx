@@ -153,6 +153,66 @@ export default function StudentProfilePage() {
     } catch { showToast('err', 'Discontinue failed'); setDiscModal(prev => prev ? { ...prev, saving: false } : prev); }
   }
 
+  // Holiday opt-out — June/Oct/Nov/Dec are optional (billed per attendance).
+  // Skipping a date cancels its lesson record (creating it as Cancelled if it
+  // doesn't exist yet — durably blocks the generators); unticking restores.
+  type OptoutDate = { date: string; slotId: string; slotLabel: string; state: string; lessonId?: string; lockReason?: string; skip: boolean; orig: boolean };
+  type OptoutMonth = { label: string; dates: OptoutDate[] };
+  const [holidayModal, setHolidayModal] = useState<{ loading: boolean; months: OptoutMonth[]; saving: boolean; noSlots?: boolean } | null>(null);
+  async function openHoliday() {
+    setHolidayModal({ loading: true, months: [], saving: false });
+    try {
+      const r = await fetch(`/api/admin/holiday-optout?studentId=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const d = await r.json();
+      if (!r.ok) { showToast('err', d.error || 'Failed to load'); setHolidayModal(null); return; }
+      setHolidayModal({
+        loading: false, saving: false, noSlots: d.noSlots,
+        months: (d.months || []).map((m: { label: string; dates: Omit<OptoutDate, 'skip' | 'orig'>[] }) => ({
+          label: m.label,
+          dates: m.dates.map((e) => ({ ...e, skip: e.state === 'skipped', orig: e.state === 'skipped' })),
+        })),
+      });
+    } catch { showToast('err', 'Failed to load'); setHolidayModal(null); }
+  }
+  async function saveHoliday() {
+    if (!holidayModal || holidayModal.saving) return;
+    const changes = holidayModal.months.flatMap(m => m.dates.filter(e => e.state !== 'locked' && e.skip !== e.orig).map(e => ({ date: e.date, slotId: e.slotId, skip: e.skip })));
+    if (!changes.length) { setHolidayModal(null); return; }
+    setHolidayModal({ ...holidayModal, saving: true });
+    try {
+      const r = await fetch('/api/admin/holiday-optout', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        body: JSON.stringify({ studentId, changes }),
+      });
+      const d = await r.json();
+      if (!r.ok) { showToast('err', d.error || 'Failed to save'); setHolidayModal(prev => prev ? { ...prev, saving: false } : prev); return; }
+      const parts = [
+        d.cancelled ? `${d.cancelled} cancelled` : '', d.created ? `${d.created} pre-blocked` : '',
+        d.restored ? `${d.restored} restored` : '', d.removed ? `${d.removed} unblocked` : '',
+      ].filter(Boolean).join(', ');
+      showToast('ok', `Holiday opt-out saved — ${parts || 'no changes'}`);
+      setHolidayModal(null);
+      fetchProfile();
+    } catch { showToast('err', 'Failed to save'); setHolidayModal(prev => prev ? { ...prev, saving: false } : prev); }
+  }
+  function toggleOptoutDate(mi: number, di: number) {
+    setHolidayModal(prev => {
+      if (!prev) return prev;
+      const months = prev.months.map((m, i) => i !== mi ? m : { ...m, dates: m.dates.map((e, j) => j !== di || e.state === 'locked' ? e : { ...e, skip: !e.skip }) });
+      return { ...prev, months };
+    });
+  }
+  function toggleOptoutMonth(mi: number) {
+    setHolidayModal(prev => {
+      if (!prev) return prev;
+      const m = prev.months[mi];
+      const unlocked = m.dates.filter(e => e.state !== 'locked');
+      const allSkipped = unlocked.length > 0 && unlocked.every(e => e.skip);
+      const months = prev.months.map((mm, i) => i !== mi ? mm : { ...mm, dates: mm.dates.map(e => e.state === 'locked' ? e : { ...e, skip: !allSkipped }) });
+      return { ...prev, months };
+    });
+  }
+
   // Slot-management modals
   const [switchModal, setSwitchModal] = useState<{ enr: Enrollment; date: string; newSlotId: string; saving: boolean } | null>(null);
   const [addModal, setAddModal] = useState<{ slotId: string; date: string; saving: boolean } | null>(null);
@@ -434,10 +494,16 @@ export default function StudentProfilePage() {
                   </button>
                 </div>
                 {s.status !== 'Inactive' && (
-                  <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), saving: false })}
-                    style={{ fontSize: 12, fontWeight: 600, color: '#b91c1c', background: '#fff', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
-                    ⏹ Discontinue…
-                  </button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={openHoliday}
+                      style={{ fontSize: 12, fontWeight: 600, color: '#0369a1', background: '#fff', border: '1px solid #bae6fd', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
+                      🏖 Holiday opt-out…
+                    </button>
+                    <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), saving: false })}
+                      style={{ fontSize: 12, fontWeight: 600, color: '#b91c1c', background: '#fff', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
+                      ⏹ Discontinue…
+                    </button>
+                  </div>
                 )}
               </div>
             </Section>
@@ -875,6 +941,62 @@ export default function StudentProfilePage() {
             <button style={btnCancel} onClick={() => setDiscModal(null)} disabled={discModal.saving}>Cancel</button>
             <button style={{ ...btnPrimary, background: '#b91c1c' }} onClick={discontinue} disabled={discModal.saving || !discModal.date}>
               {discModal.saving ? 'Discontinuing…' : 'Discontinue'}
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {holidayModal && (
+        <ModalShell title="Holiday opt-out" onClose={() => !holidayModal.saving && setHolidayModal(null)}>
+          <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 1.5 }}>
+            June / Oct / Nov / Dec are <strong>optional months</strong> — billed only for attended lessons.
+            Tick the dates <strong>{s?.name}</strong> will <strong>skip</strong>; unticked dates stay on the schedule.
+          </div>
+          {holidayModal.loading ? (
+            <div style={{ textAlign: 'center', color: '#64748b', fontSize: 13, padding: '24px 0' }}>Loading dates…</div>
+          ) : holidayModal.noSlots ? (
+            <div style={{ fontSize: 13, color: '#64748b', padding: '12px 0' }}>No active weekly slots — nothing to opt out of.</div>
+          ) : (
+            <div style={{ maxHeight: '46vh', overflowY: 'auto' }}>
+              {holidayModal.months.map((m, mi) => {
+                const unlocked = m.dates.filter(e => e.state !== 'locked');
+                const allSkipped = unlocked.length > 0 && unlocked.every(e => e.skip);
+                return (
+                  <div key={m.label} style={{ marginBottom: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b' }}>{m.label}</span>
+                      {unlocked.length > 0 && (
+                        <button onClick={() => toggleOptoutMonth(mi)}
+                          style={{ fontSize: 11.5, fontWeight: 600, color: allSkipped ? '#b45309' : '#0369a1', background: allSkipped ? '#fef3c7' : '#f0f9ff', border: `1px solid ${allSkipped ? '#fcd34d' : '#bae6fd'}`, borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
+                          {allSkipped ? 'Skipping whole month — undo' : 'Skip whole month'}
+                        </button>
+                      )}
+                    </div>
+                    {m.dates.length === 0 && <div style={{ fontSize: 12.5, color: '#94a3b8' }}>No lesson dates this month.</div>}
+                    {m.dates.map((e, di) => {
+                      const d = new Date(e.date + 'T00:00:00');
+                      const label = d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
+                      const locked = e.state === 'locked';
+                      return (
+                        <label key={`${e.date}|${e.slotId}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', borderRadius: 8, cursor: locked ? 'default' : 'pointer', background: e.skip && !locked ? '#fffbeb' : 'transparent', opacity: locked ? 0.55 : 1 }}>
+                          <input type="checkbox" checked={locked ? false : e.skip} disabled={locked} onChange={() => toggleOptoutDate(mi, di)} />
+                          <span style={{ fontSize: 13, color: '#1e293b', minWidth: 92 }}>{label}</span>
+                          <span style={{ fontSize: 12, color: '#64748b' }}>{e.slotLabel}</span>
+                          {locked && <span style={{ fontSize: 11.5, color: '#94a3b8', marginLeft: 'auto' }}>{e.lockReason}</span>}
+                          {!locked && e.skip && <span style={{ fontSize: 11.5, color: '#b45309', marginLeft: 'auto', fontWeight: 600 }}>skip</span>}
+                        </label>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div style={modalActions}>
+            <button style={btnCancel} onClick={() => setHolidayModal(null)} disabled={holidayModal.saving}>Cancel</button>
+            <button style={btnPrimary} onClick={saveHoliday}
+              disabled={holidayModal.saving || holidayModal.loading || !holidayModal.months.some(m => m.dates.some(e => e.state !== 'locked' && e.skip !== e.orig))}>
+              {holidayModal.saving ? 'Saving…' : 'Save changes'}
             </button>
           </div>
         </ModalShell>
