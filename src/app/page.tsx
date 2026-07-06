@@ -2,8 +2,38 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import ScheduleTable from '@/components/ScheduleTable';
 import FAQ from '@/components/FAQ';
+import { faqs } from '@/lib/faqs';
 import Link from 'next/link';
 import { Reveal, CountUp, MinutesBar } from '@/components/Motion';
+
+// ── SEO structured data (JSON-LD) ────────────────────────────────────────────
+// Server-rendered into the HTML so Google reads it without executing JS.
+// LocalBusiness: connects the site to local-intent searches ("math tuition
+// Singapore"). FAQPage: makes results eligible for expandable Q&A rich snippets.
+const localBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  '@id': 'https://www.adrianmathtuition.com/#business',
+  name: "Adrian's Math Tuition",
+  description:
+    'Personalized small-group math tuition in Singapore for Secondary (E Math, A Math) and JC (H1, H2 Math) students. Max 4 students per Secondary class, 3 per JC class, taught personally by Adrian.',
+  url: 'https://www.adrianmathtuition.com',
+  telephone: '+6591397985',
+  priceRange: '$320 - $360 per month',
+  areaServed: { '@type': 'Country', name: 'Singapore' },
+  knowsAbout: ['O-Level E Math', 'O-Level A Math', 'JC H1 Math', 'JC H2 Math', 'Secondary Math Tuition', 'JC Math Tuition'],
+  founder: { '@type': 'Person', name: 'Adrian' },
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
 
 const CheckIcon = () => (
   <svg className="w-4 h-4 text-amber flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -31,19 +61,19 @@ const WA_JC = "https://wa.me/6591397985?text=Hi%20Adrian%20I%27m%20interested%20
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <Nav />
       <main>
 
         {/* HERO + SCHEDULE */}
         <section className="relative overflow-hidden pt-24 pb-16 px-6">
-          {/* Faint oversized math notation — texture without tinting the hero */}
-          <div aria-hidden className="pointer-events-none select-none absolute inset-0 -z-10">
-            <span className="hidden md:block absolute font-display text-[190px] leading-none text-navy/[0.045] top-6 left-[3%] rotate-[-8deg]">&int;</span>
-            <span className="hidden md:block absolute font-display text-[150px] leading-none text-navy/[0.045] top-40 right-[4%] rotate-[10deg]">&pi;</span>
-            <span className="hidden lg:block absolute font-display text-[120px] leading-none text-navy/[0.04] top-[430px] left-[10%] rotate-[6deg]">&Sigma;</span>
-            <span className="hidden lg:block absolute font-display text-[130px] leading-none text-navy/[0.04] top-[400px] right-[12%] rotate-[-6deg]">&radic;</span>
-          </div>
-
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <Reveal>
