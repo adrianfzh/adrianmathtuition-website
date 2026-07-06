@@ -24,6 +24,7 @@ export interface MarkingOutput {
   correct?: {
     final_answer?: string;
     method_summary?: string;
+    full_solution_plain?: string;
   };
   lines: MarkingLine[];
   student_final_answer?: {

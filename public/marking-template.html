@@ -550,9 +550,28 @@ body {
   var summaryEl = document.getElementById('summary-panel');
   var awarded = marks.awarded != null ? marks.awarded : 0;
   var max     = marks.max     != null ? marks.max     : (q.max_marks != null ? q.max_marks : '?');
+  // Full worked solution — shown only when the final answer is wrong, so the
+  // student can compare their working against a model answer.
+  var solutionHtml = '';
+  if (fa && fa.matches_correct === false && correct.full_solution_plain) {
+    var solSteps = String(correct.full_solution_plain).split(/\\n|\n/)
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean)
+      .map(function (s) { return '<div style="padding:2px 0;">' + esc(s) + '</div>'; })
+      .join('');
+    if (solSteps) {
+      solutionHtml =
+        '<div class="summary-title" style="margin-top:14px;">📖 Correct solution</div>' +
+        '<div class="summary-body">' + solSteps +
+        (correct.final_answer ? '<div style="padding:4px 0;font-weight:600;">Answer: ' + esc(correct.final_answer) + '</div>' : '') +
+        '</div>';
+    }
+  }
+
   summaryEl.innerHTML =
     '<div class="summary-title">' + esc(summary.title || 'Feedback') + '</div>' +
     '<div class="summary-body">' + markdownLite(summary.body_markdown || '') + '</div>' +
+    solutionHtml +
     '<div class="summary-meta">' +
       '<span>Marked by AdrianMath AI</span>' +
       '<span class="score-badge">' + awarded + ' / ' + max + ' mark' + (max !== 1 ? 's' : '') + '</span>' +
