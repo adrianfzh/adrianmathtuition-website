@@ -681,7 +681,7 @@ export default function SchedulePage() {
   // Reschedule a June-holiday Revision Sprint lesson to a regular slot (makeup).
   const [revReschedule, setRevReschedule] = useState<{ lesson: EnrichedLesson; date: string; slotId: string; saving: boolean } | null>(null);
   // Convert a trial student → enrolment: collect details, generate a signup link.
-  const [trialEnrol, setTrialEnrol] = useState<{ lesson: EnrichedLesson; trialName: string; level: string; subjects: string[]; subjectLevel: string; slotId: string; startDate: string; url: string; generating: boolean } | null>(null);
+  const [trialEnrol, setTrialEnrol] = useState<{ lesson: EnrichedLesson; trialName: string; studentName: string; level: string; subjects: string[]; subjectLevel: string; slotId: string; startDate: string; url: string; generating: boolean } | null>(null);
   const [deleteModal, setDeleteModal] = useState<AbsentDeleteState | null>(null);
   const [editNotesModal, setEditNotesModal] = useState<{ lesson: EnrichedLesson; notes: string } | null>(null);
   const [examDetailModal, setExamDetailModal] = useState<{ studentId: string; studentName: string; exams: any[] | null } | null>(null);
@@ -1732,6 +1732,7 @@ export default function SchedulePage() {
         headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           trialLessonId: trialEnrol.lesson.id,
+          studentName: trialEnrol.studentName?.trim() || undefined,
           level: trialEnrol.level,
           subjects: trialEnrol.subjects,
           subjectLevel: trialEnrol.subjectLevel || undefined,
@@ -2289,7 +2290,7 @@ export default function SchedulePage() {
             {actionSheet.lesson.type === 'Trial' && (
               <button className="action-btn" style={{ color: '#15803d', fontWeight: 700 }} onClick={() => {
                 const tl = actionSheet.lesson;
-                setTrialEnrol({ lesson: tl, trialName: tl.studentName, level: '', subjects: [], subjectLevel: '', slotId: tl.slotId || '', startDate: '', url: '', generating: false });
+                setTrialEnrol({ lesson: tl, trialName: tl.studentName, studentName: tl.studentName, level: '', subjects: [], subjectLevel: '', slotId: tl.slotId || '', startDate: '', url: '', generating: false });
                 setActionSheet(null);
               }}>🎓 Convert to enrolment</button>
             )}
@@ -2751,6 +2752,11 @@ export default function SchedulePage() {
               {!trialEnrol.url ? (
                 <>
                   <div className="form-group">
+                    <span className="form-label">Student name</span>
+                    <input className="modal-input" value={trialEnrol.studentName} onChange={e => setTrialEnrol({ ...trialEnrol, studentName: e.target.value })} placeholder="Student's full name" />
+                    <span style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, display: 'block' }}>Pre-fills the parent&apos;s signup form — they can still correct it.</span>
+                  </div>
+                  <div className="form-group" style={{ marginTop: 12 }}>
                     <span className="form-label">Level</span>
                     <select className="modal-select" value={trialEnrol.level} onChange={e => setTrialEnrol({ ...trialEnrol, level: e.target.value })}>
                       <option value="">Select…</option>

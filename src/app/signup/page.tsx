@@ -46,13 +46,14 @@ function SignupContent() {
   const subjectLevel  = params.get('subjectLevel')  || '';
   const trialLessonId = params.get('trialLessonId') || '';
   const startDateParam = params.get('startDate')    || '';   // YYYY-MM-DD, admin-prefilled
+  const namePrefill   = params.get('name')          || '';   // admin-prefilled student name (unsigned, editable)
   const expires       = params.get('expires')       || '';
   const sig           = params.get('sig')           || '';
 
   const [pageState, setPageState] = useState<'loading' | 'error' | 'form'>('loading');
   const [errorMsg, setErrorMsg]   = useState('');
   const [slotData, setSlotData]   = useState<SlotData | null>(null);
-  const [studentName, setStudentName] = useState('');
+  const [studentName, setStudentName] = useState(namePrefill);
   const [howHeard, setHowHeard]   = useState('');
   const [showReferral, setShowReferral] = useState(false);
   const [formError, setFormError] = useState('');

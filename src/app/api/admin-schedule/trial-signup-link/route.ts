@@ -12,10 +12,10 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { trialLessonId?: string; level: string; subjects: string[]; subjectLevel?: string; slotId: string; startDate?: string };
+  let body: { trialLessonId?: string; studentName?: string; level: string; subjects: string[]; subjectLevel?: string; slotId: string; startDate?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
-  const { trialLessonId, level, subjects, subjectLevel, slotId, startDate } = body;
+  const { trialLessonId, studentName, level, subjects, subjectLevel, slotId, startDate } = body;
   if (!slotId || !level || !Array.isArray(subjects) || subjects.length === 0) {
     return NextResponse.json({ error: 'slotId, level and at least one subject are required' }, { status: 400 });
   }
@@ -32,6 +32,12 @@ export async function POST(req: NextRequest) {
   const sig = createHmac('sha256', process.env.SIGNUP_SECRET || 'fallback-secret')
     .update(params.toString()).digest('hex').slice(0, 16);
   params.set('sig', sig);
+
+  // `name` is an unsigned convenience param — it only pre-fills the parent's
+  // form field (which they can still edit), so it's deliberately outside the
+  // HMAC. signup-data/signup rebuild the check string from an explicit param
+  // list that excludes it, so appending it here won't break signature checks.
+  if (studentName && studentName.trim()) params.set('name', studentName.trim());
 
   return NextResponse.json({ url: `https://www.adrianmathtuition.com/signup?${params.toString()}` });
 }
