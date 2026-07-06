@@ -36,9 +36,8 @@ export default function HomePage() {
 
         {/* HERO + SCHEDULE */}
         <section className="relative overflow-hidden pt-24 pb-16 px-6">
-          {/* Soft glow + faint oversized math notation — texture without noise */}
+          {/* Faint oversized math notation — texture without tinting the hero */}
           <div aria-hidden className="pointer-events-none select-none absolute inset-0 -z-10">
-            <div className="absolute left-1/2 top-[-180px] -translate-x-1/2 w-[720px] h-[560px] rounded-full bg-amber/15 blur-3xl" />
             <span className="hidden md:block absolute font-display text-[190px] leading-none text-navy/[0.045] top-6 left-[3%] rotate-[-8deg]">&int;</span>
             <span className="hidden md:block absolute font-display text-[150px] leading-none text-navy/[0.045] top-40 right-[4%] rotate-[10deg]">&pi;</span>
             <span className="hidden lg:block absolute font-display text-[120px] leading-none text-navy/[0.04] top-[430px] left-[10%] rotate-[6deg]">&Sigma;</span>
