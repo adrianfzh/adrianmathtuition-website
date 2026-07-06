@@ -3,6 +3,7 @@
 import Script from 'next/script';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import PortalActivate from './PortalActivate';
 
 declare global {
   interface Window {
@@ -34,6 +35,16 @@ interface SlotData {
   slotDay: string;
   slotTime: string;
   startDate: string | null;   // YYYY-MM-DD if admin-prefilled, null otherwise
+}
+
+// Routes /signup between its two flows. Portal branch (?token=xxx&portal=1):
+// parent consent + account setup — entirely separate from the HMAC-signed
+// student-registration flow. A dedicated component keeps hook order legal.
+function SignupGate() {
+  const params = useSearchParams();
+  const portalToken = params.get('portal') === '1' ? params.get('token') : null;
+  if (portalToken) return <PortalActivate token={portalToken} />;
+  return <SignupContent />;
 }
 
 function SignupContent() {
@@ -566,7 +577,7 @@ export default function SignupPage() {
         <div className="w-9 h-9 border-[3px] border-border border-t-navy rounded-full animate-spin" />
       </div>
     }>
-      <SignupContent />
+      <SignupGate />
     </Suspense>
   );
 }

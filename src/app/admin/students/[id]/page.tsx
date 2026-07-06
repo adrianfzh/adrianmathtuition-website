@@ -163,6 +163,7 @@ export default function StudentProfilePage() {
   // Phase 4: contact + exam quick-add
   const [contact, setContact] = useState<Contact | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
+  const [inviteState, setInviteState] = useState<'idle' | 'sending'>('idle');
   const [examForm, setExamForm] = useState<{ examType: string; examDate: string; topics: string; noExam: boolean; saving: boolean } | null>(null);
   // Phase 3: progress history + lesson modal
   const [history, setHistory] = useState<{ id: string; date: string; type: string; status: string; topicsCovered: string; mood: string; progressLogged: boolean }[]>([]);
@@ -409,7 +410,29 @@ export default function StudentProfilePage() {
                 )}
               </div>
               <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <a href="/admin/schedule" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>🗓 Schedule →</a>
+                <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                  <a href="/admin/schedule" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>🗓 Schedule →</a>
+                  <button
+                    style={btnGhost}
+                    disabled={inviteState === 'sending'}
+                    onClick={async () => {
+                      if (!confirm(`Email a portal invite to ${s.name}'s parent?`)) return;
+                      setInviteState('sending');
+                      try {
+                        const r = await fetch('/api/portal/invite', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+                          body: JSON.stringify({ airtableStudentId: studentId }),
+                        });
+                        const d = await r.json();
+                        alert(r.ok ? `✅ Invite sent to ${d.sentTo}` : `❌ ${d.error || 'Failed'}`);
+                      } catch { alert('❌ Network error'); }
+                      setInviteState('idle');
+                    }}
+                  >
+                    {inviteState === 'sending' ? 'Sending…' : '🎓 Send portal invite'}
+                  </button>
+                </div>
                 {s.status !== 'Inactive' && (
                   <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), saving: false })}
                     style={{ fontSize: 12, fontWeight: 600, color: '#b91c1c', background: '#fff', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
