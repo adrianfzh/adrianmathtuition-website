@@ -18,12 +18,15 @@ export default function Footer() {
             </svg>
             WhatsApp Us
           </a>
-          <p className="text-[hsl(45,100%,96%)] opacity-40 text-sm mt-12">
-            &copy; {new Date().getFullYear()}{' '}Adrian&apos;s Math Tuition. All rights reserved.
-          </p>
         </div>
       </footer>
-      <footer className="bg-[#111827] text-[#9ca3af] text-[0.8rem] py-6 px-6 text-center leading-relaxed">
+      <footer className="bg-[#111827] text-[#9ca3af] text-[0.8rem] py-8 px-6 text-center leading-relaxed">
+        <nav className="mb-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+          <a href="/secondary-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">Secondary Math Tuition</a>
+          <a href="/o-level-a-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">O-Level A Math Tuition</a>
+          <a href="/jc-h2-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">JC H2 Math Tuition</a>
+          <a href="/terms" className="text-[#d1d5db] hover:text-white no-underline">Terms</a>
+        </nav>
         <p className="mb-1">&copy; {new Date().getFullYear()} Adrian&apos;s Math Tuition &middot; Singapore</p>
         <p className="text-[0.75rem]">
           Questions about your data?{' '}

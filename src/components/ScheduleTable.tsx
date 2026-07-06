@@ -11,17 +11,20 @@ interface Slot {
 }
 
 function Dots({ filled, capacity }: { filled: number; capacity: number }) {
+  // Clamp for display: enrolment can exceed capacity internally (makeups etc.),
+  // but "5/4" on the public site reads like a bug — show at most capacity/capacity.
+  const shown = Math.min(filled, capacity);
   return (
     <div className="flex items-center gap-1.5">
       <div className="flex gap-[3px]">
         {Array.from({ length: capacity }).map((_, i) => (
           <span
             key={i}
-            className={`w-2 h-2 rounded-full ${i < filled ? 'bg-black/80' : 'bg-black/20'}`}
+            className={`w-2 h-2 rounded-full ${i < shown ? 'bg-black/80' : 'bg-black/20'}`}
           />
         ))}
       </div>
-      <span className="text-[12px] font-bold text-black/80">{filled}/{capacity}</span>
+      <span className="text-[12px] font-bold text-black/80">{shown}/{capacity}</span>
     </div>
   );
 }
