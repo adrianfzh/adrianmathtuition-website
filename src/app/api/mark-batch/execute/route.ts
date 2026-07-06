@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
-
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 // ── POST — fire execute-batch on Fly worker (fire-and-forget) ────────────────
 //
@@ -17,7 +12,7 @@ function checkAuth(req: NextRequest): boolean {
 // and hand off to the Fly worker which has no timeout.
 
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

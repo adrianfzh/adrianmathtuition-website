@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
-
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  const cookie = req.cookies.get('admin_pw')?.value;
-  return req.headers.get('authorization') === `Bearer ${pw}` || cookie === pw;
-}
 
 const PER_PAGE = 25;
 
 // GET /api/admin/attendance?search=name        → student search results
 // GET /api/admin/attendance?studentId=recXXX&page=1 → attendance records
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search');

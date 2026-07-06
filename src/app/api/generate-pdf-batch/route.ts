@@ -4,18 +4,13 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-function checkAuth(req: NextRequest): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return true;
-  return req.headers.get('authorization') === `Bearer ${adminPassword}`;
-}
-
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

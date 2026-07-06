@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
 const BASE    = process.env.AIRTABLE_BASE_ID!;
 const TOKEN   = process.env.AIRTABLE_TOKEN!;
 const HEADERS = { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
-
-function checkAuth(req: NextRequest) {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 async function atAll(table: string, qs = ''): Promise<any[]> {
   const records: any[] = [];
@@ -27,7 +22,7 @@ async function atAll(table: string, qs = ''): Promise<any[]> {
 
 // GET — batches, topic rates, trend
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const days = parseInt(req.nextUrl.searchParams.get('days') || '14', 10);
   const since14 = new Date(Date.now() - days * 86400_000).toISOString();
@@ -88,7 +83,7 @@ export async function GET(req: NextRequest) {
 
 // POST — approve or reject a cluster
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const { batchId, clusterIdx, action, reason } = await req.json();
 

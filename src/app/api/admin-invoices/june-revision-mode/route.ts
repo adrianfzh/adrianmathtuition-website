@@ -4,14 +4,9 @@
 // "June Revision <year>" field = 'Signed Up' (they're billed via their revision invoice).
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
-
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 async function getRecord() {
   const data = await airtableRequest('Settings',
@@ -21,13 +16,13 @@ async function getRecord() {
 }
 
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const record = await getRecord();
   return NextResponse.json({ enabled: record?.fields?.['Value'] === 'true' });
 }
 
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let body: { enabled: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }

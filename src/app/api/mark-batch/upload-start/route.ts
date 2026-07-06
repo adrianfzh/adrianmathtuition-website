@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
-
 // No longer calls createMultipartUpload — we use put() per chunk (temp blobs) to avoid the
 // 5 MB SDK minimum-part-size constraint vs Vercel's 4.5 MB body limit crossed constraint.
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let filename: string;
   try {

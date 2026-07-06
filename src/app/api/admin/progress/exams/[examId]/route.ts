@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
-
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 function shapeExam(r: any) {
   return {
@@ -33,7 +28,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ examId: string }> }
 ) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { examId } = await params;
   const data = await airtableRequest('Exams', `/${examId}`);
@@ -45,7 +40,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ examId: string }> }
 ) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { examId } = await params;
   const body = await req.json();
@@ -74,7 +69,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ examId: string }> }
 ) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { examId } = await params;
   await airtableRequest('Exams', `/${examId}`, { method: 'DELETE' });

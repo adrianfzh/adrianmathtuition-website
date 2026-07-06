@@ -3,16 +3,11 @@ import { airtableRequest } from '@/lib/airtable';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { put } from '@vercel/blob';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
-
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 // ── Cover page — drawn with PDF-lib built-in fonts (no Sharp, no system fonts needed) ──
 
@@ -119,7 +114,7 @@ async function addCoverPage(
 // ── POST — assemble PDF ───────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

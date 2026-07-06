@@ -7,17 +7,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
 function checkAuth(req: NextRequest): boolean {
+  // Cron acceptance: Vercel cron header or CRON_SECRET Bearer. Otherwise
+  // standard admin auth (signed session cookie or legacy ADMIN_PASSWORD Bearer).
   const cronSecret = process.env.CRON_SECRET;
-  const adminPassword = process.env.ADMIN_PASSWORD;
   const authHeader = req.headers.get('authorization');
-  const isVercelCron = req.headers.get('x-vercel-cron') === '1';
-  return isVercelCron ||
-    !!(cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-    !!(adminPassword && authHeader === `Bearer ${adminPassword}`);
+  if (req.headers.get('x-vercel-cron') === '1') return true;
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
+  return verifyAdminAuth(req);
 }
 
 export async function GET(req: NextRequest) {

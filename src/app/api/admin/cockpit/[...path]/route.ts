@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-function checkAuth(req: NextRequest) {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 async function proxy(req: NextRequest, pathSegments: string[]) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const botBase = process.env.BOT_BASE_URL;
   const botSecret = process.env.BOT_INTERNAL_SECRET;
   if (!botBase || !botSecret) return NextResponse.json({ error: 'bot not configured' }, { status: 503 });

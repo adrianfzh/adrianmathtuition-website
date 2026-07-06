@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
@@ -10,14 +11,8 @@ export const runtime = 'nodejs';
 //     (wrong final answers grouped by topic). Bot-question logs are intentionally
 //     NOT used as a signal here.
 
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
-
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
 
   try {

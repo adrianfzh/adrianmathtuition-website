@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
-
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const batchId = new URL(req.url).searchParams.get('batchId');
   if (!batchId) return NextResponse.json({ error: 'batchId required' }, { status: 400 });

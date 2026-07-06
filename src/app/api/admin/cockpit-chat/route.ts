@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-function checkAuth(req: NextRequest) {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 const SYSTEM = `You are Adrian's collaborator for improving his Singapore math tutoring bot's prompt rules.
 
@@ -34,7 +29,7 @@ When proposing a rule, format it inside a code fence labeled \`rule\`:
 Don't propose a rule in the first response — diagnose first, propose after agreement. Be concise.`;
 
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { messages, contextItem } = await req.json();
   const systemWithCtx = contextItem
     ? `${SYSTEM}\n\n--- CONTEXT ---\n${JSON.stringify(contextItem, null, 2)}`

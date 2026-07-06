@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { del } from '@vercel/blob';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-function checkAuth(req: NextRequest): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return true;
-  const authHeader = req.headers.get('authorization');
-  return authHeader === `Bearer ${adminPassword}`;
-}
-
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -110,7 +104,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -164,7 +158,7 @@ export async function PATCH(req: NextRequest) {
 // Bulk mode REQUIRES the caller to pass `confirmAll: true` when no `month`
 // is supplied, to guard against accidental wipe of every invoice ever.
 export async function DELETE(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   if (!process.env.AIRTABLE_TOKEN || !process.env.AIRTABLE_BASE_ID) {

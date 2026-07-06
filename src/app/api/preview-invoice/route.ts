@@ -4,17 +4,15 @@ import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { verifyPreviewInvoice } from '@/lib/invoice-preview-url';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 function checkAuth(req: NextRequest, searchParams: URLSearchParams): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return true;
-  if (req.headers.get('authorization') === `Bearer ${adminPassword}`) return true;
-  // Cookie auth for direct browser navigation (new tab links)
-  const cookie = req.cookies.get('admin_pw')?.value;
-  if (cookie && cookie === adminPassword) return true;
+  // Standard admin auth — signed httpOnly session cookie (covers direct browser
+  // navigation / new-tab links) or legacy ADMIN_PASSWORD Bearer.
+  if (verifyAdminAuth(req)) return true;
   // Signed link — authorizes a single invoice id without a cookie, so links
   // tapped from Telegram (in-app browser, no cookie) work. Scoped + expiring.
   const id = searchParams.get('id');

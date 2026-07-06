@@ -2,18 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-function checkAuth(req: NextRequest): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return true;
-  return req.headers.get('authorization') === `Bearer ${adminPassword}`;
-}
-
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!process.env.AIRTABLE_TOKEN || !process.env.AIRTABLE_BASE_ID) {
     return NextResponse.json({ error: 'Missing env vars' }, { status: 500 });
   }
@@ -45,7 +40,7 @@ export async function GET(req: NextRequest) {
 
 // POST { logId } — re-send email from a log entry
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { RESEND_API_KEY } = process.env;
   if (!RESEND_API_KEY) return NextResponse.json({ error: 'Missing RESEND_API_KEY' }, { status: 500 });
 

@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
-
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 async function sendTelegramDocument(chatId: string, pdfUrl: string, caption: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -31,7 +26,7 @@ async function sendTelegramDocument(chatId: string, pdfUrl: string, caption: str
 }
 
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   let body: { batchId: string };
   try { body = await req.json(); }

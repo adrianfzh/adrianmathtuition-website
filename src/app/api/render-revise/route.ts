@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { put } from '@vercel/blob';
 import { renderRevisePNG, RenderType, ReviseRenderInput } from '@/lib/render-revise';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -28,10 +29,11 @@ const TYPE_TO_FIELD: Record<RenderType, string> = {
 };
 
 function checkAuth(req: NextRequest): boolean {
-  const auth = req.headers.get('authorization') ?? '';
-  const cron  = process.env.CRON_SECRET;
-  const admin = process.env.ADMIN_PASSWORD;
-  return (!!cron && auth === `Bearer ${cron}`) || (!!admin && auth === `Bearer ${admin}`);
+  // CRON_SECRET Bearer (bot/cron callers) or standard admin auth
+  // (signed session cookie or legacy ADMIN_PASSWORD Bearer).
+  const cron = process.env.CRON_SECRET;
+  if (cron && req.headers.get('authorization') === `Bearer ${cron}`) return true;
+  return verifyAdminAuth(req);
 }
 
 export async function POST(req: NextRequest) {

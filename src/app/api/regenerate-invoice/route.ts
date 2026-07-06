@@ -4,6 +4,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { NO_LESSON_DATES } from '@/lib/holidays';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -17,14 +18,8 @@ const DAY_ABBREV: Record<string, string> = {
   Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat',
 };
 
-function checkAuth(req: NextRequest): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return true;
-  return req.headers.get('authorization') === `Bearer ${adminPassword}`;
-}
-
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

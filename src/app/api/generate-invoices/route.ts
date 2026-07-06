@@ -6,6 +6,7 @@ import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { NO_LESSON_DATES } from '@/lib/holidays';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 const DAY_ABBREV: Record<string, string> = {
   Sunday: 'Sun', Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
@@ -63,13 +64,13 @@ function countOccurrencesInMonth(
 }
 
 function checkAuth(req: NextRequest): boolean {
+  // Cron acceptance: Vercel cron header or CRON_SECRET Bearer. Otherwise
+  // standard admin auth (signed session cookie or legacy ADMIN_PASSWORD Bearer).
   const cronSecret = process.env.CRON_SECRET;
-  const adminPassword = process.env.ADMIN_PASSWORD;
   const authHeader = req.headers.get('authorization');
-  const isVercelCron = req.headers.get('x-vercel-cron') === '1';
-  const validAdmin = !!(adminPassword && authHeader === `Bearer ${adminPassword}`);
-  const validCron = !!(cronSecret && authHeader === `Bearer ${cronSecret}`);
-  return isVercelCron || validAdmin || validCron;
+  if (req.headers.get('x-vercel-cron') === '1') return true;
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
+  return verifyAdminAuth(req);
 }
 
 export async function POST(req: NextRequest) {

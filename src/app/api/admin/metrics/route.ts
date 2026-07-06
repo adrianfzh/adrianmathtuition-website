@@ -7,15 +7,17 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 function checkAuth(req: NextRequest): boolean {
+  if (verifyAdminAuth(req)) return true;
+  // Legacy plaintext admin_pw cookie — kept only until all pages are migrated
+  // to the signed session; remove after the pages sweep.
   const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  const cookie = req.cookies.get('admin_pw')?.value;
-  return req.headers.get('authorization') === `Bearer ${pw}` || cookie === pw;
+  return !!pw && req.cookies.get('admin_pw')?.value === pw;
 }
 
 function getSupabase() {

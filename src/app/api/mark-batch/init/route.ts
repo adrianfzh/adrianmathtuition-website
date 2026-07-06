@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { airtableRequestAll } from '@/lib/airtable';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -9,12 +10,6 @@ export const dynamic = 'force-dynamic';
 
 const MAX_BYTES = 50 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
-
-function checkAuth(req: NextRequest): boolean {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 function generateBatchId(): string {
   const ts = Date.now();
@@ -25,7 +20,7 @@ function generateBatchId(): string {
 // ── GET — student list for dropdown ──────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
@@ -47,7 +42,7 @@ export async function GET(req: NextRequest) {
 // ── POST — enqueue batch (slim: insert Supabase + fire Fly) ──────────────────
 
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) {
+  if (!verifyAdminAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -1,21 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
 import { costFor } from '@/lib/model-pricing';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
-
-function checkAuth(req: NextRequest) {
-  const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
-  return req.headers.get('authorization') === `Bearer ${pw}`;
-}
 
 function costForRecord(r: any): number {
   return costFor(r.fields['Tokens In'] || 0, r.fields['Tokens Out'] || 0, r.fields['Model Used'] || '');
 }
 
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const sp   = req.nextUrl.searchParams;
   const days = Math.min(parseInt(sp.get('days') || '7', 10), 90);
@@ -179,7 +174,7 @@ export async function GET(req: NextRequest) {
 
 // POST — trigger on-demand AI analysis of recent questions
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const { days = 1 } = await req.json().catch(() => ({}));
   const adminChatId = process.env.ADMIN_CHAT_ID || process.env.ADRIAN_CHAT_ID || '';

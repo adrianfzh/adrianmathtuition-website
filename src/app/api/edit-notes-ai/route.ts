@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -63,7 +64,8 @@ export async function POST(req: NextRequest) {
   try {
     const { instruction, currentContent, topic, subject, password } = await req.json();
 
-    if (!password || password !== process.env.ADMIN_PASSWORD) {
+    // Signed admin session cookie (preferred) or legacy password in the body.
+    if (!verifyAdminAuth(req) && (!password || password !== process.env.ADMIN_PASSWORD)) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
