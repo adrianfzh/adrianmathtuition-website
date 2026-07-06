@@ -165,6 +165,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
+  { emoji: '🏖️', title: 'June Revision', sub: 'Published schedules · JC2 · Sec 4', href: '/admin/june-revision' },
   { emoji: '📊', title: 'At a glance',     sub: 'Status · todos · invoices · students', href: '/admin/status' },
   { emoji: '✅', title: 'To-Do',           sub: 'Build-test-fix loop task list',        href: '/admin/todo' },
   { emoji: '📏', title: 'Grading Rubrics', sub: 'The standard Solo marks against',       href: '/admin/rubrics' },
