@@ -110,6 +110,7 @@ export default function MarkPaperPage() {
   const [runId, setRunId] = useState<string | null>(null);
   const [recentRuns, setRecentRuns] = useState<Run[]>([]);
   const [markModel, setMarkModel] = useState<'opus' | 'sonnet'>('opus');
+  const [markStyle, setMarkStyle] = useState<'classic' | 'teacher'>('classic');
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
@@ -184,7 +185,7 @@ export default function MarkPaperPage() {
       const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf.name, model: markModel }),
+        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf.name, model: markModel, style: markStyle }),
       });
       const raw = await resp.text();
       let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string }[]; run_id?: string | null; usage?: Usage; error?: string };
@@ -318,6 +319,18 @@ export default function MarkPaperPage() {
             >
               <option value="opus">Opus 4.8 (default)</option>
               <option value="sonnet">Sonnet 5</option>
+            </select>
+          </label>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#374151' }}>
+            <span>Marks:</span>
+            <select
+              value={markStyle}
+              onChange={(e) => setMarkStyle(e.target.value as 'classic' | 'teacher')}
+              disabled={busy}
+              style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
+            >
+              <option value="classic">Classic pills</option>
+              <option value="teacher">✍️ Teacher&apos;s red pen</option>
             </select>
           </label>
           <span style={{ color: '#6b7280', fontSize: 13 }}>Reads each photo against the paper and marks every question it finds (≈1–2 min).</span>
