@@ -40,6 +40,13 @@ export default function ScheduleTable() {
   const [timeSlots, setTimeSlots] = useState<Record<string, Record<string, Slot>>>({});
   const [loading, setLoading] = useState(true);
 
+  // Only render days that actually have classes — empty Wed/Thu columns made the
+  // grid look sparse (and forced extra swiping on mobile for the weekend classes).
+  const activeDays = DAY_ORDER.filter(d =>
+    Object.values(timeSlots).some(row => row[d])
+  );
+  const days = loading || activeDays.length === 0 ? DAY_ORDER : activeDays;
+
   useEffect(() => {
     fetch('/api/schedule')
       .then(r => r.json())
@@ -68,7 +75,7 @@ export default function ScheduleTable() {
           <thead>
             <tr>
               <th className="text-left text-muted-foreground font-medium pb-2 w-24">Time</th>
-              {DAY_ORDER.map(d => (
+              {days.map(d => (
                 <th key={d} className="text-center font-semibold text-navy pb-2 w-24">{d}</th>
               ))}
             </tr>
@@ -76,13 +83,13 @@ export default function ScheduleTable() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={8} className="text-center py-8 text-muted-foreground">Loading schedule&hellip;</td>
+                <td colSpan={days.length + 1} className="text-center py-8 text-muted-foreground">Loading schedule&hellip;</td>
               </tr>
             ) : (
               TIME_ORDER.filter(t => timeSlots[t]).map(time => (
                 <tr key={time}>
                   <td className="text-left text-muted-foreground font-medium py-1 border-t border-border whitespace-nowrap">{time}</td>
-                  {DAY_ORDER.map(day => {
+                  {days.map(day => {
                     const slot = timeSlots[time]?.[day];
                     if (!slot) {
                       return <td key={day} className="text-center py-1 border-t border-border"><span className="text-muted-foreground/30">&mdash;</span></td>;
@@ -96,6 +103,9 @@ export default function ScheduleTable() {
                     const hoverBg = isJC ? 'hover:bg-amber' : 'hover:bg-[hsl(350,75%,75%)]';
 
                     if (isAvailable) {
+                      // An empty class shown as "0/3 available" is anti-social-proof —
+                      // present it as a fresh class instead of an unwanted one.
+                      const isNew = slot.filled === 0;
                       return (
                         <td key={day} className="py-1 border-t border-border text-center">
                           <a
@@ -106,8 +116,12 @@ export default function ScheduleTable() {
                           >
                             <span className="block text-[15px] font-bold mb-0.5">{slot.type}</span>
                             <span className="block text-[13px] font-medium mb-0.5 opacity-90">{day} {slot.time}</span>
-                            <Dots filled={slot.filled} capacity={slot.capacity} />
-                            <span className="text-[12px] font-bold text-green-600 mt-0.5 tracking-wide">available</span>
+                            {isNew ? (
+                              <span className="text-[11px] font-bold bg-white/60 rounded-full px-2 py-0.5">new class</span>
+                            ) : (
+                              <Dots filled={slot.filled} capacity={slot.capacity} />
+                            )}
+                            <span className="text-[12px] font-bold text-green-600 mt-0.5 tracking-wide">{isNew ? 'slots open' : 'available'}</span>
                           </a>
                         </td>
                       );
