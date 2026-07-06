@@ -488,17 +488,19 @@ export default function StudentProfilePage() {
                 {s.juneRevision && <Field label="June revision" value={s.juneRevision} />}
               </div>
               <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
-                {!contact ? (
-                  <button style={btnGhost} onClick={loadContact} disabled={contactLoading}>{contactLoading ? 'Loading…' : '👤 Show contact'}</button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                  {!contact ? (
+                    <button style={btnGhost} onClick={loadContact} disabled={contactLoading}>{contactLoading ? 'Loading…' : '👤 Show contact'}</button>
+                  ) : (
+                    <div style={{ fontSize: 13, color: '#374151', display: 'flex', flexWrap: 'wrap', gap: '4px 18px' }}>
+                      {contact.parentName && <span><span style={{ color: '#9ca3af' }}>Parent:</span> {contact.parentName}</span>}
+                      {contact.parentEmail && <span><span style={{ color: '#9ca3af' }}>Email:</span> {contact.parentEmail}</span>}
+                      {contact.parentContact && <span><span style={{ color: '#9ca3af' }}>Parent ☎:</span> {contact.parentContact}</span>}
+                      {contact.studentContact && <span><span style={{ color: '#9ca3af' }}>Student ☎:</span> {contact.studentContact}</span>}
+                    </div>
+                  )}
                   <button style={btnGhost} onClick={askForReview} disabled={reviewBusy}>{reviewBusy ? 'Preparing…' : '⭐ Ask for review'}</button>
-                ) : (
-                  <div style={{ fontSize: 13, color: '#374151', display: 'flex', flexWrap: 'wrap', gap: '4px 18px' }}>
-                    {contact.parentName && <span><span style={{ color: '#9ca3af' }}>Parent:</span> {contact.parentName}</span>}
-                    {contact.parentEmail && <span><span style={{ color: '#9ca3af' }}>Email:</span> {contact.parentEmail}</span>}
-                    {contact.parentContact && <span><span style={{ color: '#9ca3af' }}>Parent ☎:</span> {contact.parentContact}</span>}
-                    {contact.studentContact && <span><span style={{ color: '#9ca3af' }}>Student ☎:</span> {contact.studentContact}</span>}
-                  </div>
-                )}
+                </div>
               </div>
               <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
