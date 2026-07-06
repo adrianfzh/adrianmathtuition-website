@@ -18,8 +18,14 @@ const localBusinessSchema = {
   description:
     'Personalized small-group math tuition in Singapore for Secondary (E Math, A Math) and JC (H1, H2 Math) students. Max 4 students per Secondary class, 3 per JC class, taught personally by Adrian.',
   url: 'https://www.adrianmathtuition.com',
+  image: 'https://www.adrianmathtuition.com/adrian.jpg',
   telephone: '+6591397985',
   priceRange: '$320 - $360 per month',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Hougang',
+    addressCountry: 'SG',
+  },
   areaServed: { '@type': 'Country', name: 'Singapore' },
   knowsAbout: ['O-Level E Math', 'O-Level A Math', 'JC H1 Math', 'JC H2 Math', 'Secondary Math Tuition', 'JC Math Tuition'],
   founder: { '@type': 'Person', name: 'Adrian' },
