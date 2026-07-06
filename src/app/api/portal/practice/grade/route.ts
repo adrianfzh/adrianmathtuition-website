@@ -64,12 +64,16 @@ export async function POST(req: NextRequest) {
   // Question WITH mark scheme (service role; never sent to the client)
   const { data: q } = await admin
     .from('questions')
-    .select('id, level, question_text, parts, answer, solution, total_marks, topics, ai_generated')
+    .select('id, level, question_text, parts, answer, solution, total_marks, topics, ai_generated, solution_source')
     .eq('id', questionId)
     .maybeSingle();
   if (!q) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
-  if (q.ai_generated === true) {
-    // E7 rule: AI-generated questions stay ungraded until Adrian spot-checks them.
+  if (q.ai_generated === true && q.solution_source !== 'ai_opus') {
+    // E7 rule (amended 2026-07-06): AI questions that passed the bot worker's
+    // four verification gates (code/blind/skill/grade — solution_source='ai_opus',
+    // written ONLY by the bot's generation worker) are gradable. Any other
+    // ai_generated row (e.g. /similar's weaker-verified 'ai_generated_v1' cache)
+    // stays ungraded until it goes through the gates.
     return NextResponse.json({ error: 'This AI practice question isn’t gradable yet — check the solution instead' }, { status: 409 });
   }
 

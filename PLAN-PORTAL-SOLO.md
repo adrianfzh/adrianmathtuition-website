@@ -145,12 +145,23 @@ tables + Auth user gone); two-account leak test on notes/settings APIs.
    The `generation_requests` queue table is live. When a student's chosen/weak topic runs low
    on unattempted bank questions, the portal server inserts a generation request
    (`requested_by='portal:<uid>'`); generated questions serve later, always badged
-   "AI practice question". Rules: (a) **AI-generated questions are NOT graded** until Adrian
-   has spot-checked that question once — their mark schemes are AI-authored
-   (`solution_source='ai_opus'`) and grading against them compounds error; serve them
-   answer-at-the-bottom style. (b) The WORKER should be a cron in the Fly.io bot (24/7,
-   has Anthropic + service keys) — NOT a Cowork scheduled task (sleeps when Cowork closed;
-   Adrian never activated it). Building the Fly worker is its own task in the bot repo.
+   "AI practice question". Rules: (a) ~~AI-generated questions are NOT graded until Adrian
+   has spot-checked that question once~~ **SUPERSEDED 2026-07-06 — the four-gate worker is live.**
+   The worker (bot repo, `ai/generation-worker.js`, 5-min cron; manual: `/trigger_cron generate`)
+   inserts a question ONLY if it passes all four gates: **code** (Opus runs SymPy via the
+   code-execution tool; computed answer must match and the question must be well-posed),
+   **blind re-solve** (independent Sonnet call that never sees the claimed solution; answers
+   compared numerically), **skill fidelity** (same primary sub-group as the source via
+   `question_subgroups`/`subgroups` + total marks within ±1), and **grader self-consistency**
+   (the portal-equivalent examiner prompt must award the generated solution full marks).
+   Questions passing all four gates ARE gradable: `/api/portal/practice/grade` now blocks only
+   `ai_generated` rows whose `solution_source !== 'ai_opus'` — `'ai_opus'` is written EXCLUSIVELY
+   by the four-gate worker. (The bot's /similar cache writes `'ai_generated_v1'` with weaker
+   verification and therefore stays ungraded. Zero `ai_generated` rows predated the gates —
+   verified 2026-07-06 — so no legacy rows needed quarantining.)
+   (b) The WORKER lives in the Fly.io bot (24/7, has Anthropic + service keys) — built 2026-07-06
+   (`ai/generation-worker.js` + shared `ai/question-gen.js`, also used by /revise) — NOT a Cowork
+   scheduled task (sleeps when Cowork closed; Adrian never activated it).
    (c) Admin "Generate similar" button + POST /api/generate-similar can ship independently.
 
 6. **Calibration gate (launch blocker):** assemble 10–15 exemplar attempts (real student working
