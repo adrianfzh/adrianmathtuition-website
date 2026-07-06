@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
+import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
 
 /** Number of days within which a lesson's progress fields may be edited. */
 export const EDIT_WINDOW_DAYS = 14;
@@ -20,6 +21,10 @@ export function daysAgo(n: number): string {
 export function verifyAdminAuth(req: NextRequest): boolean {
   const pw = process.env.ADMIN_PASSWORD;
   if (!pw) return true;
+  // Preferred: signed httpOnly session cookie (see lib/admin-session.ts —
+  // carries no secret, JS-unreadable). Legacy: raw-password Bearer header,
+  // kept for the bot/tools and admin pages not yet migrated.
+  if (verifyAdminSession(req.cookies.get(ADMIN_SESSION_COOKIE)?.value)) return true;
   return req.headers.get('authorization') === `Bearer ${pw}`;
 }
 
