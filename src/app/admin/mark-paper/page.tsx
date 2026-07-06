@@ -178,14 +178,16 @@ export default function MarkPaperPage() {
 
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
-    if (!pdf || images.length === 0) { setError('Add a question PDF and at least one working photo.'); return; }
+    if (images.length === 0) { setError('Add at least one working photo.'); return; }
     setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked(null);
     try {
-      const pdfBase64 = await pdfToBase64(pdf);
+      // PDF is optional — without it, photos are marked standalone (self-contained
+      // worksheets where the printed questions are on the pages themselves).
+      const pdfBase64 = pdf ? await pdfToBase64(pdf) : null;
       const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf.name, model: markModel, style: markStyle }),
+        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`, model: markModel, style: markStyle }),
       });
       const raw = await resp.text();
       let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string }[]; run_id?: string | null; usage?: Usage; error?: string };
@@ -239,7 +241,7 @@ export default function MarkPaperPage() {
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Mark a paper</h1>
-      <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the question paper (PDF) and the student&rsquo;s working (photos), then Mark. The marker reads each photo against the paper and marks every question it finds — no manual matching.</p>
+      <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the student&rsquo;s working (photos) — plus the question paper (PDF) if there is one — then Mark. With a paper, each photo is marked against it; without one, the marker reads the printed questions off the pages themselves (self-contained worksheets).</p>
 
       {error && <div style={{ ...card, borderColor: '#fca5a5', background: '#fef2f2', color: '#b91c1c' }}>{error}</div>}
 
@@ -274,13 +276,13 @@ export default function MarkPaperPage() {
       {/* Upload */}
       <div style={card}>
         <FileDrop
-          label="Question paper (PDF)"
+          label="Question paper (PDF) — optional"
           accept="application/pdf"
           multiple={false}
           count={pdf ? 1 : 0}
           primaryName={pdf?.name || null}
           onFiles={(fs) => setPdf(fs.find((f) => f.type === 'application/pdf') || fs[0] || null)}
-          hint="One PDF file"
+          hint="One PDF file · leave empty for self-contained worksheets (questions printed on the pages)"
         />
         <FileDrop
           label="Student working (photos — one or more)"
@@ -333,7 +335,7 @@ export default function MarkPaperPage() {
               <option value="teacher">✍️ Teacher&apos;s red pen</option>
             </select>
           </label>
-          <span style={{ color: '#6b7280', fontSize: 13 }}>Reads each photo against the paper and marks every question it finds (≈1–2 min).</span>
+          <span style={{ color: '#6b7280', fontSize: 13 }}>{pdf ? 'Reads each photo against the paper and marks every question it finds (≈1–2 min).' : 'No paper attached — marks each photo standalone, reading the printed questions off the page (≈1–2 min).'}</span>
         </div>
       </div>
 
