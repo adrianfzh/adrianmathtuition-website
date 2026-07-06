@@ -12,14 +12,6 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
-function checkAuth(req: NextRequest): boolean {
-  if (verifyAdminAuth(req)) return true;
-  // Legacy plaintext admin_pw cookie — kept only until all pages are migrated
-  // to the signed session; remove after the pages sweep.
-  const pw = process.env.ADMIN_PASSWORD;
-  return !!pw && req.cookies.get('admin_pw')?.value === pw;
-}
-
 function getSupabase() {
   const url = process.env.SUPABASE_URL!;
   const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
@@ -48,7 +40,7 @@ async function airtableFetchAll(table: string, query: string): Promise<any[]> {
 }
 
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const sb = getSupabase();
   const now = new Date();
