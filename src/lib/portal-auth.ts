@@ -38,10 +38,12 @@ export async function currentStudent() {
     .single<PortalAccount>();
   if (!account) redirect('/login');
 
-  const airtableRecord = (await airtableRequest(
-    'Students',
-    `/${account.airtable_student_id}`
-  )) as { id: string; fields: Record<string, unknown> };
+  // Airtable is best-effort: a deleted student record or an Airtable outage
+  // must degrade the page (fall back to portal_accounts copies), never 500 it.
+  let airtableRecord: { id: string; fields: Record<string, unknown> } | null = null;
+  try {
+    airtableRecord = await airtableRequest('Students', `/${account.airtable_student_id}`);
+  } catch { /* degrade gracefully */ }
 
   return { user, account, airtableRecord };
 }
