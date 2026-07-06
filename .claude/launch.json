@@ -14,6 +14,12 @@
       "runtimeArgs": ["run", "start"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "Next.js Prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "start", "-p", "3210"],
+      "port": 3210
     }
   ]
 }

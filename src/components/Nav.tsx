@@ -7,6 +7,14 @@ export default function Nav() {
           <span className="text-muted-foreground text-sm md:text-[14px]">math tuition</span>
         </div>
         <div className="flex items-center gap-4 md:gap-6">
+        {process.env.NEXT_PUBLIC_PORTAL_ENABLED === 'true' && (
+          <a
+            href="/login"
+            className="text-sm font-semibold text-navy hover:opacity-80 transition-opacity"
+          >
+            Log in
+          </a>
+        )}
         <a
           href="https://wa.me/6591397985?text=Hi%20Adrian,%20I%27m%20interested%20in%20a%20free%20trial%20lesson"
           target="_blank"
