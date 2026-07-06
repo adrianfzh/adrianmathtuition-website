@@ -19,13 +19,32 @@ export async function POST(req: NextRequest) {
   const account = caller.account;
 
   const body = await req.json().catch(() => ({}));
-  const { questionId, lines } = body as { questionId?: string; lines?: string[] };
-  if (!questionId || !Array.isArray(lines)) {
-    return NextResponse.json({ error: 'questionId and lines[] required' }, { status: 400 });
-  }
-  const cleanLines = lines.map(l => String(l).slice(0, 500)).slice(0, 60);
-  if (!cleanLines.some(l => l.trim())) {
-    return NextResponse.json({ error: 'Write some working first' }, { status: 400 });
+  const { questionId, lines, image } = body as {
+    questionId?: string;
+    lines?: string[];
+    image?: { data?: string; mediaType?: string };
+  };
+  if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 });
+
+  // Photo path (primary for students) or typed-lines path — exactly one.
+  let attemptImage: { data: string; mediaType: 'image/jpeg' | 'image/png' | 'image/webp' } | undefined;
+  let cleanLines: string[] | undefined;
+  if (image?.data) {
+    const mediaType = image.mediaType;
+    if (mediaType !== 'image/jpeg' && mediaType !== 'image/png' && mediaType !== 'image/webp') {
+      return NextResponse.json({ error: 'Photo must be JPEG, PNG or WebP' }, { status: 400 });
+    }
+    if (image.data.length > 4_000_000) { // ~3MB binary — client should downscale well below this
+      return NextResponse.json({ error: 'Photo too large — try again (it will be resized automatically)' }, { status: 413 });
+    }
+    attemptImage = { data: image.data.replace(/^data:[^,]+,/, ''), mediaType };
+  } else if (Array.isArray(lines)) {
+    cleanLines = lines.map(l => String(l).slice(0, 500)).slice(0, 60);
+    if (!cleanLines.some(l => l.trim())) {
+      return NextResponse.json({ error: 'Write some working first' }, { status: 400 });
+    }
+  } else {
+    return NextResponse.json({ error: 'lines[] or image required' }, { status: 400 });
   }
 
   const admin = createServiceClient();
@@ -58,12 +77,14 @@ export async function POST(req: NextRequest) {
 
   let result;
   try {
-    result = await gradeAttempt({ question: q, lines: cleanLines, weaknessTags });
+    result = await gradeAttempt({ question: q, lines: cleanLines, image: attemptImage, weaknessTags });
   } catch {
     return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
   }
 
-  // Persist attempt (feedback JSON includes the lines so history can replay it)
+  // Persist attempt (feedback JSON includes the lines so history can replay it).
+  // Photo attempts store the transcription, not the image — no student photos at rest.
+  const storedLines = result.transcribedLines || cleanLines || [];
   const { data: inserted } = await admin
     .from('student_attempts')
     .insert({
@@ -71,9 +92,9 @@ export async function POST(req: NextRequest) {
       airtable_student_id: account.airtable_student_id,
       question_id: q.id,
       attempted_via: 'portal',
-      answer_text: cleanLines.join('\n'),
+      answer_text: storedLines.join('\n'),
       marking_verdict: result.verdict,
-      marking_json: { ...result, model: GRADING_MODEL, lines: cleanLines, topics: q.topics },
+      marking_json: { ...result, model: GRADING_MODEL, lines: storedLines, source: attemptImage ? 'photo' : 'typed', topics: q.topics },
     })
     .select('id')
     .single();

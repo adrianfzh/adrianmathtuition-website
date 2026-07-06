@@ -32,9 +32,17 @@ export interface GradeResult {
   lineComments: LineComment[];
   strengths: string[];
   nextSteps: string[];
+  // Photo attempts: the model's faithful transcription of the handwritten
+  // working — lineComments reference THESE line numbers.
+  transcribedLines?: string[];
   // true when the model needed a second attempt to produce valid JSON —
   // treated as a lower-confidence grade (triggers a spot-check alert).
   parseRetried?: boolean;
+}
+
+export interface AttemptImage {
+  data: string;       // raw base64, no data: prefix
+  mediaType: 'image/jpeg' | 'image/png' | 'image/webp';
 }
 
 function collectScheme(parts: unknown, out: string[], prefix = ''): void {
@@ -82,18 +90,31 @@ function validate(raw: unknown, lineCount: number): GradeResult | null {
 
 export async function gradeAttempt(opts: {
   question: Record<string, unknown>;
-  lines: string[];
+  lines?: string[];
+  image?: AttemptImage;
   weaknessTags: string[];
 }): Promise<GradeResult> {
-  const { question, lines, weaknessTags } = opts;
+  const { question, lines, image, weaknessTags } = opts;
+  const isPhoto = !!image;
+  if (!isPhoto && !lines?.length) throw new Error('lines or image required');
+
   const scheme: string[] = [];
   collectScheme(question.parts, scheme);
   if (question.answer) scheme.push(`OVERALL ANSWER: ${question.answer}`);
   if (question.solution) scheme.push(`FULL SOLUTION: ${question.solution}`);
 
-  const numbered = lines.map((l, i) => `${i + 1}. ${l || '(blank line)'}`).join('\n');
   const watch = weaknessTags.length
     ? `\nThis student's recurring error types (watch for them, mention only if they occur): ${weaknessTags.join(', ')}.`
+    : '';
+
+  const workingSection = isPhoto
+    ? `STUDENT'S WORKING: in the attached photo (handwritten or on a tablet).
+First transcribe it FAITHFULLY into discrete numbered steps — one mathematical step per line, plain text (e.g. "x^2 - 3x = 5", "sqrt(50) = 5 sqrt(2)"). Transcribe what is written, including mistakes — do not correct while transcribing. If part of the photo is unreadable, transcribe it as "(illegible)". Then mark those transcribed lines; lineComments reference the transcribed line numbers.`
+    : `STUDENT'S WORKING (numbered lines — reference these numbers ONLY):
+${lines!.map((l, i) => `${i + 1}. ${l || '(blank line)'}`).join('\n')}`;
+
+  const transcriptionField = isPhoto
+    ? `\n  "transcribedLines": ["<each transcribed step, in order>"],`
     : '';
 
   const prompt = `You are an experienced Singapore ${question.level} mathematics examiner marking one student's working against the official mark scheme.
@@ -103,14 +124,13 @@ ${question.question_text || ''}
 ${scheme.length ? '\nMARK SCHEME:\n' + scheme.join('\n') : ''}
 Total marks: ${question.total_marks ?? 'per parts above'}
 
-STUDENT'S WORKING (numbered lines — reference these numbers ONLY):
-${numbered}
+${workingSection}
 ${watch}
 
 Mark strictly but fairly per the scheme: method marks where the approach is valid, accuracy marks only for correct values. Follow-through where the scheme allows. If the working is too sparse to earn a mark, it doesn't earn it.
 
 Reply with ONLY a JSON object (no markdown fences):
-{
+{${transcriptionField}
   "verdict": "correct"|"partial"|"wrong",
   "score": <number>, "outOf": <number>,
   "partBreakdown": [{"label":"a","awarded":2,"outOf":3,"comment":"<why, one sentence>"}],
@@ -122,18 +142,34 @@ Comment on every line that earns or loses a mark; skip trivial restatements. "ta
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+  const content = (extra: string): Anthropic.MessageParam['content'] => {
+    const text = { type: 'text' as const, text: prompt + extra };
+    return isPhoto
+      ? [{ type: 'image' as const, source: { type: 'base64' as const, media_type: image!.mediaType, data: image!.data } }, text]
+      : [text];
+  };
+
   let lastErr = '';
   for (let attempt = 0; attempt < 2; attempt++) {
     const msg = await anthropic.messages.create({
       model: GRADING_MODEL,
-      max_tokens: 4000,
-      messages: [{ role: 'user', content: attempt === 0 ? prompt : `${prompt}\n\nYour previous reply was not valid JSON (${lastErr}). Reply with ONLY the JSON object.` }],
+      max_tokens: 5000,
+      messages: [{
+        role: 'user',
+        content: content(attempt === 0 ? '' : `\n\nYour previous reply was not valid JSON (${lastErr}). Reply with ONLY the JSON object.`),
+      }],
     });
     const text = msg.content.filter(b => b.type === 'text').map(b => (b as { text: string }).text).join('');
     try {
       const jsonStr = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);
-      const parsed = validate(JSON.parse(jsonStr), lines.length);
-      if (parsed) return { ...parsed, parseRetried: attempt > 0 };
+      const raw = JSON.parse(jsonStr) as Record<string, unknown>;
+      const transcribed = isPhoto && Array.isArray(raw.transcribedLines)
+        ? (raw.transcribedLines as unknown[]).map(String).slice(0, 60)
+        : undefined;
+      const lineCount = isPhoto ? (transcribed?.length || 0) : lines!.length;
+      if (isPhoto && !lineCount) { lastErr = 'no transcribedLines'; continue; }
+      const parsed = validate(raw, lineCount);
+      if (parsed) return { ...parsed, ...(transcribed ? { transcribedLines: transcribed } : {}), parseRetried: attempt > 0 };
       lastErr = 'schema mismatch';
     } catch (e) {
       lastErr = e instanceof Error ? e.message.slice(0, 100) : 'parse error';

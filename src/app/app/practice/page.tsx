@@ -33,7 +33,30 @@ type GradeResult = {
   partBreakdown: { label: string; awarded: number; outOf: number; comment: string }[];
   lineComments: LineComment[];
   strengths: string[]; nextSteps: string[];
+  transcribedLines?: string[];
 };
+
+// Downscale + re-encode any camera image to a small JPEG (also normalises
+// HEIC on iOS, since Safari decodes it into the canvas).
+async function fileToJpegDataUrl(file: File, maxDim = 1600): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i);
+      i.onerror = () => rej(new Error('Could not read that image'));
+      i.src = url;
+    });
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.82);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 function getCookie(n: string) { if (typeof document === 'undefined') return ''; const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${n}=([^;]*)`)); return m ? decodeURIComponent(m[1]) : ''; }
 function setCookie(n: string, v: string, d: number) { document.cookie = `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + d * 864e5).toUTCString()}; path=/; SameSite=Strict`; }
@@ -65,6 +88,9 @@ export default function PracticePage() {
 
   // Grading state (students only)
   const [working, setWorking] = useState('');
+  const [photo, setPhoto] = useState<string | null>(null); // JPEG data URL, downscaled
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [grading, setGrading] = useState(false);
   const [grade, setGrade] = useState<GradeResult | null>(null);
   const [gradedLines, setGradedLines] = useState<string[]>([]);
@@ -151,19 +177,32 @@ export default function PracticePage() {
     finally { setSolLoading(false); }
   }
 
+  async function handlePhotoPick(file: File | undefined) {
+    if (!file) return;
+    setPhotoBusy(true); setError('');
+    try {
+      setPhoto(await fileToJpegDataUrl(file));
+    } catch { setError('Could not read that photo — try again.'); }
+    finally { setPhotoBusy(false); }
+  }
+
   async function submitForMarking() {
     if (!q || grading) return;
     const lines = working.split('\n');
     setGrading(true); setError('');
     try {
+      const body = photo
+        ? { questionId: q.id, image: { data: photo.split(',')[1], mediaType: 'image/jpeg' } }
+        : { questionId: q.id, lines };
       const r = await fetch('/api/portal/practice/grade', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionId: q.id, lines }),
+        body: JSON.stringify(body),
       });
       const d = await r.json();
       if (!r.ok) { setError(d.error || 'Marking failed'); return; }
       if (grade) setPrevScore(grade.score);
-      setGrade(d.result); setGradedLines(d.result?.lineComments ? lines : lines);
+      setGrade(d.result);
+      setGradedLines(d.result?.transcribedLines || lines);
       setWeakTags(d.weaknessTags || []);
     } catch { setError('Connection error while marking'); }
     finally { setGrading(false); }
@@ -296,25 +335,53 @@ export default function PracticePage() {
             </div>
           </div>
 
-          {/* Working editor (students) */}
+          {/* Working editor (students): photo-first, typing as fallback */}
           {isStudent && (
             <div className="bg-white border border-slate-200 rounded-2xl p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">
-                Your working — one step per line
+                Your working
               </p>
-              <textarea
-                value={working}
-                onChange={(e) => setWorking(e.target.value)}
-                rows={Math.max(6, working.split('\n').length + 1)}
-                placeholder={'e.g.\n2x^2 - 3x + 9 = 2(x^2 - 3/2 x) + 9\n= 2(x - 3/4)^2 - 9/8 + 9\n= 2(x - 3/4)^2 + 63/8'}
-                className="w-full border border-slate-300 rounded-xl px-3.5 py-3 text-sm font-mono leading-6 focus:outline-none focus:ring-2 focus:ring-navy/30"
-                disabled={grading}
+
+              <input
+                ref={fileInputRef} type="file" accept="image/*" capture="environment"
+                className="hidden"
+                onChange={(e) => { handlePhotoPick(e.target.files?.[0]); e.target.value = ''; }}
               />
+
+              {photo ? (
+                <div className="mb-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photo} alt="Your working" className="max-h-64 rounded-xl border border-slate-200" />
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={() => fileInputRef.current?.click()} disabled={photoBusy || grading}
+                      className="text-xs text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5">📷 Retake</button>
+                    <button onClick={() => setPhoto(null)} disabled={grading}
+                      className="text-xs text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5">✕ Remove — type instead</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <button onClick={() => fileInputRef.current?.click()} disabled={photoBusy || grading}
+                    className="w-full border-2 border-dashed border-slate-300 rounded-xl py-6 text-sm font-semibold text-slate-500 hover:border-navy/40 hover:text-navy transition-colors mb-3">
+                    {photoBusy ? 'Reading photo…' : '📷 Snap a photo of your working on paper'}
+                  </button>
+                  <p className="text-[11px] text-slate-400 -mt-1 mb-2 text-center">or type it, one step per line:</p>
+                  <textarea
+                    value={working}
+                    onChange={(e) => setWorking(e.target.value)}
+                    rows={Math.max(5, working.split('\n').length + 1)}
+                    placeholder={'e.g.\n2x^2 - 3x + 9 = 2(x^2 - 3/2 x) + 9\n= 2(x - 3/4)^2 - 9/8 + 9\n= 2(x - 3/4)^2 + 63/8'}
+                    className="w-full border border-slate-300 rounded-xl px-3.5 py-3 text-sm font-mono leading-6 focus:outline-none focus:ring-2 focus:ring-navy/30"
+                    disabled={grading}
+                  />
+                </>
+              )}
+
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 <button onClick={submitForMarking}
-                  disabled={grading || !working.trim() || solution !== null}
+                  disabled={grading || (!photo && !working.trim()) || solution !== null}
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
-                  {grading ? 'Marking… (≈20s)' : grade ? '✏️ Re-mark my working' : '✅ Get it marked'}
+                  {grading ? 'Marking… (≈30s)' : grade ? '✏️ Re-mark my working' : '✅ Get it marked'}
                 </button>
                 {solution === null && (
                   <button onClick={showSolution} disabled={solLoading}
@@ -352,6 +419,12 @@ export default function PracticePage() {
                   </span>
                 </div>
               </div>
+
+              {grade.transcribedLines && (
+                <p className="text-[11px] text-slate-400 mb-2">
+                  📷 Transcribed from your photo — if a step was misread, retake a clearer shot.
+                </p>
+              )}
 
               {/* Working with per-line verdicts */}
               <div className="rounded-xl border border-slate-100 divide-y divide-slate-50 mb-4">
