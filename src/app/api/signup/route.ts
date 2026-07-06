@@ -4,6 +4,7 @@ import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram, sendTelegramWithButtons } from '@/lib/telegram';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { NO_LESSON_DATES } from '@/lib/holidays';
+import { buildPreviewInvoiceUrl } from '@/lib/invoice-preview-url';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -455,7 +456,7 @@ export async function POST(request: NextRequest) {
                 `Status: Draft — review and send when ready.`,
                 [
                   [
-                    { text: '👁 Preview PDF', url: `${baseUrl}/api/preview-invoice?id=${createdInvoice.id}` },
+                    { text: '👁 Preview PDF', url: buildPreviewInvoiceUrl(createdInvoice.id, baseUrl) },
                     { text: '📤 Review & Send', callback_data: `send_invoice_review:${createdInvoice.id}` },
                   ],
                 ]

@@ -2,26 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
+import { verifyPreviewInvoice } from '@/lib/invoice-preview-url';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-function checkAuth(req: NextRequest): boolean {
+function checkAuth(req: NextRequest, searchParams: URLSearchParams): boolean {
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) return true;
   if (req.headers.get('authorization') === `Bearer ${adminPassword}`) return true;
   // Cookie auth for direct browser navigation (new tab links)
   const cookie = req.cookies.get('admin_pw')?.value;
-  return !!cookie && cookie === adminPassword;
+  if (cookie && cookie === adminPassword) return true;
+  // Signed link — authorizes a single invoice id without a cookie, so links
+  // tapped from Telegram (in-app browser, no cookie) work. Scoped + expiring.
+  const id = searchParams.get('id');
+  return !!id && verifyPreviewInvoice(id, searchParams.get('exp'), searchParams.get('sig'));
 }
 
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) {
+  const { searchParams } = new URL(req.url);
+  if (!checkAuth(req, searchParams)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { searchParams } = new URL(req.url);
   const recordId = searchParams.get('id');
   if (!recordId) {
     return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 });
