@@ -141,6 +141,18 @@ tables + Auth user gone); two-account leak test on notes/settings APIs.
    History list from `/api/portal/practice-history`.
 5. **Memory loop:** inject the student's top-3 `weakness_tags` into the grading prompt
    ("watch for: sign-error, missing-step…").
+6a. **E7 — AI question top-up (added 2026-07-06; from `CLAUDE_CODE_PROMPT_similar_tool.md`, approved by Adrian).**
+   The `generation_requests` queue table is live. When a student's chosen/weak topic runs low
+   on unattempted bank questions, the portal server inserts a generation request
+   (`requested_by='portal:<uid>'`); generated questions serve later, always badged
+   "AI practice question". Rules: (a) **AI-generated questions are NOT graded** until Adrian
+   has spot-checked that question once — their mark schemes are AI-authored
+   (`solution_source='ai_opus'`) and grading against them compounds error; serve them
+   answer-at-the-bottom style. (b) The WORKER should be a cron in the Fly.io bot (24/7,
+   has Anthropic + service keys) — NOT a Cowork scheduled task (sleeps when Cowork closed;
+   Adrian never activated it). Building the Fly worker is its own task in the bot repo.
+   (c) Admin "Generate similar" button + POST /api/generate-similar can ship independently.
+
 6. **Calibration gate (launch blocker):** assemble 10–15 exemplar attempts (real student working
    from marked papers Adrian has, with known mark allocations). Point `scripts/eval/` at them;
    iterate the rubric prompt until scores are within **±1 mark on ≥80%** of exemplars.
