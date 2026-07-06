@@ -26,6 +26,10 @@ const localBusinessSchema = {
     addressLocality: 'Hougang',
     addressCountry: 'SG',
   },
+  // Google Business Profile listing + its pin coordinates — ties the website
+  // and the Maps listing together as one entity for local search.
+  sameAs: ['https://maps.app.goo.gl/iyE8UwNJNRfF88Vr9'],
+  geo: { '@type': 'GeoCoordinates', latitude: 1.3581182, longitude: 103.8844493 },
   areaServed: { '@type': 'Country', name: 'Singapore' },
   knowsAbout: ['O-Level E Math', 'O-Level A Math', 'JC H1 Math', 'JC H2 Math', 'Secondary Math Tuition', 'JC Math Tuition'],
   founder: { '@type': 'Person', name: 'Adrian' },
