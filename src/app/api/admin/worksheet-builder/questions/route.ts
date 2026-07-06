@@ -41,6 +41,40 @@ const GENERATED_LEVELS: Record<UiLevel, string[]> = {
 
 const MAX_ROWS = 30;
 
+/* questions.parts jsonb: [{text,label,marks,answer,solution,subparts?:[...]}].
+ * Flatten into display text / combined answer / combined solution so
+ * multi-part questions carry their full content through the builder. */
+type Part = {
+  text?: string | null;
+  label?: string | null;
+  marks?: number | null;
+  answer?: string | null;
+  solution?: string | null;
+  subparts?: Part[] | null;
+};
+
+function flattenParts(stem: string, parts: Part[] | null): { text: string; answer: string; solution: string } {
+  if (!parts?.length) return { text: stem, answer: '', solution: '' };
+  const textLines: string[] = stem ? [stem] : [];
+  const answers: string[] = [];
+  const solutions: string[] = [];
+  const walk = (list: Part[], prefix: string) => {
+    for (const p of list) {
+      const label = p.label ? `${prefix}(${p.label})` : prefix;
+      if (p.text) textLines.push(`**${label}** ${p.text}${p.marks ? `  [${p.marks}]` : ''}`);
+      if (p.answer) answers.push(`${label} ${p.answer}`);
+      if (p.solution) solutions.push(`**${label}**\n${p.solution}`);
+      if (p.subparts?.length) walk(p.subparts, label);
+    }
+  };
+  walk(parts, '');
+  return {
+    text: textLines.join('\n\n'),
+    answer: answers.join(';  '),
+    solution: solutions.join('\n\n'),
+  };
+}
+
 export interface BuilderQuestion {
   id: string;
   source: 'seed' | 'generated';
@@ -84,6 +118,7 @@ export async function GET(req: NextRequest) {
   const topic = (searchParams.get('topic') ?? '').trim();
   const search = (searchParams.get('search') ?? '').trim();
   const source = searchParams.get('source') ?? 'all';
+  const offset = Math.max(0, parseInt(searchParams.get('offset') ?? '0', 10) || 0);
 
   if (!level || !UI_LEVELS.includes(level)) {
     return NextResponse.json({ error: 'level must be EM, AM or H2' }, { status: 400 });
@@ -99,11 +134,11 @@ export async function GET(req: NextRequest) {
   if (source === 'seed' || source === 'all') {
     let q = supa
       .from('questions')
-      .select('id, question_text, answer, solution, total_marks, school, year, exam_type, difficulty, has_image, image_url, verified, ai_generated')
+      .select('id, question_text, answer, solution, parts, total_marks, school, year, exam_type, difficulty, has_image, image_url, verified, ai_generated')
       .is('deleted_at', null)
       .in('level', SEED_LEVELS[level])
       .order('year', { ascending: false, nullsFirst: false })
-      .limit(MAX_ROWS);
+      .range(offset, offset + MAX_ROWS - 1);
     if (topic) q = q.overlaps('topics', [topic]);
     if (search) q = q.ilike('question_text', `%${search}%`);
 
@@ -114,17 +149,18 @@ export async function GET(req: NextRequest) {
       const prov = r.ai_generated
         ? 'AI-generated (seed bank)'
         : [r.school, r.year, r.exam_type].filter(Boolean).join(' · ') || 'Question bank';
+      const flat = flattenParts(r.question_text ?? '', (r.parts as Part[] | null) ?? null);
       results.push({
         id: r.id,
         source: 'seed',
-        text: r.question_text ?? '',
+        text: flat.text,
         marks: r.total_marks ?? null,
         provenance: prov,
         difficulty: r.difficulty ?? null,
         hasImage: !!r.has_image,
         imageUrl: firstImageUrl(r.image_url),
-        answer: r.answer ?? '',
-        solution: r.solution ?? '',
+        answer: flat.answer || (r.answer ?? ''),
+        solution: flat.solution || (r.solution ?? ''),
       });
     }
   }
@@ -136,7 +172,7 @@ export async function GET(req: NextRequest) {
       .select('id, question_text, marks, answer, solution, verified, generated_by, topic')
       .in('level', GENERATED_LEVELS[level])
       .order('generated_at', { ascending: false })
-      .limit(MAX_ROWS);
+      .range(offset, offset + MAX_ROWS - 1);
     if (topic) q = q.eq('topic', topic);
     if (search) q = q.ilike('question_text', `%${search}%`);
 

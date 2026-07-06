@@ -165,6 +165,9 @@ export default function WorksheetBuilderClient() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   // Worksheet set
   const [items, setItems] = useState<SetItem[]>([]);
@@ -229,23 +232,41 @@ export default function WorksheetBuilderClient() {
       .catch(() => setTopics([]));
   }, [authed, level]);
 
-  async function runSearch() {
+  async function runSearch(append = false) {
+    const nextOffset = append ? offset + 30 : 0;
     setSearching(true);
     setSearched(true);
     try {
-      const params = new URLSearchParams({ level, source });
+      const params = new URLSearchParams({ level, source, offset: String(nextOffset) });
       if (topic) params.set('topic', topic);
       if (search.trim()) params.set('search', search.trim());
       const res = await fetch(`/api/admin/worksheet-builder/questions?${params}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Search failed');
-      setResults(data.questions ?? []);
+      const fetched: SearchResult[] = data.questions ?? [];
+      setResults(prev => {
+        if (!append) return fetched;
+        const seen = new Set(prev.map(q => q.id));
+        return [...prev, ...fetched.filter(q => !seen.has(q.id))];
+      });
+      setOffset(nextOffset);
+      setHasMore(fetched.length > 0);
+      if (!append) setExpandedIds(new Set());
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Search failed', 'error');
-      setResults([]);
+      if (!append) setResults([]);
     } finally {
       setSearching(false);
     }
+  }
+
+  function toggleExpanded(id: string) {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   // ── Set operations ─────────────────────────────────────────────────────────
@@ -446,7 +467,7 @@ export default function WorksheetBuilderClient() {
                   <option value="generated">AI practice</option>
                 </select>
                 <button
-                  onClick={runSearch}
+                  onClick={() => runSearch(false)}
                   disabled={searching}
                   className="bg-slate-800 text-white rounded-lg px-4 py-1.5 text-sm font-semibold hover:bg-slate-700 disabled:opacity-50"
                 >
@@ -485,13 +506,35 @@ export default function WorksheetBuilderClient() {
                         </button>
                       </div>
                     </div>
-                    <div className="text-sm text-slate-800 leading-snug max-h-32 overflow-hidden [&_p]:m-0 [&_p]:mb-1">
-                      <ReactMarkdown {...katexMd}>{truncate(q.text, 320)}</ReactMarkdown>
+                    <div
+                      className={`text-sm text-slate-800 leading-snug [&_p]:m-0 [&_p]:mb-1 ${
+                        expandedIds.has(q.id) ? '' : 'max-h-32 overflow-hidden'
+                      }`}
+                    >
+                      <ReactMarkdown {...katexMd}>
+                        {expandedIds.has(q.id) ? q.text : truncate(q.text, 320)}
+                      </ReactMarkdown>
                     </div>
+                    {q.text.length > 200 && (
+                      <button
+                        onClick={() => toggleExpanded(q.id)}
+                        className="text-[11px] font-semibold text-sky-600 hover:text-sky-800 mt-1"
+                      >
+                        {expandedIds.has(q.id) ? '▲ Show less' : '▼ Show full question'}
+                      </button>
+                    )}
                     {q.hasImage && <div className="text-[11px] text-slate-400 mt-1">📷 has diagram</div>}
                   </div>
                 );
               })}
+              {!searching && results.length > 0 && hasMore && (
+                <button
+                  onClick={() => runSearch(true)}
+                  className="w-full text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl py-2 hover:bg-slate-50"
+                >
+                  Load more (older years)
+                </button>
+              )}
             </div>
           </div>
 
