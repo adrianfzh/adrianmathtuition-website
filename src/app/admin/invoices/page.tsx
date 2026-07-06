@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import AdminAIChat from '@/components/AdminAIChat';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 const CSS = `
 html { font-size: 18px; }
@@ -550,20 +551,6 @@ body.email-panel-open .content { padding-right: 440px; transition: padding-right
 
 export default function AdminPage() {
   useEffect(() => {
-    // Cookie helpers — persistent login across PWA sessions
-    function getCookie(name: string): string {
-      const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-      return m ? decodeURIComponent(m[1]) : '';
-    }
-    function setCookie(name: string, value: string, days: number) {
-      const expires = new Date(Date.now() + days * 864e5).toUTCString();
-      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
-    }
-    function deleteCookie(name: string) {
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Strict`;
-    }
-
-    let adminPassword = getCookie('admin_pw') || sessionStorage.getItem('adminPassword') || '';
     let invoices: any[] = [];
     let totalVisible = false;
     let selectedMonth = '';
@@ -572,10 +559,6 @@ export default function AdminPage() {
     let statusFilter = '';
     const selectedLevels = new Set<string>();
     let currentPreviewId = '';
-
-    function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-      return { Authorization: `Bearer ${adminPassword}`, ...extra };
-    }
 
     function escHtml(str: unknown): string {
       return String(str)
@@ -589,36 +572,14 @@ export default function AdminPage() {
       return String(str).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
     }
 
-    async function verifyAndLogin(pw: string): Promise<boolean> {
-      try {
-        const res = await fetch('/api/admin-invoices?auth=check', {
-          headers: { Authorization: `Bearer ${pw}` },
-        });
-        return res.ok;
-      } catch {
-        return false;
-      }
-    }
-
     async function init() {
       const overlay = document.getElementById('login-overlay');
-      // If we have a saved password (cookie or sessionStorage), verify silently
-      if (adminPassword) {
-        const ok = await verifyAndLogin(adminPassword);
-        if (ok) {
-          // Refresh the 30-day cookie so it rolls forward while active
-          setCookie('admin_pw', adminPassword, 30);
-          sessionStorage.setItem('adminAuthed', '1');
-          sessionStorage.setItem('adminPassword', adminPassword);
-          if (overlay) overlay.style.display = 'none';
-          loadInvoices();
-          return;
-        }
-        // Saved password is invalid — clear it
-        adminPassword = '';
-        deleteCookie('admin_pw');
-        sessionStorage.removeItem('adminAuthed');
-        sessionStorage.removeItem('adminPassword');
+      // Signed httpOnly session cookie (silently upgrades legacy plaintext cookies)
+      const ok = await ensureAdminSession();
+      if (ok) {
+        if (overlay) overlay.style.display = 'none';
+        loadInvoices();
+        return;
       }
       if (overlay) overlay.style.display = 'flex';
       const input = document.getElementById('pw-input') as HTMLInputElement;
@@ -636,12 +597,8 @@ export default function AdminPage() {
       errorEl.style.display = 'none';
 
       try {
-        const ok = await verifyAndLogin(pw);
+        const ok = await loginAdminSession(pw);
         if (ok) {
-          adminPassword = pw;
-          setCookie('admin_pw', pw, 30);
-          sessionStorage.setItem('adminAuthed', '1');
-          sessionStorage.setItem('adminPassword', pw);
           const overlay = document.getElementById('login-overlay');
           if (overlay) overlay.style.display = 'none';
           loadInvoices();
@@ -665,11 +622,9 @@ export default function AdminPage() {
 
     function logout() {
       if (!confirm('Log out of the admin dashboard?')) return;
-      adminPassword = '';
-      deleteCookie('admin_pw');
       sessionStorage.removeItem('adminAuthed');
       sessionStorage.removeItem('adminPassword');
-      location.reload();
+      fetch('/api/admin/session', { method: 'DELETE' }).finally(() => location.reload());
     }
 
     async function loadInvoices() {
@@ -679,7 +634,7 @@ export default function AdminPage() {
       container.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:48px 0;font-size:14px;">Loading...</p>';
 
       try {
-        const res = await fetch('/api/admin-invoices', { headers: authHeaders() });
+        const res = await fetch('/api/admin-invoices');
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
         invoices = await res.json();
         populateMonthFilter();
@@ -1302,7 +1257,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices/send-reminder', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id }),
         });
         const data = await res.json();
@@ -1357,9 +1312,7 @@ export default function AdminPage() {
 
       if (btn) { btn.disabled = true; btn.textContent = '\u23F3 Loading\u2026'; }
       try {
-        const res = await fetch(`/api/preview-invoice?id=${encodeURIComponent(id)}`, {
-          headers: authHeaders(),
-        });
+        const res = await fetch(`/api/preview-invoice?id=${encodeURIComponent(id)}`);
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
@@ -1469,7 +1422,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/send-invoices', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, preview: true }),
         });
         const data = await res.json();
@@ -1519,9 +1472,7 @@ export default function AdminPage() {
       }
       listEl.innerHTML = '<div class="email-logs-empty">Loading email logs…</div>';
       try {
-        const res = await fetch(`/api/admin/student-profile?id=${encodeURIComponent(inv.studentId)}`, {
-          headers: authHeaders(),
-        });
+        const res = await fetch(`/api/admin/student-profile?id=${encodeURIComponent(inv.studentId)}`);
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
         const data = await res.json();
         const logs: any[] = Array.isArray(data.sentInvoices) ? data.sentInvoices : [];
@@ -1578,7 +1529,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: currentPreviewId, fields: { 'Custom Email Message': message } }),
         });
         if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || `Server error: ${res.status}`); }
@@ -1602,7 +1553,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: currentPreviewId, fields: { 'Custom Email Message': '' } }),
         });
         if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || `Server error: ${res.status}`); }
@@ -1624,7 +1575,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, fields: { Status: 'Approved' } }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -1649,7 +1600,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, fields: { Status: 'Draft' } }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -1719,7 +1670,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, fields }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -1740,7 +1691,7 @@ export default function AdminPage() {
         try {
           await fetch('/api/admin-invoices', {
             method: 'PATCH',
-            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ recordId: id, fields: { 'PDF URL': '' } }),
           });
         } catch { /* non-fatal */ }
@@ -1749,13 +1700,13 @@ export default function AdminPage() {
         try {
           await fetch('/api/generate-pdf-batch', {
             method: 'POST',
-            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ recordId: id, force: true }),
           });
         } catch { /* non-fatal */ }
 
         try {
-          const freshRes = await fetch('/api/admin-invoices', { headers: authHeaders() });
+          const freshRes = await fetch('/api/admin-invoices');
           if (freshRes.ok) {
             const freshList = await freshRes.json();
             const freshInv = freshList.find((i: any) => i.id === id);
@@ -1783,7 +1734,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': inv.finalAmount, 'Is Paid': true } }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -1828,7 +1779,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': amount, 'Is Paid': isPaid } }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -1872,7 +1823,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, fields: { 'Amount Paid': amount, 'Is Paid': isPaid } }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -1906,7 +1857,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, fields: {
             'Lessons Count': n, 'Line Items': JSON.stringify(lineItems),
             'Final Amount': finalAmount, 'Auto Notes': autoNotes,
@@ -1940,7 +1891,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, fields: {
             'Adjustment Amount': newAdj, 'Adjustment Notes': adjustmentNotes, 'Final Amount': finalAmount,
           } }),
@@ -1978,7 +1929,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/send-invoices', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id }),
         });
         if (!res.ok) {
@@ -2033,7 +1984,7 @@ export default function AdminPage() {
           try {
             const res = await fetch('/api/admin-invoices', {
               method: 'PATCH',
-              headers: authHeaders({ 'Content-Type': 'application/json' }),
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ recordId: inv.id, fields: { Status: 'Approved' } }),
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2085,7 +2036,7 @@ export default function AdminPage() {
           try {
             const res = await fetch('/api/admin-invoices', {
               method: 'PATCH',
-              headers: authHeaders({ 'Content-Type': 'application/json' }),
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ recordId: inv.id, fields: { Status: 'Draft' } }),
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2113,7 +2064,7 @@ export default function AdminPage() {
 
     async function loadReferralStatus() {
       try {
-        const res = await fetch('/api/admin-invoices/referral-status', { headers: authHeaders() });
+        const res = await fetch('/api/admin-invoices/referral-status');
         const data = await res.json();
         const pending = (data.pending || []) as any[];
         const pendingCash = (data.pendingCash || []) as any[];
@@ -2185,7 +2136,7 @@ export default function AdminPage() {
 
     async function loadPaymentsOverview() {
       try {
-        const res = await fetch('/api/admin-invoices/payments-overview', { headers: authHeaders() });
+        const res = await fetch('/api/admin-invoices/payments-overview');
         const data = await res.json();
         const el = document.getElementById('payments-overview');
         if (!el) return;
@@ -2222,7 +2173,7 @@ export default function AdminPage() {
 
     async function loadDeferredPending() {
       try {
-        const res = await fetch('/api/admin-invoices/deferred-pending', { headers: authHeaders() });
+        const res = await fetch('/api/admin-invoices/deferred-pending');
         const data = await res.json();
         const pending = (data.pending || []) as any[];
         const el = document.getElementById('deferred-pending-banner');
@@ -2263,7 +2214,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: invoiceId, fields: { 'Deferred Amount': 0, 'Deferred Note': '', 'Deferred To Month': '' } }),
         });
         if (!res.ok) throw new Error('Failed');
@@ -2277,7 +2228,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices/referral-mark-paid', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ studentId }),
         });
         if (!res.ok) throw new Error('Failed');
@@ -2290,7 +2241,7 @@ export default function AdminPage() {
 
     async function loadAutoSendPauseState() {
       try {
-        const res = await fetch('/api/admin-invoices/auto-send-pause', { headers: authHeaders() });
+        const res = await fetch('/api/admin-invoices/auto-send-pause');
         const data = await res.json();
         updatePauseBtn(data.paused);
       } catch { /* non-fatal */ }
@@ -2324,7 +2275,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices/auto-send-pause', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ paused: newPaused }),
         });
         const data = await res.json();
@@ -2335,7 +2286,7 @@ export default function AdminPage() {
 
     async function loadJuneRevisionState() {
       try {
-        const res = await fetch('/api/admin-invoices/june-revision-mode', { headers: authHeaders() });
+        const res = await fetch('/api/admin-invoices/june-revision-mode');
         const data = await res.json();
         updateJuneRevisionBtn(data.enabled);
       } catch { /* non-fatal */ }
@@ -2365,7 +2316,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices/june-revision-mode', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ enabled: newEnabled }),
         });
         const data = await res.json();
@@ -2384,7 +2335,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/send-invoices', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordIds: approvedIds }),
         });
         const data = await res.json();
@@ -2421,7 +2372,7 @@ export default function AdminPage() {
           btn.textContent = `\uD83D\uDCE4 Sending batch ${b + 1}/${batches.length}\u2026`;
           const res = await fetch('/api/send-invoices', {
             method: 'POST',
-            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             // notify:false \u2192 suppress per-batch Telegram; we post ONE consolidated summary below.
             body: JSON.stringify({ recordIds: batches[b], notify: false }),
           });
@@ -2440,7 +2391,7 @@ export default function AdminPage() {
         try {
           await fetch('/api/send-invoices', {
             method: 'POST',
-            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ summary: { sent: totalSent, failed: totalFailed, errors: allErrors, sentDetails: allSentDetails, month: approvedInvoices[0]?.month } }),
           });
         } catch { /* summary is non-critical */ }
@@ -2521,7 +2472,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/generate-pdf-batch', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -2550,7 +2501,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/generate-invoices', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ month: selectedMonth || '' }),
         });
         if (!res.ok) {
@@ -2593,7 +2544,7 @@ export default function AdminPage() {
         try {
           const res = await fetch('/api/generate-pdf-batch', {
             method: 'POST',
-            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ recordId: inv.id, force: true }),
           });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2666,7 +2617,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/regenerate-invoice', {
           method: 'POST',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id }),
         });
         if (!res.ok) {
@@ -2723,7 +2674,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ studentId, paymentAlias: combined }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -2747,7 +2698,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'PATCH',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ studentId, paymentAlias: combined }),
         });
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -2776,7 +2727,7 @@ export default function AdminPage() {
       try {
         const res = await fetch('/api/admin-invoices', {
           method: 'DELETE',
-          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: id, scope: 'invoice' }),
         });
         const data = await res.json();

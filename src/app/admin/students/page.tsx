@@ -1,26 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 const AIRTABLE_URL = `https://airtable.com/appFJ43XdnrBL4LzA`;
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
-}
 
 export default function StudentsPage() {
   const [password, setPassword]   = useState('');
   const [authed, setAuthed]       = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
   const [students, setStudents] = useState<{ id: string; name: string; level: string; subjects: string[] }[]>([]);
   const [listLoading, setListLoading] = useState(false);
   const [query, setQuery] = useState('');
@@ -29,7 +18,7 @@ export default function StudentsPage() {
   useEffect(() => {
     if (!authed) return;
     setListLoading(true);
-    fetch('/api/admin/progress/students', { headers: { Authorization: `Bearer ${savedPw.current}` } })
+    fetch('/api/admin/progress/students')
       .then(r => r.json())
       .then(d => setStudents(d.students || []))
       .catch(() => {})
@@ -37,17 +26,14 @@ export default function StudentsPage() {
   }, [authed]);
 
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
-    if (pw) { savedPw.current = pw; verify(pw); }
+    ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
 
   async function verify(pw: string) {
     setAuthLoading(true);
     try {
-      const res = await fetch('/api/admin-invoices?auth=check', {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
-      if (res.ok) { savedPw.current = pw; setCookie('admin_pw', pw, 30); setAuthed(true); }
+      const ok = await loginAdminSession(pw);
+      if (ok) setAuthed(true);
       else setAuthError('Incorrect password');
     } catch { setAuthError('Connection error'); }
     finally { setAuthLoading(false); }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -67,18 +68,6 @@ type StudentLevel = 'SECONDARY' | 'JC' | 'unknown';
 type UploadState = 'upload' | 'uploading' | 'detecting' | 'preview' | 'marking' | 'marked' | 'assembling';
 type AppView = 'landing' | 'upload-flow';
 
-// ── Cookie helpers ─────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
-}
-
 function relativeTime(iso: string): string {
   if (!iso) return '';
   const diff = Date.now() - new Date(iso).getTime();
@@ -98,18 +87,17 @@ export default function MarkPage() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
 
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
-    if (pw) { savedPw.current = pw; verifyAndLogin(pw); }
+    // Signed httpOnly session (silently upgrades legacy plaintext cookies)
+    ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
 
   async function verifyAndLogin(pw: string) {
     setAuthLoading(true);
     try {
-      const res = await fetch('/api/mark-batch/init', { headers: { Authorization: `Bearer ${pw}` } });
-      if (res.ok) { savedPw.current = pw; setCookie('admin_pw', pw, 30); setAuthed(true); }
+      const ok = await loginAdminSession(pw);
+      if (ok) setAuthed(true);
       else setAuthError('Incorrect password');
     } catch { setAuthError('Connection error'); }
     finally { setAuthLoading(false); }
@@ -139,12 +127,12 @@ export default function MarkPage() {
     );
   }
 
-  return <MarkApp savedPw={savedPw} />;
+  return <MarkApp />;
 }
 
 // ── App shell ─────────────────────────────────────────────────────────────────
 
-function MarkApp({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
+function MarkApp() {
   const [view, setView] = useState<AppView>('landing');
   const goLanding = useCallback(() => setView('landing'), []);
   const goUpload = useCallback(() => setView('upload-flow'), []);
@@ -162,8 +150,8 @@ function MarkApp({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
         </div>
         <div className="mark-body">
           {view === 'landing'
-            ? <LandingView savedPw={savedPw} onNewBatch={goUpload} />
-            : <UploadFlow savedPw={savedPw} onDone={goLanding} onCancel={goLanding} />}
+            ? <LandingView onNewBatch={goUpload} />
+            : <UploadFlow onDone={goLanding} onCancel={goLanding} />}
         </div>
       </div>
     </>
@@ -172,7 +160,7 @@ function MarkApp({ savedPw }: { savedPw: React.MutableRefObject<string> }) {
 
 // ── Landing view ──────────────────────────────────────────────────────────────
 
-function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<string>; onNewBatch: () => void }) {
+function LandingView({ onNewBatch }: { onNewBatch: () => void }) {
   const [tab, setTab] = useState<'to-mark' | 'marked'>('to-mark');
   const [batches, setBatches] = useState<BatchListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,16 +170,14 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/mark-batch/list?status=${status}`, {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch(`/api/mark-batch/list?status=${status}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       setBatches(data.batches || []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load');
     } finally { setLoading(false); }
-  }, [savedPw]);
+  }, []);
 
   useEffect(() => { fetchBatches(tab); }, [tab, fetchBatches]);
 
@@ -207,7 +193,7 @@ function LandingView({ savedPw, onNewBatch }: { savedPw: React.MutableRefObject<
     try {
       await fetch(`/api/mark-batch/delete`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: b.batchId }),
       });
       fetchBatches(tab);
@@ -287,14 +273,13 @@ const CHUNK_SIZE = 4 * 1024 * 1024;
 
 async function uploadPdfChunked(
   file: File,
-  pw: string,
   onProgress: (pct: number) => void,
   signal: AbortSignal,
 ): Promise<string> {
   // 1. Get uploadId + pathname from server
   const startRes = await fetch('/api/mark-batch/upload-start', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ filename: file.name }),
     signal,
   });
@@ -318,7 +303,7 @@ async function uploadPdfChunked(
       try {
         const res = await fetch(url, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/octet-stream' },
+          headers: { 'Content-Type': 'application/octet-stream' },
           body: chunk,
           signal,
         });
@@ -353,7 +338,7 @@ async function uploadPdfChunked(
   // 3. Server assembles chunks into final PDF blob and cleans up temp blobs
   const completeRes = await fetch('/api/mark-batch/upload-complete', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pathname, parts }),
     signal,
   });
@@ -367,8 +352,7 @@ async function uploadPdfChunked(
 
 // ── Upload flow (upload → detect → preview → mark → marked → assemble) ────────
 
-function UploadFlow({ savedPw, onDone, onCancel }: {
-  savedPw: React.MutableRefObject<string>;
+function UploadFlow({ onDone, onCancel }: {
   onDone: () => void;
   onCancel: () => void;
 }) {
@@ -394,10 +378,10 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
   }, []);
 
   useEffect(() => {
-    fetch('/api/mark-batch/init', { headers: { Authorization: `Bearer ${savedPw.current}` } })
+    fetch('/api/mark-batch/init')
       .then(r => r.json()).then(d => setStudents(d.students || [])).catch(() => setStudents([]))
       .finally(() => setStudentsLoading(false));
-  }, [savedPw]);
+  }, []);
 
   const selectedStudent = students.find(s => s.id === selectedStudentId) || null;
   const isAdHoc = selectedStudentId === '__adhoc__';
@@ -423,9 +407,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(r => setTimeout(r, 5000));
       try {
-        const res = await fetch(`/api/mark-batch/get?batchId=${batchId}`, {
-          headers: { Authorization: `Bearer ${savedPw.current}` },
-        });
+        const res = await fetch(`/api/mark-batch/get?batchId=${batchId}`);
         if (!res.ok) continue;
         const { batch } = await res.json();
         if (batch.status === 'detected' && batch.detectionJson) {
@@ -462,14 +444,13 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
         const file = files[0];
         const blobUrl = await uploadPdfChunked(
           file,
-          savedPw.current,
           setUploadProgress,
           abortCtrl.signal,
         );
 
         const res = await fetch('/api/mark-batch/init', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ pdfBlobUrl: blobUrl, studentName, studentId: selectedStudent?.id || null }),
           signal: abortCtrl.signal,
         });
@@ -494,7 +475,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
       files.forEach(f => fd.append('images[]', f));
       try {
         const res = await fetch('/api/mark-batch/init', {
-          method: 'POST', headers: { Authorization: `Bearer ${savedPw.current}` }, body: fd,
+          method: 'POST', body: fd,
         });
         if (!res.ok) {
           let msg = `Upload failed: ${res.status}`;
@@ -513,9 +494,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(r => setTimeout(r, 5000));
       try {
-        const res = await fetch(`/api/mark-batch/get?batchId=${batchId}`, {
-          headers: { Authorization: `Bearer ${savedPw.current}` },
-        });
+        const res = await fetch(`/api/mark-batch/get?batchId=${batchId}`);
         if (!res.ok) continue;
         const { batch } = await res.json();
         if ((batch.status === 'marked' || batch.status === 'finalized') && batch.markingJson) {
@@ -540,7 +519,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     try {
       const res = await fetch('/api/mark-batch/execute', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: batchResult.batchId, studentLevel }),
       });
       if (!res.ok && res.status !== 202) {
@@ -559,7 +538,7 @@ function UploadFlow({ savedPw, onDone, onCancel }: {
     try {
       const res = await fetch('/api/mark-batch/assemble-pdf', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: batchResult.batchId, includeCoverPage }),
       });
       if (!res.ok) {

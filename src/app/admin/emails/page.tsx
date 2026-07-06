@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,18 +18,6 @@ interface EmailLog {
   status: string;
   error: string;
   resendId: string;
-}
-
-// ─── Cookie helpers ────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -82,7 +71,6 @@ export default function EmailsPage() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
 
   const [logs, setLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,22 +87,14 @@ export default function EmailsPage() {
   // ── Auth ────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    const pw = getCookie('admin_pw');
-    if (pw) {
-      savedPw.current = pw;
-      verifyAndLogin(pw);
-    }
+    ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
 
   async function verifyAndLogin(pw: string) {
     setAuthLoading(true);
     try {
-      const res = await fetch('/api/admin-invoices?auth=check', {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
-      if (res.ok) {
-        savedPw.current = pw;
-        setCookie('admin_pw', pw, 30);
+      const ok = await loginAdminSession(pw);
+      if (ok) {
         setAuthed(true);
       } else {
         setAuthError('Incorrect password');
@@ -138,9 +118,7 @@ export default function EmailsPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/admin-emails', {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch('/api/admin-emails');
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const data = await res.json();
       setLogs(data);
@@ -163,10 +141,7 @@ export default function EmailsPage() {
     try {
       const res = await fetch('/api/admin-emails', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${savedPw.current}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ logId }),
       });
       const data = await res.json();

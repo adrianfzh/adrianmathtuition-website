@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -38,14 +39,6 @@ interface Props {
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
-
-// ── Cookie helper ─────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
 
 // ── KaTeX config (same as SwipeApp) ──────────────────────────────────────────
 
@@ -126,7 +119,6 @@ function AISidebar({
   subgroup,
   content,
   title,
-  auth,
   onAccept,
   onPreviewChange,
 }: {
@@ -134,7 +126,6 @@ function AISidebar({
   subgroup: Subgroup | undefined;
   content: string;
   title: string;
-  auth: string;
   onAccept: (newContent: string) => void;
   onPreviewChange?: (content: string | null) => void;
 }) {
@@ -173,7 +164,7 @@ function AISidebar({
       const img = images[idx];
       const res = await fetch('/api/admin/cards/upload-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageData: img.data, imageMediaType: img.mediaType }),
       });
       const json = await res.json();
@@ -204,7 +195,6 @@ function AISidebar({
         subgroupDescription: subgroup?.description ?? '',
         content_kind: card.content_kind,
         images: images.map(i => ({ data: i.data, mediaType: i.mediaType })),
-        password: auth,
       });
 
       const controller = new AbortController();
@@ -255,7 +245,7 @@ function AISidebar({
         abortRef.current = null;
       }
     },
-    [streaming, title, content, card, subgroup, images, auth, onPreviewChange]
+    [streaming, title, content, card, subgroup, images, onPreviewChange]
   );
 
   function handleAccept() {
@@ -462,9 +452,6 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw') || '';
-  const auth = pw;
-
   const [title, setTitle] = useState(card.card_title);
   const [content, setContent] = useState(card.content);
   const [contentHistory, setContentHistory] = useState<string[]>([]);
@@ -535,7 +522,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
     try {
       const res = await fetch('/api/admin/cards/subgroups/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level: card.level, topic: card.topic, name: newSgName.trim(), description: newSgDesc.trim() || null }),
       });
       const json = await res.json();
@@ -564,15 +551,15 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
   const isNarrow = useWindowWidth() < 1280;
 
   useEffect(() => {
-    if (!pw) { window.location.href = '/admin'; }
-  }, [pw]);
+    ensureAdminSession().then((ok) => {
+      if (!ok) { window.location.href = '/admin'; }
+    });
+  }, []);
 
   // Fetch section list for this card's (level, topic)
   useEffect(() => {
-    if (!pw || !card.level || !card.topic) return;
-    fetch(`/api/admin/cards/sections/list?level=${encodeURIComponent(card.level)}&topic=${encodeURIComponent(card.topic)}`, {
-      headers: { Authorization: `Bearer ${pw}` },
-    })
+    if (!card.level || !card.topic) return;
+    fetch(`/api/admin/cards/sections/list?level=${encodeURIComponent(card.level)}&topic=${encodeURIComponent(card.topic)}`)
       .then((r) => r.json())
       .then((j) => {
         const names: string[] = (j.sections ?? []).map((s: { name: string }) => s.name);
@@ -584,7 +571,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
       })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pw]);
+  }, []);
 
   // Back URL
   const backParams = new URLSearchParams();
@@ -613,7 +600,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
       try {
         const res = await fetch(`/api/admin/cards/${card.id}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(fields),
         });
         if (!res.ok) throw new Error();
@@ -623,7 +610,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
         setSaveStatus('error');
       }
     },
-    [card.id, auth]
+    [card.id]
   );
 
   const scheduleSave = useCallback(() => {
@@ -689,7 +676,6 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
     try {
       const res = await fetch(`/api/admin/cards/${card.id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${auth}` },
       });
       if (!res.ok) throw new Error();
       router.push(backUrl);
@@ -848,7 +834,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
                     const base64 = dataUrl.split(',')[1];
                     const res = await fetch('/api/admin/cards/upload-image', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                      headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ imageData: base64, imageMediaType: file.type }),
                     });
                     const json = await res.json();
@@ -968,7 +954,7 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
                     const dataUrl = ev.target?.result as string;
                     const res = await fetch('/api/admin/cards/upload-image', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                      headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ imageData: dataUrl.split(',')[1], imageMediaType: file.type }),
                     });
                     const json = await res.json();
@@ -1046,7 +1032,6 @@ export default function EditorClient({ card, subgroups: initialSubgroups, siblin
                   subgroup={currentSubgroup}
                   content={content}
                   title={title}
-                  auth={auth}
                   onAccept={(newContent) => { setContentHistory(prev => [...prev.slice(-9), content]); setContent(newContent); }}
                   onPreviewChange={setAiPreviewContent}
                 />

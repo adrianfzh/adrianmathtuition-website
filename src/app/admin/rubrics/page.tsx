@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 type Descriptor = { band: number; range: string; text: string };
 type Criterion = { name: string; maxMarks: number; descriptors: Descriptor[] };
@@ -9,15 +10,11 @@ type Rubric = {
   criteria: Criterion[]; grading_notes: string | null; out_of: number | null;
 };
 
-function getCookie(n: string) { if (typeof document === 'undefined') return ''; const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${n}=([^;]*)`)); return m ? decodeURIComponent(m[1]) : ''; }
-function setCookie(n: string, v: string, d: number) { document.cookie = `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + d * 864e5).toUTCString()}; path=/; SameSite=Strict`; }
-
 export default function RubricsPage() {
   const [password, setPassword] = useState('');
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
 
   const [rubrics, setRubrics] = useState<Rubric[]>([]);
   const [canEdit, setCanEdit] = useState(false);
@@ -25,27 +22,27 @@ export default function RubricsPage() {
   const [savedMsg, setSavedMsg] = useState<Record<string, string>>({});
 
   async function load() {
-    const r = await fetch('/api/admin/rubrics', { headers: { Authorization: `Bearer ${savedPw.current}` } });
+    const r = await fetch('/api/admin/rubrics');
     const d = await r.json();
     setRubrics(d.rubrics || []);
     setCanEdit(!!d.canEdit);
     setNotes(Object.fromEntries((d.rubrics || []).map((x: Rubric) => [x.id, x.grading_notes || ''])));
   }
   useEffect(() => { if (authed) load(); /* eslint-disable-next-line */ }, [authed]);
-  useEffect(() => { const pw = getCookie('admin_pw') || getCookie('schedule_pw'); if (pw) { savedPw.current = pw; verify(pw); } }, []);
+  useEffect(() => { ensureAdminSession().then((ok) => { if (ok) setAuthed(true); }); }, []);
 
   async function verify(pw: string) {
     setAuthLoading(true);
     try {
-      const r = await fetch('/api/admin/rubrics?auth=check', { headers: { Authorization: `Bearer ${pw}` } });
-      if (r.ok) { savedPw.current = pw; setCookie('admin_pw', pw, 30); setAuthed(true); } else setAuthError('Incorrect password');
+      const ok = await loginAdminSession(pw);
+      if (ok) setAuthed(true); else setAuthError('Incorrect password');
     } catch { setAuthError('Connection error'); } finally { setAuthLoading(false); }
   }
 
   async function saveNotes(id: string) {
     setSavedMsg((m) => ({ ...m, [id]: 'Saving…' }));
     const r = await fetch('/api/admin/rubrics', {
-      method: 'PATCH', headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, grading_notes: notes[id] }),
     });
     const d = await r.json();

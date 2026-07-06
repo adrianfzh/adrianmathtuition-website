@@ -19,6 +19,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { RightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './BankPanel';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -114,14 +115,6 @@ function fixMathFences(src: string): string {
   return src
     .replace(/\$\$(?=\S)/g, () => '$$\n')
     .replace(/([^\n\s])\$\$/g, (_, c: string) => `${c}\n$$`);
-}
-
-// ── Cookie helper ─────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
 }
 
 // ── Simple line diff ──────────────────────────────────────────────────────────
@@ -319,9 +312,9 @@ function DragCardOverlay({ card }: { card: CardRow }) {
 
 // ── Quick-add card to a known section ─────────────────────────────────────────
 
-function QuickAddCardToSectionModal({ sectionName, kind, subgroups, level, topic, auth, onClose, onCreated }: {
+function QuickAddCardToSectionModal({ sectionName, kind, subgroups, level, topic, onClose, onCreated }: {
   sectionName: string; kind: 'worked_example' | 'refresher' | 'practice';
-  subgroups: Subgroup[]; level: string; topic: string; auth: string;
+  subgroups: Subgroup[]; level: string; topic: string;
   onClose: () => void; onCreated: (card: CardRow) => void;
 }) {
   const [sgId, setSgId] = useState<number>(subgroups[0]?.id ?? 0);
@@ -337,7 +330,7 @@ function QuickAddCardToSectionModal({ sectionName, kind, subgroups, level, topic
     try {
       const res = await fetch('/api/admin/cards/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, topic, subgroup_id: sgId, card_title: title, display_group: sectionName, content_kind: kind }),
       });
       const json = await res.json();
@@ -377,9 +370,9 @@ function QuickAddCardToSectionModal({ sectionName, kind, subgroups, level, topic
 // ── Section header — display_group-based rename + delete ─────────────────────
 
 function SectionHeader({
-  name, cardCount, level, topic, auth, dragHandleProps, onRenamed, onDeleted, onAddCard,
+  name, cardCount, level, topic, dragHandleProps, onRenamed, onDeleted, onAddCard,
 }: {
-  name: string; cardCount: number; level: string; topic: string; auth: string;
+  name: string; cardCount: number; level: string; topic: string;
   dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
   onRenamed: (oldName: string, newName: string) => void;
   onDeleted: (name: string) => void;
@@ -403,7 +396,7 @@ function SectionHeader({
     try {
       const res = await fetch('/api/admin/cards/sections/rename', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, topic, oldName: name, newName: trimmed }),
       });
       const json = await res.json();
@@ -420,7 +413,7 @@ function SectionHeader({
     try {
       const res = await fetch('/api/admin/cards/sections/delete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, topic, name }),
       });
       const json = await res.json();
@@ -543,11 +536,10 @@ function DroppablePanel({ id, isCrossKindTarget, children }: { id: string; isCro
 
 // ── New card modal ─────────────────────────────────────────────────────────────
 
-function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, level, topic, onClose, onCreated, onSubgroupCreated, auth }: {
+function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, level, topic, onClose, onCreated, onSubgroupCreated }: {
   subgroups: Subgroup[]; sections: string[]; level: string; topic: string;
   onClose: () => void; onCreated: (id: string) => void;
   onSubgroupCreated: (sg: Subgroup) => void;
-  auth: string;
 }) {
   const [subgroups, setSubgroups] = useState<Subgroup[]>(initialSubgroups);
   const [sgId, setSgId] = useState<number | '__new__'>(initialSubgroups[0]?.id ?? 0);
@@ -570,7 +562,7 @@ function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, 
     try {
       const res = await fetch('/api/admin/cards/subgroups/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, topic, name: newSgName.trim(), description: newSgDesc.trim() || null }),
       });
       const json = await res.json();
@@ -596,7 +588,7 @@ function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, 
     try {
       const res = await fetch('/api/admin/cards/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, topic, subgroup_id: sgId, card_title: title, display_group: resolvedSection }),
       });
       const json = await res.json();
@@ -714,10 +706,10 @@ function NewCardModal({ subgroups: initialSubgroups, sections: initialSections, 
 // ── Sortable section wrapper (section drag-to-reorder) ────────────────────────
 
 function SortableSectionWrapper({
-  name, kindPrefix = 'we', children, level, topic, auth, onRenamed, onDeleted, onAddCard, cardCount,
+  name, kindPrefix = 'we', children, level, topic, onRenamed, onDeleted, onAddCard, cardCount,
 }: {
   name: string; kindPrefix?: 'we' | 'rf' | 'pr'; children: React.ReactNode;
-  level: string; topic: string; auth: string;
+  level: string; topic: string;
   cardCount: number;
   onRenamed: (oldName: string, newName: string) => void;
   onDeleted: (name: string) => void;
@@ -732,7 +724,6 @@ function SortableSectionWrapper({
         cardCount={cardCount}
         level={level}
         topic={topic}
-        auth={auth}
         dragHandleProps={{ ...attributes, ...listeners } as React.HTMLAttributes<HTMLSpanElement>}
         onRenamed={onRenamed}
         onDeleted={onDeleted}
@@ -794,9 +785,9 @@ function NewSectionModal({ level, topic, existingSections, onClose, onCreated }:
 
 // ── New refresher modal ───────────────────────────────────────────────────────
 
-function NewRefresherModal({ subgroups, defaultSgId, level, topic, auth, onClose, onCreated }: {
+function NewRefresherModal({ subgroups, defaultSgId, level, topic, onClose, onCreated }: {
   subgroups: Subgroup[]; defaultSgId: number | null;
-  level: string; topic: string; auth: string;
+  level: string; topic: string;
   onClose: () => void;
   onCreated: (card: CardRow) => void;
 }) {
@@ -813,7 +804,7 @@ function NewRefresherModal({ subgroups, defaultSgId, level, topic, auth, onClose
     try {
       const res = await fetch('/api/admin/cards/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, topic, subgroup_id: sgId, card_title: title, content_kind: 'refresher' }),
       });
       const json = await res.json();
@@ -853,7 +844,7 @@ function NewRefresherModal({ subgroups, defaultSgId, level, topic, auth, onClose
 // RefresherPanel: no DndContext — participates in parent's single DndContext.
 // Groups cards by display_group (null → flat zone). Supports + New section and per-section + card.
 function RefresherPanel({
-  cards, subgroups, auth, selectedId, level, topic,
+  cards, subgroups, selectedId, level, topic,
   localSections, sectionOrder, activeDragId, isCrossKindDrag,
   onSelectCard, onCardCreated, onRenamed, onDeleted, onNewSection, onAddCard,
   onBankDrop,
@@ -861,7 +852,7 @@ function RefresherPanel({
   label = '🧠 Refresher',
   colorClass = 'text-blue-700',
 }: {
-  cards: CardRow[]; subgroups: Subgroup[]; auth: string; selectedId: string | null;
+  cards: CardRow[]; subgroups: Subgroup[]; selectedId: string | null;
   level: string; topic: string;
   localSections: string[]; sectionOrder: string[];
   activeDragId: string | null; isCrossKindDrag: boolean;
@@ -938,7 +929,6 @@ function RefresherPanel({
                       cardCount={sectionCards.length}
                       level={level}
                       topic={topic}
-                      auth={auth}
                       onRenamed={onRenamed}
                       onDeleted={onDeleted}
                       onAddCard={() => onAddCard(sectionKey)}
@@ -994,9 +984,9 @@ function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void;
 
 // ── AI Sidebar ────────────────────────────────────────────────────────────────
 
-function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind, auth, onAccept, onPreviewChange }: {
+function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind, onAccept, onPreviewChange }: {
   cardId: string; level: string; topic: string; subgroup: Subgroup | undefined;
-  content: string; title: string; contentKind: string; auth: string; onAccept: (c: string) => void;
+  content: string; title: string; contentKind: string; onAccept: (c: string) => void;
   onPreviewChange?: (content: string | null) => void;
 }) {
   const [prompt, setPrompt] = useState('');
@@ -1043,7 +1033,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
       const img = images[idx];
       const res = await fetch('/api/admin/cards/upload-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageData: img.data, imageMediaType: img.mediaType }),
       });
       const json = await res.json();
@@ -1061,7 +1051,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
       const res = await fetch('/api/edit-cards-ai', {
         method: 'POST', signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', content_kind: contentKind, images: images.map(i => ({ data: i.data, mediaType: i.mediaType })), password: auth }),
+        body: JSON.stringify({ instruction, currentTitle: title, currentContent: content, level, topic, subgroupName: subgroup?.name ?? '', subgroupDescription: subgroup?.description ?? '', content_kind: contentKind, images: images.map(i => ({ data: i.data, mediaType: i.mediaType })) }),
       });
       if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error ?? `HTTP ${res.status}`); }
       const reader = res.body!.getReader();
@@ -1084,7 +1074,7 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
     } catch (e: unknown) {
       if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
     } finally { setStreaming(false); abortRef.current = null; }
-  }, [streaming, title, content, level, topic, subgroup, contentKind, images, auth, onPreviewChange]);
+  }, [streaming, title, content, level, topic, subgroup, contentKind, images, onPreviewChange]);
 
   function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImages([]); setBlobUrls({}); onPreviewChange?.(null); }
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); onPreviewChange?.(null); }
@@ -1192,12 +1182,12 @@ function AISidebar({ cardId, level, topic, subgroup, content, title, contentKind
 
 // ── Inline editor panel ───────────────────────────────────────────────────────
 
-function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
+function EditorPanel({ initialCard, subgroups, allCards, level, topic,
   textareaWidth, aiWidth, aiOpen,
   onSaved, onDeleted, onNavigate, onTextareaResize, onAiResize, onAiToggle,
 }: {
   initialCard: CardRow; subgroups: Subgroup[]; allCards: CardRow[];
-  level: string; topic: string; auth: string;
+  level: string; topic: string;
   textareaWidth: number; aiWidth: number; aiOpen: boolean;
   onSaved: (updated: Pick<CardRow, 'id' | 'card_title' | 'is_published' | 'subgroup_id' | 'order_index' | 'content'>) => void;
   onDeleted: (id: string) => void;
@@ -1301,7 +1291,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
       if (pendingSourceQuestionId) body.source_question_id = pendingSourceQuestionId;
       const res = await fetch(`/api/admin/cards/${cardId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error();
@@ -1310,7 +1300,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
       if (pendingSourceQuestionId) setPendingSourceQuestionId(null);
       setTimeout(() => setSaveStatus((s) => s === 'saved' ? 'idle' : s), 2500);
     } catch { setSaveStatus('error'); }
-  }, [cardId, auth, onSaved, pendingSourceQuestionId]);
+  }, [cardId, onSaved, pendingSourceQuestionId]);
 
   const scheduleSave = useCallback((fields: { card_title: string; content: string; subgroup_id: number; order_index: number; is_published: boolean }) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -1359,7 +1349,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
   async function handleDelete() {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/cards/${cardId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${auth}` } });
+      const res = await fetch(`/api/admin/cards/${cardId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       onDeleted(cardId);
     } catch { setDeleting(false); setShowDelete(false); }
@@ -1421,7 +1411,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
                     const base64 = dataUrl.split(',')[1];
                     const res = await fetch('/api/admin/cards/upload-image', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                      headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ imageData: base64, imageMediaType: file.type }),
                     });
                     const json = await res.json();
@@ -1505,7 +1495,7 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
                 const dataUrl = ev.target?.result as string;
                 const res = await fetch('/api/admin/cards/upload-image', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+                  headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ imageData: dataUrl.split(',')[1], imageMediaType: file.type }),
                 });
                 const json = await res.json();
@@ -1583,7 +1573,6 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
                 level={level}
                 topic={topic}
                 subgroupId={sgId ?? null}
-                auth={auth}
                 activeTab={rightTab}
                 onTabChange={setRightTab}
                 aiContent={
@@ -1595,7 +1584,6 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
                     content={content}
                     title={title}
                     contentKind={initialCard.content_kind}
-                    auth={auth}
                     onAccept={(c) => { setContentHistory(prev => [...prev.slice(-9), content]); setContent(c); }}
                     onPreviewChange={setAiPreviewContent}
                   />
@@ -1625,8 +1613,6 @@ function EditorPanel({ initialCard, subgroups, allCards, level, topic, auth,
 export default function EditCardsClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw') || '';
-  const auth = pw;
 
   const [level, setLevel] = useState(searchParams.get('level') || '');
   const [topic, setTopic] = useState(searchParams.get('topic') || '');
@@ -1668,7 +1654,9 @@ export default function EditCardsClient() {
   const reorderTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
-    if (!pw) { window.location.href = '/admin'; return; }
+    ensureAdminSession().then((ok) => {
+      if (!ok) { window.location.href = '/admin'; }
+    });
 
     // Load layout
     if (!layoutLoaded.current) {
@@ -1709,7 +1697,7 @@ export default function EditCardsClient() {
 
   useEffect(() => {
     if (!level) { setTopics([]); setTopic(''); return; }
-    fetch(`/api/admin/cards/topics?level=${encodeURIComponent(level)}`, { headers: { Authorization: `Bearer ${auth}` } })
+    fetch(`/api/admin/cards/topics?level=${encodeURIComponent(level)}`)
       .then((r) => r.json()).then((j) => setTopics(j.topics ?? [])).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level]);
@@ -1737,7 +1725,7 @@ export default function EditCardsClient() {
     try {
       const res = await fetch('/api/admin/cards/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -1750,7 +1738,7 @@ export default function EditCardsClient() {
       alert('Failed to create card from bank question: ' + (err instanceof Error ? err.message : String(err)));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth, level, topic]);
+  }, [level, topic]);
   // Keep a ref to fetchCards so handleBankDropOnList (defined first) can call it without circular dep
   const fetchCardsRef = useRef<((silent?: boolean) => Promise<void>) | null>(null);
 
@@ -1761,9 +1749,9 @@ export default function EditCardsClient() {
       const params = new URLSearchParams({ level, topic });
       if (subgroupFilter) params.set('subgroupId', subgroupFilter);
       const [weRes, rfRes, prRes] = await Promise.all([
-        fetch(`/api/admin/cards/list?${params}`, { headers: { Authorization: `Bearer ${auth}` } }),
-        fetch(`/api/admin/cards/list?${params}&kind=refresher`, { headers: { Authorization: `Bearer ${auth}` } }),
-        fetch(`/api/admin/cards/list?${params}&kind=practice`, { headers: { Authorization: `Bearer ${auth}` } }),
+        fetch(`/api/admin/cards/list?${params}`),
+        fetch(`/api/admin/cards/list?${params}&kind=refresher`),
+        fetch(`/api/admin/cards/list?${params}&kind=practice`),
       ]);
       const [weJson, rfJson, prJson] = await Promise.all([weRes.json(), rfRes.json(), prRes.json()]);
       setCards(weJson.cards ?? []);
@@ -1772,7 +1760,7 @@ export default function EditCardsClient() {
       setRefresherCards(rfJson.cards ?? []);
       setPracticeCards(prJson.cards ?? []);
     } finally { if (!silent) setLoading(false); }
-  }, [level, topic, subgroupFilter, auth]);
+  }, [level, topic, subgroupFilter]);
 
   useEffect(() => { fetchCards(); }, [fetchCards]);
   // Keep the ref in sync so handleBankDropOnList can call latest fetchCards
@@ -1865,7 +1853,7 @@ export default function EditCardsClient() {
           setSectionOrder(reordered);
           fetch('/api/admin/cards/sections/reorder', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ level, topic, orderedNames: reordered }),
           }).catch(() => fetchCards());
         } else {
@@ -1898,7 +1886,7 @@ export default function EditCardsClient() {
         showToast(`Moved "${movedSection}" to ${tgtKind === 'refresher' ? '🧠 Refresher' : '💡 Worked Examples'}`);
         fetch('/api/admin/cards/sections/move-section', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ level, topic, displayGroup: movedSection, sourceKind: srcKind, targetKind: tgtKind }),
         }).then((r) => { if (!r.ok) throw new Error(); }).catch(() => fetchCards());
       }
@@ -1941,7 +1929,7 @@ export default function EditCardsClient() {
         try {
           const res = await fetch('/api/admin/cards/reorder', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ orderedIds: reordered.map((c) => c.id) }),
           });
           if (!res.ok) throw new Error();
@@ -1967,7 +1955,7 @@ export default function EditCardsClient() {
       setLocalSections((prev) => prev.filter((s) => s !== tgtSection));
       fetch('/api/admin/cards/sections/move-card', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardId: activeIdStr, targetSection: tgtSection, sourceOrderedIds: remainSrc.map((c) => c.id), destOrderedIds: newDest.map((c) => c.id) }),
       }).then((r) => { if (!r.ok) throw new Error(); fetchCards(true); }).catch(() => fetchCards());
 
@@ -1987,7 +1975,7 @@ export default function EditCardsClient() {
       showToast(`Moved to ${tgtKind === 'refresher' ? '🧠 Refresher' : '💡 Worked Examples'}`);
       fetch('/api/admin/cards/sections/move-card', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardId: activeIdStr, targetSection: tgtSection, targetKind: tgtKind, sourceOrderedIds: remainSrc.map((c) => c.id), destOrderedIds: newDest.map((c) => c.id) }),
       }).then((r) => { if (!r.ok) throw new Error(); }).catch(() => fetchCards());
     }
@@ -2193,7 +2181,6 @@ export default function EditCardsClient() {
                 <RefresherPanel
                   cards={refresherCards}
                   subgroups={subgroups}
-                  auth={auth}
                   selectedId={selectedId}
                   level={level}
                   topic={topic}
@@ -2260,7 +2247,6 @@ export default function EditCardsClient() {
                             cardCount={sectionCards.length}
                             level={level}
                             topic={topic}
-                            auth={auth}
                             onRenamed={handleSectionRenamed}
                             onDeleted={handleSectionDeleted}
                             onAddCard={() => setQuickAdd({ sectionName, kind: 'worked_example' })}
@@ -2288,7 +2274,6 @@ export default function EditCardsClient() {
                 <RefresherPanel
                   cards={practiceCards}
                   subgroups={subgroups}
-                  auth={auth}
                   selectedId={selectedId}
                   level={level}
                   topic={topic}
@@ -2353,7 +2338,6 @@ export default function EditCardsClient() {
                   allCards={card.content_kind === 'refresher' ? refresherCards : cards}
                   level={level}
                   topic={topic}
-                  auth={auth}
                   textareaWidth={textareaWidth}
                   aiWidth={aiWidth}
                   aiOpen={aiOpen}
@@ -2379,7 +2363,6 @@ export default function EditCardsClient() {
           subgroups={subgroups}
           level={level}
           topic={topic}
-          auth={auth}
           onClose={() => setQuickAdd(null)}
           onCreated={(card) => {
             if (quickAdd.kind === 'refresher') {
@@ -2411,7 +2394,7 @@ export default function EditCardsClient() {
             // Persist to sections_meta so the section survives a page reload
             fetch('/api/admin/cards/sections/reorder', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ level, topic, orderedNames: newOrder }),
             }).catch(() => {}); // best-effort
           }}
@@ -2433,7 +2416,6 @@ export default function EditCardsClient() {
               return [...prev, sg].sort((a, b) => a.id - b.id);
             });
           }}
-          auth={auth}
         />
       )}
     </div>

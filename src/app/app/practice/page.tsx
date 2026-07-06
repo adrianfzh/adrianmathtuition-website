@@ -8,6 +8,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 // Retrieval-first practice (PORTAL.md + tiered-router spec) + the Phase E
 // grading loop: pick level+topic → real bank question → type working →
@@ -58,18 +59,12 @@ async function fileToJpegDataUrl(file: File, maxDim = 1600): Promise<string> {
   }
 }
 
-function getCookie(n: string) { if (typeof document === 'undefined') return ''; const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${n}=([^;]*)`)); return m ? decodeURIComponent(m[1]) : ''; }
-function setCookie(n: string, v: string, d: number) { document.cookie = `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + d * 864e5).toUTCString()}; path=/; SameSite=Strict`; }
-
 export default function PracticePage() {
   // mode: checking → student (portal session) | admin (password) | locked
   const [mode, setMode] = useState<'checking' | 'student' | 'admin' | 'locked'>('checking');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
-  const authHeaders = useCallback((): Record<string, string> =>
-    savedPw.current ? { Authorization: `Bearer ${savedPw.current}` } : {}, []);
 
   const [levels, setLevels] = useState(ADMIN_LEVELS);
   const [level, setLevel] = useState('AM');
@@ -102,12 +97,11 @@ export default function PracticePage() {
   const [gen, setGen] = useState<any>(null);
   const [genLoading, setGenLoading] = useState(false);
 
-  // Detect portal session first; fall back to admin password mode
+  // Detect portal session first; fall back to admin session mode
   useEffect(() => {
     getSupabaseBrowser().auth.getUser().then(({ data: { user } }) => {
       if (user) { setMode('student'); return; }
-      const pw = getCookie('admin_pw') || getCookie('schedule_pw');
-      if (pw) { savedPw.current = pw; verifyAdmin(pw); } else setMode('locked');
+      ensureAdminSession().then(ok => setMode(ok ? 'admin' : 'locked'));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -115,8 +109,8 @@ export default function PracticePage() {
   async function verifyAdmin(pw: string) {
     setAuthLoading(true);
     try {
-      const r = await fetch('/api/portal/practice/topics?auth=check', { headers: { Authorization: `Bearer ${pw}` } });
-      if (r.ok) { savedPw.current = pw; setCookie('admin_pw', pw, 30); setMode('admin'); }
+      const ok = await loginAdminSession(pw);
+      if (ok) setMode('admin');
       else { setAuthError('Incorrect password'); setMode('locked'); }
     } catch { setAuthError('Connection error'); setMode('locked'); }
     finally { setAuthLoading(false); }
@@ -126,7 +120,7 @@ export default function PracticePage() {
   useEffect(() => {
     if (mode !== 'student' && mode !== 'admin') return;
     setLoadingTopics(true); setTopic(''); setTopics([]); setQ(null); setExhausted(false); resetAttempt();
-    fetch(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`, { headers: authHeaders() })
+    fetch(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`)
       .then(r => r.json())
       .then(d => {
         setTopics(d.topics || []);
@@ -148,7 +142,7 @@ export default function PracticePage() {
     setLoading(true); setError(''); setExhausted(false); resetAttempt();
     try {
       const r = await fetch('/api/portal/practice/next', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, topic, exclude: excludeIds }),
       });
       const d = await r.json();
@@ -157,7 +151,7 @@ export default function PracticePage() {
       setQ(d.question);
     } catch { setError('Connection error'); }
     finally { setLoading(false); }
-  }, [level, topic, authHeaders]);
+  }, [level, topic]);
 
   function start() { setSeen([]); fetchNext([]); }
   function tryAnother() {
@@ -170,7 +164,7 @@ export default function PracticePage() {
     if (!q) return;
     setSolLoading(true);
     try {
-      const r = await fetch(`/api/portal/practice/solution?id=${q.id}`, { headers: authHeaders() });
+      const r = await fetch(`/api/portal/practice/solution?id=${q.id}`);
       const d = await r.json();
       setSolution(r.ok ? d.markdown : '_Could not load the solution._');
     } catch { setSolution('_Could not load the solution._'); }
@@ -218,7 +212,7 @@ export default function PracticePage() {
     setGenLoading(true); setGen(null);
     try {
       const r = await fetch('/api/portal/practice/generate', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, topic, maxRetries: 1, cache: false }),
       });
       setGen(await r.json());

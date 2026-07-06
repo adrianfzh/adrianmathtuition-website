@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -59,12 +60,6 @@ interface Submission {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
 const STATUS_COLOR: Record<string, string> = {
   detected: '#6b7280', marking: '#d97706', marked: '#2563eb',
   finalized: '#16a34a', failed: '#dc2626', deleted: '#9ca3af',
@@ -76,7 +71,6 @@ export default function BatchDetailPage() {
   const params = useParams();
   const router = useRouter();
   const batchId = params.batchId as string;
-  const savedPw = useRef('');
 
   const [batch, setBatch] = useState<Batch | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -93,18 +87,16 @@ export default function BatchDetailPage() {
   const [sendResult, setSendResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
-    savedPw.current = pw;
-    loadBatch(pw);
+    // Establish the signed httpOnly session first (silently upgrades legacy
+    // plaintext cookies); the batch fetch itself 401s if not authed.
+    ensureAdminSession().finally(() => loadBatch());
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [batchId]);
 
-  const loadBatch = useCallback(async (pw: string) => {
+  const loadBatch = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`/api/mark-batch/get?batchId=${encodeURIComponent(batchId)}`, {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
+      const res = await fetch(`/api/mark-batch/get?batchId=${encodeURIComponent(batchId)}`);
       if (!res.ok) throw new Error(`${res.status}`);
       const data = await res.json();
       setBatch(data.batch);
@@ -117,7 +109,7 @@ export default function BatchDetailPage() {
   // Auto-poll every 8s while marking is in progress
   useEffect(() => {
     if (batch?.status !== 'marking' && batch?.status !== 'processing') return;
-    const id = setInterval(() => loadBatch(savedPw.current), 8000);
+    const id = setInterval(() => loadBatch(), 8000);
     return () => clearInterval(id);
   }, [batch?.status, loadBatch]);
 
@@ -127,7 +119,7 @@ export default function BatchDetailPage() {
     try {
       const res = await fetch('/api/mark-batch/execute', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: batch.batchId, studentLevel: 'unknown' }),
       });
       if (!res.ok && res.status !== 202) {
@@ -136,7 +128,7 @@ export default function BatchDetailPage() {
         return;
       }
       // Fly accepted (202) — reload to show 'marking' status; auto-poll will take over
-      await loadBatch(savedPw.current);
+      await loadBatch();
     } catch (e: unknown) {
       setActionError(e instanceof Error ? e.message : 'Network error');
     } finally { setActionLoading(false); }
@@ -148,7 +140,7 @@ export default function BatchDetailPage() {
     try {
       const res = await fetch('/api/mark-batch/assemble-pdf', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: batch.batchId, includeCoverPage }),
       });
       if (!res.ok) {
@@ -156,7 +148,7 @@ export default function BatchDetailPage() {
         setActionError(d.error || `Assembly failed: ${res.status}`);
         return;
       }
-      await loadBatch(savedPw.current);
+      await loadBatch();
     } catch (e: unknown) {
       setActionError(e instanceof Error ? e.message : 'Network error');
     } finally { setActionLoading(false); }
@@ -169,7 +161,7 @@ export default function BatchDetailPage() {
     try {
       await fetch('/api/mark-batch/delete', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: batch.batchId }),
       });
       router.push('/admin/mark');
@@ -185,7 +177,7 @@ export default function BatchDetailPage() {
     try {
       const res = await fetch('/api/mark-batch/send-to-student', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batchId: batch.batchId }),
       });
       const d = await res.json();
@@ -212,7 +204,6 @@ export default function BatchDetailPage() {
     try {
       const res = await fetch('/api/mark-batch/upload-amended', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}` },
         body: fd,
       });
       if (!res.ok) {
@@ -220,7 +211,7 @@ export default function BatchDetailPage() {
         setUploadError(d.error || `Upload failed: ${res.status}`);
         return;
       }
-      await loadBatch(savedPw.current);
+      await loadBatch();
     } catch (e: unknown) { setUploadError(e instanceof Error ? e.message : 'Network error'); }
     finally { setUploading(false); if (amendInputRef.current) amendInputRef.current.value = ''; }
   }
@@ -358,7 +349,7 @@ export default function BatchDetailPage() {
                     <div className="spinner-sm" />
                     <span>Marking in progress…</span>
                     <button className="refresh-btn"
-                      onClick={() => loadBatch(savedPw.current)}>
+                      onClick={() => loadBatch()}>
                       Refresh
                     </button>
                   </div>

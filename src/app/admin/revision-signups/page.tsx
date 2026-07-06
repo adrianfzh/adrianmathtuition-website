@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -138,19 +139,11 @@ function generateWhatsAppMsg(student: Student): string {
   return lines.join('\n');
 }
 
-// ── Cookie helper ──────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function RevisionSignupsPage() {
   const router = useRouter();
-  const [adminPw, setAdminPw] = useState('');
+  const [authed, setAuthed] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -187,24 +180,23 @@ export default function RevisionSignupsPage() {
   const [quickSendMsg, setQuickSendMsg] = useState<Record<string, string>>({});
   const emailTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auth check
+  // Auth check — signed httpOnly session (silently upgrades legacy plaintext cookies)
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
-    if (!pw) {
-      router.replace('/admin');
-      return;
-    }
-    setAdminPw(pw);
+    ensureAdminSession().then((ok) => {
+      if (!ok) {
+        router.replace('/admin');
+        return;
+      }
+      setAuthed(true);
+    });
   }, [router]);
 
   const fetchStudents = useCallback(async () => {
-    if (!adminPw) return;
+    if (!authed) return;
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/admin-revision-list', {
-        headers: { Authorization: `Bearer ${adminPw}` },
-      });
+      const res = await fetch('/api/admin-revision-list');
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setStudents(data.students);
@@ -213,18 +205,18 @@ export default function RevisionSignupsPage() {
     } finally {
       setLoading(false);
     }
-  }, [adminPw]);
+  }, [authed]);
 
   useEffect(() => {
-    if (adminPw) fetchStudents();
-  }, [adminPw, fetchStudents]);
+    if (authed) fetchStudents();
+  }, [authed, fetchStudents]);
 
   // ── Attendance tab ─────────────────────────────────────────────────────────
   const fetchAttendance = useCallback(async () => {
-    if (!adminPw) return;
+    if (!authed) return;
     setAttLoading(true); setAttError('');
     try {
-      const res = await fetch('/api/admin-revision-attendance', { headers: { Authorization: `Bearer ${adminPw}` } });
+      const res = await fetch('/api/admin-revision-attendance');
       if (!res.ok) throw new Error(await res.text());
       setAttData(await res.json());
     } catch (e: unknown) {
@@ -232,16 +224,16 @@ export default function RevisionSignupsPage() {
     } finally {
       setAttLoading(false);
     }
-  }, [adminPw]);
+  }, [authed]);
 
   useEffect(() => {
-    if (adminPw && viewMode === 'attendance' && !attData) fetchAttendance();
-  }, [adminPw, viewMode, attData, fetchAttendance]);
+    if (authed && viewMode === 'attendance' && !attData) fetchAttendance();
+  }, [authed, viewMode, attData, fetchAttendance]);
 
   async function markSession(lessonId: string, status: string) {
     await fetch('/api/admin-revision-attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'mark', lessonId, status }),
     });
     await fetchAttendance();
@@ -262,7 +254,7 @@ export default function RevisionSignupsPage() {
     setEditTopics(null);
     await fetch('/api/admin-revision-attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'topics', lessonId, topics: value }),
     });
   }
@@ -279,7 +271,7 @@ export default function RevisionSignupsPage() {
     });
     await fetch('/api/admin-revision-attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'assignment', lessonId, value }),
     });
   }
@@ -298,7 +290,7 @@ export default function RevisionSignupsPage() {
     setEditHwNote(null);
     await fetch('/api/admin-revision-attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'hwnote', lessonId, note: value }),
     });
   }
@@ -314,7 +306,7 @@ export default function RevisionSignupsPage() {
     try {
       const res = await fetch('/api/admin-revision-attendance', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'makeup', lessonId: makeupModal.lessonId, studentId: makeupModal.studentId, date: makeupModal.date, slotId: makeupModal.slotId }),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -331,7 +323,7 @@ export default function RevisionSignupsPage() {
     if (!confirm('Remove this makeup? The makeup lesson will be deleted.')) return;
     await fetch('/api/admin-revision-attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'unmakeup', lessonId }),
     });
     await fetchAttendance();
@@ -544,10 +536,7 @@ export default function RevisionSignupsPage() {
       const total = subjectTotal(selectedSubjects, signupStudent.level);
       const res = await fetch('/api/admin-revision-signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminPw}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           studentId: signupStudent.id,
           level: signupStudent.level,
@@ -561,9 +550,7 @@ export default function RevisionSignupsPage() {
       }
       setSignupStudent(null);
       // Re-fetch and auto-open Manage for the newly signed-up student
-      const listRes = await fetch('/api/admin-revision-list', {
-        headers: { Authorization: `Bearer ${adminPw}` },
-      });
+      const listRes = await fetch('/api/admin-revision-list');
       if (listRes.ok) {
         const data = await listRes.json();
         setStudents(data.students);
@@ -655,10 +642,7 @@ export default function RevisionSignupsPage() {
   async function updateStatus(studentId: string, status: 'Opted Out' | 'No Response') {
     const res = await fetch('/api/admin-revision-status', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${adminPw}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId, status }),
     });
     if (!res.ok) {
@@ -694,7 +678,7 @@ export default function RevisionSignupsPage() {
       // Step 1: generate PDF and attach to invoice record
       const pdfRes = await fetch('/api/generate-pdf-batch', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recordIds: [manageStudent.revisionInvoiceId], force: true }),
       });
       if (!pdfRes.ok) throw new Error('PDF generation failed');
@@ -703,7 +687,7 @@ export default function RevisionSignupsPage() {
       if (customEmailText !== null) {
         await fetch(`/api/admin-invoices`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recordId: manageStudent.revisionInvoiceId, fields: { 'Custom Email Message': customEmailText } }),
         });
       }
@@ -721,7 +705,7 @@ export default function RevisionSignupsPage() {
   async function sendInvoice(invoiceId: string) {
     const res = await fetch('/api/send-invoices', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ recordIds: [invoiceId] }),
     });
     if (!res.ok) {
@@ -738,14 +722,14 @@ export default function RevisionSignupsPage() {
     try {
       const pdfRes = await fetch('/api/generate-pdf-batch', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recordIds: [student.revisionInvoiceId], force: true }),
       });
       if (!pdfRes.ok) throw new Error('PDF generation failed');
       setQuickSendMsg(prev => ({ ...prev, [student.id]: 'Sending email…' }));
       const res = await fetch('/api/send-invoices', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPw}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recordIds: [student.revisionInvoiceId] }),
       });
       if (!res.ok) {
@@ -768,10 +752,7 @@ export default function RevisionSignupsPage() {
     try {
       const res = await fetch('/api/admin-revision-revert', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminPw}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId: manageStudent.id }),
       });
       if (!res.ok) {

@@ -2,16 +2,11 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 const SLUG_TO_LABEL: Record<string, string> = {
   's1': 'S1', 's2': 'S2', 'em': 'EM', 'am': 'AM', 'jc': 'JC',
 };
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
 
 export default function NoteViewerPage({
   params,
@@ -22,24 +17,25 @@ export default function NoteViewerPage({
   const router = useRouter();
   const levelLabel = SLUG_TO_LABEL[level] ?? level.toUpperCase();
 
-  const [pw, setPw]         = useState('');
+  const [authed, setAuthed] = useState(false);
   const [pdfUrl, setPdfUrl] = useState('');
   const [title, setTitle]   = useState('');
   const [error, setError]   = useState('');
 
   useEffect(() => {
-    const cookie = getCookie('admin_pw');
-    if (!cookie) { router.replace('/admin'); return; }
-    setPw(cookie);
+    ensureAdminSession().then(ok => {
+      if (!ok) { router.replace('/admin'); return; }
+      setAuthed(true);
+    });
   }, [router]);
 
   useEffect(() => {
-    if (!pw) return;
-    fetch(`/api/admin-notes/${noteId}`, { headers: { Authorization: `Bearer ${pw}` } })
+    if (!authed) return;
+    fetch(`/api/admin-notes/${noteId}`)
       .then(r => r.ok ? r.json() : r.text().then(t => { throw new Error(t); }))
       .then(data => { setPdfUrl(data.pdfUrl); setTitle(data.title); })
       .catch(e => setError(e.message ?? 'Failed to load'));
-  }, [pw, noteId]);
+  }, [authed, noteId]);
 
   // Auto-open PDF in new tab once URL is known — window.open in useEffect
   // is treated as user-initiated on most browsers since we're responding to navigation

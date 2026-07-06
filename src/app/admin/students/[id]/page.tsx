@@ -1,18 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
-}
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 // Same JC/Sec category (Mixed/Adhoc/unknown count as available to all).
 function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
@@ -100,7 +91,6 @@ export default function StudentProfilePage() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
 
   const [data, setData] = useState<Profile | null>(null);
   // Ad-hoc billing: un-billed Completed Ad-hoc lessons → one Draft invoice on demand.
@@ -108,7 +98,7 @@ export default function StudentProfilePage() {
   const [adhocBilling, setAdhocBilling] = useState(false);
   async function loadAdhoc() {
     try {
-      const r = await fetch(`/api/admin/bill-adhoc?studentId=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const r = await fetch(`/api/admin/bill-adhoc?studentId=${studentId}`);
       if (r.ok) setAdhoc(await r.json());
     } catch { /* non-fatal */ }
   }
@@ -117,7 +107,7 @@ export default function StudentProfilePage() {
     setAdhocBilling(true);
     try {
       const r = await fetch('/api/admin/bill-adhoc', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId }),
       });
       const d = await r.json();
@@ -141,7 +131,7 @@ export default function StudentProfilePage() {
     setDiscModal({ ...discModal, saving: true });
     try {
       const r = await fetch('/api/admin/student-discontinue', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId, effectiveDate: discModal.date }),
       });
       const d = await r.json();
@@ -162,7 +152,7 @@ export default function StudentProfilePage() {
   async function openHoliday() {
     setHolidayModal({ loading: true, months: [], saving: false });
     try {
-      const r = await fetch(`/api/admin/holiday-optout?studentId=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const r = await fetch(`/api/admin/holiday-optout?studentId=${studentId}`);
       const d = await r.json();
       if (!r.ok) { showToast('err', d.error || 'Failed to load'); setHolidayModal(null); return; }
       setHolidayModal({
@@ -181,7 +171,7 @@ export default function StudentProfilePage() {
     setHolidayModal({ ...holidayModal, saving: true });
     try {
       const r = await fetch('/api/admin/holiday-optout', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId, changes }),
       });
       const d = await r.json();
@@ -239,7 +229,7 @@ export default function StudentProfilePage() {
   const fetchProfile = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`/api/admin/student-profile?id=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const res = await fetch(`/api/admin/student-profile?id=${studentId}`);
       if (!res.ok) throw new Error((await res.json()).error || 'Failed to load');
       setData(await res.json());
     } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Failed'); }
@@ -248,14 +238,14 @@ export default function StudentProfilePage() {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/progress/students/${studentId}/lessons`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const res = await fetch(`/api/admin/progress/students/${studentId}/lessons`);
       if (res.ok) setHistory(((await res.json()).lessons || []).filter((l: any) => l.status === 'Completed' || l.progressLogged));
     } catch { /* non-fatal */ }
   }, [studentId]);
 
   const fetchGlance = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/progress/students/${studentId}/at-a-glance`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const res = await fetch(`/api/admin/progress/students/${studentId}/at-a-glance`);
       if (res.ok) { const j = await res.json(); setGlance(j?.error ? null : j); }
     } catch { /* non-fatal */ }
   }, [studentId]);
@@ -263,16 +253,16 @@ export default function StudentProfilePage() {
   async function verify(pw: string) {
     setAuthLoading(true);
     try {
-      const res = await fetch('/api/admin-invoices?auth=check', { headers: { Authorization: `Bearer ${pw}` } });
-      if (res.ok) { savedPw.current = pw; setCookie('admin_pw', pw, 30); setAuthed(true); }
+      const ok = await loginAdminSession(pw);
+      if (ok) setAuthed(true);
       else setAuthError('Incorrect password');
     } catch { setAuthError('Connection error'); }
     finally { setAuthLoading(false); }
   }
 
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
-    if (pw) { savedPw.current = pw; verify(pw); }
+    // Signed httpOnly session (silently upgrades legacy plaintext cookies)
+    ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
   useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); fetchGlance(); } }, [authed, studentId, fetchProfile, fetchHistory, fetchGlance]);
 
@@ -282,7 +272,7 @@ export default function StudentProfilePage() {
     try {
       const res = await fetch('/api/admin-schedule/switch', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId, oldSlotId: switchModal.enr.slotId, newSlotId: switchModal.newSlotId, switchDate: switchModal.date }),
       });
       const json = await res.json();
@@ -305,7 +295,7 @@ export default function StudentProfilePage() {
     try {
       const res = await fetch('/api/admin-schedule/add-weekly-slot', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId, slotId: addModal.slotId, startDate: addModal.date || undefined }),
       });
       const json = await res.json();
@@ -332,7 +322,7 @@ export default function StudentProfilePage() {
     try {
       const res = await fetch(`/api/admin/progress/lessons?id=${lessonId}`, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields: { Status: status } }),
       });
       if (!res.ok) throw new Error('Failed');
@@ -346,7 +336,7 @@ export default function StudentProfilePage() {
     try {
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lessonId: lesson.id, action: 'delete', notify: false }),
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Failed');
@@ -362,7 +352,7 @@ export default function StudentProfilePage() {
     try {
       const res = await fetch('/api/admin-schedule/reschedule', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lessonId: reschedModal.lesson.id, newDate: reschedModal.date, newSlotId: reschedModal.slotId }),
       });
       const json = await res.json();
@@ -380,7 +370,7 @@ export default function StudentProfilePage() {
   async function loadContact() {
     setContactLoading(true);
     try {
-      const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`);
       if (res.ok) setContact(await res.json());
     } catch { showToast('err', 'Failed to load contact'); }
     finally { setContactLoading(false); }
@@ -397,7 +387,7 @@ export default function StudentProfilePage() {
     try {
       let c = contact;
       if (!c) {
-        const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+        const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`);
         if (!res.ok) { showToast('err', 'Failed to load contact'); return; }
         c = await res.json();
         setContact(c);
@@ -422,7 +412,7 @@ export default function StudentProfilePage() {
     try {
       const res = await fetch('/api/admin-schedule/quick-add-exam', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           studentId, examType: examForm.examType, noExam: examForm.noExam,
           examDate: examForm.noExam ? null : (examForm.examDate || null),
@@ -514,7 +504,7 @@ export default function StudentProfilePage() {
                       try {
                         const r = await fetch('/api/portal/invite', {
                           method: 'POST',
-                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+                          headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ airtableStudentId: studentId }),
                         });
                         const d = await r.json();
@@ -1115,7 +1105,6 @@ export default function StudentProfilePage() {
       {lessonModal && (
         <LessonModal
           lesson={lessonModal}
-          password={savedPw.current}
           slots={(data?.slots ?? []).map(sl => ({ id: sl.id, time: sl.label }))}
           onClose={() => { setLessonModal(null); fetchHistory(); fetchProfile(); }}
           onProgressLogged={() => { /* refreshed on close */ }}

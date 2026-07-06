@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import topicLists from '@/lib/topic-lists.json';
 import { mergeTopics } from '@/lib/topicMerge';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -125,19 +126,6 @@ function useAutosave(saveFn: (fields: Record<string, any>) => Promise<void>) {
   }
 
   return { status, savedAt, schedule, flush };
-}
-
-// ── Cookie helpers ────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
 }
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
@@ -342,13 +330,12 @@ function TopicGrid({
 // ── ExamForm ──────────────────────────────────────────────────────────────────
 
 function ExamForm({
-  initial, subjects, level, studentId, pw, onCreated, onUpdated, onDeleted, onClose,
+  initial, subjects, level, studentId, onCreated, onUpdated, onDeleted, onClose,
 }: {
   initial?: Exam;
   subjects: Subject[];
   level: string;
   studentId: string;
-  pw: string;
   onCreated: (exam: Exam) => void;
   onUpdated: (exam: Exam) => void;
   onDeleted: (id: string) => void;
@@ -403,7 +390,7 @@ function ExamForm({
         // Edit existing — PATCH all fields at once
         const res = await fetch(`/api/admin/progress/exams/${examId}`, {
           method: 'PATCH',
-          headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error('Failed to save');
@@ -413,7 +400,7 @@ function ExamForm({
         // New exam — POST creates or upserts with all fields
         const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error('Failed to save');
@@ -430,10 +417,7 @@ function ExamForm({
 
   async function handleDelete() {
     if (!examId) { onClose(); return; }
-    await fetch(`/api/admin/progress/exams/${examId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${pw}` },
-    });
+    await fetch(`/api/admin/progress/exams/${examId}`, { method: 'DELETE' });
     onDeleted(examId);
   }
 
@@ -582,9 +566,9 @@ function sortExams(exams: Exam[]): Exam[] {
 }
 
 function UpcomingExams({
-  studentId, subjects, level, pw, activeType, onExamCompleteChange,
+  studentId, subjects, level, activeType, onExamCompleteChange,
 }: {
-  studentId: string; subjects: Subject[]; level: string; pw: string;
+  studentId: string; subjects: Subject[]; level: string;
   activeType: ExamType | null;
   onExamCompleteChange?: (complete: boolean) => void;
 }) {
@@ -619,7 +603,7 @@ function UpcomingExams({
         if (existing) {
           const res = await fetch(`/api/admin/progress/exams/${existing.id}`, {
             method: 'PATCH',
-            headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ noExam: true }),
           });
           if (!res.ok) throw new Error();
@@ -629,7 +613,7 @@ function UpcomingExams({
           // Create a minimal exam record with noExam=true
           const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ examType: activeType, noExam: true }),
           });
           if (!res.ok) throw new Error();
@@ -642,7 +626,7 @@ function UpcomingExams({
         if (record) {
           const res = await fetch(`/api/admin/progress/exams/${record.id}`, {
             method: 'PATCH',
-            headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ noExam: false }),
           });
           if (!res.ok) throw new Error();
@@ -664,9 +648,7 @@ function UpcomingExams({
   async function loadExams() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/progress/students/${studentId}/exams`, {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
+      const res = await fetch(`/api/admin/progress/students/${studentId}/exams`);
       const json = await res.json();
       setExams(sortExams(json.exams ?? []));
     } finally {
@@ -758,7 +740,6 @@ function UpcomingExams({
                   subjects={subjects}
                   level={level}
                   studentId={studentId}
-                  pw={pw}
                   onCreated={handleCreated}
                   onUpdated={handleUpdated}
                   onDeleted={handleDeleted}
@@ -804,7 +785,6 @@ function UpcomingExams({
               subjects={subjects}
               level={level}
               studentId={studentId}
-              pw={pw}
               onCreated={exam => { handleCreated(exam); }}
               onUpdated={handleUpdated}
               onDeleted={id => { handleDeleted(id); setAddOpen(false); }}
@@ -820,10 +800,9 @@ function UpcomingExams({
 // ── LogForm ───────────────────────────────────────────────────────────────────
 
 function LogForm({
-  lesson, pw, onSaved, onStatusChange, activeType, onExamCompleteChange,
+  lesson, onSaved, onStatusChange, activeType, onExamCompleteChange,
 }: {
   lesson: LessonCard;
-  pw: string;
   onSaved: (updated: Partial<LessonCard>) => void;
   onStatusChange: (status: SaveStatus, savedAt: Date | null) => void;
   activeType: ExamType | null;
@@ -844,10 +823,9 @@ function LogForm({
   onStatusChangeRef.current = onStatusChange;
 
   useEffect(() => {
-    fetch(`/api/admin/progress/students/${lesson.studentId}/previous-lesson?before=${lesson.date}`, {
-      headers: { Authorization: `Bearer ${pw}` },
-    }).then(r => r.json()).then(d => setPrevLesson(d.lesson)).catch(() => {});
-  }, [lesson.studentId, lesson.date, pw]);
+    fetch(`/api/admin/progress/students/${lesson.studentId}/previous-lesson?before=${lesson.date}`)
+      .then(r => r.json()).then(d => setPrevLesson(d.lesson)).catch(() => {});
+  }, [lesson.studentId, lesson.date]);
 
   function buildFields(f: FormState): Record<string, any> {
     const fields: Record<string, any> = {
@@ -865,7 +843,7 @@ function LogForm({
   const saveFn = useCallback(async (fields: Record<string, any>) => {
     const res = await fetch(`/api/admin/progress/lessons?id=${lesson.id}`, {
       method: 'PATCH',
-      headers: { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields }),
     });
     if (!res.ok) throw new Error();
@@ -879,7 +857,7 @@ function LogForm({
       lessonNotes: fields['Lesson Notes'],
       progressLogged: true,
     });
-  }, [lesson.id, pw, onSaved]);
+  }, [lesson.id, onSaved]);
 
   const { status: saveStatus, savedAt, schedule } = useAutosave(saveFn);
 
@@ -1089,7 +1067,6 @@ function LogForm({
         studentId={lesson.studentId}
         subjects={lesson.subjects.filter(Boolean) as Subject[]}
         level={lesson.level}
-        pw={pw}
         activeType={activeType}
         onExamCompleteChange={onExamCompleteChange}
       />
@@ -1119,8 +1096,8 @@ function buildExamPillTooltip(s: ExamInfoStatus): string {
 // ── LessonCardRow ─────────────────────────────────────────────────────────────
 
 function LessonCardRow({
-  lesson, pw, onUpdate, activeType, autoOpen,
-}: { lesson: LessonCard; pw: string; onUpdate: (id: string, updated: Partial<LessonCard>) => void; activeType: ExamType | null; autoOpen?: boolean }) {
+  lesson, onUpdate, activeType, autoOpen,
+}: { lesson: LessonCard; onUpdate: (id: string, updated: Partial<LessonCard>) => void; activeType: ExamType | null; autoOpen?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(autoOpen ?? false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -1233,7 +1210,6 @@ function LessonCardRow({
       {open && (
         <LogForm
           lesson={data}
-          pw={pw}
           onSaved={handleSaved}
           onStatusChange={handleStatusChange}
           activeType={activeType}
@@ -1254,7 +1230,7 @@ interface StudentRecord {
   subjectLevel: string;
 }
 
-function StudentSearchCard({ student, pw, activeType }: { student: StudentRecord; pw: string; activeType: ExamType | null }) {
+function StudentSearchCard({ student, activeType }: { student: StudentRecord; activeType: ExamType | null }) {
   const [open, setOpen] = useState(false);
 
   const subjectBadges = (student.subjects ?? []).filter(Boolean);
@@ -1311,7 +1287,6 @@ function StudentSearchCard({ student, pw, activeType }: { student: StudentRecord
             studentId={student.id}
             subjects={student.subjects.filter(Boolean) as Subject[]}
             level={student.level}
-            pw={pw}
             activeType={activeType}
           />
         </div>
@@ -1327,7 +1302,6 @@ export default function ProgressPage() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
 
   const [date, setDate] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -1359,13 +1333,19 @@ export default function ProgressPage() {
   const MAX_PULL = 120;
 
   useEffect(() => {
-    const pw = getCookie('progress_pw') || getCookie('admin_pw');
-    if (pw) { savedPw.current = pw; verifyAndLogin(pw); }
+    // Signed httpOnly session check — silently upgrades any legacy plaintext cookie
+    ensureAdminSession().then(ok => {
+      if (ok) {
+        setAuthed(true);
+        fetchExamSeason();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function fetchExamSeason(pw: string) {
+  async function fetchExamSeason() {
     try {
-      const res = await fetch('/api/admin/exam-season', { headers: { Authorization: `Bearer ${pw}` } });
+      const res = await fetch('/api/admin/exam-season');
       if (res.ok) setExamSeason(await res.json());
     } catch {}
   }
@@ -1375,24 +1355,22 @@ export default function ProgressPage() {
     try {
       const res = await fetch('/api/admin/exam-season', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ forceOn }),
       });
       if (res.ok) setExamSeason(await res.json());
     } catch {}
   }
 
-  async function verifyAndLogin(pw: string) {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthError('');
     setAuthLoading(true);
     try {
-      const res = await fetch('/api/admin-invoices?auth=check', {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
-      if (res.ok) {
-        savedPw.current = pw;
-        setCookie('progress_pw', pw, 30);
+      const ok = await loginAdminSession(password);
+      if (ok) {
         setAuthed(true);
-        fetchExamSeason(pw);
+        fetchExamSeason();
       } else {
         setAuthError('Incorrect password');
       }
@@ -1403,20 +1381,12 @@ export default function ProgressPage() {
     }
   }
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setAuthError('');
-    await verifyAndLogin(password);
-  }
-
-  const fetchLessons = useCallback(async (d: string, pw: string) => {
+  const fetchLessons = useCallback(async (d: string) => {
     console.log('[effect] fetchLessons called with date:', d);
     setLoading(true);
     setFetchError('');
     try {
-      const res = await fetch(`/api/admin/progress/lessons?date=${d}`, {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
+      const res = await fetch(`/api/admin/progress/lessons?date=${d}`);
       if (!res.ok) throw new Error('Failed to load');
       const json = await res.json();
       setLessons(json.lessons ?? []);
@@ -1429,12 +1399,12 @@ export default function ProgressPage() {
 
   useEffect(() => {
     console.log('[effect] date changed to:', date, '| authed:', authed);
-    if (authed && savedPw.current) fetchLessons(date, savedPw.current);
+    if (authed) fetchLessons(date);
   }, [authed, date, fetchLessons]);
 
   useEffect(() => {
-    if (!authed || !savedPw.current) return;
-    fetch('/api/admin/progress/students', { headers: { Authorization: `Bearer ${savedPw.current}` } })
+    if (!authed) return;
+    fetch('/api/admin/progress/students')
       .then(r => r.json())
       .then(json => setAllStudents(json.students ?? []))
       .catch(() => {});
@@ -1451,12 +1421,10 @@ export default function ProgressPage() {
   }
 
   async function triggerRefresh() {
-    if (refreshing || loading || !savedPw.current) return;
+    if (refreshing || loading || !authed) return;
     setRefreshing(true);
     try {
-      const res = await fetch(`/api/admin/progress/lessons?date=${date}`, {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch(`/api/admin/progress/lessons?date=${date}`);
       if (res.ok) setLessons((await res.json()).lessons ?? []);
     } finally {
       setRefreshing(false);
@@ -1691,7 +1659,7 @@ export default function ProgressPage() {
                 </p>
                 <div className="space-y-2">
                   {group.lessons.map(lesson => (
-                    <LessonCardRow key={lesson.id} lesson={lesson} pw={savedPw.current} onUpdate={updateLesson} activeType={examSeason?.active ?? null} autoOpen={lesson.id === openLessonId} />
+                    <LessonCardRow key={lesson.id} lesson={lesson} onUpdate={updateLesson} activeType={examSeason?.active ?? null} autoOpen={lesson.id === openLessonId} />
                   ))}
                 </div>
               </div>
@@ -1703,7 +1671,7 @@ export default function ProgressPage() {
                 )}
                 <div className="space-y-2">
                   {extraStudents.map(student => (
-                    <StudentSearchCard key={student.id} student={student} pw={savedPw.current} activeType={examSeason?.active ?? null} />
+                    <StudentSearchCard key={student.id} student={student} activeType={examSeason?.active ?? null} />
                   ))}
                 </div>
               </div>

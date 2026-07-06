@@ -250,13 +250,11 @@ export function BankPanel({
   level,
   topic,
   subgroupId,
-  auth,
   onDragQuestion,
 }: {
   level: string;
   topic: string;
   subgroupId: number | null;
-  auth: string;
   onDragQuestion?: (q: BankQuestion | null) => void;
 }) {
   const [search, setSearch] = useState('');
@@ -287,7 +285,7 @@ export function BankPanel({
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${auth}` } });
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         setQuestions(json.questions ?? []);
@@ -300,7 +298,7 @@ export function BankPanel({
       }
     }, 250);
     return () => clearTimeout(t);
-  }, [url, level, topic, auth]);
+  }, [url, level, topic]);
 
   function toggleDifficulty(d: Difficulty) {
     setDifficulties((prev) => {
@@ -487,7 +485,6 @@ export function RightPanel({
   level,
   topic,
   subgroupId,
-  auth,
   activeTab,
   onTabChange,
   aiContent,
@@ -497,7 +494,6 @@ export function RightPanel({
   level: string;
   topic: string;
   subgroupId: number | null;
-  auth: string;
   activeTab: 'ai' | 'bank';
   onTabChange: (t: 'ai' | 'bank') => void;
   aiContent: React.ReactNode;
@@ -523,7 +519,7 @@ export function RightPanel({
       <div className="flex-1 min-h-0 overflow-hidden">
         {activeTab === 'ai' && aiContent}
         {activeTab === 'bank' && (
-          <BankPanel level={level} topic={topic} subgroupId={subgroupId} auth={auth} onDragQuestion={onDragQuestion} />
+          <BankPanel level={level} topic={topic} subgroupId={subgroupId} onDragQuestion={onDragQuestion} />
         )}
       </div>
     </div>

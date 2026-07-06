@@ -30,6 +30,7 @@ import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { getTopicsForPaperLevel } from '@/lib/canonical-topics';
 import { renderDesmosPng } from '@/lib/desmos';
+import { ensureAdminSession } from '@/lib/admin-client';
 import { LessonRightPanel, buildBankWorkedExampleTemplate, type BankQuestion } from './LessonBankPanel';
 import { StagingPanel } from './StagingPanel';
 import { addToStaging, isStaged as storeIsStaged, stagedCount, subscribeStaging, removeStaged, setPane as setStagePane, setKind as setStageKind, setSection as setStageSection, setStagingScope, nextActionSeq, getStaged as getStagedItems, replaceStaging, type StageKind, type StagedItem } from '@/lib/staging-store';
@@ -168,14 +169,6 @@ const katexOptions = {
   output: 'htmlAndMathml' as const,
   macros: { '\\tfrac': '\\frac' },
 };
-
-// ── Cookie helper ────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
 
 // Wrap standalone <img> tags (each on its own line) in a <div> before rendering. A bare <img> is
 // inline/phrasing content, and react-markdown's raw-HTML reparse (rehype-raw) can reorder it
@@ -621,7 +614,7 @@ function DeleteModal({ onConfirm, onCancel, deleting }: { onConfirm: () => void;
 // ── AI Sidebar ────────────────────────────────────────────────────────────────
 
 function AISidebar({
-  cardId, lessonLevel, lessonTopics, sectionName, content, title, contentKind, auth,
+  cardId, lessonLevel, lessonTopics, sectionName, content, title, contentKind,
   onAccept, onPreviewChange,
 }: {
   cardId: string;
@@ -631,7 +624,6 @@ function AISidebar({
   content: string;
   title: string;
   contentKind: ContentKind;
-  auth: string;
   onAccept: (c: string) => void;
   onPreviewChange?: (content: string | null) => void;
 }) {
@@ -715,7 +707,6 @@ function AISidebar({
           subgroupDescription,
           content_kind: contentKind,
           images: images.map(i => ({ data: i.data, mediaType: i.mediaType })),
-          password: auth,
         }),
       });
       if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error ?? `HTTP ${res.status}`); }
@@ -739,7 +730,7 @@ function AISidebar({
     } catch (e: unknown) {
       if (!aborted) setAiError(e instanceof Error ? e.message : 'AI error');
     } finally { setStreaming(false); abortRef.current = null; }
-  }, [streaming, aiOnline, title, content, lessonLevel, lessonTopics, sectionName, contentKind, images, auth, onPreviewChange]);
+  }, [streaming, aiOnline, title, content, lessonLevel, lessonTopics, sectionName, contentKind, images, onPreviewChange]);
 
   function handleAccept() { if (!aiResult) return; onAccept(aiResult); setDiffLines(null); setAiResult(''); setPrompt(''); setImages([]); onPreviewChange?.(null); }
   function handleReject() { setDiffLines(null); setAiResult(''); setPrompt(''); onPreviewChange?.(null); }
@@ -753,7 +744,7 @@ function AISidebar({
       const dataUrl = await renderDesmosPng(eqs);
       const res = await fetch('/api/admin/lessons/upload-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dataUrl }),
       });
       if (!res.ok) { const j = await res.json().catch(() => ({} as { error?: string })); throw new Error(j.error || `HTTP ${res.status}`); }
@@ -1013,7 +1004,6 @@ function EditorPanel({
   initialCard,
   lessonLevel,
   lessonTopics,
-  auth,
   allKindCards,
   textareaWidth,
   aiWidth,
@@ -1030,7 +1020,6 @@ function EditorPanel({
   initialCard: Card;
   lessonLevel: string;
   lessonTopics: string[];
-  auth: string;
   allKindCards: Card[]; // for prev/next nav within same kind
   textareaWidth: number;
   aiWidth: number;
@@ -1144,7 +1133,7 @@ function EditorPanel({
       });
       const resp = await fetch('/api/admin/lessons/upload-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dataUrl }),
       });
       if (!resp.ok) { const j = await resp.json().catch(() => ({} as { error?: string })); throw new Error(j.error || `HTTP ${resp.status}`); }
@@ -1419,7 +1408,6 @@ function EditorPanel({
               <LessonRightPanel
                 level={lessonLevel}
                 topics={lessonTopics}
-                auth={auth}
                 activeTab={rightTab}
                 onTabChange={onRightTabChange}
                 onStage={(q) => addToStaging(q)}
@@ -1433,7 +1421,6 @@ function EditorPanel({
                     content={content}
                     title={title}
                     contentKind={kind}
-                    auth={auth}
                     onAccept={(c) => { setContentHistory(prev => [...prev.slice(-9), content]); setContent(c); }}
                     onPreviewChange={setAiPreviewContent}
                   />
@@ -1647,7 +1634,6 @@ export default function LessonEditorClient() {
   const params = useParams();
   const router = useRouter();
   const id = String(params?.id ?? '');
-  const pw = useRef<string>('');
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
@@ -1696,9 +1682,7 @@ export default function LessonEditorClient() {
   const layoutLoaded = useRef(false);
 
   useEffect(() => {
-    const cookiePw = getCookie('admin_pw') || getCookie('schedule_pw');
-    pw.current = cookiePw;
-    setAuthed(!!cookiePw);
+    ensureAdminSession().then(ok => setAuthed(ok));
     if (!layoutLoaded.current) {
       layoutLoaded.current = true;
       const l = loadLayout();
@@ -1810,7 +1794,7 @@ export default function LessonEditorClient() {
     let done = 0, failed = 0;
     for (const card of targets) {
       try {
-        const newContent = await generateSolutionForCard(card, lesson, pw.current);
+        const newContent = await generateSolutionForCard(card, lesson);
         if (newContent) {
           await storePatchCard(card.id, { content: newContent });
           setCards(prev => prev.map(c => c.id === card.id ? { ...c, content: newContent } : c));
@@ -2230,16 +2214,16 @@ export default function LessonEditorClient() {
           className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 rounded text-xs font-medium disabled:opacity-50"
         >{batchSol ? `Generating ${batchSol.done}/${batchSol.total}…` : '✨ Fill solutions'}</button>
         <button
-          onClick={() => generatePDF(id, pw.current, lesson.name)}
+          onClick={() => generatePDF(id, lesson.name)}
           className="px-3 py-1 bg-rose-600 hover:bg-rose-700 rounded text-xs font-medium"
         >📄 Generate PDF</button>
         <button
-          onClick={() => downloadDocx(lesson, cards, pw.current)}
+          onClick={() => downloadDocx(lesson, cards)}
           title="Download as Word (.docx) with editable equations"
           className="px-3 py-1 bg-blue-700 hover:bg-blue-800 rounded text-xs font-medium"
         >⬇ DOCX</button>
         <button
-          onClick={() => deleteLesson(id, pw.current, router)}
+          onClick={() => deleteLesson(id, router)}
           className="px-2 py-1 hover:bg-rose-700/40 rounded text-xs"
           title="Delete lesson"
         >🗑</button>
@@ -2302,7 +2286,6 @@ export default function LessonEditorClient() {
               initialCard={selectedCard}
               lessonLevel={lesson.level}
               lessonTopics={lesson.topics}
-              auth={pw.current}
               allKindCards={allCardsForNav}
               textareaWidth={textareaWidth}
               aiWidth={aiWidth}
@@ -2340,7 +2323,6 @@ export default function LessonEditorClient() {
           sections={sectionList}
           level={lesson.level}
           topics={lesson.topics}
-          auth={pw.current}
         />
       )}
     </div>
@@ -2364,7 +2346,7 @@ function practiceHasSolution(content: string | null): boolean {
 
 // Run the AI "generate solutions" route for one card and return the full generated content.
 // Reuses the same SSE endpoint the editor's quick action uses.
-async function generateSolutionForCard(card: Card, lesson: Lesson, pw: string): Promise<string> {
+async function generateSolutionForCard(card: Card, lesson: Lesson): Promise<string> {
   const res = await fetch('/api/edit-cards-ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -2377,7 +2359,6 @@ async function generateSolutionForCard(card: Card, lesson: Lesson, pw: string): 
       subgroupName: card.section_name || 'Practice',
       subgroupDescription: `Lesson section "${card.section_name}". Topics: ${(lesson.topics ?? []).join(', ')}.`,
       content_kind: 'practice',
-      password: pw,
     }),
   });
   if (!res.ok) { const j = await res.json().catch(() => ({} as { error?: string })); throw new Error(j.error || `HTTP ${res.status}`); }
@@ -2399,9 +2380,9 @@ async function generateSolutionForCard(card: Card, lesson: Lesson, pw: string): 
   return result.trim();
 }
 
-async function generatePDF(lessonId: string, pw: string, name: string) {
+async function generatePDF(lessonId: string, name: string) {
   try {
-    const res = await fetch(`/api/admin/lessons/${lessonId}/pdf`, { headers: { Authorization: `Bearer ${pw}` } });
+    const res = await fetch(`/api/admin/lessons/${lessonId}/pdf`);
     if (!res.ok) { alert('PDF generation failed: ' + (await res.text()).slice(0, 200)); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -2415,7 +2396,7 @@ async function generatePDF(lessonId: string, pw: string, name: string) {
 }
 
 // Build the lesson .docx in-browser (native Word/OMML equations) and download it.
-async function downloadDocx(lesson: Lesson, cards: Card[], auth: string) {
+async function downloadDocx(lesson: Lesson, cards: Card[]) {
   try {
     // Source tags for bank-linked cards: [2023/JC2/Prelim/ACJC/P1/Q8]. Cosmetic — export proceeds
     // without them if the lookup fails.
@@ -2424,7 +2405,7 @@ async function downloadDocx(lesson: Lesson, cards: Card[], auth: string) {
     const srcIds = [...new Set(cards.map(c => c.source_question_id).filter(Boolean))] as string[];
     if (srcIds.length > 0) {
       try {
-        const res = await fetch(`/api/admin/lessons/question-meta?ids=${srcIds.join(',')}`, { headers: { Authorization: `Bearer ${auth}` } });
+        const res = await fetch(`/api/admin/lessons/question-meta?ids=${srcIds.join(',')}`);
         if (res.ok) {
           const j = await res.json() as { questions?: { id: string; school: string; year: number; paper: string; question_number: string; level: string | null; exam_type: string | null; answer: string | null }[] };
           for (const q of j.questions ?? []) {
@@ -2456,8 +2437,8 @@ async function downloadDocx(lesson: Lesson, cards: Card[], auth: string) {
   }
 }
 
-async function deleteLesson(id: string, pw: string, router: ReturnType<typeof useRouter>) {
+async function deleteLesson(id: string, router: ReturnType<typeof useRouter>) {
   if (!confirm('Delete this lesson and all its cards? This cannot be undone.')) return;
-  await fetch(`/api/admin/lessons/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${pw}` } });
+  await fetch(`/api/admin/lessons/${id}`, { method: 'DELETE' });
   router.push('/admin/lessons');
 }

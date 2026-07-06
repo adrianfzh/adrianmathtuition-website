@@ -1,17 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { MARKETING_CALENDAR, type Pillar, type MarketingPost } from '@/data/marketing-calendar';
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
-}
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 const PILLAR_COLORS: Record<Pillar, { bg: string; fg: string }> = {
   'Teach':         { bg: '#e6f0e6', fg: '#2f6b3a' },
@@ -48,18 +39,16 @@ export default function MarketingCalendarPage() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
 
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
-    if (pw) { savedPw.current = pw; verify(pw); }
+    ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
 
   async function verify(pw: string) {
     setAuthLoading(true);
     try {
-      const res = await fetch('/api/admin-invoices?auth=check', { headers: { Authorization: `Bearer ${pw}` } });
-      if (res.ok) { savedPw.current = pw; setCookie('admin_pw', pw, 30); setAuthed(true); }
+      const ok = await loginAdminSession(pw);
+      if (ok) setAuthed(true);
       else setAuthError('Incorrect password');
     } catch { setAuthError('Connection error'); }
     finally { setAuthLoading(false); }

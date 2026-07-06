@@ -11,6 +11,7 @@ export default function CardsPreviewPage() {
   );
 }
 import { topicSlug } from '@/lib/topic-slug';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -40,14 +41,6 @@ interface TopicCounts {
   worked_example: number;
   practice: number;
   total: number;
-}
-
-// ── Cookie helper ─────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
 }
 
 // ── Supabase fetch helpers ────────────────────────────────────────────────────
@@ -93,8 +86,7 @@ function CardsPreviewInner() {
   const [authed, setAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
-    setAuthed(!!pw);
+    ensureAdminSession().then(ok => setAuthed(ok));
   }, []);
 
   if (authed === null) {

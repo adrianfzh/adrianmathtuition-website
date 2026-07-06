@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { costFor } from '@/lib/model-pricing';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 // KaTeX web renderer — loads KaTeX from CDN once and renders math in a div
 function WebMathRenderer({ text }: { text: string }) {
@@ -74,15 +75,6 @@ function WebMathRenderer({ text }: { text: string }) {
   }, [text]);
 
   return <div ref={ref} style={{ whiteSpace: 'pre-wrap' }}>{text}</div>;
-}
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-function getAuth(): string {
-  return getCookie('admin_pw') || getCookie('schedule_pw') || '';
 }
 
 type Question = {
@@ -238,29 +230,28 @@ export default function BotAnalytics() {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash === '#lint') setLintExpanded(true);
   }, []);
-  const pw = getAuth();
-  const auth = { Authorization: `Bearer ${pw}` };
-
   const load = useCallback(() => {
-    if (!pw) { window.location.href = '/admin'; return; }
     setLoading(true);
-    Promise.all([
-      fetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`, { headers: auth }).then(r => r.json()),
-      fetch(`/api/admin/cockpit/synthesis-batches`, { headers: auth }).then(r => r.json()),
-      fetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`, { headers: auth }).then(r => r.json()),
-      fetch(`/api/admin/cockpit/pending-suggestions`, { headers: auth }).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
-      fetch(`/api/admin/cockpit/lint-reports?limit=12`, { headers: auth }).then(r => r.ok ? r.json() : { runs: [] }).catch(() => ({ runs: [] })),
-    ]).then(([qd, bd, rd, sd, ld]) => {
-      setQuestions(computeFlags(qd.questions || []));
-      setBatches(bd.batches || []);
-      setRates(rd.rates || []);
-      setTrend(rd.trend || []);
-      setPendingSugs(sd.suggestions || []);
-      setLintRuns(ld.runs || []);
-      setLintRunIdx(0);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [days, pw]); // eslint-disable-line react-hooks/exhaustive-deps
+    ensureAdminSession().then(ok => {
+      if (!ok) { window.location.href = '/admin'; return; }
+      Promise.all([
+        fetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`).then(r => r.json()),
+        fetch(`/api/admin/cockpit/synthesis-batches`).then(r => r.json()),
+        fetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`).then(r => r.json()),
+        fetch(`/api/admin/cockpit/pending-suggestions`).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
+        fetch(`/api/admin/cockpit/lint-reports?limit=12`).then(r => r.ok ? r.json() : { runs: [] }).catch(() => ({ runs: [] })),
+      ]).then(([qd, bd, rd, sd, ld]) => {
+        setQuestions(computeFlags(qd.questions || []));
+        setBatches(bd.batches || []);
+        setRates(rd.rates || []);
+        setTrend(rd.trend || []);
+        setPendingSugs(sd.suggestions || []);
+        setLintRuns(ld.runs || []);
+        setLintRunIdx(0);
+        setLoading(false);
+      }).catch(() => setLoading(false));
+    });
+  }, [days]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { chatScrollRef.current?.scrollTo(0, chatScrollRef.current.scrollHeight); }, [chatMessages]);
@@ -318,7 +309,7 @@ export default function BotAnalytics() {
     try {
       const r = await fetch('/api/admin/cockpit-chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...auth },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: msgs, contextItem: ctx ?? contextItem }),
       });
       const d = await r.json();
@@ -346,7 +337,7 @@ export default function BotAnalytics() {
     const theme = contextItem?.topic || contextItem?.theme || 'cockpit-applied';
     if (!confirm(`Apply this rule to prompt_additions.txt?\n\n${rule}`)) return;
     const r = await fetch('/api/admin/cockpit/append-rule', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rule, theme, sourceContext: JSON.stringify(contextItem) }),
     });
     const d = await r.json();
@@ -356,7 +347,7 @@ export default function BotAnalytics() {
       const sugKey = contextItem?.suggestionKey;
       if (sugKey) {
         await fetch('/api/admin/cockpit/dismiss-suggestion', {
-          method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ key: sugKey }),
         });
         setPendingSugs(prev => prev.filter(x => x.key !== sugKey));
@@ -656,11 +647,11 @@ export default function BotAnalytics() {
                     const s = pendingSugs.find(x => x.key === key);
                     if (!s) continue;
                     await fetch('/api/admin/cockpit/append-rule', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                      method: 'POST', headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ rule: s.suggestion, theme: 'daily-verification', sourceContext: JSON.stringify(s) }),
                     });
                     await fetch('/api/admin/cockpit/dismiss-suggestion', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                      method: 'POST', headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ key }),
                     });
                   }
@@ -673,7 +664,7 @@ export default function BotAnalytics() {
                   setBulkLoading(true);
                   for (const key of keys) {
                     await fetch('/api/admin/cockpit/dismiss-suggestion', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json', ...auth },
+                      method: 'POST', headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ key }),
                     });
                   }
@@ -963,7 +954,7 @@ export default function BotAnalytics() {
                   {/* Bot answer — with view toggle */}
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Bot answer</div>
-                    <ResponseViewer aiResponse={selected.aiResponse || ''} responseView={responseView} setResponseView={setResponseView} auth={auth} />
+                    <ResponseViewer aiResponse={selected.aiResponse || ''} responseView={responseView} setResponseView={setResponseView} />
                   </div>
 
                   {/* Actions */}
@@ -1082,11 +1073,10 @@ export default function BotAnalytics() {
 }
 
 // ─── ResponseViewer — module-level so it never remounts on parent re-render ──
-function ResponseViewer({ aiResponse, responseView, setResponseView, auth }: {
+function ResponseViewer({ aiResponse, responseView, setResponseView }: {
   aiResponse: string;
   responseView: 'raw' | 'telegram' | 'web';
   setResponseView: (v: 'raw' | 'telegram' | 'web') => void;
-  auth: Record<string, string>;
 }) {
   const [telegramText, setTelegramText] = useState<string | null>(null);
   const [telegramLoading, setTelegramLoading] = useState(false);
@@ -1105,7 +1095,7 @@ function ResponseViewer({ aiResponse, responseView, setResponseView, auth }: {
     setTelegramLoading(true);
     fetch('/api/admin/cockpit/format-telegram', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...auth },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: aiResponse }),
     }).then(r => r.json()).then(d => {
       setTelegramText(d.formatted ?? aiResponse);

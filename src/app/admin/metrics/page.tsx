@@ -1,12 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-
-function getCookie(n: string) {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${n}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
+import { ensureAdminSession } from '@/lib/admin-client';
 
 type Trend = 'up' | 'down' | 'same';
 type Metric = { curr: number; prior: number | null; trend: Trend };
@@ -30,7 +25,6 @@ const CARDS: { key: string; label: string; unit?: string; fmt?: (v: number) => s
 ];
 
 export default function MetricsPage() {
-  const pw = getCookie('admin_pw') || getCookie('schedule_pw') || '';
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -38,8 +32,11 @@ export default function MetricsPage() {
   const chartInstance = useRef<any>(null);
 
   useEffect(() => {
-    if (!pw) { window.location.href = '/admin'; return; }
-    fetch('/api/admin/metrics', { headers: { Authorization: `Bearer ${pw}` } })
+    ensureAdminSession()
+      .then(ok => {
+        if (!ok) { window.location.href = '/admin'; return Promise.reject('Not authed'); }
+        return fetch('/api/admin/metrics');
+      })
       .then(r => r.ok ? r.json() : r.json().then(j => Promise.reject(j.error || 'Failed')))
       .then(d => { setData(d); setLoading(false); })
       .catch(e => { setError(String(e)); setLoading(false); });

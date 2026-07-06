@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 import EditorClient from './EditorClient';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
 
 interface Card {
   id: string;
@@ -34,13 +35,7 @@ export default async function EditCardPage({
   params: Promise<{ id: string }>;
 }) {
   const cookieStore = await cookies();
-  const pw =
-    cookieStore.get('admin_pw')?.value ||
-    cookieStore.get('schedule_pw')?.value ||
-    cookieStore.get('progress_pw')?.value ||
-    '';
-
-  if (!pw || pw !== process.env.ADMIN_PASSWORD) {
+  if (!verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value)) {
     redirect('/admin');
   }
 

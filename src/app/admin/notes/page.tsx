@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { airtableRequestAll } from '@/lib/airtable';
+import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
 
 const LEVELS = [
   { slug: 's1', label: 'S1', sub: 'Secondary 1',  atLevel: 'S1', from: '#1d4ed8', to: '#3b82f6' },
@@ -13,8 +14,7 @@ const LEVELS = [
 
 export default async function NotesIndexPage() {
   const cookieStore = await cookies();
-  const pw = cookieStore.get('admin_pw')?.value;
-  if (!pw || pw !== process.env.ADMIN_PASSWORD) redirect('/admin');
+  if (!verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value)) redirect('/admin');
 
   // Note counts per level (best-effort)
   const counts: Record<string, number> = {};

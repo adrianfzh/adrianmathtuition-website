@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 interface Cluster {
   theme: string;
@@ -34,11 +35,6 @@ const CONF_COLORS: Record<string, string> = {
   low: '#dc2626',
 };
 
-function getPw(): string {
-  if (typeof window === 'undefined') return '';
-  return sessionStorage.getItem('adminPw') || localStorage.getItem('schedule_pw') || '';
-}
-
 export default function ImprovementsDashboard() {
   const [batches, setBatches]       = useState<Batch[]>([]);
   const [topicRates, setTopicRates] = useState<TopicRate[]>([]);
@@ -49,9 +45,8 @@ export default function ImprovementsDashboard() {
 
   const load = useCallback(() => {
     setLoading(true);
-    fetch(`/api/admin/improvements?days=${days}`, {
-      headers: { Authorization: `Bearer ${getPw()}` },
-    })
+    ensureAdminSession()
+      .then(() => fetch(`/api/admin/improvements?days=${days}`))
       .then(r => r.json())
       .then(data => {
         setBatches(data.batches || []);
@@ -68,7 +63,7 @@ export default function ImprovementsDashboard() {
     setActionMsg('');
     const res = await fetch('/api/admin/improvements', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getPw()}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ batchId, clusterIdx, action: act, reason }),
     });
     const d = await res.json();

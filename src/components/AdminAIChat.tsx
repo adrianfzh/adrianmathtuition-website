@@ -43,12 +43,11 @@ interface AdminAIChatProps {
 // ─── Action executor ──────────────────────────────────────────────────────────
 
 async function executeAction(
-  action: ActionItem,
-  password: string
+  action: ActionItem
 ): Promise<{ ok: boolean; error?: string }> {
+  // Same-origin routes — the httpOnly admin session cookie authenticates.
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${password}`,
   };
 
   try {
@@ -119,14 +118,6 @@ async function executeAction(
   }
 }
 
-// ─── Cookie helper ────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
-  return match ? decodeURIComponent(match[1]) : '';
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AdminAIChat({
@@ -168,8 +159,6 @@ export default function AdminAIChat({
     const text = input.trim();
     if (!text || streaming) return;
 
-    const password = getCookie('admin_pw');
-
     const userMsg: Message = { role: 'user', content: text };
     const assistantMsg: Message = { role: 'assistant', content: '' };
 
@@ -190,10 +179,7 @@ export default function AdminAIChat({
     try {
       const res = await fetch(apiRoute, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${password}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: history }),
         signal: controller.signal,
       });
@@ -285,8 +271,6 @@ export default function AdminAIChat({
       const msg = messages[msgIndex];
       if (!msg?.actionPlan) return;
 
-      const password = getCookie('admin_pw');
-
       // Set executing state
       setMessages(prev => {
         const updated = [...prev];
@@ -297,7 +281,7 @@ export default function AdminAIChat({
       const results: { id: string; label: string; ok: boolean; error?: string }[] = [];
 
       for (const action of msg.actionPlan.actions) {
-        const result = await executeAction(action, password);
+        const result = await executeAction(action);
         results.push({ id: action.id, label: action.label, ...result });
       }
 

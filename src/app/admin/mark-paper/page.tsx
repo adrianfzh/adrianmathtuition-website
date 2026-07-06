@@ -1,16 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
-
-// ── auth (same cookie scheme as the other admin pages) ──────────────────────
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return m ? decodeURIComponent(m[2]) : '';
-}
-function getAuth(): string {
-  return getCookie('admin_pw') || getCookie('schedule_pw') || '';
-}
+import { ensureAdminSession } from '@/lib/admin-client';
 
 // ── file helpers ────────────────────────────────────────────────────────────
 function readDataUrl(file: File): Promise<string> {
@@ -116,15 +107,10 @@ export default function MarkPaperPage() {
   const [error, setError] = useState('');
   const [lightbox, setLightbox] = useState<string | null>(null);
 
-  const authHeaders = { Authorization: `Bearer ${getAuth()}`, 'Content-Type': 'application/json' };
-
-  // Not logged in (e.g. opened this page directly in a browser without the admin cookie)
-  // → send to the admin hub to log in, instead of failing with a bare "unauthorized".
-  useEffect(() => { if (!getAuth()) window.location.href = '/admin'; }, []);
+  const authHeaders = { 'Content-Type': 'application/json' };
 
   // Lifetime cost metrics + recent runs (for the history list). Re-callable after mark/generate.
   async function loadStats() {
-    if (!getAuth()) return;
     try {
       const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'stats' }) });
       if (!r.ok) return;
@@ -133,7 +119,15 @@ export default function MarkPaperPage() {
       setRecentRuns(d.runs || []);
     } catch { /* ignore */ }
   }
-  useEffect(() => { loadStats(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  // Establish the admin session first (silently upgrades a legacy cookie); if not
+  // logged in, send to the admin hub instead of failing with a bare "unauthorized".
+  useEffect(() => {
+    ensureAdminSession().then(ok => {
+      if (!ok) { window.location.href = '/admin'; return; }
+      loadStats();
+    });
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
 
   // Load a stored run back into the page so its PDFs can be regenerated (no re-mark).
   async function loadRun(id: string) {

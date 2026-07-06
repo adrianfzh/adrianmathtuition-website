@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { put } from '@vercel/blob/client';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 const SLUG_TO_LABEL: Record<string, string> = {
   's1': 'S1', 's2': 'S2', 'em': 'E Math', 'am': 'A Math', 'jc': 'JC H2',
@@ -21,12 +22,6 @@ const SLUG_TO_SUBLEVELS: Record<string, string[]> = {};
 
 interface Note { id: string; title: string; pdfUrl: string; uploadedAt: string; }
 
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
 function fileNameToTitle(name: string) {
   return name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
 }
@@ -36,7 +31,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const router = useRouter();
   const levelLabel = SLUG_TO_LABEL[level] ?? level.toUpperCase();
 
-  const [pw, setPw] = useState('');
+  const [authed, setAuthed] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -70,19 +65,18 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
 
   // Auth
   useEffect(() => {
-    const cookie = getCookie('admin_pw');
-    if (!cookie) { router.replace('/admin'); return; }
-    setPw(cookie);
+    ensureAdminSession().then(ok => {
+      if (!ok) { router.replace('/admin'); return; }
+      setAuthed(true);
+    });
   }, [router]);
 
-  useEffect(() => { if (pw) fetchNotes(); }, [pw]);
+  useEffect(() => { if (authed) fetchNotes(); }, [authed]);
 
   async function fetchNotes() {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`/api/admin-notes?level=${encodeURIComponent(level)}`, {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
+      const res = await fetch(`/api/admin-notes?level=${encodeURIComponent(level)}`);
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setNotes(data.notes ?? []);
@@ -102,7 +96,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     try {
       await fetch(`/api/admin-notes/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: val }),
       });
       setNotes(prev => prev.map(n => n.id === id ? { ...n, title: val } : n));
@@ -116,9 +110,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     if (!confirm('Delete this note? Cannot be undone.')) return;
     setDeletingId(id);
     try {
-      await fetch(`/api/admin-notes/${id}`, {
-        method: 'DELETE', headers: { Authorization: `Bearer ${pw}` },
-      });
+      await fetch(`/api/admin-notes/${id}`, { method: 'DELETE' });
       showToast('Deleted');
       fetchNotes();
     } catch { showToast('Delete failed'); }
@@ -141,8 +133,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     setReplacingId(id);
     try {
       const tokenRes = await fetch(
-        `/api/admin-notes/upload-token?level=${encodeURIComponent(uploadLevel)}&filename=${encodeURIComponent(file.name)}`,
-        { headers: { Authorization: `Bearer ${pw}` } });
+        `/api/admin-notes/upload-token?level=${encodeURIComponent(uploadLevel)}&filename=${encodeURIComponent(file.name)}`);
       if (!tokenRes.ok) throw new Error('token');
       const { token, pathname } = await tokenRes.json();
       const blob = await put(pathname, file, {
@@ -150,7 +141,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
       });
       const res = await fetch(`/api/admin-notes/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blobUrl: blob.url, blobPathname: blob.pathname }),
       });
       if (!res.ok) throw new Error('patch');
@@ -190,8 +181,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
       try {
         // Step 1: Get a short-lived client upload token from our server
         const tokenRes = await fetch(
-          `/api/admin-notes/upload-token?level=${encodeURIComponent(uploadLevel)}&filename=${encodeURIComponent(pf.file.name)}`,
-          { headers: { Authorization: `Bearer ${pw}` } }
+          `/api/admin-notes/upload-token?level=${encodeURIComponent(uploadLevel)}&filename=${encodeURIComponent(pf.file.name)}`
         );
         if (!tokenRes.ok) {
           const d = await tokenRes.json().catch(() => ({}));
@@ -210,7 +200,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
         // Step 3: Register in Airtable
         const regRes = await fetch('/api/admin-notes/register', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pw}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ blobUrl: blob.url, blobPathname: blob.pathname, title: pf.title.trim(), level: uploadLevel }),
         });
         if (!regRes.ok) {

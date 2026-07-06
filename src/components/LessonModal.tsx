@@ -204,13 +204,13 @@ const LM_CSS = `.lm-card {
 
 export default function LessonModal({
   lesson,
-  password,
   slots,
   onClose,
   onProgressLogged,
 }: {
   lesson: LessonModalLesson;
-  password: string;
+  /** @deprecated Unused — auth is via the httpOnly admin session cookie. Kept optional until all callers stop passing it. */
+  password?: string;
   slots: { id: string; time: string }[];
   onClose: () => void;
   onProgressLogged: (lessonId: string) => void;
@@ -261,9 +261,7 @@ export default function LessonModal({
   // Fetch context on mount
   useEffect(() => {
     setCtxLoading(true);
-    fetch(`/api/admin-schedule/lesson-context?id=${lesson.id}`, {
-      headers: { Authorization: `Bearer ${password}` },
-    })
+    fetch(`/api/admin-schedule/lesson-context?id=${lesson.id}`)
       .then(r => r.json())
       .then((data: LessonContextData) => {
         setCtx(data);
@@ -316,7 +314,7 @@ export default function LessonModal({
         setCtxError('Failed to load lesson context');
         setCtxLoading(false);
       });
-    // lesson.id is the only meaningful dep — password/slots are stable refs.
+    // lesson.id is the only meaningful dep — slots is a stable ref.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson.id]);
 
@@ -332,7 +330,7 @@ export default function LessonModal({
     try {
       const res = await fetch('/api/admin-schedule/lesson-update', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${password}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lessonId: lesson.id, fields: fieldsRef.current }),
       });
       if (!res.ok) {
@@ -406,7 +404,7 @@ export default function LessonModal({
       try {
         const res = await fetch('/api/admin-schedule/lesson-prev-update', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${password}`, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId: ctx.prev!.id, homeworkReturned: val }),
         });
         if (!res.ok) throw new Error();
@@ -441,7 +439,7 @@ export default function LessonModal({
       }
       const res = await fetch('/api/admin-schedule/quick-add-exam', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${password}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
       });
       if (!res.ok) throw new Error();

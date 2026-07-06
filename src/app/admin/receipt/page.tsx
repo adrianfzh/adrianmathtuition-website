@@ -1,20 +1,8 @@
 'use client';
 
-import { Suspense, useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-
-// ─── Cookie helpers ────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
-}
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -35,22 +23,16 @@ function ReceiptPreviewContent() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
 
   useEffect(() => {
-    const pw = getCookie('admin_pw');
-    if (pw) { savedPw.current = pw; verifyAndLogin(pw); }
+    ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
 
   async function verifyAndLogin(pw: string) {
     setAuthLoading(true);
     try {
-      const res = await fetch('/api/admin-invoices?auth=check', {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
-      if (res.ok) {
-        savedPw.current = pw;
-        setCookie('admin_pw', pw, 30);
+      const ok = await loginAdminSession(pw);
+      if (ok) {
         setAuthed(true);
       } else {
         setAuthError('Incorrect password');
@@ -90,9 +72,7 @@ function ReceiptPreviewContent() {
         isOverpayment: String(isOverpayment),
         remainingBalance, paymentMethod,
       });
-      const res = await fetch(`/api/send-receipt?${qs}`, {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch(`/api/send-receipt?${qs}`);
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setSubject(data.subject || '');
@@ -119,10 +99,7 @@ function ReceiptPreviewContent() {
     try {
       const res = await fetch('/api/send-receipt', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${savedPw.current}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           invoiceId,
           paymentAmount: parseFloat(paymentAmount),

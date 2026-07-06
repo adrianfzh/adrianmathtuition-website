@@ -1,16 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
-function getPw(): string {
-  if (typeof window === 'undefined') return '';
-  return getCookie('admin_pw') || getCookie('schedule_pw') || localStorage.getItem('schedule_pw') || '';
-}
+import { ensureAdminSession } from '@/lib/admin-client';
 
 interface ModelStat {
   model: string; count: number; avgTime: number;
@@ -52,9 +42,8 @@ export default function AnalyticsDashboard() {
     setLoading(true);
     setData(null);
     setSelectedDate(null);
-    fetch(`/api/admin-analytics?days=${days}`, {
-      headers: { Authorization: `Bearer ${getPw()}` },
-    })
+    ensureAdminSession()
+      .then(() => fetch(`/api/admin-analytics?days=${days}`))
       .then(r => {
         if (r.status === 401) { window.location.href = '/admin'; return null; }
         return r.json();
@@ -71,7 +60,7 @@ export default function AnalyticsDashboard() {
     try {
       const r = await fetch('/api/admin-analytics', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getPw()}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ days: analysisDays }),
       });
       if (r.status === 401) { window.location.href = '/admin'; return; }

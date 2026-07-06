@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loadLessons, addLesson, saveLessonMeta } from '@/lib/offline/store';
+import { ensureAdminSession } from '@/lib/admin-client';
 import type { LocalLesson } from '@/lib/offline/db';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
@@ -22,12 +23,6 @@ function cmpInLevel(a: LocalLesson, b: LocalLesson): number {
   return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
 }
 
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
 export default function LessonsListPage() {
   const router = useRouter();
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -37,8 +32,7 @@ export default function LessonsListPage() {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw');
-    setAuthed(!!pw);
+    ensureAdminSession().then(ok => setAuthed(ok));
   }, []);
 
   const refresh = useCallback(async () => {

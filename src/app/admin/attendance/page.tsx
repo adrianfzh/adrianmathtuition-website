@@ -1,12 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
+import { ensureAdminSession } from '@/lib/admin-client';
 
 type Student = { id: string; name: string; level: string };
 type Lesson = {
@@ -31,9 +26,6 @@ const STATUS_CFG: Record<string, { label: string; bg: string; color: string; ico
 const MASTERY_CFG: Record<string, string> = { Strong: '🟢', OK: '🟡', Slow: '🔴' };
 
 export default function AttendancePage() {
-  const pw = getCookie('admin_pw') || getCookie('schedule_pw') || '';
-  const auth = { Authorization: `Bearer ${pw}` };
-
   const [search, setSearch]           = useState('');
   const [searchResults, setSearchResults] = useState<Student[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -44,10 +36,10 @@ export default function AttendancePage() {
   const [error, setError]             = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Redirect if not authed
+  // Establish the admin session (silently upgrades a legacy cookie); redirect if not authed
   useEffect(() => {
-    if (!pw) window.location.href = '/admin';
-  }, [pw]);
+    ensureAdminSession().then(ok => { if (!ok) window.location.href = '/admin'; });
+  }, []);
 
   // Search debounce
   useEffect(() => {
@@ -56,7 +48,7 @@ export default function AttendancePage() {
     debounceRef.current = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const res = await fetch(`/api/admin/attendance?search=${encodeURIComponent(search)}`, { headers: auth });
+        const res = await fetch(`/api/admin/attendance?search=${encodeURIComponent(search)}`);
         const json = await res.json();
         setSearchResults(json.students || []);
       } catch { setSearchResults([]); }
@@ -67,7 +59,7 @@ export default function AttendancePage() {
   const loadAttendance = useCallback(async (studentId: string, p: number) => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`/api/admin/attendance?studentId=${studentId}&page=${p}`, { headers: auth });
+      const res = await fetch(`/api/admin/attendance?studentId=${studentId}&page=${p}`);
       if (!res.ok) throw new Error('Failed to load');
       setData(await res.json());
     } catch (err: any) { setError(err.message); }

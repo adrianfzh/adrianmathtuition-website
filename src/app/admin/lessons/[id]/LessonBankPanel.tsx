@@ -362,7 +362,7 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
 // solution first (used for the file only — NOT saved to the question bank).
 const SOLVE_INSTRUCTION = `Add a full worked solution to this card. Preserve every labelled part — if the input has (a), (b), (i), (ii), keep them all and solve each. Put the working under a line "**Working:**". Use $\\begin{aligned}...\\end{aligned}$ for chained equations. Keep the original question text intact above the working.`;
 
-export async function downloadQuestionDocx(q: BankQuestion, auth: string, generateSolution: boolean): Promise<void> {
+export async function downloadQuestionDocx(q: BankQuestion, generateSolution: boolean): Promise<void> {
   const { title, content } = buildBankWorkedExampleTemplate(q);
   let fullContent = content;
   if (generateSolution) {
@@ -378,7 +378,6 @@ export async function downloadQuestionDocx(q: BankQuestion, auth: string, genera
         subgroupName: 'Single question export',
         subgroupDescription: `One-off DOCX export. Topics: ${(q.topics ?? []).join(', ')}.`,
         content_kind: 'practice',
-        password: auth,
       }),
     });
     if (!res.ok) { const j = await res.json().catch(() => ({} as { error?: string })); throw new Error(j.error || `HTTP ${res.status}`); }
@@ -407,7 +406,7 @@ export async function downloadQuestionDocx(q: BankQuestion, auth: string, genera
       try {
         await fetch('/api/admin/lessons/save-solution', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: q.id, solution: working }),
         });
       } catch { /* ignore — the .docx still downloads */ }
@@ -464,7 +463,6 @@ export async function downloadQuestionsDocx(
 export function LessonBankPanel({
   level,
   topics,
-  auth,
   onDragQuestion,
   onInsert,
   onStage,
@@ -472,7 +470,6 @@ export function LessonBankPanel({
 }: {
   level: string;
   topics: string[];
-  auth: string;
   onDragQuestion?: (q: BankQuestion | null) => void;
   /** Quick-insert (button) — drops a card into a specific kind. */
   onInsert?: (q: BankQuestion, kind: 'refresher' | 'worked_example' | 'practice') => void;
@@ -650,7 +647,7 @@ export function LessonBankPanel({
         const params = new URLSearchParams();
         params.set('level', level); params.set('topics', topics.join(','));
         if (cQuery) params.set('q', cQuery); params.set('limit', String(limit));
-        const res = await fetch(`/api/admin/lessons/bank?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
+        const res = await fetch(`/api/admin/lessons/bank?${params.toString()}`);
         if (!res.ok) return;
         const json = await res.json();
         list = json.questions ?? []; tot = json.total ?? list.length; src = 'server';
@@ -664,7 +661,7 @@ export function LessonBankPanel({
       persistCache();
     } catch { /* keep existing results on any failure */ }
     finally { revalidating.current = false; setRefreshing(false); }
-  }, [level, topics, lessonKey, committed, auth, limit]);
+  }, [level, topics, lessonKey, committed, limit]);
 
   // Fetch is driven ONLY by `committed` (set on Search click / Enter) and level/topics.
   useEffect(() => {
@@ -734,7 +731,7 @@ export function LessonBankPanel({
           params.set('q', cQuery);
           params.set('model', committed.aiModel);
           params.set('limit', '60');
-          const res = await fetch(`/api/admin/lessons/bank-semantic?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
+          const res = await fetch(`/api/admin/lessons/bank-semantic?${params.toString()}`);
           if (!res.ok) {
             const j = await res.json().catch(() => ({} as { error?: string }));
             throw new Error(j.error || `HTTP ${res.status}`);
@@ -753,7 +750,7 @@ export function LessonBankPanel({
         params.set('topics', topics.join(','));
         if (cQuery) params.set('q', cQuery);
         params.set('limit', String(limit));
-        const res = await fetch(`/api/admin/lessons/bank?${params.toString()}`, { headers: { Authorization: `Bearer ${auth}` } });
+        const res = await fetch(`/api/admin/lessons/bank?${params.toString()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (cancelled) return;
@@ -775,7 +772,7 @@ export function LessonBankPanel({
       }
     })();
     return () => { cancelled = true; };
-  }, [level, topics, lessonKey, committed, auth, limit]);
+  }, [level, topics, lessonKey, committed, limit]);
 
   // Restore the saved scroll position once this lesson's results are on screen (after a card switch).
   // Runs once per mount so it doesn't fight the user's own scrolling.
@@ -841,7 +838,7 @@ export function LessonBankPanel({
     const candidates = displayed;            // snapshot the current filtered pool
     const res = await fetch('/api/admin/lessons/propose', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         level, topics,
         questionIds: candidates.map(q => q.id),
@@ -923,7 +920,7 @@ export function LessonBankPanel({
         buildBankWorkedExampleTemplate(q).content.replace(/<img[^>]*>/g, '[diagram]').slice(0, 6000);
       const res = await fetch('/api/admin/lessons/notes-recaps', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           level, topics, model: proposeModel,
           concepts: picks.concepts,
@@ -1241,7 +1238,6 @@ export function LessonBankPanel({
             onInsert={onInsert}
             onStage={onStage}
             staged={isStaged?.(q.id)}
-            auth={auth}
           />
         ))}
         {displayed.length > renderCap && (
@@ -1281,7 +1277,7 @@ export function BankQuestionCard({
   onStage,
   staged,
   draggable = true,
-  auth,
+  adminTools = true,
 }: {
   q: BankQuestion;
   onDragStart?: () => void;
@@ -1290,8 +1286,8 @@ export function BankQuestionCard({
   onStage?: (q: BankQuestion) => void;
   staged?: boolean;
   draggable?: boolean;
-  /** Admin auth — enables the per-question DOCX download (+ AI solve when no solution exists). */
-  auth?: string;
+  /** Show the per-question DOCX download (+ AI solve when no solution exists). */
+  adminTools?: boolean;
 }) {
   const tag = `${q.school} ${q.year} P${q.paper} Q${q.question_number}`;
   const difficulty = q.difficulty ?? 'Standard';
@@ -1462,13 +1458,13 @@ export function BankQuestionCard({
         </div>
       )}
 
-      {(onInsert || onStage || auth) && (
+      {(onInsert || onStage || adminTools) && (
         <div className="flex gap-1 pt-1 border-t border-slate-100">
-          {auth && (
+          {adminTools && (
             <button
               onClick={async (e) => {
                 e.stopPropagation(); setDl('busy');
-                try { await downloadQuestionDocx(q, auth, false); } catch (err) { alert('DOCX failed: ' + (err as Error).message); }
+                try { await downloadQuestionDocx(q, false); } catch (err) { alert('DOCX failed: ' + (err as Error).message); }
                 setDl('idle');
               }}
               disabled={dl !== 'idle'}
@@ -1476,11 +1472,11 @@ export function BankQuestionCard({
               className="text-[10px] px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded hover:bg-indigo-100 disabled:opacity-50"
             >{dl === 'busy' ? '…' : '⬇ DOCX'}</button>
           )}
-          {auth && !solutionMd && (
+          {adminTools && !solutionMd && (
             <button
               onClick={async (e) => {
                 e.stopPropagation(); setDl('solving');
-                try { await downloadQuestionDocx(q, auth, true); } catch (err) { alert('Solve failed: ' + (err as Error).message); }
+                try { await downloadQuestionDocx(q, true); } catch (err) { alert('Solve failed: ' + (err as Error).message); }
                 setDl('idle');
               }}
               disabled={dl !== 'idle'}
@@ -1516,7 +1512,6 @@ export function BankQuestionCard({
 export function LessonRightPanel({
   level,
   topics,
-  auth,
   activeTab,
   onTabChange,
   aiContent,
@@ -1527,7 +1522,6 @@ export function LessonRightPanel({
 }: {
   level: string;
   topics: string[];
-  auth: string;
   activeTab: 'ai' | 'bank';
   onTabChange: (t: 'ai' | 'bank') => void;
   aiContent: React.ReactNode;
@@ -1558,7 +1552,6 @@ export function LessonRightPanel({
           <LessonBankPanel
             level={level}
             topics={topics}
-            auth={auth}
             onInsert={onInsert}
             onDragQuestion={onDragQuestion}
             onStage={onStage}

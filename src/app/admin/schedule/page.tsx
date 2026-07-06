@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import AdminAIChat from '@/components/AdminAIChat';
 import LessonModal from '@/components/LessonModal';
 import {
@@ -239,18 +240,6 @@ function getTypeStyle(type: string, status: string) {
   // Lessons that have "happened but moved/missed" should look muted regardless of original type
   if (status === 'Absent' || status === 'Cancelled' || status === 'Rescheduled') return TYPE_COLORS.Absent;
   return TYPE_COLORS[type] || TYPE_COLORS.Regular;
-}
-
-// ─── Cookie helpers ────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
 }
 
 // ─── Lesson input modal ────────────────────────────────────────────────────────
@@ -591,7 +580,6 @@ export default function SchedulePage() {
   const [lessonModal, setLessonModal] = useState<EnrichedLesson | null>(null);
   const [contactCache, setContactCache] = useState<Record<string, StudentContact>>({});
   const [contactLoading, setContactLoading] = useState(false);
-  const savedPw = useRef('');
   const stripRef = useRef<HTMLDivElement>(null);
   const desktopScrollRef = useRef<HTMLDivElement>(null);
   // Tracks what triggered the last activeDate change so the auto-scroll effect
@@ -646,14 +634,14 @@ export default function SchedulePage() {
   async function loadAllStudents() {
     if (allStudents.length) return;
     try {
-      const r = await fetch('/api/admin/progress/students', { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const r = await fetch('/api/admin/progress/students');
       const d = await r.json();
       setAllStudents((d.students || []).map((s: { id: string; name: string; level: string }) => ({ id: s.id, name: s.name, level: s.level })));
     } catch { /* non-fatal */ }
   }
   async function prefillCharge(level: string) {
     try {
-      const r = await fetch(`/api/admin/rate?level=${encodeURIComponent(level)}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+      const r = await fetch(`/api/admin/rate?level=${encodeURIComponent(level)}`);
       const d = await r.json();
       if (d.rate != null) setAddModal(m => m ? { ...m, charge: String(d.rate) } : null);
     } catch { /* keep manual */ }
@@ -664,7 +652,7 @@ export default function SchedulePage() {
     setCreatingStudent(true); setModalError('');
     try {
       const r = await fetch('/api/admin/students/create', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${savedPw.current}` },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), level, email: addModal?.newEmail || undefined }),
       });
       const d = await r.json();
@@ -752,28 +740,22 @@ export default function SchedulePage() {
     return map;
   }, [enrichedLessons]);
 
-  // Check cookie on mount
+  // Check session on mount (upgrades a legacy plaintext cookie if present)
   useEffect(() => {
-    const pw = getCookie('schedule_pw');
-    if (pw) {
-      savedPw.current = pw;
-      verifyAndLogin(pw);
-    }
+    setAuthLoading(true);
+    ensureAdminSession()
+      .then(ok => { if (ok) setAuthed(true); })
+      .finally(() => setAuthLoading(false));
   }, []);
 
-  async function verifyAndLogin(pw: string) {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthError('');
     setAuthLoading(true);
     try {
-      const res = await fetch('/api/admin-invoices?auth=check', {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
-      if (res.ok) {
-        savedPw.current = pw;
-        setCookie('schedule_pw', pw, 30);
-        setAuthed(true);
-      } else {
-        setAuthError('Incorrect password');
-      }
+      const ok = await loginAdminSession(password);
+      if (ok) setAuthed(true);
+      else setAuthError('Incorrect password');
     } catch {
       setAuthError('Connection error');
     } finally {
@@ -781,19 +763,11 @@ export default function SchedulePage() {
     }
   }
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setAuthError('');
-    await verifyAndLogin(password);
-  }
-
-  const fetchSchedule = useCallback(async (mon: Date, pw: string) => {
+  const fetchSchedule = useCallback(async (mon: Date) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/admin-schedule?week=${isoDate(mon)}`, {
-        headers: { Authorization: `Bearer ${pw}` },
-      });
+      const res = await fetch(`/api/admin-schedule?week=${isoDate(mon)}`);
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const json = await res.json();
       setData(json);
@@ -805,14 +779,14 @@ export default function SchedulePage() {
   }, []);
 
   useEffect(() => {
-    if (authed && savedPw.current) {
+    if (authed) {
       // Clear any manual exam season override so auto-detection takes over
       fetch('/api/admin/exam-season', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       }).catch(() => {}); // non-fatal
-      fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
+      fetchSchedule(new Date(mondayISO + 'T00:00:00'));
     }
   }, [authed, mondayISO, fetchSchedule]);
 
@@ -823,9 +797,7 @@ export default function SchedulePage() {
     if (!lesson?.revisionMakeup || !lesson.studentId) { setRevMakeupInfo(null); return; }
     let cancelled = false;
     setRevMakeupInfo('loading');
-    fetch(`/api/admin-revision-attendance?studentId=${lesson.studentId}`, {
-      headers: { Authorization: `Bearer ${savedPw.current}` },
-    })
+    fetch(`/api/admin-revision-attendance?studentId=${lesson.studentId}`)
       .then(r => r.json())
       .then(d => {
         if (cancelled) return;
@@ -1255,7 +1227,7 @@ export default function SchedulePage() {
     try {
       const res = await fetch('/api/admin-schedule/add-weekly-slot', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           studentId: addSlotModal.studentId,
           slotId: addSlotModal.slot.id,
@@ -1266,7 +1238,7 @@ export default function SchedulePage() {
       if (!res.ok) throw new Error(json.error || 'Failed to add weekly slot');
       setAddSlotModal(null);
       showToast('success', `✓ Added — ${json.lessonsCreated} lesson${json.lessonsCreated !== 1 ? 's' : ''} generated`);
-      await fetchSchedule(monday, savedPw.current);
+      await fetchSchedule(monday);
     } catch (err: any) {
       showToast('error', err.message || 'Failed');
     } finally {
@@ -1327,25 +1299,25 @@ export default function SchedulePage() {
         // Permanent slot switch: cancel future lessons, create new ones, update enrollment
         const res = await fetch('/api/admin-schedule/switch', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId: lesson.id, newSlotId: toSlotId, switchDate: toDate }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Switch failed');
         setRescheduleModal(null);
-        await fetchSchedule(monday, savedPw.current);
+        await fetchSchedule(monday);
         showToast('success', `✓ Switched to ${json.newSlotName} from ${json.switchDate} — ${json.cancelled} cancelled, ${json.created} created${json.adjustment ? ` · ${json.adjustment > 0 ? '+' : ''}$${json.adjustment} ${json.adjustmentMonth} adjustment` : ''}`);
       } else {
         const res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, notify }),
         });
         const json = await res.json();
         if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
         if (!res.ok) throw new Error(json.error || 'Failed');
         setRescheduleModal(null);
-        await fetchSchedule(monday, savedPw.current);
+        await fetchSchedule(monday);
         const sent = json.notificationsSent?.student || json.notificationsSent?.parent;
         showToast('success', notify ? (sent ? '✓ Rescheduled — notifications sent' : '✓ Rescheduled (notifications partial)') : '✓ Rescheduled');
       }
@@ -1359,13 +1331,13 @@ export default function SchedulePage() {
     try {
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lessonId: absentModal.lesson.id, action: 'absent', notify: absentModal.notify, reason: absentModal.reason || undefined }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
       setAbsentModal(null);
-      await fetchSchedule(monday, savedPw.current);
+      await fetchSchedule(monday);
       showToast('success', '✓ Marked absent');
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
@@ -1377,13 +1349,13 @@ export default function SchedulePage() {
     try {
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lessonId: deleteModal.lesson.id, action: 'delete', notify: deleteModal.notify, reason: deleteModal.reason || undefined }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
       setDeleteModal(null);
-      await fetchSchedule(monday, savedPw.current);
+      await fetchSchedule(monday);
       showToast('success', '✓ Lesson deleted');
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
@@ -1394,9 +1366,7 @@ export default function SchedulePage() {
     setAbsentLessonsError('');
     setAbsentLessonsLoading(true);
     try {
-      const res = await fetch(`/api/admin-schedule/absent-lessons?studentId=${studentId}`, {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch(`/api/admin-schedule/absent-lessons?studentId=${studentId}`);
       if (!res.ok) {
         setAbsentLessonsError(`Error ${res.status} loading lessons`);
         return;
@@ -1415,9 +1385,7 @@ export default function SchedulePage() {
     setUpcomingLessonsError('');
     setUpcomingLessonsLoading(true);
     try {
-      const res = await fetch(`/api/admin-schedule/upcoming-lessons?studentId=${studentId}`, {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch(`/api/admin-schedule/upcoming-lessons?studentId=${studentId}`);
       if (!res.ok) { setUpcomingLessonsError(`Error ${res.status} loading lessons`); return; }
       const json = await res.json();
       setUpcomingLessons(json.lessons ?? []);
@@ -1433,9 +1401,7 @@ export default function SchedulePage() {
     setRevSessionsError('');
     setRevSessionsLoading(true);
     try {
-      const res = await fetch(`/api/admin-revision-attendance?studentId=${studentId}`, {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch(`/api/admin-revision-attendance?studentId=${studentId}`);
       if (!res.ok) { setRevSessionsError(`Error ${res.status} loading revision lessons`); return; }
       const json = await res.json();
       const stu = (json.students ?? [])[0];
@@ -1472,14 +1438,14 @@ export default function SchedulePage() {
         const defaultNote = addModal.type === 'Makeup' ? 'Makeup lesson' : 'Rescheduled by admin';
         const res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || defaultNote }),
         });
         const json = await res.json();
         if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
         if (!res.ok) throw new Error(json.error || 'Failed');
         setAddModal(null);
-        await fetchSchedule(monday, savedPw.current);
+        await fetchSchedule(monday);
         showToast('success', addModal.type === 'Makeup' ? '✓ Makeup lesson scheduled' : '✓ Lesson rescheduled');
         return;
       }
@@ -1490,13 +1456,13 @@ export default function SchedulePage() {
       if (addModal.type === 'Revision Makeup' && addModal.linkedLessonId) {
         const res = await fetch('/api/admin-revision-attendance', {
           method: 'POST',
-          headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'makeup', lessonId: addModal.linkedLessonId, studentId: addModal.studentId, date: addModal.date, slotId: addModal.slotId }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Failed');
         setAddModal(null);
-        await fetchSchedule(monday, savedPw.current);
+        await fetchSchedule(monday);
         showToast('success', '✓ Revision makeup scheduled');
         return;
       }
@@ -1508,14 +1474,14 @@ export default function SchedulePage() {
       if (addModal.type === 'Ad-hoc') body.chargeOverride = Number(addModal.charge);
       const res = await fetch('/api/admin-schedule/add', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
       const json = await res.json();
       if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
       if (!res.ok) throw new Error(json.error || 'Failed');
       setAddModal(null);
-      await fetchSchedule(monday, savedPw.current);
+      await fetchSchedule(monday);
       showToast('success', '✓ Lesson added');
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
@@ -1527,12 +1493,12 @@ export default function SchedulePage() {
     try {
       const res = await fetch(`/api/admin/progress/lessons?id=${editNotesModal.lesson.id}`, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields: { Notes: editNotesModal.notes } }),
       });
       if (!res.ok) throw new Error('Failed to save');
       setEditNotesModal(null);
-      await fetchSchedule(monday, savedPw.current);
+      await fetchSchedule(monday);
       showToast('success', '✓ Notes saved');
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
@@ -1562,7 +1528,7 @@ export default function SchedulePage() {
     const dist = pullDistance;
     setPullDistance(0);
     if (dist >= PULL_THRESHOLD) {
-      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
     }
   }
 
@@ -1587,9 +1553,7 @@ export default function SchedulePage() {
     setModal({ student: { name, parentName: '', parentEmail: '' }, lessonType, studentId });
     setContactLoading(true);
     try {
-      const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`, {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`);
       if (!res.ok) throw new Error('Failed to load');
       const contact: StudentContact = await res.json();
       setContactCache(prev => ({ ...prev, [studentId]: contact }));
@@ -1615,7 +1579,7 @@ export default function SchedulePage() {
     try {
       const res = await fetch('/api/admin-schedule/attendance', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ studentId, slotId, date, status }),
       });
       if (!res.ok) throw new Error('Failed');
@@ -1645,7 +1609,7 @@ export default function SchedulePage() {
     try {
       const res = await fetch(`/api/admin/progress/lessons?id=${lesson.id}`, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields: { Status: status } }),
       });
       if (!res.ok) throw new Error('Failed');
@@ -1668,12 +1632,12 @@ export default function SchedulePage() {
     try {
       const res = await fetch('/api/admin-revision-attendance', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'makeup', lessonId: lesson.id, studentId: lesson.studentId, date, slotId }),
       });
       if (!res.ok) throw new Error(await res.text());
       setRevReschedule(null);
-      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
       showToast('success', 'Revision lesson rescheduled');
     } catch (e: unknown) {
       setRevReschedule(r => r && { ...r, saving: false });
@@ -1689,11 +1653,11 @@ export default function SchedulePage() {
     try {
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lessonId: lesson.id, action: 'delete', notify: false }),
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Failed');
-      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
       showToast('success', '✓ Reschedule undone');
     } catch (e: unknown) {
       showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Failed to undo');
@@ -1708,11 +1672,11 @@ export default function SchedulePage() {
     try {
       const res = await fetch('/api/admin-revision-attendance', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'unmakeup', makeupId: lesson.id }),
       });
       if (!res.ok) throw new Error(await res.text());
-      await fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
       showToast('success', '✓ Revision reschedule undone');
     } catch (e: unknown) {
       showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Failed to undo');
@@ -1729,7 +1693,7 @@ export default function SchedulePage() {
     try {
       const res = await fetch('/api/admin-schedule/trial-signup-link', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${savedPw.current}`, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           trialLessonId: trialEnrol.lesson.id,
           studentName: trialEnrol.studentName?.trim() || undefined,
@@ -1761,9 +1725,7 @@ export default function SchedulePage() {
     setExamDetailModal({ studentId: lesson.studentId, studentName: lesson.studentName, exams: null });
     setExamDetailLoading(true);
     try {
-      const res = await fetch(`/api/admin/progress/students/${lesson.studentId}/exams`, {
-        headers: { Authorization: `Bearer ${savedPw.current}` },
-      });
+      const res = await fetch(`/api/admin/progress/students/${lesson.studentId}/exams`);
       if (!res.ok) throw new Error();
       const json = await res.json();
       setExamDetailModal(prev => prev ? { ...prev, exams: json.exams ?? [] } : null);
@@ -2032,7 +1994,7 @@ export default function SchedulePage() {
           <button className="nav-btn" onClick={prevWeek}>‹</button>
           <button className="week-label" onClick={thisWeek}>{formatWeekLabel(monday)}</button>
           <button className="nav-btn" onClick={nextWeek}>›</button>
-          <button className="nav-btn refresh-btn" onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current)} disabled={loading} title="Refresh">↻</button>
+          <button className="nav-btn refresh-btn" onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))} disabled={loading} title="Refresh">↻</button>
         </div>
       </div>
 
@@ -2117,7 +2079,7 @@ export default function SchedulePage() {
         {error && (
           <div className="error-banner">
             {error}
-            <button onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'), savedPw.current)}>Retry</button>
+            <button onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))}>Retry</button>
           </div>
         )}
 
@@ -3124,7 +3086,6 @@ export default function SchedulePage() {
       {lessonModal && (
         <LessonModal
           lesson={lessonModal}
-          password={savedPw.current}
           slots={data?.slots ?? []}
           onClose={() => setLessonModal(null)}
           onProgressLogged={handleProgressLogged}

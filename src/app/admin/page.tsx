@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 // Mini calculator icon for the launcher (replaces the abacus emoji).
 const CalcIcon = (
@@ -63,19 +64,6 @@ interface BotStats {
   modelStats: { model: string; count: number; cost: number }[];
 }
 
-// ── Cookie helpers ─────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
-}
-
 // ── Hub page ───────────────────────────────────────────────────────────────────
 
 export default function AdminHub() {
@@ -83,58 +71,23 @@ export default function AdminHub() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const savedPw = useRef('');
-
 
   useEffect(() => {
-    // Preferred: signed httpOnly session (lib/admin-session.ts). Bootstrap: if a
-    // legacy raw-password cookie exists, silently upgrade it to a session and
-    // expire the legacy cookie (it held the actual admin password — see the
+    // Preferred: signed httpOnly session (lib/admin-session.ts). The helper
+    // bootstrap-upgrades a legacy raw-password cookie to a session and expires
+    // the plaintext cookie (it held the actual admin password — see the
     // 2026-07-06 security audit).
-    (async () => {
-      try {
-        const s = await fetch('/api/admin/session');
-        if ((await s.json()).authed) { setAuthed(true); return; }
-      } catch { /* fall through to legacy */ }
-      const pw = getCookie('admin_pw') || getCookie('schedule_pw') || getCookie('progress_pw');
-      if (pw) {
-        savedPw.current = pw;
-        const ok = await verifyAndLogin(pw);
-        if (ok) {
-          setCookie('admin_pw', '', -1); // expire the plaintext-password cookie
-        }
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
-
-  async function verifyAndLogin(pw: string): Promise<boolean> {
-    setAuthLoading(true);
-    try {
-      const res = await fetch('/api/admin/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw }),
-      });
-      if (res.ok) {
-        savedPw.current = pw;
-        setAuthed(true);
-        return true;
-      }
-      setAuthError('Incorrect password');
-      return false;
-    } catch {
-      setAuthError('Connection error');
-      return false;
-    } finally {
-      setAuthLoading(false);
-    }
-  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setAuthError('');
-    await verifyAndLogin(password);
+    setAuthLoading(true);
+    const ok = await loginAdminSession(password);
+    setAuthLoading(false);
+    if (ok) setAuthed(true);
+    else setAuthError('Incorrect password');
   }
 
 

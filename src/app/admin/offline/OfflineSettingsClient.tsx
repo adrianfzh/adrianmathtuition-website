@@ -20,14 +20,9 @@ import {
   type OfflineSettings, type QBSyncState, type SyncProgress,
 } from '@/lib/offline/qb-cache';
 import { requestPersistentStorage } from '@/lib/offline/persistStorage';
+import { ensureAdminSession } from '@/lib/admin-client';
 
 const LEVELS = ['AM', 'EM', 'JC', 'S1', 'S2'];
-
-function getCookie(name: string): string {
-  if (typeof document === 'undefined') return '';
-  const m = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
-  return m ? decodeURIComponent(m[1]) : '';
-}
 
 function bytesPretty(b: number | null): string {
   if (b == null) return '—';
@@ -63,8 +58,7 @@ export default function OfflineSettingsClient() {
   const [confirmDisableLevel, setConfirmDisableLevel] = useState<string | null>(null);
 
   useEffect(() => {
-    const pw = getCookie('admin_pw') || getCookie('schedule_pw');
-    setAuthed(!!pw);
+    ensureAdminSession().then(ok => setAuthed(ok));
     // Strong intent signal — user opened the settings page, so ask the browser to
     // promote our storage to persistent (resists eviction under disk pressure).
     void requestPersistentStorage();

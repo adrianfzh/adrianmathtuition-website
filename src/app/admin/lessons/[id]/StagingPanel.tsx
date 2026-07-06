@@ -29,11 +29,10 @@ const KIND_BTN: Record<StageKind, { label: string; on: string; off: string }> = 
 
 const WIDTHS_KEY = 'lesson_staging_widths_v1';
 
-function StagedCard({ item, sections, onSend, auth, autoKind }: {
+function StagedCard({ item, sections, onSend, autoKind }: {
   item: StagedItem;
   sections: string[];
   onSend?: (q: BankQuestion, kind: StageKind, section: string, concept?: string) => void;
-  auth?: string;
   /** Pane-enforced kind (Pool=E / Keep=P mode) — Send uses this over the card's chip. */
   autoKind?: StageKind;
 }) {
@@ -56,7 +55,7 @@ function StagedCard({ item, sections, onSend, auth, autoKind }: {
         <button {...noDrag} onClick={() => removeStaged(item.q.id)} title="Remove from staging entirely (delete from tray)" className="text-[10px] px-1.5 py-0.5 rounded border border-slate-300 text-slate-500 hover:bg-slate-100">🗑 remove</button>
       </div>
       <div className="p-1.5">
-        <BankQuestionCard q={item.q} draggable={false} auth={auth} />
+        <BankQuestionCard q={item.q} draggable={false} />
         {/* R/E/P + section on BOTH panes (pre-classify in the Pool); Send → only where onSend is wired (Keep). */}
         <div className="flex items-center gap-1 mt-1.5 flex-wrap" {...noDrag}>
             <span className="text-[10px] text-slate-400">as</span>
@@ -80,14 +79,13 @@ function StagedCard({ item, sections, onSend, auth, autoKind }: {
   );
 }
 
-function Pane({ title, pane, items, sections, hint, onSend, style, headerActions, autoKind, auth }: {
+function Pane({ title, pane, items, sections, hint, onSend, style, headerActions, autoKind }: {
   title: string; pane: StagePane; items: StagedItem[]; sections: string[]; hint: string;
   onSend?: (q: BankQuestion, kind: StageKind, section: string, concept?: string) => void;
   style?: React.CSSProperties;
   headerActions?: React.ReactNode;
   /** When set, anything dropped into this pane is auto-assigned this kind (Pool=E / Keep=P mode). */
   autoKind?: StageKind;
-  auth?: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `pane-${pane}`, data: { pane } });
   const [bankOver, setBankOver] = useState(false);
@@ -147,7 +145,7 @@ function Pane({ title, pane, items, sections, hint, onSend, style, headerActions
         className={`flex-1 overflow-y-auto p-2 space-y-2 min-h-[120px] ${(isOver || bankOver) ? 'outline outline-2 outline-dashed outline-blue-400 bg-blue-50/40' : ''}`}
       >
         <SortableContext items={items.map(i => i.q.id)} strategy={verticalListSortingStrategy}>
-          {items.map(item => <StagedCard key={item.q.id} item={item} sections={sections} onSend={onSend} auth={auth} autoKind={autoKind} />)}
+          {items.map(item => <StagedCard key={item.q.id} item={item} sections={sections} onSend={onSend} autoKind={autoKind} />)}
         </SortableContext>
         {items.length === 0 && <p className="text-[11px] text-slate-400 italic text-center py-6">Drag questions here</p>}
       </div>
@@ -172,7 +170,7 @@ function Divider({ onDrag }: { onDrag: (dx: number) => void }) {
   );
 }
 
-export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, onRedoLesson, lessonUndoTopSeq, lessonRedoTopSeq, sections, level, topics, auth }: {
+export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, onRedoLesson, lessonUndoTopSeq, lessonRedoTopSeq, sections, level, topics }: {
   onClose: () => void;
   onInsert: (q: BankQuestion, kind: StageKind, section: string, concept?: string) => void;
   onInsertBatch?: (items: { q: BankQuestion; kind: StageKind; section: string; concept?: string }[]) => void;
@@ -183,7 +181,6 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
   sections: string[];
   level: string;
   topics: string[];
-  auth: string;
 }) {
   const [items, setItems] = useState<StagedItem[]>(() => getStaged());
   const [showRejected, setShowRejected] = useState(false);
@@ -358,7 +355,6 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
               <LessonBankPanel
                 level={level}
                 topics={topics}
-                auth={auth}
                 onStage={(q) => addToStaging(q)}
                 isStaged={(id) => isStaged(id)}
               />
@@ -367,7 +363,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
           <Divider onDrag={(dx) => setBankW(w => { const n = Math.max(220, Math.min(700, w + dx)); saveWidths(n, poolW); return n; })} />
           <Pane
             title={kindMode ? 'Pool — examples (E)' : 'Pool — candidates'} pane="pool" items={pool} sections={sections}
-            hint="drag right to shortlist →" style={{ width: poolW }} auth={auth} onSend={onInsert}
+            hint="drag right to shortlist →" style={{ width: poolW }} onSend={onInsert}
             autoKind={kindMode ? 'worked_example' : undefined}
             headerActions={pool.length > 0 && (
               <>
@@ -397,7 +393,7 @@ export function StagingPanel({ onClose, onInsert, onInsertBatch, onUndoLesson, o
           <Divider onDrag={(dx) => setPoolW(w => { const n = Math.max(260, w + dx); saveWidths(bankW, n); return n; })} />
           <Pane
             title={kindMode ? 'Keep — practice (P)' : 'Keep — shortlist'} pane="keep" items={keep} sections={sections}
-            hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }} auth={auth}
+            hint="set R/E/P + section" onSend={onInsert} style={{ flex: 1 }}
             autoKind={kindMode ? 'practice' : undefined}
             headerActions={keep.length > 0 && (
               <>
