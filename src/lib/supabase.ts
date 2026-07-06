@@ -6,9 +6,12 @@ function getUrl() {
 function getAnonKey() {
   return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
 }
-function getServiceKey() {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+// Privileged key that bypasses RLS. New convention: SUPABASE_SECRET_KEY holding an
+// sb_secret_... key; SUPABASE_SERVICE_ROLE_KEY (legacy JWT) kept as fallback.
+export function getSecretKey() {
+  return process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 }
+const getServiceKey = getSecretKey;
 
 let _supabase: SupabaseClient | null = null;
 let _supabaseAdmin: SupabaseClient | null = null;

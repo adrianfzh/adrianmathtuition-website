@@ -78,7 +78,7 @@ export default function RubricsPage() {
           <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, color: '#111' }}>📏 Grading Rubrics</h1>
         </div>
         <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 18px' }}>
-          The standard the Solo grader marks against. Editing the band descriptors {canEdit ? 'is enabled.' : 'needs SUPABASE_SERVICE_ROLE_KEY — for now edit band text in the Supabase dashboard; you can still save examiner notes below once the key is set.'}
+          The standard the Solo grader marks against. Editing the band descriptors {canEdit ? 'is enabled.' : 'needs SUPABASE_SECRET_KEY — for now edit band text in the Supabase dashboard; you can still save examiner notes below once the key is set.'}
         </p>
 
         {rubrics.length === 0 && <p style={{ color: '#9ca3af', fontSize: 14 }}>No rubrics found.</p>}

@@ -35,9 +35,11 @@ export async function createSupabaseServer() {
 }
 
 export function createServiceClient() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // SUPABASE_SECRET_KEY = new-style sb_secret_... key (preferred);
+  // SUPABASE_SERVICE_ROLE_KEY = legacy JWT fallback.
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set — required for this operation');
+    throw new Error('SUPABASE_SECRET_KEY is not set — required for this operation');
   }
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
     auth: { persistSession: false, autoRefreshToken: false },

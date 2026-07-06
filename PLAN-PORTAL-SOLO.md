@@ -29,7 +29,9 @@ a parent-consent record exists for every account; grading calibrated to ±1 mark
   `src/app/api/portal/{invite,dashboard,practice-history}/route.ts`,
   `src/lib/{supabase-client,supabase-server,portal-auth}.ts`.
 - `.env.local` has `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` only.
-  **`SUPABASE_SERVICE_ROLE_KEY` is missing** — Phase A adds it (local + Vercel).
+  **`SUPABASE_SECRET_KEY` is missing** — Phase A adds it (local + Vercel). Convention
+  (2026-07-06): the env var is `SUPABASE_SECRET_KEY` holding a new-style `sb_secret_...`
+  key; all code falls back to legacy `SUPABASE_SERVICE_ROLE_KEY` if that's what exists.
 - **Stale spec reference:** RUBRIC-SPEC's `src/lib/learn/prompts.ts` does not exist in this repo.
   The English grader lives with the bot's `/essay` flow. Irrelevant here — English is out of scope.
 - Reusable grading assets: `src/lib/marking-pipeline.ts` (Claude marking prompt for photos),
@@ -54,7 +56,7 @@ AI-generated questions (v2 — QB pull first); parent portal; marking gallery; l
 
 ### Phase A — Foundations: auth plumbing (2–4 days)
 
-1. **Env/config:** get `SUPABASE_SERVICE_ROLE_KEY` from Supabase dashboard → `.env.local` + Vercel env.
+1. **Env/config:** mint an `sb_secret_...` key in the Supabase dashboard → `.env.local` + Vercel env as `SUPABASE_SECRET_KEY`.
    Configure Supabase Auth: site URL `https://www.adrianmathtuition.com`, redirect URLs for
    local + prod; set SMTP to Resend (decision D2) so verification/reset emails come from the
    real domain; create Google OAuth client (consent screen + redirect URI) and add to Supabase.

@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   // Diagnostic: log which env vars are available
   console.log('[render-revise] env check — SUPABASE_URL:', !!process.env.SUPABASE_URL,
     'NEXT_PUBLIC_SUPABASE_ANON_KEY:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    'SUPABASE_SERVICE_ROLE_KEY:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    'secret key:', !!(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY));
 
   // Read with anon key, write with service_role (anon has no UPDATE without RLS policy)
   const supabase = createClient(
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
   );
   const supabaseAdmin = createClient(
     process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
   );
 
   // Fetch practice question + subgroup name in one query

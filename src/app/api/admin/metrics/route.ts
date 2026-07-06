@@ -2,8 +2,8 @@
 // Aggregates bot performance metrics from Supabase (conversation_history)
 // and Airtable (Questions table).
 //
-// Requires SUPABASE_SERVICE_ROLE_KEY in Vercel env vars (bypasses RLS).
-// Falls back to SUPABASE_ANON_KEY if service role not set.
+// Requires SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY) in Vercel
+// env vars (bypasses RLS). Falls back to SUPABASE_ANON_KEY if neither is set.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -20,7 +20,7 @@ function checkAuth(req: NextRequest): boolean {
 
 function getSupabase() {
   const url = process.env.SUPABASE_URL!;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
+  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
   return createClient(url, key);
 }
 
