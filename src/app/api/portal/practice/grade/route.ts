@@ -81,10 +81,14 @@ export async function POST(req: NextRequest) {
   const newTags = result.lineComments.filter(c => !c.ok && c.tag).map(c => c.tag!) ;
   await upsertWeaknessTags(account.id, account.airtable_student_id, newTags);
 
-  // Beta trust backstop: Adrian sees every grade and can spot-check (no student work in the message).
-  sendTelegram(
-    `🎓 Portal grade: ${account.display_name || account.email} · ${q.topics?.[0] || '?'} · ${result.score}/${result.outOf} (${result.verdict})`
-  ).catch(() => {});
+  // Alerts: only true anomalies page Adrian in real time (a 9:30pm daily digest
+  // covers normal grades — see /api/portal/practice-digest). Anomaly = the model
+  // needed a retry to produce valid JSON, i.e. lower confidence in the grade.
+  if (result.parseRetried) {
+    sendTelegram(
+      `⚠️ Portal grade needed a JSON retry (lower confidence) — ${account.display_name || account.email}, ${q.topics?.[0] || '?'}, ${result.score}/${result.outOf}. Worth a spot-check.`
+    ).catch(() => {});
+  }
 
   return NextResponse.json({
     attemptId: inserted?.id ?? null,

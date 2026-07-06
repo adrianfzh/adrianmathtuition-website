@@ -32,6 +32,9 @@ export interface GradeResult {
   lineComments: LineComment[];
   strengths: string[];
   nextSteps: string[];
+  // true when the model needed a second attempt to produce valid JSON —
+  // treated as a lower-confidence grade (triggers a spot-check alert).
+  parseRetried?: boolean;
 }
 
 function collectScheme(parts: unknown, out: string[], prefix = ''): void {
@@ -130,7 +133,7 @@ Comment on every line that earns or loses a mark; skip trivial restatements. "ta
     try {
       const jsonStr = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);
       const parsed = validate(JSON.parse(jsonStr), lines.length);
-      if (parsed) return parsed;
+      if (parsed) return { ...parsed, parseRetried: attempt > 0 };
       lastErr = 'schema mismatch';
     } catch (e) {
       lastErr = e instanceof Error ? e.message.slice(0, 100) : 'parse error';
