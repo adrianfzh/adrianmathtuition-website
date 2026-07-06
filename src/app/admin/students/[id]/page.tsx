@@ -386,6 +386,36 @@ export default function StudentProfilePage() {
     finally { setContactLoading(false); }
   }
 
+  // Ask-for-review: opens WhatsApp to the parent with a pre-written review ask.
+  // GBP listing link — swap for the direct g.page/r/…/review link from the GBP
+  // dashboard ("Ask for reviews") when available; it lands straight on the form.
+  const REVIEW_LINK = 'https://maps.app.goo.gl/iyE8UwNJNRfF88Vr9';
+  const [reviewBusy, setReviewBusy] = useState(false);
+  async function askForReview() {
+    if (reviewBusy) return;
+    setReviewBusy(true);
+    try {
+      let c = contact;
+      if (!c) {
+        const res = await fetch(`/api/admin-schedule/student-contact?id=${studentId}`, { headers: { Authorization: `Bearer ${savedPw.current}` } });
+        if (!res.ok) { showToast('err', 'Failed to load contact'); return; }
+        c = await res.json();
+        setContact(c);
+      }
+      const firstName = (c!.parentName || '').trim().split(/\s+/)[0];
+      const msg = `Hi${firstName ? ' ' + firstName : ''}! It's been a pleasure teaching ${s?.name || 'your child'} 😊 If you've been happy with the lessons, would you mind leaving a short Google review? It really helps other parents find us:\n\n${REVIEW_LINK}\n\nThank you so much! — Adrian`;
+      const digits = (c!.parentContact || '').replace(/\D/g, '');
+      const phone = digits.length === 8 ? `65${digits}` : digits;
+      if (phone.length >= 10) {
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      } else {
+        await navigator.clipboard?.writeText(msg);
+        showToast('ok', 'No parent number on file — message copied, paste it into WhatsApp');
+      }
+    } catch { showToast('err', 'Failed to prepare review request'); }
+    finally { setReviewBusy(false); }
+  }
+
   async function submitExam() {
     if (!examForm || !examForm.examType) return;
     setExamForm({ ...examForm, saving: true });
@@ -460,6 +490,7 @@ export default function StudentProfilePage() {
               <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #f1f5f9' }}>
                 {!contact ? (
                   <button style={btnGhost} onClick={loadContact} disabled={contactLoading}>{contactLoading ? 'Loading…' : '👤 Show contact'}</button>
+                  <button style={btnGhost} onClick={askForReview} disabled={reviewBusy}>{reviewBusy ? 'Preparing…' : '⭐ Ask for review'}</button>
                 ) : (
                   <div style={{ fontSize: 13, color: '#374151', display: 'flex', flexWrap: 'wrap', gap: '4px 18px' }}>
                     {contact.parentName && <span><span style={{ color: '#9ca3af' }}>Parent:</span> {contact.parentName}</span>}
