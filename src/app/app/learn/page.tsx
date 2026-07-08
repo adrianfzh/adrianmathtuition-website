@@ -4,16 +4,21 @@
 // localStorage. Admin (testing) additionally sees pending units, chipped.
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { KIND_META, KIND_RANK } from '@/lib/learn';
+import { KIND_META } from '@/lib/learn';
 import { getDoneMap } from '@/lib/learn-progress';
 import type { LearnTopic, UnitKind, UnitSummary } from '@/lib/learn-types';
 
 type SubjectOpt = { key: string; label: string };
 
+// Teaching order IS the path — unit_order encodes Adrian's notes sequence
+// (core → example → check interleaved per subtopic). Never group by kind.
 function sortUnits(units: UnitSummary[]): UnitSummary[] {
-  return [...units].sort(
-    (a, b) => KIND_RANK[a.kind] - KIND_RANK[b.kind] || a.unit_order - b.unit_order,
-  );
+  return [...units].sort((a, b) => a.unit_order - b.unit_order);
+}
+
+// Part number from unit_order (601.xx → Part 1, 602.xx → Part 2 …)
+function partOf(u: UnitSummary): number {
+  return Math.floor(u.unit_order) % 100 || 1;
 }
 
 export default function LearnPage() {
@@ -119,31 +124,68 @@ export default function LearnPage() {
                   </div>
                 </button>
 
-                {isOpen && (
-                  <div className="border-t border-gray-100 divide-y divide-gray-50">
-                    {units.map(u => (
-                      <Link
-                        key={u.id}
-                        href={`/app/learn/${u.id}`}
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-[hsl(45,100%,98%)] transition-colors"
-                      >
-                        <span className="text-lg leading-none w-6 text-center shrink-0">{KIND_META[u.kind].icon}</span>
-                        <span className="flex-1 min-w-0">
-                          <span className="text-sm font-medium text-gray-800 block truncate">{u.title}</span>
-                          <span className="text-[11px] text-gray-400">{KIND_META[u.kind].label}</span>
-                        </span>
-                        {u.pending && (
-                          <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 shrink-0">
-                            pending
+                {isOpen && (() => {
+                  const nextUp = units.find(u => !done[u.id]) ?? units[0];
+                  const nextIdx = units.indexOf(nextUp);
+                  return (
+                    <div className="border-t border-gray-100">
+                      {/* One obvious way in: start or continue the path */}
+                      <div className="px-5 py-3 bg-[hsl(45,100%,97%)]">
+                        <Link
+                          href={`/app/learn/${nextUp.id}`}
+                          className="flex items-center justify-between gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-3 font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity"
+                        >
+                          <span className="min-w-0 truncate">
+                            {doneCount === 0 ? '▶ Start here' : '▶ Continue'} · {nextUp.title}
                           </span>
-                        )}
-                        <span className={`text-sm shrink-0 ${done[u.id] ? 'text-emerald-500' : 'text-gray-200'}`}>
-                          {done[u.id] ? '✓' : '○'}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                          <span className="shrink-0 text-xs opacity-80">{doneCount}/{units.length}</span>
+                        </Link>
+                        <p className="text-[11px] text-gray-400 mt-2">
+                          Lessons flow in order — finish one and it takes you to the next. You can also jump to any step below.
+                        </p>
+                      </div>
+                      <div className="divide-y divide-gray-50">
+                        {units.map((u, i) => {
+                          const showPart = i === 0 || partOf(u) !== partOf(units[i - 1]);
+                          const isNext = i === nextIdx;
+                          const isFuture = i > nextIdx;
+                          return (
+                            <div key={u.id}>
+                              {showPart && units.some(x => partOf(x) !== partOf(units[0])) && (
+                                <p className="px-5 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                  Part {partOf(u)}
+                                </p>
+                              )}
+                              <Link
+                                href={`/app/learn/${u.id}`}
+                                className={`flex items-center gap-3 px-5 py-3 hover:bg-[hsl(45,100%,98%)] transition-colors ${
+                                  isNext ? 'bg-[hsl(43,90%,95%)]' : ''
+                                } ${isFuture ? 'opacity-60' : ''}`}
+                              >
+                                <span className={`text-[11px] font-bold w-6 text-center shrink-0 ${isNext ? 'text-navy' : 'text-gray-300'}`}>
+                                  {i + 1}
+                                </span>
+                                <span className="text-lg leading-none w-6 text-center shrink-0">{KIND_META[u.kind].icon}</span>
+                                <span className="flex-1 min-w-0">
+                                  <span className="text-sm font-medium text-gray-800 block truncate">{u.title}</span>
+                                  <span className="text-[11px] text-gray-400">{KIND_META[u.kind].label}</span>
+                                </span>
+                                {u.pending && (
+                                  <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 rounded-full px-2 py-0.5 shrink-0">
+                                    pending
+                                  </span>
+                                )}
+                                <span className={`text-sm shrink-0 ${done[u.id] ? 'text-emerald-500' : 'text-gray-200'}`}>
+                                  {done[u.id] ? '✓' : isNext ? '›' : '○'}
+                                </span>
+                              </Link>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
