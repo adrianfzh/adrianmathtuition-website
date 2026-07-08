@@ -11,20 +11,72 @@ import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 // Retrieval-first practice (PORTAL.md + tiered-router spec) + the Phase E
-// grading loop: pick level+topic → real bank question → type working →
-// Opus marks it line-by-line → revise → re-mark. Students authenticate via
-// the portal session; the admin-password mode remains for Adrian's testing.
+// grading loop: pick a topic → real bank question → type/snap working →
+// Opus marks it line-by-line → revise → re-mark. Stage 1 (the picker) is a
+// progress-aware grid scoped to the student's level AND subjects; the grading
+// loop below it is unchanged. Students authenticate via the portal session;
+// the admin-password mode remains for Adrian's testing (all levels, no mastery).
 
 const REMARK = [remarkMath, remarkGfm];
 const REHYPE = [rehypeRaw, rehypeKatex];
 
-const ADMIN_LEVELS: { code: string; label: string }[] = [
-  { code: 'S1', label: 'Sec 1' }, { code: 'S2', label: 'Sec 2' },
-  { code: 'S3_EM', label: 'Sec 3 E-Math' }, { code: 'S3_AM', label: 'Sec 3 A-Math' },
-  { code: 'EM', label: 'O-Level E-Math' }, { code: 'EM_NA', label: 'E-Math (NA)' },
-  { code: 'AM', label: 'O-Level A-Math' }, { code: 'JC1', label: 'JC1 H2 Math' },
-  { code: 'JC2', label: 'JC2 H2 Math' },
+type LevelOpt = { key: string; label: string };
+
+// Fallback level list shown before the overview call resolves. Kept in sync
+// with ALL_QB_LEVELS in lib/practice.ts (can't import that here — it pulls in
+// server-only modules).
+const DEFAULT_LEVELS: LevelOpt[] = [
+  { key: 'S1', label: 'Sec 1' }, { key: 'S2', label: 'Sec 2' },
+  { key: 'S3_EM', label: 'Sec 3 E-Math' }, { key: 'S3_AM', label: 'Sec 3 A-Math' },
+  { key: 'EM', label: 'O-Level E-Math' }, { key: 'EM_NA', label: 'E-Math (NA)' },
+  { key: 'AM', label: 'O-Level A-Math' }, { key: 'JC1', label: 'JC1 H2 Math' },
+  { key: 'JC2', label: 'JC2 H2 Math' },
 ];
+
+type TopicStatus = 'strong' | 'practising' | 'weak' | 'new';
+type TopicCard = {
+  topic: string;
+  questionCount: number;
+  attempts: number;
+  mastery: number | null;
+  status: TopicStatus;
+  lastPracticedAt: string | null;
+};
+type Recommended = { topic: string; level: string; reason: string };
+
+const STATUS_META: Record<TopicStatus, { label: string; cls: string }> = {
+  strong: { label: 'Strong', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  practising: { label: 'Practising', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  weak: { label: 'Needs work', cls: 'bg-rose-50 text-rose-700 border-rose-200' },
+  new: { label: 'Not started', cls: 'bg-slate-50 text-slate-500 border-slate-200' },
+};
+
+// Strand = the leading word before "(" in a topic name (Differentiation,
+// Integration, Trigonometry, Algebra, Number, Geometry, …). Everything else
+// collapses to that word, so the chip row is derived, not hard-coded.
+function strandOf(topic: string): string {
+  const head = (topic.split('(')[0] || topic).trim();
+  return head.split(/\s+/)[0] || 'Other';
+}
+
+// Decorative mastery ring (conic-gradient). The % is exposed as text; the ring
+// itself is aria-hidden.
+function MasteryRing({ pct }: { pct: number | null }) {
+  const gold = 'hsl(42, 95%, 50%)';
+  const track = 'hsl(220, 16%, 88%)';
+  const deg = pct != null ? Math.round(Math.max(0, Math.min(100, pct)) * 3.6) : 0;
+  return (
+    <div
+      aria-hidden
+      className="relative w-12 h-12 shrink-0 rounded-full"
+      style={{ background: pct != null ? `conic-gradient(${gold} ${deg}deg, ${track} ${deg}deg)` : track }}
+    >
+      <div className="absolute inset-[3px] rounded-full bg-white flex items-center justify-center text-[11px] font-bold text-navy">
+        {pct != null ? `${pct}%` : '—'}
+      </div>
+    </div>
+  );
+}
 
 type Question = { id: string; markdown: string; marks: number | null; source: string | null; hasSolution: boolean };
 type LineComment = { line: number; ok: boolean; comment: string; fix?: string; tag?: string; severity?: string };
@@ -66,17 +118,22 @@ export default function PracticePage() {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
-  const [levels, setLevels] = useState(ADMIN_LEVELS);
+  // Stage 1 picker state
+  const [levels, setLevels] = useState<LevelOpt[]>(DEFAULT_LEVELS);
   const [level, setLevel] = useState('AM');
-  const [topics, setTopics] = useState<{ topic: string; n: number }[]>([]);
+  const [topics, setTopics] = useState<TopicCard[]>([]);
+  const [recommended, setRecommended] = useState<Recommended[]>([]);
   const [topic, setTopic] = useState('');
-  const [loadingTopics, setLoadingTopics] = useState(false);
+  const [loadingOverview, setLoadingOverview] = useState(false);
+  const [search, setSearch] = useState('');
+  const [strand, setStrand] = useState('All');
 
   const [q, setQ] = useState<Question | null>(null);
   const [loading, setLoading] = useState(false);
   const [exhausted, setExhausted] = useState(false);
   const [error, setError] = useState('');
   const [seen, setSeen] = useState<string[]>([]);
+  const questionRef = useRef<HTMLDivElement>(null);
 
   const [solution, setSolution] = useState<string | null>(null);
   const [solLoading, setSolLoading] = useState(false);
@@ -116,34 +173,44 @@ export default function PracticePage() {
     finally { setAuthLoading(false); }
   }
 
-  // Load topics when level changes (once authed either way)
+  // Load the progress-aware overview when the level changes (once authed).
   useEffect(() => {
     if (mode !== 'student' && mode !== 'admin') return;
-    setLoadingTopics(true); setTopic(''); setTopics([]); setQ(null); setExhausted(false); resetAttempt();
-    fetch(`/api/portal/practice/topics?level=${encodeURIComponent(level)}`)
+    setLoadingOverview(true); setTopic(''); setTopics([]); setRecommended([]);
+    setQ(null); setExhausted(false); setError(''); resetAttempt();
+    fetch(`/api/portal/practice/overview?level=${encodeURIComponent(level)}`)
       .then(r => r.json())
       .then(d => {
+        if (d.error) { setError(d.error); return; }
         setTopics(d.topics || []);
+        setRecommended(d.recommended || []);
         if (Array.isArray(d.levels) && d.levels.length) {
-          setLevels(d.levels.map((l: { key: string; label: string }) => ({ code: l.key, label: l.label })));
-          if (!d.levels.some((l: { key: string }) => l.key === level)) setLevel(d.levels[0].key);
+          setLevels(d.levels);
+          if (!d.levels.some((l: LevelOpt) => l.key === level)) setLevel(d.levels[0].key);
         }
       })
-      .catch(() => setError('Could not load topics'))
-      .finally(() => setLoadingTopics(false));
+      .catch(() => setError('Could not load your practice topics'))
+      .finally(() => setLoadingOverview(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, mode]);
+
+  // Scroll the question into view once it loads (after a card click).
+  useEffect(() => {
+    if (q) questionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [q]);
 
   function resetAttempt() {
     setWorking(''); setGrade(null); setGradedLines([]); setPrevScore(null); setSolution(null);
   }
 
-  const fetchNext = useCallback(async (excludeIds: string[]) => {
+  const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string) => {
+    const useTopic = topicArg ?? topic;
+    if (!useTopic) return;
     setLoading(true); setError(''); setExhausted(false); resetAttempt();
     try {
       const r = await fetch('/api/portal/practice/next', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level, topic, exclude: excludeIds }),
+        body: JSON.stringify({ level, topic: useTopic, exclude: excludeIds }),
       });
       const d = await r.json();
       if (!r.ok) { setError(d.error || 'Something went wrong'); return; }
@@ -153,7 +220,10 @@ export default function PracticePage() {
     finally { setLoading(false); }
   }, [level, topic]);
 
-  function start() { setSeen([]); fetchNext([]); }
+  // Clicking a topic card / recommendation starts that topic immediately.
+  function startTopic(t: string) {
+    setTopic(t); setSeen([]); fetchNext([], t);
+  }
   function tryAnother() {
     const nextSeen = q ? [...seen, q.id] : seen;
     setSeen(nextSeen);
@@ -206,7 +276,6 @@ export default function PracticePage() {
   if (grade) for (const c of grade.lineComments) commentsByLine.set(c.line, c);
 
   // Admin test harness for Stage 2 generation (not part of the student flow).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function testGenerate() {
     if (!topic) return;
     setGenLoading(true); setGen(null);
@@ -248,43 +317,113 @@ export default function PracticePage() {
 
   const isStudent = mode === 'student';
 
+  // Strand chips derived from the loaded topic list.
+  const strandChips = ['All', ...Array.from(new Set(topics.map(t => strandOf(t.topic)))).sort()];
+  const filteredTopics = topics.filter(t =>
+    (strand === 'All' || strandOf(t.topic) === strand) &&
+    (!search.trim() || t.topic.toLowerCase().includes(search.trim().toLowerCase()))
+  );
+
   return (
-    <div className="pb-20 sm:pb-6 max-w-3xl mx-auto">
+    <div className="pb-20 sm:pb-6 max-w-4xl mx-auto">
       <h1 className="text-xl font-bold text-navy mb-1 pt-1">Practice</h1>
       <p className="text-sm text-slate-500 mb-4">
         {isStudent
-          ? 'Pick a topic, work the question in the box, and get it marked line by line.'
-          : 'Admin testing mode — retrieval + generation harness.'}
+          ? 'Pick a topic to start — snap or type your working and get it marked line by line.'
+          : 'Admin testing mode — all levels, retrieval + generation harness (no student mastery).'}
       </p>
 
-      {/* Picker */}
-      <div className="flex flex-wrap gap-3 items-end bg-white border border-slate-200 rounded-2xl p-4 mb-5">
-        <label className="flex flex-col text-xs font-semibold text-slate-500 gap-1">
-          Level
-          <select value={level} onChange={(e) => setLevel(e.target.value)}
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 min-w-[150px]">
-            {levels.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
-          </select>
-        </label>
-        <label className="flex flex-col text-xs font-semibold text-slate-500 gap-1 flex-1 min-w-[180px]">
-          Topic
-          <select value={topic} onChange={(e) => setTopic(e.target.value)} disabled={loadingTopics || !topics.length}
-            className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 w-full disabled:bg-slate-50">
-            <option value="">{loadingTopics ? 'Loading…' : topics.length ? 'Choose a topic…' : 'No topics'}</option>
-            {topics.map((t) => <option key={t.topic} value={t.topic}>{t.topic} ({t.n})</option>)}
-          </select>
-        </label>
-        <button onClick={start} disabled={!topic || loading}
-          className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
-          {q || exhausted ? 'Restart topic' : 'Start'}
-        </button>
-        {!isStudent && (
+      {/* ── Stage 1: progress-aware picker ── */}
+      {/* Segmented level control */}
+      <div className="inline-flex flex-wrap gap-1 bg-slate-100 rounded-xl p-1 mb-4">
+        {levels.map((l) => (
+          <button key={l.key} onClick={() => setLevel(l.key)}
+            className={`text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors ${
+              level === l.key ? 'bg-navy text-[hsl(45,100%,96%)]' : 'text-slate-500 hover:text-navy'}`}>
+            {l.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Search + strand filter */}
+      <div className="flex flex-col gap-3 mb-4">
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search topics…"
+          className="w-full sm:max-w-xs border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30" />
+        {strandChips.length > 1 && (
+          <div className="flex flex-wrap gap-1.5">
+            {strandChips.map((s) => (
+              <button key={s} onClick={() => setStrand(s)}
+                className={`text-xs font-medium rounded-full px-3 py-1 border transition-colors ${
+                  strand === s ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'bg-white text-slate-500 border-slate-200 hover:border-navy/40'}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Recommended for you (students only) */}
+      {isStudent && recommended.length > 0 && (
+        <div className="mb-5">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">⭐ Recommended for you</h2>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+            {recommended.map((r) => {
+              const t = topics.find(x => x.topic === r.topic);
+              return (
+                <button key={r.topic} onClick={() => startTopic(r.topic)}
+                  className="group text-left rounded-2xl p-4 border border-[hsl(42,90%,62%)] bg-[hsl(45,100%,97%)] flex gap-3 items-center hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-[hsl(42,90%,50%)]">
+                  <MasteryRing pct={t?.mastery ?? null} />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-navy text-sm truncate">{r.topic}</div>
+                    <div className="text-[11px] text-[hsl(35,55%,38%)] mt-0.5">{r.reason}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Admin: test-generate control (kept from the old harness) */}
+      {!isStudent && (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="text-xs text-slate-400">{topic ? `Selected: ${topic}` : 'Pick a topic card to test-generate.'}</span>
           <button onClick={testGenerate} disabled={!topic || genLoading} title="Admin: generate + code-verify one question (Stage 2)"
             className="bg-white border border-violet-300 text-violet-700 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-40">
             {genLoading ? 'Generating…' : '🧪 Test generate'}
           </button>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Topic grid (web) / rows (mobile) */}
+      {loadingOverview ? (
+        <p className="text-sm text-slate-400 mb-5">Loading topics…</p>
+      ) : filteredTopics.length === 0 ? (
+        <p className="text-sm text-slate-400 mb-5">
+          {topics.length === 0 ? 'No topics available for this level yet.' : 'No topics match your search.'}
+        </p>
+      ) : (
+        <div className="grid gap-3 grid-cols-1 sm:[grid-template-columns:repeat(auto-fill,minmax(230px,1fr))] mb-6">
+          {filteredTopics.map((t) => {
+            const meta = STATUS_META[t.status];
+            return (
+              <button key={t.topic} onClick={() => startTopic(t.topic)}
+                className={`group text-left bg-white border rounded-2xl p-4 flex gap-3 items-center transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-navy/30 ${
+                  topic === t.topic ? 'border-navy ring-2 ring-navy/20' : 'border-slate-200'}`}>
+                <MasteryRing pct={t.mastery} />
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-navy text-sm truncate">{t.topic}</div>
+                  <div className="mt-1 flex items-center gap-2 flex-wrap">
+                    <span className={`text-[11px] font-medium border rounded-full px-2 py-0.5 ${meta.cls}`}>{meta.label}</span>
+                    <span className="text-[11px] text-slate-400">{t.questionCount}+ questions</span>
+                  </div>
+                </div>
+                <span className="text-navy text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline shrink-0">Start →</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Stage 2 generation test result (admin) */}
       {!isStudent && gen && (
@@ -312,10 +451,11 @@ export default function PracticePage() {
 
       {exhausted && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
-          You&apos;ve seen every question we have for this topic. Try another topic, or hit <b>Restart topic</b> to go again.
+          You&apos;ve seen every question we have for this topic. Try another topic, or tap the topic card again to go through them again.
         </div>
       )}
 
+      <div ref={questionRef}>
       {q && !loading && (
         <div className="space-y-4">
           {/* Question card */}
@@ -494,6 +634,7 @@ export default function PracticePage() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

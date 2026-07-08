@@ -63,10 +63,14 @@ export async function POST(req: NextRequest) {
   // Student display fields from Airtable (best effort)
   let displayName: string | null = null;
   let level: string | null = null;
+  let subjects: string[] | null = null;
   try {
     const student = await airtableRequest('Students', `/${t.row.airtable_student_id}`);
     displayName = student.fields?.['Student Name'] || null;
     level = student.fields?.['Level'] || null;
+    // Subjects is a multipleSelects field → array of strings; scopes practice.
+    const rawSubjects = student.fields?.['Subjects'];
+    subjects = Array.isArray(rawSubjects) && rawSubjects.length ? rawSubjects : null;
   } catch { /* non-fatal */ }
 
   const supabase = createServiceClient();
@@ -95,6 +99,7 @@ export async function POST(req: NextRequest) {
     email,
     display_name: displayName,
     level,
+    subjects,
     consent_record: {
       parent_email: t.row.email,
       policy_version: POLICY_VERSION,
