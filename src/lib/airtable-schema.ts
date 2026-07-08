@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-06-17T13:41:49.322Z
+// Last synced: 2026-07-08T01:31:32.078Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -373,7 +373,9 @@ export const SCHEMA = {
           "Rescheduled",
           "Additional",
           "Trial",
-          "Revision Sprint"
+          "Revision Sprint",
+          "Revision Makeup",
+          "Ad-hoc"
         ]
       },
       "Status": {
@@ -387,7 +389,17 @@ export const SCHEMA = {
           "Cancelled - Prorated"
         ]
       },
+      "Is Makeup": {
+        "type": "checkbox"
+      },
+      "Outcome": {
+        "type": "formula"
+      },
       "Rescheduled Lesson ID": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Lessons"
+      },
+      "Makeup For": {
         "type": "multipleRecordLinks",
         "linkedTable": "Lessons"
       },
@@ -404,12 +416,11 @@ export const SCHEMA = {
       "Rescheduled Slot": {
         "type": "multipleLookupValues"
       },
+      "Is Revision Makeup": {
+        "type": "checkbox"
+      },
       "Charge Override": {
         "type": "currency"
-      },
-      "From field: Rescheduled To": {
-        "type": "multipleRecordLinks",
-        "linkedTable": "Lessons"
       },
       "Topics Covered": {
         "type": "multilineText"
@@ -476,6 +487,9 @@ export const SCHEMA = {
       "Source Invoice": {
         "type": "multipleRecordLinks",
         "linkedTable": "Invoices"
+      },
+      "Replacement Status": {
+        "type": "multipleLookupValues"
       }
     }
   },
@@ -525,7 +539,8 @@ export const SCHEMA = {
           "Regular",
           "Enrollment",
           "Revision Sprint",
-          "Adjustment"
+          "Adjustment",
+          "Adhoc"
         ]
       },
       "Status": {
@@ -1286,6 +1301,24 @@ export const SCHEMA = {
       },
       "Uploaded At": {
         "type": "dateTime"
+      }
+    }
+  },
+  "Todos": {
+    "tableId": "tblRX44eqbj8CZO3f",
+    "fields": {
+      "Task": {
+        "type": "singleLineText"
+      },
+      "Status": {
+        "type": "singleSelect",
+        "options": [
+          "To Do",
+          "Done"
+        ]
+      },
+      "Notes": {
+        "type": "multilineText"
       }
     }
   }
