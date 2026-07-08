@@ -1293,3 +1293,9 @@ body {
   .lrn-desmos { height: 200px; }
   .lrn-start-topic { font-size: 1.6rem; }
 }
+
+/* ── LEARN player — step-reveal pop ──────────────────────────────── */
+@keyframes pop {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
