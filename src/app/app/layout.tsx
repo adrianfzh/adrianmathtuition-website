@@ -1,11 +1,17 @@
 // App shell — wraps every /app/* page. Server-side auth gate: no session →
 // /login. Desktop: top nav. Mobile (<640px): bottom tab bar (thumb-reachable).
+// Adrian's signed admin cookie also passes the gate (review/testing) — the
+// per-page APIs decide what an admin caller may see (e.g. pending units).
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { requireAuth } from '@/lib/portal-auth';
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import SignOutButton from './signout-button';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  await requireAuth();
+  const cookieStore = await cookies();
+  const isAdmin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
+  if (!isAdmin) await requireAuth();
 
   return (
     <div className="min-h-screen bg-[hsl(45,100%,98%)]">
