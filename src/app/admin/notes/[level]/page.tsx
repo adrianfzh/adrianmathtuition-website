@@ -20,7 +20,7 @@ const SLUG_TO_UPLOAD_LEVEL: Record<string, string> = {
 // No sub-levels needed any more — everything is flat
 const SLUG_TO_SUBLEVELS: Record<string, string[]> = {};
 
-interface Note { id: string; title: string; pdfUrl: string; uploadedAt: string; }
+interface Note { id: string; title: string; pdfUrl: string; uploadedAt: string; source?: 'dropbox' | 'airtable'; }
 
 function fileNameToTitle(name: string) {
   return name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
@@ -35,6 +35,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [dropboxFolder, setDropboxFolder] = useState('');
 
   // Edit mode
   const [editMode, setEditMode] = useState(false);
@@ -80,6 +81,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setNotes(data.notes ?? []);
+      if (data.dropboxEnabled && data.dropboxFolder) setDropboxFolder(data.dropboxFolder);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to load notes');
     } finally { setLoading(false); }
@@ -275,7 +277,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                         }}
                       />
                     </div>
-                  ) : editMode ? (
+                  ) : editMode && note.source !== 'dropbox' ? (
                     <div className="nl-card nl-card-edit">
                       <div className="nl-card-top"><span className="nl-doc-badge">PDF</span></div>
                       <span className="nl-card-text">{note.title}</span>
@@ -289,9 +291,12 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                     </div>
                   ) : (
                     <button className="nl-card" onClick={() => window.open(note.pdfUrl, '_blank')}>
-                      <div className="nl-card-top"><span className="nl-doc-badge">PDF</span></div>
+                      <div className="nl-card-top">
+                        <span className="nl-doc-badge">PDF</span>
+                        {note.source === 'dropbox' && <span className="nl-dbx-badge" title="Managed in Dropbox">☁︎ Dropbox</span>}
+                      </div>
                       <span className="nl-card-text">{note.title}</span>
-                      <span className="nl-card-hint">Tap to open &middot; print</span>
+                      <span className="nl-card-hint">{editMode && note.source === 'dropbox' ? 'Edit in Dropbox' : 'Tap to open · print'}</span>
                     </button>
                   )}
                 </div>
@@ -299,10 +304,17 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
             </div>
           )}
 
+          {/* Dropbox drop-in hint */}
+          {dropboxFolder && (
+            <div className="nl-dbx-hint">
+              ☁︎ Drop PDFs into <b>Dropbox / Apps / AdrianMathNotes / {dropboxFolder}</b> and they appear here automatically — no upload needed.
+            </div>
+          )}
+
           {/* Upload section — collapsed by default */}
           <div className="nl-upload-section">
             <button className="nl-upload-toggle" onClick={() => setUploadOpen(o => !o)}>
-              {uploadOpen ? '▲ Hide upload' : '＋ Upload notes'}
+              {uploadOpen ? '▲ Hide upload' : '＋ Upload notes (Blob)'}
             </button>
 
             {uploadOpen && (
@@ -427,6 +439,9 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 }
 .nl-card-text { font-size: 14.5px; font-weight: 700; color: #13203a; line-height: 1.3; flex: 1; }
 .nl-card-hint { font-size: 11px; color: #98a2b3; font-weight: 500; }
+.nl-card-top { justify-content: space-between; }
+.nl-dbx-badge { font-size: 9.5px; font-weight: 700; color: #0061ff; background: #eaf1ff; padding: 3px 6px; border-radius: 6px; line-height: 1; white-space: nowrap; }
+.nl-dbx-hint { font-size: 12.5px; color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; line-height: 1.5; }
 
 /* Edit-mode card */
 .nl-card-edit {
