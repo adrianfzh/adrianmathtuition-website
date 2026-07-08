@@ -9,10 +9,20 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
+// URL is exposed as NEXT_PUBLIC_SUPABASE_URL locally but only as SUPABASE_URL in
+// Vercel (Preview + Production) — fall back so server clients work in every env.
+// (Without this, deployed invite/activate/service calls throw "supabaseUrl is
+// required" and surface to the client as a generic "Network error".)
+function supabaseUrl() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  if (!url) throw new Error('SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL is not set');
+  return url;
+}
+
 export async function createSupabaseServer() {
   const cookieStore = await cookies();
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseUrl(),
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
@@ -41,7 +51,7 @@ export function createServiceClient() {
   if (!key) {
     throw new Error('SUPABASE_SECRET_KEY is not set — required for this operation');
   }
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
+  return createClient(supabaseUrl(), key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
