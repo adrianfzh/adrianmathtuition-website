@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
+import PasswordInput from '@/components/PasswordInput';
 
 function LoginForm() {
   const router = useRouter();
@@ -88,13 +89,12 @@ function LoginForm() {
             onChange={e => setEmail(e.target.value)}
             className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30"
           />
-          <input
-            type="password"
+          <PasswordInput
             required
             autoComplete="current-password"
             placeholder="Password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={setPassword}
             className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30"
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
