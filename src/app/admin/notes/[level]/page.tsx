@@ -293,7 +293,14 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
                     <button className="nl-card" onClick={() => window.open(note.pdfUrl, '_blank')}>
                       <div className="nl-card-top">
                         <span className="nl-doc-badge">PDF</span>
-                        {note.source === 'dropbox' && <span className="nl-dbx-badge" title="Managed in Dropbox">☁︎ Dropbox</span>}
+                        {note.source === 'dropbox' && (
+                          <span className="nl-dbx-badge" title="Managed in Dropbox">
+                            <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
+                              <path d="M6 1.807 0 5.629l6 3.822 6.001-3.822L6 1.807zM18 1.807l-6 3.822 6 3.822 6-3.822-6-3.822zM0 13.274l6 3.822 6.001-3.822L6 9.452l-6 3.822zM18 9.452l-6 3.822 6 3.822 6-3.822-6-3.822zM6 18.371l6.001 3.822 6-3.822-6-3.822L6 18.371z"/>
+                            </svg>
+                            Dropbox
+                          </span>
+                        )}
                       </div>
                       <span className="nl-card-text">{note.title}</span>
                       <span className="nl-card-hint">{editMode && note.source === 'dropbox' ? 'Edit in Dropbox' : 'Tap to open · print'}</span>
@@ -307,7 +314,10 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
           {/* Dropbox drop-in hint */}
           {dropboxFolder && (
             <div className="nl-dbx-hint">
-              ☁︎ Drop PDFs into <b>Dropbox / Apps / AdrianMathNotes / {dropboxFolder}</b> and they appear here automatically — no upload needed.
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="#0061ff" aria-hidden="true">
+                <path d="M6 1.807 0 5.629l6 3.822 6.001-3.822L6 1.807zM18 1.807l-6 3.822 6 3.822 6-3.822-6-3.822zM0 13.274l6 3.822 6.001-3.822L6 9.452l-6 3.822zM18 9.452l-6 3.822 6 3.822 6-3.822-6-3.822zM6 18.371l6.001 3.822 6-3.822-6-3.822L6 18.371z"/>
+              </svg>{' '}
+              Drop PDFs into <b>Dropbox / Apps / AdrianMathNotes / {dropboxFolder}</b> and they appear here automatically — no upload needed.
             </div>
           )}
 
@@ -440,8 +450,10 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
 .nl-card-text { font-size: 14.5px; font-weight: 700; color: #13203a; line-height: 1.3; flex: 1; }
 .nl-card-hint { font-size: 11px; color: #98a2b3; font-weight: 500; }
 .nl-card-top { justify-content: space-between; }
-.nl-dbx-badge { font-size: 9.5px; font-weight: 700; color: #0061ff; background: #eaf1ff; padding: 3px 6px; border-radius: 6px; line-height: 1; white-space: nowrap; }
+.nl-dbx-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px; font-weight: 700; color: #0061ff; background: #eaf1ff; padding: 3px 7px; border-radius: 6px; line-height: 1; white-space: nowrap; }
+.nl-dbx-badge svg { display: block; }
 .nl-dbx-hint { font-size: 12.5px; color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; line-height: 1.5; }
+.nl-dbx-hint svg { vertical-align: -1px; }
 
 /* Edit-mode card */
 .nl-card-edit {
