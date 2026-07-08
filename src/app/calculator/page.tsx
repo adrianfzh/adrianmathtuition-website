@@ -141,6 +141,13 @@ export default function CalculatorPage() {
   const [mathTab, setMathTab] = useState<string>('MATH');
   const [showApps, setShowApps] = useState(false);
   const [realEmu, setRealEmu] = useState(false);
+  // Deep-link: /calculator?real=1 opens the real-emulator overlay immediately
+  // (the admin-hub TI-84 tile uses this to jump straight to the working emulator).
+  useEffect(() => {
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('real') === '1') {
+      setRealEmu(true);
+    }
+  }, []);
   const [zoomMenu, setZoomMenu] = useState(false);
   const [toast, setToast] = useState('');
   // graphing
@@ -750,7 +757,7 @@ export default function CalculatorPage() {
       </div>
 
       {showApps && <EquationSolver title="PlySmlt2 — Equation Solver" accent="#2f6cab" onClose={() => setShowApps(false)} />}
-      {realEmu && <RealEmulator title="TI-84 Plus CE — real emulator" url="https://www.ti84-online.com/" alts={[{ label: 'tcalc', url: 'https://tcalc.edu.tpglit.ch/' }, { label: 'jsTIfied', url: 'https://www.cemetech.net/projects/jstified/' }]} onClose={() => setRealEmu(false)} />}
+      {realEmu && <RealEmulator title="TI-84 Plus CE — real emulator" url="https://www.ti84-online.com/calculator.html" alts={[{ label: 'tcalc', url: 'https://tcalc.edu.tpglit.ch/' }, { label: 'jsTIfied', url: 'https://www.cemetech.net/projects/jstified/' }]} onClose={() => setRealEmu(false)} />}
 
       <style jsx>{`
         .wrap { min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; background: #e9eaec; padding: 10px; box-sizing: border-box; }
