@@ -27,15 +27,14 @@ export async function POST(req: NextRequest) {
   const q = data?.[0];
   if (!q) return NextResponse.json({ question: null });
 
-  const source = [q.school, q.year ? String(q.year) : null, q.paper ? `P${q.paper}` : null,
-    q.question_number ? `Q${q.question_number}` : null].filter(Boolean).join(' ');
-
+  // Deliberately NOT exposing the originating school/paper to students —
+  // the portal shows the question and marks only.
   return NextResponse.json({
     question: {
       id: q.id,
       markdown: questionMarkdown(q),
       marks: q.total_marks ?? null,
-      source: source || null,
+      source: null,
       hasSolution: !!q.has_solution,
     },
   });

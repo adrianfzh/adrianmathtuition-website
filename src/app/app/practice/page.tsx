@@ -460,10 +460,11 @@ export default function PracticePage() {
         <div className="space-y-4">
           {/* Question card */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5">
-            <div className="flex justify-between items-center mb-3 text-xs text-slate-400">
-              <span>{q.source || 'Practice question'}</span>
-              {q.marks ? <span className="font-semibold">{q.marks} mark{q.marks === 1 ? '' : 's'}</span> : null}
-            </div>
+            {q.marks ? (
+              <div className="flex justify-end items-center mb-3 text-xs text-slate-400">
+                <span className="font-semibold">{q.marks} mark{q.marks === 1 ? '' : 's'}</span>
+              </div>
+            ) : null}
             <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
               <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{q.markdown}</ReactMarkdown>
             </div>
