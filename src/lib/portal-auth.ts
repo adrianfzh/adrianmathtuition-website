@@ -19,6 +19,7 @@ export interface PortalAccount {
   email: string;
   display_name: string | null;
   level: string | null;
+  subjects: string[] | null;
   telegram_chat_id: number | null;
   prefs: Record<string, unknown>;
   created_at: string;

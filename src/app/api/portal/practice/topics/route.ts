@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (new URL(req.url).searchParams.get('auth') === 'check') return NextResponse.json({ ok: true });
 
   const url = new URL(req.url);
-  const levels = caller.kind === 'student' ? qbLevelsFor(caller.account.level) : null;
+  const levels = caller.kind === 'student' ? qbLevelsFor(caller.account.level, caller.account.subjects) : null;
   const level = url.searchParams.get('level') || levels?.[0]?.key;
   if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });
   if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
