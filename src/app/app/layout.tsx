@@ -16,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="hidden sm:flex items-center gap-5">
               <Link href="/app" className="text-sm text-gray-600 hover:text-navy">Dashboard</Link>
               <Link href="/app/practice" className="text-sm text-gray-600 hover:text-navy">Practice</Link>
-              <Link href="/app/learn" className="text-sm text-gray-600 hover:text-navy">Notes</Link>
+              <Link href="/app/learn" className="text-sm text-gray-600 hover:text-navy">Learn</Link>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -38,7 +38,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <span className="text-lg leading-none">✏️</span>Practice
           </Link>
           <Link href="/app/learn" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
-            <span className="text-lg leading-none">📚</span>Notes
+            <span className="text-lg leading-none">📚</span>Learn
           </Link>
         </div>
       </nav>
