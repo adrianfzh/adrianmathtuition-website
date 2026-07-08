@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
+import PasswordInput from '@/components/PasswordInput';
 
 // Reuse the practice page's markdown+LaTeX stack.
 const REMARK = [remarkMath, remarkGfm];
@@ -179,13 +180,12 @@ export default function KioskClient() {
                 Enter the admin password once to authorise this device. Students can then print
                 worksheets without signing in.
               </p>
-              <input
-                type="password"
+              <PasswordInput
                 inputMode="text"
                 autoComplete="current-password"
                 placeholder="Admin password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={setPassword}
                 aria-label="Admin password"
               />
               {setupErr && <div className="err">{setupErr}</div>}

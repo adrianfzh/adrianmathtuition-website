@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import PasswordInput from '@/components/PasswordInput';
 
 // Mini calculator icon for the launcher (replaces the abacus emoji).
 const CalcIcon = (
@@ -102,12 +103,11 @@ export default function AdminHub() {
             <h1>Admin Hub</h1>
             <p>Adrian&apos;s Math Tuition</p>
             <form onSubmit={handleLogin}>
-              <input
-                type="password"
+              <PasswordInput
                 className="hub-pw-input"
                 placeholder="Admin password"
                 value={password}
-                onChange={e => { setPassword(e.target.value); setAuthError(''); }}
+                onChange={v => { setPassword(v); setAuthError(''); }}
                 autoFocus
                 disabled={authLoading}
               />
@@ -164,6 +164,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '🧩', title: 'Worksheet Builder', sub: 'Pick QB questions · roles · PDF',   href: '/admin/worksheet-builder' },
+  { emoji: '🎓', title: 'Learn Review', sub: 'Approve · edit interactive units', href: '/admin/learn-review' },
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
   { emoji: '🏖️', title: 'June Revision', sub: 'Published schedules · JC2 · Sec 4', href: '/admin/june-revision' },
