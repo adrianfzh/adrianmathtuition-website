@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
+import { dropboxConfigured, listFolder } from '@/lib/dropbox';
 
 const LEVELS = [
   { slug: 's1', label: 'S1', sub: 'Secondary 1',  atLevel: 'S1', from: '#1d4ed8', to: '#3b82f6' },
@@ -12,18 +13,41 @@ const LEVELS = [
   { slug: 'jc', label: 'JC', sub: 'H2 Maths',      atLevel: 'JC', from: '#92400e', to: '#f59e0b' },
 ];
 
+const titleKey = (name: string) => name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim().toLowerCase();
+
+async function dbxTitleKeys(folder: string): Promise<Set<string>> {
+  try {
+    const entries = await listFolder(`/${folder}`);
+    return new Set(entries.filter(e => e.tag === 'file' && /\.pdf$/i.test(e.name)).map(e => titleKey(e.name)));
+  } catch { return new Set(); }
+}
+
 export default async function NotesIndexPage() {
   const cookieStore = await cookies();
   if (!verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value)) redirect('/admin');
 
-  // Note counts per level (best-effort)
+  // Note counts per level — merge Dropbox files with Airtable/Blob notes, deduped
+  // by title (a note that exists in both sources counts once). A blank-title
+  // Airtable record (no PDF) is ignored so it never inflates the count.
   const counts: Record<string, number> = {};
   try {
-    const data = await airtableRequestAll('PrintNotes', '?fields[]=Level');
+    const [data, ...dbxSets] = await Promise.all([
+      airtableRequestAll('PrintNotes', '?fields[]=Level&fields[]=Title&fields[]=PDF URL'),
+      ...LEVELS.map(l => dropboxConfigured() ? dbxTitleKeys(l.atLevel) : Promise.resolve(new Set<string>())),
+    ]);
+    const dbxByLevel: Record<string, Set<string>> = {};
+    LEVELS.forEach((l, i) => { dbxByLevel[l.atLevel] = dbxSets[i]; });
+    // Start from each level's Dropbox keys, then add Airtable titles not already there.
+    const keysByLevel: Record<string, Set<string>> = {};
+    for (const l of LEVELS) keysByLevel[l.atLevel] = new Set(dbxByLevel[l.atLevel]);
     for (const r of data.records || []) {
       const lv = r.fields?.['Level'] as string | undefined;
-      if (lv) counts[lv] = (counts[lv] || 0) + 1;
+      const title = ((r.fields?.['Title'] as string) || '').trim();
+      const hasPdf = !!(r.fields?.['PDF URL']);
+      if (!lv || !title || !hasPdf || !keysByLevel[lv]) continue; // skip blank/no-PDF junk
+      keysByLevel[lv].add(title.toLowerCase());
     }
+    for (const l of LEVELS) counts[l.atLevel] = keysByLevel[l.atLevel].size;
   } catch { /* counts are best-effort */ }
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
