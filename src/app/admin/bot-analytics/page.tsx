@@ -89,6 +89,14 @@ type Question = {
   dismissed?: boolean;
 };
 type Cluster = { theme: string; proposed_rule: string; confidence: string; affects_topics: string[]; suggestion_ids: number[] };
+
+// Compact token count, e.g. 8123 -> "8.1k", 45678 -> "46k".
+function fmtTok(n: number): string {
+  if (!n) return '0';
+  if (n >= 10000) return `${Math.round(n / 1000)}k`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return String(n);
+}
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
 // Confusion follow-up signal patterns
@@ -593,6 +601,7 @@ export default function BotAnalytics() {
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
                         <span style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
                           {q.timeTaken ? <span title="response time" style={{ color: '#94a3b8' }}>{q.timeTaken.toFixed(1)}s</span> : null}
+                          {(q.tokensIn || q.tokensOut) ? <span title={`${(q.tokensIn || 0).toLocaleString()} tokens in / ${(q.tokensOut || 0).toLocaleString()} out`} style={{ fontFamily: 'monospace', color: '#94a3b8' }}>{fmtTok(q.tokensIn || 0)}↑{fmtTok(q.tokensOut || 0)}↓</span> : null}
                           {(q.tokensIn || q.tokensOut) ? <span title={`${q.tokensIn || 0} in / ${q.tokensOut || 0} out · ${q.modelUsed || ''}`} style={{ fontFamily: 'monospace', color: '#0f766e', fontWeight: 600 }}>${costFor(q.tokensIn || 0, q.tokensOut || 0, q.modelUsed).toFixed(3)}</span> : null}
                           {q.status && q.status !== 'New' && statusBadge(q.status)}
                           {confBadge(q.confidence)}
