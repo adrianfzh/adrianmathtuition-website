@@ -23,6 +23,11 @@ const TARGET_PER_TIER = 7;  // desired verified questions per (level, topic, tie
 const PER_TOPIC_CAP = 3;    // max requests enqueued per (topic, tier) per run
 const MAX_ENQUEUE = 12;     // max requests enqueued per run (bounds nightly cost)
 const QUEUE_BACKOFF = 15;
+// Give up on a (topic, tier) shelf after this many CONSECUTIVE failed requests
+// within HISTORY_DAYS — stops burning budget nightly on topics the generator
+// can't crack. Un-skips automatically when a success lands or failures age out.
+const SKIP_AFTER_FAILURES = 3;
+const HISTORY_DAYS = 14;
 // Topics whose bank questions all carry diagrams but whose MATH is text-safe —
 // these may seed from KB worked examples. Genuinely figure-dependent topics
 // (Plane Geometry, Integration (Area)) stay curated-only until diagram
@@ -56,7 +61,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, skipped: `queue busy (${queued} waiting)` });
   }
 
-  const report: { level: string; topic: string; tier: string; have: number; enqueued: number }[] = [];
+  // Recent per-shelf outcomes (topic column is stamped by this cron, so history
+  // accumulates from the first stamped run). Newest first per shelf.
+  const { data: hist } = await supa
+    .from('generation_requests')
+    .select('topic, tier, status, completed_at')
+    .not('topic', 'is', null)
+    .in('status', ['done', 'failed'])
+    .gte('created_at', new Date(Date.now() - HISTORY_DAYS * 86400_000).toISOString())
+    .order('completed_at', { ascending: false });
+  const shelfHistory = new Map<string, string[]>();
+  for (const h of hist || []) {
+    const k = `${h.topic}|${h.tier ?? ''}`;
+    if (!shelfHistory.has(k)) shelfHistory.set(k, []);
+    shelfHistory.get(k)!.push(h.status as string);
+  }
+  const shelfSkipped = (topic: string, tier: string): boolean => {
+    const statuses = shelfHistory.get(`${topic}|${tier}`) || [];
+    if (statuses.length < SKIP_AFTER_FAILURES) return false;
+    return statuses.slice(0, SKIP_AFTER_FAILURES).every(s => s === 'failed');
+  };
+
+  const report: { level: string; topic: string; tier: string; have: number; enqueued: number; skipped?: string }[] = [];
   let budget = MAX_ENQUEUE - (queued ?? 0);
 
   for (const [level, cfg] of Object.entries(TOPUP_LEVELS)) {
@@ -97,6 +123,7 @@ export async function GET(req: NextRequest) {
           status: 'pending',
           generated_ids: [] as string[],
           tier,
+          topic,
           ...(isGraph ? { figure_mode: 'graph' } : {}),
         }));
       } else if (TEXT_FALLBACK_TOPICS.has(topic)) {
@@ -116,6 +143,7 @@ export async function GET(req: NextRequest) {
             status: 'pending',
             generated_ids: [] as string[],
             tier,
+            topic,
           }));
         }
       }
@@ -124,6 +152,10 @@ export async function GET(req: NextRequest) {
       // whose difficulty maps to each tier, top up any tier below target.
       for (const tier of STOCK_TIERS) {
         if (budget <= 0) break;
+        if (shelfSkipped(topic, tier)) {
+          report.push({ level, topic, tier, have: -1, enqueued: 0, skipped: `last ${SKIP_AFTER_FAILURES} attempts failed` });
+          continue;
+        }
         const { count: have } = await supa
           .from('questions')
           .select('id', { count: 'exact', head: true })
@@ -149,7 +181,12 @@ export async function GET(req: NextRequest) {
   }
 
   const total = report.reduce((a, r) => a + r.enqueued, 0);
-  return NextResponse.json({ ok: true, enqueued: total, lowTiers: report.filter(r => r.have < TARGET_PER_TIER) });
+  return NextResponse.json({
+    ok: true,
+    enqueued: total,
+    skippedShelves: report.filter(r => r.skipped),
+    lowTiers: report.filter(r => !r.skipped && r.have < TARGET_PER_TIER),
+  });
 }
 
 export const POST = GET;
