@@ -869,6 +869,31 @@ export default function AdminPage() {
       return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
+    // Outstanding on a single invoice — only a Sent, not-fully-paid invoice owes money.
+    function invoiceOutstanding(i: any): number {
+      if (i.status !== 'Sent' || i.isPaid) return 0;
+      return Math.max(0, (i.finalAmount || 0) - (i.amountPaid || 0));
+    }
+    const shortMon = (m: string) => String(m || '').split(' ')[0].slice(0, 3);
+    // Sum this student's outstanding across every month EXCEPT the one on the card,
+    // so any month view surfaces balances sitting in other months.
+    function otherMonthsOutstanding(inv: any): { total: number; entries: { month: string; amount: number }[] } {
+      const sid = inv.studentId;
+      if (!sid) return { total: 0, entries: [] };
+      const monthOrder = ['January','February','March','April','May','June',
+        'July','August','September','October','November','December'];
+      const parseM = (m: string) => { const [mo, yr] = String(m).split(' '); return parseInt(yr) * 12 + monthOrder.indexOf(mo); };
+      let total = 0;
+      const entries: { month: string; amount: number }[] = [];
+      for (const i of invoices) {
+        if (i.studentId !== sid || i.month === inv.month) continue;
+        const o = invoiceOutstanding(i);
+        if (o > 0.001) { total += o; entries.push({ month: i.month, amount: o }); }
+      }
+      entries.sort((a, b) => parseM(b.month) - parseM(a.month));
+      return { total, entries };
+    }
+
     function renderCard(inv: any): string {
       const isDraft = inv.status === 'Draft';
       const isApproved = inv.status === 'Approved';
@@ -890,6 +915,16 @@ export default function AdminPage() {
         : '';
 
       const outstanding = inv.finalAmount - (inv.amountPaid || 0);
+
+      // Cross-month awareness: warn if this student owes on any OTHER month.
+      const otherOut = otherMonthsOutstanding(inv);
+      const otherMonthsBadge = otherOut.total > 0.001
+        ? `<div class="other-months-out" title="Outstanding balances on other months for ${escAttr(inv.studentName)}"
+             style="margin-top:8px;font-size:12.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:7px 10px;line-height:1.5;">
+             ⚠️ <strong>$${otherOut.total.toFixed(2)}</strong> outstanding in other months: ${otherOut.entries.map(e => `${escHtml(shortMon(e.month))} $${e.amount.toFixed(2)}`).join(' · ')}
+           </div>`
+        : '';
+
       let paymentBadge = '';
       if (isSent) {
         if (inv.isPaid && (!inv.amountPaid || outstanding <= 0)) {
@@ -1077,6 +1112,7 @@ export default function AdminPage() {
               ${adjLine}
               <div class="final-amount">$${inv.finalAmount.toFixed(2)}</div>
               ${paymentBadge}
+              ${otherMonthsBadge}
               ${inlinePaidHtml}
               ${quickEditHtml}
             </div>
