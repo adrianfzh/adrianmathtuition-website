@@ -18,7 +18,12 @@ const TOPUP_LEVELS: Record<string, { seedLevels: string[]; poolLevels: string[] 
 const TARGET = 20;          // desired verified questions per (level, topic)
 const PER_TOPIC_CAP = 3;    // max requests enqueued per topic per run
 const MAX_ENQUEUE = 12;     // max requests enqueued per run (bounds nightly cost)
-const QUEUE_BACKOFF = 15;   // skip run if this many requests already waiting
+const QUEUE_BACKOFF = 15;
+// Topics whose bank questions all carry diagrams but whose MATH is text-safe —
+// these may seed from KB worked examples. Genuinely figure-dependent topics
+// (Plane Geometry, Integration (Area)) stay curated-only until diagram
+// generation exists.
+const TEXT_FALLBACK_TOPICS = new Set(['Modulus Functions', 'Trigonometry (R-Formula)']);   // skip run if this many requests already waiting
 
 function authed(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') || '';
@@ -69,17 +74,39 @@ export async function GET(req: NextRequest) {
         .is('deleted_at', null)
         .not('solution', 'is', null)
         .limit(30);
-      if (!seeds?.length) { report.push({ level, topic, have: have ?? 0, enqueued: 0 }); continue; }
-
-      const picked = seeds.sort(() => Math.random() - 0.5).slice(0, need);
-      const rows = picked.map(s => ({
-        source_question_id: s.id,
-        similarity_level: 'similar',
-        count: 1,
-        requested_by: 'admin-topup',
-        status: 'pending',
-        generated_ids: [] as string[],
-      }));
+      let rows: Record<string, unknown>[] = [];
+      if (seeds?.length) {
+        const picked = seeds.sort(() => Math.random() - 0.5).slice(0, need);
+        rows = picked.map(s => ({
+          source_question_id: s.id,
+          similarity_level: 'similar',
+          count: 1,
+          requested_by: 'admin-topup',
+          status: 'pending',
+          generated_ids: [] as string[],
+        }));
+      } else if (TEXT_FALLBACK_TOPICS.has(topic)) {
+        // No diagram-free bank seeds — seed from Adrian's ingested worked
+        // examples instead (kb_entries text; the 4 gates still verify output).
+        const { data: kb } = await supa
+          .from('kb_entries')
+          .select('content')
+          .eq('subject', level).eq('topic', topic).eq('section_type', 'example')
+          .not('is_current', 'is', false)
+          .limit(20);
+        const exs = (kb || []).filter(k => (k.content || '').length > 80);
+        if (!exs.length) { report.push({ level, topic, have: have ?? 0, enqueued: 0 }); continue; }
+        rows = exs.sort(() => Math.random() - 0.5).slice(0, need).map(k => ({
+          source_text: (k.content as string).slice(0, 4000),
+          similarity_level: 'similar',
+          count: 1,
+          requested_by: 'admin-topup',
+          status: 'pending',
+          generated_ids: [] as string[],
+        }));
+      } else {
+        report.push({ level, topic, have: have ?? 0, enqueued: 0 }); continue;
+      }
       const { error } = await supa.from('generation_requests').insert(rows);
       if (!error) {
         budget -= rows.length;
