@@ -28,6 +28,16 @@ const LEVELS: { key: string; label: string }[] = [
 
 const COUNTS = [5, 8, 12, 15];
 
+// Difficulty tiers. 'mixed' (default) sends no tier filter → draws from the whole
+// verified pool; the others map onto questions.difficulty (see lib/practice-tiers).
+type TierChoice = 'basic' | 'standard' | 'advanced' | 'mixed';
+const TIER_CHOICES: { key: TierChoice; label: string }[] = [
+  { key: 'basic', label: 'Basic' },
+  { key: 'standard', label: 'Standard' },
+  { key: 'advanced', label: 'Advanced' },
+  { key: 'mixed', label: 'Mixed' },
+];
+
 type Topic = { topic: string; count: number };
 type WsQuestion = { id: string; markdown: string; marks: number | null; figureUrl?: string | null; answer?: string | null };
 type Worksheet = { title: string; level: string; topic: string; questions: WsQuestion[] };
@@ -49,6 +59,7 @@ export default function KioskClient() {
   const [topicsErr, setTopicsErr] = useState('');
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [count, setCount] = useState(8);
+  const [tier, setTier] = useState<TierChoice>('mixed');
   const [includeAnswers, setIncludeAnswers] = useState(false);
 
   // Print
@@ -139,7 +150,7 @@ export default function KioskClient() {
     try {
       const url = `/api/kiosk/worksheet?level=${encodeURIComponent(level)}&topic=${encodeURIComponent(
         selectedTopic
-      )}&count=${count}&answers=${includeAnswers ? 1 : 0}`;
+      )}&count=${count}&tier=${tier}&answers=${includeAnswers ? 1 : 0}`;
       const r = await fetch(url);
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || 'Could not build worksheet');
@@ -244,6 +255,21 @@ export default function KioskClient() {
                   ← Back to topics
                 </button>
                 <div className="opt-topic">{selectedTopic}</div>
+
+                <div className="opt-block">
+                  <div className="opt-label">Difficulty</div>
+                  <div className="tier-row">
+                    {TIER_CHOICES.map((t) => (
+                      <button
+                        key={t.key}
+                        className={`tier-btn ${tier === t.key ? 'tier-on' : ''}`}
+                        onClick={() => setTier(t.key)}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <div className="opt-block">
                   <div className="opt-label">How many questions?</div>
@@ -434,6 +460,14 @@ const PRINT_CSS = `
     font-size: 22px; font-weight: 800;
   }
   .count-on { border-color: var(--navy); background: var(--navy); color: #fff; }
+
+  .tier-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .tier-btn {
+    flex: 1 1 0; min-width: 96px; min-height: 64px; border-radius: 14px; cursor: pointer;
+    border: 2px solid #d9e0e8; background: #fff; color: var(--navy);
+    font-size: 18px; font-weight: 800;
+  }
+  .tier-on { border-color: var(--navy); background: var(--navy); color: #fff; }
 
   .toggle-row {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;

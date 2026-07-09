@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyKioskAuth, KIOSK_LEVELS } from '@/lib/kiosk-session';
+import { normalizeTier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
 
 export const runtime = 'nodejs';
 
@@ -61,6 +62,7 @@ export async function GET(req: NextRequest) {
   const level = params.get('level') || '';
   const topic = (params.get('topic') || '').trim();
   const withAnswers = params.get('answers') === '1';
+  const tier = normalizeTier(params.get('tier'));  // basic|standard|advanced|null(=Mixed)
   const count = Math.min(MAX_COUNT, Math.max(1, parseInt(params.get('count') || '8', 10) || 8));
 
   const cfg = KIOSK_LEVELS[level];
@@ -71,24 +73,31 @@ export async function GET(req: NextRequest) {
 
   // Pool = union of both servable sources:
   //  - `questions` (the generation worker's output + real bank): flatten parts,
-  //    text-only or gate-5 verified figure, solved, not deleted.
-  //  - `practice_questions` (the /revise pool): already flat.
+  //    text-only or gate-5 verified figure, solved, not deleted. Carries a
+  //    `difficulty` we can map to a tier.
+  //  - `practice_questions` (the /revise pool): already flat, but has NO
+  //    difficulty — so it's only servable when the tier filter is off (Mixed).
   const seedLevels = SEED_LEVELS[level] ?? cfg.questionLevels;
+  let bankQuery = supa.from('questions')
+    .select('id, question_text, parts, total_marks, answer, figure_url, has_image')
+    .in('level', seedLevels)
+    .overlaps('topics', [topic])
+    .is('deleted_at', null)
+    .not('solution', 'is', null)
+    .or('has_image.eq.false,figure_url.not.is.null')
+    .limit(POOL_CAP);
+  if (tier) bankQuery = bankQuery.in('difficulty', TIER_DIFFICULTY_VALUES[tier]);
   const [bankRes, poolRes] = await Promise.all([
-    supa.from('questions')
-      .select('id, question_text, parts, total_marks, answer, figure_url, has_image')
-      .in('level', seedLevels)
-      .overlaps('topics', [topic])
-      .is('deleted_at', null)
-      .not('solution', 'is', null)
-      .or('has_image.eq.false,figure_url.not.is.null')
-      .limit(POOL_CAP),
-    supa.from('practice_questions')
-      .select('id, question_text, marks, answer, figure_url')
-      .in('level', cfg.questionLevels)
-      .eq('topic', topic)
-      .eq('verified', true)
-      .limit(POOL_CAP),
+    bankQuery,
+    // practice_questions has no difficulty → include only in Mixed (no tier).
+    tier
+      ? Promise.resolve({ data: [], error: null } as { data: never[]; error: null })
+      : supa.from('practice_questions')
+          .select('id, question_text, marks, answer, figure_url')
+          .in('level', cfg.questionLevels)
+          .eq('topic', topic)
+          .eq('verified', true)
+          .limit(POOL_CAP),
   ]);
   if (bankRes.error && poolRes.error) {
     return NextResponse.json({ error: bankRes.error.message }, { status: 500 });
@@ -125,10 +134,12 @@ export async function GET(req: NextRequest) {
     ...(withAnswers ? { answer: r.answer } : {}),
   }));
 
+  const tierLabel = tier ? tier.charAt(0).toUpperCase() + tier.slice(1) : 'Mixed';
   return NextResponse.json({
-    title: `${cfg.label} — ${topic}`,
+    title: `${cfg.label} — ${topic} · ${tierLabel}`,
     level,
     topic,
+    tier: tier ?? 'mixed',
     questions,
   });
 }
