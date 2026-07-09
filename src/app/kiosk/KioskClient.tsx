@@ -32,7 +32,6 @@ const COUNTS = [5, 8, 12, 15];
 // verified pool; the others map onto questions.difficulty (see lib/practice-tiers).
 type TierChoice = 'basic' | 'standard' | 'advanced' | 'mixed';
 const TIER_CHOICES: { key: TierChoice; label: string }[] = [
-  { key: 'basic', label: 'Basic' },
   { key: 'standard', label: 'Standard' },
   { key: 'advanced', label: 'Advanced' },
   { key: 'mixed', label: 'Mixed' },

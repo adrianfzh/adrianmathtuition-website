@@ -6,7 +6,10 @@
 // Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { TIERS, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
+import { type Tier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
+
+// Kiosk offers Standard/Advanced/Mixed — no Basic shelf to stock.
+const STOCK_TIERS: readonly Tier[] = ['standard', 'advanced'];
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -119,7 +122,7 @@ export async function GET(req: NextRequest) {
 
       // Stock is now tracked per (level, topic, tier): count servable questions
       // whose difficulty maps to each tier, top up any tier below target.
-      for (const tier of TIERS) {
+      for (const tier of STOCK_TIERS) {
         if (budget <= 0) break;
         const { count: have } = await supa
           .from('questions')
