@@ -1,4 +1,5 @@
 'use client';
+import { studentTitle } from '@/lib/learn';
 // /app/learn/[unitId] — THE PLAYER. Renders one learning_unit by kind. All
 // interaction is client-side (zero server round-trips after the unit loads).
 // Mechanics ported from public/prototype-step-player.html.
@@ -58,7 +59,7 @@ function NextButton({ next, cleared = 0 }: { next: UnitSummary | null; cleared?:
         </Link>
       ) : (
         <Link href={`/app/learn/${next.id}`} className="block text-center bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3.5 font-semibold">
-          Next: {next.title} →
+          Next: {studentTitle(next.kind, next.title)} →
         </Link>
       )}
     </div>

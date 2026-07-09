@@ -5,7 +5,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { KIND_META } from '@/lib/learn';
+import { KIND_META, studentTitle } from '@/lib/learn';
 import { getDoneMap, getSessionCleared } from '@/lib/learn-progress';
 import type { LearnTopic, UnitKind, UnitSummary } from '@/lib/learn-types';
 import RecallChat from './RecallChat';
@@ -205,7 +205,7 @@ function LearnPageInner() {
                           className="flex items-center justify-between gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-3 font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity"
                         >
                           <span className="min-w-0 truncate">
-                            {doneCount === 0 ? '▶ Start here' : '▶ Continue'} · {nextUp.title}
+                            {doneCount === 0 ? '▶ Start here' : '▶ Continue'} · {studentTitle(nextUp.kind, nextUp.title)}
                           </span>
                           <span className="shrink-0 text-xs opacity-80">{doneCount}/{units.length}</span>
                         </Link>
@@ -236,7 +236,7 @@ function LearnPageInner() {
                                 </span>
                                 <span className="text-lg leading-none w-6 text-center shrink-0">{KIND_META[u.kind].icon}</span>
                                 <span className="flex-1 min-w-0">
-                                  <span className="text-sm font-medium text-gray-800 block truncate">{u.title}</span>
+                                  <span className="text-sm font-medium text-gray-800 block truncate">{studentTitle(u.kind, u.title)}</span>
                                   <span className="text-[11px] text-gray-400">{KIND_META[u.kind].label}</span>
                                 </span>
                                 {u.pending && (
