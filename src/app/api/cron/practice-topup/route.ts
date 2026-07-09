@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
         const picked = seeds.sort(() => Math.random() - 0.5).slice(0, need);
         rows = picked.map(s => ({
           source_question_id: s.id,
-          similarity_level: 'similar',
+          similarity_level: 'same-skills',
           count: 1,
           requested_by: 'admin-topup',
           status: 'pending',
@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
         if (!exs.length) { report.push({ level, topic, have: have ?? 0, enqueued: 0 }); continue; }
         rows = exs.sort(() => Math.random() - 0.5).slice(0, need).map(k => ({
           source_text: (k.content as string).slice(0, 4000),
-          similarity_level: 'similar',
+          similarity_level: 'same-skills',
           count: 1,
           requested_by: 'admin-topup',
           status: 'pending',
