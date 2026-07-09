@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
   // both come from one query, and reschedule destinations are included.
   const windowStart = (() => { const d = new Date(today + 'T00:00:00'); d.setMonth(d.getMonth() - 6); return d.toISOString().slice(0, 10); })();
   const lessonsData = await airtableRequestAll('Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Date}>='${windowStart}'`)}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&sort[0][field]=Date&sort[0][direction]=asc`);
+    `?filterByFormula=${encodeURIComponent(`{Date}>='${windowStart}'`)}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&fields[]=Mastery&sort[0][field]=Date&sort[0][direction]=asc`);
   const mine = lessonsData.records.filter((r: any) => r.fields['Student']?.[0] === id);
 
   // A makeup lesson = a reschedule destination OR a revision makeup. Computed up
@@ -143,18 +143,15 @@ export async function GET(req: NextRequest) {
     })
     .sort((a: any, b: any) => b.date.localeCompare(a.date));
 
-  // Exams for this student
-  const examsData = await airtableRequestAll('Exams',
-    `?fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`);
-  const exams = examsData.records
-    .filter((r: any) => r.fields['Student']?.[0] === id)
-    .map((r: any) => ({
-      id: r.id,
-      examType: r.fields['Exam Type'] || '',
-      examDate: r.fields['Exam Date'] || '',
-      testedTopics: r.fields['Tested Topics'] || '',
-      noExam: r.fields['No Exam'] === true,
-    }));
+  // Most recent past Completed lesson + its Mastery — for the profile summary strip.
+  // Exam data is served by /api/admin/exams (richer, editable) — not duplicated here.
+  const lastLesson = (() => {
+    const done = mine
+      .filter((r: any) => r.fields['Status'] === 'Completed' && (r.fields['Date'] || '') <= today)
+      .sort((a: any, b: any) => (b.fields['Date'] || '').localeCompare(a.fields['Date'] || ''));
+    const r = done[0];
+    return r ? { date: r.fields['Date'] || '', mastery: (r.fields['Mastery'] || '') as string } : null;
+  })();
 
   // Invoices for this student — match in JS. `Line Items Extra` is needed to
   // strip the carry-forward lump when computing the true per-month breakdown.
@@ -230,7 +227,7 @@ export async function GET(req: NextRequest) {
     upcoming,
     attendance,
     makeups,
-    exams,
+    lastLesson,
     invoices,
     payments,
     sentInvoices,
