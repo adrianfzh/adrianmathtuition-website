@@ -88,4 +88,9 @@ export interface LearnTopic {
   topic: string;
   spine_order: number;
   units: UnitSummary[];
+  // Strategy-layer passthrough (present only when a topic_meta row exists for
+  // this subject|topic). Harmless when absent; powers later readiness hints.
+  prereqs?: string[];
+  examWeight?: number;
+  difficulty?: number;
 }

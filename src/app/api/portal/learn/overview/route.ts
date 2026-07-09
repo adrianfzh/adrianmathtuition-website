@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
   const supabase = getSupabaseAdmin();
 
-  const [{ data: spine }, unitRes] = await Promise.all([
+  const [{ data: spine }, unitRes, { data: meta }] = await Promise.all([
     supabase.from('topic_spine').select('subject, topic, spine_order').in('subject', subjects),
     (() => {
       let q = supabase
@@ -40,11 +40,26 @@ export async function GET(req: NextRequest) {
       q = isStudent ? q.eq('status', 'approved') : q.in('status', ['approved', 'pending']);
       return q.order('unit_order');
     })(),
+    // Strategy layer (curriculum-intelligence). Optional — harmless if the table
+    // has no rows for these subjects. Powers default_order override + prereq/
+    // weight/difficulty passthrough. Never fails the overview.
+    supabase
+      .from('topic_meta')
+      .select('subject, topic, default_order, prerequisites, exam_weight, difficulty')
+      .in('subject', subjects),
   ]);
   if (unitRes.error) return NextResponse.json({ error: unitRes.error.message }, { status: 500 });
 
   const spineOrder = new Map<string, number>();
   for (const s of spine || []) spineOrder.set(`${s.subject}|${s.topic}`, Number(s.spine_order));
+
+  // topic_meta indexed by subject|topic → default_order override + passthrough.
+  type MetaRow = {
+    subject: string; topic: string; default_order: number | null;
+    prerequisites: string[] | null; exam_weight: number | null; difficulty: number | null;
+  };
+  const metaByTopic = new Map<string, MetaRow>();
+  for (const m of (meta || []) as MetaRow[]) metaByTopic.set(`${m.subject}|${m.topic}`, m);
 
   // Group units by subject|topic.
   const byTopic = new Map<string, LearnTopic>();
@@ -66,8 +81,22 @@ export async function GET(req: NextRequest) {
     byTopic.get(key)!.units.push(summary);
   }
 
+  // Attach strategy-layer passthrough where a topic_meta row exists.
+  for (const t of byTopic.values()) {
+    const m = metaByTopic.get(`${t.subject}|${t.topic}`);
+    if (!m) continue;
+    if (Array.isArray(m.prerequisites)) t.prereqs = m.prerequisites;
+    if (m.exam_weight != null) t.examWeight = m.exam_weight;
+    if (m.difficulty != null) t.difficulty = m.difficulty;
+  }
+
+  // Order by topic_meta.default_order when present, else fall back to the spine.
+  const effOrder = (t: LearnTopic): number => {
+    const m = metaByTopic.get(`${t.subject}|${t.topic}`);
+    return m && m.default_order != null ? Number(m.default_order) : t.spine_order;
+  };
   let topics = [...byTopic.values()].sort(
-    (a, b) => a.spine_order - b.spine_order || a.topic.localeCompare(b.topic),
+    (a, b) => effOrder(a) - effOrder(b) || a.topic.localeCompare(b.topic),
   );
 
   // Empty state → seed the fixture so the experience is never a blank page.
