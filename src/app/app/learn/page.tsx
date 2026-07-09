@@ -96,13 +96,21 @@ function LearnPageInner() {
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <div className="pt-1">
-        <h1 className="text-xl font-bold text-navy">Learn</h1>
-        {sessionCleared > 0 && (
-          <p className="text-sm text-[#1f9e6f] font-medium mt-0.5">
-            {sessionCleared} {sessionCleared === 1 ? 'unit' : 'units'} cleared this session — keep going
-          </p>
-        )}
+      <div className="pt-1 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-navy">Learn</h1>
+          {sessionCleared > 0 && (
+            <p className="text-sm text-[#1f9e6f] font-medium mt-0.5">
+              {sessionCleared} {sessionCleared === 1 ? 'unit' : 'units'} cleared this session — keep going
+            </p>
+          )}
+        </div>
+        <Link
+          href={`/app/learn/map${activeSubject ? `?subject=${encodeURIComponent(activeSubject)}` : ''}`}
+          className="text-sm rounded-full px-4 py-1.5 font-semibold bg-white text-gray-600 border border-gray-200 hover:border-navy/40 transition-colors shrink-0"
+        >
+          🗺 Map
+        </Link>
       </div>
 
       {subjects.length > 1 && (
