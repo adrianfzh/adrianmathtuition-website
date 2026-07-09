@@ -11,7 +11,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
-import { markDone } from '@/lib/learn-progress';
+import { markDone, bumpSessionCleared } from '@/lib/learn-progress';
 import type {
   AutopsyPayload, CheckPayload, CorePayload, Decision, ExamplePayload,
   LearnUnit, TryPayload, UnitSummary,
@@ -39,18 +39,29 @@ function nextOf(siblings: UnitSummary[], current: LearnUnit): UnitSummary | null
   return idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : null;
 }
 
-function NextButton({ next }: { next: UnitSummary | null }) {
-  if (!next) {
-    return (
-      <Link href="/app/learn" className="block text-center bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3.5 font-semibold">
-        ↺ Back to Learn
-      </Link>
-    );
-  }
+function SessionRecap({ cleared }: { cleared: number }) {
+  if (cleared <= 0) return null;
   return (
-    <Link href={`/app/learn/${next.id}`} className="block text-center bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3.5 font-semibold">
-      Next: {next.title} →
-    </Link>
+    <p className="text-center text-sm font-semibold text-[#1f9e6f] mb-0.5">
+      ✨ {cleared} cleared this session
+    </p>
+  );
+}
+
+function NextButton({ next, cleared = 0 }: { next: UnitSummary | null; cleared?: number }) {
+  return (
+    <div className="space-y-2">
+      <SessionRecap cleared={cleared} />
+      {!next ? (
+        <Link href="/app/learn" className="block text-center bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3.5 font-semibold">
+          ↺ Back to Learn
+        </Link>
+      ) : (
+        <Link href={`/app/learn/${next.id}`} className="block text-center bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3.5 font-semibold">
+          Next: {next.title} →
+        </Link>
+      )}
+    </div>
   );
 }
 
@@ -87,7 +98,7 @@ type Beat =
   | { type: 'decision'; decision: Decision }
   | { type: 'answer'; md: string };
 
-function ExamplePlayer({ payload, next, onDone, onProgress }: { payload: ExamplePayload; next: UnitSummary | null; onDone: () => void; onProgress: (v: number) => void }) {
+function ExamplePlayer({ payload, next, onDone, onProgress, cleared }: { payload: ExamplePayload; next: UnitSummary | null; onDone: () => void; onProgress: (v: number) => void; cleared: number }) {
   const beats = useMemo<Beat[]>(() => {
     const out: Beat[] = [];
     payload.steps.forEach((s, idx) => {
@@ -202,7 +213,7 @@ function ExamplePlayer({ payload, next, onDone, onProgress }: { payload: Example
         })}
         <div ref={endRef} />
 
-        {finished && <NextButton next={next} />}
+        {finished && <NextButton next={next} cleared={cleared} />}
       </div>
 
       {!finished && (
@@ -220,7 +231,7 @@ function ExamplePlayer({ payload, next, onDone, onProgress }: { payload: Example
 }
 
 // ---------------------------------------------------------------- check
-function CheckPlayer({ payload, next, onDone }: { payload: CheckPayload; next: UnitSummary | null; onDone: () => void }) {
+function CheckPlayer({ payload, next, onDone, cleared }: { payload: CheckPayload; next: UnitSummary | null; onDone: () => void; cleared: number }) {
   const [pick, setPick] = useState<number | null>(null);
   const solved = pick != null && !!payload.options[pick]?.ok;
   useEffect(() => { if (solved) onDone(); }, [solved, onDone]);
@@ -247,13 +258,13 @@ function CheckPlayer({ payload, next, onDone }: { payload: CheckPayload; next: U
           <p className="text-[.84rem] text-[#4a5a6d] mt-1 px-0.5"><Md className="inline [&_p]:inline">{payload.options[pick]!.feedback_md!}</Md></p>
         )}
       </div>
-      {solved && <NextButton next={next} />}
+      {solved && <NextButton next={next} cleared={cleared} />}
     </div>
   );
 }
 
 // ---------------------------------------------------------------- autopsy
-function AutopsyPlayer({ payload, next, onDone }: { payload: AutopsyPayload; next: UnitSummary | null; onDone: () => void }) {
+function AutopsyPlayer({ payload, next, onDone, cleared }: { payload: AutopsyPayload; next: UnitSummary | null; onDone: () => void; cleared: number }) {
   const [solved, setSolved] = useState(false);
   const [misses, setMisses] = useState<Record<number, boolean>>({});
   useEffect(() => { if (solved) onDone(); }, [solved, onDone]);
@@ -302,13 +313,13 @@ function AutopsyPlayer({ payload, next, onDone }: { payload: AutopsyPayload; nex
           </div>
         </div>
       )}
-      {solved && <NextButton next={next} />}
+      {solved && <NextButton next={next} cleared={cleared} />}
     </div>
   );
 }
 
 // ---------------------------------------------------------------- try
-function TryPlayer({ payload, next, onDone }: { payload: TryPayload; next: UnitSummary | null; onDone: () => void }) {
+function TryPlayer({ payload, next, onDone, cleared }: { payload: TryPayload; next: UnitSummary | null; onDone: () => void; cleared: number }) {
   const [showAns, setShowAns] = useState(false);
   return (
     <div className="space-y-3">
@@ -332,7 +343,7 @@ function TryPlayer({ payload, next, onDone }: { payload: TryPayload; next: UnitS
           {showAns && <div className="mt-2"><Md>{payload.answer_md}</Md></div>}
         </div>
       )}
-      <NextButton next={next} />
+      <NextButton next={next} cleared={cleared} />
     </div>
   );
 }
@@ -355,6 +366,8 @@ export default function UnitPlayerPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'notfound'>('loading');
   const [exProgress, setExProgress] = useState(0);
   const [doneLocal, setDoneLocal] = useState(false);
+  const [cleared, setCleared] = useState(0);
+  const bumpedRef = useRef(false);
 
   useEffect(() => {
     if (!unitId) return;
@@ -373,7 +386,11 @@ export default function UnitPlayerPage() {
       .catch(() => setStatus('error'));
   }, [unitId]);
 
-  const onDone = useCallback(() => { if (unit) markDone(unit.id); setDoneLocal(true); }, [unit]);
+  const onDone = useCallback(() => {
+    if (unit) markDone(unit.id);
+    setDoneLocal(true);
+    if (!bumpedRef.current) { bumpedRef.current = true; setCleared(bumpSessionCleared()); }
+  }, [unit]);
   const next = useMemo(() => (unit ? nextOf(siblings, unit) : null), [siblings, unit]);
   const headerProgress = !unit ? 0
     : unit.kind === 'example' ? exProgress
@@ -403,10 +420,10 @@ export default function UnitPlayerPage() {
         {status === 'ready' && unit && (
           <>
             {unit.kind === 'core' && <CorePlayer payload={unit.payload as CorePayload} next={next} onDone={onDone} />}
-            {unit.kind === 'example' && <ExamplePlayer payload={unit.payload as ExamplePayload} next={next} onDone={onDone} onProgress={setExProgress} />}
-            {unit.kind === 'check' && <CheckPlayer payload={unit.payload as CheckPayload} next={next} onDone={onDone} />}
-            {unit.kind === 'autopsy' && <AutopsyPlayer payload={unit.payload as AutopsyPayload} next={next} onDone={onDone} />}
-            {unit.kind === 'try' && <TryPlayer payload={unit.payload as TryPayload} next={next} onDone={onDone} />}
+            {unit.kind === 'example' && <ExamplePlayer payload={unit.payload as ExamplePayload} next={next} onDone={onDone} onProgress={setExProgress} cleared={cleared} />}
+            {unit.kind === 'check' && <CheckPlayer payload={unit.payload as CheckPayload} next={next} onDone={onDone} cleared={cleared} />}
+            {unit.kind === 'autopsy' && <AutopsyPlayer payload={unit.payload as AutopsyPayload} next={next} onDone={onDone} cleared={cleared} />}
+            {unit.kind === 'try' && <TryPlayer payload={unit.payload as TryPayload} next={next} onDone={onDone} cleared={cleared} />}
           </>
         )}
       </div>
