@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { ALL_LEARN_SUBJECTS, LEARN_SUBJECT_LABEL, learnSubjectsForLevel } from '@/lib/learn';
+import { studentTitle, ALL_LEARN_SUBJECTS, LEARN_SUBJECT_LABEL, learnSubjectsForLevel } from '@/lib/learn';
 import { fixtureTopic } from '@/lib/learn-fixture';
 import type { LearnTopic, UnitKind, UnitSummary } from '@/lib/learn-types';
 
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
       });
     }
     const summary: UnitSummary = {
-      id: r.id, kind: r.kind as UnitKind, title: r.title,
+      id: r.id, kind: r.kind as UnitKind, title: isStudent ? studentTitle(r.kind, r.title) : r.title,
       unit_order: Number(r.unit_order), status: r.status,
       ...(r.status !== 'approved' ? { pending: true } : {}),
     };

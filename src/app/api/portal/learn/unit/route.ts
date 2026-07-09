@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { learnSubjectsForLevel } from '@/lib/learn';
+import { studentTitle, learnSubjectsForLevel } from '@/lib/learn';
 import { getFixtureUnit, isFixtureId } from '@/lib/learn-fixture';
 import type { LearnUnit, UnitKind, UnitSummary } from '@/lib/learn-types';
 
@@ -51,14 +51,14 @@ export async function GET(req: NextRequest) {
   const { data: sib } = await sq.order('unit_order');
 
   const siblings: UnitSummary[] = (sib || []).map(s => ({
-    id: s.id, kind: s.kind as UnitKind, title: s.title,
+    id: s.id, kind: s.kind as UnitKind, title: isStudent ? studentTitle(s.kind, s.title) : s.title,
     unit_order: Number(s.unit_order), status: s.status,
     ...(s.status !== 'approved' ? { pending: true } : {}),
   }));
 
   const full: LearnUnit = {
     id: unit.id, subject: unit.subject, topic: unit.topic,
-    kind: unit.kind as UnitKind, title: unit.title,
+    kind: unit.kind as UnitKind, title: isStudent ? studentTitle(unit.kind, unit.title) : unit.title,
     unit_order: Number(unit.unit_order), status: unit.status,
     ...(unit.status !== 'approved' ? { pending: true } : {}),
     payload: unit.payload,

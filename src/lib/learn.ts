@@ -21,7 +21,7 @@ export function learnSubjectsForLevel(level: string | null): string[] {
 
 export const KIND_META: Record<UnitKind, { icon: string; label: string }> = {
   core:    { icon: '📘', label: 'Concept' },
-  example: { icon: '🎬', label: 'Worked example' },
+  example: { icon: '📐', label: 'Worked example' },
   check:   { icon: '⚡', label: 'Quick check' },
   autopsy: { icon: '🔍', label: 'Spot the error' },
   try:     { icon: '✏️', label: 'Your turn' },
@@ -32,3 +32,12 @@ export const KIND_META: Record<UnitKind, { icon: string; label: string }> = {
 export const KIND_RANK: Record<UnitKind, number> = {
   core: 0, example: 1, check: 2, autopsy: 3, try: 4,
 };
+
+// Students must not see revealing titles for recall/hunt units — the title of a
+// check ("Check: degree of the remainder") or an autopsy names the answer.
+// Editors/admin keep the real titles.
+export function studentTitle(kind: string, title: string): string {
+  if (kind === 'check') return 'Quick check';
+  if (kind === 'autopsy') return 'Spot the mistake';
+  return title;
+}
