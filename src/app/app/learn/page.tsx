@@ -109,12 +109,20 @@ function LearnPageInner() {
             </p>
           )}
         </div>
-        <Link
-          href={`/app/learn/map${activeSubject ? `?subject=${encodeURIComponent(activeSubject)}` : ''}`}
-          className="text-sm rounded-full px-4 py-1.5 font-semibold bg-white text-gray-600 border border-gray-200 hover:border-navy/40 transition-colors shrink-0"
-        >
-          🗺 Map
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href={`/app/reference${activeSubject ? `?subject=${encodeURIComponent(activeSubject)}` : ''}`}
+            className="text-sm rounded-full px-4 py-1.5 font-semibold bg-white text-gray-600 border border-gray-200 hover:border-navy/40 transition-colors"
+          >
+            📋 Formulas &amp; Methods
+          </Link>
+          <Link
+            href={`/app/learn/map${activeSubject ? `?subject=${encodeURIComponent(activeSubject)}` : ''}`}
+            className="text-sm rounded-full px-4 py-1.5 font-semibold bg-white text-gray-600 border border-gray-200 hover:border-navy/40 transition-colors"
+          >
+            🗺 Map
+          </Link>
+        </div>
       </div>
 
       {subjects.length > 1 && (
