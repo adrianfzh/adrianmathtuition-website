@@ -28,6 +28,7 @@ export default function Footer() {
           <a href="/terms" className="text-[#d1d5db] hover:text-white no-underline">Terms</a>
         </nav>
         <p className="mb-1">&copy; {new Date().getFullYear()} Adrian&apos;s Math Tuition &middot; Singapore</p>
+        <p className="mb-1">Adrian&apos;s Math Tuition is part of Kix Education.</p>
         <p className="text-[0.75rem]">
           Questions about your data?{' '}
           <a href="mailto:adrian@adrianmathtuition.com" className="text-[#818cf8] no-underline">
