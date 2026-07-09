@@ -166,6 +166,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '🧩', title: 'Worksheet Builder', sub: 'Pick QB questions · roles · PDF',   href: '/admin/worksheet-builder' },
   { emoji: '🎓', title: 'Learn Review', sub: 'Approve · edit interactive units', href: '/admin/learn-review' },
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
+  { emoji: '📊', title: 'Exams', sub: 'Dates · topics · results', href: '/admin/exams' },
   { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
   { emoji: '🏖️', title: 'June Revision', sub: 'Published schedules · JC2 · Sec 4', href: '/admin/june-revision' },
   { emoji: '📊', title: 'At a glance',     sub: 'Status · todos · invoices · students', href: '/admin/status' },

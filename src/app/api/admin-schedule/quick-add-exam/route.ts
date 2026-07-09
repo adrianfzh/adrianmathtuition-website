@@ -38,7 +38,10 @@ export async function POST(req: NextRequest) {
   // ARRAYJOIN filter on linked records is unreliable — filter in JS.
   const allExams = await airtableRequestAll(
     'Exams',
-    `?filterByFormula=${encodeURIComponent(`{Exam Type}='${examType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Score&fields[]=Total Marks`
+    // NB: names must match the live schema exactly — an unknown field name in
+    // fields[] makes Airtable reject the whole request (422). The result columns
+    // are `Result Score` / `Result Total` (there is no `Score` / `Total Marks`).
+    `?filterByFormula=${encodeURIComponent(`{Exam Type}='${examType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Result Score&fields[]=Result Total`
   );
   const existing = allExams.records.find(
     (r: any) =>

@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import { resolveActiveExamType } from '@/lib/exam-season';
+import { getExamTopicsForSubject } from '@/lib/canonical-topics';
+import { EXAM_TYPES, examPercent, gradeFromScore, resultTone, RESULT_TONE_COLORS, examTypeLabel } from '@/lib/exam-grade';
 
 // Same JC/Sec category (Mixed/Adhoc/unknown count as available to all).
 function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
@@ -30,7 +33,11 @@ interface Enrollment { enrollmentId: string; slotId: string | null; slotLabel: s
 interface UpLesson { id: string; date: string; slotId: string | null; slotLabel: string; type: string; status: string; isMakeup: boolean; }
 interface AttRow { id: string; outcomeLessonId: string; date: string; monthLabel: string; type: string; status: string; rescheduledToDate: string; slotLabel: string; notes: string; }
 interface MakeupRow { id: string; date: string; monthLabel: string; status: string; slotLabel: string; makeupForDate: string; isRevision: boolean; }
-interface Exam { id: string; examType: string; examDate: string; testedTopics: string; noExam: boolean; }
+interface Exam {
+  id: string; studentId: string | null; examType: string; customName: string; subject: string;
+  examDate: string; testedTopics: string; resultScore: number | null; resultTotal: number | null;
+  resultGrade: string; resultNotes: string; examNotes: string; noExam: boolean;
+}
 interface Invoice { id: string; month: string; finalAmount: number | null; amountPaid: number | null; isPaid: boolean; status: string; invoiceType: string; pdfUrl: string; }
 interface SentInvoice { id: string; subject: string; sentAt: string; toEmail: string; status: string; pdfUrl: string; }
 interface SlotOpt { id: string; label: string; level: string; }
@@ -43,7 +50,7 @@ interface Profile {
   upcoming: UpLesson[];
   attendance: AttRow[];
   makeups: MakeupRow[];
-  exams: Exam[];
+  lastLesson: { date: string; mastery: string } | null;
   invoices: Invoice[];
   payments: PaymentSummary;
   sentInvoices: SentInvoice[];
@@ -214,7 +221,11 @@ export default function StudentProfilePage() {
   const [contact, setContact] = useState<Contact | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
   const [inviteState, setInviteState] = useState<'idle' | 'sending'>('idle');
-  const [examForm, setExamForm] = useState<{ examType: string; examDate: string; topics: string; noExam: boolean; saving: boolean } | null>(null);
+  // Exams — editable WA1/WA2/WA3/EOY rows for the current year, saved via /api/admin/exams.
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [examCell, setExamCell] = useState<Record<string, 'saving' | 'saved' | 'error'>>({});
+  const [topicsOpen, setTopicsOpen] = useState<string | null>(null);
+  const examTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   // Phase 3: progress history + lesson modal
   const [history, setHistory] = useState<{ id: string; date: string; type: string; status: string; topicsCovered: string; mood: string; progressLogged: boolean }[]>([]);
   const [lessonModal, setLessonModal] = useState<LessonModalLesson | null>(null);
@@ -250,6 +261,43 @@ export default function StudentProfilePage() {
     } catch { /* non-fatal */ }
   }, [studentId]);
 
+  const fetchExams = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/admin/exams?studentId=${studentId}`);
+      if (res.ok) setExams(((await res.json()).exams || []) as Exam[]);
+    } catch { /* non-fatal */ }
+  }, [studentId]);
+
+  // Save one exam field (debounced 500ms, optimistic). Upserts by (student, type).
+  function saveExamField(examType: string, patch: Partial<Exam>, fieldKey: string) {
+    setExams(prev => {
+      const idx = prev.findIndex(e => e.examType === examType);
+      const base: Exam = idx >= 0 ? prev[idx] : { id: '', studentId, examType, customName: '', subject: '', examDate: '', testedTopics: '', resultScore: null, resultTotal: null, resultGrade: '', resultNotes: '', examNotes: '', noExam: false };
+      const next = { ...base, ...patch };
+      if ('resultScore' in patch || 'resultTotal' in patch) next.resultGrade = gradeFromScore(next.resultScore, next.resultTotal);
+      const arr = prev.slice();
+      if (idx >= 0) arr[idx] = next; else arr.push(next);
+      return arr;
+    });
+    const key = `${examType}:${fieldKey}`;
+    if (examTimers.current[key]) clearTimeout(examTimers.current[key]);
+    setExamCell(s => ({ ...s, [key]: 'saving' }));
+    examTimers.current[key] = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/admin/exams', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId, examType, ...patch }),
+        });
+        if (!res.ok) throw new Error();
+        const saved: Exam = await res.json();
+        setExams(prev => { const i = prev.findIndex(e => e.examType === examType); const arr = prev.slice(); if (i >= 0) arr[i] = saved; else arr.push(saved); return arr; });
+        setExamCell(s => ({ ...s, [key]: 'saved' }));
+        setTimeout(() => setExamCell(s => { const n = { ...s }; delete n[key]; return n; }), 1200);
+      } catch { setExamCell(s => ({ ...s, [key]: 'error' })); }
+    }, 500);
+  }
+  useEffect(() => () => { Object.values(examTimers.current).forEach(clearTimeout); }, []);
+
   async function verify(pw: string) {
     setAuthLoading(true);
     try {
@@ -264,7 +312,7 @@ export default function StudentProfilePage() {
     // Signed httpOnly session (silently upgrades legacy plaintext cookies)
     ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
-  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); fetchGlance(); } }, [authed, studentId, fetchProfile, fetchHistory, fetchGlance]);
+  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); fetchGlance(); fetchExams(); } }, [authed, studentId, fetchProfile, fetchHistory, fetchGlance, fetchExams]);
 
   async function submitSwitch() {
     if (!switchModal || !switchModal.date || !switchModal.newSlotId) return;
@@ -406,29 +454,6 @@ export default function StudentProfilePage() {
     finally { setReviewBusy(false); }
   }
 
-  async function submitExam() {
-    if (!examForm || !examForm.examType) return;
-    setExamForm({ ...examForm, saving: true });
-    try {
-      const res = await fetch('/api/admin-schedule/quick-add-exam', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId, examType: examForm.examType, noExam: examForm.noExam,
-          examDate: examForm.noExam ? null : (examForm.examDate || null),
-          testedTopics: examForm.noExam ? '' : examForm.topics,
-        }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error || 'Failed');
-      setExamForm(null);
-      showToast('ok', 'Exam saved');
-      await fetchProfile();
-    } catch (e: unknown) {
-      setExamForm(m => m && { ...m, saving: false });
-      showToast('err', e instanceof Error ? e.message.slice(0, 90) : 'Failed');
-    }
-  }
-
   // ── Auth gate ──────────────────────────────────────────────────────────────
   if (!authed) {
     return (
@@ -530,6 +555,9 @@ export default function StudentProfilePage() {
                 )}
               </div>
             </Section>
+
+            {/* Compact summary strip — next exam · last mastery · attendance % */}
+            <SummaryStrip exams={exams} lastLesson={data.lastLesson} attendance={data.attendance} studentLevel={s.level} />
 
             {/* Discontinue result — invoices needing review */}
             {discResult && discResult.invoicesToReview.length > 0 && (
@@ -812,19 +840,11 @@ export default function StudentProfilePage() {
               ))}
             </Section>
 
-            {/* Exams */}
-            <Section title="Exams" show={tab === 'overview'} action={<button style={btnGhost} onClick={() => setExamForm({ examType: '', examDate: '', topics: '', noExam: false, saving: false })}>＋ Add / update</button>}>
-              {data.exams.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No exams recorded.</div>}
-              {data.exams.map(ex => (
-                <div key={ex.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontWeight: 600, color: '#111' }}>{ex.examType}</span>
-                    {' · '}<span style={{ color: '#6b7280' }}>{ex.noExam ? 'No exam' : (ex.examDate ? fmtDate(ex.examDate) : 'date TBC')}</span>
-                    {ex.testedTopics && <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>{ex.testedTopics}</div>}
-                  </div>
-                  <button style={btnGhost} onClick={() => setExamForm({ examType: ex.examType, examDate: ex.examDate || '', topics: ex.testedTopics || '', noExam: ex.noExam, saving: false })}>Edit</button>
-                </div>
-              ))}
+            {/* Exams — WA1/WA2/WA3/EOY rows for the current year, inline editable */}
+            <Section title="Exams" show={tab === 'overview'} action={<a href="/admin/exams" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Cohort view →</a>}>
+              <ExamsEditor exams={exams} studentLevel={s.level} subjects={s.subjects}
+                cellState={examCell} topicsOpen={topicsOpen} setTopicsOpen={setTopicsOpen}
+                onSave={saveExamField} />
             </Section>
 
             {/* Payment records — true per-month outstanding (own-month charge with
@@ -1072,35 +1092,6 @@ export default function StudentProfilePage() {
         );
       })()}
 
-      {/* Exam quick-add / edit */}
-      {examForm && (
-        <ModalShell title="Add / update exam" onClose={() => !examForm.saving && setExamForm(null)}>
-          <Label>Exam type</Label>
-          <select style={input} value={examForm.examType} onChange={e => setExamForm({ ...examForm, examType: e.target.value })}>
-            <option value="">Select…</option>
-            {['WA1', 'WA2', 'WA3', 'EOY', 'Prelim', 'Promo', 'Mid-Year', 'Final'].map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '12px 0', fontSize: 14, color: '#374151' }}>
-            <input type="checkbox" checked={examForm.noExam} onChange={e => setExamForm({ ...examForm, noExam: e.target.checked })} />
-            No exam this period
-          </label>
-          {!examForm.noExam && (
-            <>
-              <Label>Exam date</Label>
-              <input type="date" style={input} value={examForm.examDate} onChange={e => setExamForm({ ...examForm, examDate: e.target.value })} />
-              <Label style={{ marginTop: 12 }}>Tested topics (comma-separated)</Label>
-              <input style={input} value={examForm.topics} placeholder="e.g. Differentiation, Vectors" onChange={e => setExamForm({ ...examForm, topics: e.target.value })} />
-            </>
-          )}
-          <div style={modalActions}>
-            <button style={btnCancel} onClick={() => setExamForm(null)} disabled={examForm.saving}>Cancel</button>
-            <button style={btnPrimary} onClick={submitExam} disabled={examForm.saving || !examForm.examType}>
-              {examForm.saving ? 'Saving…' : 'Save exam'}
-            </button>
-          </div>
-        </ModalShell>
-      )}
-
       {/* Shared progress-logging modal */}
       {lessonModal && (
         <LessonModal
@@ -1137,35 +1128,23 @@ function Field({ label, value }: { label: string; value: string }) {
   return <div><span style={{ color: '#9ca3af' }}>{label}:</span> <span style={{ color: '#111', fontWeight: 600 }}>{value || '—'}</span></div>;
 }
 
-interface GlanceExam { id: string; examType: string; customName: string; examDate: string; testedTopics: string; resultScore: number | null; resultTotal: number | null; resultGrade: string; noExam: boolean; }
 interface Glance {
-  upcomingExam: GlanceExam | null;
-  exams: GlanceExam[];
   weakTopics: { topic: string; missed: number }[];
   stats: { submissionsMarked: number; submissionsWrong: number };
 }
-function glanceExamLabel(e: GlanceExam): string { return e.customName?.trim() || e.examType || 'Exam'; }
 
+// Weak-topics-only now: next exam lives in the SummaryStrip and results in the
+// editable Exams section — both on this same tab — so the glance section no
+// longer repeats them.
 function AtAGlanceSection({ glance, show }: { glance: Glance | null; show: boolean }) {
   if (!show) return null;
   const g = glance;
-  const withResults = (g?.exams || []).filter(e => e.resultScore != null && e.resultTotal);
   return (
     <Section title="At a glance">
       {!g ? (
         <div style={{ color: '#9ca3af', fontSize: 14 }}>Loading…</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Next exam */}
-          {g.upcomingExam && (
-            <div>
-              <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, marginBottom: 3 }}>NEXT EXAM</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>
-                {glanceExamLabel(g.upcomingExam)} · {g.upcomingExam.examDate ? fmtDate(g.upcomingExam.examDate) : ''}
-              </div>
-              {g.upcomingExam.testedTopics && <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 2 }}>Tests: {g.upcomingExam.testedTopics}</div>}
-            </div>
-          )}
           {/* Work on next */}
           <div>
             <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, marginBottom: 6 }}>WORK ON NEXT</div>
@@ -1187,25 +1166,6 @@ function AtAGlanceSection({ glance, show }: { glance: Glance | null; show: boole
               </>
             )}
           </div>
-          {/* Exam results */}
-          {withResults.length > 0 && (
-            <div>
-              <div style={{ fontSize: 12, color: '#9ca3af', fontWeight: 600, marginBottom: 6 }}>EXAM RESULTS</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {withResults.map(e => {
-                  const pct = e.resultTotal ? Math.round((e.resultScore! / e.resultTotal) * 100) : null;
-                  const color = pct == null ? '#475569' : pct >= 70 ? '#059669' : pct >= 50 ? '#d97706' : '#dc2626';
-                  return (
-                    <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5 }}>
-                      <span style={{ fontWeight: 600, color: '#374151', width: 90, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{glanceExamLabel(e)}</span>
-                      <span style={{ fontSize: 12, color: '#9ca3af', width: 78, flexShrink: 0 }}>{e.examDate ? fmtDate(e.examDate) : ''}</span>
-                      <span style={{ marginLeft: 'auto', fontWeight: 700, color }}>{e.resultScore}/{e.resultTotal}{pct != null ? ` · ${pct}%` : ''}{e.resultGrade ? ` · ${e.resultGrade}` : ''}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </Section>
@@ -1214,6 +1174,161 @@ function AtAGlanceSection({ glance, show }: { glance: Glance | null; show: boole
 function Label({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 5, ...style }}>{children}</div>;
 }
+
+// Mastery → dot colour (Strong 🟢 / OK 🟡 / Slow 🔴)
+const MASTERY_DOT: Record<string, string> = { Strong: '#16a34a', OK: '#d97706', Slow: '#dc2626' };
+function pickSubject(subjects: string[]): string {
+  if (subjects?.includes('A Math')) return 'A Math';
+  if (subjects?.includes('E Math')) return 'E Math';
+  return subjects?.[0] || '';
+}
+function examTokens(str: string): string[] { return (str || '').split(',').map(t => t.trim()).filter(Boolean); }
+
+function SummaryStrip({ exams, lastLesson, attendance, studentLevel }: {
+  exams: Exam[]; lastLesson: { date: string; mastery: string } | null; attendance: AttRow[]; studentLevel: string;
+}) {
+  const todayStr = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10); // SGT
+  // Next dated exam (soonest upcoming); else most recent past dated exam with a result.
+  const dated = exams.filter(e => !e.noExam && e.examDate);
+  const upcoming = dated.filter(e => e.examDate >= todayStr).sort((a, b) => a.examDate.localeCompare(b.examDate))[0];
+  const pastWithResult = dated.filter(e => e.examDate < todayStr && e.resultScore != null && e.resultTotal)
+    .sort((a, b) => b.examDate.localeCompare(a.examDate))[0];
+  const ex = upcoming || pastWithResult || null;
+  const daysAway = ex && upcoming ? Math.round((new Date(ex.examDate + 'T00:00:00').getTime() - new Date(todayStr + 'T00:00:00').getTime()) / 86400000) : null;
+  const pct = ex ? examPercent(ex.resultScore, ex.resultTotal) : null;
+  const tone = resultTone(pct);
+  const tc = tone ? RESULT_TONE_COLORS[tone] : null;
+
+  const done = attendance.filter(r => r.status === 'Completed').length;
+  const missed = attendance.filter(r => r.status === 'Absent').length;
+  const rate = done + missed ? Math.round((done / (done + missed)) * 100) : null;
+  const dot = lastLesson?.mastery ? MASTERY_DOT[lastLesson.mastery] : null;
+
+  const cell: React.CSSProperties = { flex: 1, minWidth: 130, padding: '2px 4px' };
+  const cap: React.CSSProperties = { fontSize: 10.5, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: 3 };
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14, padding: '12px 16px', marginBottom: 14, display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+      <div style={cell}>
+        <div style={cap}>{upcoming ? 'Next exam' : 'Last exam'}</div>
+        {ex ? (
+          <>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#111' }}>
+              {examTypeLabel(ex.examType, studentLevel)} · {fmtDate(ex.examDate)}
+              {daysAway != null && <span style={{ fontSize: 11.5, fontWeight: 600, color: daysAway <= 7 ? '#b45309' : '#64748b' }}> · {daysAway === 0 ? 'today' : `${daysAway}d`}</span>}
+            </div>
+            <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 1 }}>
+              {examTokens(ex.testedTopics).length} topic{examTokens(ex.testedTopics).length === 1 ? '' : 's'}
+              {pct != null && tc && <span style={{ fontWeight: 700, color: tc.fg }}> · {ex.resultScore}/{ex.resultTotal} · {pct.toFixed(1)}% {ex.resultGrade}</span>}
+            </div>
+          </>
+        ) : <div style={{ fontSize: 13.5, color: '#cbd5e1' }}>None scheduled</div>}
+      </div>
+      <div style={{ ...cell, borderLeft: '1px solid #f1f5f9', paddingLeft: 14 }}>
+        <div style={cap}>Last lesson</div>
+        {lastLesson ? (
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#111', display: 'flex', alignItems: 'center', gap: 6 }}>
+            {dot && <span style={{ width: 9, height: 9, borderRadius: '50%', background: dot, display: 'inline-block' }} />}
+            {lastLesson.mastery || '—'}
+            <span style={{ fontSize: 11.5, fontWeight: 500, color: '#94a3b8' }}>{fmtDate(lastLesson.date)}</span>
+          </div>
+        ) : <div style={{ fontSize: 13.5, color: '#cbd5e1' }}>No lessons yet</div>}
+      </div>
+      <div style={{ ...cell, borderLeft: '1px solid #f1f5f9', paddingLeft: 14 }}>
+        <div style={cap}>Attendance</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#0f172a' }}>{rate == null ? '—' : `${rate}%`}
+          <span style={{ fontSize: 11.5, fontWeight: 500, color: '#94a3b8' }}> · {done}/{done + missed}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExamsEditor({ exams, studentLevel, subjects, cellState, topicsOpen, setTopicsOpen, onSave }: {
+  exams: Exam[]; studentLevel: string; subjects: string[];
+  cellState: Record<string, 'saving' | 'saved' | 'error'>;
+  topicsOpen: string | null; setTopicsOpen: (v: string | null) => void;
+  onSave: (examType: string, patch: Partial<Exam>, fieldKey: string) => void;
+}) {
+  const activeType = resolveActiveExamType(null);
+  const cats = useMemo(() => getExamTopicsForSubject(studentLevel, pickSubject(subjects)), [studentLevel, subjects]);
+  const flash = (key: string) => {
+    const st = cellState[key];
+    if (st === 'saving') return <span style={{ fontSize: 10, color: '#94a3b8' }}>…</span>;
+    if (st === 'saved') return <span style={{ fontSize: 10, color: '#15803d' }}>✓</span>;
+    if (st === 'error') return <span style={{ fontSize: 10, color: '#dc2626' }}>err</span>;
+    return null;
+  };
+  return (
+    <div>
+      {EXAM_TYPES.map(type => {
+        const ex = exams.find(e => e.examType === type);
+        const active = activeType === type;
+        const pct = examPercent(ex?.resultScore, ex?.resultTotal);
+        const tone = resultTone(pct); const tc = tone ? RESULT_TONE_COLORS[tone] : null;
+        const tokens = examTokens(ex?.testedTopics || '');
+        return (
+          <div key={type} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 8px', borderBottom: '1px solid #f1f5f9', flexWrap: 'wrap', background: active ? '#f5f9ff' : 'transparent', borderRadius: active ? 8 : 0 }}>
+            <div style={{ width: 66, flexShrink: 0, fontSize: 13, fontWeight: 700, color: active ? '#1d4ed8' : '#111' }}>
+              {examTypeLabel(type, studentLevel)}
+              {active && <div style={{ fontSize: 9.5, fontWeight: 700, color: '#1d4ed8' }}>active</div>}
+            </div>
+            <input type="date" value={ex?.examDate || ''} disabled={ex?.noExam}
+              onChange={e => onSave(type, { examDate: e.target.value }, 'date')}
+              style={{ ...examInput, width: 128, opacity: ex?.noExam ? 0.4 : 1 }} />
+            <button onClick={() => setTopicsOpen(topicsOpen === type ? null : type)} disabled={ex?.noExam}
+              style={{ ...examChip, opacity: ex?.noExam ? 0.4 : 1 }}>
+              {tokens.length ? `${tokens.length} topic${tokens.length === 1 ? '' : 's'}` : '＋ topics'}
+            </button>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#64748b', cursor: 'pointer' }}>
+              <input type="checkbox" checked={!!ex?.noExam} onChange={e => onSave(type, { noExam: e.target.checked }, 'noexam')} /> no exam
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginLeft: 'auto' }}>
+              <input type="number" placeholder="—" value={ex?.resultScore ?? ''} onChange={e => onSave(type, { resultScore: e.target.value === '' ? null : Number(e.target.value) }, 'score')} style={{ ...examInput, width: 46, textAlign: 'center' }} />
+              <span style={{ color: '#cbd5e1' }}>/</span>
+              <input type="number" placeholder="—" value={ex?.resultTotal ?? ''} onChange={e => onSave(type, { resultTotal: e.target.value === '' ? null : Number(e.target.value) }, 'total')} style={{ ...examInput, width: 46, textAlign: 'center' }} />
+            </div>
+            <div style={{ width: 88, textAlign: 'right' }}>
+              {pct != null && tc ? <span style={{ fontSize: 12.5, fontWeight: 700, color: tc.fg }}>{pct.toFixed(1)}% <span style={{ background: tc.bg, padding: '1px 6px', borderRadius: 6 }}>{ex?.resultGrade || gradeFromScore(ex?.resultScore, ex?.resultTotal)}</span></span> : <span style={{ color: '#cbd5e1', fontSize: 12 }}>—</span>}
+            </div>
+            <input placeholder="result notes" value={ex?.resultNotes ?? ''} onChange={e => onSave(type, { resultNotes: e.target.value }, 'rnotes')} style={{ ...examInput, flex: 1, minWidth: 100 }} />
+            <span style={{ width: 14 }}>{flash(`${type}:date`) || flash(`${type}:topics`) || flash(`${type}:score`) || flash(`${type}:total`) || flash(`${type}:rnotes`) || flash(`${type}:noexam`)}</span>
+            {topicsOpen === type && (
+              <div>
+                <div onClick={() => setTopicsOpen(null)} style={{ position: 'fixed', inset: 0, zIndex: 45 }} />
+                <div style={{ position: 'absolute', zIndex: 46, top: '100%', left: 8, marginTop: 4, width: 320, maxHeight: 320, overflowY: 'auto', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.14)', padding: 12 }}>
+                  {tokens.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid #f1f5f9' }}>
+                      {tokens.map(t => (
+                        <button key={t} onClick={() => onSave(type, { testedTopics: tokens.filter(x => x !== t).join(', ') }, 'topics')}
+                          style={{ fontSize: 11.5, fontWeight: 600, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 999, padding: '2px 9px', cursor: 'pointer' }}>{t} ✕</button>
+                      ))}
+                    </div>
+                  )}
+                  {cats.map(c => (
+                    <div key={c.label} style={{ marginBottom: 8 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>{c.label}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        {c.topics.map(t => {
+                          const on = tokens.includes(t);
+                          return (
+                            <button key={t} onClick={() => onSave(type, { testedTopics: (on ? tokens.filter(x => x !== t) : [...tokens, t]).join(', ') }, 'topics')}
+                              style={{ fontSize: 11, cursor: 'pointer', borderRadius: 999, padding: '2px 8px', border: on ? '1px solid #1d4ed8' : '1px solid #e5e7eb', background: on ? '#eff6ff' : '#fff', color: on ? '#1d4ed8' : '#64748b' }}>{t}</button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+const examInput: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 7, padding: '6px 9px', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#fff' };
+const examChip: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: '#1e3a5f', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', flexShrink: 0 };
 function SlotSelect({ slots, studentLevel, excludeId, value, onChange }: { slots: SlotOpt[]; studentLevel: string; excludeId: string | null; value: string; onChange: (v: string) => void }) {
   const avail = slots.filter(s => s.id !== excludeId);
   const same = avail.filter(s => sameLevelSlot(studentLevel, s.level));
