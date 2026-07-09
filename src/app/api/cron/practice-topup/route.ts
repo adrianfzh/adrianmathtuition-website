@@ -64,10 +64,17 @@ export async function GET(req: NextRequest) {
     for (const topic of topics) {
       if (EXCLUDED_TOPICS.has(topic)) continue;
       if (budget <= 0) break;
+      // Servable stock lives in `questions` (the generation worker's output
+      // table and the kiosk/portal source): solved, not deleted, and either
+      // text-only or carrying a gate-5 verified figure.
       const { count: have } = await supa
-        .from('practice_questions')
+        .from('questions')
         .select('id', { count: 'exact', head: true })
-        .in('level', cfg.poolLevels).eq('topic', topic).eq('verified', true);
+        .in('level', cfg.seedLevels)
+        .overlaps('topics', [topic])
+        .is('deleted_at', null)
+        .not('solution', 'is', null)
+        .or('has_image.eq.false,figure_url.not.is.null');
       if ((have ?? 0) >= TARGET) continue;
 
       const need = Math.min(PER_TOPIC_CAP, TARGET - (have ?? 0), budget);

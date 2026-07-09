@@ -24,6 +24,36 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+
+// questions.level values servable per kiosk level token.
+const SEED_LEVELS: Record<string, string[]> = {
+  EM: ['EM', 'S3_EM'],
+  AM: ['AM', 'S3_AM'],
+  JC2: ['JC', 'JC1', 'JC2'],
+};
+
+/* questions.parts jsonb → flattened display text + combined answer
+ * (same shape the worksheet-builder uses). */
+type Part = {
+  text?: string | null; label?: string | null; marks?: number | null;
+  answer?: string | null; subparts?: Part[] | null;
+};
+function flattenParts(stem: string, parts: Part[] | null): { text: string; answer: string } {
+  if (!parts?.length) return { text: stem, answer: '' };
+  const textLines: string[] = stem ? [stem] : [];
+  const answers: string[] = [];
+  const walk = (list: Part[], prefix: string) => {
+    for (const p of list) {
+      const label = p.label ? `${prefix}(${p.label})` : prefix;
+      if (p.text) textLines.push(`**${label}** ${p.text}${p.marks ? `  [${p.marks}]` : ''}`);
+      if (p.answer) answers.push(`${label} ${p.answer}`);
+      if (p.subparts?.length) walk(p.subparts, label);
+    }
+  };
+  walk(parts, '');
+  return { text: textLines.join('\n\n'), answer: answers.join(';  ') };
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyKioskAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -37,23 +67,62 @@ export async function GET(req: NextRequest) {
   if (!cfg) return NextResponse.json({ error: 'level must be EM, AM or JC2' }, { status: 400 });
   if (!topic) return NextResponse.json({ error: 'topic required' }, { status: 400 });
 
-  const { data, error } = await getSupabaseAdmin()
-    .from('practice_questions')
-    .select('id, question_text, marks, answer, figure_url')
-    .in('level', cfg.questionLevels)
-    .eq('topic', topic)
-    .eq('verified', true)
-    .limit(POOL_CAP);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const supa = getSupabaseAdmin();
 
-  const picked = shuffle(data || []).slice(0, count);
+  // Pool = union of both servable sources:
+  //  - `questions` (the generation worker's output + real bank): flatten parts,
+  //    text-only or gate-5 verified figure, solved, not deleted.
+  //  - `practice_questions` (the /revise pool): already flat.
+  const seedLevels = SEED_LEVELS[level] ?? cfg.questionLevels;
+  const [bankRes, poolRes] = await Promise.all([
+    supa.from('questions')
+      .select('id, question_text, parts, total_marks, answer, figure_url, has_image')
+      .in('level', seedLevels)
+      .overlaps('topics', [topic])
+      .is('deleted_at', null)
+      .not('solution', 'is', null)
+      .or('has_image.eq.false,figure_url.not.is.null')
+      .limit(POOL_CAP),
+    supa.from('practice_questions')
+      .select('id, question_text, marks, answer, figure_url')
+      .in('level', cfg.questionLevels)
+      .eq('topic', topic)
+      .eq('verified', true)
+      .limit(POOL_CAP),
+  ]);
+  if (bankRes.error && poolRes.error) {
+    return NextResponse.json({ error: bankRes.error.message }, { status: 500 });
+  }
+
+  type Item = { id: string; markdown: string; marks: number | null; figureUrl: string | null; answer: string | null };
+  const items: Item[] = [];
+  for (const r of bankRes.data || []) {
+    const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
+    items.push({
+      id: r.id as string,
+      markdown: flat.text,
+      marks: (r.total_marks as number | null) ?? null,
+      figureUrl: (r.figure_url as string | null) ?? null,
+      answer: flat.answer || ((r.answer as string | null) ?? null),
+    });
+  }
+  for (const r of poolRes.data || []) {
+    items.push({
+      id: r.id as string,
+      markdown: (r.question_text as string) ?? '',
+      marks: (r.marks as number | null) ?? null,
+      figureUrl: (r.figure_url as string | null) ?? null,
+      answer: (r.answer as string | null) ?? null,
+    });
+  }
+
+  const picked = shuffle(items).slice(0, count);
   const questions = picked.map((r) => ({
-    id: r.id as string,
-    // practice_questions is flat — parts are already embedded in question_text.
-    markdown: (r.question_text as string) ?? '',
-    marks: (r.marks as number | null) ?? null,
-    figureUrl: (r.figure_url as string | null) ?? null,
-    ...(withAnswers ? { answer: (r.answer as string | null) ?? null } : {}),
+    id: r.id,
+    markdown: r.markdown,
+    marks: r.marks,
+    figureUrl: r.figureUrl,
+    ...(withAnswers ? { answer: r.answer } : {}),
   }));
 
   return NextResponse.json({
