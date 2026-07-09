@@ -4,6 +4,7 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMe
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import AdminAIChat from '@/components/AdminAIChat';
 import LessonModal from '@/components/LessonModal';
+import { QuickLogSheet, VoiceLog } from '@/components/QuickLog';
 import {
   DndContext, DragOverlay,
   useSensor, useSensors,
@@ -253,7 +254,7 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; activeExamType?: string | null; slotLevel?: string }) {
+function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, onQuickLog, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; onQuickLog?: () => void; activeExamType?: string | null; slotLevel?: string }) {
   // Rescheduled-away chips (status=Rescheduled) are display-only — disable dragging
   const isRescheduledAway = lesson.status === 'Rescheduled';
   // Cross-level flag: e.g. a JC student rescheduled into a Sec slot
@@ -415,6 +416,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
                 </span>
               </>
             )}
+            {/* Quick-log 📝 pill — today/yesterday only (same gate as attendance) */}
+            {!isRescheduledAway && !isFaded && onQuickLog && (
+              <button onClick={e => { e.stopPropagation(); onQuickLog(); }} title="Quick log progress"
+                style={{ width: 20, height: 20, borderRadius: 4, border: '1px solid #dbeafe', background: '#eff6ff', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}>📝</button>
+            )}
           </div>
         )}
         {/* Mobile only: type-tag on its own line */}
@@ -450,6 +456,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
       {/* Attendance controls — mobile only (web uses line-2 inside content div) */}
       {isTouch && !isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (
         <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
+          {/* Quick-log 📝 pill */}
+          {!isFaded && onQuickLog && (
+            <button onClick={e => { e.stopPropagation(); onQuickLog(); }} title="Quick log progress"
+              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #dbeafe', background: '#eff6ff', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}>📝</button>
+          )}
           {lesson.status === 'Scheduled' && (
             <>
               {onMarkAbsent && (
@@ -481,7 +492,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
 
 function DroppableLessonSlot({
   id, lessons, onChipTap, onAddClick, onExamDateClick, onStudentClick,
-  onMarkPresent, onMarkAbsent, onUndo,
+  onMarkPresent, onMarkAbsent, onUndo, onQuickLog,
   ghostStudents, cancelledStudents, onGhostTap, savingStudents, activeExamType, slotLevel,
 }: {
   id: string;
@@ -494,6 +505,7 @@ function DroppableLessonSlot({
   onMarkPresent?: (lesson: EnrichedLesson) => void;
   onMarkAbsent?: (lesson: EnrichedLesson) => void;
   onUndo?: (lesson: EnrichedLesson) => void;
+  onQuickLog?: (lesson: EnrichedLesson) => void;
   ghostStudents?: { id: string; name: string }[];
   cancelledStudents?: { id: string; name: string; reason: string }[];
   onGhostTap?: (studentId: string, studentName: string) => void;
@@ -507,7 +519,7 @@ function DroppableLessonSlot({
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} activeExamType={activeExamType} slotLevel={slotLevel} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} onQuickLog={onQuickLog && l.studentId && l.type !== 'Trial' ? () => onQuickLog(l) : undefined} activeExamType={activeExamType} slotLevel={slotLevel} />
         ))}
         {ghosts.map(s => (
           <div
@@ -578,6 +590,8 @@ export default function SchedulePage() {
 
   const [modal, setModal] = useState<{ student: StudentContact; lessonType: string; studentId: string } | null>(null);
   const [lessonModal, setLessonModal] = useState<EnrichedLesson | null>(null);
+  // Fast in-class tap-log bottom sheet (📝 pill on today/yesterday chips)
+  const [quickLog, setQuickLog] = useState<EnrichedLesson | null>(null);
   const [contactCache, setContactCache] = useState<Record<string, StudentContact>>({});
   const [contactLoading, setContactLoading] = useState(false);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -1573,6 +1587,31 @@ export default function SchedulePage() {
     } : d);
   }
 
+  // Voice log applied to several lessons at once — flip all their dots locally.
+  function handleProgressLoggedBatch(lessonIds: string[]) {
+    const ids = new Set(lessonIds);
+    setData(d => d ? {
+      ...d,
+      lessons: d.lessons.map(l => ids.has(l.id) ? { ...l, progressLogged: true } : l),
+    } : d);
+  }
+
+  // Roster for the voice-log parser: the viewed day's lessons with a linked
+  // student (skips Trial/no-student chips and cancelled/moved-away lessons).
+  function getVoiceRoster(): { lessonId: string; studentName: string; slotTime?: string }[] {
+    const dateStr = isoDate(activeDate);
+    return enrichedLessons
+      .filter(l =>
+        l.date === dateStr && l.studentId && l.type !== 'Trial' &&
+        l.status !== 'Cancelled' && l.status !== 'Rescheduled'
+      )
+      .map(l => ({
+        lessonId: l.id,
+        studentName: l.studentName,
+        slotTime: data?.slots.find(s => s.id === l.slotId)?.time,
+      }));
+  }
+
   // ── Attendance marking ───────────────────────────────────────────────────────
   async function handleAttendance(studentId: string, slotId: string, date: string, status: 'Completed' | 'Absent') {
     setSavingAttendance(prev => new Set([...prev, studentId]));
@@ -1828,6 +1867,7 @@ export default function SchedulePage() {
           onMarkPresent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Completed') : undefined}
           onMarkAbsent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Absent') : undefined}
           onUndo={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Scheduled') : undefined}
+          onQuickLog={showAttendance ? (lesson) => setQuickLog(lesson) : undefined}
           onGhostTap={(studentId, studentName) => setGhostActionSheet({ studentId, studentName, slotId: slot.id, date: dateStr })}
           savingStudents={savingAttendance}
           activeExamType={data?.activeExamType}
@@ -1991,6 +2031,7 @@ export default function SchedulePage() {
             fabSmall
             fabClassName="schedule-ai-fab"
           />
+          <VoiceLog getRoster={getVoiceRoster} onApplied={handleProgressLoggedBatch} onToast={showToast} />
           <button className="nav-btn" onClick={prevWeek}>‹</button>
           <button className="week-label" onClick={thisWeek}>{formatWeekLabel(monday)}</button>
           <button className="nav-btn" onClick={nextWeek}>›</button>
@@ -3092,6 +3133,16 @@ export default function SchedulePage() {
         />
       )}
 
+      {/* Quick tap-log bottom sheet (📝 pill) */}
+      {quickLog && (
+        <QuickLogSheet
+          lesson={{ id: quickLog.id, studentName: quickLog.studentName, date: quickLog.date }}
+          onClose={() => setQuickLog(null)}
+          onLogged={handleProgressLogged}
+          onToast={showToast}
+        />
+      )}
+
       {/* Toast */}
       {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
     </>
@@ -3296,6 +3347,10 @@ body {
   white-space: nowrap;
 }
 .today-pill-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+/* Voice-log header button: emoji-only on narrow screens */
+@media (max-width: 767px) {
+  .voice-log-label { display: none; }
+}
 /* Hidden on desktop — the date strip handles navigation there */
 @media (min-width: 768px) {
   .today-pill-btn { display: none; }
