@@ -161,6 +161,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '🤖', title: 'Bot',           sub: 'Metrics · analytics · API usage',     href: '/admin/bot'          },
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
   { emoji: '📨', title: 'Email Log',     sub: 'All sent invoices & receipts',               href: '/admin/emails'       },
+  { emoji: '📬', title: 'Parent Digests', sub: 'Weekly · monthly · term drafts',       href: '/admin/digests'      },
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '🧩', title: 'Worksheet Builder', sub: 'Pick QB questions · roles · PDF',   href: '/admin/worksheet-builder' },
