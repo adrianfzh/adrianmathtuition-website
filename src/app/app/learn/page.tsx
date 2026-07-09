@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { KIND_META } from '@/lib/learn';
 import { getDoneMap, getSessionCleared } from '@/lib/learn-progress';
 import type { LearnTopic, UnitKind, UnitSummary } from '@/lib/learn-types';
+import RecallChat from './RecallChat';
 
 type SubjectOpt = { key: string; label: string };
 
@@ -230,6 +231,8 @@ function LearnPageInner() {
           })}
         </div>
       )}
+
+      <RecallChat />
     </div>
   );
 }
