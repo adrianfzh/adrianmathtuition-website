@@ -23,7 +23,9 @@ const QUEUE_BACKOFF = 15;
 // these may seed from KB worked examples. Genuinely figure-dependent topics
 // (Plane Geometry, Integration (Area)) stay curated-only until diagram
 // generation exists.
-const TEXT_FALLBACK_TOPICS = new Set(['Modulus Functions', 'Trigonometry (R-Formula)']);   // skip run if this many requests already waiting
+const TEXT_FALLBACK_TOPICS = new Set(['Trigonometry (R-Formula)']);
+// Out of the current syllabus — never generate for these.
+const EXCLUDED_TOPICS = new Set(['Modulus Functions']);   // skip run if this many requests already waiting
 
 function authed(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') || '';
@@ -56,6 +58,7 @@ export async function GET(req: NextRequest) {
     const topics = [...new Set((topicRows || []).map(r => r.topic as string))];
 
     for (const topic of topics) {
+      if (EXCLUDED_TOPICS.has(topic)) continue;
       if (budget <= 0) break;
       const { count: have } = await supa
         .from('practice_questions')
