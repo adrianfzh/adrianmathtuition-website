@@ -26,6 +26,10 @@ const QUEUE_BACKOFF = 15;
 const TEXT_FALLBACK_TOPICS = new Set(['Trigonometry (R-Formula)']);
 // Out of the current syllabus — never generate for these.
 const EXCLUDED_TOPICS = new Set(['Modulus Functions']);   // skip run if this many requests already waiting
+// Topics whose questions are inherently graph-based: here the worker COMPUTES a
+// matplotlib figure (vision-gated) for each generated question, so image-bearing
+// bank questions are valid seeds and the request is tagged figure_mode:'graph'.
+const GRAPH_TOPICS = new Set(['Integration (Area)', 'Coordinate Geometry', 'Linear Law', 'Trigonometry (Graphs)']);
 
 function authed(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') || '';
@@ -67,16 +71,20 @@ export async function GET(req: NextRequest) {
       if ((have ?? 0) >= TARGET) continue;
 
       const need = Math.min(PER_TOPIC_CAP, TARGET - (have ?? 0), budget);
-      // Seeds: real, solved, diagram-free bank questions of this topic.
-      const { data: seeds } = await supa
+      const isGraph = GRAPH_TOPICS.has(topic);
+      // Seeds: real, solved bank questions of this topic. Graph topics may seed
+      // from image-bearing questions (the figure is recomputed + vision-gated);
+      // all other topics stay diagram-free.
+      let seedQuery = supa
         .from('questions')
         .select('id')
         .in('level', cfg.seedLevels)
         .overlaps('topics', [topic])
-        .eq('has_image', false)
         .is('deleted_at', null)
         .not('solution', 'is', null)
         .limit(30);
+      if (!isGraph) seedQuery = seedQuery.eq('has_image', false);
+      const { data: seeds } = await seedQuery;
       let rows: Record<string, unknown>[] = [];
       if (seeds?.length) {
         const picked = seeds.sort(() => Math.random() - 0.5).slice(0, need);
@@ -87,6 +95,7 @@ export async function GET(req: NextRequest) {
           requested_by: 'admin-topup',
           status: 'pending',
           generated_ids: [] as string[],
+          ...(isGraph ? { figure_mode: 'graph' } : {}),
         }));
       } else if (TEXT_FALLBACK_TOPICS.has(topic)) {
         // No diagram-free bank seeds — seed from Adrian's ingested worked

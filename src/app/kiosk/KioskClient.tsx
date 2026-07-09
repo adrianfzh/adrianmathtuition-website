@@ -29,7 +29,7 @@ const LEVELS: { key: string; label: string }[] = [
 const COUNTS = [5, 8, 12, 15];
 
 type Topic = { topic: string; count: number };
-type WsQuestion = { id: string; markdown: string; marks: number | null; answer?: string | null };
+type WsQuestion = { id: string; markdown: string; marks: number | null; figureUrl?: string | null; answer?: string | null };
 type Worksheet = { title: string; level: string; topic: string; questions: WsQuestion[] };
 
 type AuthState = 'checking' | 'setup' | 'ready';
@@ -300,6 +300,10 @@ export default function KioskClient() {
             {worksheet.questions.map((q) => (
               <li key={q.id} className="ws-q">
                 <div className="ws-q-body">
+                  {q.figureUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={q.figureUrl} alt="Question figure" className="ws-figure" />
+                  )}
                   <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>
                     {q.markdown}
                   </ReactMarkdown>
@@ -484,6 +488,7 @@ const PRINT_CSS = `
   .ws-q { margin-bottom: 6pt; break-inside: avoid; }
   .ws-q-body { display: block; }
   .ws-q-body p { display: inline; margin: 0; }
+  .ws-figure { display: block; max-width: 78%; max-height: 240pt; margin: 6pt 0; }
   .ws-marks { font-weight: 700; margin-left: 6px; }
   .ws-answer-space {
     height: 74pt; margin: 6pt 0 4pt;

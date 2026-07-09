@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await getSupabaseAdmin()
     .from('practice_questions')
-    .select('id, question_text, marks, answer')
+    .select('id, question_text, marks, answer, figure_url')
     .in('level', cfg.questionLevels)
     .eq('topic', topic)
     .eq('verified', true)
@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
     // practice_questions is flat — parts are already embedded in question_text.
     markdown: (r.question_text as string) ?? '',
     marks: (r.marks as number | null) ?? null,
+    figureUrl: (r.figure_url as string | null) ?? null,
     ...(withAnswers ? { answer: (r.answer as string | null) ?? null } : {}),
   }));
 

@@ -78,7 +78,7 @@ function MasteryRing({ pct }: { pct: number | null }) {
   );
 }
 
-type Question = { id: string; markdown: string; marks: number | null; source: string | null; hasSolution: boolean };
+type Question = { id: string; markdown: string; marks: number | null; figureUrl?: string | null; source: string | null; hasSolution: boolean };
 type LineComment = { line: number; ok: boolean; comment: string; fix?: string; tag?: string; severity?: string };
 type GradeResult = {
   verdict: 'correct' | 'partial' | 'wrong';
@@ -465,6 +465,12 @@ export default function PracticePage() {
                 <span className="font-semibold">{q.marks} mark{q.marks === 1 ? '' : 's'}</span>
               </div>
             ) : null}
+            {q.figureUrl && (
+              // Computed + vision-verified matplotlib figure for the question.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={q.figureUrl} alt="Figure for this question"
+                className="w-full max-w-full rounded-xl border border-slate-200 mb-3 bg-white" />
+            )}
             <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
               <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{q.markdown}</ReactMarkdown>
             </div>

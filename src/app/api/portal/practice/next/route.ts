@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
       id: q.id,
       markdown: questionMarkdown(q),
       marks: q.total_marks ?? null,
+      figureUrl: q.figure_url ?? null,
       source: null,
       hasSolution: !!q.has_solution,
     },
