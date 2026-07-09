@@ -1,0 +1,1639 @@
+{
+ "checklist": [
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "1. Cell Structure & Organisation",
+   "LO": "a",
+   "You must be able to…": "Identify + state functions of cell structures (cell wall, membrane, cytoplasm, nucleus, vacuoles, chloroplasts)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "1. Cell Structure & Organisation",
+   "LO": "b",
+   "You must be able to…": "Identify + state functions of ER, Golgi body, mitochondria, ribosomes (from EM)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "1. Cell Structure & Organisation",
+   "LO": "c",
+   "You must be able to…": "Compare typical animal vs plant cells",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "1. Cell Structure & Organisation",
+   "LO": "d",
+   "You must be able to…": "Explain how specialised cells are adapted (muscle, root hair, red blood cell)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "2. Movement of Substances",
+   "LO": "a",
+   "You must be able to…": "Define diffusion; its role in nutrient uptake & gaseous exchange",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "2. Movement of Substances",
+   "LO": "b",
+   "You must be able to…": "Define osmosis; investigate + describe effects on plant & animal tissues",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "2. Movement of Substances",
+   "LO": "c",
+   "You must be able to…": "Define active transport; its importance (ion uptake by root hairs, glucose uptake in villi)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "3. Biological Molecules",
+   "LO": "a",
+   "You must be able to…": "List elements in carbohydrates, fats, proteins",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "3. Biological Molecules",
+   "LO": "b",
+   "You must be able to…": "State main roles of carbohydrates, fats, proteins",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "3. Biological Molecules",
+   "LO": "c",
+   "You must be able to…": "Describe + carry out food tests: starch (iodine), reducing sugar (Benedict's), protein (biuret), fats (ethanol)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "3. Biological Molecules",
+   "LO": "d",
+   "You must be able to…": "State large molecules built from basic units (starch/glycogen←glucose; protein←amino acids; fat←glycerol+fatty acids)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "3. Biological Molecules",
+   "LO": "e",
+   "You must be able to…": "Explain enzyme action: active site, enzyme-substrate complex, lowers activation energy, specificity, lock-and-key",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "I. Cells & Chemistry of Life",
+   "Topic": "3. Biological Molecules",
+   "LO": "f",
+   "You must be able to…": "Investigate + explain effect of temperature & pH on enzyme rate",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "4. Nutrition in Humans",
+   "LO": "a",
+   "You must be able to…": "Functions of digestive-system parts (mouth→anus): ingestion, digestion, absorption, assimilation, egestion",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "4. Nutrition in Humans",
+   "LO": "b",
+   "You must be able to…": "Describe peristalsis",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "4. Nutrition in Humans",
+   "LO": "c",
+   "You must be able to…": "Functions of enzymes in digestion (amylase, maltase, protease, lipase) + substrates/products",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "4. Nutrition in Humans",
+   "LO": "d",
+   "You must be able to…": "Explain how villus structure (capillaries, lacteal) suits absorption",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "4. Nutrition in Humans",
+   "LO": "e",
+   "You must be able to…": "State role of hepatic portal vein",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "4. Nutrition in Humans",
+   "LO": "f",
+   "You must be able to…": "Role of liver (glucose↔glycogen, fat digestion, amino-acid metabolism→urea, breakdown of alcohol & hormones)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "4. Nutrition in Humans",
+   "LO": "g",
+   "You must be able to…": "Outline effects of alcohol on brain + long-term effects + social implications",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "5. Transport in Humans",
+   "LO": "a",
+   "You must be able to…": "Identify main blood vessels to/from heart, lungs, liver, kidney",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "5. Transport in Humans",
+   "LO": "b",
+   "You must be able to…": "Relate structure of arteries, veins, capillaries to function",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "5. Transport in Humans",
+   "LO": "c",
+   "You must be able to…": "Describe transfer of materials between capillaries & tissue fluid",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "5. Transport in Humans",
+   "LO": "d",
+   "You must be able to…": "Components of blood + roles (RBC/haemoglobin, plasma, WBC, platelets/clotting)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "5. Transport in Humans",
+   "LO": "e",
+   "You must be able to…": "ABO blood groups + donor/recipient combinations",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "5. Transport in Humans",
+   "LO": "f",
+   "You must be able to…": "Structure & function of heart (muscular contraction, valves)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "5. Transport in Humans",
+   "LO": "g",
+   "You must be able to…": "Outline cardiac cycle (systole/diastole)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "5. Transport in Humans",
+   "LO": "h",
+   "You must be able to…": "Coronary heart disease: causes, prevention",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "6. Respiration in Humans",
+   "LO": "a",
+   "You must be able to…": "Identify larynx→alveoli + functions in gaseous exchange",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "6. Respiration in Humans",
+   "LO": "b",
+   "You must be able to…": "Describe breathing (cilia, diaphragm, ribs, intercostal muscles)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "6. Respiration in Humans",
+   "LO": "c",
+   "You must be able to…": "Explain how alveolus structure suits gaseous exchange",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "6. Respiration in Humans",
+   "LO": "d",
+   "You must be able to…": "Toxic components of tobacco smoke (nicotine, tar, CO) + effects",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "6. Respiration in Humans",
+   "LO": "e",
+   "You must be able to…": "Define aerobic respiration + word & symbol equation",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "6. Respiration in Humans",
+   "LO": "f",
+   "You must be able to…": "Define anaerobic respiration in humans + word equation",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "6. Respiration in Humans",
+   "LO": "g",
+   "You must be able to…": "Explain oxygen debt during vigorous exercise",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "7. Excretion in Humans",
+   "LO": "a",
+   "You must be able to…": "Define excretion + importance of removing nitrogenous compounds",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "7. Excretion in Humans",
+   "LO": "b",
+   "You must be able to…": "Identify kidneys, ureter, bladder, urethra + functions",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "7. Excretion in Humans",
+   "LO": "c",
+   "You must be able to…": "Outline nephron function: ultra-filtration & selective reabsorption",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "7. Excretion in Humans",
+   "LO": "d",
+   "You must be able to…": "Outline mechanism of dialysis in kidney failure",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "a",
+   "You must be able to…": "Define homeostasis",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "b",
+   "You must be able to…": "Explain principles: stimulus, corrective mechanism, negative feedback",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "c",
+   "You must be able to…": "Maintenance of body temperature (receptors, sweating, shivering, blood flow, hypothalamus)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "d",
+   "You must be able to…": "Define a hormone",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "e",
+   "You must be able to…": "Endocrine gland (islets of Langerhans)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "f",
+   "You must be able to…": "Explain regulation of blood glucose by insulin & glucagon",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "g",
+   "You must be able to…": "Describe type-2 diabetes",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "h",
+   "You must be able to…": "Risk factors + management of type-2 diabetes",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "i",
+   "You must be able to…": "Outline role of ADH in osmoregulation",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "j",
+   "You must be able to…": "State role of nervous system (brain, spinal cord, nerves)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "k",
+   "You must be able to…": "Outline reflex action (receptor→sensory→relay→motor→effector)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "l",
+   "You must be able to…": "Describe structure of the eye (front & horizontal section)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "m",
+   "You must be able to…": "State functions of eye parts (focused image on retina)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "8. Homeostasis, Co-ordination & Response",
+   "LO": "n",
+   "You must be able to…": "Describe pupil reflex to bright/dim light",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "a",
+   "You must be able to…": "Infectious vs non-infectious diseases + examples",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "b",
+   "You must be able to…": "Pathogens (bacteria, viruses); spread via body fluids, food, water",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "c",
+   "You must be able to…": "Virus structure (protein coat + genetic material; reproduces in host)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "d",
+   "You must be able to…": "Bacteria structure (cell wall, DNA no nucleus; pathogenic/non-)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "e",
+   "You must be able to…": "Signs/symptoms of influenza & pneumococcal disease",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "f",
+   "You must be able to…": "Transmission + reduction for influenza & pneumococcus",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "g",
+   "You must be able to…": "How vaccines work (stimulate WBC to produce antibodies)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "h",
+   "You must be able to…": "How antibiotics target bacteria but not viruses",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "II. The Human Body",
+   "Topic": "9. Infectious Diseases in Humans",
+   "LO": "i",
+   "You must be able to…": "Discuss antibiotic misuse → resistance",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "a",
+   "You must be able to…": "Cellular/tissue structure of a dicot leaf (transverse section) + significance",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "b",
+   "You must be able to…": "Positions & functions of xylem & phloem in leaf & stem",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "c",
+   "You must be able to…": "Explain how root hair cell suits water & ion uptake",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "d",
+   "You must be able to…": "Chlorophyll absorbs light → chemical energy for carbohydrates",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "e",
+   "You must be able to…": "Why most life depends on photosynthesis",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "f",
+   "You must be able to…": "State photosynthesis equation (words & symbols)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "g",
+   "You must be able to…": "Describe how CO2 reaches mesophyll cells",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "h",
+   "You must be able to…": "Investigate effect of light, CO2, temperature on photosynthesis rate",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "i",
+   "You must be able to…": "Discuss limiting factors",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "j",
+   "You must be able to…": "Define transpiration (consequence of gaseous exchange)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "k",
+   "You must be able to…": "Explain water movement between cells & environment via water potential",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "l",
+   "You must be able to…": "Outline water pathway root→xylem→leaf by transpiration pull",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "m",
+   "You must be able to…": "Investigate effect of air movement, temp, humidity, light on transpiration; how wilting occurs",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "10. Nutrition & Transport in Flowering Plants",
+   "LO": "n",
+   "You must be able to…": "Define translocation (sucrose in phloem)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "a",
+   "You must be able to…": "Describe non-cyclical nature of energy flow",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "b",
+   "You must be able to…": "Roles of producers, consumers, decomposers in food chains/webs",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "c",
+   "You must be able to…": "Explain energy losses along food chains; efficiency between trophic levels",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "d",
+   "You must be able to…": "Describe + interpret pyramids of numbers & biomass",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "e",
+   "You must be able to…": "Carbon cycle; forests & oceans as carbon sinks",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "f",
+   "You must be able to…": "How human activity raises atmospheric CO2 → global warming",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "g",
+   "You must be able to…": "Discuss actions to reduce global warming",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "h",
+   "You must be able to…": "Effects of pollution (sewage, plastics, insecticides/biomagnification)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "III. Living Together",
+   "Topic": "11. Organisms & their Environment",
+   "LO": "i",
+   "You must be able to…": "Discuss conservation & sustainable use → biodiversity",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "12. Molecular Genetics",
+   "LO": "a",
+   "You must be able to…": "Outline relationships among DNA, genes, chromosomes",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "12. Molecular Genetics",
+   "LO": "b",
+   "You must be able to…": "DNA = double helix, two strands of nucleotides (sugar+phosphate+base)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "12. Molecular Genetics",
+   "LO": "c",
+   "You must be able to…": "State complementary base pairing (A-T, C-G)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "12. Molecular Genetics",
+   "LO": "d",
+   "You must be able to…": "Each gene: sequence of nucleotides, codes for one polypeptide, unit of inheritance",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "12. Molecular Genetics",
+   "LO": "e",
+   "You must be able to…": "DNA carries genetic code to synthesise polypeptides",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "12. Molecular Genetics",
+   "LO": "f",
+   "You must be able to…": "Genes transferred between organisms → transgenic organisms",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "12. Molecular Genetics",
+   "LO": "g",
+   "You must be able to…": "How insulin gene inserted into bacterial DNA (biotechnology)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "12. Molecular Genetics",
+   "LO": "h",
+   "You must be able to…": "Discuss benefits & ethics of genetic engineering",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "a",
+   "You must be able to…": "Define asexual reproduction",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "b",
+   "You must be able to…": "State mitosis (genetically identical, chromosome number maintained)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "c",
+   "You must be able to…": "Importance of mitosis (growth, repair, asexual reproduction)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "d",
+   "You must be able to…": "Define sexual reproduction",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "e",
+   "You must be able to…": "Define haploid/diploid; need for reduction division",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "f",
+   "You must be able to…": "Homologous pairs of chromosomes",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "g",
+   "You must be able to…": "State meiosis (genetically dissimilar, number halved)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "h",
+   "You must be able to…": "Meiosis in gamete formation",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "i-n",
+   "You must be able to…": "Flower structure, pollination (self/cross), insect vs wind, pollen tube → fertilisation",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "o",
+   "You must be able to…": "Male reproductive system + functions",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "p",
+   "You must be able to…": "Female reproductive system + functions",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "q",
+   "You must be able to…": "Outline menstrual cycle (progesterone & oestrogen; fertile/infertile phases)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "r",
+   "You must be able to…": "Fertilisation & early development (implantation)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "s",
+   "You must be able to…": "Functions of amniotic sac & fluid",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "t",
+   "You must be able to…": "Function of placenta & umbilical cord (exchange)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "13. Reproduction",
+   "LO": "u",
+   "You must be able to…": "Transmission of HIV + reduction",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "a",
+   "You must be able to…": "Distinguish gene vs allele",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "b",
+   "You must be able to…": "Explain dominant, recessive, codominant, homozygous, heterozygous, phenotype, genotype",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "c",
+   "You must be able to…": "Predict simple crosses (3:1 and 1:1 ratios)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "d",
+   "You must be able to…": "Explain why observed ratios differ from expected",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "e",
+   "You must be able to…": "Use genetic diagrams to solve monohybrid problems",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "f",
+   "You must be able to…": "Codominance & multiple alleles (ABO blood groups)",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "g",
+   "You must be able to…": "Sex determination (XX / XY)",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "h",
+   "You must be able to…": "Mutation (sickle cell; Down syndrome)",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "i",
+   "You must be able to…": "Ionising radiation & chemical mutagens increase mutation rate",
+   "Priority": "★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "j",
+   "You must be able to…": "Continuous vs discontinuous variation + examples",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "k",
+   "You must be able to…": "Variation & competition → differential survival",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "l",
+   "You must be able to…": "Environmental factors as forces of natural selection",
+   "Priority": "★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  },
+  {
+   "Theme": "IV. Continuity of Life",
+   "Topic": "14. Inheritance",
+   "LO": "m",
+   "You must be able to…": "Explain natural selection as mechanism for evolution",
+   "Priority": "★★★",
+   "Confidence 1-5": null,
+   "Done": null,
+   "Topical Qs done": null,
+   "Notes / where I struggle": null
+  }
+ ],
+ "chains": [
+  {
+   "Topic": "2 Movement",
+   "Concept": "Diffusion",
+   "Mark-scheme chain — write THIS to score the marks": "Net movement of particles from a region of higher concentration to a region of lower concentration, down a concentration gradient.",
+   "Common trap": "Must say NET movement + 'down a concentration gradient'."
+  },
+  {
+   "Topic": "2 Movement",
+   "Concept": "Osmosis",
+   "Mark-scheme chain — write THIS to score the marks": "Net movement of water molecules from a region of higher water potential to a region of lower water potential, through a partially permeable membrane, down a water potential gradient.",
+   "Common trap": "'Partially' (not 'semi') permeable; it's water molecules, not 'water'."
+  },
+  {
+   "Topic": "2 Movement",
+   "Concept": "Plant cell in dilute solution",
+   "Mark-scheme chain — write THIS to score the marks": "Water enters the cell by osmosis → vacuole expands → pushes cytoplasm against the cell wall → cell becomes turgid; the cell wall prevents bursting.",
+   "Common trap": "Turgid, not 'swollen'. Wall stops it bursting."
+  },
+  {
+   "Topic": "2 Movement",
+   "Concept": "Plant cell in concentrated solution",
+   "Mark-scheme chain — write THIS to score the marks": "Water leaves by osmosis → cytoplasm & membrane shrink and pull away from the cell wall → cell is plasmolysed.",
+   "Common trap": "Plasmolysis = membrane pulls from wall."
+  },
+  {
+   "Topic": "2 Movement",
+   "Concept": "Red blood cell in dilute solution",
+   "Mark-scheme chain — write THIS to score the marks": "Water enters by osmosis → cell swells and bursts (haemolysis) because there is no cell wall to resist expansion.",
+   "Common trap": "Contrast with plant cell — no wall."
+  },
+  {
+   "Topic": "2 Movement",
+   "Concept": "Active transport",
+   "Mark-scheme chain — write THIS to score the marks": "Movement of particles from a region of lower concentration to a region of higher concentration, against a concentration gradient, using energy released from respiration.",
+   "Common trap": "Must include 'against gradient' AND 'energy from respiration'."
+  },
+  {
+   "Topic": "3 Enzymes",
+   "Concept": "Mode of action",
+   "Mark-scheme chain — write THIS to score the marks": "Substrate binds to the active site of the enzyme forming an enzyme-substrate complex; the active site is complementary in shape to the substrate (specificity); the enzyme lowers the activation energy.",
+   "Common trap": "Complementary shape; 'lock and key'; lowers activation energy."
+  },
+  {
+   "Topic": "3 Enzymes",
+   "Concept": "Effect of temperature",
+   "Mark-scheme chain — write THIS to score the marks": "As temperature rises, rate increases (molecules gain kinetic energy → more frequent effective collisions) up to the optimum; above the optimum the enzyme is denatured — its active site changes shape so substrate no longer fits, and rate falls.",
+   "Common trap": "'Denatured' NOT 'killed'. Denaturation is permanent."
+  },
+  {
+   "Topic": "3 Enzymes",
+   "Concept": "Effect of pH",
+   "Mark-scheme chain — write THIS to score the marks": "Each enzyme works fastest at its optimum pH; at extreme pH the enzyme is denatured — active site changes shape — so rate falls.",
+   "Common trap": "Name the change: active site changes shape."
+  },
+  {
+   "Topic": "4 Nutrition",
+   "Concept": "Villus adaptation",
+   "Mark-scheme chain — write THIS to score the marks": "Villi and microvilli give a large surface area; the epithelium is one cell thick giving a short diffusion distance; a dense capillary network maintains a steep concentration gradient; a lacteal absorbs fatty acids & glycerol.",
+   "Common trap": "4 marks = 4 features. Lacteal for fats."
+  },
+  {
+   "Topic": "5 Transport",
+   "Concept": "Artery / vein / capillary",
+   "Mark-scheme chain — write THIS to score the marks": "Artery: thick, muscular, elastic wall to withstand high pressure, narrow lumen. Vein: thinner wall, wider lumen, valves to prevent backflow. Capillary: wall one cell thick → short diffusion distance for exchange.",
+   "Common trap": "Match each structure to its pressure/exchange function."
+  },
+  {
+   "Topic": "5 Transport",
+   "Concept": "Red blood cell",
+   "Mark-scheme chain — write THIS to score the marks": "Biconcave disc → large surface area to volume ratio for oxygen diffusion; no nucleus → more room for haemoglobin; haemoglobin binds oxygen to form oxyhaemoglobin.",
+   "Common trap": "No nucleus = more haemoglobin, not 'flexible'."
+  },
+  {
+   "Topic": "6 Respiration",
+   "Concept": "Aerobic respiration",
+   "Mark-scheme chain — write THIS to score the marks": "Glucose + oxygen → carbon dioxide + water (+ energy released).  C6H12O6 + 6O2 → 6CO2 + 6H2O.",
+   "Common trap": "Energy is 'released', not 'produced/made'."
+  },
+  {
+   "Topic": "6 Respiration",
+   "Concept": "Anaerobic (human)",
+   "Mark-scheme chain — write THIS to score the marks": "Glucose → lactic acid (+ a small amount of energy released).",
+   "Common trap": "In humans it's lactic acid (yeast = ethanol + CO2)."
+  },
+  {
+   "Topic": "6 Respiration",
+   "Concept": "Alveolus adaptation",
+   "Mark-scheme chain — write THIS to score the marks": "Large surface area, wall one cell thick (short diffusion distance), moist surface, and a good blood supply that maintains a steep concentration gradient for gaseous exchange.",
+   "Common trap": "4 marks = 4 features."
+  },
+  {
+   "Topic": "6 Respiration",
+   "Concept": "Oxygen debt",
+   "Mark-scheme chain — write THIS to score the marks": "During vigorous exercise oxygen supply is insufficient, so muscles respire anaerobically producing lactic acid; the oxygen debt is repaid by continued rapid, deep breathing which oxidises the lactic acid.",
+   "Common trap": "Lactic acid must be oxidised/removed."
+  },
+  {
+   "Topic": "7 Excretion",
+   "Concept": "Ultrafiltration",
+   "Mark-scheme chain — write THIS to score the marks": "High blood pressure in the glomerulus forces small molecules (water, glucose, salts, urea) out of the blood into the Bowman's capsule; large molecules (blood cells, proteins) remain in the blood.",
+   "Common trap": "High pressure + size selectivity."
+  },
+  {
+   "Topic": "7 Excretion",
+   "Concept": "Selective reabsorption",
+   "Mark-scheme chain — write THIS to score the marks": "Useful substances are reabsorbed into the blood: all glucose, some water and some salts; urea and excess water remain to form urine.",
+   "Common trap": "'ALL glucose' reabsorbed (in a healthy person)."
+  },
+  {
+   "Topic": "8 Homeostasis",
+   "Concept": "Negative feedback",
+   "Mark-scheme chain — write THIS to score the marks": "A change in the internal environment is detected; a corrective mechanism is triggered that reverses the change and returns the condition towards its set point.",
+   "Common trap": "Corrective mechanism REVERSES the change."
+  },
+  {
+   "Topic": "8 Homeostasis",
+   "Concept": "Body temp too high",
+   "Mark-scheme chain — write THIS to score the marks": "Temperature receptors in the skin detect the rise → hypothalamus coordinates → vasodilation (more blood flows near skin surface, more heat lost) and increased sweating (evaporation of sweat removes heat).",
+   "Common trap": "Vasodilation ≠ vessels move. More blood flow near surface."
+  },
+  {
+   "Topic": "8 Homeostasis",
+   "Concept": "Blood glucose too high",
+   "Mark-scheme chain — write THIS to score the marks": "Islets of Langerhans in the pancreas secrete insulin → liver converts excess glucose to glycogen for storage → blood glucose falls back to normal.",
+   "Common trap": "Insulin from pancreas; storage as glycogen in liver."
+  },
+  {
+   "Topic": "8 Homeostasis",
+   "Concept": "Reflex arc",
+   "Mark-scheme chain — write THIS to score the marks": "Stimulus → receptor → sensory neurone → relay neurone (in spinal cord) → motor neurone → effector → response.",
+   "Common trap": "Fixed order; relay neurone is in the spinal cord/CNS."
+  },
+  {
+   "Topic": "10 Plants",
+   "Concept": "Photosynthesis",
+   "Mark-scheme chain — write THIS to score the marks": "Carbon dioxide + water → (light energy, chlorophyll) glucose + oxygen.  6CO2 + 6H2O → C6H12O6 + 6O2.",
+   "Common trap": "Light energy & chlorophyll go ABOVE the arrow."
+  },
+  {
+   "Topic": "10 Plants",
+   "Concept": "Limiting factor",
+   "Mark-scheme chain — write THIS to score the marks": "The factor in shortest supply that limits the rate of the process; increasing it raises the rate until another factor becomes limiting.",
+   "Common trap": "Explain the plateau on rate graphs with this."
+  },
+  {
+   "Topic": "10 Plants",
+   "Concept": "Transpiration pull",
+   "Mark-scheme chain — write THIS to score the marks": "Water evaporates from mesophyll cell surfaces and diffuses out through stomata; this lowers water potential in the leaf, drawing water up the xylem as a continuous column from the roots.",
+   "Common trap": "Water pulled UP xylem; continuous column."
+  },
+  {
+   "Topic": "12 Genetics",
+   "Concept": "Complementary base pairing",
+   "Mark-scheme chain — write THIS to score the marks": "DNA is two strands of nucleotides; adenine pairs with thymine (A-T) and cytosine pairs with guanine (C-G).",
+   "Common trap": "A-T, C-G exactly."
+  },
+  {
+   "Topic": "14 Inheritance",
+   "Concept": "Genetic-diagram method",
+   "Mark-scheme chain — write THIS to score the marks": "State parental phenotypes → genotypes → gametes (circle them) → Punnett square → offspring genotypes → offspring phenotype ratio.",
+   "Common trap": "Marks for gametes circled + full working, not just the answer."
+  },
+  {
+   "Topic": "14 Inheritance",
+   "Concept": "Codominance (ABO)",
+   "Mark-scheme chain — write THIS to score the marks": "Alleles I^A and I^B are codominant, I^O is recessive; genotype I^A I^B gives blood group AB because both alleles are expressed.",
+   "Common trap": "Both alleles expressed = codominance."
+  },
+  {
+   "Topic": "14 Inheritance",
+   "Concept": "Natural selection",
+   "Mark-scheme chain — write THIS to score the marks": "There is variation in a population; a selection pressure (competition/predation/environment) means better-adapted individuals are more likely to survive and reproduce, passing on their favourable alleles; over many generations the favourable allele becomes more common.",
+   "Common trap": "Full chain: variation → pressure → differential survival → inheritance → allele frequency change."
+  }
+ ],
+ "diagrams": [
+  {
+   "Topic": "1 Cells",
+   "Diagram": "Animal & plant cell",
+   "Must label": "Cell wall, membrane, cytoplasm, nucleus, vacuole, chloroplast, mitochondria",
+   "Skill / calculation": "Compare table: what plant has that animal lacks",
+   "✔": null
+  },
+  {
+   "Topic": "1 / P3",
+   "Diagram": "Biological drawing",
+   "Must label": "Clean single lines, no shading, ruled label lines, title, magnification",
+   "Skill / calculation": "Magnification = image size ÷ actual size; keep units consistent",
+   "✔": null
+  },
+  {
+   "Topic": "4 Nutrition",
+   "Diagram": "Villus (section)",
+   "Must label": "Epithelium (one cell), capillary network, lacteal, microvilli",
+   "Skill / calculation": "Link each labelled part to absorption",
+   "✔": null
+  },
+  {
+   "Topic": "5 Transport",
+   "Diagram": "Heart (external + section)",
+   "Must label": "4 chambers, atria/ventricles, valves, aorta, vena cava, pulmonary artery/vein",
+   "Skill / calculation": "Trace blood flow deoxygenated vs oxygenated side",
+   "✔": null
+  },
+  {
+   "Topic": "5 Transport",
+   "Diagram": "Artery / vein / capillary",
+   "Must label": "Wall thickness, lumen size, valve (vein)",
+   "Skill / calculation": "Relate each to pressure / exchange",
+   "✔": null
+  },
+  {
+   "Topic": "6 Respiration",
+   "Diagram": "Alveolus + capillary",
+   "Must label": "Alveolus, capillary, RBC, O2/CO2 diffusion arrows",
+   "Skill / calculation": "State the 4 adaptations for gas exchange",
+   "✔": null
+  },
+  {
+   "Topic": "7 Excretion",
+   "Diagram": "Nephron + kidney",
+   "Must label": "Glomerulus, Bowman's capsule, tubule, collecting duct; cortex/medulla",
+   "Skill / calculation": "Say where ultrafiltration vs reabsorption occurs",
+   "✔": null
+  },
+  {
+   "Topic": "8 Coordination",
+   "Diagram": "Reflex arc",
+   "Must label": "Receptor, sensory neurone, relay neurone (spinal cord), motor neurone, effector",
+   "Skill / calculation": "Give the fixed pathway order",
+   "✔": null
+  },
+  {
+   "Topic": "8 Coordination",
+   "Diagram": "Eye (horizontal section)",
+   "Must label": "Cornea, iris, pupil, lens, ciliary body, retina, optic nerve",
+   "Skill / calculation": "Explain pupil reflex (bright/dim) + focusing",
+   "✔": null
+  },
+  {
+   "Topic": "10 Plants",
+   "Diagram": "Leaf (transverse section)",
+   "Must label": "Waxy cuticle, upper epidermis, palisade & spongy mesophyll, air spaces, xylem/phloem, stomata, guard cells",
+   "Skill / calculation": "Link palisade→photosynthesis, stomata→gas exchange, xylem/phloem→transport",
+   "✔": null
+  },
+  {
+   "Topic": "10 Plants",
+   "Diagram": "Root hair cell",
+   "Must label": "Root hair (extension), cytoplasm, vacuole, cell wall",
+   "Skill / calculation": "Explain large surface area for water/ion uptake",
+   "✔": null
+  },
+  {
+   "Topic": "13 Reproduction",
+   "Diagram": "Flower (insect vs wind)",
+   "Must label": "Sepal, petal, stamen (anther, filament), carpel (stigma, style, ovary, ovule)",
+   "Skill / calculation": "Compare insect- vs wind-pollinated features",
+   "✔": null
+  },
+  {
+   "Topic": "13 Reproduction",
+   "Diagram": "Male & female repro systems",
+   "Must label": "Testes, sperm duct, prostate, urethra, penis / ovary, oviduct, uterus, cervix, vagina",
+   "Skill / calculation": "State function of each part",
+   "✔": null
+  },
+  {
+   "Topic": "12 Genetics",
+   "Diagram": "DNA structure",
+   "Must label": "Two strands, sugar-phosphate backbone, base pairs A-T & C-G",
+   "Skill / calculation": "Show complementary pairing",
+   "✔": null
+  },
+  {
+   "Topic": "11 Ecology",
+   "Diagram": "Food web / pyramids / carbon cycle",
+   "Must label": "Trophic levels, producers/consumers/decomposers; pyramid of numbers & biomass; CO2 in/out",
+   "Skill / calculation": "Explain energy loss between levels; interpret pyramids",
+   "✔": null
+  },
+  {
+   "Topic": "14 Inheritance",
+   "Diagram": "Genetic diagram / Punnett square",
+   "Must label": "Parental phenotype→genotype→gametes (circled)→grid→ratio",
+   "Skill / calculation": "Full working scores, not just the ratio",
+   "✔": null
+  }
+ ],
+ "error_types": [
+  "Keyword missing"
+ ]
+}
