@@ -64,3 +64,23 @@ export function bumpSessionCleared(): number {
 export function getSessionCleared(): number {
   return readSession().count;
 }
+
+// ------------------------------------------------------------ usage events
+// Fire-and-forget server-side usage ledger (unit_events). Never awaited by UI;
+// failures are swallowed. Used for weakness resurfacing + explain-it-back cap.
+export type UnitEvent = 'completed' | 'check_pass' | 'check_fail' | 'decision_wrong';
+
+export function postUnitEvent(
+  ctx: { unitId: string; subject?: string; topic?: string; kind?: string },
+  event: UnitEvent,
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    fetch('/api/portal/learn/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...ctx, event }),
+      keepalive: true,
+    }).catch(() => { /* non-fatal */ });
+  } catch { /* non-fatal */ }
+}

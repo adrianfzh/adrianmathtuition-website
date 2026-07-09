@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { studentTitle, ALL_LEARN_SUBJECTS, LEARN_SUBJECT_LABEL, learnSubjectsForLevel } from '@/lib/learn';
+import { buildReviewList } from '@/lib/learn-review';
 import { fixtureTopic } from '@/lib/learn-fixture';
 import type { LearnTopic, UnitKind, UnitSummary } from '@/lib/learn-types';
 
@@ -72,8 +73,12 @@ export async function GET(req: NextRequest) {
   // Empty state → seed the fixture so the experience is never a blank page.
   if (topics.length === 0) topics = [fixtureTopic()];
 
+  // Weakness resurfacing strip (students only; degrades to []).
+  const review = isStudent ? await buildReviewList(caller.account) : [];
+
   return NextResponse.json({
     subjects: subjects.map(s => ({ key: s, label: LEARN_SUBJECT_LABEL[s] || s })),
     topics,
+    review,
   });
 }

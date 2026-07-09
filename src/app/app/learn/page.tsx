@@ -11,6 +11,7 @@ import type { LearnTopic, UnitKind, UnitSummary } from '@/lib/learn-types';
 import RecallChat from './RecallChat';
 
 type SubjectOpt = { key: string; label: string };
+type ReviewItem = { unitId: string; topic: string; title: string; reason: string };
 
 // Teaching order IS the path — unit_order encodes Adrian's notes sequence
 // (core → example → check interleaved per subtopic). Never group by kind.
@@ -30,6 +31,7 @@ function LearnPageInner() {
 
   const [subjects, setSubjects] = useState<SubjectOpt[]>([]);
   const [topics, setTopics] = useState<LearnTopic[]>([]);
+  const [review, setReview] = useState<ReviewItem[]>([]);
   const [activeSubject, setActiveSubject] = useState<string | null>(null);
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [done, setDone] = useState<Record<string, boolean>>({});
@@ -53,6 +55,7 @@ function LearnPageInner() {
         if (!d) return;
         setSubjects(d.subjects || []);
         setTopics(d.topics || []);
+        setReview(d.review || []);
         // Honour a deep-link subject if the student actually owns it.
         const subjectKeys: string[] = (d.subjects || []).map((s: SubjectOpt) => s.key);
         const initialSubject = deepLinkSubject && subjectKeys.includes(deepLinkSubject)
@@ -129,6 +132,24 @@ function LearnPageInner() {
               {s.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {status === 'ready' && review.length > 0 && (
+        <div className={`${card} p-4`}>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2">🔄 Quick review</p>
+          <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5">
+            {review.map(r => (
+              <Link
+                key={r.unitId}
+                href={`/app/learn/${r.unitId}`}
+                className="shrink-0 max-w-[15rem] rounded-xl border border-[#ecd9a8] bg-[hsl(43,90%,96%)] px-3 py-2 hover:border-navy/40 transition-colors"
+              >
+                <span className="block text-sm font-semibold text-navy truncate">{r.title}</span>
+                <span className="block text-[11px] text-[#8a7320] truncate">{r.topic} · {r.reason}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 

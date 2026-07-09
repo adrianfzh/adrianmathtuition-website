@@ -10,6 +10,7 @@
 // feeds the dashboard and its route, both of which must never 500.
 import { getSupabaseAdmin } from './supabase';
 import { learnSubjectsForLevel } from './learn';
+import { unresolvedFails } from './learn-review';
 import { qbLevelsFor } from './practice';
 import { airtableRequestAll } from './airtable';
 import type { PortalAccount } from './portal-auth';
@@ -137,6 +138,21 @@ export async function getTodayCards(account: PortalAccount): Promise<TodayCard[]
         push(w.topic, 'Needs work', '🩹 Needs work');
       }
     } catch { /* Supabase issue → skip this reason */ }
+  }
+
+  // 4. Review time — the topic with the most unresolved learn-unit fails.
+  //    Only if a card slot remains (lowest priority).
+  if (cards.length < 4) {
+    try {
+      const fails = await unresolvedFails(supabase, account.id);
+      const byTopic = new Map<string, number>();
+      for (const f of fails) if (f.topic) byTopic.set(f.topic, (byTopic.get(f.topic) || 0) + 1);
+      const ranked = [...byTopic.entries()].sort((a, b) => b[1] - a[1]);
+      for (const [topic] of ranked) {
+        if (cards.length >= 4) break;
+        push(topic, 'Review time', '🔄 Review time');
+      }
+    } catch { /* no events yet → skip */ }
   }
 
   return cards.slice(0, 4);
