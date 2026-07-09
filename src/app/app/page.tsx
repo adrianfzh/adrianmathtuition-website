@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { currentStudent } from '@/lib/portal-auth';
 import { getDashboardData } from '@/lib/portal-dashboard';
+import { getTodayCards } from '@/lib/portal-today';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,13 +21,48 @@ function friendlyDate(dateStr: string): string {
 
 export default async function DashboardPage() {
   const { account } = await currentStudent();
-  const d = await getDashboardData(account);
+  const [d, todayCards] = await Promise.all([
+    getDashboardData(account),
+    getTodayCards(account).catch(() => []),
+  ]);
 
   const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
 
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
       <h1 className="text-xl font-bold text-navy pt-1">Hi {d.firstName} 👋</h1>
+
+      {/* Today stack — personalised "start here" learn cards */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Start here</p>
+        {todayCards.length > 0 ? (
+          <div className="space-y-2">
+            {todayCards.map((c, i) => (
+              <Link
+                key={`${c.subject}|${c.topic}|${i}`}
+                href={`/app/learn?topic=${encodeURIComponent(c.topic)}&subject=${encodeURIComponent(c.subject)}`}
+                className="flex items-center gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 shadow-sm hover:opacity-90 transition-opacity"
+              >
+                <span className="flex-1 min-w-0">
+                  <span className="block font-semibold text-[hsl(45,100%,96%)] truncate">{c.topic}</span>
+                  <span className="mt-1 inline-block text-[11px] font-medium bg-[hsl(43,90%,60%)] text-navy rounded-full px-2 py-0.5">
+                    {c.chip}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[hsl(43,90%,60%)] text-lg">›</span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Link
+            href="/app/learn"
+            className="flex items-center justify-between gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 font-semibold shadow-sm hover:opacity-90 transition-opacity"
+          >
+            <span>▶ Start learning</span>
+            <span className="shrink-0 text-[hsl(43,90%,60%)] text-lg">›</span>
+          </Link>
+        )}
+      </div>
 
       {/* Next lesson */}
       <div className={card}>

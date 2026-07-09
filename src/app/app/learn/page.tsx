@@ -2,10 +2,11 @@
 // /app/learn — topic list in spine order. Tap a topic to reveal its units
 // (core → examples → checks → autopsy → try). Per-unit done ticks from
 // localStorage. Admin (testing) additionally sees pending units, chipped.
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { KIND_META } from '@/lib/learn';
-import { getDoneMap } from '@/lib/learn-progress';
+import { getDoneMap, getSessionCleared } from '@/lib/learn-progress';
 import type { LearnTopic, UnitKind, UnitSummary } from '@/lib/learn-types';
 
 type SubjectOpt = { key: string; label: string };
@@ -21,15 +22,24 @@ function partOf(u: UnitSummary): number {
   return Math.floor(u.unit_order) % 100 || 1;
 }
 
-export default function LearnPage() {
+function LearnPageInner() {
+  const searchParams = useSearchParams();
+  const deepLinkTopic = searchParams.get('topic');
+  const deepLinkSubject = searchParams.get('subject');
+
   const [subjects, setSubjects] = useState<SubjectOpt[]>([]);
   const [topics, setTopics] = useState<LearnTopic[]>([]);
   const [activeSubject, setActiveSubject] = useState<string | null>(null);
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'locked'>('loading');
+  const [sessionCleared, setSessionCleared] = useState(0);
 
-  useEffect(() => { setDone(getDoneMap()); }, []);
+  // Deep-link (from the dashboard Today stack): preselect subject + open topic once.
+  const deepLinkApplied = useRef(false);
+  const topicRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => { setDone(getDoneMap()); setSessionCleared(getSessionCleared()); }, []);
 
   useEffect(() => {
     fetch('/api/portal/learn/overview')
@@ -42,7 +52,12 @@ export default function LearnPage() {
         if (!d) return;
         setSubjects(d.subjects || []);
         setTopics(d.topics || []);
-        setActiveSubject((d.subjects?.[0]?.key) ?? null);
+        // Honour a deep-link subject if the student actually owns it.
+        const subjectKeys: string[] = (d.subjects || []).map((s: SubjectOpt) => s.key);
+        const initialSubject = deepLinkSubject && subjectKeys.includes(deepLinkSubject)
+          ? deepLinkSubject
+          : (d.subjects?.[0]?.key ?? null);
+        setActiveSubject(initialSubject);
         setStatus('ready');
       })
       .catch(() => setStatus('error'));
@@ -56,6 +71,23 @@ export default function LearnPage() {
     return scoped.length ? scoped : topics;
   }, [topics, activeSubject]);
 
+  // Apply the deep-link once topics are loaded: switch subject, expand the topic,
+  // and scroll it into view.
+  useEffect(() => {
+    if (deepLinkApplied.current || status !== 'ready' || !deepLinkTopic) return;
+    const match =
+      topics.find(t => t.topic === deepLinkTopic && (!deepLinkSubject || t.subject === deepLinkSubject)) ||
+      topics.find(t => t.topic === deepLinkTopic);
+    deepLinkApplied.current = true;
+    if (!match) return;
+    const key = `${match.subject}|${match.topic}`;
+    setActiveSubject(match.subject);
+    setOpenTopic(key);
+    requestAnimationFrame(() => {
+      topicRefs.current[key]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [status, topics, deepLinkTopic, deepLinkSubject]);
+
   const card = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
   if (status === 'locked') {
@@ -64,7 +96,14 @@ export default function LearnPage() {
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <h1 className="text-xl font-bold text-navy pt-1">Learn</h1>
+      <div className="pt-1">
+        <h1 className="text-xl font-bold text-navy">Learn</h1>
+        {sessionCleared > 0 && (
+          <p className="text-sm text-[#1f9e6f] font-medium mt-0.5">
+            {sessionCleared} {sessionCleared === 1 ? 'unit' : 'units'} cleared this session — keep going
+          </p>
+        )}
+      </div>
 
       {subjects.length > 1 && (
         <div className="flex flex-wrap gap-2">
@@ -104,7 +143,7 @@ export default function LearnPage() {
             const doneCount = units.filter(u => done[u.id]).length;
             const isOpen = openTopic === key;
             return (
-              <div key={key} className={card}>
+              <div key={key} ref={el => { topicRefs.current[key] = el; }} className={`${card} scroll-mt-20`}>
                 <button
                   onClick={() => setOpenTopic(isOpen ? null : key)}
                   className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
@@ -192,5 +231,14 @@ export default function LearnPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// useSearchParams must sit under a Suspense boundary for the App Router build.
+export default function LearnPage() {
+  return (
+    <Suspense fallback={<div className="p-5 text-sm text-gray-400">Loading lessons…</div>}>
+      <LearnPageInner />
+    </Suspense>
   );
 }
