@@ -15,7 +15,8 @@ export interface CorePayload {
 export interface ExampleStep {
   label?: string;
   math?: string;            // raw LaTeX (no $ delimiters); rendered as display math
-  annotation_md?: string;   // Adrian's arrow comment → gold bubble
+  annotation_md?: string;   // Adrian's arrow comment → gold bubble (short cue)
+  more_md?: string;         // optional deeper "why" — collapsed behind a tap
 }
 export interface DecisionOption {
   label_md: string;

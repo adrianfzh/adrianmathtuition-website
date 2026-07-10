@@ -267,15 +267,32 @@ function CorePlayer({ payload, next, onDone, unitId }: { payload: CorePayload; n
 
 // ---------------------------------------------------------------- example
 type Beat =
-  | { type: 'step'; label?: string; math?: string; annotation_md?: string }
+  | { type: 'step'; label?: string; math?: string; annotation_md?: string; more_md?: string }
   | { type: 'decision'; decision: Decision }
   | { type: 'answer'; md: string };
+
+// Collapsed "why" layer under a step — teaching depth on demand.
+function WhyMore({ md }: { md: string }) {
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <button onClick={() => setOpen(true)} className="mt-1.5 text-[.78rem] font-semibold text-navy/60 underline decoration-dotted underline-offset-2">
+        Why? ▾
+      </button>
+    );
+  }
+  return (
+    <div className="mt-1.5 rounded-xl border border-[#dfe5ec] bg-[#f7f9fb] px-3.5 py-2.5 text-[.84rem] text-[#4a5a6d] animate-[pop_.2s_ease]">
+      <Md>{md}</Md>
+    </div>
+  );
+}
 
 function ExamplePlayer({ payload, next, onDone, onProgress, cleared, onEvent, tryUnit, unitId }: { payload: ExamplePayload; next: UnitSummary | null; onDone: () => void; onProgress: (v: number) => void; cleared: number; onEvent: (e: UnitEvent) => void; tryUnit: UnitSummary | null; unitId: string }) {
   const beats = useMemo<Beat[]>(() => {
     const out: Beat[] = [];
     payload.steps.forEach((s, idx) => {
-      out.push({ type: 'step', label: s.label, math: s.math, annotation_md: s.annotation_md });
+      out.push({ type: 'step', label: s.label, math: s.math, annotation_md: s.annotation_md, more_md: s.more_md });
       (payload.decisions || [])
         .filter(d => d.after_step === idx + 1)
         .forEach(d => out.push({ type: 'decision', decision: d }));
@@ -342,6 +359,7 @@ function ExamplePlayer({ payload, next, onDone, onProgress, cleared, onEvent, tr
                     <span className="inline [&_p]:inline [&_*]:text-[#6b5310]"><Md className="inline">{b.annotation_md}</Md></span>
                   </div>
                 )}
+                {b.more_md && <WhyMore md={b.more_md} />}
               </div>
             );
           }

@@ -218,7 +218,7 @@ function CorePreview({ p }: { p: { summary_md?: string; formula_md?: string; rem
   );
 }
 
-interface Step { label?: string; math?: string; annotation_md?: string }
+interface Step { label?: string; math?: string; annotation_md?: string; more_md?: string }
 
 function ExamplePreview({ p }: { p: { problem_md?: string; steps?: Step[]; decisions?: Decision[]; answer_md?: string } }) {
   const steps = p.steps ?? [];
@@ -240,6 +240,12 @@ function ExamplePreview({ p }: { p: { problem_md?: string; steps?: Step[]; decis
             </div>
             {s.math && <div className="mt-1"><MathBlock tex={s.math} /></div>}
             {s.annotation_md && <AnnotationBubble>{s.annotation_md}</AnnotationBubble>}
+            {s.more_md && (
+              <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 mt-1.5">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-0.5">Why (tap-to-expand for students)</div>
+                <Md className="!text-[13px] !text-slate-500">{s.more_md}</Md>
+              </div>
+            )}
             {decisions.filter(d => d.after_step === i + 1).map((d, di) => <DecisionCard key={di} d={d} />)}
           </li>
         ))}
