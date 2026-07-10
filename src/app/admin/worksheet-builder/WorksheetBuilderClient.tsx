@@ -29,7 +29,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type UiLevel = 'EM' | 'AM' | 'H2';
-type Source = 'all' | 'seed' | 'generated';
+type Source = 'all' | 'seed' | 'generated' | 'ai-bank';
 type Role = 'we' | 'practice';
 
 interface SearchResult {
@@ -465,6 +465,7 @@ export default function WorksheetBuilderClient() {
                   <option value="all">All sources</option>
                   <option value="seed">Past papers</option>
                   <option value="generated">AI practice</option>
+                  <option value="ai-bank">AI-generated (new, bank)</option>
                 </select>
                 <button
                   onClick={() => runSearch(false)}

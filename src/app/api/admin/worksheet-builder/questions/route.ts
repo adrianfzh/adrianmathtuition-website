@@ -123,22 +123,28 @@ export async function GET(req: NextRequest) {
   if (!level || !UI_LEVELS.includes(level)) {
     return NextResponse.json({ error: 'level must be EM, AM or H2' }, { status: 400 });
   }
-  if (!['seed', 'generated', 'all'].includes(source)) {
-    return NextResponse.json({ error: 'source must be seed, generated or all' }, { status: 400 });
+  if (!['seed', 'generated', 'ai-bank', 'all'].includes(source)) {
+    return NextResponse.json({ error: 'source must be seed, generated, ai-bank or all' }, { status: 400 });
   }
 
   const supa = getSupabaseAdmin();
   const results: BuilderQuestion[] = [];
 
   // ── Seed questions (real past-paper bank) ──────────────────────────────────
-  if (source === 'seed' || source === 'all') {
+  if (source === 'seed' || source === 'all' || source === 'ai-bank') {
     let q = supa
       .from('questions')
-      .select('id, question_text, answer, solution, parts, total_marks, school, year, exam_type, difficulty, has_image, image_url, verified, ai_generated')
+      .select('id, question_text, answer, solution, parts, total_marks, school, year, exam_type, difficulty, has_image, image_url, verified, ai_generated, figure_url, solution_source')
       .is('deleted_at', null)
       .in('level', SEED_LEVELS[level])
-      .order('year', { ascending: false, nullsFirst: false })
       .range(offset, offset + MAX_ROWS - 1);
+    // ai-bank: newest generations first; past papers keep year ordering
+    q = source === 'ai-bank'
+      ? q.order('created_at', { ascending: false })
+      : q.order('year', { ascending: false, nullsFirst: false });
+    // 'ai-bank' = only AI-generated bank rows (gen-worker, geometry construct,
+    // session batches), newest first — the "show me just the new ones" view.
+    if (source === 'ai-bank') q = q.eq('ai_generated', true);
     if (topic) q = q.overlaps('topics', [topic]);
     if (search) q = q.ilike('question_text', `%${search}%`);
 
@@ -147,7 +153,7 @@ export async function GET(req: NextRequest) {
 
     for (const r of data ?? []) {
       const prov = r.ai_generated
-        ? 'AI-generated (seed bank)'
+        ? `AI · ${(r as { solution_source?: string }).solution_source ?? 'generated'}`
         : [r.school, r.year, r.exam_type].filter(Boolean).join(' · ') || 'Question bank';
       const flat = flattenParts(r.question_text ?? '', (r.parts as Part[] | null) ?? null);
       results.push({
