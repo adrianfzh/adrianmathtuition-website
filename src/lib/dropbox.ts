@@ -8,6 +8,7 @@ const API = 'https://api.dropboxapi.com/2';
 
 // Cache the access token in-process (they last ~4h; we refresh at 3.5h).
 let cached: { token: string; expiresAt: number } | null = null;
+let inflight: Promise<string> | null = null; // dedupe concurrent refreshes
 
 export function dropboxConfigured(): boolean {
   return !!(process.env.DROPBOX_APP_KEY && process.env.DROPBOX_APP_SECRET && process.env.DROPBOX_REFRESH_TOKEN);
@@ -15,6 +16,14 @@ export function dropboxConfigured(): boolean {
 
 async function getAccessToken(): Promise<string> {
   if (cached && Date.now() < cached.expiresAt) return cached.token;
+  // If a refresh is already running (e.g. 5 listFolder calls fired at once),
+  // await it instead of kicking off five parallel token refreshes.
+  if (inflight) return inflight;
+  inflight = refreshToken().finally(() => { inflight = null; });
+  return inflight;
+}
+
+async function refreshToken(): Promise<string> {
   const key = process.env.DROPBOX_APP_KEY || '';
   const secret = process.env.DROPBOX_APP_SECRET || '';
   const refresh = process.env.DROPBOX_REFRESH_TOKEN || '';

@@ -1,56 +1,15 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
-import { dropboxConfigured, listFolder } from '@/lib/dropbox';
-
-const LEVELS = [
-  { slug: 's1', label: 'S1', sub: 'Secondary 1',  atLevel: 'S1', from: '#1d4ed8', to: '#3b82f6' },
-  { slug: 's2', label: 'S2', sub: 'Secondary 2',  atLevel: 'S2', from: '#0369a1', to: '#0ea5e9' },
-  { slug: 'em', label: 'EM', sub: 'E Maths',       atLevel: 'EM', from: '#6d28d9', to: '#a855f7' },
-  { slug: 'am', label: 'AM', sub: 'A Maths',       atLevel: 'AM', from: '#065f46', to: '#10b981' },
-  { slug: 'jc', label: 'JC', sub: 'H2 Maths',      atLevel: 'JC', from: '#92400e', to: '#f59e0b' },
-];
-
-const titleKey = (name: string) => name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim().toLowerCase();
-
-async function dbxTitleKeys(folder: string): Promise<Set<string>> {
-  try {
-    const entries = await listFolder(`/${folder}`);
-    return new Set(entries.filter(e => e.tag === 'file' && /\.pdf$/i.test(e.name)).map(e => titleKey(e.name)));
-  } catch { return new Set(); }
-}
+import NotesGrid from './NotesGrid';
 
 export default async function NotesIndexPage() {
   const cookieStore = await cookies();
   if (!verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value)) redirect('/admin');
 
-  // Note counts per level — merge Dropbox files with Airtable/Blob notes, deduped
-  // by title (a note that exists in both sources counts once). A blank-title
-  // Airtable record (no PDF) is ignored so it never inflates the count.
-  const counts: Record<string, number> = {};
-  try {
-    const [data, ...dbxSets] = await Promise.all([
-      airtableRequestAll('PrintNotes', '?fields[]=Level&fields[]=Title&fields[]=PDF URL'),
-      ...LEVELS.map(l => dropboxConfigured() ? dbxTitleKeys(l.atLevel) : Promise.resolve(new Set<string>())),
-    ]);
-    const dbxByLevel: Record<string, Set<string>> = {};
-    LEVELS.forEach((l, i) => { dbxByLevel[l.atLevel] = dbxSets[i]; });
-    // Start from each level's Dropbox keys, then add Airtable titles not already there.
-    const keysByLevel: Record<string, Set<string>> = {};
-    for (const l of LEVELS) keysByLevel[l.atLevel] = new Set(dbxByLevel[l.atLevel]);
-    for (const r of data.records || []) {
-      const lv = r.fields?.['Level'] as string | undefined;
-      const title = ((r.fields?.['Title'] as string) || '').trim();
-      const hasPdf = !!(r.fields?.['PDF URL']);
-      if (!lv || !title || !hasPdf || !keysByLevel[lv]) continue; // skip blank/no-PDF junk
-      keysByLevel[lv].add(title.toLowerCase());
-    }
-    for (const l of LEVELS) counts[l.atLevel] = keysByLevel[l.atLevel].size;
-  } catch { /* counts are best-effort */ }
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-
+  // Tiles + counts render in <NotesGrid /> (client) so the page appears instantly;
+  // per-level counts (which need slow Dropbox folder listings) stream in after.
   return (
     <div style={{ minHeight: '100vh', background: '#f1f5f9', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
 
@@ -62,11 +21,6 @@ export default async function NotesIndexPage() {
           </Link>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 6 }}>
             <div style={{ fontSize: 24, fontWeight: 800, color: '#fff', letterSpacing: '-0.4px' }}>🖨️ Print Notes</div>
-            {total > 0 && (
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', padding: '3px 10px', borderRadius: 20 }}>
-                {total} total
-              </span>
-            )}
           </div>
           <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.55)', marginTop: 3 }}>
             Tap a level to open and print
@@ -74,56 +28,9 @@ export default async function NotesIndexPage() {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid (client — renders instantly, counts stream in) */}
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '22px 16px 48px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          {LEVELS.map(({ slug, label, sub, atLevel, from, to }, i) => {
-            const isLast = i === LEVELS.length - 1 && LEVELS.length % 2 !== 0;
-            const n = counts[atLevel] || 0;
-            return (
-              <Link
-                key={slug}
-                href={`/admin/notes/${slug}`}
-                style={{
-                  gridColumn: isLast ? 'span 2' : undefined,
-                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                  background: `linear-gradient(140deg, ${from}, ${to})`,
-                  borderRadius: 20,
-                  padding: '20px 20px 18px',
-                  minHeight: isLast ? 128 : 148,
-                  textDecoration: 'none',
-                  boxShadow: `0 10px 24px -8px ${from}66, 0 2px 6px rgba(16,24,40,0.08)`,
-                  position: 'relative', overflow: 'hidden',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                {/* soft light sweep */}
-                <div style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.10)' }} />
-                <div style={{ position: 'absolute', bottom: -50, right: 20, width: 96, height: 96, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
-
-                {/* top row: count pill */}
-                <div style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end' }}>
-                  <span style={{
-                    fontSize: 11.5, fontWeight: 700, color: '#fff',
-                    background: 'rgba(255,255,255,0.18)', padding: '3px 10px', borderRadius: 20,
-                    backdropFilter: 'blur(2px)',
-                  }}>
-                    {n === 0 ? 'No notes yet' : `${n} note${n === 1 ? '' : 's'}`}
-                  </span>
-                </div>
-
-                {/* bottom: label + sub + arrow */}
-                <div style={{ position: 'relative' }}>
-                  <div style={{ fontSize: 40, fontWeight: 900, color: '#fff', letterSpacing: '-1.5px', lineHeight: 1 }}>{label}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
-                    <span style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.82)', fontWeight: 600 }}>{sub}</span>
-                    <span style={{ fontSize: 18, color: 'rgba(255,255,255,0.7)', lineHeight: 1 }}>→</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <NotesGrid />
       </div>
     </div>
   );
