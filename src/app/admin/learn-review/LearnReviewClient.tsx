@@ -6,7 +6,10 @@
 // Edit mode validates the payload JSON and katex-render-checks every math string
 // before saving. Students only ever see approved units in the portal player.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -200,9 +203,17 @@ function AnnotationBubble({ children }: { children: string }) {
   );
 }
 
-function CorePreview({ p }: { p: { summary_md?: string; formula_md?: string; remember_md?: string } }) {
+// Inline SVG figure preview (same defensive strip as the player).
+function FigurePreview({ svg }: { svg: string }) {
+  const clean = svg.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/\son\w+="[^"]*"/gi, '');
+  if (!/^\s*<svg[\s>]/i.test(clean)) return null;
+  return <div className="flex justify-center [&_svg]:max-w-full [&_svg]:h-auto my-2" dangerouslySetInnerHTML={{ __html: clean }} />;
+}
+
+function CorePreview({ p }: { p: { summary_md?: string; formula_md?: string; remember_md?: string; figure_svg?: string } }) {
   return (
     <div className="space-y-3">
+      {p.figure_svg && <FigurePreview svg={p.figure_svg} />}
       {p.summary_md && <Md>{p.summary_md}</Md>}
       {p.formula_md && (
         <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
@@ -219,7 +230,7 @@ function CorePreview({ p }: { p: { summary_md?: string; formula_md?: string; rem
   );
 }
 
-interface Step { label?: string; math?: string; annotation_md?: string; more_md?: string }
+interface Step { label?: string; math?: string; annotation_md?: string; more_md?: string; figure_svg?: string }
 
 function ExamplePreview({ p }: { p: { problem_md?: string; steps?: Step[]; decisions?: Decision[]; answer_md?: string } }) {
   const steps = p.steps ?? [];
@@ -239,6 +250,7 @@ function ExamplePreview({ p }: { p: { problem_md?: string; steps?: Step[]; decis
               <span className="text-xs font-bold text-slate-300 shrink-0">{i + 1}</span>
               {s.label && <span className="text-sm font-semibold text-slate-700">{s.label}</span>}
             </div>
+            {s.figure_svg && <FigurePreview svg={s.figure_svg} />}
             {s.math && <div className="mt-1"><MathBlock tex={s.math} /></div>}
             {s.annotation_md && <AnnotationBubble>{s.annotation_md}</AnnotationBubble>}
             {s.more_md && (
@@ -353,6 +365,31 @@ function UnitPreview({ unit }: { unit: Unit }) {
 }
 
 // ── Unit card (with edit mode) ───────────────────────────────────────────────
+
+// Sortable wrapper: whole-card drag via the ⠿ handle only, so buttons,
+// text selection and scrolling inside the card keep working.
+// Module-level component — required because it uses the useSortable hook.
+function SortableUnitRow({ unit, children }: { unit: Unit; children: ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: unit.id });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`relative ${isDragging ? 'z-10 opacity-80 shadow-xl' : ''}`}
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        aria-label="Drag to reorder"
+        className="absolute right-2 top-2 z-10 cursor-grab active:cursor-grabbing rounded-lg px-2 py-1 text-slate-300 hover:text-slate-500 hover:bg-slate-50 text-lg leading-none select-none"
+        style={{ touchAction: 'none' }}
+      >
+        ⠿
+      </button>
+      {children}
+    </div>
+  );
+}
 
 function UnitCard({
   unit,
@@ -578,6 +615,32 @@ export default function LearnReviewClient() {
     return d;
   }
 
+  // Drag-to-reorder. The topic's existing unit_order values are fixed slots;
+  // the new visual order decides which unit occupies which slot (Part headers
+  // stay in place, units move across them). Optimistic; reverts on failure.
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 6 } }),
+  );
+  async function handleDragEnd(e: DragEndEvent) {
+    const { active, over } = e;
+    if (!over || active.id === over.id || !selectedTopic) return;
+    const oldIndex = units.findIndex(u => u.id === active.id);
+    const newIndex = units.findIndex(u => u.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const prev = units;
+    const slots = [...units.map(u => u.unit_order)].sort((a, b) => (a ?? 0) - (b ?? 0));
+    const moved = arrayMove(units, oldIndex, newIndex).map((u, i) => ({ ...u, unit_order: slots[i] }));
+    setUnits(moved);
+    try {
+      await post({ action: 'reorder', subject, topic: selectedTopic, orderedIds: moved.map(u => u.id) });
+      showToast('Order saved');
+    } catch (err) {
+      setUnits(prev);
+      showToast((err as Error).message, 'error');
+    }
+  }
+
   async function handleStatus(id: string, action: 'approve' | 'reject' | 'pending') {
     setBusyId(id);
     try {
@@ -730,11 +793,17 @@ export default function LearnReviewClient() {
           ) : units.length === 0 ? (
             <p className="text-sm text-slate-400">No units in this topic.</p>
           ) : (
-            <div className="space-y-4">
-              {units.map(u => (
-                <UnitCard key={u.id} unit={u} onStatus={handleStatus} onSaveEdit={handleSaveEdit} busy={busyId === u.id} />
-              ))}
-            </div>
+            <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={units.map(u => u.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-4">
+                  {units.map(u => (
+                    <SortableUnitRow key={u.id} unit={u}>
+                      <UnitCard unit={u} onStatus={handleStatus} onSaveEdit={handleSaveEdit} busy={busyId === u.id} />
+                    </SortableUnitRow>
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
       )}

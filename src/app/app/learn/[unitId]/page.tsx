@@ -194,6 +194,7 @@ function FadedReplay({ payload, onEvent, tryUnit }: {
       {payload.steps.map((s, i) => (
         <div key={i} className="border-t border-gray-100 pt-2.5 first:border-0 first:pt-0">
           {s.label && <div className="font-bold text-navy text-[.9rem] mb-1"><Md>{s.label}</Md></div>}
+          {s.figure_svg && revealed[i] && <FigureSvg svg={s.figure_svg} />}
           {s.math && (
             revealed[i] ? (
               <div className="animate-[pop_.2s_ease]"><Md block>{s.math}</Md></div>
@@ -238,6 +239,7 @@ function CorePlayer({ payload, next, onDone, unitId }: { payload: CorePayload; n
   return (
     <div className="space-y-3">
       <div className={`${CARD} p-4`}>
+        {payload.figure_svg && <FigureSvg svg={payload.figure_svg} />}
         <Md>{payload.summary_md}</Md>
         {payload.formula_md && (
           <div className="mt-3">
@@ -267,9 +269,25 @@ function CorePlayer({ payload, next, onDone, unitId }: { payload: CorePayload; n
 
 // ---------------------------------------------------------------- example
 type Beat =
-  | { type: 'step'; label?: string; math?: string; annotation_md?: string; more_md?: string }
+  | { type: 'step'; label?: string; math?: string; annotation_md?: string; more_md?: string; figure_svg?: string }
   | { type: 'decision'; decision: Decision }
   | { type: 'answer'; md: string };
+
+// Inline SVG diagram. Payloads are admin-authored, but strip active content
+// defensively before injecting.
+function FigureSvg({ svg }: { svg: string }) {
+  const clean = useMemo(
+    () => svg.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/\son\w+="[^"]*"/gi, ''),
+    [svg],
+  );
+  if (!/^\s*<svg[\s>]/i.test(clean)) return null;
+  return (
+    <div
+      className="mb-3 flex justify-center [&_svg]:max-w-full [&_svg]:h-auto animate-[pop_.28s_ease]"
+      dangerouslySetInnerHTML={{ __html: clean }}
+    />
+  );
+}
 
 // Collapsed "why" layer under a step — teaching depth on demand.
 function WhyMore({ md }: { md: string }) {
@@ -292,7 +310,7 @@ function ExamplePlayer({ payload, next, onDone, onProgress, cleared, onEvent, tr
   const beats = useMemo<Beat[]>(() => {
     const out: Beat[] = [];
     payload.steps.forEach((s) => {
-      out.push({ type: 'step', label: s.label, math: s.math, annotation_md: s.annotation_md, more_md: s.more_md });
+      out.push({ type: 'step', label: s.label, math: s.math, annotation_md: s.annotation_md, more_md: s.more_md, figure_svg: s.figure_svg });
     });
     // Decision quizzes are deliberately NOT rendered on the first-teach path —
     // Adrian's call (2026-07-10): students learning something new want the
@@ -353,6 +371,7 @@ function ExamplePlayer({ payload, next, onDone, onProgress, cleared, onEvent, tr
             return (
               <div key={idx} className={`${CARD} p-4 animate-[pop_.28s_ease]`}>
                 {b.label && <div className="font-bold text-navy text-[.92rem] mb-1"><Md>{b.label}</Md></div>}
+                {b.figure_svg && <FigureSvg svg={b.figure_svg} />}
                 {b.math && <Md block>{b.math}</Md>}
                 {b.annotation_md && (
                   <div className="mt-2.5 rounded-xl rounded-tl-sm border border-[#ecd9a8] bg-[hsl(43,90%,94%)] px-3.5 py-2.5 text-[.86rem] text-[#6b5310]">

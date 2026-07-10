@@ -95,6 +95,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, updated: data?.length ?? 0 });
   }
 
+  // Reorder decks within a topic. orderedIds is the full new visual order; the
+  // topic's EXISTING unit_order values act as fixed slots (so Part boundaries —
+  // the integer blocks like 601/602 — keep their positions) and each unit is
+  // assigned the slot matching its new position.
+  if (action === 'reorder') {
+    const subject = String(body.subject ?? '');
+    const topic = String(body.topic ?? '');
+    const orderedIds = body.orderedIds;
+    if (!subject || !topic || !Array.isArray(orderedIds) || orderedIds.some(x => typeof x !== 'string')) {
+      return NextResponse.json({ error: 'subject, topic and orderedIds[] required' }, { status: 400 });
+    }
+    const { data: units, error } = await supa
+      .from('learning_units')
+      .select('id, unit_order')
+      .eq('subject', subject)
+      .eq('topic', topic);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const byId = new Map((units ?? []).map(u => [u.id, u]));
+    if (orderedIds.length !== byId.size || orderedIds.some(x => !byId.has(x))) {
+      return NextResponse.json({ error: 'orderedIds must be a permutation of the topic\'s units' }, { status: 409 });
+    }
+    const slots = (units ?? []).map(u => u.unit_order).sort((a, b) => a - b);
+    let changed = 0;
+    for (let i = 0; i < orderedIds.length; i++) {
+      const u = byId.get(orderedIds[i] as string)!;
+      if (u.unit_order !== slots[i]) {
+        const { error: upErr } = await supa
+          .from('learning_units')
+          .update({ unit_order: slots[i], updated_at: now })
+          .eq('id', u.id);
+        if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+        changed++;
+      }
+    }
+    return NextResponse.json({ ok: true, changed });
+  }
+
   // Everything else is keyed on a single unit id.
   const id = String(body.id ?? '');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });

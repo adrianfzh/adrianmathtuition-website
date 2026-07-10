@@ -9,6 +9,7 @@ export interface CorePayload {
   summary_md: string;
   formula_md?: string;
   remember_md?: string;
+  figure_svg?: string;      // self-contained inline SVG diagram (geometry etc.)
 }
 
 // example — step-reveal player
@@ -17,6 +18,8 @@ export interface ExampleStep {
   math?: string;            // raw LaTeX (no $ delimiters); rendered as display math
   annotation_md?: string;   // Adrian's arrow comment → gold bubble (short cue)
   more_md?: string;         // optional deeper "why" — collapsed behind a tap
+  figure_svg?: string;      // diagram state AT this step — successive steps add
+                            // construction lines/marks, so tapping animates the build
 }
 export interface DecisionOption {
   label_md: string;
