@@ -131,7 +131,10 @@ export async function GET(req: NextRequest) {
   const results: BuilderQuestion[] = [];
 
   // ── Seed questions (real past-paper bank) ──────────────────────────────────
-  if (source === 'seed' || source === 'all' || source === 'ai-bank') {
+  // 'generated' (the retired practice_questions pool) is now an alias of
+  // 'ai-bank' — the pool was migrated into the bank on 2026-07-10.
+  const wantAiBank = source === 'ai-bank' || source === 'generated';
+  if (source === 'seed' || source === 'all' || wantAiBank) {
     let q = supa
       .from('questions')
       .select('id, question_text, answer, solution, parts, total_marks, school, year, exam_type, difficulty, has_image, image_url, verified, ai_generated, figure_url, solution_source')
@@ -139,12 +142,12 @@ export async function GET(req: NextRequest) {
       .in('level', SEED_LEVELS[level])
       .range(offset, offset + MAX_ROWS - 1);
     // ai-bank: newest generations first; past papers keep year ordering
-    q = source === 'ai-bank'
+    q = wantAiBank
       ? q.order('created_at', { ascending: false })
       : q.order('year', { ascending: false, nullsFirst: false });
     // 'ai-bank' = only AI-generated bank rows (gen-worker, geometry construct,
     // session batches), newest first — the "show me just the new ones" view.
-    if (source === 'ai-bank') q = q.eq('ai_generated', true);
+    if (wantAiBank) q = q.eq('ai_generated', true);
     if (topic) q = q.overlaps('topics', [topic]);
     if (search) q = q.ilike('question_text', `%${search}%`);
 
@@ -172,34 +175,6 @@ export async function GET(req: NextRequest) {
   }
 
   // ── Generated practice questions (4-gate verified pipeline) ───────────────
-  if (source === 'generated' || source === 'all') {
-    let q = supa
-      .from('practice_questions')
-      .select('id, question_text, marks, answer, solution, verified, generated_by, topic')
-      .in('level', GENERATED_LEVELS[level])
-      .order('generated_at', { ascending: false })
-      .range(offset, offset + MAX_ROWS - 1);
-    if (topic) q = q.eq('topic', topic);
-    if (search) q = q.ilike('question_text', `%${search}%`);
-
-    const { data, error } = await q;
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    for (const r of data ?? []) {
-      results.push({
-        id: r.id,
-        source: 'generated',
-        text: r.question_text ?? '',
-        marks: r.marks ?? null,
-        provenance: r.verified ? 'AI • 4-gate verified' : 'AI-generated (unverified)',
-        difficulty: null,
-        hasImage: false,
-        imageUrl: null,
-        answer: r.answer ?? '',
-        solution: r.solution ?? '',
-      });
-    }
-  }
 
   return NextResponse.json({ questions: results.slice(0, MAX_ROWS) });
 }

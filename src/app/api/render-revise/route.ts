@@ -68,10 +68,11 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
   );
 
-  // Fetch practice question + subgroup name in one query
+  // ONE STORE: practice questions now live in `questions` (same ids as the old
+  // pool). Sub-group name comes via the question_subgroups join table.
   const { data: row, error: fetchErr } = await supabase
-    .from('practice_questions')
-    .select('*, subgroups(name)')
+    .from('questions')
+    .select('*')
     .eq('id', practice_question_id)
     .single();
 
@@ -79,6 +80,12 @@ export async function POST(req: NextRequest) {
     console.error('[render-revise] fetch failed:', fetchErr?.message);
     return NextResponse.json({ error: 'Practice question not found' }, { status: 404 });
   }
+  const { data: sgLink } = await supabase
+    .from('question_subgroups')
+    .select('subgroups(name)')
+    .eq('question_id', practice_question_id)
+    .eq('is_primary', true)
+    .limit(1);
 
   // Cache hit — return existing URL
   if (row[urlField]) {
@@ -87,10 +94,10 @@ export async function POST(req: NextRequest) {
 
   // Build render input
   const input: ReviseRenderInput = {
-    topic:          row.topic ?? '',
-    subgroup_name:  (row.subgroups as { name: string } | null)?.name ?? '',
+    topic:          (Array.isArray(row.topics) ? row.topics[0] : row.topic) ?? '',
+    subgroup_name:  (() => { const sg = sgLink?.[0]?.subgroups as unknown; return (Array.isArray(sg) ? (sg[0] as { name?: string })?.name : (sg as { name?: string } | null)?.name) ?? ''; })(),
     question_text:  row.question_text ?? '',
-    marks:          row.marks ?? null,
+    marks:          row.total_marks ?? row.marks ?? null,
     answer:         row.answer ?? '',
     solution:       row.solution ?? '',
   };
@@ -123,7 +130,7 @@ export async function POST(req: NextRequest) {
 
   // Cache the URL in Supabase before returning — must await, or Vercel kills the function first
   const { data: updateData, error: updateErr } = await supabaseAdmin
-    .from('practice_questions')
+    .from('questions')
     .update({ [urlField]: blobUrl })
     .eq('id', practice_question_id)
     .select(urlField);

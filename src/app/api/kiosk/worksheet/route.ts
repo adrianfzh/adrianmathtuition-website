@@ -87,19 +87,10 @@ export async function GET(req: NextRequest) {
     .or('has_image.eq.false,figure_url.not.is.null')
     .limit(POOL_CAP);
   if (tier) bankQuery = bankQuery.in('difficulty', TIER_DIFFICULTY_VALUES[tier]);
-  const [bankRes, poolRes] = await Promise.all([
-    bankQuery,
-    // practice_questions has no difficulty → include only in Mixed (no tier).
-    tier
-      ? Promise.resolve({ data: [], error: null } as { data: never[]; error: null })
-      : supa.from('practice_questions')
-          .select('id, question_text, marks, answer, figure_url')
-          .in('level', cfg.questionLevels)
-          .eq('topic', topic)
-          .eq('verified', true)
-          .limit(POOL_CAP),
-  ]);
-  if (bankRes.error && poolRes.error) {
+  // ONE STORE: the old practice_questions pool was migrated into the bank
+  // (ai_generated rows, difficulty 'Standard'), so the bank query covers it.
+  const bankRes = await bankQuery;
+  if (bankRes.error) {
     return NextResponse.json({ error: bankRes.error.message }, { status: 500 });
   }
 
@@ -113,15 +104,6 @@ export async function GET(req: NextRequest) {
       marks: (r.total_marks as number | null) ?? null,
       figureUrl: (r.figure_url as string | null) ?? null,
       answer: flat.answer || ((r.answer as string | null) ?? null),
-    });
-  }
-  for (const r of poolRes.data || []) {
-    items.push({
-      id: r.id as string,
-      markdown: (r.question_text as string) ?? '',
-      marks: (r.marks as number | null) ?? null,
-      figureUrl: (r.figure_url as string | null) ?? null,
-      answer: (r.answer as string | null) ?? null,
     });
   }
 

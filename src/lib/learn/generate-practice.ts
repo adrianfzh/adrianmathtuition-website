@@ -81,12 +81,18 @@ Return ONLY JSON: {"wellPosed": bool, "matches": bool, "computedAnswer": "...", 
 
 async function cache(level: string, topic: string, q: GenQuestion, v: Verify, attempts: number) {
   try {
-    await getSupabaseAdmin().from('practice_questions').insert({
-      level, topic, question_text: q.question, marks: q.marks ?? null,
+    // ONE STORE: cache into the bank (questions), not the retired pool.
+    await getSupabaseAdmin().from('questions').insert({
+      level, topics: [topic], question_text: q.question, total_marks: q.marks ?? null,
       answer: q.answer, solution: q.solution ?? null,
-      verified: true, verified_at: new Date().toISOString(),
-      generated_by: 'stage2/web', gen_model: GEN_MODEL, verify_model: `${VERIFY_MODEL}+code`,
-      verify_mismatch: false, verify_log: v as any, attempts_made: attempts,
+      difficulty: 'Standard', ai_generated: true, has_image: false,
+      school: 'AI Generated', year: new Date().getFullYear(), exam_type: 'Practice',
+      solution_source: 'ai_learn', verified: true,
+      gen_meta: {
+        generated_by: 'stage2/web', gen_model: GEN_MODEL, verify_model: `${VERIFY_MODEL}+code`,
+        verified_at: new Date().toISOString(), generated_at: new Date().toISOString(),
+        verify_mismatch: false, verify_log: v as any, attempts_made: attempts,
+      },
     });
   } catch { /* cache is best-effort; a serve still works without it */ }
 }

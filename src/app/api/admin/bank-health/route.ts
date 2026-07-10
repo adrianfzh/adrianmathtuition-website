@@ -24,11 +24,29 @@ export async function GET(req: NextRequest) {
 
   try {
     // ── All practice questions (small: tens of rows) ──────────────────────────
-    const { data: pqs, error: pqErr } = await supa
-      .from('practice_questions')
-      .select('id, subgroup_id, level, topic, verified, flagged_count, hit_count, question_text');
+    // ONE STORE: generated practice lives in the bank now; reconstruct the old
+    // pool shape (subgroup_id via the join table) so the rest of this route is unchanged.
+    const { data: aiQs, error: pqErr } = await supa
+      .from('questions')
+      .select('id, level, topics, verified, flagged_count, hit_count, question_text')
+      .eq('ai_generated', true)
+      .is('deleted_at', null);
     if (pqErr) throw pqErr;
-    const practice = pqs || [];
+    const aiIds = (aiQs || []).map(q => q.id);
+    const { data: sgLinks } = aiIds.length
+      ? await supa.from('question_subgroups').select('question_id, subgroup_id').in('question_id', aiIds)
+      : { data: [] as { question_id: string; subgroup_id: number }[] };
+    const sgByQ = new Map((sgLinks || []).map(l => [l.question_id, l.subgroup_id]));
+    const practice = (aiQs || []).map(q => ({
+      id: q.id,
+      subgroup_id: sgByQ.get(q.id) ?? null,
+      level: q.level,
+      topic: Array.isArray(q.topics) ? q.topics[0] : null,
+      verified: q.verified,
+      flagged_count: q.flagged_count,
+      hit_count: q.hit_count,
+      question_text: q.question_text,
+    }));
 
     const EXCLUDE_THRESHOLD = 3;
     const verifiedCoveredByLevel: Record<string, Set<number>> = {};
