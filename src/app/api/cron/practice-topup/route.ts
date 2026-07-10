@@ -21,7 +21,9 @@ const TOPUP_LEVELS: Record<string, { seedLevels: string[]; poolLevels: string[] 
 };
 const TARGET_PER_TIER = 7;  // desired verified questions per (level, topic, tier)
 const PER_TOPIC_CAP = 3;    // max requests enqueued per (topic, tier) per run
-const MAX_ENQUEUE = 12;     // max requests enqueued per run (bounds nightly cost)
+const MAX_ENQUEUE = 4;      // max requests enqueued per run — throttled 12→4 Jul 2026:
+                            // bulk backfill now happens in plan-billed Claude Code
+                            // sessions; the nightly API run is maintenance trickle only
 const QUEUE_BACKOFF = 15;
 // Give up on a (topic, tier) shelf after this many CONSECUTIVE failed requests
 // within HISTORY_DAYS — stops burning budget nightly on topics the generator
