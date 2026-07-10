@@ -548,6 +548,7 @@ function TryPlayer({ payload, next, onDone, cleared }: { payload: TryPayload; ne
     <div className="space-y-3">
       <div className={`${CARD} border-dashed p-4`}>
         <p className="text-[.68rem] font-extrabold uppercase tracking-[.1em] text-[#E7A417] mb-1.5">✏️ Your turn</p>
+        {payload.figure_svg && <FigureSvg svg={payload.figure_svg} />}
         <Md>{payload.problem_md}</Md>
         {payload.note_md && <p className="text-[.82rem] text-[#66788d] mt-2"><Md className="inline [&_p]:inline">{payload.note_md}</Md></p>}
       </div>

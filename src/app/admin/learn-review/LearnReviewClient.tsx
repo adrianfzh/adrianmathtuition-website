@@ -326,12 +326,13 @@ function AutopsyPreview({ p }: { p: { problem_md?: string; working?: string[]; w
   );
 }
 
-function TryPreview({ p }: { p: { problem_md?: string; answer_md?: string; note_md?: string } }) {
+function TryPreview({ p }: { p: { problem_md?: string; answer_md?: string; note_md?: string; figure_svg?: string } }) {
   return (
     <div className="space-y-3">
       {p.problem_md && (
         <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
           <div className="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-1">Problem</div>
+          {p.figure_svg && <FigurePreview svg={p.figure_svg} />}
           <Md>{p.problem_md}</Md>
         </div>
       )}

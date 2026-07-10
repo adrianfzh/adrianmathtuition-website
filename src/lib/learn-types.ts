@@ -59,6 +59,7 @@ export interface TryPayload {
   problem_md: string;
   answer_md?: string;
   note_md?: string;
+  figure_svg?: string;      // problem diagram (shown with the problem statement)
 }
 
 export type UnitPayload =
