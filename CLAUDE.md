@@ -16,7 +16,11 @@ Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Ta
 
 **`main` = production** (auto-deploys to Vercel prod). **`dev` = preview** (auto-deploys to a Vercel preview URL, NOT prod). Work never lands on `main` without an explicit go-ahead.
 
-**On any turn where I change code, auto commit + push to `dev` at the end of that turn — no need for the user to say "push".** Pushing to `dev` does NOT deploy anything (this Vercel project only auto-deploys the production branch). To give the user something to look at, after pushing to `dev` run **`vercel deploy --yes`** (preview, NOT `--prod`) and share the returned preview URL. The preview is fully isolated from prod; Sentry is off there (env vars are Production-scoped).
+**On any turn where I change code, auto commit + push to `dev` at the end of that turn — no need for the user to say "push".** Pushing to `dev` does NOT deploy anything (this Vercel project only auto-deploys the production branch). To give the user something to look at, after pushing to `dev` run **`vercel deploy --yes`** (preview, NOT `--prod`), then **re-point the stable alias** so Adrian's bookmark shows the latest build:
+```
+vercel alias set <new-deployment-url> adrianmath-dev.vercel.app
+```
+**https://adrianmath-dev.vercel.app is Adrian's permanent preview bookmark** (set up 2026-07-10). Always re-alias after every preview deploy and share THIS url, not the per-deploy one. Cookies survive re-aliasing (same domain), so his login persists across deploys. The preview is fully isolated from prod; Sentry is off there (env vars are Production-scoped).
 
 > Optional nicety: enabling "preview deployments for all branches" in Vercel → Settings → Git would auto-build a **stable** `…-git-dev-…vercel.app` URL on every `dev` push, removing the manual `vercel deploy` step. Not enabled currently.
 
