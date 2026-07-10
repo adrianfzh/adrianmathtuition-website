@@ -76,6 +76,14 @@ const LEVELS: { value: UiLevel; label: string }[] = [
 /** UI level → subgroups.level used by /api/admin/cards/topics */
 const TOPIC_LEVEL: Record<UiLevel, string> = { EM: 'EM', AM: 'AM', H2: 'JC' };
 
+// practice_questions rows store \(..\) / \[..\] delimiters, which remark-math
+// does not recognise — normalise to $..$ / $$..$$ before rendering.
+function normalizeMath(t: string): string {
+  return (t || '')
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_, m) => `$$${m}$$`)
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_, m) => `$${m}$`);
+}
+
 const katexMd = {
   remarkPlugins: [remarkMath, remarkGfm],
   rehypePlugins: [rehypeKatex],
@@ -513,7 +521,7 @@ export default function WorksheetBuilderClient() {
                       }`}
                     >
                       <ReactMarkdown {...katexMd}>
-                        {expandedIds.has(q.id) ? q.text : truncate(q.text, 320)}
+                        {normalizeMath(expandedIds.has(q.id) ? q.text : truncate(q.text, 320))}
                       </ReactMarkdown>
                     </div>
                     {q.text.length > 200 && (
@@ -524,7 +532,12 @@ export default function WorksheetBuilderClient() {
                         {expandedIds.has(q.id) ? '▲ Show less' : '▼ Show full question'}
                       </button>
                     )}
-                    {q.hasImage && <div className="text-[11px] text-slate-400 mt-1">📷 has diagram</div>}
+                    {q.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={q.imageUrl} alt="question diagram" loading="lazy" className="mt-2 max-h-52 rounded border border-slate-200 bg-white" />
+                    ) : (
+                      q.hasImage && <div className="text-[11px] text-slate-400 mt-1">📷 has diagram (no preview available)</div>
+                    )}
                   </div>
                 );
               })}

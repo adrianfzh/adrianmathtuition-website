@@ -164,7 +164,7 @@ export async function GET(req: NextRequest) {
         provenance: prov,
         difficulty: r.difficulty ?? null,
         hasImage: !!r.has_image,
-        imageUrl: firstImageUrl(r.image_url),
+        imageUrl: firstImageUrl(r.image_url) ?? (r as { figure_url?: string | null }).figure_url ?? null,
         answer: flat.answer || (r.answer ?? ''),
         solution: flat.solution || (r.solution ?? ''),
       });
