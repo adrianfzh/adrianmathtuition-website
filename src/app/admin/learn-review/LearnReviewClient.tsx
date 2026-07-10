@@ -177,6 +177,7 @@ function DecisionCard({ d }: { d: Decision }) {
     <div className="rounded-xl border border-violet-200 bg-violet-50/40 p-3 my-2">
       <div className="text-[11px] font-bold uppercase tracking-wide text-violet-600 mb-1">
         Decision{typeof d.after_step === 'number' ? ` · after step ${d.after_step}` : ''}
+        <span className="ml-2 normal-case font-medium text-violet-400">— quiz data, currently hidden from students</span>
       </div>
       {d.context_strip_md && (
         <div className="text-[12px] text-slate-500 border-l-2 border-slate-200 pl-2 mb-2">

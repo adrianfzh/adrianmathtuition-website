@@ -291,12 +291,13 @@ function WhyMore({ md }: { md: string }) {
 function ExamplePlayer({ payload, next, onDone, onProgress, cleared, onEvent, tryUnit, unitId }: { payload: ExamplePayload; next: UnitSummary | null; onDone: () => void; onProgress: (v: number) => void; cleared: number; onEvent: (e: UnitEvent) => void; tryUnit: UnitSummary | null; unitId: string }) {
   const beats = useMemo<Beat[]>(() => {
     const out: Beat[] = [];
-    payload.steps.forEach((s, idx) => {
+    payload.steps.forEach((s) => {
       out.push({ type: 'step', label: s.label, math: s.math, annotation_md: s.annotation_md, more_md: s.more_md });
-      (payload.decisions || [])
-        .filter(d => d.after_step === idx + 1)
-        .forEach(d => out.push({ type: 'decision', decision: d }));
     });
+    // Decision quizzes are deliberately NOT rendered on the first-teach path —
+    // Adrian's call (2026-07-10): students learning something new want the
+    // content straight up; questions live in check/try decks. The decisions
+    // data stays in payloads for a future optional "test yourself" replay.
     if (payload.answer_md) out.push({ type: 'answer', md: payload.answer_md });
     return out;
   }, [payload]);
