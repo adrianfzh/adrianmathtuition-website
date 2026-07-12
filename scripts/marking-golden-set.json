@@ -1,0 +1,115 @@
+{
+  "_readme": "Golden set transcribed from Adrian's own red-pen marking (scans in ~/Desktop/AdrianMath/marking_calibration/). expected.line_verdicts aligns 1:1 with working_lines (null = don't care). expected.must_mention = case-insensitive substrings the marking JSON must contain somewhere (correction/summary). Grow this set as more scripts are transcribed — especially items where the current prompt disagrees with Adrian.",
+  "items": [
+    {
+      "id": "circle-props-1a-semicircle-reason",
+      "source": "EM-circle-properties-circular-measure p1 Q1a",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "G is a point outside circle with centre O. GA and GB are tangents to the circle at A and B. Explain why a circle can be drawn passing through A, O, B and G, stating the diameter.",
+      "working_lines": [
+        "The centre will be midpoint of GO"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": [null],
+        "must_mention": ["tan", "rad", "semicircle"]
+      },
+      "note": "Adrian accepted the midpoint claim but supplied the missing justification chain in red: ∠GAO = ∠GBO = 90° (tan ⊥ rad), right angles in semicircle, AB... circle through A,O,B,G with GO as diameter. A bare assertion without the tangent-radius reason is an incomplete explanation."
+    },
+    {
+      "id": "circle-props-bii-isos-reasons-full",
+      "source": "EM-circle-properties-circular-measure p1 Q1b(ii)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "In the circle with centre O, ∠AOB = 126°. P, C are points on the circumference. Find ∠OAB and hence ∠DCA, giving reasons.",
+      "working_lines": [
+        "∠OAB = ∠OBA (△AOB is an isos △)",
+        "∠OAB = (180° − 126°)/2 = 27°",
+        "∠DCA = 27° (∠s in same seg)"
+      ],
+      "expected": {
+        "margin_note": "",
+        "line_verdicts": ["correct", "correct", "correct"],
+        "must_mention": []
+      },
+      "note": "Fully correct with reasons stated — Adrian ticks every line, no deduction, no commentary."
+    },
+    {
+      "id": "plane-geom-2b-does-not-prove",
+      "source": "AM-plane-geometry p1 Q2b",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 3",
+      "max_marks": 2,
+      "question": "In the diagram, K is the midpoint of QR, H is the midpoint of PH and HR... Given PR = 2PH and QH = HS, prove that PQ = SR.",
+      "working_lines": [
+        "QH = HS",
+        "PQ = SR"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": [null, "wrong"],
+        "must_mention": ["does not prove"]
+      },
+      "note": "Adrian: 'does not prove PQ = SR' — restating givens then asserting the conclusion is a logical gap worth all the marks; his red pen supplies the midpoint-theorem chain (PQ = 2HK and SR = 2HK ∴ PQ = SR)."
+    },
+    {
+      "id": "em-prelim-parallelogram-congruency-model",
+      "source": "EM-Prelim-Paper-Set-1-Paper-1 Q7",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 3,
+      "question": "ABCD is a parallelogram. APQ, BRQ, CRS and DPS are straight lines which bisect angles A, B, C and D respectively. Show that triangle ADP and triangle CBR are congruent. Give a reason for each statement you make.",
+      "working_lines": [
+        "AD = BC (sides of parallelogram)",
+        "∠ADP = ∠BRC (vert. opp ∠s)"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": ["correct", "wrong"],
+        "must_mention": ["asa"]
+      },
+      "note": "Adrian marked −2 of [3]: first statement fine (he tightened the reason to 'opp sides of parallelogram'), second is wrong (not vertically opposite), and the attempt never reaches a congruency test. His red pen writes the complete model proof ending '∴ △ADP ≡ △CBR (ASA)'."
+    },
+    {
+      "id": "coord-geom-12h-ecf",
+      "source": "EM-coordinate-geometry-graphs p3 Q3ii",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 3",
+      "max_marks": 2,
+      "question": "Line AB: y = 2x + h. Line BC: x + 2y = 12h. B is the intersection of AB and BC. Find the coordinates of B in terms of h.",
+      "working_lines": [
+        "2x + h = −(1/2)x + 12h",
+        "(5/2)x = 11h",
+        "x = (22/5)h",
+        "y = 2((22/5)h) + h = (49/5)h"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["wrong", "correct", "correct", "correct"],
+        "must_mention": ["6h"]
+      },
+      "note": "The student mis-copied 12h where rearranging gives 6h. Adrian circles the wrong token, writes 6 above, then ECF: the subsequent solving METHOD is followed through as correct (his red continuation shows x=2h, y=5h, B(2h,5h)). One error, one deduction — later lines are not re-penalized."
+    },
+    {
+      "id": "circular-measure-irrelevant-property",
+      "source": "EM-circle-properties-circular-measure p4 Q1a (radians)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "In the circle, reflex ∠AOB is required. The minor angle relationships are given via the tangent at A. Find ∠AOB in radians, where the tangent-chord angle at A is π/4.",
+      "working_lines": [
+        "reflex ∠AOB = (π/4) × 2 = π/2 (∠ at centre is 2 times ∠ at circumference)",
+        "∠AOB = 2π − π/2 = 3π/2"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": ["wrong", null],
+        "must_mention": ["not relevant"]
+      },
+      "note": "Adrian: underlines the quoted property, ✗, 'this property is not relevant in this question', and 'discuss in class and try again' — a conceptual misapplication rather than a slip, so the summary should defer to class discussion."
+    }
+  ]
+}

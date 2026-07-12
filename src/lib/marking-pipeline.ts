@@ -120,25 +120,84 @@ STAGE 2 — READ THE PAGE (fills "question" and "lines" fields)
 
 STAGE 3 — DIAGNOSE ERRORS (fills error_type and correction fields)
 - For each line with verdict="wrong": identify the specific error type from the enumeration.
-- Where a correction would help the student, add a correction object with BOTH text_latex AND text_plain:
+- ERROR CARRIED FORWARD (ECF) — the tutor's standard: after a wrong line, judge every
+  subsequent line by whether the METHOD is valid given the student's (wrong) value.
+  Valid follow-through gets verdict="correct" even though the numbers are off. Never
+  penalize the same error twice.
+- Correction style (match the tutor's red pen):
+  - Small slip → correct the exact wrong token, minimally: "you mean ∠XOY", "should be 0.6".
+    Do NOT re-derive the whole line for a one-token slip.
+  - Missing setup → supply the missing opening line (e.g. "let the coordinates of D be (3, y)").
+  - Method fundamentally wrong or irrelevant → say why it does not apply ("this property is
+    not relevant in this question") and give the correct working compactly, WITH reasons.
+  - Where an early error derails later work, the correction may show the corrected
+    continuation so the student sees the true path.
+- Each correction object needs BOTH text_latex AND text_plain:
   - text_latex: LaTeX version for the HTML renderer (e.g. "'49% taller' means larger $= 100 + 49 = 149$, so ratio should be $100 : 149$")
   - text_plain: Telegram-safe version using Unicode only, no backslashes, no dollar signs (e.g. "'49% taller' means larger = 149, so ratio should be 100 : 149")
 - Arrow direction: "up" points to the line above (common for corrections below a wrong line), "down" points to the line below, "right" for inline, null if correction stands alone.
+
+STAGE 3B — REASONS ARE LOAD-BEARING (geometry/proof/"show that" questions)
+- In geometry, proof, congruency/similarity and "show that" questions, EVERY statement
+  must carry its bracketed reason in Singapore convention: (∠s in same seg), (∠s in opp
+  seg), (tan ⊥ rad), (∠ at centre is 2 times ∠ at circumference), (vert opp ∠s), (isos △),
+  (∠ sum of △), (∠s on str. line), (sum of ∠s in quad is 360°), (tangents from ext pt),
+  (ext ∠ of cyclic quad), (corr ∠s), (alt ∠s), (given), (proven in (a)), (common ∠),
+  (midpt theorem / converse of midpt theorem), (AA/ASA/SAS/SSS/RHS).
+- A true statement with a MISSING reason is an error: verdict="wrong",
+  error_type the closest fit, correction = "state the reason: (…)" with the right reason.
+  A true statement with a WRONG reason: correct the reason only.
+- BUT do not invent errors: a statement that carries a correct value AND a correct
+  reason is simply correct — tick it. Reasons in equivalent wording count ("isos △" =
+  "base ∠s of isosceles triangle"). Fully correct work with reasons gets FULL marks and
+  an empty margin_note; when unsure whether a reason is even required for a pure
+  computation step (not a proof claim), do not deduct.
+- Citing something as (given) when it was proven — or asserting facts not established —
+  is an error to flag. When the student restates givens and then asserts the conclusion
+  without a derivation, the correction MUST use the tutor's phrasing "does not prove …"
+  (e.g. "does not prove PQ = SR") and supply the missing chain. When the student applies
+  a property/method that does not apply to the situation, the correction MUST say it is
+  "not relevant in this question" before giving the right approach.
+- Similarity/congruency: each matched pair needs its own justification and the final
+  test must be named (AA, ASA, …).
+- Extraneous roots must be explicitly rejected with cause ("x = −4 (rej), since x ≥ …");
+  keeping an extraneous root is an error even when the other root is right.
+- "Show that" answers must ARRIVE at the exact stated value, never assume it.
 
 STAGE 4 — JUDGE THE FINAL ANSWER (fills "student_final_answer" and "marks" fields)
 - The student's final committed answer is on the "Answer" line or in the most recent non-crossed-out working.
 - had_self_correction = true if the student visibly crossed out an earlier attempt before the final.
 - matches_correct = true iff student_final_answer.value_latex is mathematically equivalent to correct.final_answer.
-- Mark awards:
-  - Final answer matches AND no self-correction: full marks.
-  - Final answer matches BUT student had a crossed-out wrong attempt: partial credit, typically half the marks (round up for odd totals; e.g. 2/3 for 3-mark Q, 1/2 for 2-mark Q).
-  - Final answer differs from correct: partial credit only if SOME lines have verdict="correct" AND the method on those lines is sound. Otherwise 0.
+- Mark awards — DEDUCTION model (the tutor writes "−n" in the margin, never fractions):
+  - Start from max_marks and deduct for: wrong final value; each missing/wrong required
+    reason (proof questions); unjustified logical leaps; an unrejected extraneous root;
+    wrong units or precision on the answer line (3 s.f. default, degrees to 1 d.p.,
+    respect any stated rounding).
+  - SELF-CORRECTION COSTS NOTHING: a crossed-out attempt followed by correct work earns
+    FULL marks. Crossed-out work is ignored except as context.
+  - ECF: after one deduction for an error, correct follow-through method earns its marks.
+    But ECF never restores full marks: matches_correct is judged against the TRUE correct
+    answer (never against the ECF value), so a slip that makes the final value wrong
+    costs at least 1 mark even when every later line is ECF-correct. Example: one
+    mis-copied coefficient in an otherwise perfect 4-line solve of a [2]-mark part →
+    margin_note "-1", NOT full marks.
+  - A misapplied/irrelevant property or method is a CONCEPTUAL error, not a slip: it
+    forfeits every mark that depends on it — when the whole [n]-mark part rests on it,
+    margin_note is "-n" (all marks lost), the correction says "not relevant in this
+    question", and the summary ends with "Let's discuss this in class and try again."
+  - Notation the tutor would merely repair in passing (sloppy but recoverable, e.g.
+    m₁(m₂) for M_AB × M_BC) is corrected but NOT deducted, unless it caused the error.
+  - Never award below 0; a fundamentally wrong/irrelevant attempt on an [n]-mark part is
+    typically −n (all marks) with the full correct working supplied in corrections.
 - margin_note: e.g. "-1" if 1 mark lost, "-2" if 2 marks lost, empty string if full marks.
 
 STAGE 5 — WRITE THE SUMMARY ("summary" field)
 - title: "Well done!" if awarded==max, otherwise "Where you went wrong".
 - body_markdown: 2-4 sentences explaining the key error in plain English, naming the concept, ending with a rule of thumb the student can remember. Use **bold** for the key concept name. Speak TO the student (use "you" and "your").
 - For fully correct answers: congratulate specifically on what was well done, no rule-of-thumb needed.
+- If the attempt shows a CONCEPTUAL gap (not a slip) — wrong method entirely, proof with
+  no valid statements — end the summary with "Let's discuss this in class and try again."
+  (the tutor defers re-teaching to class rather than writing a lecture).
 
 STAGE 6 — UNCERTAINTY (optional)
 - raised = true if you have a SPECIFIC concern: unclear handwriting, ambiguous interpretation, non-standard method that might be valid, close-call partial credit.
@@ -501,7 +560,7 @@ export async function callSonnetMarking(
   const makeCall = (userText: string) =>
     withSonnetRetry(
       () => client.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         max_tokens: 8000,
         system: systemPrompt,
         messages: [
