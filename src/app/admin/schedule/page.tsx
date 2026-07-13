@@ -380,9 +380,26 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
                       }}>{topic}</span>
                     ))}
                   </div>
+                  <button
+                    onClick={e => { e.stopPropagation(); setShowTopicDropdown(false); onExamDateClick?.(lesson); }}
+                    style={{ marginTop: 8, width: '100%', fontSize: 11, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '4px 8px', cursor: 'pointer' }}
+                  >✏️ Edit date / topics</button>
                 </div>
               )}
             </span>
+          )}
+          {/* Missing exam info during active season — one-tap add */}
+          {!isFaded && activeExamType && !lesson.examDate && lesson.type !== 'Trial' && onExamDateClick && (
+            <span
+              role="button"
+              title={`Add ${activeExamType} exam date & topics`}
+              onClick={e => { e.stopPropagation(); onExamDateClick(lesson); }}
+              style={{
+                flexShrink: 0, fontSize: 9, fontWeight: 700, lineHeight: 1.4, cursor: 'pointer',
+                padding: '1px 6px', borderRadius: 8, whiteSpace: 'nowrap',
+                background: '#eff6ff', color: '#1d4ed8', border: '1px dashed #93c5fd',
+              }}
+            >＋ {activeExamType}</span>
           )}
         </div>
         {/* Line 2 (web only): type-tag + small attendance buttons on the same row */}
@@ -688,6 +705,8 @@ export default function SchedulePage() {
   const [editNotesModal, setEditNotesModal] = useState<{ lesson: EnrichedLesson; notes: string } | null>(null);
   const [examDetailModal, setExamDetailModal] = useState<{ studentId: string; studentName: string; exams: any[] | null } | null>(null);
   const [examDetailLoading, setExamDetailLoading] = useState(false);
+  // Per-chip exam quick-add/edit for the active exam season.
+  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; examType: string; examDate: string; testedTopics: string; noExam: boolean; saving: boolean } | null>(null);
   const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -1775,6 +1794,46 @@ export default function SchedulePage() {
     }
   }
 
+  // ── Exam quick-add/edit (per chip, active season) ────────────────────────────
+  function openExamEdit(lesson: EnrichedLesson) {
+    if (!lesson.studentId) return;
+    const examType = data?.activeExamType || 'WA3';
+    const hasDate = lesson.examDate && lesson.examDate !== 'NO_EXAM';
+    setExamEdit({
+      studentId: lesson.studentId,
+      studentName: lesson.studentName,
+      examType,
+      examDate: hasDate ? (lesson.examDate as string) : '',
+      testedTopics: lesson.examTopics || '',
+      noExam: lesson.examDate === 'NO_EXAM',
+      saving: false,
+    });
+  }
+  async function saveExamEdit() {
+    if (!examEdit || examEdit.saving) return;
+    setExamEdit({ ...examEdit, saving: true });
+    try {
+      const res = await fetch('/api/admin-schedule/quick-add-exam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: examEdit.studentId,
+          examType: examEdit.examType,
+          examDate: examEdit.noExam ? '' : (examEdit.examDate || ''),
+          testedTopics: examEdit.noExam ? '' : examEdit.testedTopics,
+          noExam: examEdit.noExam,
+        }),
+      });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Failed'); }
+      showToast('success', 'Exam info saved');
+      setExamEdit(null);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+    } catch (e: unknown) {
+      showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Failed to save');
+      setExamEdit(prev => prev ? { ...prev, saving: false } : prev);
+    }
+  }
+
   // ── renderLessonsSlotCard ────────────────────────────────────────────────────
   function renderLessonsSlotCard(slot: Slot, date: Date) {
     const dateStr = isoDate(date);
@@ -1853,7 +1912,7 @@ export default function SchedulePage() {
           slotLevel={slot.level}
           onChipTap={(lesson) => { setModalError(''); setActionSheet({ lesson, date: dateStr, slotId: slot.id }); }}
           onAddClick={() => openAddModal(date, slot)}
-          onExamDateClick={handleExamDateClick}
+          onExamDateClick={openExamEdit}
           ghostStudents={ghostStudents}
           cancelledStudents={cancelledStudents}
           onStudentClick={(lesson) => {
@@ -2196,6 +2255,49 @@ export default function SchedulePage() {
       )}
 
       {/* Exam detail modal */}
+      {examEdit && (
+        <div className="modal-overlay" onClick={() => !examEdit.saving && setExamEdit(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <div className="modal-name">{examEdit.studentName}</div>
+                <div className="modal-type" style={{ color: '#64748b' }}>Exam info · {examEdit.examType}</div>
+              </div>
+              <button className="modal-close" onClick={() => setExamEdit(null)} disabled={examEdit.saving}>✕</button>
+            </div>
+            <div className="modal-body">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: 12 }}>
+                <input type="checkbox" checked={examEdit.noExam} onChange={e => setExamEdit({ ...examEdit, noExam: e.target.checked })} />
+                No exam this season
+              </label>
+              {!examEdit.noExam && (
+                <>
+                  <div className="form-group">
+                    <span className="form-label">Exam date</span>
+                    <input type="date" className="modal-input" value={examEdit.examDate}
+                      onChange={e => setExamEdit({ ...examEdit, examDate: e.target.value })} />
+                  </div>
+                  <div className="form-group" style={{ marginTop: 12 }}>
+                    <span className="form-label">Topics tested</span>
+                    <textarea className="modal-input" rows={3} placeholder="e.g. Quadratic equations, Indices, Surds"
+                      value={examEdit.testedTopics}
+                      onChange={e => setExamEdit({ ...examEdit, testedTopics: e.target.value })}
+                      style={{ resize: 'vertical', fontFamily: 'inherit' }} />
+                    <span style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, display: 'block' }}>Comma-separated. Shows on the chip during exam season.</span>
+                  </div>
+                </>
+              )}
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setExamEdit(null)} disabled={examEdit.saving}>Cancel</button>
+                <button className="btn-primary" onClick={saveExamEdit} disabled={examEdit.saving}>
+                  {examEdit.saving ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {examDetailModal && (
         <div className="modal-overlay" onClick={() => setExamDetailModal(null)}>
           <div className="modal-card" onClick={e => e.stopPropagation()}>
