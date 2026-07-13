@@ -30,16 +30,30 @@ export async function GET(req: NextRequest) {
 
   const supabase = getSupabaseAdmin();
 
-  const [{ data: spine }, unitRes, { data: meta }] = await Promise.all([
-    supabase.from('topic_spine').select('subject, topic, spine_order').in('subject', subjects),
-    (() => {
-      let q = supabase
+  // Units can exceed PostgREST's 1000-row page cap (the full corpus is ~1,900),
+  // so page through them — otherwise high-unit_order topics (S1/S2, late AM) get
+  // silently truncated and vanish from the overview.
+  async function fetchAllUnits(): Promise<{ data: UnitRow[]; error: { message: string } | null }> {
+    const rows: UnitRow[] = [];
+    const statuses = isStudent ? ['approved'] : ['approved', 'pending'];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase
         .from('learning_units')
         .select('id, subject, topic, unit_order, kind, title, status')
-        .in('subject', subjects);
-      q = isStudent ? q.eq('status', 'approved') : q.in('status', ['approved', 'pending']);
-      return q.order('unit_order');
-    })(),
+        .in('subject', subjects)
+        .in('status', statuses)
+        .order('unit_order')
+        .range(from, from + 999);
+      if (error) return { data: rows, error };
+      rows.push(...((data || []) as UnitRow[]));
+      if (!data || data.length < 1000) break;
+    }
+    return { data: rows, error: null };
+  }
+
+  const [{ data: spine }, unitRes, { data: meta }] = await Promise.all([
+    supabase.from('topic_spine').select('subject, topic, spine_order').in('subject', subjects),
+    fetchAllUnits(),
     // Strategy layer (curriculum-intelligence). Optional — harmless if the table
     // has no rows for these subjects. Powers default_order override + prereq/
     // weight/difficulty passthrough. Never fails the overview.
