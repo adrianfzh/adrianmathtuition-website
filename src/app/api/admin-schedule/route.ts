@@ -116,12 +116,12 @@ export async function GET(req: NextRequest) {
     const formula = `OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`;
     const studentsData = await fetchAll(
       'Students',
-      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name&fields[]=Level`
+      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name&fields[]=Level&fields[]=Subjects`
     );
     studentsById = Object.fromEntries(
       studentsData.map((r: any) => [
         r.id,
-        { name: r.fields['Student Name'] || '', level: r.fields['Level'] || '' },
+        { name: r.fields['Student Name'] || '', level: r.fields['Level'] || '', subjects: r.fields['Subjects'] || [] },
       ])
     );
   }
@@ -270,6 +270,8 @@ export async function GET(req: NextRequest) {
   let activeExamType: ExamType | null = null;
   const examsByStudent: Record<string, string | null> = {};
   const examTopicsByStudent: Record<string, string | null> = {};
+  // Full per-subject/per-paper entries for the exam quick-add dialog + chip dropdown.
+  const examEntriesByStudent: Record<string, { subject: string; paper: string; date: string | null; topics: string; notes: string }[]> = {};
 
   try {
     // Resolve active exam type (override from Settings, fallback to date windows)
@@ -289,9 +291,9 @@ export async function GET(req: NextRequest) {
     if (activeExamType) {
       const examsData = await fetchAll(
         'Exams',
-        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`
+        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Paper&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`
       );
-      // Build studentId → earliest exam date, or 'NO_EXAM' sentinel
+      // Build studentId → earliest exam date (chip badge) + full entries (dialog/dropdown)
       for (const r of examsData) {
         const sid: string | undefined = r.fields['Student']?.[0];
         if (!sid) continue;
@@ -300,8 +302,16 @@ export async function GET(req: NextRequest) {
           examsByStudent[sid] = 'NO_EXAM'; // takes precedence over any date
           continue;
         }
-        if (examsByStudent[sid] === 'NO_EXAM') continue; // already flagged
         const examDate: string | undefined = r.fields['Exam Date'];
+        // Record the entry (even a date-less one carries topics/notes for the dialog)
+        (examEntriesByStudent[sid] ||= []).push({
+          subject: (r.fields['Subject'] as string) || '',
+          paper: (r.fields['Paper'] as string) || '',
+          date: examDate || null,
+          topics: (r.fields['Tested Topics'] as string) || '',
+          notes: (r.fields['Exam Notes'] as string) || '',
+        });
+        if (examsByStudent[sid] === 'NO_EXAM') continue; // already flagged
         if (!examDate) continue;
         if (!examsByStudent[sid] || examDate < examsByStudent[sid]!) {
           examsByStudent[sid] = examDate;
@@ -324,5 +334,6 @@ export async function GET(req: NextRequest) {
     activeExamType,
     examsByStudent,
     examTopicsByStudent,
+    examEntriesByStudent,
   });
 }

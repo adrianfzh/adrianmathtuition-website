@@ -49,7 +49,10 @@ interface Lesson {
 interface Student {
   name: string;
   level: string;
+  subjects?: string[];
 }
+
+interface ExamEntry { subject: string; paper: string; date: string | null; topics: string; notes: string }
 
 interface StudentContact {
   name: string;
@@ -70,6 +73,7 @@ interface ScheduleData {
   activeExamType?: string | null;
   examsByStudent?: Record<string, string | null>;
   examTopicsByStudent?: Record<string, string | null>;
+  examEntriesByStudent?: Record<string, ExamEntry[]>;
 }
 
 interface EnrichedLesson extends Lesson {
@@ -705,8 +709,11 @@ export default function SchedulePage() {
   const [editNotesModal, setEditNotesModal] = useState<{ lesson: EnrichedLesson; notes: string } | null>(null);
   const [examDetailModal, setExamDetailModal] = useState<{ studentId: string; studentName: string; exams: any[] | null } | null>(null);
   const [examDetailLoading, setExamDetailLoading] = useState(false);
-  // Per-chip exam quick-add/edit for the active exam season.
-  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; examType: string; examDate: string; testedTopics: string; noExam: boolean; saving: boolean } | null>(null);
+  // Per-chip exam quick-add/edit for the active exam season. Each subject the
+  // student takes gets a row; S4 EM/AM and JC2 prelims default to a Paper 1/2
+  // split, others to a single paper (with an option to split).
+  type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string };
+  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean } | null>(null);
   const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -1795,34 +1802,64 @@ export default function SchedulePage() {
   }
 
   // ── Exam quick-add/edit (per chip, active season) ────────────────────────────
+  // Prelims split into Paper 1 / Paper 2 for S4 EM/AM and JC2; everything else
+  // is a single paper by default.
+  function prelimSplitDefault(level: string, subject: string): boolean {
+    const lv = (level || '').toLowerCase();
+    const s = (subject || '').toLowerCase();
+    if (lv.includes('sec 4') && (s.includes('e math') || s.includes('a math'))) return true;
+    if (lv === 'jc2' && s.includes('h2')) return true;
+    return false;
+  }
   function openExamEdit(lesson: EnrichedLesson) {
     if (!lesson.studentId) return;
+    const sid = lesson.studentId;
     const examType = data?.activeExamType || 'WA3';
-    const hasDate = lesson.examDate && lesson.examDate !== 'NO_EXAM';
-    setExamEdit({
-      studentId: lesson.studentId,
-      studentName: lesson.studentName,
-      examType,
-      examDate: hasDate ? (lesson.examDate as string) : '',
-      testedTopics: lesson.examTopics || '',
-      noExam: lesson.examDate === 'NO_EXAM',
-      saving: false,
+    const level = lesson.studentLevel || '';
+    const entries = data?.examEntriesByStudent?.[sid] || [];
+    // Subjects the student takes (fall back to whatever exam records already exist).
+    let subjects = (data?.students?.[sid]?.subjects || []).filter(Boolean);
+    if (!subjects.length) subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))];
+    if (!subjects.length) subjects = ['']; // generic single row
+
+    const rows: ExamSubjectRow[] = subjects.map(subject => {
+      const subjEntries = entries.filter(e => (e.subject || '') === subject);
+      const single = subjEntries.find(e => !e.paper);
+      const p1 = subjEntries.find(e => e.paper === 'Paper 1');
+      const p2 = subjEntries.find(e => e.paper === 'Paper 2');
+      const hasSplit = !!(p1 || p2);
+      const mode: 'single' | 'split' = hasSplit ? 'split' : (subjEntries.length ? 'single' : (prelimSplitDefault(level, subject) ? 'split' : 'single'));
+      return {
+        subject,
+        mode,
+        date: single?.date || '',
+        p1Date: p1?.date || '',
+        p2Date: p2?.date || '',
+        topics: (subjEntries.find(e => e.topics)?.topics) || '',
+        notes: (subjEntries.find(e => e.notes)?.notes) || '',
+      };
     });
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false });
+  }
+  function setExamRow(i: number, patch: Partial<ExamSubjectRow>) {
+    setExamEdit(prev => prev ? { ...prev, rows: prev.rows.map((r, idx) => idx === i ? { ...r, ...patch } : r) } : prev);
   }
   async function saveExamEdit() {
     if (!examEdit || examEdit.saving) return;
     setExamEdit({ ...examEdit, saving: true });
     try {
-      const res = await fetch('/api/admin-schedule/quick-add-exam', {
+      const entries = examEdit.noExam ? [] : examEdit.rows.flatMap(r =>
+        r.mode === 'split'
+          ? [
+              { subject: r.subject, paper: 'Paper 1', examDate: r.p1Date, testedTopics: r.topics, notes: r.notes },
+              { subject: r.subject, paper: 'Paper 2', examDate: r.p2Date, testedTopics: '', notes: '' },
+            ]
+          : [{ subject: r.subject, paper: '', examDate: r.date, testedTopics: r.topics, notes: r.notes }]
+      );
+      const res = await fetch('/api/admin-schedule/set-exams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId: examEdit.studentId,
-          examType: examEdit.examType,
-          examDate: examEdit.noExam ? '' : (examEdit.examDate || ''),
-          testedTopics: examEdit.noExam ? '' : examEdit.testedTopics,
-          noExam: examEdit.noExam,
-        }),
+        body: JSON.stringify({ studentId: examEdit.studentId, examType: examEdit.examType, noExam: examEdit.noExam, entries }),
       });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Failed'); }
       showToast('success', 'Exam info saved');
@@ -2266,27 +2303,51 @@ export default function SchedulePage() {
               <button className="modal-close" onClick={() => setExamEdit(null)} disabled={examEdit.saving}>✕</button>
             </div>
             <div className="modal-body">
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: 12 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: 14 }}>
                 <input type="checkbox" checked={examEdit.noExam} onChange={e => setExamEdit({ ...examEdit, noExam: e.target.checked })} />
                 No exam this season
               </label>
-              {!examEdit.noExam && (
-                <>
-                  <div className="form-group">
-                    <span className="form-label">Exam date</span>
-                    <input type="date" className="modal-input" value={examEdit.examDate}
-                      onChange={e => setExamEdit({ ...examEdit, examDate: e.target.value })} />
+              {!examEdit.noExam && examEdit.rows.map((row, i) => (
+                <div key={row.subject || i} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 12px 4px', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b' }}>{row.subject || 'Exam'}</span>
+                    {row.mode === 'single' ? (
+                      <button onClick={() => setExamRow(i, { mode: 'split', p1Date: row.date, p2Date: '' })}
+                        style={{ fontSize: 11.5, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>➕ Split P1 / P2</button>
+                    ) : (
+                      <button onClick={() => setExamRow(i, { mode: 'single', date: row.p1Date })}
+                        style={{ fontSize: 11.5, fontWeight: 600, color: '#64748b', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>Merge to 1 paper</button>
+                    )}
                   </div>
-                  <div className="form-group" style={{ marginTop: 12 }}>
-                    <span className="form-label">Topics tested</span>
-                    <textarea className="modal-input" rows={3} placeholder="e.g. Quadratic equations, Indices, Surds"
-                      value={examEdit.testedTopics}
-                      onChange={e => setExamEdit({ ...examEdit, testedTopics: e.target.value })}
-                      style={{ resize: 'vertical', fontFamily: 'inherit' }} />
-                    <span style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, display: 'block' }}>Comma-separated. Shows on the chip during exam season.</span>
+                  {row.mode === 'single' ? (
+                    <>
+                      <div className="form-group">
+                        <span className="form-label">Exam date</span>
+                        <input type="date" className="modal-input" value={row.date} onChange={e => setExamRow(i, { date: e.target.value })} />
+                      </div>
+                      <div className="form-group" style={{ marginTop: 10 }}>
+                        <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
+                        <input className="modal-input" placeholder="e.g. Indices, Surds, Quadratics" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} />
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <span className="form-label">Paper 1 date</span>
+                        <input type="date" className="modal-input" value={row.p1Date} onChange={e => setExamRow(i, { p1Date: e.target.value })} />
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <span className="form-label">Paper 2 date</span>
+                        <input type="date" className="modal-input" value={row.p2Date} onChange={e => setExamRow(i, { p2Date: e.target.value })} />
+                      </div>
+                    </div>
+                  )}
+                  <div className="form-group" style={{ marginTop: 10 }}>
+                    <span className="form-label">Notes <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
+                    <input className="modal-input" placeholder="e.g. bring graph paper" value={row.notes} onChange={e => setExamRow(i, { notes: e.target.value })} />
                   </div>
-                </>
-              )}
+                </div>
+              ))}
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => setExamEdit(null)} disabled={examEdit.saving}>Cancel</button>
                 <button className="btn-primary" onClick={saveExamEdit} disabled={examEdit.saving}>
