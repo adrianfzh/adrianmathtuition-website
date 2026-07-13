@@ -167,7 +167,9 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
       const effectiveRate = rate !== undefined ? rate : (invoiceData.ratePerLesson || 0);
       const amount = (count * effectiveRate).toFixed(2);
       const slotCell    = day ? `<span class="slot-pill">${day}</span>` : '';
-      const lessonsCell = day ? `<span class="lessons-badge">${count}</span>` : '';
+      // Lessons badge shows the count on its own — a slot/day isn't required
+      // (ad-hoc invoices have no fixed weekday but still want the count visible).
+      const lessonsCell = count ? `<span class="lessons-badge">${count}</span>` : '';
       return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>$${amount}</td></tr>`;
     }).join('');
   }
@@ -248,7 +250,7 @@ export async function generateReceiptPDF(receiptData: ReceiptData): Promise<Buff
       const amount = (count * (receiptData.ratePerLesson || 0)).toFixed(2);
       const description = items[0].description || `Tuition \u2014 ${receiptData.month || ''}`;
       const slotCell    = day ? `<span class="slot-pill">${day}</span>` : '';
-      const lessonsCell = day ? `<span class="lessons-badge">${count}</span>` : '';
+      const lessonsCell = count ? `<span class="lessons-badge">${count}</span>` : '';
       return `<tr><td><div class="desc-main">${description}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>$${amount}</td></tr>`;
     }).join('');
   }
