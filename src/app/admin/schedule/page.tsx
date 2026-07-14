@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import { getExamTopicsForSubject } from '@/lib/canonical-topics';
 import AdminAIChat from '@/components/AdminAIChat';
 import LessonModal from '@/components/LessonModal';
 import { QuickLogSheet, VoiceLog } from '@/components/QuickLog';
@@ -87,8 +88,9 @@ function fmtTLDate(iso: string | null): string {
 
 // Regular-work tab: per subject, the current topic + a box to advance to the
 // next topic, and the topic timeline (history) below.
-function ExamWorkTab({ studentId, subjects, tl, onDraft, onAdvance, onDeleteRow }: {
+function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDeleteRow }: {
   studentId: string;
+  level: string;
   subjects: string[];
   tl: { loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null;
   onDraft: (subject: string, v: string) => void;
@@ -99,6 +101,8 @@ function ExamWorkTab({ studentId, subjects, tl, onDraft, onAdvance, onDeleteRow 
   return (
     <>
       {subjects.map(subject => {
+        const cats = getExamTopicsForSubject(level || 'Sec 4', subject || 'E Math');
+        const listId = `tl-topics-${(subject || 'x').replace(/\s+/g, '')}`;
         const rows = tl.rows.filter(r => (r.subject || '') === subject).sort((a, b) => (b.started || '').localeCompare(a.started || ''));
         const current = rows.find(r => r.current);
         const history = rows.filter(r => !r.current);
@@ -117,10 +121,13 @@ function ExamWorkTab({ studentId, subjects, tl, onDraft, onAdvance, onDeleteRow 
               <div style={{ fontSize: 13, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 10 }}>No current topic</div>
             )}
             <div style={{ display: 'flex', gap: 6 }}>
-              <input className="modal-input" placeholder={current ? 'Move to next topic…' : 'Set current topic…'} value={draft}
+              <input className="modal-input" list={listId} placeholder={current ? 'Move to next topic…' : 'Pick or type a topic…'} value={draft}
                 onChange={e => onDraft(subject, e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) onAdvance(subject, draft); }}
-                style={{ flex: 1 }} />
+                style={{ flex: 1, minWidth: 0 }} />
+              <datalist id={listId}>
+                {cats.flatMap(c => c.topics).map(t => <option key={t} value={t} />)}
+              </datalist>
               <button className="btn-primary" disabled={saving || !draft.trim()} onClick={() => onAdvance(subject, draft)} style={{ whiteSpace: 'nowrap' }}>
                 {saving ? '…' : current ? 'Advance' : 'Set'}
               </button>
@@ -151,6 +158,7 @@ interface EnrichedLesson extends Lesson {
   examDate?: string | null;
   examTopics?: string | null;
   examApprox?: boolean;
+  examEntries?: ExamEntry[];
   currentTopic?: string | null;
 }
 
@@ -396,14 +404,14 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
       {/* Content: name + sub-lines — flex:1 with minWidth:0 allows ellipsis truncation */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {lesson.type === 'Trial' && <span className="trial-badge">🆕</span>}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0, flexWrap: 'wrap', rowGap: 3 }}>
           <span
             className={isFaded ? 'absent-name' : ''}
             role={onStudentClick ? 'button' : undefined}
             onClick={onStudentClick ? e => { e.stopPropagation(); onStudentClick(); } : undefined}
             style={{
               ...(onStudentClick ? { cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 } : {}),
-              flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+              flex: '1 1 auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 74,
             }}
           >{lesson.studentName}</span>
           {/* Cross-level badge — student level differs from this slot's level */}
@@ -422,43 +430,50 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             <span ref={dropdownRef} style={{ position: 'relative', flexShrink: 0 }}>
               <span
                 role="button"
-                title={lesson.examTopics ? 'Click to see topics tested' : 'Click to see exam details'}
+                title="Click to see exam schedule"
                 onClick={e => {
                   e.stopPropagation();
-                  if (lesson.examTopics) {
-                    setShowTopicDropdown(v => !v);
-                  } else {
-                    onExamDateClick?.(lesson);
-                  }
+                  if ((lesson.examEntries?.length ?? 0) > 0) setShowTopicDropdown(v => !v);
+                  else onExamDateClick?.(lesson);
                 }}
                 style={{ fontSize: 9, color: '#64748b', whiteSpace: 'nowrap', cursor: 'pointer' }}
-              >📅 {lesson.examApprox ? '~' : ''}{formatExamDate(lesson.examDate)}{lesson.examApprox ? ' (wk)' : ''}{lesson.examTopics ? ' ▾' : ''}</span>
-              {showTopicDropdown && lesson.examTopics && (
+              >📅 {lesson.examApprox ? '~' : ''}{formatExamDate(lesson.examDate)}{lesson.examApprox ? ' (wk)' : ''}{(lesson.examEntries?.length ?? 0) > 0 ? ' ▾' : ''}</span>
+              {showTopicDropdown && (lesson.examEntries?.length ?? 0) > 0 && (
                 <div
                   onClick={e => e.stopPropagation()}
                   style={{
                     position: 'absolute', top: '100%', left: 0, zIndex: 200,
                     background: 'white', border: '1px solid #e2e8f0', borderRadius: 8,
                     padding: '8px 10px', boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
-                    minWidth: 180, maxWidth: 260, marginTop: 2,
+                    minWidth: 200, maxWidth: 280, marginTop: 2, textAlign: 'left',
                   }}
                 >
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
-                    📝 Topics tested · {formatExamDate(lesson.examDate)}
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {lesson.examTopics.split(',').map(t => t.trim()).filter(Boolean).map(topic => (
-                      <span key={topic} style={{
-                        fontSize: 10, padding: '2px 7px',
-                        background: '#f0f9ff', border: '1px solid #bae6fd',
-                        borderRadius: 10, color: '#0369a1', whiteSpace: 'nowrap',
-                      }}>{topic}</span>
-                    ))}
-                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 6 }}>📅 Exam schedule</div>
+                  {[...new Set((lesson.examEntries || []).map(e => e.subject))].map(subj => {
+                    const ents = (lesson.examEntries || []).filter(e => e.subject === subj).sort((a, b) => (a.paper || '').localeCompare(b.paper || ''));
+                    const topics = (ents.find(e => e.topics)?.topics) || '';
+                    return (
+                      <div key={subj || 'x'} style={{ marginBottom: 7 }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 700, color: '#1e293b' }}>{subj || 'Exam'}</div>
+                        {ents.map((e, k) => (
+                          <div key={k} style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>
+                            {e.paper ? `${e.paper}: ` : ''}{e.approx ? '~' : ''}{e.date ? formatExamDate(e.date) : '—'}{e.approx ? ' (wk)' : ''}
+                          </div>
+                        ))}
+                        {topics && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 3 }}>
+                            {topics.split(',').map(t => t.trim()).filter(Boolean).map(t => (
+                              <span key={t} style={{ fontSize: 9.5, padding: '1px 6px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, color: '#0369a1' }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                   <button
                     onClick={e => { e.stopPropagation(); setShowTopicDropdown(false); onExamDateClick?.(lesson); }}
-                    style={{ marginTop: 8, width: '100%', fontSize: 11, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '4px 8px', cursor: 'pointer' }}
-                  >✏️ Edit date / topics</button>
+                    style={{ marginTop: 4, width: '100%', fontSize: 11, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '4px 8px', cursor: 'pointer' }}
+                  >✏️ Edit dates / topics</button>
                 </div>
               )}
             </span>
@@ -805,7 +820,7 @@ export default function SchedulePage() {
   // student takes gets a row; S4 EM/AM and JC2 prelims default to a Paper 1/2
   // split, others to a single paper (with an option to split).
   type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean };
-  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentSubjects: string[]; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
+  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
   // Regular-work topic timeline for the open student (Work tab).
   const [topicTL, setTopicTL] = useState<{ loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null>(null);
   const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
@@ -851,7 +866,8 @@ export default function SchedulePage() {
       const currentTopic = lesson.studentId
         ? ((data.currentTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
         : null;
-      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, currentTopic };
+      const examEntries = lesson.studentId ? (data.examEntriesByStudent?.[lesson.studentId] ?? []) : [];
+      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examEntries, currentTopic };
     });
   }, [data]);
 
@@ -1949,7 +1965,7 @@ export default function SchedulePage() {
         approxP2: !!p2?.approx,
       };
     });
-    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentSubjects: subjects.filter(Boolean), examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'exam' });
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'exam' });
     loadTimeline(sid);
   }
   // Open the student panel straight on the Regular-work (topic) tab.
@@ -2464,6 +2480,7 @@ export default function SchedulePage() {
               {examEdit.tab === 'work' ? (
                 <ExamWorkTab
                   studentId={examEdit.studentId}
+                  level={examEdit.studentLevel}
                   subjects={examEdit.studentSubjects.length ? examEdit.studentSubjects : ['']}
                   tl={topicTL}
                   onDraft={(subject, v) => setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject]: v } } : prev)}
@@ -2509,22 +2526,28 @@ export default function SchedulePage() {
                       </div>
                     </>
                   ) : (
+                    <>
                     <div style={{ display: 'flex', gap: 10 }}>
-                      <div className="form-group" style={{ flex: 1 }}>
+                      <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
                         <span className="form-label">Paper 1 date</span>
-                        <input type="date" className="modal-input" value={row.p1Date} onChange={e => setExamRow(i, { p1Date: e.target.value })} />
+                        <input type="date" className="modal-input" style={{ minWidth: 0, width: '100%', boxSizing: 'border-box' }} value={row.p1Date} onChange={e => setExamRow(i, { p1Date: e.target.value })} />
                         <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
                           <input type="checkbox" checked={row.approxP1} onChange={e => setExamRow(i, { approxP1: e.target.checked })} /> ~ week
                         </label>
                       </div>
-                      <div className="form-group" style={{ flex: 1 }}>
+                      <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
                         <span className="form-label">Paper 2 date</span>
-                        <input type="date" className="modal-input" value={row.p2Date} onChange={e => setExamRow(i, { p2Date: e.target.value })} />
+                        <input type="date" className="modal-input" style={{ minWidth: 0, width: '100%', boxSizing: 'border-box' }} value={row.p2Date} onChange={e => setExamRow(i, { p2Date: e.target.value })} />
                         <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
                           <input type="checkbox" checked={row.approxP2} onChange={e => setExamRow(i, { approxP2: e.target.checked })} /> ~ week
                         </label>
                       </div>
                     </div>
+                    <div className="form-group" style={{ marginTop: 10 }}>
+                      <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
+                      <input className="modal-input" placeholder="e.g. whole syllabus" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} />
+                    </div>
+                    </>
                   )}
                   <div className="form-group" style={{ marginTop: 10 }}>
                     <span className="form-label">Notes <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
