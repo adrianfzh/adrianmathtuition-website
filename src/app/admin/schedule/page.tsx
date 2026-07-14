@@ -52,7 +52,7 @@ interface Student {
   subjects?: string[];
 }
 
-interface ExamEntry { subject: string; paper: string; date: string | null; topics: string; notes: string }
+interface ExamEntry { subject: string; paper: string; date: string | null; topics: string; notes: string; approx?: boolean }
 
 interface StudentContact {
   name: string;
@@ -73,6 +73,7 @@ interface ScheduleData {
   activeExamType?: string | null;
   examsByStudent?: Record<string, string | null>;
   examTopicsByStudent?: Record<string, string | null>;
+  examApproxByStudent?: Record<string, boolean>;
   examEntriesByStudent?: Record<string, ExamEntry[]>;
   currentTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
 }
@@ -149,6 +150,7 @@ interface EnrichedLesson extends Lesson {
   studentLevel: string;
   examDate?: string | null;
   examTopics?: string | null;
+  examApprox?: boolean;
   currentTopic?: string | null;
 }
 
@@ -430,7 +432,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
                   }
                 }}
                 style={{ fontSize: 9, color: '#64748b', whiteSpace: 'nowrap', cursor: 'pointer' }}
-              >📅 {formatExamDate(lesson.examDate)}{lesson.examTopics ? ' ▾' : ''}</span>
+              >📅 {lesson.examApprox ? '~' : ''}{formatExamDate(lesson.examDate)}{lesson.examApprox ? ' (wk)' : ''}{lesson.examTopics ? ' ▾' : ''}</span>
               {showTopicDropdown && lesson.examTopics && (
                 <div
                   onClick={e => e.stopPropagation()}
@@ -462,18 +464,22 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             </span>
           )}
           {/* Missing exam info during active season — one-tap add */}
-          {!isFaded && activeExamType && !lesson.examDate && lesson.type !== 'Trial' && onExamDateClick && (
+          {!isFaded && activeExamType && !lesson.examDate && lesson.type !== 'Trial' && onExamDateClick && (() => {
+            const lv = (lesson.studentLevel || '').toLowerCase();
+            const pillType = activeExamType === 'WA3' && (lv.includes('sec 4') || lv === 'jc2') ? 'Prelim' : activeExamType;
+            return (
             <span
               role="button"
-              title={`Add ${activeExamType} exam date & topics`}
+              title={`Add ${pillType} exam date & topics`}
               onClick={e => { e.stopPropagation(); onExamDateClick(lesson); }}
               style={{
                 flexShrink: 0, fontSize: 9, fontWeight: 700, lineHeight: 1.4, cursor: 'pointer',
                 padding: '1px 6px', borderRadius: 8, whiteSpace: 'nowrap',
                 background: '#eff6ff', color: '#1d4ed8', border: '1px dashed #93c5fd',
               }}
-            >＋ {activeExamType}</span>
-          )}
+            >＋ {pillType}</span>
+            );
+          })()}
           {/* Current topic (Regular work) — tap to view/advance */}
           {!isFaded && lesson.type !== 'Trial' && onWork && (
             <span
@@ -798,7 +804,7 @@ export default function SchedulePage() {
   // Per-chip exam quick-add/edit for the active exam season. Each subject the
   // student takes gets a row; S4 EM/AM and JC2 prelims default to a Paper 1/2
   // split, others to a single paper (with an option to split).
-  type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string };
+  type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean };
   const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentSubjects: string[]; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
   // Regular-work topic timeline for the open student (Work tab).
   const [topicTL, setTopicTL] = useState<{ loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null>(null);
@@ -841,10 +847,11 @@ export default function SchedulePage() {
       const studentLevel = student?.level || '';
       const examDate = lesson.studentId ? (data.examsByStudent?.[lesson.studentId] ?? null) : null;
       const examTopics = lesson.studentId ? (data.examTopicsByStudent?.[lesson.studentId] ?? null) : null;
+      const examApprox = lesson.studentId ? (data.examApproxByStudent?.[lesson.studentId] ?? false) : false;
       const currentTopic = lesson.studentId
         ? ((data.currentTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
         : null;
-      return { ...lesson, studentName, studentLevel, examDate, examTopics, currentTopic };
+      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, currentTopic };
     });
   }, [data]);
 
@@ -1902,11 +1909,20 @@ export default function SchedulePage() {
     if (lv === 'jc2' && s.includes('h2')) return true;
     return false;
   }
+  // Sec 4 / JC2 in the WA3 window sit their Prelims, not "WA3".
+  function levelExamType(level: string): string {
+    const active = data?.activeExamType || 'WA3';
+    const lv = (level || '').toLowerCase();
+    if (active === 'WA3' && (lv.includes('sec 4') || lv === 'jc2')) return 'Prelim';
+    return active;
+  }
   function openExamEdit(lesson: EnrichedLesson) {
     if (!lesson.studentId) return;
     const sid = lesson.studentId;
-    const examType = data?.activeExamType || 'WA3';
     const level = lesson.studentLevel || '';
+    // If the student already has records under an exam type, honour it; else default by level.
+    const existingType = (data?.examEntriesByStudent?.[sid] || []).length ? null : null; // entries don't carry type; keep default
+    const examType = existingType || levelExamType(level);
     const entries = data?.examEntriesByStudent?.[sid] || [];
     // Subjects the student takes (fall back to whatever exam records already exist).
     let subjects = (data?.students?.[sid]?.subjects || []).filter(Boolean);
@@ -1928,6 +1944,9 @@ export default function SchedulePage() {
         p2Date: p2?.date || '',
         topics: (subjEntries.find(e => e.topics)?.topics) || '',
         notes: (subjEntries.find(e => e.notes)?.notes) || '',
+        approx: !!single?.approx,
+        approxP1: !!p1?.approx,
+        approxP2: !!p2?.approx,
       };
     });
     setExamEdit({ studentId: sid, studentName: lesson.studentName, studentSubjects: subjects.filter(Boolean), examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'exam' });
@@ -1978,10 +1997,10 @@ export default function SchedulePage() {
       const entries = examEdit.noExam ? [] : examEdit.rows.flatMap(r =>
         r.mode === 'split'
           ? [
-              { subject: r.subject, paper: 'Paper 1', examDate: r.p1Date, testedTopics: r.topics, notes: r.notes },
-              { subject: r.subject, paper: 'Paper 2', examDate: r.p2Date, testedTopics: '', notes: '' },
+              { subject: r.subject, paper: 'Paper 1', examDate: r.p1Date, testedTopics: r.topics, notes: r.notes, approx: r.approxP1 },
+              { subject: r.subject, paper: 'Paper 2', examDate: r.p2Date, testedTopics: '', notes: '', approx: r.approxP2 },
             ]
-          : [{ subject: r.subject, paper: '', examDate: r.date, testedTopics: r.topics, notes: r.notes }]
+          : [{ subject: r.subject, paper: '', examDate: r.date, testedTopics: r.topics, notes: r.notes, approx: r.approx }]
       );
       const res = await fetch('/api/admin-schedule/set-exams', {
         method: 'POST',
@@ -2452,6 +2471,12 @@ export default function SchedulePage() {
                   onDeleteRow={(rowId) => deleteTimelineRow(examEdit.studentId, rowId)}
                 />
               ) : (<>
+              <div className="form-group" style={{ marginBottom: 12 }}>
+                <span className="form-label">Exam</span>
+                <select className="modal-select" value={examEdit.examType} onChange={e => setExamEdit({ ...examEdit, examType: e.target.value })}>
+                  {['Prelim', 'WA3', 'WA1', 'WA2', 'EOY'].map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: 14 }}>
                 <input type="checkbox" checked={examEdit.noExam} onChange={e => setExamEdit({ ...examEdit, noExam: e.target.checked })} />
                 No exam this season
@@ -2473,6 +2498,10 @@ export default function SchedulePage() {
                       <div className="form-group">
                         <span className="form-label">Exam date</span>
                         <input type="date" className="modal-input" value={row.date} onChange={e => setExamRow(i, { date: e.target.value })} />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
+                          <input type="checkbox" checked={row.approx} onChange={e => setExamRow(i, { approx: e.target.checked })} />
+                          ~ week only (date not confirmed)
+                        </label>
                       </div>
                       <div className="form-group" style={{ marginTop: 10 }}>
                         <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
@@ -2484,10 +2513,16 @@ export default function SchedulePage() {
                       <div className="form-group" style={{ flex: 1 }}>
                         <span className="form-label">Paper 1 date</span>
                         <input type="date" className="modal-input" value={row.p1Date} onChange={e => setExamRow(i, { p1Date: e.target.value })} />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
+                          <input type="checkbox" checked={row.approxP1} onChange={e => setExamRow(i, { approxP1: e.target.checked })} /> ~ week
+                        </label>
                       </div>
                       <div className="form-group" style={{ flex: 1 }}>
                         <span className="form-label">Paper 2 date</span>
                         <input type="date" className="modal-input" value={row.p2Date} onChange={e => setExamRow(i, { p2Date: e.target.value })} />
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
+                          <input type="checkbox" checked={row.approxP2} onChange={e => setExamRow(i, { approxP2: e.target.checked })} /> ~ week
+                        </label>
                       </div>
                     </div>
                   )}

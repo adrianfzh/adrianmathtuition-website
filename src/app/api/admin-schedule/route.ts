@@ -270,8 +270,9 @@ export async function GET(req: NextRequest) {
   let activeExamType: ExamType | null = null;
   const examsByStudent: Record<string, string | null> = {};
   const examTopicsByStudent: Record<string, string | null> = {};
+  const examApproxByStudent: Record<string, boolean> = {};
   // Full per-subject/per-paper entries for the exam quick-add dialog + chip dropdown.
-  const examEntriesByStudent: Record<string, { subject: string; paper: string; date: string | null; topics: string; notes: string }[]> = {};
+  const examEntriesByStudent: Record<string, { subject: string; paper: string; date: string | null; topics: string; notes: string; approx: boolean }[]> = {};
 
   try {
     // Resolve active exam type (override from Settings, fallback to date windows)
@@ -295,9 +296,13 @@ export async function GET(req: NextRequest) {
         if (m) return { subject: m[1].trim(), paper: m[2] === 'P1' ? 'Paper 1' : 'Paper 2' };
         return { subject: (raw || '').trim(), paper: '' };
       };
+      // Approximate ("week only") dates carry a "~|" marker in Exam Notes.
+      const parseNotes = (raw: string): { approx: boolean; notes: string } =>
+        (raw || '').startsWith('~|') ? { approx: true, notes: raw.slice(2) } : { approx: false, notes: raw || '' };
+      // Sec 4 / JC2 prelims are stored as Exam Type 'Prelim'; fetch both so they show.
       const examsData = await fetchAll(
         'Exams',
-        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`
+        `?filterByFormula=${encodeURIComponent(`OR({Exam Type}='${activeExamType}',{Exam Type}='Prelim')`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`
       );
       // Build studentId → earliest exam date (chip badge) + full entries (dialog/dropdown)
       for (const r of examsData) {
@@ -311,18 +316,21 @@ export async function GET(req: NextRequest) {
         const examDate: string | undefined = r.fields['Exam Date'];
         // Record the entry (even a date-less one carries topics/notes for the dialog)
         const parsed = parseSubject((r.fields['Subject'] as string) || '');
+        const pn = parseNotes((r.fields['Exam Notes'] as string) || '');
         (examEntriesByStudent[sid] ||= []).push({
           subject: parsed.subject,
           paper: parsed.paper,
           date: examDate || null,
           topics: (r.fields['Tested Topics'] as string) || '',
-          notes: (r.fields['Exam Notes'] as string) || '',
+          notes: pn.notes,
+          approx: pn.approx,
         });
         if (examsByStudent[sid] === 'NO_EXAM') continue; // already flagged
         if (!examDate) continue;
         if (!examsByStudent[sid] || examDate < examsByStudent[sid]!) {
           examsByStudent[sid] = examDate;
           examTopicsByStudent[sid] = (r.fields['Tested Topics'] as string) || null;
+          examApproxByStudent[sid] = pn.approx;
         }
       }
     }
@@ -354,6 +362,7 @@ export async function GET(req: NextRequest) {
     activeExamType,
     examsByStudent,
     examTopicsByStudent,
+    examApproxByStudent,
     examEntriesByStudent,
     currentTopicByStudent,
   });

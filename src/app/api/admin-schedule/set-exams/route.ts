@@ -21,7 +21,12 @@ export const runtime = 'nodejs';
 // subject+paper); a record whose (subject,paper) is not in the active entries is
 // deleted UNLESS it already carries a result (post-exam data we must not lose).
 
-interface Entry { subject?: string; paper?: string; examDate?: string; testedTopics?: string; notes?: string }
+interface Entry { subject?: string; paper?: string; examDate?: string; testedTopics?: string; notes?: string; approx?: boolean }
+
+// An approximate ("week only") date is flagged with a leading marker in Exam
+// Notes (no extra Airtable field). encodeNotes/… the schedule route strips it.
+const APPROX = '~|';
+const encodeNotes = (notes?: string, approx?: boolean) => (approx ? APPROX : '') + (notes ?? '');
 
 // Paper is encoded INTO the Subject field ("E Math (P1)") so no new Airtable
 // field is needed. subjectField() builds the stored value; the schedule route
@@ -83,7 +88,7 @@ export async function POST(req: NextRequest) {
       Subject: subj || null,
       'Exam Date': (e.examDate || '').trim() || null,
       'Tested Topics': e.testedTopics ?? '',
-      'Exam Notes': e.notes ?? '',
+      'Exam Notes': encodeNotes(e.notes, e.approx),
       'No Exam': false,
     };
     const existing = byKey.get(subj);
