@@ -289,9 +289,15 @@ export async function GET(req: NextRequest) {
     // Fetch all exam dates for the active season — no studentIds filter needed;
     // the page only looks up students that actually appear in lessons.
     if (activeExamType) {
+      // Paper is encoded into Subject ("E Math (P1)") — no Paper field needed.
+      const parseSubject = (raw: string): { subject: string; paper: string } => {
+        const m = (raw || '').match(/^(.*)\s*\((P1|P2)\)\s*$/);
+        if (m) return { subject: m[1].trim(), paper: m[2] === 'P1' ? 'Paper 1' : 'Paper 2' };
+        return { subject: (raw || '').trim(), paper: '' };
+      };
       const examsData = await fetchAll(
         'Exams',
-        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Paper&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`
+        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeExamType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`
       );
       // Build studentId → earliest exam date (chip badge) + full entries (dialog/dropdown)
       for (const r of examsData) {
@@ -304,9 +310,10 @@ export async function GET(req: NextRequest) {
         }
         const examDate: string | undefined = r.fields['Exam Date'];
         // Record the entry (even a date-less one carries topics/notes for the dialog)
+        const parsed = parseSubject((r.fields['Subject'] as string) || '');
         (examEntriesByStudent[sid] ||= []).push({
-          subject: (r.fields['Subject'] as string) || '',
-          paper: (r.fields['Paper'] as string) || '',
+          subject: parsed.subject,
+          paper: parsed.paper,
           date: examDate || null,
           topics: (r.fields['Tested Topics'] as string) || '',
           notes: (r.fields['Exam Notes'] as string) || '',

@@ -23,7 +23,16 @@ export const runtime = 'nodejs';
 
 interface Entry { subject?: string; paper?: string; examDate?: string; testedTopics?: string; notes?: string }
 
-const keyOf = (subject?: string, paper?: string) => `${(subject || '').trim()}|${(paper || '').trim()}`;
+// Paper is encoded INTO the Subject field ("E Math (P1)") so no new Airtable
+// field is needed. subjectField() builds the stored value; the schedule route
+// parses it back into { subject, paper }.
+function subjectField(subject?: string, paper?: string): string {
+  const s = (subject || '').trim();
+  const p = (paper || '').trim();
+  if (!p) return s;
+  const short = p === 'Paper 1' ? 'P1' : p === 'Paper 2' ? 'P2' : p;
+  return s ? `${s} (${short})` : short;
+}
 const isActive = (e: Entry) => !!((e.examDate || '').trim() || (e.testedTopics || '').trim() || (e.notes || '').trim());
 
 export async function POST(req: NextRequest) {
@@ -38,11 +47,11 @@ export async function POST(req: NextRequest) {
   // unreliable, so filter by Exam Type in Airtable and match student in JS.
   const all = await airtableRequestAll(
     'Exams',
-    `?filterByFormula=${encodeURIComponent(`{Exam Type}='${examType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Paper&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam&fields[]=Result Score&fields[]=Result Total`
+    `?filterByFormula=${encodeURIComponent(`{Exam Type}='${examType}'`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam&fields[]=Result Score&fields[]=Result Total`
   );
   const mine = (all.records || []).filter((r: any) => r.fields['Student']?.[0] === studentId);
   const byKey = new Map<string, any>();
-  for (const r of mine) byKey.set(keyOf(r.fields['Subject'], r.fields['Paper']), r);
+  for (const r of mine) byKey.set((r.fields['Subject'] || '').trim(), r); // Subject encodes the paper
   const hasResult = (r: any) => r.fields['Result Score'] != null || r.fields['Result Total'] != null;
 
   const result = { created: 0, updated: 0, deleted: 0 };
@@ -52,7 +61,7 @@ export async function POST(req: NextRequest) {
     let markerKept = false;
     for (const r of mine) {
       if (!markerKept) {
-        await airtableRequest('Exams', `/${r.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { 'No Exam': true, 'Exam Date': null, 'Tested Topics': '', 'Paper': null, 'Subject': null } }) });
+        await airtableRequest('Exams', `/${r.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { 'No Exam': true, 'Exam Date': null, 'Tested Topics': '', 'Subject': null } }) });
         markerKept = true; result.updated++;
       } else {
         await airtableRequest('Exams', `/${r.id}`, { method: 'DELETE' }); result.deleted++;
@@ -68,17 +77,16 @@ export async function POST(req: NextRequest) {
   const activeKeys = new Set<string>();
   for (const e of entries) {
     if (!isActive(e)) continue;
-    const k = keyOf(e.subject, e.paper);
-    activeKeys.add(k);
+    const subj = subjectField(e.subject, e.paper); // paper encoded into Subject
+    activeKeys.add(subj);
     const fields: Record<string, any> = {
-      Subject: e.subject || null,
-      Paper: (e.paper || '').trim() || null,
+      Subject: subj || null,
       'Exam Date': (e.examDate || '').trim() || null,
       'Tested Topics': e.testedTopics ?? '',
       'Exam Notes': e.notes ?? '',
       'No Exam': false,
     };
-    const existing = byKey.get(k);
+    const existing = byKey.get(subj);
     if (existing) {
       await airtableRequest('Exams', `/${existing.id}`, { method: 'PATCH', body: JSON.stringify({ typecast: true, fields }) });
       result.updated++;
@@ -88,11 +96,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Delete records no longer wanted (skip any that carry a result, and any
-  // No-Exam marker being cleared is fine to remove).
+  // Delete records no longer wanted (skip any that carry a result).
   for (const r of mine) {
-    const k = keyOf(r.fields['Subject'], r.fields['Paper']);
-    if (activeKeys.has(k) || hasResult(r)) continue;
+    const subj = (r.fields['Subject'] || '').trim();
+    if (activeKeys.has(subj) || hasResult(r)) continue;
     await airtableRequest('Exams', `/${r.id}`, { method: 'DELETE' });
     result.deleted++;
   }
