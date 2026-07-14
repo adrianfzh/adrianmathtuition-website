@@ -81,6 +81,14 @@ interface ScheduleData {
 
 interface TimelineRow { id: string; subject: string; topic: string; started: string | null; ended: string | null; current: boolean }
 
+const MASTERY_OPTS = [
+  { value: 'Strong', label: '🟢 Strong', bg: '#dcfce7', color: '#166534', border: '#86efac' },
+  { value: 'OK', label: '🟡 OK', bg: '#fef9c3', color: '#854d0e', border: '#fde047' },
+  { value: 'Slow', label: '🔴 Slow', bg: '#fee2e2', color: '#991b1b', border: '#fca5a5' },
+];
+const QUICK_NOTES = ['HW not done', 'Careless slips', 'Great today'];
+const HW_OPTS = ['Yes', 'Partial', 'No'];
+
 function fmtTLDate(iso: string | null): string {
   if (!iso) return '';
   try { return new Date(iso + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'short' }); } catch { return iso; }
@@ -764,9 +772,41 @@ export default function SchedulePage() {
   // student takes gets a row; S4 EM/AM and JC2 prelims default to a Paper 1/2
   // split, others to a single paper (with an option to split).
   type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean };
-  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
+  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; lessonId: string; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
   // Regular-work topic timeline for the open student (Work tab).
   const [topicTL, setTopicTL] = useState<{ loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null>(null);
+  // "This lesson" log folded into the Work tab (mastery / HW returned / note),
+  // saving to the same endpoints the old quick-log pencil used.
+  const [lessonLog, setLessonLog] = useState<{ loading: boolean; mastery: string; hwPrev: string; prevId: string | null; noteChips: string[]; freeNote: string; base: { mastery: string; hwPrev: string; notes: string }; saving: boolean } | null>(null);
+  async function loadLessonLog(lessonId: string) {
+    setLessonLog({ loading: true, mastery: '', hwPrev: '', prevId: null, noteChips: [], freeNote: '', base: { mastery: '', hwPrev: '', notes: '' }, saving: false });
+    try {
+      const res = await fetch(`/api/admin-schedule/lesson-context?id=${lessonId}`);
+      const ctx = await res.json();
+      const cur = ctx.current ?? {};
+      setLessonLog({ loading: false, mastery: cur.mastery ?? '', hwPrev: ctx.prev?.homeworkReturned ?? '', prevId: ctx.prev?.id ?? null, noteChips: [], freeNote: '', base: { mastery: cur.mastery ?? '', hwPrev: ctx.prev?.homeworkReturned ?? '', notes: cur.lessonNotes ?? '' }, saving: false });
+    } catch { setLessonLog(prev => prev ? { ...prev, loading: false } : null); }
+  }
+  async function saveLessonLog(lessonId: string) {
+    if (!lessonLog || lessonLog.saving) return;
+    setLessonLog({ ...lessonLog, saving: true });
+    try {
+      const fields: Record<string, string> = {};
+      if (lessonLog.mastery && lessonLog.mastery !== lessonLog.base.mastery) fields.mastery = lessonLog.mastery;
+      const appendParts = [...lessonLog.noteChips, lessonLog.freeNote.trim()].filter(Boolean);
+      if (appendParts.length) { const a = appendParts.join('; '); fields.lessonNotes = lessonLog.base.notes ? `${lessonLog.base.notes}\n${a}` : a; }
+      const writeHw = !!(lessonLog.hwPrev && lessonLog.hwPrev !== lessonLog.base.hwPrev && lessonLog.prevId);
+      const tasks: Promise<Response>[] = [];
+      if (Object.keys(fields).length) tasks.push(fetch('/api/admin-schedule/lesson-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId, fields }) }));
+      if (writeHw) tasks.push(fetch('/api/admin-schedule/lesson-prev-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId: lessonLog.prevId, homeworkReturned: lessonLog.hwPrev }) }));
+      if (!tasks.length) { showToast('success', 'Nothing to save'); setLessonLog({ ...lessonLog, saving: false }); return; }
+      const rs = await Promise.all(tasks);
+      if (rs.some(r => !r.ok)) throw new Error();
+      if (Object.keys(fields).length) handleProgressLogged(lessonId);
+      showToast('success', '✓ Lesson logged');
+      setLessonLog(prev => prev ? { ...prev, saving: false, noteChips: [], freeNote: '', base: { mastery: prev.mastery, hwPrev: prev.hwPrev, notes: fields.lessonNotes ?? prev.base.notes } } : null);
+    } catch { showToast('error', 'Save failed'); setLessonLog(prev => prev ? { ...prev, saving: false } : null); }
+  }
   const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -1909,8 +1949,9 @@ export default function SchedulePage() {
         approxP2: !!p2?.approx,
       };
     });
-    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'exam' });
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'exam' });
     loadTimeline(sid);
+    loadLessonLog(lesson.id);
   }
   // Open the student panel straight on the Regular-work (topic) tab.
   function openWork(lesson: EnrichedLesson) {
@@ -2070,7 +2111,6 @@ export default function SchedulePage() {
           onMarkPresent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Completed') : undefined}
           onMarkAbsent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Absent') : undefined}
           onUndo={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Scheduled') : undefined}
-          onQuickLog={showAttendance ? (lesson) => setQuickLog(lesson) : undefined}
           onGhostTap={(studentId, studentName) => setGhostActionSheet({ studentId, studentName, slotId: slot.id, date: dateStr })}
           savingStudents={savingAttendance}
           activeExamType={data?.activeExamType}
@@ -2422,6 +2462,7 @@ export default function SchedulePage() {
             </div>
             <div className="modal-body">
               {examEdit.tab === 'work' ? (
+                <>
                 <ExamWorkTab
                   studentId={examEdit.studentId}
                   level={examEdit.studentLevel}
@@ -2431,6 +2472,53 @@ export default function SchedulePage() {
                   onAdvance={(subject, topic) => advanceTopic(examEdit.studentId, subject, topic)}
                   onDeleteRow={(rowId) => deleteTimelineRow(examEdit.studentId, rowId)}
                 />
+                {/* This-lesson log (mastery / HW / note) — folded in from the old pencil */}
+                {lessonLog && !lessonLog.loading && (
+                  <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginTop: 4 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.05em', color: '#334155', textTransform: 'uppercase', marginBottom: 8 }}>This lesson</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>MASTERY</div>
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                      {MASTERY_OPTS.map(o => {
+                        const on = lessonLog.mastery === o.value;
+                        return (
+                          <button key={o.value} onClick={() => setLessonLog(p => p ? { ...p, mastery: p.mastery === o.value ? '' : o.value } : p)}
+                            style={{ flex: 1, padding: '8px 4px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
+                              background: on ? o.bg : '#fff', color: on ? o.color : '#64748b', border: `1px solid ${on ? o.border : '#e5e7eb'}` }}>{o.label}</button>
+                        );
+                      })}
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>QUICK NOTE</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
+                      {QUICK_NOTES.map(n => {
+                        const on = lessonLog.noteChips.includes(n);
+                        return (
+                          <button key={n} onClick={() => setLessonLog(p => p ? { ...p, noteChips: on ? p.noteChips.filter(x => x !== n) : [...p.noteChips, n] } : p)}
+                            style={{ fontSize: 12, fontWeight: 600, padding: '5px 11px', borderRadius: 16, cursor: 'pointer', background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>{n}</button>
+                        );
+                      })}
+                    </div>
+                    <input className="modal-input" placeholder="Anything else… (appended to lesson notes)" value={lessonLog.freeNote}
+                      onChange={e => setLessonLog(p => p ? { ...p, freeNote: e.target.value } : p)} />
+                    {lessonLog.prevId && (
+                      <>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', margin: '12px 0 4px' }}>HW RETURNED (previous lesson)</div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {HW_OPTS.map(h => {
+                            const on = lessonLog.hwPrev === h;
+                            return (
+                              <button key={h} onClick={() => setLessonLog(p => p ? { ...p, hwPrev: p.hwPrev === h ? '' : h } : p)}
+                                style={{ flex: 1, padding: '7px 4px', fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: 'pointer', background: on ? '#eff6ff' : '#fff', color: on ? '#1d4ed8' : '#64748b', border: `1px solid ${on ? '#93c5fd' : '#e5e7eb'}` }}>{h}</button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                    <button className="btn-primary" style={{ width: '100%', marginTop: 12 }} disabled={lessonLog.saving} onClick={() => saveLessonLog(examEdit.lessonId)}>
+                      {lessonLog.saving ? 'Saving…' : 'Save lesson log'}
+                    </button>
+                  </div>
+                )}
+                </>
               ) : (<>
               <div className="form-group" style={{ marginBottom: 12 }}>
                 <span className="form-label">Exam</span>
