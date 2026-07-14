@@ -437,7 +437,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
               label = `📘 ${lesson.currentTopic}`;
               openTab = 'work';
             } else {
-              label = '📋 log';
+              label = '＋ exam / topic';
               openTab = 'exam';
             }
             const open = () => { if (openTab === 'work' && onWork) onWork(); else if (onExamDateClick) onExamDateClick(lesson); else onWork?.(); };
@@ -2442,7 +2442,21 @@ export default function SchedulePage() {
                 <input type="checkbox" checked={examEdit.noExam} onChange={e => setExamEdit({ ...examEdit, noExam: e.target.checked })} />
                 No exam this season
               </label>
-              {!examEdit.noExam && examEdit.rows.map((row, i) => (
+              {!examEdit.noExam && examEdit.rows.map((row, i) => {
+                const topicOpts = getExamTopicsForSubject(examEdit.studentLevel || 'Sec 4', row.subject || 'E Math').flatMap(c => c.topics);
+                const listId = `exam-topics-${i}`;
+                const dateBox = (label: string, value: string, dateKey: 'date' | 'p1Date' | 'p2Date', approxVal: boolean, approxKey: 'approx' | 'approxP1' | 'approxP2') => (
+                  <div className="form-group" style={{ marginTop: 10 }}>
+                    <span className="form-label">{label}</span>
+                    <input type="date" className="modal-input" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
+                      value={value} onChange={e => setExamRow(i, { [dateKey]: e.target.value } as Partial<ExamSubjectRow>)} />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
+                      <input type="checkbox" checked={approxVal} onChange={e => setExamRow(i, { [approxKey]: e.target.checked } as Partial<ExamSubjectRow>)} />
+                      Only know the week — exact date TBC
+                    </label>
+                  </div>
+                );
+                return (
                 <div key={row.subject || i} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 12px 4px', marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                     <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b' }}>{row.subject || 'Exam'}</span>
@@ -2454,51 +2468,21 @@ export default function SchedulePage() {
                         style={{ fontSize: 11.5, fontWeight: 600, color: '#64748b', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>Merge to 1 paper</button>
                     )}
                   </div>
-                  {row.mode === 'single' ? (
-                    <>
-                      <div className="form-group">
-                        <span className="form-label">Exam date</span>
-                        <input type="date" className="modal-input" value={row.date} onChange={e => setExamRow(i, { date: e.target.value })} />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
-                          <input type="checkbox" checked={row.approx} onChange={e => setExamRow(i, { approx: e.target.checked })} />
-                          ~ week only (date not confirmed)
-                        </label>
-                      </div>
-                      <div className="form-group" style={{ marginTop: 10 }}>
-                        <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
-                        <input className="modal-input" placeholder="e.g. Indices, Surds, Quadratics" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
-                        <span className="form-label">Paper 1 date</span>
-                        <input type="date" className="modal-input" style={{ minWidth: 0, width: '100%', boxSizing: 'border-box' }} value={row.p1Date} onChange={e => setExamRow(i, { p1Date: e.target.value })} />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
-                          <input type="checkbox" checked={row.approxP1} onChange={e => setExamRow(i, { approxP1: e.target.checked })} /> ~ week
-                        </label>
-                      </div>
-                      <div className="form-group" style={{ flex: 1, minWidth: 0 }}>
-                        <span className="form-label">Paper 2 date</span>
-                        <input type="date" className="modal-input" style={{ minWidth: 0, width: '100%', boxSizing: 'border-box' }} value={row.p2Date} onChange={e => setExamRow(i, { p2Date: e.target.value })} />
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11.5, color: '#64748b', cursor: 'pointer', marginTop: 5 }}>
-                          <input type="checkbox" checked={row.approxP2} onChange={e => setExamRow(i, { approxP2: e.target.checked })} /> ~ week
-                        </label>
-                      </div>
-                    </div>
-                    <div className="form-group" style={{ marginTop: 10 }}>
-                      <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
-                      <input className="modal-input" placeholder="e.g. whole syllabus" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} />
-                    </div>
-                    </>
-                  )}
+                  {row.mode === 'single'
+                    ? dateBox('Exam date', row.date, 'date', row.approx, 'approx')
+                    : (<>{dateBox('Paper 1 date', row.p1Date, 'p1Date', row.approxP1, 'approxP1')}{dateBox('Paper 2 date', row.p2Date, 'p2Date', row.approxP2, 'approxP2')}</>)}
+                  <div className="form-group" style={{ marginTop: 10 }}>
+                    <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
+                    <input className="modal-input" list={listId} placeholder="Pick from list or type…" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} />
+                    <datalist id={listId}>{topicOpts.map(t => <option key={t} value={t} />)}</datalist>
+                  </div>
                   <div className="form-group" style={{ marginTop: 10 }}>
                     <span className="form-label">Notes <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
                     <input className="modal-input" placeholder="e.g. bring graph paper" value={row.notes} onChange={e => setExamRow(i, { notes: e.target.value })} />
                   </div>
                 </div>
-              ))}
+                );
+              })}
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => setExamEdit(null)} disabled={examEdit.saving}>Cancel</button>
                 <button className="btn-primary" onClick={saveExamEdit} disabled={examEdit.saving}>
