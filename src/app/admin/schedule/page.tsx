@@ -425,92 +425,36 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
               }}
             >⚠ {crossBadge}</span>
           )}
-          {/* Inline exam date badge — shows topic dropdown if topics are recorded */}
-          {!isFaded && lesson.examDate && lesson.examDate !== 'NO_EXAM' && (
-            <span ref={dropdownRef} style={{ position: 'relative', flexShrink: 0 }}>
+          {/* One pill → opens the tabbed dialog (Exam | Regular work). Shows the
+              most relevant glanceable info; details/edit live in the popup. */}
+          {!isFaded && lesson.type !== 'Trial' && (onExamDateClick || onWork) && (() => {
+            const hasExam = !!lesson.examDate && lesson.examDate !== 'NO_EXAM';
+            let label: string, openTab: 'exam' | 'work';
+            if (hasExam) {
+              label = `📅 ${lesson.examApprox ? '~' : ''}${formatExamDate(lesson.examDate!)}${lesson.examApprox ? ' (wk)' : ''}`;
+              openTab = 'exam';
+            } else if (lesson.currentTopic) {
+              label = `📘 ${lesson.currentTopic}`;
+              openTab = 'work';
+            } else {
+              label = '📋 log';
+              openTab = 'exam';
+            }
+            const open = () => { if (openTab === 'work' && onWork) onWork(); else if (onExamDateClick) onExamDateClick(lesson); else onWork?.(); };
+            return (
               <span
                 role="button"
-                title="Click to see exam schedule"
-                onClick={e => {
-                  e.stopPropagation();
-                  if ((lesson.examEntries?.length ?? 0) > 0) setShowTopicDropdown(v => !v);
-                  else onExamDateClick?.(lesson);
+                title="Exam & regular-work — tap for details"
+                onClick={e => { e.stopPropagation(); open(); }}
+                style={{
+                  flexShrink: 0, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis',
+                  fontSize: 9, fontWeight: 700, lineHeight: 1.4, cursor: 'pointer',
+                  padding: '1px 7px', borderRadius: 8, whiteSpace: 'nowrap',
+                  background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe',
                 }}
-                style={{ fontSize: 9, color: '#64748b', whiteSpace: 'nowrap', cursor: 'pointer' }}
-              >📅 {lesson.examApprox ? '~' : ''}{formatExamDate(lesson.examDate)}{lesson.examApprox ? ' (wk)' : ''}{(lesson.examEntries?.length ?? 0) > 0 ? ' ▾' : ''}</span>
-              {showTopicDropdown && (lesson.examEntries?.length ?? 0) > 0 && (
-                <div
-                  onClick={e => e.stopPropagation()}
-                  style={{
-                    position: 'absolute', top: '100%', left: 0, zIndex: 200,
-                    background: 'white', border: '1px solid #e2e8f0', borderRadius: 8,
-                    padding: '8px 10px', boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
-                    minWidth: 200, maxWidth: 280, marginTop: 2, textAlign: 'left',
-                  }}
-                >
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', marginBottom: 6 }}>📅 Exam schedule</div>
-                  {[...new Set((lesson.examEntries || []).map(e => e.subject))].map(subj => {
-                    const ents = (lesson.examEntries || []).filter(e => e.subject === subj).sort((a, b) => (a.paper || '').localeCompare(b.paper || ''));
-                    const topics = (ents.find(e => e.topics)?.topics) || '';
-                    return (
-                      <div key={subj || 'x'} style={{ marginBottom: 7 }}>
-                        <div style={{ fontSize: 11.5, fontWeight: 700, color: '#1e293b' }}>{subj || 'Exam'}</div>
-                        {ents.map((e, k) => (
-                          <div key={k} style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>
-                            {e.paper ? `${e.paper}: ` : ''}{e.approx ? '~' : ''}{e.date ? formatExamDate(e.date) : '—'}{e.approx ? ' (wk)' : ''}
-                          </div>
-                        ))}
-                        {topics && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 3 }}>
-                            {topics.split(',').map(t => t.trim()).filter(Boolean).map(t => (
-                              <span key={t} style={{ fontSize: 9.5, padding: '1px 6px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, color: '#0369a1' }}>{t}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  <button
-                    onClick={e => { e.stopPropagation(); setShowTopicDropdown(false); onExamDateClick?.(lesson); }}
-                    style={{ marginTop: 4, width: '100%', fontSize: 11, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '4px 8px', cursor: 'pointer' }}
-                  >✏️ Edit dates / topics</button>
-                </div>
-              )}
-            </span>
-          )}
-          {/* Missing exam info during active season — one-tap add */}
-          {!isFaded && activeExamType && !lesson.examDate && lesson.type !== 'Trial' && onExamDateClick && (() => {
-            const lv = (lesson.studentLevel || '').toLowerCase();
-            const pillType = activeExamType === 'WA3' && (lv.includes('sec 4') || lv === 'jc2') ? 'Prelim' : activeExamType;
-            return (
-            <span
-              role="button"
-              title={`Add ${pillType} exam date & topics`}
-              onClick={e => { e.stopPropagation(); onExamDateClick(lesson); }}
-              style={{
-                flexShrink: 0, fontSize: 9, fontWeight: 700, lineHeight: 1.4, cursor: 'pointer',
-                padding: '1px 6px', borderRadius: 8, whiteSpace: 'nowrap',
-                background: '#eff6ff', color: '#1d4ed8', border: '1px dashed #93c5fd',
-              }}
-            >＋ {pillType}</span>
+              >{label}</span>
             );
           })()}
-          {/* Current topic (Regular work) — tap to view/advance */}
-          {!isFaded && lesson.type !== 'Trial' && onWork && (
-            <span
-              role="button"
-              title={lesson.currentTopic ? `Working on: ${lesson.currentTopic} — tap to update` : 'Set current topic'}
-              onClick={e => { e.stopPropagation(); onWork(); }}
-              style={{
-                flexShrink: 0, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis',
-                fontSize: 9, fontWeight: 700, lineHeight: 1.4, cursor: 'pointer',
-                padding: '1px 6px', borderRadius: 8, whiteSpace: 'nowrap',
-                background: lesson.currentTopic ? '#f0f9ff' : '#f8fafc',
-                color: lesson.currentTopic ? '#0369a1' : '#94a3b8',
-                border: `1px ${lesson.currentTopic ? 'solid #bae6fd' : 'dashed #cbd5e1'}`,
-              }}
-            >📘 {lesson.currentTopic || 'topic'}</span>
-          )}
         </div>
         {/* Line 2 (web only): type-tag + small attendance buttons on the same row */}
         {!isTouch && (
