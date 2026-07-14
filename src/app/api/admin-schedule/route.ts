@@ -330,6 +330,19 @@ export async function GET(req: NextRequest) {
     console.error('[admin-schedule] exam fetch failed:', err);
   }
 
+  // Current "working on" topic per student (for the chip pill). Small table.
+  const currentTopicByStudent: Record<string, { subject: string; topic: string }[]> = {};
+  try {
+    const tl = await fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`);
+    for (const r of tl) {
+      const sid = r.fields['Student']?.[0];
+      if (!sid || !r.fields['Topic']) continue;
+      (currentTopicByStudent[sid] ||= []).push({ subject: r.fields['Subject'] || '', topic: r.fields['Topic'] });
+    }
+  } catch (err) {
+    console.error('[admin-schedule] topic timeline fetch failed:', err);
+  }
+
   return NextResponse.json({
     weekStart,
     weekEnd,
@@ -342,5 +355,6 @@ export async function GET(req: NextRequest) {
     examsByStudent,
     examTopicsByStudent,
     examEntriesByStudent,
+    currentTopicByStudent,
   });
 }

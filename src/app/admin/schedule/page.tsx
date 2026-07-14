@@ -74,6 +74,74 @@ interface ScheduleData {
   examsByStudent?: Record<string, string | null>;
   examTopicsByStudent?: Record<string, string | null>;
   examEntriesByStudent?: Record<string, ExamEntry[]>;
+  currentTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
+}
+
+interface TimelineRow { id: string; subject: string; topic: string; started: string | null; ended: string | null; current: boolean }
+
+function fmtTLDate(iso: string | null): string {
+  if (!iso) return '';
+  try { return new Date(iso + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'short' }); } catch { return iso; }
+}
+
+// Regular-work tab: per subject, the current topic + a box to advance to the
+// next topic, and the topic timeline (history) below.
+function ExamWorkTab({ studentId, subjects, tl, onDraft, onAdvance, onDeleteRow }: {
+  studentId: string;
+  subjects: string[];
+  tl: { loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null;
+  onDraft: (subject: string, v: string) => void;
+  onAdvance: (subject: string, topic: string) => void;
+  onDeleteRow: (rowId: string) => void;
+}) {
+  if (!tl || tl.loading) return <div style={{ color: '#94a3b8', fontSize: 13, padding: '20px 0', textAlign: 'center' }}>Loading topics…</div>;
+  return (
+    <>
+      {subjects.map(subject => {
+        const rows = tl.rows.filter(r => (r.subject || '') === subject).sort((a, b) => (b.started || '').localeCompare(a.started || ''));
+        const current = rows.find(r => r.current);
+        const history = rows.filter(r => !r.current);
+        const draft = tl.drafts[subject] ?? '';
+        const saving = tl.savingSubject === subject;
+        return (
+          <div key={subject || 'gen'} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 12 }}>
+            {subject && <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>{subject}</div>}
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Working on now</div>
+            {current ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '5px 10px' }}>📘 {current.topic}</span>
+                <span style={{ fontSize: 11.5, color: '#94a3b8' }}>since {fmtTLDate(current.started)}</span>
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 10 }}>No current topic</div>
+            )}
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input className="modal-input" placeholder={current ? 'Move to next topic…' : 'Set current topic…'} value={draft}
+                onChange={e => onDraft(subject, e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) onAdvance(subject, draft); }}
+                style={{ flex: 1 }} />
+              <button className="btn-primary" disabled={saving || !draft.trim()} onClick={() => onAdvance(subject, draft)} style={{ whiteSpace: 'nowrap' }}>
+                {saving ? '…' : current ? 'Advance' : 'Set'}
+              </button>
+            </div>
+            {history.length > 0 && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 6 }}>Timeline</div>
+                {history.map(r => (
+                  <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: '#475569', padding: '3px 0' }}>
+                    <span style={{ color: '#cbd5e1' }}>•</span>
+                    <span style={{ flex: 1 }}>{r.topic}</span>
+                    <span style={{ color: '#94a3b8', fontSize: 11.5 }}>{fmtTLDate(r.started)}{r.ended ? ` – ${fmtTLDate(r.ended)}` : ''}</span>
+                    <button onClick={() => onDeleteRow(r.id)} title="Delete" style={{ border: 'none', background: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: 13, padding: '0 2px' }}>✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
 }
 
 interface EnrichedLesson extends Lesson {
@@ -81,6 +149,7 @@ interface EnrichedLesson extends Lesson {
   studentLevel: string;
   examDate?: string | null;
   examTopics?: string | null;
+  currentTopic?: string | null;
 }
 
 // LessonModal types (ExamRecord/LessonContextData) now live in the shared
@@ -258,7 +327,7 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, onQuickLog, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; onQuickLog?: () => void; activeExamType?: string | null; slotLevel?: string }) {
+function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, onQuickLog, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onWork?: () => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; onQuickLog?: () => void; activeExamType?: string | null; slotLevel?: string }) {
   // Rescheduled-away chips (status=Rescheduled) are display-only — disable dragging
   const isRescheduledAway = lesson.status === 'Rescheduled';
   // Cross-level flag: e.g. a JC student rescheduled into a Sec slot
@@ -405,6 +474,22 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
               }}
             >＋ {activeExamType}</span>
           )}
+          {/* Current topic (Regular work) — tap to view/advance */}
+          {!isFaded && lesson.type !== 'Trial' && onWork && (
+            <span
+              role="button"
+              title={lesson.currentTopic ? `Working on: ${lesson.currentTopic} — tap to update` : 'Set current topic'}
+              onClick={e => { e.stopPropagation(); onWork(); }}
+              style={{
+                flexShrink: 0, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis',
+                fontSize: 9, fontWeight: 700, lineHeight: 1.4, cursor: 'pointer',
+                padding: '1px 6px', borderRadius: 8, whiteSpace: 'nowrap',
+                background: lesson.currentTopic ? '#f0f9ff' : '#f8fafc',
+                color: lesson.currentTopic ? '#0369a1' : '#94a3b8',
+                border: `1px ${lesson.currentTopic ? 'solid #bae6fd' : 'dashed #cbd5e1'}`,
+              }}
+            >📘 {lesson.currentTopic || 'topic'}</span>
+          )}
         </div>
         {/* Line 2 (web only): type-tag + small attendance buttons on the same row */}
         {!isTouch && (
@@ -512,7 +597,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onStudentClick, o
 }
 
 function DroppableLessonSlot({
-  id, lessons, onChipTap, onAddClick, onExamDateClick, onStudentClick,
+  id, lessons, onChipTap, onAddClick, onExamDateClick, onWork, onStudentClick,
   onMarkPresent, onMarkAbsent, onUndo, onQuickLog,
   ghostStudents, cancelledStudents, onGhostTap, savingStudents, activeExamType, slotLevel,
 }: {
@@ -522,6 +607,7 @@ function DroppableLessonSlot({
   onChipTap: (lesson: EnrichedLesson) => void;
   onAddClick: () => void;
   onExamDateClick?: (lesson: EnrichedLesson) => void;
+  onWork?: (lesson: EnrichedLesson) => void;
   onStudentClick?: (lesson: EnrichedLesson) => void;
   onMarkPresent?: (lesson: EnrichedLesson) => void;
   onMarkAbsent?: (lesson: EnrichedLesson) => void;
@@ -540,7 +626,7 @@ function DroppableLessonSlot({
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} onQuickLog={onQuickLog && l.studentId && l.type !== 'Trial' ? () => onQuickLog(l) : undefined} activeExamType={activeExamType} slotLevel={slotLevel} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onWork={onWork && l.studentId && l.type !== 'Trial' ? () => onWork(l) : undefined} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} onQuickLog={onQuickLog && l.studentId && l.type !== 'Trial' ? () => onQuickLog(l) : undefined} activeExamType={activeExamType} slotLevel={slotLevel} />
         ))}
         {ghosts.map(s => (
           <div
@@ -713,7 +799,9 @@ export default function SchedulePage() {
   // student takes gets a row; S4 EM/AM and JC2 prelims default to a Paper 1/2
   // split, others to a single paper (with an option to split).
   type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string };
-  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean } | null>(null);
+  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentSubjects: string[]; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
+  // Regular-work topic timeline for the open student (Work tab).
+  const [topicTL, setTopicTL] = useState<{ loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null>(null);
   const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -753,7 +841,10 @@ export default function SchedulePage() {
       const studentLevel = student?.level || '';
       const examDate = lesson.studentId ? (data.examsByStudent?.[lesson.studentId] ?? null) : null;
       const examTopics = lesson.studentId ? (data.examTopicsByStudent?.[lesson.studentId] ?? null) : null;
-      return { ...lesson, studentName, studentLevel, examDate, examTopics };
+      const currentTopic = lesson.studentId
+        ? ((data.currentTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
+        : null;
+      return { ...lesson, studentName, studentLevel, examDate, examTopics, currentTopic };
     });
   }, [data]);
 
@@ -1839,7 +1930,43 @@ export default function SchedulePage() {
         notes: (subjEntries.find(e => e.notes)?.notes) || '',
       };
     });
-    setExamEdit({ studentId: sid, studentName: lesson.studentName, examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false });
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentSubjects: subjects.filter(Boolean), examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'exam' });
+    loadTimeline(sid);
+  }
+  // Open the student panel straight on the Regular-work (topic) tab.
+  function openWork(lesson: EnrichedLesson) {
+    openExamEdit(lesson);
+    setExamEdit(prev => prev ? { ...prev, tab: 'work' } : prev);
+  }
+  async function loadTimeline(studentId: string) {
+    setTopicTL({ loading: true, rows: [], drafts: {}, savingSubject: null });
+    try {
+      const res = await fetch(`/api/admin-schedule/topic-timeline?studentId=${studentId}`);
+      const d = await res.json();
+      setTopicTL({ loading: false, rows: d.rows || [], drafts: {}, savingSubject: null });
+    } catch { setTopicTL({ loading: false, rows: [], drafts: {}, savingSubject: null }); }
+  }
+  async function advanceTopic(studentId: string, subject: string, topic: string) {
+    if (!topic.trim()) return;
+    setTopicTL(prev => prev ? { ...prev, savingSubject: subject } : prev);
+    try {
+      const res = await fetch('/api/admin-schedule/topic-timeline', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, subject, topic: topic.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      showToast('success', `Now on: ${topic.trim()}`);
+      setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject]: '' } } : prev);
+      await loadTimeline(studentId);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+    } catch { showToast('error', 'Failed to update topic'); setTopicTL(prev => prev ? { ...prev, savingSubject: null } : prev); }
+  }
+  async function deleteTimelineRow(studentId: string, rowId: string) {
+    try {
+      await fetch('/api/admin-schedule/topic-timeline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rowId, action: 'delete' }) });
+      await loadTimeline(studentId);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+    } catch { showToast('error', 'Failed to delete'); }
   }
   function setExamRow(i: number, patch: Partial<ExamSubjectRow>) {
     setExamEdit(prev => prev ? { ...prev, rows: prev.rows.map((r, idx) => idx === i ? { ...r, ...patch } : r) } : prev);
@@ -1950,6 +2077,7 @@ export default function SchedulePage() {
           onChipTap={(lesson) => { setModalError(''); setActionSheet({ lesson, date: dateStr, slotId: slot.id }); }}
           onAddClick={() => openAddModal(date, slot)}
           onExamDateClick={openExamEdit}
+          onWork={openWork}
           ghostStudents={ghostStudents}
           cancelledStudents={cancelledStudents}
           onStudentClick={(lesson) => {
@@ -2298,11 +2426,32 @@ export default function SchedulePage() {
             <div className="modal-header">
               <div>
                 <div className="modal-name">{examEdit.studentName}</div>
-                <div className="modal-type" style={{ color: '#64748b' }}>Exam info · {examEdit.examType}</div>
+                <div className="modal-type" style={{ color: '#64748b' }}>{examEdit.tab === 'exam' ? `Exam info · ${examEdit.examType}` : 'Regular work · topics'}</div>
               </div>
               <button className="modal-close" onClick={() => setExamEdit(null)} disabled={examEdit.saving}>✕</button>
             </div>
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: 6, padding: '0 16px', marginTop: -4 }}>
+              {(['exam', 'work'] as const).map(t => (
+                <button key={t} onClick={() => setExamEdit({ ...examEdit, tab: t })}
+                  style={{ flex: 1, padding: '9px 10px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 8,
+                    border: examEdit.tab === t ? '1px solid #1e3a5f' : '1px solid #e5e7eb',
+                    background: examEdit.tab === t ? '#1e3a5f' : '#fff', color: examEdit.tab === t ? '#fff' : '#64748b' }}>
+                  {t === 'exam' ? '📝 Exam' : '📘 Regular work'}
+                </button>
+              ))}
+            </div>
             <div className="modal-body">
+              {examEdit.tab === 'work' ? (
+                <ExamWorkTab
+                  studentId={examEdit.studentId}
+                  subjects={examEdit.studentSubjects.length ? examEdit.studentSubjects : ['']}
+                  tl={topicTL}
+                  onDraft={(subject, v) => setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject]: v } } : prev)}
+                  onAdvance={(subject, topic) => advanceTopic(examEdit.studentId, subject, topic)}
+                  onDeleteRow={(rowId) => deleteTimelineRow(examEdit.studentId, rowId)}
+                />
+              ) : (<>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: 14 }}>
                 <input type="checkbox" checked={examEdit.noExam} onChange={e => setExamEdit({ ...examEdit, noExam: e.target.checked })} />
                 No exam this season
@@ -2354,6 +2503,7 @@ export default function SchedulePage() {
                   {examEdit.saving ? 'Saving…' : 'Save'}
                 </button>
               </div>
+              </>)}
             </div>
           </div>
         </div>
