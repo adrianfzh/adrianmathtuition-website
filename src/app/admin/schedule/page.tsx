@@ -127,20 +127,20 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDel
             ) : (
               <div style={{ fontSize: 13, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 10 }}>No current topic</div>
             )}
-            <select className="modal-select" value="" style={{ marginBottom: 6 }}
-              onChange={e => { if (e.target.value) onDraft(subject, e.target.value); }}>
-              <option value="">＋ pick a topic from list…</option>
+            <select className="modal-select" value="" disabled={saving}
+              onChange={e => { if (e.target.value) onAdvance(subject, e.target.value); }}>
+              <option value="">📗 pick a topic to set as current…</option>
               {cats.flatMap(c => c.topics).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <input className="modal-input" placeholder={current ? 'Move to next topic…' : 'or type a topic…'} value={draft}
-                onChange={e => onDraft(subject, e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) onAdvance(subject, draft); }}
-                style={{ flex: 1, minWidth: 0 }} />
-              <button className="btn-primary" disabled={saving || !draft.trim()} onClick={() => onAdvance(subject, draft)} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
-                {saving ? '…' : current ? 'Advance' : 'Set'}
+            <input className="modal-input" placeholder="…or type a custom topic" value={draft}
+              onChange={e => onDraft(subject, e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) onAdvance(subject, draft); }}
+              style={{ marginTop: 6 }} />
+            {draft.trim() && (
+              <button className="btn-primary" disabled={saving} onClick={() => onAdvance(subject, draft)} style={{ width: '100%', marginTop: 6 }}>
+                {saving ? 'Setting…' : current ? `Set “${draft.trim()}” as current (was: ${current.topic})` : `Set “${draft.trim()}” as current`}
               </button>
-            </div>
+            )}
             {history.length > 0 && (
               <div style={{ marginTop: 12 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 6 }}>Timeline</div>
@@ -1950,7 +1950,7 @@ export default function SchedulePage() {
         approxP2: !!p2?.approx,
       };
     });
-    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'exam' });
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'work' });
     loadTimeline(sid);
     loadLessonLog(lesson.id);
   }
@@ -2476,7 +2476,8 @@ export default function SchedulePage() {
                 {/* This-lesson log (mastery / HW / note) — folded in from the old pencil */}
                 {lessonLog && !lessonLog.loading && (
                   <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginTop: 4 }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.05em', color: '#334155', textTransform: 'uppercase', marginBottom: 8 }}>This lesson</div>
+                    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.05em', color: '#334155', textTransform: 'uppercase' }}>This lesson</div>
+                    <div style={{ fontSize: 11.5, color: '#94a3b8', marginBottom: 10 }}>Saves mastery, note & homework to this lesson&apos;s progress record.</div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>MASTERY</div>
                     <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
                       {MASTERY_OPTS.map(o => {
@@ -2560,13 +2561,26 @@ export default function SchedulePage() {
                     ? dateBox('Exam date', row.date, 'date', row.approx, 'approx')
                     : (<>{dateBox('Paper 1 date', row.p1Date, 'p1Date', row.approxP1, 'approxP1')}{dateBox('Paper 2 date', row.p2Date, 'p2Date', row.approxP2, 'approxP2')}</>)}
                   <div className="form-group" style={{ marginTop: 10 }}>
-                    <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
-                    <input className="modal-input" placeholder="e.g. whole syllabus" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} />
-                    <select className="modal-select" value="" style={{ marginTop: 6 }}
-                      onChange={e => { const v = e.target.value; if (!v) return; const cur = (row.topics || '').trim(); setExamRow(i, { topics: cur ? `${cur}, ${v}` : v }); }}>
-                      <option value="">＋ add topic from list…</option>
-                      {topicOpts.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
+                    <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· tap to toggle · optional</span></span>
+                    {(() => {
+                      const sel = new Set((row.topics || '').split(',').map(s => s.trim()).filter(Boolean));
+                      const toggle = (t: string) => { const s = new Set(sel); if (s.has(t)) s.delete(t); else s.add(t); setExamRow(i, { topics: [...s].join(', ') }); };
+                      return (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {topicOpts.map(t => {
+                            const on = sel.has(t);
+                            return (
+                              <button key={t} type="button" onClick={() => toggle(t)}
+                                style={{ fontSize: 11.5, fontWeight: 600, padding: '5px 10px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
+                                  background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>
+                                {on ? '✓ ' : ''}{t}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                    <input className="modal-input" placeholder="+ custom topic (comma-separated)" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} style={{ marginTop: 8 }} />
                   </div>
                   <div className="form-group" style={{ marginTop: 10 }}>
                     <span className="form-label">Notes <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
@@ -4098,12 +4112,12 @@ body {
 }
 .modal-textarea:focus { border-color: #1a365d; }
 .modal-input {
-  width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0;
+  width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #e2e8f0;
   border-radius: 10px; font-size: 14px; font-family: inherit; outline: none;
 }
 .modal-input:focus { border-color: #1a365d; }
 .modal-select {
-  width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0;
+  width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #e2e8f0;
   border-radius: 10px; font-size: 14px; font-family: inherit;
   outline: none; background: white;
 }
