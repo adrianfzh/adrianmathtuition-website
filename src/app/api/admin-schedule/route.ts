@@ -274,6 +274,10 @@ export async function GET(req: NextRequest) {
   // Full per-subject/per-paper entries for the exam quick-add dialog + chip dropdown.
   const examEntriesByStudent: Record<string, { subject: string; paper: string; date: string | null; topics: string; notes: string; approx: boolean }[]> = {};
 
+  // Kick off the (independent) current-topic fetch now so it runs concurrently
+  // with the exam block below instead of adding another sequential round-trip.
+  const tlPromise = fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`).catch(() => [] as any[]);
+
   try {
     // Resolve active exam type (override from Settings, fallback to date windows)
     const settingsData = await airtableRequest(
@@ -338,11 +342,11 @@ export async function GET(req: NextRequest) {
     console.error('[admin-schedule] exam fetch failed:', err);
   }
 
-  // Current "working on" topic per student (for the chip pill). Small table.
+  // Current "working on" topic per student (for the chip pill) — resolve the
+  // concurrently-started fetch.
   const currentTopicByStudent: Record<string, { subject: string; topic: string }[]> = {};
   try {
-    const tl = await fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`);
-    for (const r of tl) {
+    for (const r of await tlPromise) {
       const sid = r.fields['Student']?.[0];
       if (!sid || !r.fields['Topic']) continue;
       (currentTopicByStudent[sid] ||= []).push({ subject: r.fields['Subject'] || '', topic: r.fields['Topic'] });

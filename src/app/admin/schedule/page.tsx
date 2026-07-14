@@ -411,7 +411,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             onClick={onStudentClick ? e => { e.stopPropagation(); onStudentClick(); } : undefined}
             style={{
               ...(onStudentClick ? { cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 } : {}),
-              flex: '1 1 auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 74,
+              flex: '1 1 100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
             }}
           >{lesson.studentName}</span>
           {/* Cross-level badge — student level differs from this slot's level */}
