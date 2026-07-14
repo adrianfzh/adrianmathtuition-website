@@ -110,7 +110,6 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDel
     <>
       {subjects.map(subject => {
         const cats = getExamTopicsForSubject(level || 'Sec 4', subject || 'E Math');
-        const listId = `tl-topics-${(subject || 'x').replace(/\s+/g, '')}`;
         const rows = tl.rows.filter(r => (r.subject || '') === subject).sort((a, b) => (b.started || '').localeCompare(a.started || ''));
         const current = rows.find(r => r.current);
         const history = rows.filter(r => !r.current);
@@ -128,15 +127,17 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDel
             ) : (
               <div style={{ fontSize: 13, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 10 }}>No current topic</div>
             )}
+            <select className="modal-select" value="" style={{ marginBottom: 6 }}
+              onChange={e => { if (e.target.value) onDraft(subject, e.target.value); }}>
+              <option value="">＋ pick a topic from list…</option>
+              {cats.flatMap(c => c.topics).map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
             <div style={{ display: 'flex', gap: 6 }}>
-              <input className="modal-input" list={listId} placeholder={current ? 'Move to next topic…' : 'Pick or type a topic…'} value={draft}
+              <input className="modal-input" placeholder={current ? 'Move to next topic…' : 'or type a topic…'} value={draft}
                 onChange={e => onDraft(subject, e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) onAdvance(subject, draft); }}
                 style={{ flex: 1, minWidth: 0 }} />
-              <datalist id={listId}>
-                {cats.flatMap(c => c.topics).map(t => <option key={t} value={t} />)}
-              </datalist>
-              <button className="btn-primary" disabled={saving || !draft.trim()} onClick={() => onAdvance(subject, draft)} style={{ whiteSpace: 'nowrap' }}>
+              <button className="btn-primary" disabled={saving || !draft.trim()} onClick={() => onAdvance(subject, draft)} style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {saving ? '…' : current ? 'Advance' : 'Set'}
               </button>
             </div>
@@ -2532,7 +2533,6 @@ export default function SchedulePage() {
               </label>
               {!examEdit.noExam && examEdit.rows.map((row, i) => {
                 const topicOpts = getExamTopicsForSubject(examEdit.studentLevel || 'Sec 4', row.subject || 'E Math').flatMap(c => c.topics);
-                const listId = `exam-topics-${i}`;
                 const dateBox = (label: string, value: string, dateKey: 'date' | 'p1Date' | 'p2Date', approxVal: boolean, approxKey: 'approx' | 'approxP1' | 'approxP2') => (
                   <div className="form-group" style={{ marginTop: 10 }}>
                     <span className="form-label">{label}</span>
@@ -2561,8 +2561,12 @@ export default function SchedulePage() {
                     : (<>{dateBox('Paper 1 date', row.p1Date, 'p1Date', row.approxP1, 'approxP1')}{dateBox('Paper 2 date', row.p2Date, 'p2Date', row.approxP2, 'approxP2')}</>)}
                   <div className="form-group" style={{ marginTop: 10 }}>
                     <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
-                    <input className="modal-input" list={listId} placeholder="Pick from list or type…" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} />
-                    <datalist id={listId}>{topicOpts.map(t => <option key={t} value={t} />)}</datalist>
+                    <input className="modal-input" placeholder="e.g. whole syllabus" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} />
+                    <select className="modal-select" value="" style={{ marginTop: 6 }}
+                      onChange={e => { const v = e.target.value; if (!v) return; const cur = (row.topics || '').trim(); setExamRow(i, { topics: cur ? `${cur}, ${v}` : v }); }}>
+                      <option value="">＋ add topic from list…</option>
+                      {topicOpts.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
                   </div>
                   <div className="form-group" style={{ marginTop: 10 }}>
                     <span className="form-label">Notes <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
@@ -3917,6 +3921,8 @@ body {
   width: 100%; max-width: 400px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.25);
   overflow: hidden;
+  max-height: 92dvh;
+  display: flex; flex-direction: column;
 }
 .modal-header {
   display: flex; align-items: flex-start;
@@ -3932,7 +3938,7 @@ body {
   cursor: pointer; flex-shrink: 0; color: #64748b;
   display: flex; align-items: center; justify-content: center;
 }
-.modal-body { padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+.modal-body { padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; min-height: 0; -webkit-overflow-scrolling: touch; }
 .modal-row { display: flex; align-items: center; gap: 12px; font-size: 15px; }
 .modal-label {
   font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
