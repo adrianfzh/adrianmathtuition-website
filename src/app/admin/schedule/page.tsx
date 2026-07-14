@@ -4112,12 +4112,15 @@ body {
 }
 .modal-textarea:focus { border-color: #1a365d; }
 .modal-input {
-  width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #e2e8f0;
+  width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #e2e8f0;
   border-radius: 10px; font-size: 14px; font-family: inherit; outline: none;
+  -webkit-appearance: none; appearance: none;
 }
 .modal-input:focus { border-color: #1a365d; }
+/* Date inputs on iOS have a large intrinsic min-width; force them to fit the box. */
+input.modal-input[type="date"] { display: block; }
 .modal-select {
-  width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #e2e8f0;
+  width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1.5px solid #e2e8f0;
   border-radius: 10px; font-size: 14px; font-family: inherit;
   outline: none; background: white;
 }
