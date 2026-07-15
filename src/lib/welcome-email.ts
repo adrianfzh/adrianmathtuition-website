@@ -21,9 +21,10 @@ function formatDateLong(iso: string): string {
 }
 
 export function buildWelcomeEmailHtml(d: WelcomeEmailData): { subject: string; html: string } {
-  const studentFirst = d.studentName.trim().split(/\s+/)[0];
-  const parentFirst = d.parentName.trim().split(/\s+/)[0];
-  const subject = `Welcome to Adrian's Math Tuition, ${studentFirst}! 🎉`;
+  // Use the full name + they/them — slicing a "first name" wrongly used the
+  // surname for Chinese names (surname-first) and doesn't fit Malay/Indian names.
+  const name = d.studentName.trim();
+  const subject = `Welcome to Adrian's Math Tuition! 🎉`;
 
   const section = (title: string, body: string) => `
     <tr><td style="padding:0 32px 22px">
@@ -40,9 +41,9 @@ export function buildWelcomeEmailHtml(d: WelcomeEmailData): { subject: string; h
           <p style="margin:0;font-size:20px;font-weight:800;color:#fdf6e3;letter-spacing:0.02em">ADRIAN'S <span style="font-weight:400;opacity:0.85">math tuition</span></p>
         </td></tr>
         <tr><td style="padding:30px 32px 22px">
-          <p style="margin:0 0 12px;font-size:22px;font-weight:700;color:#1e3a5f">Welcome aboard, ${studentFirst}! 🎉</p>
+          <p style="margin:0 0 12px;font-size:22px;font-weight:700;color:#1e3a5f">Welcome aboard, ${name}! 🎉</p>
           <p style="margin:0;font-size:15px;line-height:1.65;color:#33415c">
-            Hi ${parentFirst}, thank you for enrolling <strong>${d.studentName}</strong> — I'm really looking forward to working together.
+            Hi there, thank you for enrolling <strong>${name}</strong> — I'm really looking forward to working together.
             Here's everything you need to know to get started.
           </p>
         </td></tr>
@@ -56,12 +57,12 @@ export function buildWelcomeEmailHtml(d: WelcomeEmailData): { subject: string; h
           </table>
         </td></tr>
         ${section('What to bring', `Just writing materials and a calculator — all worksheets and learning materials are provided, with <strong>no material fees</strong>.`)}
-        ${section('Questions between lessons', `${studentFirst} is welcome (and encouraged!) to WhatsApp me questions anytime — stuck on homework, confused by something from school, anything. <a href="${WA_LINK}" style="color:#1e3a5f;font-weight:600">Message me at ${WHATSAPP}</a>.`)}
+        ${section('Questions between lessons', `They're welcome (and encouraged!) to WhatsApp me questions anytime — stuck on homework, confused by something from school, anything. <a href="${WA_LINK}" style="color:#1e3a5f;font-weight:600">Message me at ${WHATSAPP}</a>.`)}
         ${section('If a lesson is missed', `No worries — we'll arrange a replacement lesson at any other available time slot. Just drop me a WhatsApp message.`)}
         ${section('Payment', `Invoices are emailed monthly (around the middle of the month) and payable by <strong>PayNow to ${WHATSAPP.replace(/ /g, '')}</strong>. Your first invoice will arrive separately.`)}
         <tr><td style="padding:6px 32px 30px">
           <p style="margin:0;font-size:15px;line-height:1.65;color:#33415c">
-            If there's anything at all — exam dates, topics ${studentFirst} is struggling with, schedule questions — just WhatsApp me.
+            If there's anything at all — exam dates, topics they're struggling with, schedule questions — just WhatsApp me.
             See you in class!<br/><br/>
             <strong style="color:#1e3a5f">Adrian</strong><br/>
             <span style="font-size:13.5px;color:#8a94a6">Adrian's Math Tuition · ${WHATSAPP} · adrianmathtuition.com</span>
