@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { sendTelegram } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
 
@@ -32,12 +33,21 @@ function monthKey(label: string): number {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { studentId, effectiveDate } = await req.json().catch(() => ({}));
+  const { studentId, effectiveDate, reason, voidUnsent, emailParent } = await req.json().catch(() => ({}));
   if (!studentId || !/^\d{4}-\d{2}-\d{2}$/.test(effectiveDate || '')) {
     return NextResponse.json({ error: 'studentId and effectiveDate (YYYY-MM-DD) required' }, { status: 400 });
   }
 
-  const result = { enrollmentsEnded: 0, lessonsDeleted: 0, studentInactive: false, invoicesToReview: [] as any[] };
+  const result = { enrollmentsEnded: 0, lessonsDeleted: 0, studentInactive: false, invoicesVoided: 0, invoicesToReview: [] as any[], emailSent: false };
+
+  // Student record (name / parent email / existing notes) for the notes append, email, and summary.
+  let studentName = '', parentEmail = '', existingNotes = '';
+  try {
+    const s = await airtableRequest('Students', `/${studentId}`);
+    studentName = s.fields['Student Name'] || '';
+    parentEmail = s.fields['Parent Email'] || '';
+    existingNotes = s.fields['Notes'] || '';
+  } catch { /* non-fatal */ }
 
   // 1. End all Active enrollments (linked-record gotcha: filter by Status, match student in JS)
   const enr = await airtableRequestAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Status`);
@@ -60,20 +70,68 @@ export async function POST(req: NextRequest) {
   }
   result.lessonsDeleted = hisLessons.length;
 
-  // 3. Student -> Inactive
+  // 3. Student -> Inactive, and log the discontinue reason to Notes.
+  const stamp = `[Discontinued ${effectiveDate}${reason ? ` — ${String(reason).trim()}` : ''}]`;
+  const newNotes = existingNotes ? `${existingNotes}\n${stamp}` : stamp;
   await airtableRequest('Students', `/${studentId}`, {
     method: 'PATCH',
-    body: JSON.stringify({ fields: { Status: 'Inactive' } }),
+    body: JSON.stringify({ fields: { Status: 'Inactive', Notes: newNotes } }),
   });
   result.studentInactive = true;
 
-  // 4. Live invoices for effective month onwards -> report for review
+  // 4. Live invoices for the effective month onwards.
+  //    Unsent (Draft/Approved) → auto-void if requested. Sent/Overdue → report only
+  //    (the parent already has them; voiding may need a message).
   const effKey = monthKey(`${MONTHS[new Date(effectiveDate + 'T00:00:00Z').getUTCMonth()]} ${new Date(effectiveDate + 'T00:00:00Z').getUTCFullYear()}`);
   const inv = await airtableRequestAll('Invoices',
     `?filterByFormula=${encodeURIComponent(`AND({Status}!='Voided',NOT({Is Paid}))`)}&fields[]=Student&fields[]=Month&fields[]=Status&fields[]=Final Amount&fields[]=Invoice Type`);
-  result.invoicesToReview = (inv.records || [])
-    .filter((r: any) => r.fields['Student']?.[0] === studentId && monthKey(r.fields['Month']) >= effKey)
-    .map((r: any) => ({ id: r.id, month: r.fields['Month'], status: r.fields['Status'], amount: r.fields['Final Amount'], type: r.fields['Invoice Type'] }));
+  const mineInv = (inv.records || []).filter((r: any) => r.fields['Student']?.[0] === studentId && monthKey(r.fields['Month']) >= effKey);
+  for (const r of mineInv) {
+    const status = r.fields['Status'];
+    const unsent = status === 'Draft' || status === 'Approved';
+    if (voidUnsent && unsent) {
+      try {
+        await airtableRequest('Invoices', `/${r.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Status: 'Voided' } }) });
+        result.invoicesVoided++;
+        continue;
+      } catch { /* fall through to report */ }
+    }
+    result.invoicesToReview.push({ id: r.id, month: r.fields['Month'], status, amount: r.fields['Final Amount'], type: r.fields['Invoice Type'] });
+  }
+
+  // 5. Optional farewell email to the parent (opt-in).
+  if (emailParent && parentEmail && process.env.RESEND_API_KEY) {
+    try {
+      const first = studentName.trim().split(/\s+/)[0] || 'your child';
+      const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:#33415c;line-height:1.6;max-width:560px;margin:0 auto;padding:16px">
+        <p style="font-size:18px;font-weight:700;color:#1e3a5f">Thank you</p>
+        <p>Thank you for the time we've had teaching <strong>${studentName}</strong> at Adrian's Math Tuition.</p>
+        <p>${first}'s last lesson with us is before <strong>${effectiveDate}</strong>. It's been a real pleasure, and ${first} is always welcome back — just message me anytime.</p>
+        <p>Wishing ${first} all the very best.</p>
+        <p style="margin-top:18px"><strong style="color:#1e3a5f">Adrian</strong><br/><span style="font-size:13px;color:#8a94a6">Adrian's Math Tuition · 9139 7985 · adrianmathtuition.com</span></p>
+      </body></html>`;
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: "Adrian's Math Tuition <hello@adrianmathtuition.com>", to: parentEmail, subject: `Thank you from Adrian's Math Tuition`, html }),
+      });
+      result.emailSent = res.ok;
+    } catch { /* non-fatal */ }
+  }
+
+  // 6. Telegram summary to admin (silent to parents).
+  try {
+    const reviewLine = result.invoicesToReview.length
+      ? `\n⚠️ Review ${result.invoicesToReview.length} sent invoice(s): ${result.invoicesToReview.map((i: any) => `${i.month} $${i.amount} (${i.status})`).join(', ')}`
+      : '';
+    await sendTelegram(
+      `⏹ <b>Discontinued: ${studentName}</b>\n` +
+      `Effective: ${effectiveDate}${reason ? `\nReason: ${String(reason).trim()}` : ''}\n` +
+      `Enrolments ended: ${result.enrollmentsEnded} · Future lessons removed: ${result.lessonsDeleted}\n` +
+      `Invoices auto-voided: ${result.invoicesVoided}${result.emailSent ? '\n📧 Farewell email sent to parent' : ''}` +
+      reviewLine
+    );
+  } catch { /* non-fatal */ }
 
   return NextResponse.json({ success: true, ...result });
 }

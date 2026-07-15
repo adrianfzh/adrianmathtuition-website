@@ -131,21 +131,24 @@ export default function StudentProfilePage() {
 
   // Discontinue student — one atomic action: end Active enrollments, delete future
   // Scheduled Regular lessons, set Inactive; reports live invoices for review.
-  const [discModal, setDiscModal] = useState<{ date: string; saving: boolean } | null>(null);
-  const [discResult, setDiscResult] = useState<{ enrollmentsEnded: number; lessonsDeleted: number; invoicesToReview: { id: string; month: string; status: string; amount: number }[] } | null>(null);
+  const [discModal, setDiscModal] = useState<{ date: string; reason: string; voidUnsent: boolean; emailParent: boolean; saving: boolean } | null>(null);
+  const [discResult, setDiscResult] = useState<{ enrollmentsEnded: number; lessonsDeleted: number; invoicesVoided?: number; emailSent?: boolean; invoicesToReview: { id: string; month: string; status: string; amount: number }[] } | null>(null);
   async function discontinue() {
     if (!discModal || discModal.saving) return;
     setDiscModal({ ...discModal, saving: true });
     try {
       const r = await fetch('/api/admin/student-discontinue', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, effectiveDate: discModal.date }),
+        body: JSON.stringify({ studentId, effectiveDate: discModal.date, reason: discModal.reason.trim() || undefined, voidUnsent: discModal.voidUnsent, emailParent: discModal.emailParent }),
       });
       const d = await r.json();
       if (!r.ok) { showToast('err', d.error || 'Discontinue failed'); setDiscModal({ ...discModal, saving: false }); return; }
       setDiscResult(d);
       setDiscModal(null);
-      showToast('ok', `Discontinued — ${d.enrollmentsEnded} enrollment(s) ended, ${d.lessonsDeleted} future lesson(s) removed`);
+      const bits = [`${d.enrollmentsEnded} enrolment(s) ended`, `${d.lessonsDeleted} lesson(s) removed`];
+      if (d.invoicesVoided) bits.push(`${d.invoicesVoided} invoice(s) voided`);
+      if (d.emailSent) bits.push('email sent');
+      showToast('ok', `Discontinued — ${bits.join(', ')}`);
       fetchProfile();
     } catch { showToast('err', 'Discontinue failed'); setDiscModal(prev => prev ? { ...prev, saving: false } : prev); }
   }
@@ -547,7 +550,7 @@ export default function StudentProfilePage() {
                       style={{ fontSize: 12, fontWeight: 600, color: '#0369a1', background: '#fff', border: '1px solid #bae6fd', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
                       🏖 Holiday opt-out…
                     </button>
-                    <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), saving: false })}
+                    <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), reason: '', voidUnsent: true, emailParent: false, saving: false })}
                       style={{ fontSize: 12, fontWeight: 600, color: '#b91c1c', background: '#fff', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
                       ⏹ Discontinue…
                     </button>
@@ -972,12 +975,26 @@ export default function StudentProfilePage() {
           </div>
           <Label>No regular lessons from</Label>
           <input type="date" style={input} value={discModal.date} onChange={e => setDiscModal({ ...discModal, date: e.target.value })} />
+
+          <div style={{ marginTop: 12 }}><Label>Reason <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></Label></div>
+          <input style={input} placeholder="e.g. moving overseas, stopping tuition" value={discModal.reason} onChange={e => setDiscModal({ ...discModal, reason: e.target.value })} />
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#334155', cursor: 'pointer', marginTop: 12 }}>
+            <input type="checkbox" checked={discModal.voidUnsent} onChange={e => setDiscModal({ ...discModal, voidUnsent: e.target.checked })} />
+            Auto-void unsent invoices (Draft / Approved) from that month on
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#334155', cursor: 'pointer', marginTop: 8 }}>
+            <input type="checkbox" checked={discModal.emailParent} onChange={e => setDiscModal({ ...discModal, emailParent: e.target.checked })} />
+            Email the parent a short thank-you / confirmation
+          </label>
+
           <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 12, lineHeight: 1.7, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px' }}>
             This will:<br />
             • End all <b>Active enrollments</b> (End Date = day before)<br />
             • Delete future <b>Scheduled Regular</b> lessons from that date<br />
-            • Set the student to <b>Inactive</b><br />
-            • List any live invoices from that month for your review (not auto-voided)<br />
+            • Set the student to <b>Inactive</b> and log the reason<br />
+            • {discModal.voidUnsent ? 'Void unsent invoices; ' : ''}list any <b>sent</b> invoices for your review<br />
+            • Send you a Telegram summary{discModal.emailParent ? ' + email the parent' : ''}<br />
             <span style={{ color: '#16a34a' }}>Makeup / rescheduled lessons and history are kept.</span>
           </div>
           <div style={modalActions}>
