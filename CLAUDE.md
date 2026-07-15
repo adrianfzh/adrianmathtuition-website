@@ -243,9 +243,10 @@ SET (2026-07-16) to `6580164142` — Adrian's real SG WhatsApp Business sender �
 (Production + Preview dev) and `.env.local`. ⚠ NOT the Twilio sandbox `14155238886` (that sender
 is OFFLINE; the bot's `TWILIO_WHATSAPP_FROM` fly secret was also updated to the SG number).
 
-⚠ **Bot side committed but NOT deployed** (commit `0d00e7a` in the bot repo) — `fly deploy` needed
-before students can actually sign in. Phase 2 (planned): recommended-for-you topics from lesson
-progress, homework pickup, exam-season packs. Phase 3: print → photograph → AI-mark loop.
+✅ **Bot side DEPLOYED** (2026-07-16, rebased as `d0cb2c0` after reconciling with Mac B's
+commits) — the full sign-in loop is live end-to-end on the preview. Phase 2 (planned):
+recommended-for-you topics from lesson progress, homework pickup, exam-season packs.
+Phase 3: print → photograph → AI-mark loop.
 
 ## June 2026 Revision Sprint
 
