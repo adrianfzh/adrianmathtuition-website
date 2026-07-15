@@ -226,6 +226,10 @@ to their own level.** No anonymous browsing.
    `x-kiosk-student` token and 403 on a non-entitled level — enforced server-side, admin bypasses.
 5. **Print cap 4 worksheets/day per student** (SGT day) via POST `/api/kiosk/print-log` (gates
    `window.print()`, logs to `kiosk_prints`). GET returns `{used, remaining}` for the "n/4" chip.
+5b. **Deterministic daily draw** — the worksheet is seeded on `SGT-date|level|topic|tier`
+   (seeded Fisher–Yates over an `.order('id')`-pinned pool), so students printing the same
+   topic+tier the same day get the SAME sheet (they can discuss); reprints are identical;
+   counts slice one shared order (print 8 then 15 → Q9–15 are new). Rotates at SGT midnight.
 6. **Answers always print inline** — one `[Ans: …]` line closing each question after the working
    space, right-aligned, orange `#843C0C`, KaTeX coloured too (STYLE.md house rule). No answers-at-
    back section, no toggle. Name line prefills the student's name.

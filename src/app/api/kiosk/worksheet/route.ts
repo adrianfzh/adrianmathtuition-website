@@ -17,12 +17,38 @@ const MAX_COUNT = 20;
 // Cap the pool we shuffle over — enough randomness without pulling the whole bank.
 const POOL_CAP = 120;
 
-// Fisher–Yates shuffle (unbiased) — randomisation happens in JS after fetching
-// a capped verified pool, so the bank order can't be inferred.
-function shuffle<T>(arr: T[]): T[] {
+// DETERMINISTIC daily draw (Adrian, 2026-07-16): two students printing the same
+// level+topic+tier on the same SGT day get the SAME sheet — so they can discuss.
+// Counts slice one shared order, so printing 8 then 15 extends (Q9–15 are new),
+// and a reprint is an identical copy. Seed rotates at SGT midnight.
+function sgtDate(): string {
+  return new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10);
+}
+// FNV-1a string hash → 32-bit seed.
+function hashSeed(s: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+// mulberry32 — tiny deterministic PRNG.
+function mulberry32(seed: number): () => number {
+  let a = seed;
+  return () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// Fisher–Yates with a seeded PRNG — same seed → same order.
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const rand = mulberry32(seed);
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
@@ -100,6 +126,7 @@ export async function GET(req: NextRequest) {
     .is('deleted_at', null)
     .not('solution', 'is', null)
     .or('has_image.eq.false,figure_url.not.is.null')
+    .order('id') // pin pool order — Postgres gives no default ordering, and the daily draw must be reproducible
     .limit(POOL_CAP);
   if (tier) bankQuery = bankQuery.in('difficulty', TIER_DIFFICULTY_VALUES[tier]);
   // ONE STORE: the old practice_questions pool was migrated into the bank
@@ -122,7 +149,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const picked = shuffle(items).slice(0, count);
+  const picked = seededShuffle(items, hashSeed(`${sgtDate()}|${level}|${topic}|${tier ?? 'mixed'}`)).slice(0, count);
   const questions = picked.map((r) => ({
     id: r.id,
     markdown: r.markdown,
