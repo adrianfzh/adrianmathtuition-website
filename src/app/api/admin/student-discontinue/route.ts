@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     try {
       const first = studentName.trim().split(/\s+/)[0] || 'your child';
       const disregard = voidedSentMonths.length
-        ? `<p style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px"><strong>Please disregard the invoice we sent for ${[...new Set(voidedSentMonths)].join(' and ')}</strong> — it has been cancelled, as it covered lessons from ${effectiveDate} that won't take place. There's nothing owed for it.</p>`
+        ? `<p style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px"><strong>Please disregard the invoice issued for ${[...new Set(voidedSentMonths)].join(' and ')}.</strong> It has been cancelled, as it covered lessons from ${effectiveDate} that will no longer take place, and no payment is required.</p>`
         : '';
       const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:#33415c;line-height:1.6;max-width:560px;margin:0 auto;padding:16px">
         <p style="font-size:18px;font-weight:700;color:#1e3a5f">Thank you</p>
