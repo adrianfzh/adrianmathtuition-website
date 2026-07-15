@@ -141,11 +141,13 @@ export async function getDashboardData(account: PortalAccount): Promise<Dashboar
     supabase
       .from('student_attempts')
       .select('id', { count: 'exact', head: true })
+      .eq('user_id', account.id)
       .gte('attempted_at', weekAgo)
       .then(r => r.count || 0),
     supabase
       .from('student_attempts')
       .select('attempted_at, marking_verdict, attempted_via')
+      .eq('user_id', account.id)
       .order('attempted_at', { ascending: false })
       .limit(5)
       .then(r => (r.data || []).map(a => ({

@@ -11,7 +11,7 @@ export async function GET() {
 
   const [{ data: account }, { data: attempts }] = await Promise.all([
     supabase.from('portal_accounts').select('*').eq('id', user.id).single(),
-    supabase.from('student_attempts').select('*').order('attempted_at', { ascending: true }),
+    supabase.from('student_attempts').select('*').eq('user_id', user.id).order('attempted_at', { ascending: true }),
   ]);
 
   const payload = {

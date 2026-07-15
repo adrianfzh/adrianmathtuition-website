@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
   const { data: attempts } = await supabase
     .from('student_attempts')
     .select('id, attempted_at, attempted_via, question_id, marking_verdict, marking_json')
+    .eq('user_id', user.id)
     .order('attempted_at', { ascending: false })
     .limit(limit);
 

@@ -20,7 +20,10 @@ export function daysAgo(n: number): string {
 
 export function verifyAdminAuth(req: NextRequest): boolean {
   const pw = process.env.ADMIN_PASSWORD;
-  if (!pw) return true;
+  // Fail CLOSED when no admin password is configured. Previously returned true
+  // here, which meant an unset/blank ADMIN_PASSWORD (bad deploy, cleared env)
+  // silently opened every admin + admin-gated portal route to the public.
+  if (!pw) return false;
   // Preferred: signed httpOnly session cookie (see lib/admin-session.ts —
   // carries no secret, JS-unreadable). Legacy: raw-password Bearer header,
   // kept for the bot/tools and admin pages not yet migrated.
