@@ -26,6 +26,16 @@ const LEVELS: { key: string; label: string }[] = [
   { key: 'JC2', label: 'H2 Math' },
 ];
 
+// Notes exist for more levels than practice (S1/S2 too). Slugs match
+// NOTE_SLUG_TO_LEVELS in src/lib/notes-list.ts.
+const NOTE_LEVELS: { key: string; label: string }[] = [
+  { key: 's1', label: 'Sec 1' },
+  { key: 's2', label: 'Sec 2' },
+  { key: 'em', label: 'E Math' },
+  { key: 'am', label: 'A Math' },
+  { key: 'jc', label: 'H2 Math' },
+];
+
 const COUNTS = [5, 8, 12, 15];
 
 // Difficulty tiers. 'mixed' (default) sends no tier filter → draws from the whole
@@ -50,6 +60,14 @@ export default function KioskClient() {
   const [password, setPassword] = useState('');
   const [setupErr, setSetupErr] = useState('');
   const [setupBusy, setSetupBusy] = useState(false);
+
+  // Mode: quick practice worksheet (default) or browse/print notes.
+  const [mode, setMode] = useState<'practice' | 'notes'>('practice');
+
+  // Notes browser
+  const [noteLevel, setNoteLevel] = useState<string>('am');
+  const [notes, setNotes] = useState<{ id: string; title: string; pdfUrl: string }[] | null>(null);
+  const [notesBusy, setNotesBusy] = useState(false);
 
   // Picker
   const [level, setLevel] = useState<string>('AM');
@@ -106,6 +124,19 @@ export default function KioskClient() {
     setSelectedTopic(null);
     loadTopics(level);
   }, [auth, level, loadTopics]);
+
+  // ── Fetch notes whenever the notes level changes (in notes mode) ─────
+  useEffect(() => {
+    if (auth !== 'ready' || mode !== 'notes') return;
+    let alive = true;
+    setNotesBusy(true);
+    fetch(`/api/kiosk/notes?level=${encodeURIComponent(noteLevel)}`)
+      .then((r) => r.json().catch(() => ({})))
+      .then((j) => { if (alive) setNotes(Array.isArray(j.notes) ? j.notes : []); })
+      .catch(() => { if (alive) setNotes([]); })
+      .finally(() => { if (alive) setNotesBusy(false); });
+    return () => { alive = false; };
+  }, [auth, mode, noteLevel]);
 
   // ── Print once the worksheet DOM is committed ────────────────────────
   useEffect(() => {
@@ -210,9 +241,54 @@ export default function KioskClient() {
           <div className="picker">
             <header className="picker-head">
               <div className="brand">AdrianMath Tuition</div>
-              <div className="brand-sub">Print a practice worksheet</div>
+              <div className="brand-sub">{mode === 'notes' ? 'Open and print revision notes' : 'Print a practice worksheet'}</div>
             </header>
 
+            {/* Mode toggle */}
+            <div className="segmented" role="tablist" aria-label="Mode" style={{ marginBottom: 14 }}>
+              <button role="tab" aria-selected={mode === 'practice'}
+                className={`seg ${mode === 'practice' ? 'seg-on' : ''}`}
+                onClick={() => { setMode('practice'); setSelectedTopic(null); }}>
+                ✏️ Practice
+              </button>
+              <button role="tab" aria-selected={mode === 'notes'}
+                className={`seg ${mode === 'notes' ? 'seg-on' : ''}`}
+                onClick={() => setMode('notes')}>
+                📄 Notes
+              </button>
+            </div>
+
+            {/* ── NOTES MODE ── */}
+            {mode === 'notes' && (
+              <>
+                <div className="segmented" role="tablist" aria-label="Notes level">
+                  {NOTE_LEVELS.map((l) => (
+                    <button key={l.key} role="tab" aria-selected={noteLevel === l.key}
+                      className={`seg ${noteLevel === l.key ? 'seg-on' : ''}`}
+                      onClick={() => setNoteLevel(l.key)}>
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+                <section className="topics-wrap">
+                  {notesBusy && <div className="muted pad">Loading notes…</div>}
+                  {!notesBusy && notes && notes.length === 0 && (
+                    <div className="muted pad">No notes for this level yet.</div>
+                  )}
+                  <div className="topic-grid">
+                    {(notes ?? []).map((n) => (
+                      <button key={n.id} className="topic-tile" onClick={() => window.open(n.pdfUrl, '_blank')}>
+                        <span className="topic-name">{n.title}</span>
+                        <span className="topic-count">Tap to open · print</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
+
+            {/* ── PRACTICE MODE (unchanged) ── */}
+            {mode === 'practice' && (<>
             {/* Level segmented control */}
             <div className="segmented" role="tablist" aria-label="Level">
               {LEVELS.map((l) => (
@@ -300,6 +376,7 @@ export default function KioskClient() {
                 </button>
               </section>
             )}
+            </>)}
           </div>
         )}
 

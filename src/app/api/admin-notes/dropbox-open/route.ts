@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyKioskAuth } from '@/lib/kiosk-session';
 import { getTemporaryLink, dropboxConfigured } from '@/lib/dropbox';
 
 export const runtime = 'nodejs';
@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 // so links opened from /admin/notes are never stale. Admin-auth via session cookie
 // (the tab is opened same-origin from the notes page).
 export async function GET(req: NextRequest) {
-  if (!verifyAdminAuth(req)) {
+  if (!verifyKioskAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   if (!dropboxConfigured()) {
