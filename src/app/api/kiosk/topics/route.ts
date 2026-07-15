@@ -4,12 +4,17 @@
 // Auth: valid kiosk device cookie OR admin. 401 otherwise.
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { isKioskOpen } from '@/lib/kiosk-config';
 import { verifyKioskAuth, KIOSK_LEVELS } from '@/lib/kiosk-session';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
   if (!verifyKioskAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!verifyAdminAuth(req) && !(await isKioskOpen())) {
+    return NextResponse.json({ error: 'Kiosk closed', closed: true }, { status: 403 });
+  }
 
   const level = new URL(req.url).searchParams.get('level') || '';
   const cfg = KIOSK_LEVELS[level];

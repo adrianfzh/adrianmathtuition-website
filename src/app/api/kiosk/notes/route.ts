@@ -4,12 +4,18 @@
 // bank metadata are involved — notes are Adrian's own PDFs.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyKioskAuth } from '@/lib/kiosk-session';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { isKioskOpen } from '@/lib/kiosk-config';
 import { listNotesForLevel, NOTE_SLUG_TO_LEVELS } from '@/lib/notes-list';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
   if (!verifyKioskAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Master switch: closed → serve nothing (admin bypasses).
+  if (!verifyAdminAuth(req) && !(await isKioskOpen())) {
+    return NextResponse.json({ error: 'Kiosk closed', closed: true }, { status: 403 });
+  }
 
   const level = (new URL(req.url).searchParams.get('level') || '').toLowerCase();
   if (!NOTE_SLUG_TO_LEVELS[level]) {

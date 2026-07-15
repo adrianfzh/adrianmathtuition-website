@@ -61,6 +61,9 @@ export default function KioskClient() {
   const [setupErr, setSetupErr] = useState('');
   const [setupBusy, setSetupBusy] = useState(false);
 
+  // Kiosk open/closed (master switch + hours). null = still checking.
+  const [openState, setOpenState] = useState<{ open: boolean; adminBypass: boolean; nextOpen: string | null } | null>(null);
+
   // Mode: quick practice worksheet (default) or browse/print notes.
   const [mode, setMode] = useState<'practice' | 'notes'>('practice');
 
@@ -101,6 +104,18 @@ export default function KioskClient() {
       alive = false;
     };
   }, []);
+
+  // ── Open/closed status (once authorised; re-check every 5 min) ───────
+  useEffect(() => {
+    if (auth !== 'ready') return;
+    let alive = true;
+    const check = () => fetch('/api/kiosk/status')
+      .then(r => r.json()).then(j => { if (alive) setOpenState({ open: !!j.open, adminBypass: !!j.adminBypass, nextOpen: j.nextOpen ?? null }); })
+      .catch(() => { if (alive) setOpenState({ open: true, adminBypass: false, nextOpen: null }); }); // fail open on network error
+    check();
+    const id = setInterval(check, 5 * 60 * 1000);
+    return () => { alive = false; clearInterval(id); };
+  }, [auth]);
 
   // ── Fetch topics whenever level changes (once authorised) ────────────
   const loadTopics = useCallback(async (lvl: string) => {
@@ -237,8 +252,24 @@ export default function KioskClient() {
           </div>
         )}
 
-        {auth === 'ready' && (
+        {auth === 'ready' && openState && !openState.open && (
+          <div className="picker" style={{ textAlign: 'center', paddingTop: 60 }}>
+            <div className="brand">AdrianMath Tuition</div>
+            <div style={{ fontSize: 64, margin: '24px 0' }}>🌙</div>
+            <h1 style={{ color: '#1c3a5e', fontSize: 30, margin: '0 0 10px' }}>Centre closed</h1>
+            <p style={{ color: '#66788d', fontSize: 18 }}>
+              {openState.nextOpen ? <>Come back <strong>{openState.nextOpen}</strong>.</> : 'Please come back during opening hours.'}
+            </p>
+          </div>
+        )}
+
+        {auth === 'ready' && openState && openState.open && (
           <div className="picker">
+            {openState.adminBypass && (
+              <div style={{ background: '#fff3cd', border: '1px solid #ffe08a', color: '#7a5b00', borderRadius: 10, padding: '8px 12px', margin: '0 0 12px', fontSize: 13, textAlign: 'center' }}>
+                ⚠ Kiosk is closed to students — you're viewing it as admin.
+              </div>
+            )}
             <header className="picker-head">
               <div className="brand">AdrianMath Tuition</div>
               <div className="brand-sub">{mode === 'notes' ? 'Open and print revision notes' : 'Print a practice worksheet'}</div>
