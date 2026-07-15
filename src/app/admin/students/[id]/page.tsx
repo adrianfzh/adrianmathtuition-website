@@ -520,41 +520,27 @@ export default function StudentProfilePage() {
                   <button style={btnGhost} onClick={askForReview} disabled={reviewBusy}>{reviewBusy ? 'Preparing…' : '⭐ Ask for review'}</button>
                 </div>
               </div>
-              <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                  <a href="/admin/schedule" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>🗓 Schedule →</a>
-                  <button
-                    style={btnGhost}
-                    disabled={inviteState === 'sending'}
-                    onClick={async () => {
-                      if (!confirm(`Email a portal invite to ${s.name}'s parent?`)) return;
-                      setInviteState('sending');
-                      try {
-                        const r = await fetch('/api/portal/invite', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ airtableStudentId: studentId }),
-                        });
-                        const d = await r.json();
-                        alert(r.ok ? `✅ Invite sent to ${d.sentTo}` : `❌ ${d.error || 'Failed'}`);
-                      } catch { alert('❌ Network error'); }
-                      setInviteState('idle');
-                    }}
-                  >
-                    {inviteState === 'sending' ? 'Sending…' : '🎓 Send portal invite'}
-                  </button>
-                </div>
+              <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
+                <a href="/admin/schedule" style={actionBtn()}>🗓 Schedule</a>
+                <button style={actionBtn()} disabled={inviteState === 'sending'}
+                  onClick={async () => {
+                    if (!confirm(`Email a portal invite to ${s.name}'s parent?`)) return;
+                    setInviteState('sending');
+                    try {
+                      const r = await fetch('/api/portal/invite', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ airtableStudentId: studentId }) });
+                      const d = await r.json();
+                      alert(r.ok ? `✅ Invite sent to ${d.sentTo}` : `❌ ${d.error || 'Failed'}`);
+                    } catch { alert('❌ Network error'); }
+                    setInviteState('idle');
+                  }}>
+                  {inviteState === 'sending' ? 'Sending…' : '🎓 Portal invite'}
+                </button>
                 {s.status !== 'Inactive' && (
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={openHoliday}
-                      style={{ fontSize: 12, fontWeight: 600, color: '#0369a1', background: '#fff', border: '1px solid #bae6fd', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
-                      🏖 Holiday opt-out…
-                    </button>
-                    <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), reason: '', voidUnsent: true, emailParent: true, saving: false })}
-                      style={{ fontSize: 12, fontWeight: 600, color: '#b91c1c', background: '#fff', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
-                      ⏹ Discontinue…
-                    </button>
-                  </div>
+                  <button onClick={openHoliday} style={actionBtn('#0369a1', '#bae6fd', '#f0f9ff')}>🏖 Holiday opt-out</button>
+                )}
+                {s.status !== 'Inactive' && (
+                  <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), reason: '', voidUnsent: true, emailParent: true, saving: false })}
+                    style={actionBtn('#b91c1c', '#fecaca', '#fef2f2')}>⏹ Discontinue</button>
                 )}
               </div>
             </Section>
@@ -1372,7 +1358,11 @@ function ModalShell({ title, onClose, children }: { title: string; onClose: () =
   );
 }
 
-const input: React.CSSProperties = { width: '100%', border: '1px solid #e5e7eb', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none', boxSizing: 'border-box', background: '#fff' };
+const input: React.CSSProperties = { width: '100%', minWidth: 0, maxWidth: '100%', border: '1px solid #e5e7eb', borderRadius: 8, padding: '9px 12px', fontSize: 14, outline: 'none', boxSizing: 'border-box', background: '#fff', WebkitAppearance: 'none', appearance: 'none' };
+// Uniform profile action button (Schedule / Portal invite / Holiday / Discontinue).
+function actionBtn(color = '#334155', border = '#e5e7eb', bg = '#fff'): React.CSSProperties {
+  return { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 40, padding: '8px 10px', borderRadius: 10, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', textDecoration: 'none', border: `1px solid ${border}`, background: bg, color, textAlign: 'center', lineHeight: 1.2, whiteSpace: 'nowrap' };
+}
 const btnGhost: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: '#1e3a5f', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer' };
 const btnPrimary: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#fff', background: '#1e3a5f', border: 'none', borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
 const btnCancel: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#475569', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '9px 16px', cursor: 'pointer' };
