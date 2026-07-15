@@ -7,6 +7,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isKioskOpen } from '@/lib/kiosk-config';
 import { verifyKioskAuth, KIOSK_LEVELS } from '@/lib/kiosk-session';
+import { studentFromRequest } from '@/lib/kiosk-student';
 
 export const runtime = 'nodejs';
 
@@ -19,6 +20,15 @@ export async function GET(req: NextRequest) {
   const level = new URL(req.url).searchParams.get('level') || '';
   const cfg = KIOSK_LEVELS[level];
   if (!cfg) return NextResponse.json({ error: 'level must be EM, AM or JC2' }, { status: 400 });
+
+  // Hard-lock: students only see their own level's topics (admin bypasses).
+  if (!verifyAdminAuth(req)) {
+    const student = studentFromRequest(req);
+    if (!student) return NextResponse.json({ error: 'Scan to start', studentRequired: true }, { status: 401 });
+    if (!student.entitlements.practice.includes(level)) {
+      return NextResponse.json({ error: 'Not your level', forbidden: true }, { status: 403 });
+    }
+  }
 
   const { data, error } = await getSupabaseAdmin().rpc('practice_topics', { p_level: cfg.topicsKey });
   if (error) return NextResponse.json({ error: error.message, topics: [] }, { status: 500 });

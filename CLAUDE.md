@@ -202,6 +202,45 @@ For when an adjustment must land on a month whose invoice doesn't exist yet (e.g
 - **Banner:** `/admin/invoices` shows a blue "⏰ Pending adjustments" banner (data from `/api/admin-invoices/deferred-pending`) grouped by target month, each with a ✕ Cancel button.
 - PDF caveat: like referral credits, the deferral changes `Final Amount` after the draft PDF was rendered — regenerate PDFs before sending (the normal draft-review step covers this).
 
+## Kiosk (`/kiosk`) — iPad print station with WhatsApp QR sign-in
+
+Self-service iPad kiosk at the centre: students print practice worksheets + revision notes.
+Device authorised once (admin password → 180-day `kiosk_session` cookie); open/closed gate =
+`kiosk_config` mode (closed/open/scheduled) + opening hours in `lib/kiosk-hours.ts`; admin
+control at `/admin/kiosk`.
+
+**Student identity (Phase 1, 2026-07-16): WhatsApp reverse-QR pairing — students are HARD-LOCKED
+to their own level.** No anonymous browsing.
+
+1. Idle kiosk shows a QR encoding `wa.me/<KIOSK_WA_NUMBER>?text=KIOSK-<6-digit-code>` (3-min TTL,
+   auto-regenerates; code from POST `/api/kiosk/pair {action:'create'}`).
+2. Student scans → WhatsApp opens prefilled → sends. Bot (`handlers/whatsapp.js` `kioskSignIn`)
+   resolves the phone via `identify()` and claims the pairing: POST `/api/kiosk/pair` with
+   `x-render-secret` + `{code, studentId, studentName, level, subjects}`.
+3. Kiosk polls GET `/api/kiosk/pair?code=` (2.5s) → one-shot `{student, token}` (signed HMAC
+   student token, 30 min, `lib/kiosk-student.ts`). UI greets by name, shows only entitled levels,
+   5-min idle reset ("Done ✓" button ends session).
+4. Entitlements from Level+Subjects (`deriveEntitlements`): Sec 3–5 E/A Math → EM/AM; IP Math →
+   both; JC (H2/H1) → JC2; Sec 1/2 → notes only (s1/s2 — no practice pool yet, S1/S2 banks pending
+   sub-group labelling). Content routes (`topics`/`notes`/`worksheet`) 401 without the
+   `x-kiosk-student` token and 403 on a non-entitled level — enforced server-side, admin bypasses.
+5. **Print cap 4 worksheets/day per student** (SGT day) via POST `/api/kiosk/print-log` (gates
+   `window.print()`, logs to `kiosk_prints`). GET returns `{used, remaining}` for the "n/4" chip.
+6. **Answers always print inline** — one `[Ans: …]` line closing each question after the working
+   space, right-aligned, orange `#843C0C`, KaTeX coloured too (STYLE.md house rule). No answers-at-
+   back section, no toggle. Name line prefills the student's name.
+
+Supabase (math project): `kiosk_pairings` (code pk, claim/consume timestamps, student fields),
+`kiosk_prints` (print log). Both RLS-on, service-role only.
+
+**Env: `KIOSK_WA_NUMBER`** (digits only, the Twilio WhatsApp business number) — REQUIRED in Vercel
+for the QR to be scannable; without it the kiosk shows a manual "WhatsApp KIOSK-<code>" fallback.
+`.env.local` has a PLACEHOLDER (6500000000) for local dev.
+
+⚠ **Bot side committed but NOT deployed** (commit `0d00e7a` in the bot repo) — `fly deploy` needed
+before students can actually sign in. Phase 2 (planned): recommended-for-you topics from lesson
+progress, homework pickup, exam-season packs. Phase 3: print → photograph → AI-mark loop.
+
 ## June 2026 Revision Sprint
 
 `/admin/revision-signups` has two tabs: **Sign-ups** (manage sign-ups) and **Attendance**.

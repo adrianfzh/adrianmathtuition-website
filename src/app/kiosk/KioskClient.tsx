@@ -6,6 +6,7 @@ import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
+import QRCode from 'qrcode';
 import 'katex/dist/katex.min.css';
 import PasswordInput from '@/components/PasswordInput';
 
@@ -17,9 +18,10 @@ const REHYPE = [rehypeRaw, rehypeKatex];
 const NAVY = '#1c3a5e';
 const CREAM = 'hsl(45,100%,96%)';
 const GOLD = '#E7A417';
+const ANSWER_ORANGE = '#843C0C'; // STYLE.md practice-answer colour
 
-// Fixed level list (ungated kiosk — no student record to scope by). Tokens match
-// KIOSK_LEVELS in src/lib/kiosk-session.ts.
+// Practice level tokens (KIOSK_LEVELS in src/lib/kiosk-session.ts). The student's
+// pairing token decides which of these are visible — the kiosk is hard-locked.
 const LEVELS: { key: string; label: string }[] = [
   { key: 'EM', label: 'E Math' },
   { key: 'AM', label: 'A Math' },
@@ -37,6 +39,7 @@ const NOTE_LEVELS: { key: string; label: string }[] = [
 ];
 
 const COUNTS = [5, 8, 12, 15];
+const IDLE_RESET_MS = 5 * 60 * 1000; // student session UI resets after 5 min idle
 
 // Difficulty tiers. 'mixed' (default) sends no tier filter → draws from the whole
 // verified pool; the others map onto questions.difficulty (see lib/practice-tiers).
@@ -52,6 +55,13 @@ type WsQuestion = { id: string; markdown: string; marks: number | null; figureUr
 type Worksheet = { title: string; level: string; topic: string; questions: WsQuestion[] };
 
 type AuthState = 'checking' | 'setup' | 'ready';
+type Student = {
+  id: string;
+  name: string;
+  level: string;
+  entitlements: { practice: string[]; notes: string[] };
+};
+type Pairing = { code: string; waUrl: string | null; expiresAt: string };
 
 export default function KioskClient() {
   const [auth, setAuth] = useState<AuthState>('checking');
@@ -62,7 +72,15 @@ export default function KioskClient() {
   const [setupBusy, setSetupBusy] = useState(false);
 
   // Kiosk open/closed (master switch + hours). null = still checking.
-  const [openState, setOpenState] = useState<{ open: boolean; adminBypass: boolean; nextOpen: string | null } | null>(null);
+  const [openState, setOpenState] = useState<{ open: boolean; admin: boolean; adminBypass: boolean; nextOpen: string | null } | null>(null);
+
+  // ── Student session (QR pairing) ─────────────────────────────────────
+  const [student, setStudent] = useState<Student | null>(null);
+  const studentTokenRef = useRef<string | null>(null);
+  const [pairing, setPairing] = useState<Pairing | null>(null);
+  const [pairErr, setPairErr] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [printsUsed, setPrintsUsed] = useState<{ used: number; remaining: number } | null>(null);
 
   // Mode: quick practice worksheet (default) or browse/print notes.
   const [mode, setMode] = useState<'practice' | 'notes'>('practice');
@@ -80,7 +98,6 @@ export default function KioskClient() {
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [count, setCount] = useState(8);
   const [tier, setTier] = useState<TierChoice>('mixed');
-  const [includeAnswers, setIncludeAnswers] = useState(false);
 
   // Print
   const [printing, setPrinting] = useState(false);
@@ -92,6 +109,30 @@ export default function KioskClient() {
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(''), 3500);
+  }, []);
+
+  const isAdmin = !!openState?.admin;
+  // A student session (or admin) unlocks the pickers.
+  const unlocked = isAdmin || !!student;
+
+  // Levels this session may see (admin sees everything).
+  const visibleLevels = isAdmin ? LEVELS : LEVELS.filter((l) => student?.entitlements.practice.includes(l.key));
+  const visibleNoteLevels = isAdmin ? NOTE_LEVELS : NOTE_LEVELS.filter((l) => student?.entitlements.notes.includes(l.key));
+
+  // Headers for content fetches — carries the signed student token when present.
+  const contentHeaders = useCallback((): HeadersInit => {
+    const t = studentTokenRef.current;
+    return t ? { 'x-kiosk-student': t } : {};
+  }, []);
+
+  const endStudentSession = useCallback(() => {
+    setStudent(null);
+    studentTokenRef.current = null;
+    setPairing(null);
+    setQrDataUrl(null);
+    setPrintsUsed(null);
+    setSelectedTopic(null);
+    setWorksheet(null);
   }, []);
 
   // ── Auth check on mount ──────────────────────────────────────────────
@@ -110,20 +151,129 @@ export default function KioskClient() {
     if (auth !== 'ready') return;
     let alive = true;
     const check = () => fetch('/api/kiosk/status')
-      .then(r => r.json()).then(j => { if (alive) setOpenState({ open: !!j.open, adminBypass: !!j.adminBypass, nextOpen: j.nextOpen ?? null }); })
-      .catch(() => { if (alive) setOpenState({ open: true, adminBypass: false, nextOpen: null }); }); // fail open on network error
+      .then(r => r.json()).then(j => { if (alive) setOpenState({ open: !!j.open, admin: !!j.admin, adminBypass: !!j.adminBypass, nextOpen: j.nextOpen ?? null }); })
+      .catch(() => { if (alive) setOpenState({ open: true, admin: false, adminBypass: false, nextOpen: null }); }); // fail open on network error
     check();
     const id = setInterval(check, 5 * 60 * 1000);
     return () => { alive = false; clearInterval(id); };
   }, [auth]);
 
-  // ── Fetch topics whenever level changes (once authorised) ────────────
+  // ── QR pairing: create a code + poll for the WhatsApp claim ──────────
+  const needsPairing = auth === 'ready' && !!openState?.open && !unlocked;
+
+  useEffect(() => {
+    if (!needsPairing) return;
+    let alive = true;
+    let pollId: ReturnType<typeof setInterval> | null = null;
+
+    const create = async () => {
+      setPairErr('');
+      try {
+        const r = await fetch('/api/kiosk/pair', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'create' }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || 'Could not start pairing');
+        if (!alive) return;
+        setPairing(j as Pairing);
+
+        if (pollId) clearInterval(pollId);
+        pollId = setInterval(async () => {
+          try {
+            const pr = await fetch(`/api/kiosk/pair?code=${encodeURIComponent(j.code)}`);
+            const pj = await pr.json().catch(() => ({}));
+            if (!alive) return;
+            if (pj.student && pj.token) {
+              if (pollId) clearInterval(pollId);
+              studentTokenRef.current = pj.token as string;
+              setStudent(pj.student as Student);
+              setPairing(null);
+              setQrDataUrl(null);
+            } else if (pj.expired) {
+              if (pollId) clearInterval(pollId);
+              create(); // stale code → fresh QR
+            } else if (pj.unmapped) {
+              if (pollId) clearInterval(pollId);
+              setPairErr(pj.error || 'This account has no kiosk content yet — tell Adrian.');
+            }
+          } catch {
+            /* transient poll error — keep trying */
+          }
+        }, 2500);
+      } catch (e) {
+        if (alive) setPairErr(e instanceof Error ? e.message : 'Could not start pairing');
+      }
+    };
+
+    create();
+    return () => {
+      alive = false;
+      if (pollId) clearInterval(pollId);
+    };
+  }, [needsPairing]);
+
+  // Render the QR whenever the pairing changes.
+  useEffect(() => {
+    if (!pairing?.waUrl) {
+      setQrDataUrl(null);
+      return;
+    }
+    let alive = true;
+    QRCode.toDataURL(pairing.waUrl, { width: 480, margin: 1, color: { dark: NAVY, light: '#ffffff' } })
+      .then((url) => alive && setQrDataUrl(url))
+      .catch(() => alive && setQrDataUrl(null));
+    return () => {
+      alive = false;
+    };
+  }, [pairing]);
+
+  // ── Idle reset: any 5-min gap in touches ends the student session ────
+  useEffect(() => {
+    if (!student) return;
+    let timer = setTimeout(endStudentSession, IDLE_RESET_MS);
+    const bump = () => {
+      clearTimeout(timer);
+      timer = setTimeout(endStudentSession, IDLE_RESET_MS);
+    };
+    window.addEventListener('pointerdown', bump);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('pointerdown', bump);
+    };
+  }, [student, endStudentSession]);
+
+  // ── Defaults follow the entitlement set when a student pairs ─────────
+  useEffect(() => {
+    if (!student) return;
+    const p = student.entitlements.practice;
+    const n = student.entitlements.notes;
+    if (p.length > 0) {
+      setMode('practice');
+      setLevel(p[0]);
+    } else {
+      setMode('notes'); // lower sec: notes only
+    }
+    if (n.length > 0) setNoteLevel(n[0]);
+    // Pull the day's print usage for the indicator.
+    fetch('/api/kiosk/print-log', { headers: contentHeaders() })
+      .then((r) => r.json())
+      .then((j) => setPrintsUsed({ used: j.used ?? 0, remaining: j.remaining ?? 0 }))
+      .catch(() => setPrintsUsed(null));
+  }, [student, contentHeaders]);
+
+  // ── Fetch topics whenever level changes (once unlocked) ──────────────
   const loadTopics = useCallback(async (lvl: string) => {
     setTopicsBusy(true);
     setTopicsErr('');
     try {
-      const r = await fetch(`/api/kiosk/topics?level=${encodeURIComponent(lvl)}`);
+      const r = await fetch(`/api/kiosk/topics?level=${encodeURIComponent(lvl)}`, { headers: contentHeaders() });
       const j = await r.json().catch(() => ({}));
+      if (r.status === 401 && j.studentRequired) {
+        endStudentSession(); // token expired server-side → back to the QR screen
+        return;
+      }
       if (!r.ok) throw new Error(j.error || 'Could not load topics');
       setTopics(Array.isArray(j.topics) ? j.topics : []);
     } catch (e) {
@@ -132,26 +282,26 @@ export default function KioskClient() {
     } finally {
       setTopicsBusy(false);
     }
-  }, []);
+  }, [contentHeaders, endStudentSession]);
 
   useEffect(() => {
-    if (auth !== 'ready') return;
+    if (auth !== 'ready' || !unlocked) return;
     setSelectedTopic(null);
     loadTopics(level);
-  }, [auth, level, loadTopics]);
+  }, [auth, unlocked, level, loadTopics]);
 
   // ── Fetch notes whenever the notes level changes (in notes mode) ─────
   useEffect(() => {
-    if (auth !== 'ready' || mode !== 'notes') return;
+    if (auth !== 'ready' || !unlocked || mode !== 'notes') return;
     let alive = true;
     setNotesBusy(true);
-    fetch(`/api/kiosk/notes?level=${encodeURIComponent(noteLevel)}`)
+    fetch(`/api/kiosk/notes?level=${encodeURIComponent(noteLevel)}`, { headers: contentHeaders() })
       .then((r) => r.json().catch(() => ({})))
       .then((j) => { if (alive) setNotes(Array.isArray(j.notes) ? j.notes : []); })
       .catch(() => { if (alive) setNotes([]); })
       .finally(() => { if (alive) setNotesBusy(false); });
     return () => { alive = false; };
-  }, [auth, mode, noteLevel]);
+  }, [auth, unlocked, mode, noteLevel, contentHeaders]);
 
   // ── Print once the worksheet DOM is committed ────────────────────────
   useEffect(() => {
@@ -193,10 +343,30 @@ export default function KioskClient() {
     if (!selectedTopic) return;
     setPrinting(true);
     try {
+      // 1. Gate + log against the daily cap (students only; admin passes).
+      const gate = await fetch('/api/kiosk/print-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...contentHeaders() },
+        body: JSON.stringify({ level, topic: selectedTopic, tier, count }),
+      });
+      const gj = await gate.json().catch(() => ({}));
+      if (gate.status === 401 && gj.studentRequired) {
+        endStudentSession();
+        return;
+      }
+      if (!gate.ok) {
+        showToast(gj.error || 'Could not print');
+        if (gj.capReached) setPrintsUsed({ used: gj.used ?? 4, remaining: 0 });
+        setPrinting(false);
+        return;
+      }
+      if (typeof gj.used === 'number') setPrintsUsed({ used: gj.used, remaining: gj.remaining ?? 0 });
+
+      // 2. Build the sheet — answers ALWAYS included (printed inline per question).
       const url = `/api/kiosk/worksheet?level=${encodeURIComponent(level)}&topic=${encodeURIComponent(
         selectedTopic
-      )}&count=${count}&tier=${tier}&answers=${includeAnswers ? 1 : 0}`;
-      const r = await fetch(url);
+      )}&count=${count}&tier=${tier}&answers=1`;
+      const r = await fetch(url, { headers: contentHeaders() });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || 'Could not build worksheet');
       if (!j.questions?.length) {
@@ -219,6 +389,8 @@ export default function KioskClient() {
     timeZone: 'Asia/Singapore',
   });
 
+  const firstName = (student?.name || '').split(/\s+/)[0] || '';
+
   return (
     <>
       <style>{PRINT_CSS}</style>
@@ -233,8 +405,8 @@ export default function KioskClient() {
               <div className="setup-badge">AdrianMath</div>
               <h1>Set up this iPad</h1>
               <p className="muted">
-                Enter the admin password once to authorise this device. Students can then print
-                worksheets without signing in.
+                Enter the admin password once to authorise this device. Students then sign in by
+                scanning the kiosk QR with WhatsApp.
               </p>
               <PasswordInput
                 inputMode="text"
@@ -263,44 +435,90 @@ export default function KioskClient() {
           </div>
         )}
 
-        {auth === 'ready' && openState && openState.open && (
+        {/* ── PAIRING SCREEN: scan with WhatsApp to start ── */}
+        {auth === 'ready' && openState && openState.open && !unlocked && (
+          <div className="centered">
+            <div className="pair-card">
+              <div className="brand">AdrianMath Tuition</div>
+              <h1 className="pair-title">Scan to start</h1>
+              <p className="pair-sub">
+                Open your phone camera, scan the code, then tap <strong>Send</strong> in WhatsApp.
+              </p>
+              {qrDataUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={qrDataUrl} alt="WhatsApp pairing QR code" className="pair-qr" />
+              ) : pairing && !pairing.waUrl ? (
+                <div className="pair-fallback">
+                  <p>WhatsApp <strong>KIOSK-{pairing.code}</strong><br />to the AdrianMath number to sign in.</p>
+                  <p className="muted" style={{ fontSize: 13 }}>(QR unavailable — KIOSK_WA_NUMBER not configured)</p>
+                </div>
+              ) : (
+                <div className="pair-qr pair-qr-loading">Generating…</div>
+              )}
+              {pairing && <div className="pair-code">Code: KIOSK-{pairing.code}</div>}
+              {pairErr && <div className="err" style={{ marginTop: 10 }}>{pairErr}</div>}
+              <p className="pair-hint muted">Waiting for your WhatsApp message…</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── MAIN UI (student paired, or admin) ── */}
+        {auth === 'ready' && openState && openState.open && unlocked && (
           <div className="picker">
             {openState.adminBypass && (
               <div style={{ background: '#fff3cd', border: '1px solid #ffe08a', color: '#7a5b00', borderRadius: 10, padding: '8px 12px', margin: '0 0 12px', fontSize: 13, textAlign: 'center' }}>
                 ⚠ Kiosk is closed to students — you're viewing it as admin.
               </div>
             )}
+
+            {student && (
+              <div className="greet-bar">
+                <div className="greet-who">
+                  👋 Hi <strong>{firstName}</strong>
+                  <span className="greet-level">{student.level}</span>
+                  {printsUsed && (
+                    <span className="greet-prints">{printsUsed.used}/4 prints today</span>
+                  )}
+                </div>
+                <button className="greet-done" onClick={endStudentSession}>Done ✓</button>
+              </div>
+            )}
+
             <header className="picker-head">
               <div className="brand">AdrianMath Tuition</div>
               <div className="brand-sub">{mode === 'notes' ? 'Open and print revision notes' : 'Print a practice worksheet'}</div>
             </header>
 
-            {/* Mode toggle */}
-            <div className="segmented" role="tablist" aria-label="Mode" style={{ marginBottom: 14 }}>
-              <button role="tab" aria-selected={mode === 'practice'}
-                className={`seg ${mode === 'practice' ? 'seg-on' : ''}`}
-                onClick={() => { setMode('practice'); setSelectedTopic(null); }}>
-                ✏️ Practice
-              </button>
-              <button role="tab" aria-selected={mode === 'notes'}
-                className={`seg ${mode === 'notes' ? 'seg-on' : ''}`}
-                onClick={() => setMode('notes')}>
-                📄 Notes
-              </button>
-            </div>
+            {/* Mode toggle — only when the student has both surfaces */}
+            {(isAdmin || (visibleLevels.length > 0 && visibleNoteLevels.length > 0)) && (
+              <div className="segmented" role="tablist" aria-label="Mode" style={{ marginBottom: 14 }}>
+                <button role="tab" aria-selected={mode === 'practice'}
+                  className={`seg ${mode === 'practice' ? 'seg-on' : ''}`}
+                  onClick={() => { setMode('practice'); setSelectedTopic(null); }}>
+                  ✏️ Practice
+                </button>
+                <button role="tab" aria-selected={mode === 'notes'}
+                  className={`seg ${mode === 'notes' ? 'seg-on' : ''}`}
+                  onClick={() => setMode('notes')}>
+                  📄 Notes
+                </button>
+              </div>
+            )}
 
             {/* ── NOTES MODE ── */}
             {mode === 'notes' && (
               <>
-                <div className="segmented" role="tablist" aria-label="Notes level">
-                  {NOTE_LEVELS.map((l) => (
-                    <button key={l.key} role="tab" aria-selected={noteLevel === l.key}
-                      className={`seg ${noteLevel === l.key ? 'seg-on' : ''}`}
-                      onClick={() => setNoteLevel(l.key)}>
-                      {l.label}
-                    </button>
-                  ))}
-                </div>
+                {visibleNoteLevels.length > 1 && (
+                  <div className="segmented" role="tablist" aria-label="Notes level">
+                    {visibleNoteLevels.map((l) => (
+                      <button key={l.key} role="tab" aria-selected={noteLevel === l.key}
+                        className={`seg ${noteLevel === l.key ? 'seg-on' : ''}`}
+                        onClick={() => setNoteLevel(l.key)}>
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <section className="topics-wrap">
                   {notesBusy && <div className="muted pad">Loading notes…</div>}
                   {!notesBusy && notes && notes.length === 0 && (
@@ -318,22 +536,24 @@ export default function KioskClient() {
               </>
             )}
 
-            {/* ── PRACTICE MODE (unchanged) ── */}
+            {/* ── PRACTICE MODE ── */}
             {mode === 'practice' && (<>
-            {/* Level segmented control */}
-            <div className="segmented" role="tablist" aria-label="Level">
-              {LEVELS.map((l) => (
-                <button
-                  key={l.key}
-                  role="tab"
-                  aria-selected={level === l.key}
-                  className={`seg ${level === l.key ? 'seg-on' : ''}`}
-                  onClick={() => setLevel(l.key)}
-                >
-                  {l.label}
-                </button>
-              ))}
-            </div>
+            {/* Level segmented control — hidden when the student has exactly one level */}
+            {visibleLevels.length > 1 && (
+              <div className="segmented" role="tablist" aria-label="Level">
+                {visibleLevels.map((l) => (
+                  <button
+                    key={l.key}
+                    role="tab"
+                    aria-selected={level === l.key}
+                    className={`seg ${level === l.key ? 'seg-on' : ''}`}
+                    onClick={() => setLevel(l.key)}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Topic grid */}
             {!selectedTopic && (
@@ -392,19 +612,20 @@ export default function KioskClient() {
                   </div>
                 </div>
 
-                <label className="toggle-row">
-                  <span className="opt-label">Include answer key</span>
-                  <input
-                    type="checkbox"
-                    checked={includeAnswers}
-                    onChange={(e) => setIncludeAnswers(e.target.checked)}
-                  />
-                  <span className={`switch ${includeAnswers ? 'switch-on' : ''}`} aria-hidden />
-                </label>
-
-                <button className="btn-primary big" onClick={print} disabled={printing}>
-                  {printing ? 'Preparing…' : 'Print worksheet'}
+                <button
+                  className="btn-primary big"
+                  onClick={print}
+                  disabled={printing || (printsUsed?.remaining === 0 && !isAdmin)}
+                >
+                  {printsUsed?.remaining === 0 && !isAdmin
+                    ? 'Daily limit reached'
+                    : printing ? 'Preparing…' : 'Print worksheet'}
                 </button>
+                {student && printsUsed && printsUsed.remaining > 0 && (
+                  <div className="muted" style={{ textAlign: 'center', fontSize: 14 }}>
+                    {printsUsed.remaining} print{printsUsed.remaining === 1 ? '' : 's'} left today · answers included
+                  </div>
+                )}
               </section>
             )}
             </>)}
@@ -424,7 +645,7 @@ export default function KioskClient() {
               <span>{dateStr}</span>
             </div>
             <div className="ws-namebar">
-              <span>Name: ______________________________</span>
+              <span>Name: {student ? student.name : '______________________________'}</span>
               <span>Class: ______________</span>
             </div>
           </div>
@@ -443,30 +664,20 @@ export default function KioskClient() {
                   {q.marks != null && <span className="ws-marks">[{q.marks}]</span>}
                 </div>
                 <div className="ws-answer-space" aria-hidden />
+                {q.answer && (
+                  // House style (STYLE.md): one [Ans: …] line closing the question,
+                  // AFTER the working space — right-aligned, orange, maths included.
+                  <div className="ws-ans-line">
+                    <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>
+                      {`[Ans: ${q.answer}]`}
+                    </ReactMarkdown>
+                  </div>
+                )}
               </li>
             ))}
           </ol>
 
           <div className="ws-footer">AdrianMath Tuition · adrianmathtuition.com</div>
-
-          {includeAnswers && worksheet.questions.some((q) => q.answer) && (
-            <div className="ws-answers">
-              <h2>Answers</h2>
-              <ol className="ws-answers-list">
-                {worksheet.questions.map((q, i) => (
-                  <li key={q.id}>
-                    <span className="ws-ans-n">{i + 1}.</span>
-                    <span className="ws-ans-body">
-                      <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>
-                        {q.answer || '—'}
-                      </ReactMarkdown>
-                    </span>
-                  </li>
-                ))}
-              </ol>
-              <div className="ws-footer">AdrianMath Tuition · adrianmathtuition.com</div>
-            </div>
-          )}
         </div>
       )}
     </>
@@ -513,6 +724,45 @@ const PRINT_CSS = `
     border: 2px solid #d9e0e8; outline: none; width: 100%;
   }
   .setup-card input:focus { border-color: var(--gold); }
+
+  /* Pairing screen */
+  .pair-card {
+    width: min(520px, 94vw);
+    background: #fff; border: 1px solid #e6ddc4; border-radius: 24px;
+    padding: 36px 32px; text-align: center;
+    box-shadow: 0 12px 40px rgba(28,58,94,0.12);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .pair-title { font-size: 34px; font-weight: 800; margin: 6px 0 0; }
+  .pair-sub { font-size: 18px; color: #5b6b7d; margin: 0; }
+  .pair-qr {
+    width: min(320px, 70vw); height: auto; margin: 10px 0 2px;
+    border: 1px solid #e6ddc4; border-radius: 16px; padding: 10px; background: #fff;
+  }
+  .pair-qr-loading { display: grid; place-items: center; min-height: 260px; color: #5b6b7d; }
+  .pair-fallback { font-size: 18px; }
+  .pair-code { font-size: 15px; color: #5b6b7d; letter-spacing: .04em; }
+  .pair-hint { font-size: 14px; }
+
+  /* Student greeting bar */
+  .greet-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: #fff; border: 1px solid #e6ddc4; border-radius: 14px;
+    padding: 12px 16px; margin-bottom: 16px;
+  }
+  .greet-who { font-size: 18px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .greet-level {
+    background: var(--navy); color: #fff; font-size: 13px; font-weight: 700;
+    border-radius: 999px; padding: 3px 10px;
+  }
+  .greet-prints {
+    background: #fdf1dc; color: #7a5b00; font-size: 13px; font-weight: 700;
+    border-radius: 999px; padding: 3px 10px;
+  }
+  .greet-done {
+    border: 2px solid var(--navy); background: transparent; color: var(--navy);
+    font-size: 15px; font-weight: 800; border-radius: 999px; padding: 8px 18px; cursor: pointer;
+  }
 
   /* Picker */
   .picker { max-width: 1100px; margin: 0 auto; padding: 28px 20px 64px; }
@@ -576,24 +826,6 @@ const PRINT_CSS = `
   }
   .tier-on { border-color: var(--navy); background: var(--navy); color: #fff; }
 
-  .toggle-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    cursor: pointer; padding: 6px 0;
-  }
-  .toggle-row .opt-label { margin: 0; }
-  .toggle-row input { position: absolute; opacity: 0; width: 0; height: 0; }
-  .switch {
-    width: 62px; height: 36px; border-radius: 999px; background: #cbd5e1;
-    position: relative; transition: background .15s; flex: none;
-  }
-  .switch::after {
-    content: ""; position: absolute; top: 3px; left: 3px;
-    width: 30px; height: 30px; border-radius: 50%; background: #fff;
-    transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.3);
-  }
-  .switch-on { background: var(--gold); }
-  .switch-on::after { transform: translateX(26px); }
-
   .btn-primary {
     border: none; cursor: pointer; background: var(--gold); color: var(--navy);
     font-size: 20px; font-weight: 800; padding: 18px; border-radius: 14px;
@@ -609,6 +841,13 @@ const PRINT_CSS = `
     max-width: 90vw; text-align: center;
   }
 }
+
+/* House style (STYLE.md): [Ans: …] closes each question — right-aligned, orange,
+   not bold, ENTIRE line orange including the rendered maths. Lives outside
+   @media print so the rule is testable; .worksheet is display:none on screen. */
+.ws-ans-line { text-align: right; color: ${ANSWER_ORANGE}; font-weight: 400; margin: 0 0 4pt; }
+.ws-ans-line p { display: inline; margin: 0; }
+.ws-ans-line .katex { color: ${ANSWER_ORANGE}; }
 
 /* ── Print ── */
 @media print {
@@ -640,12 +879,5 @@ const PRINT_CSS = `
     margin-top: 14pt; padding-top: 6pt; border-top: 1px solid #999;
     text-align: center; font-size: 9pt; color: #555;
   }
-
-  .ws-answers { break-before: page; page-break-before: always; }
-  .ws-answers h2 { font-size: 15pt; border-bottom: 2px solid #111; padding-bottom: 4pt; }
-  .ws-answers-list { list-style: none; padding: 0; margin: 10pt 0 0; }
-  .ws-answers-list li { display: flex; gap: 8px; margin-bottom: 6pt; break-inside: avoid; }
-  .ws-ans-n { font-weight: 700; }
-  .ws-ans-body p { display: inline; margin: 0; }
 }
 `;

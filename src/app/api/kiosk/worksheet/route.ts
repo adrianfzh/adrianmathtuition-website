@@ -9,6 +9,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isKioskOpen } from '@/lib/kiosk-config';
 import { verifyKioskAuth, KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { normalizeTier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
+import { studentFromRequest } from '@/lib/kiosk-student';
 
 export const runtime = 'nodejs';
 
@@ -73,6 +74,15 @@ export async function GET(req: NextRequest) {
   const cfg = KIOSK_LEVELS[level];
   if (!cfg) return NextResponse.json({ error: 'level must be EM, AM or JC2' }, { status: 400 });
   if (!topic) return NextResponse.json({ error: 'topic required' }, { status: 400 });
+
+  // Hard-lock: students can only build worksheets for their own level (admin bypasses).
+  if (!verifyAdminAuth(req)) {
+    const student = studentFromRequest(req);
+    if (!student) return NextResponse.json({ error: 'Scan to start', studentRequired: true }, { status: 401 });
+    if (!student.entitlements.practice.includes(level)) {
+      return NextResponse.json({ error: 'Not your level', forbidden: true }, { status: 403 });
+    }
+  }
 
   const supa = getSupabaseAdmin();
 

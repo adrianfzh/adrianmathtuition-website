@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     open: isAdmin ? true : openForDevice,
     mode,
+    admin: isAdmin, // client skips QR pairing for Adrian's own browser
     adminBypass: isAdmin && !openForDevice,
     nextOpen: openForDevice ? null : nextOpenLabel(),
     hoursSummary: HOURS_SUMMARY,

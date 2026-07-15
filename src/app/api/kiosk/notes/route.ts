@@ -7,6 +7,7 @@ import { verifyKioskAuth } from '@/lib/kiosk-session';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isKioskOpen } from '@/lib/kiosk-config';
 import { listNotesForLevel, NOTE_SLUG_TO_LEVELS } from '@/lib/notes-list';
+import { studentFromRequest } from '@/lib/kiosk-student';
 
 export const runtime = 'nodejs';
 
@@ -20,6 +21,15 @@ export async function GET(req: NextRequest) {
   const level = (new URL(req.url).searchParams.get('level') || '').toLowerCase();
   if (!NOTE_SLUG_TO_LEVELS[level]) {
     return NextResponse.json({ error: 'level must be s1, s2, em, am or jc' }, { status: 400 });
+  }
+
+  // Hard-lock: students only see their own level's notes (admin bypasses).
+  if (!verifyAdminAuth(req)) {
+    const student = studentFromRequest(req);
+    if (!student) return NextResponse.json({ error: 'Scan to start', studentRequired: true }, { status: 401 });
+    if (!student.entitlements.notes.includes(level)) {
+      return NextResponse.json({ error: 'Not your level', forbidden: true }, { status: 403 });
+    }
   }
 
   const { notes } = await listNotesForLevel(level);
