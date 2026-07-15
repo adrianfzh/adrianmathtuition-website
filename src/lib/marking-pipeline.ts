@@ -192,6 +192,13 @@ STAGE 4 — JUDGE THE FINAL ANSWER (fills "student_final_answer" and "marks" fie
         already-reasoned claim need NO separate reason (after "∠OAB = ∠OBA (isos △)",
         the line "∠OAB = (180° − 126°)/2 = 27°" is just arithmetic — tick it). Do not
         invent missing-reason deductions in work a Singapore teacher would tick through.
+        CLARITY COMMENTS ARE NOT DEDUCTIONS: when the mathematics is correct and the
+        final answer is right but the setup is terse or under-explained, the tutor
+        writes "needs clearer explanation" beside the question number and still awards
+        FULL marks — put that feedback in the summary or uncertainty notes, keep
+        margin_note empty, and keep the line verdicts "correct". Deduct only when a
+        required step, reason, or value is wrong or absent — never merely because the
+        explanation could be clearer.
     Q2. Did the student cite a property/method whose premise does NOT exist in this
         configuration, or which yields a wrong value (e.g. "∠ at centre is 2 times ∠ at
         circumference" with no centre/circumference pair)? → CONCEPTUAL FORFEIT: every

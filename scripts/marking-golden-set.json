@@ -113,6 +113,180 @@
         "must_mention": ["not relevant", "in class and try again"]
       },
       "note": "Adrian: underlines the cited property, ✗, 'this property is not relevant in this question' (D is an external point — no circumference angle exists, the property cannot apply), then '✗✗ discuss in class and try again'. Full forfeit −2 of [2]: every subsequent line manipulates the value produced by the misapplied property, so none of it earns method marks. Correct path: quadrilateral DAOB has right angles at A and B (tan ⊥ rad) so ∠AOB = 3π/4; right triangle ADO with ∠ADO = π/8 gives AD = 8/tan(π/8) ≈ 19.3 cm."
+    },
+    {
+      "id": "kylie-5a-factorise-missing-one",
+      "source": "Kylie_2020_EOY.pdf p2 Q5a (TJC Aurora 2024, Sec 2). max_marks assumed [2] — printed paper not in folder.",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 2,
+      "question": "Factorise completely: −6b²c − 18b²c² − 12b³c",
+      "working_lines": [
+        "−6b²c − 18b²c² − 12b³c",
+        "= −6b²c (3c + 2b)"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": [null, "wrong"],
+        "must_mention": []
+      },
+      "note": "Student dropped the 1 term inside the bracket (−6b²c × 1 = −6b²c is unaccounted for). Adrian inserts a red '1 +' with a caret into the bracket and writes a generalizing teaching example in the margin: 'eg. 2a + 4a²b = 2a(1 + 2ab)'. One slip, −1; minimal-token fix, not a re-derivation."
+    },
+    {
+      "id": "kylie-5b-combine-terms-slip",
+      "source": "Kylie_2020_EOY.pdf p2 Q5b (TJC Aurora 2024, Sec 2). max_marks assumed [2].",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 2,
+      "question": "Express as a single fraction in its simplest form: (3−2x)/15 − [−(2x+5)/5 + (x−4)/10]",
+      "working_lines": [
+        "(6−4x)/30 − [−(12x+30)/30 + (3x−12)/30]",
+        "[6−4x+12x+30−3x+12] / 30",
+        "[6+30+12−4x+12x−3x] / 30",
+        "(48 + 13x) / 30"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["correct", "correct", "correct", "wrong"],
+        "must_mention": ["5x"]
+      },
+      "note": "Three correct rearrangement lines, then the x-terms are mis-combined on the final line: −4x+12x−3x = 5x, student wrote 13x. Adrian circles the 13, ✗, writes the corrected fraction (5x+48)/30 beside it. Single arithmetic slip on the last line → −1; earlier lines all ticked."
+    },
+    {
+      "id": "kylie-9biii-unjustified-2n3-wrong-final",
+      "source": "Kylie_2020_EOY.pdf p4 Q9b(iii) (TJC Aurora 2024, Sec 2). QUESTION RECONSTRUCTED from parts (a)/(b) of the student's working — Adrian to verify against the Aurora paper. max_marks assumed [2].",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 2,
+      "question": "In the pattern, the sum of row n is n² + 2n + 1 = (n+1)² (established in part (b)). The sums of two consecutive rows differ by 97. Find the sum of each of these two rows.",
+      "working_lines": [
+        "Tn+1 − Tn = 2n+3",
+        "97 = 2n+3",
+        "2n = 97−3 = 94",
+        "n = 94÷2 = 47",
+        "n+1 = 47+1 = 48",
+        "The two terms are 47 and 48"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": [null, "correct", "correct", "correct", null, "wrong"],
+        "must_mention": ["2304", "2401"]
+      },
+      "note": "The 2n+3 difference is correct in value but asserted with no derivation (and with confusing notation — Tn was defined as 2n+1 in part (a), for which Tn+1−Tn = 2, not 2n+3): Adrian writes 'how did you get 2n+3?' pointing at line 1. Solving to n=47 is ticked through. The final answer gives the row INDICES (47, 48) instead of the requested sums — red pen supplies n+2 = 49, (n+1)² = 48² = 2304, (n+2)² = 49² = 2401. Net margin −1 of [2]: the solve earns its mark; the unjustified setup + wrong final interpretation costs the other."
+    },
+    {
+      "id": "kylie-10i-vert-opp-wording-tightened",
+      "source": "Kylie_2020_EOY.pdf p4 Q10(i) (TJC Aurora 2024, Sec 2). QUESTION RECONSTRUCTED — diagram not available; Adrian to verify. max_marks assumed [1].",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 1,
+      "question": "In the diagram, straight lines HI and AB intersect at G, and ∠BGI = 23°. Find ∠HGA, giving a reason.",
+      "working_lines": [
+        "∠HGA = ∠BGI = 23° (opposite angles)"
+      ],
+      "expected": {
+        "margin_note": "",
+        "line_verdicts": ["correct"],
+        "must_mention": []
+      },
+      "note": "Correct value with an imprecise reason: 'opposite angles' should be 'vertically opposite angles'. Adrian inserts a red 'vertically' with a caret and double-ticks the line — the reason wording is tightened IN PASSING with NO deduction and verdict stays correct. Full marks, empty margin. This is the equivalent-wording control: a marker that flips this line to 'wrong' or deducts is over-marking."
+    },
+    {
+      "id": "tiffany-1-estimation-accept-1sf",
+      "source": "Tiffany_S2Math_PracticePaper.pdf p1 Q1 (digital iPad marking — green ink is Adrian). max_marks assumed [2].",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 2,
+      "question": "By rounding each number to 1 significant figure, estimate the value of (3456 × 0.987) / 25.",
+      "working_lines": [
+        "≈ (3000 × 1) / 30",
+        "= 3000/30",
+        "= 100"
+      ],
+      "expected": {
+        "margin_note": "",
+        "line_verdicts": ["correct", "correct", "correct"],
+        "must_mention": []
+      },
+      "note": "Full marks — every line ticked. Leniency control: this is an ESTIMATION question; 3456→3000, 0.987→1, 25→30 (1 s.f.) is exactly what was asked. A marker that penalizes 25→30 for 'inaccuracy' or demands the exact value 136.5 is mis-marking the question type."
+    },
+    {
+      "id": "kaylen-4-estimation-2sf-full",
+      "source": "KayLen_ Numbers Advanced Practice.pdf p3 Q4; printed question + [2] + answer on p1.",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 2,
+      "question": "By approximating each number to 2 significant figures, estimate the value of (12.1 × √48.8) / ∛27.3. [2]",
+      "working_lines": [
+        "12.1 ≈ 12",
+        "√48.8 ≈ √49",
+        "∛27.3 ≈ ∛27",
+        "(12 × √49)/∛27 = (12 × 7)/3 = 4 × 7 = 28",
+        "Ans: 28"
+      ],
+      "expected": {
+        "margin_note": "",
+        "line_verdicts": ["correct", "correct", "correct", "correct", "correct"],
+        "must_mention": []
+      },
+      "note": "Full marks, every line ticked including the answer. Clean estimation execution: approximate under the radicals to perfect powers (48.8→49, 27.3→27), then evaluate. Empty margin."
+    },
+    {
+      "id": "kaylen-5-answer-only-one-mark",
+      "source": "KayLen_ Numbers Advanced Practice.pdf p3 Q5; printed question + [1] + answer on p1.",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 1,
+      "question": "The number 102 999 corrected to n significant figures is 103 000. Write down the largest possible value of n. [1]",
+      "working_lines": [
+        "Ans: 5"
+      ],
+      "expected": {
+        "margin_note": "",
+        "line_verdicts": ["correct"],
+        "must_mention": []
+      },
+      "note": "Answer-only response on a [1] 'write down' question — correct value, full marks, ticked. Control: 'write down' questions need no working; demanding shown working here is over-marking."
+    },
+    {
+      "id": "kaylen-2-clearer-explanation-no-deduction",
+      "source": "KayLen_ Numbers Advanced Practice.pdf p2 Q2; printed question + [3] + answer (x=8.4, y=21) on p1.",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 3,
+      "question": "A rectangular board can be exactly covered by 12 identical rectangular cards arranged as shown (cards of width x and length y; the arrangement makes the board length 6x and gives y = 2.5x). The length of the board is 50.4 cm. Find the length and width of each card. [3]",
+      "working_lines": [
+        "y = 2.5x",
+        "x + 2y = 6x",
+        "6x = 50.4",
+        "x = 8.4",
+        "y = 21"
+      ],
+      "expected": {
+        "margin_note": "",
+        "line_verdicts": [null, null, "correct", "correct", "correct"],
+        "must_mention": []
+      },
+      "note": "Adrian circles the question number and writes 'needs clearer explanation' — but deducts NOTHING (both answers right, printed answer matches). Presentation feedback rides alongside full marks. A marker that converts 'unclear setup' into a deduction here is over-marking; the right behaviour is full marks + the comment (uncertainty note or summary remark is acceptable)."
+    },
+    {
+      "id": "kaylen-3i-crossed-notation-full-marks",
+      "source": "KayLen_ Numbers Advanced Practice.pdf p2 Q3(i); printed question + [1] + answer (148.6 m) on p1.",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 2",
+      "max_marks": 1,
+      "question": "A rectangular field is measured as 49.9 m and 24.5 m, correct to the nearest 0.1 metre. Find (i) the least possible perimeter in metres. [1]",
+      "working_lines": [
+        "49.85 ≈ 49.9",
+        "24.45 ≈ 24.5",
+        "2(49.85 + 24.45) = 148.6"
+      ],
+      "expected": {
+        "margin_note": "",
+        "line_verdicts": [null, null, "correct"],
+        "must_mention": []
+      },
+      "note": "The student's '≈' notation on the first two lines is written backwards (49.85 IS the least value of a quantity recorded as 49.9 — it is not 'approximately 49.9'); Adrian crosses that notation. But the bounds themselves are the right values and the perimeter line is correct and ticked: 148.6, full [1], empty margin. Notation repaired in passing, not penalized — the deduction-free ✗ on a notation line must not pull the margin down when the required computation is right."
     }
   ]
 }
