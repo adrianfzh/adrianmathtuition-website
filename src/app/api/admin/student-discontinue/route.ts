@@ -79,20 +79,23 @@ export async function POST(req: NextRequest) {
   });
   result.studentInactive = true;
 
-  // 4. Live invoices for the effective month onwards.
-  //    Unsent (Draft/Approved) → auto-void if requested. Sent/Overdue → report only
-  //    (the parent already has them; voiding may need a message).
+  // 4. Invoices FROM the effective month onwards cover lessons that won't happen,
+  //    so void them all (Draft/Approved AND already-sent), unpaid only. Older
+  //    unpaid invoices (< effective month) are genuinely owed for delivered
+  //    lessons — never touched here. Paid invoices are excluded by the query.
+  //    Track any *sent* invoice we void so the parent can be told to disregard it.
   const effKey = monthKey(`${MONTHS[new Date(effectiveDate + 'T00:00:00Z').getUTCMonth()]} ${new Date(effectiveDate + 'T00:00:00Z').getUTCFullYear()}`);
   const inv = await airtableRequestAll('Invoices',
     `?filterByFormula=${encodeURIComponent(`AND({Status}!='Voided',NOT({Is Paid}))`)}&fields[]=Student&fields[]=Month&fields[]=Status&fields[]=Final Amount&fields[]=Invoice Type`);
   const mineInv = (inv.records || []).filter((r: any) => r.fields['Student']?.[0] === studentId && monthKey(r.fields['Month']) >= effKey);
+  const voidedSentMonths: string[] = []; // sent invoices we voided → tell parent to disregard
   for (const r of mineInv) {
     const status = r.fields['Status'];
-    const unsent = status === 'Draft' || status === 'Approved';
-    if (voidUnsent && unsent) {
+    if (voidUnsent) {
       try {
         await airtableRequest('Invoices', `/${r.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Status: 'Voided' } }) });
         result.invoicesVoided++;
+        if (status === 'Sent' || status === 'Overdue') voidedSentMonths.push(r.fields['Month']);
         continue;
       } catch { /* fall through to report */ }
     }
@@ -103,10 +106,14 @@ export async function POST(req: NextRequest) {
   if (emailParent && parentEmail && process.env.RESEND_API_KEY) {
     try {
       const first = studentName.trim().split(/\s+/)[0] || 'your child';
+      const disregard = voidedSentMonths.length
+        ? `<p style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px"><strong>Please disregard the invoice we sent for ${[...new Set(voidedSentMonths)].join(' and ')}</strong> — it has been cancelled, as it covered lessons from ${effectiveDate} that won't take place. There's nothing owed for it.</p>`
+        : '';
       const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:#33415c;line-height:1.6;max-width:560px;margin:0 auto;padding:16px">
         <p style="font-size:18px;font-weight:700;color:#1e3a5f">Thank you</p>
         <p>Thank you for the time we've had teaching <strong>${studentName}</strong> at Adrian's Math Tuition.</p>
         <p>${first}'s last lesson with us is before <strong>${effectiveDate}</strong>. It's been a real pleasure, and ${first} is always welcome back — just message me anytime.</p>
+        ${disregard}
         <p>Wishing ${first} all the very best.</p>
         <p style="margin-top:18px"><strong style="color:#1e3a5f">Adrian</strong><br/><span style="font-size:13px;color:#8a94a6">Adrian's Math Tuition · 9139 7985 · adrianmathtuition.com</span></p>
       </body></html>`;

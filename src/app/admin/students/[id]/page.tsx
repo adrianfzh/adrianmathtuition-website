@@ -979,9 +979,9 @@ export default function StudentProfilePage() {
           <div style={{ marginTop: 12 }}><Label>Reason <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></Label></div>
           <input style={input} placeholder="e.g. moving overseas, stopping tuition" value={discModal.reason} onChange={e => setDiscModal({ ...discModal, reason: e.target.value })} />
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#334155', cursor: 'pointer', marginTop: 12 }}>
-            <input type="checkbox" checked={discModal.voidUnsent} onChange={e => setDiscModal({ ...discModal, voidUnsent: e.target.checked })} />
-            Auto-void unsent invoices (Draft / Approved) from that month on
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: '#334155', cursor: 'pointer', marginTop: 12, lineHeight: 1.4 }}>
+            <input type="checkbox" checked={discModal.voidUnsent} onChange={e => setDiscModal({ ...discModal, voidUnsent: e.target.checked })} style={{ marginTop: 2 }} />
+            <span>Void invoices from that month on (incl. an already-<b>sent</b> latest invoice). Older unpaid invoices stay owed.</span>
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#334155', cursor: 'pointer', marginTop: 8 }}>
             <input type="checkbox" checked={discModal.emailParent} onChange={e => setDiscModal({ ...discModal, emailParent: e.target.checked })} />
