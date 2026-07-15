@@ -239,7 +239,9 @@ Supabase (math project): `kiosk_pairings` (code pk, claim/consume timestamps, st
 
 **Env: `KIOSK_WA_NUMBER`** (digits only, the Twilio WhatsApp business number) — REQUIRED in Vercel
 for the QR to be scannable; without it the kiosk shows a manual "WhatsApp KIOSK-<code>" fallback.
-`.env.local` has a PLACEHOLDER (6500000000) for local dev.
+SET (2026-07-16) to `6580164142` — Adrian's real SG WhatsApp Business sender — in Vercel
+(Production + Preview dev) and `.env.local`. ⚠ NOT the Twilio sandbox `14155238886` (that sender
+is OFFLINE; the bot's `TWILIO_WHATSAPP_FROM` fly secret was also updated to the SG number).
 
 ⚠ **Bot side committed but NOT deployed** (commit `0d00e7a` in the bot repo) — `fly deploy` needed
 before students can actually sign in. Phase 2 (planned): recommended-for-you topics from lesson
