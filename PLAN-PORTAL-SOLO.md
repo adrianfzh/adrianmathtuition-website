@@ -1,6 +1,9 @@
 # PLAN — Portal v1 + Solo Practice (Math), combined build
 
-> **Status:** PLAN (approved scope, not started). Written 2026-07-04.
+> **Status:** IN PROGRESS (header refreshed 2026-07-15 — Phases A–E are substantially built:
+> auth, invite+consent, dashboard, learn/notes, settings, graded practice loop + four-gate
+> generation all live in code). Still open: E6 calibration gate (see the marking-calibration
+> workstream), Phase F PWA/alpha sign-off, Phase G hardening. Originally written 2026-07-04.
 > **How to use this doc:** execute phases in order. Each phase has numbered steps and a
 > **Verify** block — do not move to the next phase until every Verify item passes.
 > If blocked or a decision is missing, add it to §7 Open Questions and STOP — do not improvise

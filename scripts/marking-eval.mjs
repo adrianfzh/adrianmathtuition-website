@@ -19,7 +19,7 @@ const env = Object.fromEntries(fs.readFileSync(new URL('../.env.local', import.m
   .split('\n').filter(l => l.includes('=') && !l.startsWith('#'))
   .map(l => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1).replace(/^["']|["']$/g, '')]));
 const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-const MODEL = process.env.MARKING_EVAL_MODEL || 'claude-sonnet-4-6'; // default = marking-pipeline.ts model
+const MODEL = process.env.MARKING_EVAL_MODEL || 'claude-sonnet-5'; // default = marking-pipeline.ts runtime model — keep in sync when swapping
 
 const golden = JSON.parse(fs.readFileSync(new URL('./marking-golden-set.json', import.meta.url), 'utf8'));
 const only = process.argv.includes('--item') ? Number(process.argv[process.argv.indexOf('--item') + 1]) : null;

@@ -4,7 +4,7 @@
 
 Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Tailwind CSS.
 
-> **🚧 IN-PROGRESS: Student Portal v1 build.** Spec at [`PORTAL.md`](PORTAL.md) (root of repo). Read it before touching anything under `/app/*`, `/login`, `/signup`, or `/api/portal/*`. Schema migrations applied 2026-05-05. File scaffolding in place — search `// TODO PORTAL` for unfinished work.
+> **🚧 Student Portal v1 — largely built, pre-beta.** Specs: [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) (root of repo). Read them before touching anything under `/app/*`, `/login`, `/signup`, or `/api/portal/*`. The original `// TODO PORTAL` scaffolding markers are all consumed (none remain as of 2026-07-15); remaining work is the grading calibration gate and Phase G hardening (leak-test/RLS audit, grade rate-limit, retention cron), not scaffolding.
 
 ## Commands
 
