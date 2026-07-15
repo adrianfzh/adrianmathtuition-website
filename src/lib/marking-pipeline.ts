@@ -146,7 +146,10 @@ STAGE 3B — REASONS ARE LOAD-BEARING (geometry/proof/"show that" questions)
   (midpt theorem / converse of midpt theorem), (AA/ASA/SAS/SSS/RHS).
 - A true statement with a MISSING reason is an error: verdict="wrong",
   error_type the closest fit, correction = "state the reason: (…)" with the right reason.
-  A true statement with a WRONG reason: correct the reason only.
+  A true statement with a WRONG reason: correct the reason only. An IMPRECISE but
+  essentially-correct reason (e.g. "sides of parallelogram" where the precise reason is
+  "opp. sides of parallelogram") is tightened in passing: verdict stays "correct",
+  no deduction — the tutor rewords it in red without penalty.
 - BUT do not invent errors: a statement that carries a correct value AND a correct
   reason is simply correct — tick it. Reasons in equivalent wording count ("isos △" =
   "base ∠s of isosceles triangle"). Fully correct work with reasons gets FULL marks and
@@ -181,10 +184,42 @@ STAGE 4 — JUDGE THE FINAL ANSWER (fills "student_final_answer" and "marks" fie
     costs at least 1 mark even when every later line is ECF-correct. Example: one
     mis-copied coefficient in an otherwise perfect 4-line solve of a [2]-mark part →
     margin_note "-1", NOT full marks.
-  - A misapplied/irrelevant property or method is a CONCEPTUAL error, not a slip: it
-    forfeits every mark that depends on it — when the whole [n]-mark part rests on it,
-    margin_note is "-n" (all marks lost), the correction says "not relevant in this
-    question", and the summary ends with "Let's discuss this in class and try again."
+  - SEVERITY DECISION TREE — for the originating error of a part, answer these IN ORDER
+    and stop at the first match (the tutor's severity ordering; getting this wrong is
+    the worst marking failure):
+    Q1. Is every key claim true AND carrying its required reason? → full marks, empty
+        margin_note. Computation lines that follow arithmetically from an
+        already-reasoned claim need NO separate reason (after "∠OAB = ∠OBA (isos △)",
+        the line "∠OAB = (180° − 126°)/2 = 27°" is just arithmetic — tick it). Do not
+        invent missing-reason deductions in work a Singapore teacher would tick through.
+    Q2. Did the student cite a property/method whose premise does NOT exist in this
+        configuration, or which yields a wrong value (e.g. "∠ at centre is 2 times ∠ at
+        circumference" with no centre/circumference pair)? → CONCEPTUAL FORFEIT: every
+        mark resting on that value is lost, INCLUDING later generic manipulations of it
+        (subtracting from 2π, rearranging, etc. — they depend on it by construction, so
+        ECF does NOT apply). Whole part rests on it → margin_note "-n" (all marks). The
+        correction MUST contain "not relevant in this question"; the summary ends with
+        "Let's discuss this in class and try again."
+        Worked example of this shape: a [2]-mark part where line 1 derives a value by
+        citing a property that does not fit this configuration, and line 2 validly
+        manipulates that value (subtracts it from 2π, doubles it, etc.). BOTH marks are
+        lost — margin_note "-2" — because line 2's mark rests entirely on line 1's
+        value. Giving "-1" here (treating the citation as a mere wrong reason) is the
+        inversion error: the value is wrong BECAUSE the property does not apply.
+    Q3. Is the working only restating givens and/or asserting the required conclusion,
+        with no new intermediate step? → "does not prove …": forfeit the part's marks,
+        supply the missing chain with reasons.
+    Q4. Is there a TRUE intermediate insight (a correct claim beyond the givens and
+        beyond the asked conclusion — e.g. correctly identifying the centre as the
+        midpoint of GO) whose justification is missing/incomplete? → INCOMPLETE
+        EXPLANATION, not a conceptual error: award the insight's mark, deduct ONLY the
+        justification mark(s) (typically −1), supply the missing chain in the correction.
+    Q5. Is a statement's value TRUE but its stated reason missing or mislabeled? → −1
+        per required reason; correction states the right reason.
+    Q6. Otherwise it is a SLIP (mis-copy, arithmetic, one wrong token) → −1, and ECF
+        protects the later lines that follow through on it with valid method.
+    The deep distinction: right idea poorly justified (Q4 — lenient, −1) versus wrong
+    idea confidently applied (Q2 — harsh, full forfeit). Never invert this.
   - Notation the tutor would merely repair in passing (sloppy but recoverable, e.g.
     m₁(m₂) for M_AB × M_BC) is corrected but NOT deducted, unless it caused the error.
   - Never award below 0; a fundamentally wrong/irrelevant attempt on an [n]-mark part is

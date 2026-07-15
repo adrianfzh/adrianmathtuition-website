@@ -24,26 +24,11 @@ const MODEL = process.env.MARKING_EVAL_MODEL || 'claude-sonnet-5'; // default = 
 const golden = JSON.parse(fs.readFileSync(new URL('./marking-golden-set.json', import.meta.url), 'utf8'));
 const only = process.argv.includes('--item') ? Number(process.argv[process.argv.indexOf('--item') + 1]) : null;
 
-let pass = 0, total = 0;
-for (const [i, item] of golden.items.entries()) {
-  if (only !== null && i !== only) continue;
-  total++;
-  const sys = buildMarkingPrompt(item.question, item.student_level, item.question_level);
-  const user = `The student's handwritten working, transcribed line by line (treat as the page content):\n` +
-    item.working_lines.map((l, n) => `Line ${n + 1}: ${l}`).join('\n') +
-    `\nMax marks for this part: [${item.max_marks}]`;
-  const resp = await anthropic.messages.create({
-    model: MODEL, max_tokens: 8000, system: sys,
-    messages: [{ role: 'user', content: user }],
-  });
-  let out;
-  try {
-    const raw = resp.content.filter(b => b.type === 'text').map(b => b.text).join('').trim()
-      .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-    out = JSON.parse(raw);
-  }
-  catch { const raw=resp.content.filter(b=>b.type==='text').map(b=>b.text).join(''); console.log(`#${i} ${item.id}: FAIL (non-JSON output) :: ${JSON.stringify(raw.slice(0,180))}`); continue; }
+// NOTE: `temperature` is rejected ("deprecated") by claude-sonnet-5 — do not re-add it.
+// Variance is handled by majority-of-K sampling instead (EVAL_SAMPLES, default 3).
+const K = Math.max(1, Number(process.env.EVAL_SAMPLES || 3));
 
+function scoreSample(out, item) {
   const gotMargin = (out.marks?.margin_note ?? '').replace('−', '-');
   const wantMargin = item.expected.margin_note.replace('−', '-');
   const marginOk = gotMargin === wantMargin;
@@ -62,9 +47,37 @@ for (const [i, item] of golden.items.entries()) {
   const flagsHit = item.expected.must_mention.filter(m => blob.includes(m.toLowerCase()));
   const fOk = flagsHit.length === item.expected.must_mention.length;
 
-  const ok = marginOk && vOk && fOk;
-  if (ok) pass++;
-  console.log(`#${i} ${item.id}: ${ok ? 'PASS' : 'FAIL'}  margin ${gotMargin || '(full)'}${marginOk ? '' : ` ≠ ${wantMargin || '(full)'}`}  verdicts ${vDetail}  flags ${flagsHit.length}/${item.expected.must_mention.length}${fOk ? '' : ' missing: ' + item.expected.must_mention.filter(m => !flagsHit.includes(m)).join('; ')}`);
+  return { ok: marginOk && vOk && fOk, gotMargin, wantMargin, marginOk, vDetail,
+    flagsHit, fOk, missing: item.expected.must_mention.filter(m => !flagsHit.includes(m)) };
 }
-console.log(`\n${pass}/${total} items agree with Adrian's marking`);
+
+async function runSample(item) {
+  const sys = buildMarkingPrompt(item.question, item.student_level, item.question_level);
+  const user = `The student's handwritten working, transcribed line by line (treat as the page content):\n` +
+    item.working_lines.map((l, n) => `Line ${n + 1}: ${l}`).join('\n') +
+    `\nMax marks for this part: [${item.max_marks}]`;
+  const resp = await anthropic.messages.create({
+    model: MODEL, max_tokens: 16000, system: sys,
+    messages: [{ role: 'user', content: user }],
+  });
+  const raw = resp.content.filter(b => b.type === 'text').map(b => b.text).join('').trim()
+    .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  try { return scoreSample(JSON.parse(raw), item); }
+  catch { return { ok: false, nonJson: true, raw: raw.slice(0, 120) }; }
+}
+
+let pass = 0, total = 0;
+for (const [i, item] of golden.items.entries()) {
+  if (only !== null && i !== only) continue;
+  total++;
+  const samples = await Promise.all(Array.from({ length: K }, () =>
+    runSample(item).catch(e => ({ ok: false, nonJson: true, raw: String(e).slice(0, 120) }))));
+  const passes = samples.filter(s => s.ok).length;
+  const ok = passes * 2 > K; // strict majority
+  if (ok) pass++;
+  const detail = samples.map(s => s.nonJson ? 'non-JSON' :
+    `${s.ok ? 'pass' : 'fail'}(margin ${s.gotMargin || '(full)'}${s.marginOk ? '' : `≠${s.wantMargin || '(full)'}`}, v ${s.vDetail}${s.fOk ? '' : ', missing: ' + s.missing.join(';')})`).join(' | ');
+  console.log(`#${i} ${item.id}: ${ok ? 'PASS' : 'FAIL'} ${passes}/${K} samples — ${detail}`);
+}
+console.log(`\n${pass}/${total} items agree with Adrian's marking (majority of ${K} samples)`);
 process.exit(pass === total ? 0 : 1);

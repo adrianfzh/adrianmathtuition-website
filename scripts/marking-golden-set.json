@@ -95,21 +95,24 @@
     },
     {
       "id": "circular-measure-irrelevant-property",
-      "source": "EM-circle-properties-circular-measure p4 Q1a (radians)",
+      "source": "EM-circle-properties-circular-measure IMG_9169 Q1a; printed question: 'O REV 2026 EM 4' PDF p4, Circular Measure Practice Q1(a). Re-transcribed 2026-07-15 with the real question text + full working (the earlier paraphrase omitted the tangent-tangent configuration and truncated the working to 2 lines — no model would full-forfeit without seeing that D is external).",
       "question_level": "SECONDARY",
       "student_level": "Sec 4",
       "max_marks": 2,
-      "question": "In the circle, reflex ∠AOB is required. The minor angle relationships are given via the tangent at A. Find ∠AOB in radians, where the tangent-chord angle at A is π/4.",
+      "question": "ACB is an arc of a circle with centre O and radius 8 cm. AD and BD are tangents to the circle at A and B respectively, meeting at the external point D, and angle ADB = π/4. (a) Find the length of AD. [2]",
       "working_lines": [
         "reflex ∠AOB = (π/4) × 2 = π/2 (∠ at centre is 2 times ∠ at circumference)",
-        "∠AOB = 2π − π/2 = 3π/2"
+        "∠AOB = 2π − π/2 = 3π/2",
+        "(3π/2) ÷ 2 = 3π/4",
+        "tan(3π/4) = AD/8",
+        "AD = −8"
       ],
       "expected": {
         "margin_note": "-2",
-        "line_verdicts": ["wrong", null],
-        "must_mention": ["not relevant"]
+        "line_verdicts": ["wrong", null, null, null, null],
+        "must_mention": ["not relevant", "in class and try again"]
       },
-      "note": "Adrian: underlines the quoted property, ✗, 'this property is not relevant in this question', and 'discuss in class and try again' — a conceptual misapplication rather than a slip, so the summary should defer to class discussion."
+      "note": "Adrian: underlines the cited property, ✗, 'this property is not relevant in this question' (D is an external point — no circumference angle exists, the property cannot apply), then '✗✗ discuss in class and try again'. Full forfeit −2 of [2]: every subsequent line manipulates the value produced by the misapplied property, so none of it earns method marks. Correct path: quadrilateral DAOB has right angles at A and B (tan ⊥ rad) so ∠AOB = 3π/4; right triangle ADO with ∠ADO = π/8 gives AD = 8/tan(π/8) ≈ 19.3 cm."
     }
   ]
 }
