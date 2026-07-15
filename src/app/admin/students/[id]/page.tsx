@@ -550,7 +550,7 @@ export default function StudentProfilePage() {
                       style={{ fontSize: 12, fontWeight: 600, color: '#0369a1', background: '#fff', border: '1px solid #bae6fd', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
                       🏖 Holiday opt-out…
                     </button>
-                    <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), reason: '', voidUnsent: true, emailParent: false, saving: false })}
+                    <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), reason: '', voidUnsent: true, emailParent: true, saving: false })}
                       style={{ fontSize: 12, fontWeight: 600, color: '#b91c1c', background: '#fff', border: '1px solid #fecaca', borderRadius: 8, padding: '5px 12px', cursor: 'pointer' }}>
                       ⏹ Discontinue…
                     </button>
