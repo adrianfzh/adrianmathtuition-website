@@ -105,22 +105,24 @@ export async function POST(req: NextRequest) {
   // 5. Optional farewell email to the parent (opt-in).
   if (emailParent && parentEmail && process.env.RESEND_API_KEY) {
     try {
-      const first = studentName.trim().split(/\s+/)[0] || 'your child';
+      // Use the full name (can't reliably tell a given name from a full-name
+      // string — Chinese put the surname first, Western last) and "them/their".
+      const name = studentName || 'your child';
+      const dateFmt = (() => { try { return new Date(effectiveDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); } catch { return effectiveDate; } })();
       const disregard = voidedSentMonths.length
-        ? `<p style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px"><strong>Please disregard the invoice issued for ${[...new Set(voidedSentMonths)].join(' and ')}.</strong> It has been cancelled, as it covered lessons from ${effectiveDate} that will no longer take place, and no payment is required.</p>`
+        ? `<p style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px"><strong>Please disregard the invoice issued for ${[...new Set(voidedSentMonths)].join(' and ')}.</strong> It has been cancelled, as it covered lessons from ${dateFmt} that will no longer take place, and no payment is required.</p>`
         : '';
       const html = `<!DOCTYPE html><html><body style="font-family:-apple-system,'Segoe UI',Arial,sans-serif;color:#33415c;line-height:1.6;max-width:560px;margin:0 auto;padding:16px">
-        <p style="font-size:18px;font-weight:700;color:#1e3a5f">Thank you</p>
-        <p>Thank you for the time we've had teaching <strong>${studentName}</strong> at Adrian's Math Tuition.</p>
-        <p>${first}'s last lesson with us is before <strong>${effectiveDate}</strong>. It's been a real pleasure, and ${first} is always welcome back — just message me anytime.</p>
+        <p>Thank you for the time we've spent teaching <strong>${name}</strong> at Adrian's Math Tuition.</p>
+        <p>The last lesson with us is before <strong>${dateFmt}</strong>. It's been a real pleasure, and they're always welcome back — just message me anytime.</p>
         ${disregard}
-        <p>Wishing ${first} all the very best.</p>
+        <p>Wishing them all the very best.</p>
         <p style="margin-top:18px"><strong style="color:#1e3a5f">Adrian</strong><br/><span style="font-size:13px;color:#8a94a6">Adrian's Math Tuition · 9139 7985 · adrianmathtuition.com</span></p>
       </body></html>`;
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: "Adrian's Math Tuition <hello@adrianmathtuition.com>", to: parentEmail, subject: `Thank you from Adrian's Math Tuition`, html }),
+        body: JSON.stringify({ from: "Adrian's Math Tuition <hello@adrianmathtuition.com>", to: parentEmail, subject: studentName ? `${studentName} — end of lessons at Adrian's Math Tuition` : `End of lessons — Adrian's Math Tuition`, html }),
       });
       result.emailSent = res.ok;
     } catch { /* non-fatal */ }
