@@ -230,6 +230,19 @@ to their own level.** No anonymous browsing.
    (seeded Fisher–Yates over an `.order('id')`-pinned pool), so students printing the same
    topic+tier the same day get the SAME sheet (they can discuss); reprints are identical;
    counts slice one shared order (print 8 then 15 → Q9–15 are new). Rotates at SGT midnight.
+5c. **Pool is ANSWER-gated, not solution-gated** (fixed 2026-07-16): eligibility = has a
+   printable answer (top-level `answer` OR any `parts[].answer`, checked in JS post-flatten)
+   + not-deleted + text-only-or-verified-figure. The old `solution NOT NULL` filter was an
+   AI-pool leftover that hid ~80% of the extracted bank. Fetch cap 400 → answer gate → pool
+   cap 120 in pinned id order.
+5d. **Type A revision worksheets** — "Worksheet type" toggle (✏️ Practice only / 📘 Notes +
+   practice). `card=1` on `/api/kiosk/worksheet` attaches the topic's **`topic_cards`** row
+   (math Supabase; one per kiosk-level+canonical-topic; `content_md` = markdown+KaTeX, 1-page
+   budget; `draft`→`approved` workflow, drafts print with a DRAFT watermark). Card renders as
+   page 1 (facts/techniques/traps, blockquotes = boxed formula panels), questions from page 2.
+   Cards are authored by the Cowork notes session per `~/Desktop/AdrianMath/TOPIC_CARD_SPEC.md`;
+   2 AM pilot drafts seeded (Coordinate Geometry, Circles). Types B (worked-example paired) and
+   C (mixed-topic) planned — B needs the S1 sub-group backfill for example↔question matching.
 6. **Answers always print inline** — one `[Ans: …]` line closing each question after the working
    space, right-aligned, orange `#843C0C`, KaTeX coloured too (STYLE.md house rule). No answers-at-
    back section, no toggle. Name line prefills the student's name.
