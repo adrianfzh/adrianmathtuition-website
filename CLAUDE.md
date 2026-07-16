@@ -43,6 +43,27 @@ This keeps history linear (`dev` is always at or ahead of `main`). If `--ff-only
 
 Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/route.ts`. Shared components in `src/`. Deployed on Vercel.
 
+## Testing & monitoring policy (2026-07-16)
+
+Two layers guard parent/student-facing operations; keep BOTH current as features land:
+
+1. **Unit tests (vitest, pre-push gated)** — money and date logic MUST live as pure
+   functions in `src/lib/` with a sibling `.test.ts`, not inline in routes/handlers.
+   Existing homes: `billing-math.ts` (lesson-date counting — use it, never re-implement
+   a weekday/proration loop; a duplicated loop in the bot dropped the last Friday of a
+   month, Kieran Lai Jul 2026), `invoice-month.ts` (invoice month labels/spanning),
+   `invoice-payments.ts`. When a money bug is fixed, add a named regression test.
+   `.githooks/pre-push` runs `npm test` and blocks the push on failure.
+2. **Synthetic monitoring** — `/api/health-check` (cron every 6h) probes the live
+   parent-facing surfaces (Airtable, public schedule, signup-link HMAC handshake,
+   invoice PDF blob, Dropbox notes, Resend, kiosk, the Fly bot) and Telegram-alerts
+   ONLY on failure. **Any new parent/student-facing surface must add a check here**
+   (a `timed('name', …)` entry) in the same PR that ships the feature.
+
+Definition of done for a feature touching money or parents/students: pure logic in
+lib + tests + a health-check entry when it adds a surface. Browser E2E is deliberately
+NOT used (solo-maintenance cost outweighs value).
+
 ## Key Pages (`src/app/`)
 
 - `page.tsx` — homepage with schedule widget (fetches `/api/schedule`)

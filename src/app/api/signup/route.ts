@@ -7,6 +7,7 @@ import { NO_LESSON_DATES } from '@/lib/holidays';
 import { buildPreviewInvoiceUrl } from '@/lib/invoice-preview-url';
 import { sendWelcomeEmail } from '@/lib/welcome-email';
 import { displaySpanMonth } from '@/lib/invoice-month';
+import { firstInvoiceLessonDates } from '@/lib/billing-math';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -319,37 +320,26 @@ export async function POST(request: NextRequest) {
         const allLineItems: { date: string; day: string; type: string; description: string }[] = [];
 
         if (targetDay !== undefined) {
-          // April (start month) line items — from start date to end of month
+          // Lesson dates from the shared tested billing math (single source of
+          // truth — the old inline loops had a sibling copy in the bot that
+          // dropped the last Friday of the month; see billing-math.test.ts).
           const startMonthLabel = `${MONTH_NAMES[start.getMonth()]} ${start.getFullYear()}`;
-          const lastDayOfStartMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0);
-          const cur1 = new Date(start);
-          while (cur1.getDay() !== targetDay) cur1.setDate(cur1.getDate() + 1);
-          while (cur1 <= lastDayOfStartMonth) {
-            const iso = cur1.toISOString().split('T')[0];
-            if (!NO_LESSON_DATES.includes(iso)) {
-              allLineItems.push({ date: iso, day: dayLabel, type: 'Regular', description: `${level} ${subjectsStr} — ${startMonthLabel}` });
-            }
-            cur1.setDate(cur1.getDate() + 7);
+          const { startMonth: startMonthDates, nextMonth: nextMonthDates } =
+            firstInvoiceLessonDates(String(startDate), targetDay, batchAlreadyRan, NO_LESSON_DATES);
+          for (const iso of startMonthDates) {
+            allLineItems.push({ date: iso, day: dayLabel, type: 'Regular', description: `${level} ${subjectsStr} — ${startMonthLabel}` });
           }
           const aprilCount = allLineItems.length;
 
-          // Next month line items — only if batch already ran
           let nextMonthCount = 0;
           let nextMonthLabel = '';
           if (batchAlreadyRan) {
             const nextMonthStart = new Date(start.getFullYear(), start.getMonth() + 1, 1);
-            const nextMonthEnd   = new Date(start.getFullYear(), start.getMonth() + 2, 0);
             nextMonthLabel = `${MONTH_NAMES[nextMonthStart.getMonth()]} ${nextMonthStart.getFullYear()}`;
-            const cur2 = new Date(nextMonthStart);
-            while (cur2.getDay() !== targetDay) cur2.setDate(cur2.getDate() + 1);
-            while (cur2 <= nextMonthEnd) {
-              const iso = cur2.toISOString().split('T')[0];
-              if (!NO_LESSON_DATES.includes(iso)) {
-                allLineItems.push({ date: iso, day: dayLabel, type: 'Regular', description: `${level} ${subjectsStr} — ${nextMonthLabel}` });
-              }
-              cur2.setDate(cur2.getDate() + 7);
+            for (const iso of nextMonthDates) {
+              allLineItems.push({ date: iso, day: dayLabel, type: 'Regular', description: `${level} ${subjectsStr} — ${nextMonthLabel}` });
             }
-            nextMonthCount = allLineItems.length - aprilCount;
+            nextMonthCount = nextMonthDates.length;
           }
 
           const totalLessons = allLineItems.length;
