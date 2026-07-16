@@ -26,11 +26,11 @@ export type Part = {
   image_url?: string | null; image_url_after?: string | null;
 };
 
-/* Working space is APPORTIONED TO THE MARKS (STYLE.md: ≈1.8 blank lines per
- * mark — a 2-mark part gets a small gap, a 6-mark question a large one),
- * rendered as an empty spacer div. No ruled lines — this is math. */
+/* Working space is APPORTIONED TO THE MARKS (STYLE.md; Adrian bumped the rate
+ * 2026-07-17: 9mm/mark printed too tight) — 14mm per mark, clamped 14–84mm.
+ * Rendered as an empty spacer div. No ruled lines — this is math. */
 export function spaceMm(marks: number): number {
-  return Math.min(54, Math.max(9, marks * 9));
+  return Math.min(84, Math.max(14, marks * 14));
 }
 
 export function flattenParts(stem: string, parts: Part[] | null): { text: string; answer: string } {

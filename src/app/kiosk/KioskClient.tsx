@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import QRCode from 'qrcode';
@@ -12,6 +13,9 @@ import PasswordInput from '@/components/PasswordInput';
 
 // Reuse the practice page's markdown+LaTeX stack.
 const REMARK = [remarkMath, remarkGfm];
+// Notes cards: soft newlines become real line breaks, so each fact in a
+// formula box sits on its own line (Adrian 2026-07-17 — no prose walls).
+const REMARK_CARD = [remarkMath, remarkGfm, remarkBreaks];
 const REHYPE = [rehypeRaw, rehypeKatex];
 
 // Tutor palette.
@@ -694,7 +698,7 @@ export default function KioskClient() {
             <section className="ws-card">
               <div className="ws-card-title">Notes — {worksheet.card.title.replace(/ — Quick Revision$/, '')}</div>
               <div className="ws-card-body">
-                <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>
+                <ReactMarkdown remarkPlugins={REMARK_CARD} rehypePlugins={REHYPE}>
                   {worksheet.card.contentMd}
                 </ReactMarkdown>
               </div>
@@ -705,8 +709,12 @@ export default function KioskClient() {
           )}
 
           <ol className="ws-questions">
-            {worksheet.questions.map((q) => (
+            {worksheet.questions.map((q, qi) => (
               <li key={q.id} className="ws-q">
+                {/* Explicit number (not a CSS ::marker): survives page breaks and
+                    figure-first questions — the marker was printing at the answer
+                    line on tall questions (Adrian 2026-07-17). */}
+                <span className="ws-qnum">{qi + 1}.</span>
                 <div className="ws-q-body">
                   {q.figureUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -920,7 +928,7 @@ const PRINT_CSS = `
 .ws-card-body { font-size: 9pt; line-height: 1.35; }
 .ws-card-body h2 { font-size: 9.5pt; margin: 5pt 0 2pt; border-bottom: 0.75pt solid #bbb; padding-bottom: 1pt; }
 .ws-card-body h3 { font-size: 9pt; margin: 4pt 0 2pt; }
-.ws-card-body ul, .ws-card-body ol { margin: 2pt 0 3pt 14pt; padding: 0; }
+.ws-card-body ul, .ws-card-body ol { margin: 2pt 0 3pt 0; padding-left: 13pt; }
 .ws-card-body li { margin-bottom: 1.5pt; }
 .ws-card-body p { margin: 2pt 0; }
 .ws-card-body blockquote { border: 0.9pt solid #111; border-radius: 3px; padding: 3pt 7pt; margin: 3pt 0; }
@@ -943,6 +951,9 @@ const PRINT_CSS = `
   .worksheet {
     color: #111; font-family: "Times New Roman", Georgia, serif; font-size: 9.5pt; line-height: 1.5;
   }
+  /* KaTeX defaults to 1.21em — maths printed ~11.5pt against 9.5pt prose and the
+     whole sheet read oversized. Pin maths to the body size. */
+  .worksheet .katex { font-size: 1em; }
 
   /* Branded header (STYLE.md): navy caps brand + orange rule, grey level token,
      navy bold TYPE, big centred topic title. */
@@ -955,12 +966,15 @@ const PRINT_CSS = `
   .ws-namebar { display: flex; justify-content: space-between; gap: 10pt; font-size: 9pt; margin-top: 4pt; }
   .ws-datemeta { color: #6E6E6E; text-transform: capitalize; }
 
-  .ws-questions { list-style: decimal; padding-left: 18pt; margin: 0; }
-  .ws-q { margin-bottom: 5pt; break-inside: avoid; }
+  /* Explicit numbering (::marker misplaced itself on tall/figure-first questions). */
+  .ws-questions { list-style: none; padding-left: 18pt; margin: 0; }
+  .ws-q { margin-bottom: 5pt; break-inside: avoid; position: relative; }
+  .ws-qnum { position: absolute; left: -18pt; top: 0; font-weight: 700; }
   .ws-q-body { display: block; }
   .ws-q-body p { display: block; margin: 0 0 1.5pt; }
-  .ws-figure { display: block; max-width: 72%; max-height: 220pt; margin: 4pt 0; }
-  .ws-q-body img { display: block; max-width: 72%; max-height: 220pt; margin: 4pt 0; }
+  /* Figures print generously — grids especially must be big enough to plot on. */
+  .ws-figure { display: block; max-width: 100%; max-height: 300pt; margin: 5pt 0; }
+  .ws-q-body img { display: block; max-width: 100%; max-height: 300pt; margin: 5pt 0; }
 
   /* Marks right-aligned at the margin, exam style. */
   .ws-mk { float: right; font-weight: 400; }
