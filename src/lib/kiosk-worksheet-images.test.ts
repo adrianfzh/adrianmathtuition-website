@@ -73,13 +73,23 @@ describe('flattenParts', () => {
     ]);
     expect(text.indexOf('![diagram]')).toBeLessThan(text.indexOf('**(a)**'));
   });
-  it('keeps stem, labels, marks, and combined answers intact', () => {
+  it('keeps stem, labels, marks, and combined answers intact (house style: marks span + proportional spacer)', () => {
     const { text, answer } = flattenParts('Stem here.', [
       { label: 'a', text: 'First.', marks: 2, answer: '1' },
       { label: 'b', text: 'Second.', answer: '2' },
     ]);
-    expect(text).toBe('Stem here.\n\n**(a)** First.  [2]\n\n**(b)** Second.');
+    // Marks render as a right-floating span, followed by a marks-proportional
+    // working-space div (9mm/mark, clamp 9–54). Unmarked parts get neither.
+    expect(text).toBe(
+      'Stem here.\n\n**(a)** First. <span class="ws-mk">[2]</span>\n\n<div class="ws-sp" style="height:18mm"></div>\n\n**(b)** Second.'
+    );
     expect(answer).toBe('(a) 1;  (b) 2');
+  });
+  it('clamps working space to 9–54mm', () => {
+    const one = flattenParts('', [{ label: 'a', text: 'Tiny.', marks: 1, answer: 'x' }]).text;
+    const big = flattenParts('', [{ label: 'b', text: 'Huge.', marks: 9, answer: 'y' }]).text;
+    expect(one).toContain('height:9mm');
+    expect(big).toContain('height:54mm');
   });
   it('returns the stem untouched when parts are null/empty', () => {
     expect(flattenParts('Just a stem.', null)).toEqual({ text: 'Just a stem.', answer: '' });
