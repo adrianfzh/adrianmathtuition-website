@@ -23,7 +23,9 @@ const localBusinessSchema = {
   priceRange: '$320 - $360 per month',
   address: {
     '@type': 'PostalAddress',
+    streetAddress: '203 Hougang Street 21, #03-51',
     addressLocality: 'Hougang',
+    postalCode: '530203',
     addressCountry: 'SG',
   },
   // Google Business Profile listing + its pin coordinates — ties the website
