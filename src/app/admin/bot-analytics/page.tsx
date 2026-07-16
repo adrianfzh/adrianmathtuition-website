@@ -122,6 +122,9 @@ function computeFlags(qs: Question[]): Question[] {
 
   // Status-based flags (strongest signals)
   for (const q of enriched.values()) {
+    // Post-deploy smoke tests (staging-web-checks.js, chat ids web-check-*)
+    // deliberately trigger low-confidence answers — never flag them.
+    if (String(q.chatId || '').startsWith('web-check-')) continue;
     if (q.status === 'negative_feedback') addFlag(q, 'negative_feedback');
     if (q.status === 'admin_forced') addFlag(q, 'admin_forced');
     if (q.status === 'low_confidence' || (q.confidence || '').toLowerCase() === 'low') addFlag(q, 'low_confidence');
@@ -135,6 +138,7 @@ function computeFlags(qs: Question[]): Question[] {
       const prev = group[i - 1];
       const cap = (curr.caption || '').toLowerCase().trim();
       const minsDiff = (new Date(curr.timestamp).getTime() - new Date(prev.timestamp).getTime()) / 60000;
+      if (String(curr.chatId || '').startsWith('web-check-')) continue; // smoke tests never flag
       if (minsDiff <= 20 && (CONFUSION_RE.some(r => r.test(cap)) || cap.length < 15)) {
         const p = enriched.get(prev.id)!;
         p.confusedFollowUp = curr.caption;
