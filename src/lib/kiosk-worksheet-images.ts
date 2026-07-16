@@ -26,6 +26,13 @@ export type Part = {
   image_url?: string | null; image_url_after?: string | null;
 };
 
+/* Working space is APPORTIONED TO THE MARKS (STYLE.md: ≈1.8 blank lines per
+ * mark — a 2-mark part gets a small gap, a 6-mark question a large one),
+ * rendered as an empty spacer div. No ruled lines — this is math. */
+export function spaceMm(marks: number): number {
+  return Math.min(54, Math.max(9, marks * 9));
+}
+
 export function flattenParts(stem: string, parts: Part[] | null): { text: string; answer: string } {
   if (!parts?.length) return { text: stem, answer: '' };
   const textLines: string[] = stem ? [stem] : [];
@@ -34,7 +41,13 @@ export function flattenParts(stem: string, parts: Part[] | null): { text: string
     for (const p of list) {
       const label = p.label ? `${prefix}(${p.label})` : prefix;
       if (isPlausibleImagePath(p.image_url)) textLines.push(`![diagram](${imgSrc(p.image_url)})`);
-      if (p.text) textLines.push(`**${label}** ${p.text}${p.marks ? `  [${p.marks}]` : ''}`);
+      if (p.text) {
+        // Marks right-aligned like a real exam paper (span floats right in print CSS),
+        // followed by marks-proportional working space.
+        const mk = p.marks ? ` <span class="ws-mk">[${p.marks}]</span>` : '';
+        textLines.push(`**${label}** ${p.text}${mk}`);
+        if (p.marks) textLines.push(`<div class="ws-sp" style="height:${spaceMm(p.marks)}mm"></div>`);
+      }
       if (isPlausibleImagePath(p.image_url_after)) textLines.push(`![diagram](${imgSrc(p.image_url_after)})`);
       if (p.answer) answers.push(`${label} ${p.answer}`);
       if (p.subparts?.length) walk(p.subparts, label);

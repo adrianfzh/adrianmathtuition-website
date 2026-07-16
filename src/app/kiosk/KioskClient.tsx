@@ -55,7 +55,18 @@ const TIER_CHOICES: { key: TierChoice; label: string }[] = [
 type Topic = { topic: string; count: number };
 type WsQuestion = { id: string; markdown: string; marks: number | null; figureUrl?: string | null; imageUrls?: string[]; answer?: string | null };
 type WsCard = { title: string; contentMd: string; status: string };
-type Worksheet = { title: string; level: string; topic: string; card?: WsCard | null; questions: WsQuestion[] };
+type Worksheet = { title: string; level: string; topic: string; tier?: string; card?: WsCard | null; questions: WsQuestion[] };
+
+// STYLE.md branded header: grey LEVEL • SUBJECT token per level.
+const WS_LEVEL_LABEL: Record<string, string> = {
+  S1: 'SEC 1 • MATH', S2: 'SEC 2 • MATH',
+  EM: 'O LEVEL • EM', AM: 'O LEVEL • AM', JC2: 'JC • H2 MATH',
+};
+// Working space when a question has no per-part spacers (stem-only questions):
+// apportioned to total marks, ≈1.8 lines/mark (STYLE.md), no ruled lines.
+function wsSpaceMm(marks: number | null): number {
+  return Math.min(54, Math.max(12, (marks ?? 3) * 9));
+}
 
 type AuthState = 'checking' | 'setup' | 'ready';
 type Student = {
@@ -663,21 +674,25 @@ export default function KioskClient() {
       {worksheet && (
         <div className="worksheet">
           <div className="ws-header">
-            <div className="ws-title">AdrianMath Tuition</div>
-            <div className="ws-meta">
-              <span>{worksheet.title}</span>
-              <span>{dateStr}</span>
+            {/* STYLE.md branded header: brand line + orange rule, grey level token +
+                navy TYPE, topic as the big centred title. */}
+            <div className="ws-brand">ADRIAN&apos;S MATH TUITION</div>
+            <div className="ws-line2">
+              <span className="ws-lvl">{WS_LEVEL_LABEL[worksheet.level] ?? worksheet.level}</span>
+              <span className="ws-type">{worksheet.card ? 'REVISION WORKSHEET' : 'PRACTICE WORKSHEET'}</span>
             </div>
+            <div className="ws-topic">{worksheet.topic}</div>
             <div className="ws-namebar">
               <span>Name: {student ? student.name : '______________________________'}</span>
+              <span className="ws-datemeta">{worksheet.tier && worksheet.tier !== 'mixed' ? `${worksheet.tier} · ` : ''}{dateStr}</span>
               <span>Class: ______________</span>
             </div>
           </div>
 
           {worksheet.card && (
-            // Type A: the topic revision card — page 1, questions start on page 2.
+            // Type A: compact revision notes — a section, not a page; questions flow after it.
             <section className="ws-card">
-              <div className="ws-card-title">📘 {worksheet.card.title}</div>
+              <div className="ws-card-title">Notes — {worksheet.card.title.replace(/ — Quick Revision$/, '')}</div>
               <div className="ws-card-body">
                 <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>
                   {worksheet.card.contentMd}
@@ -705,9 +720,16 @@ export default function KioskClient() {
                   <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>
                     {q.markdown}
                   </ReactMarkdown>
-                  {q.marks != null && <span className="ws-marks">[{q.marks}]</span>}
+                  {/* Total marks shown right-aligned only when parts don't carry their own. */}
+                  {q.marks != null && !q.markdown.includes('ws-mk') && (
+                    <span className="ws-mk">[{q.marks}]</span>
+                  )}
                 </div>
-                <div className="ws-answer-space" aria-hidden />
+                {/* Stem-only questions get marks-proportional working space; parts
+                    already carry their own ws-sp spacers inside the markdown. */}
+                {!q.markdown.includes('ws-sp') && (
+                  <div className="ws-answer-space" style={{ height: `${wsSpaceMm(q.marks)}mm` }} aria-hidden />
+                )}
                 {q.answer && (
                   // House style (STYLE.md): one [Ans: …] line closing the question,
                   // AFTER the working space — right-aligned, orange, maths included.
@@ -721,7 +743,10 @@ export default function KioskClient() {
             ))}
           </ol>
 
-          <div className="ws-footer">AdrianMath Tuition · adrianmathtuition.com</div>
+          <div className="ws-footer">
+            <span className="ws-foot-brand">Adrian&apos;s Math Tuition</span>
+            <span className="ws-foot-url">adrianmathtuition.com</span>
+          </div>
         </div>
       )}
     </>
@@ -889,55 +914,64 @@ const PRINT_CSS = `
 /* House style (STYLE.md): [Ans: …] closes each question — right-aligned, orange,
    not bold, ENTIRE line orange including the rendered maths. Lives outside
    @media print so the rule is testable; .worksheet is display:none on screen. */
-.ws-card { page-break-after: always; }
-.ws-card-title { font-size: 15pt; font-weight: 800; border-bottom: 1.5px solid #111; padding-bottom: 5pt; margin-bottom: 9pt; }
-.ws-card-body { font-size: 10.5pt; line-height: 1.5; }
-.ws-card-body h2 { font-size: 12pt; margin: 10pt 0 4pt; border-bottom: 1px solid #bbb; padding-bottom: 2pt; }
-.ws-card-body h3 { font-size: 11pt; margin: 8pt 0 3pt; }
-.ws-card-body ul, .ws-card-body ol { margin: 3pt 0 6pt 16pt; padding: 0; }
-.ws-card-body li { margin-bottom: 2.5pt; }
-.ws-card-body p { margin: 3pt 0; }
-.ws-card-body blockquote { border: 1.2px solid #111; border-radius: 4px; padding: 6pt 9pt; margin: 6pt 0; }
-.ws-card-body blockquote p { margin: 2pt 0; }
-.ws-card-body table { border-collapse: collapse; margin: 5pt 0; }
-.ws-card-body th, .ws-card-body td { border: 1px solid #999; padding: 3pt 7pt; font-size: 10pt; }
-.ws-card-draft { margin-top: 8pt; text-align: center; color: #b00; font-size: 9pt; letter-spacing: .15em; font-weight: 700; }
+/* Compact notes section (Adrian 2026-07-16: a section, not a page) */
+.ws-card { border: 1pt solid ${NAVY}; border-radius: 4px; padding: 6pt 9pt 5pt; margin: 5pt 0 9pt; }
+.ws-card-title { font-size: 10pt; font-weight: 700; color: ${NAVY}; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 3pt; }
+.ws-card-body { font-size: 9pt; line-height: 1.35; }
+.ws-card-body h2 { font-size: 9.5pt; margin: 5pt 0 2pt; border-bottom: 0.75pt solid #bbb; padding-bottom: 1pt; }
+.ws-card-body h3 { font-size: 9pt; margin: 4pt 0 2pt; }
+.ws-card-body ul, .ws-card-body ol { margin: 2pt 0 3pt 14pt; padding: 0; }
+.ws-card-body li { margin-bottom: 1.5pt; }
+.ws-card-body p { margin: 2pt 0; }
+.ws-card-body blockquote { border: 0.9pt solid #111; border-radius: 3px; padding: 3pt 7pt; margin: 3pt 0; }
+.ws-card-body blockquote p { margin: 1.5pt 0; }
+.ws-card-body table { border-collapse: collapse; margin: 3pt 0; }
+.ws-card-body th, .ws-card-body td { border: 0.75pt solid #999; padding: 2pt 6pt; font-size: 8.5pt; }
+.ws-card-draft { margin-top: 4pt; text-align: right; color: #b00; font-size: 7.5pt; letter-spacing: .15em; font-weight: 700; }
 .ws-ans-line { text-align: right; color: ${ANSWER_ORANGE}; font-weight: 400; margin: 0 0 4pt; }
 .ws-ans-line p { display: inline; margin: 0; }
 .ws-ans-line .katex { color: ${ANSWER_ORANGE}; }
 
-/* ── Print ── */
+/* ── Print (house style: Times New Roman, body 9.5pt, marks right-aligned,
+      working space apportioned to marks, no ruled lines) ── */
 @media print {
   .no-print { display: none !important; }
   .worksheet { display: block; }
-  @page { size: A4; margin: 16mm 14mm; }
+  @page { size: A4; margin: 15mm 22mm 13mm; }
   html, body { background: #fff; }
 
   .worksheet {
-    color: #111; font-family: "Times New Roman", Georgia, serif; font-size: 12pt;
+    color: #111; font-family: "Times New Roman", Georgia, serif; font-size: 9.5pt; line-height: 1.5;
   }
-  .ws-header { border-bottom: 2px solid #111; padding-bottom: 8px; margin-bottom: 14px; }
-  .ws-title { font-size: 18pt; font-weight: 800; letter-spacing: .01em; }
-  .ws-meta { display: flex; justify-content: space-between; font-size: 11pt; margin-top: 4px; }
-  .ws-namebar { display: flex; justify-content: space-between; font-size: 11pt; margin-top: 10px; }
 
-  .ws-questions { list-style: decimal; padding-left: 26pt; margin: 0; }
-  .ws-q { margin-bottom: 6pt; break-inside: avoid; }
+  /* Branded header (STYLE.md): navy caps brand + orange rule, grey level token,
+     navy bold TYPE, big centred topic title. */
+  .ws-header { margin-bottom: 8pt; }
+  .ws-brand { text-align: center; color: ${NAVY}; font-weight: 700; font-size: 11.5pt; letter-spacing: .3em; border-bottom: 1.1pt solid ${ANSWER_ORANGE}; padding-bottom: 2.5pt; }
+  .ws-line2 { text-align: center; margin-top: 3pt; }
+  .ws-lvl { color: #6E6E6E; font-size: 8pt; letter-spacing: .2em; }
+  .ws-type { color: ${NAVY}; font-weight: 700; font-size: 9.5pt; letter-spacing: .26em; margin-left: 9pt; }
+  .ws-topic { text-align: center; font-size: 13.5pt; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin: 7pt 0 3pt; }
+  .ws-namebar { display: flex; justify-content: space-between; gap: 10pt; font-size: 9pt; margin-top: 4pt; }
+  .ws-datemeta { color: #6E6E6E; text-transform: capitalize; }
+
+  .ws-questions { list-style: decimal; padding-left: 18pt; margin: 0; }
+  .ws-q { margin-bottom: 5pt; break-inside: avoid; }
   .ws-q-body { display: block; }
-  .ws-q-body p { display: inline; margin: 0; }
-  .ws-figure { display: block; max-width: 78%; max-height: 240pt; margin: 6pt 0; }
-  /* Part-level figures arrive as markdown images inside the question body
-     (no class) — constrain them like .ws-figure or they print at full size. */
-  .ws-q-body img { display: block; max-width: 78%; max-height: 240pt; margin: 6pt 0; }
-  .ws-marks { font-weight: 700; margin-left: 6px; }
-  .ws-answer-space {
-    height: 74pt; margin: 6pt 0 4pt;
-    background-image: repeating-linear-gradient(#fff 0 26pt, #bbb 26pt 26.6pt);
-  }
+  .ws-q-body p { display: block; margin: 0 0 1.5pt; }
+  .ws-figure { display: block; max-width: 72%; max-height: 220pt; margin: 4pt 0; }
+  .ws-q-body img { display: block; max-width: 72%; max-height: 220pt; margin: 4pt 0; }
+
+  /* Marks right-aligned at the margin, exam style. */
+  .ws-mk { float: right; font-weight: 400; }
+  /* Working space: blank, no lines; heights set inline (∝ marks). */
+  .ws-sp, .ws-answer-space { display: block; }
 
   .ws-footer {
-    margin-top: 14pt; padding-top: 6pt; border-top: 1px solid #999;
-    text-align: center; font-size: 9pt; color: #555;
+    margin-top: 10pt; padding-top: 4pt; border-top: 0.75pt solid #999;
+    display: flex; justify-content: space-between; font-size: 8pt;
   }
+  .ws-footer .ws-foot-brand { color: ${NAVY}; font-weight: 700; letter-spacing: .12em; }
+  .ws-footer .ws-foot-url { color: #6E6E6E; }
 }
 `;
