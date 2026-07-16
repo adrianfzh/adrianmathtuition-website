@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
-import { sendTelegram } from '@/lib/telegram';
+import { sendTelegramWithButtons } from '@/lib/telegram';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -29,7 +29,8 @@ export async function GET(req: NextRequest) {
     ]);
     const nameById: Record<string, string> = Object.fromEntries((stuData.records || []).map((r: any) => [r.id, r.fields['Student Name'] || '?']));
     const open = (fuData.records || []).map((r: any) => ({
-      note: r.fields['Note'] || '',
+      id: r.id as string,
+      note: (r.fields['Note'] || '') as string,
       due: (r.fields['Due'] as string) || null,
       student: r.fields['Student']?.[0] ? (nameById[r.fields['Student'][0]] || '?') : null,
     }));
@@ -40,17 +41,26 @@ export async function GET(req: NextRequest) {
     const dueToday = open.filter(f => f.due === today);
     const rest = open.filter(f => !f.due || f.due > today)
       .sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999'));
+    const ordered = [...overdue, ...dueToday, ...rest]; // numbering matches message order
 
-    const line = (f: { note: string; due: string | null; student: string | null }) =>
-      `• ${f.student ? `<b>${esc(f.student)}</b> — ` : ''}${esc(f.note)}${f.due ? ` <i>(due ${f.due})</i>` : ''}`;
+    const line = (f: typeof open[number], n: number) =>
+      `${n}. ${f.student ? `<b>${esc(f.student)}</b> — ` : ''}${esc(f.note)}${f.due ? ` <i>(due ${f.due})</i>` : ''}`;
 
+    let n = 0;
     const parts: string[] = [`📌 <b>Parent follow-ups</b> (${open.length} open)`];
-    if (overdue.length) parts.push(`\n⚠️ <b>Overdue:</b>\n${overdue.map(line).join('\n')}`);
-    if (dueToday.length) parts.push(`\n📅 <b>Due today:</b>\n${dueToday.map(line).join('\n')}`);
-    if (rest.length) parts.push(`\n🗂 <b>Upcoming / no date:</b>\n${rest.slice(0, 10).map(line).join('\n')}${rest.length > 10 ? `\n…and ${rest.length - 10} more` : ''}`);
-    parts.push(`\nManage → adrianmathtuition.com/admin/followups`);
+    if (overdue.length) parts.push(`\n⚠️ <b>Overdue:</b>\n${overdue.map(f => line(f, ++n)).join('\n')}`);
+    if (dueToday.length) parts.push(`\n📅 <b>Due today:</b>\n${dueToday.map(f => line(f, ++n)).join('\n')}`);
+    if (rest.length) parts.push(`\n🗂 <b>Upcoming / no date:</b>\n${rest.map(f => line(f, ++n)).join('\n')}`);
+    parts.push(`\nTap ✓ when you've done one — it drops out of tomorrow's digest.`);
 
-    await sendTelegram(parts.join('\n'));
+    // One ✓ / ⏰ button row per item (numbered to match), handled by the bot's
+    // fu_done / fu_snz callbacks. Cap at 12 rows to stay well inside Telegram limits.
+    const buttons = ordered.slice(0, 12).map((f, i) => ([
+      { text: `✓ Done ${i + 1}`, callback_data: `fu_done:${f.id}` },
+      { text: `⏰ +3d ${i + 1}`, callback_data: `fu_snz:${f.id}` },
+    ]));
+
+    await sendTelegramWithButtons(parts.join('\n'), buttons);
     return NextResponse.json({ ok: true, sent: true, open: open.length, overdue: overdue.length, dueToday: dueToday.length });
   } catch (e) {
     // Table not created yet → quiet no-op so the cron doesn't error daily.
