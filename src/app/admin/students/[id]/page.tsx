@@ -522,6 +522,7 @@ export default function StudentProfilePage() {
               </div>
               <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
                 <a href="/admin/schedule" style={actionBtn()}>🗓 Schedule</a>
+                <a href={`/admin/followups?student=${studentId}`} style={actionBtn()}>📌 Follow-up</a>
                 <button style={actionBtn()} disabled={inviteState === 'sending'}
                   onClick={async () => {
                     if (!confirm(`Email a portal invite to ${s.name}'s parent?`)) return;
