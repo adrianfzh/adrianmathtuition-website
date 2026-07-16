@@ -53,7 +53,7 @@ const TIER_CHOICES: { key: TierChoice; label: string }[] = [
 ];
 
 type Topic = { topic: string; count: number };
-type WsQuestion = { id: string; markdown: string; marks: number | null; figureUrl?: string | null; answer?: string | null };
+type WsQuestion = { id: string; markdown: string; marks: number | null; figureUrl?: string | null; imageUrls?: string[]; answer?: string | null };
 type WsCard = { title: string; contentMd: string; status: string };
 type Worksheet = { title: string; level: string; topic: string; card?: WsCard | null; questions: WsQuestion[] };
 
@@ -697,6 +697,11 @@ export default function KioskClient() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={q.figureUrl} alt="Question figure" className="ws-figure" />
                   )}
+                  {(q.imageUrls ?? []).map((u) => (
+                    // Watermark-clean original crop (served when no engine figure exists)
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={u} src={u} alt="Question diagram" className="ws-figure" />
+                  ))}
                   <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>
                     {q.markdown}
                   </ReactMarkdown>

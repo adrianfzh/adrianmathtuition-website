@@ -15,10 +15,8 @@ export const runtime = 'nodejs';
 
 const MAX_COUNT = 20;
 // Cap the pool we shuffle over — enough randomness without pulling the whole bank.
+// (kiosk_pool RPC fetches up to 400 in pinned id order; JS re-checks answers and caps here.)
 const POOL_CAP = 120;
-// Fetch more than POOL_CAP because answer-less rows are dropped in JS after
-// flattening (the sheet prints answers, so only answer-bearing questions serve).
-const FETCH_CAP = 400;
 
 // DETERMINISTIC daily draw (Adrian, 2026-07-16): two students printing the same
 // level+topic+tier on the same SGT day get the SAME sheet — so they can discuss.
@@ -125,28 +123,35 @@ export async function GET(req: NextRequest) {
   //  - `practice_questions` (the /revise pool): already flat, but has NO
   //    difficulty — so it's only servable when the tier filter is off (Mixed).
   const seedLevels = SEED_LEVELS[level] ?? cfg.questionLevels;
-  let bankQuery = supa.from('questions')
-    .select('id, question_text, parts, total_marks, answer, figure_url, has_image')
-    .in('level', seedLevels)
-    .overlaps('topics', [topic])
-    .is('deleted_at', null)
-    // NOTE: no solution filter. The sheet prints ANSWERS (never solutions), so the
-    // gate is answer-presence — checked in JS after flattening parts, because most
-    // extracted questions carry answers in parts[].answer, not the top-level column.
-    // (The old `solution NOT NULL` filter was a leftover from the AI-generated-only
-    // pool and silently excluded ~80% of the extracted bank. Removed 2026-07-16.)
-    .or('has_image.eq.false,figure_url.not.is.null')
-    .order('id') // pin pool order — Postgres gives no default ordering, and the daily draw must be reproducible
-    .limit(FETCH_CAP);
-  if (tier) bankQuery = bankQuery.in('difficulty', TIER_DIFFICULTY_VALUES[tier]);
-  // ONE STORE: the old practice_questions pool was migrated into the bank
-  // (ai_generated rows, difficulty 'Standard'), so the bank query covers it.
-  const bankRes = await bankQuery;
+  // Pool comes from the kiosk_pool RPC — the single source of truth for
+  // servability. It UNIONs tag-match with sub-group-match (so method-first
+  // cross-topic labels serve under the topic the picker counts them in),
+  // gates on answer-presence (top-level OR parts), and accepts figures that
+  // are either engine-drawn (figure_url) or watermark-scanned clean crops.
+  // Ordered by id, so the deterministic daily draw is reproducible.
+  const bankRes = await supa.rpc('kiosk_pool', {
+    p_tag_levels: seedLevels,
+    p_sg_level: cfg.topicsKey,
+    p_topic: topic,
+    p_difficulties: tier ? TIER_DIFFICULTY_VALUES[tier] : null,
+  });
   if (bankRes.error) {
     return NextResponse.json({ error: bankRes.error.message }, { status: 500 });
   }
 
-  type Item = { id: string; markdown: string; marks: number | null; figureUrl: string | null; answer: string | null };
+  // Original-crop diagrams (image_url = JSON array of 'question_images/<file>')
+  // are served via the public bucket when the RPC let them through (clean scan).
+  const IMG_BASE = `${process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/question_images/`;
+  function cropUrls(imageUrl: string | null): string[] {
+    if (!imageUrl) return [];
+    try {
+      const arr = JSON.parse(imageUrl);
+      if (!Array.isArray(arr)) return [];
+      return arr.map((p: string) => IMG_BASE + String(p).replace(/^question_images\//, ''));
+    } catch { return []; }
+  }
+
+  type Item = { id: string; markdown: string; marks: number | null; figureUrl: string | null; imageUrls: string[]; answer: string | null };
   const items: Item[] = [];
   for (const r of bankRes.data || []) {
     const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
@@ -157,6 +162,7 @@ export async function GET(req: NextRequest) {
       markdown: flat.text,
       marks: (r.total_marks as number | null) ?? null,
       figureUrl: (r.figure_url as string | null) ?? null,
+      imageUrls: r.figure_url ? [] : cropUrls((r.image_url as string | null) ?? null),
       answer,
     });
     if (items.length >= POOL_CAP) break; // cap AFTER the answer gate, in pinned id order
@@ -168,6 +174,7 @@ export async function GET(req: NextRequest) {
     markdown: r.markdown,
     marks: r.marks,
     figureUrl: r.figureUrl,
+    imageUrls: r.imageUrls,
     ...(withAnswers ? { answer: r.answer } : {}),
   }));
 
