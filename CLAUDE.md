@@ -238,6 +238,14 @@ to their own level.** No anonymous browsing.
    + not-deleted + text-only-or-verified-figure. The old `solution NOT NULL` filter was an
    AI-pool leftover that hid ~80% of the extracted bank. Fetch cap 400 → answer gate → pool
    cap 120 in pinned id order.
+5c-ii. **Figure crops resolve via `lib/kiosk-worksheet-images.ts`** (fixed 2026-07-16): the
+   `questions.image_url` JSON array holds bare paths (`<file>.png` /
+   `question_images/<file>.png`) **or `{url,pos}` objects** (the 2025 EM batch, ~270 rows —
+   the old `String(entry)` printed `[object Object]` URLs for all of them). Part-level
+   figures (`parts[].image_url` / `image_url_after`, relative or full URL) print inline as
+   markdown images at their position — previously dropped, so figure-dependent questions
+   (e.g. Mayflower 2024 AM Q10) printed without their graphs. Unit-tested; don't re-inline
+   this logic in the route.
 5d. **Type A revision worksheets** — "Worksheet type" toggle (✏️ Practice only / 📘 Notes +
    practice). `card=1` on `/api/kiosk/worksheet` attaches the topic's **`topic_cards`** row
    (math Supabase; one per kiosk-level+canonical-topic; `content_md` = markdown+KaTeX, 1-page
