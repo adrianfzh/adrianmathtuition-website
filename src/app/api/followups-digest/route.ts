@@ -37,11 +37,15 @@ export async function GET(req: NextRequest) {
     if (!open.length) return NextResponse.json({ ok: true, sent: false, open: 0 });
 
     const today = localToday();
+    // Actionable = overdue, due today, or no date set — these nag daily with
+    // buttons. Future-dated items are deferred (that's what ⏰ +3d means): shown
+    // compactly for awareness, no buttons, until their date arrives.
     const overdue = open.filter(f => f.due && f.due < today);
     const dueToday = open.filter(f => f.due === today);
-    const rest = open.filter(f => !f.due || f.due > today)
-      .sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999'));
-    const ordered = [...overdue, ...dueToday, ...rest]; // numbering matches message order
+    const noDate = open.filter(f => !f.due);
+    const later = open.filter(f => f.due && f.due > today)
+      .sort((a, b) => a.due!.localeCompare(b.due!));
+    const actionable = [...overdue, ...dueToday, ...noDate]; // numbering matches message order
 
     const line = (f: typeof open[number], n: number) =>
       `${n}. ${f.student ? `<b>${esc(f.student)}</b> — ` : ''}${esc(f.note)}${f.due ? ` <i>(due ${f.due})</i>` : ''}`;
@@ -50,18 +54,18 @@ export async function GET(req: NextRequest) {
     const parts: string[] = [`📌 <b>Parent follow-ups</b> (${open.length} open)`];
     if (overdue.length) parts.push(`\n⚠️ <b>Overdue:</b>\n${overdue.map(f => line(f, ++n)).join('\n')}`);
     if (dueToday.length) parts.push(`\n📅 <b>Due today:</b>\n${dueToday.map(f => line(f, ++n)).join('\n')}`);
-    if (rest.length) parts.push(`\n🗂 <b>Upcoming / no date:</b>\n${rest.map(f => line(f, ++n)).join('\n')}`);
-    parts.push(`\nTap ✓ when you've done one — it drops out of tomorrow's digest.`);
+    if (noDate.length) parts.push(`\n📍 <b>No date — until done:</b>\n${noDate.map(f => line(f, ++n)).join('\n')}`);
+    if (later.length) parts.push(`\n🗂 <b>Later:</b>\n${later.map(f => `· ${f.student ? `<b>${esc(f.student)}</b> — ` : ''}${esc(f.note)} <i>(${f.due})</i>`).join('\n')}`);
+    if (actionable.length) parts.push(`\nTap ✓ when done (Undo appears) · ⏰ pushes it 3 days out.`);
 
-    // One ✓ / ⏰ button row per item (numbered to match), handled by the bot's
-    // fu_done / fu_snz callbacks. Cap at 12 rows to stay well inside Telegram limits.
-    const buttons = ordered.slice(0, 12).map((f, i) => ([
+    // ✓ / ⏰ button rows only for actionable items, numbered to match the list.
+    const buttons = actionable.slice(0, 12).map((f, i) => ([
       { text: `✓ Done ${i + 1}`, callback_data: `fu_done:${f.id}` },
       { text: `⏰ +3d ${i + 1}`, callback_data: `fu_snz:${f.id}` },
     ]));
 
     await sendTelegramWithButtons(parts.join('\n'), buttons);
-    return NextResponse.json({ ok: true, sent: true, open: open.length, overdue: overdue.length, dueToday: dueToday.length });
+    return NextResponse.json({ ok: true, sent: true, open: open.length, overdue: overdue.length, dueToday: dueToday.length, later: later.length });
   } catch (e) {
     // Table not created yet → quiet no-op so the cron doesn't error daily.
     if (e instanceof Error && /NOT_FOUND|TABLE_NOT_FOUND|404/i.test(e.message)) return NextResponse.json({ ok: true, sent: false, tableMissing: true });
