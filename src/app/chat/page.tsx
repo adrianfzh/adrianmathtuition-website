@@ -32,7 +32,7 @@ declare global {
       renderToString: (math: string, opts: { displayMode: boolean; throwOnError: boolean }) => string;
     };
     renderMathInElement: (el: HTMLElement, opts: object) => void;
-    Telegram?: { WebApp: { expand: () => void; ready: () => void } };
+    Telegram?: { WebApp: { expand: () => void; ready: () => void; initData?: string } };
   }
 }
 
@@ -812,10 +812,13 @@ export default function ChatPage() {
         row.dataset.voted = kind;
         Array.from(row.children).forEach(c => { (c as HTMLElement).style.opacity = c === b ? '1' : '0.3'; });
         b.style.background = 'hsl(220,60%,96%)';
+        const fbBody: Record<string, unknown> = { chatId: sessionIdRef.current, messageId, feedback: kind };
+        const tgInit = window.Telegram?.WebApp?.initData;
+        if (tgInit) fbBody.tgInitData = tgInit;
         fetch(`${BOT_API_BASE}/api/chat/feedback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chatId: sessionIdRef.current, messageId, feedback: kind }),
+          body: JSON.stringify(fbBody),
         }).catch(() => { /* feedback is best-effort */ });
       };
       return b;
@@ -827,6 +830,8 @@ export default function ChatPage() {
 
   /* ── One-time "become a student" nudge after the 2nd answered question ── */
   const maybeShowRegistrationNudge = useCallback(() => {
+    // Mini-app users arrived via the bot — they're already students; don't pitch them
+    if (window.Telegram?.WebApp?.initData) return;
     try { if (localStorage.getItem('am_chat_nudge_off')) return; } catch { return; }
     if (document.getElementById('regNudge')) return;
     if (conversationHistoryRef.current.filter(h => h.role === 'assistant').length < 2) return;
@@ -865,19 +870,25 @@ export default function ChatPage() {
   useEffect(() => {
     if (restoredOnceRef.current) return;
     restoredOnceRef.current = true;
+    // Telegram Mini App: identity comes from verified initData — always try a
+    // server restore. Browser: use the localStorage chatId (7-day window).
+    const tgInit = window.Telegram?.WebApp?.initData || '';
     let savedId = '';
     try {
       savedId = localStorage.getItem('am_chat_id') || '';
       const last = parseInt(localStorage.getItem('am_chat_last') || '0', 10);
-      if (!savedId || Date.now() - last > 7 * 24 * 60 * 60 * 1000) return;
-    } catch { return; }
-    fetch(`${BOT_API_BASE}/api/chat/history?chatId=${encodeURIComponent(savedId)}`)
+      if (!tgInit && (!savedId || Date.now() - last > 7 * 24 * 60 * 60 * 1000)) return;
+    } catch { if (!tgInit) return; }
+    const historyQs = tgInit
+      ? `tgInitData=${encodeURIComponent(tgInit)}`
+      : `chatId=${encodeURIComponent(savedId)}`;
+    fetch(`${BOT_API_BASE}/api/chat/history?${historyQs}`)
       .then(r => (r.ok ? r.json() : { messages: [] }))
       .then((data: { messages: RestoredMessage[] }) => {
         const msgs = data.messages || [];
         if (!msgs.length) return;
         const insert = () => {
-          sessionIdRef.current = savedId;
+          if (savedId) sessionIdRef.current = savedId;
           for (const m of msgs) {
             if (m.role === 'user') {
               addMessageToDOM('user', m.content === '[image]' ? null : m.content, m.image_url || null);
@@ -953,11 +964,17 @@ export default function ChatPage() {
         sessionIdRef.current = 'web-' + (globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
       }
       try { localStorage.setItem('am_chat_id', sessionIdRef.current); } catch { /* noop */ }
+      // requestId lets the server store the finished answer for resume-replay
+      // if this connection drops mid-stream.
+      const requestId = 'req-' + (globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
       const body: Record<string, unknown> = {
         history: conversationHistoryRef.current,
         source: isTelegramWebview ? 'telegram-webview' : 'website',
         chatId: sessionIdRef.current,
+        requestId,
       };
+      const tgInitForSend = window.Telegram?.WebApp?.initData;
+      if (tgInitForSend) body.tgInitData = tgInitForSend;
 
       if (capturedFile) {
         body.image = capturedPreviewSrc.split(',')[1];
@@ -995,8 +1012,9 @@ export default function ChatPage() {
       const streamStartedAt = Date.now();
       let fullText = '';
       let sawDone = false;
+      let gotError = false;
       let doneMessageId: number | null = null;
-      let lastStatus: { status: string; chars?: number } | null = null;
+      let lastStatus: { status: string; chars?: number; glimpse?: string | null } | null = null;
       let statusTicker: ReturnType<typeof setInterval> | null = null;
       const stopStatusTicker = () => { if (statusTicker) { clearInterval(statusTicker); statusTicker = null; } };
       stopStatusTickerRef = stopStatusTicker;
@@ -1069,27 +1087,35 @@ export default function ChatPage() {
         if (fullText || !lastStatus) { stopStatusTicker(); return; }
         const secs = Math.round((Date.now() - streamStartedAt) / 1000);
         // Only rebuild the DOM when the stage changes — rebuilding every second
-        // would restart the jumping-dots animation and look janky.
+        // would restart the jumping-dots animation and look janky. The reasoning
+        // glimpse updates via textContent (XSS-safe) without a rebuild.
         const existing = streamDiv.querySelector('.st-label') as HTMLElement | null;
         if (existing && existing.dataset.status === lastStatus.status) {
           const secsEl = streamDiv.querySelector('.st-secs');
           if (secsEl) secsEl.textContent = `${secs}s`;
+          const gEl = streamDiv.querySelector('.st-glimpse');
+          if (gEl) gEl.textContent = lastStatus.glimpse ? ` — ${lastStatus.glimpse}` : '';
           return;
         }
         const text = lastStatus.status === 'writing'
           ? 'Writing the solution'
           : lastStatus.status === 'checking'
             ? 'Checking the working'
-            : 'Thinking';
+            : lastStatus.status === 'reconnecting'
+              ? 'Reconnecting'
+              : 'Thinking';
         const dot = (delay: string) =>
           `<span style="width:5px;height:5px;border-radius:50%;background:hsl(220,10%,46%);display:inline-block;animation:tdot 1.2s ${delay} infinite;opacity:0.4;"></span>`;
         streamDiv.innerHTML =
-          `<em class="st-label" data-status="${lastStatus.status}" style="color:hsl(220,10%,46%);font-size:0.95em;display:inline-flex;align-items:center;gap:4px;">` +
-          `${text}&nbsp;${dot('0s')}${dot('0.2s')}${dot('0.4s')}` +
+          `<em class="st-label" data-status="${lastStatus.status}" style="color:hsl(220,10%,46%);font-size:0.95em;display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;">` +
+          `${text}<span class="st-glimpse" style="opacity:0.7;"></span>&nbsp;${dot('0s')}${dot('0.2s')}${dot('0.4s')}` +
           `&nbsp;<span class="st-secs" style="opacity:0.55;font-size:0.85em;">${secs}s</span></em>`;
+        const gEl = streamDiv.querySelector('.st-glimpse');
+        if (gEl) gEl.textContent = lastStatus.glimpse ? ` — ${lastStatus.glimpse}` : '';
       };
 
-      const reader = res.body!.getReader();
+      const consumeStream = async (streamRes: Response) => {
+      const reader = streamRes.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
 
@@ -1105,7 +1131,7 @@ export default function ChatPage() {
           try {
             const parsed = JSON.parse(line.slice(6));
 
-            if (parsed.error) { showError(parsed.error); return; }
+            if (parsed.error) { gotError = true; showError(parsed.error); return; }
 
             if (parsed.verify) {
               fullText = '';
@@ -1120,7 +1146,8 @@ export default function ChatPage() {
             // between server events (which arrive every ~1.5-5s).
             if (parsed.status) {
               if (!fullText) {
-                lastStatus = { status: parsed.status, chars: parsed.chars };
+                // Keep the last reasoning glimpse when a bare keepalive arrives
+                lastStatus = { status: parsed.status, chars: parsed.chars, glimpse: parsed.glimpse ?? lastStatus?.glimpse ?? null };
                 renderStatusLabel();
                 if (!statusTicker) statusTicker = setInterval(renderStatusLabel, 1000);
               }
@@ -1168,10 +1195,42 @@ export default function ChatPage() {
           } catch { /* ignore parse errors */ }
         }
       }
+      };
+
+      await consumeStream(res);
+
+      if (gotError && !fullText) {
+        stopStatusTicker();
+        streamDiv.innerHTML = '';
+      }
+
+      // Mid-stream drop: the server keeps generating and stores the finished
+      // answer for 5 minutes — poll for a replay instead of losing the answer.
+      if (!sawDone && !gotError) {
+        lastStatus = { status: 'reconnecting', glimpse: null };
+        renderStatusLabel();
+        if (!statusTicker) statusTicker = setInterval(renderStatusLabel, 1000);
+        for (let attempt = 0; attempt < 40 && !sawDone; attempt++) { // 160s — hard image answers think for minutes
+          await new Promise(r => setTimeout(r, 4000));
+          try {
+            const rr = await fetch('https://adrianmath-telegram-math-bot.fly.dev/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ resume: requestId, chatId: sessionIdRef.current }),
+            });
+            if (rr.status === 202) continue;          // still generating server-side
+            if (!rr.ok || !rr.body) break;            // gone — fall through to error
+            fullText = '';                             // replay rebuilds from scratch
+            await consumeStream(rr);
+          } catch { /* transient network error — keep polling */ }
+        }
+        stopStatusTicker();
+      }
 
       // Stream ended without a done event → server restarted or connection
-      // dropped mid-answer. Never leave a stale status label hanging.
-      if (!sawDone && !fullText) {
+      // dropped mid-answer (and resume polling came up empty). Never leave a
+      // stale status label hanging.
+      if (!sawDone && !fullText && !gotError) {
         stopStatusTicker();
         streamDiv.innerHTML = '<em style="color:hsl(0,50%,45%);">⚠️ Connection lost while solving — please send your question again.</em>';
         scrollToBottom();
