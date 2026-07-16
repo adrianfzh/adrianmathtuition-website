@@ -633,9 +633,17 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        // A bespoke email body (Custom Email Message) applies to exactly the send
+        // it was written for — clear it on success so a future re-send falls back
+        // to the normal template instead of repeating e.g. a one-off apology.
+        const hadCustomMsg = !!String(invoiceMap.get(invoiceId)?.record?.fields?.['Custom Email Message'] || '').trim();
         await at('Invoices', `/${invoiceId}`, {
           method: 'PATCH',
-          body: JSON.stringify({ fields: { 'Status': 'Sent', 'Sent At': new Date().toISOString() } }),
+          body: JSON.stringify({ fields: {
+            'Status': 'Sent',
+            'Sent At': new Date().toISOString(),
+            ...(hadCustomMsg ? { 'Custom Email Message': '' } : {}),
+          } }),
         });
         sentCount++;
         const sentMeta = invoiceMap.get(invoiceId);
