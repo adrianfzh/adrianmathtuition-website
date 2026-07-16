@@ -10,6 +10,7 @@ import { isKioskOpen } from '@/lib/kiosk-config';
 import { verifyKioskAuth, KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { normalizeTier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
 import { studentFromRequest } from '@/lib/kiosk-student';
+import { flattenParts, cropUrls, type Part } from '@/lib/kiosk-worksheet-images';
 
 export const runtime = 'nodejs';
 
@@ -65,27 +66,8 @@ const SEED_LEVELS: Record<string, string[]> = {
   S2: ['S2'],
 };
 
-/* questions.parts jsonb → flattened display text + combined answer
- * (same shape the worksheet-builder uses). */
-type Part = {
-  text?: string | null; label?: string | null; marks?: number | null;
-  answer?: string | null; subparts?: Part[] | null;
-};
-function flattenParts(stem: string, parts: Part[] | null): { text: string; answer: string } {
-  if (!parts?.length) return { text: stem, answer: '' };
-  const textLines: string[] = stem ? [stem] : [];
-  const answers: string[] = [];
-  const walk = (list: Part[], prefix: string) => {
-    for (const p of list) {
-      const label = p.label ? `${prefix}(${p.label})` : prefix;
-      if (p.text) textLines.push(`**${label}** ${p.text}${p.marks ? `  [${p.marks}]` : ''}`);
-      if (p.answer) answers.push(`${label} ${p.answer}`);
-      if (p.subparts?.length) walk(p.subparts, label);
-    }
-  };
-  walk(parts, '');
-  return { text: textLines.join('\n\n'), answer: answers.join(';  ') };
-}
+// parts flattening + figure-path resolution live in lib/kiosk-worksheet-images
+// (pure helpers, unit-tested there).
 
 export async function GET(req: NextRequest) {
   if (!verifyKioskAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -137,18 +119,6 @@ export async function GET(req: NextRequest) {
   });
   if (bankRes.error) {
     return NextResponse.json({ error: bankRes.error.message }, { status: 500 });
-  }
-
-  // Original-crop diagrams (image_url = JSON array of 'question_images/<file>')
-  // are served via the public bucket when the RPC let them through (clean scan).
-  const IMG_BASE = `${process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/question_images/`;
-  function cropUrls(imageUrl: string | null): string[] {
-    if (!imageUrl) return [];
-    try {
-      const arr = JSON.parse(imageUrl);
-      if (!Array.isArray(arr)) return [];
-      return arr.map((p: string) => IMG_BASE + String(p).replace(/^question_images\//, ''));
-    } catch { return []; }
   }
 
   type Item = { id: string; markdown: string; marks: number | null; figureUrl: string | null; imageUrls: string[]; answer: string | null };

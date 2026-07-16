@@ -926,6 +926,9 @@ const PRINT_CSS = `
   .ws-q-body { display: block; }
   .ws-q-body p { display: inline; margin: 0; }
   .ws-figure { display: block; max-width: 78%; max-height: 240pt; margin: 6pt 0; }
+  /* Part-level figures arrive as markdown images inside the question body
+     (no class) — constrain them like .ws-figure or they print at full size. */
+  .ws-q-body img { display: block; max-width: 78%; max-height: 240pt; margin: 6pt 0; }
   .ws-marks { font-weight: 700; margin-left: 6px; }
   .ws-answer-space {
     height: 74pt; margin: 6pt 0 4pt;
