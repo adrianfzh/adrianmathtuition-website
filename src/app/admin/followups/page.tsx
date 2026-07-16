@@ -108,7 +108,14 @@ export default function FollowupsPage() {
             <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
               <button onClick={() => { setSnoozeId(snoozeId === f.id ? null : f.id); setSnoozeDate(''); }} disabled={busyId === f.id}
                 style={{ fontSize: 12, fontWeight: 600, color: '#64748b', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px', cursor: 'pointer' }}>⏰</button>
-              <button onClick={() => patch(f.id, { done: true })} disabled={busyId === f.id}
+              <button
+                onClick={() => {
+                  // Confirm before dismissing — it then moves to History (restorable).
+                  const who = nameOf(f.studentId);
+                  if (!confirm(`Mark done?\n\n${who ? who + ' — ' : ''}${f.note}\n\n(It moves to History — restorable anytime.)`)) return;
+                  patch(f.id, { done: true }).then(() => showToast('Done ✓ — moved to History'));
+                }}
+                disabled={busyId === f.id}
                 style={{ fontSize: 12, fontWeight: 700, color: '#16a34a', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 12px', cursor: 'pointer' }}>
                 {busyId === f.id ? '…' : '✓ Done'}
               </button>
