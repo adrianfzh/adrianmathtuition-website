@@ -6,6 +6,7 @@ import { billingMonthOf } from '@/lib/lesson-generation';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { buildPreviewInvoiceUrl } from '@/lib/invoice-preview-url';
 import { sendWelcomeEmail } from '@/lib/welcome-email';
+import { displaySpanMonth } from '@/lib/invoice-month';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -407,12 +408,15 @@ export async function POST(request: NextRequest) {
 
             invoiceGenerated = true;
             invoiceAmount = totalAmount;
+            // Parent-facing month spans back for combined first invoices
+            // ("July–August 2026"); the Month FIELD stays the filing label.
+            const displayMonth = displaySpanMonth(invoiceMonthLabel, JSON.stringify(allLineItems));
             firstInvoiceMeta = {
               id: createdInvoice.id,
-              month: invoiceMonthLabel,
+              month: displayMonth,
               amount: totalAmount,
               dueDate: (createdInvoice.fields?.['Due Date'] as string) || firstLessonDate,
-              filename: `AdrianMathTuition-Invoice-${sanitize(studentName).replace(/\s+/g, '-')}-${invoiceMonthLabel.replace(/\s+/g, '-')}.pdf`,
+              filename: `AdrianMathTuition-Invoice-${sanitize(studentName).replace(/\s+/g, '-')}-${displayMonth.replace(/[\s–]/g, '-')}.pdf`,
             };
 
             // Generate PDF (non-fatal)
@@ -420,7 +424,7 @@ export async function POST(request: NextRequest) {
               try {
                 const invoiceData = {
                   studentName: sanitize(studentName) as string,
-                  month: invoiceMonthLabel,
+                  month: displayMonth,
                   invoiceId: createdInvoice.id,
                   issueDate: todayStr,
                   dueDate: firstLessonDate,
