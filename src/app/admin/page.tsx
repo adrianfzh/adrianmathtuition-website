@@ -166,6 +166,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '🧩', title: 'Worksheet Builder', sub: 'Pick QB questions · roles · PDF',   href: '/admin/worksheet-builder' },
   { emoji: '🎓', title: 'Learn Review', sub: 'Approve · edit interactive units', href: '/admin/learn-review' },
+  { emoji: '⚡', title: 'Revision Decks', sub: 'Quick recall · worked examples by topic', href: '/revise/am' },
   { emoji: '📖', title: 'Learn (student view)', sub: 'Preview the tap-through player', href: '/app/learn' },
   { emoji: '🖥️', title: 'Kiosk control', sub: 'Open / close the centre kiosk', href: '/admin/kiosk' },
   { emoji: '🖼️', title: 'Figure review', sub: 'Flag figures to regenerate', href: '/admin/figures' },
