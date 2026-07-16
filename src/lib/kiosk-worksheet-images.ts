@@ -26,11 +26,12 @@ export type Part = {
   image_url?: string | null; image_url_after?: string | null;
 };
 
-/* Working space is APPORTIONED TO THE MARKS (STYLE.md; Adrian bumped the rate
- * 2026-07-17: 9mm/mark printed too tight) — 14mm per mark, clamped 14–84mm.
- * Rendered as an empty spacer div. No ruled lines — this is math. */
+/* Working space is APPORTIONED TO THE MARKS (STYLE.md). Calibrated on printed
+ * sheets with Adrian (2026-07-17): 14mm/mark, but low-mark parts still need a
+ * real working block — exam papers give ~3cm even for [1]-[2] — so floor 30mm,
+ * cap 84mm. Rendered as an empty spacer div. No ruled lines — this is math. */
 export function spaceMm(marks: number): number {
-  return Math.min(84, Math.max(14, marks * 14));
+  return Math.min(84, Math.max(30, marks * 14));
 }
 
 export function flattenParts(stem: string, parts: Part[] | null): { text: string; answer: string } {

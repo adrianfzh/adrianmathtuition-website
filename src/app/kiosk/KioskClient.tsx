@@ -67,9 +67,9 @@ const WS_LEVEL_LABEL: Record<string, string> = {
   EM: 'O LEVEL • EM', AM: 'O LEVEL • AM', JC2: 'JC • H2 MATH',
 };
 // Working space when a question has no per-part spacers (stem-only questions):
-// apportioned to total marks, ≈1.8 lines/mark (STYLE.md), no ruled lines.
+// same calibration as lib/kiosk-worksheet-images spaceMm (14mm/mark, 30–84mm).
 function wsSpaceMm(marks: number | null): number {
-  return Math.min(54, Math.max(12, (marks ?? 3) * 9));
+  return Math.min(84, Math.max(30, (marks ?? 3) * 14));
 }
 
 type AuthState = 'checking' | 'setup' | 'ready';
@@ -753,7 +753,6 @@ export default function KioskClient() {
 
           <div className="ws-footer">
             <span className="ws-foot-brand">Adrian&apos;s Math Tuition</span>
-            <span className="ws-foot-url">adrianmathtuition.com</span>
           </div>
         </div>
       )}
