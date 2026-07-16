@@ -66,7 +66,7 @@ Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/ro
 - `revise/[topic]/[subtopic]/[subsubtopic]/lesson/page.tsx` — revision lesson player
 - `revise/[topic]/[subtopic]/worked-examples/page.tsx` — TikTok-style swipe cards over `content_snippets` (route: `/revise/[level]/[topic-slug]/worked-examples`); accepts `?subgroup={id}` to filter to one sub-group
 - `explain/[id]/page.tsx` — public annotated-explanation page; renders content from `explanations` table with KaTeX (full `\underbrace` support); deep-links into Teach Me via "🎓 Teach me this concept" CTA
-- `learn/page.tsx` — learn page
+- `learn/page.tsx` — Adrian's PARKING PLACE for interactive visuals (Desmos/SVG/steps). Deliberately unlinked from nav — do NOT retire or "clean up"; Adrian is deciding what it becomes (noted 2026-07-16)
 - `formulas/*` — formula reference pages (indices, factorization, statistics, etc.)
 - `o-level-a-math-tuition/`, `jc-h2-math-tuition/`, `secondary-math-tuition/` — SEO landing pages
 
