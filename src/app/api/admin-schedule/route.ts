@@ -55,14 +55,26 @@ export async function GET(req: NextRequest) {
   const lessonsFilter = `AND({Date}>='${weekStart}',{Date}<'${weekEndExclusive}')`;
 
   // Fetch slots, enrollments, and lessons in parallel
-  const [slotsData, enrollmentsData, lessonsData] = await Promise.all([
+  // ── Stage 1: everything independent, in one parallel burst ──────────────────
+  // (settings + topic-timeline don't depend on the week's data at all)
+  const [slotsData, enrollmentsData, lessonsData, settingsData, tlRecords] = await Promise.all([
     fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`{Is Active}=1`)}`),
     fetchAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot`),
     fetchAll(
       'Lessons',
       `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Progress Logged&fields[]=Is Revision Makeup`
     ),
+    airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`).catch(() => ({ records: [] })),
+    fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`).catch(() => [] as any[]),
   ]);
+
+  // Resolve exam season immediately (needed to include the exams fetch in stage 2).
+  let stage1ForceOn: ExamType | null = null;
+  try {
+    const v = JSON.parse(settingsData.records?.[0]?.fields?.['Value'] || '{}');
+    if (['WA1', 'WA2', 'WA3', 'EOY'].includes(v.forceOn)) stage1ForceOn = v.forceOn as ExamType;
+  } catch {}
+  const resolvedExamType = resolveActiveExamType(stage1ForceOn);
 
   // Split out cancelled lessons — they don't belong in the main lessons array
   // (which the grid renders), but the UI needs them to replace ghost chips.
@@ -82,27 +94,6 @@ export async function GET(req: NextRequest) {
     .map((r: any) => r.fields['Rescheduled Lesson ID']?.[0])
     .filter(Boolean) as string[];
 
-  // Fetch dates for the new (rescheduled-to) lessons, if any
-  let rescheduledDatesById: Record<string, string> = {};
-  let rescheduledSlotById: Record<string, string> = {};
-  let rescheduledStatusById: Record<string, string> = {};
-  if (rescheduledNewIds.length) {
-    const formula = `OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
-    const newLessons = await fetchAll(
-      'Lessons',
-      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Date&fields[]=Slot&fields[]=Status`
-    );
-    rescheduledDatesById = Object.fromEntries(
-      newLessons.map((r: any) => [r.id, r.fields['Date'] ?? ''])
-    );
-    rescheduledSlotById = Object.fromEntries(
-      newLessons.map((r: any) => [r.id, r.fields['Slot']?.[0] ?? ''])
-    );
-    rescheduledStatusById = Object.fromEntries(
-      newLessons.map((r: any) => [r.id, r.fields['Status'] ?? ''])
-    );
-  }
-
   // Collect all unique student IDs (from both enrollments and lessons)
   const studentIds = [
     ...new Set([
@@ -111,20 +102,48 @@ export async function GET(req: NextRequest) {
     ].filter(Boolean)),
   ] as string[];
 
-  let studentsById: Record<string, any> = {};
-  if (studentIds.length) {
-    const formula = `OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`;
-    const studentsData = await fetchAll(
-      'Students',
-      `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student Name&fields[]=Level&fields[]=Subjects`
-    );
-    studentsById = Object.fromEntries(
-      studentsData.map((r: any) => [
-        r.id,
-        { name: r.fields['Student Name'] || '', level: r.fields['Level'] || '', subjects: r.fields['Subjects'] || [] },
-      ])
-    );
-  }
+  // Extra (inactive/adhoc) slots referenced by this week's lessons
+  const stage1SlotIds = new Set(slotsData.map((r: any) => r.id));
+  const extraSlotIds = [
+    ...new Set(
+      lessonsData
+        .map((r: any) => r.fields['Slot']?.[0])
+        .filter((id: string | undefined) => id && !stage1SlotIds.has(id))
+    ),
+  ] as string[];
+
+  const hasRevisionLessons = activeLessonRecs.some((r: any) => r.fields['Type'] === 'Revision Sprint');
+
+  // ── Stage 2: every fetch that depends only on stage 1, in one parallel burst.
+  // Previously these ran one after another (~6 sequential Airtable round-trips).
+  const [newLessons, studentsData, extraSlotsData, revInvData, examsData] = await Promise.all([
+    rescheduledNewIds.length
+      ? fetchAll('Lessons', `?filterByFormula=${encodeURIComponent(`OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Date&fields[]=Slot&fields[]=Status`)
+      : Promise.resolve([] as any[]),
+    studentIds.length
+      ? fetchAll('Students', `?filterByFormula=${encodeURIComponent(`OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Student Name&fields[]=Level&fields[]=Subjects`)
+      : Promise.resolve([] as any[]),
+    extraSlotIds.length
+      ? fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`OR(${extraSlotIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}`)
+      : Promise.resolve([] as any[]),
+    hasRevisionLessons
+      ? fetchAll('Invoices', `?filterByFormula=${encodeURIComponent(`AND({Invoice Type}='Revision Sprint',{Status}!='Voided')`)}&fields[]=Student&fields[]=Line Items`)
+      : Promise.resolve([] as any[]),
+    resolvedExamType
+      ? fetchAll('Exams', `?filterByFormula=${encodeURIComponent(`OR({Exam Type}='${resolvedExamType}',{Exam Type}='Prelim')`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`).catch(() => [] as any[])
+      : Promise.resolve([] as any[]),
+  ]);
+
+  const rescheduledDatesById: Record<string, string> = Object.fromEntries(newLessons.map((r: any) => [r.id, r.fields['Date'] ?? '']));
+  const rescheduledSlotById: Record<string, string> = Object.fromEntries(newLessons.map((r: any) => [r.id, r.fields['Slot']?.[0] ?? '']));
+  const rescheduledStatusById: Record<string, string> = Object.fromEntries(newLessons.map((r: any) => [r.id, r.fields['Status'] ?? '']));
+
+  const studentsById: Record<string, any> = Object.fromEntries(
+    studentsData.map((r: any) => [
+      r.id,
+      { name: r.fields['Student Name'] || '', level: r.fields['Level'] || '', subjects: r.fields['Subjects'] || [] },
+    ])
+  );
 
   // Normalize day name to full English name regardless of Airtable storage format
   // (handles abbreviated "Sun", numeric-prefix "7 Sunday", plain "Sunday", etc.)
@@ -155,19 +174,8 @@ export async function GET(req: NextRequest) {
     };
   });
 
-  // Fetch any inactive/adhoc slots referenced by lessons this week that
-  // are NOT already in the active slots list (e.g. one-off Thursday lessons).
-  const activeSlotIds = new Set(slots.map((s: any) => s.id));
-  const extraSlotIds = [
-    ...new Set(
-      lessonsData
-        .map((r: any) => r.fields['Slot']?.[0])
-        .filter((id: string | undefined) => id && !activeSlotIds.has(id))
-    ),
-  ] as string[];
-  if (extraSlotIds.length) {
-    const formula = `OR(${extraSlotIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
-    const extraSlotsData = await fetchAll('Slots', `?filterByFormula=${encodeURIComponent(formula)}`);
+  // Merge in the extra (inactive/adhoc) slots pre-fetched in stage 2.
+  {
     for (const r of extraSlotsData) {
       const dayRaw: string = r.fields['Day'] || '';
       const match = dayRaw.match(/^(\d+)\s+(.+)/);
@@ -239,8 +247,7 @@ export async function GET(req: NextRequest) {
   // H2 2–5) from the student's signed-up subjects + the sprint date schedule.
   const revisionLessons = lessons.filter((l: any) => l.type === 'Revision Sprint');
   if (revisionLessons.length) {
-    const invData = await fetchAll('Invoices',
-      `?filterByFormula=${encodeURIComponent(`AND({Invoice Type}='Revision Sprint',{Status}!='Voided')`)}&fields[]=Student&fields[]=Line Items`);
+    const invData = revInvData; // pre-fetched in stage 2
     const subjectsByStudent: Record<string, string[]> = {};
     for (const r of invData) {
       const sid = r.fields['Student']?.[0];
@@ -274,25 +281,9 @@ export async function GET(req: NextRequest) {
   // Full per-subject/per-paper entries for the exam quick-add dialog + chip dropdown.
   const examEntriesByStudent: Record<string, { subject: string; paper: string; date: string | null; topics: string; notes: string; approx: boolean }[]> = {};
 
-  // Kick off the (independent) current-topic fetch now so it runs concurrently
-  // with the exam block below instead of adding another sequential round-trip.
-  const tlPromise = fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`).catch(() => [] as any[]);
-
   try {
-    // Resolve active exam type (override from Settings, fallback to date windows)
-    const settingsData = await airtableRequest(
-      'Settings',
-      `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`
-    ).catch(() => ({ records: [] }));
-    let forceOn: ExamType | null = null;
-    try {
-      const v = JSON.parse(settingsData.records?.[0]?.fields?.['Value'] || '{}');
-      if (['WA1', 'WA2', 'WA3', 'EOY'].includes(v.forceOn)) forceOn = v.forceOn as ExamType;
-    } catch {}
-    activeExamType = resolveActiveExamType(forceOn);
-
-    // Fetch all exam dates for the active season — no studentIds filter needed;
-    // the page only looks up students that actually appear in lessons.
+    // Exam type + exams were resolved/fetched in stages 1–2.
+    activeExamType = resolvedExamType;
     if (activeExamType) {
       // Paper is encoded into Subject ("E Math (P1)") — no Paper field needed.
       const parseSubject = (raw: string): { subject: string; paper: string } => {
@@ -303,11 +294,6 @@ export async function GET(req: NextRequest) {
       // Approximate ("week only") dates carry a "~|" marker in Exam Notes.
       const parseNotes = (raw: string): { approx: boolean; notes: string } =>
         (raw || '').startsWith('~|') ? { approx: true, notes: raw.slice(2) } : { approx: false, notes: raw || '' };
-      // Sec 4 / JC2 prelims are stored as Exam Type 'Prelim'; fetch both so they show.
-      const examsData = await fetchAll(
-        'Exams',
-        `?filterByFormula=${encodeURIComponent(`OR({Exam Type}='${activeExamType}',{Exam Type}='Prelim')`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`
-      );
       // Build studentId → earliest exam date (chip badge) + full entries (dialog/dropdown)
       for (const r of examsData) {
         const sid: string | undefined = r.fields['Student']?.[0];
@@ -342,11 +328,10 @@ export async function GET(req: NextRequest) {
     console.error('[admin-schedule] exam fetch failed:', err);
   }
 
-  // Current "working on" topic per student (for the chip pill) — resolve the
-  // concurrently-started fetch.
+  // Current "working on" topic per student (for the chip pill) — fetched in stage 1.
   const currentTopicByStudent: Record<string, { subject: string; topic: string }[]> = {};
   try {
-    for (const r of await tlPromise) {
+    for (const r of tlRecords) {
       const sid = r.fields['Student']?.[0];
       if (!sid || !r.fields['Topic']) continue;
       (currentTopicByStudent[sid] ||= []).push({ subject: r.fields['Subject'] || '', topic: r.fields['Topic'] });
