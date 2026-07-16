@@ -230,14 +230,19 @@ to their own level.** No anonymous browsing.
 5. **Print cap 4 worksheets/day per student** (SGT day) via POST `/api/kiosk/print-log` (gates
    `window.print()`, logs to `kiosk_prints`). GET returns `{used, remaining}` for the "n/4" chip.
 5b. **Deterministic daily draw** — the worksheet is seeded on `SGT-date|level|topic|tier`
-   (seeded Fisher–Yates over an `.order('id')`-pinned pool), so students printing the same
-   topic+tier the same day get the SAME sheet (they can discuss); reprints are identical;
-   counts slice one shared order (print 8 then 15 → Q9–15 are new). Rotates at SGT midnight.
+   (seeded Fisher–Yates over an `.order('id')`-pinned pool; helpers in `lib/kiosk-draw.ts`,
+   unit-tested incl. a pinned permutation), so students printing the same topic+tier the same
+   day get the SAME sheet (they can discuss); reprints are identical; counts slice one shared
+   order (print 8 then 15 → Q9–15 are new). Rotates at SGT midnight. The shuffle runs over the
+   **FULL answer-gated pool** with the count slice LAST (fixed 2026-07-16: the old POOL_CAP=120
+   applied *before* the shuffle permanently starved every row past position 120 in id order —
+   69 of AM Trig (Graphs)' 189 rows could never print). Only the RPC's 400-row fetch cap bounds
+   the pool now; any future cap must slice *after* the shuffle.
 5c. **Pool is ANSWER-gated, not solution-gated** (fixed 2026-07-16): eligibility = has a
    printable answer (top-level `answer` OR any `parts[].answer`, checked in JS post-flatten)
    + not-deleted + text-only-or-verified-figure. The old `solution NOT NULL` filter was an
-   AI-pool leftover that hid ~80% of the extracted bank. Fetch cap 400 → answer gate → pool
-   cap 120 in pinned id order.
+   AI-pool leftover that hid ~80% of the extracted bank. Fetch cap 400 → answer gate → seeded
+   shuffle over the whole gated pool (no post-gate cap).
 5c-ii. **Figure crops resolve via `lib/kiosk-worksheet-images.ts`** (fixed 2026-07-16): the
    `questions.image_url` JSON array holds bare paths (`<file>.png` /
    `question_images/<file>.png`) **or `{url,pos}` objects** (the 2025 EM batch, ~270 rows —

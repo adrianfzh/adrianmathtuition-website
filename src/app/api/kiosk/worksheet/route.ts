@@ -11,51 +11,15 @@ import { verifyKioskAuth, KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { normalizeTier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
 import { studentFromRequest } from '@/lib/kiosk-student';
 import { flattenParts, cropUrls, type Part } from '@/lib/kiosk-worksheet-images';
+import { dailyDraw, drawSeedKey } from '@/lib/kiosk-draw';
 
 export const runtime = 'nodejs';
 
 const MAX_COUNT = 20;
-// Cap the pool we shuffle over — enough randomness without pulling the whole bank.
-// (kiosk_pool RPC fetches up to 400 in pinned id order; JS re-checks answers and caps here.)
-const POOL_CAP = 120;
 
-// DETERMINISTIC daily draw (Adrian, 2026-07-16): two students printing the same
-// level+topic+tier on the same SGT day get the SAME sheet — so they can discuss.
-// Counts slice one shared order, so printing 8 then 15 extends (Q9–15 are new),
-// and a reprint is an identical copy. Seed rotates at SGT midnight.
-function sgtDate(): string {
-  return new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10);
-}
-// FNV-1a string hash → 32-bit seed.
-function hashSeed(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return h >>> 0;
-}
-// mulberry32 — tiny deterministic PRNG.
-function mulberry32(seed: number): () => number {
-  let a = seed;
-  return () => {
-    a |= 0; a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-// Fisher–Yates with a seeded PRNG — same seed → same order.
-function seededShuffle<T>(arr: T[], seed: number): T[] {
-  const rand = mulberry32(seed);
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
+// DETERMINISTIC daily draw — seeded shuffle over the FULL eligible pool, count
+// slice last (lib/kiosk-draw, unit-tested there). Same SGT day + level + topic
+// + tier → same sheet; counts extend one shared order; rotates at SGT midnight.
 
 // questions.level values servable per kiosk level token.
 const SEED_LEVELS: Record<string, string[]> = {
@@ -135,10 +99,12 @@ export async function GET(req: NextRequest) {
       imageUrls: r.figure_url ? [] : cropUrls((r.image_url as string | null) ?? null),
       answer,
     });
-    if (items.length >= POOL_CAP) break; // cap AFTER the answer gate, in pinned id order
   }
+  // NO pool cap here: the whole answer-gated pool (≤400 rows from the RPC's
+  // fetch cap) feeds the seeded shuffle. Capping before the shuffle starved
+  // every row past the cap in id order — they could never print, on any day.
 
-  const picked = seededShuffle(items, hashSeed(`${sgtDate()}|${level}|${topic}|${tier ?? 'mixed'}`)).slice(0, count);
+  const picked = dailyDraw(items, drawSeedKey(level, topic, tier), count);
   const questions = picked.map((r) => ({
     id: r.id,
     markdown: r.markdown,
