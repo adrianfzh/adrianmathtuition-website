@@ -37,11 +37,16 @@ export default function FollowupsPage() {
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2500); };
 
+  const [doneRows, setDoneRows] = useState<FU[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
   const load = useCallback(async () => {
     try {
-      const r = await fetch('/api/admin/followups');
+      const r = await fetch('/api/admin/followups?all=1');
       const d = await r.json();
-      setRows(d.followups || []);
+      const all: FU[] = d.followups || [];
+      setRows(all.filter(f => !f.done));
+      setDoneRows(all.filter(f => f.done));
       setTableMissing(!!d.tableMissing);
     } catch { setRows([]); }
   }, []);
@@ -169,6 +174,30 @@ export default function FollowupsPage() {
             {group('📅 Due today', dueToday, '#b45309')}
             {group('Upcoming / no date', upcoming, '#64748b')}
           </>
+        )}
+
+        {/* History — done items, restorable anytime (nothing is ever deleted) */}
+        {doneRows.length > 0 && (
+          <div style={{ marginTop: 26 }}>
+            <button onClick={() => setShowHistory(v => !v)}
+              style={{ width: '100%', fontSize: 12.5, fontWeight: 600, color: '#64748b', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 10, padding: '9px 12px', cursor: 'pointer' }}>
+              {showHistory ? '▲ Hide history' : `▼ History · ${doneRows.length} done`}
+            </button>
+            {showHistory && doneRows.map(f => (
+              <div key={f.id} style={{ background: '#fff', border: '1px solid #f1f5f9', borderRadius: 12, padding: '10px 14px', marginTop: 8, opacity: 0.75 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {nameOf(f.studentId) && <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginRight: 6 }}>{nameOf(f.studentId)}</span>}
+                    <span style={{ fontSize: 13.5, color: '#475569', textDecoration: 'line-through' }}>{f.note}</span>
+                  </div>
+                  <button onClick={() => patch(f.id, { done: false })} disabled={busyId === f.id}
+                    style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: '5px 10px', cursor: 'pointer' }}>
+                    {busyId === f.id ? '…' : '↩ Restore'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
