@@ -13,7 +13,16 @@
 // Scores: margin_note agreement (exact) + per-line verdict agreement + required-flag hits.
 import fs from 'node:fs';
 import Anthropic from '@anthropic-ai/sdk';
-import { buildMarkingPrompt } from '../src/lib/marking-pipeline.ts';
+import { createRequire } from 'node:module';
+import { buildMarkingPrompt as sitePrompt } from '../src/lib/marking-pipeline.ts';
+
+// MARKING_PROMPT_SRC=/path/to/bot/ai/annotate.js evals the BOT's prompt (CommonJS)
+// instead of the website one — used to verify a port keeps the golden set green.
+const promptSrc = process.env.MARKING_PROMPT_SRC;
+const buildMarkingPrompt = promptSrc
+  ? createRequire(import.meta.url)(promptSrc).buildMarkingPrompt
+  : sitePrompt;
+if (promptSrc) console.log(`[eval] using prompt from ${promptSrc}`);
 
 const env = Object.fromEntries(fs.readFileSync(new URL('../.env.local', import.meta.url), 'utf8')
   .split('\n').filter(l => l.includes('=') && !l.startsWith('#'))
