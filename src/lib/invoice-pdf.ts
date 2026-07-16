@@ -8,6 +8,7 @@ import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { airtableRequest } from '@/lib/airtable';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
+import { displaySpanMonth } from '@/lib/invoice-month';
 
 export async function generateAndStoreInvoicePdf(
   invoiceRecord: { id: string; fields: Record<string, any> },
@@ -23,7 +24,9 @@ export async function generateAndStoreInvoicePdf(
 
   const invoiceData = {
     studentName,
-    month: f['Month'] || '',
+    // "July–August 2026" when line items start before the stored Month (combined
+    // first invoices) — matches what preview-invoice shows.
+    month: displaySpanMonth(f['Month'] || '', f['Line Items']),
     invoiceId: invoiceRecord.id,
     issueDate: f['Issue Date'] || '',
     dueDate: f['Due Date'] || '',
@@ -44,7 +47,7 @@ export async function generateAndStoreInvoicePdf(
 
   const buffer = await generateInvoicePDF(invoiceData);
   const blob = await put(
-    `invoices/AdrianMathTuition-Invoice-${studentName.replace(/\s+/g, '-')}-${(f['Month'] || '').replace(/\s+/g, '-')}.pdf`,
+    `invoices/AdrianMathTuition-Invoice-${studentName.replace(/\s+/g, '-')}-${displaySpanMonth(f['Month'] || '', f['Line Items']).replace(/[\s–]/g, '-')}.pdf`,
     buffer,
     { access: 'public', contentType: 'application/pdf', allowOverwrite: true },
   );

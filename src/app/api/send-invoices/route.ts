@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
-import { getInvoiceMonth } from '@/lib/invoice-month';
+import { getInvoiceMonth, displaySpanMonth } from '@/lib/invoice-month';
 import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -296,7 +296,9 @@ export async function POST(req: NextRequest) {
       const rec = await at('Invoices', `/${singleRecordId}`);
       const sid = rec.fields['Student']?.[0];
       const stu = sid ? await at('Students', `/${sid}`) : { fields: {} };
-      const month = (rec.fields['Month'] || '') as string;
+      // Display month spans back when line items start earlier than the stored
+      // Month (combined first invoices → "July–August 2026").
+      const month = displaySpanMonth((rec.fields['Month'] || '') as string, rec.fields['Line Items'] as string | undefined);
       const studentName = (stu.fields['Student Name'] || '') as string;
       const invoice = {
         id: rec.id,
@@ -509,14 +511,18 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
+      // Display month spans back when line items start earlier than the stored
+      // Month (combined first invoices \u2192 "July\u2013August 2026") \u2014 used in the
+      // subject, body, payment reference, and attachment filename below.
+      const sendDisplayMonth = displaySpanMonth((invoiceRecord.fields['Month'] || '') as string, invoiceRecord.fields['Line Items'] as string | undefined);
       const invoice = {
         id: invoiceRecord.id,
         studentName: student['Student Name'],
         parentEmail: student['Parent Email'],
-        month: invoiceRecord.fields['Month'],
+        month: sendDisplayMonth,
         finalAmount: invoiceRecord.fields['Final Amount'] || 0,
         dueDate: invoiceRecord.fields['Due Date'],
-        paymentRef: `${(student['Student Name'] || '').toUpperCase()} \u2013 ${(invoiceRecord.fields['Month'] || '').toUpperCase()}`,
+        paymentRef: `${(student['Student Name'] || '').toUpperCase()} \u2013 ${sendDisplayMonth.toUpperCase()}`,
         level: (student['Level'] || '') as string,
       };
 
@@ -564,7 +570,7 @@ export async function POST(req: NextRequest) {
         emailData.attachments = [{
           filename: invoiceType === 'Revision Sprint'
             ? `AdrianMathTuition-Revision-Sprint-${(invoice.studentName || '').replace(/\s+/g, '-')}-June-2026.pdf`
-            : `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/\s+/g, '-')}.pdf`,
+            : `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}.pdf`,
           content: pdfBuffer.toString('base64'),
           type: 'application/pdf',
           disposition: 'attachment',
