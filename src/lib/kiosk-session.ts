@@ -26,6 +26,10 @@ export const KIOSK_LEVELS: Record<
   EM: { label: 'E Math', topicsKey: 'EM', questionLevels: ['EM'] },
   AM: { label: 'A Math', topicsKey: 'AM', questionLevels: ['AM'] },
   JC2: { label: 'H2 Math', topicsKey: 'JC', questionLevels: ['JC', 'JC1', 'JC2'] },
+  // Lower sec enabled 2026-07-16 — unblocked by the sub-group backfill
+  // (the practice_topics RPC counts via sub-group joins).
+  S1: { label: 'Sec 1 Math', topicsKey: 'S1', questionLevels: ['S1'] },
+  S2: { label: 'Sec 2 Math', topicsKey: 'S2', questionLevels: ['S2'] },
 };
 
 function secret(): string {

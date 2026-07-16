@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   const level = new URL(req.url).searchParams.get('level') || '';
   const cfg = KIOSK_LEVELS[level];
-  if (!cfg) return NextResponse.json({ error: 'level must be EM, AM or JC2' }, { status: 400 });
+  if (!cfg) return NextResponse.json({ error: 'unknown kiosk level' }, { status: 400 });
 
   // Hard-lock: students only see their own level's topics (admin bypasses).
   if (!verifyAdminAuth(req)) {

@@ -23,6 +23,8 @@ const ANSWER_ORANGE = '#843C0C'; // STYLE.md practice-answer colour
 // Practice level tokens (KIOSK_LEVELS in src/lib/kiosk-session.ts). The student's
 // pairing token decides which of these are visible — the kiosk is hard-locked.
 const LEVELS: { key: string; label: string }[] = [
+  { key: 'S1', label: 'Sec 1' },
+  { key: 'S2', label: 'Sec 2' },
   { key: 'EM', label: 'E Math' },
   { key: 'AM', label: 'A Math' },
   { key: 'JC2', label: 'H2 Math' },

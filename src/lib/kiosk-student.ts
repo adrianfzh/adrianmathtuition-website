@@ -45,7 +45,8 @@ export function deriveEntitlements(level: string, subjects: string[]): StudentEn
       notes.add('jc');
     }
   } else if (secN === '1' || secN === '2') {
-    // Lower sec: notes only (s1/s2); no practice pool yet.
+    // Lower sec: own practice pool (S1/S2 banks, sub-group-labelled 2026-07-16) + notes.
+    practice.add(secN === '1' ? 'S1' : 'S2');
     notes.add(secN === '1' ? 's1' : 's2');
   } else if (secN) {
     // Sec 3–5: subject-driven. IP Math counts as both (integrated syllabus).

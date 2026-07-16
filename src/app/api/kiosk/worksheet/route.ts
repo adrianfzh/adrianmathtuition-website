@@ -63,6 +63,8 @@ const SEED_LEVELS: Record<string, string[]> = {
   EM: ['EM', 'S3_EM'],
   AM: ['AM', 'S3_AM'],
   JC2: ['JC', 'JC1', 'JC2'],
+  S1: ['S1'],
+  S2: ['S2'],
 };
 
 /* questions.parts jsonb → flattened display text + combined answer
@@ -102,7 +104,7 @@ export async function GET(req: NextRequest) {
   const count = Math.min(MAX_COUNT, Math.max(1, parseInt(params.get('count') || '8', 10) || 8));
 
   const cfg = KIOSK_LEVELS[level];
-  if (!cfg) return NextResponse.json({ error: 'level must be EM, AM or JC2' }, { status: 400 });
+  if (!cfg) return NextResponse.json({ error: 'unknown kiosk level' }, { status: 400 });
   if (!topic) return NextResponse.json({ error: 'topic required' }, { status: 400 });
 
   // Hard-lock: students can only build worksheets for their own level (admin bypasses).
