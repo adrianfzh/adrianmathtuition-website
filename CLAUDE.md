@@ -222,8 +222,10 @@ to their own level.** No anonymous browsing.
    5-min idle reset ("Done ✓" button ends session).
 4. Entitlements from Level+Subjects (`deriveEntitlements`): Sec 3–5 E/A Math → EM/AM; IP Math →
    both; JC (H2/H1) → JC2; **Sec 1/2 → S1/S2 practice + notes** (enabled 2026-07-16 — unblocked by
-   the sub-group backfill; the `practice_topics` RPC counts via sub-group joins, and now also counts
-   `parts[].answer`-only questions). Content routes (`topics`/`notes`/`worksheet`) 401 without the
+   the sub-group backfill; the `practice_topics` RPC counts via sub-group joins, now also counts
+   `parts[].answer`-only questions, AND applies the worksheet's figure gate so picker counts match
+   what the sheet can actually serve — diagram-heavy topics show honest small counts until their
+   figures are verified). Content routes (`topics`/`notes`/`worksheet`) 401 without the
    `x-kiosk-student` token and 403 on a non-entitled level — enforced server-side, admin bypasses.
 5. **Print cap 4 worksheets/day per student** (SGT day) via POST `/api/kiosk/print-log` (gates
    `window.print()`, logs to `kiosk_prints`). GET returns `{used, remaining}` for the "n/4" chip.
