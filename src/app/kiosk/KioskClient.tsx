@@ -52,7 +52,8 @@ const TIER_CHOICES: { key: TierChoice; label: string }[] = [
 
 type Topic = { topic: string; count: number };
 type WsQuestion = { id: string; markdown: string; marks: number | null; figureUrl?: string | null; answer?: string | null };
-type Worksheet = { title: string; level: string; topic: string; questions: WsQuestion[] };
+type WsCard = { title: string; contentMd: string; status: string };
+type Worksheet = { title: string; level: string; topic: string; card?: WsCard | null; questions: WsQuestion[] };
 
 type AuthState = 'checking' | 'setup' | 'ready';
 type Student = {
@@ -102,6 +103,8 @@ export default function KioskClient() {
   // Print
   const [printing, setPrinting] = useState(false);
   const [worksheet, setWorksheet] = useState<Worksheet | null>(null);
+  // Type A revision worksheet: prepend the topic's notes/formula card as page 1.
+  const [withCard, setWithCard] = useState(false);
   const [toast, setToast] = useState('');
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -365,7 +368,7 @@ export default function KioskClient() {
       // 2. Build the sheet — answers ALWAYS included (printed inline per question).
       const url = `/api/kiosk/worksheet?level=${encodeURIComponent(level)}&topic=${encodeURIComponent(
         selectedTopic
-      )}&count=${count}&tier=${tier}&answers=1`;
+      )}&count=${count}&tier=${tier}&answers=1${withCard ? '&card=1' : ''}`;
       const r = await fetch(url, { headers: contentHeaders() });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || 'Could not build worksheet');
@@ -374,6 +377,7 @@ export default function KioskClient() {
         setPrinting(false);
         return;
       }
+      if (withCard && !j.card) showToast('No revision notes for this topic yet — printing practice only.');
       setWorksheet(j as Worksheet);
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'Could not build worksheet');
@@ -583,6 +587,24 @@ export default function KioskClient() {
                 <div className="opt-topic">{selectedTopic}</div>
 
                 <div className="opt-block">
+                  <div className="opt-label">Worksheet type</div>
+                  <div className="tier-row">
+                    <button
+                      className={`tier-btn ${!withCard ? 'tier-on' : ''}`}
+                      onClick={() => setWithCard(false)}
+                    >
+                      ✏️ Practice only
+                    </button>
+                    <button
+                      className={`tier-btn ${withCard ? 'tier-on' : ''}`}
+                      onClick={() => setWithCard(true)}
+                    >
+                      📘 Notes + practice
+                    </button>
+                  </div>
+                </div>
+
+                <div className="opt-block">
                   <div className="opt-label">Difficulty</div>
                   <div className="tier-row">
                     {TIER_CHOICES.map((t) => (
@@ -649,6 +671,21 @@ export default function KioskClient() {
               <span>Class: ______________</span>
             </div>
           </div>
+
+          {worksheet.card && (
+            // Type A: the topic revision card — page 1, questions start on page 2.
+            <section className="ws-card">
+              <div className="ws-card-title">📘 {worksheet.card.title}</div>
+              <div className="ws-card-body">
+                <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>
+                  {worksheet.card.contentMd}
+                </ReactMarkdown>
+              </div>
+              {worksheet.card.status === 'draft' && (
+                <div className="ws-card-draft">DRAFT — pending review</div>
+              )}
+            </section>
+          )}
 
           <ol className="ws-questions">
             {worksheet.questions.map((q) => (
@@ -845,6 +882,19 @@ const PRINT_CSS = `
 /* House style (STYLE.md): [Ans: …] closes each question — right-aligned, orange,
    not bold, ENTIRE line orange including the rendered maths. Lives outside
    @media print so the rule is testable; .worksheet is display:none on screen. */
+.ws-card { page-break-after: always; }
+.ws-card-title { font-size: 15pt; font-weight: 800; border-bottom: 1.5px solid #111; padding-bottom: 5pt; margin-bottom: 9pt; }
+.ws-card-body { font-size: 10.5pt; line-height: 1.5; }
+.ws-card-body h2 { font-size: 12pt; margin: 10pt 0 4pt; border-bottom: 1px solid #bbb; padding-bottom: 2pt; }
+.ws-card-body h3 { font-size: 11pt; margin: 8pt 0 3pt; }
+.ws-card-body ul, .ws-card-body ol { margin: 3pt 0 6pt 16pt; padding: 0; }
+.ws-card-body li { margin-bottom: 2.5pt; }
+.ws-card-body p { margin: 3pt 0; }
+.ws-card-body blockquote { border: 1.2px solid #111; border-radius: 4px; padding: 6pt 9pt; margin: 6pt 0; }
+.ws-card-body blockquote p { margin: 2pt 0; }
+.ws-card-body table { border-collapse: collapse; margin: 5pt 0; }
+.ws-card-body th, .ws-card-body td { border: 1px solid #999; padding: 3pt 7pt; font-size: 10pt; }
+.ws-card-draft { margin-top: 8pt; text-align: center; color: #b00; font-size: 9pt; letter-spacing: .15em; font-weight: 700; }
 .ws-ans-line { text-align: right; color: ${ANSWER_ORANGE}; font-weight: 400; margin: 0 0 4pt; }
 .ws-ans-line p { display: inline; margin: 0; }
 .ws-ans-line .katex { color: ${ANSWER_ORANGE}; }

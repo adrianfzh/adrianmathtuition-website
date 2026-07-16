@@ -16,6 +16,9 @@ export const runtime = 'nodejs';
 const MAX_COUNT = 20;
 // Cap the pool we shuffle over — enough randomness without pulling the whole bank.
 const POOL_CAP = 120;
+// Fetch more than POOL_CAP because answer-less rows are dropped in JS after
+// flattening (the sheet prints answers, so only answer-bearing questions serve).
+const FETCH_CAP = 400;
 
 // DETERMINISTIC daily draw (Adrian, 2026-07-16): two students printing the same
 // level+topic+tier on the same SGT day get the SAME sheet — so they can discuss.
@@ -94,6 +97,7 @@ export async function GET(req: NextRequest) {
   const level = params.get('level') || '';
   const topic = (params.get('topic') || '').trim();
   const withAnswers = params.get('answers') === '1';
+  const withCard = params.get('card') === '1'; // Type A: prepend the topic revision card
   const tier = normalizeTier(params.get('tier'));  // basic|standard|advanced|null(=Mixed)
   const count = Math.min(MAX_COUNT, Math.max(1, parseInt(params.get('count') || '8', 10) || 8));
 
@@ -124,10 +128,14 @@ export async function GET(req: NextRequest) {
     .in('level', seedLevels)
     .overlaps('topics', [topic])
     .is('deleted_at', null)
-    .not('solution', 'is', null)
+    // NOTE: no solution filter. The sheet prints ANSWERS (never solutions), so the
+    // gate is answer-presence — checked in JS after flattening parts, because most
+    // extracted questions carry answers in parts[].answer, not the top-level column.
+    // (The old `solution NOT NULL` filter was a leftover from the AI-generated-only
+    // pool and silently excluded ~80% of the extracted bank. Removed 2026-07-16.)
     .or('has_image.eq.false,figure_url.not.is.null')
     .order('id') // pin pool order — Postgres gives no default ordering, and the daily draw must be reproducible
-    .limit(POOL_CAP);
+    .limit(FETCH_CAP);
   if (tier) bankQuery = bankQuery.in('difficulty', TIER_DIFFICULTY_VALUES[tier]);
   // ONE STORE: the old practice_questions pool was migrated into the bank
   // (ai_generated rows, difficulty 'Standard'), so the bank query covers it.
@@ -140,13 +148,16 @@ export async function GET(req: NextRequest) {
   const items: Item[] = [];
   for (const r of bankRes.data || []) {
     const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
+    const answer = flat.answer || ((r.answer as string | null) ?? '');
+    if (!answer.trim()) continue; // answers always print — answer-less questions don't serve
     items.push({
       id: r.id as string,
       markdown: flat.text,
       marks: (r.total_marks as number | null) ?? null,
       figureUrl: (r.figure_url as string | null) ?? null,
-      answer: flat.answer || ((r.answer as string | null) ?? null),
+      answer,
     });
+    if (items.length >= POOL_CAP) break; // cap AFTER the answer gate, in pinned id order
   }
 
   const picked = seededShuffle(items, hashSeed(`${sgtDate()}|${level}|${topic}|${tier ?? 'mixed'}`)).slice(0, count);
@@ -158,12 +169,26 @@ export async function GET(req: NextRequest) {
     ...(withAnswers ? { answer: r.answer } : {}),
   }));
 
+  // Type A: attach the topic revision card (page 1 of the printed sheet).
+  // Draft cards serve too — Adrian pilots the format before formally approving.
+  let card: { title: string; contentMd: string; status: string } | null = null;
+  if (withCard) {
+    const cardRes = await supa.from('topic_cards')
+      .select('title, content_md, status')
+      .eq('level', level).eq('topic', topic)
+      .maybeSingle();
+    if (cardRes.data) {
+      card = { title: cardRes.data.title, contentMd: cardRes.data.content_md, status: cardRes.data.status };
+    }
+  }
+
   const tierLabel = tier ? tier.charAt(0).toUpperCase() + tier.slice(1) : 'Mixed';
   return NextResponse.json({
     title: `${cfg.label} — ${topic} · ${tierLabel}`,
     level,
     topic,
     tier: tier ?? 'mixed',
+    ...(withCard ? { card } : {}),
     questions,
   });
 }
