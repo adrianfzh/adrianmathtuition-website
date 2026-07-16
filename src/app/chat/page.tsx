@@ -769,7 +769,7 @@ export default function ChatPage() {
       const bubble = document.getElementById('typingBubble');
       if (bubble && !document.getElementById('thinkingLabel')) {
         bubble.insertAdjacentHTML('beforeend',
-          '<span id="thinkingLabel" style="margin-left:8px;font-size:13px;color:hsl(220,10%,46%);">🧠 thinking…</span>');
+          '<span id="thinkingLabel" style="margin-left:8px;font-size:13px;color:hsl(220,10%,46%);">Thinking…</span>');
       }
     }, 6000);
     scrollToBottom();
@@ -1077,10 +1077,10 @@ export default function ChatPage() {
           return;
         }
         const text = lastStatus.status === 'writing'
-          ? '✍️ writing solution'
+          ? 'Writing the solution'
           : lastStatus.status === 'checking'
-            ? '🔍 double-checking'
-            : '💭 thinking hard';
+            ? 'Checking the working'
+            : 'Thinking';
         const dot = (delay: string) =>
           `<span style="width:5px;height:5px;border-radius:50%;background:hsl(220,10%,46%);display:inline-block;animation:tdot 1.2s ${delay} infinite;opacity:0.4;"></span>`;
         streamDiv.innerHTML =
