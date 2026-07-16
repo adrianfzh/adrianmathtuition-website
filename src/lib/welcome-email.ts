@@ -12,7 +12,12 @@ export interface WelcomeEmailData {
   studentName: string;
   slotLabel: string;   // e.g. "Sunday 11am-1pm"
   startDate: string;   // YYYY-MM-DD
+  // When present, the first invoice rides along as a PDF attachment and the
+  // Payment section names the amount + due date (auto-send on signup).
+  invoice?: { month: string; amount: number; dueDate: string };
 }
+
+export interface WelcomeAttachment { filename: string; contentBase64: string }
 
 function formatDateLong(iso: string): string {
   const d = new Date(iso + 'T00:00:00');
@@ -59,7 +64,9 @@ export function buildWelcomeEmailHtml(d: WelcomeEmailData): { subject: string; h
         ${section('What to bring', `Just writing materials and a calculator — all worksheets and learning materials are provided, with <strong>no material fees</strong>.`)}
         ${section('Questions between lessons', `They're welcome (and encouraged!) to WhatsApp me questions anytime — stuck on homework, confused by something from school, anything. <a href="${WA_LINK}" style="color:#1e3a5f;font-weight:600">Message me at ${WHATSAPP}</a>.`)}
         ${section('If a lesson is missed', `No worries — we'll arrange a replacement lesson at any other available time slot. Just drop me a WhatsApp message.`)}
-        ${section('Payment', `Invoices are emailed monthly (around the middle of the month) and payable by <strong>PayNow to ${WHATSAPP.replace(/ /g, '')}</strong>. Your first invoice will arrive separately.`)}
+        ${section('Payment', d.invoice
+          ? `The first invoice — <strong>$${d.invoice.amount.toFixed(2)}</strong> for ${d.invoice.month}, due <strong>${formatDateLong(d.invoice.dueDate)}</strong> — is attached to this email as a PDF. Payment is by <strong>PayNow to ${WHATSAPP.replace(/ /g, '')}</strong> (please include the student's name in the reference). Subsequent invoices arrive monthly around the middle of the month.`
+          : `Invoices are emailed monthly (around the middle of the month) and payable by <strong>PayNow to ${WHATSAPP.replace(/ /g, '')}</strong>. Your first invoice will arrive separately.`)}
         <tr><td style="padding:6px 32px 30px">
           <p style="margin:0;font-size:15px;line-height:1.65;color:#33415c">
             If there's anything at all — exam dates, topics they're struggling with, schedule questions — just WhatsApp me.
@@ -77,7 +84,7 @@ export function buildWelcomeEmailHtml(d: WelcomeEmailData): { subject: string; h
 }
 
 /** Send the welcome email via Resend; log to EmailLog. Never throws. */
-export async function sendWelcomeEmail(d: WelcomeEmailData): Promise<{ sent: boolean; error?: string }> {
+export async function sendWelcomeEmail(d: WelcomeEmailData, attachment?: WelcomeAttachment): Promise<{ sent: boolean; error?: string }> {
   try {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey || !d.parentEmail) return { sent: false, error: 'no api key or recipient' };
@@ -91,10 +98,24 @@ export async function sendWelcomeEmail(d: WelcomeEmailData): Promise<{ sent: boo
         to: d.parentEmail,
         subject,
         html,
+        ...(attachment ? { attachments: [{ filename: attachment.filename, content: attachment.contentBase64 }] } : {}),
       }),
     });
     if (!res.ok) return { sent: false, error: `Resend ${res.status}: ${(await res.text()).slice(0, 200)}` };
     const data = await res.json() as { id?: string };
+
+    // Resend returns 200 even for SUPPRESSED addresses (prior bounce/spam) — when
+    // an invoice rides along, verify the send wasn't suppressed before we let the
+    // caller mark that invoice Sent. (Same guard as send-invoices.)
+    if (attachment && data.id) {
+      try {
+        const st = await fetch(`https://api.resend.com/emails/${data.id}`, { headers: { Authorization: `Bearer ${apiKey}` } });
+        const ev = ((await st.json()) as { last_event?: string }).last_event || '';
+        if (['suppressed', 'failed', 'bounced'].includes(ev)) {
+          return { sent: false, error: `NOT delivered (${ev}) — recipient blocked by email provider` };
+        }
+      } catch { /* status probe is best-effort */ }
+    }
 
     // Log to EmailLog (non-fatal; typecast creates the 'welcome' Type option)
     try {

@@ -281,6 +281,10 @@ export async function POST(request: NextRequest) {
     // combine both months into one invoice rather than creating two separate ones.
     let invoiceGenerated = false;
     let invoiceAmount: number | null = null;
+    // First-invoice auto-send: PDF + metadata hoisted out of the invoice block so
+    // Step 8 can attach the invoice to the welcome email and mark it Sent.
+    let firstInvoicePdf: Buffer | null = null;
+    let firstInvoiceMeta: { id: string; month: string; amount: number; dueDate: string; filename: string } | null = null;
     try {
       if (ratePerLesson && slotIds.length > 0) {
         const start = new Date(String(startDate) + 'T00:00:00');
@@ -403,6 +407,13 @@ export async function POST(request: NextRequest) {
 
             invoiceGenerated = true;
             invoiceAmount = totalAmount;
+            firstInvoiceMeta = {
+              id: createdInvoice.id,
+              month: invoiceMonthLabel,
+              amount: totalAmount,
+              dueDate: (createdInvoice.fields?.['Due Date'] as string) || firstLessonDate,
+              filename: `AdrianMathTuition-Invoice-${sanitize(studentName).replace(/\s+/g, '-')}-${invoiceMonthLabel.replace(/\s+/g, '-')}.pdf`,
+            };
 
             // Generate PDF (non-fatal)
             if (process.env.VERCEL === '1') {
@@ -424,6 +435,7 @@ export async function POST(request: NextRequest) {
                   lineItemsExtra: [],
                 };
                 const pdfBuffer = await generateInvoicePDF(invoiceData);
+                firstInvoicePdf = pdfBuffer; // for the welcome-email attachment (Step 8)
                 const uploadRes = await fetch(
                   `https://content.airtableapi.com/v0/${baseId}/Invoices/${createdInvoice.id}/uploadAttachment`,
                   {
@@ -454,7 +466,7 @@ export async function POST(request: NextRequest) {
               await sendTelegramWithButtons(
                 `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
                 `First invoice: $${totalAmount.toFixed(2)} (${breakdown})\n` +
-                `Status: Draft — review and send when ready.`,
+                `Auto-emailing it to the parent with the welcome email…`,
                 [
                   [
                     { text: '👁 Preview PDF', url: buildPreviewInvoiceUrl(createdInvoice.id, baseUrl) },
@@ -559,7 +571,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 8: Welcome email to the parent (non-fatal)
+    // Step 8: Welcome email to the parent — with the first invoice attached when
+    // its PDF rendered (auto-send). On confirmed delivery the invoice is marked
+    // Sent + logged; on failure it stays Draft and Telegram points at Review & Send.
     try {
       let slotLabel = '';
       if (slotIds.length > 0) {
@@ -568,14 +582,41 @@ export async function POST(request: NextRequest) {
         const slotTime = (slotRecord.fields?.['Time'] || '').trim();
         slotLabel = `${dayRaw} ${slotTime}`.trim();
       }
-      const welcome = await sendWelcomeEmail({
-        parentName: sanitize(parentName),
-        parentEmail: sanitize(parentEmail),
-        studentName: sanitize(studentName),
-        slotLabel,
-        startDate: String(startDate),
-      });
-      if (!welcome.sent) console.error('[signup] Welcome email not sent:', welcome.error);
+      const attachInvoice = !!(firstInvoicePdf && firstInvoiceMeta);
+      const welcome = await sendWelcomeEmail(
+        {
+          parentName: sanitize(parentName),
+          parentEmail: sanitize(parentEmail),
+          studentName: sanitize(studentName),
+          slotLabel,
+          startDate: String(startDate),
+          ...(attachInvoice ? { invoice: { month: firstInvoiceMeta!.month, amount: firstInvoiceMeta!.amount, dueDate: firstInvoiceMeta!.dueDate } } : {}),
+        },
+        attachInvoice ? { filename: firstInvoiceMeta!.filename, contentBase64: firstInvoicePdf!.toString('base64') } : undefined,
+      );
+      if (welcome.sent && attachInvoice) {
+        // Invoice delivered with the welcome email → mark Sent + log.
+        try {
+          await at('Invoices', `/${firstInvoiceMeta!.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Status: 'Sent' } }) });
+          await at('EmailLog', '', {
+            method: 'POST',
+            body: JSON.stringify({ typecast: true, fields: {
+              'Email ID': `invoice-${firstInvoiceMeta!.id}-${Date.now()}`,
+              'Sent At': new Date().toISOString(),
+              'Type': 'invoice',
+              'To Email': sanitize(parentEmail),
+              'Subject': `Welcome + first invoice (${firstInvoiceMeta!.month})`,
+              'Related Invoice': [firstInvoiceMeta!.id],
+              'Status': 'sent',
+            }}),
+          });
+        } catch (markErr) { console.error('[signup] mark-sent failed (non-fatal):', (markErr as Error).message); }
+        try { await sendTelegram(`📤 First invoice <b>auto-emailed</b> to ${sanitize(parentName)} with the welcome email ✓ ($${firstInvoiceMeta!.amount.toFixed(2)}, marked Sent)`); } catch { /**/ }
+      } else if (attachInvoice && !welcome.sent) {
+        try { await sendTelegram(`⚠️ First-invoice auto-send FAILED for ${sanitize(studentName)} (${welcome.error || 'unknown'}). Invoice is still Draft — use 📤 Review &amp; Send.`); } catch { /**/ }
+      } else if (!welcome.sent) {
+        console.error('[signup] Welcome email not sent:', welcome.error);
+      }
     } catch (welcomeErr) {
       console.error('[signup] Welcome email failed (non-fatal):', (welcomeErr as Error).message);
     }
