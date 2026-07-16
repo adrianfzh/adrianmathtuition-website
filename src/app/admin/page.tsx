@@ -169,6 +169,7 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '⚡', title: 'Revision Decks', sub: 'Quick recall · worked examples by topic', href: '/revise/am' },
   { emoji: '📖', title: 'Learn (student view)', sub: 'Preview the tap-through player', href: '/app/learn' },
   { emoji: '🖥️', title: 'Kiosk control', sub: 'Open / close the centre kiosk', href: '/admin/kiosk' },
+  { emoji: '🧾', title: 'Kiosk (student view)', sub: 'QR sign-in · print worksheets & notes', href: '/kiosk' },
   { emoji: '🖼️', title: 'Figure review', sub: 'Flag figures to regenerate', href: '/admin/figures' },
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📊', title: 'Exams', sub: 'Dates · topics · results', href: '/admin/exams' },
