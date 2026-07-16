@@ -10,6 +10,16 @@ interface HistoryEntry {
   content: string;
 }
 
+interface RestoredMessage {
+  id: number;
+  role: string;
+  content: string;
+  image_url: string | null;
+  feedback: string | null;
+}
+
+const BOT_API_BASE = 'https://adrianmath-telegram-math-bot.fly.dev';
+
 interface Slot {
   el: HTMLDivElement;
   text: string;
@@ -784,6 +794,118 @@ export default function ChatPage() {
     return textDiv;
   }, []);
 
+  /* ── 👍/👎 feedback row under an assistant answer ── */
+  const attachFeedbackRow = useCallback((group: HTMLElement, messageId: number, existing: string | null) => {
+    if (!messageId || group.querySelector('.fb-row')) return;
+    const row = document.createElement('div');
+    row.className = 'fb-row';
+    row.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
+    if (existing) row.dataset.voted = existing;
+    const mk = (kind: 'up' | 'down') => {
+      const b = document.createElement('button');
+      b.textContent = kind === 'up' ? '👍' : '👎';
+      b.setAttribute('aria-label', kind === 'up' ? 'Good answer' : 'Bad answer');
+      b.style.cssText = 'background:none;border:1px solid hsl(220,15%,88%);border-radius:8px;padding:2px 9px;cursor:pointer;font-size:13px;opacity:0.5;';
+      if (existing === kind) { b.style.opacity = '1'; b.style.background = 'hsl(220,60%,96%)'; }
+      b.onclick = () => {
+        if (row.dataset.voted) return;
+        row.dataset.voted = kind;
+        Array.from(row.children).forEach(c => { (c as HTMLElement).style.opacity = c === b ? '1' : '0.3'; });
+        b.style.background = 'hsl(220,60%,96%)';
+        fetch(`${BOT_API_BASE}/api/chat/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chatId: sessionIdRef.current, messageId, feedback: kind }),
+        }).catch(() => { /* feedback is best-effort */ });
+      };
+      return b;
+    };
+    row.appendChild(mk('up'));
+    row.appendChild(mk('down'));
+    group.appendChild(row);
+  }, []);
+
+  /* ── One-time "become a student" nudge after the 2nd answered question ── */
+  const maybeShowRegistrationNudge = useCallback(() => {
+    try { if (localStorage.getItem('am_chat_nudge_off')) return; } catch { return; }
+    if (document.getElementById('regNudge')) return;
+    if (conversationHistoryRef.current.filter(h => h.role === 'assistant').length < 2) return;
+    const inner = messagesInnerRef.current;
+    if (!inner) return;
+    const box = document.createElement('div');
+    box.id = 'regNudge';
+    box.style.cssText = 'margin:4px 0 20px;padding:12px 14px;border:1px solid hsl(220,40%,88%);background:hsl(220,60%,97%);border-radius:12px;font-size:13.5px;line-height:1.55;color:hsl(220,30%,25%);display:flex;gap:10px;align-items:flex-start;';
+    box.innerHTML = '<span style="font-size:16px;">💡</span><span style="flex:1;">Enjoying the bot? <strong>Adrian&rsquo;s students</strong> get answers tuned to their exact level and syllabus, photo marking of their written working, and practice from real exam papers. <a href="https://wa.me/6591397985?text=Hi%20Adrian%2C%20I%27d%20like%20to%20ask%20about%20math%20lessons" target="_blank" rel="noopener" style="color:hsl(220,70%,40%);font-weight:600;">Ask about lessons &rarr;</a></span><button aria-label="Dismiss" style="background:none;border:none;cursor:pointer;font-size:14px;color:hsl(220,10%,55%);padding:0 2px;">✕</button>';
+    const dismiss = box.querySelector('button') as HTMLButtonElement;
+    dismiss.onclick = () => {
+      box.remove();
+      try { localStorage.setItem('am_chat_nudge_off', '1'); } catch { /* noop */ }
+    };
+    inner.appendChild(box);
+  }, []);
+
+  /* ── Start a fresh conversation ── */
+  const startNewChat = useCallback(() => {
+    sessionIdRef.current = '';
+    conversationHistoryRef.current = [];
+    if (messagesInnerRef.current) messagesInnerRef.current.innerHTML = '';
+    try {
+      localStorage.removeItem('am_chat_id');
+      localStorage.removeItem('am_chat_last');
+    } catch { /* noop */ }
+    setConversationStarted(false);
+    setTimeout(() => welcomeInputRef.current?.focus(), 60);
+  }, []);
+
+  /* ── Restore the previous conversation once on mount ──
+     The chatId lives in localStorage; the messages live server-side
+     (chat_messages via /api/chat/history), so restores include image
+     thumbnails and past feedback. Best-effort: any failure = fresh chat. */
+  const restoredOnceRef = useRef(false);
+  useEffect(() => {
+    if (restoredOnceRef.current) return;
+    restoredOnceRef.current = true;
+    let savedId = '';
+    try {
+      savedId = localStorage.getItem('am_chat_id') || '';
+      const last = parseInt(localStorage.getItem('am_chat_last') || '0', 10);
+      if (!savedId || Date.now() - last > 7 * 24 * 60 * 60 * 1000) return;
+    } catch { return; }
+    fetch(`${BOT_API_BASE}/api/chat/history?chatId=${encodeURIComponent(savedId)}`)
+      .then(r => (r.ok ? r.json() : { messages: [] }))
+      .then((data: { messages: RestoredMessage[] }) => {
+        const msgs = data.messages || [];
+        if (!msgs.length) return;
+        const insert = () => {
+          sessionIdRef.current = savedId;
+          for (const m of msgs) {
+            if (m.role === 'user') {
+              addMessageToDOM('user', m.content === '[image]' ? null : m.content, m.image_url || null);
+            } else {
+              addMessageToDOM('bot', m.content);
+              const groups = messagesInnerRef.current?.children;
+              const lastGroup = groups?.[groups.length - 1] as HTMLElement | undefined;
+              if (lastGroup && m.id) attachFeedbackRow(lastGroup, m.id, m.feedback);
+            }
+          }
+          conversationHistoryRef.current = msgs.slice(-12).map(m => ({
+            role: (m.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+            content: m.content,
+          }));
+          setConversationStarted(true);
+          maybeShowRegistrationNudge();
+          setTimeout(scrollToBottom, 120);
+        };
+        // KaTeX loads from CDN — wait for it (max ~6s) so restored math renders
+        const waitKatex = (tries: number) => {
+          if ((typeof window.katex !== 'undefined' && typeof window.renderMathInElement === 'function') || tries > 40) insert();
+          else setTimeout(() => waitKatex(tries + 1), 150);
+        };
+        waitKatex(0);
+      })
+      .catch(() => { /* restore is best-effort */ });
+  }, [addMessageToDOM, attachFeedbackRow, maybeShowRegistrationNudge]); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ── Transfer welcome text to fixed input on transition ── */
   useEffect(() => {
     if (conversationStarted && fixedInputRef.current && welcomeInputRef.current) {
@@ -830,6 +952,7 @@ export default function ChatPage() {
       if (!sessionIdRef.current) {
         sessionIdRef.current = 'web-' + (globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`);
       }
+      try { localStorage.setItem('am_chat_id', sessionIdRef.current); } catch { /* noop */ }
       const body: Record<string, unknown> = {
         history: conversationHistoryRef.current,
         source: isTelegramWebview ? 'telegram-webview' : 'website',
@@ -872,6 +995,7 @@ export default function ChatPage() {
       const streamStartedAt = Date.now();
       let fullText = '';
       let sawDone = false;
+      let doneMessageId: number | null = null;
       let lastStatus: { status: string; chars?: number } | null = null;
       let statusTicker: ReturnType<typeof setInterval> | null = null;
       const stopStatusTicker = () => { if (statusTicker) { clearInterval(statusTicker); statusTicker = null; } };
@@ -1035,6 +1159,7 @@ export default function ChatPage() {
 
             if (parsed.done) {
               sawDone = true;
+              if (typeof parsed.messageId === 'number') doneMessageId = parsed.messageId;
               stopStatusTicker();
               // Don't render immediately — the typewriter finishes revealing the
               // buffer and its final frame does the clean full render.
@@ -1058,6 +1183,12 @@ export default function ChatPage() {
       if (conversationHistoryRef.current.length > 12) {
         conversationHistoryRef.current = conversationHistoryRef.current.slice(-12);
       }
+      try { localStorage.setItem('am_chat_last', String(Date.now())); } catch { /* noop */ }
+      if (doneMessageId) {
+        const group = streamDiv.parentElement?.parentElement as HTMLElement | null;
+        if (group) attachFeedbackRow(group, doneMessageId, null);
+      }
+      maybeShowRegistrationNudge();
       scrollToBottom();
 
     } catch {
@@ -1069,7 +1200,7 @@ export default function ChatPage() {
       setIsLoading(false);
       fixedInputRef.current?.focus();
     }
-  }, [isLoading, conversationStarted, selectedFile, previewSrc, removeImage, addMessageToDOM, addTypingToDOM, removeTypingFromDOM, addStreamingMessage, scheduleRender, showError]);
+  }, [isLoading, conversationStarted, selectedFile, previewSrc, removeImage, addMessageToDOM, addTypingToDOM, removeTypingFromDOM, addStreamingMessage, scheduleRender, showError, attachFeedbackRow, maybeShowRegistrationNudge]);
 
   /* ── Keyboard listeners ── */
   useEffect(() => {
@@ -1636,6 +1767,19 @@ export default function ChatPage() {
               flexShrink: 0,
             }}>
               <div style={{ maxWidth: 720, margin: '0 auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+                  <button
+                    onClick={startNewChat}
+                    disabled={isLoading}
+                    style={{
+                      background: 'none', border: 'none', cursor: isLoading ? 'default' : 'pointer',
+                      fontSize: 12, color: 'hsl(220,10%,46%)', padding: '2px 4px',
+                      opacity: isLoading ? 0.4 : 0.8,
+                    }}
+                  >
+                    ⊕ New chat
+                  </button>
+                </div>
                 {errorMsg && (
                   <div style={{
                     background: 'hsl(0,90%,97%)', border: '1px solid hsl(0,70%,85%)',
