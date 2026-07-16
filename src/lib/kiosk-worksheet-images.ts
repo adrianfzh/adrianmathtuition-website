@@ -27,11 +27,10 @@ export type Part = {
 };
 
 /* Working space is APPORTIONED TO THE MARKS (STYLE.md). Calibrated on printed
- * sheets with Adrian (2026-07-17): 14mm/mark, but low-mark parts still need a
- * real working block — exam papers give ~3cm even for [1]-[2] — so floor 30mm,
- * cap 84mm. Rendered as an empty spacer div. No ruled lines — this is math. */
+ * sheets with Adrian (2026-07-17, then "1.2x more"): 17mm/mark, floor 36mm,
+ * cap 100mm. Rendered as an empty spacer div. No ruled lines — this is math. */
 export function spaceMm(marks: number): number {
-  return Math.min(84, Math.max(30, marks * 14));
+  return Math.min(100, Math.max(36, marks * 17));
 }
 
 export function flattenParts(stem: string, parts: Part[] | null): { text: string; answer: string } {

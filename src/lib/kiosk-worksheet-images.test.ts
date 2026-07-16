@@ -79,17 +79,17 @@ describe('flattenParts', () => {
       { label: 'b', text: 'Second.', answer: '2' },
     ]);
     // Marks render as a right-floating span, followed by a marks-proportional
-    // working-space div (14mm/mark, floor 30, cap 84). Unmarked parts get neither.
+    // working-space div (17mm/mark, floor 36, cap 100). Unmarked parts get neither.
     expect(text).toBe(
-      'Stem here.\n\n**(a)** First. <span class="ws-mk">[2]</span>\n\n<div class="ws-sp" style="height:30mm"></div>\n\n**(b)** Second.'
+      'Stem here.\n\n**(a)** First. <span class="ws-mk">[2]</span>\n\n<div class="ws-sp" style="height:36mm"></div>\n\n**(b)** Second.'
     );
     expect(answer).toBe('(a) 1;  (b) 2');
   });
-  it('clamps working space to 30–84mm', () => {
+  it('clamps working space to 36–100mm', () => {
     const one = flattenParts('', [{ label: 'a', text: 'Tiny.', marks: 1, answer: 'x' }]).text;
     const big = flattenParts('', [{ label: 'b', text: 'Huge.', marks: 9, answer: 'y' }]).text;
-    expect(one).toContain('height:30mm');
-    expect(big).toContain('height:84mm');
+    expect(one).toContain('height:36mm');
+    expect(big).toContain('height:100mm');
   });
   it('returns the stem untouched when parts are null/empty', () => {
     expect(flattenParts('Just a stem.', null)).toEqual({ text: 'Just a stem.', answer: '' });

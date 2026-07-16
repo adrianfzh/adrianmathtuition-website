@@ -67,9 +67,9 @@ const WS_LEVEL_LABEL: Record<string, string> = {
   EM: 'O LEVEL • EM', AM: 'O LEVEL • AM', JC2: 'JC • H2 MATH',
 };
 // Working space when a question has no per-part spacers (stem-only questions):
-// same calibration as lib/kiosk-worksheet-images spaceMm (14mm/mark, 30–84mm).
+// same calibration as lib/kiosk-worksheet-images spaceMm (17mm/mark, 36–100mm).
 function wsSpaceMm(marks: number | null): number {
-  return Math.min(84, Math.max(30, (marks ?? 3) * 14));
+  return Math.min(100, Math.max(36, (marks ?? 3) * 17));
 }
 
 type AuthState = 'checking' | 'setup' | 'ready';
