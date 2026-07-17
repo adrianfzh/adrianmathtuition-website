@@ -3,7 +3,7 @@
 // Closed (default) / Open (force on) / Scheduled (auto by opening hours).
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ensureAdminSession } from '@/lib/admin-client';
+import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 type Mode = 'closed' | 'open' | 'scheduled';
 type Status = { mode: Mode; open: boolean; nextOpen: string | null; hoursSummary: string };
@@ -18,17 +18,35 @@ export default function KioskAdminPage() {
   const [status, setStatus] = useState<Status | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  // authed: null = checking, false = show password form, true = show controls.
+  // The page previously skipped the login form entirely, so a device without an
+  // admin session (e.g. the iPad) just saw "Unauthorized" on every tap.
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const [pw, setPw] = useState('');
+  const [pwErr, setPwErr] = useState('');
 
   const load = useCallback(async () => {
     try {
-      await ensureAdminSession();
       const r = await fetch('/api/kiosk/status');
       if (!r.ok) throw new Error('Could not load status');
       setStatus(await r.json());
     } catch (e) { setErr(e instanceof Error ? e.message : 'Error'); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    ensureAdminSession().then(ok => {
+      setAuthed(ok);
+      if (ok) load();
+    });
+  }, [load]);
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setPwErr('');
+    const ok = await loginAdminSession(pw);
+    if (ok) { setAuthed(true); setPw(''); load(); }
+    else setPwErr('Incorrect password');
+  }
 
   async function setMode(mode: Mode) {
     setBusy(true); setErr('');
@@ -55,6 +73,22 @@ export default function KioskAdminPage() {
         <Link href="/admin" style={{ color: '#8a97a8', fontSize: 14, textDecoration: 'none' }}>‹ Admin</Link>
       </div>
 
+      {authed === false && (
+        <form onSubmit={handleLogin} style={{ display: 'grid', gap: 10, maxWidth: 360 }}>
+          <p style={{ color: '#5a6b7d', fontSize: 14, margin: 0 }}>Enter the admin password to control the kiosk on this device.</p>
+          <input type="password" value={pw} onChange={e => { setPw(e.target.value); setPwErr(''); }}
+            placeholder="Admin password" autoFocus
+            style={{ borderRadius: 10, border: '1px solid #d9d2bf', padding: '12px 14px', fontSize: 16 }} />
+          {pwErr && <div style={{ color: '#c0392b', fontSize: 13 }}>{pwErr}</div>}
+          <button type="submit" disabled={!pw}
+            style={{ borderRadius: 10, border: 'none', background: '#1c3a5e', color: '#fff', padding: '12px 14px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
+            Enter
+          </button>
+        </form>
+      )}
+
+      {authed !== true ? null : (
+      <>
       {status && (
         <div style={{
           borderRadius: 14, padding: '14px 16px', marginBottom: 18, fontSize: 15, fontWeight: 600,
@@ -92,6 +126,8 @@ export default function KioskAdminPage() {
         </p>
       )}
       {err && <p style={{ color: '#c0392b', fontSize: 14 }}>{err}</p>}
+      </>
+      )}
     </div>
   );
 }

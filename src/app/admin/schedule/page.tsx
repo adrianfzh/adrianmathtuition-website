@@ -2533,7 +2533,29 @@ export default function SchedulePage() {
                 No exam this season
               </label>
               {!examEdit.noExam && examEdit.rows.map((row, i) => {
-                const topicOpts = getExamTopicsForSubject(examEdit.studentLevel || 'Sec 4', row.subject || 'E Math').flatMap(c => c.topics);
+                // Group the cascading topic list by level (own → [S2] → [S1], per
+                // Adrian 2026-07-17): EM shows its own topics first, then Sec 2,
+                // then Sec 1 — each under a small header. Dedupe across groups so
+                // a topic shared with a lower level only appears once (own level).
+                const topicGroups = (() => {
+                  const cats = getExamTopicsForSubject(examEdit.studentLevel || 'Sec 4', row.subject || 'E Math');
+                  const seen = new Set<string>();
+                  const buckets: { key: string; header: string; topics: string[] }[] = [];
+                  for (const c of cats) {
+                    const m = /^\[(S1|S2)\]/.exec(c.label || '');
+                    const key = m ? m[1] : 'own';
+                    const header = key === 'S1' ? 'Sec 1 topics' : key === 'S2' ? 'Sec 2 topics'
+                      : row.subject === 'A Math' ? 'A Math topics'
+                      : /sec\s*1/i.test(examEdit.studentLevel || '') ? 'Sec 1 topics'
+                      : /sec\s*2/i.test(examEdit.studentLevel || '') ? 'Sec 2 topics'
+                      : /jc/i.test(examEdit.studentLevel || '') ? 'JC topics'
+                      : 'EM (Sec 3/4) topics';
+                    let b = buckets.find(x => x.key === key);
+                    if (!b) { b = { key, header, topics: [] }; buckets.push(b); }
+                    for (const t of c.topics) { if (!seen.has(t)) { seen.add(t); b.topics.push(t); } }
+                  }
+                  return buckets.filter(b => b.topics.length > 0);
+                })();
                 const dateBox = (label: string, value: string, dateKey: 'date' | 'p1Date' | 'p2Date', approxVal: boolean, approxKey: 'approx' | 'approxP1' | 'approxP2') => (
                   <div className="form-group" style={{ marginTop: 10 }}>
                     <span className="form-label">{label}</span>
@@ -2578,18 +2600,25 @@ export default function SchedulePage() {
                               ))}
                             </div>
                           )}
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                            {topicOpts.map(t => {
-                              const on = sel.has(t);
-                              return (
-                                <button key={t} type="button" onClick={() => toggle(t)}
-                                  style={{ fontSize: 11.5, fontWeight: 600, padding: '5px 10px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
-                                    background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>
-                                  {on ? '✓ ' : ''}{t}
-                                </button>
-                              );
-                            })}
-                          </div>
+                          {topicGroups.map(g => (
+                            <div key={g.key} style={{ marginBottom: 10 }}>
+                              {topicGroups.length > 1 && (
+                                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', color: '#94a3b8', margin: '2px 0 6px' }}>{g.header}</div>
+                              )}
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {g.topics.map(t => {
+                                  const on = sel.has(t);
+                                  return (
+                                    <button key={t} type="button" onClick={() => toggle(t)}
+                                      style={{ fontSize: 11.5, fontWeight: 600, padding: '5px 10px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
+                                        background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>
+                                      {on ? '✓ ' : ''}{t}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
                         </>
                       );
                     })()}
