@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { weekdayLessonDates, firstInvoiceLessonDates, lastDayOfMonthISO, firstOfNextMonthISO } from './billing-math';
+import { weekdayLessonDates, firstInvoiceLessonDates, lastDayOfMonthISO, firstOfNextMonthISO, nextDayISO } from './billing-math';
 
 const FRI = 5, SUN = 0, TUE = 2;
 
@@ -15,6 +15,26 @@ describe('lastDayOfMonthISO / firstOfNextMonthISO', () => {
   it('handles February incl. leap years', () => {
     expect(lastDayOfMonthISO('2026-02-10')).toBe('2026-02-28');
     expect(lastDayOfMonthISO('2028-02-10')).toBe('2028-02-29');
+  });
+});
+
+// REGRESSION — reschedule capacity gate: {Date}='2026-07-28' equality matched
+// zero Lessons records in Airtable while the half-open range found 8, so
+// countLessonsInSlot returned 0 for every date and the 409 "slot full" check
+// never fired. All single-day filters must use AND({Date}>='d',{Date}<nextDay).
+describe('nextDayISO (exclusive upper bound for Airtable single-day filters)', () => {
+  it('increments a normal day', () => {
+    expect(nextDayISO('2026-07-28')).toBe('2026-07-29');
+  });
+  it('rolls over month end', () => {
+    expect(nextDayISO('2026-07-31')).toBe('2026-08-01');
+  });
+  it('rolls over year end', () => {
+    expect(nextDayISO('2026-12-31')).toBe('2027-01-01');
+  });
+  it('handles leap-day boundaries', () => {
+    expect(nextDayISO('2028-02-28')).toBe('2028-02-29');
+    expect(nextDayISO('2028-02-29')).toBe('2028-03-01');
   });
 });
 

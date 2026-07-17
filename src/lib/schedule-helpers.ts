@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
+import { nextDayISO } from '@/lib/billing-math';
 
 /** Number of days within which a lesson's progress fields may be edited. */
 export const EDIT_WINDOW_DAYS = 14;
@@ -41,15 +42,32 @@ export function formatDateSlotLabel(
   return `${day}, ${date} ${slotFields.Time ?? ''}`.trim();
 }
 
+// Airtable formula matching Lessons ON a single date. {Date}='YYYY-MM-DD'
+// equality silently matches NOTHING on the date-typed field (verified live
+// 2026-07-17 — it found 0 of 8 records on 2026-07-28, so the capacity gate
+// never fired). Half-open range is the only reliable form.
+export function onDateFormula(date: string): string {
+  return `AND({Date}>='${date}',{Date}<'${nextDayISO(date)}')`;
+}
+
 // NOTE: ARRAYJOIN({Slot}) returns slot display names, not record IDs.
 // Filter by Date + Status only in Airtable, then match slotId in JS.
 // Makeup capacity is the TOTAL slot limit (regular + makeup combined).
 // Count all non-cancelled/absent lessons and compare against makeupCapacity.
-export async function countLessonsInSlot(slotId: string, date: string): Promise<number> {
+export async function countLessonsOnDateBySlot(date: string): Promise<Record<string, number>> {
   const formula = encodeURIComponent(
-    `AND({Date}='${date}',{Status}!='Cancelled',{Status}!='Absent')`
+    `AND(${onDateFormula(date)},{Status}!='Cancelled',{Status}!='Absent')`
   );
   const data = await airtableRequestAll('Lessons', `?filterByFormula=${formula}&fields[]=Slot`);
-  return data.records.filter((r: any) => r.fields['Slot']?.[0] === slotId).length;
+  const counts: Record<string, number> = {};
+  for (const r of data.records) {
+    const sid = r.fields['Slot']?.[0];
+    if (sid) counts[sid] = (counts[sid] ?? 0) + 1;
+  }
+  return counts;
+}
+
+export async function countLessonsInSlot(slotId: string, date: string): Promise<number> {
+  return (await countLessonsOnDateBySlot(date))[slotId] ?? 0;
 }
 

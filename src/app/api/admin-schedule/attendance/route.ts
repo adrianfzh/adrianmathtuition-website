@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAdminAuth, onDateFormula } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     // Slot + Student in JS.
     const existing = await airtableRequestAll(
       'Lessons',
-      `?filterByFormula=${encodeURIComponent(`{Date}='${date}'`)}&fields[]=Status&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Notes`
+      `?filterByFormula=${encodeURIComponent(onDateFormula(date))}&fields[]=Status&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Notes`
     );
     const matchedRecords = existing.records.filter(
       (r: any) => r.fields['Slot']?.[0] === slotId && r.fields['Student']?.[0] === studentId

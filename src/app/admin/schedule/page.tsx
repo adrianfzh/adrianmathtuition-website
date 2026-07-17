@@ -717,6 +717,22 @@ export default function SchedulePage() {
   // Modals
   const [rescheduleModal, setRescheduleModal] = useState<RescheduleState | null>(null);
   const [showAllRescheduleSlots, setShowAllRescheduleSlots] = useState(false);
+  // Real per-slot booked counts for the reschedule target date, keyed
+  // date → slotId → count. The loaded week's lessons can't see other weeks
+  // (28 Jul showed 0/6 with 2 reschedules already booked), so counts come from
+  // /api/admin-schedule/slot-counts — same semantics as the server's 409 gate.
+  const [targetDayCounts, setTargetDayCounts] = useState<Record<string, Record<string, number>>>({});
+  useEffect(() => {
+    const d = rescheduleModal?.toDate;
+    if (!d || rescheduleModal?.switchMode) return;
+    let stale = false;
+    fetch(`/api/admin-schedule/slot-counts?date=${d}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => { if (!stale && j?.counts) setTargetDayCounts(prev => ({ ...prev, [d]: j.counts })); })
+      .catch(() => {});
+    return () => { stale = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rescheduleModal?.toDate, rescheduleModal?.switchMode]);
   const [actionSheet, setActionSheet] = useState<ActionSheetState | null>(null);
   // Topics of the original missed revision session, shown when a 🏖 Revision makeup
   // chip's action sheet is open. Fetched on demand from the attendance route (which
@@ -1456,6 +1472,7 @@ export default function SchedulePage() {
         if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
         if (!res.ok) throw new Error(json.error || 'Failed');
         setRescheduleModal(null);
+        setTargetDayCounts({}); // booked counts changed — drop the cache
         await fetchSchedule(monday);
         const sent = json.notificationsSent?.student || json.notificationsSent?.parent;
         showToast('success', notify ? (sent ? '✓ Rescheduled — notifications sent' : '✓ Rescheduled (notifications partial)') : '✓ Rescheduled');
@@ -2880,18 +2897,23 @@ export default function SchedulePage() {
                                 const label = `${s.dayName} ${s.time} (${s.level})${availStr}`;
                                 return <option key={s.id} value={s.id} disabled={isFull && !showAllRescheduleSlots}>{label}</option>;
                               }
-                              // Reschedule mode: show makeup capacity
+                              // Reschedule mode: show makeup capacity. Counts come from
+                              // slot-counts (any date, matches the server's 409 gate);
+                              // fall back to the loaded week's lessons while it loads.
                               const mkCap = s.makeupCapacity ?? s.capacity ?? 0;
-                              const slotLessons = rescheduleModal.toDate
-                                ? (enrichedLessonMap[`${rescheduleModal.toDate}__${s.id}`] ?? [])
-                                : [];
-                              const existingLessons = slotLessons.length > 0
-                                ? slotLessons.filter(l =>
-                                    l.status !== 'Cancelled' &&
-                                    l.status !== 'Absent' &&
-                                    l.status !== 'Rescheduled'
-                                  ).length
-                                : (s.enrolledCount ?? 0);
+                              const dayCounts = rescheduleModal.toDate ? targetDayCounts[rescheduleModal.toDate] : undefined;
+                              let existingLessons: number;
+                              if (dayCounts) {
+                                existingLessons = dayCounts[s.id] ?? 0;
+                              } else if (rescheduleModal.toDate) {
+                                existingLessons = (enrichedLessonMap[`${rescheduleModal.toDate}__${s.id}`] ?? []).filter(l =>
+                                  l.status !== 'Cancelled' &&
+                                  l.status !== 'Absent' &&
+                                  l.status !== 'Rescheduled'
+                                ).length;
+                              } else {
+                                existingLessons = s.enrolledCount ?? 0;
+                              }
                               const isFull = mkCap > 0 && existingLessons >= mkCap;
                               const availStr = mkCap > 0
                                 ? (isFull ? ' — FULL' : ` — ${existingLessons}/${mkCap}`)

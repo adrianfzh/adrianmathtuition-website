@@ -28,6 +28,18 @@ export function firstOfNextMonthISO(isoStr: string): string {
 }
 
 /**
+ * The day after `isoStr`, as YYYY-MM-DD. Exists to build exclusive upper
+ * bounds for Airtable date filters: `{Date}='YYYY-MM-DD'` equality silently
+ * matches NOTHING on the date-typed Lessons field (verified live 2026-07-17 —
+ * the reschedule capacity gate counted 0 lessons for every date). Always
+ * filter a single day as AND({Date}>='d',{Date}<nextDayISO(d)).
+ */
+export function nextDayISO(isoStr: string): string {
+  const d = parse(isoStr);
+  return iso(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1)));
+}
+
+/**
  * Every date of `weekday` (0=Sunday…6=Saturday) from startISO to endISO,
  * BOTH INCLUSIVE, excluding any dates in `excluded` (e.g. NO_LESSON_DATES).
  * A lesson on the period's last day is included — regression: Kieran Lai,
