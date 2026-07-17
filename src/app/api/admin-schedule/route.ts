@@ -60,7 +60,12 @@ export async function GET(req: NextRequest) {
   // (settings + topic-timeline don't depend on the week's data at all)
   const [slotsData, enrollmentsData, lessonsData, settingsData, tlRecords] = await Promise.all([
     fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`{Is Active}=1`)}`),
-    fetchAll('Enrollments', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot`),
+    // ALL enrollments (not just Active) with their tenure dates, so the Roster
+    // can show who was enrolled during the VIEWED week, not just who's enrolled
+    // now. Slot switches END the old enrollment + CREATE a new one (tenure is
+    // preserved, never edited in place), so a past week's roster is derivable.
+    // Overlap is filtered in JS below to sidestep Airtable's date-coercion gotcha.
+    fetchAll('Enrollments', `?fields[]=Student&fields[]=Slot&fields[]=Start Date&fields[]=End Date&fields[]=Status`),
     fetchAll(
       'Lessons',
       `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Progress Logged&fields[]=Is Revision Makeup`
@@ -226,14 +231,24 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // enrollmentsBySlot: slotId → studentId[]
+  // enrollmentsBySlot: slotId → studentId[], as the roster stood DURING the
+  // viewed week. An enrollment counts if its tenure overlaps [weekStart,weekEnd]:
+  // it had started by week-end (missing Start Date = "since forever") and hadn't
+  // ended before the week began (missing End Date = still open). So a past week
+  // shows that week's real membership — a since-departed student reappears, and
+  // a switched student sits in the slot they were actually in then, not today's.
   const enrollmentsBySlot: Record<string, string[]> = {};
   for (const r of enrollmentsData) {
     const slotId = r.fields['Slot']?.[0];
     const studentId = r.fields['Student']?.[0];
     if (!slotId || !studentId) continue;
+    const start = (r.fields['Start Date'] as string) || '';
+    const end = (r.fields['End Date'] as string) || '';
+    const startedByWeekEnd = !start || start <= weekEnd;
+    const notEndedBeforeWeek = !end || end >= weekStart;
+    if (!startedByWeekEnd || !notEndedBeforeWeek) continue;
     if (!enrollmentsBySlot[slotId]) enrollmentsBySlot[slotId] = [];
-    enrollmentsBySlot[slotId].push(studentId);
+    if (!enrollmentsBySlot[slotId].includes(studentId)) enrollmentsBySlot[slotId].push(studentId);
   }
 
   function isTimeRelatedNote(note: string): boolean {

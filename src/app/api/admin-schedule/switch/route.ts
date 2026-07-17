@@ -2,9 +2,10 @@
 // Permanently switches a student to a new slot starting from switchDate:
 //   A. Delete all future Scheduled lessons on old slot (from switchDate onward)
 //   B. Create new weekly lessons on new slot (9-week horizon)
-//   C. Proration: charge/credit the difference in remaining lessons this month
-//      (new-slot weekday vs old-slot weekday, switchDate→month-end, excl holidays)
-//      as a Draft 'Adjustment' invoice.
+//   C. Proration: reconcile the switch month's ACTUAL lessons against what the
+//      issued invoice billed (lib/switch-proration.ts), as a Draft 'Adjustment'
+//      invoice. A credit on an already-PAID month defers to the next month so it
+//      actually reduces a future payment.
 //   D. Enrollment history: END the old enrollment (Status 'Ended', End Date =
 //      day before switch) and CREATE a new Active enrollment on the new slot,
 //      carrying over Rate Per Lesson + Rate Type.
@@ -13,7 +14,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { generateRegularLessonsForSlot, DEFAULT_WEEKS_AHEAD, NO_LESSON_DATES } from '@/lib/lesson-generation';
+import { generateRegularLessonsForSlot, DEFAULT_WEEKS_AHEAD } from '@/lib/lesson-generation';
+import { computeSwitchProration } from '@/lib/switch-proration';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -24,21 +26,6 @@ const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','
 function fmtUTC(d: Date): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 }
-// Count weekly occurrences of `dayName` from `fromDate` to `monthEnd` (inclusive),
-// excluding public holidays. Mirrors the bot's countRemainingLessons.
-function countRemainingLessons(dayName: string, fromDate: Date, monthEnd: Date): number {
-  const target = DAY_NAMES.indexOf(dayName);
-  if (target === -1) return 0;
-  const d = new Date(fromDate);
-  let count = 0;
-  while (d.getUTCDay() !== target) d.setUTCDate(d.getUTCDate() + 1);
-  while (d <= monthEnd) {
-    if (!NO_LESSON_DATES.includes(fmtUTC(d))) count++;
-    d.setUTCDate(d.getUTCDate() + 7);
-  }
-  return count;
-}
-
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -81,7 +68,12 @@ export async function POST(req: NextRequest) {
   const studentRec = await airtableRequest('Students', `/${studentId}`);
   const studentName: string = studentRec.fields['Student Name'] || studentId;
 
-  const results = { cancelled: 0, created: 0, enrollmentUpdated: false, adjustment: 0, adjustmentMonth: '', errors: [] as string[] };
+  const results = {
+    cancelled: 0, created: 0, enrollmentUpdated: false,
+    adjustment: 0, adjustmentMonth: '',
+    billedLessonCount: 0, correctLessonCount: 0, invoiceWasPaid: false,
+    errors: [] as string[],
+  };
 
   // ── A. Delete future Scheduled lessons on old slot ──────────────────────────
   try {
@@ -129,14 +121,39 @@ export async function POST(req: NextRequest) {
     const ratePerLesson: number = enrollment?.fields['Rate Per Lesson'] ?? 0;
     const rateType: string = enrollment?.fields['Rate Type'] || '';
 
-    // ── Proration: difference in remaining lessons this month × rate ──────────
+    // ── Proration: reconcile the switch month's ACTUAL lessons against what the
+    // issued invoice billed (see lib/switch-proration.ts for why forward-only
+    // weekday counting was wrong). This runs after steps A+B, so the lesson
+    // records already reflect the switch. ──────────────────────────────────────
     const switchDt = new Date(switchDate + 'T00:00:00Z');
-    const monthEnd = new Date(Date.UTC(switchDt.getUTCFullYear(), switchDt.getUTCMonth() + 1, 0));
-    const newRemaining = countRemainingLessons(newDayRaw, switchDt, monthEnd);
-    const oldRemaining = countRemainingLessons(oldDayRaw, switchDt, monthEnd);
-    const adjustment = Math.round((newRemaining - oldRemaining) * ratePerLesson * 100) / 100;
     const monthStr = switchDt.toLocaleDateString('en-SG', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    const ym = `${switchDt.getUTCFullYear()}-${String(switchDt.getUTCMonth() + 1).padStart(2, '0')}`;
+
+    // The issued switch-month invoice (non-voided, Regular). Base Amount ÷ rate
+    // = lessons it charged for. None → nothing to reconcile (future invoice
+    // bills the new enrollment correctly), adjustment stays 0.
+    const monthInvoices = await airtableRequestAll('Invoices',
+      `?filterByFormula=${encodeURIComponent(`AND({Month}='${monthStr}',{Status}!='Voided')`)}&fields[]=Student&fields[]=Base Amount&fields[]=Invoice Type&fields[]=Status&fields[]=Is Paid`
+    );
+    const issued = monthInvoices.records.find((r: any) =>
+      r.fields['Student']?.[0] === studentId &&
+      (r.fields['Invoice Type'] == null || r.fields['Invoice Type'] === 'Regular')
+    );
+    const invoiceBaseAmount: number | null = issued ? (issued.fields['Base Amount'] ?? null) : null;
+    const invoiceWasPaid: boolean = !!issued?.fields['Is Paid'];
+
+    // Actual Regular, non-cancelled lessons for this student in the switch month.
+    const monthLessons = await airtableRequestAll('Lessons',
+      `?filterByFormula=${encodeURIComponent(`AND({Date}>='${ym}-01',{Date}<'${ym}-32',{Type}='Regular',{Status}!='Cancelled',{Status}!='Cancelled - Prorated')`)}&fields[]=Student`
+    );
+    const correctLessonCount = monthLessons.records.filter((r: any) => r.fields['Student']?.[0] === studentId).length;
+
+    const proration = computeSwitchProration(correctLessonCount, invoiceBaseAmount, ratePerLesson);
+    const adjustment = proration.adjustment;
     results.adjustment = adjustment;
+    results.billedLessonCount = proration.billedLessonCount;
+    results.correctLessonCount = correctLessonCount;
+    results.invoiceWasPaid = invoiceWasPaid;
 
     // ── Enrollment history: end old, create new ───────────────────────────────
     if (enrollment) {
@@ -159,23 +176,34 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Adjustment invoice (only if non-zero) ─────────────────────────────────
-    // typecast:true so the 'Adjustment' Invoice Type option is created on write.
+    // A credit on an ALREADY-PAID switch month can't reduce that (settled)
+    // invoice, so attribute it to the NEXT month where it actually lowers a
+    // payment. An extra charge, or any adjustment on an unpaid month, stays on
+    // the switch month. typecast:true creates the 'Adjustment' option on write.
     if (adjustment !== 0 && monthStr) {
+      const deferCredit = invoiceWasPaid && adjustment < 0;
+      const nextMonthDt = new Date(Date.UTC(switchDt.getUTCFullYear(), switchDt.getUTCMonth() + 1, 1));
+      const targetMonth = deferCredit
+        ? nextMonthDt.toLocaleDateString('en-SG', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+        : monthStr;
+      const countNote = `${correctLessonCount} lesson${correctLessonCount === 1 ? '' : 's'} after switch vs ${proration.billedLessonCount} billed`;
+      const note = `Slot switch from ${oldSlotName} to ${newSlotName} effective ${switchDate} — ${countNote}.`
+        + (deferCredit ? ` Credit carried to ${targetMonth} (${monthStr} invoice already paid).` : '');
       await airtableRequest('Invoices', '', {
         method: 'POST',
         body: JSON.stringify({
           typecast: true,
           fields: {
             Student: [studentId],
-            Month: monthStr,
+            Month: targetMonth,
             'Invoice Type': 'Adjustment',
             'Adjustment Amount': adjustment,
-            'Adjustment Notes': `Slot switch from ${oldSlotName} to ${newSlotName} effective ${switchDate}`,
+            'Adjustment Notes': note,
             Status: 'Draft',
           },
         }),
       });
-      results.adjustmentMonth = monthStr;
+      results.adjustmentMonth = targetMonth;
     }
   } catch (err: any) {
     results.errors.push(`Enrollment/proration step: ${err.message}`);

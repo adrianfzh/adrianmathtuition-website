@@ -1368,9 +1368,26 @@ export default function SchedulePage() {
 
   // ── Roster view ─────────────────────────────────────────────────────────────
   function renderRosterView() {
+    // The roster now reflects who was enrolled during the VIEWED week (server
+    // filters enrollments by tenure). Flag it when that week isn't the current
+    // one, so a historical roster is never mistaken for the present.
+    const currentMondayISO = isoDate(getMondayOfWeek(new Date()));
+    const isPastWeek = mondayISO < currentMondayISO;
+    const isFutureWeek = mondayISO > currentMondayISO;
     return (
       <>
-        {/* Mobile: simple Mon–Sun tab strip (no dates — roster is week-agnostic) */}
+        {(isPastWeek || isFutureWeek) && (
+          <div className="roster-week-notice" onClick={goToToday} role="button" title="Jump to the current week">
+            <span>
+              {isPastWeek ? '⏮ Roster as it stood the week of ' : '⏭ Roster for the week of '}
+              <strong>{formatWeekLabel(monday)}</strong>
+              {isPastWeek ? ' — students who have since switched slots or left appear where they were then.' : '.'}
+            </span>
+            <span className="roster-week-notice-cta">This week →</span>
+          </div>
+        )}
+        {/* Mobile: Mon–Sun tab strip. The roster reflects the week selected in
+            the shared week-nav above; these tabs pick the day within it. */}
         <div className="mobile-day">
           <div className="roster-day-tabs">
             {DAYS.map((day, i) => (
@@ -2368,13 +2385,13 @@ export default function SchedulePage() {
             Roster
           </button>
         </div>
-        {/* Right side — Today pill lives here, always reserves space */}
+        {/* Right side — Today pill lives here, always reserves space. Shown in
+            roster mode too now that the roster reflects the VIEWED week (so a
+            past-week roster needs a one-tap way back to the present). */}
         <div className="view-tabs-side view-tabs-right">
-          {viewMode === 'lessons' && (
-            <button className="today-pill-btn" onClick={goToToday} title="Go to today">
-              Today
-            </button>
-          )}
+          <button className="today-pill-btn" onClick={goToToday} title="Go to this week">
+            {viewMode === 'roster' ? 'This week' : 'Today'}
+          </button>
         </div>
       </div>
 
@@ -3918,6 +3935,15 @@ body {
   line-height: 1;
 }
 /* ── Roster day tabs (mobile, Mon–Sun labels only, no dates) ── */
+.roster-week-notice {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin: 8px 12px 0; padding: 8px 14px;
+  background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px;
+  color: #9a3412; font-size: 13px; line-height: 1.4; cursor: pointer;
+}
+.roster-week-notice:hover { background: #ffedd5; }
+.roster-week-notice strong { font-weight: 700; white-space: nowrap; }
+.roster-week-notice-cta { flex-shrink: 0; font-weight: 700; white-space: nowrap; }
 .roster-day-tabs {
   display: flex;
   background: white;
