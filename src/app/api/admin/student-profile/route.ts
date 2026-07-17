@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { computePerMonthPayments } from '@/lib/invoice-payments';
+import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
 
 export const runtime = 'nodejs';
 
@@ -92,6 +93,14 @@ export async function GET(req: NextRequest) {
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const monthLabel = (d: string) => { const p = d.split('-'); return p.length === 3 ? `${MONTHS[+p[1] - 1]} ${p[0]}` : 'Unknown'; };
   const byId: Record<string, any> = Object.fromEntries(mine.map((r: any) => [r.id, r]));
+  // Same records, in the shape the shared chain-walker expects.
+  const chainById: Record<string, ChainLesson> = Object.fromEntries(mine.map((r: any) => [r.id, {
+    id: r.id,
+    date: r.fields['Date'] || '',
+    status: r.fields['Status'] || '',
+    slotId: r.fields['Slot']?.[0] ?? null,
+    rescheduledToId: r.fields['Rescheduled Lesson ID']?.[0] ?? null,
+  }]));
   // (destinationIds / origByDest / isMakeup computed above, before `upcoming`.)
   // Strip covers history through the END of the current month, so the current
   // month always shows its full set (incl. not-yet-happened lessons as grey boxes).
@@ -103,10 +112,12 @@ export async function GET(req: NextRequest) {
   const attendance = mine
     .filter((r: any) => !isMakeup(r) && r.fields['Type'] !== 'Trial' && (r.fields['Date'] || '') <= endOfMonth)
     .map((r: any) => {
-      let cur = r, guard = 0;
-      while (cur.fields['Status'] === 'Rescheduled' && cur.fields['Rescheduled Lesson ID']?.[0] && byId[cur.fields['Rescheduled Lesson ID'][0]] && guard < 12) {
-        cur = byId[cur.fields['Rescheduled Lesson ID'][0]]; guard++;
-      }
+      // Chain walk lives in lib/reschedule-chain.ts — this used to be a second
+      // inline copy of it, and the schedule chip had a THIRD that only read one
+      // hop (so a twice-moved lesson read as pending there while reading
+      // correctly here). One implementation, one set of tests.
+      const chain = resolveRescheduleChain(r.id, chainById, today);
+      const cur = (chain.finalId && byId[chain.finalId]) || r;
       const moved = cur.id !== r.id;
       const slotId = r.fields['Slot']?.[0] || null;
       const sf = slotId ? slotById[slotId] : null;

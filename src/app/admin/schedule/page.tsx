@@ -40,6 +40,10 @@ interface Lesson {
   rescheduledToDate?: string;
   rescheduledToSlotTime?: string;
   rescheduledToStatus?: string;
+  /** What became of the lesson at the END of its reschedule chain. */
+  rescheduledOutcome?: 'delivered' | 'missed' | 'cancelled' | 'upcoming' | 'unmarked' | 'broken';
+  /** Links followed; >1 means it was moved more than once. */
+  rescheduledHops?: number;
   progressLogged?: boolean;
   revisionLabel?: string;
   revisionSubject?: string;
@@ -329,6 +333,18 @@ function ProfileIconLink({ studentId }: { studentId: string }) {
   );
 }
 
+// How a rescheduled-away chip reads, by what actually became of the lesson.
+// 'missed'/'cancelled' must NOT look like 'upcoming' — a lesson the student
+// never got is a debt to act on, not a booking to wait for.
+const RESCHEDULE_OUTCOME: Record<string, { color: string; suffix: string; title: string }> = {
+  delivered: { color: '#16a34a', suffix: ' ✓', title: 'Made up — the student attended the replacement lesson' },
+  missed:    { color: '#dc2626', suffix: ' ✗ missed too', title: 'The makeup was ALSO missed — still owed, needs a new makeup' },
+  cancelled: { color: '#dc2626', suffix: ' — cancelled', title: 'The makeup was cancelled — not delivered' },
+  upcoming:  { color: '#2563eb', suffix: '', title: 'Makeup is scheduled and still to come' },
+  unmarked:  { color: '#b45309', suffix: ' — unmarked', title: 'The makeup date has passed but attendance was never marked' },
+  broken:    { color: '#64748b', suffix: '', title: 'Reschedule link is incomplete' },
+};
+
 function getTypeStyle(type: string, status: string) {
   // Lessons that have "happened but moved/missed" should look muted regardless of original type
   if (status === 'Absent' || status === 'Cancelled' || status === 'Rescheduled') return TYPE_COLORS.Absent;
@@ -529,18 +545,26 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
         ) : isTouch && lesson.type !== 'Regular' && !isFaded && (
           <span className="type-tag" style={{ display: 'inline-block', marginTop: 1 }}>{lesson.type}</span>
         )}
-        {/* Faded status sub-lines */}
-        {isRescheduledAway && (
-          <span style={{
-            display: 'block', fontSize: 10, marginTop: 2, fontWeight: 600,
-            // green if the destination lesson is already completed, blue if still upcoming
-            color: lesson.rescheduledToStatus === 'Completed' ? '#16a34a' : '#2563eb',
-          }}>
-            {lesson.rescheduledToDate
-              ? `Rescheduled → ${formatExamDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}`
-              : 'Rescheduled'}
-          </span>
-        )}
+        {/* Faded status sub-lines. Colour reflects what ACTUALLY became of the
+            lesson at the END of its reschedule chain (server resolves it), not
+            the first hop: a makeup the student also missed must not look like
+            one that is still to come. */}
+        {isRescheduledAway && (() => {
+          const o = lesson.rescheduledOutcome;
+          const v = RESCHEDULE_OUTCOME[o ?? 'broken'] ?? RESCHEDULE_OUTCOME.broken;
+          return (
+            <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 600, color: v.color }}
+              title={v.title}>
+              {lesson.rescheduledToDate
+                ? `Rescheduled → ${formatExamDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}${v.suffix}`
+                : `Rescheduled${v.suffix}`}
+              {/* Moved more than once — the date above is where it finally landed. */}
+              {(lesson.rescheduledHops ?? 1) > 1 && (
+                <span style={{ opacity: 0.7, fontWeight: 500 }} title={`Moved ${lesson.rescheduledHops} times`}> ↻{lesson.rescheduledHops}</span>
+              )}
+            </span>
+          );
+        })()}
         {lesson.status === 'Absent' && (
           <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 600, color: '#dc2626' }}>
             no reschedule yet

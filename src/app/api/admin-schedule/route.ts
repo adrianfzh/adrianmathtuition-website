@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { resolveActiveExamType, ExamType } from '@/lib/exam-season';
 import { subjectsFromRevisionLineItems, assignRevisionSessions } from '@/lib/revision-sessions';
+import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
 
 export const runtime = 'nodejs';
 
@@ -118,7 +119,7 @@ export async function GET(req: NextRequest) {
   // Previously these ran one after another (~6 sequential Airtable round-trips).
   const [newLessons, studentsData, extraSlotsData, revInvData, examsData] = await Promise.all([
     rescheduledNewIds.length
-      ? fetchAll('Lessons', `?filterByFormula=${encodeURIComponent(`OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Date&fields[]=Slot&fields[]=Status`)
+      ? fetchAll('Lessons', `?filterByFormula=${encodeURIComponent(`OR(${rescheduledNewIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Date&fields[]=Slot&fields[]=Status&fields[]=Rescheduled Lesson ID`)
       : Promise.resolve([] as any[]),
     studentIds.length
       ? fetchAll('Students', `?filterByFormula=${encodeURIComponent(`OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Student Name&fields[]=Level&fields[]=Subjects`)
@@ -134,9 +135,38 @@ export async function GET(req: NextRequest) {
       : Promise.resolve([] as any[]),
   ]);
 
-  const rescheduledDatesById: Record<string, string> = Object.fromEntries(newLessons.map((r: any) => [r.id, r.fields['Date'] ?? '']));
-  const rescheduledSlotById: Record<string, string> = Object.fromEntries(newLessons.map((r: any) => [r.id, r.fields['Slot']?.[0] ?? '']));
-  const rescheduledStatusById: Record<string, string> = Object.fromEntries(newLessons.map((r: any) => [r.id, r.fields['Status'] ?? '']));
+  // ── Reschedule CHAINS ───────────────────────────────────────────────────────
+  // A moved lesson's replacement can itself be moved, so `Rescheduled Lesson ID`
+  // is a chain. Fetch onward hops until every chain terminates — almost always 0
+  // extra rounds (only ~5% of moved lessons move twice), so this costs nothing in
+  // the common case. Resolution/classification lives in lib/reschedule-chain.ts.
+  const chainById: Record<string, ChainLesson> = {};
+  const addToChain = (recs: any[]) => {
+    for (const r of recs) {
+      chainById[r.id] = {
+        id: r.id,
+        date: r.fields['Date'] ?? '',
+        status: r.fields['Status'] ?? '',
+        slotId: r.fields['Slot']?.[0] ?? null,
+        rescheduledToId: r.fields['Rescheduled Lesson ID']?.[0] ?? null,
+      };
+    }
+  };
+  addToChain(newLessons);
+  for (let round = 0; round < 10; round++) {
+    const missing = [...new Set(
+      Object.values(chainById)
+        .filter(l => l.status === 'Rescheduled' && l.rescheduledToId && !chainById[l.rescheduledToId])
+        .map(l => l.rescheduledToId as string)
+    )];
+    if (!missing.length) break;
+    const more = await fetchAll('Lessons',
+      `?filterByFormula=${encodeURIComponent(`OR(${missing.map(id => `RECORD_ID()='${id}'`).join(',')})`)}&fields[]=Date&fields[]=Slot&fields[]=Status&fields[]=Rescheduled Lesson ID`
+    ).catch(() => [] as any[]);
+    if (!more.length) break; // deleted record — resolveRescheduleChain reports 'broken'
+    addToChain(more);
+  }
+  const todayISO = localToday();
 
   const studentsById: Record<string, any> = Object.fromEntries(
     studentsData.map((r: any) => [
@@ -217,6 +247,7 @@ export async function GET(req: NextRequest) {
     // For other types, only surface timing-related notes (truncated to 80 chars).
     const filteredNote = type === 'Trial' || isTimeRelatedNote(rawNote) ? rawNote.slice(0, 80) : '';
     const rescheduledNewId = r.fields['Rescheduled Lesson ID']?.[0] ?? null;
+    const chain = resolveRescheduleChain(rescheduledNewId, chainById, todayISO);
     return {
       id: r.id,
       date: r.fields['Date'] || '',
@@ -225,15 +256,23 @@ export async function GET(req: NextRequest) {
       type,
       status: r.fields['Status'] || '',
       notes: filteredNote,
-      rescheduledToDate: rescheduledNewId ? (rescheduledDatesById[rescheduledNewId] ?? '') : '',
+      // Where the lesson ACTUALLY ended up (chain walked to its end), not the
+      // first hop: a lesson moved twice then taught used to report the middle
+      // date and read as pending.
+      rescheduledToDate: chain.finalDate,
       rescheduledToSlotTime: (() => {
-        const sid = rescheduledNewId ? (rescheduledSlotById[rescheduledNewId] ?? '') : '';
+        const sid = chain.finalSlotId;
         if (!sid) return '';
         const slot = slots.find((s: any) => s.id === sid);
         return slot?.time ?? '';
       })(),
-      // Status of the destination lesson — drives green (Completed) vs blue (upcoming)
-      rescheduledToStatus: rescheduledNewId ? (rescheduledStatusById[rescheduledNewId] ?? '') : '',
+      rescheduledToStatus: chain.finalStatus,
+      // What became of it — 'delivered' | 'missed' | 'cancelled' | 'upcoming' |
+      // 'unmarked' | 'broken'. The chip colours by THIS, not by status alone:
+      // a makeup the student also missed is not the same as one still to come.
+      rescheduledOutcome: chain.outcome,
+      // >1 means it was moved more than once (the chip shows a ↻n hint).
+      rescheduledHops: chain.hops,
       // A makeup created for a missed June-holiday revision lesson (Additional
       // lesson at a regular Sec slot) — flagged so the chip can say so.
       revisionMakeup: r.fields['Is Revision Makeup'] === true || /revision makeup/i.test(rawNote),
