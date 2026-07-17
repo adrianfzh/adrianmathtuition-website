@@ -5,6 +5,7 @@ import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -58,12 +59,18 @@ export async function POST(req: NextRequest) {
         studentName = studentRecord.fields['Student Name'] || '';
       }
 
+      // One issue-date rule for every PDF path (see lib/invoice-month.ts):
+      // regenerating a SENT invoice reissues it → today; a fresh Draft → the
+      // 15th; otherwise preserve. Resolve BEFORE building the PDF so the
+      // document and the stored field agree.
+      const issueDate = resolveInvoiceIssueDate(f['Status'] || 'Draft', f['Issue Date'], sgtTodayISO());
+
       const lineItems = f['Line Items'] ? JSON.parse(f['Line Items']) : [];
       const invoiceData = {
         studentName,
         month: f['Month'] || '',
         invoiceId: id,
-        issueDate: f['Issue Date'] || '',
+        issueDate,
         dueDate: f['Due Date'] || '',
         lessonsCount: f['Lessons Count'] || 0,
         ratePerLesson: f['Rate Per Lesson'] || 0,
@@ -87,18 +94,11 @@ export async function POST(req: NextRequest) {
         { access: 'public', contentType: 'application/pdf', allowOverwrite: true }
       );
 
-      // Only default the Issue Date (to the 15th) when it's blank — never
-      // clobber an explicitly-set issue date (e.g. an amended invoice reissued
-      // with today's date). Regenerating a PDF must not silently change it.
-      const issueDateFields: Record<string, any> = { 'PDF URL': blob.url };
-      if (!f['Issue Date']) {
-        const issueDate = new Date();
-        issueDate.setDate(15);
-        issueDateFields['Issue Date'] = issueDate.toISOString().split('T')[0];
-      }
+      // Persist the resolved issue date alongside the new PDF URL, so the field
+      // and the document always match.
       await at('Invoices', `/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ fields: issueDateFields }),
+        body: JSON.stringify({ fields: { 'PDF URL': blob.url, 'Issue Date': issueDate } }),
       });
 
       generated++;

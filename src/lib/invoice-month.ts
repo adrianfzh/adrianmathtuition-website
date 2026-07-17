@@ -24,6 +24,34 @@ export function getInvoiceMonth(today = new Date()): {
   };
 }
 
+/** Today's date in SGT (UTC+8) as YYYY-MM-DD, independent of server timezone. */
+export function sgtTodayISO(now = Date.now()): string {
+  return new Date(now + 8 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+/**
+ * The Issue Date to stamp when (re)generating an invoice PDF — ONE rule for
+ * every PDF path (generate-pdf-batch, regenerate-invoice). An invoice's issue
+ * date is the date it was issued to the parent:
+ *   - Status 'Sent' → today: regenerating a sent invoice reissues it (an amend
+ *     changed the document), so it must carry today's date, not the original
+ *     send date. This is the whole point — a split where one path stamped today
+ *     and another preserved the old date is how amended invoices kept a stale
+ *     issue date.
+ *   - No issue date yet (fresh Draft PDF) → the 15th of today's month, the
+ *     scheduled batch-send date.
+ *   - Otherwise (unsent Draft that already has a date) → preserve it.
+ */
+export function resolveInvoiceIssueDate(
+  status: string,
+  currentIssueDate: string | undefined | null,
+  todayISO: string,
+): string {
+  if (status === 'Sent') return todayISO;
+  if (currentIssueDate) return currentIssueDate;
+  return `${todayISO.slice(0, 7)}-15`;
+}
+
 /**
  * Display month for an invoice whose line items start before its stored Month.
  * A combined first invoice (e.g. July lessons filed under "August 2026" so the

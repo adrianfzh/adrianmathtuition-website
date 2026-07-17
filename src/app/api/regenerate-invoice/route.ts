@@ -5,6 +5,7 @@ import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { resolveInvoiceIssueDate, sgtTodayISO } from '@/lib/invoice-month';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -204,10 +205,9 @@ export async function POST(req: NextRequest) {
     // Only overwrite Auto Notes if there is a fresh carry-over to write;
     // otherwise preserve whatever the admin set via the Amend form.
     const dueDateStr = `${year}-${String(monthIdx + 1).padStart(2, '0')}-15`;
-    // An amended/regenerated invoice is issued TODAY — stamp the regeneration
-    // date (SGT) as the new Issue Date so the PDF doesn't carry the original
-    // send date on a document that has since changed.
-    const issueDateStr = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
+    // Issue Date via the one shared rule (lib/invoice-month.ts): a Sent invoice
+    // being rebuilt is reissued today; a Draft keeps its send-date/default.
+    const issueDateStr = resolveInvoiceIssueDate(f['Status'] || 'Draft', f['Issue Date'], sgtTodayISO());
     const patchFields: Record<string, any> = {
       'Lessons Count': regularCount + additionalCount,
       'Rate Per Lesson': ratePerLesson,

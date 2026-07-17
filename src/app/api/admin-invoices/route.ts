@@ -134,21 +134,9 @@ export async function PATCH(req: NextRequest) {
     fields['Is Paid'] = true;
   }
 
-  // Amending the BILLING of an already-SENT invoice reissues it — stamp today
-  // (SGT) as the new Issue Date so the reissued PDF doesn't carry the original
-  // send date. (The ✏️ Amend form PATCHes here then regenerates the PDF via
-  // generate-pdf-batch, which preserves whatever Issue Date it finds — so the
-  // date has to be refreshed here.) Drafts keep their generation-time date; a
-  // caller that sets Issue Date explicitly wins.
-  const BILLING_FIELDS = ['Final Amount', 'Base Amount', 'Line Items', 'Line Items Extra', 'Adjustment Amount', 'Lessons Count'];
-  if (fields['Issue Date'] === undefined && BILLING_FIELDS.some((k) => fields[k] !== undefined)) {
-    try {
-      const current = await airtableRequest('Invoices', `/${recordId}`);
-      if (current.fields['Status'] === 'Sent') {
-        fields['Issue Date'] = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
-      }
-    } catch { /* non-fatal — fall through without re-stamping */ }
-  }
+  // NOTE: Issue Date on an amended/reissued invoice is stamped by the PDF
+  // regeneration step (generate-pdf-batch / regenerate-invoice, via
+  // resolveInvoiceIssueDate) — NOT here. Keep the one rule in one place.
 
   try {
     const updated = await airtableRequest('Invoices', `/${recordId}`, {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getInvoiceMonth, displaySpanMonth } from './invoice-month';
+import { getInvoiceMonth, displaySpanMonth, resolveInvoiceIssueDate, sgtTodayISO } from './invoice-month';
 
 describe('getInvoiceMonth — always the month AFTER today', () => {
   it('mid-year: April → May', () => {
@@ -56,5 +56,38 @@ describe('displaySpanMonth — combined first invoices show the full period', ()
     expect(displaySpanMonth('August 2026', 'not json')).toBe('August 2026');
     expect(displaySpanMonth('August 2026', '[]')).toBe('August 2026');
     expect(displaySpanMonth('', kieranItems)).toBe('');
+  });
+});
+
+describe('resolveInvoiceIssueDate — one issue-date rule for every PDF path', () => {
+  const TODAY = '2026-07-17';
+
+  // REGRESSION — Kiara Tan, Aug 2026: her Sent invoice was amended (−$70 credit)
+  // but the Amend→generate-pdf-batch path preserved the original 15 Jul date.
+  // Regenerating a SENT invoice reissues it, so it must carry today's date.
+  it('Sent invoice → today, regardless of the stored date', () => {
+    expect(resolveInvoiceIssueDate('Sent', '2026-07-15', TODAY)).toBe('2026-07-17');
+    expect(resolveInvoiceIssueDate('Sent', null, TODAY)).toBe('2026-07-17');
+    expect(resolveInvoiceIssueDate('Sent', undefined, TODAY)).toBe('2026-07-17');
+  });
+
+  it('fresh Draft (no date yet) → the 15th of today\'s month', () => {
+    expect(resolveInvoiceIssueDate('Draft', '', TODAY)).toBe('2026-07-15');
+    expect(resolveInvoiceIssueDate('Draft', null, TODAY)).toBe('2026-07-15');
+  });
+
+  it('unsent Draft that already has a date → preserved (send cron owns it)', () => {
+    expect(resolveInvoiceIssueDate('Draft', '2026-07-15', TODAY)).toBe('2026-07-15');
+    expect(resolveInvoiceIssueDate('Draft', '2026-08-15', '2026-07-17')).toBe('2026-08-15');
+  });
+});
+
+describe('sgtTodayISO', () => {
+  it('is a day ahead of UTC late in the UTC evening (SGT is UTC+8)', () => {
+    // 2026-07-16 20:00 UTC = 2026-07-17 04:00 SGT.
+    expect(sgtTodayISO(Date.UTC(2026, 6, 16, 20, 0, 0))).toBe('2026-07-17');
+  });
+  it('matches UTC date mid-day', () => {
+    expect(sgtTodayISO(Date.UTC(2026, 6, 17, 6, 0, 0))).toBe('2026-07-17');
   });
 });
