@@ -394,8 +394,8 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 
 ### Chip features
 
-- **Quick attendance pills** — ✅ / ❌ appear on chips for today and yesterday only; tap to set Completed/Absent
-- **Status pill** — full menu (Completed / Absent / Cancelled / Cancelled-Prorated / Clear). Past unmarked lessons show amber `?`
+- **Quick attendance pills** — ✅ / ❌ (and `undo`) appear on chips for **today and yesterday only**; tap to set Completed/Absent. This is a UI convenience gate, NOT a rule: attendance can be set on **any** date via the chip's action sheet (✅ Mark present / ❌ Mark absent → `PATCH /api/admin/progress/lessons`, which has no date window). The 14-day `EDIT_WINDOW_DAYS` lock applies to **progress fields only** (topics/mastery/mood/notes), never to Status.
+- **Attendance outcome is visible on every date** — green `Completed` / red `Absent` render regardless of how old the week is, and a past lesson still at `Scheduled` shows an amber `? unmarked` flag. (These used to sit behind the same today/yesterday gate as the ✓/✗ buttons, so on an older week an attended lesson looked identical to a never-marked one.) Any new chip-status affordance must gate the *buttons*, not the *label*.
 - **⚠ exam season pill** — appears when student is missing exam date or tested topics for the active exam type
 - **Progress dot** — green `●` on chip when `Progress Logged = true`
 - **Student name tap** — opens LessonModal as overlay (non-Trial lessons with studentId); Trial lessons open `/admin/progress` in new tab

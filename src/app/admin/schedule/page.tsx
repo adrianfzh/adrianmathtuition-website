@@ -354,6 +354,13 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lesson.id, disabled: isRescheduledAway });
   const style = getTypeStyle(lesson.type, lesson.status);
   const isFaded = lesson.status === 'Absent' || lesson.status === 'Cancelled' || isRescheduledAway;
+  // Attendance was recorded either way (present or missed).
+  const isMarked = lesson.status === 'Completed' || lesson.status === 'Absent';
+  // A past lesson still sitting at Scheduled was never marked. Dates are
+  // YYYY-MM-DD, so string compare is safe (and TZ-free).
+  const isPastUnmarked =
+    lesson.status === 'Scheduled' && !isRescheduledAway &&
+    lesson.type !== 'Trial' && lesson.date < isoDate(new Date());
   // True on touch/coarse-pointer devices (phones, tablets).
   const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
   // Whether attendance controls are present (caller passes undefined when not applicable)
@@ -485,7 +492,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
                 )}
               </>
             )}
-            {!isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (lesson.status === 'Completed' || lesson.status === 'Absent') && (
+            {/* Attendance outcome — shown on EVERY date, not just today/yesterday.
+                It used to sit behind hasAttendance (today/yesterday only), so on an
+                older week a Completed chip rendered identically to a never-marked
+                one. Undo stays gated (onUndo is only passed for today/yesterday). */}
+            {!isRescheduledAway && lesson.status !== 'Cancelled' && isMarked && (
               <>
                 {onUndo && (
                   <button onClick={e => { e.stopPropagation(); onUndo(); }} title="Undo"
@@ -495,6 +506,15 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
                   {lesson.status}
                 </span>
               </>
+            )}
+            {/* Past + still Scheduled = attendance was never marked. Amber flag so
+                unmarked lessons are findable on old weeks (tap the chip → Mark
+                present/absent; the Status PATCH has no 14-day window). */}
+            {isPastUnmarked && (
+              <span title="Attendance not marked — tap the chip to mark it"
+                style={{ fontSize: 10, fontWeight: 700, flexShrink: 0, color: '#b45309', background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 4, padding: '1px 5px', lineHeight: 1.4 }}>
+                ? unmarked
+              </span>
             )}
             {/* Quick-log 📝 pill — today/yesterday only (same gate as attendance) */}
             {!isRescheduledAway && !isFaded && onQuickLog && (
@@ -534,7 +554,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
         )}
       </div>
       {/* Attendance controls — mobile only (web uses line-2 inside content div) */}
-      {isTouch && !isRescheduledAway && lesson.status !== 'Cancelled' && hasAttendance && (
+      {isTouch && !isRescheduledAway && lesson.status !== 'Cancelled' && (hasAttendance || isMarked || isPastUnmarked) && (
         <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'center' }}>
           {/* Quick-log 📝 pill */}
           {!isFaded && onQuickLog && (
@@ -553,7 +573,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
               )}
             </>
           )}
-          {(lesson.status === 'Completed' || lesson.status === 'Absent') && (
+          {isMarked && (
             <>
               {onUndo && (
                 <button onClick={e => { e.stopPropagation(); onUndo(); }} title="Undo"
@@ -563,6 +583,12 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
                 {lesson.status}
               </span>
             </>
+          )}
+          {isPastUnmarked && (
+            <span title="Attendance not marked — tap the chip to mark it"
+              style={{ fontSize: 11, fontWeight: 700, flexShrink: 0, color: '#b45309', background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 4, padding: '2px 6px', lineHeight: 1.4 }}>
+              ? unmarked
+            </span>
           )}
         </div>
       )}
