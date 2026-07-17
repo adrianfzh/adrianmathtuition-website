@@ -2566,18 +2566,31 @@ export default function SchedulePage() {
                       const sel = new Set((row.topics || '').split(',').map(s => s.trim()).filter(Boolean));
                       const toggle = (t: string) => { const s = new Set(sel); if (s.has(t)) s.delete(t); else s.add(t); setExamRow(i, { topics: [...s].join(', ') }); };
                       return (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                          {topicOpts.map(t => {
-                            const on = sel.has(t);
-                            return (
-                              <button key={t} type="button" onClick={() => toggle(t)}
-                                style={{ fontSize: 11.5, fontWeight: 600, padding: '5px 10px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
-                                  background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>
-                                {on ? '✓ ' : ''}{t}
-                              </button>
-                            );
-                          })}
-                        </div>
+                        <>
+                          {sel.size > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, padding: '7px 9px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, marginBottom: 8 }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: '#1e3a5f' }}>Selected ({sel.size}):</span>
+                              {[...sel].map(t => (
+                                <button key={t} type="button" onClick={() => toggle(t)} title="Tap to remove"
+                                  style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 12, cursor: 'pointer', background: '#1e3a5f', color: '#fff', border: '1px solid #1e3a5f' }}>
+                                  {t} ✕
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {topicOpts.map(t => {
+                              const on = sel.has(t);
+                              return (
+                                <button key={t} type="button" onClick={() => toggle(t)}
+                                  style={{ fontSize: 11.5, fontWeight: 600, padding: '5px 10px', borderRadius: 14, cursor: 'pointer', textAlign: 'left',
+                                    background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>
+                                  {on ? '✓ ' : ''}{t}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
                       );
                     })()}
                     <input className="modal-input" placeholder="+ custom topic (comma-separated)" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} style={{ marginTop: 8 }} />
