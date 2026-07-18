@@ -896,6 +896,9 @@ export default function SchedulePage() {
   // split, others to a single paper (with an option to split).
   type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean };
   const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; lessonId: string; examType: string; noExam: boolean; pwaa: string; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
+  // Prelim rows hide the topic picker by default (all topics tested) — this
+  // tracks which row indices the admin has expanded to add specific topics.
+  const [prelimTopicsOpen, setPrelimTopicsOpen] = useState<Set<number>>(new Set());
   // Regular-work topic timeline for the open student (Work tab).
   const [topicTL, setTopicTL] = useState<{ loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null>(null);
   // "This lesson" log folded into the Work tab (mastery / HW returned / note),
@@ -2092,6 +2095,7 @@ export default function SchedulePage() {
       };
     });
     const pwaa = data?.examAssessmentByStudent?.[sid] || '';
+    setPrelimTopicsOpen(new Set());
     setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM' && !pwaa, pwaa, rows, saving: false, tab: 'work' });
     loadTimeline(sid);
     loadLessonLog(lesson.id);
@@ -2744,8 +2748,26 @@ export default function SchedulePage() {
                   {row.mode === 'single'
                     ? dateBox('Exam date', row.date, 'date', row.approx, 'approx')
                     : (<>{dateBox('Paper 1 date', row.p1Date, 'p1Date', row.approxP1, 'approxP1')}{dateBox('Paper 2 date', row.p2Date, 'p2Date', row.approxP2, 'approxP2')}</>)}
+                  {/* Prelim = everything tested, so the topic picker is hidden
+                      by default; still reveal it if topics exist or on request. */}
+                  {(() => {
+                    const isPrelim = examEdit.examType === 'Prelim';
+                    const hasTopics = (row.topics || '').trim().length > 0;
+                    const showPicker = !isPrelim || hasTopics || prelimTopicsOpen.has(i);
+                    if (isPrelim && !showPicker) {
+                      return (
+                        <div className="form-group" style={{ marginTop: 10 }}>
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>Prelim — all topics tested.</span>{' '}
+                          <button type="button" onClick={() => setPrelimTopicsOpen(s => new Set(s).add(i))}
+                            style={{ fontSize: 12, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', marginTop: 4 }}>
+                            ＋ Add specific topics (optional)
+                          </button>
+                        </div>
+                      );
+                    }
+                    return (
                   <div className="form-group" style={{ marginTop: 10 }}>
-                    <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· tap to toggle · optional</span></span>
+                    <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>{isPrelim ? '· optional (all tested by default)' : '· tap to toggle · optional'}</span></span>
                     {(() => {
                       const sel = new Set((row.topics || '').split(',').map(s => s.trim()).filter(Boolean));
                       const toggle = (t: string) => { const s = new Set(sel); if (s.has(t)) s.delete(t); else s.add(t); setExamRow(i, { topics: [...s].join(', ') }); };
@@ -2786,6 +2808,8 @@ export default function SchedulePage() {
                     })()}
                     <input className="modal-input" placeholder="+ custom topic (comma-separated)" value={row.topics} onChange={e => setExamRow(i, { topics: e.target.value })} style={{ marginTop: 8 }} />
                   </div>
+                    );
+                  })()}
                   <div className="form-group" style={{ marginTop: 10 }}>
                     <span className="form-label">Notes <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional</span></span>
                     <input className="modal-input" placeholder="e.g. bring graph paper" value={row.notes} onChange={e => setExamRow(i, { notes: e.target.value })} />
