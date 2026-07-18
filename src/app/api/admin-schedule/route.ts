@@ -136,7 +136,7 @@ export async function GET(req: NextRequest) {
       ? fetchAll('Invoices', `?filterByFormula=${encodeURIComponent(`AND({Invoice Type}='Revision Sprint',{Status}!='Voided')`)}&fields[]=Student&fields[]=Line Items`)
       : Promise.resolve([] as any[]),
     resolvedExamType
-      ? fetchAll('Exams', `?filterByFormula=${encodeURIComponent(`OR({Exam Type}='${resolvedExamType}',{Exam Type}='Prelim')`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam`).catch(() => [] as any[])
+      ? fetchAll('Exams', `?filterByFormula=${encodeURIComponent(`OR({Exam Type}='${resolvedExamType}',{Exam Type}='Prelim')`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam&fields[]=Exam Type`).catch(() => [] as any[])
       : Promise.resolve([] as any[]),
   ]);
 
@@ -332,8 +332,12 @@ export async function GET(req: NextRequest) {
   const examsByStudent: Record<string, string | null> = {};
   const examTopicsByStudent: Record<string, string | null> = {};
   const examApproxByStudent: Record<string, boolean> = {};
+  // Students who sit Project Work / an Alternative Assessment INSTEAD of a WA.
+  // sid → 'Project Work' | 'Alternative Assessment'. (No WA exam, but the chip
+  // says what to expect rather than "no upcoming exam".)
+  const examAssessmentByStudent: Record<string, string> = {};
   // Full per-subject/per-paper entries for the exam quick-add dialog + chip dropdown.
-  const examEntriesByStudent: Record<string, { subject: string; paper: string; date: string | null; topics: string; notes: string; approx: boolean }[]> = {};
+  const examEntriesByStudent: Record<string, { subject: string; paper: string; examType: string; date: string | null; topics: string; notes: string; approx: boolean }[]> = {};
 
   try {
     // Exam type + exams were resolved/fetched in stages 1–2.
@@ -355,6 +359,9 @@ export async function GET(req: NextRequest) {
         const noExam: boolean = r.fields['No Exam'] === true;
         if (noExam) {
           examsByStudent[sid] = 'NO_EXAM'; // takes precedence over any date
+          // A "PWAA:<type>" marker in Exam Notes = has PW/AA instead of a WA.
+          const notes = (r.fields['Exam Notes'] as string) || '';
+          if (notes.startsWith('PWAA:')) examAssessmentByStudent[sid] = notes.slice(5).trim();
           continue;
         }
         const examDate: string | undefined = r.fields['Exam Date'];
@@ -364,6 +371,7 @@ export async function GET(req: NextRequest) {
         (examEntriesByStudent[sid] ||= []).push({
           subject: parsed.subject,
           paper: parsed.paper,
+          examType: (r.fields['Exam Type'] as string) || '',
           date: examDate || null,
           topics: (r.fields['Tested Topics'] as string) || '',
           notes: pn.notes,
@@ -406,6 +414,7 @@ export async function GET(req: NextRequest) {
     examsByStudent,
     examTopicsByStudent,
     examApproxByStudent,
+    examAssessmentByStudent,
     examEntriesByStudent,
     currentTopicByStudent,
   });

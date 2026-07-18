@@ -12,10 +12,17 @@ export const runtime = 'nodejs';
 //
 // Body: {
 //   studentId, examType,
-//   noExam?: boolean,                              // whole season = no exam
+//   noExam?: boolean,                              // whole season = no WA exam
+//   pwaa?: 'Project Work' | 'Alternative Assessment' | '',  // has this INSTEAD of a WA
 //   entries: [{ subject, paper?, examDate?, testedTopics?, notes? }]
 // }
 // paper: 'Paper 1' | 'Paper 2' | '' (blank = single paper)
+//
+// PW/AA: some students sit Project Work / an Alternative Assessment instead of a
+// WA. That means no WA exam (noExam), but the schedule chip should say so rather
+// than "no upcoming exam". No new Airtable field — the assessment label is stored
+// as a "PWAA:<type>" marker in Exam Notes on the No-Exam marker record (same
+// marker-in-a-field pattern as the "~|" approx flag and the paper-in-Subject).
 //
 // Reconciliation: an entry with a date/topics/notes is upserted (matched on
 // subject+paper); a record whose (subject,paper) is not in the active entries is
@@ -43,9 +50,13 @@ const isActive = (e: Entry) => !!((e.examDate || '').trim() || (e.testedTopics |
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { studentId?: string; examType?: string; noExam?: boolean; entries?: Entry[] };
+  let body: { studentId?: string; examType?: string; noExam?: boolean; pwaa?: string; entries?: Entry[] };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
-  const { studentId, examType, noExam, entries = [] } = body;
+  const { studentId, examType, pwaa, entries = [] } = body;
+  // PW/AA implies no WA exam, so it drives the no-exam branch too.
+  const noExam = body.noExam || !!(pwaa || '').trim();
+  // The PW/AA label to stamp on the marker record's Exam Notes (empty = plain no-exam).
+  const pwaaNote = (pwaa || '').trim() ? `PWAA:${(pwaa || '').trim()}` : '';
   if (!studentId || !examType) return NextResponse.json({ error: 'Missing studentId or examType' }, { status: 400 });
 
   // Existing records for this (student, examType) — linked-record filter is
@@ -61,19 +72,20 @@ export async function POST(req: NextRequest) {
 
   const result = { created: 0, updated: 0, deleted: 0 };
 
-  // ── No exam this season: drop everything, keep a single No-Exam marker ──
+  // ── No WA exam this season: drop everything, keep a single No-Exam marker.
+  // If PW/AA, tag the marker's Exam Notes so the chip shows the assessment. ──
   if (noExam) {
     let markerKept = false;
     for (const r of mine) {
       if (!markerKept) {
-        await airtableRequest('Exams', `/${r.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { 'No Exam': true, 'Exam Date': null, 'Tested Topics': '', 'Subject': null } }) });
+        await airtableRequest('Exams', `/${r.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { 'No Exam': true, 'Exam Date': null, 'Tested Topics': '', 'Subject': null, 'Exam Notes': pwaaNote } }) });
         markerKept = true; result.updated++;
       } else {
         await airtableRequest('Exams', `/${r.id}`, { method: 'DELETE' }); result.deleted++;
       }
     }
     if (!markerKept) {
-      await airtableRequest('Exams', '', { method: 'POST', body: JSON.stringify({ fields: { Student: [studentId], 'Exam Type': examType, 'No Exam': true } }) });
+      await airtableRequest('Exams', '', { method: 'POST', body: JSON.stringify({ fields: { Student: [studentId], 'Exam Type': examType, 'No Exam': true, 'Exam Notes': pwaaNote } }) });
       result.created++;
     }
     return NextResponse.json({ ok: true, ...result });

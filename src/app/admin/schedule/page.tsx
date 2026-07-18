@@ -57,7 +57,7 @@ interface Student {
   subjects?: string[];
 }
 
-interface ExamEntry { subject: string; paper: string; date: string | null; topics: string; notes: string; approx?: boolean }
+interface ExamEntry { subject: string; paper: string; examType?: string; date: string | null; topics: string; notes: string; approx?: boolean }
 
 interface StudentContact {
   name: string;
@@ -79,6 +79,7 @@ interface ScheduleData {
   examsByStudent?: Record<string, string | null>;
   examTopicsByStudent?: Record<string, string | null>;
   examApproxByStudent?: Record<string, boolean>;
+  examAssessmentByStudent?: Record<string, string>;
   examEntriesByStudent?: Record<string, ExamEntry[]>;
   currentTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
 }
@@ -171,7 +172,9 @@ interface EnrichedLesson extends Lesson {
   examDate?: string | null;
   examTopics?: string | null;
   examApprox?: boolean;
+  examAssessment?: string | null; // 'Project Work' | 'Alternative Assessment' — has this instead of a WA
   examEntries?: ExamEntry[];
+  activeExamType?: string | null;
   currentTopic?: string | null;
 }
 
@@ -362,6 +365,41 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
+// Compact "what to expect" lines for a chip during exam season — one per
+// subject: "WA3 · A Math · 24 Jul — Differentiation, Integration", or with a
+// P1/P2 split "Prelim · A Math · P1 24 Jul, P2 26 Jul". CSS-truncated per line.
+function examSummaryLines(lesson: EnrichedLesson): string[] {
+  const entries = lesson.examEntries || [];
+  if (!entries.length) return [];
+  const fmt = (e: ExamEntry): string =>
+    e.date ? `${e.approx ? '~' : ''}${formatExamDate(e.date)}${e.approx ? ' (wk)' : ''}` : (e.approx ? '~wk TBC' : '');
+  const bySubject = new Map<string, ExamEntry[]>();
+  for (const e of entries) {
+    const key = e.subject || '';
+    if (!bySubject.has(key)) bySubject.set(key, []);
+    bySubject.get(key)!.push(e);
+  }
+  const lines: string[] = [];
+  for (const [subject, es] of bySubject) {
+    const type = es[0].examType || lesson.activeExamType || '';
+    const p1 = es.find(e => e.paper === 'Paper 1');
+    const p2 = es.find(e => e.paper === 'Paper 2');
+    let dates: string;
+    if (p1 || p2) {
+      dates = [p1 && (p1.date || p1.approx) ? `P1 ${fmt(p1)}` : '', p2 && (p2.date || p2.approx) ? `P2 ${fmt(p2)}` : '']
+        .filter(Boolean).join(', ');
+    } else {
+      dates = fmt(es.find(e => !e.paper) || es[0]);
+    }
+    const topics = (es.map(e => e.topics).find(t => (t || '').trim()) || '').trim();
+    let line = [type, subject].filter(Boolean).join(' · ');
+    if (dates) line += ` · ${dates}`;
+    if (topics) line += ` — ${topics}`;
+    lines.push(line);
+  }
+  return lines;
+}
+
 function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, onQuickLog, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onWork?: () => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; onQuickLog?: () => void; activeExamType?: string | null; slotLevel?: string }) {
   // Rescheduled-away chips (status=Rescheduled) are display-only — disable dragging
   const isRescheduledAway = lesson.status === 'Rescheduled';
@@ -462,7 +500,11 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
           {!isFaded && lesson.type !== 'Trial' && (onExamDateClick || onWork) && (() => {
             const hasExam = !!lesson.examDate && lesson.examDate !== 'NO_EXAM';
             let label: string, openTab: 'exam' | 'work';
-            if (hasExam) {
+            if (lesson.examAssessment) {
+              // Project Work / Alternative Assessment instead of a WA.
+              label = `📋 ${lesson.examAssessment === 'Project Work' ? 'Project Work' : 'Alt. Assessment'}`;
+              openTab = 'exam';
+            } else if (hasExam) {
               label = `📅 ${lesson.examApprox ? '~' : ''}${formatExamDate(lesson.examDate!)}${lesson.examApprox ? ' (wk)' : ''}`;
               openTab = 'exam';
             } else if (lesson.currentTopic) {
@@ -570,7 +612,21 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             no reschedule yet
           </span>
         )}
-        {!isFaded && lesson.examDate === 'NO_EXAM' && (
+        {/* Exam-season summary — what to expect for this student. PW/AA, or a
+            compact per-subject line (type · subject · date · topics). Only
+            appears during an active exam season. */}
+        {!isFaded && lesson.type !== 'Trial' && lesson.examAssessment && (
+          <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 700, color: '#7c3aed' }}
+            title={`${lesson.examAssessment} instead of a ${lesson.activeExamType || 'WA'} exam`}>
+            📋 {lesson.examAssessment}{lesson.activeExamType ? ` · no ${lesson.activeExamType}` : ''}
+          </span>
+        )}
+        {!isFaded && lesson.type !== 'Trial' && !lesson.examAssessment && examSummaryLines(lesson).map((ln, idx) => (
+          <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: 1, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={ln}>
+            📅 {ln}
+          </span>
+        ))}
+        {!isFaded && !lesson.examAssessment && lesson.examDate === 'NO_EXAM' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 1 }}>no upcoming exam</span>
         )}
         {lesson.type !== 'Trial' && lesson.notes && !isFaded && (
@@ -839,7 +895,7 @@ export default function SchedulePage() {
   // student takes gets a row; S4 EM/AM and JC2 prelims default to a Paper 1/2
   // split, others to a single paper (with an option to split).
   type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean };
-  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; lessonId: string; examType: string; noExam: boolean; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
+  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; lessonId: string; examType: string; noExam: boolean; pwaa: string; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
   // Regular-work topic timeline for the open student (Work tab).
   const [topicTL, setTopicTL] = useState<{ loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null>(null);
   // "This lesson" log folded into the Work tab (mastery / HW returned / note),
@@ -914,11 +970,12 @@ export default function SchedulePage() {
       const examDate = lesson.studentId ? (data.examsByStudent?.[lesson.studentId] ?? null) : null;
       const examTopics = lesson.studentId ? (data.examTopicsByStudent?.[lesson.studentId] ?? null) : null;
       const examApprox = lesson.studentId ? (data.examApproxByStudent?.[lesson.studentId] ?? false) : false;
+      const examAssessment = lesson.studentId ? (data.examAssessmentByStudent?.[lesson.studentId] ?? null) : null;
       const currentTopic = lesson.studentId
         ? ((data.currentTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
         : null;
       const examEntries = lesson.studentId ? (data.examEntriesByStudent?.[lesson.studentId] ?? []) : [];
-      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examEntries, currentTopic };
+      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic };
     });
   }, [data]);
 
@@ -2034,7 +2091,8 @@ export default function SchedulePage() {
         approxP2: !!p2?.approx,
       };
     });
-    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM', rows, saving: false, tab: 'work' });
+    const pwaa = data?.examAssessmentByStudent?.[sid] || '';
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM' && !pwaa, pwaa, rows, saving: false, tab: 'work' });
     loadTimeline(sid);
     loadLessonLog(lesson.id);
   }
@@ -2080,7 +2138,9 @@ export default function SchedulePage() {
     if (!examEdit || examEdit.saving) return;
     setExamEdit({ ...examEdit, saving: true });
     try {
-      const entries = examEdit.noExam ? [] : examEdit.rows.flatMap(r =>
+      // PW/AA and "no exam" both mean no WA rows; PW/AA also carries a label.
+      const noRows = examEdit.noExam || !!examEdit.pwaa;
+      const entries = noRows ? [] : examEdit.rows.flatMap(r =>
         r.mode === 'split'
           ? [
               { subject: r.subject, paper: 'Paper 1', examDate: r.p1Date, testedTopics: r.topics, notes: r.notes, approx: r.approxP1 },
@@ -2091,7 +2151,7 @@ export default function SchedulePage() {
       const res = await fetch('/api/admin-schedule/set-exams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: examEdit.studentId, examType: examEdit.examType, noExam: examEdit.noExam, entries }),
+        body: JSON.stringify({ studentId: examEdit.studentId, examType: examEdit.examType, noExam: examEdit.noExam, pwaa: examEdit.pwaa, entries }),
       });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Failed'); }
       showToast('success', 'Exam info saved');
@@ -2612,11 +2672,29 @@ export default function SchedulePage() {
                   {['Prelim', 'WA3', 'WA1', 'WA2', 'EOY'].map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: 14 }}>
-                <input type="checkbox" checked={examEdit.noExam} onChange={e => setExamEdit({ ...examEdit, noExam: e.target.checked })} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: 10 }}>
+                <input type="checkbox" checked={examEdit.noExam} onChange={e => setExamEdit({ ...examEdit, noExam: e.target.checked, ...(e.target.checked ? { pwaa: '' } : {}) })} />
                 No exam this season
               </label>
-              {!examEdit.noExam && examEdit.rows.map((row, i) => {
+              {/* PW/AA: student sits Project Work / an Alternative Assessment
+                  INSTEAD of a WA (so no WA exam), but the chip should say so. */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: examEdit.pwaa ? 8 : 14 }}>
+                <input type="checkbox" checked={!!examEdit.pwaa} onChange={e => setExamEdit({ ...examEdit, pwaa: e.target.checked ? 'Project Work' : '', ...(e.target.checked ? { noExam: false } : {}) })} />
+                Project Work / Alternative Assessment (no WA exam)
+              </label>
+              {!!examEdit.pwaa && (
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                  {['Project Work', 'Alternative Assessment'].map(opt => (
+                    <button key={opt} type="button" onClick={() => setExamEdit({ ...examEdit, pwaa: opt })}
+                      style={{ flex: 1, fontSize: 12, fontWeight: 700, padding: '7px 8px', borderRadius: 8, cursor: 'pointer',
+                        background: examEdit.pwaa === opt ? '#7c3aed' : '#fff', color: examEdit.pwaa === opt ? '#fff' : '#64748b',
+                        border: `1px solid ${examEdit.pwaa === opt ? '#7c3aed' : '#e5e7eb'}` }}>
+                      {opt === 'Project Work' ? '📋 Project Work' : '📝 Alternative Assessment'}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {!examEdit.noExam && !examEdit.pwaa && examEdit.rows.map((row, i) => {
                 // Group the cascading topic list by level (own → [S2] → [S1], per
                 // Adrian 2026-07-17): EM shows its own topics first, then Sec 2,
                 // then Sec 1 — each under a small header. Dedupe across groups so
