@@ -835,6 +835,17 @@ export default function SchedulePage() {
   // Modals
   const [rescheduleModal, setRescheduleModal] = useState<RescheduleState | null>(null);
   const [showAllRescheduleSlots, setShowAllRescheduleSlots] = useState(false);
+  // Adrian's away/blocked periods — shade the strip/grid, warn in modals, and
+  // gate reschedules (server-enforced; managed in the 🏖 modal).
+  const [blockedRanges, setBlockedRanges] = useState<{ start: string; end: string; reason: string }[]>([]);
+  const [blockedModal, setBlockedModal] = useState<{ start: string; end: string; reason: string; saving: boolean } | null>(null);
+  useEffect(() => {
+    fetch('/api/admin-schedule/blocked-dates')
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => { if (Array.isArray(j?.ranges)) setBlockedRanges(j.ranges); })
+      .catch(() => {});
+  }, []);
+  const blockOf = (iso: string) => blockedRanges.find(r => r.start <= iso && iso <= r.end) ?? null;
   // Real per-slot booked counts for the reschedule target date, keyed
   // date → slotId → count. The loaded week's lessons can't see other weeks
   // (28 Jul showed 0/6 with 2 reschedules already booked), so counts come from
@@ -1609,9 +1620,12 @@ export default function SchedulePage() {
         });
         let json = await res.json();
         if (res.status === 409) {
-          // Admin can override a full slot — confirm, then retry with force.
-          if (!window.confirm(`Slot full — ${json.currentCount}/${json.capacity} booked.\nBook anyway (admin override)?`)) {
-            setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return;
+          // Admin can override a full slot / an away date — confirm, then retry with force.
+          const prompt = json.blocked
+            ? `You're away on that date${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}.\nBook anyway (admin override)?`
+            : `Slot full — ${json.currentCount}/${json.capacity} booked.\nBook anyway (admin override)?`;
+          if (!window.confirm(prompt)) {
+            setModalError(json.blocked ? `Blocked — you're away${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}` : `Slot full — max ${json.capacity} (${json.currentCount} booked)`); return;
           }
           res = await fetch('/api/admin-schedule/reschedule', {
             method: 'POST',
@@ -1628,6 +1642,42 @@ export default function SchedulePage() {
       }
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
+  }
+
+  async function addBlockedRange() {
+    if (!blockedModal) return;
+    const { start, end, reason } = blockedModal;
+    if (!start || !end) { showToast('error', 'Pick both dates'); return; }
+    if (end < start) { showToast('error', 'End date is before start date'); return; }
+    setBlockedModal(m => m ? { ...m, saving: true } : m);
+    try {
+      const res = await fetch('/api/admin-schedule/blocked-dates', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ start, end, reason }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setBlockedRanges(json.ranges);
+      setBlockedModal(m => m ? { ...m, start: '', end: '', reason: '', saving: false } : m);
+      showToast('success', '✓ Blocked period added');
+    } catch (err: any) {
+      setBlockedModal(m => m ? { ...m, saving: false } : m);
+      showToast('error', err.message || 'Failed');
+    }
+  }
+
+  async function removeBlockedRange(r: { start: string; end: string }) {
+    if (!window.confirm('Remove this blocked period?')) return;
+    try {
+      const res = await fetch('/api/admin-schedule/blocked-dates', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ start: r.start, end: r.end }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setBlockedRanges(json.ranges);
+      showToast('success', '✓ Removed');
+    } catch (err: any) { showToast('error', err.message || 'Failed'); }
   }
 
   async function handleConfirmAbsent() {
@@ -1748,9 +1798,12 @@ export default function SchedulePage() {
         });
         let json = await res.json();
         if (res.status === 409) {
-          // Admin can override a full slot — confirm, then retry with force.
-          if (!window.confirm(`Slot full — ${json.currentCount}/${json.capacity} booked.\nBook anyway (admin override)?`)) {
-            setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return;
+          // Admin can override a full slot / an away date — confirm, then retry with force.
+          const prompt = json.blocked
+            ? `You're away on that date${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}.\nBook anyway (admin override)?`
+            : `Slot full — ${json.currentCount}/${json.capacity} booked.\nBook anyway (admin override)?`;
+          if (!window.confirm(prompt)) {
+            setModalError(json.blocked ? `Blocked — you're away${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}` : `Slot full — max ${json.capacity} (${json.currentCount} booked)`); return;
           }
           res = await fetch('/api/admin-schedule/reschedule', {
             method: 'POST',
@@ -1788,13 +1841,27 @@ export default function SchedulePage() {
       if (addModal.type === 'Trial') { body.trialStudentName = addModal.trialStudentName; }
       else { body.studentId = addModal.studentId; }
       if (addModal.type === 'Ad-hoc') body.chargeOverride = Number(addModal.charge);
-      const res = await fetch('/api/admin-schedule/add', {
+      let res = await fetch('/api/admin-schedule/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const json = await res.json();
-      if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
+      let json = await res.json();
+      if (res.status === 409) {
+        if (json.blocked) {
+          // Away date — confirm, then retry with force (slot-full stays a hard stop here).
+          if (!window.confirm(`You're away on that date${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}.\nBook anyway (admin override)?`)) {
+            setModalError(`Blocked — you're away${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}`); return;
+          }
+          res = await fetch('/api/admin-schedule/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...body, force: true }),
+          });
+          json = await res.json();
+        }
+        if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
+      }
       if (!res.ok) throw new Error(json.error || 'Failed');
       setAddModal(null);
       await fetchSchedule(monday);
@@ -2386,6 +2453,9 @@ export default function SchedulePage() {
         {/* Mobile: always show only the active day — drag within same day only */}
         <div className="mobile-day">
           <div className="day-col">
+            {(() => { const b = blockOf(isoDate(activeDate)); return b ? (
+              <div className="away-banner">🏖 You&apos;re away{b.reason ? ` — ${b.reason}` : ''} ({formatExamDate(b.start)}{b.end !== b.start ? ` – ${formatExamDate(b.end)}` : ''})</div>
+            ) : null; })()}
             {renderRevisionCard(activeDate)}
             {(slotsByDay[dayNameOf(activeDate)] ?? []).map(slot => renderLessonsSlotCard(slot, activeDate))}
             {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && !renderRevisionCard(activeDate) && <div className="no-slots">No lessons</div>}
@@ -2398,14 +2468,16 @@ export default function SchedulePage() {
           {DAYS.map((day, i) => {
             const date = weekDates[i];
             const isToday = isoDate(date) === isoDate(new Date());
+            const colBlock = blockOf(isoDate(date));
             return (
-              <div key={day} className={`grid-col${isToday ? ' grid-col-today' : ''}`}>
+              <div key={day} className={`grid-col${isToday ? ' grid-col-today' : ''}${colBlock ? ' grid-col-blocked' : ''}`}>
                 <div className="grid-day-header">
                   <span className="grid-day-name">{DAY_SHORT[i]}</span>
                   <span className={`grid-day-date${isToday ? ' today-date' : ''}`}>
                     {isToday ? date.getDate() : date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
+                {colBlock && <div className="away-banner">🏖 Away{colBlock.reason ? ` — ${colBlock.reason}` : ''}</div>}
                 {renderRevisionCard(date)}
                 {(slotsByDay[day] ?? []).map(slot => renderLessonsSlotCard(slot, date))}
                 {(slotsByDay[day] ?? []).length === 0 && !renderRevisionCard(date) && <div className="no-slots">No slots</div>}
@@ -2461,6 +2533,7 @@ export default function SchedulePage() {
           <button className="week-label" onClick={thisWeek}>{formatWeekLabel(monday)}</button>
           <button className="nav-btn" onClick={nextWeek}>›</button>
           <button className="nav-btn refresh-btn" onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))} disabled={loading} title="Refresh">↻</button>
+          <button className="nav-btn" onClick={() => setBlockedModal({ start: '', end: '', reason: '', saving: false })} title="Away / blocked dates">🏖</button>
         </div>
       </div>
 
@@ -2499,6 +2572,7 @@ export default function SchedulePage() {
             const iso = isoDate(date);
             const isActive = iso === isoDate(activeDate);
             const isTodayPill = iso === isoDate(new Date());
+            const pillBlock = blockOf(iso);
             const prevDate = idx > 0 ? stripDates[idx - 1] : null;
             const isFirstOfMonth = !prevDate || prevDate.getMonth() !== date.getMonth();
             return (
@@ -2510,7 +2584,8 @@ export default function SchedulePage() {
                 )}
                 <button
                   data-iso={iso}
-                  className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}`}
+                  className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}${pillBlock ? ' blocked' : ''}`}
+                  title={pillBlock ? `Away — ${pillBlock.reason || 'blocked'}` : undefined}
                   onClick={() => setActiveDateFromPill(date)}
                 >
                   <span className="dp-dow">{date.toLocaleDateString('en-SG', { weekday: 'short' }).slice(0, 3).toUpperCase()}</span>
@@ -3031,6 +3106,60 @@ export default function SchedulePage() {
         </div>
       )}
 
+      {/* Away / blocked dates manager */}
+      {blockedModal && (
+        <div className="modal-overlay" onClick={() => setBlockedModal(null)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <div className="modal-name">🏖 Away dates</div>
+                <div className="modal-type">Students can&apos;t reschedule into these periods</div>
+              </div>
+              <button className="modal-close" onClick={() => setBlockedModal(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {blockedRanges.length === 0 && (
+                <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: 13, marginBottom: 10 }}>No blocked periods yet.</div>
+              )}
+              {blockedRanges.map(r => (
+                <div key={`${r.start}_${r.end}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 10px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 13.5, color: '#78350f' }}>
+                    🏖 <strong>{formatExamDate(r.start)}{r.end !== r.start ? ` – ${formatExamDate(r.end)}` : ''}</strong>
+                    {r.reason && <span style={{ color: '#92400e' }}> · {r.reason}</span>}
+                  </span>
+                  <button onClick={() => removeBlockedRange(r)}
+                    style={{ fontSize: 11.5, fontWeight: 600, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', flexShrink: 0 }}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 10 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <span className="form-label">From</span>
+                    <input type="date" className="modal-input" style={{ width: '100%', boxSizing: 'border-box' }} value={blockedModal.start}
+                      onChange={e => setBlockedModal(m => m ? { ...m, start: e.target.value, ...(m.end && m.end < e.target.value ? { end: e.target.value } : {}) } : m)} />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <span className="form-label">To</span>
+                    <input type="date" className="modal-input" style={{ width: '100%', boxSizing: 'border-box' }} value={blockedModal.end} min={blockedModal.start || undefined}
+                      onChange={e => setBlockedModal(m => m ? { ...m, end: e.target.value } : m)} />
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginTop: 8 }}>
+                  <span className="form-label">Reason <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional, goes into reschedule notes</span></span>
+                  <input className="modal-input" placeholder="e.g. Japan trip" value={blockedModal.reason}
+                    onChange={e => setBlockedModal(m => m ? { ...m, reason: e.target.value } : m)} />
+                </div>
+                <button className="btn-primary" style={{ width: '100%', marginTop: 10 }} disabled={blockedModal.saving} onClick={addBlockedRange}>
+                  {blockedModal.saving ? 'Saving…' : '＋ Add blocked period'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Reschedule modal */}
       {rescheduleModal && (
         <div className="modal-overlay" onClick={() => !submitting && setRescheduleModal(null)}>
@@ -3054,6 +3183,9 @@ export default function SchedulePage() {
                       <span className="form-label">New Date</span>
                       <input type="date" className="modal-input" value={rescheduleModal.toDate}
                         onChange={e => setRescheduleModal(m => m ? { ...m, toDate: e.target.value, toSlotId: '' } : null)} />
+                      {(() => { const b = rescheduleModal.toDate ? blockOf(rescheduleModal.toDate) : null; return b ? (
+                        <div className="away-banner" style={{ marginTop: 6 }}>🏖 You&apos;re away on this date{b.reason ? ` — ${b.reason}` : ''}. Confirm will ask to override.</div>
+                      ) : null; })()}
                     </div>
                   )}
                   <div className="form-group">
@@ -4032,6 +4164,22 @@ body {
 .date-pill.active { background: #1a365d; color: #FFF8E7; }
 .date-pill.active .dp-date { color: #FFF8E7; font-weight: 700; }
 .date-pill.active .dp-dow { color: rgba(255,248,231,0.75); }
+/* Away/blocked days — amber stripes on the strip pill, tinted desktop column,
+   and a banner inside the day view. */
+.date-pill.blocked:not(.active) {
+  background: repeating-linear-gradient(135deg, #fffbeb, #fffbeb 5px, #fef3c7 5px, #fef3c7 10px);
+  color: #92400e;
+}
+.date-pill.blocked.active { box-shadow: inset 0 0 0 2px #f59e0b; }
+.grid-col-blocked .slot-card { opacity: 0.75; }
+.grid-col-blocked {
+  background: repeating-linear-gradient(135deg, rgba(254,243,199,0.35), rgba(254,243,199,0.35) 7px, transparent 7px, transparent 14px);
+  border-radius: 10px;
+}
+.away-banner {
+  background: #fffbeb; border: 1px solid #fde68a; color: #92400e;
+  border-radius: 8px; padding: 7px 10px; font-size: 12.5px; font-weight: 600;
+}
 .dp-dow { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
 .dp-date { font-size: 15px; font-weight: 600; margin-top: 1px; }
 /* Dot under today's date number */

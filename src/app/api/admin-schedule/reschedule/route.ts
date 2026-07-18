@@ -9,6 +9,7 @@ import {
   countLessonsInSlot,
 } from '@/lib/schedule-helpers';
 import { billingMonthOf } from '@/lib/lesson-generation';
+import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
 
 export const runtime = 'nodejs';
 
@@ -73,7 +74,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Capacity check (skipped when the admin forces an override)
+    // 3. Capacity + away-date checks (both skipped when the admin forces an override)
+    const { ranges: blockedRanges } = await fetchBlockedRecord();
+    const targetBlock = findBlock(blockedRanges, newDate);
+    if (!force && targetBlock) {
+      return NextResponse.json(
+        { error: 'Adrian is away on that date', blocked: true, reason: targetBlock.reason || 'away' },
+        { status: 409 }
+      );
+    }
     const currentCount = await countLessonsInSlot(newSlotId, newDate);
     if (!force && currentCount >= makeupCapacity) {
       return NextResponse.json(
@@ -93,13 +102,21 @@ export async function POST(req: NextRequest) {
     // recorded via the 'Is Makeup' checkbox (Type stays 'Rescheduled'). The write
     // is retried without the field if the checkbox doesn't exist in Airtable yet.
     const isMakeup = origFields['Status'] === 'Absent';
+    // Auto-note: when the ORIGINAL lesson sits in one of Adrian's away periods,
+    // record why it moved — no manual note needed per student.
+    const origBlock = findBlock(blockedRanges, origDate);
+    let noteText = notes || (origDateFormatted ? `${isMakeup ? 'Makeup for' : 'Rescheduled from'} ${origDateFormatted}` : '');
+    if (origBlock) {
+      const away = `Adrian away${origBlock.reason ? `: ${origBlock.reason}` : ''}`;
+      noteText = noteText ? `${noteText} — ${away}` : away;
+    }
     const newFields: Record<string, any> = {
       Student: [origStudentId],
       Slot: [newSlotId],
       Date: newDate,
       Type: 'Rescheduled',
       Status: 'Scheduled',
-      Notes: notes || (origDateFormatted ? `${isMakeup ? 'Makeup for' : 'Rescheduled from'} ${origDateFormatted}` : ''),
+      Notes: noteText,
       // Carry over the original lesson's billing month so a moved lesson stays
       // owned by the month it was originally scheduled/billed in.
       'Billing Month': origFields['Billing Month'] || billingMonthOf(origDate),

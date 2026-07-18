@@ -5,6 +5,7 @@ import {
   countLessonsInSlot,
 } from '@/lib/schedule-helpers';
 import { billingMonthOf } from '@/lib/lesson-generation';
+import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
 
 export const runtime = 'nodejs';
 
@@ -22,6 +23,8 @@ export async function POST(req: NextRequest) {
     notes?: string;
     linkedLessonId?: string;
     chargeOverride?: number;
+    // Admin override: book on an away/blocked date anyway (client confirms first).
+    force?: boolean;
   };
   try {
     body = await req.json();
@@ -29,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { type, date, slotId, studentId, trialStudentName, notes, linkedLessonId, chargeOverride } = body;
+  const { type, date, slotId, studentId, trialStudentName, notes, linkedLessonId, chargeOverride, force } = body;
 
   if (!type || !date || !slotId) {
     return NextResponse.json({ error: 'type, date, and slotId are required' }, { status: 400 });
@@ -45,6 +48,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // 0. Away-date gate — no new lessons during Adrian's blocked periods
+    // unless the admin explicitly overrides.
+    if (!force) {
+      const { ranges } = await fetchBlockedRecord();
+      const block = findBlock(ranges, date);
+      if (block) {
+        return NextResponse.json(
+          { error: 'Adrian is away on that date', blocked: true, reason: block.reason || 'away' },
+          { status: 409 }
+        );
+      }
+    }
+
     // 1. Fetch target slot + capacity check.
     // Revision makeups skip the capacity check (mirrors the dedicated
     // Attendance-tab / Revision-Sprint-chip reschedule flow, which has none).
