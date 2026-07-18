@@ -1616,7 +1616,7 @@ export default function SchedulePage() {
           res = await fetch('/api/admin-schedule/reschedule', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, notify, force: true }),
+            body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, force: true }),
           });
           json = await res.json();
         }
