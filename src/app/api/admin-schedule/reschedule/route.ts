@@ -22,6 +22,8 @@ export async function POST(req: NextRequest) {
     newDate: string;
     newSlotId: string;
     notes?: string;
+    // Admin override: book into a full slot anyway (client confirms first).
+    force?: boolean;
   };
   try {
     body = await req.json();
@@ -29,7 +31,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { lessonId, newDate, newSlotId, notes } = body;
+  const { lessonId, newDate, newSlotId, notes, force } = body;
 
   if (!lessonId || !newDate || !newSlotId) {
     return NextResponse.json(
@@ -71,9 +73,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Capacity check
+    // 3. Capacity check (skipped when the admin forces an override)
     const currentCount = await countLessonsInSlot(newSlotId, newDate);
-    if (currentCount >= makeupCapacity) {
+    if (!force && currentCount >= makeupCapacity) {
       return NextResponse.json(
         { error: 'Slot full', currentCount, capacity: makeupCapacity },
         { status: 409 }

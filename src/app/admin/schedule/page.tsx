@@ -362,9 +362,11 @@ function formatExamDate(iso: string): string {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 
-// Compact "what to expect" lines for a chip during exam season — one per
-// subject: "WA3 · A Math · 24 Jul — Differentiation, Integration", or with a
-// P1/P2 split "Prelim · A Math · P1 24 Jul, P2 26 Jul". CSS-truncated per line.
+// "What to expect" lines for a chip during exam season — one per subject:
+// "A Math · 24 Jul — Differentiation, Integration", or with a P1/P2 split
+// "A Math · P1 24 Jul, P2 26 Jul". The exam type lives on the date pill (not
+// here) and topics render in full, wrapped — no per-line truncation
+// (Adrian 2026-07-18).
 function examSummaryLines(lesson: EnrichedLesson): string[] {
   const entries = lesson.examEntries || [];
   if (!entries.length) return [];
@@ -389,9 +391,13 @@ function examSummaryLines(lesson: EnrichedLesson): string[] {
       dates = fmt(es.find(e => !e.paper) || es[0]);
     }
     const topics = (es.map(e => e.topics).find(t => (t || '').trim()) || '').trim();
-    let line = [type, subject].filter(Boolean).join(' · ');
-    if (dates) line += ` · ${dates}`;
-    if (topics) line += ` — ${topics}`;
+    // Notes ride along after topics — Adrian sometimes types the tested
+    // topics into the notes field instead.
+    const notes = (es.map(e => e.notes).find(n => (n || '').trim()) || '').trim();
+    const detail = [topics, notes].filter(Boolean).join(' · ');
+    let line = subject || type;
+    if (dates) line += line ? ` · ${dates}` : dates;
+    if (detail) line += ` — ${detail}`;
     lines.push(line);
   }
   return lines;
@@ -419,6 +425,12 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
 
   const [showTopicDropdown, setShowTopicDropdown] = useState(false);
   const dropdownRef = useRef<HTMLSpanElement>(null);
+
+  // Exam-season summary lines (subject · date — topics). When present, they
+  // carry the dates, so the 📅 pill shows the exam type instead of repeating
+  // the date.
+  const examLines = !isFaded && lesson.type !== 'Trial' && !lesson.examAssessment
+    ? examSummaryLines(lesson) : [];
 
   // Close dropdown when clicking outside the chip
   useEffect(() => {
@@ -502,7 +514,10 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
               label = `📋 ${lesson.examAssessment === 'Project Work' ? 'Project Work' : 'Alt. Assessment'}`;
               openTab = 'exam';
             } else if (hasExam) {
-              label = `📅 ${lesson.examApprox ? '~' : ''}${formatExamDate(lesson.examDate!)}${lesson.examApprox ? ' (wk)' : ''}`;
+              const examType = (lesson.examEntries || []).map(e => e.examType).find(Boolean) || lesson.activeExamType || '';
+              label = examLines.length && examType
+                ? `📅 ${examType}`
+                : `📅 ${lesson.examApprox ? '~' : ''}${formatExamDate(lesson.examDate!)}${lesson.examApprox ? ' (wk)' : ''}`;
               openTab = 'exam';
             } else if (lesson.currentTopic) {
               label = `📘 ${lesson.currentTopic}`;
@@ -618,8 +633,8 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             📋 {lesson.examAssessment}{lesson.activeExamType ? ` · no ${lesson.activeExamType}` : ''}
           </span>
         )}
-        {!isFaded && lesson.type !== 'Trial' && !lesson.examAssessment && examSummaryLines(lesson).map((ln, idx) => (
-          <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: 1, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={ln}>
+        {examLines.map((ln, idx) => (
+          <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: 1, color: '#475569', overflowWrap: 'break-word' }}>
             📅 {ln}
           </span>
         ))}
@@ -1587,13 +1602,24 @@ export default function SchedulePage() {
         await fetchSchedule(monday);
         showToast('success', `✓ Switched to ${json.newSlotName} from ${json.switchDate} — ${json.cancelled} cancelled, ${json.created} created${json.adjustment ? ` · ${json.adjustment > 0 ? '+' : ''}$${json.adjustment} ${json.adjustmentMonth} adjustment` : ''}`);
       } else {
-        const res = await fetch('/api/admin-schedule/reschedule', {
+        let res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined }),
         });
-        const json = await res.json();
-        if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
+        let json = await res.json();
+        if (res.status === 409) {
+          // Admin can override a full slot — confirm, then retry with force.
+          if (!window.confirm(`Slot full — ${json.currentCount}/${json.capacity} booked.\nBook anyway (admin override)?`)) {
+            setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return;
+          }
+          res = await fetch('/api/admin-schedule/reschedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, notify, force: true }),
+          });
+          json = await res.json();
+        }
         if (!res.ok) throw new Error(json.error || 'Failed');
         setRescheduleModal(null);
         setTargetDayCounts({}); // booked counts changed — drop the cache
@@ -1715,13 +1741,24 @@ export default function SchedulePage() {
           setSubmitting(false); return;
         }
         const defaultNote = addModal.type === 'Makeup' ? 'Makeup lesson' : 'Rescheduled by admin';
-        const res = await fetch('/api/admin-schedule/reschedule', {
+        let res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || defaultNote }),
         });
-        const json = await res.json();
-        if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
+        let json = await res.json();
+        if (res.status === 409) {
+          // Admin can override a full slot — confirm, then retry with force.
+          if (!window.confirm(`Slot full — ${json.currentCount}/${json.capacity} booked.\nBook anyway (admin override)?`)) {
+            setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return;
+          }
+          res = await fetch('/api/admin-schedule/reschedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || defaultNote, force: true }),
+          });
+          json = await res.json();
+        }
         if (!res.ok) throw new Error(json.error || 'Failed');
         setAddModal(null);
         await fetchSchedule(monday);
@@ -2772,11 +2809,17 @@ export default function SchedulePage() {
                           {sel.size > 0 && (
                             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, padding: '7px 9px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, marginBottom: 8 }}>
                               <span style={{ fontSize: 11, fontWeight: 700, color: '#1e3a5f' }}>Selected ({sel.size}):</span>
+                              {/* Chip body is inert — only a deliberate tap on the ✕
+                                  removes (accidental taps kept deleting topics). */}
                               {[...sel].map(t => (
-                                <button key={t} type="button" onClick={() => toggle(t)} title="Tap to remove"
-                                  style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 12, cursor: 'pointer', background: '#1e3a5f', color: '#fff', border: '1px solid #1e3a5f' }}>
-                                  {t} ✕
-                                </button>
+                                <span key={t}
+                                  style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11, fontWeight: 600, padding: '3px 4px 3px 9px', borderRadius: 12, background: '#1e3a5f', color: '#fff', border: '1px solid #1e3a5f' }}>
+                                  {t}
+                                  <button type="button" onClick={() => toggle(t)} title="Remove" aria-label={`Remove ${t}`}
+                                    style={{ marginLeft: 5, width: 18, height: 18, borderRadius: 9, border: 'none', cursor: 'pointer', background: 'rgba(255,255,255,0.22)', color: '#fff', fontSize: 10, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                                    ✕
+                                  </button>
+                                </span>
                               ))}
                             </div>
                           )}
@@ -3023,8 +3066,11 @@ export default function SchedulePage() {
                       const daySlots = selectedDayName
                         ? sortedSlots.filter(s => s.dayName === selectedDayName)
                         : sortedSlots;
-                      const displaySlots = showAllRescheduleSlots ? sortedSlots : daySlots;
-                      const hiddenCount = sortedSlots.length - daySlots.length;
+                      // Reschedule mode always lists only the selected date's slots;
+                      // the checkbox unlocks FULL ones (admin override) instead of
+                      // pulling in every other day (Adrian 2026-07-18). Switch mode
+                      // has no date, so daySlots is already the full list there.
+                      const displaySlots = daySlots;
 
                       return (
                         <>
@@ -3093,7 +3139,7 @@ export default function SchedulePage() {
                             <label htmlFor="show-all-slots" style={{ fontSize: 12, color: '#64748b', cursor: 'pointer' }}>
                               {rescheduleModal.switchMode
                                 ? 'Show full slots and other levels'
-                                : `Show all slots${hiddenCount > 0 && !showAllRescheduleSlots ? ` (${hiddenCount} on other days)` : ''}`}
+                                : 'Include full slots (admin override)'}
                             </label>
                           </div>
                         </>
