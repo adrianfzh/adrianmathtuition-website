@@ -186,7 +186,6 @@ interface RescheduleState {
   toDate: string;
   toSlotId: string;
   notes: string;
-  notify: boolean;
   showPickers: boolean; // true = manual pick mode (from action sheet)
   switchMode?: boolean; // true = same-day slot switch (date locked, slot picker only)
 }
@@ -203,7 +202,6 @@ interface AddModalState {
   studentSearch: string;
   trialStudentName: string;
   notes: string;
-  notify: boolean;
   /** Makeup: the Absent lesson being made up. Rescheduled: the Scheduled lesson being moved. */
   linkedLessonId: string;
   /** Ad-hoc only: per-lesson charge + inline new-student fields. */
@@ -213,7 +211,6 @@ interface AddModalState {
 }
 interface AbsentDeleteState {
   lesson: EnrichedLesson;
-  notify: boolean;
   reason: string;
 }
 
@@ -1555,13 +1552,13 @@ export default function SchedulePage() {
     const toDate = toKey.slice(0, sep);
     const toSlotId = toKey.slice(sep + 2);
     setModalError('');
-    setRescheduleModal({ lesson, toDate, toSlotId, notes: '', notify: false, showPickers: false });
+    setRescheduleModal({ lesson, toDate, toSlotId, notes: '', showPickers: false });
     setShowAllRescheduleSlots(false);
   }
 
   async function handleConfirmReschedule() {
     if (!rescheduleModal) return;
-    const { lesson, toDate, toSlotId, notes, notify } = rescheduleModal;
+    const { lesson, toDate, toSlotId, notes } = rescheduleModal;
     if (!toSlotId) { setModalError('Select a slot'); return; }
     if (!toDate) { setModalError(rescheduleModal.switchMode ? 'Select a start date' : 'Select a date'); return; }
     setSubmitting(true); setModalError('');
@@ -1593,7 +1590,7 @@ export default function SchedulePage() {
         const res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined, notify }),
+          body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined }),
         });
         const json = await res.json();
         if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
@@ -1601,8 +1598,7 @@ export default function SchedulePage() {
         setRescheduleModal(null);
         setTargetDayCounts({}); // booked counts changed — drop the cache
         await fetchSchedule(monday);
-        const sent = json.notificationsSent?.student || json.notificationsSent?.parent;
-        showToast('success', notify ? (sent ? '✓ Rescheduled — notifications sent' : '✓ Rescheduled (notifications partial)') : '✓ Rescheduled');
+        showToast('success', '✓ Rescheduled');
       }
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
@@ -1615,7 +1611,7 @@ export default function SchedulePage() {
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId: absentModal.lesson.id, action: 'absent', notify: absentModal.notify, reason: absentModal.reason || undefined }),
+        body: JSON.stringify({ lessonId: absentModal.lesson.id, action: 'absent', reason: absentModal.reason || undefined }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
@@ -1633,7 +1629,7 @@ export default function SchedulePage() {
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId: deleteModal.lesson.id, action: 'delete', notify: deleteModal.notify, reason: deleteModal.reason || undefined }),
+        body: JSON.stringify({ lessonId: deleteModal.lesson.id, action: 'delete', reason: deleteModal.reason || undefined }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
@@ -1753,7 +1749,7 @@ export default function SchedulePage() {
       // Additional / Trial / standalone Revision Makeup → add route
       const body: Record<string, any> = { type: addModal.type, date: addModal.date, slotId: addModal.slotId, notes: addModal.notes || undefined };
       if (addModal.type === 'Trial') { body.trialStudentName = addModal.trialStudentName; }
-      else { body.studentId = addModal.studentId; body.notify = addModal.notify; }
+      else { body.studentId = addModal.studentId; }
       if (addModal.type === 'Ad-hoc') body.chargeOverride = Number(addModal.charge);
       const res = await fetch('/api/admin-schedule/add', {
         method: 'POST',
@@ -1817,13 +1813,13 @@ export default function SchedulePage() {
 
   function openAddModal(date: Date, slot: Slot) {
     setModalError('');
-    setAddModal({ type: 'Makeup', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: false, linkedLessonId: '' });
+    setAddModal({ type: 'Makeup', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', linkedLessonId: '' });
   }
 
   function openAddModalFab() {
     setModalError('');
     const todaySlots = slotsByDay[dayNameOf(activeDate)] ?? [];
-    setAddModal({ type: 'Makeup', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', notify: false, linkedLessonId: '' });
+    setAddModal({ type: 'Makeup', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', linkedLessonId: '' });
   }
 
   async function openStudentModal(studentId: string, lessonType: string) {
@@ -1962,7 +1958,7 @@ export default function SchedulePage() {
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId: lesson.id, action: 'delete', notify: false }),
+        body: JSON.stringify({ lessonId: lesson.id, action: 'delete' }),
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Failed');
       await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
@@ -2959,13 +2955,13 @@ export default function SchedulePage() {
               <button className="action-btn" onClick={() => handleUndoReschedule(actionSheet.lesson)}>↩ Undo reschedule</button>
             )}
             <button className="action-btn" onClick={() => {
-              setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: false, showPickers: true });
+              setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', showPickers: true });
               setShowAllRescheduleSlots(false);
               setModalError(''); setActionSheet(null);
             }}>🔄 Reschedule</button>
             {actionSheet.lesson.type !== 'Trial' && (
               <button className="action-btn" onClick={() => {
-                setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', notify: false, showPickers: true, switchMode: true });
+                setRescheduleModal({ lesson: actionSheet.lesson, toDate: '', toSlotId: '', notes: '', showPickers: true, switchMode: true });
                 setShowAllRescheduleSlots(false);
                 setModalError(''); setActionSheet(null);
               }}>🔀 Switch slot</button>
@@ -2975,7 +2971,7 @@ export default function SchedulePage() {
             )}
             {actionSheet.lesson.status !== 'Absent' && (
               <button className="action-btn" onClick={() => {
-                setAbsentModal({ lesson: actionSheet.lesson, notify: false, reason: '' });
+                setAbsentModal({ lesson: actionSheet.lesson, reason: '' });
                 setModalError(''); setActionSheet(null);
               }}>🚫 Mark absent</button>
             )}
@@ -2984,7 +2980,7 @@ export default function SchedulePage() {
               setModalError(''); setActionSheet(null);
             }}>📝 Edit notes</button>
             <button className="action-btn danger" onClick={() => {
-              setDeleteModal({ lesson: actionSheet.lesson, notify: false, reason: '' });
+              setDeleteModal({ lesson: actionSheet.lesson, reason: '' });
               setModalError(''); setActionSheet(null);
             }}>🗑 Delete lesson</button>
             <button className="action-btn cancel-btn" onClick={() => setActionSheet(null)}>Cancel</button>
@@ -3162,11 +3158,6 @@ export default function SchedulePage() {
                   value={rescheduleModal.notes}
                   onChange={e => setRescheduleModal(m => m ? { ...m, notes: e.target.value } : null)} />
               </div>
-              <label className="check-row">
-                <input type="checkbox" checked={rescheduleModal.notify}
-                  onChange={e => setRescheduleModal(m => m ? { ...m, notify: e.target.checked } : null)} />
-                Notify student &amp; parent
-              </label>
               {modalError && <div className="modal-error">{modalError}</div>}
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => setRescheduleModal(null)} disabled={submitting}>Cancel</button>
@@ -3198,11 +3189,6 @@ export default function SchedulePage() {
                   value={absentModal.reason}
                   onChange={e => setAbsentModal(m => m ? { ...m, reason: e.target.value } : null)} />
               </div>
-              <label className="check-row">
-                <input type="checkbox" checked={absentModal.notify}
-                  onChange={e => setAbsentModal(m => m ? { ...m, notify: e.target.checked } : null)} />
-                Notify student &amp; parent
-              </label>
               {modalError && <div className="modal-error">{modalError}</div>}
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => setAbsentModal(null)} disabled={submitting}>Cancel</button>
@@ -3228,11 +3214,6 @@ export default function SchedulePage() {
             </div>
             <div className="modal-body">
               <p style={{ fontSize: 14, color: '#374151' }}>Permanently delete this lesson record? This cannot be undone.</p>
-              <label className="check-row">
-                <input type="checkbox" checked={deleteModal.notify}
-                  onChange={e => setDeleteModal(m => m ? { ...m, notify: e.target.checked } : null)} />
-                Notify student &amp; parent
-              </label>
               {modalError && <div className="modal-error">{modalError}</div>}
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => setDeleteModal(null)} disabled={submitting}>Cancel</button>
@@ -3740,14 +3721,6 @@ export default function SchedulePage() {
                 <div style={{ fontSize: 12.5, color: '#0f766e', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 8, padding: '8px 10px', lineHeight: 1.45 }}>
                   Creates a <strong>🏖 Revision Makeup</strong> lesson (already paid in the Revision Sprint, so <strong>not billed</strong> again). Silent — no parent message.
                 </div>
-              )}
-              {/* Notify (Additional/Makeup only — Revision Makeup is always silent) */}
-              {addModal.type !== 'Trial' && addModal.type !== 'Revision Makeup' && (
-                <label className="check-row">
-                  <input type="checkbox" checked={addModal.notify}
-                    onChange={e => setAddModal(m => m ? { ...m, notify: e.target.checked } : null)} />
-                  Notify student &amp; parent
-                </label>
               )}
               {modalError && <div className="modal-error">{modalError}</div>}
               <div className="modal-actions">
@@ -4367,8 +4340,6 @@ input.modal-input[type="date"] { display: block; }
   outline: none; background: white;
 }
 .modal-select:focus { border-color: #1a365d; }
-.check-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #374151; cursor: pointer; }
-.check-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #1a365d; }
 .student-search-results {
   border: 1.5px solid #e2e8f0; border-top: none;
   border-radius: 0 0 10px 10px; max-height: 180px; overflow-y: auto; background: white;

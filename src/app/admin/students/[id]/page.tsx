@@ -388,7 +388,7 @@ export default function StudentProfilePage() {
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId: lesson.id, action: 'delete', notify: false }),
+        body: JSON.stringify({ lessonId: lesson.id, action: 'delete' }),
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Failed');
       showToast('ok', 'Lesson cancelled');
