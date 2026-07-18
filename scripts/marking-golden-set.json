@@ -287,6 +287,478 @@
         "must_mention": []
       },
       "note": "The student's '≈' notation on the first two lines is written backwards (49.85 IS the least value of a quantity recorded as 49.9 — it is not 'approximately 49.9'); Adrian crosses that notation. But the bounds themselves are the right values and the perimeter line is correct and ticked: 148.6, full [1], empty margin. Notation repaired in passing, not penalized — the deduction-free ✗ on a notation line must not pull the margin down when the required computation is right."
+    },
+    {
+      "id": "pearle-q3ii-substitutes-wrong-k",
+      "source": "Pearle_EM_Set3_P1.pdf p1 Q3(ii) (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 1,
+      "question": "Given that one solution of the equation 1/(2x² + kx) = 1/2 is x = −2: in part (i) the student correctly found k = 3. Part (ii): find a second possible value of x. [1]",
+      "working_lines": [
+        "sub k = 0",
+        "1/(2x² + 0) = 1/2",
+        "2x² = 2",
+        "x² = 1",
+        "x = √1 = 1"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["wrong", null, null, null, null],
+        "must_mention": ["3x"]
+      },
+      "note": "Adrian: 'why sub k=0?' at line 1 and 'Sub k=3!' — the value of k was already determined in (i); substituting k=0 answers a different equation. Red rework: 1/(2x²+3x) = 1/2 → 2x²+3x−2 = 0 → (2x−1)(x+2) = 0 → x = 1/2 (or the given −2). −1 of [1]."
+    },
+    {
+      "id": "pearle-q5-prove-by-example",
+      "source": "Pearle_EM_Set3_P1.pdf p2 Q5 (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "Given that 2m − 1 = (2n + 3)², where n is a positive integer, show that m is an integer. [2]",
+      "working_lines": [
+        "assuming n = 2",
+        "2m − 1 = (2(2) + 3)²",
+        "2m − 1 = (7)²",
+        "2m = 49 + 1",
+        "2m = 50",
+        "m = 25"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": ["wrong", null, null, null, null, null],
+        "must_mention": ["for all"]
+      },
+      "note": "Verifying one value of n does not show the statement — Adrian: 'need to prove for all values of n.' (−2, full forfeit). His red model proof: (2n+3)² = (even + odd)² = (odd)², an odd number, so 2m−1 is odd → 2m = odd + 1 = even → m is an integer."
+    },
+    {
+      "id": "pearle-q6-vague-explanation",
+      "source": "Pearle_EM_Set3_P1.pdf p6 Q6 (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 1,
+      "question": "The graph shows the trend in the number of coronavirus infections in a country, plotted with a vertical axis marked 10, 100, 1000, 10000 (equal spacing between successive powers of 10) against dates. The plotted trend looks roughly like a straight line. Jamie claims the trend is approximated by a linear equation of the form y = 320x, where x is the number of days and y is the number of infections. Explain why she is wrong. [1]",
+      "working_lines": [
+        "The number of infections per day is inconsistent."
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": [null],
+        "must_mention": ["scale"]
+      },
+      "note": "Adrian: 'how so? be clearer.' — the sentence does not identify the actual reason. Red model answer: 'The scale on the vertical axis is not uniform, hence the graph is not linear.' On an explain question the explanation IS the answer; a vague response that never names the mathematical reason earns nothing: −1 of [1]."
+    },
+    {
+      "id": "pearle-q7-venn-region-slip",
+      "source": "Pearle_EM_Set3_P1.pdf p6 Q7 (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "There are 30 members in a community club. All members take up at least one activity, either aqua aerobics or pickleball. 15 members take up aqua aerobics and 24 take up pickleball. A = {members who take up aqua aerobics}, P = {members who take up pickleball}. Indicate in the Venn diagram, showing clearly, the number of members in each subset. [2] (The student filled the three regions of the Venn diagram as transcribed below.)",
+      "working_lines": [
+        "A only: 15",
+        "A ∩ P: 9",
+        "P only: 15"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["wrong", "correct", "correct"],
+        "must_mention": []
+      },
+      "note": "Overlap 15 + 24 − 30 = 9 and P-only 24 − 9 = 15 are right; the A-only region must be 15 − 9 = 6, but the student re-used the whole-set count 15. Adrian crosses the 15, writes 6 below it, ticks the other two regions: −1 of [2]."
+    },
+    {
+      "id": "pearle-q11-similar-solids-linear-ratio",
+      "source": "Pearle_EM_Set3_P1.pdf p4 Q11 (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 3,
+      "question": "The picture shows a model terracotta warrior. The model has a height of 15 cm and weighs 20 grammes. A similar terracotta warrior has a height of 1.8 metres. Find the weight of the larger terracotta warrior. Give your answer in kilogrammes, correct to 1 decimal place. [3]",
+      "working_lines": [
+        "W/0.02 = 180/15",
+        "15W = 3.6",
+        "W = 3.6/15",
+        "W = 0.24 = 0.2 (1 d.p.)",
+        "Answer: 0.2 kg"
+      ],
+      "expected": {
+        "margin_note": "-3",
+        "line_verdicts": ["wrong", null, null, null, null],
+        "must_mention": ["volume", "34.6"]
+      },
+      "note": "Weight was scaled by the LINEAR ratio. Adrian: 'weight is related to volume!' and 'For similar solids, weight is not equal to volume, but their ratios are.' — the weight ratio equals the CUBE of the length ratio. Full forfeit −3 of [3]; red rework: W/0.02 = (180/15)³ → W = (180/15)³ × 0.02 = 34.6 kg (1 d.p.)."
+    },
+    {
+      "id": "pearle-q12b-stops-before-answer",
+      "source": "Pearle_EM_Set3_P1.pdf p5 Q12(b) (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 3,
+      "question": "Given that R varies inversely as the square of T, find the percentage change in R when T is doubled. [3]",
+      "working_lines": [
+        "R = K/T², so K = RT²",
+        "new T = 2T",
+        "new R = K/(2T)² = K/4T²",
+        "= RT²/4T² = R/4"
+      ],
+      "expected": {
+        "margin_note": "-3",
+        "line_verdicts": [null, null, null, null],
+        "must_mention": ["75"]
+      },
+      "note": "The manipulation to new R = R/4 is correct, but the question asks for the PERCENTAGE CHANGE and the student stopped without computing it — no percentage, no sign, answer line untouched. Adrian circled −3 (full forfeit of [3]) and completed the work in red: (R − R/4)/R × 100 = 75, so R decreases by 75% (percentage change −75%). The asked-for quantity never appearing forfeits the part despite correct preliminary algebra."
+    },
+    {
+      "id": "pearle-q15ii-variance-formula",
+      "source": "Pearle_EM_Set3_P1.pdf p8 Q15(ii) (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "x₁, x₂, x₃, …, x₁₀ are 10 unique numbers whose mean x̄ is 11.8 and standard deviation is 4.729. Find the value of x₁² + x₂² + x₃² + … + x₁₀², giving your answer to the nearest whole number. [2]",
+      "working_lines": [
+        "4.729² × 10 = 223.63",
+        "≈ 224"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": ["wrong", null],
+        "must_mention": ["1616"]
+      },
+      "note": "The student treated Σx² as n × (standard deviation)², dropping the mean term from σ² = Σx²/n − x̄². Adrian's red rework: 4.729² = Σx²/10 − 11.8² → Σx²/10 = 4.729² + 139.24 = 161.603441 → Σx² = 1616 (nearest whole number). Wrong formula → full forfeit −2 of [2]."
+    },
+    {
+      "id": "pearle-q17ii-termwise-square-root",
+      "source": "Pearle_EM_Set3_P1.pdf p10 Q17(ii) (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 3,
+      "question": "Given that y = x² + 6x + c, make x the subject of the formula. [3] (Part (i) asked to express x² + 6x + 10 in the form (x + p)² + q.)",
+      "working_lines": [
+        "y = x² + 6x + c",
+        "x² + 6x = y − c",
+        "x + 6x = √(y − c)",
+        "7x = √(y − c)",
+        "x = √(y − c)/7"
+      ],
+      "expected": {
+        "margin_note": "-3",
+        "line_verdicts": [null, null, "wrong", null, null],
+        "must_mention": []
+      },
+      "note": "Line 3 square-roots the left side TERM BY TERM (√(x² + 6x) is not x + 6x) — an illegal operation, not a slip; everything after rests on it. Full forfeit −3 of [3]. Adrian's red model: complete the square — y = (x+3)² − 9 + c → (x+3)² = y + 9 − c → x + 3 = ±√(y + 9 − c) → x = −3 ± √(y + 9 − c)."
+    },
+    {
+      "id": "pearle-q19ii-unjustified-collinear",
+      "source": "Pearle_EM_Set3_P1.pdf p11 Q19(ii) (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 3,
+      "question": "A(1, 2), B(8, 5), C(13, 7) and D(13, 2) are four points. In part (i) the student correctly showed AB + BC = 13.0, correct to 3 significant figures. Part (ii): By finding AC, determine the sum of interior angles in figure ABCD, justifying your answer. [3]",
+      "working_lines": [
+        "AD = 13 − 1 = 12",
+        "CD = 7 − 2 = 5",
+        "Using Pythagoras theorem, AC = √(12² + 5²) = 13",
+        "∴ ABCD is a right ∠ △, total sum of interior ∠s = 180°"
+      ],
+      "expected": {
+        "margin_note": "-3",
+        "line_verdicts": [null, null, null, "wrong"],
+        "must_mention": ["straight line"]
+      },
+      "note": "AC = 13 is right, but calling four-lettered ABCD a triangle requires showing B lies ON segment AC — the load-bearing justification is AB + BC = 13.0 = AC, so A, B and C lie on a straight line and ABCD degenerates to triangle ACD (interior angle sum 180°). Adrian: 'We need to first find out if A, B and C is on a straight line… It looks like the points are on a straight line, but since the question didn't say, we should not assume.' Right final number with the justification absent on a justify question → full forfeit −3 of [3]."
+    },
+    {
+      "id": "pearle-q21i-wrong-final-form",
+      "source": "Pearle_EM_Set3_P1.pdf p12 Q21(i) (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "A(−16, 0), B(0, 12) and C(8, 2) are three points. Find the equation of the line AB, expressing your answer in the form ax + by + c = 0, where a, b and c are constants to be found. [2]",
+      "working_lines": [
+        "Gradient = (12 − 0)/(0 − (−16)) = 12/16 = 3/4",
+        "y = (3/4)x + 12",
+        "(3/4)x + 12y + 12 = 0"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["correct", "correct", "wrong"],
+        "must_mention": ["48"]
+      },
+      "note": "Gradient 3/4 and y = (3/4)x + 12 are both right (B(0,12) is the y-intercept). The final rearrangement is botched — y turned into 12y and the signs never moved: from y = (3/4)x + 12, 4y = 3x + 48 → 3x − 4y + 48 = 0. One slip in the last line → −1 of [2]."
+    },
+    {
+      "id": "pearle-q22i-calculation-error",
+      "source": "Pearle_EM_Set3_P1.pdf p13 Q22(i) (EM 2022 Prelims Practice Set 3, Paper 1)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "Checkpoints W, X, Y are in a jungle reserve. X is due north of Y and is on a bearing of 077° from W; the angle between the north line at X and the line XW is 103°. Angle XWY = 53° and WY is 60 metres. Calculate the distance XY. [2]",
+      "working_lines": [
+        "∠WXY = 180° − 103° = 77°",
+        "60/sin 77° = XY/sin 53°",
+        "XY = (60/sin 77°) × sin 53°",
+        "XY = 23.766",
+        "XY = 23.8 m"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["correct", "correct", "correct", "wrong", null],
+        "must_mention": ["49.2"]
+      },
+      "note": "Sine-rule setup fully correct and ticked; the numeric evaluation is a calculator slip — (60/sin 77°) × sin 53° = 49.17857 → 49.2 m (3 s.f.), the student got 23.766. Adrian crosses the value, writes 'calculation error.' and the corrected 49.2: −1 of [2] with the method marks kept."
+    },
+    {
+      "id": "liuying-q3a-range-not-iqr",
+      "source": "LiuYing_EM_TYS2017_P1.pdf p2 Q3(a) (GCE O-Level 4048/01 Oct/Nov 2017 TYS)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 1,
+      "question": "The stem-and-leaf diagram shows the masses, in grams, of some apples. Stems (tens): 19 | 1 4 5 5; 20 | 0 3 4 7 8 8; 21 | 0 1 4 7 7 8 9; 22 | 4 6 8. Key: 19 | 4 represents 194 grams. For these masses, find (a) the range. [1]",
+      "working_lines": [
+        "217 − 203",
+        "= 14"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["wrong", null],
+        "must_mention": ["37"]
+      },
+      "note": "The student subtracted the quartiles (Q3 − Q1 = 217 − 203) — that is the interquartile range, not the range. Adrian underlines 'the range' in the question, writes 'not IQR.', crosses the 14 and gives the correct range 228 − 191 = 37: −1 of [1]."
+    },
+    {
+      "id": "liuying-q3b-median-position",
+      "source": "LiuYing_EM_TYS2017_P1.pdf p2 Q3(b) (GCE O-Level 4048/01 Oct/Nov 2017 TYS)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 1,
+      "question": "The stem-and-leaf diagram shows the masses, in grams, of some apples. Stems (tens): 19 | 1 4 5 5; 20 | 0 3 4 7 8 8; 21 | 0 1 4 7 7 8 9; 22 | 4 6 8. Key: 19 | 4 represents 194 grams. For these masses, find (b) the median. [1]",
+      "working_lines": [
+        "(20 + 1)/2 = 11",
+        "median = 208"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": [null, "wrong"],
+        "must_mention": ["209"]
+      },
+      "note": "There are 20 values (even count), so the median is the average of the 10th and 11th values: (208 + 210)/2 = 209. The student answered 208 (the 10th value). Adrian crosses 208 and writes 209: −1 of [1]."
+    },
+    {
+      "id": "liuying-q6a-subset-symbol",
+      "source": "LiuYing_EM_TYS2017_P1.pdf p4 Q6(a) (GCE O-Level 4048/01 Oct/Nov 2017 TYS)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 1,
+      "question": "ξ = {integers x : 1 ≤ x ≤ 12}. From the Venn diagram: A = {1, 2, 5, 10}, B = {1, 3, 5, 7, 9, 11}, C = {2, 4, 5, 6, 8, 9, 11}. Use one of the symbols ∅, ⊂, ⊄, ∉, ∈, ξ to complete the statement: {2, 10} ___ A. [1]",
+      "working_lines": [
+        "{2, 10} ∈ A"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["wrong"],
+        "must_mention": ["subset"]
+      },
+      "note": "{2, 10} is a SET of two elements of A, so the correct symbol is ⊂ (a proper subset of A); ∈ relates a single element to a set. Adrian crosses the answer and writes ⊂: −1 of [1]. The set-vs-element symbol confusion is the exact concept being tested."
+    },
+    {
+      "id": "liuying-q7-joiners-change-total",
+      "source": "LiuYing_EM_TYS2017_P1.pdf p4 Q7 (GCE O-Level 4048/01 Oct/Nov 2017 TYS)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 3,
+      "question": "Parveen runs a squash club. 58 of the members are adults and 37 are children. Her aim is that at least 70% of the members should be adults. Work out the smallest number of adults that would need to join the club in order to achieve her aim. [3]",
+      "working_lines": [
+        "58 + 37 = 95",
+        "70/100 × 95 = 66.5",
+        "= 67",
+        "Answer: 67"
+      ],
+      "expected": {
+        "margin_note": "-3",
+        "line_verdicts": [null, null, null, "wrong"],
+        "must_mention": ["29"]
+      },
+      "note": "The student computed 70% of the CURRENT total 95, ignoring that each joining adult also raises the total membership. Adrian circles the 95, writes 'you did not consider the people joining.', crosses 67 and gives 29: full forfeit −3 of [3]. Correct chain: (58 + x)/(95 + x) ≥ 0.7 → 0.3x ≥ 8.5 → x ≥ 28.3, so 29 adults."
+    },
+    {
+      "id": "liuying-q15-sin-should-be-tan",
+      "source": "LiuYing_EM_TYS2017_P1.pdf p8 Q15 (GCE O-Level 4048/01 Oct/Nov 2017 TYS)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 4,
+      "question": "In the diagram, A, B, C and D are points on a circle, centre O. AC passes through O. AB = 8.1 cm, BC = 13.8 cm and angle BDA = x°. Find x. Show your working and give reasons. [4]",
+      "working_lines": [
+        "∠ABC = 90° (∠ in a semicircle)",
+        "sin ∠ACB = 8.1/13.8",
+        "∠ACB = 35.94",
+        "∠BDA = 35.94 (∠s in same segment)",
+        "x = 35.94 ≈ 36.0 (1 d.p.)"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": ["correct", "wrong", null, null, null],
+        "must_mention": ["tan", "30.4"]
+      },
+      "note": "AB = 8.1 and BC = 13.8 are the two LEGS of the right triangle (right angle at B), so the ratio is tan ∠ACB = 8.1/13.8, not sin. Adrian circles 'sin', writes 'tan', and corrects the answer to x = 30.4 (tan⁻¹(8.1/13.8) = 30.4°). The semicircle reason and the same-segment transfer both earned their marks: −2 of [4], not a full forfeit."
+    },
+    {
+      "id": "liuying-q23a-two-contradictory-models",
+      "source": "LiuYing_EM_TYS2017_P1.pdf p15 Q23(a) (GCE O-Level 4048/01 Oct/Nov 2017 TYS)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "A company sells three sizes of the same brand of shampoo: 400 ml at $30.80, 250 ml at $19.25, and 75 ml at $5.95. Show that the cost of the shampoo is not directly proportional to the quantity of shampoo. [2]",
+      "working_lines": [
+        "Assume that cost is directly proportional to the quantity of shampoo",
+        "A = ka, k = A/a = 5.95/75 = 119/1500",
+        "A = k/a, so Aa = k = 5.95 × 75 = 446.25",
+        "new A = ka: 30.80 = (119/1500)a, a = 2.443",
+        "∴ cost of shampoo is not directly proportional to the quantity of shampoo"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": [null, null, "wrong", null, null],
+        "must_mention": []
+      },
+      "note": "The working uses A = ka and A = k/a (inverse proportion) interchangeably — Adrian circles both forms, writes 'which is it?' and 'There are 2 sets of workings that tell separate stories.', and forfeits both marks even though the final sentence states the right conclusion. A 'show that' must present ONE coherent argument (e.g. compare unit rates 30.80/400 = 0.077 vs 5.95/75 = 0.0793 — different, so not directly proportional); self-contradictory working earns nothing."
+    },
+    {
+      "id": "junhe-q6iii-inadequate-explain",
+      "source": "JunHe_AM_SGSS_P1.pdf p5 Q6(iii) (SGSS AMP1/4E Prelim 2021, AM)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 1,
+      "question": "A certain species of fish was introduced into a pond and its population P, t days later, is given by P = 5000 + Ae^(kt). From parts (i)–(ii): A = −2000 and k = −0.0511 (3 s.f.), so P = 5000 − 2000e^(−0.0511t). (iii) Explain why the number of fishes can never reach 5000. [1]",
+      "working_lines": [
+        "For all values of t, −2000e^(−0.0511t) can never be 0.",
+        "∴ P = 5000 − 2000e^(−0.0511t) can never reach 5000."
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": [null, null],
+        "must_mention": []
+      },
+      "note": "Both sentences are true, but the explanation never makes the link explicit — Adrian: 'does not adequately explain.' (−1 of [1]) and writes the required chain in red: let P = 5000 → 5000 = 5000 − 2000e^(−0.0511t) → 0 = −2000e^(−0.0511t) → e^(−0.0511t) = 0, impossible since an exponential is always positive — 'need this part for a more complete explanation.' On explain questions the explicit derivation from the target value IS the answer."
+    },
+    {
+      "id": "junhe-q10ii-second-deriv-zero-inconclusive",
+      "source": "JunHe_AM_SGSS_P1.pdf p9 Q10(ii) (SGSS AMP1/4E Prelim 2021, AM)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 4,
+      "question": "Given that y = x(2x − 4)³, the stationary points found in part (i) are (2, 0) and (1/2, −27/2). (ii) Determine the nature of each of these points. [4]",
+      "working_lines": [
+        "d²y/dx² = 4(2x − 4)(12x − 12)",
+        "when x = 2, d²y/dx² = 4[2(2) − 4][12(2) − 12] = 0",
+        "(2, 0) is the point of inflexion",
+        "when x = 1/2, d²y/dx² = 4[2(1/2) − 4][12(1/2) − 12] = 72 > 0",
+        "(1/2, −27/2) is the minimum point"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": [null, null, "wrong", null, "correct"],
+        "must_mention": ["sign"]
+      },
+      "note": "d²y/dx² = 0 at a stationary point is INCONCLUSIVE — Adrian crosses the inflexion conclusion and writes '★ d²y/dx² = 0 → does not mean it is a point of inflexion! Need to use sign-test to determine', supplying a first-derivative sign-test table (x = 2⁻, 2, 2⁺; dy/dx +ve, 0, +ve → stationary point of inflexion). The conclusion happens to be right but is unestablished: −1 of [4]. The minimum at x = 1/2 (72 > 0) is fully correct and keeps its marks."
+    },
+    {
+      "id": "junhe-q11i-derivative-sign-slip",
+      "source": "JunHe_AM_SGSS_P1.pdf p10 Q11(i) (SGSS AMP1/4E Prelim 2021, AM)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 1,
+      "question": "A particle P moves along a horizontal straight line so that t seconds after motion has begun, its displacement s m from a fixed point O is given by s = t³ + 5t² − 2t + 4. (i) Express the velocity of P in terms of t. [1]",
+      "working_lines": [
+        "v = 3t² − 10t − 2"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["wrong"],
+        "must_mention": []
+      },
+      "note": "d/dt(5t²) = +10t; the student flipped the sign to −10t. Adrian crosses the line and writes v = 3t² + 10t − 2 in red: −1 of [1] (a slip, but on a 1-mark part it costs the mark)."
+    },
+    {
+      "id": "junhe-q12ai-discriminant-non-sequitur",
+      "source": "JunHe_AM_SGSS_P1.pdf p12 Q12(a)(i) (SGSS AMP1/4E Prelim 2021, AM)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 2,
+      "question": "(a)(i) Show that x² − 10x + 21 can never be smaller than −4. [2]",
+      "working_lines": [
+        "discriminant = (−10)² − 4(1)(21) = 16",
+        "since discriminant > 0, x² − 10x + 21 can never be smaller than −4 [shown]"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": [null, "wrong"],
+        "must_mention": []
+      },
+      "note": "The discriminant of x² − 10x + 21 itself (16 > 0 — the curve crosses the x-axis twice) says NOTHING about how low the curve goes; the inference is a non-sequitur and Adrian crosses it with a large ✗: full forfeit −2 of [2]. His red supplies the valid route: complete the square — x² − 10x + 21 = (x − 5)² − 4, and since (x − 5)² ≥ 0, the expression is ≥ −4 for all x (minimum −4 at x = 5)."
+    },
+    {
+      "id": "junhe2-q2ii-divide-loses-roots",
+      "source": "JunHe_AM_Set6_P2.pdf p3 Q2(ii) (AM 2021 Prelim Set 6 Paper 2)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 4,
+      "question": "In part (i) the identity (tan²y − sin²y)/(sec²y(cosec²y − 1)) = tan²y sin⁴y was proven. (ii) Hence solve the equation (tan²y − sin²y)/(sec²y(cosec²y − 1)) = (1/16)tan²y for 0° ≤ y ≤ 180°. [4]",
+      "working_lines": [
+        "tan²y sin⁴y = (1/16) tan²y",
+        "sin⁴y = 1/16",
+        "sin y = ±1/2",
+        "basic ∠ = sin⁻¹(1/2) = 30°",
+        "when sin y > 0: y = 30°, 180° − 30° = 150°",
+        "when sin y < 0: y = 210°, 330° (out of range)",
+        "∴ y = 30°, 150° for 0° ≤ y ≤ 180°"
+      ],
+      "expected": {
+        "margin_note": "-2",
+        "line_verdicts": [null, "wrong", null, null, null, null, null],
+        "must_mention": ["factoris"]
+      },
+      "note": "Dividing both sides by tan²y throws away the tan²y = 0 roots. Adrian: 'don't divide by tan²y. factorise' with the red chain tan²y(sin⁴y − 1/16) = 0 → tan y = 0 giving y = 0°, 180°, and '★ you are missing these answers': −2 of [4]. The 30°/150° branch is ticked — the deduction is for the lost solution family, not the found one."
+    },
+    {
+      "id": "fenglin-q1c-calculator-factoring-no-deduction",
+      "source": "Fenglin_EM_PracticeSet3_Paper2.pdf p1 Q1(c) (EM 2021 Prelims Practice Set 3, Paper 2)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 4,
+      "question": "(c) Solve the equation 1/((x+1)(x−2)) = 2/(8−x). [4]",
+      "working_lines": [
+        "2(x+1)(x−2) = 8 − x",
+        "2x² − 4x + 2x − 4 = 8 − x",
+        "2x² − 2x − 4 − 8 + x = 0",
+        "2x² − x − 12 = 0",
+        "(x − 2.71)(x + 2.21) = 0",
+        "x = 2.71 or x = −2.21"
+      ],
+      "expected": {
+        "margin_note": "",
+        "line_verdicts": [null, null, null, "correct", null, "correct"],
+        "must_mention": []
+      },
+      "note": "The student jumps from 2x² − x − 12 = 0 straight to decimal-root 'factors' (calculator solve written as a factorisation). Adrian TICKS the final roots (2.71 and −2.21 are correct to 3 s.f.), deducts NOTHING, and writes 'does your school allow this?' beside the step plus the standard quadratic-formula working in red. Method-policy feedback rides along as a query/uncertainty note — a marker that deducts here or flips the roots to wrong is over-marking."
+    },
+    {
+      "id": "fenglin-q2bi-percentages-dont-add",
+      "source": "Fenglin_EM_PracticeSet3_Paper2.pdf p3 Q2(b)(i) (EM 2021 Prelims Practice Set 3, Paper 2)",
+      "question_level": "SECONDARY",
+      "student_level": "Sec 4",
+      "max_marks": 1,
+      "question": "Paul bought an apartment at the end of 2006. The price of the apartment at the end of 2006 was 9% higher than at the end of 2005. The price at the end of 2007 was 6% higher than at the end of 2006. (i) Express the price of the apartment at the end of 2007 as a percentage of the price at the end of 2005. [1]",
+      "working_lines": [
+        "2007 higher than 2005 by 9% + 6% = 15%",
+        "2005 → 100%",
+        "2007 → 100% + 15% = 115%"
+      ],
+      "expected": {
+        "margin_note": "-1",
+        "line_verdicts": ["wrong", null, null],
+        "must_mention": ["115.54"]
+      },
+      "note": "Successive percentage increases MULTIPLY, they don't add — Adrian: 'percentage does not work like that. Do year by year.' Red model: let the 2005 price be x → 2006 is 1.09x → 2007 is 1.09x × 1.06 = 1.1554x → 115.54%. Crossed 115, wrote 115.54: −1 of [1]."
     }
   ]
 }

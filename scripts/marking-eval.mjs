@@ -71,8 +71,19 @@ async function runSample(item) {
   });
   const raw = resp.content.filter(b => b.type === 'text').map(b => b.text).join('').trim()
     .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-  try { return scoreSample(JSON.parse(raw), item); }
-  catch { return { ok: false, nonJson: true, raw: raw.slice(0, 120) }; }
+  // Lenient parse ladder (mirrors the runtime pipeline's retry tolerance):
+  // 1. as-is; 2. outermost {...} span; 3. same span with lone backslashes
+  // (invalid JSON escapes from LaTeX like \frac) doubled.
+  const candidates = [raw];
+  const i0 = raw.indexOf('{'), i1 = raw.lastIndexOf('}');
+  if (i0 >= 0 && i1 > i0) {
+    const span = raw.slice(i0, i1 + 1);
+    candidates.push(span, span.replace(/\\(?!["\\/bfnrtu])/g, '\\\\'));
+  }
+  for (const c of candidates) {
+    try { return scoreSample(JSON.parse(c), item); } catch { /* next */ }
+  }
+  return { ok: false, nonJson: true, raw: raw.slice(0, 120) };
 }
 
 let pass = 0, total = 0;

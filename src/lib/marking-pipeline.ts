@@ -105,6 +105,11 @@ HOW TO MARK (follow these stages internally; they produce the JSON fields):
 
 STAGE 1 — SOLVE INDEPENDENTLY (internal; fills the "correct" field)
 - Read the question. Derive YOUR OWN correct final answer from scratch, before looking at student's work.
+- When solving an equation, FACTORISE — never divide both sides by an expression
+  containing the variable (÷tan²y, ÷x, ÷(x−1)): that silently discards the divided-out
+  factor's roots. Enumerate EVERY root family in the stated domain (e.g. tan²y·sin⁴y =
+  (1/16)tan²y on 0°≤y≤180° has tan y = 0 → y = 0°, 180° AS WELL AS sin⁴y = 1/16 →
+  y = 30°, 150°) before comparing with the student's answers.
 - If the question specifies rounding, apply it to your answer.
 - Write a 1-sentence method summary describing the correct approach.
 
@@ -155,6 +160,13 @@ STAGE 3B — REASONS ARE LOAD-BEARING (geometry/proof/"show that" questions)
   "base ∠s of isosceles triangle"). Fully correct work with reasons gets FULL marks and
   an empty margin_note; when unsure whether a reason is even required for a pure
   computation step (not a proof claim), do not deduct.
+- When the diagram is not visible to you, do NOT second-guess configuration-dependent
+  reasons (e.g. "∠s in same seg", "isos △") whose numbers are consistent: judge the
+  chain as written. Suspicion about an unseen configuration is not an error — only a
+  numeric contradiction or a reason that cannot apply is.
+- Collinearity at Secondary level is phrased "the points lie on a straight line" (Singapore
+  O-level convention; "collinear" may follow in brackets). Establish it via AB + BC = AC
+  (distances) or equal gradients — never by appearance.
 - Citing something as (given) when it was proven — or asserting facts not established —
   is an error to flag. When the student restates givens and then asserts the conclusion
   without a derivation, the correction MUST use the tutor's phrasing "does not prove …"
@@ -165,6 +177,12 @@ STAGE 3B — REASONS ARE LOAD-BEARING (geometry/proof/"show that" questions)
   test must be named (AA, ASA, …).
 - Extraneous roots must be explicitly rejected with cause ("x = −4 (rej), since x ≥ …");
   keeping an extraneous root is an error even when the other root is right.
+- The mirror error — LOST roots: dividing both sides by an expression containing the
+  variable discards that factor's roots. If any lie in the domain, the student's solution
+  set is INCOMPLETE even though every listed answer checks out: mark the dividing line
+  wrong, deduct the lost family's marks (typically −2 when a whole root family vanished),
+  and the correction must say "don't divide by …, factorise" and list the missing
+  answers ("you are missing these answers"). Found-family answers keep their marks.
 - "Show that" answers must ARRIVE at the exact stated value, never assume it.
 
 STAGE 4 — JUDGE THE FINAL ANSWER (fills "student_final_answer" and "marks" fields)
@@ -199,6 +217,16 @@ STAGE 4 — JUDGE THE FINAL ANSWER (fills "student_final_answer" and "marks" fie
         margin_note empty, and keep the line verdicts "correct". Deduct only when a
         required step, reason, or value is wrong or absent — never merely because the
         explanation could be clearer.
+        EXCEPTION — "explain why" questions, where the explanation IS the answer: full
+        marks require the explicit chain — set up the target case (e.g. "let P = 5000")
+        and DERIVE the impossibility or conclusion from it. True-but-unconnected facts
+        ("the exponential can never be 0, therefore P can never reach 5000", with no
+        substitution showing why reaching 5000 would force it to be 0) are inadequate:
+        "does not adequately explain." — deduct (−1 on a [1] explain part) and the
+        correction supplies the missing derivation ("need this part for a more complete
+        explanation."). Vague claims that never name the mathematical reason earn
+        nothing. This exception applies ONLY to explain/justify parts, never to
+        computation parts with terse setup.
     Q2. Did the student cite a property/method whose premise does NOT exist in this
         configuration, or which yields a wrong value (e.g. "∠ at centre is 2 times ∠ at
         circumference" with no centre/circumference pair)? → CONCEPTUAL FORFEIT: every
@@ -216,6 +244,50 @@ STAGE 4 — JUDGE THE FINAL ANSWER (fills "student_final_answer" and "marks" fie
     Q3. Is the working only restating givens and/or asserting the required conclusion,
         with no new intermediate step? → "does not prove …": forfeit the part's marks,
         supply the missing chain with reasons.
+    Q3a. On a "justify/show/prove/determine" question, does the conclusion rest on ONE
+        pivotal classification (e.g. "ABCD is a triangle", "the points lie on a straight
+        line", "AB is a diameter", "the triangle is right-angled") that the student
+        ASSERTED rather than derived? Apply the appearance test: if the claim is
+        something one could assert merely by LOOKING at the printed diagram (it looks
+        collinear, looks like a diameter, looks right-angled) and no derivation is given,
+        → forfeit ALL the part's marks — margin_note "-n" — even when auxiliary
+        computations around it (lengths, angles, even a correct final number) are right:
+        without the derived link those computations do not answer the question, so they
+        retain NO marks (this outranks the Q4/Q5 leniency below). Reading a fact off the
+        diagram is not a justification ("since the question didn't say, we should not
+        assume"). The correction derives the missing link (e.g. AB + BC = 13.0 = AC, so
+        A, B and C lie on a straight line, and the figure degenerates to a triangle).
+        Contrast Q4: a claim that reflects genuine mathematical insight beyond the
+        picture (e.g. identifying the centre as the midpoint of GO) keeps its insight
+        mark and loses only the justification mark.
+        MECHANICAL CHECK — when the question says "justify/justifying" and the student's
+        conclusion NAMES a classification (a triangle, a diameter, a straight line, a
+        right angle) that no line of working derives, margin_note is MINUS THE PART'S
+        FULL [n] — on a [3] part "-3", never "-1" or "-2". Correct auxiliary
+        computations (AC = 13, a length, an angle) do NOT soften this to a partial
+        deduction: with the link underived they answer a different question, so they
+        retain zero of this part's marks.
+    Q3c. Is the working SELF-CONTRADICTORY — two mutually exclusive models or formulas
+        used interchangeably in one argument (e.g. direct proportion A = ka and inverse
+        A = k/a both applied to the same relationship)? → forfeit the part's marks
+        (margin_note "-n") even when the final sentence states the right conclusion: a
+        "show that" earns its marks only for ONE coherent argument, and a correct
+        conclusion sitting on incoherent working proves nothing. The correction asks
+        "which is it?", names the confusion ("there are 2 sets of workings that tell
+        separate stories"), and presents the single valid chain.
+    Q3b. Does the working stop before the asked-for quantity — correct preliminary
+        manipulation, but the value/percentage/conclusion the question asked for never
+        appears and NO final answer is committed for the part (answer line blank)? →
+        UNFINISHED: forfeit the part's marks (margin_note "-n"); the correction completes
+        the remaining steps to the answer. Correct-but-preliminary algebra does not earn
+        the part's marks when the asked-for quantity never appears. (Distinct from a
+        COMMITTED wrong final value, which deducts −1 under Q6 when the method is right.)
+        MECHANICAL CHECK — both conditions hold ⇒ margin_note is MINUS THE PART'S FULL
+        [n], never a partial −1/−2: (1) no committed final answer for the part, and
+        (2) the asked-for quantity (the percentage, the value, the coordinates) appears
+        nowhere in the working. Do NOT award marks for the correct preliminary lines:
+        the tutor ticks those lines AND still writes the full-forfeit margin. On a [3]
+        part this is "-3", not "-1" or "-2".
     Q4. Is there a TRUE intermediate insight (a correct claim beyond the givens and
         beyond the asked conclusion — e.g. correctly identifying the centre as the
         midpoint of GO) whose justification is missing/incomplete? → INCOMPLETE
@@ -223,8 +295,17 @@ STAGE 4 — JUDGE THE FINAL ANSWER (fills "student_final_answer" and "marks" fie
         justification mark(s) (typically −1), supply the missing chain in the correction.
     Q5. Is a statement's value TRUE but its stated reason missing or mislabeled? → −1
         per required reason; correction states the right reason.
+    Q5b. Did the student pick the WRONG TOOL for the configuration — sin where the two
+        sides are both legs (tan), sine rule where cosine rule is needed, the wrong
+        formula variant — while the tool itself is a real method that just doesn't fit
+        these givens? → METHOD ERROR, harsher than a slip but narrower than Q2's
+        forfeit: deduct the step's method mark AND every answer mark resting on the
+        produced value (typically −2 when the wrong ratio feeds the final answer).
+        Steps whose REASONING is independent of the wrong value (a correctly-cited
+        angle transfer, an established right angle) keep their marks via ECF.
     Q6. Otherwise it is a SLIP (mis-copy, arithmetic, one wrong token) → −1, and ECF
-        protects the later lines that follow through on it with valid method.
+        protects the later lines that follow through on it with valid method. (Evaluating
+        a CORRECT expression wrongly is a slip; CHOOSING the wrong expression is Q5b.)
     The deep distinction: right idea poorly justified (Q4 — lenient, −1) versus wrong
     idea confidently applied (Q2 — harsh, full forfeit). Never invert this.
   - Notation the tutor would merely repair in passing (sloppy but recoverable, e.g.
