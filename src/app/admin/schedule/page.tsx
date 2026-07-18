@@ -403,6 +403,70 @@ function examSummaryLines(lesson: EnrichedLesson): string[] {
   return lines;
 }
 
+// Agoda-style tap-tap range picker: first tap sets the start, second tap (on
+// or after the start) sets the end; tapping earlier restarts the range. Used
+// by the 🏖 Away-dates modal.
+function RangeCalendar({ start, end, onChange }: { start: string; end: string; onChange: (start: string, end: string) => void }) {
+  const [viewMonth, setViewMonth] = useState(() => {
+    const base = start ? new Date(start + 'T00:00:00') : new Date();
+    return new Date(base.getFullYear(), base.getMonth(), 1);
+  });
+  const todayIso = isoDate(new Date());
+  const year = viewMonth.getFullYear(), month = viewMonth.getMonth();
+  const cells: (string | null)[] = [];
+  for (let i = 0; i < new Date(year, month, 1).getDay(); i++) cells.push(null);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  for (let d = 1; d <= daysInMonth; d++) cells.push(isoDate(new Date(year, month, d)));
+  const tap = (iso: string) => {
+    if (!start || end || iso < start) onChange(iso, '');
+    else onChange(start, iso);
+  };
+  return (
+    <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <button type="button" onClick={() => setViewMonth(new Date(year, month - 1, 1))}
+          style={{ border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', fontSize: 14 }}>‹</button>
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b' }}>
+          {viewMonth.toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })}
+        </span>
+        <button type="button" onClick={() => setViewMonth(new Date(year, month + 1, 1))}
+          style={{ border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', fontSize: 14 }}>›</button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+          <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: '#94a3b8', padding: '2px 0' }}>{d}</div>
+        ))}
+        {cells.map((iso, i) => {
+          if (!iso) return <div key={`e${i}`} />;
+          const isPast = iso < todayIso;
+          const isEdge = iso === start || iso === end;
+          const inRange = !!start && !!end && iso > start && iso < end;
+          return (
+            <button key={iso} type="button" disabled={isPast} onClick={() => tap(iso)}
+              style={{
+                height: 34, border: 'none', cursor: isPast ? 'default' : 'pointer',
+                borderRadius: isEdge ? 8 : inRange ? 0 : 8,
+                background: isEdge ? '#1e3a5f' : inRange ? '#dbeafe' : 'transparent',
+                color: isPast ? '#cbd5e1' : isEdge ? '#fff' : inRange ? '#1e40af' : '#334155',
+                fontSize: 13, fontWeight: isEdge ? 700 : iso === todayIso ? 700 : 500,
+                textDecoration: iso === todayIso && !isEdge ? 'underline' : 'none', textUnderlineOffset: 3,
+              }}>
+              {Number(iso.slice(8))}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ marginTop: 8, fontSize: 12.5, color: start ? '#334155' : '#94a3b8', fontWeight: 600, textAlign: 'center' }}>
+        {start
+          ? end
+            ? <>🏖 {formatExamDate(start)}{end !== start ? <> → {formatExamDate(end)}</> : ' (1 day)'}</>
+            : <>From {formatExamDate(start)} — now tap the end date</>
+          : 'Tap the start date'}
+      </div>
+    </div>
+  );
+}
+
 function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, onQuickLog, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onWork?: () => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; onQuickLog?: () => void; activeExamType?: string | null; slotLevel?: string }) {
   // Rescheduled-away chips (status=Rescheduled) are display-only — disable dragging
   const isRescheduledAway = lesson.status === 'Rescheduled';
@@ -426,11 +490,15 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
   const [showTopicDropdown, setShowTopicDropdown] = useState(false);
   const dropdownRef = useRef<HTMLSpanElement>(null);
 
+  // Exam/topic info shows only where it's actionable: not on Rescheduled
+  // replacement chips, and only for lessons dated yesterday → +14 days
+  // (Adrian 2026-07-18). Older weeks and far-future chips skip the clutter.
+  const showExamInfo = !isFaded && lesson.type !== 'Trial' && lesson.type !== 'Rescheduled' &&
+    lesson.date >= isoDate(addDays(new Date(), -1)) && lesson.date <= isoDate(addDays(new Date(), 14));
   // Exam-season summary lines (subject · date — topics). When present, they
   // carry the dates, so the 📅 pill shows the exam type instead of repeating
   // the date.
-  const examLines = !isFaded && lesson.type !== 'Trial' && !lesson.examAssessment
-    ? examSummaryLines(lesson) : [];
+  const examLines = showExamInfo && !lesson.examAssessment ? examSummaryLines(lesson) : [];
 
   // Close dropdown when clicking outside the chip
   useEffect(() => {
@@ -506,7 +574,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
           )}
           {/* One pill → opens the tabbed dialog (Exam | Regular work). Shows the
               most relevant glanceable info; details/edit live in the popup. */}
-          {!isFaded && lesson.type !== 'Trial' && (onExamDateClick || onWork) && (() => {
+          {showExamInfo && (onExamDateClick || onWork) && (() => {
             const hasExam = !!lesson.examDate && lesson.examDate !== 'NO_EXAM';
             let label: string, openTab: 'exam' | 'work';
             if (lesson.examAssessment) {
@@ -627,18 +695,18 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
         {/* Exam-season summary — what to expect for this student. PW/AA, or a
             compact per-subject line (type · subject · date · topics). Only
             appears during an active exam season. */}
-        {!isFaded && lesson.type !== 'Trial' && lesson.examAssessment && (
+        {showExamInfo && lesson.examAssessment && (
           <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 700, color: '#7c3aed' }}
             title={`${lesson.examAssessment} instead of a ${lesson.activeExamType || 'WA'} exam`}>
             📋 {lesson.examAssessment}{lesson.activeExamType ? ` · no ${lesson.activeExamType}` : ''}
           </span>
         )}
         {examLines.map((ln, idx) => (
-          <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: 1, color: '#475569', overflowWrap: 'break-word' }}>
+          <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: idx === 0 ? 6 : 2, color: '#475569', overflowWrap: 'break-word' }}>
             📅 {ln}
           </span>
         ))}
-        {!isFaded && !lesson.examAssessment && lesson.examDate === 'NO_EXAM' && (
+        {showExamInfo && !lesson.examAssessment && lesson.examDate === 'NO_EXAM' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 1 }}>no upcoming exam</span>
         )}
         {lesson.type !== 'Trial' && lesson.notes && !isFaded && (
@@ -3134,18 +3202,11 @@ export default function SchedulePage() {
                 </div>
               ))}
               <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 10 }}>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <span className="form-label">From</span>
-                    <input type="date" className="modal-input" style={{ width: '100%', boxSizing: 'border-box' }} value={blockedModal.start}
-                      onChange={e => setBlockedModal(m => m ? { ...m, start: e.target.value, ...(m.end && m.end < e.target.value ? { end: e.target.value } : {}) } : m)} />
-                  </div>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <span className="form-label">To</span>
-                    <input type="date" className="modal-input" style={{ width: '100%', boxSizing: 'border-box' }} value={blockedModal.end} min={blockedModal.start || undefined}
-                      onChange={e => setBlockedModal(m => m ? { ...m, end: e.target.value } : m)} />
-                  </div>
-                </div>
+                <RangeCalendar
+                  start={blockedModal.start}
+                  end={blockedModal.end}
+                  onChange={(start, end) => setBlockedModal(m => m ? { ...m, start, end } : m)}
+                />
                 <div className="form-group" style={{ marginTop: 8 }}>
                   <span className="form-label">Reason <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional, goes into reschedule notes</span></span>
                   <input className="modal-input" placeholder="e.g. Japan trip" value={blockedModal.reason}
