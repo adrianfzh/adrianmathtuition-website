@@ -696,18 +696,18 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             compact per-subject line (type · subject · date · topics). Only
             appears during an active exam season. */}
         {showExamInfo && lesson.examAssessment && (
-          <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 700, color: '#7c3aed' }}
+          <span style={{ display: 'block', fontSize: 10, marginTop: 6, fontWeight: 700, color: '#7c3aed' }}
             title={`${lesson.examAssessment} instead of a ${lesson.activeExamType || 'WA'} exam`}>
             📋 {lesson.examAssessment}{lesson.activeExamType ? ` · no ${lesson.activeExamType}` : ''}
           </span>
         )}
         {examLines.map((ln, idx) => (
-          <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: idx === 0 ? 6 : 2, color: '#475569', overflowWrap: 'break-word' }}>
+          <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: idx === 0 ? 6 : 4, color: '#475569', overflowWrap: 'break-word' }}>
             📅 {ln}
           </span>
         ))}
         {showExamInfo && !lesson.examAssessment && lesson.examDate === 'NO_EXAM' && (
-          <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 1 }}>no upcoming exam</span>
+          <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 6 }}>no upcoming exam</span>
         )}
         {lesson.type !== 'Trial' && lesson.notes && !isFaded && (
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
