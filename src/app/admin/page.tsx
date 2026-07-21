@@ -1,6 +1,14 @@
 'use client';
 
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import {
+  DndContext, closestCenter, useSensor, useSensors,
+  PointerSensor, TouchSensor, type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext, rectSortingStrategy, arrayMove, useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import PasswordInput from '@/components/PasswordInput';
 
@@ -73,6 +81,39 @@ export default function AdminHub() {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
 
+  // Drag-to-arrange launcher order (persisted per device).
+  const [order, setOrder] = useState<string[]>(loadHubOrder);
+  // Set true when a real drag occurs so the trailing click doesn't navigate.
+  const suppressClickRef = useRef(false);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 8 } }),
+  );
+
+  const launcherByHref = new Map(LAUNCHERS.map(l => [l.href, l]));
+  const orderedLaunchers = order.map(h => launcherByHref.get(h)).filter(Boolean) as Launcher[];
+
+  function handleDragEnd(e: DragEndEvent) {
+    // A drag just completed → cancel the synthetic click that follows drop.
+    suppressClickRef.current = true;
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    setOrder(prev => {
+      const from = prev.indexOf(String(active.id));
+      const to = prev.indexOf(String(over.id));
+      if (from < 0 || to < 0) return prev;
+      const next = arrayMove(prev, from, to);
+      saveHubOrder(next);
+      return next;
+    });
+  }
+
+  function resetHubOrder() {
+    const defaults = LAUNCHERS.map(l => l.href);
+    setOrder(defaults);
+    saveHubOrder(defaults);
+  }
+
   useEffect(() => {
     // Preferred: signed httpOnly session (lib/admin-session.ts). The helper
     // bootstrap-upgrades a legacy raw-password cookie to a session and expires
@@ -132,21 +173,36 @@ export default function AdminHub() {
         <div className="hub-header">
           <div className="hub-header-inner">
             <span className="hub-title">Admin</span>
+            <button className="hub-reset" onClick={resetHubOrder} title="Reset tile order">
+              ↺ Reset order
+            </button>
           </div>
         </div>
 
         <div className="hub-body">
 
-          {/* Launcher grid */}
-          <div className="launcher-grid">
-            {LAUNCHERS.map(({ emoji, title, sub, href, icon }) => (
-              <a key={href} href={href} className="launcher-card">
-                <div className="launcher-emoji">{icon ?? emoji}</div>
-                <div className="launcher-title">{title}</div>
-                <div className="launcher-sub">{sub}</div>
-              </a>
-            ))}
-          </div>
+          <div className="hub-hint">Drag tiles to rearrange · tap to open</div>
+
+          {/* Launcher grid — drag to rearrange (order saved on this device) */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={order} strategy={rectSortingStrategy}>
+              {/* Every fresh press clears the suppress flag, so a drag that emits
+                  no trailing click can never block the next genuine tap. */}
+              <div className="launcher-grid" onPointerDownCapture={() => { suppressClickRef.current = false; }}>
+                {orderedLaunchers.map(launcher => (
+                  <SortableLauncherCard
+                    key={launcher.href}
+                    launcher={launcher}
+                    suppressClickRef={suppressClickRef}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
 
         </div>
       </div>
@@ -156,7 +212,9 @@ export default function AdminHub() {
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 
-const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon?: ReactNode }[] = [
+type Launcher = { emoji: string; title: string; sub: string; href: string; icon?: ReactNode };
+
+const LAUNCHERS: Launcher[] = [
   { emoji: '📅', title: 'Schedule',  sub: 'Weekly lessons · drag to reschedule', href: '/admin/schedule'  },
   { emoji: '🤖', title: 'Bot',           sub: 'Metrics · analytics · API usage',     href: '/admin/bot'          },
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
@@ -190,6 +248,69 @@ const LAUNCHERS: { emoji: string; title: string; sub: string; href: string; icon
   { emoji: '🩺', title: 'Bank Health', sub: 'QB coverage · gaps · flagged questions', href: '/admin/bank-health' },
   { emoji: '🧭', title: 'Curriculum', sub: 'Strategy layer · dependency graph', href: '/admin/curriculum' },
 ];
+
+// ── Custom launcher order (drag-to-arrange, per-device) ─────────────────────────
+// Single admin, no server-side profile store, so the arrangement lives in
+// localStorage — same approach as the schedule view-mode preference. `href` is
+// the stable id (every launcher's is unique). The saved list is reconciled
+// against the live LAUNCHERS on every load so tiles added/removed in code still
+// appear (new ones append to the end) and stale hrefs drop out.
+const HUB_ORDER_KEY = 'admin_hub_order_v1';
+
+function loadHubOrder(): string[] {
+  const allHrefs = LAUNCHERS.map(l => l.href);
+  if (typeof window === 'undefined') return allHrefs;
+  try {
+    const saved = JSON.parse(localStorage.getItem(HUB_ORDER_KEY) || '[]');
+    if (!Array.isArray(saved)) return allHrefs;
+    const known = new Set(allHrefs);
+    const valid = saved.filter((h: unknown): h is string => typeof h === 'string' && known.has(h));
+    const missing = allHrefs.filter(h => !valid.includes(h)); // new launchers → append
+    return [...valid, ...missing];
+  } catch {
+    return allHrefs;
+  }
+}
+
+function saveHubOrder(order: string[]): void {
+  if (typeof window === 'undefined') return;
+  try { localStorage.setItem(HUB_ORDER_KEY, JSON.stringify(order)); } catch { /* best-effort */ }
+}
+
+// One draggable launcher tile. Module-level (not inline) so its useSortable hook
+// keeps a stable identity across the parent's re-renders. A plain tap still
+// navigates: the sensors only start a drag past an 8px move (mouse) or a 500ms
+// hold (touch); when a real drag happened, `suppressClickRef` cancels the
+// trailing synthetic click so we don't navigate on drop.
+function SortableLauncherCard({ launcher, suppressClickRef }: {
+  launcher: Launcher;
+  suppressClickRef: RefObject<boolean>;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: launcher.href });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.45 : 1,
+    zIndex: isDragging ? 20 : undefined,
+    touchAction: 'manipulation', // allow page scroll; TouchSensor delay gates drag
+  };
+  return (
+    <a
+      ref={setNodeRef}
+      style={style}
+      href={launcher.href}
+      className={`launcher-card${isDragging ? ' dragging' : ''}`}
+      onClick={e => { if (suppressClickRef.current) { e.preventDefault(); suppressClickRef.current = false; } }}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="launcher-emoji">{launcher.icon ?? launcher.emoji}</div>
+      <div className="launcher-title">{launcher.title}</div>
+      <div className="launcher-sub">{launcher.sub}</div>
+    </a>
+  );
+}
 
 // ── CSS ────────────────────────────────────────────────────────────────────────
 
@@ -276,6 +397,23 @@ const hubCSS = `
   font-size: 18px;
   font-weight: 700;
   color: #111827;
+}
+.hub-reset {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.hub-reset:hover { background: #f3f4f6; color: #374151; }
+.hub-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+  padding-left: 2px;
 }
 .hub-refresh {
   background: none;
@@ -432,6 +570,12 @@ const hubCSS = `
 }
 .launcher-card:active { background: #f9fafb; }
 @media (hover: hover) { .launcher-card:hover { background: #f9fafb; } }
+.launcher-card { cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.launcher-card.dragging {
+  cursor: grabbing;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.16);
+  border-color: #cbd5e1;
+}
 .launcher-emoji {
   font-size: 36px;
   margin-bottom: 12px;
