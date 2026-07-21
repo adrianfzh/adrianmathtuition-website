@@ -241,6 +241,36 @@ function addDays(d: Date, n: number): Date {
   return copy;
 }
 
+// ─── Stale-while-revalidate cache for the weekly schedule payload ──────────────
+// The schedule fetch is a two-stage Airtable round-trip behind a Vercel cold
+// start, so a cold load takes a beat. We stash each week's JSON in localStorage
+// and paint it INSTANTLY on the next visit, then revalidate in the background
+// and swap in fresh data. Repeat visits to a week feel instant; the freshest
+// data still arrives a moment later. Also gates the optimistic auth render below
+// (a cached payload means "this device was authed before").
+const SCHED_CACHE_PREFIX = 'schedule_cache_v1:';
+const SCHED_CACHE_MAX_AGE = 1000 * 60 * 60 * 12; // 12h — older than this we don't paint stale
+const SCHED_AUTH_HINT = 'schedule_was_authed';
+
+function readSchedCache(weekISO: string): ScheduleData | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(SCHED_CACHE_PREFIX + weekISO);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { at: number; data: ScheduleData };
+    if (!parsed?.data || Date.now() - parsed.at > SCHED_CACHE_MAX_AGE) return null;
+    return parsed.data;
+  } catch { return null; }
+}
+
+function writeSchedCache(weekISO: string, data: ScheduleData): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(SCHED_CACHE_PREFIX + weekISO, JSON.stringify({ at: Date.now(), data }));
+    localStorage.setItem(SCHED_AUTH_HINT, '1');
+  } catch { /* quota / private mode — cache is best-effort */ }
+}
+
 function formatWeekLabel(monday: Date): string {
   const sunday = addDays(monday, 6);
   const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
@@ -827,7 +857,15 @@ function DroppableLessonSlot({
 
 export default function SchedulePage() {
   const [password, setPassword] = useState('');
-  const [authed, setAuthed] = useState(false);
+  // Optimistic auth: if this device was authed before (it holds a cached
+  // schedule), paint the UI immediately and verify the session in the
+  // background. A genuinely-expired session makes the schedule fetch 401 →
+  // we flip back to the login screen. Avoids blocking first paint on a
+  // round-trip to /api/admin/session.
+  const [authed, setAuthed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem(SCHED_AUTH_HINT) === '1';
+  });
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   // Track actual viewport width so desktop grid is only mounted on desktop.
@@ -845,8 +883,15 @@ export default function SchedulePage() {
   const [activeDate, setActiveDate] = useState<Date>(() => {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d;
   });
-  const [data, setData] = useState<ScheduleData | null>(null);
+  // Seed from the cached current-week payload so the grid paints on first frame.
+  const [data, setData] = useState<ScheduleData | null>(() =>
+    readSchedCache(isoDate(getMondayOfWeek(new Date())))
+  );
   const [loading, setLoading] = useState(false);
+  // True while a background stale-while-revalidate refresh is in flight (cached
+  // data already on screen). Distinct from `loading`, which is the cold-load
+  // spinner shown only when there's nothing to display yet.
+  const [revalidating, setRevalidating] = useState(false);
   const [error, setError] = useState('');
   // (no lazy-load state — strip uses a fixed ±26-week range)
   // Roster-only day selection (0=Mon…6=Sun) — independent of the date strip
@@ -1099,8 +1144,18 @@ export default function SchedulePage() {
   // Check session on mount (upgrades a legacy plaintext cookie if present)
   useEffect(() => {
     setAuthLoading(true);
+    // Runs in PARALLEL with the optimistic schedule fetch (which starts as soon
+    // as the cached auth hint makes `authed` true), so the session round-trip is
+    // no longer on the critical path. Correct the optimistic bet either way:
+    // confirm on success, drop to login on a genuinely-expired session.
     ensureAdminSession()
-      .then(ok => { if (ok) setAuthed(true); })
+      .then(ok => {
+        if (ok) setAuthed(true);
+        else {
+          if (typeof window !== 'undefined') localStorage.removeItem(SCHED_AUTH_HINT);
+          setAuthed(false);
+        }
+      })
       .finally(() => setAuthLoading(false));
   }, []);
 
@@ -1120,17 +1175,37 @@ export default function SchedulePage() {
   }
 
   const fetchSchedule = useCallback(async (mon: Date) => {
-    setLoading(true);
+    const weekISO = isoDate(mon);
+    // Stale-while-revalidate: if we have a cached copy of THIS week, show it
+    // instantly and revalidate quietly (no full-screen "Loading…"). Otherwise
+    // this is a genuine cold load, so surface the spinner.
+    const cached = readSchedCache(weekISO);
+    if (cached) setData(cached);
+    else setData(null);
+    setLoading(!cached);
+    setRevalidating(!!cached);
     setError('');
     try {
-      const res = await fetch(`/api/admin-schedule?week=${isoDate(mon)}`);
+      const res = await fetch(`/api/admin-schedule?week=${weekISO}`);
+      // A 401 means the optimistic session bet was wrong (cookie expired) —
+      // drop the stale view and bounce to the login screen.
+      if (res.status === 401) {
+        localStorage.removeItem(SCHED_AUTH_HINT);
+        setAuthed(false);
+        setData(null);
+        return;
+      }
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const json = await res.json();
       setData(json);
+      writeSchedCache(weekISO, json);
     } catch (err: any) {
-      setError(err.message || 'Failed to load');
+      // Keep any cached view on transient errors; only show the error banner
+      // when we have nothing to display.
+      if (!cached) setError(err.message || 'Failed to load');
     } finally {
       setLoading(false);
+      setRevalidating(false);
     }
   }, []);
 
@@ -2600,7 +2675,7 @@ export default function SchedulePage() {
           <button className="nav-btn" onClick={prevWeek}>‹</button>
           <button className="week-label" onClick={thisWeek}>{formatWeekLabel(monday)}</button>
           <button className="nav-btn" onClick={nextWeek}>›</button>
-          <button className="nav-btn refresh-btn" onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))} disabled={loading} title="Refresh">↻</button>
+          <button className={`nav-btn refresh-btn${revalidating ? ' revalidating' : ''}`} onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))} disabled={loading} title={revalidating ? 'Updating…' : 'Refresh'}>↻</button>
           <button className="nav-btn" onClick={() => setBlockedModal({ start: '', end: '', reason: '', saving: false })} title="Away / blocked dates">🏖</button>
         </div>
       </div>
@@ -4087,6 +4162,8 @@ body {
 .nav-btn:hover { background: rgba(255,255,255,0.25); }
 .refresh-btn { font-size: 18px; }
 .refresh-btn:disabled { opacity: 0.5; cursor: default; }
+.refresh-btn.revalidating { animation: schedule-spin 0.8s linear infinite; }
+@keyframes schedule-spin { to { transform: rotate(360deg); } }
 .drag-handle {
   align-self: stretch;
   display: flex; align-items: center; justify-content: center;
