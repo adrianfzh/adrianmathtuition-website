@@ -572,13 +572,40 @@ export default function AdminPage() {
       return String(str).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
     }
 
+    // ── Stale-while-revalidate cache (mirrors /admin/schedule) ────────────────
+    // The API walks three full Airtable pagination scans, so a cold load takes
+    // a beat. Cache the invoice list and paint it instantly on the next visit.
+    const INV_CACHE_KEY = 'admin_invoices_cache_v1';
+    const INV_CACHE_MAX_AGE = 1000 * 60 * 60 * 12; // 12h — older we don't paint stale
+
+    function readInvCache(): any[] | null {
+      try {
+        const raw = localStorage.getItem(INV_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed?.data) || Date.now() - parsed.at > INV_CACHE_MAX_AGE) return null;
+        return parsed.data;
+      } catch { return null; }
+    }
+
+    function writeInvCache(list: any[]): void {
+      try { localStorage.setItem(INV_CACHE_KEY, JSON.stringify({ at: Date.now(), data: list })); }
+      catch { /* quota / private mode — cache is best-effort */ }
+    }
+
     async function init() {
       const overlay = document.getElementById('login-overlay');
+      // Session check and data load run in PARALLEL — the API enforces auth
+      // itself (401), and loadInvoices paints cached data instantly meanwhile.
+      // Previously the session round-trip serialized ahead of the fetch.
+      const loadP = loadInvoices();
       // Signed httpOnly session cookie (silently upgrades legacy plaintext cookies)
       const ok = await ensureAdminSession();
       if (ok) {
         if (overlay) overlay.style.display = 'none';
-        loadInvoices();
+        // If the parallel fetch raced ahead of a legacy-cookie session upgrade
+        // it saw a 401 — the session exists now, so one retry succeeds.
+        if ((await loadP) === 'unauthorized') loadInvoices();
         return;
       }
       if (overlay) overlay.style.display = 'flex';
@@ -627,24 +654,43 @@ export default function AdminPage() {
       fetch('/api/admin/session', { method: 'DELETE' }).finally(() => location.reload());
     }
 
-    async function loadInvoices() {
+    async function loadInvoices(): Promise<'ok' | 'unauthorized' | 'error'> {
       const errorBanner = document.getElementById('error-banner') as HTMLElement;
       const container = document.getElementById('invoices-container') as HTMLElement;
       errorBanner.style.display = 'none';
-      container.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:48px 0;font-size:14px;">Loading...</p>';
-
-      try {
-        const res = await fetch('/api/admin-invoices');
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        invoices = await res.json();
+      // SWR: paint the cached list on the first frame (no "Loading..." flash),
+      // then refresh from the API and re-render with fresh data below.
+      const cached = readInvCache();
+      if (cached) {
+        invoices = cached;
         populateMonthFilter();
         renderAll();
         updateBulkButtonLabels();
+      } else {
+        container.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:48px 0;font-size:14px;">Loading...</p>';
+      }
+
+      try {
+        const res = await fetch('/api/admin-invoices');
+        // Not our call to error-banner on: init() owns the login flow.
+        if (res.status === 401) return 'unauthorized';
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        invoices = await res.json();
+        writeInvCache(invoices);
+        populateMonthFilter();
+        renderAll();
+        updateBulkButtonLabels();
+        return 'ok';
       } catch (err: any) {
-        const errorMsg = document.getElementById('error-msg') as HTMLElement;
-        errorMsg.textContent = err.message;
-        errorBanner.style.display = 'flex';
-        container.innerHTML = '';
+        // Keep the cached view on transient errors; only surface the banner
+        // when there's nothing on screen.
+        if (!cached) {
+          const errorMsg = document.getElementById('error-msg') as HTMLElement;
+          errorMsg.textContent = err.message;
+          errorBanner.style.display = 'flex';
+          container.innerHTML = '';
+        }
+        return 'error';
       }
     }
 

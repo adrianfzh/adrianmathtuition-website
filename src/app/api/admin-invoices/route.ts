@@ -27,41 +27,46 @@ export async function GET(req: NextRequest) {
   // Zane/Xavier/Lucas from generate-invoices).
   // Include 'Paid' as a safety net so a stray non-standard status can never hide an invoice from the dashboard.
   const formula = encodeURIComponent(`OR({Status}='Draft',{Status}='Approved',{Status}='Sent',{Status}='Paid')`);
-  const invoicesData = await airtableRequestAll(
-    'Invoices',
-    `?filterByFormula=${formula}&sort[0][field]=Student&sort[0][direction]=asc`
-  );
-  const invoices = invoicesData.records || [];
 
-  // Fetch all students without an ID filter — the OR(RECORD_ID()=...) approach silently
-  // drops records when there are 50+ students, causing blank names on new students.
-  let studentsById: Record<string, any> = {};
-  const studentsData = await airtableRequestAll(
-    'Students',
-    `?fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Payment Alias&fields[]=Level&fields[]=Subjects`
-  );
-  studentsById = Object.fromEntries(studentsData.records.map((r: any) => [r.id, r.fields]));
-
-  // Latest archived "sent PDF" per invoice (from EmailLog) — lets the invoice
-  // card link the exact PDF the parent received, even after an amendment
-  // overwrote the working PDF. Can't filter linked records by ID in Airtable,
-  // so fetch the (small) set of logs that carry an archived PDF and match in JS.
-  const sentPdfByInvoice: Record<string, { url: string; sentAt: string }> = {};
-  try {
-    const logs = await airtableRequestAll(
+  // The three datasets are independent — fetch them in ONE parallel burst.
+  // They used to run sequentially, stacking three full pagination walks
+  // (invoices incl. every Paid one, all students, all archived-PDF logs)
+  // on the critical path of every dashboard load.
+  const [invoicesData, studentsData, emailLogData] = await Promise.all([
+    airtableRequestAll(
+      'Invoices',
+      `?filterByFormula=${formula}&sort[0][field]=Student&sort[0][direction]=asc`
+    ),
+    // Fetch all students without an ID filter — the OR(RECORD_ID()=...) approach silently
+    // drops records when there are 50+ students, causing blank names on new students.
+    airtableRequestAll(
+      'Students',
+      `?fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Payment Alias&fields[]=Level&fields[]=Subjects`
+    ),
+    // Latest archived "sent PDF" per invoice (from EmailLog) — lets the invoice
+    // card link the exact PDF the parent received, even after an amendment
+    // overwrote the working PDF. Can't filter linked records by ID in Airtable,
+    // so fetch the (small) set of logs that carry an archived PDF and match in JS.
+    airtableRequestAll(
       'EmailLog',
       `?filterByFormula=${encodeURIComponent(`NOT({PDF URL}='')`)}&fields[]=Related Invoice&fields[]=PDF URL&fields[]=Sent At`
-    );
-    for (const lr of logs.records || []) {
-      const invId = lr.fields['Related Invoice']?.[0];
-      const url = lr.fields['PDF URL'];
-      const sentAt = (lr.fields['Sent At'] || '') as string;
-      if (!invId || !url) continue;
-      const cur = sentPdfByInvoice[invId];
-      if (!cur || sentAt > cur.sentAt) sentPdfByInvoice[invId] = { url, sentAt };
-    }
-  } catch (e: any) {
-    console.error('[admin-invoices] sent-PDF join failed (non-fatal):', e?.message);
+    ).catch((e: any) => {
+      console.error('[admin-invoices] sent-PDF join failed (non-fatal):', e?.message);
+      return { records: [] as any[] };
+    }),
+  ]);
+  const invoices = invoicesData.records || [];
+  const studentsById: Record<string, any> =
+    Object.fromEntries(studentsData.records.map((r: any) => [r.id, r.fields]));
+
+  const sentPdfByInvoice: Record<string, { url: string; sentAt: string }> = {};
+  for (const lr of emailLogData.records || []) {
+    const invId = lr.fields['Related Invoice']?.[0];
+    const url = lr.fields['PDF URL'];
+    const sentAt = (lr.fields['Sent At'] || '') as string;
+    if (!invId || !url) continue;
+    const cur = sentPdfByInvoice[invId];
+    if (!cur || sentAt > cur.sentAt) sentPdfByInvoice[invId] = { url, sentAt };
   }
 
   const result = invoices.map((r: any) => {
