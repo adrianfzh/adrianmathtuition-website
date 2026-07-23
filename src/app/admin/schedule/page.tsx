@@ -50,6 +50,8 @@ interface Lesson {
   revisionSubject?: string;
   revisionTime?: string;
   revisionMakeup?: boolean;
+  /** Who booked it — 'Web admin' / 'Bot (parent)' / 'Bot (student)' / 'Bot (admin)' / 'WhatsApp (…)'. Null on pre-attribution records. */
+  bookedVia?: string | null;
 }
 
 interface Student {
@@ -3206,6 +3208,13 @@ export default function SchedulePage() {
             <div className="action-sheet-header">
               <div className="action-sheet-title">{actionSheet.lesson.studentName}</div>
               <div className="action-sheet-sub">{formatDateSlot(actionSheet.date, actionSheet.slotId)}</div>
+              {/* Actor attribution — who booked this lesson (null on records
+                  created before the 'Booked Via' field existed). */}
+              {actionSheet.lesson.bookedVia && (
+                <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>
+                  ✍️ Booked via <span style={{ fontWeight: 600, color: '#475569' }}>{actionSheet.lesson.bookedVia}</span>
+                </div>
+              )}
             </div>
             {actionSheet.lesson.studentId && (
               <button className="action-btn" style={{ color: '#1d4ed8', fontWeight: 700 }} onClick={() => {

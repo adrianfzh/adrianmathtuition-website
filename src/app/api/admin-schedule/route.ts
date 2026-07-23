@@ -75,10 +75,14 @@ export async function GET(req: NextRequest) {
     // Overlap is filtered in JS below to sidestep Airtable's date-coercion gotcha.
     cachedScheduleStatic('enrollments', () =>
       fetchAll('Enrollments', `?fields[]=Student&fields[]=Slot&fields[]=Start Date&fields[]=End Date&fields[]=Status`)),
-    fetchAll(
-      'Lessons',
-      `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Progress Logged&fields[]=Is Revision Makeup`
-    ),
+    (async () => {
+      const baseQuery = `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Progress Logged&fields[]=Is Revision Makeup`;
+      // 'Booked Via' may not exist in Airtable yet — an unknown name in
+      // fields[] 422s the whole request, so fall back without it rather than
+      // break the schedule.
+      try { return await fetchAll('Lessons', baseQuery + `&fields[]=Booked Via`); }
+      catch { return fetchAll('Lessons', baseQuery); }
+    })(),
     airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`).catch(() => ({ records: [] })),
     cachedScheduleStatic('topic-timeline', () =>
       fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`).catch(() => [] as any[])),
@@ -302,6 +306,10 @@ export async function GET(req: NextRequest) {
       // lesson at a regular Sec slot) — flagged so the chip can say so.
       revisionMakeup: r.fields['Is Revision Makeup'] === true || /revision makeup/i.test(rawNote),
       progressLogged: r.fields['Progress Logged'] === true,
+      // Actor attribution — who booked this lesson ('Web admin' / 'Bot (parent)'
+      // / 'Bot (student)' / 'Bot (admin)' / 'WhatsApp (…)'); null on records
+      // created before the field existed. Shown in the chip action sheet.
+      bookedVia: (r.fields['Booked Via'] as string) || null,
     };
   });
 
