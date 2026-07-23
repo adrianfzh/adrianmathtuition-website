@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import { findDoubleBookedIds } from '@/lib/double-booking';
 import { getExamTopicsForSubject } from '@/lib/canonical-topics';
 import AdminAIChat from '@/components/AdminAIChat';
 import LessonModal from '@/components/LessonModal';
@@ -176,6 +177,9 @@ interface EnrichedLesson extends Lesson {
   examEntries?: ExamEntry[];
   activeExamType?: string | null;
   currentTopic?: string | null;
+  // Same student occupies this (date, slot) 2+ times — always a data error;
+  // the chip shows a red "double-booked" badge (lib/double-booking.ts).
+  doubleBooked?: boolean;
 }
 
 // LessonModal types (ExamRecord/LessonContextData) now live in the shared
@@ -722,6 +726,17 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             no reschedule yet
           </span>
         )}
+        {/* Double-booked — this student has 2+ lessons in this same (date, slot).
+            Physically impossible, always a data error: delete or move one of
+            the flagged chips. New bookings are blocked server-side; this badge
+            surfaces pre-existing ones. */}
+        {lesson.doubleBooked && (
+          <span
+            title="This student has 2 or more lessons in this same slot & date — delete or move one"
+            style={{ display: 'inline-block', fontSize: 10, marginTop: 3, fontWeight: 700, color: '#b91c1c', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 4, padding: '1px 6px', lineHeight: 1.4 }}>
+            ⚠ double-booked
+          </span>
+        )}
         {/* Exam-season summary — what to expect for this student. PW/AA, or a
             compact per-subject line (type · subject · date · topics). Only
             appears during an active exam season. */}
@@ -1102,6 +1117,8 @@ export default function SchedulePage() {
 
   const enrichedLessons = useMemo<EnrichedLesson[]>(() => {
     if (!data) return [];
+    // Same student occupying the same (date, slot) twice — flag both chips.
+    const doubleBookedIds = findDoubleBookedIds(data.lessons);
     return data.lessons.map(lesson => {
       const student = lesson.studentId ? data.students[lesson.studentId] : null;
       const studentName = student?.name || (lesson.type === 'Trial' ? getTrialName(lesson.notes) : lesson.type === 'Rescheduled' ? '(no student)' : 'Unknown');
@@ -1114,7 +1131,7 @@ export default function SchedulePage() {
         ? ((data.currentTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
         : null;
       const examEntries = lesson.studentId ? (data.examEntriesByStudent?.[lesson.studentId] ?? []) : [];
-      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic };
+      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic, doubleBooked: doubleBookedIds.has(lesson.id) };
     });
   }, [data]);
 
@@ -1762,6 +1779,12 @@ export default function SchedulePage() {
           body: JSON.stringify({ lessonId: lesson.id, newDate: toDate, newSlotId: toSlotId, notes: notes || undefined }),
         });
         let json = await res.json();
+        if (res.status === 409 && json.doubleBooked) {
+          // Same student already occupies that (date, slot) — physically
+          // impossible, so there is NO force override. Surface it and stop.
+          setModalError(`${lesson.studentName} already has a lesson in that slot on that date`);
+          return;
+        }
         if (res.status === 409) {
           // Admin can override a full slot / an away date — confirm, then retry with force.
           const prompt = json.blocked
@@ -1940,6 +1963,11 @@ export default function SchedulePage() {
           body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || defaultNote }),
         });
         let json = await res.json();
+        if (res.status === 409 && json.doubleBooked) {
+          // Same student already occupies that (date, slot) — no force override.
+          setModalError('This student already has a lesson in that slot on that date');
+          return;
+        }
         if (res.status === 409) {
           // Admin can override a full slot / an away date — confirm, then retry with force.
           const prompt = json.blocked
@@ -1990,6 +2018,11 @@ export default function SchedulePage() {
         body: JSON.stringify(body),
       });
       let json = await res.json();
+      if (res.status === 409 && json.doubleBooked) {
+        // Same student already occupies that (date, slot) — no force override.
+        setModalError('This student already has a lesson in that slot on that date');
+        return;
+      }
       if (res.status === 409) {
         if (json.blocked) {
           // Away date — confirm, then retry with force (slot-full stays a hard stop here).

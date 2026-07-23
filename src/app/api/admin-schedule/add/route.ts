@@ -3,6 +3,7 @@ import { airtableRequest } from '@/lib/airtable';
 import {
   verifyAdminAuth,
   countLessonsInSlot,
+  findStudentSlotConflict,
 } from '@/lib/schedule-helpers';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
@@ -82,6 +83,24 @@ export async function POST(req: NextRequest) {
       if (currentCount >= makeupCapacity) {
         return NextResponse.json(
           { error: 'Slot full', currentCount, capacity: makeupCapacity },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Double-booking guard (all typed lessons with a student — Trial has none):
+    // the same student twice in one (date, slot) is physically impossible.
+    // HARD stop, not bypassed by `force` (that's for away-date overrides).
+    if (studentId) {
+      const conflict = await findStudentSlotConflict(studentId, date, slotId);
+      if (conflict) {
+        return NextResponse.json(
+          {
+            error: 'This student already has a lesson in that slot on that date — a student can only attend a slot once',
+            doubleBooked: true,
+            conflictLessonId: conflict.id,
+            conflictLessonType: conflict.type,
+          },
           { status: 409 }
         );
       }

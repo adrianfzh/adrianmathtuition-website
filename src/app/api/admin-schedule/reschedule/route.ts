@@ -7,6 +7,7 @@ import { airtableRequest } from '@/lib/airtable';
 import {
   verifyAdminAuth,
   countLessonsInSlot,
+  findStudentSlotConflict,
 } from '@/lib/schedule-helpers';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
@@ -87,6 +88,23 @@ export async function POST(req: NextRequest) {
     if (!force && currentCount >= makeupCapacity) {
       return NextResponse.json(
         { error: 'Slot full', currentCount, capacity: makeupCapacity },
+        { status: 409 }
+      );
+    }
+
+    // Double-booking guard — the same student twice in one (date, slot) is
+    // physically impossible, so this is a HARD stop that even `force` cannot
+    // bypass (force covers capacity/away overrides, not data errors). This is
+    // exactly how Adele ended up with two lessons in Sun 26 Jul 9-11am.
+    const conflict = await findStudentSlotConflict(origStudentId, newDate, newSlotId);
+    if (conflict) {
+      return NextResponse.json(
+        {
+          error: 'This student already has a lesson in that slot on that date — a student can only attend a slot once',
+          doubleBooked: true,
+          conflictLessonId: conflict.id,
+          conflictLessonType: conflict.type,
+        },
         { status: 409 }
       );
     }

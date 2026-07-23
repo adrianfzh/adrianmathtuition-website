@@ -71,3 +71,28 @@ export async function countLessonsInSlot(slotId: string, date: string): Promise<
   return (await countLessonsOnDateBySlot(date))[slotId] ?? 0;
 }
 
+// Double-booking guard: does this student already OCCUPY this (date, slot)?
+// Occupying = not Cancelled / Absent / Rescheduled-away (same rule as
+// lib/double-booking.ts). Same linked-record gotcha as above — filter by
+// Date + Status in Airtable, match the student/slot record IDs in JS.
+// Returns the conflicting lesson or null. Every route that CREATES a lesson
+// for a student at a slot must call this and 409 on a hit — the same student
+// twice in one slot is physically impossible (Adele, Sun 26 Jul 2026).
+export async function findStudentSlotConflict(
+  studentId: string, date: string, slotId: string
+): Promise<{ id: string; type: string } | null> {
+  const formula = encodeURIComponent(
+    `AND(${onDateFormula(date)},{Status}!='Cancelled',{Status}!='Absent',{Status}!='Rescheduled')`
+  );
+  const data = await airtableRequestAll(
+    'Lessons',
+    `?filterByFormula=${formula}&fields[]=Slot&fields[]=Student&fields[]=Type`
+  );
+  for (const r of data.records) {
+    if (r.fields['Student']?.[0] === studentId && r.fields['Slot']?.[0] === slotId) {
+      return { id: r.id, type: (r.fields['Type'] as string) || '' };
+    }
+  }
+  return null;
+}
+

@@ -484,6 +484,17 @@ Opens as an overlay when the student name is tapped on a non-Trial lesson chip. 
 ### Error conventions
 
 - 401 auth, 400 bad body, 403 outside edit window, 409 slot full, 500 Airtable errors
+- **409 double-booked (`doubleBooked: true`)** — the same student occupying the same
+  (date, slot) twice is physically impossible, so every lesson-creating route
+  (`reschedule`, `add`, `admin-revision-attendance` makeup) calls
+  `findStudentSlotConflict()` (`lib/schedule-helpers.ts`) and hard-409s on a hit.
+  **`force` does NOT bypass it** (force covers capacity/away overrides only) and the
+  client must not offer the "book anyway" retry for it. Occupancy rule (not
+  Cancelled/Absent/Rescheduled) is the pure `occupiesSlot()` in `lib/double-booking.ts`
+  (unit-tested); `/admin/schedule` uses its `findDoubleBookedIds()` to badge any
+  pre-existing duplicates with a red "⚠ double-booked" chip pill. Added after Adele
+  (26 Jul 2026) ended up with a thrice-moved lesson AND an unrelated makeup in the
+  same Sun 9–11am slot. Any NEW lesson-creation path must call the same guard.
 - Notification failures are logged but never fail the parent request
 
 ### UI patterns

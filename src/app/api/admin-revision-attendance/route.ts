@@ -8,7 +8,7 @@
 // the fixed sprint date schedule (EM dates ⊂ AM dates, so EM+AM students have
 // two records on shared dates — assigned deterministically by record id).
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAdminAuth, findStudentSlotConflict } from '@/lib/schedule-helpers';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 
 export const runtime = 'nodejs';
@@ -75,6 +75,19 @@ export async function POST(req: NextRequest) {
       const { lessonId, studentId, date, slotId } = body;
       if (!lessonId || !studentId || !date || !slotId) {
         return NextResponse.json({ error: 'lessonId, studentId, date, slotId required' }, { status: 400 });
+      }
+      // 0. Double-booking guard — same student twice in one (date, slot) is
+      // physically impossible; hard 409, same rule as reschedule/add.
+      const conflict = await findStudentSlotConflict(studentId, date, slotId);
+      if (conflict) {
+        return NextResponse.json(
+          {
+            error: 'This student already has a lesson in that slot on that date — a student can only attend a slot once',
+            doubleBooked: true,
+            conflictLessonId: conflict.id,
+          },
+          { status: 409 }
+        );
       }
       // 1. Create the makeup lesson at the chosen regular slot
       const makeup = await airtableRequest('Lessons', '', {
