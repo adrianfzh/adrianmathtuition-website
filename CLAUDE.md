@@ -495,6 +495,15 @@ Opens as an overlay when the student name is tapped on a non-Trial lesson chip. 
   pre-existing duplicates with a red "⚠ double-booked" chip pill. Added after Adele
   (26 Jul 2026) ended up with a thrice-moved lesson AND an unrelated makeup in the
   same Sun 9–11am slot. Any NEW lesson-creation path must call the same guard.
+- **`Booked Via` (Lessons, single select — actor attribution, added 2026-07-23)** —
+  every lesson-creating write stamps WHO booked it: website routes write `Web admin`;
+  the bot (repo `adrianmath-telegram-bot`, `lib/reschedule.js` `bookReplacementLesson`
+  + the Additional-lesson creations) writes `Bot (parent)` / `Bot (student)` /
+  `Bot (admin)` / `WhatsApp (parent|student)`. Write with `typecast: true` and drop
+  the field gracefully on `UNKNOWN_FIELD_NAME` — a booking must never fail on
+  metadata. Shown in the /admin/schedule chip action sheet ("✍️ Booked via …");
+  records created before the field existed are unstamped. **Any new lesson-creation
+  path must stamp it.**
 - Notification failures are logged but never fail the parent request
 
 ### UI patterns
