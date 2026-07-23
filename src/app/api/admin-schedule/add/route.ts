@@ -156,12 +156,24 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // 3. Create lesson
-    const newLesson = await airtableRequest('Lessons', '', {
-      method: 'POST',
-      // typecast so the new 'Ad-hoc' Type select option is created on first write.
-      body: JSON.stringify({ fields: lessonFields, ...(type === 'Ad-hoc' ? { typecast: true } : {}) }),
-    });
+    // 3. Create lesson — always typecast (creates the 'Ad-hoc' Type option and
+    // 'Booked Via' select options on first write). 'Booked Via' is the actor
+    // attribution shared with the bot; dropped if the field doesn't exist yet.
+    lessonFields['Booked Via'] = 'Web admin';
+    let newLesson;
+    try {
+      newLesson = await airtableRequest('Lessons', '', {
+        method: 'POST',
+        body: JSON.stringify({ fields: lessonFields, typecast: true }),
+      });
+    } catch (e: any) {
+      if (!/UNKNOWN_FIELD_NAME|Booked Via/i.test(e?.message || '')) throw e;
+      delete lessonFields['Booked Via'];
+      newLesson = await airtableRequest('Lessons', '', {
+        method: 'POST',
+        body: JSON.stringify({ fields: lessonFields, typecast: true }),
+      });
+    }
     const lessonId: string = newLesson.id;
 
     // 4. For Makeup with linkedLessonId, back-link the absent lesson

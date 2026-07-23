@@ -139,15 +139,26 @@ export async function POST(req: NextRequest) {
       // owned by the month it was originally scheduled/billed in.
       'Billing Month': origFields['Billing Month'] || billingMonthOf(origDate),
       'Is Makeup': isMakeup,
+      // Actor attribution — the bot writes 'Bot (parent)'/'Bot (student)'/
+      // 'Bot (admin)' here, so every reschedule records WHO made it.
+      'Booked Via': 'Web admin',
     };
     let newLesson;
+    // typecast lets new 'Booked Via' select options auto-create; optional
+    // fields are dropped one at a time if Airtable doesn't have them yet.
+    const createLesson = () => airtableRequest('Lessons', '', { method: 'POST', body: JSON.stringify({ fields: newFields, typecast: true }) });
     try {
-      newLesson = await airtableRequest('Lessons', '', { method: 'POST', body: JSON.stringify({ fields: newFields }) });
+      newLesson = await createLesson();
     } catch (e: any) {
-      if (/UNKNOWN_FIELD_NAME|Is Makeup/i.test(e?.message || '')) {
+      if (!/UNKNOWN_FIELD_NAME|Is Makeup|Booked Via/i.test(e?.message || '')) throw e;
+      delete newFields['Booked Via'];
+      try {
+        newLesson = await createLesson();
+      } catch (e2: any) {
+        if (!/UNKNOWN_FIELD_NAME|Is Makeup/i.test(e2?.message || '')) throw e2;
         delete newFields['Is Makeup'];
-        newLesson = await airtableRequest('Lessons', '', { method: 'POST', body: JSON.stringify({ fields: newFields }) });
-      } else { throw e; }
+        newLesson = await createLesson();
+      }
     }
     const newLessonId: string = newLesson.id;
 

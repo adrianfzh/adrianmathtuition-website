@@ -89,15 +89,28 @@ export async function POST(req: NextRequest) {
           { status: 409 }
         );
       }
-      // 1. Create the makeup lesson at the chosen regular slot
-      const makeup = await airtableRequest('Lessons', '', {
-        method: 'POST',
-        body: JSON.stringify({ fields: {
-          Student: [studentId], Slot: [slotId], Date: date,
-          Type: 'Revision Makeup', Status: 'Scheduled', Notes: 'Revision makeup',
-          'Is Revision Makeup': true,
-        }}),
-      });
+      // 1. Create the makeup lesson at the chosen regular slot. 'Booked Via' is
+      // the shared actor-attribution field (dropped if it doesn't exist yet).
+      const makeupFields: Record<string, any> = {
+        Student: [studentId], Slot: [slotId], Date: date,
+        Type: 'Revision Makeup', Status: 'Scheduled', Notes: 'Revision makeup',
+        'Is Revision Makeup': true,
+        'Booked Via': 'Web admin',
+      };
+      let makeup;
+      try {
+        makeup = await airtableRequest('Lessons', '', {
+          method: 'POST',
+          body: JSON.stringify({ fields: makeupFields, typecast: true }),
+        });
+      } catch (e: any) {
+        if (!/UNKNOWN_FIELD_NAME|Booked Via/i.test(e?.message || '')) throw e;
+        delete makeupFields['Booked Via'];
+        makeup = await airtableRequest('Lessons', '', {
+          method: 'POST',
+          body: JSON.stringify({ fields: makeupFields, typecast: true }),
+        });
+      }
       // 2. Mark the revision lesson Rescheduled (NOT Absent) + link to the makeup.
       //    Consistent with regular reschedules — its real outcome is read from the
       //    makeup's status, so it never shows a misleading red "Absent" once made up.
