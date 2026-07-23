@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { generateRegularLessonsForSlot, DEFAULT_WEEKS_AHEAD } from '@/lib/lesson-generation';
+import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -58,6 +59,9 @@ export async function POST(req: NextRequest) {
         ...(rateType ? { 'Rate Type': rateType } : {}),
       }}),
     });
+    // Roster derives from Enrollments — drop the 60s schedule-statics cache
+    // so the page's follow-up refetch shows the new slot immediately.
+    invalidateScheduleStatics();
 
     // 2. Generate the recurring lessons
     const { created, dates } = await generateRegularLessonsForSlot({

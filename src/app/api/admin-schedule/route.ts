@@ -4,6 +4,7 @@ import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { resolveActiveExamType, ExamType } from '@/lib/exam-season';
 import { subjectsFromRevisionLineItems, assignRevisionSessions } from '@/lib/revision-sessions';
 import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
+import { cachedScheduleStatic } from '@/lib/schedule-static-cache';
 
 export const runtime = 'nodejs';
 
@@ -58,20 +59,29 @@ export async function GET(req: NextRequest) {
   // Fetch slots, enrollments, and lessons in parallel
   // ── Stage 1: everything independent, in one parallel burst ──────────────────
   // (settings + topic-timeline don't depend on the week's data at all)
+  // Slots / Enrollments / Topic Timeline are week-independent and change
+  // rarely, so they're served through a 60s in-memory cache (see
+  // lib/schedule-static-cache.ts — enrollment-writing routes invalidate it).
+  // The unfiltered Enrollments scan in particular pages through the ENTIRE
+  // enrollment history and is the slowest part of week navigation.
+  // Lessons + Settings are always fetched live.
   const [slotsData, enrollmentsData, lessonsData, settingsData, tlRecords] = await Promise.all([
-    fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`{Is Active}=1`)}`),
+    cachedScheduleStatic('slots', () =>
+      fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`{Is Active}=1`)}`)),
     // ALL enrollments (not just Active) with their tenure dates, so the Roster
     // can show who was enrolled during the VIEWED week, not just who's enrolled
     // now. Slot switches END the old enrollment + CREATE a new one (tenure is
     // preserved, never edited in place), so a past week's roster is derivable.
     // Overlap is filtered in JS below to sidestep Airtable's date-coercion gotcha.
-    fetchAll('Enrollments', `?fields[]=Student&fields[]=Slot&fields[]=Start Date&fields[]=End Date&fields[]=Status`),
+    cachedScheduleStatic('enrollments', () =>
+      fetchAll('Enrollments', `?fields[]=Student&fields[]=Slot&fields[]=Start Date&fields[]=End Date&fields[]=Status`)),
     fetchAll(
       'Lessons',
       `?filterByFormula=${encodeURIComponent(lessonsFilter)}&sort[0][field]=Date&sort[0][direction]=asc&fields[]=Date&fields[]=Slot&fields[]=Student&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Progress Logged&fields[]=Is Revision Makeup`
     ),
     airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`).catch(() => ({ records: [] })),
-    fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`).catch(() => [] as any[]),
+    cachedScheduleStatic('topic-timeline', () =>
+      fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`).catch(() => [] as any[])),
   ]);
 
   // Resolve exam season immediately (needed to include the exams fetch in stage 2).

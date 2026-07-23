@@ -173,6 +173,38 @@ function toTelegramText(raw: string): string {
   return s.replace(/\n{3,}/g,'\n\n').trim();
 }
 
+// ── Stale-while-revalidate cache (mirrors /admin/schedule) ────────────────────
+// Every load is 5 proxied round-trips to the Fly.io bot, which may be waking
+// from a cold start — several seconds on the first visit after idle. Cache the
+// combined payload per date-range in localStorage, paint it instantly, then
+// refresh in the background. Questions are cached RAW (pre-computeFlags);
+// flags are re-derived on read since they're computed, not fetched.
+const COCKPIT_CACHE_PREFIX = 'bot_analytics_cache_v1:';
+const COCKPIT_CACHE_MAX_AGE = 1000 * 60 * 60 * 6; // 6h — older than this we don't paint stale
+
+type CockpitCacheData = {
+  questions: Question[]; batches: any[]; rates: any[];
+  trend: any[]; suggestions: any[]; lintRuns: any[];
+};
+
+function readCockpitCache(days: number): CockpitCacheData | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(COCKPIT_CACHE_PREFIX + days);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { at: number; data: CockpitCacheData };
+    if (!parsed?.data || Date.now() - parsed.at > COCKPIT_CACHE_MAX_AGE) return null;
+    return parsed.data;
+  } catch { return null; }
+}
+
+function writeCockpitCache(days: number, data: CockpitCacheData): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(COCKPIT_CACHE_PREFIX + days, JSON.stringify({ at: Date.now(), data }));
+  } catch { /* quota / private mode — cache is best-effort */ }
+}
+
 export default function BotAnalytics() {
   const [questions, setQuestions]   = useState<Question[]>([]);
   const [batches, setBatches]       = useState<{ batchId: string; clusters: Cluster[] }[]>([]);
@@ -211,6 +243,10 @@ export default function BotAnalytics() {
     return `since=${encodeURIComponent(midnightSGT(d - 1))}`; // last N days
   }
   const [loading, setLoading]       = useState(true);
+  // Background refresh in flight while cached data is on screen (SWR).
+  const [revalidating, setRevalidating] = useState(false);
+  // One-shot guard for the 401→session-upgraded→retry path in load().
+  const retriedRef = useRef(false);
   const [qTab, setQTab]             = useState<'flagged' | 'all' | 'mine'>('flagged');
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
   const [selected, setSelected]     = useState<Question | null>(null);
@@ -243,25 +279,66 @@ export default function BotAnalytics() {
     if (typeof window !== 'undefined' && window.location.hash === '#lint') setLintExpanded(true);
   }, []);
   const load = useCallback(() => {
-    setLoading(true);
-    ensureAdminSession().then(ok => {
-      if (!ok) { window.location.href = '/admin'; return; }
-      Promise.all([
-        fetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`).then(r => r.json()),
-        fetch(`/api/admin/cockpit/synthesis-batches`).then(r => r.json()),
-        fetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`).then(r => r.json()),
-        fetch(`/api/admin/cockpit/pending-suggestions`).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
-        fetch(`/api/admin/cockpit/lint-reports?limit=12`).then(r => r.ok ? r.json() : { runs: [] }).catch(() => ({ runs: [] })),
-      ]).then(([qd, bd, rd, sd, ld]) => {
-        setQuestions(computeFlags(qd.questions || []));
-        setBatches(bd.batches || []);
-        setRates(rd.rates || []);
-        setTrend(rd.trend || []);
-        setPendingSugs(sd.suggestions || []);
-        setLintRuns(ld.runs || []);
-        setLintRunIdx(0);
-        setLoading(false);
-      }).catch(() => setLoading(false));
+    // Stale-while-revalidate: paint this range's cached payload on the first
+    // frame, then refresh quietly. Cold load (nothing cached) shows "Loading…".
+    const cached = readCockpitCache(days);
+    if (cached) {
+      setQuestions(computeFlags(cached.questions || []));
+      setBatches(cached.batches || []);
+      setRates(cached.rates || []);
+      setTrend(cached.trend || []);
+      setPendingSugs(cached.suggestions || []);
+      setLintRuns(cached.lintRuns || []);
+      setLintRunIdx(0);
+      setLoading(false);
+      setRevalidating(true);
+    } else {
+      setLoading(true);
+    }
+    setPendingSugsError(false);
+    // The session check now runs in PARALLEL with the data fetches — the
+    // cockpit proxy enforces auth itself (401s) so nothing waits on it.
+    // Previously this was a serial round-trip ahead of all five fetches.
+    const sessionOk = ensureAdminSession();
+    const authFetch = async (url: string) => {
+      const r = await fetch(url);
+      if (r.status === 401) throw new Error('unauthorized');
+      return r;
+    };
+    Promise.all([
+      authFetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`).then(r => r.json()),
+      authFetch(`/api/admin/cockpit/synthesis-batches`).then(r => r.json()),
+      authFetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`).then(r => r.json()),
+      fetch(`/api/admin/cockpit/pending-suggestions`).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
+      fetch(`/api/admin/cockpit/lint-reports?limit=12`).then(r => r.ok ? r.json() : { runs: [] }).catch(() => ({ runs: [] })),
+    ]).then(([qd, bd, rd, sd, ld]) => {
+      const payload: CockpitCacheData = {
+        questions: qd.questions || [], batches: bd.batches || [],
+        rates: rd.rates || [], trend: rd.trend || [],
+        suggestions: sd.suggestions || [], lintRuns: ld.runs || [],
+      };
+      setQuestions(computeFlags(payload.questions));
+      setBatches(payload.batches);
+      setRates(payload.rates);
+      setTrend(payload.trend);
+      setPendingSugs(payload.suggestions);
+      setLintRuns(payload.lintRuns);
+      setLintRunIdx(0);
+      setLoading(false);
+      setRevalidating(false);
+      retriedRef.current = false;
+      writeCockpitCache(days, payload);
+    }).catch(async (err) => {
+      setLoading(false);
+      setRevalidating(false);
+      if (err?.message === 'unauthorized') {
+        // The parallel fetches may have raced ahead of a legacy-cookie session
+        // upgrade. If the session check resolved authed, retry ONCE (guarded so
+        // a genuinely broken session can't loop); otherwise go log in.
+        const ok = await sessionOk;
+        if (ok && !retriedRef.current) { retriedRef.current = true; load(); }
+        else window.location.href = '/admin';
+      }
     });
   }, [days]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -445,7 +522,7 @@ export default function BotAnalytics() {
           style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 8px', fontSize: 13 }}>
           {[{d:1,label:'Today'},{d:2,label:'Yesterday'},{d:3,label:'Last 3 days'},{d:7,label:'Last 7 days'}].map(({d,label}) => <option key={d} value={d}>{label}</option>)}
         </select>
-        <button onClick={load} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 13 }}>↻ Refresh</button>
+        <button onClick={load} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 13, opacity: revalidating ? 0.6 : 1 }}>{revalidating ? '↻ Updating…' : '↻ Refresh'}</button>
         <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>
           {allVisible.length} questions · {flagged.length} flagged · {totalClusters} clusters
         </span>

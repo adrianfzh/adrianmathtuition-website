@@ -8,6 +8,7 @@ import { buildPreviewInvoiceUrl } from '@/lib/invoice-preview-url';
 import { sendWelcomeEmail } from '@/lib/welcome-email';
 import { displaySpanMonth } from '@/lib/invoice-month';
 import { firstInvoiceLessonDates } from '@/lib/billing-math';
+import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -250,6 +251,9 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({ fields: enrollmentFields }),
       });
       enrollmentId = enrollmentRecord.id;
+      // New enrollment — drop the admin-schedule statics cache so the Roster
+      // shows the new student without waiting out the 60s TTL.
+      invalidateScheduleStatics();
     } catch (err) {
       console.error('[signup] Enrollment creation failed:', (err as Error).message);
       return NextResponse.json({

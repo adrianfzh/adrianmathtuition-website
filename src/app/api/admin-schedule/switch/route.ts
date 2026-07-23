@@ -16,6 +16,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { generateRegularLessonsForSlot, DEFAULT_WEEKS_AHEAD } from '@/lib/lesson-generation';
 import { computeSwitchProration } from '@/lib/switch-proration';
+import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -173,6 +174,9 @@ export async function POST(req: NextRequest) {
         }}),
       });
       results.enrollmentUpdated = true;
+      // Roster derives from Enrollments — drop the 60s schedule-statics cache
+      // so the page's follow-up refetch shows the new slot immediately.
+      invalidateScheduleStatics();
     }
 
     // ── Adjustment invoice (only if non-zero) ─────────────────────────────────

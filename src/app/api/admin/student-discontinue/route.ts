@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { sendTelegram } from '@/lib/telegram';
+import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 
 export const runtime = 'nodejs';
 
@@ -59,6 +60,9 @@ export async function POST(req: NextRequest) {
     });
     result.enrollmentsEnded++;
   }
+  // Roster derives from Enrollments — drop the admin-schedule statics cache so
+  // the departed student disappears without waiting out the 60s TTL.
+  if (result.enrollmentsEnded) invalidateScheduleStatics();
 
   // 2. Delete future Scheduled Regular lessons
   const lesFormula = encodeURIComponent(`AND({Type}='Regular',{Status}='Scheduled',{Date}>='${effectiveDate}')`);
