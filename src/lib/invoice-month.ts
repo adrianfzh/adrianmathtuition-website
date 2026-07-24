@@ -30,6 +30,20 @@ export function sgtTodayISO(now = Date.now()): string {
 }
 
 /**
+ * First day of the month `monthsBack` months before todayISO's month — the
+ * cutoff for the admin-invoices default view: Paid invoices older than this
+ * are only fetched on demand (?all=1). Keeps the dashboard's Airtable scan
+ * from growing a page (~0.25s) every couple of months, forever.
+ */
+export function paidWindowCutoffISO(todayISO: string, monthsBack: number): string {
+  const [y, m] = todayISO.split('-').map(Number);
+  const total = y * 12 + (m - 1) - monthsBack;
+  const cy = Math.floor(total / 12);
+  const cm = (total % 12) + 1;
+  return `${cy}-${String(cm).padStart(2, '0')}-01`;
+}
+
+/**
  * The Issue Date to stamp when (re)generating an invoice PDF — ONE rule for
  * every PDF path (generate-pdf-batch, regenerate-invoice). An invoice's issue
  * date is the date it was issued to the parent:

@@ -138,7 +138,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `edit-cards-ai/route.ts` — SSE stream for AI card edits (claude-opus-4-6, max 4000 tokens)
 
 ### Invoices (cron + admin)
-- `admin-invoices/route.ts` — GET/PATCH invoices for `/admin/invoices`
+- `admin-invoices/route.ts` — GET/PATCH invoices for `/admin/invoices`. GET default **windows PAID invoices to the last ~5 months** (`paidWindowCutoffISO` in `lib/invoice-month.ts`, unit-tested) so the Airtable scan doesn't grow a serial pagination page every ~2 months; unpaid/unsent are always included regardless of age; `?all=1` = full history (the month filter's "Earlier months…" option triggers it)
 - `generate-invoices/route.ts` — creates Draft invoice records (cron: 14th 7am SGT)
 - `generate-pdf-batch/route.ts` — batch PDF generation → Vercel Blob upload
 - `preview-invoice/route.ts` — generates and returns PDF inline
@@ -409,7 +409,8 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 - **Prelim = all topics tested** — in the exam dialog, when `examType==='Prelim'` the per-subject topic picker is **hidden by default** (just an "＋ Add specific topics (optional)" reveal), since prelims test everything. The picker still appears if topics were already saved or the admin clicks reveal (`prelimTopicsOpen` set, reset per open). Other exam types show the picker as before.
 - **Project Work / Alternative Assessment (PW/AA)** — some students sit PW or an AA *instead* of a WA. The exam dialog has a "Project Work / Alternative Assessment (no WA exam)" checkbox + a PW/AA toggle; checking it means no WA exam. Stored with NO new Airtable field: the marker record gets `No Exam=true` + a `PWAA:<type>` marker in **Exam Notes** (same marker-in-a-field pattern as the `~|` approx flag / paper-in-Subject). The schedule route parses it into `examAssessmentByStudent` (sid → 'Project Work' | 'Alternative Assessment'); the chip pill shows `📋 Project Work` / `📋 Alt. Assessment` and a `📋 … · no WA3` sub-line instead of "no upcoming exam". `set-exams` accepts `pwaa` in the body.
 - **Progress dot** — green `●` on chip when `Progress Logged = true`
-- **Student name tap** — opens LessonModal as overlay (non-Trial lessons with studentId); Trial lessons open `/admin/progress` in new tab
+- **Student name tap** — opens the same tabbed **Exam | Regular work** sheet as the chip pill (2026-07-24; the old LessonModal overlay is retired on this page — the component remains on `/admin/lessons` + `/admin/students/[id]`). Trial lessons still open `/admin/progress` in a new tab. The sheet opens on the **Exam tab during an active exam season**, Regular work otherwise (`openWork` still forces the work tab from the 📘 topic pill).
+- **Classmate exam fill (same school = same paper)** — in the Exam tab: (a) **"Also save for classmates"** — tick same-level students and Save writes the identical exam info to each via per-student `set-exams` POSTs (subjects filtered to what each ticked student takes; a ⚠︎ marks students whose existing exam info would be overwritten; mismatched-subject students are skipped and named in the toast); (b) **"📋 Same school? Copy exam info from:"** — shown while the current student's rows are empty; prefills rows from a classmate's saved entries (`rowsFromEntries`, shared with `openExamEdit`) for review before saving.
 
 ### Drag-and-drop stack
 
@@ -448,9 +449,9 @@ Regular weekly lessons exist as individual `Lessons` records. Three things creat
 | `/api/admin-schedule/student-contact` | GET | Lazy-load student contact info |
 | `/api/admin-schedule/unmarked-count` | GET | Count of past lessons needing status |
 
-### LessonModal
+### LessonModal (retired on /admin/schedule 2026-07-24 — still used by /admin/lessons and /admin/students/[id])
 
-Opens as an overlay when the student name is tapped on a non-Trial lesson chip. Sections:
+Shared component `src/components/LessonModal.tsx`. On the schedule page, name tap now opens the tabbed Exam | Regular-work sheet instead. Sections:
 
 1. **Edit-lock banner** — shown if lesson date is outside 14-day window or in future; inputs are disabled
 2. **Previous lesson recap** — read-only (topics, homework set); includes Homework Returned radio (Yes/Partial/No) that writes to the PREVIOUS lesson record

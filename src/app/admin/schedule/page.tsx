@@ -5,7 +5,6 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { findDoubleBookedIds } from '@/lib/double-booking';
 import { getExamTopicsForSubject } from '@/lib/canonical-topics';
 import AdminAIChat from '@/components/AdminAIChat';
-import LessonModal from '@/components/LessonModal';
 import { QuickLogSheet, VoiceLog } from '@/components/QuickLog';
 import {
   DndContext, DragOverlay,
@@ -918,7 +917,6 @@ export default function SchedulePage() {
   });
 
   const [modal, setModal] = useState<{ student: StudentContact; lessonType: string; studentId: string } | null>(null);
-  const [lessonModal, setLessonModal] = useState<EnrichedLesson | null>(null);
   // Fast in-class tap-log bottom sheet (📝 pill on today/yesterday chips)
   const [quickLog, setQuickLog] = useState<EnrichedLesson | null>(null);
   const [contactCache, setContactCache] = useState<Record<string, StudentContact>>({});
@@ -1048,7 +1046,7 @@ export default function SchedulePage() {
   // student takes gets a row; S4 EM/AM and JC2 prelims default to a Paper 1/2
   // split, others to a single paper (with an option to split).
   type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean };
-  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; lessonId: string; examType: string; noExam: boolean; pwaa: string; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work' } | null>(null);
+  const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; lessonId: string; examType: string; noExam: boolean; pwaa: string; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work'; applyTo: string[] } | null>(null);
   // Prelim rows hide the topic picker by default (all topics tested) — this
   // tracks which row indices the admin has expanded to add specific topics.
   const [prelimTopicsOpen, setPrelimTopicsOpen] = useState<Set<number>>(new Set());
@@ -2339,20 +2337,11 @@ export default function SchedulePage() {
     if (active === 'WA3' && (lv.includes('sec 4') || lv === 'jc2')) return 'Prelim';
     return active;
   }
-  function openExamEdit(lesson: EnrichedLesson) {
-    if (!lesson.studentId) return;
-    const sid = lesson.studentId;
-    const level = lesson.studentLevel || '';
-    // If the student already has records under an exam type, honour it; else default by level.
-    const existingType = (data?.examEntriesByStudent?.[sid] || []).length ? null : null; // entries don't carry type; keep default
-    const examType = existingType || levelExamType(level);
-    const entries = data?.examEntriesByStudent?.[sid] || [];
-    // Subjects the student takes (fall back to whatever exam records already exist).
-    let subjects = (data?.students?.[sid]?.subjects || []).filter(Boolean);
-    if (!subjects.length) subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))];
-    if (!subjects.length) subjects = ['']; // generic single row
-
-    const rows: ExamSubjectRow[] = subjects.map(subject => {
+  // Build the per-subject editor rows from saved exam entries. Shared by
+  // openExamEdit and "Copy from <classmate>" (which rebuilds the CURRENT
+  // student's rows from a classmate's entries).
+  function rowsFromEntries(entries: ExamEntry[], subjects: string[], level: string): ExamSubjectRow[] {
+    return subjects.map(subject => {
       const subjEntries = entries.filter(e => (e.subject || '') === subject);
       const single = subjEntries.find(e => !e.paper);
       const p1 = subjEntries.find(e => e.paper === 'Paper 1');
@@ -2372,9 +2361,25 @@ export default function SchedulePage() {
         approxP2: !!p2?.approx,
       };
     });
+  }
+
+  function openExamEdit(lesson: EnrichedLesson) {
+    if (!lesson.studentId) return;
+    const sid = lesson.studentId;
+    const level = lesson.studentLevel || '';
+    const examType = levelExamType(level);
+    const entries = data?.examEntriesByStudent?.[sid] || [];
+    // Subjects the student takes (fall back to whatever exam records already exist).
+    let subjects = (data?.students?.[sid]?.subjects || []).filter(Boolean);
+    if (!subjects.length) subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))];
+    if (!subjects.length) subjects = ['']; // generic single row
+
+    const rows = rowsFromEntries(entries, subjects, level);
     const pwaa = data?.examAssessmentByStudent?.[sid] || '';
     setPrelimTopicsOpen(new Set());
-    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM' && !pwaa, pwaa, rows, saving: false, tab: 'work' });
+    // During exam season the sheet opens on the Exam tab (that's what needs
+    // filling in); off-season it opens on Regular work.
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM' && !pwaa, pwaa, rows, saving: false, tab: data?.activeExamType ? 'exam' : 'work', applyTo: [] });
     loadTimeline(sid);
     loadLessonLog(lesson.id);
   }
@@ -2382,6 +2387,30 @@ export default function SchedulePage() {
   function openWork(lesson: EnrichedLesson) {
     openExamEdit(lesson);
     setExamEdit(prev => prev ? { ...prev, tab: 'work' } : prev);
+  }
+  // Classmates at the same level — candidates for "copy from" and "also save
+  // for" (same school → same exam dates & topics). hasExam marks students who
+  // already carry exam info this season.
+  function sameLevelClassmates(): { id: string; name: string; hasExam: boolean }[] {
+    if (!examEdit || !data) return [];
+    return Object.entries(data.students)
+      .filter(([id, s]) => id !== examEdit.studentId && (s.level || '') === examEdit.studentLevel)
+      .map(([id, s]) => ({
+        id,
+        name: s.name,
+        hasExam: (data.examEntriesByStudent?.[id] || []).some(e => e.date || e.topics),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+  // Prefill the CURRENT student's rows from a classmate's saved exam entries.
+  function copyExamFrom(sourceSid: string) {
+    const entries = data?.examEntriesByStudent?.[sourceSid] || [];
+    setExamEdit(prev => {
+      if (!prev) return prev;
+      const subjects = prev.studentSubjects.length ? prev.studentSubjects : [''];
+      return { ...prev, rows: rowsFromEntries(entries, subjects, prev.studentLevel) };
+    });
+    showToast('success', `Copied from ${data?.students?.[sourceSid]?.name || 'classmate'} — check dates, then Save`);
   }
   async function loadTimeline(studentId: string) {
     setTopicTL({ loading: true, rows: [], drafts: {}, savingSubject: null });
@@ -2430,13 +2459,33 @@ export default function SchedulePage() {
             ]
           : [{ subject: r.subject, paper: '', examDate: r.date, testedTopics: r.topics, notes: r.notes, approx: r.approx }]
       );
-      const res = await fetch('/api/admin-schedule/set-exams', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId: examEdit.studentId, examType: examEdit.examType, noExam: examEdit.noExam, pwaa: examEdit.pwaa, entries }),
-      });
-      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Failed'); }
-      showToast('success', 'Exam info saved');
+      // Primary student first, then any ticked classmates (same school → same
+      // paper). Classmates only receive entries for subjects THEY take.
+      const targets = [examEdit.studentId, ...examEdit.applyTo];
+      const skipped: string[] = [];
+      for (const sid of targets) {
+        let sidEntries = entries;
+        if (sid !== examEdit.studentId && entries.length) {
+          const tSubjects = (data?.students?.[sid]?.subjects || []).filter(Boolean);
+          if (tSubjects.length) {
+            sidEntries = entries.filter(en => !en.subject || tSubjects.includes(en.subject));
+            if (!sidEntries.length) { skipped.push(data?.students?.[sid]?.name || sid); continue; }
+          }
+        }
+        const res = await fetch('/api/admin-schedule/set-exams', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: sid, examType: examEdit.examType, noExam: examEdit.noExam, pwaa: examEdit.pwaa, entries: sidEntries }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(`${data?.students?.[sid]?.name || 'Student'}: ${d.error || 'Failed'}`);
+        }
+      }
+      const savedCount = targets.length - skipped.length;
+      showToast('success', savedCount > 1
+        ? `Exam info saved · ${savedCount} students${skipped.length ? ` (skipped ${skipped.join(', ')} — different subjects)` : ''}`
+        : 'Exam info saved');
       setExamEdit(null);
       await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
     } catch (e: unknown) {
@@ -2532,7 +2581,9 @@ export default function SchedulePage() {
             if (!lesson.studentId || lesson.type === 'Trial') {
               window.open(`/admin/progress?date=${lesson.date}&lesson=${lesson.id}`, '_blank');
             } else {
-              setLessonModal(lesson);
+              // Same tabbed sheet as the pill (the old LessonModal form is retired
+              // here) — Exam tab first during exam season, Regular work otherwise.
+              openExamEdit(lesson);
             }
           }}
           onMarkPresent={showAttendance ? (lesson) => handleDirectStatus(lesson, 'Completed') : undefined}
@@ -2956,6 +3007,27 @@ export default function SchedulePage() {
                 )}
                 </>
               ) : (<>
+              {/* Same-school shortcut: prefill from a classmate who's already
+                  filled in (only offered while this student's rows are empty). */}
+              {(() => {
+                const empty = examEdit.rows.every(r => !r.date && !r.p1Date && !r.p2Date && !r.topics);
+                if (!empty || examEdit.noExam || examEdit.pwaa) return null;
+                const cands = sameLevelClassmates().filter(c => c.hasExam).slice(0, 8);
+                if (!cands.length) return null;
+                return (
+                  <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '9px 11px', marginBottom: 14 }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: '#0369a1', marginBottom: 6 }}>📋 Same school? Copy exam info from:</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {cands.map(c => (
+                        <button key={c.id} type="button" onClick={() => copyExamFrom(c.id)}
+                          style={{ fontSize: 12, fontWeight: 600, padding: '5px 11px', borderRadius: 14, cursor: 'pointer', background: '#fff', color: '#0369a1', border: '1px solid #bae6fd' }}>
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="form-group" style={{ marginBottom: 12 }}>
                 <span className="form-label">Exam</span>
                 <select className="modal-select" value={examEdit.examType} onChange={e => setExamEdit({ ...examEdit, examType: e.target.value })}>
@@ -3109,10 +3181,39 @@ export default function SchedulePage() {
                 </div>
                 );
               })}
+              {/* Same school = same paper: tick classmates to write this exam
+                  info to them too on Save (subjects filtered per student). */}
+              {(() => {
+                const mates = sameLevelClassmates();
+                if (!mates.length) return null;
+                const toggle = (id: string) => setExamEdit(prev => prev
+                  ? { ...prev, applyTo: prev.applyTo.includes(id) ? prev.applyTo.filter(x => x !== id) : [...prev.applyTo, id] }
+                  : prev);
+                return (
+                  <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 12px', marginBottom: 12 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.05em', color: '#334155', textTransform: 'uppercase' }}>Also save for classmates</div>
+                    <div style={{ fontSize: 11.5, color: '#94a3b8', margin: '2px 0 8px' }}>
+                      Same school, same paper? Tick the {examEdit.studentLevel || 'same-level'} students who share these dates & topics. ⚠︎ = already has exam info (will be overwritten).
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {mates.map(m => {
+                        const on = examEdit.applyTo.includes(m.id);
+                        return (
+                          <button key={m.id} type="button" onClick={() => toggle(m.id)}
+                            style={{ fontSize: 12, fontWeight: 600, padding: '5px 11px', borderRadius: 14, cursor: 'pointer',
+                              background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>
+                            {on ? '✓ ' : ''}{m.name}{m.hasExam ? ' ⚠︎' : ''}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => setExamEdit(null)} disabled={examEdit.saving}>Cancel</button>
                 <button className="btn-primary" onClick={saveExamEdit} disabled={examEdit.saving}>
-                  {examEdit.saving ? 'Saving…' : 'Save'}
+                  {examEdit.saving ? 'Saving…' : examEdit.applyTo.length ? `Save · ${examEdit.applyTo.length + 1} students` : 'Save'}
                 </button>
               </div>
               </>)}
@@ -4090,15 +4191,9 @@ export default function SchedulePage() {
         </div>
       )}
 
-      {/* Lesson input modal */}
-      {lessonModal && (
-        <LessonModal
-          lesson={lessonModal}
-          slots={data?.slots ?? []}
-          onClose={() => setLessonModal(null)}
-          onProgressLogged={handleProgressLogged}
-        />
-      )}
+      {/* The old LessonModal overlay is retired on this page (2026-07-24) —
+          name tap now opens the same Exam | Regular-work sheet as the pill.
+          The shared component still serves /admin/lessons + /admin/students. */}
 
       {/* Quick tap-log bottom sheet (📝 pill) */}
       {quickLog && (

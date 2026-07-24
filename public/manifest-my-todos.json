@@ -1,0 +1,12 @@
+{
+  "name": "My To-Dos — Adrian's Math Tuition",
+  "short_name": "My To-Dos",
+  "start_url": "/admin/my-todos",
+  "display": "standalone",
+  "background_color": "#7C3AED",
+  "theme_color": "#7C3AED",
+  "icons": [
+    { "src": "/icons/my-todos-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/my-todos-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

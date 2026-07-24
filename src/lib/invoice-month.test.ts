@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getInvoiceMonth, displaySpanMonth, resolveInvoiceIssueDate, sgtTodayISO } from './invoice-month';
+import { getInvoiceMonth, displaySpanMonth, resolveInvoiceIssueDate, sgtTodayISO, paidWindowCutoffISO } from './invoice-month';
 
 describe('getInvoiceMonth — always the month AFTER today', () => {
   it('mid-year: April → May', () => {
@@ -89,5 +89,17 @@ describe('sgtTodayISO', () => {
   });
   it('matches UTC date mid-day', () => {
     expect(sgtTodayISO(Date.UTC(2026, 6, 17, 6, 0, 0))).toBe('2026-07-17');
+  });
+});
+
+describe('paidWindowCutoffISO', () => {
+  it('first of the month N months back', () => {
+    expect(paidWindowCutoffISO('2026-07-24', 4)).toBe('2026-03-01');
+    expect(paidWindowCutoffISO('2026-07-01', 0)).toBe('2026-07-01');
+  });
+  it('crosses year boundaries', () => {
+    expect(paidWindowCutoffISO('2026-02-10', 4)).toBe('2025-10-01');
+    expect(paidWindowCutoffISO('2026-01-05', 1)).toBe('2025-12-01');
+    expect(paidWindowCutoffISO('2026-12-31', 12)).toBe('2025-12-01');
   });
 });

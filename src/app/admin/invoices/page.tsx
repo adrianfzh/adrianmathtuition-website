@@ -577,6 +577,13 @@ export default function AdminPage() {
     // a beat. Cache the invoice list and paint it instantly on the next visit.
     const INV_CACHE_KEY = 'admin_invoices_cache_v1';
     const INV_CACHE_MAX_AGE = 1000 * 60 * 60 * 12; // 12h — older we don't paint stale
+    // Default API view windows old PAID invoices out (fast, non-growing scan).
+    // "Earlier months…" in the month filter flips this on for the full history.
+    let fullHistory = false;
+    // Sticky "All Months" choice — populateMonthFilter runs twice per load
+    // (cached paint, then fresh data); without this the second pass would
+    // stomp an explicit All-Months selection back to the newest month.
+    let showAllMonths = false;
 
     function readInvCache(): any[] | null {
       try {
@@ -671,12 +678,13 @@ export default function AdminPage() {
       }
 
       try {
-        const res = await fetch('/api/admin-invoices');
+        const res = await fetch(`/api/admin-invoices${fullHistory ? '?all=1' : ''}`);
         // Not our call to error-banner on: init() owns the login flow.
         if (res.status === 401) return 'unauthorized';
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
         invoices = await res.json();
-        writeInvCache(invoices);
+        // Only cache the (fast) default view — it's what the next visit paints.
+        if (!fullHistory) writeInvCache(invoices);
         populateMonthFilter();
         renderAll();
         updateBulkButtonLabels();
@@ -707,9 +715,15 @@ export default function AdminPage() {
       const sel = document.getElementById('month-filter') as HTMLSelectElement;
       const prev = sel.value;
       sel.innerHTML = '<option value="">All Months</option>' +
-        months.map(m => `<option value="${escAttr(m)}">${escHtml(m)}</option>`).join('');
+        months.map(m => `<option value="${escAttr(m)}">${escHtml(m)}</option>`).join('') +
+        // Default view omits Paid invoices older than ~5 months — this option
+        // refetches the full history (?all=1) and repopulates the dropdown.
+        (fullHistory ? '' : '<option value="__ALL_HISTORY__">Earlier months… (load full history)</option>');
 
-      if (prev && months.includes(prev)) {
+      if (showAllMonths) {
+        sel.value = '';
+        selectedMonth = '';
+      } else if (prev && months.includes(prev)) {
         sel.value = prev;
         selectedMonth = prev;
       } else {
@@ -719,6 +733,13 @@ export default function AdminPage() {
     }
 
     function onMonthFilter(val: string) {
+      if (val === '__ALL_HISTORY__') {
+        fullHistory = true;
+        showAllMonths = true;
+        loadInvoices();
+        return;
+      }
+      showAllMonths = val === '';
       selectedMonth = val;
       renderAll();
       updateBulkButtonLabels();
@@ -1788,7 +1809,7 @@ export default function AdminPage() {
         } catch { /* non-fatal */ }
 
         try {
-          const freshRes = await fetch('/api/admin-invoices');
+          const freshRes = await fetch(`/api/admin-invoices${fullHistory ? '?all=1' : ''}`);
           if (freshRes.ok) {
             const freshList = await freshRes.json();
             const freshInv = freshList.find((i: any) => i.id === id);
