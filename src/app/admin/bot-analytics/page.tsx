@@ -247,7 +247,7 @@ export default function BotAnalytics() {
   const [revalidating, setRevalidating] = useState(false);
   // One-shot guard for the 401→session-upgraded→retry path in load().
   const retriedRef = useRef(false);
-  const [qTab, setQTab]             = useState<'flagged' | 'all' | 'mine'>('flagged');
+  const [qTab, setQTab]             = useState<'flagged' | 'all' | 'mine' | 'tests'>('flagged');
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
   const [selected, setSelected]     = useState<Question | null>(null);
   const [opusOpen, setOpusOpen]     = useState(false);
@@ -451,10 +451,15 @@ export default function BotAnalytics() {
     if (selected?.id === id) setSelected(null);
   }
 
-  const flagged = questions.filter(q => q.flagReason && !dismissed.has(q.id) && !q.isAdminUpload);
-  const allVisible = questions.filter(q => !dismissed.has(q.id) && !q.isAdminUpload);
-  const myUploads = questions.filter(q => q.isAdminUpload && !dismissed.has(q.id));
-  const displayList = qTab === 'mine' ? myUploads : qTab === 'flagged' ? flagged : allVisible;
+  // Smoke-suite runs + ad-hoc probes use web-check-*/web-probe* chat ids — keep
+  // them OUT of the real-student tabs (per Adrian 2026-07-24) and give them
+  // their own Tests tab instead of mixing with genuine questions.
+  const isTestChat = (q: Question) => /^web-(check|probe)/.test(String(q.chatId || ''));
+  const flagged = questions.filter(q => q.flagReason && !dismissed.has(q.id) && !q.isAdminUpload && !isTestChat(q));
+  const allVisible = questions.filter(q => !dismissed.has(q.id) && !q.isAdminUpload && !isTestChat(q));
+  const myUploads = questions.filter(q => q.isAdminUpload && !dismissed.has(q.id) && !isTestChat(q));
+  const testRows = questions.filter(q => isTestChat(q) && !dismissed.has(q.id));
+  const displayList = qTab === 'mine' ? myUploads : qTab === 'flagged' ? flagged : qTab === 'tests' ? testRows : allVisible;
 
   // Group adjacent turns of the same conversation (same chatId + <30min gap) into
   // threads. displayList is newest-first, so a conversation's turns are adjacent.
@@ -646,13 +651,13 @@ export default function BotAnalytics() {
             {/* Questions section */}
             <div style={{ padding: '12px 16px 0' }}>
               <div style={{ display: 'flex', gap: 0, marginBottom: 10, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
-                {(['flagged', 'all', 'mine'] as const).map(tab => (
+                {(['flagged', 'all', 'mine', 'tests'] as const).map(tab => (
                   <button key={tab} onClick={() => setQTab(tab)} style={{
                     flex: 1, padding: '7px 0', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
                     background: qTab === tab ? '#1e3a5f' : 'transparent',
                     color: qTab === tab ? '#fff' : '#64748b',
                   }}>
-                    {tab === 'flagged' ? `🔴 Flagged (${flagged.length})` : tab === 'all' ? `All (${allVisible.length})` : `📤 Mine (${myUploads.length})`}
+                    {tab === 'flagged' ? `🔴 Flagged (${flagged.length})` : tab === 'all' ? `All (${allVisible.length})` : tab === 'mine' ? `📤 Mine (${myUploads.length})` : `🧪 Tests (${testRows.length})`}
                   </button>
                 ))}
               </div>
