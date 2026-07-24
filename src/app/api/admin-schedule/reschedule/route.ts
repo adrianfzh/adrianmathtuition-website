@@ -10,6 +10,7 @@ import {
   findStudentSlotConflict,
 } from '@/lib/schedule-helpers';
 import { billingMonthOf } from '@/lib/lesson-generation';
+import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
 
 export const runtime = 'nodejs';
@@ -173,6 +174,8 @@ export async function POST(req: NextRequest) {
       }),
     });
 
+    // New source→dest link — refresh the cached reschedule-source map.
+    invalidateScheduleStatics();
     return NextResponse.json({ success: true, newLessonId });
   } catch (err: any) {
     console.error('[reschedule] Error:', err);

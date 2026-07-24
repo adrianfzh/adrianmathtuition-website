@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
   // The unfiltered Enrollments scan in particular pages through the ENTIRE
   // enrollment history and is the slowest part of week navigation.
   // Lessons + Settings are always fetched live.
-  const [slotsData, enrollmentsData, lessonsData, settingsData, tlRecords] = await Promise.all([
+  const [slotsData, enrollmentsData, lessonsData, settingsData, tlRecords, reschedSourcesData] = await Promise.all([
     cachedScheduleStatic('slots', () =>
       fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`{Is Active}=1`)}`)),
     // ALL enrollments (not just Active) with their tenure dates, so the Roster
@@ -86,6 +86,22 @@ export async function GET(req: NextRequest) {
     airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`).catch(() => ({ records: [] })),
     cachedScheduleStatic('topic-timeline', () =>
       fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`).catch(() => [] as any[])),
+    // Reschedule SOURCES (Status='Rescheduled') across a ±6/7-month window, so
+    // destination chips can say where they came FROM even when the source lies
+    // outside the viewed week (bot-created makeups say just "Makeup lesson" —
+    // no parseable origin note). Month-quantized bounds keep the cache key
+    // stable across week navigation; the widest source→dest gap on record is
+    // 128 days, so ±6 months has ample headroom. Reschedule-mutating routes
+    // call invalidateScheduleStatics().
+    cachedScheduleStatic(`resched-sources:${weekStart.slice(0, 7)}`, () => {
+      const [wy, wm] = weekStart.split('-').map(Number);
+      const monthISO = (y: number, m0: number) => new Date(Date.UTC(y, m0, 1)).toISOString().slice(0, 10);
+      const from = monthISO(wy, wm - 1 - 6);
+      const to = monthISO(wy, wm - 1 + 7);
+      return fetchAll('Lessons',
+        `?filterByFormula=${encodeURIComponent(`AND({Status}='Rescheduled',{Date}>='${from}',{Date}<'${to}')`)}&fields[]=Date&fields[]=Slot&fields[]=Rescheduled Lesson ID`
+      ).catch(() => [] as any[]);
+    }),
   ]);
 
   // Resolve exam season immediately (needed to include the exams fetch in stage 2).
@@ -126,7 +142,9 @@ export async function GET(req: NextRequest) {
   const stage1SlotIds = new Set(slotsData.map((r: any) => r.id));
   const extraSlotIds = [
     ...new Set(
-      lessonsData
+      // Include reschedule-source slots so an origin label ("↩ from …") can
+      // name the time even when the source sat in an inactive/adhoc slot.
+      [...lessonsData, ...reschedSourcesData]
         .map((r: any) => r.fields['Slot']?.[0])
         .filter((id: string | undefined) => id && !stage1SlotIds.has(id))
     ),
@@ -270,12 +288,13 @@ export async function GET(req: NextRequest) {
   }
 
   // ── Reverse reschedule lookup: where did a Rescheduled/Makeup lesson come
-  // FROM? Sources in this week's fetch link forward via Rescheduled Lesson ID;
-  // for sources outside the week (not fetched — the linked field can't be
-  // formula-filtered by record id) fall back to the "Rescheduled from …" /
-  // "Makeup for …" note the create routes stamp on the destination lesson.
+  // FROM? Sources link forward via Rescheduled Lesson ID (a linked field, so
+  // it can't be formula-filtered by record id) — the windowed
+  // reschedSourcesData fetch covers sources up to ±6 months outside the viewed
+  // week; the week's own records refresh the same entries. Note-parse
+  // ("Rescheduled from …" / "Makeup for …") stays as a last-resort fallback.
   const sourceByDestId: Record<string, { date: string; slotId: string | null }> = {};
-  for (const r of lessonsData) {
+  for (const r of [...reschedSourcesData, ...lessonsData]) {
     const destId = r.fields['Rescheduled Lesson ID']?.[0];
     if (destId) sourceByDestId[destId] = { date: r.fields['Date'] || '', slotId: r.fields['Slot']?.[0] || null };
   }
@@ -288,7 +307,7 @@ export async function GET(req: NextRequest) {
     if (type !== 'Rescheduled' && type !== 'Makeup') return null;
     const src = sourceByDestId[lessonId];
     if (src?.date) {
-      const slot = slotsData.find((s: any) => s.id === src.slotId);
+      const slot = slotsData.find((s: any) => s.id === src.slotId) || extraSlotsData.find((s: any) => s.id === src.slotId);
       const time = slot?.fields?.['Time'] || '';
       return `${fmtDayDate(src.date)}${time ? ` ${time}` : ''}`;
     }

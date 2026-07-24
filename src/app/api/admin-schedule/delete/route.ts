@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 
 export const runtime = 'nodejs';
 
@@ -97,6 +98,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Undo/delete rewires reschedule links — refresh the cached source map.
+    invalidateScheduleStatics();
     return NextResponse.json({ success: true, action });
   } catch (err: any) {
     console.error('[delete] Error:', err);

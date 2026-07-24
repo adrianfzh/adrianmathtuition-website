@@ -9,6 +9,7 @@
 // two records on shared dates — assigned deterministically by record id).
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth, findStudentSlotConflict } from '@/lib/schedule-helpers';
+import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 
 export const runtime = 'nodejs';
@@ -118,6 +119,7 @@ export async function POST(req: NextRequest) {
         method: 'PATCH',
         body: JSON.stringify({ fields: { Status: 'Rescheduled', 'Rescheduled Lesson ID': [makeup.id] } }),
       });
+      invalidateScheduleStatics(); // new source→makeup link
       return NextResponse.json({ success: true, makeupId: makeup.id });
     }
 
@@ -149,6 +151,7 @@ export async function POST(req: NextRequest) {
       if (!lessonId) {
         // No linked revision lesson found — at least remove the orphan makeup.
         if (makeupIdIn) await airtableRequest('Lessons', `/${makeupIdIn}`, { method: 'DELETE' }).catch(() => {});
+        invalidateScheduleStatics();
         return NextResponse.json({ success: true });
       }
 
@@ -166,6 +169,7 @@ export async function POST(req: NextRequest) {
         method: 'PATCH',
         body: JSON.stringify({ fields: { 'Rescheduled Lesson ID': [], Status: revertToScheduled ? 'Scheduled' : 'Absent' } }),
       });
+      invalidateScheduleStatics(); // unlink rewires the reschedule-source map
       return NextResponse.json({ success: true });
     }
 
