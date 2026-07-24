@@ -74,8 +74,8 @@ export default function TodoPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
         <div style={{ width: '100%', maxWidth: 360, background: '#fff', borderRadius: 20, border: '1px solid #e5e7eb', padding: '32px 28px', textAlign: 'center' }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>✅</div>
-          <h1 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 4px', color: '#111' }}>To-Do</h1>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🔁</div>
+          <h1 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 4px', color: '#111' }}>Loop Tasks</h1>
           <p style={{ fontSize: 13, color: '#9ca3af', margin: '0 0 24px' }}>Admin password required</p>
           <form onSubmit={e => { e.preventDefault(); setAuthError(''); verify(password); }}>
             <input type="password" value={password} onChange={e => { setPassword(e.target.value); setAuthError(''); }}
@@ -108,10 +108,11 @@ export default function TodoPage() {
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <a href="/admin" style={{ textDecoration: 'none', color: '#6b7280', fontSize: 14, fontWeight: 600 }}>‹ Admin</a>
-          <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, color: '#111' }}>✅ To-Do</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, color: '#111' }}>🔁 Loop Tasks</h1>
         </div>
         <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 12px' }}>
-          The build-test-fix <code>/loop</code> works these top-to-bottom — open items first, oldest at the top.
+          Dev-task queue for Claude — worked top-to-bottom, open items first, oldest at the top.
+          Personal errands go in <a href="/admin/my-todos" style={{ color: '#1e3a5f' }}>My To-Dos</a>.
         </p>
 
         <details style={{ marginBottom: 18, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12 }}>

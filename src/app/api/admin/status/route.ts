@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { airtableRequestAll } from '@/lib/airtable';
+import { createServiceClient } from '@/lib/supabase-server';
 
 export const runtime = 'nodejs';
 
@@ -11,14 +12,25 @@ export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (new URL(req.url).searchParams.get('auth') === 'check') return NextResponse.json({ ok: true });
 
-  const out: any = { todos: { open: 0, items: [] }, invoices: { unpaid: 0, owed: 0 }, students: 0, bot: { weekQuestions: 0 } };
+  const out: any = { todos: { open: 0, items: [] }, myTodos: { open: 0, overdue: 0 }, invoices: { unpaid: 0, owed: 0 }, students: 0, bot: { weekQuestions: 0 } };
 
-  // To-Do (build-test-fix loop list)
+  // Loop tasks (build-test-fix loop list, Airtable)
   try {
     const t = await airtableRequestAll('Todos', '');
     const open = (t.records || []).filter((r: any) => (r.fields['Status'] || 'To Do') !== 'Done');
     out.todos = { open: open.length, items: open.slice(0, 8).map((r: any) => r.fields['Task'] || '') };
   } catch { /* table may not exist */ }
+
+  // Personal to-dos (Supabase admin_todos — /admin/my-todos)
+  try {
+    const supa = createServiceClient();
+    const { data } = await supa.from('admin_todos').select('due_date').eq('done', false);
+    const today = localToday();
+    out.myTodos = {
+      open: (data || []).length,
+      overdue: (data || []).filter(r => r.due_date && r.due_date < today).length,
+    };
+  } catch { /* noop */ }
 
   // Unpaid invoices
   try {

@@ -5,6 +5,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
 type Status = {
   todos: { open: number; items: string[] };
+  myTodos?: { open: number; overdue: number };
   invoices: { unpaid: number; owed: number };
   students: number;
   bot: { weekQuestions: number };
@@ -72,7 +73,8 @@ export default function StatusPage() {
         {!s ? <p style={{ color: '#9ca3af', fontSize: 14 }}>Loading…</p> : (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
-              {card('Open to-dos', s.todos.open, 'build-test-fix loop', '/admin/todo')}
+              {card('My to-dos', s.myTodos?.open ?? 0, s.myTodos?.overdue ? `${s.myTodos.overdue} overdue` : 'personal list', '/admin/my-todos')}
+              {card('Loop tasks', s.todos.open, 'build-test-fix loop', '/admin/todo')}
               {card('Unpaid invoices', s.invoices.unpaid, `$${s.invoices.owed} outstanding`, '/admin/invoices')}
               {card('Students', s.students, 'active profiles', '/admin/students')}
               {card('Bot questions', s.bot.weekQuestions, 'last 7 days', '/admin/bot')}

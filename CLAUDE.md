@@ -68,7 +68,9 @@ NOT used (solo-maintenance cost outweighs value).
 
 - `page.tsx` — homepage with schedule widget (fetches `/api/schedule`)
 - `chat/page.tsx` — web math solver (SSE to Fly.io `/api/chat`)
-- `admin/page.tsx` — **admin hub**: status cards (logged today, unpaid invoices, makeups owed, this week's lessons) + 4 launcher tiles (Schedule, Progress, Invoices, Students). Cookie-based auth (30-day), PWA-ready.
+- `admin/page.tsx` — **admin hub**: status cards (logged today, unpaid invoices, makeups owed, this week's lessons) + launcher tile grid (Schedule, Invoices, Students, My To-Dos, Loop Tasks, Kiosk, …). Cookie-based auth (30-day), PWA-ready.
+- `admin/my-todos/page.tsx` — **Adrian's personal to-do list** (add/edit/check/delete, optional due dates with overdue/Today/Tomorrow chips). Supabase `admin_todos` (math project, RLS-on service-role-only) via `/api/admin/my-todos`. NOT the loop queue — nothing automated reads it.
+- `admin/todo/page.tsx` — **Loop Tasks** (was titled "To-Do" until 2026-07-24): dev-task queue for the build-test-fix `/loop`; Airtable `Todos` table via `/api/admin/todo`. Open items oldest-first; the loop implements each, runs `npm test`, marks Done.
 - `admin/schedule/page.tsx` — lesson management calendar. See [/admin/schedule](#adminschedule--lesson-management) below.
 - `admin/progress/page.tsx` — read-only student timeline. See [/admin/progress](#adminprogress--student-timeline) below.
 - `admin/invoices/page.tsx` — invoice management dashboard (was `/admin` before restructure)
@@ -115,6 +117,9 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/progress/student-timeline/route.ts` — student timeline data + aggregations (GET `?id=recXXX&range=90`)
 - `admin/exam-season/route.ts` — GET/POST exam season override
 - `admin/admin-stats/route.ts` — status card data for hub page
+- `admin/my-todos/route.ts` — personal to-do CRUD (Supabase `admin_todos`): GET open+recent-done, POST `{task,dueDate?}`, PATCH `{id,done?/task?/dueDate?}`, DELETE `{id}` or `{clearDone:true}`
+- `admin/todo/route.ts` — loop-queue CRUD (Airtable `Todos`: Task/Status/Notes) for `/admin/todo`
+- `admin/status/route.ts` — At-a-glance data: loop todos, personal `myTodos {open,overdue}`, unpaid invoices, students, bot week count
 
 ### Cards editor (`/admin/edit-cards`)
 - `admin/cards/topics/route.ts` — GET `?level=AM` → `{ topics: string[] }` (distinct topics from subgroups)
