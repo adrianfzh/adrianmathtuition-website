@@ -28,16 +28,20 @@ export async function GET(req: NextRequest) {
   // Zane/Xavier/Lucas from generate-invoices).
   // Include 'Paid' as a safety net so a stray non-standard status can never hide an invoice from the dashboard.
   //
-  // Default view windows PAID invoices to the last ~5 months (settled history;
-  // the scan otherwise grows a serial pagination page every ~2 months, slowing
-  // every dashboard load forever). Unpaid/unsent invoices are ALWAYS included
-  // whatever their age. ?all=1 ("Earlier months…" in the month filter) fetches
-  // the full history. Blank Issue Date on a Paid invoice stays visible.
+  // Default view windows SETTLED invoices to the last ~5 months (the scan
+  // otherwise grows a serial pagination page every ~2 months, slowing every
+  // dashboard load forever). "Settled" = the {Is Paid} CHECKBOX — paid
+  // invoices keep Status='Sent' in this base; Status='Paid' is only a
+  // stray-status safety net, so keying the window on it is a no-op (verified
+  // live 2026-07-24: 288 of 288 records still returned). Unpaid/unsent are
+  // ALWAYS included whatever their age; blank Issue Date is never dropped.
+  // ?all=1 ("Earlier months…" in the month filter) fetches the full history.
   const all = searchParams.get('all') === '1';
   const cutoff = paidWindowCutoffISO(sgtTodayISO(), 4);
+  const statusUniverse = `OR({Status}='Draft',{Status}='Approved',{Status}='Sent',{Status}='Paid')`;
   const formula = encodeURIComponent(all
-    ? `OR({Status}='Draft',{Status}='Approved',{Status}='Sent',{Status}='Paid')`
-    : `OR({Status}='Draft',{Status}='Approved',{Status}='Sent',AND({Status}='Paid',OR({Issue Date}='',{Issue Date}>='${cutoff}')))`);
+    ? statusUniverse
+    : `AND(${statusUniverse},OR(NOT({Is Paid}),{Issue Date}='',{Issue Date}>='${cutoff}'))`);
 
   // The three datasets are independent — fetch them in ONE parallel burst.
   // They used to run sequentially, stacking three full pagination walks
