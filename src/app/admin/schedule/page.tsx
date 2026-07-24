@@ -40,6 +40,8 @@ interface Lesson {
   rescheduledToDate?: string;
   rescheduledToSlotTime?: string;
   rescheduledToStatus?: string;
+  /** Where a Rescheduled/Makeup lesson came FROM, e.g. "Fri, 24 Jul 3-5pm". */
+  rescheduledFrom?: string | null;
   /** What became of the lesson at the END of its reschedule chain. */
   rescheduledOutcome?: 'delivered' | 'missed' | 'cancelled' | 'upcoming' | 'unmarked' | 'broken';
   /** Links followed; >1 means it was moved more than once. */
@@ -101,9 +103,13 @@ function fmtTLDate(iso: string | null): string {
   try { return new Date(iso + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'short' }); } catch { return iso; }
 }
 
-// Regular-work tab: per subject, the current topic + a box to advance to the
-// next topic, and the topic timeline (history) below.
-function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDeleteRow }: {
+// Regular-work tab: per subject — the current topic, the planned NEXT-lesson
+// topic, and the timeline (history). The topic picker is hidden behind
+// "✏️ Change" once a current topic exists (it used to sit permanently below
+// the chip, reading as an unanswered question); it auto-opens only when the
+// subject has no current topic yet. Mis-picks self-heal server-side (same-day
+// replace deletes the wrong row; re-picking a topic ended today resurrects it).
+function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDeleteRow, onPlan, onStartPlanned }: {
   studentId: string;
   level: string;
   subjects: string[];
@@ -111,43 +117,102 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDel
   onDraft: (subject: string, v: string) => void;
   onAdvance: (subject: string, topic: string) => void;
   onDeleteRow: (rowId: string) => void;
+  onPlan: (subject: string, topic: string) => void;
+  onStartPlanned: (subject: string) => void;
 }) {
+  // Per-subject picker state: which picker (if any) is open. Explicit null =
+  // user closed it; undefined = default (open 'current' when none set yet).
+  const [openPicker, setOpenPicker] = useState<Record<string, 'current' | 'next' | null>>({});
   if (!tl || tl.loading) return <div style={{ color: '#94a3b8', fontSize: 13, padding: '20px 0', textAlign: 'center' }}>Loading topics…</div>;
   return (
     <>
       {subjects.map(subject => {
         const cats = getExamTopicsForSubject(level || 'Sec 4', subject || 'E Math');
-        const rows = tl.rows.filter(r => (r.subject || '') === subject).sort((a, b) => (b.started || '').localeCompare(a.started || ''));
+        const rows = tl.rows.filter(r => (r.subject || '') === subject);
         const current = rows.find(r => r.current);
-        const history = rows.filter(r => !r.current);
+        // A planned "next lesson" topic is a row that never started.
+        const planned = rows.find(r => !r.current && !r.started);
+        const history = rows.filter(r => !r.current && r.started)
+          .sort((a, b) => (b.started || '').localeCompare(a.started || ''));
         const draft = tl.drafts[subject] ?? '';
         const saving = tl.savingSubject === subject;
+        const picker = openPicker[subject] !== undefined ? openPicker[subject] : (current ? null : 'current');
+        const setPicker = (v: 'current' | 'next' | null) => setOpenPicker(p => ({ ...p, [subject]: v }));
+        const commit = (topic: string) => {
+          if (!topic.trim()) return;
+          if (picker === 'next') onPlan(subject, topic);
+          else onAdvance(subject, topic);
+          setPicker(null);
+        };
+        const pickerUI = (
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, marginBottom: 10 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+              {picker === 'next' ? '📗 Topic for the NEXT lesson' : current ? `📘 Change current topic (now: ${current.topic})` : '📘 Set the current topic'}
+            </div>
+            <select className="modal-select" value="" disabled={saving}
+              onChange={e => { if (e.target.value) commit(e.target.value); }}>
+              <option value="">pick a topic…</option>
+              {cats.flatMap(c => c.topics).map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <input className="modal-input" placeholder="…or type a custom topic" value={draft}
+              onChange={e => onDraft(subject, e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) commit(draft); }}
+              style={{ marginTop: 6 }} />
+            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+              {draft.trim() && (
+                <button className="btn-primary" disabled={saving} onClick={() => commit(draft)} style={{ flex: 1 }}>
+                  {saving ? 'Saving…' : picker === 'next' ? `Plan “${draft.trim()}” for next lesson` : `Set “${draft.trim()}” as current`}
+                </button>
+              )}
+              <button onClick={() => setPicker(null)} disabled={saving}
+                style={{ border: '1px solid #e5e7eb', background: '#fff', color: '#64748b', borderRadius: 8, padding: '8px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        );
         return (
           <div key={subject || 'gen'} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 12 }}>
             {subject && <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>{subject}</div>}
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Working on now</div>
             {current ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '5px 10px' }}>📘 {current.topic}</span>
                 <span style={{ fontSize: 11.5, color: '#94a3b8' }}>since {fmtTLDate(current.started)}</span>
+                {picker !== 'current' && (
+                  <button onClick={() => setPicker('current')}
+                    style={{ fontSize: 11.5, fontWeight: 600, color: '#64748b', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 9px', cursor: 'pointer' }}>
+                    ✏️ Change
+                  </button>
+                )}
               </div>
-            ) : (
+            ) : picker !== 'current' ? (
               <div style={{ fontSize: 13, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 10 }}>No current topic</div>
-            )}
-            <select className="modal-select" value="" disabled={saving}
-              onChange={e => { if (e.target.value) onAdvance(subject, e.target.value); }}>
-              <option value="">📗 pick a topic to set as current…</option>
-              {cats.flatMap(c => c.topics).map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <input className="modal-input" placeholder="…or type a custom topic" value={draft}
-              onChange={e => onDraft(subject, e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) onAdvance(subject, draft); }}
-              style={{ marginTop: 6 }} />
-            {draft.trim() && (
-              <button className="btn-primary" disabled={saving} onClick={() => onAdvance(subject, draft)} style={{ width: '100%', marginTop: 6 }}>
-                {saving ? 'Setting…' : current ? `Set “${draft.trim()}” as current (was: ${current.topic})` : `Set “${draft.trim()}” as current`}
+            ) : null}
+            {picker === 'current' && pickerUI}
+
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', margin: '2px 0 4px' }}>Next lesson</div>
+            {planned ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                <span onClick={() => setPicker('next')} title="Tap to change"
+                  style={{ fontSize: 13.5, fontWeight: 700, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '5px 10px', cursor: 'pointer' }}>
+                  📗 {planned.topic}
+                </span>
+                <button onClick={() => onStartPlanned(subject)} disabled={saving}
+                  style={{ fontSize: 11.5, fontWeight: 700, color: '#fff', background: '#15803d', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer' }}>
+                  ▶ Start now
+                </button>
+                <button onClick={() => onDeleteRow(planned.id)} title="Remove plan" disabled={saving}
+                  style={{ border: 'none', background: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: 14, padding: '0 2px' }}>✕</button>
+              </div>
+            ) : picker !== 'next' ? (
+              <button onClick={() => setPicker('next')}
+                style={{ fontSize: 12, fontWeight: 600, color: '#15803d', background: '#f0fdf4', border: '1px dashed #86efac', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', marginBottom: 10 }}>
+                ＋ Plan next lesson’s topic
               </button>
-            )}
+            ) : null}
+            {picker === 'next' && pickerUI}
+
             {history.length > 0 && (
               <div style={{ marginTop: 12 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 6 }}>Timeline</div>
@@ -395,6 +460,12 @@ function getTypeStyle(type: string, status: string) {
 function formatExamDate(iso: string): string {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
+}
+
+/** Like formatExamDate but with the weekday: "Sun, 26 Jul". */
+function formatDayDate(iso: string): string {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 // "What to expect" lines for a chip during exam season — one per subject:
@@ -702,6 +773,13 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
         ) : isTouch && lesson.type !== 'Regular' && !isFaded && (
           <span className="type-tag" style={{ display: 'inline-block', marginTop: 1 }}>{lesson.type}</span>
         )}
+        {/* Where a Rescheduled/Makeup lesson came FROM (its immediate source) —
+            keeps the origin visible on the destination chip. */}
+        {(lesson.type === 'Rescheduled' || lesson.type === 'Makeup') && lesson.rescheduledFrom && !isFaded && !isRescheduledAway && (
+          <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 500, color: '#64748b' }}>
+            ↩ from {lesson.rescheduledFrom}
+          </span>
+        )}
         {/* Faded status sub-lines. Colour reflects what ACTUALLY became of the
             lesson at the END of its reschedule chain (server resolves it), not
             the first hop: a makeup the student also missed must not look like
@@ -713,7 +791,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             <span style={{ display: 'block', fontSize: 10, marginTop: 2, fontWeight: 600, color: v.color }}
               title={v.title}>
               {lesson.rescheduledToDate
-                ? `Rescheduled → ${formatExamDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}${v.suffix}`
+                ? `Rescheduled → ${formatDayDate(lesson.rescheduledToDate)}${lesson.rescheduledToSlotTime ? ` ${lesson.rescheduledToSlotTime}` : ''}${v.suffix}`
                 : `Rescheduled${v.suffix}`}
               {/* Moved more than once — the date above is where it finally landed. */}
               {(lesson.rescheduledHops ?? 1) > 1 && (
@@ -2442,6 +2520,34 @@ export default function SchedulePage() {
       await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
     } catch { showToast('error', 'Failed to delete'); }
   }
+  // Plan the topic for the NEXT lesson (stored as a not-yet-started timeline row).
+  async function planTopic(studentId: string, subject: string, topic: string) {
+    if (!topic.trim()) return;
+    setTopicTL(prev => prev ? { ...prev, savingSubject: subject } : prev);
+    try {
+      const res = await fetch('/api/admin-schedule/topic-timeline', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, subject, topic: topic.trim(), action: 'plan' }),
+      });
+      if (!res.ok) throw new Error();
+      showToast('success', `Next lesson: ${topic.trim()}`);
+      setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject]: '' } } : prev);
+      await loadTimeline(studentId);
+    } catch { showToast('error', 'Failed to save plan'); setTopicTL(prev => prev ? { ...prev, savingSubject: null } : prev); }
+  }
+  async function startPlannedTopic(studentId: string, subject: string) {
+    setTopicTL(prev => prev ? { ...prev, savingSubject: subject } : prev);
+    try {
+      const res = await fetch('/api/admin-schedule/topic-timeline', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, subject, action: 'startPlanned' }),
+      });
+      if (!res.ok) throw new Error();
+      showToast('success', 'Planned topic is now current');
+      await loadTimeline(studentId);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+    } catch { showToast('error', 'Failed to start planned topic'); setTopicTL(prev => prev ? { ...prev, savingSubject: null } : prev); }
+  }
   function setExamRow(i: number, patch: Partial<ExamSubjectRow>) {
     setExamEdit(prev => prev ? { ...prev, rows: prev.rows.map((r, idx) => idx === i ? { ...r, ...patch } : r) } : prev);
   }
@@ -2957,6 +3063,8 @@ export default function SchedulePage() {
                   onDraft={(subject, v) => setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject]: v } } : prev)}
                   onAdvance={(subject, topic) => advanceTopic(examEdit.studentId, subject, topic)}
                   onDeleteRow={(rowId) => deleteTimelineRow(examEdit.studentId, rowId)}
+                  onPlan={(subject, topic) => planTopic(examEdit.studentId, subject, topic)}
+                  onStartPlanned={(subject) => startPlannedTopic(examEdit.studentId, subject)}
                 />
                 {/* This-lesson log (mastery / HW / note) — folded in from the old pencil */}
                 {lessonLog && !lessonLog.loading && (

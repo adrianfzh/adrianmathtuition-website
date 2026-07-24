@@ -269,6 +269,33 @@ export async function GET(req: NextRequest) {
     return /\d{1,2}[:.]\d{2}|(?:early|late|delay|arriv|leav|start|end|finish|cancel|\d+\s*(?:min|hr|hour)|half[\s-]?hour)/i.test(note);
   }
 
+  // ── Reverse reschedule lookup: where did a Rescheduled/Makeup lesson come
+  // FROM? Sources in this week's fetch link forward via Rescheduled Lesson ID;
+  // for sources outside the week (not fetched — the linked field can't be
+  // formula-filtered by record id) fall back to the "Rescheduled from …" /
+  // "Makeup for …" note the create routes stamp on the destination lesson.
+  const sourceByDestId: Record<string, { date: string; slotId: string | null }> = {};
+  for (const r of lessonsData) {
+    const destId = r.fields['Rescheduled Lesson ID']?.[0];
+    if (destId) sourceByDestId[destId] = { date: r.fields['Date'] || '', slotId: r.fields['Slot']?.[0] || null };
+  }
+  const fmtDayDate = (iso: string): string => {
+    try {
+      return new Date(iso + 'T00:00:00+08:00').toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
+    } catch { return iso; }
+  };
+  function rescheduledFromLabel(lessonId: string, type: string, rawNote: string): string | null {
+    if (type !== 'Rescheduled' && type !== 'Makeup') return null;
+    const src = sourceByDestId[lessonId];
+    if (src?.date) {
+      const slot = slotsData.find((s: any) => s.id === src.slotId);
+      const time = slot?.fields?.['Time'] || '';
+      return `${fmtDayDate(src.date)}${time ? ` ${time}` : ''}`;
+    }
+    const m = rawNote.match(/(?:Rescheduled from|Makeup for)\s+([^|]+)/i);
+    return m ? m[1].trim() : null;
+  }
+
   const lessons = activeLessonRecs.map((r: any) => {
     const rawNote: string = r.fields['Notes'] || '';
     const type: string = r.fields['Type'] || 'Regular';
@@ -296,6 +323,9 @@ export async function GET(req: NextRequest) {
         return slot?.time ?? '';
       })(),
       rescheduledToStatus: chain.finalStatus,
+      // Where a Rescheduled/Makeup lesson came FROM ("Fri, 24 Jul 3-5pm") —
+      // same-week source record, else parsed from the stamped note.
+      rescheduledFrom: rescheduledFromLabel(r.id, type, rawNote),
       // What became of it — 'delivered' | 'missed' | 'cancelled' | 'upcoming' |
       // 'unmarked' | 'broken'. The chip colours by THIS, not by status alone:
       // a makeup the student also missed is not the same as one still to come.
