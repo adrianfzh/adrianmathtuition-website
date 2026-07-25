@@ -514,7 +514,9 @@ function examSummaryLines(lesson: EnrichedLesson): string[] {
     // topics into the notes field instead.
     const notes = (es.map(e => e.notes).find(n => (n || '').trim()) || '').trim();
     const detail = [topics, notes].filter(Boolean).join(' · ');
-    let line = subject || type;
+    // Lead with the exam type so the line reads "WA3 · E Math · 20 Aug — …"
+    // (Adrian 2026-07-26: clearer than the bare subject).
+    let line = [type, subject].filter(Boolean).join(' · ');
     if (dates) line += line ? ` · ${dates}` : dates;
     if (detail) line += ` — ${detail}`;
     lines.push(line);
@@ -586,7 +588,7 @@ function RangeCalendar({ start, end, onChange }: { start: string; end: string; o
   );
 }
 
-function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, onQuickLog, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onExamDateClick?: (lesson: EnrichedLesson) => void; onWork?: () => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; onQuickLog?: () => void; activeExamType?: string | null; slotLevel?: string }) {
+function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, onQuickLog, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; onQuickLog?: () => void; activeExamType?: string | null; slotLevel?: string }) {
   // Rescheduled-away chips (status=Rescheduled) are display-only — disable dragging
   const isRescheduledAway = lesson.status === 'Rescheduled';
   // Cross-level flag: e.g. a JC student rescheduled into a Sec slot
@@ -627,9 +629,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
       ? (lesson.examEntries || []).every(e => !!e.date && e.date < chipToday)
       : lesson.examDate! < chipToday
   );
-  // The pill itself shows the current topic when there's no pending exam to
-  // show — the 📘 sub-line only renders when the pill is busy with exam info.
-  const pillShowsTopic = !!lesson.currentTopic && !lesson.examAssessment && !(chipHasExam && !examsOver);
+  const chipExamType = (lesson.examEntries || []).map(e => e.examType).find(Boolean) || lesson.activeExamType || '';
   // Exam-season summary lines (subject · date — topics). When present, they
   // carry the dates, so the 📅 pill shows the exam type instead of repeating
   // the date.
@@ -707,52 +707,9 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
               }}
             >⚠ {crossBadge}</span>
           )}
-          {/* One pill → opens the tabbed dialog (Exam | Regular work). Shows the
-              most relevant glanceable info; details/edit live in the popup. */}
-          {showExamInfo && (onExamDateClick || onWork) && (() => {
-            const hasExam = chipHasExam;
-            const pillExamType = (lesson.examEntries || []).map(e => e.examType).find(Boolean) || lesson.activeExamType || '';
-            let label: string, openTab: 'exam' | 'work', done = false;
-            if (lesson.examAssessment) {
-              // Project Work / Alternative Assessment instead of a WA.
-              label = `📋 ${lesson.examAssessment === 'Project Work' ? 'Project Work' : 'Alt. Assessment'}`;
-              openTab = 'exam';
-            } else if (hasExam && !examsOver) {
-              label = examLines.length && pillExamType
-                ? `📅 ${pillExamType}`
-                : `📅 ${lesson.examApprox ? '~' : ''}${formatExamDate(lesson.examDate!)}${lesson.examApprox ? ' (wk)' : ''}`;
-              openTab = 'exam';
-            } else if (lesson.currentTopic) {
-              // Exams over + a current topic set → back to normal: show the topic.
-              label = `📘 ${lesson.currentTopic}`;
-              openTab = 'work';
-            } else if (examsOver) {
-              // Exams done, no next topic yet — green pill; tap lands on the
-              // Regular-work tab to plan what's next.
-              label = `✅ ${pillExamType || 'Exams'} done`;
-              openTab = 'work';
-              done = true;
-            } else {
-              label = '＋ exam / topic';
-              openTab = 'exam';
-            }
-            const open = () => { if (openTab === 'work' && onWork) onWork(); else if (onExamDateClick) onExamDateClick(lesson); else onWork?.(); };
-            return (
-              <span
-                role="button"
-                title={done ? 'Exams over — tap to plan regular work' : 'Exam & regular-work — tap for details'}
-                onClick={e => { e.stopPropagation(); open(); }}
-                style={{
-                  flexShrink: 0, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis',
-                  fontSize: 9, fontWeight: 700, lineHeight: 1.4, cursor: 'pointer',
-                  padding: '1px 7px', borderRadius: 8, whiteSpace: 'nowrap',
-                  background: done ? '#f0fdf4' : '#eff6ff',
-                  color: done ? '#15803d' : '#1d4ed8',
-                  border: `1px solid ${done ? '#bbf7d0' : '#bfdbfe'}`,
-                }}
-              >{label}</span>
-            );
-          })()}
+          {/* The exam/topic pill is retired (Adrian 2026-07-26) — the NAME is
+              the tap target for the Exam | Regular-work sheet; the info the
+              pill carried now lives in the labelled sub-lines below. */}
         </div>
         {/* Line 2 (web only): type-tag + small attendance buttons on the same row */}
         {!isTouch && (
@@ -868,20 +825,29 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             📅 {ln}
           </span>
         ))}
+        {/* Exams all past → compact green done line (dates decluttered). */}
+        {showExamInfo && examsOver && !lesson.examAssessment && (
+          <span style={{ display: 'block', fontSize: 10, marginTop: 6, fontWeight: 700, color: '#15803d' }}>
+            ✅ {chipExamType || 'Exams'} done
+          </span>
+        )}
         {showExamInfo && !lesson.examAssessment && lesson.examDate === 'NO_EXAM' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 6 }}>no upcoming exam</span>
         )}
-        {/* Regular-work lines — shown ALONGSIDE exam info (Adrian 2026-07-25):
-            the current topic (unless the pill already shows it) and the
-            planned next-lesson topic, so exam + work are visible at once. */}
-        {showExamInfo && lesson.currentTopic && !pillShowsTopic && (
+        {/* Nothing recorded at all — muted nudge (the name opens the sheet). */}
+        {showExamInfo && !lesson.examAssessment && !chipHasExam && lesson.examDate !== 'NO_EXAM' && !lesson.currentTopic && !lesson.nextTopic && (
+          <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 6 }}>no exam / topic yet</span>
+        )}
+        {/* Regular-work lines — labelled, shown alongside exam info
+            (Adrian 2026-07-26: "Working on:" / "Next lesson:"). */}
+        {showExamInfo && lesson.currentTopic && (
           <span style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: 6, color: '#0369a1', overflowWrap: 'break-word' }}>
-            📘 {lesson.currentTopic}
+            📘 Working on: {lesson.currentTopic}
           </span>
         )}
         {showExamInfo && lesson.nextTopic && (
-          <span style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: lesson.currentTopic && !pillShowsTopic ? 3 : 6, color: '#15803d', overflowWrap: 'break-word' }}>
-            📗 next: {lesson.nextTopic}
+          <span style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: lesson.currentTopic ? 3 : 6, color: '#15803d', overflowWrap: 'break-word' }}>
+            📗 Next lesson: {lesson.nextTopic}
           </span>
         )}
         {lesson.type !== 'Trial' && lesson.notes && !isFaded && (
@@ -932,7 +898,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
 }
 
 function DroppableLessonSlot({
-  id, lessons, onChipTap, onAddClick, onExamDateClick, onWork, onStudentClick,
+  id, lessons, onChipTap, onAddClick, onStudentClick,
   onMarkPresent, onMarkAbsent, onUndo, onQuickLog,
   ghostStudents, cancelledStudents, onGhostTap, savingStudents, activeExamType, slotLevel,
 }: {
@@ -941,8 +907,6 @@ function DroppableLessonSlot({
   slotLevel?: string;
   onChipTap: (lesson: EnrichedLesson) => void;
   onAddClick: () => void;
-  onExamDateClick?: (lesson: EnrichedLesson) => void;
-  onWork?: (lesson: EnrichedLesson) => void;
   onStudentClick?: (lesson: EnrichedLesson) => void;
   onMarkPresent?: (lesson: EnrichedLesson) => void;
   onMarkAbsent?: (lesson: EnrichedLesson) => void;
@@ -961,7 +925,7 @@ function DroppableLessonSlot({
     <div ref={setNodeRef} className={`lesson-drop-zone${isOver ? ' drop-over' : ''}`}>
       <div className="lesson-list">
         {lessons.map(l => (
-          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onExamDateClick={onExamDateClick} onWork={onWork && l.studentId && l.type !== 'Trial' ? () => onWork(l) : undefined} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} onQuickLog={onQuickLog && l.studentId && l.type !== 'Trial' ? () => onQuickLog(l) : undefined} activeExamType={activeExamType} slotLevel={slotLevel} />
+          <DraggableLessonChip key={l.id} lesson={l} onTap={() => onChipTap(l)} onStudentClick={onStudentClick ? () => onStudentClick(l) : undefined} onMarkPresent={onMarkPresent ? () => onMarkPresent(l) : undefined} onMarkAbsent={onMarkAbsent ? () => onMarkAbsent(l) : undefined} onUndo={onUndo ? () => onUndo(l) : undefined} onQuickLog={onQuickLog && l.studentId && l.type !== 'Trial' ? () => onQuickLog(l) : undefined} activeExamType={activeExamType} slotLevel={slotLevel} />
         ))}
         {ghosts.map(s => (
           <div
@@ -2518,11 +2482,6 @@ export default function SchedulePage() {
     loadTimeline(sid);
     loadLessonLog(lesson.id);
   }
-  // Open the student panel straight on the Regular-work (topic) tab.
-  function openWork(lesson: EnrichedLesson) {
-    openExamEdit(lesson);
-    setExamEdit(prev => prev ? { ...prev, tab: 'work' } : prev);
-  }
   // Classmates at the same level — candidates for "copy from" and "also save
   // for" (same school → same exam dates & topics). hasExam marks students who
   // already carry exam info this season.
@@ -2751,8 +2710,6 @@ export default function SchedulePage() {
           slotLevel={slot.level}
           onChipTap={(lesson) => { setModalError(''); setActionSheet({ lesson, date: dateStr, slotId: slot.id }); }}
           onAddClick={() => openAddModal(date, slot)}
-          onExamDateClick={openExamEdit}
-          onWork={openWork}
           ghostStudents={ghostStudents}
           cancelledStudents={cancelledStudents}
           onStudentClick={(lesson) => {
