@@ -374,6 +374,36 @@ export default function BotAnalytics() {
     sendChat([firstMsg], r);
   }
 
+  // One-tap regression capture: the question + Adrian's one-line expectation
+  // become a permanent eval case (regression_cases, replayed by the bot repo's
+  // scripts/regression-eval.js). One line of typing — or just the correct answer.
+  async function addToRegressionBank() {
+    if (!selected) return;
+    const expected = window.prompt('What SHOULD have happened? One line — or just type the correct final answer.');
+    if (!expected || !expected.trim()) return;
+    const levelGuess = (selected.topic || '').match(/^(AM|EM|JC2?|S[12])\b/i)?.[1]?.toUpperCase() || null;
+    try {
+      const r = await fetch('/api/admin/regression-case', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          expected: expected.trim(),
+          questionText: selected.caption || '(image question)',
+          badAnswer: selected.aiResponse || '',
+          sourceQuestionId: selected.id,
+          channel: String(selected.chatId || '').startsWith('web') ? 'web' : 'telegram',
+          level: levelGuess === 'JC2' ? 'JC' : levelGuess,
+          topic: selected.topic || null,
+          imageUrl: selected.imageUrl || null,
+        }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'save failed');
+      alert(`📌 Saved to regression bank (${j.kind} check). It will be replayed on every future run.`);
+    } catch (e) {
+      alert('Save failed: ' + (e instanceof Error ? e.message : String(e)));
+    }
+  }
+
   async function discussWithOpus() {
     if (!selected) return;
     setOpusOpen(true);
@@ -1058,6 +1088,10 @@ export default function BotAnalytics() {
                       <button onClick={discussWithOpus}
                         style={{ padding: '8px 18px', background: '#1e3a5f', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                         Discuss with Opus ▸
+                      </button>
+                      <button onClick={addToRegressionBank}
+                        style={{ padding: '8px 16px', background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                        📌 Regression bank
                       </button>
                       <button onClick={() => dismiss(selected.id)}
                         style={{ padding: '8px 16px', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13, cursor: 'pointer' }}>
