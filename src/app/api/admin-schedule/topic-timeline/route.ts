@@ -16,11 +16,17 @@ export const runtime = 'nodejs';
 // topic that was set TODAY deletes the mis-pick (no zero-length rows), and
 // re-picking a topic that was ended TODAY resurrects its original row.
 //
+// MULTIPLE topics may be current at once, and multiple may be planned
+// (Adrian 2026-07-25): 'add' starts another current topic alongside the
+// existing ones; each chip retires individually via 'end'.
+//
 // GET  ?studentId=recXXX           → { rows: [...] } sorted by Started
-// POST { studentId, subject, topic }         → advance current topic for (student, subject)
-// POST { studentId, subject, topic, action:'plan' }  → set/replace the planned next topic
-// POST { studentId, subject, action:'startPlanned' } → promote the planned topic to current
-// POST { studentId, subject, action:'clear' } → end the current topic (no new one)
+// POST { studentId, subject, topic }         → REPLACE current topic(s) (legacy advance; assistant/voice path)
+// POST { studentId, subject, topic, action:'add' }   → add another current topic (keeps existing)
+// POST { studentId, subject, action:'end', rowId }   → end ONE current topic (delete if started today)
+// POST { studentId, subject, topic, action:'plan' }  → add a planned next-lesson topic
+// POST { studentId, subject, action:'startPlanned', rowId? } → start a planned topic (keeps other currents)
+// POST { studentId, subject, action:'clear' } → end ALL current topics for the subject
 // POST { rowId, ...fields }                   → edit/delete a single row (corrections)
 
 const TABLE = 'Topic Timeline';
@@ -67,7 +73,9 @@ export async function POST(req: NextRequest) {
   const today = localToday();
 
   // ── Single-row edit / delete (corrections) ──
-  if (body.rowId) {
+  // ('end' and 'startPlanned' also carry rowId but are handled below with
+  // student context.)
+  if (body.rowId && (!body.action || body.action === 'delete')) {
     if (body.action === 'delete') {
       await airtableRequest(TABLE, `/${body.rowId}`, { method: 'DELETE' });
       invalidateScheduleStatics();
@@ -88,73 +96,98 @@ export async function POST(req: NextRequest) {
   try {
     const mine = await rowsFor(studentId);
     const forSubject = (r: any) => (r.fields['Subject'] || '') === subject;
-    const currentForSubject = mine.find((r: any) => r.fields['Current'] === true && forSubject(r));
+    // MULTIPLE topics may be current / planned at once.
+    const currentsForSubject = mine.filter((r: any) => r.fields['Current'] === true && forSubject(r));
     // A plan is a row that never started: no Started date, not Current.
-    const plannedForSubject = mine.find((r: any) => !r.fields['Started'] && r.fields['Current'] !== true && forSubject(r));
+    const plannedsForSubject = mine.filter((r: any) => !r.fields['Started'] && r.fields['Current'] !== true && forSubject(r));
 
-    // Retire the current topic ahead of a replacement. A topic set TODAY is a
-    // mis-pick being corrected (it produced the "24 Jul – 24 Jul" noise rows)
-    // → delete it; anything older is real history → stamp Ended.
-    const retireCurrent = async () => {
-      if (!currentForSubject) return;
-      if ((currentForSubject.fields['Started'] || '') === today) {
-        await airtableRequest(TABLE, `/${currentForSubject.id}`, { method: 'DELETE' });
+    // Retire one row: a topic set TODAY is a mis-pick being corrected (it
+    // produced the "24 Jul – 24 Jul" noise rows) → delete it; anything older
+    // is real history → stamp Ended.
+    const retireRow = async (row: any) => {
+      if ((row.fields['Started'] || '') === today) {
+        await airtableRequest(TABLE, `/${row.id}`, { method: 'DELETE' });
       } else {
-        await airtableRequest(TABLE, `/${currentForSubject.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Ended: today, Current: false } }) });
+        await airtableRequest(TABLE, `/${row.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Ended: today, Current: false } }) });
       }
     };
     const done = () => { invalidateScheduleStatics(); return NextResponse.json({ ok: true }); };
+    // Flip a planned/ended row back into a live current topic.
+    const startRow = (id: string) =>
+      airtableRequest(TABLE, `/${id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Started: today, Current: true, Ended: null } }) });
 
-    // ── Clear: end the current topic, create nothing ──
-    if (action === 'clear') {
-      await retireCurrent();
+    // ── End: one specific current topic (its chip's ✕) ──
+    if (action === 'end') {
+      const row = mine.find((r: any) => r.id === body.rowId);
+      if (row) await retireRow(row);
       return done();
     }
 
-    // ── Plan: set/replace the "next lesson" topic (a row that hasn't started) ──
+    // ── Clear: end ALL current topics for the subject, create nothing ──
+    if (action === 'clear') {
+      for (const row of currentsForSubject) await retireRow(row);
+      return done();
+    }
+
+    // ── Plan: ADD a "next lesson" topic (a row that hasn't started) ──
     if (action === 'plan') {
       if (!topic || !topic.trim()) return NextResponse.json({ error: 'topic required' }, { status: 400 });
-      if (plannedForSubject) {
-        await airtableRequest(TABLE, `/${plannedForSubject.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Topic: topic.trim() } }) });
-      } else {
-        await airtableRequest(TABLE, '', {
-          method: 'POST',
-          body: JSON.stringify({ fields: { Student: [studentId], Subject: subject, Topic: topic.trim() } }),
-        });
+      if (plannedsForSubject.some((r: any) => (r.fields['Topic'] || '').trim() === topic.trim())) {
+        return NextResponse.json({ ok: true, unchanged: true });
       }
+      await airtableRequest(TABLE, '', {
+        method: 'POST',
+        body: JSON.stringify({ fields: { Student: [studentId], Subject: subject, Topic: topic.trim() } }),
+      });
       return done();
     }
 
-    // ── Start the planned topic now ──
+    // ── Start a planned topic now (alongside any other current topics) ──
     if (action === 'startPlanned') {
-      if (!plannedForSubject) return NextResponse.json({ error: 'no planned topic' }, { status: 400 });
-      await retireCurrent();
-      await airtableRequest(TABLE, `/${plannedForSubject.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Started: today, Current: true } }) });
+      const row = body.rowId ? mine.find((r: any) => r.id === body.rowId) : plannedsForSubject[0];
+      if (!row) return NextResponse.json({ error: 'no planned topic' }, { status: 400 });
+      await startRow(row.id);
       return done();
     }
 
-    // ── Advance to a new current topic ──
     if (!topic || !topic.trim()) return NextResponse.json({ error: 'topic required' }, { status: 400 });
-    // Same topic already current → nothing to do.
-    if (currentForSubject && (currentForSubject.fields['Topic'] || '') === topic.trim()) {
+    const sameCurrent = currentsForSubject.some((r: any) => (r.fields['Topic'] || '').trim() === topic.trim());
+
+    // ── Add: another current topic alongside the existing ones ──
+    if (action === 'add') {
+      if (sameCurrent) return NextResponse.json({ ok: true, unchanged: true });
+      // Re-adding a topic ended TODAY = undoing a mis-removal — resurrect it.
+      const endedTodaySame = mine.find((r: any) =>
+        forSubject(r) && r.fields['Current'] !== true
+        && (r.fields['Ended'] || '') === today && (r.fields['Topic'] || '').trim() === topic.trim());
+      if (endedTodaySame) { await startRow(endedTodaySame.id); return done(); }
+      // Adding the topic that was planned consumes the plan (no duplicate row).
+      const plannedSame = plannedsForSubject.find((r: any) => (r.fields['Topic'] || '').trim() === topic.trim());
+      if (plannedSame) { await startRow(plannedSame.id); return done(); }
+      await airtableRequest(TABLE, '', {
+        method: 'POST',
+        body: JSON.stringify({ fields: { Student: [studentId], Subject: subject, Topic: topic.trim(), Started: today, Current: true } }),
+      });
+      return done();
+    }
+
+    // ── Advance (legacy default — assistant/voice path): REPLACE current topic(s) ──
+    if (sameCurrent && currentsForSubject.length === 1) {
       return NextResponse.json({ ok: true, unchanged: true });
     }
-    await retireCurrent();
+    for (const row of currentsForSubject) {
+      if ((row.fields['Topic'] || '').trim() !== topic.trim()) await retireRow(row);
+    }
+    if (sameCurrent) return done(); // kept the matching row, retired the rest
     // Re-picking a topic that was ended TODAY = undoing a mis-pick — resurrect
     // the original row instead of splitting the topic's history in two.
     const endedTodaySame = mine.find((r: any) =>
-      r.id !== currentForSubject?.id && forSubject(r) && r.fields['Current'] !== true
-      && (r.fields['Ended'] || '') === today && (r.fields['Topic'] || '') === topic.trim());
-    if (endedTodaySame) {
-      await airtableRequest(TABLE, `/${endedTodaySame.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Ended: null, Current: true } }) });
-      return done();
-    }
-    // Advancing into the topic that was planned for next lesson consumes the
-    // plan (no duplicate row).
-    if (plannedForSubject && (plannedForSubject.fields['Topic'] || '').trim() === topic.trim()) {
-      await airtableRequest(TABLE, `/${plannedForSubject.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Started: today, Current: true } }) });
-      return done();
-    }
+      forSubject(r) && r.fields['Current'] !== true
+      && (r.fields['Ended'] || '') === today && (r.fields['Topic'] || '').trim() === topic.trim());
+    if (endedTodaySame) { await startRow(endedTodaySame.id); return done(); }
+    // Advancing into the topic that was planned for next lesson consumes the plan.
+    const plannedSame = plannedsForSubject.find((r: any) => (r.fields['Topic'] || '').trim() === topic.trim());
+    if (plannedSame) { await startRow(plannedSame.id); return done(); }
     await airtableRequest(TABLE, '', {
       method: 'POST',
       body: JSON.stringify({ fields: { Student: [studentId], Subject: subject, Topic: topic.trim(), Started: today, Current: true } }),

@@ -110,16 +110,17 @@ function fmtTLDate(iso: string | null): string {
 // the chip, reading as an unanswered question); it auto-opens only when the
 // subject has no current topic yet. Mis-picks self-heal server-side (same-day
 // replace deletes the wrong row; re-picking a topic ended today resurrects it).
-function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDeleteRow, onPlan, onStartPlanned }: {
+function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEndTopic, onDeleteRow, onPlan, onStartPlanned }: {
   studentId: string;
   level: string;
   subjects: string[];
   tl: { loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null;
   onDraft: (subject: string, v: string) => void;
-  onAdvance: (subject: string, topic: string) => void;
+  onAddTopic: (subject: string, topic: string) => void;
+  onEndTopic: (subject: string, rowId: string) => void;
   onDeleteRow: (rowId: string) => void;
   onPlan: (subject: string, topic: string) => void;
-  onStartPlanned: (subject: string) => void;
+  onStartPlanned: (subject: string, rowId: string) => void;
 }) {
   // Per-subject picker state: which picker (if any) is open. Explicit null =
   // user closed it; undefined = default (open 'current' when none set yet).
@@ -130,25 +131,26 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDel
       {subjects.map(subject => {
         const cats = getExamTopicsForSubject(level || 'Sec 4', subject || 'E Math');
         const rows = tl.rows.filter(r => (r.subject || '') === subject);
-        const current = rows.find(r => r.current);
-        // A planned "next lesson" topic is a row that never started.
-        const planned = rows.find(r => !r.current && !r.started);
+        // MULTIPLE topics can be current at once; each chip retires via its ✕.
+        const currents = rows.filter(r => r.current);
+        // Planned "next lesson" topics are rows that never started.
+        const planneds = rows.filter(r => !r.current && !r.started);
         const history = rows.filter(r => !r.current && r.started)
           .sort((a, b) => (b.started || '').localeCompare(a.started || ''));
         const draft = tl.drafts[subject] ?? '';
         const saving = tl.savingSubject === subject;
-        const picker = openPicker[subject] !== undefined ? openPicker[subject] : (current ? null : 'current');
+        const picker = openPicker[subject] !== undefined ? openPicker[subject] : (currents.length ? null : 'current');
         const setPicker = (v: 'current' | 'next' | null) => setOpenPicker(p => ({ ...p, [subject]: v }));
         const commit = (topic: string) => {
           if (!topic.trim()) return;
           if (picker === 'next') onPlan(subject, topic);
-          else onAdvance(subject, topic);
+          else onAddTopic(subject, topic);
           setPicker(null);
         };
         const pickerUI = (
           <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, marginBottom: 10 }}>
             <div style={{ fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
-              {picker === 'next' ? '📗 Topic for the NEXT lesson' : current ? `📘 Change current topic (now: ${current.topic})` : '📘 Set the current topic'}
+              {picker === 'next' ? '📗 Add a topic for the NEXT lesson' : currents.length ? '📘 Add another current topic' : '📘 Set the current topic'}
             </div>
             <select className="modal-select" value="" disabled={saving}
               onChange={e => { if (e.target.value) commit(e.target.value); }}>
@@ -162,7 +164,7 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDel
             <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
               {draft.trim() && (
                 <button className="btn-primary" disabled={saving} onClick={() => commit(draft)} style={{ flex: 1 }}>
-                  {saving ? 'Saving…' : picker === 'next' ? `Plan “${draft.trim()}” for next lesson` : `Set “${draft.trim()}” as current`}
+                  {saving ? 'Saving…' : picker === 'next' ? `Plan “${draft.trim()}”` : `Add “${draft.trim()}”`}
                 </button>
               )}
               <button onClick={() => setPicker(null)} disabled={saving}
@@ -176,43 +178,51 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAdvance, onDel
           <div key={subject || 'gen'} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 12 }}>
             {subject && <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>{subject}</div>}
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Working on now</div>
-            {current ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '5px 10px' }}>📘 {current.topic}</span>
-                <span style={{ fontSize: 11.5, color: '#94a3b8' }}>since {fmtTLDate(current.started)}</span>
-                {picker !== 'current' && (
-                  <button onClick={() => setPicker('current')}
-                    style={{ fontSize: 11.5, fontWeight: 600, color: '#64748b', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 9px', cursor: 'pointer' }}>
-                    ✏️ Change
-                  </button>
-                )}
+            {currents.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+                {currents.map(c => (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '5px 10px' }}>📘 {c.topic}</span>
+                    <span style={{ fontSize: 11.5, color: '#94a3b8' }}>since {fmtTLDate(c.started)}</span>
+                    <button onClick={() => onEndTopic(subject, c.id)} disabled={saving} title="Done with this topic — end it"
+                      style={{ border: 'none', background: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: 14, padding: '0 2px' }}>✕</button>
+                  </div>
+                ))}
               </div>
             ) : picker !== 'current' ? (
               <div style={{ fontSize: 13, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 10 }}>No current topic</div>
             ) : null}
-            {picker === 'current' && pickerUI}
+            {picker === 'current' ? pickerUI : (
+              <button onClick={() => setPicker('current')}
+                style={{ fontSize: 12, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px dashed #7dd3fc', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', marginBottom: 10 }}>
+                ＋ Add {currents.length ? 'another ' : ''}topic
+              </button>
+            )}
 
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', margin: '2px 0 4px' }}>Next lesson</div>
-            {planned ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-                <span onClick={() => setPicker('next')} title="Tap to change"
-                  style={{ fontSize: 13.5, fontWeight: 700, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '5px 10px', cursor: 'pointer' }}>
-                  📗 {planned.topic}
-                </span>
-                <button onClick={() => onStartPlanned(subject)} disabled={saving}
-                  style={{ fontSize: 11.5, fontWeight: 700, color: '#fff', background: '#15803d', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer' }}>
-                  ▶ Start now
-                </button>
-                <button onClick={() => onDeleteRow(planned.id)} title="Remove plan" disabled={saving}
-                  style={{ border: 'none', background: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: 14, padding: '0 2px' }}>✕</button>
+            {planneds.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+                {planneds.map(p => (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '5px 10px' }}>
+                      📗 {p.topic}
+                    </span>
+                    <button onClick={() => onStartPlanned(subject, p.id)} disabled={saving} title="Move this into Working on now (starts today)"
+                      style={{ fontSize: 11.5, fontWeight: 700, color: '#fff', background: '#15803d', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer' }}>
+                      ▶ Start now
+                    </button>
+                    <button onClick={() => onDeleteRow(p.id)} title="Remove plan" disabled={saving}
+                      style={{ border: 'none', background: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: 14, padding: '0 2px' }}>✕</button>
+                  </div>
+                ))}
               </div>
-            ) : picker !== 'next' ? (
+            )}
+            {picker === 'next' ? pickerUI : (
               <button onClick={() => setPicker('next')}
                 style={{ fontSize: 12, fontWeight: 600, color: '#15803d', background: '#f0fdf4', border: '1px dashed #86efac', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', marginBottom: 10 }}>
-                ＋ Plan next lesson’s topic
+                ＋ Plan {planneds.length ? 'another ' : ''}next-lesson topic
               </button>
-            ) : null}
-            {picker === 'next' && pickerUI}
+            )}
 
             {history.length > 0 && (
               <div style={{ marginTop: 12 }}>
@@ -2545,20 +2555,36 @@ export default function SchedulePage() {
       setTopicTL({ loading: false, rows: d.rows || [], drafts: {}, savingSubject: null });
     } catch { setTopicTL({ loading: false, rows: [], drafts: {}, savingSubject: null }); }
   }
-  async function advanceTopic(studentId: string, subject: string, topic: string) {
+  // ADD a current topic (multi-topic: existing current topics are kept;
+  // each retires individually via its chip's ✕).
+  async function addTopic(studentId: string, subject: string, topic: string) {
     if (!topic.trim()) return;
     setTopicTL(prev => prev ? { ...prev, savingSubject: subject } : prev);
     try {
       const res = await fetch('/api/admin-schedule/topic-timeline', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, subject, topic: topic.trim() }),
+        body: JSON.stringify({ studentId, subject, topic: topic.trim(), action: 'add' }),
       });
       if (!res.ok) throw new Error();
       showToast('success', `Now on: ${topic.trim()}`);
       setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject]: '' } } : prev);
       await loadTimeline(studentId);
       await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
-    } catch { showToast('error', 'Failed to update topic'); setTopicTL(prev => prev ? { ...prev, savingSubject: null } : prev); }
+    } catch { showToast('error', 'Failed to add topic'); setTopicTL(prev => prev ? { ...prev, savingSubject: null } : prev); }
+  }
+  // End ONE current topic (its chip's ✕) — deletes the row if it was only
+  // started today (mis-pick), else stamps Ended.
+  async function endTopic(studentId: string, subject: string, rowId: string) {
+    setTopicTL(prev => prev ? { ...prev, savingSubject: subject } : prev);
+    try {
+      const res = await fetch('/api/admin-schedule/topic-timeline', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, subject, rowId, action: 'end' }),
+      });
+      if (!res.ok) throw new Error();
+      await loadTimeline(studentId);
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+    } catch { showToast('error', 'Failed to end topic'); setTopicTL(prev => prev ? { ...prev, savingSubject: null } : prev); }
   }
   async function deleteTimelineRow(studentId: string, rowId: string) {
     try {
@@ -2582,12 +2608,12 @@ export default function SchedulePage() {
       await loadTimeline(studentId);
     } catch { showToast('error', 'Failed to save plan'); setTopicTL(prev => prev ? { ...prev, savingSubject: null } : prev); }
   }
-  async function startPlannedTopic(studentId: string, subject: string) {
+  async function startPlannedTopic(studentId: string, subject: string, rowId: string) {
     setTopicTL(prev => prev ? { ...prev, savingSubject: subject } : prev);
     try {
       const res = await fetch('/api/admin-schedule/topic-timeline', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, subject, action: 'startPlanned' }),
+        body: JSON.stringify({ studentId, subject, rowId, action: 'startPlanned' }),
       });
       if (!res.ok) throw new Error();
       showToast('success', 'Planned topic is now current');
@@ -3108,10 +3134,11 @@ export default function SchedulePage() {
                   subjects={examEdit.studentSubjects.length ? examEdit.studentSubjects : ['']}
                   tl={topicTL}
                   onDraft={(subject, v) => setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject]: v } } : prev)}
-                  onAdvance={(subject, topic) => advanceTopic(examEdit.studentId, subject, topic)}
+                  onAddTopic={(subject, topic) => addTopic(examEdit.studentId, subject, topic)}
+                  onEndTopic={(subject, rowId) => endTopic(examEdit.studentId, subject, rowId)}
                   onDeleteRow={(rowId) => deleteTimelineRow(examEdit.studentId, rowId)}
                   onPlan={(subject, topic) => planTopic(examEdit.studentId, subject, topic)}
-                  onStartPlanned={(subject) => startPlannedTopic(examEdit.studentId, subject)}
+                  onStartPlanned={(subject, rowId) => startPlannedTopic(examEdit.studentId, subject, rowId)}
                 />
                 {/* This-lesson log (mastery / HW / note) — folded in from the old pencil */}
                 {lessonLog && !lessonLog.loading && (
