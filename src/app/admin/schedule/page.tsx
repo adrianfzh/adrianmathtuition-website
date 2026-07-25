@@ -603,10 +603,20 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
   // too — during exam season their moved lesson is often the only one shown).
   const showExamInfo = !isFaded && lesson.type !== 'Trial' &&
     lesson.date >= isoDate(addDays(new Date(), -1)) && lesson.date <= isoDate(addDays(new Date(), 14));
+  // All exam dates strictly past → this student's exams are OVER: the chip
+  // swaps the date lines for a green "done" pill (Adrian 2026-07-25). An
+  // entry without a date means "TBC", so it blocks the done state; exam-day
+  // itself still counts as upcoming.
+  const chipToday = isoDate(new Date());
+  const examsOver = !!lesson.examDate && lesson.examDate !== 'NO_EXAM' && (
+    (lesson.examEntries || []).length
+      ? (lesson.examEntries || []).every(e => !!e.date && e.date < chipToday)
+      : lesson.examDate < chipToday
+  );
   // Exam-season summary lines (subject · date — topics). When present, they
   // carry the dates, so the 📅 pill shows the exam type instead of repeating
   // the date.
-  const examLines = showExamInfo && !lesson.examAssessment ? examSummaryLines(lesson) : [];
+  const examLines = showExamInfo && !lesson.examAssessment && !examsOver ? examSummaryLines(lesson) : [];
 
   // Close dropdown when clicking outside the chip
   useEffect(() => {
@@ -684,20 +694,27 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
               most relevant glanceable info; details/edit live in the popup. */}
           {showExamInfo && (onExamDateClick || onWork) && (() => {
             const hasExam = !!lesson.examDate && lesson.examDate !== 'NO_EXAM';
-            let label: string, openTab: 'exam' | 'work';
+            const pillExamType = (lesson.examEntries || []).map(e => e.examType).find(Boolean) || lesson.activeExamType || '';
+            let label: string, openTab: 'exam' | 'work', done = false;
             if (lesson.examAssessment) {
               // Project Work / Alternative Assessment instead of a WA.
               label = `📋 ${lesson.examAssessment === 'Project Work' ? 'Project Work' : 'Alt. Assessment'}`;
               openTab = 'exam';
-            } else if (hasExam) {
-              const examType = (lesson.examEntries || []).map(e => e.examType).find(Boolean) || lesson.activeExamType || '';
-              label = examLines.length && examType
-                ? `📅 ${examType}`
+            } else if (hasExam && !examsOver) {
+              label = examLines.length && pillExamType
+                ? `📅 ${pillExamType}`
                 : `📅 ${lesson.examApprox ? '~' : ''}${formatExamDate(lesson.examDate!)}${lesson.examApprox ? ' (wk)' : ''}`;
               openTab = 'exam';
             } else if (lesson.currentTopic) {
+              // Exams over + a current topic set → back to normal: show the topic.
               label = `📘 ${lesson.currentTopic}`;
               openTab = 'work';
+            } else if (examsOver) {
+              // Exams done, no next topic yet — green pill; tap lands on the
+              // Regular-work tab to plan what's next.
+              label = `✅ ${pillExamType || 'Exams'} done`;
+              openTab = 'work';
+              done = true;
             } else {
               label = '＋ exam / topic';
               openTab = 'exam';
@@ -706,13 +723,15 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
             return (
               <span
                 role="button"
-                title="Exam & regular-work — tap for details"
+                title={done ? 'Exams over — tap to plan regular work' : 'Exam & regular-work — tap for details'}
                 onClick={e => { e.stopPropagation(); open(); }}
                 style={{
                   flexShrink: 0, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis',
                   fontSize: 9, fontWeight: 700, lineHeight: 1.4, cursor: 'pointer',
                   padding: '1px 7px', borderRadius: 8, whiteSpace: 'nowrap',
-                  background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe',
+                  background: done ? '#f0fdf4' : '#eff6ff',
+                  color: done ? '#15803d' : '#1d4ed8',
+                  border: `1px solid ${done ? '#bbf7d0' : '#bfdbfe'}`,
                 }}
               >{label}</span>
             );
@@ -2458,8 +2477,11 @@ export default function SchedulePage() {
     const pwaa = data?.examAssessmentByStudent?.[sid] || '';
     setPrelimTopicsOpen(new Set());
     // During exam season the sheet opens on the Exam tab (that's what needs
-    // filling in); off-season it opens on Regular work.
-    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM' && !pwaa, pwaa, rows, saving: false, tab: data?.activeExamType ? 'exam' : 'work', applyTo: [] });
+    // filling in); off-season — or once ALL this student's exam dates have
+    // passed — it opens on Regular work (post-exam, planning is the action).
+    const sheetToday = isoDate(new Date());
+    const studentExamsOver = entries.length > 0 && entries.every(e => !!e.date && e.date < sheetToday);
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM' && !pwaa, pwaa, rows, saving: false, tab: data?.activeExamType && !studentExamsOver ? 'exam' : 'work', applyTo: [] });
     loadTimeline(sid);
     loadLessonLog(lesson.id);
   }
