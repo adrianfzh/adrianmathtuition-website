@@ -596,10 +596,12 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
   const [showTopicDropdown, setShowTopicDropdown] = useState(false);
   const dropdownRef = useRef<HTMLSpanElement>(null);
 
-  // Exam/topic info shows only where it's actionable: not on Rescheduled
-  // replacement chips, and only for lessons dated yesterday → +14 days
-  // (Adrian 2026-07-18). Older weeks and far-future chips skip the clutter.
-  const showExamInfo = !isFaded && lesson.type !== 'Trial' && lesson.type !== 'Rescheduled' &&
+  // Exam/topic info shows only where it's actionable: lessons dated
+  // yesterday → +14 days (Adrian 2026-07-18) — older weeks and far-future
+  // chips skip the clutter. Rescheduled replacement chips DO get the pill
+  // (Adrian 2026-07-25: exam info must be enterable for rescheduled students
+  // too — during exam season their moved lesson is often the only one shown).
+  const showExamInfo = !isFaded && lesson.type !== 'Trial' &&
     lesson.date >= isoDate(addDays(new Date(), -1)) && lesson.date <= isoDate(addDays(new Date(), 14));
   // Exam-season summary lines (subject · date — topics). When present, they
   // carry the dates, so the 📅 pill shows the exam type instead of repeating
