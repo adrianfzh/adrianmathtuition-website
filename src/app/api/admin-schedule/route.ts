@@ -84,8 +84,11 @@ export async function GET(req: NextRequest) {
       catch { return fetchAll('Lessons', baseQuery); }
     })(),
     airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`).catch(() => ({ records: [] })),
-    cachedScheduleStatic('topic-timeline', () =>
-      fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent('{Current}=1')}&fields[]=Student&fields[]=Subject&fields[]=Topic`).catch(() => [] as any[])),
+    // Current topics ({Current}=1) AND planned next-lesson topics (no Started
+    // date) — the chip shows both. Key is -v2: the old cached shape lacked the
+    // Current/Started fields this split needs.
+    cachedScheduleStatic('topic-timeline-v2', () =>
+      fetchAll('Topic Timeline', `?filterByFormula=${encodeURIComponent(`OR({Current}=1,{Started}='')`)}&fields[]=Student&fields[]=Subject&fields[]=Topic&fields[]=Current&fields[]=Started`).catch(() => [] as any[])),
     // Reschedule SOURCES (Status='Rescheduled') across a ±6/7-month window, so
     // destination chips can say where they came FROM even when the source lies
     // outside the viewed week (bot-created makeups say just "Makeup lesson" —
@@ -457,13 +460,18 @@ export async function GET(req: NextRequest) {
     console.error('[admin-schedule] exam fetch failed:', err);
   }
 
-  // Current "working on" topic per student (for the chip pill) — fetched in stage 1.
+  // Current "working on" + planned "next lesson" topics per student (for the
+  // chip) — fetched in stage 1. A planned row has no Started date and isn't
+  // Current (see topic-timeline route).
   const currentTopicByStudent: Record<string, { subject: string; topic: string }[]> = {};
+  const nextTopicByStudent: Record<string, { subject: string; topic: string }[]> = {};
   try {
     for (const r of tlRecords) {
       const sid = r.fields['Student']?.[0];
       if (!sid || !r.fields['Topic']) continue;
-      (currentTopicByStudent[sid] ||= []).push({ subject: r.fields['Subject'] || '', topic: r.fields['Topic'] });
+      const entry = { subject: r.fields['Subject'] || '', topic: r.fields['Topic'] };
+      if (r.fields['Current'] === true) (currentTopicByStudent[sid] ||= []).push(entry);
+      else if (!r.fields['Started']) (nextTopicByStudent[sid] ||= []).push(entry);
     }
   } catch (err) {
     console.error('[admin-schedule] topic timeline fetch failed:', err);
@@ -484,5 +492,6 @@ export async function GET(req: NextRequest) {
     examAssessmentByStudent,
     examEntriesByStudent,
     currentTopicByStudent,
+    nextTopicByStudent,
   });
 }

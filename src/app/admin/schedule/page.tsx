@@ -86,6 +86,7 @@ interface ScheduleData {
   examAssessmentByStudent?: Record<string, string>;
   examEntriesByStudent?: Record<string, ExamEntry[]>;
   currentTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
+  nextTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
 }
 
 interface TimelineRow { id: string; subject: string; topic: string; started: string | null; ended: string | null; current: boolean }
@@ -243,6 +244,8 @@ interface EnrichedLesson extends Lesson {
   examEntries?: ExamEntry[];
   activeExamType?: string | null;
   currentTopic?: string | null;
+  /** Planned "next lesson" topic(s), joined — shown as a 📗 chip sub-line. */
+  nextTopic?: string | null;
   // Same student occupies this (date, slot) 2+ times — always a data error;
   // the chip shows a red "double-booked" badge (lib/double-booking.ts).
   doubleBooked?: boolean;
@@ -608,11 +611,15 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
   // entry without a date means "TBC", so it blocks the done state; exam-day
   // itself still counts as upcoming.
   const chipToday = isoDate(new Date());
-  const examsOver = !!lesson.examDate && lesson.examDate !== 'NO_EXAM' && (
+  const chipHasExam = !!lesson.examDate && lesson.examDate !== 'NO_EXAM';
+  const examsOver = chipHasExam && (
     (lesson.examEntries || []).length
       ? (lesson.examEntries || []).every(e => !!e.date && e.date < chipToday)
-      : lesson.examDate < chipToday
+      : lesson.examDate! < chipToday
   );
+  // The pill itself shows the current topic when there's no pending exam to
+  // show — the 📘 sub-line only renders when the pill is busy with exam info.
+  const pillShowsTopic = !!lesson.currentTopic && !lesson.examAssessment && !(chipHasExam && !examsOver);
   // Exam-season summary lines (subject · date — topics). When present, they
   // carry the dates, so the 📅 pill shows the exam type instead of repeating
   // the date.
@@ -693,7 +700,7 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
           {/* One pill → opens the tabbed dialog (Exam | Regular work). Shows the
               most relevant glanceable info; details/edit live in the popup. */}
           {showExamInfo && (onExamDateClick || onWork) && (() => {
-            const hasExam = !!lesson.examDate && lesson.examDate !== 'NO_EXAM';
+            const hasExam = chipHasExam;
             const pillExamType = (lesson.examEntries || []).map(e => e.examType).find(Boolean) || lesson.activeExamType || '';
             let label: string, openTab: 'exam' | 'work', done = false;
             if (lesson.examAssessment) {
@@ -853,6 +860,19 @@ function DraggableLessonChip({ lesson, onTap, onExamDateClick, onWork, onStudent
         ))}
         {showExamInfo && !lesson.examAssessment && lesson.examDate === 'NO_EXAM' && (
           <span style={{ display: 'block', fontSize: 10, opacity: 0.4, fontStyle: 'italic', marginTop: 6 }}>no upcoming exam</span>
+        )}
+        {/* Regular-work lines — shown ALONGSIDE exam info (Adrian 2026-07-25):
+            the current topic (unless the pill already shows it) and the
+            planned next-lesson topic, so exam + work are visible at once. */}
+        {showExamInfo && lesson.currentTopic && !pillShowsTopic && (
+          <span style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: 6, color: '#0369a1', overflowWrap: 'break-word' }}>
+            📘 {lesson.currentTopic}
+          </span>
+        )}
+        {showExamInfo && lesson.nextTopic && (
+          <span style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: lesson.currentTopic && !pillShowsTopic ? 3 : 6, color: '#15803d', overflowWrap: 'break-word' }}>
+            📗 next: {lesson.nextTopic}
+          </span>
         )}
         {lesson.type !== 'Trial' && lesson.notes && !isFaded && (
           <div className="text-[10px] italic text-amber-700 mt-0.5 leading-tight" title={lesson.notes}>↳ {lesson.notes}</div>
@@ -1226,11 +1246,14 @@ export default function SchedulePage() {
       const examTopics = lesson.studentId ? (data.examTopicsByStudent?.[lesson.studentId] ?? null) : null;
       const examApprox = lesson.studentId ? (data.examApproxByStudent?.[lesson.studentId] ?? false) : false;
       const examAssessment = lesson.studentId ? (data.examAssessmentByStudent?.[lesson.studentId] ?? null) : null;
+      const nextTopic = lesson.studentId
+        ? ((data.nextTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
+        : null;
       const currentTopic = lesson.studentId
         ? ((data.currentTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
         : null;
       const examEntries = lesson.studentId ? (data.examEntriesByStudent?.[lesson.studentId] ?? []) : [];
-      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic, doubleBooked: doubleBookedIds.has(lesson.id) };
+      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic, nextTopic, doubleBooked: doubleBookedIds.has(lesson.id) };
     });
   }, [data]);
 
