@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
   // The unfiltered Enrollments scan in particular pages through the ENTIRE
   // enrollment history and is the slowest part of week navigation.
   // Lessons + Settings are always fetched live.
-  const [slotsData, enrollmentsData, lessonsData, settingsData, tlRecords, reschedSourcesData] = await Promise.all([
+  const [slotsData, enrollmentsData, lessonsData, settingsData, tlRecords, upcomingData, reschedSourcesData] = await Promise.all([
     cachedScheduleStatic('slots', () =>
       fetchAll('Slots', `?filterByFormula=${encodeURIComponent(`{Is Active}=1`)}`)),
     // ALL enrollments (not just Active) with their tenure dates, so the Roster
@@ -96,6 +96,12 @@ export async function GET(req: NextRequest) {
     // stable across week navigation; the widest source→dest gap on record is
     // 128 days, so ±6 months has ample headroom. Reschedule-mutating routes
     // call invalidateScheduleStatics().
+    // Upcoming lessons for ~6 weeks past the viewed week, so each chip can say
+    // when the student's NEXT lesson is ("next Sat, 1 Aug") even when it falls
+    // outside this week's fetch. Live (not cached): bookings change too often.
+    fetchAll('Lessons',
+      `?filterByFormula=${encodeURIComponent(`AND({Date}>='${weekStart}',{Date}<'${isoDate(addDays(sunday, 43))}',{Status}!='Cancelled',{Status}!='Absent',{Status}!='Rescheduled')`)}&fields[]=Date&fields[]=Student&fields[]=Slot`
+    ).catch(() => [] as any[]),
     cachedScheduleStatic(`resched-sources:${weekStart.slice(0, 7)}`, () => {
       const [wy, wm] = weekStart.split('-').map(Number);
       const monthISO = (y: number, m0: number) => new Date(Date.UTC(y, m0, 1)).toISOString().slice(0, 10);
@@ -477,6 +483,19 @@ export async function GET(req: NextRequest) {
     console.error('[admin-schedule] topic timeline fetch failed:', err);
   }
 
+  // Per-student upcoming occupying lessons (sorted by date) — the client finds
+  // the first one AFTER each chip's date to label "next Sat, 1 Aug".
+  const upcomingLessonsByStudent: Record<string, { date: string; slotId: string | null }[]> = {};
+  for (const r of upcomingData) {
+    const sid = r.fields['Student']?.[0];
+    const date = r.fields['Date'];
+    if (!sid || !date) continue;
+    (upcomingLessonsByStudent[sid] ||= []).push({ date, slotId: r.fields['Slot']?.[0] ?? null });
+  }
+  for (const sid of Object.keys(upcomingLessonsByStudent)) {
+    upcomingLessonsByStudent[sid].sort((a, b) => a.date.localeCompare(b.date));
+  }
+
   return NextResponse.json({
     weekStart,
     weekEnd,
@@ -493,5 +512,6 @@ export async function GET(req: NextRequest) {
     examEntriesByStudent,
     currentTopicByStudent,
     nextTopicByStudent,
+    upcomingLessonsByStudent,
   });
 }

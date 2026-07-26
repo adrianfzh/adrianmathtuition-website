@@ -87,6 +87,7 @@ interface ScheduleData {
   examEntriesByStudent?: Record<string, ExamEntry[]>;
   currentTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
   nextTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
+  upcomingLessonsByStudent?: Record<string, { date: string; slotId: string | null }[]>;
 }
 
 interface TimelineRow { id: string; subject: string; topic: string; started: string | null; ended: string | null; current: boolean }
@@ -256,6 +257,8 @@ interface EnrichedLesson extends Lesson {
   currentTopic?: string | null;
   /** Planned "next lesson" topic(s), joined — shown as a 📗 chip sub-line. */
   nextTopic?: string | null;
+  /** The student's next lesson AFTER this chip's date, e.g. "Sat, 1 Aug". */
+  nextLessonLabel?: string | null;
   // Same student occupies this (date, slot) 2+ times — always a data error;
   // the chip shows a red "double-booked" badge (lib/double-booking.ts).
   doubleBooked?: boolean;
@@ -693,9 +696,16 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
             onClick={onStudentClick ? e => { e.stopPropagation(); onStudentClick(); } : undefined}
             style={{
               ...(onStudentClick ? { cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 } : {}),
-              flex: '1 1 100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+              flex: '0 1 auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
             }}
           >{lesson.studentName}</span>
+          {/* When the student sees Adrian next (first lesson after this one). */}
+          {lesson.nextLessonLabel && !isFaded && !isRescheduledAway && (
+            <span title="This student's next lesson"
+              style={{ flexShrink: 0, fontSize: 9, fontWeight: 600, color: '#94a3b8', whiteSpace: 'nowrap' }}>
+              → next {lesson.nextLessonLabel}
+            </span>
+          )}
           {/* Cross-level badge — student level differs from this slot's level */}
           {crossBadge && (
             <span
@@ -1223,11 +1233,16 @@ export default function SchedulePage() {
       const nextTopic = lesson.studentId
         ? ((data.nextTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
         : null;
+      // First upcoming lesson strictly AFTER this chip's date (list is sorted).
+      const nextLesson = lesson.studentId
+        ? (data.upcomingLessonsByStudent?.[lesson.studentId] || []).find(u => u.date > lesson.date)
+        : undefined;
+      const nextLessonLabel = nextLesson ? formatDayDate(nextLesson.date) : null;
       const currentTopic = lesson.studentId
         ? ((data.currentTopicByStudent?.[lesson.studentId] || []).map(t => t.topic).filter(Boolean).join(' · ') || null)
         : null;
       const examEntries = lesson.studentId ? (data.examEntriesByStudent?.[lesson.studentId] ?? []) : [];
-      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic, nextTopic, doubleBooked: doubleBookedIds.has(lesson.id) };
+      return { ...lesson, studentName, studentLevel, examDate, examTopics, examApprox, examAssessment, examEntries, activeExamType: data.activeExamType ?? null, currentTopic, nextTopic, nextLessonLabel, doubleBooked: doubleBookedIds.has(lesson.id) };
     });
   }, [data]);
 
