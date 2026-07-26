@@ -26,6 +26,9 @@ export const runtime = 'nodejs';
 // POST { studentId, subject, action:'end', rowId }   → end ONE current topic (delete if started today)
 // POST { studentId, subject, topic, action:'plan' }  → add a planned next-lesson topic
 // POST { studentId, subject, action:'startPlanned', rowId? } → start a planned topic (keeps other currents)
+// POST { studentId, action:'autoStartPlanned' } → promote ALL planned rows (any subject);
+//        called when the sheet opens on a TODAY lesson — planned topics
+//        automatically become the day's work (Adrian 2026-07-26)
 // POST { studentId, subject, action:'clear' } → end ALL current topics for the subject
 // POST { rowId, ...fields }                   → edit/delete a single row (corrections)
 
@@ -115,6 +118,17 @@ export async function POST(req: NextRequest) {
     // Flip a planned/ended row back into a live current topic.
     const startRow = (id: string) =>
       airtableRequest(TABLE, `/${id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Started: today, Current: true, Ended: null } }) });
+
+    // ── Auto-start: promote ALL planned rows (any subject) to current.
+    // Fired when the sheet opens on a TODAY lesson; idempotent (after
+    // promotion no planned rows remain). Returns the promoted topic names
+    // so the client can toast what just happened.
+    if (action === 'autoStartPlanned') {
+      const allPlanned = mine.filter((r: any) => !r.fields['Started'] && r.fields['Current'] !== true);
+      for (const row of allPlanned) await startRow(row.id);
+      if (allPlanned.length) invalidateScheduleStatics();
+      return NextResponse.json({ ok: true, promoted: allPlanned.map((r: any) => r.fields['Topic'] || '').filter(Boolean) });
+    }
 
     // ── End: one specific current topic (its chip's ✕) ──
     if (action === 'end') {

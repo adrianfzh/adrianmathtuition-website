@@ -178,7 +178,7 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEn
         return (
           <div key={subject || 'gen'} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 12 }}>
             {subject && <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>{subject}</div>}
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Working on now</div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Work on today</div>
             {currents.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
                 {currents.map(c => (
@@ -703,7 +703,7 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
           {lesson.nextLessonLabel && !isFaded && !isRescheduledAway && (
             <span title="This student's next lesson"
               style={{ flexShrink: 0, fontSize: 9, fontWeight: 600, color: '#94a3b8', whiteSpace: 'nowrap' }}>
-              → next {lesson.nextLessonLabel}
+              → next lesson: {lesson.nextLessonLabel}
             </span>
           )}
           {/* Cross-level badge — student level differs from this slot's level */}
@@ -2494,8 +2494,29 @@ export default function SchedulePage() {
     const sheetToday = isoDate(new Date());
     const studentExamsOver = entries.length > 0 && entries.every(e => !!e.date && e.date < sheetToday);
     setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM' && !pwaa, pwaa, rows, saving: false, tab: data?.activeExamType && !studentExamsOver ? 'exam' : 'work', applyTo: [] });
-    loadTimeline(sid);
+    // Opening the sheet on a TODAY lesson auto-applies any planned next-lesson
+    // topics — what was planned becomes today's work (Adrian 2026-07-26).
+    if (lesson.date === isoDate(new Date())) {
+      autoStartPlanned(sid).finally(() => loadTimeline(sid));
+    } else {
+      loadTimeline(sid);
+    }
     loadLessonLog(lesson.id);
+  }
+  // Promote ALL planned topics to current (server is idempotent); toasts what
+  // it promoted so the switch isn't silent.
+  async function autoStartPlanned(studentId: string): Promise<void> {
+    try {
+      const res = await fetch('/api/admin-schedule/topic-timeline', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, action: 'autoStartPlanned' }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.ok && Array.isArray(d.promoted) && d.promoted.length) {
+        showToast('success', `Planned topic${d.promoted.length > 1 ? 's' : ''} started today: ${d.promoted.join(' · ')}`);
+        fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+      }
+    } catch { /* non-fatal — the sheet still opens */ }
   }
   // Classmates at the same level — candidates for "copy from" and "also save
   // for" (same school → same exam dates & topics). hasExam marks students who
