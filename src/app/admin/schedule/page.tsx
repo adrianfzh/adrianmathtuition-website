@@ -2660,7 +2660,10 @@ export default function SchedulePage() {
       const bFaded = (b.status === 'Absent' || b.status === 'Rescheduled') ? 1 : 0;
       return aFaded - bFaded;
     });
-    const presentCount = visibleLessons.filter(l => l.status === 'Completed').length;
+    // Students ATTENDING this slot on this date (Adrian 2026-07-26): scheduled
+    // or completed chips — absent / rescheduled-away / cancelled don't count.
+    // (Was a marked-present count, which read 0 on every future slot.)
+    const attendingCount = visibleLessons.filter(l => l.status !== 'Absent' && l.status !== 'Rescheduled').length;
 
     // Enrolled students whose lesson for THIS date+slot was cancelled (e.g.
     // June regular lesson cancelled for a Revision Sprint). Shown as a faded,
@@ -2700,7 +2703,7 @@ export default function SchedulePage() {
             {levelChip(slot.level)}
           </div>
           <div className="slot-header-right">
-            <span className="capacity">{presentCount}</span>
+            <span className="capacity" title="Students attending this slot">{attendingCount}</span>
             <button className="slot-add-btn" onClick={() => openAddModal(date, slot)} title="Add lesson">+</button>
           </div>
         </div>
