@@ -111,7 +111,12 @@ function fmtTLDate(iso: string | null): string {
 // the chip, reading as an unanswered question); it auto-opens only when the
 // subject has no current topic yet. Mis-picks self-heal server-side (same-day
 // replace deletes the wrong row; re-picking a topic ended today resurrects it).
-function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEndTopic, onDeleteRow, onPlan, onStartPlanned }: {
+type WorkTabLog = {
+  loading: boolean; mastery: string; homework: string; hwPrev: string; prevId: string | null;
+  noteChips: string[]; freeNote: string; saving: boolean;
+};
+
+function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEndTopic, onDeleteRow, onPlan, onStartPlanned, log, onLog, onSaveLog }: {
   studentId: string;
   level: string;
   subjects: string[];
@@ -122,15 +127,21 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEn
   onDeleteRow: (rowId: string) => void;
   onPlan: (subject: string, topic: string) => void;
   onStartPlanned: (subject: string, rowId: string) => void;
+  log: WorkTabLog | null;
+  onLog: (patch: Partial<WorkTabLog>) => void;
+  onSaveLog: () => void;
 }) {
-  // Per-subject picker state: which picker (if any) is open. Explicit null =
-  // user closed it; undefined = default (open 'current' when none set yet).
-  const [openPicker, setOpenPicker] = useState<Record<string, 'current' | 'next' | null>>({});
   if (!tl || tl.loading) return <div style={{ color: '#94a3b8', fontSize: 13, padding: '20px 0', textAlign: 'center' }}>Loading topics…</div>;
+  const sectionHead = (label: string) => (
+    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', margin: '10px 0 4px' }}>{label}</div>
+  );
   return (
     <>
-      {subjects.map(subject => {
+      {subjects.map((subject, si) => {
         const cats = getExamTopicsForSubject(level || 'Sec 4', subject || 'E Math');
+        // Dedupe — cascading level lists repeat shared topics across
+        // categories, which duplicated <option> keys (console noise).
+        const topicOptions = [...new Set(cats.flatMap(c => c.topics))];
         const rows = tl.rows.filter(r => (r.subject || '') === subject);
         // MULTIPLE topics can be current at once; each chip retires via its ✕.
         const currents = rows.filter(r => r.current);
@@ -138,48 +149,48 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEn
         const planneds = rows.filter(r => !r.current && !r.started);
         const history = rows.filter(r => !r.current && r.started)
           .sort((a, b) => (b.started || '').localeCompare(a.started || ''));
-        const draft = tl.drafts[subject] ?? '';
         const saving = tl.savingSubject === subject;
-        const picker = openPicker[subject] !== undefined ? openPicker[subject] : (currents.length ? null : 'current');
-        const setPicker = (v: 'current' | 'next' | null) => setOpenPicker(p => ({ ...p, [subject]: v }));
-        const commit = (topic: string) => {
-          if (!topic.trim()) return;
-          if (picker === 'next') onPlan(subject, topic);
-          else onAddTopic(subject, topic);
-          setPicker(null);
-        };
-        const pickerUI = (
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, marginBottom: 10 }}>
-            <div style={{ fontSize: 11.5, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
-              {picker === 'next' ? '📗 Add a topic for the NEXT lesson' : currents.length ? '📘 Add another current topic' : '📘 Set the current topic'}
-            </div>
-            <select className="modal-select" value="" disabled={saving}
-              onChange={e => { if (e.target.value) commit(e.target.value); }}>
-              <option value="">pick a topic…</option>
-              {cats.flatMap(c => c.topics).map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <input className="modal-input" placeholder="…or type a custom topic" value={draft}
-              onChange={e => onDraft(subject, e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) commit(draft); }}
-              style={{ marginTop: 6 }} />
-            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+        // Both pickers are always on screen — separate draft keys so the two
+        // custom-topic inputs don't mirror each other.
+        const nextDraftKey = subject + '::next';
+        const todayDraft = tl.drafts[subject] ?? '';
+        const nextDraft = tl.drafts[nextDraftKey] ?? '';
+        // The lesson log (mastery / note / homework / save) renders inside the
+        // FIRST subject card — one flowing form, no separate box below.
+        const primary = si === 0;
+        // Always-visible inline picker (Adrian 2026-07-26: fill immediately,
+        // no reveal buttons).
+        const pickerRows = (mode: 'today' | 'next') => {
+          const draft = mode === 'next' ? nextDraft : todayDraft;
+          const key = mode === 'next' ? nextDraftKey : subject;
+          const commit = (topic: string) => {
+            if (!topic.trim()) return;
+            if (mode === 'next') onPlan(subject, topic); else onAddTopic(subject, topic);
+          };
+          return (
+            <>
+              <select className="modal-select" value="" disabled={saving}
+                onChange={e => { if (e.target.value) commit(e.target.value); }}>
+                <option value="">{mode === 'next' ? '＋ pick a topic to plan…' : '＋ pick a topic to add…'}</option>
+                {topicOptions.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <input className="modal-input" placeholder="…or type a custom topic" value={draft}
+                onChange={e => onDraft(key, e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && draft.trim()) commit(draft); }}
+                style={{ marginTop: 6 }} />
               {draft.trim() && (
-                <button className="btn-primary" disabled={saving} onClick={() => commit(draft)} style={{ flex: 1 }}>
-                  {saving ? 'Saving…' : picker === 'next' ? `Plan “${draft.trim()}”` : `Add “${draft.trim()}”`}
+                <button className="btn-primary" disabled={saving} onClick={() => commit(draft)} style={{ width: '100%', marginTop: 6 }}>
+                  {saving ? 'Saving…' : mode === 'next' ? `Plan “${draft.trim()}”` : `Add “${draft.trim()}”`}
                 </button>
               )}
-              <button onClick={() => setPicker(null)} disabled={saving}
-                style={{ border: '1px solid #e5e7eb', background: '#fff', color: '#64748b', borderRadius: 8, padding: '8px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        );
+            </>
+          );
+        };
         return (
           <div key={subject || 'gen'} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 12 }}>
             {subject && <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>{subject}</div>}
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Work on today</div>
-            {currents.length > 0 ? (
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Today&apos;s lesson</div>
+            {currents.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
                 {currents.map(c => (
                   <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -190,17 +201,55 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEn
                   </div>
                 ))}
               </div>
-            ) : picker !== 'current' ? (
-              <div style={{ fontSize: 13, color: '#cbd5e1', fontStyle: 'italic', marginBottom: 10 }}>No current topic</div>
-            ) : null}
-            {picker === 'current' ? pickerUI : (
-              <button onClick={() => setPicker('current')}
-                style={{ fontSize: 12, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px dashed #7dd3fc', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', marginBottom: 10 }}>
-                ＋ Add {currents.length ? 'another ' : ''}topic
-              </button>
+            )}
+            {pickerRows('today')}
+            {primary && log && !log.loading && (
+              <>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', margin: '12px 0 4px' }}>MASTERY</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {MASTERY_OPTS.map(o => {
+                    const on = log.mastery === o.value;
+                    return (
+                      <button key={o.value} onClick={() => onLog({ mastery: on ? '' : o.value })}
+                        style={{ flex: 1, padding: '8px 4px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
+                          background: on ? o.bg : '#fff', color: on ? o.color : '#64748b', border: `1px solid ${on ? o.border : '#e5e7eb'}` }}>{o.label}</button>
+                    );
+                  })}
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', margin: '12px 0 4px' }}>QUICK NOTE</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
+                  {QUICK_NOTES.map(n => {
+                    const on = log.noteChips.includes(n);
+                    return (
+                      <button key={n} onClick={() => onLog({ noteChips: on ? log.noteChips.filter(x => x !== n) : [...log.noteChips, n] })}
+                        style={{ fontSize: 12, fontWeight: 600, padding: '5px 11px', borderRadius: 16, cursor: 'pointer', background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>{n}</button>
+                    );
+                  })}
+                </div>
+                <input className="modal-input" placeholder="Anything else… (appended to lesson notes)" value={log.freeNote}
+                  onChange={e => onLog({ freeNote: e.target.value })} />
+
+                {sectionHead('Homework')}
+                <input className="modal-input" placeholder="What homework was assigned? (if any)" value={log.homework}
+                  onChange={e => onLog({ homework: e.target.value })} />
+                {log.prevId && (
+                  <>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', margin: '10px 0 4px' }}>HW RETURNED (previous lesson)</div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {HW_OPTS.map(h => {
+                        const on = log.hwPrev === h;
+                        return (
+                          <button key={h} onClick={() => onLog({ hwPrev: on ? '' : h })}
+                            style={{ flex: 1, padding: '7px 4px', fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: 'pointer', background: on ? '#eff6ff' : '#fff', color: on ? '#1d4ed8' : '#64748b', border: `1px solid ${on ? '#93c5fd' : '#e5e7eb'}` }}>{h}</button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </>
             )}
 
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: '#94a3b8', textTransform: 'uppercase', margin: '2px 0 4px' }}>Next lesson</div>
+            {sectionHead('Next lesson')}
             {planneds.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
                 {planneds.map(p => (
@@ -208,7 +257,7 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEn
                     <span style={{ fontSize: 13.5, fontWeight: 700, color: '#15803d', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '5px 10px' }}>
                       📗 {p.topic}
                     </span>
-                    <button onClick={() => onStartPlanned(subject, p.id)} disabled={saving} title="Move this into Working on now (starts today)"
+                    <button onClick={() => onStartPlanned(subject, p.id)} disabled={saving} title="Start this topic today"
                       style={{ fontSize: 11.5, fontWeight: 700, color: '#fff', background: '#15803d', border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer' }}>
                       ▶ Start now
                     </button>
@@ -218,10 +267,10 @@ function ExamWorkTab({ studentId, level, subjects, tl, onDraft, onAddTopic, onEn
                 ))}
               </div>
             )}
-            {picker === 'next' ? pickerUI : (
-              <button onClick={() => setPicker('next')}
-                style={{ fontSize: 12, fontWeight: 600, color: '#15803d', background: '#f0fdf4', border: '1px dashed #86efac', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', marginBottom: 10 }}>
-                ＋ Plan {planneds.length ? 'another ' : ''}next-lesson topic
+            {pickerRows('next')}
+            {primary && log && !log.loading && (
+              <button className="btn-primary" style={{ width: '100%', marginTop: 14 }} disabled={log.saving} onClick={onSaveLog}>
+                {log.saving ? 'Saving…' : 'Save lesson log'}
               </button>
             )}
 
@@ -852,7 +901,7 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
             (Adrian 2026-07-26: "Working on:" / "Next lesson:"). */}
         {showExamInfo && lesson.currentTopic && (
           <span style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: 6, color: '#0369a1', overflowWrap: 'break-word' }}>
-            📘 Working on: {lesson.currentTopic}
+            📘 Today&apos;s lesson: {lesson.currentTopic}
           </span>
         )}
         {showExamInfo && lesson.nextTopic && (
@@ -1157,14 +1206,14 @@ export default function SchedulePage() {
   const [topicTL, setTopicTL] = useState<{ loading: boolean; rows: TimelineRow[]; drafts: Record<string, string>; savingSubject: string | null } | null>(null);
   // "This lesson" log folded into the Work tab (mastery / HW returned / note),
   // saving to the same endpoints the old quick-log pencil used.
-  const [lessonLog, setLessonLog] = useState<{ loading: boolean; mastery: string; hwPrev: string; prevId: string | null; noteChips: string[]; freeNote: string; base: { mastery: string; hwPrev: string; notes: string }; saving: boolean } | null>(null);
+  const [lessonLog, setLessonLog] = useState<{ loading: boolean; mastery: string; homework: string; hwPrev: string; prevId: string | null; noteChips: string[]; freeNote: string; base: { mastery: string; homework: string; hwPrev: string; notes: string }; saving: boolean } | null>(null);
   async function loadLessonLog(lessonId: string) {
-    setLessonLog({ loading: true, mastery: '', hwPrev: '', prevId: null, noteChips: [], freeNote: '', base: { mastery: '', hwPrev: '', notes: '' }, saving: false });
+    setLessonLog({ loading: true, mastery: '', homework: '', hwPrev: '', prevId: null, noteChips: [], freeNote: '', base: { mastery: '', homework: '', hwPrev: '', notes: '' }, saving: false });
     try {
       const res = await fetch(`/api/admin-schedule/lesson-context?id=${lessonId}`);
       const ctx = await res.json();
       const cur = ctx.current ?? {};
-      setLessonLog({ loading: false, mastery: cur.mastery ?? '', hwPrev: ctx.prev?.homeworkReturned ?? '', prevId: ctx.prev?.id ?? null, noteChips: [], freeNote: '', base: { mastery: cur.mastery ?? '', hwPrev: ctx.prev?.homeworkReturned ?? '', notes: cur.lessonNotes ?? '' }, saving: false });
+      setLessonLog({ loading: false, mastery: cur.mastery ?? '', homework: cur.homeworkAssigned ?? '', hwPrev: ctx.prev?.homeworkReturned ?? '', prevId: ctx.prev?.id ?? null, noteChips: [], freeNote: '', base: { mastery: cur.mastery ?? '', homework: cur.homeworkAssigned ?? '', hwPrev: ctx.prev?.homeworkReturned ?? '', notes: cur.lessonNotes ?? '' }, saving: false });
     } catch { setLessonLog(prev => prev ? { ...prev, loading: false } : null); }
   }
   async function saveLessonLog(lessonId: string) {
@@ -1173,6 +1222,7 @@ export default function SchedulePage() {
     try {
       const fields: Record<string, string> = {};
       if (lessonLog.mastery && lessonLog.mastery !== lessonLog.base.mastery) fields.mastery = lessonLog.mastery;
+      if (lessonLog.homework !== lessonLog.base.homework) fields.homeworkAssigned = lessonLog.homework;
       const appendParts = [...lessonLog.noteChips, lessonLog.freeNote.trim()].filter(Boolean);
       if (appendParts.length) { const a = appendParts.join('; '); fields.lessonNotes = lessonLog.base.notes ? `${lessonLog.base.notes}\n${a}` : a; }
       const writeHw = !!(lessonLog.hwPrev && lessonLog.hwPrev !== lessonLog.base.hwPrev && lessonLog.prevId);
@@ -1184,7 +1234,7 @@ export default function SchedulePage() {
       if (rs.some(r => !r.ok)) throw new Error();
       if (Object.keys(fields).length) handleProgressLogged(lessonId);
       showToast('success', '✓ Lesson logged');
-      setLessonLog(prev => prev ? { ...prev, saving: false, noteChips: [], freeNote: '', base: { mastery: prev.mastery, hwPrev: prev.hwPrev, notes: fields.lessonNotes ?? prev.base.notes } } : null);
+      setLessonLog(prev => prev ? { ...prev, saving: false, noteChips: [], freeNote: '', base: { mastery: prev.mastery, homework: prev.homework, hwPrev: prev.hwPrev, notes: fields.lessonNotes ?? prev.base.notes } } : null);
     } catch { showToast('error', 'Save failed'); setLessonLog(prev => prev ? { ...prev, saving: false } : null); }
   }
   const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
@@ -2599,7 +2649,7 @@ export default function SchedulePage() {
       });
       if (!res.ok) throw new Error();
       showToast('success', `Next lesson: ${topic.trim()}`);
-      setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject]: '' } } : prev);
+      setTopicTL(prev => prev ? { ...prev, drafts: { ...prev.drafts, [subject + '::next']: '' } } : prev);
       await loadTimeline(studentId);
     } catch { showToast('error', 'Failed to save plan'); setTopicTL(prev => prev ? { ...prev, savingSubject: null } : prev); }
   }
@@ -3135,55 +3185,11 @@ export default function SchedulePage() {
                   onDeleteRow={(rowId) => deleteTimelineRow(examEdit.studentId, rowId)}
                   onPlan={(subject, topic) => planTopic(examEdit.studentId, subject, topic)}
                   onStartPlanned={(subject, rowId) => startPlannedTopic(examEdit.studentId, subject, rowId)}
+                  log={lessonLog}
+                  onLog={(patch) => setLessonLog(p => p ? { ...p, ...patch } : p)}
+                  onSaveLog={() => saveLessonLog(examEdit.lessonId)}
                 />
-                {/* This-lesson log (mastery / HW / note) — folded in from the old pencil */}
-                {lessonLog && !lessonLog.loading && (
-                  <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginTop: 4 }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.05em', color: '#334155', textTransform: 'uppercase' }}>This lesson</div>
-                    <div style={{ fontSize: 11.5, color: '#94a3b8', marginBottom: 10 }}>Saves mastery, note & homework to this lesson&apos;s progress record.</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>MASTERY</div>
-                    <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-                      {MASTERY_OPTS.map(o => {
-                        const on = lessonLog.mastery === o.value;
-                        return (
-                          <button key={o.value} onClick={() => setLessonLog(p => p ? { ...p, mastery: p.mastery === o.value ? '' : o.value } : p)}
-                            style={{ flex: 1, padding: '8px 4px', fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
-                              background: on ? o.bg : '#fff', color: on ? o.color : '#64748b', border: `1px solid ${on ? o.border : '#e5e7eb'}` }}>{o.label}</button>
-                        );
-                      })}
-                    </div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>QUICK NOTE</div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
-                      {QUICK_NOTES.map(n => {
-                        const on = lessonLog.noteChips.includes(n);
-                        return (
-                          <button key={n} onClick={() => setLessonLog(p => p ? { ...p, noteChips: on ? p.noteChips.filter(x => x !== n) : [...p.noteChips, n] } : p)}
-                            style={{ fontSize: 12, fontWeight: 600, padding: '5px 11px', borderRadius: 16, cursor: 'pointer', background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569', border: `1px solid ${on ? '#1e3a5f' : '#e5e7eb'}` }}>{n}</button>
-                        );
-                      })}
-                    </div>
-                    <input className="modal-input" placeholder="Anything else… (appended to lesson notes)" value={lessonLog.freeNote}
-                      onChange={e => setLessonLog(p => p ? { ...p, freeNote: e.target.value } : p)} />
-                    {lessonLog.prevId && (
-                      <>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', margin: '12px 0 4px' }}>HW RETURNED (previous lesson)</div>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {HW_OPTS.map(h => {
-                            const on = lessonLog.hwPrev === h;
-                            return (
-                              <button key={h} onClick={() => setLessonLog(p => p ? { ...p, hwPrev: p.hwPrev === h ? '' : h } : p)}
-                                style={{ flex: 1, padding: '7px 4px', fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: 'pointer', background: on ? '#eff6ff' : '#fff', color: on ? '#1d4ed8' : '#64748b', border: `1px solid ${on ? '#93c5fd' : '#e5e7eb'}` }}>{h}</button>
-                            );
-                          })}
-                        </div>
-                      </>
-                    )}
-                    <button className="btn-primary" style={{ width: '100%', marginTop: 12 }} disabled={lessonLog.saving} onClick={() => saveLessonLog(examEdit.lessonId)}>
-                      {lessonLog.saving ? 'Saving…' : 'Save lesson log'}
-                    </button>
-                  </div>
-                )}
-                </>
+                                </>
               ) : (<>
               {/* Same-school shortcut: prefill from a classmate who's already
                   filled in (only offered while this student's rows are empty). */}
