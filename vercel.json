@@ -48,20 +48,12 @@
       "schedule": "0 2 15 * *"
     },
     {
-      "path": "/api/trigger-synthesis",
-      "schedule": "0 0 */2 * *"
-    },
-    {
       "path": "/api/june-revision-followup",
       "schedule": "0 1 25 5 *"
     },
     {
       "path": "/api/portal/practice-digest",
       "schedule": "30 13 * * *"
-    },
-    {
-      "path": "/api/progress-digest",
-      "schedule": "0 0 * * 1"
     },
     {
       "path": "/api/cron/practice-topup",
