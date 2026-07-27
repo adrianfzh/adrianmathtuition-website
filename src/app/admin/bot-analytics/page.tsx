@@ -305,39 +305,60 @@ export default function BotAnalytics() {
       if (r.status === 401) throw new Error('unauthorized');
       return r;
     };
-    Promise.all([
-      authFetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`).then(r => r.json()),
-      authFetch(`/api/admin/cockpit/synthesis-batches`).then(r => r.json()),
-      authFetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`).then(r => r.json()),
-      fetch(`/api/admin/cockpit/pending-suggestions`).then(r => r.ok ? r.json() : Promise.reject(r.status)).catch(() => { setPendingSugsError(true); return { suggestions: [] }; }),
-      fetch(`/api/admin/cockpit/lint-reports?limit=12`).then(r => r.ok ? r.json() : { runs: [] }).catch(() => ({ runs: [] })),
-    ]).then(([qd, bd, rd, sd, ld]) => {
-      const payload: CockpitCacheData = {
-        questions: qd.questions || [], batches: bd.batches || [],
-        rates: rd.rates || [], trend: rd.trend || [],
-        suggestions: sd.suggestions || [], lintRuns: ld.runs || [],
-      };
-      setQuestions(computeFlags(payload.questions));
-      setBatches(payload.batches);
-      setRates(payload.rates);
-      setTrend(payload.trend);
-      setPendingSugs(payload.suggestions);
-      setLintRuns(payload.lintRuns);
+    // Each call paints its own section the MOMENT it lands (Adrian 2026-07-26:
+    // the old Promise.all blocked the whole page on the slowest bot call —
+    // questions on a wide range takes 6-8s while suggestions/lint land <1s).
+    // The combined cache is written once every call has resolved.
+    let authHandled = false;
+    const onAuthErr = async (err: any) => {
+      if (err?.message !== 'unauthorized' || authHandled) return;
+      authHandled = true;
+      setLoading(false);
+      setRevalidating(false);
+      // The parallel fetches may have raced ahead of a legacy-cookie session
+      // upgrade. If the session check resolved authed, retry ONCE (guarded so
+      // a genuinely broken session can't loop); otherwise go log in.
+      const ok = await sessionOk;
+      if (ok && !retriedRef.current) { retriedRef.current = true; load(); }
+      else window.location.href = '/admin';
+    };
+    const acc: Partial<CockpitCacheData> = {};
+    const pQuestions = authFetch(`/api/admin/cockpit/questions?${buildDateParams(days)}`).then(r => r.json()).then(qd => {
+      const qs = (qd.questions || []) as Question[];
+      acc.questions = qs;
+      setQuestions(computeFlags(qs));
+      setLoading(false);
+    }).catch(onAuthErr);
+    const pBatches = authFetch(`/api/admin/cockpit/synthesis-batches`).then(r => r.json()).then(bd => {
+      const bs = bd.batches || [];
+      acc.batches = bs;
+      setBatches(bs);
+    }).catch(onAuthErr);
+    const pRates = authFetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`).then(r => r.json()).then(rd => {
+      const rs = rd.rates || [];
+      const tr = rd.trend || [];
+      acc.rates = rs; acc.trend = tr;
+      setRates(rs);
+      setTrend(tr);
+    }).catch(onAuthErr);
+    const pSugs = fetch(`/api/admin/cockpit/pending-suggestions`).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(sd => {
+      const sg = sd.suggestions || [];
+      acc.suggestions = sg;
+      setPendingSugs(sg);
+    }).catch(() => { setPendingSugsError(true); acc.suggestions = []; });
+    const pLint = fetch(`/api/admin/cockpit/lint-reports?limit=12`).then(r => r.ok ? r.json() : { runs: [] }).catch(() => ({ runs: [] })).then(ld => {
+      const lr = ld.runs || [];
+      acc.lintRuns = lr;
+      setLintRuns(lr);
       setLintRunIdx(0);
+    });
+    Promise.allSettled([pQuestions, pBatches, pRates, pSugs, pLint]).then(() => {
       setLoading(false);
       setRevalidating(false);
+      if (authHandled) return;
       retriedRef.current = false;
-      writeCockpitCache(days, payload);
-    }).catch(async (err) => {
-      setLoading(false);
-      setRevalidating(false);
-      if (err?.message === 'unauthorized') {
-        // The parallel fetches may have raced ahead of a legacy-cookie session
-        // upgrade. If the session check resolved authed, retry ONCE (guarded so
-        // a genuinely broken session can't loop); otherwise go log in.
-        const ok = await sessionOk;
-        if (ok && !retriedRef.current) { retriedRef.current = true; load(); }
-        else window.location.href = '/admin';
+      if (acc.questions && acc.batches && acc.rates && acc.trend && acc.suggestions && acc.lintRuns) {
+        writeCockpitCache(days, acc as CockpitCacheData);
       }
     });
   }, [days]); // eslint-disable-line react-hooks/exhaustive-deps
