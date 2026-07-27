@@ -84,7 +84,7 @@ type Question = {
   tokensIn?: number; tokensOut?: number;
   suggestions: { id: string; issue: string; suggestion: string; status: string }[];
   // enriched client-side
-  flagReason?: 'negative_feedback' | 'low_confidence' | 'confusion_followup' | 'admin_forced' | 'multiple';
+  flagReason?: 'negative_feedback' | 'low_confidence' | 'confusion_followup' | 'admin_forced' | 'student_correction' | 'multiple';
   confusedFollowUp?: string;
   dismissed?: boolean;
 };
@@ -127,6 +127,7 @@ function computeFlags(qs: Question[]): Question[] {
     if (String(q.chatId || '').startsWith('web-check-')) continue;
     if (q.status === 'negative_feedback') addFlag(q, 'negative_feedback');
     if (q.status === 'admin_forced') addFlag(q, 'admin_forced');
+    if (q.status === 'student_correction') addFlag(q, 'student_correction');
     if (q.status === 'low_confidence' || (q.confidence || '').toLowerCase() === 'low') addFlag(q, 'low_confidence');
   }
 
@@ -179,11 +180,11 @@ function toTelegramText(raw: string): string {
 // combined payload per date-range in localStorage, paint it instantly, then
 // refresh in the background. Questions are cached RAW (pre-computeFlags);
 // flags are re-derived on read since they're computed, not fetched.
-const COCKPIT_CACHE_PREFIX = 'bot_analytics_cache_v1:';
+const COCKPIT_CACHE_PREFIX = 'bot_analytics_cache_v2:';
 const COCKPIT_CACHE_MAX_AGE = 1000 * 60 * 60 * 6; // 6h — older than this we don't paint stale
 
 type CockpitCacheData = {
-  questions: Question[]; batches: any[]; rates: any[];
+  questions: Question[]; verif: any[]; rates: any[];
   trend: any[]; suggestions: any[]; lintRuns: any[];
 };
 
@@ -207,7 +208,7 @@ function writeCockpitCache(days: number, data: CockpitCacheData): void {
 
 export default function BotAnalytics() {
   const [questions, setQuestions]   = useState<Question[]>([]);
-  const [batches, setBatches]       = useState<{ batchId: string; clusters: Cluster[] }[]>([]);
+  const [verifDays, setVerifDays]   = useState<{ window_label: string; checked: number; correct: number; wrong: number; incomplete: number; unclear: number; low_confidence: number }[]>([]);
   const [rates, setRates]           = useState<{ topic: string; rate: number; sugs: number; qs: number }[]>([]);
   const [trend, setTrend]           = useState<{ date: string; count: number }[]>([]);
   const [pendingSugs, setPendingSugs] = useState<{
@@ -284,7 +285,7 @@ export default function BotAnalytics() {
     const cached = readCockpitCache(days);
     if (cached) {
       setQuestions(computeFlags(cached.questions || []));
-      setBatches(cached.batches || []);
+      setVerifDays(cached.verif || []);
       setRates(cached.rates || []);
       setTrend(cached.trend || []);
       setPendingSugs(cached.suggestions || []);
@@ -329,11 +330,11 @@ export default function BotAnalytics() {
       setQuestions(computeFlags(qs));
       setLoading(false);
     }).catch(onAuthErr);
-    const pBatches = authFetch(`/api/admin/cockpit/synthesis-batches`).then(r => r.json()).then(bd => {
-      const bs = bd.batches || [];
-      acc.batches = bs;
-      setBatches(bs);
-    }).catch(onAuthErr);
+    const pVerif = fetch(`/api/admin/cockpit/verification-trend`).then(r => r.ok ? r.json() : { days: [] }).catch(() => ({ days: [] })).then(vd => {
+      const vds = vd.days || [];
+      acc.verif = vds;
+      setVerifDays(vds);
+    });
     const pRates = authFetch(`/api/admin/cockpit/error-rates?${buildDateParams(days)}`).then(r => r.json()).then(rd => {
       const rs = rd.rates || [];
       const tr = rd.trend || [];
@@ -352,12 +353,12 @@ export default function BotAnalytics() {
       setLintRuns(lr);
       setLintRunIdx(0);
     });
-    Promise.allSettled([pQuestions, pBatches, pRates, pSugs, pLint]).then(() => {
+    Promise.allSettled([pQuestions, pVerif, pRates, pSugs, pLint]).then(() => {
       setLoading(false);
       setRevalidating(false);
       if (authHandled) return;
       retriedRef.current = false;
-      if (acc.questions && acc.batches && acc.rates && acc.trend && acc.suggestions && acc.lintRuns) {
+      if (acc.questions && acc.verif && acc.rates && acc.trend && acc.suggestions && acc.lintRuns) {
         writeCockpitCache(days, acc as CockpitCacheData);
       }
     });
@@ -526,7 +527,6 @@ export default function BotAnalytics() {
     }
     return groups;
   })();
-  const totalClusters = batches.reduce((s, b) => s + b.clusters.length, 0);
 
   function confBadge(conf: string) {
     const isLow = (conf || '').toLowerCase() === 'low';
@@ -544,6 +544,7 @@ export default function BotAnalytics() {
       negative_feedback: '🚫 Student said wrong',
       low_confidence: '⚠ Low confidence',
       admin_forced: '🔧 Admin intervened',
+      student_correction: '✏️ Student corrected bot',
       confusion_followup: `💬 "${(q.confusedFollowUp || '').slice(0, 25)}"`,
       multiple: '⚠ Multiple signals',
     };
@@ -580,7 +581,7 @@ export default function BotAnalytics() {
         </select>
         <button onClick={load} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 13, opacity: revalidating ? 0.6 : 1 }}>{revalidating ? '↻ Updating…' : '↻ Refresh'}</button>
         <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>
-          {allVisible.length} questions · {flagged.length} flagged · {totalClusters} clusters
+          {allVisible.length} questions · {flagged.length} flagged
         </span>
       </div>
 
@@ -919,22 +920,21 @@ export default function BotAnalytics() {
                 );
               })()}
 
-              {/* Clusters */}
-              {totalClusters > 0 && (
+              {/* Daily answer-verification trend (replaces retired synthesis clusters) */}
+              {verifDays.length > 0 && (
                 <div style={{ marginTop: 16 }}>
-                  <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13, color: '#475569' }}>⚡ Clustered themes ({totalClusters})</div>
-                  {batches.map(b => b.clusters.map((c, i) => (
-                    <div key={`${b.batchId}-${i}`} onClick={() => selectCluster(c)}
-                      style={{ background: '#fff', borderRadius: 8, padding: '10px 14px', marginBottom: 6, borderLeft: `3px solid ${c.confidence==='high'?'#22c55e':c.confidence==='medium'?'#f59e0b':'#ef4444'}`, cursor: 'pointer' }}
-                      onMouseOver={e => (e.currentTarget.style.background='#f0f9ff')}
-                      onMouseOut={e => (e.currentTarget.style.background='#fff')}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <span style={{ fontWeight: 600, fontSize: 13 }}>{c.theme}</span>
-                        <span style={{ fontSize: 11, background: '#f1f5f9', borderRadius: 4, padding: '1px 6px' }}>{c.confidence}</span>
+                  <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 13, color: '#475569' }}>🩺 Daily answer verification (Sonnet re-check, up to 20/day)</div>
+                  <div style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+                    {verifDays.slice(0, 14).map(v => (
+                      <div key={v.window_label} style={{ display: 'flex', gap: 10, padding: '3px 0', borderBottom: '1px solid #f1f5f9' }}>
+                        <span style={{ color: '#64748b', minWidth: 90 }}>{v.window_label}</span>
+                        <span style={{ color: '#16a34a' }}>✓ {v.correct}</span>
+                        <span style={{ color: v.wrong ? '#dc2626' : '#94a3b8' }}>✗ {v.wrong}</span>
+                        <span style={{ color: v.incomplete ? '#d97706' : '#94a3b8' }}>⚠ {v.incomplete}</span>
+                        <span style={{ color: '#94a3b8' }}>of {v.checked}</span>
                       </div>
-                      {c.affects_topics?.length > 0 && <div style={{ fontSize: 12, color: '#64748b', marginTop: 3 }}>{c.affects_topics.join(', ')}</div>}
-                    </div>
-                  )))}
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -1026,6 +1026,7 @@ export default function BotAnalytics() {
                       {selected.flagReason === 'admin_forced' && '🔧 Admin manually intervened on this response'}
                       {selected.flagReason === 'low_confidence' && '⚠ Bot flagged this response as low confidence'}
                       {selected.flagReason === 'confusion_followup' && <>💬 Student followed up with <strong>"{selected.confusedFollowUp}"</strong> — answer may have been unclear or wrong</>}
+                      {selected.flagReason === 'student_correction' && <>✏️ The student's message CORRECTS the previous answer (detected by Haiku) — check whether the bot was wrong</>}
                       {selected.flagReason === 'multiple' && <>⚠ Multiple signals:{selected.status === 'negative_feedback' ? ' student said wrong,' : ''}{(selected.confidence||'').toLowerCase() === 'low' ? ' low confidence,' : ''}{selected.confusedFollowUp ? ` follow-up: "${selected.confusedFollowUp}"` : ''}</>}
                     </div>
                   )}
