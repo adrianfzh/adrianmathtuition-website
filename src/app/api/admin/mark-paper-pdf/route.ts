@@ -24,7 +24,7 @@ async function addCoverPage(
   const navy = rgb(0x1e / 255, 0x3a / 255, 0x5f / 255);
 
   page.drawRectangle({ x: 0, y: y(64), width: W, height: 64, color: navy });
-  const head = 'AdrianMath Tuition';
+  const head = 'AdrianMath';
   page.drawText(head, { x: (W - bold.widthOfTextAtSize(head, 22)) / 2, y: y(44), font: bold, size: 22, color: rgb(1, 1, 1) });
 
   const title = 'Marked Paper';
@@ -56,7 +56,7 @@ async function addCoverPage(
   });
 
   page.drawLine({ start: { x: PAD, y: y(690) }, end: { x: W - PAD, y: y(690) }, thickness: 1, color: hr });
-  const foot = 'AdrianMath Tuition  ·  adrianmathtuition.com';
+  const foot = 'AdrianMath  ·  adrianmathtuition.com';
   page.drawText(foot, { x: (W - reg.widthOfTextAtSize(foot, 10)) / 2, y: y(712), font: reg, size: 10, color: rgb(0.612, 0.639, 0.686) });
 }
 

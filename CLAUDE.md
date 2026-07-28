@@ -683,8 +683,19 @@ transcripts, … (changed 2026-07-28; transcripts used to be a block at the very
 - Every line carries `data-plain`; after auto-render, any line that errored
   (`.katex-error`) **or was skipped entirely** (no `.katex`, still showing `$`/`\cmd`)
   is replaced by its plain transcription. A reader never sees raw LaTeX.
-- No AI attribution anywhere on the sheet — header and footer read "AdrianMath Tuition"
+- No AI attribution anywhere on the sheet — header and footer read "AdrianMath"
   (Adrian's call, 2026-07-28).
+
+**Prompt caching on the question paper (bot, `ai/paper-marker.js`)** — the PDF carries a
+1h `cache_control`, but every photo is marked in PARALLEL, so they all raced to *write*
+the same prefix: N writes at 2× input price, zero reads — worse than no caching.
+`warmPdfCache()` now prefills the entry with one tiny `max_tokens: 1024` call before the
+fan-out (skipped for a single photo; failures are logged and ignored). The cached prefix
+is **`tools → system → messages`**, so the warm-up must use the same model, the same
+code-exec tool, the same system prompt and the same leading `pdfBlock` as
+`markPhotoDirect` — change any one of them and the marking calls miss the entry the
+warm-up just paid to write. Thinking config is part of that too: it's shared via
+`streamOpus`, so don't give the warm-up its own.
 
 Tick/cross rendering on the photos themselves lives in the **bot** (`ai/annotate.js`):
 marks are drawn just past `bbox.x2`, centred on the glyph's own optical centre, at
