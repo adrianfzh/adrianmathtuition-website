@@ -15,6 +15,56 @@ function readDataUrl(file: File): Promise<string> {
 async function pdfToBase64(file: File): Promise<string> {
   return (await readDataUrl(file)).split(',')[1] || '';
 }
+
+// A scanned PDF of the student's working is rasterised to one JPEG per page IN THE
+// BROWSER, then fed into the normal photo path — so marking, the Gemini bounding
+// boxes and the red-pen overlay all see a plain image and need no changes. Doing it
+// here (not server-side) also keeps a fat scan off the 4.5MB request-body ceiling.
+// The worker is served from /public rather than bundled: its version must match the
+// installed pdfjs-dist exactly or pdf.js throws, and pdf-worker-asset.test.ts pins that.
+async function loadPdfjs() {
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const pdfjs = (await import('pdfjs-dist/build/pdf.mjs' as string)) as any;
+  pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  return pdfjs;
+}
+
+async function pdfToPageImages(file: File, onPage: (done: number, total: number) => void): Promise<File[]> {
+  const pdfjs = await loadPdfjs();
+  // disableFontFace draws glyphs as paths instead of installing @font-face rules —
+  // the page is only ever rasterised, never shown, so the document-level font
+  // machinery is pure risk here.
+  const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), disableFontFace: true }).promise;
+  const base = file.name.replace(/\.pdf$/i, '');
+  const pages: File[] = [];
+  try {
+    for (let n = 1; n <= doc.numPages; n++) {
+      const page = await doc.getPage(n);
+      // Render a little above the 1280px upload cap so the downscale has data to
+      // work with — handwriting is the thing being read.
+      const unit = page.getViewport({ scale: 1 });
+      const viewport = page.getViewport({ scale: Math.min(3, 1600 / Math.max(unit.width, unit.height)) });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      const ctx = canvas.getContext('2d')!;
+      // PDF pages have no background of their own — without this, JPEG turns the
+      // transparent paper black and the marker sees nothing.
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // intent 'print' is what makes this reliable off-screen. The default 'display'
+      // intent paces the paint loop with requestAnimationFrame, which a hidden or
+      // backgrounded tab never fires — the render promise then never settles and the
+      // conversion hangs with no error. 'print' paces with timers instead.
+      await page.render({ canvasContext: ctx, viewport, intent: 'print' }).promise;
+      const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.85));
+      if (blob) pages.push(new File([blob], `${base}-p${n}.jpg`, { type: 'image/jpeg' }));
+      page.cleanup?.();
+      onPage(n, doc.numPages);
+    }
+  } finally { await doc.destroy?.(); }
+  return pages;
+}
 // Build the upload payload for one image. Downscale via canvas when the browser can
 // decode it (keeps the payload small); otherwise — HEIC on Chrome — send the raw bytes
 // and let the server (sharp) convert. Never reject a photo here.
@@ -89,6 +139,7 @@ export default function MarkPaperPage() {
   const [pdf, setPdf] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
   const [imgPreviews, setImgPreviews] = useState<(string | null)[]>([]);
+  const [rasterizing, setRasterizing] = useState('');
 
   const [results, setResults] = useState<Result[] | null>(null);
   const [totals, setTotals] = useState<{ awarded: number; max: number } | null>(null);
@@ -152,6 +203,26 @@ export default function MarkPaperPage() {
     try { const b = await createImageBitmap(f); b.close?.(); return true; } catch { return false; }
   }
 
+  // Working dropped as a PDF (a scan rather than phone photos): expand it to one image
+  // per page first, then carry on down the ordinary photo path.
+  async function onPickWorking(arr: File[]) {
+    const isPdf = (f: File) => f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+    const pdfs = arr.filter(isPdf);
+    const photos = arr.filter((f) => !isPdf(f) && (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(f.name)));
+    if (photos.length) await onPickImages(photos);
+    for (const f of pdfs) {
+      setError('');
+      try {
+        setRasterizing(`Converting ${f.name}…`);
+        const pages = await pdfToPageImages(f, (done, total) => setRasterizing(`Converting ${f.name} — page ${done} of ${total}…`));
+        if (!pages.length) throw new Error('no pages could be rendered');
+        await onPickImages(pages);
+      } catch (e) {
+        setError(`Couldn't read ${f.name} as pages (${(e as Error).message}). Photograph the pages instead.`);
+      } finally { setRasterizing(''); }
+    }
+  }
+
   // Accept all picked photos (HEIC included). Preview those the browser can decode; the rest
   // still upload and get converted on the server. Appends, so you can build the set up.
   async function onPickImages(arr: File[]) {
@@ -172,7 +243,7 @@ export default function MarkPaperPage() {
 
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
-    if (images.length === 0) { setError('Add at least one working photo.'); return; }
+    if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
     setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked(null);
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
@@ -230,12 +301,12 @@ export default function MarkPaperPage() {
     finally { setGenerating(false); }
   }
 
-  const busy = phase === 'proposing' || phase === 'marking';
+  const busy = phase === 'proposing' || phase === 'marking' || !!rasterizing;
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Mark a paper</h1>
-      <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the student&rsquo;s working (photos) — plus the question paper (PDF) if there is one — then Mark. With a paper, each photo is marked against it; without one, the marker reads the printed questions off the pages themselves (self-contained worksheets).</p>
+      <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the student&rsquo;s working (photos, or a scanned PDF) — plus the question paper (PDF) if there is one — then Mark. With a paper, each photo is marked against it; without one, the marker reads the printed questions off the pages themselves (self-contained worksheets).</p>
 
       {error && <div style={{ ...card, borderColor: '#fca5a5', background: '#fef2f2', color: '#b91c1c' }}>{error}</div>}
 
@@ -279,14 +350,17 @@ export default function MarkPaperPage() {
           hint="One PDF file · leave empty for self-contained worksheets (questions printed on the pages)"
         />
         <FileDrop
-          label="Student working (photos — one or more)"
-          accept="image/*"
+          label="Student working (photos or a scanned PDF)"
+          accept="image/*,application/pdf"
           multiple
           count={images.length}
           primaryName={null}
-          onFiles={(fs) => { const imgs = fs.filter((f) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(f.name)); if (imgs.length) onPickImages(imgs); }}
-          hint="JPG / PNG / HEIC · drop several · click to add more"
+          onFiles={(fs) => { if (fs.length) onPickWorking(fs); }}
+          hint="JPG / PNG / HEIC, or a PDF scan — its pages become photos · drop several · click to add more"
         />
+        {rasterizing && (
+          <div style={{ marginTop: 8, fontSize: 13, color: '#2563eb' }}>📄 {rasterizing}</div>
+        )}
         {imgPreviews.length > 0 && (
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
             {imgPreviews.map((src, i) => (

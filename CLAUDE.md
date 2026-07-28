@@ -77,6 +77,7 @@ NOT used (solo-maintenance cost outweighs value).
 - `admin/invoices/page.tsx` — invoice management dashboard (was `/admin` before restructure)
 - `admin/students/page.tsx` — **student directory**: searchable + level-filtered list, links into each profile
 - `admin/students/[id]/page.tsx` — **student profile hub** (Phase 1): header (level/subjects/status), **Weekly slots** with 🔀 Switch slot + ＋ Add slot (reuses `/api/admin-schedule/switch` + `/add-weekly-slot`), and read-only Upcoming lessons / Exams / Recent invoices. Data from `/api/admin/student-profile?id=`. Phases 2–4 (inline lesson actions, embedded progress/LessonModal, exam quick-add) pending. Contact lazy-loaded via `student-contact`.
+- `admin/mark-paper/page.tsx` — **the marking page in use**: upload the student's working (+ optionally the question paper PDF) → `/api/admin/mark-paper`, a thin proxy to the Fly bot, where the model and all marking logic live (`ai/paper-marker.js` — Opus 5 since 2026-07-28; the page's dropdown is only a label). **Working may be photos OR a scanned PDF** — see below.
 - `admin/mark/page.tsx` — AI batch marking landing page (tabs + upload flow)
 - `admin/mark/batch/[batchId]/page.tsx` — batch detail page
 - `admin/edit-notes/page.tsx` — revision notes editor with editor mode toggle
@@ -630,6 +631,32 @@ Accepts a structured marking JSON payload from the Fly.io bot (Stage B.1a) and r
 **Known cold-start latency:** First request after deploy takes 5–15 s (Chromium download + launch). Subsequent warm requests: 1–3 s.
 
 **Bot wiring:** Stage B.1c (not yet implemented). The bot will call this endpoint after the AI marking step and upload the PNG to Vercel Blob.
+
+## /admin/mark-paper — scanned-PDF working (client-side rasterisation)
+
+Adrian can drop the student's working in as **a scanned PDF** instead of phone photos.
+The PDF never reaches the server as a PDF: `pdfToPageImages()` in
+`src/app/admin/mark-paper/page.tsx` rasterises it **in the browser** to one JPEG per
+page and feeds those into the ordinary photo path, so marking → Gemini bounding boxes →
+red-pen overlay → assembled PDF are all untouched (annotation needs a raster). Doing it
+client-side also keeps a fat scan off Vercel's 4.5 MB request-body ceiling.
+
+Three non-obvious details, each a bug if changed:
+
+- **`intent: 'print'` on `page.render()`** — the default `'display'` intent paces the
+  paint loop with `requestAnimationFrame`, which a hidden or backgrounded tab never
+  fires: the render promise then never settles and the conversion hangs on page 1 with
+  no error and nothing in the console. `'print'` paces with timers.
+- **`disableFontFace: true`** on `getDocument` — glyphs draw as paths; the page is only
+  ever rasterised, so document-level `@font-face` machinery is pure risk.
+- **White fill before rendering** — PDF pages have no background of their own, and JPEG
+  turns the transparent paper black, so the marker would see nothing.
+
+The worker is a **vendored copy at `public/pdf.worker.min.mjs`**, not a bundled import.
+pdf.js refuses to run when worker and API versions differ, and `npm update pdfjs-dist`
+would leave the copy behind — breaking PDF uploads at runtime with nothing failing at
+build time. `src/lib/pdf-worker-asset.test.ts` pins the pair; when it fails the fix is
+`cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/pdf.worker.min.mjs`.
 
 ## Batch Marking
 
