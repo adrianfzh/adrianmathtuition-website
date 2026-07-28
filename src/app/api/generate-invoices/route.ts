@@ -6,6 +6,8 @@ import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
 import { NO_LESSON_DATES } from '@/lib/holidays';
+import { billableAdditionalFor, mapAdditionalRecord } from '@/lib/additional-lessons';
+import { nextDayISO } from '@/lib/billing-math';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 const DAY_ABBREV: Record<string, string> = {
@@ -197,6 +199,22 @@ export async function POST(req: NextRequest) {
       console.log(`[generate-invoices] June Revision Mode: ${juneRevisionMode ? 'ON' : 'off'}`);
     }
 
+    // ── Billable Additional lessons — ONE window fetch for ALL students ─────
+    // Fetched by Type/Status/Date only and matched to students in JS
+    // (lib/additional-lessons.ts). The old per-student formula filtered on
+    // {Student}='recXXX', which matches NOTHING on a linked field — every
+    // Additional lesson since launch went unbilled (0 of 315 invoices ever
+    // carried one; found 2026-07-26). Date upper bound is half-open (the <=
+    // form silently drops the boundary day on date-typed fields).
+    const addToday = new Date();
+    const addWindowEnd = formatDate(addToday);
+    const addWindowStart = formatDate(new Date(addToday.getFullYear(), addToday.getMonth() - 1, 15));
+    const additionalPool = (
+      await airtableRequestAll('Lessons',
+        `?filterByFormula=${encodeURIComponent(`AND({Type}='Additional',{Status}='Completed',{Date}>='${addWindowStart}',{Date}<'${nextDayISO(addWindowEnd)}')`)}&fields[]=Date&fields[]=Student&fields[]=Is Revision Makeup&fields[]=Notes`
+      ).catch(() => ({ records: [] as any[] }))
+    ).records.map(mapAdditionalRecord);
+
     for (const studentId in enrollmentsByStudent) {
       const studentEnrollments = enrollmentsByStudent[studentId];
       const student = studentsById[studentId];
@@ -265,19 +283,8 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        const today = new Date();
-        const addWindowEnd = formatDate(today);
-        const prevInvoiceDate = new Date(today.getFullYear(), today.getMonth() - 1, 15);
-        const addWindowStart = formatDate(prevInvoiceDate);
-        // NB: exclude "Revision makeup" lessons — they are makeups for an already-paid
-        // Revision Sprint session, so they must NOT be billed again (even though they're
-        // Type='Additional' so they show on the schedule). Keyed off the structured
-        // {Is Revision Makeup} flag, with the legacy note-text kept as a safety net.
-        const additionalFormula = encodeURIComponent(
-          `AND({Student}='${studentId}',{Type}='Additional',{Status}='Completed',{Date}>='${addWindowStart}',{Date}<='${addWindowEnd}',NOT(OR({Is Revision Makeup},FIND('Revision makeup',{Notes}))))`
-        );
-        const additionalData = await at('Lessons', `?filterByFormula=${additionalFormula}&sort[0][field]=Date&sort[0][direction]=asc`);
-        const additionalLessons = additionalData.records || [];
+        // Revision makeups excluded inside the lib (already-paid sprint sessions).
+        const additionalLessons = billableAdditionalFor(additionalPool, studentId);
 
         const lessonCount = isProrated ? proratedLessonRecords.length : allLineItems.length;
         const additionalCount = additionalLessons.length;
@@ -332,9 +339,9 @@ export async function POST(req: NextRequest) {
             lineItemsForInvoice.push({ ...item, description, rate: itemRate });
           });
         }
-        additionalLessons.forEach((r: any) => {
+        additionalLessons.forEach((r) => {
           lineItemsForInvoice.push({
-            date: r.fields['Date'], day: '', type: 'Additional',
+            date: r.date, day: '', type: 'Additional',
             description: `Additional Lesson \u2014 ${invoiceMonth.label}`,
           });
         });

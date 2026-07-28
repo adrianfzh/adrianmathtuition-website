@@ -52,7 +52,8 @@ Two layers guard parent/student-facing operations; keep BOTH current as features
    Existing homes: `billing-math.ts` (lesson-date counting — use it, never re-implement
    a weekday/proration loop; a duplicated loop in the bot dropped the last Friday of a
    month, Kieran Lai Jul 2026), `invoice-month.ts` (invoice month labels/spanning),
-   `invoice-payments.ts`. When a money bug is fixed, add a named regression test.
+   `invoice-payments.ts`, `additional-lessons.ts` (billable Additional-lesson matching —
+   the linked-record-filter regression). When a money bug is fixed, add a named regression test.
    `.githooks/pre-push` runs `npm test` and blocks the push on failure.
 2. **Synthetic monitoring** — `/api/health-check` (cron every 6h) probes the live
    parent-facing surfaces (Airtable, public schedule, signup-link HMAC handshake,
@@ -378,7 +379,7 @@ This takes 2 seconds and returns **no student data** — only field names, types
 ## Gotchas
 
 - **Airtable date filter bug**: `{Date}<='endStr'` silently excludes records on `endStr` when Date is date-typed. Always use exclusive upper bound: `{Date}<'dayAfterEnd'` (add 1 day). Reference: `bot/flows.js:643`.
-- **Linked record filtering**: Cannot use `{Student}='recXXX'` on a linked record field, AND `FIND('recXXX', ARRAYJOIN({Student}))>0` also does NOT work — `ARRAYJOIN` returns the linked record's **display name** (e.g. "Sim Ze Kai"), not the record ID. Correct pattern: filter by other fields (Date, Status, Exam Type, etc.) in Airtable, fetch the `Student`/`Slot` fields too, then match the record ID in JS: `r.fields['Student']?.[0] === studentId`. Applies to all linked-record fields.
+- **Linked record filtering**: Cannot use `{Student}='recXXX'` on a linked record field, AND `FIND('recXXX', ARRAYJOIN({Student}))>0` also does NOT work — `ARRAYJOIN` returns the linked record's **display name** (e.g. "Sim Ze Kai"), not the record ID. Correct pattern: filter by other fields (Date, Status, Exam Type, etc.) in Airtable, fetch the `Student`/`Slot` fields too, then match the record ID in JS: `r.fields['Student']?.[0] === studentId`. Applies to all linked-record fields. **This exact mistake sat in `generate-invoices`' Additional-lesson query and silently unbilled every Additional lesson from launch until 2026-07-26** (0 of 315 invoices ever carried one) — fixed via `lib/additional-lessons.ts` (window-fetch all, match student in JS; unit-tested).
 - **Single-record GET has no `fields[]`**: Airtable's single-record endpoint (`GET /v0/{base}/{table}/{recXXX}`) ignores `fields[]` query params — they only work on list endpoints. Fetch all fields and filter in JS.
 - **Privacy — lazy-load contact info**: `/api/admin-schedule` does NOT return `parentEmail`/`parentName` eagerly. Use `/api/admin-schedule/student-contact?id=recXXX` to fetch on demand.
 - **UTC vs local time**: `getMondayOfWeek`/`addDays`/`isoDate` in `admin-schedule/route.ts` use UTC. `localToday()`/`daysAgo()` in `lib/schedule-helpers.ts` use local time. Do NOT merge — they serve different domains.
