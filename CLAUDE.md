@@ -717,6 +717,39 @@ marks are drawn just past `bbox.x2`, centred on the glyph's own optical centre, 
 `~0.95 × fontSize`. The old code anchored on `annotationX + fontSize` with a glyph that
 extended up-and-right of its anchor, which put marks ~130 px out in the margin.
 
+### Margin layer — the score and the reason, beside the working (bot, 2026-07-29)
+
+Ticks alone don't tell a parent anything. On top of the line marks the overlay now writes,
+on the ORIGINAL photo: a **boxed `awarded/max` in the right margin** aligned to the top of
+each part's working, and — for parts that dropped marks only — the part's **one-line
+`error_summary` placed in real white space** with a leader curve to the crossed step.
+Ticks/crosses stay, but they're decoration; the box and the sentence are the product.
+
+- **Placement is arithmetic, not vibes** — `ai/whitespace.js` (pure, no sharp, 10 tests)
+  thresholds the page to an ink/no-ink grid, dilates by a cell, and searches a summed-area
+  table for the nearest free window to the anchor. It counts **dark pixels, never averages
+  brightness** (a thin printed rule is a few dark pixels in a bright cell — an average calls
+  it empty and the comment lands on the rule). `occupy()` claims every rectangle it uses,
+  including the ticks already placed and the top-right corner reserved for the page total,
+  so two comments on a page with one big blank area can't stack in the same hole.
+  **No room found → nothing is drawn** (`[annotate] no room for comment on …`): a comment
+  written over the student's working is worse than no comment. A null occupancy grid means
+  "place nothing", never "the page is empty".
+- **Part regions are matched by KEY, never by array position** — Gemini silently omits parts
+  it can't find, so an index match attaches the comment to the wrong working. `paper-marker`
+  carries `question_number` onto each part so the key is `Q8(i)`, not `(i)` (a page with two
+  questions has two of each label).
+- **Vision model list** — `GEMINI_VISION_MODELS` (default
+  `gemini-3.1-pro-preview,gemini-2.5-pro`) is tried in order, falling through only on a
+  404/unsupported. The old `gemini-2.5-pro` pin came from someone trying bare
+  `gemini-3.1-pro`, which 404s — the id needs the `-preview` suffix; the model was there
+  all along.
+- **Font: Patrick Hand** (SIL OFL, vendored at `assets/fonts/`), installed system-wide by the
+  Dockerfile via `fc-cache -f`. sharp draws SVG text through librsvg → fontconfig, so a face
+  sitting in the repo is invisible to it and every annotation silently falls back to DejaVu
+  sans. Verify after a deploy with `fly ssh console -C fc-list | grep -i patrick`.
+  (The typeset transcript sheets are unrelated — they're Puppeteer/webfont and still Caveat.)
+
 ## Batch Marking
 
 Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s limit.
