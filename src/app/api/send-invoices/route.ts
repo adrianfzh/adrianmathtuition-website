@@ -312,7 +312,11 @@ export async function POST(req: NextRequest) {
       };
       const isAmended = (await fetchDeliveredWithPdf([rec.id])).has(rec.id);
       const isFirstInvP = ((rec.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice');
-      const subject = isAmended
+      // Adjustment invoices must NOT reuse the regular month's subject — the
+      // parent already received "Invoice for <month>" and paid it.
+      const subject = ((rec.fields['Invoice Type'] || 'Regular') as string) === 'Adjustment'
+        ? `Additional Lessons \u2014 Invoice for ${month} \u2013 ${studentName}`
+        : isAmended
         ? `AMENDED Invoice for ${month} – ${studentName}`
         : isFirstInvP
           ? `Welcome to Adrian's Math Tuition — First Invoice for ${studentName} (${month})`
@@ -529,7 +533,11 @@ export async function POST(req: NextRequest) {
       const pdfBuffer = pdfBuffers[i];
       const isAmended = deliveredWithPdf.has(invoiceRecord.id);
       const isFirstInv = ((invoiceRecord.fields['Auto Notes'] || '') as string).toLowerCase().includes('first invoice');
-      const subject = isAmended
+      // Adjustment invoices must NOT reuse the regular month's subject/filename —
+      // the parent already received "Invoice for <month>" and paid it.
+      const subject = ((invoiceRecord.fields['Invoice Type'] || 'Regular') as string) === 'Adjustment'
+        ? `Additional Lessons \u2014 Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
+        : isAmended
         ? `AMENDED Invoice for ${invoice.month} \u2013 ${invoice.studentName}`
         : isFirstInv
           ? `Welcome to Adrian's Math Tuition \u2014 First Invoice for ${invoice.studentName} (${invoice.month})`
@@ -570,7 +578,9 @@ export async function POST(req: NextRequest) {
         emailData.attachments = [{
           filename: invoiceType === 'Revision Sprint'
             ? `AdrianMathTuition-Revision-Sprint-${(invoice.studentName || '').replace(/\s+/g, '-')}-June-2026.pdf`
-            : `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}.pdf`,
+            : invoiceType === 'Adjustment'
+              ? `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}-Additional-Lessons.pdf`
+              : `AdrianMathTuition-Invoice-${(invoice.studentName || '').replace(/\s+/g, '-')}-${(invoice.month || '').replace(/[\s–]/g, '-')}.pdf`,
           content: pdfBuffer.toString('base64'),
           type: 'application/pdf',
           disposition: 'attachment',

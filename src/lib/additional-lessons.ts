@@ -15,6 +15,8 @@ export interface AdditionalLessonRecord {
   studentId: string | null;
   isRevisionMakeup: boolean;
   notes: string;
+  /** Already billed on some invoice (Billed checkbox) — never bill again. */
+  billed: boolean;
 }
 
 export function mapAdditionalRecord(r: { id: string; fields: Record<string, unknown> }): AdditionalLessonRecord {
@@ -24,6 +26,7 @@ export function mapAdditionalRecord(r: { id: string; fields: Record<string, unkn
     studentId: (r.fields['Student'] as string[] | undefined)?.[0] ?? null,
     isRevisionMakeup: r.fields['Is Revision Makeup'] === true,
     notes: (r.fields['Notes'] as string) || '',
+    billed: r.fields['Billed'] === true,
   };
 }
 
@@ -31,9 +34,12 @@ export function mapAdditionalRecord(r: { id: string; fields: Record<string, unkn
  * The student's billable Additional lessons from a window-fetched pool.
  * Revision makeups are NEVER billable — the Revision Sprint was already paid
  * (structured flag first, legacy "Revision makeup" note text as safety net).
+ * Lessons already MARKED billed (manual adjustment invoice, or a previous
+ * generator run's write-back) are excluded — the marker, not the window, is
+ * the primary double-billing guard.
  */
 export function billableAdditionalFor(pool: AdditionalLessonRecord[], studentId: string): AdditionalLessonRecord[] {
   return pool
-    .filter(l => l.studentId === studentId && !l.isRevisionMakeup && !/revision makeup/i.test(l.notes))
+    .filter(l => l.studentId === studentId && !l.billed && !l.isRevisionMakeup && !/revision makeup/i.test(l.notes))
     .sort((a, b) => a.date.localeCompare(b.date));
 }

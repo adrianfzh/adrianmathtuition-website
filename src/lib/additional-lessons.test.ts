@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { billableAdditionalFor, mapAdditionalRecord } from './additional-lessons';
 
 const rec = (over: Partial<ReturnType<typeof mapAdditionalRecord>>) => ({
-  id: 'rec1', date: '2026-07-12', studentId: 'recStudent', isRevisionMakeup: false, notes: '', ...over,
+  id: 'rec1', date: '2026-07-12', studentId: 'recStudent', isRevisionMakeup: false, notes: '', billed: false, ...over,
 });
 
 describe('billableAdditionalFor', () => {
@@ -31,6 +31,15 @@ describe('billableAdditionalFor', () => {
     expect(billableAdditionalFor(pool, 'recStudent').map(l => l.id)).toEqual(['b']);
   });
 
+  // REGRESSION — Tan Heng Kang, Jul 2026: his 12/17/19 Jul extras were billed
+  // on a manual adjustment invoice; the September run's window (15 Jul-14 Aug)
+  // still contained 17+19 Jul. The Billed marker — not the window — must be
+  // what prevents the second billing.
+  it('excludes lessons already marked Billed', () => {
+    const pool = [rec({ id: 'billed17', date: '2026-07-17', billed: true }), rec({ id: 'fresh', date: '2026-07-20' })];
+    expect(billableAdditionalFor(pool, 'recStudent').map(l => l.id)).toEqual(['fresh']);
+  });
+
   it('sorts by date ascending', () => {
     const pool = [rec({ id: 'later', date: '2026-07-19' }), rec({ id: 'earlier', date: '2026-06-21' })];
     expect(billableAdditionalFor(pool, 'recStudent').map(l => l.id)).toEqual(['earlier', 'later']);
@@ -40,12 +49,12 @@ describe('billableAdditionalFor', () => {
 describe('mapAdditionalRecord', () => {
   it('maps the Airtable record shape incl. the linked-student array', () => {
     const m = mapAdditionalRecord({
-      id: 'recL', fields: { 'Date': '2026-07-12', 'Student': ['recS'], 'Is Revision Makeup': true, 'Notes': 'n' },
+      id: 'recL', fields: { 'Date': '2026-07-12', 'Student': ['recS'], 'Is Revision Makeup': true, 'Notes': 'n', 'Billed': true },
     });
-    expect(m).toEqual({ id: 'recL', date: '2026-07-12', studentId: 'recS', isRevisionMakeup: true, notes: 'n' });
+    expect(m).toEqual({ id: 'recL', date: '2026-07-12', studentId: 'recS', isRevisionMakeup: true, notes: 'n', billed: true });
   });
   it('is safe on missing fields', () => {
     const m = mapAdditionalRecord({ id: 'recL', fields: {} });
-    expect(m).toEqual({ id: 'recL', date: '', studentId: null, isRevisionMakeup: false, notes: '' });
+    expect(m).toEqual({ id: 'recL', date: '', studentId: null, isRevisionMakeup: false, notes: '', billed: false });
   });
 });

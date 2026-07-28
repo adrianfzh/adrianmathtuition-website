@@ -209,11 +209,20 @@ export async function POST(req: NextRequest) {
     const addToday = new Date();
     const addWindowEnd = formatDate(addToday);
     const addWindowStart = formatDate(new Date(addToday.getFullYear(), addToday.getMonth() - 1, 15));
-    const additionalPool = (
-      await airtableRequestAll('Lessons',
-        `?filterByFormula=${encodeURIComponent(`AND({Type}='Additional',{Status}='Completed',{Date}>='${addWindowStart}',{Date}<'${nextDayISO(addWindowEnd)}')`)}&fields[]=Date&fields[]=Student&fields[]=Is Revision Makeup&fields[]=Notes`
-      ).catch(() => ({ records: [] as any[] }))
-    ).records.map(mapAdditionalRecord);
+    // The Billed checkbox is the PRIMARY double-billing guard (a lesson billed
+    // on a manual adjustment invoice must never be auto-billed again; windows
+    // alone can't know that). The field may not exist yet — an unknown name in
+    // fields[] 422s the request, so fall back without it and WARN in the
+    // Telegram summary rather than fail the run.
+    const additionalBaseQ = `?filterByFormula=${encodeURIComponent(`AND({Type}='Additional',{Status}='Completed',{Date}>='${addWindowStart}',{Date}<'${nextDayISO(addWindowEnd)}')`)}&fields[]=Date&fields[]=Student&fields[]=Is Revision Makeup&fields[]=Notes`;
+    let billedFieldMissing = false;
+    const additionalPool = await airtableRequestAll('Lessons', additionalBaseQ + `&fields[]=Billed`)
+      .catch(async () => {
+        billedFieldMissing = true;
+        return airtableRequestAll('Lessons', additionalBaseQ).catch(() => ({ records: [] as any[] }));
+      })
+      .then((d: any) => (d.records || []).map(mapAdditionalRecord));
+    const billedLessonPatches: string[] = [];
 
     for (const studentId in enrollmentsByStudent) {
       const studentEnrollments = enrollmentsByStudent[studentId];
@@ -385,6 +394,16 @@ export async function POST(req: NextRequest) {
           method: 'POST',
           body: JSON.stringify({ fields: invoiceFields }),
         });
+
+        // Mark the invoiced Additional lessons Billed so no future run can
+        // bill them again (skipped gracefully while the field doesn't exist).
+        if (!billedFieldMissing && additionalLessons.length) {
+          await Promise.all(additionalLessons.map(l =>
+            at('Lessons', `/${l.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Billed: true } }) })
+              .then(() => { billedLessonPatches.push(l.date); })
+              .catch(() => { /* metadata write must never fail the invoice */ })
+          ));
+        }
 
 
         // Generate and upload PDF in production only
@@ -710,6 +729,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Billed-marker status: warn loudly if the guard is off, note write-backs.
+    const billedSection = billedFieldMissing && additionalPool.length
+      ? `\n\n\u26a0\ufe0f <b>Billed checkbox missing on Lessons</b> \u2014 additional lessons were billed by date-window only; create the field so nothing can double-bill.`
+      : billedLessonPatches.length
+        ? `\n\n\u2705 Marked ${billedLessonPatches.length} additional lesson${billedLessonPatches.length === 1 ? '' : 's'} as Billed.`
+        : '';
+
     await sendTelegram(
       `\ud83d\udccb <b>Draft invoices ready \u2014 ${invoiceMonth.label}</b>\n\n` +
         `${summaryLines}\n\n` +
@@ -717,6 +743,7 @@ export async function POST(req: NextRequest) {
         skipSection +
         referralSection +
         deferredSection +
+        billedSection +
         `\n\nReview and hold any before 15th via /amend [name].\n` +
         `Invoices send automatically at 10am tomorrow.`
     );
