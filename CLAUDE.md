@@ -664,6 +664,21 @@ The marked PDF (`/api/admin/mark-paper-pdf`) interleaves each **annotated photo*
 **typeset transcript sheets for that photo** — photo 1, its transcripts, photo 2, its
 transcripts, … (changed 2026-07-28; transcripts used to be a block at the very end).
 
+**Two PDF buttons, two products** (`mode` on the route): **📄 Generate full PDF** =
+annotated photos **+** the typeset transcript sheets interleaved behind each photo (the
+route renders one PNG per question through Puppeteer — the slow path). **🖼️ Generate
+images PDF** (`mode:'photos'`) = the annotated original photos ONLY, no typeset pages,
+no Puppeteer — a few seconds, and the closest thing to a hand-marked script. With a
+single photo the full mode returns a PNG (`kind:'image'`) instead of a PDF.
+
+**One feedback comment per attempt, not two** (2026-07-29). The marking JSON used to
+carry `summary.body_markdown` (rendered on the sheet) *and* `overall_comment` (printed
+raw in the results table) — the same judgement written twice, so the wording drifted
+between the two surfaces. The bot now asks for `summary` only, spec'd Unicode-only (no
+LaTeX), and derives `overall_comment` from it via `plainFromMarkdown()`
+(`ai/plain-text.js` in the bot, unit-tested). **Don't add a second free-text summary
+field** — a new surface strips the one that exists.
+
 - Order lives in `lib/marked-pdf-order.ts` (`orderMarkedPages`, unit-tested), not in the
   route. Sheets are bucketed by **`photo_index`**, which the mark-paper page must keep
   sending in its `results[]` payload — drop it and every transcript falls to the back
