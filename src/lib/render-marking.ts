@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
+import { repairMarkingLatex } from '@/lib/latex-repair';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -163,8 +164,13 @@ async function buildMarkingHTML(payload: RenderRequest): Promise<string> {
   const templatePath = path.join(process.cwd(), 'public', 'marking-template.html');
   const template = await fs.readFile(templatePath, 'utf8');
 
-  // Escape </script so payload JSON can't break out of the script tag
-  const payloadJson = JSON.stringify(payload).replace(/<\/script/gi, '<\\/script');
+  // The model's LaTeX escaping is unreliable — repair before KaTeX ever sees it.
+  const repaired: RenderRequest = { ...payload, marking: repairMarkingLatex(payload.marking) };
 
-  return template.replace('/*PAYLOAD_PLACEHOLDER*/', payloadJson);
+  // Escape </script so payload JSON can't break out of the script tag
+  const payloadJson = JSON.stringify(repaired).replace(/<\/script/gi, '<\\/script');
+
+  // Function replacement, NOT a string: a string replacement expands `$&`, `` $` ``,
+  // `$'` and `$1`, and this payload is wall-to-wall `$...$` maths delimiters.
+  return template.replace('/*PAYLOAD_PLACEHOLDER*/', () => payloadJson);
 }

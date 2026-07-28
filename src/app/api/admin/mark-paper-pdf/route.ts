@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
+import { orderMarkedPages } from '@/lib/marked-pdf-order';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
-type ResultIn = { question_number: string; marking_output: MarkingOutput | null };
+type ResultIn = { question_number: string; marking_output: MarkingOutput | null; photo_index?: number | null };
 
 // Compact cover page (pdf-lib built-in fonts only — no Sharp/system fonts).
 async function addCoverPage(
@@ -55,7 +56,7 @@ async function addCoverPage(
   });
 
   page.drawLine({ start: { x: PAD, y: y(690) }, end: { x: W - PAD, y: y(690) }, thickness: 1, color: hr });
-  const foot = 'Marked by AdrianMath AI  ·  Reviewed by Adrian';
+  const foot = 'AdrianMath Tuition  ·  adrianmathtuition.com';
   page.drawText(foot, { x: (W - reg.widthOfTextAtSize(foot, 10)) / 2, y: y(712), font: reg, size: 10, color: rgb(0.612, 0.639, 0.686) });
 }
 
@@ -72,12 +73,12 @@ export async function POST(req: NextRequest) {
   const ts = new Date().toISOString();
 
   // Render each question to a typeset PNG (skipped in photos-only mode).
-  const pngs: { label: string; buf: Buffer; awarded: number; max: number }[] = [];
+  const pngs: { label: string; buf: Buffer; awarded: number; max: number; photo_index?: number | null }[] = [];
   if (mode !== 'photos') for (const r of results) {
     const mo = r.marking_output!;
     try {
       const buf = await renderMarkingPNG({ marking: mo, student, timestamp: ts });
-      pngs.push({ label: String(r.question_number), buf, awarded: mo.marks?.awarded ?? 0, max: mo.marks?.max ?? 0 });
+      pngs.push({ label: String(r.question_number), buf, awarded: mo.marks?.awarded ?? 0, max: mo.marks?.max ?? 0, photo_index: r.photo_index });
     } catch (e) {
       console.error('[mark-paper-pdf] render failed for', r.question_number, (e as Error).message);
     }
@@ -102,21 +103,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: blob.url, kind: 'image', totalAwarded: pngs[0].awarded, totalMax: pngs[0].max });
   }
 
-  // Assemble a PDF: annotated original photos first, then typeset sheets (question order), + cover.
-  pngs.sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+  // Assemble a PDF: each annotated photo followed by ITS OWN transcript sheets, + cover.
   const pdfDoc = await PDFDocument.create();
-  for (const a of annotated) {
+  const pages = orderMarkedPages(
+    annotated.map(a => ({ photo_index: a.photo_index, item: a })),
+    pngs.map(p => ({ photo_index: p.photo_index, label: p.label, item: p })),
+  );
+  for (const pg of pages) {
     try {
-      let img;
-      try { img = await pdfDoc.embedJpg(a.buf); } catch { img = await pdfDoc.embedPng(a.buf); }
+      const buf = pg.item.buf;
+      // Annotated photos come off Blob as JPEG; typeset sheets are always PNG.
+      const img = pg.kind === 'photo'
+        ? await pdfDoc.embedJpg(buf).catch(() => pdfDoc.embedPng(buf))
+        : await pdfDoc.embedPng(buf);
       const page = pdfDoc.addPage([img.width, img.height]);
       page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
-    } catch (e) { console.error('[mark-paper-pdf] embed annotated failed', (e as Error).message); }
-  }
-  for (const p of pngs) {
-    const img = await pdfDoc.embedPng(p.buf);
-    const page = pdfDoc.addPage([img.width, img.height]);
-    page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+    } catch (e) { console.error('[mark-paper-pdf] embed failed', pg.kind, (e as Error).message); }
   }
   // Cover data from the marking results (works even in photos mode, where there are no typeset pages).
   const coverQs = results.map(r => ({ label: String(r.question_number), awarded: r.marking_output!.marks?.awarded ?? 0, max: r.marking_output!.marks?.max ?? 0 }));

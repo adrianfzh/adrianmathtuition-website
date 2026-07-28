@@ -658,6 +658,39 @@ would leave the copy behind — breaking PDF uploads at runtime with nothing fai
 build time. `src/lib/pdf-worker-asset.test.ts` pins the pair; when it fails the fix is
 `cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/pdf.worker.min.mjs`.
 
+## Marked-PDF assembly — page order + LaTeX repair
+
+The marked PDF (`/api/admin/mark-paper-pdf`) interleaves each **annotated photo** with the
+**typeset transcript sheets for that photo** — photo 1, its transcripts, photo 2, its
+transcripts, … (changed 2026-07-28; transcripts used to be a block at the very end).
+
+- Order lives in `lib/marked-pdf-order.ts` (`orderMarkedPages`, unit-tested), not in the
+  route. Sheets are bucketed by **`photo_index`**, which the mark-paper page must keep
+  sending in its `results[]` payload — drop it and every transcript falls to the back
+  again (orphans and index-less sheets are appended, never lost).
+- **`lib/latex-repair.ts` (`repairLatex` / `repairMarkingLatex`, unit-tested)** runs in
+  `render-marking.ts` before KaTeX ever sees the payload. The model's JSON escaping is
+  unreliable in both directions within a single paper — `frac{1}{2}` (backslash dropped,
+  renders as the letters f-r-a-c) and `\\frac` (doubled, renders as an error) — so the lib
+  collapses over-escapes and restores dropped backslashes on a known command list,
+  masking `\text{…}` spans so English prose isn't mangled.
+- Two more render-side rules that were each a live bug: the payload is injected with a
+  **function** replacement (`template.replace(ph, () => json)`) because a string
+  replacement expands `$&`/`` $` ``/`$'`/`$1` in a payload that is wall-to-wall `$…$`
+  maths; and line content is set with **`textContent`, never `innerHTML`**, because an
+  ordinary `$\frac{d^2v}{dx^2}<0$` otherwise opens an HTML tag at the `<` and swallows
+  the rest of the line. KaTeX auto-render walks text nodes, so `textContent` is enough.
+- Every line carries `data-plain`; after auto-render, any line that errored
+  (`.katex-error`) **or was skipped entirely** (no `.katex`, still showing `$`/`\cmd`)
+  is replaced by its plain transcription. A reader never sees raw LaTeX.
+- No AI attribution anywhere on the sheet — header and footer read "AdrianMath Tuition"
+  (Adrian's call, 2026-07-28).
+
+Tick/cross rendering on the photos themselves lives in the **bot** (`ai/annotate.js`):
+marks are drawn just past `bbox.x2`, centred on the glyph's own optical centre, at
+`~0.95 × fontSize`. The old code anchored on `annotationX + fontSize` with a glyph that
+extended up-and-right of its anchor, which put marks ~130 px out in the margin.
+
 ## Batch Marking
 
 Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s limit.

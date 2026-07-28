@@ -88,7 +88,7 @@ async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
 type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null };
 type Result = {
-  question_number: string; working_index: number; match_confidence: string;
+  question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
   marking_output?: unknown;
   review_recommended?: boolean; review_reasons?: string[];
@@ -281,7 +281,8 @@ export default function MarkPaperPage() {
     setGenerating(true); setMarked(null); setError('');
     try {
       const payload = {
-        results: (results || []).map((r) => ({ question_number: r.question_number, marking_output: r.marking_output })),
+        // photo_index is what lets the PDF put each transcript sheet behind its own photo.
+        results: (results || []).map((r) => ({ question_number: r.question_number, marking_output: r.marking_output, photo_index: r.photo_index })),
         annotated_photos: annotatedPhotos,
         totals,
         student: { name: '', level: '' },
