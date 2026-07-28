@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
 import { orderMarkedPages } from '@/lib/marked-pdf-order';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -11,53 +11,50 @@ export const dynamic = 'force-dynamic';
 
 type ResultIn = { question_number: string; marking_output: MarkingOutput | null; photo_index?: number | null };
 
-// Compact cover page (pdf-lib built-in fonts only — no Sharp/system fonts).
-async function addCoverPage(
+// Height of the header strip added above the FIRST page to carry the paper total.
+// The total lives on the first marked page, not on a cover sheet of its own (Adrian,
+// Jul 2026: "don't have to put the first page") — a marked script starts with the work.
+const stripHeight = (imgWidth: number) => Math.max(52, Math.round(imgWidth * 0.062));
+
+// Paper total, drawn into that strip. It sits on the LEFT and is labelled, because the
+// annotated photo already carries a hand-circled PAGE total in its top-right corner and
+// two unlabelled red scores stacked in one corner read as a contradiction.
+async function drawPaperTotal(
   pdfDoc: PDFDocument,
-  p: { studentName: string; studentLevel: string; questions: Array<{ label: string; awarded: number; max: number }>; totalAwarded: number; totalMax: number },
+  page: PDFPage,
+  p: { width: number; imgHeight: number; studentName: string; studentLevel: string; totalAwarded: number; totalMax: number },
 ): Promise<void> {
-  const W = 595, H = 842, PAD = 60;
   const reg = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const page = pdfDoc.insertPage(0, [W, H]);
-  const y = (t: number) => H - t;
-  const navy = rgb(0x1e / 255, 0x3a / 255, 0x5f / 255);
+  const strip = stripHeight(p.width);
+  const red = rgb(0.816, 0.204, 0.173);
+  const pad = Math.round(strip * 0.3);
+  const yMid = p.imgHeight + strip / 2;
 
-  page.drawRectangle({ x: 0, y: y(64), width: W, height: 64, color: navy });
-  const head = 'AdrianMath';
-  page.drawText(head, { x: (W - bold.widthOfTextAtSize(head, 22)) / 2, y: y(44), font: bold, size: 22, color: rgb(1, 1, 1) });
+  // The image is drawn at y=0, so the strip is bare page above it — paint it white so a
+  // JPEG's edge tint doesn't bleed into the label.
+  page.drawRectangle({ x: 0, y: p.imgHeight, width: p.width, height: strip, color: rgb(1, 1, 1) });
 
-  const title = 'Marked Paper';
-  page.drawText(title, { x: (W - bold.widthOfTextAtSize(title, 30)) / 2, y: y(136), font: bold, size: 30, color: rgb(0.067, 0.094, 0.153) });
-
-  const body = rgb(0.216, 0.255, 0.318);
-  const dateStr = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
-  page.drawText(`Student: ${p.studentName || '—'}`, { x: PAD, y: y(200), font: reg, size: 13, color: body });
-  page.drawText(`Date: ${dateStr}`, { x: PAD, y: y(220), font: reg, size: 13, color: body });
-  page.drawText(`Level: ${p.studentLevel || '—'}`, { x: PAD, y: y(240), font: reg, size: 13, color: body });
-
-  const hr = rgb(0.82, 0.835, 0.855);
-  page.drawLine({ start: { x: PAD, y: y(270) }, end: { x: W - PAD, y: y(270) }, thickness: 1, color: hr });
-
-  const score = `Total: ${p.totalAwarded} / ${p.totalMax}`;
-  page.drawText(score, { x: (W - bold.widthOfTextAtSize(score, 38)) / 2, y: y(350), font: bold, size: 38, color: navy });
-  page.drawLine({ start: { x: PAD, y: y(390) }, end: { x: W - PAD, y: y(390) }, thickness: 1, color: hr });
-
-  page.drawText('Question breakdown:', { x: PAD, y: y(412), font: reg, size: 11, color: rgb(0.42, 0.447, 0.502) });
-  const cols = p.questions.length > 7 ? 2 : 1;
-  const halfN = Math.ceil(p.questions.length / cols);
-  const lineH = Math.min(22, (680 - 428) / Math.max(halfN, 1));
-  const colW = (W - 2 * PAD) / cols;
-  p.questions.forEach((q, i) => {
-    const col = Math.floor(i / halfN), row = i % halfN;
-    const pct = q.max > 0 ? (q.awarded / q.max) * 100 : 0;
-    const color = pct === 100 ? rgb(0.086, 0.396, 0.204) : pct >= 50 ? rgb(0.572, 0.251, 0.055) : rgb(0.6, 0.106, 0.106);
-    page.drawText(`Q${q.label}: ${q.awarded}/${q.max}`, { x: PAD + col * colW, y: y(428 + (row + 1) * lineH), font: bold, size: 11, color });
+  const label = 'PAPER TOTAL';
+  const score = `${p.totalAwarded} / ${p.totalMax}`;
+  const labelSize = Math.round(strip * 0.24), scoreSize = Math.round(strip * 0.46);
+  const boxW = pad * 2 + Math.max(bold.widthOfTextAtSize(score, scoreSize), reg.widthOfTextAtSize(label, labelSize));
+  const boxH = strip * 0.82;
+  page.drawRectangle({
+    x: pad, y: yMid - boxH / 2, width: boxW, height: boxH,
+    borderColor: red, borderWidth: Math.max(1.5, strip * 0.028),
   });
+  page.drawText(label, { x: pad * 2, y: yMid + boxH * 0.08, font: reg, size: labelSize, color: red });
+  page.drawText(score, { x: pad * 2, y: yMid - boxH * 0.42, font: bold, size: scoreSize, color: red });
 
-  page.drawLine({ start: { x: PAD, y: y(690) }, end: { x: W - PAD, y: y(690) }, thickness: 1, color: hr });
-  const foot = 'AdrianMath  ·  adrianmathtuition.com';
-  page.drawText(foot, { x: (W - reg.widthOfTextAtSize(foot, 10)) / 2, y: y(712), font: reg, size: 10, color: rgb(0.612, 0.639, 0.686) });
+  const who = [p.studentName, p.studentLevel].filter(Boolean).join('  ·  ');
+  const dateStr = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
+  const meta = [who, dateStr, 'AdrianMath'].filter(Boolean).join('   ·   ');
+  const metaSize = Math.round(strip * 0.22);
+  page.drawText(meta, {
+    x: p.width - pad - reg.widthOfTextAtSize(meta, metaSize), y: yMid - metaSize * 0.35,
+    font: reg, size: metaSize, color: rgb(0.42, 0.447, 0.502),
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -103,12 +100,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: blob.url, kind: 'image', totalAwarded: pngs[0].awarded, totalMax: pngs[0].max });
   }
 
-  // Assemble a PDF: each annotated photo followed by ITS OWN transcript sheets, + cover.
+  // Totals from the marking results (works even in photos mode, where there are no typeset pages).
+  const perQ = results.map(r => ({ awarded: r.marking_output!.marks?.awarded ?? 0, max: r.marking_output!.marks?.max ?? 0 }));
+  const totalAwarded = body.totals?.awarded ?? perQ.reduce((s, q) => s + q.awarded, 0);
+  const totalMax = body.totals?.max ?? perQ.reduce((s, q) => s + q.max, 0);
+
+  // Assemble a PDF: each annotated photo followed by ITS OWN transcript sheets.
   const pdfDoc = await PDFDocument.create();
   const pages = orderMarkedPages(
     annotated.map(a => ({ photo_index: a.photo_index, item: a })),
     pngs.map(p => ({ photo_index: p.photo_index, label: p.label, item: p })),
   );
+  let totalDrawn = false;
   for (const pg of pages) {
     try {
       const buf = pg.item.buf;
@@ -116,18 +119,18 @@ export async function POST(req: NextRequest) {
       const img = pg.kind === 'photo'
         ? await pdfDoc.embedJpg(buf).catch(() => pdfDoc.embedPng(buf))
         : await pdfDoc.embedPng(buf);
-      const page = pdfDoc.addPage([img.width, img.height]);
+      // First page only: grow the sheet by a header strip and stamp the paper total there.
+      const strip = totalDrawn ? 0 : stripHeight(img.width);
+      const page = pdfDoc.addPage([img.width, img.height + strip]);
       page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+      if (!totalDrawn) {
+        totalDrawn = true;   // set first: a failed stamp must not push the strip onto page 2
+        await drawPaperTotal(pdfDoc, page, {
+          width: img.width, imgHeight: img.height,
+          studentName: student.name, studentLevel: student.level, totalAwarded, totalMax,
+        });
+      }
     } catch (e) { console.error('[mark-paper-pdf] embed failed', pg.kind, (e as Error).message); }
-  }
-  // Cover data from the marking results (works even in photos mode, where there are no typeset pages).
-  const coverQs = results.map(r => ({ label: String(r.question_number), awarded: r.marking_output!.marks?.awarded ?? 0, max: r.marking_output!.marks?.max ?? 0 }));
-  const totalAwarded = body.totals?.awarded ?? coverQs.reduce((s, q) => s + q.awarded, 0);
-  const totalMax = body.totals?.max ?? coverQs.reduce((s, q) => s + q.max, 0);
-  try {
-    await addCoverPage(pdfDoc, { studentName: student.name, studentLevel: student.level, questions: coverQs, totalAwarded, totalMax });
-  } catch (e) {
-    console.error('[mark-paper-pdf] cover page failed:', (e as Error).message);
   }
   const pdfBytes = await pdfDoc.save();
   const blob = await put(`mark-paper/${id}.pdf`, Buffer.from(pdfBytes), { access: 'public', contentType: 'application/pdf', allowOverwrite: true });

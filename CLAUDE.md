@@ -683,6 +683,14 @@ field** — a new surface strips the one that exists.
   route. Sheets are bucketed by **`photo_index`**, which the mark-paper page must keep
   sending in its `results[]` payload — drop it and every transcript falls to the back
   again (orphans and index-less sheets are appended, never lost).
+- **No cover page — the paper total rides on the first marked page** (2026-07-29, Adrian:
+  "don't have to put the first page"). `mark-paper-pdf` grows page 1 by a `stripHeight()`
+  header band (`addPage([w, h + strip])`, image still drawn at `y: 0`) and stamps a boxed
+  red `PAPER TOTAL  x / y` at the **left** of it, student/date muted at the right. Left,
+  not right, because the annotated photo already carries the bot's hand-circled **page**
+  total in its top-right corner — two unlabelled red scores in one corner read as a
+  contradiction. The strip flag is set *before* drawing so a throw can't slide it onto
+  page 2, and the single-photo `kind:'image'` path is untouched (one page, one total).
 - **`lib/latex-repair.ts` (`repairLatex` / `repairMarkingLatex`, unit-tested)** runs in
   `render-marking.ts` before KaTeX ever sees the payload. The model's JSON escaping is
   unreliable in both directions within a single paper — `frac{1}{2}` (backslash dropped,
@@ -725,20 +733,43 @@ each part's working, and — for parts that dropped marks only — the part's **
 `error_summary` placed in real white space** with a leader curve to the crossed step.
 Ticks/crosses stay, but they're decoration; the box and the sentence are the product.
 
-- **Placement is arithmetic, not vibes** — `ai/whitespace.js` (pure, no sharp, 10 tests)
+- **Placement is arithmetic, not vibes** — `ai/whitespace.js` (pure, no sharp, 13 tests)
   thresholds the page to an ink/no-ink grid, dilates by a cell, and searches a summed-area
   table for the nearest free window to the anchor. It counts **dark pixels, never averages
   brightness** (a thin printed rule is a few dark pixels in a bright cell — an average calls
   it empty and the comment lands on the rule). `occupy()` claims every rectangle it uses,
   including the ticks already placed and the top-right corner reserved for the page total,
   so two comments on a page with one big blank area can't stack in the same hole.
-  **No room found → nothing is drawn** (`[annotate] no room for comment on …`): a comment
-  written over the student's working is worse than no comment. A null occupancy grid means
-  "place nothing", never "the page is empty".
+  **Nothing is ever drawn over working** — a null occupancy grid means "place nothing",
+  never "the page is empty".
+- **`findSpot` takes hard `colMin/colMax/rowMin/rowMax` bounds, and the anchor is the
+  part's own `bbox.x2` — never the image's right margin** (fixed 2026-07-29). A CamScanner
+  two-page spread is ONE image, so its right margin belongs to the *right-hand* page: every
+  part's score box landed there in a stack, far from the working it scored, which is what
+  Adrian read as "a lot of duplicate marks". The score box now searches a band beside its
+  own part (≈0.4%–19% of page width right of `x2`), relaxing through two wider bands before
+  giving up; comments search a ≈30% band around the part's vertical extent at three
+  wrap widths (26/16/34 chars) — **whole note or nothing**, never a mid-sentence clip.
+- **Nothing that doesn't fit is lost — it spills to a footer strip.** Parts with no room,
+  and parts Gemini couldn't locate at all (carried through `geminiLineMarks` with
+  `bbox: null` instead of being dropped), collect in `spill` and print under
+  **"Marker's notes:"** in the strip below the page, followed by the "Correct solution —
+  Q…" blocks. The strip is unconditional now, so a dense scan comes back with its
+  diagnoses rather than a page of bare ticks.
+- **The circled page total reserves its true size** — reservation and drawing share
+  `_teacherScoreGeom()`. They used to be computed separately and the reservation was the
+  smaller, so `12/12` printed straight over a part's `2/2`.
 - **Part regions are matched by KEY, never by array position** — Gemini silently omits parts
   it can't find, so an index match attaches the comment to the wrong working. `paper-marker`
   carries `question_number` onto each part so the key is `Q8(i)`, not `(i)` (a page with two
-  questions has two of each label).
+  questions has two of each label), and `photo-overlay` disambiguates a repeat with `#2`.
+  `question_number` is spec'd in the prompt as the paper's **top-level** number only — a
+  model that answered `(b)` there produced keys like `Q(b)` that collide across questions.
+- **Solutions are written for every style, including teacher** (fixed 2026-07-29). Teacher
+  style used to suppress the model solution on the theory that per-line corrections said
+  enough — but in photos-only mode the typeset transcript that carries it isn't in the PDF
+  at all, so a wrong question came back with a cross and no worked answer. `error_summary`
+  is likewise now REQUIRED (non-null, one sentence, plain Unicode) on every part below max.
 - **Vision model list** — `GEMINI_VISION_MODELS` (default
   `gemini-3.1-pro-preview,gemini-2.5-pro`) is tried in order, falling through only on a
   404/unsupported. The old `gemini-2.5-pro` pin came from someone trying bare

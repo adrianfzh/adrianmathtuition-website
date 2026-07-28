@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { orderMarkedPages } from './marked-pdf-order';
 
 const photo = (i: number) => ({ photo_index: i, item: `photo${i}` });
-const sheet = (label: string, photo_index: number | null) => ({ photo_index, label, item: `Q${label}` });
+const sheet = (label: string, photo_index?: number | null) => ({ photo_index, label, item: `Q${label}` });
 
 const flat = (pages: ReturnType<typeof orderMarkedPages<string, string>>) => pages.map(p => p.item);
 
