@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { airtableRequestAll } from '@/lib/airtable';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
-import { dropboxFolderFor, titleFromFilename } from '@/lib/notes-list';
+import { dropboxFolderFor, legacyDropboxFolderFor, titleFromFilename, type PrintableKind } from '@/lib/notes-list';
 
 export const runtime = 'nodejs';
 
@@ -26,6 +26,15 @@ async function dbxTitleKeys(folder: string | null): Promise<Set<string>> {
   } catch { return new Set(); }
 }
 
+// Same legacy-root fallback as listPrintablesForLevel — the hub pills must not
+// read 0 while the Dropbox move is half done. Dies with the shim.
+async function dbxTitleKeysFor(kind: PrintableKind, slug: string): Promise<Set<string>> {
+  const keys = await dbxTitleKeys(dropboxFolderFor(kind, slug));
+  if (keys.size > 0) return keys;
+  const legacy = legacyDropboxFolderFor(kind, slug);
+  return legacy ? dbxTitleKeys(legacy) : keys;
+}
+
 type CountsBody = { counts: Record<string, number>; revisionCounts: Record<string, number>; total: number };
 let cache: { at: number; body: CountsBody } | null = null;
 const TTL_MS = 2 * 60 * 1000;
@@ -35,8 +44,8 @@ async function computeCounts(): Promise<CountsBody> {
   const empty = () => Promise.resolve(new Set<string>());
   const [data, noteSets, revisionSets] = await Promise.all([
     airtableRequestAll('PrintNotes', '?fields[]=Level&fields[]=Title&fields[]=PDF URL'),
-    Promise.all(LEVELS.map(l => enabled ? dbxTitleKeys(dropboxFolderFor('notes', l.slug)) : empty())),
-    Promise.all(LEVELS.map(l => enabled ? dbxTitleKeys(dropboxFolderFor('revision', l.slug)) : empty())),
+    Promise.all(LEVELS.map(l => enabled ? dbxTitleKeysFor('notes', l.slug) : empty())),
+    Promise.all(LEVELS.map(l => enabled ? dbxTitleKeysFor('revision', l.slug) : empty())),
   ]);
 
   const keysByLevel: Record<string, Set<string>> = {};

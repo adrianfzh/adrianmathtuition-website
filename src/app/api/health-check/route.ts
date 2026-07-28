@@ -3,7 +3,8 @@ import { createHmac } from 'crypto';
 import { airtableRequest } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { dropboxConfigured, listFolder } from '@/lib/dropbox';
+import { dropboxConfigured } from '@/lib/dropbox';
+import { listPrintablesForLevel } from '@/lib/notes-list';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -90,9 +91,11 @@ export async function GET(req: NextRequest) {
     // Dropbox notes (admin/kiosk printing)
     timed('dropbox-notes', async () => {
       if (!dropboxConfigured()) return 'not configured (skipped)';
-      const entries = await listFolder('/EM');
-      const pdfs = entries.filter(e => e.tag === 'file').length;
-      if (pdfs === 0) throw new Error('EM folder returned 0 files');
+      // Probe through the real listing path (incl. the legacy-root fallback) so
+      // a wrong folder is caught here rather than silently listing nothing.
+      const { notes } = await listPrintablesForLevel('notes', 'em');
+      const pdfs = notes.filter(n => n.source === 'dropbox').length;
+      if (pdfs === 0) throw new Error('EM notes folder returned 0 files');
       return `${pdfs} files`;
     }),
     // Resend (welcome emails, invoices, receipts)

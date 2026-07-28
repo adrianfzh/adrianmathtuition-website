@@ -37,7 +37,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const [error, setError] = useState('');
   const [dropboxFolder, setDropboxFolder] = useState('');
 
-  // Which pile of PDFs: notes (Dropbox root + legacy Blob uploads) or revision
+  // Which pile of PDFs: notes (Dropbox Notes/<LEVEL> + legacy Blob uploads) or revision
   // worksheets (Dropbox Revision/<LEVEL> only — no Blob path, no edit mode).
   const [kind, setKind] = useState<'notes' | 'revision'>('notes');
   const isRevision = kind === 'revision';

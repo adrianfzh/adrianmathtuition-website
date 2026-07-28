@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { dropboxFolderFor, isPrintableKind, titleFromFilename, NOTE_SLUG_TO_LEVELS } from './notes-list';
+import { dropboxFolderFor, legacyDropboxFolderFor, isPrintableKind, titleFromFilename, NOTE_SLUG_TO_LEVELS } from './notes-list';
 
 // The Dropbox folder layout is the contract between Adrian's Dropbox app folder
 // and what the print pages list. A wrong path silently lists nothing (Dropbox
 // not_found is swallowed as "empty"), so pin it.
 describe('dropboxFolderFor', () => {
-  it('puts notes at the app-folder root, one folder per level', () => {
-    expect(dropboxFolderFor('notes', 'am')).toBe('AM');
-    expect(dropboxFolderFor('notes', 's1')).toBe('S1');
-    expect(dropboxFolderFor('notes', 'jc')).toBe('JC');
+  it('puts notes under Notes/<LEVEL>', () => {
+    expect(dropboxFolderFor('notes', 'am')).toBe('Notes/AM');
+    expect(dropboxFolderFor('notes', 's1')).toBe('Notes/S1');
+    expect(dropboxFolderFor('notes', 'jc')).toBe('Notes/JC');
   });
 
   it('puts revision worksheets under Revision/<LEVEL>', () => {
@@ -27,6 +27,18 @@ describe('dropboxFolderFor', () => {
   it('returns null for an unknown level rather than a bogus path', () => {
     expect(dropboxFolderFor('notes', 'jc3')).toBeNull();
     expect(dropboxFolderFor('revision', '')).toBeNull();
+  });
+});
+
+describe('legacyDropboxFolderFor', () => {
+  it('points notes at the old app-folder root so a half-done move still lists', () => {
+    expect(legacyDropboxFolderFor('notes', 'am')).toBe('AM');
+    expect(legacyDropboxFolderFor('notes', 'jc')).toBe('JC');
+  });
+
+  it('has nothing to fall back to for revision or an unknown level', () => {
+    expect(legacyDropboxFolderFor('revision', 'am')).toBeNull();
+    expect(legacyDropboxFolderFor('notes', 'jc3')).toBeNull();
   });
 });
 

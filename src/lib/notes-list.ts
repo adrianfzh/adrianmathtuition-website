@@ -3,8 +3,8 @@
 // the Dropbox app folder (Apps/AdrianMathNotes/), plus — for notes only — the
 // legacy Airtable/Blob `PrintNotes` table, merged.
 //
-// Two kinds live in the same app folder:
-//   notes     → /<LEVEL>            e.g. /AM   (kiosk + admin)
+// Two kinds live in the same app folder, one parent folder each:
+//   notes     → /Notes/<LEVEL>      e.g. /Notes/AM    (kiosk + admin)
 //   revision  → /Revision/<LEVEL>   e.g. /Revision/AM (admin only, 2026-07-28)
 import { airtableRequestAll } from '@/lib/airtable';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
@@ -26,13 +26,25 @@ export function isPrintableKind(v: string | null | undefined): v is PrintableKin
 
 /**
  * Dropbox app-folder path for a (kind, level) — the ONE place the folder layout
- * is encoded. Notes sit at the app-folder root; revision worksheets one level
- * down under Revision/. Returns null for an unknown level slug.
+ * is encoded. Each kind gets a parent folder holding one folder per level.
+ * Returns null for an unknown level slug.
  */
 export function dropboxFolderFor(kind: PrintableKind, slug: string): string | null {
   const folder = SLUG_TO_DBX_FOLDER[slug];
   if (!folder) return null;
-  return kind === 'revision' ? `Revision/${folder}` : folder;
+  return kind === 'revision' ? `Revision/${folder}` : `Notes/${folder}`;
+}
+
+/**
+ * Pre-2026-07-28 layout: notes sat loose at the app-folder root (`/AM`) before
+ * the Notes/ parent existed. Read-only fallback so a deploy and the Dropbox
+ * move don't have to happen in the same instant — either order works, and a
+ * half-moved folder still lists. Revision never had a legacy location.
+ * DELETE this (and its use below) once the root-level folders are gone.
+ */
+export function legacyDropboxFolderFor(kind: PrintableKind, slug: string): string | null {
+  if (kind !== 'notes') return null;
+  return SLUG_TO_DBX_FOLDER[slug] ?? null;
 }
 
 export type NoteEntry = {
@@ -89,7 +101,12 @@ export async function listPrintablesForLevel(kind: PrintableKind, slug: string):
   const dropboxEnabled = dropboxConfigured();
   if (!folder) return { notes: [], dropboxEnabled, dropboxFolder: undefined };
 
-  const dbx = dropboxEnabled ? await listDropboxPdfs(folder).catch(() => []) : [];
+  let dbx = dropboxEnabled ? await listDropboxPdfs(folder).catch(() => []) : [];
+  // Nothing under the new path yet → look where notes used to live (see above).
+  const legacy = legacyDropboxFolderFor(kind, slug);
+  if (dropboxEnabled && dbx.length === 0 && legacy) {
+    dbx = await listDropboxPdfs(legacy).catch(() => []);
+  }
   if (kind === 'revision') return { notes: dbx, dropboxEnabled, dropboxFolder: folder };
 
   const labels = NOTE_SLUG_TO_LEVELS[slug];

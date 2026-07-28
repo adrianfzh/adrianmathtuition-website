@@ -320,13 +320,19 @@ unit-tested). Never re-derive a folder path in a route:**
 
 | Kind | Dropbox path | Surfaces | Legacy Airtable/Blob merge |
 |---|---|---|---|
-| `notes` | `/<LEVEL>` e.g. `/AM` | `/admin/notes/<level>` + student kiosk | yes (`PrintNotes` table) |
+| `notes` | `/Notes/<LEVEL>` e.g. `/Notes/AM` | `/admin/notes/<level>` + student kiosk | yes (`PrintNotes` table) |
 | `revision` | `/Revision/<LEVEL>` e.g. `/Revision/AM` | `/admin/notes/<level>` only (2026-07-28) | no — Dropbox only |
 
 - Levels are the same five slugs everywhere: `s1 s2 em am jc`.
+- **Legacy-root fallback (transition shim, 2026-07-28)** — notes used to sit loose at the
+  app-folder root (`/AM`). `legacyDropboxFolderFor()` makes an empty `Notes/<LEVEL>` fall
+  back to `/<LEVEL>` so the deploy and the Dropbox move needn't be simultaneous. **Delete
+  the fallback + its test once the root level folders are gone.**
 - **Listing is non-recursive by design** — a PDF must sit loose in the level folder;
-  `AM/Trig/foo.pdf` is invisible. A folder that doesn't exist yet lists as empty
+  `Notes/AM/Trig/foo.pdf` is invisible. A folder that doesn't exist yet lists as empty
   (Dropbox `not_found` is swallowed), so a typo'd path fails SILENTLY — hence the test.
+- The site NEVER writes to Dropbox (`lib/dropbox.ts` = `listFolder` + `getTemporaryLink`
+  only), so it can't create these folders — they're made by hand in Dropbox.
 - Filename is the display title (`titleFromFilename`: strip `.pdf`, `-`/`_` → spaces).
 - `/api/admin-notes?level=am&kind=notes|revision` (400 on a bad kind);
   `/api/admin-notes/counts` returns `{counts, revisionCounts, total}` for the hub pills.
