@@ -37,6 +37,11 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const [error, setError] = useState('');
   const [dropboxFolder, setDropboxFolder] = useState('');
 
+  // Which pile of PDFs: notes (Dropbox root + legacy Blob uploads) or revision
+  // worksheets (Dropbox Revision/<LEVEL> only — no Blob path, no edit mode).
+  const [kind, setKind] = useState<'notes' | 'revision'>('notes');
+  const isRevision = kind === 'revision';
+
   // Edit mode
   const [editMode, setEditMode] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -72,12 +77,13 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
     });
   }, [router]);
 
-  useEffect(() => { if (authed) fetchNotes(); }, [authed]);
+  useEffect(() => { if (authed) fetchNotes(); }, [authed, kind]);
 
   async function fetchNotes() {
     setLoading(true); setError('');
+    setDropboxFolder('');
     try {
-      const res = await fetch(`/api/admin-notes?level=${encodeURIComponent(level)}`);
+      const res = await fetch(`/api/admin-notes?level=${encodeURIComponent(level)}&kind=${kind}`);
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setNotes(data.notes ?? []);
@@ -160,6 +166,8 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   }
   function onDrop(e: React.DragEvent) {
     e.preventDefault(); setDragging(false);
+    // Revision worksheets have no Blob path — they only ever come from Dropbox.
+    if (isRevision) { showToast('Drop revision PDFs into Dropbox instead'); return; }
     const dropped = Array.from(e.dataTransfer.files).filter(
       f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
     );
@@ -238,14 +246,27 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
         {/* Header */}
         <div className="nl-header">
           <a href="/admin/notes" className="nl-back">← Notes</a>
-          <span className="nl-title">{levelLabel} Notes</span>
-          <button className={`nl-edit-btn${editMode ? ' active' : ''}`} onClick={() => { setEditMode(e => !e); setRenamingId(null); }}>
-            {editMode ? 'Done' : 'Edit'}
-          </button>
+          <span className="nl-title">{levelLabel} {isRevision ? 'Revision' : 'Notes'}</span>
+          {/* Revision worksheets are Dropbox-managed — rename/delete/replace happen there. */}
+          {!isRevision && (
+            <button className={`nl-edit-btn${editMode ? ' active' : ''}`} onClick={() => { setEditMode(e => !e); setRenamingId(null); }}>
+              {editMode ? 'Done' : 'Edit'}
+            </button>
+          )}
+        </div>
+
+        {/* Kind switch */}
+        <div className="nl-seg-row">
+          <div className="nl-seg">
+            <button className={`nl-seg-btn${!isRevision ? ' on' : ''}`}
+              onClick={() => { setKind('notes'); }}>📘 Notes</button>
+            <button className={`nl-seg-btn${isRevision ? ' on' : ''}`}
+              onClick={() => { setKind('revision'); setEditMode(false); setRenamingId(null); setUploadOpen(false); }}>📝 Revision</button>
+          </div>
         </div>
 
         {/* Drag overlay */}
-        {dragging && (
+        {dragging && !isRevision && (
           <div className="nl-drag-overlay">
             <div className="nl-drag-msg">📄 Drop PDFs to upload</div>
           </div>
@@ -258,7 +279,9 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
           ) : error ? (
             <div className="nl-error">{error}</div>
           ) : notes.length === 0 ? (
-            <div className="nl-empty">No notes yet — upload below</div>
+            // In revision mode the Dropbox hint below carries the folder path,
+            // so the empty state stays short.
+            <div className="nl-empty">{isRevision ? 'No revision worksheets yet' : 'No notes yet — upload below'}</div>
           ) : (
             <div className="nl-grid">
               {notes.map(note => (
@@ -317,12 +340,13 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
               <svg viewBox="0 0 24 24" width="13" height="13" fill="#0061ff" aria-hidden="true">
                 <path d="M6 1.807 0 5.629l6 3.822 6.001-3.822L6 1.807zM18 1.807l-6 3.822 6 3.822 6-3.822-6-3.822zM0 13.274l6 3.822 6.001-3.822L6 9.452l-6 3.822zM18 9.452l-6 3.822 6 3.822 6-3.822-6-3.822zM6 18.371l6.001 3.822 6-3.822-6-3.822L6 18.371z"/>
               </svg>{' '}
-              Drop PDFs into <b>Dropbox / Apps / AdrianMathNotes / {dropboxFolder}</b> and they appear here automatically — no upload needed.
+              Drop PDFs into <b>Dropbox / Apps / AdrianMathNotes / {dropboxFolder.replace('/', ' / ')}</b> and they appear here automatically — no upload needed.
             </div>
           )}
 
-          {/* Upload section — collapsed by default */}
-          <div className="nl-upload-section">
+          {/* Upload section — collapsed by default. Notes only: revision worksheets
+              live solely in Dropbox, so there is nothing to upload here. */}
+          <div className="nl-upload-section" hidden={isRevision}>
             <button className="nl-upload-toggle" onClick={() => setUploadOpen(o => !o)}>
               {uploadOpen ? '▲ Hide upload' : '＋ Upload notes (Blob)'}
             </button>
@@ -402,6 +426,20 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sa
   color: #374151; cursor: pointer;
 }
 .nl-edit-btn.active { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
+
+/* Kind switch (Notes | Revision) */
+.nl-seg-row { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 0 16px 12px; }
+.nl-seg {
+  display: flex; gap: 4px; max-width: 700px; margin: 0 auto;
+  background: #f3f4f6; border-radius: 10px; padding: 4px;
+}
+.nl-seg-btn {
+  flex: 1; padding: 8px 10px; border: none; border-radius: 7px;
+  background: transparent; color: #6b7280;
+  font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: background .12s ease, color .12s ease;
+}
+.nl-seg-btn.on { background: #fff; color: #13203a; box-shadow: 0 1px 3px rgba(16,24,40,0.12); }
 
 /* Drag overlay */
 .nl-drag-overlay {

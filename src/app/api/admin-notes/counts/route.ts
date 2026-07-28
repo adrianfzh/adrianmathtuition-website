@@ -2,47 +2,59 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { airtableRequestAll } from '@/lib/airtable';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
+import { dropboxFolderFor, titleFromFilename } from '@/lib/notes-list';
 
 export const runtime = 'nodejs';
 
-// Per-level note counts for the /admin/notes hub — merges Dropbox folder files
-// with Airtable/Blob notes, deduped by title (a note in both sources counts
-// once; blank/no-PDF junk ignored). Loaded client-side so the hub renders
-// instantly; cached in-process (~2 min) so repeat visits skip the Dropbox round-trips.
+// Per-level counts for the /admin/notes hub — notes (Dropbox + Airtable/Blob,
+// deduped by title so a note in both sources counts once) and revision
+// worksheets (Dropbox only). Loaded client-side so the hub renders instantly;
+// cached in-process (~2 min) so repeat visits skip the Dropbox round-trips.
 
 const LEVELS = [
   { slug: 's1', atLevel: 'S1' }, { slug: 's2', atLevel: 'S2' },
   { slug: 'em', atLevel: 'EM' }, { slug: 'am', atLevel: 'AM' }, { slug: 'jc', atLevel: 'JC' },
 ];
 
-const titleKey = (name: string) => name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim().toLowerCase();
+const titleKey = (name: string) => titleFromFilename(name).toLowerCase();
 
-async function dbxTitleKeys(folder: string): Promise<Set<string>> {
+async function dbxTitleKeys(folder: string | null): Promise<Set<string>> {
+  if (!folder) return new Set();
   try {
     const entries = await listFolder(`/${folder}`);
     return new Set(entries.filter(e => e.tag === 'file' && /\.pdf$/i.test(e.name)).map(e => titleKey(e.name)));
   } catch { return new Set(); }
 }
 
-let cache: { at: number; body: { counts: Record<string, number>; total: number } } | null = null;
+type CountsBody = { counts: Record<string, number>; revisionCounts: Record<string, number>; total: number };
+let cache: { at: number; body: CountsBody } | null = null;
 const TTL_MS = 2 * 60 * 1000;
 
-async function computeCounts() {
-  const [data, ...dbxSets] = await Promise.all([
+async function computeCounts(): Promise<CountsBody> {
+  const enabled = dropboxConfigured();
+  const empty = () => Promise.resolve(new Set<string>());
+  const [data, noteSets, revisionSets] = await Promise.all([
     airtableRequestAll('PrintNotes', '?fields[]=Level&fields[]=Title&fields[]=PDF URL'),
-    ...LEVELS.map(l => dropboxConfigured() ? dbxTitleKeys(l.atLevel) : Promise.resolve(new Set<string>())),
+    Promise.all(LEVELS.map(l => enabled ? dbxTitleKeys(dropboxFolderFor('notes', l.slug)) : empty())),
+    Promise.all(LEVELS.map(l => enabled ? dbxTitleKeys(dropboxFolderFor('revision', l.slug)) : empty())),
   ]);
+
   const keysByLevel: Record<string, Set<string>> = {};
-  LEVELS.forEach((l, i) => { keysByLevel[l.atLevel] = new Set(dbxSets[i]); });
+  LEVELS.forEach((l, i) => { keysByLevel[l.atLevel] = new Set(noteSets[i]); });
   for (const r of data.records || []) {
     const lv = r.fields?.['Level'] as string | undefined;
     const title = ((r.fields?.['Title'] as string) || '').trim();
     if (!lv || !title || !r.fields?.['PDF URL'] || !keysByLevel[lv]) continue;
     keysByLevel[lv].add(title.toLowerCase());
   }
+
   const counts: Record<string, number> = {};
-  for (const l of LEVELS) counts[l.atLevel] = keysByLevel[l.atLevel].size;
-  return { counts, total: Object.values(counts).reduce((a, b) => a + b, 0) };
+  const revisionCounts: Record<string, number> = {};
+  LEVELS.forEach((l, i) => {
+    counts[l.atLevel] = keysByLevel[l.atLevel].size;
+    revisionCounts[l.atLevel] = revisionSets[i].size;
+  });
+  return { counts, revisionCounts, total: Object.values(counts).reduce((a, b) => a + b, 0) };
 }
 
 export async function GET(req: NextRequest) {
@@ -55,6 +67,6 @@ export async function GET(req: NextRequest) {
     cache = { at: Date.now(), body };
     return NextResponse.json(body, { headers: { 'Cache-Control': 'private, max-age=60' } });
   } catch {
-    return NextResponse.json({ counts: {}, total: 0 });
+    return NextResponse.json({ counts: {}, revisionCounts: {}, total: 0 });
   }
 }

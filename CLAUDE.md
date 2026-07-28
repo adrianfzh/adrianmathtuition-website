@@ -306,6 +306,37 @@ commits) — the full sign-in loop is live end-to-end on the preview. Phase 2 (p
 recommended-for-you topics from lesson progress, homework pickup, exam-season packs.
 Phase 3: print → photograph → AI-mark loop.
 
+## Printable PDFs — Dropbox drop-in folder (`/admin/notes`, kiosk Notes tab)
+
+Adrian saves a DOCX → exports a PDF into his Dropbox app folder → it appears on the
+website. **Nothing is copied or synced**: every page load lists Dropbox live, and each
+click mints a fresh ~4h temporary link (`/api/admin-notes/dropbox-open`), so a listed
+link is never stale. Auth: refresh-token OAuth (`DROPBOX_APP_KEY` / `DROPBOX_APP_SECRET`
+/ `DROPBOX_REFRESH_TOKEN`), app-folder scoped to `Dropbox/Apps/AdrianMathNotes/` — the
+site can see nothing else in his Dropbox. Health-checked every 6h (`dropbox-notes`).
+
+**Two kinds, one folder layout — encoded ONLY in `dropboxFolderFor()` (`lib/notes-list.ts`,
+unit-tested). Never re-derive a folder path in a route:**
+
+| Kind | Dropbox path | Surfaces | Legacy Airtable/Blob merge |
+|---|---|---|---|
+| `notes` | `/<LEVEL>` e.g. `/AM` | `/admin/notes/<level>` + student kiosk | yes (`PrintNotes` table) |
+| `revision` | `/Revision/<LEVEL>` e.g. `/Revision/AM` | `/admin/notes/<level>` only (2026-07-28) | no — Dropbox only |
+
+- Levels are the same five slugs everywhere: `s1 s2 em am jc`.
+- **Listing is non-recursive by design** — a PDF must sit loose in the level folder;
+  `AM/Trig/foo.pdf` is invisible. A folder that doesn't exist yet lists as empty
+  (Dropbox `not_found` is swallowed), so a typo'd path fails SILENTLY — hence the test.
+- Filename is the display title (`titleFromFilename`: strip `.pdf`, `-`/`_` → spaces).
+- `/api/admin-notes?level=am&kind=notes|revision` (400 on a bad kind);
+  `/api/admin-notes/counts` returns `{counts, revisionCounts, total}` for the hub pills.
+- Revision worksheets are **admin-only for now** (Adrian's decision 2026-07-28) — the
+  kiosk still serves `notes` only, so no student-facing surface changed and the 4/day
+  print cap is untouched. Opening them to students = add a kind param to
+  `/api/kiosk/notes` + an entitlement check + a health-check entry.
+- The Blob-upload path (`upload-token`/`register`, rename/replace/delete in Edit mode) is
+  the LEGACY notes source and stays notes-only; revision has no upload UI.
+
 ## June 2026 Revision Sprint
 
 `/admin/revision-signups` has two tabs: **Sign-ups** (manage sign-ups) and **Attendance**.

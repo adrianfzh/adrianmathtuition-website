@@ -16,6 +16,7 @@ const LEVELS = [
 // the pill is not worth blocking the tap on).
 export default function NotesGrid() {
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
+  const [revision, setRevision] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let alive = true;
@@ -23,7 +24,10 @@ export default function NotesGrid() {
       await ensureAdminSession();
       try {
         const res = await fetch('/api/admin-notes/counts');
-        if (res.ok && alive) setCounts((await res.json()).counts ?? {});
+        if (!res.ok || !alive) return;
+        const data = await res.json();
+        setCounts(data.counts ?? {});
+        setRevision(data.revisionCounts ?? {});
       } catch { /* pill just stays blank */ }
     })();
     return () => { alive = false; };
@@ -34,6 +38,7 @@ export default function NotesGrid() {
       {LEVELS.map(({ slug, label, sub, atLevel, from, to }, i) => {
         const isLast = i === LEVELS.length - 1 && LEVELS.length % 2 !== 0;
         const n = counts?.[atLevel];
+        const rev = revision[atLevel] ?? 0;
         return (
           <Link
             key={slug}
@@ -51,7 +56,7 @@ export default function NotesGrid() {
             <div style={{ position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.10)' }} />
             <div style={{ position: 'absolute', bottom: -50, right: 20, width: 96, height: 96, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
 
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end', gap: 6, flexWrap: 'wrap' }}>
               <span style={{
                 fontSize: 11.5, fontWeight: 700, color: '#fff',
                 background: 'rgba(255,255,255,0.18)', padding: '3px 10px', borderRadius: 20,
@@ -60,6 +65,16 @@ export default function NotesGrid() {
               }}>
                 {n === undefined ? '·' : n === 0 ? 'No notes yet' : `${n} note${n === 1 ? '' : 's'}`}
               </span>
+              {/* Revision-worksheet pill — only when the level has any. */}
+              {rev > 0 && (
+                <span style={{
+                  fontSize: 11.5, fontWeight: 700, color: '#fff',
+                  background: 'rgba(0,0,0,0.20)', padding: '3px 10px', borderRadius: 20,
+                  backdropFilter: 'blur(2px)', whiteSpace: 'nowrap',
+                }}>
+                  📝 {rev}
+                </span>
+              )}
             </div>
 
             <div style={{ position: 'relative' }}>
