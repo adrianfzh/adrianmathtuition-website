@@ -152,7 +152,11 @@ export default function MarkPaperPage() {
   const [runId, setRunId] = useState<string | null>(null);
   const [recentRuns, setRecentRuns] = useState<Run[]>([]);
   const [markModel, setMarkModel] = useState<'opus' | 'sonnet'>('opus');
-  const [markStyle, setMarkStyle] = useState<'classic' | 'teacher'>('classic');
+  // Red pen is the default everywhere else — the bot safelists `style` and falls through to
+  // 'teacher', and a Telegram photo needs a "classic" caption to opt back into pills. This
+  // page was the one surface still opening on 'classic', so the same paper came back looking
+  // like a different product depending on where it was marked (Adrian, Jul 2026).
+  const [markStyle, setMarkStyle] = useState<'classic' | 'teacher'>('teacher');
 
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
@@ -400,8 +404,8 @@ export default function MarkPaperPage() {
               disabled={busy}
               style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
             >
+              <option value="teacher">✍️ Teacher&apos;s red pen (default)</option>
               <option value="classic">Classic pills</option>
-              <option value="teacher">✍️ Teacher&apos;s red pen</option>
             </select>
           </label>
           <span style={{ color: '#6b7280', fontSize: 13 }}>{pdf ? 'Reads each photo against the paper and marks every question it finds (≈1–2 min).' : 'No paper attached — marks each photo standalone, reading the printed questions off the page (≈1–2 min).'}</span>
