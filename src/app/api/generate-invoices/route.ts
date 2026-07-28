@@ -354,7 +354,13 @@ export async function POST(req: NextRequest) {
         // downstream PDF/tracking code needs no change.
         const carryOverLineItems: any[] = [];
         const totalFinalAmount = finalAmount;
-        const autoNotes = '';
+        // Additional lessons render as ONE grouped line item; the individual
+        // dates go in Auto Notes, which prints on the PDF (Adrian 2026-07-26).
+        const autoNotes = additionalLessons.length
+          ? `Additional lessons: ${additionalLessons.map(l =>
+              new Date(l.date + 'T00:00:00Z').toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
+            ).join(', ')}`
+          : '';
 
         const invoiceFields: Record<string, any> = {
           'Student': [studentId],

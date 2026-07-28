@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
+import { reconciliationGap } from '@/lib/invoice-render-math';
 
 let browserInstance: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
 
@@ -195,6 +196,19 @@ export async function generateInvoicePDF(invoiceData: InvoiceData): Promise<Buff
       const lessonsCell = item.lessons ? `<span class="lessons-badge">${item.lessons}</span>` : '';
       return `${headerRow}<tr><td><div class="desc-main">${item.description || 'Additional Item'}${unpaidTag}</div></td><td>${slotCell}</td><td>${lessonsCell}</td><td>${sign}$${Math.abs(amount).toFixed(2)}</td></tr>`;
     }).join('');
+  }
+  // ── Reconciliation safety net (lib/invoice-render-math, unit-tested) ──────
+  // A total must ALWAYS be explainable from the visible rows. Manually-amended
+  // invoices used to carry the difference only in the Adjustment Amount field
+  // (Tan Heng Kang's July 2026 PDF demanded $420 while itemising $280 — the
+  // $140 of June additional lessons was invisible). If the rendered rows don't
+  // sum to the final amount, print the gap as an explicit Adjustments row.
+  const reconcileGap = reconciliationGap(
+    invoiceData.finalAmount, invoiceData.lineItems as any, invoiceData.lineItemsExtra as any, invoiceData.ratePerLesson || 0
+  );
+  if (reconcileGap !== 0) {
+    const sign = reconcileGap >= 0 ? '' : '-';
+    extraLineItemsRows += `<tr><td><div class="desc-main">Adjustments — see notes below</div></td><td></td><td></td><td>${sign}$${Math.abs(reconcileGap).toFixed(2)}</td></tr>`;
   }
   html = html.replace(/\{\{EXTRA_LINE_ITEMS_ROWS\}\}/g, extraLineItemsRows);
   html = html.replace(/\{\{AUTO_NOTES\}\}/g, (invoiceData.notes || '').replace(/\n/g, '<br>'));

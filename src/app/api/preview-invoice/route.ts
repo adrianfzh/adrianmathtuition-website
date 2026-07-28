@@ -118,7 +118,8 @@ export async function GET(req: NextRequest) {
     finalAmount: f['Final Amount'] || 0,
     status: searchParams.get('paid') === 'true' ? 'Paid' : (f['Status'] || 'Draft'),
     makeupCredits: 0,
-    notes: (f['Auto Notes'] || '') as string,
+    // Adjustment Notes ride along so an Adjustments row is always explained.
+    notes: [f['Auto Notes'], f['Adjustment Notes']].filter(Boolean).join('\n') as string,
     lineItems,
     lineItemsExtra: (() => { try { return JSON.parse(f['Line Items Extra'] || '[]'); } catch { return []; } })(),
     registerUrl: buildRegisterUrl(studentId),
