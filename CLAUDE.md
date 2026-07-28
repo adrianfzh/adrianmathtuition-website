@@ -691,6 +691,22 @@ field** — a new surface strips the one that exists.
   total in its top-right corner — two unlabelled red scores in one corner read as a
   contradiction. The strip flag is set *before* drawing so a throw can't slide it onto
   page 2, and the single-photo `kind:'image'` path is untouched (one page, one total).
+- **Every page is laid out at `PAGE_W = 595` pt, height proportional** — pages used to be
+  sized to their own pixel dimensions, so a typeset transcript came out visibly bigger
+  than the photo it explained ("why is the transcript larger than the marked page
+  itself?", Adrian 2026-07-29). Uniform WIDTH, not uniform A4: letterboxing a landscape
+  two-page CamScanner spread into portrait would shrink the working to a band adrift in
+  white space.
+- **Fonts: the transcript needs explicit symbol fallbacks** — `marking-template.html`
+  loads Noto Sans Math + Noto Sans Symbols 2 and lists them *after* Caveat / Crimson Pro /
+  JetBrains Mono in every `--font-*` stack. None of the three primaries has `∠ ≅ △ ∴`, and
+  the serverless Chromium has almost no system fonts behind them, so plain-text fields
+  rendered those as tofu boxes (LaTeX is fine — KaTeX draws its own glyphs). Per-character
+  fallback means the Notos only ever supply the missing glyph.
+- **`.final-answer` is a flex row whose children need `min-width: 0`** — a flex item
+  defaults to `min-width: auto`, so the value collapsed to min-content and a long answer
+  wrapped ONE WORD PER LINE in a tall narrow column. The `Answer` label is `flex: 0 0 auto`
+  + `nowrap`; the value is `flex: 1 1 auto` + `min-width: 0` + `overflow-wrap: anywhere`.
 - **`lib/latex-repair.ts` (`repairLatex` / `repairMarkingLatex`, unit-tested)** runs in
   `render-marking.ts` before KaTeX ever sees the payload. The model's JSON escaping is
   unreliable in both directions within a single paper — `frac{1}{2}` (backslash dropped,
@@ -750,12 +766,27 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   own part (≈0.4%–19% of page width right of `x2`), relaxing through two wider bands before
   giving up; comments search a ≈30% band around the part's vertical extent at three
   wrap widths (26/16/34 chars) — **whole note or nothing**, never a mid-sentence clip.
+  The LAST band of each drops the horizontal bound but keeps the vertical one: anywhere on
+  the page **at the right height** still reads as this part's, and `findSpot` takes the spot
+  nearest the anchor, so it only reaches across when the near margin is genuinely full.
+  Without that band a crowded margin sent perfectly placeable boxes to the footer.
 - **Nothing that doesn't fit is lost — it spills to a footer strip.** Parts with no room,
   and parts Gemini couldn't locate at all (carried through `geminiLineMarks` with
   `bbox: null` instead of being dropped), collect in `spill` and print under
   **"Marker's notes:"** in the strip below the page, followed by the "Correct solution —
   Q…" blocks. The strip is unconditional now, so a dense scan comes back with its
   diagnoses rather than a page of bare ticks.
+- **ONE spill entry per part.** The score box and the comment are placed independently, so
+  both can fail; pushing at each failure site printed the same part's note twice under
+  Marker's notes. The loop accumulates `spillScore`/`spillNote` and every exit from the
+  iteration routes through a single `flush()` — **never add a bare `spill.push`**.
+- **Red-pen text is transliterated by `penSafe()`** (`ai/plain-text.js`, unit-tested)
+  before it is drawn or measured — margin comments, footer notes and printed solutions.
+  Patrick Hand, like every handwriting face, carries Latin-1 and almost nothing else, so
+  `∠QSP ≅ ∠QXR` came out as a row of tofu boxes; librsvg can't be made to fall back
+  per-glyph, so the text changes instead (`angle QSP is congruent to angle QXR`). `° × ÷
+  ² ³ ±` are Latin-1 and deliberately left alone. LaTeX never reaches it — that's KaTeX's
+  job on the transcript sheet.
 - **The circled page total reserves its true size** — reservation and drawing share
   `_teacherScoreGeom()`. They used to be computed separately and the reservation was the
   smaller, so `12/12` printed straight over a part's `2/2`.
@@ -763,8 +794,10 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   it can't find, so an index match attaches the comment to the wrong working. `paper-marker`
   carries `question_number` onto each part so the key is `Q8(i)`, not `(i)` (a page with two
   questions has two of each label), and `photo-overlay` disambiguates a repeat with `#2`.
-  `question_number` is spec'd in the prompt as the paper's **top-level** number only — a
-  model that answered `(b)` there produced keys like `Q(b)` that collide across questions.
+  `question_number` is spec'd in the prompt as the paper's **top-level** number only, but
+  the model still answers `(b)` or `8(b)-(c)` often enough that `photo-overlay` also takes
+  the **leading integer and nothing else** (`String(p.question).match(/\d+/)`) — the raw
+  value printed keys like `Q(b)-(c)(c)`. A key is a label: tidy beats faithful.
 - **Solutions are written for every style, including teacher** (fixed 2026-07-29). Teacher
   style used to suppress the model solution on the theory that per-line corrections said
   enough — but in photos-only mode the typeset transcript that carries it isn't in the PDF
