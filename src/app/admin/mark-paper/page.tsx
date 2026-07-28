@@ -313,7 +313,7 @@ export default function MarkPaperPage() {
               disabled={busy}
               style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }}
             >
-              <option value="opus">Opus 4.8 (default)</option>
+              <option value="opus">Opus 5 (default)</option>
               <option value="sonnet">Sonnet 5</option>
             </select>
           </label>
