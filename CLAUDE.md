@@ -1007,9 +1007,22 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   not last: regions arrive in reading order, so it sits at the top of that part's working.
 - **Solutions are written for every style, including teacher** (fixed 2026-07-29). Teacher
   style used to suppress the model solution on the theory that per-line corrections said
-  enough — but in photos-only mode the typeset transcript that carries it isn't in the PDF
-  at all, so a wrong question came back with a cross and no worked answer. `error_summary`
+  enough — but a per-line fix says which STEP broke, not what the answer was, and in
+  photos-only mode the typeset transcript that carries it isn't in the PDF at all, so a
+  wrong question came back with a cross and no worked answer. `error_summary`
   is likewise now REQUIRED (non-null, one sentence, plain Unicode) on every part below max.
+  - **The condition is `solutionEntry(marking, label)` in `ai/photo-overlay.js`, and
+    nowhere else** — a pure, exported, unit-tested rule shared by `ai/paper-marker.js`
+    (this page) and `handlers/messages.js` (a photo sent to the bot). It was written out
+    twice and the copies drifted: the Telegram one kept the `style !== 'teacher'` guard
+    after this page dropped it, so the DEFAULT style answered nothing — and removing the
+    transcript's `📖 Correct solution` block the same day closed the last surface, leaving
+    a bot user with the worked answer on no surface at all. **Style is deliberately not a
+    parameter**: there is no style in which a wrong answer should go unanswered, and a
+    caller that cannot pass one cannot suppress it again.
+  - **An absent `matches_correct` is UNJUDGED, not wrong** — it's routinely missing when
+    there's no single final answer to compare (a "show that" part). The gate is
+    `=== false`; `!matches_correct` would print a model solution beside correct working.
 - **Vision model list** — `GEMINI_VISION_MODELS` (default
   `gemini-3.1-pro-preview,gemini-2.5-pro`) is tried in order, falling through only on a
   404/unsupported. The old `gemini-2.5-pro` pin came from someone trying bare
