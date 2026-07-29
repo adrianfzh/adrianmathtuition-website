@@ -86,10 +86,17 @@ export async function POST(request: NextRequest) {
     }
 
     const level = LEVEL_MAP[String(rawLevel)] || String(rawLevel);
-    const subjectLevel = String(subjectLevelParam || '');
     const subjects = subjectsParam
       ? String(subjectsParam).split(',').map(s => s.trim()).filter(Boolean)
       : [];
+    // JC links carry no subjectLevel — the bot/admin flows only ask Sec
+    // students that question — and writing '' into the Subject Level
+    // singleSelect is an "invalid option" 422 that failed the WHOLE signup
+    // (every JC signup ever, first hit by Carisse, Jul 2026). Derive H1/H2
+    // from the subject instead, and omit the field when there's nothing to say.
+    const subjectLevel = String(subjectLevelParam || '')
+      || (subjects.some(s => /^H2\b/.test(s)) ? 'H2'
+        : subjects.some(s => /^H1\b/.test(s)) ? 'H1' : '');
     const slotIds = slotId ? [String(slotId)] : [];
 
     // Step 1b: Validate start date falls on correct day of week
@@ -145,7 +152,6 @@ export async function POST(request: NextRequest) {
     const studentFields: Record<string, unknown> = {
       'Student Name': sanitize(studentName),
       'Level': level,
-      'Subject Level': subjectLevel,
       'Subjects': subjects,
       'Parent Name': sanitize(parentName),
       'Parent Contact': sanitize(parentContact),
@@ -154,6 +160,7 @@ export async function POST(request: NextRequest) {
       'Join Date': startDate,
       'How Heard': sanitize(howHeard),
     };
+    if (subjectLevel) studentFields['Subject Level'] = subjectLevel;
     if (school) studentFields['School'] = sanitize(school);
     if (studentContact) studentFields['Student Contact'] = sanitize(studentContact);
     if (referralType) studentFields['Referral Type'] = sanitize(referralType);
