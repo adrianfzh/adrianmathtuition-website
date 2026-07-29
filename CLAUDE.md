@@ -848,11 +848,24 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   the old behaviour for single-page photos (there is a regression test pinning exactly that).
   Even the last-resort band is clamped to the column: reaching across a gutter is never an
   improvement on the footer strip.
-- **A box that had to drift is captioned with its part key** (`7(c) 1/3`, leading `Q` stripped).
-  A box level with its own working needs no caption; a bare `1/3` floating between two
-  questions belongs to neither. A final uncaptioned attempt follows, because a caption widens
-  the box by half again and a margin with room for the score but not the caption would
-  otherwise lose both to the footer.
+- **EVERY score box is captioned with its part key, `Q` and all** — `Q6(a) 2/2` (2026-07-29).
+  It used to be captioned only on the attempts that had drifted, and the caption stripped the
+  leading `Q`, so one page came back with `6 2/2`, a bare `1/1` and `(c) 2/2` — Adrian:
+  *"sometimes marks are written, sometimes not written. And 6 2/2 is misleading, perhaps
+  Q6 2/2"*. A page that captions some boxes and not others reads as two different markers, and
+  a bare `2/2` beside one column of a two-up scan belongs to whichever question the reader
+  guesses. **Nothing is written uncaptioned to save space**: a box that fits nowhere goes to
+  the footer strip, which prints its key beside the score anyway.
+  - The `(c) 2/2` half of that bug is upstream, in `buildPartKeys` — the model dropped
+    `question_number` on some parts, so the key was *already* `Q(c)`. A part now borrows a
+    sibling's number (every part in the array belongs to one question).
+  - **Box geometry is `_marginScoreGeom(text, fs)` — reserve and draw share it**, like
+    `_teacherScoreGeom`, and it measures with `textWidth` from `ai/font-metrics.js`. The old
+    flat 0.56 em/char guess reserved a box nearly twice Patrick Hand's real width, so adding
+    the caption pushed boxes out of margins a bare `2/2` had fitted easily.
+  - Bands widen to fit the caption (`max(colW × frac, boxW × 1.2)`) but are still clamped to
+    the part's own column — a fixed fraction of a narrow two-up column is less than the label,
+    so a purely fractional reach would send every captioned box to the footer.
 - **Verifying placement locally is misleading** — Patrick Hand is not installed on a Mac, so
   librsvg substitutes a wider sans and every pen line renders ~35% wider than
   `ai/font-metrics.js` measured it, overflowing bands that fit on Fly. Check the *placement*
@@ -928,6 +941,13 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   the model still answers `(b)` or `8(b)-(c)` often enough that `photo-overlay` also takes
   the **leading integer and nothing else** (`String(p.question).match(/\d+/)`) — the raw
   value printed keys like `Q(b)-(c)(c)`. A key is a label: tidy beats faithful.
+  The keying and the matching are the pure, exported, unit-tested `buildPartKeys()` /
+  `matchPartRegions()` in `ai/photo-overlay.js` (`test/part-keys.test.js`) — don't re-inline them.
+- **ONE region per part key** — `matchPartRegions` keeps the FIRST box and drops repeats.
+  Gemini boxes the same part twice when its working continues down the page, and the renderer
+  draws one score box per region, so a page came back with `Q7 3/4` *and* a stray `3/4`
+  stranded wherever the first hadn't already claimed space (Adrian's photo, Jul 2026). First,
+  not last: regions arrive in reading order, so it sits at the top of that part's working.
 - **Solutions are written for every style, including teacher** (fixed 2026-07-29). Teacher
   style used to suppress the model solution on the theory that per-line corrections said
   enough — but in photos-only mode the typeset transcript that carries it isn't in the PDF

@@ -161,6 +161,10 @@ export default function MarkPaperPage() {
   const [phase, setPhase] = useState<'idle' | 'proposing' | 'proposed' | 'marking' | 'done'>('idle');
   const [error, setError] = useState('');
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [loadingRun, setLoadingRun] = useState('');
+  const [loadedName, setLoadedName] = useState('');
+  const historyRef = useRef<HTMLDetailsElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const authHeaders = { 'Content-Type': 'application/json' };
 
@@ -185,21 +189,36 @@ export default function MarkPaperPage() {
   }, []);
 
   // Load a stored run back into the page so its PDFs can be regenerated (no re-mark).
+  // The results land near the BOTTOM of the page, well below the history list the
+  // button lives in, so without the busy label, the collapse and the scroll below,
+  // a successful load looks exactly like a dead button (Adrian, Jul 2026).
   async function loadRun(id: string) {
-    setError('');
+    setError(''); setLoadingRun(id);
     try {
       const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'run', id }) });
       const d = await r.json();
       if (!r.ok || !d.run) throw new Error(d.error || 'Could not load that run');
       const rj = d.run.result_json || {};
-      setResults(rj.results || []);
+      const results = rj.results || [];
+      const photos = rj.annotated_photos || [];
+      if (!results.length && !photos.length) throw new Error('That run has no stored marking to load — mark the paper again.');
+      setResults(results);
       setTotals(rj.totals || null);
-      setAnnotatedPhotos(rj.annotated_photos || []);
+      setAnnotatedPhotos(photos);
       setUnattempted([]);
       setRunId(d.run.id);
-      setMarked(null);
+      setLoadedName(d.run.paper_name || 'Paper');
+      // The stored run doesn't carry its cost/time back, and leaving the last run's
+      // figures under a different paper's result reads as this paper's.
+      setUsage(null);
+      // Keep the PDF this run already produced: clearing it hid the one thing most
+      // worth having back, and re-generating it costs a Puppeteer round trip.
+      setMarked(d.run.pdf_url ? { url: d.run.pdf_url, kind: 'pdf' } : (d.run.photos_pdf_url ? { url: d.run.photos_pdf_url, kind: 'pdf' } : null));
       setPhase('done');
+      if (historyRef.current) historyRef.current.open = false;
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
     } catch (e) { setError((e as Error).message); }
+    finally { setLoadingRun(''); }
   }
 
   // Can the browser natively decode this for a preview? (JPEG/PNG/WebP everywhere; HEIC only on Safari.)
@@ -248,7 +267,7 @@ export default function MarkPaperPage() {
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked(null); setLoadedName('');
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -281,7 +300,14 @@ export default function MarkPaperPage() {
 
   // Render the marked typeset output: PDF (>1 image) or a single image (1 image).
   async function generateMarked(mode: 'full' | 'photos' = 'full') {
-    if (mode === 'photos' ? !annotatedPhotos.length : !results?.length) return;
+    // Say why, never nothing: a bare `return` here made a PDF click look like a dead
+    // button — the same complaint Adrian had about Load (Jul 2026).
+    if (mode === 'photos' ? !annotatedPhotos.length : !results?.length) {
+      setError(mode === 'photos'
+        ? 'This run has no annotated photos stored — mark the paper again to get them.'
+        : 'Nothing to build a PDF from — mark a paper, or load a run from the history below.');
+      return;
+    }
     setGenerating(true); setMarked(null); setError('');
     try {
       const payload = {
@@ -325,7 +351,7 @@ export default function MarkPaperPage() {
       )}
 
       {recentRuns.length > 0 && (
-        <details style={card}>
+        <details ref={historyRef} style={card}>
           <summary style={{ fontWeight: 700, cursor: 'pointer' }}>🗂️ Recent marked papers ({recentRuns.length})</summary>
           <div style={{ marginTop: 8 }}>
             {recentRuns.map((run) => (
@@ -336,7 +362,10 @@ export default function MarkPaperPage() {
                 <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
                 {run.pdf_url && <a href={run.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
                 {run.photos_pdf_url && <a href={run.photos_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
-                <button onClick={() => loadRun(run.id)} style={{ ...btn, padding: '4px 10px', fontSize: 12 }}>Load</button>
+                <button type="button" disabled={!!loadingRun} onClick={() => loadRun(run.id)}
+                  style={{ ...btn, padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
+                  {loadingRun === run.id ? 'Loading…' : 'Load'}
+                </button>
               </div>
             ))}
           </div>
@@ -416,9 +445,10 @@ export default function MarkPaperPage() {
 
       {/* Results */}
       {phase === 'done' && results && (
-        <div style={card}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10 }}>
-            Result: {totals?.awarded ?? 0}/{totals?.max ?? 0}
+        <div ref={resultsRef} style={card}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+            <span>Result: {totals?.awarded ?? 0}/{totals?.max ?? 0}</span>
+            {loadedName && <span style={{ fontSize: 13, fontWeight: 500, color: '#6b7280' }}>🗂️ loaded: {loadedName}</span>}
           </h2>
           {results.map((r, i) => (
             <div key={i} style={{ padding: '10px 0', borderTop: i ? '1px solid #f3f4f6' : 'none' }}>
