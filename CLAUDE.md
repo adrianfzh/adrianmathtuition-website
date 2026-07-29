@@ -681,7 +681,7 @@ never receive.
 | | **Annotated photo** (bot, `ai/annotate.js`) | **Transcript sheet** (site, `marking-template.html`) |
 |---|---|---|
 | What it is | the marked script — his own paper, red pen on it | a legible re-write of his working |
-| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
+| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" · **the worked solution, in 🖼 mode only** | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
 | Says | what each part scored, and WHY a mark was lost | what the answer WAS |
 | Granularity | per PART | per LINE |
 | In 🖼 images-only mode | ✅ | ❌ absent |
@@ -695,16 +695,34 @@ never receive.
 - **The comments go on the PHOTO, the worked solution goes on the TRANSCRIPT** — Adrian's
   call, 2026-07-29: *"there is no need for comments to be on both, so the comments are on the
   actual image/pdf, as well as why student's working is wrong, then the correct solution on
-  transcript."* So the photo's footer strip no longer takes `solutions` at all (its callers
-  pass `[]`; the renderer keeps the capability because the same strip carries the
-  `question_found` notices and the Marker's-notes spill, so reverting is one line per caller).
-  **Consequence, stated because it was accepted and not overlooked: the 🖼 images-only PDF
-  carries no worked solution.** He was told; it is the price of not printing the same thing
-  twice. A THIRD surface should put the solution on the transcript side, not the photo.
+  transcript."* The rule is **once per document, not once per system**: a 📄 full PDF has a
+  transcript sheet behind every photo, so the photo omits the solution; a 🖼 images-only PDF
+  has no transcript anywhere, so its photos must carry it or the answer is nowhere. (First
+  cut suppressed it on the photo unconditionally — which silently emptied 🖼, the button
+  Adrian actually presses: 5 of the 6 sample PDFs he sent were images-only.)
+  - **Two renders, one grounding pass.** `annotateToBuffer` composites the SAME Gemini
+    `annotations` object twice — `buffer` without the solution block, `bufferWithSolutions`
+    with it — and `annotateAndUpload` puts both to Blob (`-sol` suffix; the timestamp alone
+    can collide on parallel puts). Gemini runs once; the twin costs one sharp pass. **Don't
+    "simplify" it into two `annotateToBuffer` calls** — that doubles the vision spend on
+    every photo of every paper. The twin is null when nothing on the page was wrong (the two
+    images would be identical), and on the last-resort margin rung, which has no footer strip.
+  - `annotated_photos[]` therefore carries `{ photo_index, url, url_with_solutions, method }`.
+    **Which one goes in is `pickAnnotatedPhotoUrl()` (`lib/annotated-photo-source.ts`,
+    unit-tested), not an inline ternary in the route** — it is silent in both directions: the
+    plain copy in 🖼 mode answers nothing, the twin in 📄 mode answers twice. `url` is the
+    fallback everywhere (twin absent, upload failed, or a run marked before 2026-07-29), and
+    the route re-fetches `url` if the twin 404s out of Blob.
+  - The photo's footer keeps its `solutions` capability for exactly this reason — it is the
+    same strip that carries the `question_found` notices and the Marker's-notes spill.
   - The Telegram flow is unaffected — it renders overlay and transcription in parallel and
-    sends the transcription first. If BOTH renderers fail, `structuredMarkingToText` still
-    writes `📖 Correct solution:` into the plain-text message: with no picture at all, that
-    text is the only thing that arrives, so it does NOT adopt the split.
+    sends the transcription first, so its photo passes no solutions (it is the 📄 case). If
+    BOTH renderers fail, `structuredMarkingToText` still writes `📖 Correct solution:` into
+    the plain-text message: with no picture at all, that text is the only thing that arrives,
+    so it does NOT adopt the split.
+  - **A THIRD surface must answer the same question before it ships: does a student holding
+    only this document learn what the answer was?** If yes it omits the solution, if no it
+    carries it. Neither answer is "always".
 - Adrian, seeing both for the first time: *"what's really the difference between Marker's notes
   and the transcript? seems duplicated, but each has it's good points"* — keep both, keep the
   split above.
@@ -946,9 +964,9 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   `bbox: null` instead of being dropped), collect in `spill` and print under
   **"Marker's notes:"** in the strip below the page, under the `question_found`
   notices. The strip is unconditional now, so a dense scan comes back with its
-  diagnoses rather than a page of bare ticks. It no longer carries worked solutions —
-  those moved to the transcript on 2026-07-29 (see the photo-vs-transcript table above);
-  `createAnnotatedImage` still accepts a `solutions` array, but every caller passes `[]`.
+  diagnoses rather than a page of bare ticks. Whether it also carries the worked solution
+  depends on which PDF this copy is destined for — see the photo-vs-transcript table above;
+  `createAnnotatedImage`'s `solutions` array is filled on the 🖼 twin and empty on the 📄 one.
 - **ONE spill entry per part.** The score box and the comment are placed independently, so
   both can fail; pushing at each failure site printed the same part's note twice under
   Marker's notes. The loop accumulates `spillScore`/`spillNote` and every exit from the
@@ -1032,10 +1050,10 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
     `style !== 'teacher'` guard after this page dropped it, so the DEFAULT style answered
     nothing). **Style is deliberately not a parameter**: there is no style in which a wrong
     answer should go unanswered, and a caller that cannot pass one cannot suppress it again.
-  - Since the 2026-07-29 split its only remaining caller is `structuredMarkingToText` in
-    `ai/annotate.js` — the plain-text Telegram message sent when BOTH renderers failed.
-    The two picture surfaces don't consult it: the transcript prints the solution
-    unconditionally when the field is present, the photo never does.
+  - Two callers: `structuredMarkingToText` in `ai/annotate.js` (the plain-text Telegram
+    message sent when BOTH renderers failed) and `markPhotoDirect` in `ai/paper-marker.js`,
+    which builds the per-photo `solutions` array for the 🖼 twin. The transcript doesn't
+    consult it — it prints the solution unconditionally when the field is present.
   - **An absent `matches_correct` is UNJUDGED, not wrong** — it's routinely missing when
     there's no single final answer to compare (a "show that" part). The gate is
     `=== false`; `!matches_correct` would print a model solution beside correct working.

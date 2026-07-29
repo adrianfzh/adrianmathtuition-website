@@ -94,6 +94,11 @@ type Result = {
   review_recommended?: boolean; review_reasons?: string[];
 };
 type Usage = { costUsd?: number; timeSec?: number; inputTokens?: number; outputTokens?: number; model?: string };
+// The marker renders each page twice: `url` has no worked solution (📄 full — the transcript
+// sheet carries it), `url_with_solutions` has it in the footer (🖼 images-only, which has no
+// transcript). Both are forwarded to the PDF route, which picks by mode. Absent on runs
+// marked before 29 Jul 2026, and on pages where nothing was wrong — then 🖼 uses `url`.
+type AnnotatedPhoto = { photo_index: number; url: string; url_with_solutions?: string | null; method?: string | null };
 
 const card: CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, marginBottom: 16 };
 const btn: CSSProperties = { padding: '10px 18px', borderRadius: 8, border: 'none', background: '#111827', color: '#fff', fontWeight: 600, cursor: 'pointer' };
@@ -148,7 +153,7 @@ export default function MarkPaperPage() {
   const [marked, setMarked] = useState<{ url: string; kind: string } | null>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
-  const [annotatedPhotos, setAnnotatedPhotos] = useState<{ photo_index: number; url: string; method?: string | null }[]>([]);
+  const [annotatedPhotos, setAnnotatedPhotos] = useState<AnnotatedPhoto[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
   const [recentRuns, setRecentRuns] = useState<Run[]>([]);
   const [markModel, setMarkModel] = useState<'opus' | 'sonnet'>('opus');
@@ -278,7 +283,7 @@ export default function MarkPaperPage() {
         body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`, model: markModel, style: markStyle }),
       });
       const raw = await resp.text();
-      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string; method?: string | null }[]; run_id?: string | null; usage?: Usage; error?: string };
+      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
       try { d = raw ? JSON.parse(raw) : {}; }
       catch {
         const hint = resp.status === 413

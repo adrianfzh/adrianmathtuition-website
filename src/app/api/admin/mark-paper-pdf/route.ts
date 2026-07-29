@@ -3,6 +3,7 @@ import { put } from '@vercel/blob';
 import { PDFDocument, PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
 import { orderMarkedPages } from '@/lib/marked-pdf-order';
+import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -68,7 +69,7 @@ async function drawPaperTotal(
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string }[]; totals?: { awarded: number; max: number }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const mode = body.mode === 'photos' ? 'photos' : 'full';   // 'photos' = annotated originals only (no typeset)
@@ -89,11 +90,18 @@ export async function POST(req: NextRequest) {
     }
   }
   // Fetch the annotated ORIGINAL photos (PNGs from Blob) — these go in the PDF first.
+  // The marker sends two copies of each page; which one belongs in THIS document is
+  // pickAnnotatedPhotoUrl's call (see that module for why it is not inlined here).
   const annotated: { photo_index: number; buf: Buffer }[] = [];
   for (const ap of (body.annotated_photos || [])) {
+    const src = pickAnnotatedPhotoUrl(ap, mode);
     try {
-      const r = await fetch(ap.url);
+      const r = await fetch(src);
       if (r.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r.arrayBuffer()) });
+      else if (src !== ap.url) {
+        const r2 = await fetch(ap.url);   // twin went missing from Blob — the plain page still marks the work
+        if (r2.ok) annotated.push({ photo_index: ap.photo_index, buf: Buffer.from(await r2.arrayBuffer()) });
+      }
     } catch (e) { console.error('[mark-paper-pdf] fetch annotated failed', (e as Error).message); }
   }
   annotated.sort((a, b) => a.photo_index - b.photo_index);
