@@ -780,13 +780,38 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   both can fail; pushing at each failure site printed the same part's note twice under
   Marker's notes. The loop accumulates `spillScore`/`spillNote` and every exit from the
   iteration routes through a single `flush()` — **never add a bare `spill.push`**.
-- **Red-pen text is transliterated by `penSafe()`** (`ai/plain-text.js`, unit-tested)
-  before it is drawn or measured — margin comments, footer notes and printed solutions.
-  Patrick Hand, like every handwriting face, carries Latin-1 and almost nothing else, so
-  `∠QSP ≅ ∠QXR` came out as a row of tofu boxes; librsvg can't be made to fall back
-  per-glyph, so the text changes instead (`angle QSP is congruent to angle QXR`). `° × ÷
-  ² ³ ±` are Latin-1 and deliberately left alone. LaTeX never reaches it — that's KaTeX's
-  job on the transcript sheet.
+- **The red pen writes real mathematics: `$…$` is TYPESET, not transliterated**
+  (`ai/pen-math.js`, unit-tested). librsvg does no per-glyph fallback and Patrick Hand
+  carries Latin-1 and little else, so symbols either drew as tofu boxes or had to be spelled
+  out by `penSafe()` — which is how the footer solutions came back as `v = ds/dt = kpi
+  cos(pit)` and `18.964 ~= 19.0` (Adrian, Jul 2026: "able to write the mathematical
+  notations latex style?"). Maths now goes through MathJax via `ai/figure-tex.js` and is
+  emitted as **flattened SVG `<path>` data** — no installed font involved, identical in
+  sharp and in a browser, with real fractions, radicals, superscripts and Greek.
+  - **The split is per LINE, not per run.** A line with no maths is hand-written in the pen
+    (most margin comments, every heading); a line containing any `$…$` is typeset WHOLE,
+    prose included. Mixing `<text>` and `<path>` on one line means positioning the paths by
+    summing *estimated* text widths while librsvg does the real shaping (kerning and hinting
+    are not in the advance table), so the failure mode is prose written **on top of** a
+    fraction. Rendering `so $r = 5$ not $8$` both ways settled it — mixed runs printed
+    `r = 5not 8`. **Don't reintroduce per-run mixing.**
+  - Prose inside a typeset line keeps `∠ ≅ ≈ → ∞ °` as written (MathJax draws them); only
+    the pen path still transliterates via `penSafe()`. TeX specials are escaped by
+    `texEscapeText` — every form was probed against `figure-tex` first, because MathJax has
+    no `\textasciitilde`/`\textbackslash` and a bare `~` silently becomes a space.
+  - `ai/font-metrics.js` reads **real advance widths** from the vendored
+    `assets/fonts/PatrickHand-Regular.ttf` (mean 0.423 em, glyphs 0.224–0.68). The old flat
+    0.5 em guess measured every pen line ~18% wide, which decides whether a margin comment
+    fits the hole it was placed in. Falls back to a mean constant if the file can't be read.
+  - Pen `<text>` carries `xml:space="preserve"` — SVG otherwise strips a run's leading and
+    trailing spaces, the only thing separating it from what follows.
+  - `figure-tex` costs ~47 s to require on a cold filesystem (~120 ms warm), so `pen-math`
+    loads it **lazily**, like `ai/figure-engine.js`. Requiring it at module load stalls the
+    first marking request after a deploy.
+  - Degradation is layered: bad TeX retries transliterated, then falls back to per-run
+    drawing, then to plain pen prose — a lost fraction beats a lost sentence. The model
+    writes the worked answer into `correct.full_solution_latex` (one `$…$` step per line);
+    the old `full_solution_plain` is still read as a fallback.
 - **The circled page total reserves its true size** — reservation and drawing share
   `_teacherScoreGeom()`. They used to be computed separately and the reservation was the
   smaller, so `12/12` printed straight over a part's `2/2`.
