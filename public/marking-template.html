@@ -29,9 +29,23 @@
   --font-hand:      'Caveat', var(--symbols), cursive;
   --font-mono:      'JetBrains Mono', var(--symbols), 'Courier New', monospace;
   --radius:         6px;
+  /* ONE type size for every piece of transcript text — the question prompt, the
+     working, the red-pen corrections, the answer and the feedback (Adrian, Jul
+     2026: "all fonts same size in transcript"). Anything that isn't prose — the
+     circled question number, the score badge, the mark total, the label chips —
+     keeps its own size; those are scores and labels, not the transcript. */
+  --fs-body:        15px;
+  --fs-label:       11px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* KaTeX sets maths at 1.21em of its surroundings. That default is calibrated
+   against a 16px UI font; here it made every typeset working line visibly
+   bigger than the prose around it — the size mismatch Adrian asked to remove.
+   1.06em keeps maths a hair above the text (its x-height is smaller) without
+   reading as a different size. */
+.katex { font-size: 1.06em; }
 
 body {
   margin: 0;
@@ -143,16 +157,33 @@ body {
 }
 
 /* ── Question prompt ────────────────────────────────────────────── */
+/* Same SIZE as the working, so the difference between the printed question and
+   the student's own working has to be carried by everything else: the label
+   chip, the italic, a solid tint and a dark rule. */
 .question-prompt {
-  font-size: 15px;
+  font-size: var(--fs-body);
   color: var(--ink-light);
   font-style: italic;
   margin-bottom: 16px;
-  padding: 10px 14px;
-  border-left: 3px solid var(--paper-line);
-  background: rgba(0,0,0,0.025);
+  padding: 9px 14px 11px;
+  border-left: 3px solid var(--ink-light);
+  background: rgba(26,18,8,0.055);
   border-radius: 0 var(--radius) var(--radius) 0;
   line-height: 1.55;
+}
+
+.question-prompt::before {
+  content: 'Question';
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  opacity: 0.65;
+  margin-bottom: 4px;
 }
 
 /* ── Working section ────────────────────────────────────────────── */
@@ -179,7 +210,7 @@ body {
 
 .line-content {
   flex: 1;
-  font-size: 17px;
+  font-size: var(--fs-body);
   line-height: 1.6;
   color: var(--ink);
   font-family: var(--font-body);
@@ -235,7 +266,7 @@ body {
 
 .margin-correction .arrow {
   font-family: var(--font-hand);
-  font-size: 18px;
+  font-size: var(--fs-body);
   color: var(--red);
   font-weight: 700;
   flex-shrink: 0;
@@ -244,7 +275,7 @@ body {
 
 .margin-correction .correction-text {
   font-family: var(--font-hand);
-  font-size: 17px;
+  font-size: var(--fs-body);
   color: var(--red);
   font-weight: 600;
   line-height: 1.45;
@@ -273,7 +304,7 @@ body {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  font-size: 14px;
+  font-size: var(--fs-label);
   color: var(--ink-light);
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -293,7 +324,7 @@ body {
   min-width: 0;
   overflow-wrap: anywhere;
   font-family: var(--font-body);
-  font-size: 18px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--ink);
   font-style: normal;
@@ -302,17 +333,25 @@ body {
 }
 
 .wrong-answer {
-  text-decoration: line-through;
-  text-decoration-color: var(--red);
-  text-decoration-thickness: 2px;
   color: var(--red);
   opacity: 0.6;
   margin-right: 6px;
+  /* PAINTED, not `text-decoration: line-through`. The answer is typeset through
+     KaTeX now, and decoration does not propagate into KaTeX's inline-block
+     boxes — a struck `$23.5\text{ g}$` would have come out unstruck. */
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(50% - 1px), currentColor calc(50% - 1px),
+    currentColor calc(50% + 1px), transparent calc(50% + 1px));
+  /* Without `clone` a wrapped answer gets one stripe across the whole box
+     instead of one through each line. */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .correct-answer {
   font-family: var(--font-hand);
-  font-size: 20px;
+  font-size: var(--fs-body);
   font-weight: 700;
   color: var(--red);
 }
@@ -337,7 +376,7 @@ body {
 }
 
 .summary-title {
-  font-size: 15px;
+  font-size: var(--fs-body);
   font-weight: 600;
   color: var(--red);
   font-family: var(--font-body);
@@ -346,7 +385,7 @@ body {
 }
 
 .summary-body {
-  font-size: 15px;
+  font-size: var(--fs-body);
   line-height: 1.65;
   color: var(--ink);
   font-family: var(--font-body);
@@ -423,6 +462,29 @@ body {
     var m = String(s || '').match(/^Q?\s*(\d+)\s*\(?([a-zA-Z])?\)?/);
     if (!m) return { num: String(s || 'Q'), sub: '' };
     return { num: m[1], sub: m[2] ? '(' + m[2].toLowerCase() + ')' : '' };
+  }
+
+  // Give a value to KaTeX only when it actually looks like maths. Already-
+  // delimited `$…$` passes through; `23.5\text{ g}` gets its dollars (the schema
+  // asks for them, the model routinely omits them); a bare "60 g" is left as
+  // prose so the unit isn't set in math italic.
+  function mathify(v) {
+    var s = String(v == null ? '' : v).trim();
+    if (!s) return '';
+    if (s.indexOf('$') >= 0) return s;
+    if (/[\\^_{}]/.test(s)) return '$' + s + '$';
+    return s;
+  }
+
+  // textContent, never innerHTML — same reason as the working lines: an ordinary
+  // `$x<0$` would open a tag at the `<`. data-plain gives the KaTeX pass below
+  // something to fall back to when the model's LaTeX doesn't parse.
+  function mathSpan(className, latex, plain) {
+    var s = document.createElement('span');
+    if (className) s.className = className;
+    s.textContent = mathify(latex || plain || '');
+    if (plain) s.setAttribute('data-plain', plain);
+    return s;
   }
 
   function el(tag, className, html) {
@@ -550,20 +612,23 @@ body {
     var isCorrect = !!fa.matches_correct;
     var correctAnswer = correct.final_answer || '';
 
-    var wrongHtml = '';
-    if (!isCorrect && fa.value_raw) {
-      wrongHtml = '<span class="wrong-answer">' + esc(fa.value_raw) + '</span>';
-    }
-    var answerHtml;
+    // The answer is typeset, not printed as source: `value_latex` is what the
+    // marker writes it in, and a plain `23.5\text{ g}` on the one line the
+    // student looks at first was the last raw LaTeX left on the sheet.
+    var valueBox = el('span', 'final-answer-value');
     if (!isCorrect && correctAnswer) {
-      answerHtml = wrongHtml + ' <span class="correct-answer">' + esc(correctAnswer) + '</span>';
+      if (fa.value_raw) valueBox.appendChild(mathSpan('wrong-answer', fa.value_latex, fa.value_raw));
+      valueBox.appendChild(document.createTextNode(' '));
+      valueBox.appendChild(mathSpan('correct-answer', correctAnswer, correctAnswer));
     } else {
-      answerHtml = '<span>' + esc(fa.value_raw || '') + '</span>';
+      valueBox.appendChild(mathSpan(null, fa.value_latex, fa.value_raw));
     }
 
-    finalRow.innerHTML =
-      '<div class="final-answer-label"><span>Answer</span><span class="final-answer-value">' + answerHtml + '</span></div>' +
-      '<div class="final-mark-total">' + esc(marks.margin_note || '') + '</div>';
+    var labelBox = el('div', 'final-answer-label');
+    labelBox.appendChild(el('span', null, 'Answer'));
+    labelBox.appendChild(valueBox);
+    finalRow.appendChild(labelBox);
+    finalRow.appendChild(el('div', 'final-mark-total', esc(marks.margin_note || '')));
     paper.appendChild(finalRow);
   }
 
@@ -612,7 +677,9 @@ body {
     // auto-render bailed on the element entirely and left literal `$...$` /
     // `\command` on the page. Either way, swap in the model's plain transcription.
     try {
-      var hosts = document.querySelectorAll('.line-content[data-plain]');
+      // Any element carrying data-plain — working lines and, since the answer is
+      // typeset too, the answer spans.
+      var hosts = document.querySelectorAll('[data-plain]');
       for (var i = 0; i < hosts.length; i++) {
         var host = hosts[i];
         var errored = !!host.querySelector('.katex-error');

@@ -737,6 +737,34 @@ field** — a new surface strips the one that exists.
   defaults to `min-width: auto`, so the value collapsed to min-content and a long answer
   wrapped ONE WORD PER LINE in a tall narrow column. The `Answer` label is `flex: 0 0 auto`
   + `nowrap`; the value is `flex: 1 1 auto` + `min-width: 0` + `overflow-wrap: anywhere`.
+- **ONE type size for the whole transcript — `--fs-body` (15px)** (2026-07-29, Adrian:
+  "all fonts same size in transcript"). The question prompt, the working, the red-pen
+  corrections, the answer and the feedback paragraph all read from that variable; only
+  scores and label chips keep their own size (circled question number, `[n marks]`,
+  the mark total, the score badge, and `--fs-label` 11px mono for `QUESTION`/`ANSWER`).
+  **A new transcript element gets `var(--fs-body)`, not a number** — the sheet used to
+  span 15–20px and the blocks visibly disagreed about how big the paper was.
+  - **`.katex` is pinned to `1.06em`.** KaTeX's own default is `1.21em`, calibrated
+    against a 16px UI font; left alone it made every typeset working line a size
+    larger than the prose beside it, which is most of what "different sizes" looked
+    like. 1.06em keeps maths a hair up (smaller x-height) without reading as bigger.
+  - **The question prompt is differentiated by treatment, not by size** — a mono
+    `QUESTION` chip (`::before`), the italic, a solid tint and a dark left rule. It is
+    the same size as the working by request, so nothing else may carry that job.
+- **The final answer is TYPESET, from `student_final_answer.value_latex`** (2026-07-29).
+  It was the last raw LaTeX on the sheet — a plain `23.5\text{ g}` on the one line a
+  student reads first. `mathify()` adds `$…$` only when the value looks like maths
+  (contains `\ ^ _ {`), so a bare `60 g` stays prose instead of being set in math italic;
+  the row is built with `textContent` + `data-plain` like the working lines, never
+  `innerHTML`.
+  - **A struck wrong answer is PAINTED, not `text-decoration: line-through`** —
+    decoration does not propagate into KaTeX's inline-block boxes, so once the answer
+    was typeset the strike vanished. `.wrong-answer` uses a `linear-gradient` stripe
+    plus `box-decoration-break: clone` (without `clone`, a wrapped answer gets one
+    stripe across the whole box). ⚠ `.work-line.struck .line-content` still uses
+    `text-decoration`, so a crossed-out *working* line containing KaTeX shows only the
+    0.55 opacity, no strike — same root cause, not yet fixed (the block case can't use
+    the gradient trick: one stripe would land mid-box on a wrapped or fraction-tall line).
 - **`lib/latex-repair.ts` (`repairLatex` / `repairMarkingLatex`, unit-tested)** runs in
   `render-marking.ts` before KaTeX ever sees the payload. The model's JSON escaping is
   unreliable in both directions within a single paper — `frac{1}{2}` (backslash dropped,
@@ -749,9 +777,11 @@ field** — a new surface strips the one that exists.
   maths; and line content is set with **`textContent`, never `innerHTML`**, because an
   ordinary `$\frac{d^2v}{dx^2}<0$` otherwise opens an HTML tag at the `<` and swallows
   the rest of the line. KaTeX auto-render walks text nodes, so `textContent` is enough.
-- Every line carries `data-plain`; after auto-render, any line that errored
+- Every line carries `data-plain`; after auto-render, any element that errored
   (`.katex-error`) **or was skipped entirely** (no `.katex`, still showing `$`/`\cmd`)
-  is replaced by its plain transcription. A reader never sees raw LaTeX.
+  is replaced by its plain transcription. A reader never sees raw LaTeX. The sweep
+  selects on `[data-plain]`, not `.line-content[data-plain]` — the answer spans opt in
+  the same way, and so should anything typeset in future.
 - No AI attribution anywhere on the sheet — header and footer read "AdrianMath"
   (Adrian's call, 2026-07-28).
 
@@ -841,6 +871,23 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   notations latex style?"). Maths now goes through MathJax via `ai/figure-tex.js` and is
   emitted as **flattened SVG `<path>` data** — no installed font involved, identical in
   sharp and in a browser, with real fractions, radicals, superscripts and Greek.
+  - **A worked solution is split into steps by `splitTexLines`, NEVER by `/\\n|\n/`**
+    (2026-07-29). A literal backslash-`n` is also the opening of `\ne`, `\neq`, `\nabla`,
+    `\not`, `\nu`, `\ncong` — the naive regex tore `6>0\neq 0` into `6>0` and `eq 0`, and
+    both fragments then printed as raw LaTeX because neither parsed. The lib breaks on a
+    literal `\n` only when what follows **cannot** be a command name (`/\\n(?![a-zA-Z])/`);
+    the model double-escapes its separators often enough that plain `\n` must keep working.
+    Named regression test in `test/pen-math.test.js`.
+  - **Consecutive equation steps share an equals column** — `groupAlignedTex` merges a run
+    of ≥2 genuine steps into one `$\begin{aligned}…\end{aligned}$` block (MathJax accepts
+    it through `texBlock`). A step qualifies only if the whole line is one `$…$` run with a
+    top-level `=`, no `\text{…}` on the left, and a short LHS — otherwise "At $x=-0.1$ the
+    gradient is…" would stack the word "At" over a fraction. **An aligned block cannot
+    word-wrap**, so a group too wide even at the font floor falls back to its own rows
+    (`part.rows`, not a re-split of the source — re-splitting duplicated every earlier group).
+  - **The footer is set at `0.72 ×` the mark size, not `1.05 ×`.** It is read, not glanced
+    at; at the old size it was the loudest thing on the sheet and pushed a long solution
+    onto a second screen (Adrian, Jul 2026).
   - **The split is per LINE, not per run.** A line with no maths is hand-written in the pen
     (most margin comments, every heading); a line containing any `$…$` is typeset WHOLE,
     prose included. Mixing `<text>` and `<path>` on one line means positioning the paths by
