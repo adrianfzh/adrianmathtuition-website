@@ -883,6 +883,20 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   - Bands widen to fit the caption (`max(colW × frac, boxW × 1.2)`) but are still clamped to
     the part's own column — a fixed fraction of a narrow two-up column is less than the label,
     so a purely fractional reach would send every captioned box to the footer.
+- **A WORKING-ONLY page is marked against a reconstruction, and must say so** (2026-07-29).
+  With no question paper attached, the bot uses `STANDALONE_MARK_SYSTEM` — "the printed
+  question and the working are BOTH on this page". A continuation sheet or graph paper has
+  no printed question at all, so the model reconstructs the task from the working and marks
+  against that; the per-part `max` is then **its own allocation, not the paper's**. That is
+  a fine thing to do and an unacceptable thing to do silently: `match_confidence` was tied
+  only to "partly cut off or blurred", so such a page came back looking exactly as
+  trustworthy as one marked off a printed question (Adrian, Jul 2026: *"how does the marker
+  know to mark question 1 when no question is provided?"*). The prompt now names the case —
+  reconstruct from the working, number it from the student's own handwritten label or `null`,
+  `match_confidence: "low"`, and explain in `match_note` — and `match_note` is appended to
+  the ⚠ `review_reasons` line so `/admin/mark-paper` shows *why* it was uncertain.
+  **Any new "the marker had less to go on than usual" case belongs in `match_note` + a low
+  confidence, never in silence.**
 - **A photo with NO ticks on it fell to the coarse rung — and `/admin/mark-paper` now says
   so.** The overlay ladder in `ai/photo-overlay.js` tries per-LINE marks first
   (`geminiLineMarks`); its placement guards cull boxes that are too tall, out of reading
