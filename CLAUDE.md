@@ -856,9 +856,26 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   a bare `2/2` beside one column of a two-up scan belongs to whichever question the reader
   guesses. **Nothing is written uncaptioned to save space**: a box that fits nowhere goes to
   the footer strip, which prints its key beside the score anyway.
-  - The `(c) 2/2` half of that bug is upstream, in `buildPartKeys` — the model dropped
-    `question_number` on some parts, so the key was *already* `Q(c)`. A part now borrows a
-    sibling's number (every part in the array belongs to one question).
+  - **The caption is what we KNOW, never what we guessed** (2026-07-29). A part's number is
+    taken from its own attempt (`qTag()`), and **nothing is borrowed from a neighbour**:
+    `parts` is the whole PHOTO's parts — one contiguous run per attempt, every part stamped
+    with that attempt's number (`paper-marker.js`: `{...pt, question: a.question_number}`) —
+    so a neighbour carrying a number is by construction a *different question*. The earlier
+    "borrow the first number in the array" rule captioned an unmatched attempt `Q3(b) #2`,
+    filing a score under a question the student never answered. A null number is information
+    (the MATCH step found no printed question), so the key falls back to the part label
+    alone — `(b) 3/3` — and the per-question rung likewise stopped keying `Q${index}`, which
+    numbered boxes by their position in the photo's list rather than the paper's.
+  - **In teacher style the score is written ONCE, by the margin layer.** The per-question
+    rung used to put the score in the annotation's `text` too, and a part-marks score renders
+    as a `comment` whose text IS the score — so a boxed `Q1 4/5` came back with a bare
+    unboxed `4/5` beside it, reading as two different marks for one question. Classic style
+    has no margin layer, so there the annotation stays the only place it can go.
+  - **The first placement band is level with the part's FIRST line** (`top - 0.6·boxH` →
+    `top + 1.2·boxH`). The band below it reaches 40% of the part's height, which on the
+    per-question rung — where a "part" region is a whole question — is most of a page: fine
+    as a fallback, wrong as a first choice. The point of a margin score is that the eye
+    travels straight left from it to the work it scored.
   - **Box geometry is `_marginScoreGeom(text, fs)` — reserve and draw share it**, like
     `_teacherScoreGeom`, and it measures with `textWidth` from `ai/font-metrics.js`. The old
     flat 0.56 em/char guess reserved a box nearly twice Patrick Hand's real width, so adding
@@ -866,6 +883,17 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   - Bands widen to fit the caption (`max(colW × frac, boxW × 1.2)`) but are still clamped to
     the part's own column — a fixed fraction of a narrow two-up column is less than the label,
     so a purely fractional reach would send every captioned box to the footer.
+- **A photo with NO ticks on it fell to the coarse rung — and `/admin/mark-paper` now says
+  so.** The overlay ladder in `ai/photo-overlay.js` tries per-LINE marks first
+  (`geminiLineMarks`); its placement guards cull boxes that are too tall, out of reading
+  order or duplicated, and when they cull more than they keep it **throws**, dropping the
+  page to `geminiQuestionMarks` — one coarse mark and a boxed score per question, no
+  per-line ticks. That is a grounding failure on dense, slanted or two-page-per-photo
+  working, **not** a marking failure: the marks are identical either way. The method rides
+  back on `annotated_photos[].method` (`'line' | 'question' | 'margin'`), and the results
+  panel prints an amber note naming the photos that came back coarse, so "the marker
+  skipped my page" is legible as "re-shoot that page straighter". Adrian, Jul 2026: *"some
+  questions there are no ticks, is it because the working is too messy?"*
 - **Verifying placement locally is misleading** — Patrick Hand is not installed on a Mac, so
   librsvg substitutes a wider sans and every pen line renders ~35% wider than
   `ai/font-metrics.js` measured it, overflowing bands that fit on Fly. Check the *placement*

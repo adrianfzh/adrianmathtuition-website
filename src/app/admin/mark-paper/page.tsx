@@ -148,7 +148,7 @@ export default function MarkPaperPage() {
   const [marked, setMarked] = useState<{ url: string; kind: string } | null>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
-  const [annotatedPhotos, setAnnotatedPhotos] = useState<{ photo_index: number; url: string }[]>([]);
+  const [annotatedPhotos, setAnnotatedPhotos] = useState<{ photo_index: number; url: string; method?: string | null }[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
   const [recentRuns, setRecentRuns] = useState<Run[]>([]);
   const [markModel, setMarkModel] = useState<'opus' | 'sonnet'>('opus');
@@ -278,7 +278,7 @@ export default function MarkPaperPage() {
         body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`, model: markModel, style: markStyle }),
       });
       const raw = await resp.text();
-      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string }[]; run_id?: string | null; usage?: Usage; error?: string };
+      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: { photo_index: number; url: string; method?: string | null }[]; run_id?: string | null; usage?: Usage; error?: string };
       try { d = raw ? JSON.parse(raw) : {}; }
       catch {
         const hint = resp.status === 413
@@ -333,6 +333,9 @@ export default function MarkPaperPage() {
   }
 
   const busy = phase === 'proposing' || phase === 'marking' || !!rasterizing;
+  // Photos the overlay marked per QUESTION rather than per line — i.e. the ones that
+  // came back without ticks. `method` is 'line' | 'question' | 'margin' | null.
+  const coarsePhotos = annotatedPhotos.filter((p) => p.method && p.method !== 'line');
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
@@ -469,6 +472,16 @@ export default function MarkPaperPage() {
           ))}
           {unattempted.length > 0 && (
             <div style={{ fontSize: 13, color: '#6b7280', marginTop: 10 }}>Not attempted: {unattempted.map((n) => `Q${n}`).join(', ')}</div>
+          )}
+          {coarsePhotos.length > 0 && (
+            /* Why a page can come back with no ticks on it. The overlay tries per-LINE
+               marks first and drops to one coarse mark per question when it can't trust
+               where the lines are — dense, angled or two-page-per-photo working. Saying
+               so is the difference between "the marker skipped my page" and "photograph
+               that page again" (Adrian, Jul 2026: "is it because the working is messy?"). */
+            <div style={{ fontSize: 13, color: '#b45309', marginTop: 10 }}>
+              ✎ No per-line ticks on photo{coarsePhotos.length > 1 ? 's' : ''} {coarsePhotos.map((p) => p.photo_index + 1).join(', ')} — the working was too dense or slanted to place them line by line, so {coarsePhotos.length > 1 ? 'those pages' : 'that page'} got one mark and a boxed score per question instead. Marks are unaffected. A straighter, closer photo of one page at a time usually gets the ticks back.
+            </div>
           )}
           <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button style={{ ...btn, opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('full')}>
