@@ -1102,6 +1102,21 @@ export default function SchedulePage() {
     return dates;
   }, []); // intentionally empty — recompute only on full page reload
 
+  // Month sections for the strip. Each month's label is position:sticky within
+  // its own section, so the month being viewed stays pinned at the strip's left
+  // edge while scrolling and is pushed out by the next month's label. (It was
+  // previously one inline label at each month boundary — invisible mid-month.)
+  const stripMonths = useMemo(() => {
+    const groups: { key: string; label: string; dates: Date[] }[] = [];
+    for (const d of stripDates) {
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const last = groups[groups.length - 1];
+      if (last && last.key === key) last.dates.push(d);
+      else groups.push({ key, label: d.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' }), dates: [d] });
+    }
+    return groups;
+  }, [stripDates]);
+
   // DnD
   const [activeDragLesson, setActiveDragLesson] = useState<EnrichedLesson | null>(null);
   // Pull-to-refresh
@@ -3022,33 +3037,32 @@ export default function SchedulePage() {
       {/* Date strip wrapper — sticky bar, only shown in Lessons mode */}
       <div className={`date-strip-wrap${viewMode !== 'lessons' ? ' date-strip-wrap-hidden' : ''}`}>
         <div ref={stripRef} className="date-strip">
-          {stripDates.map((date, idx) => {
-            const iso = isoDate(date);
-            const isActive = iso === isoDate(activeDate);
-            const isTodayPill = iso === isoDate(new Date());
-            const pillBlock = blockOf(iso);
-            const prevDate = idx > 0 ? stripDates[idx - 1] : null;
-            const isFirstOfMonth = !prevDate || prevDate.getMonth() !== date.getMonth();
-            return (
-              <React.Fragment key={iso}>
-                {isFirstOfMonth && (
-                  <div className="strip-month-label">
-                    {date.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' })}
-                  </div>
-                )}
-                <button
-                  data-iso={iso}
-                  className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}${pillBlock ? ' blocked' : ''}`}
-                  title={pillBlock ? `Away — ${pillBlock.reason || 'blocked'}` : undefined}
-                  onClick={() => setActiveDateFromPill(date)}
-                >
-                  <span className="dp-dow">{date.toLocaleDateString('en-SG', { weekday: 'short' }).slice(0, 3).toUpperCase()}</span>
-                  <span className="dp-date">{date.getDate()}</span>
-                  {isTodayPill && <span className="dp-today-dot" />}
-                </button>
-              </React.Fragment>
-            );
-          })}
+          {stripMonths.map(month => (
+            <div key={month.key} className="strip-month-sec">
+              <div className="strip-month-label">{month.label}</div>
+              <div className="strip-month-days">
+                {month.dates.map(date => {
+                  const iso = isoDate(date);
+                  const isActive = iso === isoDate(activeDate);
+                  const isTodayPill = iso === isoDate(new Date());
+                  const pillBlock = blockOf(iso);
+                  return (
+                    <button
+                      key={iso}
+                      data-iso={iso}
+                      className={`date-pill${isActive ? ' active' : ''}${isTodayPill ? ' today' : ''}${pillBlock ? ' blocked' : ''}`}
+                      title={pillBlock ? `Away — ${pillBlock.reason || 'blocked'}` : undefined}
+                      onClick={() => setActiveDateFromPill(date)}
+                    >
+                      <span className="dp-dow">{date.toLocaleDateString('en-SG', { weekday: 'short' }).slice(0, 3).toUpperCase()}</span>
+                      <span className="dp-date">{date.getDate()}</span>
+                      {isTodayPill && <span className="dp-today-dot" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -4648,18 +4662,25 @@ body {
   display: block;
 }
 .date-pill.active .dp-today-dot { background: #FFF8E7; }
-/* Month label inserted before the first pill of each month */
+/* Month sections — the label is sticky at the strip's left edge so the month
+   being viewed is always visible while scrolling; its travel is bounded by its
+   own section, so the next month's label pushes it out. Sections must stay
+   position:static — the snap-to-today scroll math reads pill.offsetLeft
+   against .date-strip-wrap (the nearest positioned ancestor). */
+.strip-month-sec { flex-shrink: 0; display: flex; flex-direction: column; }
+.strip-month-sec + .strip-month-sec { border-left: 1px solid #e2e8f0; padding-left: 6px; }
+.strip-month-days { display: flex; gap: 4px; }
 .strip-month-label {
-  flex-shrink: 0;
-  align-self: flex-end;
-  padding: 0 6px 8px 2px;
+  position: sticky;
+  left: 8px; /* matches the strip's own left padding */
+  align-self: flex-start; /* shrink-wrap — a stretched label has no room to travel */
+  width: max-content;
+  padding: 1px 6px 3px 2px;
   font-size: 10px; font-weight: 700;
-  color: #94a3b8;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
-  border-left: 1px solid #e2e8f0;
-  margin-left: 4px;
   line-height: 1;
 }
 /* ── Roster day tabs (mobile, Mon–Sun labels only, no dates) ── */
