@@ -891,12 +891,27 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   a fine thing to do and an unacceptable thing to do silently: `match_confidence` was tied
   only to "partly cut off or blurred", so such a page came back looking exactly as
   trustworthy as one marked off a printed question (Adrian, Jul 2026: *"how does the marker
-  know to mark question 1 when no question is provided?"*). The prompt now names the case —
-  reconstruct from the working, number it from the student's own handwritten label or `null`,
-  `match_confidence: "low"`, and explain in `match_note` — and `match_note` is appended to
-  the ⚠ `review_reasons` line so `/admin/mark-paper` shows *why* it was uncertain.
-  **Any new "the marker had less to go on than usual" case belongs in `match_note` + a low
-  confidence, never in silence.**
+  know to mark question 1 when no question is provided?"*). **Mark it anyway — and disclaim
+  it where it can't be missed** (Adrian: *"the marking can continue, just put a disclaimer
+  that there is no question found"*).
+  - **`question_found` (per attempt, defaults true)** is the flag: false ONLY when there was
+    no question to read — not on the paper, not printed on the page. **A missing question
+    NUMBER is not a missing QUESTION** — students routinely leave working unnumbered, and
+    the prompt says so explicitly, or the marker starts disclaiming ordinary pages.
+  - **The disclaimer is written on the annotated PHOTO**, at the top of the footer strip
+    above "Marker's notes" (`formatQuestionNotices` in `ai/annotate.js`, unit-tested,
+    threaded through `annotateAndUpload`/`annotateToBuffer` as `notices`). It goes there
+    and not only in the results panel because the photo is the one surface that survives
+    into 🖼 images-only mode. The last-resort margin rung carries no footer at all, so it
+    can't carry this either — only the ⚠ line does there.
+  - **The allocation sentence is ours, verbatim, every time**; the model's `match_note` is
+    APPENDED for what it inferred the question to be, never substituted for it.
+  - **An unnumbered block is located by the model's own `region`** ("The working at left
+    column, top") — a page can hold a working-only block above an ordinary printed
+    question, so "this page" would disclaim the wrong half.
+  - The ⚠ `review_reasons` line distinguishes *no question found* (a fact about what the
+    marker had) from *match was uncertain* (a blurry scan). **Any new "the marker had less
+    to go on than usual" case belongs in `match_note` + low confidence, never in silence.**
 - **A photo with NO ticks on it fell to the coarse rung — and `/admin/mark-paper` now says
   so.** The overlay ladder in `ai/photo-overlay.js` tries per-LINE marks first
   (`geminiLineMarks`); its placement guards cull boxes that are too tall, out of reading
