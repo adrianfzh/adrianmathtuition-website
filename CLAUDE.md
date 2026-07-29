@@ -671,6 +671,36 @@ images PDF** (`mode:'photos'`) = the annotated original photos ONLY, no typeset 
 no Puppeteer — a few seconds, and the closest thing to a hand-marked script. With a
 single photo the full mode returns a PNG (`kind:'image'`) instead of a PDF.
 
+### Photo vs transcript — who says what (2026-07-29)
+
+The two surfaces look overlapping but are not interchangeable, and the division below is
+load-bearing: **the photo is the only surface that exists in BOTH PDF modes.** 🖼 images-only
+has no transcript at all, so anything shown only on a transcript is something a student may
+never receive.
+
+| | **Annotated photo** (bot, `ai/annotate.js`) | **Transcript sheet** (site, `marking-template.html`) |
+|---|---|---|
+| What it is | the marked script — his own paper, red pen on it | a legible re-write of his working |
+| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" + "Correct solution — Q…" | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph |
+| Granularity | per PART | per LINE |
+| In 🖼 images-only mode | ✅ | ❌ absent |
+| Legible when the handwriting isn't | no | yes — that is the whole point |
+
+- **"Marker's notes" is not a duplicate of the transcript — it is the OVERFLOW of the photo's
+  own margin.** A part's score box and `error_summary` are written beside the working when
+  `findSpot` finds room; when it doesn't (crowded scan, part Gemini couldn't locate), that same
+  text spills to the strip under the page rather than being dropped. Sparse Marker's notes =
+  the margins had room. A long one = a dense page, not a second opinion.
+- **The model solution lives on the PHOTO only** (footer, "Correct solution — Q…"). The
+  transcript's `📖 Correct solution` block was **removed 2026-07-29**: it had been dead since
+  the LaTeX change (gated on `correct.full_solution_plain`, which the marker stopped emitting
+  in favour of `full_solution_latex`), so the two surfaces had silently diverged rather than
+  duplicated. Do not restore it — that would duplicate the footer *and* put the solution on
+  the one surface images-only mode drops.
+- Adrian, seeing both for the first time: *"what's really the difference between Marker's notes
+  and the transcript? seems duplicated, but each has it's good points"* — keep both, keep the
+  split above.
+
 **One feedback comment per attempt, not two** (2026-07-29). The marking JSON used to
 carry `summary.body_markdown` (rendered on the sheet) *and* `overall_comment` (printed
 raw in the results table) — the same judgement written twice, so the wording drifted
@@ -749,7 +779,7 @@ each part's working, and — for parts that dropped marks only — the part's **
 `error_summary` placed in real white space** with a leader curve to the crossed step.
 Ticks/crosses stay, but they're decoration; the box and the sentence are the product.
 
-- **Placement is arithmetic, not vibes** — `ai/whitespace.js` (pure, no sharp, 13 tests)
+- **Placement is arithmetic, not vibes** — `ai/whitespace.js` (pure, no sharp, 20 tests)
   thresholds the page to an ink/no-ink grid, dilates by a cell, and searches a summed-area
   table for the nearest free window to the anchor. It counts **dark pixels, never averages
   brightness** (a thin printed rule is a few dark pixels in a bright cell — an average calls
@@ -770,6 +800,29 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   the page **at the right height** still reads as this part's, and `findSpot` takes the spot
   nearest the anchor, so it only reaches across when the near margin is genuinely full.
   Without that band a crowded margin sent perfectly placeable boxes to the footer.
+- **Every band is a fraction of the part's own COLUMN, never of the image** (fixed
+  2026-07-29 — the second half of the same bug). Bounding each box beside its own working
+  was necessary but not sufficient: the *unit* was still the image, and on a two-up scan one
+  physical page is only ~40% of the image width, so a "tight 19%" band is half a page wide
+  and crosses the gutter. Q7(c)'s `1/3` and Q7(d)'s `0/2` were written in the FACING page's
+  margin beside Q8 — Adrian: *"the marks 1/3, 3/3, .. placement does not seem accurate"*.
+  `pageColumns()` (`ai/whitespace.js`, unit-tested) projects the part bboxes onto the x axis
+  and merges overlaps — two physical sheets give two intervals, an ordinary photo gives
+  exactly one — and `columnBoundsFor()` returns how far left/right that part may be written,
+  **splitting the gutter down the middle**. Fewer than two columns ⇒ full width ⇒ byte-for-byte
+  the old behaviour for single-page photos (there is a regression test pinning exactly that).
+  Even the last-resort band is clamped to the column: reaching across a gutter is never an
+  improvement on the footer strip.
+- **A box that had to drift is captioned with its part key** (`7(c) 1/3`, leading `Q` stripped).
+  A box level with its own working needs no caption; a bare `1/3` floating between two
+  questions belongs to neither. A final uncaptioned attempt follows, because a caption widens
+  the box by half again and a margin with room for the score but not the caption would
+  otherwise lose both to the footer.
+- **Verifying placement locally is misleading** — Patrick Hand is not installed on a Mac, so
+  librsvg substitutes a wider sans and every pen line renders ~35% wider than
+  `ai/font-metrics.js` measured it, overflowing bands that fit on Fly. Check the *placement*
+  (which column, which side of the gutter) locally; do NOT chase apparent overflow. Real
+  widths need `fly ssh console -C fc-list | grep -i patrick`.
 - **Nothing that doesn't fit is lost — it spills to a footer strip.** Parts with no room,
   and parts Gemini couldn't locate at all (carried through `geminiLineMarks` with
   `bbox: null` instead of being dropped), collect in `spill` and print under
