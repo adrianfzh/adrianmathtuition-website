@@ -757,14 +757,19 @@ field** — a new surface strips the one that exists.
   (contains `\ ^ _ {`), so a bare `60 g` stays prose instead of being set in math italic;
   the row is built with `textContent` + `data-plain` like the working lines, never
   `innerHTML`.
-  - **A struck wrong answer is PAINTED, not `text-decoration: line-through`** —
-    decoration does not propagate into KaTeX's inline-block boxes, so once the answer
-    was typeset the strike vanished. `.wrong-answer` uses a `linear-gradient` stripe
-    plus `box-decoration-break: clone` (without `clone`, a wrapped answer gets one
-    stripe across the whole box). ⚠ `.work-line.struck .line-content` still uses
-    `text-decoration`, so a crossed-out *working* line containing KaTeX shows only the
-    0.55 opacity, no strike — same root cause, not yet fixed (the block case can't use
-    the gradient trick: one stripe would land mid-box on a wrapped or fraction-tall line).
+- **Everything crossed out is PAINTED, not `text-decoration: line-through`** — a wrong
+  final answer (`.wrong-answer`) and a working line the student struck through himself
+  (`.work-line.struck .line-text`) share one `linear-gradient` stripe rule.
+  `text-decoration` does not propagate into KaTeX's inline-block boxes, so the moment
+  either was typeset the strike simply vanished and only the fade was left.
+  - **The host must be INLINE**, which is why a working line's text sits in a
+    `<span class="line-text">` inside the `.line-content` block rather than directly in
+    it. An inline box's background is sized from the font, so the stripe lands at strike
+    height instead of halfway down a tall fraction, and `box-decoration-break: clone`
+    repaints it on every wrapped fragment (without `clone`, one stripe spans the whole
+    box). `data-plain` rides on that span too, so the plain-text fallback swap keeps
+    the strike. A block host gets one stripe through the middle of the whole box —
+    don't move the rule back up.
 - **`lib/latex-repair.ts` (`repairLatex` / `repairMarkingLatex`, unit-tested)** runs in
   `render-marking.ts` before KaTeX ever sees the payload. The model's JSON escaping is
   unreliable in both directions within a single paper — `frac{1}{2}` (backslash dropped,

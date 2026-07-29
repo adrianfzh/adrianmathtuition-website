@@ -218,12 +218,28 @@ body {
   overflow-wrap: break-word;
 }
 
-/* Struck-through line */
+/* Struck-through line. The strike itself is painted on the inline .line-text
+   host below, not here — see the shared rule with .wrong-answer. */
 .work-line.struck .line-content {
-  text-decoration: line-through;
-  text-decoration-color: var(--red);
-  text-decoration-thickness: 2px;
   opacity: 0.55;
+}
+
+/* Two things get crossed out on this sheet — a line the student struck through
+   himself, and a wrong final answer — and both are PAINTED rather than given
+   `text-decoration: line-through`. Decoration does not propagate into KaTeX's
+   inline-block boxes, so once a line was typeset the strike simply vanished and
+   only the fade was left. The host must be INLINE for this to work: an inline
+   box's background is sized from the font, so the stripe lands at strike height
+   rather than halfway down a fraction, and `clone` repaints it on every wrapped
+   fragment instead of once across the whole box. */
+.work-line.struck .line-text,
+.wrong-answer {
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(50% - 1px), var(--red) calc(50% - 1px),
+    var(--red) calc(50% + 1px), transparent calc(50% + 1px));
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .line-mark {
@@ -336,17 +352,6 @@ body {
   color: var(--red);
   opacity: 0.6;
   margin-right: 6px;
-  /* PAINTED, not `text-decoration: line-through`. The answer is typeset through
-     KaTeX now, and decoration does not propagate into KaTeX's inline-block
-     boxes — a struck `$23.5\text{ g}$` would have come out unstruck. */
-  background-image: linear-gradient(
-    to bottom,
-    transparent calc(50% - 1px), currentColor calc(50% - 1px),
-    currentColor calc(50% + 1px), transparent calc(50% + 1px));
-  /* Without `clone` a wrapped answer gets one stripe across the whole box
-     instead of one through each line. */
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
 }
 
 .correct-answer {
@@ -574,12 +579,17 @@ body {
     // Row
     var row = el('div', 'work-line' + (isStruck ? ' struck' : ''));
     var content = el('div', 'line-content');
+    // The text sits in an INLINE span inside the block, because a struck line's
+    // strike is a painted background and only an inline host puts it at strike
+    // height with one stripe per wrapped fragment.
+    var lineText = el('span', 'line-text');
     // textContent, NOT innerHTML: KaTeX auto-render walks text nodes, so it works
     // either way — but as HTML a perfectly ordinary `$\frac{d^2v}{dx^2}<0$` opens
     // a tag at the `<` and swallows the rest of the line.
-    content.textContent = line.transcription_latex || line.transcription_plain || '';
+    lineText.textContent = line.transcription_latex || line.transcription_plain || '';
     // Plain fallback, used below if KaTeX can't parse what the model wrote.
-    if (line.transcription_plain) content.setAttribute('data-plain', line.transcription_plain);
+    if (line.transcription_plain) lineText.setAttribute('data-plain', line.transcription_plain);
+    content.appendChild(lineText);
     var markEl = el('div', 'line-mark');
     if (!isStruck) {
       if (verdict === 'correct') {
