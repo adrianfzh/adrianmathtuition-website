@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { repairLatex, repairMarkingLatex } from './latex-repair';
+import { repairLatex, repairMarkingLatex, repairSolution } from './latex-repair';
 
 // Every case below is a real line off the 28 Jul 2026 marked paper that printed
 // wrong. If one of these regresses, the transcript sheet goes back to showing
@@ -92,5 +92,55 @@ describe('repairMarkingLatex', () => {
     expect(out.student_final_answer.value_latex).toBe('$\\theta = 60^\\circ$');
     expect(out.student_final_answer.matches_correct).toBe(false);
     expect(out.marks).toEqual({ awarded: 2, max: 3 });
+  });
+
+  it('repairs the worked solution too — the transcript has no other source for it', () => {
+    const out = repairMarkingLatex({
+      correct: { full_solution_latex: '$frac{1}{2}x$\\n$x = 3$', final_answer: '3' },
+    } as never) as { correct: { full_solution_latex: string; final_answer: string } };
+
+    expect(out.correct.full_solution_latex).toBe('$\\frac{1}{2}x$\n$x = 3$');
+    expect(out.correct.final_answer).toBe('3');
+  });
+});
+
+describe('repairSolution — a solution is several steps in one string', () => {
+  it('repairs each step and never wraps the whole block in one $…$', () => {
+    // Rule 4 wraps an undelimited LaTeX line; applied to the block it would set
+    // the prose between steps in math italic.
+    const out = repairSolution('theta = 60^circ\nIn triangle ABC, AB = 5');
+    expect(out).toBe('$\\theta = 60^\\circ$\nIn triangle ABC, AB = 5');
+  });
+
+  it('splits on a literal \\n but not on \\neq — the step that came back as "eq 0"', () => {
+    // `\ne`, `\neq`, `\nabla`, `\not`, `\nu` all start with the two characters a
+    // naive split treats as a separator; `6>0\neq 0` became `6>0` + `eq 0`, and
+    // both halves printed as raw source because neither parses.
+    expect(repairSolution('$6>0 \\neq 0$').split('\n')).toEqual(['$6>0 \\neq 0$']);
+    expect(repairSolution('$a=1$\\n$b=2$').split('\n')).toEqual(['$a=1$', '$b=2$']);
+  });
+
+  it('splits before a capitalised word — the step that printed a visible "\\nAt"', () => {
+    // The old rule refused to split before ANY letter, to protect `\neq` and
+    // friends. But a step opening with an ordinary capitalised word is common,
+    // and merging it left a literal `\nAt` in the middle of a rendered sheet.
+    expect(repairSolution('$t=3$\\nAt $t=1$, $s=4$').split('\n'))
+      .toEqual(['$t=3$', 'At $t=1$, $s=4$']);
+  });
+
+  it('does not split \\nRightarrow — the one command that continues in caps', () => {
+    // The exception list earns its keep here: judging on "not a lowercase letter"
+    // alone would tear the negated arrows and turnstiles in half.
+    expect(repairSolution('$a \\nRightarrow b$').split('\n')).toEqual(['$a \\nRightarrow b$']);
+    expect(repairSolution('$a \\nVdash b$').split('\n')).toEqual(['$a \\nVdash b$']);
+  });
+
+  it('normalises CR/LF and drops blank steps', () => {
+    expect(repairSolution('$a=1$\r\n\r\n$b=2$\r$c=3$')).toBe('$a=1$\n$b=2$\n$c=3$');
+  });
+
+  it('survives an empty or missing solution', () => {
+    expect(repairSolution('')).toBe('');
+    expect(repairSolution(undefined as never)).toBe('');
   });
 });

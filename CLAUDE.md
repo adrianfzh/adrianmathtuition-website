@@ -681,7 +681,8 @@ never receive.
 | | **Annotated photo** (bot, `ai/annotate.js`) | **Transcript sheet** (site, `marking-template.html`) |
 |---|---|---|
 | What it is | the marked script — his own paper, red pen on it | a legible re-write of his working |
-| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" + "Correct solution — Q…" | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph |
+| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
+| Says | what each part scored, and WHY a mark was lost | what the answer WAS |
 | Granularity | per PART | per LINE |
 | In 🖼 images-only mode | ✅ | ❌ absent |
 | Legible when the handwriting isn't | no | yes — that is the whole point |
@@ -691,15 +692,27 @@ never receive.
   `findSpot` finds room; when it doesn't (crowded scan, part Gemini couldn't locate), that same
   text spills to the strip under the page rather than being dropped. Sparse Marker's notes =
   the margins had room. A long one = a dense page, not a second opinion.
-- **The model solution lives on the PHOTO only** (footer, "Correct solution — Q…"). The
-  transcript's `📖 Correct solution` block was **removed 2026-07-29**: it had been dead since
-  the LaTeX change (gated on `correct.full_solution_plain`, which the marker stopped emitting
-  in favour of `full_solution_latex`), so the two surfaces had silently diverged rather than
-  duplicated. Do not restore it — that would duplicate the footer *and* put the solution on
-  the one surface images-only mode drops.
+- **The comments go on the PHOTO, the worked solution goes on the TRANSCRIPT** — Adrian's
+  call, 2026-07-29: *"there is no need for comments to be on both, so the comments are on the
+  actual image/pdf, as well as why student's working is wrong, then the correct solution on
+  transcript."* So the photo's footer strip no longer takes `solutions` at all (its callers
+  pass `[]`; the renderer keeps the capability because the same strip carries the
+  `question_found` notices and the Marker's-notes spill, so reverting is one line per caller).
+  **Consequence, stated because it was accepted and not overlooked: the 🖼 images-only PDF
+  carries no worked solution.** He was told; it is the price of not printing the same thing
+  twice. A THIRD surface should put the solution on the transcript side, not the photo.
+  - The Telegram flow is unaffected — it renders overlay and transcription in parallel and
+    sends the transcription first. If BOTH renderers fail, `structuredMarkingToText` still
+    writes `📖 Correct solution:` into the plain-text message: with no picture at all, that
+    text is the only thing that arrives, so it does NOT adopt the split.
 - Adrian, seeing both for the first time: *"what's really the difference between Marker's notes
   and the transcript? seems duplicated, but each has it's good points"* — keep both, keep the
   split above.
+- **The marker's comments on the photo are set at the SAME size as the score boxes** (Adrian,
+  2026-07-29: *"the fonts for the comments on the image/pdf can be smaller too (matching that
+  of the marks 2/2), so everything looks neat"*). One size, one source: `ai/annotate.js` reads
+  it off `_marginScoreGeom('0/0', mFs).fs` rather than repeating the 0.85 factor, and `lineH`
+  and the leader-curve threshold follow from it.
 
 **One feedback comment per attempt, not two** (2026-07-29). The marking JSON used to
 carry `summary.body_markdown` (rendered on the sheet) *and* `overall_comment` (printed
@@ -931,9 +944,11 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
 - **Nothing that doesn't fit is lost — it spills to a footer strip.** Parts with no room,
   and parts Gemini couldn't locate at all (carried through `geminiLineMarks` with
   `bbox: null` instead of being dropped), collect in `spill` and print under
-  **"Marker's notes:"** in the strip below the page, followed by the "Correct solution —
-  Q…" blocks. The strip is unconditional now, so a dense scan comes back with its
-  diagnoses rather than a page of bare ticks.
+  **"Marker's notes:"** in the strip below the page, under the `question_found`
+  notices. The strip is unconditional now, so a dense scan comes back with its
+  diagnoses rather than a page of bare ticks. It no longer carries worked solutions —
+  those moved to the transcript on 2026-07-29 (see the photo-vs-transcript table above);
+  `createAnnotatedImage` still accepts a `solutions` array, but every caller passes `[]`.
 - **ONE spill entry per part.** The score box and the comment are placed independently, so
   both can fail; pushing at each failure site printed the same part's note twice under
   Marker's notes. The loop accumulates `spillScore`/`spillNote` and every exit from the
@@ -1005,24 +1020,36 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   draws one score box per region, so a page came back with `Q7 3/4` *and* a stray `3/4`
   stranded wherever the first hadn't already claimed space (Adrian's photo, Jul 2026). First,
   not last: regions arrive in reading order, so it sits at the top of that part's working.
-- **Solutions are written for every style, including teacher** (fixed 2026-07-29). Teacher
-  style used to suppress the model solution on the theory that per-line corrections said
-  enough — but a per-line fix says which STEP broke, not what the answer was, and in
-  photos-only mode the typeset transcript that carries it isn't in the PDF at all, so a
-  wrong question came back with a cross and no worked answer. `error_summary`
-  is likewise now REQUIRED (non-null, one sentence, plain Unicode) on every part below max.
-  - **The condition is `solutionEntry(marking, label)` in `ai/photo-overlay.js`, and
-    nowhere else** — a pure, exported, unit-tested rule shared by `ai/paper-marker.js`
-    (this page) and `handlers/messages.js` (a photo sent to the bot). It was written out
-    twice and the copies drifted: the Telegram one kept the `style !== 'teacher'` guard
-    after this page dropped it, so the DEFAULT style answered nothing — and removing the
-    transcript's `📖 Correct solution` block the same day closed the last surface, leaving
-    a bot user with the worked answer on no surface at all. **Style is deliberately not a
-    parameter**: there is no style in which a wrong answer should go unanswered, and a
-    caller that cannot pass one cannot suppress it again.
+- **A wrong part is answered in EVERY style — the only question is which surface.**
+  `error_summary` is REQUIRED (non-null, one sentence, plain Unicode) on every part below
+  max, and the worked solution is written whenever the final answer is wrong. Teacher style
+  used to suppress the solution on the theory that per-line corrections said enough; a
+  per-line fix says which STEP broke, not what the answer was.
+  - **WHEN it is owed is `solutionEntry(marking, label)` in `ai/solution-entry.js`, and
+    nowhere else** — a pure, exported, unit-tested rule. It lives in its own module because
+    `photo-overlay` requires `annotate`, so hosting it in either would be a cycle. It was
+    written out twice once before and the copies drifted (the Telegram one kept a
+    `style !== 'teacher'` guard after this page dropped it, so the DEFAULT style answered
+    nothing). **Style is deliberately not a parameter**: there is no style in which a wrong
+    answer should go unanswered, and a caller that cannot pass one cannot suppress it again.
+  - Since the 2026-07-29 split its only remaining caller is `structuredMarkingToText` in
+    `ai/annotate.js` — the plain-text Telegram message sent when BOTH renderers failed.
+    The two picture surfaces don't consult it: the transcript prints the solution
+    unconditionally when the field is present, the photo never does.
   - **An absent `matches_correct` is UNJUDGED, not wrong** — it's routinely missing when
     there's no single final answer to compare (a "show that" part). The gate is
     `=== false`; `!matches_correct` would print a model solution beside correct working.
+- **Worked-solution steps split on `SOLUTION_STEP_RE`, mirrored in three runtimes** —
+  `lib/latex-repair.ts` (the repair pass), `public/marking-template.html` (`STEP_RE`, the
+  browser) and the bot's `splitTexLines` (`ai/pen-math.js`). The model separates steps with
+  a literal backslash-`n`, which is also how `\ne`, `\neq`, `\nabla`, `\not`, `\nu` open —
+  so the break is judged on the FIRST character (not a lowercase letter), with an explicit
+  exception list for the only commands that continue in caps:
+  `Rightarrow|Leftarrow|Leftrightarrow|VDash|Vdash`. Refusing every letter was the earlier
+  rule and it merged steps: a sheet came back with a visible `\nAt` mid-solution. Change one
+  copy and you must change all three; both repos have named regression tests.
+- ⚠ **`src/lib/latex-repair.ts` reads as binary to `grep`** — its mask sentinel uses
+  non-printing characters, so a plain `grep` silently finds nothing in it. Use `grep -a`.
 - **Vision model list** — `GEMINI_VISION_MODELS` (default
   `gemini-3.1-pro-preview,gemini-2.5-pro`) is tried in order, falling through only on a
   404/unsupported. The old `gemini-2.5-pro` pin came from someone trying bare

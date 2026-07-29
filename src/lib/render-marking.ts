@@ -25,6 +25,9 @@ export interface MarkingOutput {
   correct?: {
     final_answer?: string;
     method_summary?: string;
+    /** LaTeX, one `$…$` step per line — the field the transcript's solution panel reads. */
+    full_solution_latex?: string;
+    /** The pre-LaTeX field. Still read as a fallback; the marker stopped emitting it. */
     full_solution_plain?: string;
   };
   lines: MarkingLine[];
