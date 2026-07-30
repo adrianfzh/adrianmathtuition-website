@@ -234,6 +234,9 @@ export default function StudentProfilePage() {
   const [lessonModal, setLessonModal] = useState<LessonModalLesson | null>(null);
   const [tab, setTab] = useState<'overview' | 'billing'>('overview');
   const [glance, setGlance] = useState<Glance | null>(null);
+  // Marked papers — every AI-marked run tagged with this student on /admin/mark-paper.
+  // Lives in the bot's run store (Supabase), fetched through the mark-paper proxy.
+  const [markedPapers, setMarkedPapers] = useState<{ id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null }[] | null>(null);
 
   function showToast(kind: 'ok' | 'err', msg: string) {
     setToast({ kind, msg });
@@ -269,6 +272,16 @@ export default function StudentProfilePage() {
       const res = await fetch(`/api/admin/exams?studentId=${studentId}`);
       if (res.ok) setExams(((await res.json()).exams || []) as Exam[]);
     } catch { /* non-fatal */ }
+  }, [studentId]);
+
+  const fetchMarkedPapers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phase: 'by-student', studentId }),
+      });
+      if (res.ok) setMarkedPapers(((await res.json()).runs || []));
+    } catch { /* non-fatal — section shows nothing rather than an error */ }
   }, [studentId]);
 
   // Save one exam field (debounced 500ms, optimistic). Upserts by (student, type).
@@ -315,7 +328,7 @@ export default function StudentProfilePage() {
     // Signed httpOnly session (silently upgrades legacy plaintext cookies)
     ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
-  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); fetchGlance(); fetchExams(); } }, [authed, studentId, fetchProfile, fetchHistory, fetchGlance, fetchExams]);
+  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); fetchGlance(); fetchExams(); fetchMarkedPapers(); } }, [authed, studentId, fetchProfile, fetchHistory, fetchGlance, fetchExams, fetchMarkedPapers]);
 
   async function submitSwitch() {
     if (!switchModal || !switchModal.date || !switchModal.newSlotId) return;
@@ -579,6 +592,26 @@ export default function StudentProfilePage() {
 
             {/* ── Overview: at a glance ── */}
             <AtAGlanceSection glance={glance} show={tab === 'overview'} />
+
+            {/* Marked papers — runs tagged with this student on /admin/mark-paper.
+                ✍️ = Adrian's annotated copy (the hand-back), 🖼/📄 the AI outputs. */}
+            <Section title="Marked papers" show={tab === 'overview'} action={<a href="/admin/mark-paper" style={{ fontSize: 13, color: '#1d4ed8', textDecoration: 'none' }}>Mark a paper →</a>}>
+              {(!markedPapers || markedPapers.length === 0) && (
+                <div style={{ color: '#9ca3af', fontSize: 14 }}>
+                  None yet — papers appear here once tagged with this student on the mark page (pick them in the send row).
+                </div>
+              )}
+              {(markedPapers || []).map(r => (
+                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14 }}>
+                  <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(r.created_at.slice(0, 10))}</span>
+                  <span style={{ flex: 1, minWidth: 120, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.paper_name || 'Paper'}</span>
+                  <span style={{ color: '#111', fontWeight: 600 }}>{r.total_awarded ?? 0}/{r.total_max ?? 0}</span>
+                  {r.annotated_pdf_url && <a href={r.annotated_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600, fontSize: 13 }}>✍️ Annotated ↗</a>}
+                  {r.photos_pdf_url && <a href={r.photos_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>🖼 Images ↗</a>}
+                  {r.pdf_url && <a href={r.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontSize: 13 }}>📄 Full ↗</a>}
+                </div>
+              ))}
+            </Section>
 
             {/* Enrollments / slots */}
             <Section title="Weekly slots" show={tab === 'billing'} action={<button style={btnGhost} onClick={() => setAddModal({ slotId: '', date: '', saving: false })}>＋ Add slot</button>}>

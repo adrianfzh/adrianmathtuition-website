@@ -87,7 +87,7 @@ async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -397,6 +397,14 @@ export default function MarkPaperPage() {
     const s = (students || []).find((x) => x.id === id);
     setSendStudentName(s?.name || '');
     if (!id) { setSendEmail(''); setSendParentEmail(''); return; }
+    // Tag the run with the student — this link is what makes the paper show up on the
+    // student's profile page ("Marked papers"). Silent and best-effort; last pick wins.
+    if (runId) {
+      fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'set-student', id: runId, studentId: id, studentName: s?.name || '' }),
+      }).then(() => loadStats()).catch(() => {});
+    }
     try {
       const r = await fetch(`/api/admin/mark-paper-send?studentId=${id}`, { headers: authHeaders });
       const d = await r.json();
@@ -513,7 +521,9 @@ export default function MarkPaperPage() {
             {recentRuns.map((run) => (
               <div key={run.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
                 <span style={{ color: '#6b7280', minWidth: 120 }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
-                <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{run.paper_name || 'Paper'}</span>
+                <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {run.student_name && <span style={{ color: '#1d4ed8' }}>{run.student_name} · </span>}{run.paper_name || 'Paper'}
+                </span>
                 <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
                 <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
                 {run.annotated_pdf_url && <a href={run.annotated_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
