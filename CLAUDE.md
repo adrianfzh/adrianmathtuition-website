@@ -681,7 +681,7 @@ never receive.
 | | **Annotated photo** (bot, `ai/annotate.js`) | **Transcript sheet** (site, `marking-template.html`) |
 |---|---|---|
 | What it is | the marked script — his own paper, red pen on it | a legible re-write of his working |
-| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" · **the worked solution, in 🖼 mode only** | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
+| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" · **in 🖼 mode only: the "Where you went wrong" paragraphs + the worked solution** | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
 | Says | what each part scored, and WHY a mark was lost | what the answer WAS |
 | Granularity | per PART | per LINE |
 | In 🖼 images-only mode | ✅ | ❌ absent |
@@ -701,12 +701,17 @@ never receive.
   cut suppressed it on the photo unconditionally — which silently emptied 🖼, the button
   Adrian actually presses: 5 of the 6 sample PDFs he sent were images-only.)
   - **Two renders, one grounding pass.** `annotateToBuffer` composites the SAME Gemini
-    `annotations` object twice — `buffer` without the solution block, `bufferWithSolutions`
-    with it — and `annotateAndUpload` puts both to Blob (`-sol` suffix; the timestamp alone
-    can collide on parallel puts). Gemini runs once; the twin costs one sharp pass. **Don't
-    "simplify" it into two `annotateToBuffer` calls** — that doubles the vision spend on
-    every photo of every paper. The twin is null when nothing on the page was wrong (the two
-    images would be identical), and on the last-resort margin rung, which has no footer strip.
+    `annotations` object twice — `buffer` without the 🖼-only footer content,
+    `bufferWithSolutions` with it — and `annotateAndUpload` puts both to Blob (`-sol`
+    suffix; the timestamp alone can collide on parallel puts). Gemini runs once; the twin
+    costs one sharp pass. **Don't "simplify" it into two `annotateToBuffer` calls** — that
+    doubles the vision spend on every photo of every paper. Since 2026-07-30 the twin
+    carries TWO things the plain copy never does: the **"Where you went wrong" paragraphs**
+    (one per question below max — `feedbackEntry` in `ai/solution-entry.js`, gate is
+    `awarded < max`, NOT `matches_correct`: a right answer with a lost method mark still
+    deserves it) above the **worked solutions**. The twin is null when neither list has
+    entries (nothing dropped marks → the two images would be identical), and on the
+    last-resort margin rung, which has no footer strip.
   - `annotated_photos[]` therefore carries `{ photo_index, url, url_with_solutions, method }`.
     **Which one goes in is `pickAnnotatedPhotoUrl()` (`lib/annotated-photo-source.ts`,
     unit-tested), not an inline ternary in the route** — it is silent in both directions: the
@@ -726,11 +731,26 @@ never receive.
 - Adrian, seeing both for the first time: *"what's really the difference between Marker's notes
   and the transcript? seems duplicated, but each has it's good points"* — keep both, keep the
   split above.
-- **The marker's comments on the photo are set at the SAME size as the score boxes** (Adrian,
-  2026-07-29: *"the fonts for the comments on the image/pdf can be smaller too (matching that
-  of the marks 2/2), so everything looks neat"*). One size, one source: `ai/annotate.js` reads
-  it off `_marginScoreGeom('0/0', mFs).fs` rather than repeating the 0.85 factor, and `lineH`
-  and the leader-curve threshold follow from it.
+- **The marker's comments on the photo are 0.85× the score-box size, floor 12px** (changed
+  2026-07-30; they briefly matched the boxes per Adrian 2026-07-29, but at that size whole
+  notes rarely fit a dense page's holes and nearly everything spilled to the footer — Adrian:
+  *"make the fonts smaller for corrected lines?"*). Still ONE source: `ai/annotate.js` derives
+  `cFs` from `_marginScoreGeom('0/0', mFs).fs`, and `lineH` + the leader-curve threshold
+  follow from it.
+- **Pages are rotated upright BEFORE marking** (2026-07-30). EXIF rotation only covers phone
+  photos; a CamScanner page scanned upside down is upside down in its pixels — it was marked
+  inverted with weak tick grounding and stapled inverted into both PDFs. `ensureUpright` in
+  `ai/paper-marker.js` runs one tiny vision call per photo (`detectRotation`/`parseRotation`
+  in `ai/photo-overlay.js`, unit-tested); only exactly 90/180/270 rotates, anything else
+  means leave-the-page-alone — a wrong guess rotates a GOOD page. Failures fall back to the
+  unrotated photo.
+- **A successful line pass can still leave parts unboxed — on spreads, a region-only
+  recovery re-looks per half** (2026-07-30). A null part region sends that part's score and
+  diagnosis straight to Marker's notes without placement ever being attempted (the Q5(a)(i)
+  case: acres of white space, note still in the footer). On a landscape image, teacher style
+  re-asks for just the missing parts per half at full resolution; `applyRecoveredRegions`
+  (pure, unit-tested) fills ONLY null bboxes — located regions are never second-guessed,
+  invented keys ignored.
 
 **One feedback comment per attempt, not two** (2026-07-29). The marking JSON used to
 carry `summary.body_markdown` (rendered on the sheet) *and* `overall_comment` (printed
