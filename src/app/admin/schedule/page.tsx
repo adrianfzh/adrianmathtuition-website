@@ -2473,6 +2473,21 @@ export default function SchedulePage() {
     }
   }
 
+  // Ready-to-forward WhatsApp message for the signup link — so the parent gets
+  // context (who/what/when) and the expiry warning without Adrian retyping it
+  // every time. Composed client-side from the modal's own fields.
+  function trialWhatsappMessage(): string {
+    if (!trialEnrol?.url) return '';
+    const slot = sortedSlots.find(s => s.id === trialEnrol.slotId);
+    const slotLabel = slot ? `${slot.dayName} ${slot.time}` : '';
+    const who = trialEnrol.studentName?.trim() || trialEnrol.trialName || 'your child';
+    const what = [trialEnrol.subjects.join(' & '), slotLabel].filter(Boolean).join(', ');
+    const startBit = trialEnrol.startDate
+      ? `, starting ${new Date(trialEnrol.startDate + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}`
+      : '';
+    return `Hi! Here's the registration link to confirm ${who}'s lessons (${what}${startBit}):\n\n${trialEnrol.url}\n\nIt takes about 2 minutes to fill in. The link is valid for 48 hours — just let me know if it expires and I'll send a fresh one. Thank you!`;
+  }
+
   // Mark an existing Absent lesson back to Completed
   async function handleMarkPresent(lesson: EnrichedLesson) {
     setActionSheet(null);
@@ -4082,12 +4097,14 @@ export default function SchedulePage() {
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: 13, color: '#15803d', fontWeight: 600, marginBottom: 8 }}>✓ Signup link ready — send it to the parent (valid 24h)</div>
-                  <input readOnly className="modal-input" value={trialEnrol.url} onFocus={e => e.currentTarget.select()} style={{ fontSize: 12 }} />
+                  <div style={{ fontSize: 13, color: '#15803d', fontWeight: 600, marginBottom: 8 }}>✓ Signup link ready — send it to the parent (valid 48h)</div>
+                  <textarea readOnly className="modal-input" value={trialWhatsappMessage()} onFocus={e => e.currentTarget.select()}
+                    rows={7} style={{ fontSize: 12, lineHeight: 1.5, resize: 'vertical', fontFamily: 'inherit' }} />
                   <div className="modal-actions">
                     <button className="btn-cancel" onClick={() => setTrialEnrol(null)}>Close</button>
                     <a className="btn-primary" href={trialEnrol.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>Open</a>
                     <button className="btn-primary" onClick={() => { navigator.clipboard?.writeText(trialEnrol.url); showToast('success', 'Link copied'); }}>Copy link</button>
+                    <button className="btn-primary" onClick={() => { navigator.clipboard?.writeText(trialWhatsappMessage()); showToast('success', 'WhatsApp message copied'); }}>📋 Copy message</button>
                   </div>
                   <div style={{ fontSize: 12, color: '#64748b', marginTop: 8, lineHeight: 1.5 }}>
                     When the parent submits the form, the system creates their Student record, enrolment, first invoice and recurring lessons — and links this trial lesson to them.

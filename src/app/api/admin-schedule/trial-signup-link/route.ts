@@ -27,7 +27,10 @@ export async function POST(req: NextRequest) {
   if (subjectLevel) params.set('subjectLevel', subjectLevel);
   if (trialLessonId) params.set('trialLessonId', trialLessonId);
   if (startDate) params.set('startDate', startDate);
-  params.set('expires', String(Date.now() + 24 * 60 * 60 * 1000));
+  // 48h, not 24 — the link travels Adrian → student → parent, and the tighter
+  // window kept expiring mid-handoff (Adrian's call, 2026-07-29). Keep the bot's
+  // generateSignupUrl (handlers/flows.js) on the same number.
+  params.set('expires', String(Date.now() + 48 * 60 * 60 * 1000));
 
   const sig = createHmac('sha256', process.env.SIGNUP_SECRET || 'fallback-secret')
     .update(params.toString()).digest('hex').slice(0, 16);
