@@ -150,7 +150,11 @@ export default function MarkPaperPage() {
   const [totals, setTotals] = useState<{ awarded: number; max: number } | null>(null);
   const [unattempted, setUnattempted] = useState<string[]>([]);
   const [usage, setUsage] = useState<Usage | null>(null);
-  const [marked, setMarked] = useState<{ url: string; kind: string } | null>(null);
+  // Generated outputs, labelled — a LIST because "Generate both" shows the images PDF
+  // the moment it exists while the full PDF is still typesetting behind it.
+  const [marked, setMarked] = useState<{ url: string; kind: string; label: string }[]>([]);
+  // Which half "Generate both" is currently building (null when idle/single-mode).
+  const [bothStage, setBothStage] = useState<'images' | 'full' | null>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
   const [annotatedPhotos, setAnnotatedPhotos] = useState<AnnotatedPhoto[]>([]);
@@ -216,9 +220,13 @@ export default function MarkPaperPage() {
       // The stored run doesn't carry its cost/time back, and leaving the last run's
       // figures under a different paper's result reads as this paper's.
       setUsage(null);
-      // Keep the PDF this run already produced: clearing it hid the one thing most
-      // worth having back, and re-generating it costs a Puppeteer round trip.
-      setMarked(d.run.pdf_url ? { url: d.run.pdf_url, kind: 'pdf' } : (d.run.photos_pdf_url ? { url: d.run.photos_pdf_url, kind: 'pdf' } : null));
+      // Keep the PDFs this run already produced: clearing them hid the one thing most
+      // worth having back, and re-generating costs a Puppeteer round trip. Both kinds
+      // surface when both were built.
+      const kept: { url: string; kind: string; label: string }[] = [];
+      if (d.run.photos_pdf_url) kept.push({ url: d.run.photos_pdf_url, kind: 'pdf', label: '🖼 Images PDF' });
+      if (d.run.pdf_url) kept.push({ url: d.run.pdf_url, kind: 'pdf', label: '📄 Full PDF' });
+      setMarked(kept);
       setPhase('done');
       if (historyRef.current) historyRef.current.open = false;
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
@@ -272,7 +280,7 @@ export default function MarkPaperPage() {
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked(null); setLoadedName('');
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName('');
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -303,6 +311,31 @@ export default function MarkPaperPage() {
     } catch (e) { setError((e as Error).message); setPhase('idle'); }
   }
 
+  // One build = one call to the PDF route. Throws on failure; links the result to the
+  // run so history offers it as a one-click download.
+  async function buildPdf(mode: 'full' | 'photos'): Promise<{ url: string; kind: string; label: string }> {
+    const payload = {
+      // photo_index is what lets the PDF put each transcript sheet behind its own photo.
+      results: (results || []).map((r) => ({ question_number: r.question_number, marking_output: r.marking_output, photo_index: r.photo_index })),
+      annotated_photos: annotatedPhotos,
+      totals,
+      student: { name: '', level: '' },
+      multi: images.length > 1,
+      mode,
+    };
+    const resp = await fetch('/api/admin/mark-paper-pdf', { method: 'POST', headers: authHeaders, body: JSON.stringify(payload) });
+    const d = await resp.json();
+    if (!resp.ok) throw new Error(d.error || 'Generate failed');
+    if (runId && d.url) {
+      fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'link-pdf', id: runId, url: d.url, kind: mode }) })
+        .then(() => loadStats()).catch(() => {});
+    }
+    return {
+      url: d.url, kind: d.kind,
+      label: mode === 'photos' ? '🖼 Images PDF' : (d.kind === 'image' ? '📄 Marked image' : '📄 Full PDF'),
+    };
+  }
+
   // Render the marked typeset output: PDF (>1 image) or a single image (1 image).
   async function generateMarked(mode: 'full' | 'photos' = 'full') {
     // Say why, never nothing: a bare `return` here made a PDF click look like a dead
@@ -313,28 +346,35 @@ export default function MarkPaperPage() {
         : 'Nothing to build a PDF from — mark a paper, or load a run from the history below.');
       return;
     }
-    setGenerating(true); setMarked(null); setError('');
-    try {
-      const payload = {
-        // photo_index is what lets the PDF put each transcript sheet behind its own photo.
-        results: (results || []).map((r) => ({ question_number: r.question_number, marking_output: r.marking_output, photo_index: r.photo_index })),
-        annotated_photos: annotatedPhotos,
-        totals,
-        student: { name: '', level: '' },
-        multi: images.length > 1,
-        mode,
-      };
-      const resp = await fetch('/api/admin/mark-paper-pdf', { method: 'POST', headers: authHeaders, body: JSON.stringify(payload) });
-      const d = await resp.json();
-      if (!resp.ok) throw new Error(d.error || 'Generate failed');
-      setMarked({ url: d.url, kind: d.kind });
-      // Attach the generated PDF to its run so it shows as a one-click download in history.
-      if (runId && d.url) {
-        fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'link-pdf', id: runId, url: d.url, kind: mode }) })
-          .then(() => loadStats()).catch(() => {});
-      }
-    } catch (e) { setError((e as Error).message); }
+    setGenerating(true); setMarked([]); setError('');
+    try { setMarked([await buildPdf(mode)]); }
+    catch (e) { setError((e as Error).message); }
     finally { setGenerating(false); }
+  }
+
+  // Both PDFs from one click, IMAGES FIRST — it builds in seconds (no typesetting), so
+  // Adrian's hand-back copy is openable while the full PDF is still rendering its
+  // transcript sheets behind it. Each half fails on its own: an images link already
+  // shown is never taken away by the full build failing.
+  async function generateBoth() {
+    if (!annotatedPhotos.length && !results?.length) {
+      setError('Nothing to build a PDF from — mark a paper, or load a run from the history below.');
+      return;
+    }
+    setGenerating(true); setMarked([]); setError('');
+    const errs: string[] = [];
+    if (annotatedPhotos.length) {
+      setBothStage('images');
+      try { const r = await buildPdf('photos'); setMarked([r]); }
+      catch (e) { errs.push(`images: ${(e as Error).message}`); }
+    }
+    if (results?.length) {
+      setBothStage('full');
+      try { const r = await buildPdf('full'); setMarked((prev) => [...prev, r]); }
+      catch (e) { errs.push(`full: ${(e as Error).message}`); }
+    }
+    if (errs.length) setError(`PDF generation — ${errs.join(' · ')}`);
+    setBothStage(null); setGenerating(false);
   }
 
   const busy = phase === 'proposing' || phase === 'marking' || !!rasterizing;
@@ -489,20 +529,29 @@ export default function MarkPaperPage() {
             </div>
           )}
           <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <button style={{ ...btn, opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('full')}>
-              {generating ? 'Generating…' : '📄 Generate full PDF'}
+            {annotatedPhotos.length > 0 && (
+              <button style={{ ...btn, opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={generateBoth}>
+                {bothStage === 'images' ? '🖼 Building images…' : bothStage === 'full' ? '📄 Building full…' : generating ? 'Generating…' : '⚡ Generate both'}
+              </button>
+            )}
+            <button style={{ ...btn, background: '#374151', opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('full')}>
+              {generating && !bothStage ? 'Generating…' : '📄 Full only'}
             </button>
             {annotatedPhotos.length > 0 && (
               <button style={{ ...btn, background: '#374151', opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('photos')}>
-                {generating ? '…' : '🖼️ Generate images PDF'}
+                {generating && !bothStage ? '…' : '🖼️ Images only'}
               </button>
             )}
-            {marked && (
-              <a href={marked.url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 600 }}>
-                Open {marked.kind === 'pdf' ? 'PDF' : 'image'} ↗
+            {marked.map((m) => (
+              <a key={m.label} href={m.url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 600 }}>
+                {m.label} ↗
               </a>
+            ))}
+            {/* The images link is already up while this shows — the point of "both". */}
+            {bothStage === 'full' && marked.length > 0 && (
+              <span style={{ color: '#6b7280', fontSize: 13 }}>📄 full PDF still building…</span>
             )}
-            <span style={{ color: '#6b7280', fontSize: 13 }}>Each click builds a fresh PDF (a few sec). Full = typeset + annotated photos · Images = annotated originals only.</span>
+            <span style={{ color: '#6b7280', fontSize: 13 }}>Both = images PDF ready in seconds, full follows (it typesets a sheet per question). Fresh build every click.</span>
           </div>
         </div>
       )}
