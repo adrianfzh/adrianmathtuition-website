@@ -155,6 +155,17 @@ export default function MarkPaperPage() {
   const [marked, setMarked] = useState<{ url: string; kind: string; label: string }[]>([]);
   // Which half "Generate both" is currently building (null when idle/single-mode).
   const [bothStage, setBothStage] = useState<'images' | 'full' | null>(null);
+  // Send / save block (the no-amendments fast path). Email only — WhatsApp goes out
+  // from Adrian's PERSONAL number on the Mac by dragging the downloaded file in, so the
+  // WhatsApp feature here is the nicely-named Download, not a send button.
+  const [students, setStudents] = useState<{ id: string; name: string }[] | null>(null);
+  const [sendStudentId, setSendStudentId] = useState('');
+  const [sendStudentName, setSendStudentName] = useState('');
+  const [sendEmail, setSendEmail] = useState('');
+  const [sendParentEmail, setSendParentEmail] = useState('');
+  const [sendRemember, setSendRemember] = useState(true);
+  const [sendBusy, setSendBusy] = useState(false);
+  const [sendNote, setSendNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
   const [annotatedPhotos, setAnnotatedPhotos] = useState<AnnotatedPhoto[]>([]);
@@ -350,6 +361,58 @@ export default function MarkPaperPage() {
     try { setMarked([await buildPdf(mode)]); }
     catch (e) { setError((e as Error).message); }
     finally { setGenerating(false); }
+  }
+
+  // ── Send / save helpers ────────────────────────────────────────────────────
+  async function loadStudents() {
+    if (students) return;
+    try {
+      const r = await fetch('/api/mark-batch/init', { headers: authHeaders });
+      const d = await r.json();
+      if (r.ok) setStudents(d.students || []);
+    } catch { /* dropdown stays empty; email can still be typed */ }
+  }
+  // Eager-load once the send panel exists: an iPad opens the native picker BEFORE a
+  // focus-triggered fetch lands, and the open sheet doesn't refresh its options.
+  const sendPanelVisible = marked.length > 0;
+  useEffect(() => {
+    if (sendPanelVisible) loadStudents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sendPanelVisible]);
+  async function pickSendStudent(id: string) {
+    setSendStudentId(id); setSendNote(null);
+    const s = (students || []).find((x) => x.id === id);
+    setSendStudentName(s?.name || '');
+    if (!id) { setSendEmail(''); setSendParentEmail(''); return; }
+    try {
+      const r = await fetch(`/api/admin/mark-paper-send?studentId=${id}`, { headers: authHeaders });
+      const d = await r.json();
+      if (r.ok) { setSendEmail(d.studentEmail || ''); setSendParentEmail(d.parentEmail || ''); }
+    } catch { /* prefill is best-effort */ }
+  }
+  // The copy Adrian hands back: images when it exists (his default), else whatever there is.
+  const sendPdf = marked.find((m) => m.label.startsWith('🖼')) || marked[0] || null;
+  const scoreStr = totals ? `${totals.awarded}-${totals.max}` : '';
+  const sendFilename = [sendStudentName, loadedName || 'Marked paper', scoreStr].filter(Boolean).join(' — ') + '.pdf';
+  async function sendMarkedEmail() {
+    if (!sendPdf) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendEmail.trim())) { setSendNote({ ok: false, text: 'Enter a valid email address first.' }); return; }
+    setSendBusy(true); setSendNote(null);
+    try {
+      const r = await fetch('/api/admin/mark-paper-send', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({
+          pdfUrl: sendPdf.url, filename: sendFilename, to: sendEmail.trim(),
+          studentId: sendStudentId || undefined, saveEmail: sendRemember && !!sendStudentId,
+          paperLabel: loadedName || 'your paper', score: totals ? `${totals.awarded}/${totals.max}` : '',
+          studentName: sendStudentName,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Send failed');
+      setSendNote({ ok: true, text: `Delivered to ${sendEmail.trim()}${d.emailSaved ? ' · address saved' : ''}${d.saveHint ? ` · ${d.saveHint}` : ''}` });
+    } catch (e) { setSendNote({ ok: false, text: (e as Error).message }); }
+    finally { setSendBusy(false); }
   }
 
   // Both PDFs from one click, IMAGES FIRST — it builds in seconds (no typesetting), so
@@ -553,6 +616,49 @@ export default function MarkPaperPage() {
             )}
             <span style={{ color: '#6b7280', fontSize: 13 }}>Both = images PDF ready in seconds, full follows (it typesets a sheet per question). Fresh build every click.</span>
           </div>
+          {/* Send / save — the no-amendments fast path. Download feeds the drag-into-
+              WhatsApp move on the Mac (personal number); email goes straight out. */}
+          {sendPdf && (
+            <div style={{ marginTop: 14, padding: 12, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>📤 {sendPdf.label.replace(' ↗', '')}:</span>
+              <a
+                href={`/api/admin/mark-paper-download?url=${encodeURIComponent(sendPdf.url)}&name=${encodeURIComponent(sendFilename)}`}
+                style={{ ...btn, background: '#374151', textDecoration: 'none', fontSize: 14, padding: '8px 14px' }}
+              >
+                ⬇ Download for WhatsApp
+              </a>
+              <select
+                value={sendStudentId}
+                onFocus={loadStudents}
+                onChange={(e) => pickSendStudent(e.target.value)}
+                style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, background: 'white' }}
+              >
+                <option value="">Student…</option>
+                {(students || []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+              <input
+                type="email"
+                value={sendEmail}
+                onChange={(e) => { setSendEmail(e.target.value); setSendNote(null); }}
+                placeholder="student@email.com"
+                style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, minWidth: 210 }}
+              />
+              {sendParentEmail && sendEmail !== sendParentEmail && (
+                <button style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: 12, cursor: 'pointer', padding: 0 }} onClick={() => setSendEmail(sendParentEmail)}>
+                  use parent&apos;s: {sendParentEmail}
+                </button>
+              )}
+              <label style={{ fontSize: 12, color: '#6b7280', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <input type="checkbox" checked={sendRemember} onChange={(e) => setSendRemember(e.target.checked)} /> remember
+              </label>
+              <button style={{ ...btn, opacity: sendBusy ? 0.6 : 1, fontSize: 14, padding: '8px 14px' }} disabled={sendBusy} onClick={sendMarkedEmail}>
+                {sendBusy ? 'Sending…' : '✉️ Email PDF'}
+              </button>
+              {sendNote && (
+                <span style={{ fontSize: 13, color: sendNote.ok ? '#15803d' : '#b91c1c' }}>{sendNote.ok ? '✓ ' : '✗ '}{sendNote.text}</span>
+              )}
+            </div>
+          )}
         </div>
       )}
 
