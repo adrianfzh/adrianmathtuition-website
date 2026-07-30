@@ -954,6 +954,18 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   panel prints an amber note naming the photos that came back coarse, so "the marker
   skipped my page" is legible as "re-shoot that page straighter". Adrian, Jul 2026: *"some
   questions there are no ticks, is it because the working is too messy?"*
+  - **Two-up spreads get a per-half retry before falling coarse** (2026-07-30). The
+    pipeline caps photos at 1600px (`normalizePhoto`), so a CamScanner two-page spread
+    gives each physical page ~800px — too coarse to box dense working, which is why neat
+    pages were losing their ticks (Adrian: *"it is not too messy"* — correct; the layout
+    was the problem). When the line pass fails on a **landscape** image (`w > h*1.15`),
+    `geminiLineMarksSpread` cuts at the gutter and re-runs each half upscaled to 1600px;
+    `mergeSpreadHalves` (pure, unit-tested) shifts boxes back by the crop origin, dedupes
+    cross-half line matches (left page wins), and upgrades null part regions when the
+    other half found them. A sideways single page self-limits (every line straddles the
+    cut → both halves empty → same fall-through as before). On success `method` stays
+    `'line'` — the amber note keys off it. Cost: two extra grounding calls, only on
+    already-failed landscape pages.
 - **Verifying placement locally is misleading** — Patrick Hand is not installed on a Mac, so
   librsvg substitutes a wider sans and every pen line renders ~35% wider than
   `ai/font-metrics.js` measured it, overflowing bands that fit on Fly. Check the *placement*
