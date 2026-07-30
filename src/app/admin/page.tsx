@@ -85,9 +85,19 @@ export default function AdminHub() {
   const [order, setOrder] = useState<string[]>(loadHubOrder);
   // Set true when a real drag occurs so the trailing click doesn't navigate.
   const suppressClickRef = useRef(false);
+  // iOS-home-screen arrange mode. On iPhone the plain long-press-drag never worked:
+  // tiles carry touchAction 'manipulation' so the page can scroll, and Safari computes
+  // touch-action at GESTURE START — by the time the 500ms TouchSensor hold elapses,
+  // moving the finger scrolls the page and kills the drag. The reliable pattern is
+  // Apple's own: long-press ENTERS a jiggle mode (this gesture just arms it), the NEXT
+  // touch starts on tiles whose touchAction is already 'none', and dragging works.
+  const [arrangeMode, setArrangeMode] = useState(false);
+  const enterArrange = () => { setArrangeMode(true); try { navigator.vibrate?.(30); } catch { /* no haptics */ } };
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 8 } }),
+    // In arrange mode the hold is a token 150ms — taps don't navigate there anyway, so
+    // drag can start almost immediately, like wiggling home-screen icons.
+    useSensor(TouchSensor, { activationConstraint: arrangeMode ? { delay: 150, tolerance: 8 } : { delay: 500, tolerance: 8 } }),
   );
 
   const launcherByHref = new Map(LAUNCHERS.map(l => [l.href, l]));
@@ -181,7 +191,17 @@ export default function AdminHub() {
 
         <div className="hub-body">
 
-          <div className="hub-hint">Drag tiles to rearrange · tap to open</div>
+          <div className="hub-hint">
+            {arrangeMode ? (
+              <>Drag tiles into place · <button className="hub-arrange-done" onClick={() => setArrangeMode(false)}>✓ Done</button></>
+            ) : 'Drag tiles to rearrange (long-press on phone) · tap to open'}
+          </div>
+          {/* Home-screen jiggle while arranging. Inline keyframes: the hub's styles are
+              global CSS and this animation belongs to this one feature. */}
+          <style>{`
+            @keyframes hubJiggle { from { transform: rotate(-1.1deg); } to { transform: rotate(1.1deg); } }
+            .hub-arrange-done { border: none; background: #16a34a; color: white; border-radius: 999px; padding: 4px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+          `}</style>
 
           {/* Launcher grid — drag to rearrange (order saved on this device) */}
           <DndContext
@@ -193,11 +213,14 @@ export default function AdminHub() {
               {/* Every fresh press clears the suppress flag, so a drag that emits
                   no trailing click can never block the next genuine tap. */}
               <div className="launcher-grid" onPointerDownCapture={() => { suppressClickRef.current = false; }}>
-                {orderedLaunchers.map(launcher => (
+                {orderedLaunchers.map((launcher, i) => (
                   <SortableLauncherCard
                     key={launcher.href}
                     launcher={launcher}
                     suppressClickRef={suppressClickRef}
+                    index={i}
+                    arrangeMode={arrangeMode}
+                    onLongPress={enterArrange}
                   />
                 ))}
               </div>
@@ -283,18 +306,49 @@ function saveHubOrder(order: string[]): void {
 // navigates: the sensors only start a drag past an 8px move (mouse) or a 500ms
 // hold (touch); when a real drag happened, `suppressClickRef` cancels the
 // trailing synthetic click so we don't navigate on drop.
-function SortableLauncherCard({ launcher, suppressClickRef }: {
+function SortableLauncherCard({ launcher, suppressClickRef, index, arrangeMode, onLongPress }: {
   launcher: Launcher;
   suppressClickRef: RefObject<boolean>;
+  index: number;
+  arrangeMode: boolean;
+  onLongPress: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: launcher.href });
+  // Long-press-to-enter-arrange detection, on POINTER events with pointerType 'touch'
+  // (iOS Safari 13+ fires them; a mouse never enters jiggle mode — desktop drags
+  // directly). Runs only OUTSIDE arrange mode; a move of more than ~10px (a scroll) or
+  // lifting the finger cancels it. The press that arms the mode cannot itself drag
+  // (Safari fixed touch-action at gesture start) — the user lifts and drags on the
+  // next touch, exactly like home-screen icons. COMPOSED with dnd-kit's own
+  // onPointerDown rather than spread over it: overriding it would kill mouse drag.
+  const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lpStart = useRef<{ x: number; y: number } | null>(null);
+  const cancelLp = () => { if (lpTimer.current) clearTimeout(lpTimer.current); lpTimer.current = null; lpStart.current = null; };
+  const dndPointerDown = (listeners as Record<string, (e: React.PointerEvent) => void> | undefined)?.onPointerDown;
+  const pressProps = {
+    onPointerDown: (e: React.PointerEvent) => {
+      dndPointerDown?.(e);
+      if (arrangeMode || e.pointerType !== 'touch') return;
+      cancelLp();
+      lpStart.current = { x: e.clientX, y: e.clientY };
+      lpTimer.current = setTimeout(() => { lpTimer.current = null; onLongPress(); }, 500);
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      const s = lpStart.current;
+      if (s && Math.hypot(e.clientX - s.x, e.clientY - s.y) > 10) cancelLp();
+    },
+    onPointerUp: cancelLp,
+    onPointerCancel: cancelLp,
+  };
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.45 : 1,
     zIndex: isDragging ? 20 : undefined,
-    touchAction: 'manipulation', // allow page scroll; TouchSensor delay gates drag
+    // Arrange mode owns the gesture outright; otherwise the page must stay scrollable.
+    touchAction: arrangeMode ? 'none' : 'manipulation',
+    ...(arrangeMode && !isDragging ? { animation: `hubJiggle 0.32s ease-in-out ${(index % 3) * 0.09}s infinite alternate` } : {}),
   };
   return (
     <a
@@ -302,9 +356,13 @@ function SortableLauncherCard({ launcher, suppressClickRef }: {
       style={style}
       href={launcher.href}
       className={`launcher-card${isDragging ? ' dragging' : ''}`}
-      onClick={e => { if (suppressClickRef.current) { e.preventDefault(); suppressClickRef.current = false; } }}
+      onClick={e => {
+        // In arrange mode tiles never navigate — tap Done to leave.
+        if (arrangeMode || suppressClickRef.current) { e.preventDefault(); suppressClickRef.current = false; }
+      }}
       {...attributes}
       {...listeners}
+      {...pressProps}
     >
       <div className="launcher-emoji">{launcher.icon ?? launcher.emoji}</div>
       <div className="launcher-title">{launcher.title}</div>

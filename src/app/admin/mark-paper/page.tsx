@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
+import { put } from '@vercel/blob/client';
 import { ensureAdminSession } from '@/lib/admin-client';
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -86,7 +87,7 @@ async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -166,6 +167,11 @@ export default function MarkPaperPage() {
   const [sendRemember, setSendRemember] = useState(true);
   const [sendBusy, setSendBusy] = useState(false);
   const [sendNote, setSendNote] = useState<{ ok: boolean; text: string } | null>(null);
+  // Editable descriptor used in the filename and the email — "worksheet (10 photos)"
+  // was useless in an inbox. Prefilled from the run's stored name when it's a real one.
+  const [paperName, setPaperName] = useState('');
+  const [annotatedBusy, setAnnotatedBusy] = useState(false);
+  const annotatedInputRef = useRef<HTMLInputElement>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
   const [annotatedPhotos, setAnnotatedPhotos] = useState<AnnotatedPhoto[]>([]);
@@ -235,9 +241,16 @@ export default function MarkPaperPage() {
       // worth having back, and re-generating costs a Puppeteer round trip. Both kinds
       // surface when both were built.
       const kept: { url: string; kind: string; label: string }[] = [];
+      // Annotated first — once Adrian's own pen is on a copy, that copy IS the paper.
+      if (d.run.annotated_pdf_url) kept.push({ url: d.run.annotated_pdf_url, kind: 'pdf', label: '✍️ Annotated PDF' });
       if (d.run.photos_pdf_url) kept.push({ url: d.run.photos_pdf_url, kind: 'pdf', label: '🖼 Images PDF' });
       if (d.run.pdf_url) kept.push({ url: d.run.pdf_url, kind: 'pdf', label: '📄 Full PDF' });
       setMarked(kept);
+      // Paper name: prefill from the run unless it's the auto "worksheet (N photos)"
+      // placeholder — that label was the whole complaint ("worksheet — 86-94 does not
+      // seem helpful"), so it never reaches a filename.
+      const pn = d.run.paper_name || '';
+      setPaperName(/^worksheet \(\d+ photos?\)$/i.test(pn) ? '' : pn);
       setPhase('done');
       if (historyRef.current) historyRef.current.open = false;
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
@@ -291,7 +304,7 @@ export default function MarkPaperPage() {
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName('');
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName('');
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -390,10 +403,14 @@ export default function MarkPaperPage() {
       if (r.ok) { setSendEmail(d.studentEmail || ''); setSendParentEmail(d.parentEmail || ''); }
     } catch { /* prefill is best-effort */ }
   }
-  // The copy Adrian hands back: images when it exists (his default), else whatever there is.
-  const sendPdf = marked.find((m) => m.label.startsWith('🖼')) || marked[0] || null;
-  const scoreStr = totals ? `${totals.awarded}-${totals.max}` : '';
-  const sendFilename = [sendStudentName, loadedName || 'Marked paper', scoreStr].filter(Boolean).join(' — ') + '.pdf';
+  // The copy Adrian hands back: his own annotated one once it exists, else the images
+  // PDF, else whatever there is.
+  const sendPdf = marked.find((m) => m.label.startsWith('✍️')) || marked.find((m) => m.label.startsWith('🖼')) || marked[0] || null;
+  // Filename = Student — Paper name — date. No score and no auto "worksheet (N photos)"
+  // label — "Kieran Lai — worksheet — 86-94.pdf" told the recipient nothing (Adrian,
+  // 30 Jul 2026); the score already sits in the PDF's total strip.
+  const sendDateStr = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' });
+  const sendFilename = [...[sendStudentName, paperName].filter(Boolean), sendDateStr].join(' — ').replace(/^(?=\d)/, 'Marked paper — ') + '.pdf';
   async function sendMarkedEmail() {
     if (!sendPdf) return;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendEmail.trim())) { setSendNote({ ok: false, text: 'Enter a valid email address first.' }); return; }
@@ -404,7 +421,7 @@ export default function MarkPaperPage() {
         body: JSON.stringify({
           pdfUrl: sendPdf.url, filename: sendFilename, to: sendEmail.trim(),
           studentId: sendStudentId || undefined, saveEmail: sendRemember && !!sendStudentId,
-          paperLabel: loadedName || 'your paper', score: totals ? `${totals.awarded}/${totals.max}` : '',
+          paperLabel: paperName || 'your paper', score: totals ? `${totals.awarded}/${totals.max}` : '',
           studentName: sendStudentName,
         }),
       });
@@ -413,6 +430,34 @@ export default function MarkPaperPage() {
       setSendNote({ ok: true, text: `Delivered to ${sendEmail.trim()}${d.emailSaved ? ' · address saved' : ''}${d.saveHint ? ` · ${d.saveHint}` : ''}` });
     } catch (e) { setSendNote({ ok: false, text: (e as Error).message }); }
     finally { setSendBusy(false); }
+  }
+
+  // The Notability round trip's return leg: Adrian annotates the images PDF on the
+  // iPad, then drags the note into this page (Split View) or picks it from Files. The
+  // file goes STRAIGHT to Blob with a client token (a 10-page Notability export runs
+  // 5–20MB — past the function body cap), then links to the run as annotated_pdf_url.
+  async function uploadAnnotated(file: File | null | undefined) {
+    if (!file || annotatedBusy) return;
+    if (!runId) { setSendNote({ ok: false, text: 'Load or mark a paper first — the annotated copy attaches to its run.' }); return; }
+    if (!/pdf$/i.test(file.type) && !/\.pdf$/i.test(file.name)) { setSendNote({ ok: false, text: 'That is not a PDF — export the note as PDF from Notability.' }); return; }
+    setAnnotatedBusy(true); setSendNote(null);
+    try {
+      const tokenRes = await fetch(`/api/admin/mark-paper-annotated-token?runId=${encodeURIComponent(runId)}&filename=${encodeURIComponent(file.name)}`);
+      if (!tokenRes.ok) throw new Error('upload token failed');
+      const { token, pathname } = await tokenRes.json();
+      const blob = await put(pathname, file, {
+        access: 'public', token, multipart: file.size > 5 * 1024 * 1024, contentType: 'application/pdf',
+      });
+      const link = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'link-pdf', id: runId, url: blob.url, kind: 'annotated' }),
+      });
+      if (!link.ok) throw new Error('uploaded, but linking to the run failed — try again');
+      setMarked((prev) => [{ url: blob.url, kind: 'pdf', label: '✍️ Annotated PDF' }, ...prev.filter((m) => !m.label.startsWith('✍️'))]);
+      setSendNote({ ok: true, text: 'Annotated PDF attached — Download and Email now use it.' });
+      loadStats();
+    } catch (e) { setSendNote({ ok: false, text: (e as Error).message }); }
+    finally { setAnnotatedBusy(false); if (annotatedInputRef.current) annotatedInputRef.current.value = ''; }
   }
 
   // Both PDFs from one click, IMAGES FIRST — it builds in seconds (no typesetting), so
@@ -471,6 +516,7 @@ export default function MarkPaperPage() {
                 <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{run.paper_name || 'Paper'}</span>
                 <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
                 <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
+                {run.annotated_pdf_url && <a href={run.annotated_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
                 {run.pdf_url && <a href={run.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
                 {run.photos_pdf_url && <a href={run.photos_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
                 <button type="button" disabled={!!loadingRun} onClick={() => loadRun(run.id)}
@@ -617,10 +663,22 @@ export default function MarkPaperPage() {
             <span style={{ color: '#6b7280', fontSize: 13 }}>Both = images PDF ready in seconds, full follows (it typesets a sheet per question). Fresh build every click.</span>
           </div>
           {/* Send / save — the no-amendments fast path. Download feeds the drag-into-
-              WhatsApp move on the Mac (personal number); email goes straight out. */}
+              WhatsApp move on the Mac (personal number); email goes straight out. The
+              panel is also the DROP TARGET for the Notability round trip (Split View). */}
           {sendPdf && (
-            <div style={{ marginTop: 14, padding: 12, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div
+              onDragOver={(e) => { e.preventDefault(); }}
+              onDrop={(e) => { e.preventDefault(); uploadAnnotated(e.dataTransfer.files?.[0]); }}
+              style={{ marginTop: 14, padding: 12, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
+            >
               <span style={{ fontWeight: 600, fontSize: 14 }}>📤 {sendPdf.label.replace(' ↗', '')}:</span>
+              <input
+                type="text"
+                value={paperName}
+                onChange={(e) => setPaperName(e.target.value)}
+                placeholder="Paper name (e.g. Zhonghua Prelim AM P1)"
+                style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, minWidth: 230 }}
+              />
               <a
                 href={`/api/admin/mark-paper-download?url=${encodeURIComponent(sendPdf.url)}&name=${encodeURIComponent(sendFilename)}`}
                 style={{ ...btn, background: '#374151', textDecoration: 'none', fontSize: 14, padding: '8px 14px' }}
@@ -654,6 +712,20 @@ export default function MarkPaperPage() {
               <button style={{ ...btn, opacity: sendBusy ? 0.6 : 1, fontSize: 14, padding: '8px 14px' }} disabled={sendBusy} onClick={sendMarkedEmail}>
                 {sendBusy ? 'Sending…' : '✉️ Email PDF'}
               </button>
+              {/* Notability return leg: pick the exported PDF, or drag it anywhere onto
+                  this panel from Split View. Needs a run to attach to. */}
+              {runId && (
+                <>
+                  <input ref={annotatedInputRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }} onChange={(e) => uploadAnnotated(e.target.files?.[0])} />
+                  <button
+                    style={{ ...btn, background: '#7c3aed', opacity: annotatedBusy ? 0.6 : 1, fontSize: 14, padding: '8px 14px' }}
+                    disabled={annotatedBusy}
+                    onClick={() => annotatedInputRef.current?.click()}
+                  >
+                    {annotatedBusy ? 'Uploading…' : '✍️ Upload annotated'}
+                  </button>
+                </>
+              )}
               {sendNote && (
                 <span style={{ fontSize: 13, color: sendNote.ok ? '#15803d' : '#b91c1c' }}>{sendNote.ok ? '✓ ' : '✗ '}{sendNote.text}</span>
               )}
