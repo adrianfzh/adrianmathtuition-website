@@ -691,10 +691,11 @@ export default function MarkPaperPage() {
               <li>On the iPad, open <b>Shortcuts</b> → <b>+</b> to make a new shortcut → rename it <b>✍️ Mark paper</b>.</li>
               <li>Tap the <b>ⓘ</b> (details) → turn on <b>Show in Share Sheet</b> → under &quot;Share Sheet Types&quot; keep <b>PDFs</b> and <b>Images</b>.</li>
               <li>Add the action <b>Get Contents of URL</b> and set it up:<br />
-                URL: <code>https://www.adrianmathtuition.com/api/admin/mark-paper-inbox</code><br />
+                URL: <code>https://adrianmath-telegram-math-bot.fly.dev/api/mark-inbox</code><br />
+                <span style={{ color: '#b45309' }}>(the bot&apos;s address, NOT adrianmathtuition.com — Vercel rejects bodies over 4.5MB before our code runs, and scans are bigger)</span><br />
                 Method: <b>POST</b> · Headers: add <code>Authorization</code> = <code>Bearer {inboxToken === null ? '…' : (inboxToken || '(token not configured)')}</code><br />
-                Request Body: <b>Form</b> → add field, name <code>file</code>, type <b>File</b>, value <b>Shortcut Input</b>.</li>
-              <li>Optional: add <b>Show Notification</b> (&quot;Sent to marking ✓&quot;) after it.</li>
+                Request Body: <b>File</b> → <b>Shortcut Input</b>.</li>
+              <li>Add <b>Show Notification</b> after it, with the body set to the <b>Contents of URL</b> magic variable — the notification then shows the server&apos;s real answer (<code>{'{"ok":true…}'}</code> or the error), not blind optimism.</li>
             </ol>
             <div style={{ marginTop: 6, color: '#6b7280' }}>Then in any share sheet: tap the file → Share → <b>✍️ Mark paper</b> (it appears in the actions list — favourite it via Edit Actions to pin it near the top). Files land in a &quot;📥 From your iPad&quot; banner at the top of this page.</div>
           </div>
