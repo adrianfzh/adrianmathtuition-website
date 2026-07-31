@@ -172,6 +172,8 @@ export default function MarkPaperPage() {
   // iPad share-sheet inbox: files the "✍️ Mark paper" Shortcut posted from WhatsApp
   // (iPadOS keeps websites out of the share sheet; the Shortcut is the workaround).
   const [inbox, setInbox] = useState<{ pathname: string; url: string; name: string; size: number }[]>([]);
+  // Which history run's student tag is being edited inline (run id, or null).
+  const [editTagId, setEditTagId] = useState<string | null>(null);
   const [inboxBusy, setInboxBusy] = useState('');
   const [inboxToken, setInboxToken] = useState<string | null>(null);
   const [annotatedBusy, setAnnotatedBusy] = useState(false);
@@ -580,8 +582,38 @@ export default function MarkPaperPage() {
             {recentRuns.map((run) => (
               <div key={run.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
                 <span style={{ color: '#6b7280', minWidth: 120 }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
-                <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {run.student_name && <span style={{ color: '#1d4ed8' }}>{run.student_name} · </span>}{run.paper_name || 'Paper'}
+                <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {editTagId === run.id ? (
+                    <select
+                      autoFocus
+                      value={run.student_id || ''}
+                      onBlur={() => setEditTagId(null)}
+                      onChange={(e) => {
+                        const sid = e.target.value;
+                        const sname = (students || []).find((x) => x.id === sid)?.name || '';
+                        setEditTagId(null);
+                        if (!sid) return;
+                        setRecentRuns((prev) => prev.map((r) => r.id === run.id ? { ...r, student_id: sid, student_name: sname } : r));
+                        fetch('/api/admin/mark-paper', {
+                          method: 'POST', headers: authHeaders,
+                          body: JSON.stringify({ phase: 'set-student', id: run.id, studentId: sid, studentName: sname }),
+                        }).catch(() => {});
+                      }}
+                      style={{ fontSize: 12, padding: '2px 4px', border: '1px solid #d1d5db', borderRadius: 6 }}
+                    >
+                      <option value="">Student…</option>
+                      {(students || []).map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
+                    </select>
+                  ) : (
+                    <button
+                      title="Tag / change student"
+                      onClick={() => { loadStudents(); setEditTagId(run.id); }}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#1d4ed8', fontWeight: 600, fontSize: 13 }}
+                    >
+                      {run.student_name || '＋ tag'}
+                    </button>
+                  )}
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{run.paper_name || 'Paper'}</span>
                 </span>
                 <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
                 <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
@@ -758,7 +790,11 @@ export default function MarkPaperPage() {
               </button>
             )}
             {marked.map((m) => (
-              <a key={m.label} href={m.url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 600 }}>
+              <a
+                key={m.label}
+                href={`/api/admin/mark-paper-download?url=${encodeURIComponent(m.url)}&name=${encodeURIComponent(sendFilename)}&disposition=inline`}
+                target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 600 }}
+              >
                 {m.label} ↗
               </a>
             ))}
@@ -804,6 +840,20 @@ export default function MarkPaperPage() {
                 type="email"
                 value={sendEmail}
                 onChange={(e) => { setSendEmail(e.target.value); setSendNote(null); }}
+                onBlur={() => {
+                  // Save the address the moment it's typed — waiting for a successful
+                  // send meant a failed send also lost the address.
+                  const em = sendEmail.trim();
+                  if (!sendRemember || !sendStudentId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return;
+                  fetch('/api/admin/mark-paper-send', {
+                    method: 'PUT', headers: authHeaders,
+                    body: JSON.stringify({ studentId: sendStudentId, email: em }),
+                  }).then(async (r) => {
+                    const d = await r.json().catch(() => ({}));
+                    if (r.ok && d.saved) setSendNote({ ok: true, text: `Address saved for ${sendStudentName}` });
+                    else if (d.hint) setSendNote({ ok: false, text: d.hint });
+                  }).catch(() => {});
+                }}
                 placeholder="student@email.com"
                 style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, minWidth: 210 }}
               />

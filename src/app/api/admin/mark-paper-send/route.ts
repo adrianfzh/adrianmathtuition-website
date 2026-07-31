@@ -29,6 +29,31 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// PUT — save the typed address the moment it's entered, without sending anything
+// (Adrian, 1 Aug 2026: "can it be saved automatically? before sending?"). Same
+// typecast PATCH and the same graceful degrade as the post-send save.
+export async function PUT(req: NextRequest) {
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  let body: { studentId?: string; email?: string };
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const email = (body.email || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+  if (!body.studentId || !/^rec[a-zA-Z0-9]{14}$/.test(body.studentId)) return NextResponse.json({ error: 'bad studentId' }, { status: 400 });
+  try {
+    await airtableRequest('Students', `/${body.studentId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: { 'Student Email': email }, typecast: true }),
+    });
+    return NextResponse.json({ saved: true });
+  } catch (e) {
+    const hint = (e as Error).message?.includes('UNKNOWN_FIELD_NAME')
+      ? "Add a 'Student Email' field (type: email) to the Students table in Airtable."
+      : (e as Error).message;
+    return NextResponse.json({ saved: false, hint });
+  }
+}
+
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const RESEND_API_KEY = process.env.RESEND_API_KEY;

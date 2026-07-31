@@ -15,13 +15,17 @@ export async function GET(req: NextRequest) {
 
   const name = (req.nextUrl.searchParams.get('name') || 'marked-paper.pdf')
     .replace(/[^\w.\- ()]/g, '').slice(0, 120) || 'marked-paper.pdf';
+  // inline = view in the tab but CARRY the clean filename — Notability (and any other
+  // share-sheet import) titles the note from it, so opening PDFs through this route is
+  // what turns "2026-07-31T16-17-30-359Z" into "Alexis Wong — Xinmin EM P2 — 1 Aug".
+  const disposition = req.nextUrl.searchParams.get('disposition') === 'inline' ? 'inline' : 'attachment';
 
   const r = await fetch(url);
   if (!r.ok) return NextResponse.json({ error: `fetch failed (${r.status})` }, { status: 502 });
   return new NextResponse(r.body, {
     headers: {
       'Content-Type': r.headers.get('content-type') || 'application/pdf',
-      'Content-Disposition': `attachment; filename="${name}"`,
+      'Content-Disposition': `${disposition}; filename="${name}"`,
       'Cache-Control': 'no-store',
     },
   });
