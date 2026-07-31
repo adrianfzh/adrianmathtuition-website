@@ -694,6 +694,7 @@ export default function MarkPaperPage() {
                 URL: <code>https://adrianmath-telegram-math-bot.fly.dev/api/mark-inbox</code><br />
                 <span style={{ color: '#b45309' }}>(the bot&apos;s address, NOT adrianmathtuition.com — Vercel rejects bodies over 4.5MB before our code runs, and scans are bigger)</span><br />
                 Method: <b>POST</b> · Headers: add <code>Authorization</code> = <code>Bearer {inboxToken === null ? '…' : (inboxToken || '(token not configured)')}</code><br />
+                Optional 2nd header, keeps the original filename: <code>x-file-name</code> = insert the <b>Shortcut Input</b> variable, tap the token, set its type to <b>Name</b> (otherwise files arrive as <code>shared.pdf</code>)<br />
                 Request Body: <b>File</b> → <b>Shortcut Input</b>.</li>
               <li>Add <b>Show Notification</b> after it, with the body set to the <b>Contents of URL</b> magic variable — the notification then shows the server&apos;s real answer (<code>{'{"ok":true…}'}</code> or the error), not blind optimism.</li>
             </ol>
