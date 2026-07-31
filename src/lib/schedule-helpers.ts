@@ -53,10 +53,15 @@ export function onDateFormula(date: string): string {
 // NOTE: ARRAYJOIN({Slot}) returns slot display names, not record IDs.
 // Filter by Date + Status only in Airtable, then match slotId in JS.
 // Makeup capacity is the TOTAL slot limit (regular + makeup combined).
-// Count all non-cancelled/absent lessons and compare against makeupCapacity.
+// Counts lessons that OCCUPY a seat — the same rule as occupiesSlot()
+// (lib/double-booking.ts) and findStudentSlotConflict below: not Cancelled,
+// not Absent, and NOT Rescheduled-away. A lesson moved off this date frees
+// its seat; counting it made a 4-student Sunday read "Slot full — 6/6" (two
+// moved-away records still on the date), forcing a needless admin override
+// while the calendar badge correctly said 4 (31 Jul 2026).
 export async function countLessonsOnDateBySlot(date: string): Promise<Record<string, number>> {
   const formula = encodeURIComponent(
-    `AND(${onDateFormula(date)},{Status}!='Cancelled',{Status}!='Absent')`
+    `AND(${onDateFormula(date)},{Status}!='Cancelled',{Status}!='Absent',{Status}!='Rescheduled')`
   );
   const data = await airtableRequestAll('Lessons', `?filterByFormula=${formula}&fields[]=Slot`);
   const counts: Record<string, number> = {};

@@ -518,7 +518,7 @@ Shared component `src/components/LessonModal.tsx`. On the schedule page, name ta
 
 - Creates new lesson: `Type: 'Rescheduled'`, `Status: 'Scheduled'`
 - PATCHes original: `Status: 'Rescheduled'`, `Rescheduled Lesson ID: [newId]`, appends `| auto-linked` to Notes
-- Capacity check uses `Makeup Capacity` field (not `Normal Capacity`); excludes Cancelled/Absent lessons
+- Capacity check uses `Makeup Capacity` field (not `Normal Capacity`); counts only lessons that OCCUPY a seat — not Cancelled/Absent/**Rescheduled-away** (same rule as `occupiesSlot()`; counting moved-away records made a 4-student Sunday read "6/6 full", 31 Jul 2026)
 - Deleting a Rescheduled record reverts source lesson to `Status: 'Scheduled'` and clears the link
 
 ### Shared helpers (`lib/schedule-helpers.ts`)
@@ -528,7 +528,7 @@ Shared component `src/components/LessonModal.tsx`. On the schedule page, name ta
 - `daysAgo(n)` — `n` days before today as `YYYY-MM-DD`
 - `EDIT_WINDOW_DAYS` — `14` (the edit window constant; shared by all lesson-* routes)
 - `formatDateSlotLabel(dateStr, slotFields)` — e.g. `"Mon, 24 Nov 3-5pm"`
-- `countLessonsInSlot(slotId, date)` — excludes Cancelled/Absent; uses `FIND('id', ARRAYJOIN({Slot}))>0`
+- `countLessonsInSlot(slotId, date)` — occupancy count: excludes Cancelled/Absent/Rescheduled; filters by Date+Status in Airtable, matches the slot record ID in JS (ARRAYJOIN({Slot}) returns display names, never IDs)
 
 ### Telegram (`lib/telegram.ts`)
 
