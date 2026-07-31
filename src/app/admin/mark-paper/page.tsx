@@ -172,6 +172,10 @@ export default function MarkPaperPage() {
   // iPad share-sheet inbox: files the "✍️ Mark paper" Shortcut posted from WhatsApp
   // (iPadOS keeps websites out of the share sheet; the Shortcut is the workaround).
   const [inbox, setInbox] = useState<{ pathname: string; url: string; name: string; size: number }[]>([]);
+  // The working-PDF's filename ("xinmin EM p2") — the paper's natural name. Captured
+  // at attach so it prefills the Paper name box, survives the mark-start reset, and
+  // names the run in history (Adrian, 1 Aug 2026: "why don't we have it prefilled?").
+  const workingNameRef = useRef('');
   // Which history run's student tag is being edited inline (run id, or null).
   const [editTagId, setEditTagId] = useState<string | null>(null);
   const [inboxBusy, setInboxBusy] = useState('');
@@ -275,6 +279,10 @@ export default function MarkPaperPage() {
   async function onPickWorking(arr: File[]) {
     const isPdf = (f: File) => f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
     const pdfs = arr.filter(isPdf);
+    if (pdfs.length && pdfs[0].name && !/^shared\.pdf$/i.test(pdfs[0].name)) {
+      const nice = pdfs[0].name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
+      if (nice) { workingNameRef.current = nice; setPaperName((prev) => prev || nice); }
+    }
     const photos = arr.filter((f) => !isPdf(f) && (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(f.name)));
     if (photos.length) await onPickImages(photos);
     for (const f of pdfs) {
@@ -311,7 +319,7 @@ export default function MarkPaperPage() {
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName('');
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName(workingNameRef.current);
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -319,7 +327,7 @@ export default function MarkPaperPage() {
       const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`, model: markModel, style: markStyle }),
+        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`), model: markModel, style: markStyle }),
       });
       const raw = await resp.text();
       let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
