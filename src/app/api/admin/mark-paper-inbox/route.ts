@@ -62,13 +62,24 @@ export async function POST(req: NextRequest) {
       stored.push({ name, size: f.size });
     }
   } else {
-    const ext = TYPE_TO_EXT[contentType];
-    if (!ext) return NextResponse.json({ error: `unsupported Content-Type "${contentType}" — send a PDF or photo (or use a Form body with a "file" field)` }, { status: 415 });
     const buf = Buffer.from(await req.arrayBuffer());
     if (!buf.length) return NextResponse.json({ error: 'empty body' }, { status: 400 });
     if (buf.length > MAX_BYTES) return NextResponse.json({ error: 'over 50MB' }, { status: 413 });
+    // Trust the header when it's a known type; otherwise sniff magic bytes — Shortcuts'
+    // Content-Type varies by source app, and a silent 415 here reads as "Sent ✓" on the
+    // iPad (the shortcut's notification is unconditional).
+    let ext = TYPE_TO_EXT[contentType];
+    if (!ext) {
+      if (buf.subarray(0, 5).toString('latin1') === '%PDF-') ext = 'pdf';
+      else if (buf[0] === 0xff && buf[1] === 0xd8) ext = 'jpg';
+      else if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) ext = 'png';
+      else if (buf.subarray(4, 8).toString('latin1') === 'ftyp') ext = 'heic';
+    }
+    if (!ext) return NextResponse.json({ error: `unrecognised file (Content-Type "${contentType}") — send a PDF or photo` }, { status: 415 });
     const name = `shared.${ext}`;
-    await put(`${PREFIX}${Date.now()}-${name}`, buf, { access: 'public', contentType });
+    const putType = TYPE_TO_EXT[contentType] ? contentType
+      : (ext === 'pdf' ? 'application/pdf' : ext === 'png' ? 'image/png' : ext === 'heic' ? 'image/heic' : 'image/jpeg');
+    await put(`${PREFIX}${Date.now()}-${name}`, buf, { access: 'public', contentType: putType });
     stored.push({ name, size: buf.length });
   }
   return NextResponse.json({ ok: true, stored: stored.length, files: stored });

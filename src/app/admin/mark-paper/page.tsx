@@ -451,12 +451,17 @@ export default function MarkPaperPage() {
     setSendStudentName(s?.name || '');
     if (!id) { setSendEmail(''); setSendParentEmail(''); return; }
     // Tag the run with the student — this link is what makes the paper show up on the
-    // student's profile page ("Marked papers"). Silent and best-effort; last pick wins.
+    // student's profile page ("Marked papers"). Last pick WINS: re-picking corrects a
+    // wrong tag, and the confirmation note below is what makes that visible (a silent
+    // retag read as "I can't change it", Adrian 31 Jul 2026).
     if (runId) {
       fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({ phase: 'set-student', id: runId, studentId: id, studentName: s?.name || '' }),
-      }).then(() => loadStats()).catch(() => {});
+      }).then((r) => {
+        if (r.ok) setSendNote({ ok: true, text: `Filed under ${s?.name || 'student'} — re-pick to change` });
+        loadStats();
+      }).catch(() => {});
     }
     try {
       const r = await fetch(`/api/admin/mark-paper-send?studentId=${id}`, { headers: authHeaders });
