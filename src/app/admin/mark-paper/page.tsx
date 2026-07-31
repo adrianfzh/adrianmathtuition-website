@@ -163,7 +163,6 @@ export default function MarkPaperPage() {
   const [sendStudentId, setSendStudentId] = useState('');
   const [sendStudentName, setSendStudentName] = useState('');
   const [sendEmail, setSendEmail] = useState('');
-  const [sendParentEmail, setSendParentEmail] = useState('');
   const [sendRemember, setSendRemember] = useState(true);
   const [sendBusy, setSendBusy] = useState(false);
   const [sendNote, setSendNote] = useState<{ ok: boolean; text: string } | null>(null);
@@ -449,7 +448,7 @@ export default function MarkPaperPage() {
     setSendStudentId(id); setSendNote(null);
     const s = (students || []).find((x) => x.id === id);
     setSendStudentName(s?.name || '');
-    if (!id) { setSendEmail(''); setSendParentEmail(''); return; }
+    if (!id) { setSendEmail(''); return; }
     // Tag the run with the student — this link is what makes the paper show up on the
     // student's profile page ("Marked papers"). Last pick WINS: re-picking corrects a
     // wrong tag, and the confirmation note below is what makes that visible (a silent
@@ -466,7 +465,9 @@ export default function MarkPaperPage() {
     try {
       const r = await fetch(`/api/admin/mark-paper-send?studentId=${id}`, { headers: authHeaders });
       const d = await r.json();
-      if (r.ok) { setSendEmail(d.studentEmail || ''); setSendParentEmail(d.parentEmail || ''); }
+      // Student email only — parents are deliberately never emailed marked papers
+      // (Adrian, 1 Aug 2026), so the parent address is not even offered.
+      if (r.ok) setSendEmail(d.studentEmail || '');
     } catch { /* prefill is best-effort */ }
   }
   // The copy Adrian hands back: his own annotated one once it exists, else the images
@@ -776,7 +777,7 @@ export default function MarkPaperPage() {
               onDrop={(e) => { e.preventDefault(); uploadAnnotated(e.dataTransfer.files?.[0]); }}
               style={{ marginTop: 14, padding: 12, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}
             >
-              <span style={{ fontWeight: 600, fontSize: 14 }}>📤 {sendPdf.label.replace(' ↗', '')}:</span>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>📤 Sending: {sendPdf.label.replace(' ↗', '')}</span>
               <input
                 type="text"
                 value={paperName}
@@ -806,11 +807,6 @@ export default function MarkPaperPage() {
                 placeholder="student@email.com"
                 style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, minWidth: 210 }}
               />
-              {sendParentEmail && sendEmail !== sendParentEmail && (
-                <button style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: 12, cursor: 'pointer', padding: 0 }} onClick={() => setSendEmail(sendParentEmail)}>
-                  use parent&apos;s: {sendParentEmail}
-                </button>
-              )}
               <label style={{ fontSize: 12, color: '#6b7280', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <input type="checkbox" checked={sendRemember} onChange={(e) => setSendRemember(e.target.checked)} /> remember
               </label>
