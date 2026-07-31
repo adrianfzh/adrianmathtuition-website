@@ -383,6 +383,16 @@ export default function MarkPaperPage() {
   }
 
   // ── iPad inbox helpers ─────────────────────────────────────────────────────
+  // Re-check whenever the tab comes back to the front: the share happens in WhatsApp
+  // while this page sits in another Split View pane — without this, a file sent after
+  // the page loaded stayed invisible until a manual reload.
+  useEffect(() => {
+    const onBack = () => { if (!document.hidden) loadInbox(); };
+    window.addEventListener('focus', onBack);
+    document.addEventListener('visibilitychange', onBack);
+    return () => { window.removeEventListener('focus', onBack); document.removeEventListener('visibilitychange', onBack); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   async function loadInbox() {
     try {
       const r = await fetch('/api/admin/mark-paper-inbox');

@@ -27,25 +27,49 @@ function inboxAuthed(req: NextRequest): boolean {
   return verifyAdminAuth(req);
 }
 
-// POST — the Shortcut drops files in. multipart/form-data, field 'file' (repeatable).
+// Raw-body uploads carry no filename — name them from the Content-Type.
+const TYPE_TO_EXT: Record<string, string> = {
+  'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/jpg': 'jpg',
+  'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'image/heif': 'heif',
+};
+
+// POST — the Shortcut drops files in. Accepts BOTH multipart form-data (field 'file',
+// the documented recipe) AND a raw file body — which is what Shortcuts sends when
+// "Request Body" is set to File rather than Form. Adrian's first setup used File
+// (31 Jul 2026): formData() threw, the route 400'd, and his shortcut's unconditional
+// "Sent to marking ✓" notification reported success while nothing ever arrived. Both
+// shapes are honest configurations of the same action, so both must work.
 export async function POST(req: NextRequest) {
   if (!inboxAuthed(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  let form: FormData;
-  try { form = await req.formData(); } catch { return NextResponse.json({ error: 'expected multipart form-data with a "file" field' }, { status: 400 }); }
-  const files = form.getAll('file').filter((f): f is File => f instanceof File);
-  if (!files.length) return NextResponse.json({ error: 'no "file" field in the form' }, { status: 400 });
 
+  const contentType = (req.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
   const stored: { name: string; size: number }[] = [];
-  for (const f of files) {
-    const name = (f.name || 'shared.pdf').replace(/[^\w.\- ()]/g, '').slice(0, 120) || 'shared.pdf';
-    if (!OK_EXT.test(name)) return NextResponse.json({ error: `${name}: only PDF and photo files` }, { status: 415 });
-    if (f.size > MAX_BYTES) return NextResponse.json({ error: `${name}: over 50MB` }, { status: 413 });
-    const buf = Buffer.from(await f.arrayBuffer());
-    await put(`${PREFIX}${Date.now()}-${name}`, buf, {
-      access: 'public',
-      contentType: f.type || (/\.pdf$/i.test(name) ? 'application/pdf' : 'application/octet-stream'),
-    });
-    stored.push({ name, size: f.size });
+
+  if (contentType.startsWith('multipart/form-data')) {
+    let form: FormData;
+    try { form = await req.formData(); } catch { return NextResponse.json({ error: 'unreadable form-data' }, { status: 400 }); }
+    const files = form.getAll('file').filter((f): f is File => f instanceof File);
+    if (!files.length) return NextResponse.json({ error: 'no "file" field in the form' }, { status: 400 });
+    for (const f of files) {
+      const name = (f.name || 'shared.pdf').replace(/[^\w.\- ()]/g, '').slice(0, 120) || 'shared.pdf';
+      if (!OK_EXT.test(name)) return NextResponse.json({ error: `${name}: only PDF and photo files` }, { status: 415 });
+      if (f.size > MAX_BYTES) return NextResponse.json({ error: `${name}: over 50MB` }, { status: 413 });
+      const buf = Buffer.from(await f.arrayBuffer());
+      await put(`${PREFIX}${Date.now()}-${name}`, buf, {
+        access: 'public',
+        contentType: f.type || (/\.pdf$/i.test(name) ? 'application/pdf' : 'application/octet-stream'),
+      });
+      stored.push({ name, size: f.size });
+    }
+  } else {
+    const ext = TYPE_TO_EXT[contentType];
+    if (!ext) return NextResponse.json({ error: `unsupported Content-Type "${contentType}" — send a PDF or photo (or use a Form body with a "file" field)` }, { status: 415 });
+    const buf = Buffer.from(await req.arrayBuffer());
+    if (!buf.length) return NextResponse.json({ error: 'empty body' }, { status: 400 });
+    if (buf.length > MAX_BYTES) return NextResponse.json({ error: 'over 50MB' }, { status: 413 });
+    const name = `shared.${ext}`;
+    await put(`${PREFIX}${Date.now()}-${name}`, buf, { access: 'public', contentType });
+    stored.push({ name, size: buf.length });
   }
   return NextResponse.json({ ok: true, stored: stored.length, files: stored });
 }
