@@ -170,6 +170,11 @@ export default function MarkPaperPage() {
   // Editable descriptor used in the filename and the email — "worksheet (10 photos)"
   // was useless in an inbox. Prefilled from the run's stored name when it's a real one.
   const [paperName, setPaperName] = useState('');
+  // iPad share-sheet inbox: files the "✍️ Mark paper" Shortcut posted from WhatsApp
+  // (iPadOS keeps websites out of the share sheet; the Shortcut is the workaround).
+  const [inbox, setInbox] = useState<{ pathname: string; url: string; name: string; size: number }[]>([]);
+  const [inboxBusy, setInboxBusy] = useState('');
+  const [inboxToken, setInboxToken] = useState<string | null>(null);
   const [annotatedBusy, setAnnotatedBusy] = useState(false);
   const annotatedInputRef = useRef<HTMLInputElement>(null);
   const [generating, setGenerating] = useState(false);
@@ -210,6 +215,7 @@ export default function MarkPaperPage() {
     ensureAdminSession().then(ok => {
       if (!ok) { window.location.href = '/admin'; return; }
       loadStats();
+      loadInbox();
     });
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
@@ -374,6 +380,43 @@ export default function MarkPaperPage() {
     try { setMarked([await buildPdf(mode)]); }
     catch (e) { setError((e as Error).message); }
     finally { setGenerating(false); }
+  }
+
+  // ── iPad inbox helpers ─────────────────────────────────────────────────────
+  async function loadInbox() {
+    try {
+      const r = await fetch('/api/admin/mark-paper-inbox');
+      const d = await r.json();
+      if (r.ok) setInbox(d.files || []);
+    } catch { /* banner just stays hidden */ }
+  }
+  async function loadInboxToken() {
+    if (inboxToken !== null) return;
+    try {
+      const r = await fetch('/api/admin/mark-paper-inbox?setup=1');
+      const d = await r.json();
+      if (r.ok) setInboxToken(d.token || '');
+    } catch { setInboxToken(''); }
+  }
+  async function dismissInboxFile(pathname: string) {
+    setInbox((prev) => prev.filter((f) => f.pathname !== pathname));
+    fetch('/api/admin/mark-paper-inbox', {
+      method: 'DELETE', headers: authHeaders, body: JSON.stringify({ pathname }),
+    }).catch(() => {});
+  }
+  // Attach an inbox file where the picker would have put it, then consume it.
+  async function useInboxFile(f: { pathname: string; url: string; name: string }, as: 'working' | 'paper') {
+    setInboxBusy(f.pathname);
+    try {
+      const r = await fetch(f.url);
+      if (!r.ok) throw new Error(`fetch failed (${r.status})`);
+      const blob = await r.blob();
+      const file = new File([blob], f.name, { type: blob.type || (/\.pdf$/i.test(f.name) ? 'application/pdf' : 'image/jpeg') });
+      if (as === 'paper') setPdf(file);
+      else await onPickWorking([file]);
+      dismissInboxFile(f.pathname);
+    } catch (e) { setError(`Couldn't attach ${f.name}: ${(e as Error).message}`); }
+    finally { setInboxBusy(''); }
   }
 
   // ── Send / save helpers ────────────────────────────────────────────────────
@@ -541,6 +584,24 @@ export default function MarkPaperPage() {
 
       {/* Upload */}
       <div style={card}>
+        {/* iPad share-sheet inbox — files the "✍️ Mark paper" Shortcut sent from
+            WhatsApp etc. One tap attaches them where the picker would have. */}
+        {inbox.length > 0 && (
+          <div style={{ marginBottom: 14, padding: 12, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>📥 From your iPad ({inbox.length})</div>
+            {inbox.map((f) => (
+              <div key={f.pathname} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '6px 0', fontSize: 14, opacity: inboxBusy === f.pathname ? 0.5 : 1 }}>
+                <span style={{ flex: 1, minWidth: 140, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                <span style={{ color: '#6b7280', fontSize: 12 }}>{(f.size / 1024 / 1024).toFixed(1)}MB</span>
+                <button style={{ ...btn, fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => useInboxFile(f, 'working')}>→ Working</button>
+                {/\.pdf$/i.test(f.name) && (
+                  <button style={{ ...btn, background: '#374151', fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => useInboxFile(f, 'paper')}>→ Question paper</button>
+                )}
+                <button style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 16 }} title="Dismiss" onClick={() => dismissInboxFile(f.pathname)}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
         <FileDrop
           label="Question paper (PDF) — optional"
           accept="application/pdf"
@@ -606,6 +667,23 @@ export default function MarkPaperPage() {
           </label>
           <span style={{ color: '#6b7280', fontSize: 13 }}>{pdf ? 'Reads each photo against the paper and marks every question it finds (≈1–2 min).' : 'No paper attached — marks each photo standalone, reading the printed questions off the page (≈1–2 min).'}</span>
         </div>
+        {/* One-time Shortcut recipe — puts "✍️ Mark paper" into the iPad share sheet,
+            posting straight into the inbox banner above. */}
+        <details style={{ marginTop: 10 }} onToggle={(e) => { if ((e.target as HTMLDetailsElement).open) loadInboxToken(); }}>
+          <summary style={{ color: '#6b7280', fontSize: 13, cursor: 'pointer' }}>📱 Send files here from the iPad share sheet (one-time setup)</summary>
+          <div style={{ fontSize: 13, color: '#374151', marginTop: 8, lineHeight: 1.7 }}>
+            <ol style={{ paddingLeft: 18, margin: 0 }}>
+              <li>On the iPad, open <b>Shortcuts</b> → <b>+</b> to make a new shortcut → rename it <b>✍️ Mark paper</b>.</li>
+              <li>Tap the <b>ⓘ</b> (details) → turn on <b>Show in Share Sheet</b> → under &quot;Share Sheet Types&quot; keep <b>PDFs</b> and <b>Images</b>.</li>
+              <li>Add the action <b>Get Contents of URL</b> and set it up:<br />
+                URL: <code>https://www.adrianmathtuition.com/api/admin/mark-paper-inbox</code><br />
+                Method: <b>POST</b> · Headers: add <code>Authorization</code> = <code>Bearer {inboxToken === null ? '…' : (inboxToken || '(token not configured)')}</code><br />
+                Request Body: <b>Form</b> → add field, name <code>file</code>, type <b>File</b>, value <b>Shortcut Input</b>.</li>
+              <li>Optional: add <b>Show Notification</b> (&quot;Sent to marking ✓&quot;) after it.</li>
+            </ol>
+            <div style={{ marginTop: 6, color: '#6b7280' }}>Then in any share sheet: tap the file → Share → <b>✍️ Mark paper</b> (it appears in the actions list — favourite it via Edit Actions to pin it near the top). Files land in a &quot;📥 From your iPad&quot; banner at the top of this page.</div>
+          </div>
+        </details>
       </div>
 
       {/* (matching/confirm step removed — direct marking marks every photo against the PDF) */}
