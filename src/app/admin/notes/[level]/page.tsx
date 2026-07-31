@@ -37,10 +37,13 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const [error, setError] = useState('');
   const [dropboxFolder, setDropboxFolder] = useState('');
 
-  // Which pile of PDFs: notes (Dropbox Notes/<LEVEL> + legacy Blob uploads) or revision
-  // worksheets (Dropbox Revision/<LEVEL> only — no Blob path, no edit mode).
-  const [kind, setKind] = useState<'notes' | 'revision'>('notes');
-  const isRevision = kind === 'revision';
+  // Which pile of PDFs: notes (Dropbox Notes/<LEVEL> + legacy Blob uploads), revision
+  // worksheets (Dropbox Revision/<LEVEL>) or prelim practice sets (Dropbox
+  // Prelim/<LEVEL>). Only notes have a Blob path + edit mode — the other two are
+  // managed entirely in Dropbox.
+  const [kind, setKind] = useState<'notes' | 'revision' | 'prelim'>('notes');
+  const isDropboxOnly = kind !== 'notes';
+  const kindLabel = kind === 'revision' ? 'Revision' : kind === 'prelim' ? 'Prelim Sets' : 'Notes';
 
   // Edit mode
   const [editMode, setEditMode] = useState(false);
@@ -167,7 +170,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   function onDrop(e: React.DragEvent) {
     e.preventDefault(); setDragging(false);
     // Revision worksheets have no Blob path — they only ever come from Dropbox.
-    if (isRevision) { showToast('Drop revision PDFs into Dropbox instead'); return; }
+    if (isDropboxOnly) { showToast(`Drop ${kind} PDFs into Dropbox instead`); return; }
     const dropped = Array.from(e.dataTransfer.files).filter(
       f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
     );
@@ -246,9 +249,9 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
         {/* Header */}
         <div className="nl-header">
           <a href="/admin/notes" className="nl-back">← Notes</a>
-          <span className="nl-title">{levelLabel} {isRevision ? 'Revision' : 'Notes'}</span>
-          {/* Revision worksheets are Dropbox-managed — rename/delete/replace happen there. */}
-          {!isRevision && (
+          <span className="nl-title">{levelLabel} {kindLabel}</span>
+          {/* Revision + prelim are Dropbox-managed — rename/delete/replace happen there. */}
+          {!isDropboxOnly && (
             <button className={`nl-edit-btn${editMode ? ' active' : ''}`} onClick={() => { setEditMode(e => !e); setRenamingId(null); }}>
               {editMode ? 'Done' : 'Edit'}
             </button>
@@ -258,15 +261,17 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
         {/* Kind switch */}
         <div className="nl-seg-row">
           <div className="nl-seg">
-            <button className={`nl-seg-btn${!isRevision ? ' on' : ''}`}
+            <button className={`nl-seg-btn${kind === 'notes' ? ' on' : ''}`}
               onClick={() => { setKind('notes'); }}>📘 Notes</button>
-            <button className={`nl-seg-btn${isRevision ? ' on' : ''}`}
+            <button className={`nl-seg-btn${kind === 'revision' ? ' on' : ''}`}
               onClick={() => { setKind('revision'); setEditMode(false); setRenamingId(null); setUploadOpen(false); }}>📝 Revision</button>
+            <button className={`nl-seg-btn${kind === 'prelim' ? ' on' : ''}`}
+              onClick={() => { setKind('prelim'); setEditMode(false); setRenamingId(null); setUploadOpen(false); }}>🎯 Prelim</button>
           </div>
         </div>
 
         {/* Drag overlay */}
-        {dragging && !isRevision && (
+        {dragging && !isDropboxOnly && (
           <div className="nl-drag-overlay">
             <div className="nl-drag-msg">📄 Drop PDFs to upload</div>
           </div>
@@ -281,7 +286,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
           ) : notes.length === 0 ? (
             // In revision mode the Dropbox hint below carries the folder path,
             // so the empty state stays short.
-            <div className="nl-empty">{isRevision ? 'No revision worksheets yet' : 'No notes yet — upload below'}</div>
+            <div className="nl-empty">{kind === 'revision' ? 'No revision worksheets yet' : kind === 'prelim' ? 'No prelim practice sets yet' : 'No notes yet — upload below'}</div>
           ) : (
             <div className="nl-grid">
               {notes.map(note => (
@@ -346,7 +351,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
 
           {/* Upload section — collapsed by default. Notes only: revision worksheets
               live solely in Dropbox, so there is nothing to upload here. */}
-          <div className="nl-upload-section" hidden={isRevision}>
+          <div className="nl-upload-section" hidden={isDropboxOnly}>
             <button className="nl-upload-toggle" onClick={() => setUploadOpen(o => !o)}>
               {uploadOpen ? '▲ Hide upload' : '＋ Upload notes (Blob)'}
             </button>

@@ -17,10 +17,17 @@ describe('dropboxFolderFor', () => {
     expect(dropboxFolderFor('revision', 's2')).toBe('Revision/S2');
   });
 
-  it('covers every level slug the pages offer, for both kinds', () => {
+  it('puts prelim practice sets under Prelim/<LEVEL>', () => {
+    expect(dropboxFolderFor('prelim', 'em')).toBe('Prelim/EM');
+    expect(dropboxFolderFor('prelim', 'am')).toBe('Prelim/AM');
+    expect(dropboxFolderFor('prelim', 'jc')).toBe('Prelim/JC');
+  });
+
+  it('covers every level slug the pages offer, for all kinds', () => {
     for (const slug of Object.keys(NOTE_SLUG_TO_LEVELS)) {
       expect(dropboxFolderFor('notes', slug)).toBeTruthy();
       expect(dropboxFolderFor('revision', slug)).toBeTruthy();
+      expect(dropboxFolderFor('prelim', slug)).toBeTruthy();
     }
   });
 
@@ -36,16 +43,18 @@ describe('legacyDropboxFolderFor', () => {
     expect(legacyDropboxFolderFor('notes', 'jc')).toBe('JC');
   });
 
-  it('has nothing to fall back to for revision or an unknown level', () => {
+  it('has nothing to fall back to for revision, prelim or an unknown level', () => {
     expect(legacyDropboxFolderFor('revision', 'am')).toBeNull();
+    expect(legacyDropboxFolderFor('prelim', 'am')).toBeNull();
     expect(legacyDropboxFolderFor('notes', 'jc3')).toBeNull();
   });
 });
 
 describe('isPrintableKind', () => {
-  it('accepts only the two kinds', () => {
+  it('accepts only the three kinds', () => {
     expect(isPrintableKind('notes')).toBe(true);
     expect(isPrintableKind('revision')).toBe(true);
+    expect(isPrintableKind('prelim')).toBe(true);
     expect(isPrintableKind('worksheets')).toBe(false);
     expect(isPrintableKind(null)).toBe(false);
   });

@@ -3,9 +3,13 @@
 // the Dropbox app folder (Apps/AdrianMathNotes/), plus — for notes only — the
 // legacy Airtable/Blob `PrintNotes` table, merged.
 //
-// Two kinds live in the same app folder, one parent folder each:
+// Three kinds live in the same app folder, one parent folder each:
 //   notes     → /Notes/<LEVEL>      e.g. /Notes/AM    (kiosk + admin)
 //   revision  → /Revision/<LEVEL>   e.g. /Revision/AM (admin only, 2026-07-28)
+//   prelim    → /Prelim/<LEVEL>     e.g. /Prelim/AM   (admin only, 2026-07-30 —
+//               O-Level EM/AM + A-Level JC prelim practice sets; S1/S2 folders
+//               are valid but in practice never created, since prelims don't
+//               exist below graduating levels)
 import { airtableRequestAll } from '@/lib/airtable';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
 
@@ -18,10 +22,10 @@ const SLUG_TO_DBX_FOLDER: Record<string, string> = {
   s1: 'S1', s2: 'S2', em: 'EM', am: 'AM', jc: 'JC',
 };
 
-export type PrintableKind = 'notes' | 'revision';
+export type PrintableKind = 'notes' | 'revision' | 'prelim';
 
 export function isPrintableKind(v: string | null | undefined): v is PrintableKind {
-  return v === 'notes' || v === 'revision';
+  return v === 'notes' || v === 'revision' || v === 'prelim';
 }
 
 /**
@@ -32,14 +36,16 @@ export function isPrintableKind(v: string | null | undefined): v is PrintableKin
 export function dropboxFolderFor(kind: PrintableKind, slug: string): string | null {
   const folder = SLUG_TO_DBX_FOLDER[slug];
   if (!folder) return null;
-  return kind === 'revision' ? `Revision/${folder}` : `Notes/${folder}`;
+  if (kind === 'revision') return `Revision/${folder}`;
+  if (kind === 'prelim') return `Prelim/${folder}`;
+  return `Notes/${folder}`;
 }
 
 /**
  * Pre-2026-07-28 layout: notes sat loose at the app-folder root (`/AM`) before
  * the Notes/ parent existed. Read-only fallback so a deploy and the Dropbox
  * move don't have to happen in the same instant — either order works, and a
- * half-moved folder still lists. Revision never had a legacy location.
+ * half-moved folder still lists. Revision and prelim never had a legacy location.
  * DELETE this (and its use below) once the root-level folders are gone.
  */
 export function legacyDropboxFolderFor(kind: PrintableKind, slug: string): string | null {
@@ -93,8 +99,8 @@ export type PrintableList = {
 
 /**
  * A level's printable PDFs. `notes` merges Dropbox (going-forward source, first)
- * with the legacy Airtable/Blob table; `revision` is Dropbox-only — revision
- * worksheets were never in Airtable and are managed entirely in Dropbox.
+ * with the legacy Airtable/Blob table; `revision` and `prelim` are Dropbox-only —
+ * they were never in Airtable and are managed entirely in Dropbox.
  */
 export async function listPrintablesForLevel(kind: PrintableKind, slug: string): Promise<PrintableList> {
   const folder = dropboxFolderFor(kind, slug);
@@ -107,7 +113,7 @@ export async function listPrintablesForLevel(kind: PrintableKind, slug: string):
   if (dropboxEnabled && dbx.length === 0 && legacy) {
     dbx = await listDropboxPdfs(legacy).catch(() => []);
   }
-  if (kind === 'revision') return { notes: dbx, dropboxEnabled, dropboxFolder: folder };
+  if (kind !== 'notes') return { notes: dbx, dropboxEnabled, dropboxFolder: folder };
 
   const labels = NOTE_SLUG_TO_LEVELS[slug];
   const filterExpr = labels.length === 1

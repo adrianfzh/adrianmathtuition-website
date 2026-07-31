@@ -7,8 +7,8 @@ import { dropboxFolderFor, legacyDropboxFolderFor, titleFromFilename, type Print
 export const runtime = 'nodejs';
 
 // Per-level counts for the /admin/notes hub — notes (Dropbox + Airtable/Blob,
-// deduped by title so a note in both sources counts once) and revision
-// worksheets (Dropbox only). Loaded client-side so the hub renders instantly;
+// deduped by title so a note in both sources counts once), revision worksheets
+// and prelim practice sets (both Dropbox only). Loaded client-side so the hub renders instantly;
 // cached in-process (~2 min) so repeat visits skip the Dropbox round-trips.
 
 const LEVELS = [
@@ -35,17 +35,18 @@ async function dbxTitleKeysFor(kind: PrintableKind, slug: string): Promise<Set<s
   return legacy ? dbxTitleKeys(legacy) : keys;
 }
 
-type CountsBody = { counts: Record<string, number>; revisionCounts: Record<string, number>; total: number };
+type CountsBody = { counts: Record<string, number>; revisionCounts: Record<string, number>; prelimCounts: Record<string, number>; total: number };
 let cache: { at: number; body: CountsBody } | null = null;
 const TTL_MS = 2 * 60 * 1000;
 
 async function computeCounts(): Promise<CountsBody> {
   const enabled = dropboxConfigured();
   const empty = () => Promise.resolve(new Set<string>());
-  const [data, noteSets, revisionSets] = await Promise.all([
+  const [data, noteSets, revisionSets, prelimSets] = await Promise.all([
     airtableRequestAll('PrintNotes', '?fields[]=Level&fields[]=Title&fields[]=PDF URL'),
     Promise.all(LEVELS.map(l => enabled ? dbxTitleKeysFor('notes', l.slug) : empty())),
     Promise.all(LEVELS.map(l => enabled ? dbxTitleKeysFor('revision', l.slug) : empty())),
+    Promise.all(LEVELS.map(l => enabled ? dbxTitleKeysFor('prelim', l.slug) : empty())),
   ]);
 
   const keysByLevel: Record<string, Set<string>> = {};
@@ -59,11 +60,13 @@ async function computeCounts(): Promise<CountsBody> {
 
   const counts: Record<string, number> = {};
   const revisionCounts: Record<string, number> = {};
+  const prelimCounts: Record<string, number> = {};
   LEVELS.forEach((l, i) => {
     counts[l.atLevel] = keysByLevel[l.atLevel].size;
     revisionCounts[l.atLevel] = revisionSets[i].size;
+    prelimCounts[l.atLevel] = prelimSets[i].size;
   });
-  return { counts, revisionCounts, total: Object.values(counts).reduce((a, b) => a + b, 0) };
+  return { counts, revisionCounts, prelimCounts, total: Object.values(counts).reduce((a, b) => a + b, 0) };
 }
 
 export async function GET(req: NextRequest) {
@@ -76,6 +79,6 @@ export async function GET(req: NextRequest) {
     cache = { at: Date.now(), body };
     return NextResponse.json(body, { headers: { 'Cache-Control': 'private, max-age=60' } });
   } catch {
-    return NextResponse.json({ counts: {}, revisionCounts: {}, total: 0 });
+    return NextResponse.json({ counts: {}, revisionCounts: {}, prelimCounts: {}, total: 0 });
   }
 }

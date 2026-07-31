@@ -321,13 +321,14 @@ link is never stale. Auth: refresh-token OAuth (`DROPBOX_APP_KEY` / `DROPBOX_APP
 / `DROPBOX_REFRESH_TOKEN`), app-folder scoped to `Dropbox/Apps/AdrianMathNotes/` — the
 site can see nothing else in his Dropbox. Health-checked every 6h (`dropbox-notes`).
 
-**Two kinds, one folder layout — encoded ONLY in `dropboxFolderFor()` (`lib/notes-list.ts`,
+**Three kinds, one folder layout — encoded ONLY in `dropboxFolderFor()` (`lib/notes-list.ts`,
 unit-tested). Never re-derive a folder path in a route:**
 
 | Kind | Dropbox path | Surfaces | Legacy Airtable/Blob merge |
 |---|---|---|---|
 | `notes` | `/Notes/<LEVEL>` e.g. `/Notes/AM` | `/admin/notes/<level>` + student kiosk | yes (`PrintNotes` table) |
 | `revision` | `/Revision/<LEVEL>` e.g. `/Revision/AM` | `/admin/notes/<level>` only (2026-07-28) | no — Dropbox only |
+| `prelim` | `/Prelim/<LEVEL>` e.g. `/Prelim/AM` | `/admin/notes/<level>` only (2026-07-30) — 🎯 Prelim segment; O-Level EM/AM + JC prelim practice sets (S1/S2 valid but unused) | no — Dropbox only |
 
 - Levels are the same five slugs everywhere: `s1 s2 em am jc`.
 - **Legacy-root fallback (transition shim, 2026-07-28)** — notes used to sit loose at the
@@ -340,14 +341,15 @@ unit-tested). Never re-derive a folder path in a route:**
 - The site NEVER writes to Dropbox (`lib/dropbox.ts` = `listFolder` + `getTemporaryLink`
   only), so it can't create these folders — they're made by hand in Dropbox.
 - Filename is the display title (`titleFromFilename`: strip `.pdf`, `-`/`_` → spaces).
-- `/api/admin-notes?level=am&kind=notes|revision` (400 on a bad kind);
-  `/api/admin-notes/counts` returns `{counts, revisionCounts, total}` for the hub pills.
-- Revision worksheets are **admin-only for now** (Adrian's decision 2026-07-28) — the
-  kiosk still serves `notes` only, so no student-facing surface changed and the 4/day
-  print cap is untouched. Opening them to students = add a kind param to
-  `/api/kiosk/notes` + an entitlement check + a health-check entry.
+- `/api/admin-notes?level=am&kind=notes|revision|prelim` (400 on a bad kind);
+  `/api/admin-notes/counts` returns `{counts, revisionCounts, prelimCounts, total}` for the hub pills.
+- Revision worksheets and prelim practice sets are **admin-only** (Adrian: revision
+  2026-07-28, prelim 2026-07-30) — the kiosk still serves `notes` only, so no
+  student-facing surface changed and the 4/day print cap is untouched. Opening either
+  to students = add a kind param to `/api/kiosk/notes` + an entitlement check + a
+  health-check entry.
 - The Blob-upload path (`upload-token`/`register`, rename/replace/delete in Edit mode) is
-  the LEGACY notes source and stays notes-only; revision has no upload UI.
+  the LEGACY notes source and stays notes-only; revision and prelim have no upload UI.
 
 ## June 2026 Revision Sprint
 
