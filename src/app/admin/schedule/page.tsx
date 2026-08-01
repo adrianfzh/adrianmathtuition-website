@@ -3716,7 +3716,15 @@ export default function SchedulePage() {
                             onChange={e => setRescheduleModal(m => m ? { ...m, toSlotId: e.target.value, toDate: rescheduleModal.switchMode ? '' : m?.toDate ?? '' } : null)}>
                             <option value="">Select slot…</option>
                             {displaySlots.filter(s => {
-                              if (s.id === rescheduleModal.lesson.slotId) return false;
+                              // The lesson's OWN slot stays listed for a plain reschedule —
+                              // "same slot, next Saturday" is the most common move of all
+                              // (Adrian, 1 Aug 2026: a Sat 3-5pm lesson couldn't be moved to
+                              // the NEXT Sat 3-5pm because the dropdown hid the source slot).
+                              // Only a permanent SWITCH excludes it: switching into the slot
+                              // you already occupy is meaningless. Degenerate same-slot,
+                              // SAME-date moves are still refused server-side by the
+                              // double-booked guard.
+                              if (rescheduleModal.switchMode && s.id === rescheduleModal.lesson.slotId) return false;
                               if (rescheduleModal.switchMode) {
                                 // Level filter: match Secondary/JC category
                                 // Slot level field is 'Secondary', 'JC', 'Adhoc' etc.
