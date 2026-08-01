@@ -1,8 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
+import dynamic from 'next/dynamic';
 import { put } from '@vercel/blob/client';
 import { ensureAdminSession } from '@/lib/admin-client';
+import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
+
+// The ✏️ Annotate overlay (Apple Pencil ink over the marked pages) is heavy and
+// only opens on demand — load it when first rendered, never in the initial bundle.
+const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
 function readDataUrl(file: File): Promise<string> {
@@ -181,6 +187,7 @@ export default function MarkPaperPage() {
   const [inboxBusy, setInboxBusy] = useState('');
   const [inboxToken, setInboxToken] = useState<string | null>(null);
   const [annotatedBusy, setAnnotatedBusy] = useState(false);
+  const [annotateOpen, setAnnotateOpen] = useState(false);
   const annotatedInputRef = useRef<HTMLInputElement>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
@@ -871,6 +878,18 @@ export default function MarkPaperPage() {
               <button style={{ ...btn, opacity: sendBusy ? 0.6 : 1, fontSize: 14, padding: '8px 14px' }} disabled={sendBusy} onClick={sendMarkedEmail}>
                 {sendBusy ? 'Sending…' : '✉️ Email PDF'}
               </button>
+              {/* ✏️ Annotate: write on the marked pages right here (Apple Pencil, iPad
+                  Safari) — Done bakes the ink into the annotated PDF. The Notability
+                  round trip below stays as the fallback; both write the same
+                  annotated_pdf_url slot, last write wins. */}
+              {runId && annotatedPhotos.length > 0 && (
+                <button
+                  style={{ ...btn, background: '#0d9488', fontSize: 14, padding: '8px 14px' }}
+                  onClick={() => setAnnotateOpen(true)}
+                >
+                  ✏️ Annotate
+                </button>
+              )}
               {/* Notability return leg: pick the exported PDF, or drag it anywhere onto
                   this panel from Split View. Needs a run to attach to. */}
               {runId && (
@@ -904,6 +923,29 @@ export default function MarkPaperPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={lightbox} alt="enlarged working" style={{ maxWidth: '95%', maxHeight: '95%', objectFit: 'contain', borderRadius: 8 }} />
         </div>
+      )}
+
+      {annotateOpen && runId && annotatedPhotos.length > 0 && (
+        <AnnotateOverlay
+          runId={runId}
+          // Annotate the WITH-SOLUTIONS copy: the output replaces the 🖼 images PDF,
+          // whose footer is the only surface carrying the worked solution (see
+          // lib/annotated-photo-source.ts).
+          pages={annotatedPhotos.map((p) => ({ photoIndex: p.photo_index, url: pickAnnotatedPhotoUrl(p, 'photos') }))}
+          student={{ name: sendStudentName, level: '' }}
+          totals={totals}
+          onClose={() => setAnnotateOpen(false)}
+          onDone={({ url, linked }) => {
+            setAnnotateOpen(false);
+            // Same list update as uploadAnnotated: the ✍️ copy takes the front slot,
+            // so Download and Email switch to it immediately.
+            setMarked((prev) => [{ url, kind: 'pdf', label: '✍️ Annotated PDF' }, ...prev.filter((m) => !m.label.startsWith('✍️'))]);
+            setSendNote(linked
+              ? { ok: true, text: 'Annotated PDF attached — Download and Email now use it.' }
+              : { ok: false, text: 'Annotated PDF built (usable this session), but linking it to the run failed — hit Done again later to relink.' });
+            loadStats();
+          }}
+        />
       )}
     </div>
   );

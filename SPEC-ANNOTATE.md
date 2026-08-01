@@ -1,5 +1,11 @@
 # SPEC — In-browser Apple Pencil annotation for marked papers ("Option A")
 
+> **STATUS (2026-08-01): BUILT — pending the real-iPad checklist (§8).** Implemented in
+> one session on Mac B with the "full Notability package" Adrian approved (see §11 for
+> the deliberate deviations from this spec). Unit tests green, desktop-mouse pass done
+> (`?mouse=1`), assemble route verified end-to-end against Blob. Do not mark IMPLEMENTED
+> until §8 is ticked on a physical iPad + Pencil.
+
 > **Audience:** a Claude Code session on another Mac, building this feature in this repo.
 > Read `CLAUDE.md` first — its policies (pure logic in `src/lib/` + vitest, auto-push to
 > `dev`, promote only on Adrian's word) apply to this work. This spec was written
@@ -188,3 +194,38 @@ Pure libs tested (all green in the pre-push gate) · iPad checklist fully ticked
 CLAUDE.md updated (mark-paper section: the ✏️ Annotate flow, the overlay component, the
 new route, the shared `annotated` linkage) · this file updated with any spec deviations
 and marked **IMPLEMENTED**.
+
+## 11. As built (2026-08-01) — deviations from this spec, all approved by Adrian
+
+Adrian asked for "better UX, like Notability" (1 Aug) and approved the full package:
+
+- **Continuous vertical scroll**, not page-at-a-time (§4 said arrows suffice): all pages
+  in one scrollable strip, 1-finger scroll with momentum, 2-finger pinch-zoom. Arrows +
+  `n / N` remain as page jumps. Palm guard: touches are ignored while the pen is down
+  and for 500ms after it lifts. If real-iPad testing shows palm-scroll jumps anyway, the
+  fallback is dropping the 1-finger pan (`kind: 'maybe' → 'pan'` in AnnotateOverlay).
+- **Ink is pressure-tapered outline polygons** (`perfect-freehand`, wrapped + tested in
+  `lib/annotate/ink-outline.ts`), not the constant-width smoothed polylines of §4. The
+  §4 width formula is approximated by size/thinning params, not reproduced exactly.
+- **Highlighter tool added** (yellow/green, uniform translucent ribbon, multiply blend,
+  always rendered UNDER pen ink). Snappable like the pen (straight rule-offs).
+- **Viewport rendering** instead of §5's per-page capped canvases: two viewport-sized
+  canvases (base + live), page bitmaps kept only for visible ±1 pages (≤2600px wide),
+  full-res fetched per page only during flatten. Crisp at 4× zoom, bounded memory.
+- **Draft persistence** (§3 said none): strokes autosave to localStorage per run
+  (`lib/annotate/draft-store.ts`, tested) — tab eviction can't lose ink, and the draft
+  is KEPT after Done, so re-opening offers "Restore ink" = light re-editing of the last
+  layer (device-local only). Cancel offers keep-draft / discard / stay.
+- **Gestures**: 2-finger tap = undo, 3-finger tap = redo. `window` event
+  `annotate-pencil-doubletap` toggles pen⇄eraser — the hook for a future native
+  WKWebView shell (Pencil double-tap is not exposed to Safari; §2 discussion 1 Aug).
+- **Tool memory**: last tool/colour/width restored per device (`annotate-tools:v1`).
+- **Rect fit detail**: a stroke that starts mid-edge leaves a collinear RDP endpoint;
+  `shape-fit` drops ≤1 such endpoint per end before demanding exactly 4 corners.
+- **Files**: overlay = `src/components/AnnotateOverlay.tsx` (lazy-loaded); pure libs in
+  `src/lib/annotate/` (`types`, `stroke-geometry`, `shape-fit`, `hit-test`,
+  `flatten-plan`, `ink-outline`, `draft-store`, each with a sibling test); shared PDF
+  layout extracted to `src/lib/marked-pdf-layout.ts` (mark-paper-pdf imports it too);
+  token route gained `type=page` (JPEG); assemble route =
+  `/api/admin/mark-paper-annotate-pdf` (server-side bot link, `linked` flag, client
+  falls back to the proxy link like uploadAnnotated).

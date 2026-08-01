@@ -1263,6 +1263,34 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 
 `GOOGLE_API_KEY` — Google AI Studio key with Gemini 2.5 Pro access. Add to Vercel environment variables.
 
+## Mark-paper ✏️ Annotate (in-browser Apple Pencil ink) — 2026-08-01
+
+Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11). Status: built,
+pending the real-iPad checklist (§8). Replaces the Notability round trip on
+`/admin/mark-paper` (which stays as fallback): ✏️ Annotate button (gated
+`runId && annotatedPhotos.length`) opens a full-screen overlay over the marked pages
+(the `url_with_solutions ?? url` copy via `pickAnnotatedPhotoUrl(p,'photos')`); Done
+flattens inked pages client-side, uploads via the client-token flow (`type=page`), and
+`/api/admin/mark-paper-annotate-pdf` assembles the PDF + links it to the run as
+`kind:'annotated'` — the SAME single slot the Notability upload writes, last write wins.
+
+- **Pen-only ink** (`pointerType==='pen'`; mouse only behind `?mouse=1`) = palm
+  rejection. 1-finger scroll (suppressed while pen down/500ms after), 2-finger pinch,
+  2/3-finger tap = undo/redo. Draw-and-hold ≥500ms snaps line/rect/ellipse.
+- **Pure libs in `src/lib/annotate/`** (all unit-tested, pre-push gated): shape-fit,
+  stroke-geometry, hit-test, flatten-plan, ink-outline (perfect-freehand wrapper),
+  draft-store. Strokes live in page-image pixel coords. Don't re-implement any of this
+  inline in the overlay.
+- **Drafts**: strokes autosave to localStorage per run and are kept after Done →
+  reopening offers "Restore ink" (device-local re-editing). Closing unrestored must
+  never delete a stored draft (`dirtyRef` gate in AnnotateOverlay — regression risk).
+- **Shared PDF layout** (`PAGE_W`/strip/`drawPaperTotal`) lives in
+  `src/lib/marked-pdf-layout.ts`, imported by BOTH mark-paper-pdf and
+  mark-paper-annotate-pdf. Change layout there only.
+- **Pencil double-tap** can't reach Safari; the overlay listens for a
+  `annotate-pencil-doubletap` window event so a future ~100-line WKWebView shell
+  (UIPencilInteraction → evaluateJavaScript) gets it for free.
+
 ## Environment Variables
 
 `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`, `ANTHROPIC_API_KEY`, `ADMIN_PASSWORD`, `CRON_SECRET`, `SIGNUP_SECRET`, `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `BLOB_READ_WRITE_TOKEN`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `RECEIPT_API_TOKEN`, `RENDER_MARKING_SECRET`, `GOOGLE_API_KEY`, `SUPABASE_SECRET_KEY`, `MARK_INBOX_TOKEN`
