@@ -279,6 +279,12 @@ export async function GET(req: NextRequest) {
   // shows that week's real membership — a since-departed student reappears, and
   // a switched student sits in the slot they were actually in then, not today's.
   const enrollmentsBySlot: Record<string, string[]> = {};
+  // Tenure per entry, for DAY-level checks. The week-overlap list above is right for
+  // the Roster tab, but the Lessons tab's "tap to mark" ghosts are per DATE — a
+  // student whose enrollment ended mid-week must not ghost on the days after it
+  // ended (Chow Wen Zheng, discontinued effective Sat 1 Aug, still ghosted on that
+  // Saturday because her Mon–Fri tenure overlapped the week; 1 Aug 2026).
+  const enrollmentTenureBySlot: Record<string, { studentId: string; start: string; end: string }[]> = {};
   for (const r of enrollmentsData) {
     const slotId = r.fields['Slot']?.[0];
     const studentId = r.fields['Student']?.[0];
@@ -290,6 +296,7 @@ export async function GET(req: NextRequest) {
     if (!startedByWeekEnd || !notEndedBeforeWeek) continue;
     if (!enrollmentsBySlot[slotId]) enrollmentsBySlot[slotId] = [];
     if (!enrollmentsBySlot[slotId].includes(studentId)) enrollmentsBySlot[slotId].push(studentId);
+    (enrollmentTenureBySlot[slotId] ||= []).push({ studentId, start, end });
   }
 
   function isTimeRelatedNote(note: string): boolean {
@@ -501,6 +508,7 @@ export async function GET(req: NextRequest) {
     weekEnd,
     slots,
     enrollmentsBySlot,
+    enrollmentTenureBySlot,
     lessons,
     cancelledLessons,
     students: studentsById,

@@ -448,6 +448,11 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 
 ### Chip features
 
+- **"tap to mark" ghost chips are gated by DAY-level enrollment tenure** (2026-08-01):
+  the API returns `enrollmentTenureBySlot` beside the week-level roster, and the ghost
+  filter requires the enrollment to cover THAT date — the week-overlap list alone
+  ghosted Chow Wen Zheng on Sat 1 Aug after her enrollment ended 31 Jul (discontinued
+  effective 1 Aug: the record deletion worked; the ghost synthesis was the leak).
 - **Quick attendance pills** — ✅ / ❌ (and `undo`) appear on chips for **today and yesterday only**; tap to set Completed/Absent. This is a UI convenience gate, NOT a rule: attendance can be set on **any** date via the chip's action sheet (✅ Mark present / ❌ Mark absent → `PATCH /api/admin/progress/lessons`, which has no date window). The 14-day `EDIT_WINDOW_DAYS` lock applies to **progress fields only** (topics/mastery/mood/notes), never to Status.
 - **Rescheduled-away chips report the END of the chain, not the first hop** — `Rescheduled Lesson ID` forms a *chain* (a makeup can itself be moved). `lib/reschedule-chain.ts` (`resolveRescheduleChain`, unit-tested) walks it and classifies the result: `delivered` (green ✓) / `missed` (red — makeup also missed, still owed) / `cancelled` (red) / `upcoming` (blue) / `unmarked` (amber) / `broken` (grey); `↻n` marks >1 hop. **Use this lib — never re-walk the chain inline.** Both `/api/admin-schedule` and `/api/admin/student-profile` call it; they previously had separate copies and the schedule one read only one hop, so a twice-moved-then-taught lesson showed as pending while the profile page showed it correctly. `/api/admin-schedule` fetches onward hops in a bounded loop (usually 0 extra rounds).
 - **Attendance outcome is visible on every date** — green `Completed` / red `Absent` render regardless of how old the week is, and a past lesson still at `Scheduled` shows an amber `? unmarked` flag. (These used to sit behind the same today/yesterday gate as the ✓/✗ buttons, so on an older week an attended lesson looked identical to a never-marked one.) Any new chip-status affordance must gate the *buttons*, not the *label*.

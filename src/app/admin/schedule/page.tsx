@@ -76,6 +76,9 @@ interface ScheduleData {
   weekEnd: string;
   slots: Slot[];
   enrollmentsBySlot: Record<string, string[]>;
+  // Same entries with tenure dates — ghosts are gated per DAY with this (a mid-week
+  // discontinue must not ghost on the days after the enrollment ended).
+  enrollmentTenureBySlot?: Record<string, { studentId: string; start: string; end: string }[]>;
   lessons: Lesson[];
   cancelledLessons?: { studentId: string | null; date: string; slotId: string | null; notes: string }[];
   students: Record<string, Student>;
@@ -2806,8 +2809,19 @@ export default function SchedulePage() {
       );
       const dateAbsentIds = absentStudentsByDate[dateStr] ?? new Set<string>();
       const visibleStudentIds = new Set(visibleLessons.map(l => l.studentId).filter(Boolean));
+      // Day-level tenure gate: the roster list overlaps the WEEK, but a ghost claims
+      // the student was expected on THIS date — false for anyone whose enrollment
+      // ended earlier in the week (Chow Wen Zheng, discontinued effective Sat 1 Aug,
+      // ghosted on that Saturday) or starts later in it.
+      const tenure = data?.enrollmentTenureBySlot?.[slot.id];
+      const enrolledOnDate = (id: string) => {
+        if (!tenure) return true;   // older payload without tenure — keep old behaviour
+        return tenure.some(t => t.studentId === id
+          && (!t.start || t.start <= dateStr)
+          && (!t.end || t.end >= dateStr));
+      };
       ghostStudents = enrolledIds
-        .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id) && !dateAbsentIds.has(id) && !cancelledStudentIds.has(id))
+        .filter(id => !visibleStudentIds.has(id) && !absentStudentIds.has(id) && !dateAbsentIds.has(id) && !cancelledStudentIds.has(id) && enrolledOnDate(id))
         .map(id => ({ id, name: data?.students[id]?.name ?? 'Unknown' }));
     }
 
