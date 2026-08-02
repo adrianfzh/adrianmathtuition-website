@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put, list, del } from '@vercel/blob';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { resolveInboxFileName } from '@/lib/inbox-filename';
 
 // The iPad share-sheet inbox. A Shortcut on Adrian's iPad ("✍️ Mark paper", in the
 // WhatsApp/Files share sheet) POSTs the shared PDF or photos here; the mark-paper page
@@ -76,7 +77,10 @@ export async function POST(req: NextRequest) {
       else if (buf.subarray(4, 8).toString('latin1') === 'ftyp') ext = 'heic';
     }
     if (!ext) return NextResponse.json({ error: `unrecognised file (Content-Type "${contentType}") — send a PDF or photo` }, { status: 415 });
-    const name = `shared.${ext}`;
+    // The recipe's optional x-file-name header carries the WhatsApp document's real
+    // name — the raw File body itself has none. Ignoring this header while the page
+    // recipe advertised it is why every share arrived as "shared.pdf" (2 Aug 2026).
+    const name = resolveInboxFileName(req.headers.get('x-file-name'), ext);
     const putType = TYPE_TO_EXT[contentType] ? contentType
       : (ext === 'pdf' ? 'application/pdf' : ext === 'png' ? 'image/png' : ext === 'heic' ? 'image/heic' : 'image/jpeg');
     await put(`${PREFIX}${Date.now()}-${name}`, buf, { access: 'public', contentType: putType });
