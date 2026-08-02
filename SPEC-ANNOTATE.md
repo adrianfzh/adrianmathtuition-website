@@ -229,3 +229,17 @@ Adrian asked for "better UX, like Notability" (1 Aug) and approved the full pack
   token route gained `type=page` (JPEG); assemble route =
   `/api/admin/mark-paper-annotate-pdf` (server-side bot link, `linked` flag, client
   falls back to the proxy link like uploadAnnotated).
+
+First live-paper feedback round (2 Aug 2026):
+- Pen widths grew a 1.2pt XS and the default dropped to 2pt (3.5pt reads chunky on a
+  1280px-wide marked photo). Tool buttons swapped emoji for inline-SVG icons
+  (pen/highlighter/eraser/undo/redo, Notability-style recognisability).
+- Second entry point: an ✏️ Annotate button on every history row (`annotateRun` =
+  loadRun → auto-open overlay).
+- Known limitation, NOT an overlay bug: marked pages look soft when zoomed because
+  working photos are downscaled to ≤1280px client-side before marking (cost/latency
+  trade-off) and the bot composes its red-pen overlay onto THAT copy. Sharpening
+  means bot-side compositing onto the original-resolution photo — future work.
+- Pencil double-tap→eraser stays impossible in Safari (no web API); the overlay
+  already listens for `annotate-pencil-doubletap` so the thin WKWebView shell remains
+  the path — see §2 discussion. Wanted by Adrian, pending his call on the shell.

@@ -1290,6 +1290,20 @@ flattens inked pages client-side, uploads via the client-token flow (`type=page`
 - **Pencil double-tap** can't reach Safari; the overlay listens for a
   `annotate-pencil-doubletap` window event so a future ~100-line WKWebView shell
   (UIPencilInteraction → evaluateJavaScript) gets it for free.
+- **Second entry point**: ✏️ Annotate on each history row (load run → overlay opens).
+- **Download filenames ride the URL PATH** — `/api/admin/mark-paper-download/<name>.pdf?url=…`
+  (the `[name]` segment route re-exports the parent GET): Safari's share sheet titles
+  inline-viewed PDFs from the last path segment and ignores Content-Disposition, which
+  is why Notability imports used to be called "mark-paper-download". Build links with
+  the page's `downloadHref()`, never the bare query-param form.
+- **"shared.pdf" is WHATSAPP's doing** — its share extension hands Shortcuts a temp
+  file literally named `shared`, so no header/server fix can recover the real name.
+  The share-sheet recipe's Ask-for-Input step (type/confirm the name at share time) is
+  the only fix; Files-app shares keep real names. The bot's `/api/mark-inbox` (which
+  the Shortcut posts to — NOT the Vercel route; 4.5MB platform cap) and the website's
+  `mark-paper-inbox` both honour `x-file-name`.
+- **Marker comments render inline $…$ TeX** in the results panel via `lib/math-inline.ts`
+  (KaTeX, currency-vs-math heuristic, tested) — don't regex-render TeX in the page.
 
 ## Environment Variables
 

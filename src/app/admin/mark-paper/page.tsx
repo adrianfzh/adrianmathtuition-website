@@ -3,8 +3,10 @@
 import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import { put } from '@vercel/blob/client';
+import 'katex/dist/katex.min.css';
 import { ensureAdminSession } from '@/lib/admin-client';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
+import { mathHtml } from '@/lib/math-inline';
 
 // The ✏️ Annotate overlay (Apple Pencil ink over the marked pages) is heavy and
 // only opens on demand — load it when first rendered, never in the initial bundle.
@@ -109,6 +111,30 @@ type AnnotatedPhoto = { photo_index: number; url: string; url_with_solutions?: s
 
 const card: CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, marginBottom: 16 };
 const btn: CSSProperties = { padding: '10px 18px', borderRadius: 8, border: 'none', background: '#111827', color: '#fff', fontWeight: 600, cursor: 'pointer' };
+
+// Marker comments carry inline $…$ TeX (and $ as currency) — lib/math-inline decides
+// which is which and KaTeXes only the math. Raw \tfrac soup in the results panel was
+// the "rendering issues" complaint (Adrian, 2 Aug 2026).
+function MathText({ text }: { text: string }) {
+  return <span dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
+}
+
+// Download links carry the filename as the LAST PATH SEGMENT (plus ?name= for the
+// Content-Disposition): Safari's share sheet titles an inline-viewed PDF from the URL
+// path and ignores the header, so without this every Notability import was called
+// "mark-paper-download" (Adrian, 2 Aug 2026).
+function downloadHref(url: string, filename: string, inline: boolean): string {
+  return `/api/admin/mark-paper-download/${encodeURIComponent(filename)}?url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}${inline ? '&disposition=inline' : ''}`;
+}
+
+// A history row's download filename — same shape as the send panel's, from run fields.
+function runFilename(run: Run, suffix: string): string {
+  const d = new Date(run.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' });
+  const pn = run.paper_name && !/^worksheet \(\d+ photos?\)$/i.test(run.paper_name) && !/^shared\.pdf$/i.test(run.paper_name)
+    ? run.paper_name.replace(/\.pdf$/i, '') : '';
+  const who = [run.student_name, pn].filter(Boolean).join(' — ') || 'Marked paper';
+  return [who, suffix, d].filter(Boolean).join(' — ') + '.pdf';
+}
 
 // Drag-and-drop / click-to-browse upload zone.
 function FileDrop({ label, accept, multiple, count, primaryName, onFiles, hint }: {
@@ -272,8 +298,18 @@ export default function MarkPaperPage() {
       setPhase('done');
       if (historyRef.current) historyRef.current.open = false;
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+      return { photoCount: photos.length };
     } catch (e) { setError((e as Error).message); }
     finally { setLoadingRun(''); }
+  }
+
+  // History-row ✏️: load the run, then jump straight into the annotate overlay —
+  // "allow annotation option in recently marked papers directly" (Adrian, 2 Aug 2026).
+  async function annotateRun(id: string) {
+    const r = await loadRun(id);
+    if (!r) return;   // loadRun already surfaced the error
+    if (r.photoCount > 0) setAnnotateOpen(true);
+    else setError('This run has no marked page images stored — mark the paper again to annotate it.');
   }
 
   // Can the browser natively decode this for a preview? (JPEG/PNG/WebP everywhere; HEIC only on Safari.)
@@ -632,9 +668,13 @@ export default function MarkPaperPage() {
                 </span>
                 <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
                 <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
-                {run.annotated_pdf_url && <a href={run.annotated_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
-                {run.pdf_url && <a href={run.pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
-                {run.photos_pdf_url && <a href={run.photos_pdf_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
+                {run.annotated_pdf_url && <a href={downloadHref(run.annotated_pdf_url, runFilename(run, 'annotated'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
+                {run.pdf_url && <a href={downloadHref(run.pdf_url, runFilename(run, ''), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
+                {run.photos_pdf_url && <a href={downloadHref(run.photos_pdf_url, runFilename(run, 'images'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
+                <button type="button" disabled={!!loadingRun} title="Load and write on it with the Pencil" onClick={() => annotateRun(run.id)}
+                  style={{ ...btn, background: '#0d9488', padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
+                  {loadingRun === run.id ? '…' : '✏️ Annotate'}
+                </button>
                 <button type="button" disabled={!!loadingRun} onClick={() => loadRun(run.id)}
                   style={{ ...btn, padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
                   {loadingRun === run.id ? 'Loading…' : 'Load'}
@@ -743,6 +783,7 @@ export default function MarkPaperPage() {
                 <span style={{ color: '#b45309' }}>(the bot&apos;s address, NOT adrianmathtuition.com — Vercel rejects bodies over 4.5MB before our code runs, and scans are bigger)</span><br />
                 Method: <b>POST</b> · Headers: add <code>Authorization</code> = <code>Bearer {inboxToken === null ? '…' : (inboxToken || '(token not configured)')}</code><br />
                 Optional 2nd header, keeps the original filename: <code>x-file-name</code> = insert the <b>Shortcut Input</b> variable, tap the token, set its type to <b>Name</b> (otherwise files arrive as <code>shared.pdf</code>)<br />
+                <span style={{ color: '#b45309' }}>⚠ WhatsApp strips the real filename BEFORE Shortcuts sees it — documents arrive as a temp file literally named &quot;shared&quot;, so the header alone can&apos;t recover it. Fix: add an <b>Ask for Input</b> action (type Text, prompt &quot;Paper name?&quot;, Default Answer = Shortcut Input ▸ Name) BEFORE Get Contents of URL, and set <code>x-file-name</code> = <b>Provided Input</b> instead — you confirm or type the name in one tap at share time. Files shared from the Files app keep their real names either way.</span><br />
                 Request Body: <b>File</b> → <b>Shortcut Input</b>.</li>
               <li>Add <b>Show Notification</b> after it, with the body set to the <b>Contents of URL</b> magic variable — the notification then shows the server&apos;s real answer (<code>{'{"ok":true…}'}</code> or the error), not blind optimism.</li>
             </ol>
@@ -768,10 +809,10 @@ export default function MarkPaperPage() {
               </div>
               {(r.marking?.parts || []).map((p, j) => (
                 <div key={j} style={{ fontSize: 13, color: p.error_summary ? '#b91c1c' : '#15803d', marginLeft: 8 }}>
-                  {p.label ? `${p.label} ` : ''}{p.awarded ?? 0}/{p.max ?? 0} — {p.error_summary || 'Correct'}
+                  {p.label ? `${p.label} ` : ''}{p.awarded ?? 0}/{p.max ?? 0} — <MathText text={p.error_summary || 'Correct'} />
                 </div>
               ))}
-              {r.marking?.overall_comment && <div style={{ fontSize: 13, color: '#374151', marginTop: 4 }}>{r.marking.overall_comment}</div>}
+              {r.marking?.overall_comment && <div style={{ fontSize: 13, color: '#374151', marginTop: 4 }}><MathText text={r.marking.overall_comment} /></div>}
               {r.review_recommended && (
                 <div style={{ fontSize: 12, color: '#b45309', marginTop: 4 }}>⚠ {(r.review_reasons || []).join(' · ')}</div>
               )}
@@ -807,7 +848,7 @@ export default function MarkPaperPage() {
             {marked.map((m) => (
               <a
                 key={m.label}
-                href={`/api/admin/mark-paper-download?url=${encodeURIComponent(m.url)}&name=${encodeURIComponent(sendFilename)}&disposition=inline`}
+                href={downloadHref(m.url, sendFilename, true)}
                 target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 600 }}
               >
                 {m.label} ↗
@@ -837,7 +878,7 @@ export default function MarkPaperPage() {
                 style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, minWidth: 230 }}
               />
               <a
-                href={`/api/admin/mark-paper-download?url=${encodeURIComponent(sendPdf.url)}&name=${encodeURIComponent(sendFilename)}`}
+                href={downloadHref(sendPdf.url, sendFilename, false)}
                 style={{ ...btn, background: '#374151', textDecoration: 'none', fontSize: 14, padding: '8px 14px' }}
               >
                 ⬇ Download for WhatsApp

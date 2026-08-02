@@ -46,7 +46,9 @@ type Props = {
 const DOC_W = 1000;                 // layout units: every page is DOC_W wide
 const PAGE_GAP = 14;                // doc units between pages
 const PDF_PAGE_W = 595;             // pt — matches lib/marked-pdf-layout PAGE_W
-const PEN_WIDTHS_PT = [2, 3.5, 6];  // S / M / L at page scale (spec §4)
+// XS added + default dropped to 2pt after the first live papers — 3.5pt reads chunky
+// on a 1280px-wide marked photo (Adrian, 2 Aug 2026: "allow for thinner lines").
+const PEN_WIDTHS_PT = [1.2, 2, 3.5, 6];
 const HL_WIDTH_PT = 13;
 const PEN_COLORS = ['#dc2626', '#2563eb', '#111827'];
 const HL_COLORS = ['#facc15', '#4ade80'];
@@ -64,6 +66,45 @@ type PageDim = { w: number; h: number } | null;
 type DisplayBitmap = { src: CanvasImageSource; w: number };
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+// Proper tool icons (Notability-style recognisability) — the emoji set read as
+// mystery glyphs on the toolbar (Adrian, 2 Aug 2026). Inherit currentColor so the
+// active (dark) button state inverts them for free.
+const iconProps = {
+  width: 21, height: 21, viewBox: '0 0 24 24', fill: 'none' as const,
+  stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const,
+};
+const IconPen = () => (
+  <svg {...iconProps}>
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+    <path d="M14.5 5.5l4 4" />
+  </svg>
+);
+const IconHighlighter = () => (
+  <svg {...iconProps}>
+    <path d="M9 11.5l-5.5 5.5v3h8.5l2.5-2.5" />
+    <path d="M21.5 11.5L17 16a2 2 0 0 1-2.8 0L9 10.8a2 2 0 0 1 0-2.8L13.5 3.5l8 8z" />
+  </svg>
+);
+const IconEraser = () => (
+  <svg {...iconProps}>
+    <path d="M7 21l-4.3-4.3a2.4 2.4 0 0 1 0-3.4l9.6-9.6a2.4 2.4 0 0 1 3.4 0l5.6 5.6a2.4 2.4 0 0 1 0 3.4L13.5 21" />
+    <path d="M22 21H7" />
+    <path d="M5.5 11l7.5 7.5" />
+  </svg>
+);
+const IconUndo = () => (
+  <svg {...iconProps}>
+    <path d="M9 14L4 9l5-5" />
+    <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+  </svg>
+);
+const IconRedo = () => (
+  <svg {...iconProps}>
+    <path d="M15 14l5-5-5-5" />
+    <path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" />
+  </svg>
+);
 
 export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose }: Props) {
   // Pages sorted by photo_index — array index is the working page index throughout.
@@ -1012,9 +1053,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
         <div style={{ width: 1, alignSelf: 'stretch', background: '#e5e7eb' }} />
 
-        <button style={tool === 'pen' ? activeBtn : btn} onClick={() => setToolRemember('pen')} aria-label="Pen">✒️</button>
-        <button style={tool === 'highlighter' ? activeBtn : btn} onClick={() => setToolRemember('highlighter')} aria-label="Highlighter">🖍️</button>
-        <button style={tool === 'eraser' ? activeBtn : btn} onClick={() => setToolRemember('eraser')} aria-label="Eraser">🧽</button>
+        <button style={tool === 'pen' ? activeBtn : btn} onClick={() => setToolRemember('pen')} aria-label="Pen" title="Pen"><IconPen /></button>
+        <button style={tool === 'highlighter' ? activeBtn : btn} onClick={() => setToolRemember('highlighter')} aria-label="Highlighter" title="Highlighter"><IconHighlighter /></button>
+        <button style={tool === 'eraser' ? activeBtn : btn} onClick={() => setToolRemember('eraser')} aria-label="Eraser" title="Eraser (removes a whole stroke)"><IconEraser /></button>
 
         {tool === 'pen' && (
           <>
@@ -1047,8 +1088,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           </div>
         )}
 
-        <button style={{ ...btn, fontSize: 20, opacity: canUndo ? 1 : 0.35 }} onClick={() => undo(currentPageIdx)} disabled={!canUndo} aria-label="Undo">↺</button>
-        <button style={{ ...btn, fontSize: 20, opacity: canRedo ? 1 : 0.35 }} onClick={() => redo(currentPageIdx)} disabled={!canRedo} aria-label="Redo">↻</button>
+        <button style={{ ...btn, opacity: canUndo ? 1 : 0.35 }} onClick={() => undo(currentPageIdx)} disabled={!canUndo} aria-label="Undo" title="Undo (2-finger tap)"><IconUndo /></button>
+        <button style={{ ...btn, opacity: canRedo ? 1 : 0.35 }} onClick={() => redo(currentPageIdx)} disabled={!canRedo} aria-label="Redo" title="Redo (3-finger tap)"><IconRedo /></button>
 
         <div style={{ flex: 1 }} />
         <button
