@@ -243,3 +243,22 @@ First live-paper feedback round (2 Aug 2026):
 - Pencil double-tap→eraser stays impossible in Safari (no web API); the overlay
   already listens for `annotate-pencil-doubletap` so the thin WKWebView shell remains
   the path — see §2 discussion. Wanted by Adrian, pending his call on the shell.
+
+Second feature round (2 Aug 2026, evening) — Adrian's picks, all shipped:
+- **Partial eraser**: eraser gained a Stroke/Partial mode toggle (persisted with tool
+  memory). Partial splits strokes at the eraser circle via
+  `lib/annotate/stroke-split.ts` (densify → point-classify → rim-interpolated cuts,
+  tested); a partially-erased snapped shape becomes open freehand pieces. Undo for a
+  partial drag is a whole-page snapshot op (`{t:'page', before, after}`) — replaying
+  splits-of-splits is not worth the fragility.
+- **Lasso select**: 4th tool. Loop strokes (≥50% of sampled length inside selects —
+  `lib/annotate/lasso.ts`, tested), dashed bbox + floating 🗑 Delete/Deselect chip,
+  drag inside the box to move (render-time translate while dragging; strokes replaced
+  by shifted clones on commit, page-snapshot undo). Selection clears on tool switch,
+  page jump, undo/redo, Done and Escape.
+- **Snapped-line endpoint drag**: after a stroke snaps to a line, keeping the pen down
+  and moving drags the line's far endpoint (rect/ellipse still commit as fitted).
+- Hardening from the round: `getCoalescedEvents()` can legally return an empty list —
+  fall back to the event itself; `setPointerCapture` wrapped (throws on already-lifted
+  pointers); all btn style overrides use full `border` shorthand (React 19 warns on
+  shorthand/longhand mixes).

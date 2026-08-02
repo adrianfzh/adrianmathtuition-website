@@ -1279,8 +1279,8 @@ flattens inked pages client-side, uploads via the client-token flow (`type=page`
   2/3-finger tap = undo/redo. Draw-and-hold ≥500ms snaps line/rect/ellipse.
 - **Pure libs in `src/lib/annotate/`** (all unit-tested, pre-push gated): shape-fit,
   stroke-geometry, hit-test, flatten-plan, ink-outline (perfect-freehand wrapper),
-  draft-store. Strokes live in page-image pixel coords. Don't re-implement any of this
-  inline in the overlay.
+  draft-store, stroke-split (partial eraser), lasso (selection). Strokes live in
+  page-image pixel coords. Don't re-implement any of this inline in the overlay.
 - **Drafts**: strokes autosave to localStorage per run and are kept after Done →
   reopening offers "Restore ink" (device-local re-editing). Closing unrestored must
   never delete a stored draft (`dirtyRef` gate in AnnotateOverlay — regression risk).

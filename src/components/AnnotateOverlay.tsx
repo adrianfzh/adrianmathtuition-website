@@ -21,10 +21,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { put } from '@vercel/blob/client';
-import type { Stroke, ToolKind } from '@/lib/annotate/types';
+import type { Stroke, StrokePoint, ToolKind } from '@/lib/annotate/types';
 import { fitStroke, shapeToPolyline } from '@/lib/annotate/shape-fit';
 import { outlineToPath, strokeOutline } from '@/lib/annotate/ink-outline';
-import { hitStrokes } from '@/lib/annotate/hit-test';
+import { hitStrokes, strokeHit } from '@/lib/annotate/hit-test';
+import { splitStrokeAtCircle } from '@/lib/annotate/stroke-split';
+import { lassoSelect, strokesBBox } from '@/lib/annotate/lasso';
 import { planFlatten } from '@/lib/annotate/flatten-plan';
 import {
   draftIsEmpty, draftKey, makeDraft, parseDraft, serializeDraft,
@@ -61,9 +63,16 @@ const SNAP_MIN_CSS = 24;            // stroke length below this never snaps
 const ERASER_TOL_CSS = 8;
 const TOOLS_KEY = 'annotate-tools:v1';
 
-type Op = { t: 'add'; stroke: Stroke } | { t: 'remove'; items: { index: number; stroke: Stroke }[] };
+type Op =
+  | { t: 'add'; stroke: Stroke }
+  | { t: 'remove'; items: { index: number; stroke: Stroke }[] }
+  // Whole-page snapshot — partial-eraser drags and lasso move/delete touch many
+  // strokes at once; restoring the exact array is simpler and safer than replaying.
+  | { t: 'page'; before: Stroke[]; after: Stroke[] };
 type PageDim = { w: number; h: number } | null;
 type DisplayBitmap = { src: CanvasImageSource; w: number };
+type ToolSel = ToolKind | 'eraser' | 'lasso';
+type EraserMode = 'stroke' | 'partial';
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
@@ -105,6 +114,13 @@ const IconRedo = () => (
     <path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" />
   </svg>
 );
+const IconLasso = () => (
+  <svg {...iconProps}>
+    <ellipse cx="12" cy="9.5" rx="8.5" ry="6" strokeDasharray="3.4 2.6" />
+    <path d="M7.5 14.5c-1.8 1.4-2.3 3.3-1 5.2" />
+    <circle cx="6" cy="20.5" r="1.4" />
+  </svg>
+);
 
 export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals, onDone, onClose }: Props) {
   // Pages sorted by photo_index — array index is the working page index throughout.
@@ -132,6 +148,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   } | null>(null);
   const eraseOpsRef = useRef<{ index: number; stroke: Stroke }[]>([]);
   const erasePageRef = useRef(-1);
+  const eraseBeforeRef = useRef<Stroke[] | null>(null);   // partial mode: page snapshot at pen-down
+  const eraseChangedRef = useRef(false);
+  // Lasso state: current loop being drawn, the active selection, and an in-flight
+  // move (offset in image px; strokes untouched until commit — the renderer just
+  // draws the selected set translated, so dragging costs no outline recomputes).
+  const lassoPathRef = useRef<{ pageIdx: number; points: StrokePoint[] } | null>(null);
+  const selRef = useRef<{ pageIdx: number; set: Set<Stroke> } | null>(null);
+  const moveSelRef = useRef<{ startX: number; startY: number; dx: number; dy: number } | null>(null);
+  const chipPosRef = useRef<{ x: number; y: number } | null>(null);
   const penDownRef = useRef(false);
   const lastPenUpRef = useRef(0);
   const touchesRef = useRef(new Map<number, { x: number; y: number }>());
@@ -157,11 +182,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   );
 
   // ── UI state ────────────────────────────────────────────────────────────────
-  const [tool, setTool] = useState<ToolKind | 'eraser'>('pen');
+  const [tool, setTool] = useState<ToolSel>('pen');
   const lastInkToolRef = useRef<ToolKind>('pen');
   const [penColor, setPenColor] = useState(PEN_COLORS[0]);
   const [penWidthPt, setPenWidthPt] = useState(PEN_WIDTHS_PT[1]);
   const [hlColor, setHlColor] = useState(HL_COLORS[0]);
+  const [eraserMode, setEraserMode] = useState<EraserMode>('stroke');
+  const [selChip, setSelChip] = useState<{ x: number; y: number } | null>(null);
   const [pageNo, setPageNo] = useState(1);
   const [inkTick, setInkTick] = useState(0);
   const [busy, setBusy] = useState('');
@@ -172,10 +199,19 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const busyRef = useRef(false);
   busyRef.current = !!busy;
 
-  const setToolRemember = useCallback((t: ToolKind | 'eraser') => {
-    setTool(t);
-    if (t !== 'eraser') lastInkToolRef.current = t;
+  const clearSelection = useCallback(() => {
+    selRef.current = null;
+    moveSelRef.current = null;
+    lassoPathRef.current = null;
+    chipPosRef.current = null;
+    setSelChip(null);
   }, []);
+
+  const setToolRemember = useCallback((t: ToolSel) => {
+    setTool(t);
+    if (t !== 'eraser' && t !== 'lasso') lastInkToolRef.current = t;
+    if (t !== 'lasso') clearSelection();
+  }, [clearSelection]);
 
   // ── layout (doc units) ──────────────────────────────────────────────────────
   const layout = useMemo(() => {
@@ -344,9 +380,52 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (d) {
         const f2 = (DOC_W * k) / d.w;
         ctx.setTransform(dpr * f2, 0, 0, dpr * f2, dpr * x, dpr * y);
-        drawStrokes(ctx, strokesRef.current[i], 'hl');
-        drawStrokes(ctx, strokesRef.current[i], 'pen');
+        const sel = selRef.current && selRef.current.pageIdx === i && selRef.current.set.size
+          ? selRef.current.set : null;
+        if (!sel) {
+          drawStrokes(ctx, strokesRef.current[i], 'hl');
+          drawStrokes(ctx, strokesRef.current[i], 'pen');
+        } else {
+          // Selected strokes draw translated by the in-flight move offset — the
+          // strokes themselves stay untouched until the move commits on pen-up.
+          const all = strokesRef.current[i];
+          const rest = all.filter((s) => !sel.has(s));
+          const chosen = all.filter((s) => sel.has(s));
+          drawStrokes(ctx, rest, 'hl');
+          drawStrokes(ctx, rest, 'pen');
+          const mv = moveSelRef.current;
+          ctx.save();
+          if (mv) ctx.translate(mv.dx, mv.dy);
+          drawStrokes(ctx, chosen, 'hl');
+          drawStrokes(ctx, chosen, 'pen');
+          ctx.restore();
+          const bb = strokesBBox(chosen);
+          if (bb) {
+            const pad = 6 / f2;
+            ctx.strokeStyle = '#2563eb';
+            ctx.lineWidth = 1.5 / f2;
+            ctx.setLineDash([6 / f2, 4 / f2]);
+            ctx.strokeRect(
+              bb.minX - pad + (mv?.dx ?? 0), bb.minY - pad + (mv?.dy ?? 0),
+              bb.maxX - bb.minX + pad * 2, bb.maxY - bb.minY + pad * 2,
+            );
+            ctx.setLineDash([]);
+            // Anchor the Delete/Deselect chip just above the box (css coords).
+            const cssX = x + (bb.minX - pad + (mv?.dx ?? 0)) * f2;
+            const cssY = y + (bb.minY - pad + (mv?.dy ?? 0)) * f2;
+            const next = { x: Math.max(8, cssX), y: Math.max(58, cssY - 44) };
+            const prev = chipPosRef.current;
+            if (!prev || Math.abs(prev.x - next.x) > 1 || Math.abs(prev.y - next.y) > 1) {
+              chipPosRef.current = next;
+              setSelChip(next);
+            }
+          }
+        }
       }
+    }
+    if ((!selRef.current || !selRef.current.set.size) && chipPosRef.current) {
+      chipPosRef.current = null;
+      setSelChip(null);
     }
 
     // Track the page under the viewport centre for the n/N indicator.
@@ -376,6 +455,31 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const x = viewRef.current.ox, y = viewRef.current.oy + layoutRef.current.tops[cur.pageIdx] * k;
         ctx.setTransform(dpr * f, 0, 0, dpr * f, dpr * x, dpr * y);
         drawStrokes(ctx, [cur.stroke], cur.stroke.tool === 'highlighter' ? 'hl' : 'pen');
+      }
+    }
+
+    // In-progress lasso loop (dashed, with a faint chord back to the start).
+    const lp = lassoPathRef.current;
+    if (lp && lp.points.length > 1) {
+      const d = dimsRef.current[lp.pageIdx];
+      if (d) {
+        const k = kFactor();
+        const f = (DOC_W * k) / d.w;
+        const x = viewRef.current.ox, y = viewRef.current.oy + layoutRef.current.tops[lp.pageIdx] * k;
+        ctx.setTransform(dpr * f, 0, 0, dpr * f, dpr * x, dpr * y);
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 1.5 / f;
+        ctx.setLineDash([6 / f, 4 / f]);
+        ctx.beginPath();
+        lp.points.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+        ctx.stroke();
+        ctx.globalAlpha = 0.4;
+        ctx.beginPath();
+        ctx.moveTo(lp.points[lp.points.length - 1].x, lp.points[lp.points.length - 1].y);
+        ctx.lineTo(lp.points[0].x, lp.points[0].y);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.setLineDash([]);
       }
     }
 
@@ -438,30 +542,36 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (op.t === 'add') {
       const i = strokes.indexOf(op.stroke);
       if (i >= 0) strokes.splice(i, 1);
-    } else {
+    } else if (op.t === 'remove') {
       for (let j = op.items.length - 1; j >= 0; j--) {
         const it = op.items[j];
         strokes.splice(Math.min(it.index, strokes.length), 0, it.stroke);
       }
+    } else {
+      strokesRef.current[pageIdx] = op.before.slice();
     }
     redoRef.current[pageIdx].push(op);
+    clearSelection();   // selection may reference strokes that just changed identity
     bumpInk(); scheduleBase();
-  }, [bumpInk, scheduleBase]);
+  }, [bumpInk, clearSelection, scheduleBase]);
 
   const redo = useCallback((pageIdx: number) => {
     const op = redoRef.current[pageIdx].pop();
     if (!op) return;
     const strokes = strokesRef.current[pageIdx];
     if (op.t === 'add') strokes.push(op.stroke);
-    else {
+    else if (op.t === 'remove') {
       for (const it of op.items) {
         const i = strokes.indexOf(it.stroke);
         if (i >= 0) strokes.splice(i, 1);
       }
+    } else {
+      strokesRef.current[pageIdx] = op.after.slice();
     }
     undoRef.current[pageIdx].push(op);
+    clearSelection();
     bumpInk(); scheduleBase();
-  }, [bumpInk, scheduleBase]);
+  }, [bumpInk, clearSelection, scheduleBase]);
 
   // ── draft persistence ───────────────────────────────────────────────────────
   const saveDraft = useCallback(() => {
@@ -547,6 +657,36 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     scheduleBase();
   }, [scheduleBase, toImage]);
 
+  // Partial mode: split strokes at the eraser circle instead of removing them whole.
+  // Undo works on a page snapshot taken at pen-down — a drag may split the same
+  // stroke's pieces again and again, and replaying that is not worth the fragility.
+  const eraseAtPartial = useCallback((cssX: number, cssY: number) => {
+    const pt = toImage(cssX, cssY, erasePageRef.current >= 0 ? erasePageRef.current : -1);
+    if (!pt) return;
+    if (erasePageRef.current < 0) {
+      erasePageRef.current = pt.pageIdx;
+      eraseBeforeRef.current = strokesRef.current[pt.pageIdx].slice();
+      eraseChangedRef.current = false;
+    }
+    const d = dimsRef.current[pt.pageIdx];
+    if (!d) return;
+    const cssPerImg = (kFactor() * DOC_W) / d.w;
+    const r = ERASER_TOL_CSS / cssPerImg;
+    const strokes = strokesRef.current[pt.pageIdx];
+    let changed = false;
+    for (let i = strokes.length - 1; i >= 0; i--) {
+      if (!strokeHit(strokes[i], pt.x, pt.y, r)) continue;
+      const pieces = splitStrokeAtCircle(strokes[i], pt.x, pt.y, r);
+      if (!pieces) continue;
+      strokes.splice(i, 1, ...pieces);
+      changed = true;
+    }
+    if (changed) {
+      eraseChangedRef.current = true;
+      scheduleBase();
+    }
+  }, [scheduleBase, toImage]);
+
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
@@ -558,18 +698,42 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
     const onPointerDown = (e: PointerEvent) => {
       if (busyRef.current) return;
+      // The selection chip's buttons live inside this element — a pen tap on them
+      // must click, not start a lasso (preventDefault on pointerdown kills clicks).
+      if ((e.target as HTMLElement).closest?.('button')) return;
       if (isPenLike(e)) {
         e.preventDefault();
         stopMomentum();
         gestureRef.current = null;          // pen wins over any finger gesture
-        el.setPointerCapture(e.pointerId);
+        try { el.setPointerCapture(e.pointerId); } catch { /* pointer already inactive */ }
         penDownRef.current = true;
         const { x, y } = cssPos(e);
         cursorRef.current = { x, y, mode: tool === 'eraser' ? 'ring' : 'dot' };
         if (tool === 'eraser') {
           erasePageRef.current = -1;
           eraseOpsRef.current = [];
-          eraseAt(x, y);
+          eraseBeforeRef.current = null;
+          eraseChangedRef.current = false;
+          (eraserMode === 'partial' ? eraseAtPartial : eraseAt)(x, y);
+          scheduleLive();
+          return;
+        }
+        if (tool === 'lasso') {
+          const pt = toImage(x, y);
+          if (!pt) { penDownRef.current = false; return; }
+          const sel = selRef.current;
+          if (sel && sel.pageIdx === pt.pageIdx && sel.set.size) {
+            const bb = strokesBBox([...sel.set]);
+            const d = dimsRef.current[pt.pageIdx]!;
+            const grab = 14 * (d.w / (kFactor() * DOC_W));   // 14 css px of grab slack
+            if (bb && pt.x >= bb.minX - grab && pt.x <= bb.maxX + grab && pt.y >= bb.minY - grab && pt.y <= bb.maxY + grab) {
+              moveSelRef.current = { startX: pt.x, startY: pt.y, dx: 0, dy: 0 };
+              return;
+            }
+          }
+          clearSelection();
+          lassoPathRef.current = { pageIdx: pt.pageIdx, points: [{ x: pt.x, y: pt.y, p: 0.5 }] };
+          scheduleBase();
           scheduleLive();
           return;
         }
@@ -640,14 +804,52 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         if (!penDownRef.current) { scheduleLive(); return; }   // hover (M2 iPads / mouse)
         e.preventDefault();
         if (tool === 'eraser') {
-          const events = e.getCoalescedEvents?.() ?? [e];
-          for (const ce of events) eraseAt(cssPos(ce).x, cssPos(ce).y);
+          const fn = eraserMode === 'partial' ? eraseAtPartial : eraseAt;
+          const list = e.getCoalescedEvents?.();
+          const events = list && list.length ? list : [e];
+          for (const ce of events) fn(cssPos(ce).x, cssPos(ce).y);
           scheduleLive();
           return;
         }
+        if (tool === 'lasso') {
+          if (moveSelRef.current && selRef.current) {
+            const pt = toImage(x, y, selRef.current.pageIdx);
+            if (pt) {
+              moveSelRef.current.dx = pt.x - moveSelRef.current.startX;
+              moveSelRef.current.dy = pt.y - moveSelRef.current.startY;
+              scheduleBase();
+            }
+            return;
+          }
+          const lp = lassoPathRef.current;
+          if (lp) {
+            const list = e.getCoalescedEvents?.();
+          const events = list && list.length ? list : [e];
+            for (const ce of events) {
+              const p2 = cssPos(ce);
+              const pt2 = toImage(p2.x, p2.y, lp.pageIdx);
+              if (pt2) lp.points.push({ x: pt2.x, y: pt2.y, p: 0.5 });
+            }
+            scheduleLive();
+          }
+          return;
+        }
         const cur = currentRef.current;
-        if (!cur || cur.snapLocked) return;
-        const events = e.getCoalescedEvents?.() ?? [e];
+        if (!cur) return;
+        if (cur.snapLocked) {
+          // A snapped LINE stays live: keep dragging to fine-tune its far endpoint
+          // (Adrian, 2 Aug 2026). Other shapes commit as fitted.
+          if (cur.stroke.snapped === 'line') {
+            const pt2 = toImage(x, y, cur.pageIdx);
+            if (pt2) {
+              cur.stroke.points[1] = { x: pt2.x, y: pt2.y, p: cur.stroke.points[1].p };
+              scheduleLive();
+            }
+          }
+          return;
+        }
+        const list = e.getCoalescedEvents?.();
+          const events = list && list.length ? list : [e];
         for (const ce of events) {
           const p = cssPos(ce);
           const pt = toImage(p.x, p.y, cur.pageIdx);
@@ -701,12 +903,62 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       penDownRef.current = false;
       lastPenUpRef.current = Date.now();
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+      if (tool === 'lasso') {
+        const mv = moveSelRef.current;
+        const sel = selRef.current;
+        if (mv && sel) {
+          // Commit the move: replace selected strokes with shifted clones, one op.
+          if (Math.hypot(mv.dx, mv.dy) > 0.5) {
+            const strokes = strokesRef.current[sel.pageIdx];
+            const before = strokes.slice();
+            const map = new Map<Stroke, Stroke>();
+            for (const s of sel.set) {
+              map.set(s, { ...s, points: s.points.map((p) => ({ x: p.x + mv.dx, y: p.y + mv.dy, p: p.p })) });
+            }
+            for (let i = 0; i < strokes.length; i++) {
+              const m = map.get(strokes[i]);
+              if (m) strokes[i] = m;
+            }
+            sel.set = new Set(map.values());
+            pushUndo(sel.pageIdx, { t: 'page', before, after: strokes.slice() });
+            bumpInk();
+          }
+          moveSelRef.current = null;
+          scheduleBase();
+          return;
+        }
+        const lp = lassoPathRef.current;
+        lassoPathRef.current = null;
+        if (lp && lp.points.length >= 3) {
+          const idxs = lassoSelect(strokesRef.current[lp.pageIdx], lp.points);
+          if (idxs.length) {
+            selRef.current = { pageIdx: lp.pageIdx, set: new Set(idxs.map((i) => strokesRef.current[lp.pageIdx][i])) };
+          } else {
+            clearSelection();
+          }
+        } else {
+          clearSelection();
+        }
+        scheduleBase();
+        scheduleLive();
+        return;
+      }
       if (tool === 'eraser') {
-        if (eraseOpsRef.current.length && erasePageRef.current >= 0) {
+        if (eraserMode === 'partial') {
+          if (eraseChangedRef.current && erasePageRef.current >= 0 && eraseBeforeRef.current) {
+            pushUndo(erasePageRef.current, {
+              t: 'page', before: eraseBeforeRef.current,
+              after: strokesRef.current[erasePageRef.current].slice(),
+            });
+            bumpInk();
+          }
+        } else if (eraseOpsRef.current.length && erasePageRef.current >= 0) {
           pushUndo(erasePageRef.current, { t: 'remove', items: eraseOpsRef.current });
           bumpInk();
         }
         eraseOpsRef.current = [];
+        eraseBeforeRef.current = null;
+        eraseChangedRef.current = false;
         erasePageRef.current = -1;
         scheduleLive();
         return;
@@ -823,7 +1075,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       el.removeEventListener('gesturestart', swallow as EventListener);
       el.removeEventListener('gesturechange', swallow as EventListener);
     };
-  }, [armHoldTimer, bumpInk, clampView, eraseAt, hlColor, isPenLike, penColor, penWidthPt, pushUndo, redo, scheduleBase, scheduleLive, stopMomentum, toImage, tool, undo]);
+  }, [armHoldTimer, bumpInk, clampView, clearSelection, eraseAt, eraseAtPartial, eraserMode, hlColor, isPenLike, penColor, penWidthPt, pushUndo, redo, scheduleBase, scheduleLive, stopMomentum, toImage, tool, undo]);
 
   // ── mount: sizing, images, draft, wake lock, tool memory, misc listeners ────
   useEffect(() => {
@@ -874,6 +1126,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         if (PEN_COLORS.includes(t.penColor)) setPenColor(t.penColor);
         if (PEN_WIDTHS_PT.includes(t.penWidthPt)) setPenWidthPt(t.penWidthPt);
         if (HL_COLORS.includes(t.hlColor)) setHlColor(t.hlColor);
+        if (t.eraserMode === 'stroke' || t.eraserMode === 'partial') setEraserMode(t.eraserMode);
       }
     } catch { /* defaults are fine */ }
 
@@ -904,11 +1157,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (!toolsLoadedRef.current) { toolsLoadedRef.current = true; return; }
     try {
       localStorage.setItem(TOOLS_KEY, JSON.stringify({
-        tool: tool === 'eraser' ? lastInkToolRef.current : tool,
-        penColor, penWidthPt, hlColor,
+        tool: tool === 'eraser' || tool === 'lasso' ? lastInkToolRef.current : tool,
+        penColor, penWidthPt, hlColor, eraserMode,
       }));
     } catch { /* best-effort */ }
-  }, [tool, penColor, penWidthPt, hlColor]);
+  }, [tool, penColor, penWidthPt, hlColor, eraserMode]);
 
   const hasInk = () => strokesRef.current.some((s) => s.length > 0);
   const inkedCount = strokesRef.current.filter((s) => s.length > 0).length;
@@ -917,13 +1170,28 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const jumpToPage = useCallback((idx: number) => {
     const i = clamp(idx, 0, n - 1);
     viewRef.current.oy = -(layoutRef.current.tops[i] * kFactor()) + 8;
+    clearSelection();
     clampView();
     scheduleBase();
-  }, [clampView, n, scheduleBase]);
+  }, [clampView, clearSelection, n, scheduleBase]);
+
+  // Lasso selection actions (floating chip next to the dashed box).
+  const deleteSelection = useCallback(() => {
+    const sel = selRef.current;
+    if (!sel || !sel.set.size) return;
+    const strokes = strokesRef.current[sel.pageIdx];
+    const before = strokes.slice();
+    strokesRef.current[sel.pageIdx] = strokes.filter((s) => !sel.set.has(s));
+    pushUndo(sel.pageIdx, { t: 'page', before, after: strokesRef.current[sel.pageIdx].slice() });
+    clearSelection();
+    bumpInk();
+    scheduleBase();
+  }, [bumpInk, clearSelection, pushUndo, scheduleBase]);
 
   // ── Done: flatten inked pages → upload → assemble → link ───────────────────
   const runDone = useCallback(async () => {
     if (!hasInk() || busyRef.current) return;
+    clearSelection();
     setError('');
     try {
       const inkedPhotoIdx = pages.filter((_, i) => strokesRef.current[i].length > 0).map((p) => p.photoIndex);
@@ -983,7 +1251,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       setBusy('');
       setError((e as Error).message);
     }
-  }, [drawStrokes, onDone, pages, runId, saveDraft, student, totals]);
+  }, [clearSelection, drawStrokes, onDone, pages, runId, saveDraft, student, totals]);
 
   const discardAndClose = useCallback(() => {
     try { localStorage.removeItem(draftKey(runId)); } catch { /* ignore */ }
@@ -1010,7 +1278,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         e.preventDefault();
         if (e.shiftKey) redo(pageNoRef.current - 1); else undo(pageNoRef.current - 1);
       } else if (e.key === 'e' && !e.metaKey && !e.ctrlKey) toggleEraser();
-      else if (e.key === 'Escape') requestClose();
+      else if (e.key === 'Escape') {
+        if (selRef.current?.set.size) { clearSelection(); scheduleBase(); }
+        else requestClose();
+      }
     };
     const onDoubleTap = () => toggleEraser();
     window.addEventListener('keydown', onKey);
@@ -1019,7 +1290,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('annotate-pencil-doubletap', onDoubleTap);
     };
-  }, [tool, undo, redo, requestClose, setToolRemember]);
+  }, [tool, undo, redo, requestClose, setToolRemember, clearSelection, scheduleBase]);
 
   // ── UI ──────────────────────────────────────────────────────────────────────
   const btn: React.CSSProperties = {
@@ -1027,7 +1298,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     background: '#fff', fontSize: 18, cursor: 'pointer', padding: '0 10px',
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
   };
-  const activeBtn: React.CSSProperties = { ...btn, background: '#111827', color: '#fff', borderColor: '#111827' };
+  const activeBtn: React.CSSProperties = { ...btn, background: '#111827', color: '#fff', border: '1px solid #111827' };
   const currentPageIdx = pageNo - 1;
   const canUndo = (undoRef.current[currentPageIdx]?.length ?? 0) > 0;
   const canRedo = (redoRef.current[currentPageIdx]?.length ?? 0) > 0;
@@ -1055,7 +1326,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
         <button style={tool === 'pen' ? activeBtn : btn} onClick={() => setToolRemember('pen')} aria-label="Pen" title="Pen"><IconPen /></button>
         <button style={tool === 'highlighter' ? activeBtn : btn} onClick={() => setToolRemember('highlighter')} aria-label="Highlighter" title="Highlighter"><IconHighlighter /></button>
-        <button style={tool === 'eraser' ? activeBtn : btn} onClick={() => setToolRemember('eraser')} aria-label="Eraser" title="Eraser (removes a whole stroke)"><IconEraser /></button>
+        <button style={tool === 'eraser' ? activeBtn : btn} onClick={() => setToolRemember('eraser')} aria-label="Eraser" title="Eraser"><IconEraser /></button>
+        <button style={tool === 'lasso' ? activeBtn : btn} onClick={() => setToolRemember('lasso')} aria-label="Lasso select" title="Lasso: circle strokes to select, then drag to move"><IconLasso /></button>
+
+        {tool === 'eraser' && (
+          <div style={{ display: 'inline-flex', gap: 4 }}>
+            <button style={{ ...(eraserMode === 'stroke' ? activeBtn : btn), fontSize: 13, fontWeight: 700 }} onClick={() => setEraserMode('stroke')} title="Tap a stroke to remove it whole">Stroke</button>
+            <button style={{ ...(eraserMode === 'partial' ? activeBtn : btn), fontSize: 13, fontWeight: 700 }} onClick={() => setEraserMode('partial')} title="Rub out only what you touch">Partial</button>
+          </div>
+        )}
 
         {tool === 'pen' && (
           <>
@@ -1095,7 +1374,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <button
           style={{
             ...btn, background: hasInk() && !busy ? '#2563eb' : '#93c5fd', color: '#fff',
-            borderColor: 'transparent', fontWeight: 700, fontSize: 15, padding: '0 18px',
+            border: '1px solid transparent', fontWeight: 700, fontSize: 15, padding: '0 18px',
           }}
           disabled={!hasInk() || !!busy}
           onClick={runDone}
@@ -1141,6 +1420,16 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             ✏️ ink on {inkedCount} page{inkedCount > 1 ? 's' : ''}
           </div>
         )}
+        {selChip && (
+          <div style={{
+            position: 'absolute', left: selChip.x, top: selChip.y,
+            display: 'flex', gap: 6, background: '#fff', border: '1px solid #d1d5db',
+            borderRadius: 10, padding: 5, boxShadow: '0 4px 14px rgba(0,0,0,0.16)',
+          }}>
+            <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={deleteSelection}>🗑 Delete</button>
+            <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>
+          </div>
+        )}
       </div>
 
       {/* cancel confirm */}
@@ -1150,7 +1439,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             <div style={{ fontWeight: 700, fontSize: 16 }}>Leave annotating?</div>
             <div style={{ fontSize: 13, color: '#4b5563' }}>Your ink hasn&rsquo;t been baked into a PDF yet.</div>
             <button style={{ ...btn, height: 46, fontWeight: 700 }} onClick={() => { setConfirmOpen(false); saveDraft(); onClose(); }}>💾 Keep as draft &amp; close</button>
-            <button style={{ ...btn, height: 46, color: '#b91c1c', borderColor: '#fca5a5' }} onClick={() => { setConfirmOpen(false); discardAndClose(); }}>🗑 Discard ink &amp; close</button>
+            <button style={{ ...btn, height: 46, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={() => { setConfirmOpen(false); discardAndClose(); }}>🗑 Discard ink &amp; close</button>
             <button style={{ ...btn, height: 46 }} onClick={() => setConfirmOpen(false)}>Keep annotating</button>
           </div>
         </div>
