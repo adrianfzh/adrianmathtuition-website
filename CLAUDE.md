@@ -16,13 +16,22 @@ Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Ta
 
 **`main` = production** (auto-deploys to Vercel prod). **`dev` = preview** (auto-deploys to a Vercel preview URL, NOT prod). Work never lands on `main` without an explicit go-ahead.
 
-**On any turn where I change code, auto commit + push to `dev` at the end of that turn — no need for the user to say "push".** Pushing to `dev` does NOT deploy anything (this Vercel project only auto-deploys the production branch). To give the user something to look at, after pushing to `dev` run **`vercel deploy --yes`** (preview, NOT `--prod`), then **re-point the stable alias** so Adrian's bookmark shows the latest build:
+**On any turn where I change code, auto commit + push to `dev` at the end of that turn — no need for the user to say "push".** **A `dev` push now AUTO-BUILDS a preview via the GitHub integration** (confirmed live 2026-08-02 — the old "not enabled" note here was stale): `source: git` deployments appear in `vercel ls` within ~a minute of the push, build in 1–2 min. After it's READY, **re-point the stable alias** so Adrian's bookmark shows the latest build:
 ```
 vercel alias set <new-deployment-url> adrianmath-dev.vercel.app
 ```
 **https://adrianmath-dev.vercel.app is Adrian's permanent preview bookmark** (set up 2026-07-10). Always re-alias after every preview deploy and share THIS url, not the per-deploy one. Cookies survive re-aliasing (same domain), so his login persists across deploys. The preview is fully isolated from prod; Sentry is off there (env vars are Production-scoped).
 
-> Optional nicety: enabling "preview deployments for all branches" in Vercel → Settings → Git would auto-build a **stable** `…-git-dev-…vercel.app` URL on every `dev` push, removing the manual `vercel deploy` step. Not enabled currently.
+> ⚠ **CLI `vercel deploy` is currently SEAT-BLOCKED** (found 2026-08-02): CLI-sourced
+> deployments attach the local git author `adrianfong@Adrians-MacBook-Pro.local`, which
+> is not a Vercel team member, so they sit forever in `readyState: BLOCKED` —
+> `vercel ls`/`inspect` render that as **UNKNOWN with no duration and NO build logs**,
+> and the deployment URL serves Vercel's geist-styled "building" placeholder with HTTP
+> 200 (don't read a 200 there as READY; `vercel alias set` refuses with "not ready").
+> The GitHub auto-build is the working path — push to `dev`, wait for the `source: git`
+> deployment, alias it. To re-enable CLI deploys, either verify/approve the author in
+> Vercel team settings or set `git config user.email adrianmathtuition@gmail.com`
+> (the Vercel account email) — Adrian's call, since it changes commit attribution.
 
 - Only when code/files actually changed. Pure-discussion or read-only turns → no commit, no push.
 - Always run the build/typecheck first; never push a broken build. The pre-push hook (`.githooks/pre-push`) runs the test suite and blocks the push on failure.
