@@ -236,10 +236,15 @@ First live-paper feedback round (2 Aug 2026):
   (pen/highlighter/eraser/undo/redo, Notability-style recognisability).
 - Second entry point: an ✏️ Annotate button on every history row (`annotateRun` =
   loadRun → auto-open overlay).
-- Known limitation, NOT an overlay bug: marked pages look soft when zoomed because
-  working photos are downscaled to ≤1280px client-side before marking (cost/latency
-  trade-off) and the bot composes its red-pen overlay onto THAT copy. Sharpening
-  means bot-side compositing onto the original-resolution photo — future work.
+- ~~Known limitation~~ **FIXED 2 Aug 2026 — full-resolution marked pages.** Marked
+  pages used to look soft when zoomed because working photos were downscaled to
+  ≤1280px client-side before marking and the bot composed its red pen onto THAT copy.
+  Now the page ALSO uploads each photo to Blob at ≤2600px (client token
+  `type=original`, best-effort) and sends `originalUrl` per image in the 'direct'
+  body; the bot (`ai/hires-original.js` + a viewBox-scaled composite in
+  `ai/annotate.js`) re-renders the same overlay onto the big copy. Marking still
+  reads the 1280px copies — model cost unchanged. New runs' pages are ~2600px wide
+  (`DISPLAY_BITMAP_MAX_W` already matches); runs marked before the fix stay 1280.
 - Pencil double-tap→eraser stays impossible in Safari (no web API); the overlay
   already listens for `annotate-pencil-doubletap` so the thin WKWebView shell remains
   the path — see §2 discussion. Wanted by Adrian, pending his call on the shell.

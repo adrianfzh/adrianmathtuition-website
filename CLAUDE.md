@@ -654,6 +654,21 @@ page and feeds those into the ordinary photo path, so marking → Gemini boundin
 red-pen overlay → assembled PDF are all untouched (annotation needs a raster). Doing it
 client-side also keeps a fat scan off Vercel's 4.5 MB request-body ceiling.
 
+**Resolution chain (fixed 2 Aug 2026 — "marked pages are blurred"):** the model reads a
+≤1280px JPEG-0.72 copy (`fileToUpload` — keeps the JSON body small, model cost
+unchanged), but the bot composites its red pen onto whatever base it has, so every
+marked page + every PDF built from them used to inherit ~1280px (~110 DPI on A4). Now
+`markPaper()` ALSO uploads each photo to Blob at ≤2600px (`uploadOriginal` /
+`fileToHiresBlob`, client token `type=original` on `mark-paper-annotated-token` — the
+one flavour with no runId, since the run doesn't exist yet) and sends `originalUrl` per
+image; the bot fetches it in parallel with the marking call and re-renders the SAME
+overlay SVG onto it via viewBox scaling (`ai/hires-original.js` + `createAnnotatedImage`
+in the bot — placement math stays in small-copy coordinates). `pdfToPageImages` renders
+at ≤2600px for the same reason (the page images ARE the originals for a scanned PDF).
+Every step is best-effort: a failed original upload/fetch/aspect-check falls back to
+annotating the small copy. Don't "optimise" the originals away, and don't make marking
+read them — the split (small copy to the model, big copy to the pen) is the point.
+
 Three non-obvious details, each a bug if changed:
 
 - **`intent: 'print'` on `page.render()`** — the default `'display'` intent paces the

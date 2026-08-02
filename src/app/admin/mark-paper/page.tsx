@@ -49,10 +49,12 @@ async function pdfToPageImages(file: File, onPage: (done: number, total: number)
   try {
     for (let n = 1; n <= doc.numPages; n++) {
       const page = await doc.getPage(n);
-      // Render a little above the 1280px upload cap so the downscale has data to
-      // work with — handwriting is the thing being read.
+      // Render at the ORIGINAL-upload size (~2600px): these page images are also what
+      // gets uploaded to Blob as the full-res base the bot draws the red pen onto, so
+      // rendering small here would put the resolution ceiling right back (the marking
+      // copy is still downscaled to 1280 by fileToUpload — model cost unchanged).
       const unit = page.getViewport({ scale: 1 });
-      const viewport = page.getViewport({ scale: Math.min(3, 1600 / Math.max(unit.width, unit.height)) });
+      const viewport = page.getViewport({ scale: Math.min(3, HIRES_MAX_EDGE / Math.max(unit.width, unit.height)) });
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(viewport.width);
       canvas.height = Math.round(viewport.height);
@@ -77,7 +79,41 @@ async function pdfToPageImages(file: File, onPage: (done: number, total: number)
 // Build the upload payload for one image. Downscale via canvas when the browser can
 // decode it (keeps the payload small); otherwise — HEIC on Chrome — send the raw bytes
 // and let the server (sharp) convert. Never reject a photo here.
-async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise<{ base64: string; mediaType: string }> {
+// origWidth/origHeight are the PRE-downscale dimensions (absent when the browser
+// couldn't decode) — they decide whether a full-res original is worth uploading.
+async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise<{ base64: string; mediaType: string; origWidth?: number; origHeight?: number }> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const ow = bmp.width, oh = bmp.height;
+    const scale = Math.min(1, maxEdge / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d')!.drawImage(bmp, 0, 0, w, h);
+    bmp.close?.();
+    const out = canvas.toDataURL('image/jpeg', quality);
+    return { base64: out.split(',')[1] || '', mediaType: 'image/jpeg', origWidth: ow, origHeight: oh };
+  } catch {
+    const dataUrl = await readDataUrl(file);
+    return { base64: dataUrl.split(',')[1] || '', mediaType: file.type || 'image/heic' };
+  }
+}
+
+// ── Full-resolution originals (the blurred-marked-pages fix, 2 Aug 2026) ────────
+// The 1280px copy above is what the MODEL reads (cost/latency unchanged), but the bot
+// composites its red pen onto whatever it is given — so every marked page, and every
+// PDF built from them, used to inherit ~1280px. Each photo now ALSO goes to Blob at up
+// to 2600px via a client token, and its URL rides the 'direct' body as `originalUrl`;
+// the bot re-renders the same overlay onto it (ai/hires-original.js there). Every step
+// is best-effort: a failed original upload costs resolution, never the marking.
+const HIRES_MAX_EDGE = 2600;
+
+// Re-encode through canvas rather than uploading the raw file: uniform JPEG (the bot's
+// sharp lacks HEIC support), EXIF baked exactly like the marking copy (so the two can
+// never disagree about orientation), and bounded bytes (a 12MP camera JPEG is 3–8MB;
+// this is ~1MB). Returns null when the browser can't decode — then the raw file goes up
+// instead and the bot decides whether it can read it.
+async function fileToHiresBlob(file: File, maxEdge = HIRES_MAX_EDGE, quality = 0.9): Promise<Blob | null> {
   try {
     const bmp = await createImageBitmap(file);
     const scale = Math.min(1, maxEdge / Math.max(bmp.width, bmp.height));
@@ -86,12 +122,37 @@ async function fileToUpload(file: File, maxEdge = 1280, quality = 0.72): Promise
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d')!.drawImage(bmp, 0, 0, w, h);
     bmp.close?.();
-    const out = canvas.toDataURL('image/jpeg', quality);
-    return { base64: out.split(',')[1] || '', mediaType: 'image/jpeg' };
-  } catch {
-    const dataUrl = await readDataUrl(file);
-    return { base64: dataUrl.split(',')[1] || '', mediaType: file.type || 'image/heic' };
-  }
+    return await new Promise((res) => canvas.toBlob(res, 'image/jpeg', quality));
+  } catch { return null; }
+}
+
+async function uploadOriginal(file: File, up: { mediaType: string; origWidth?: number; origHeight?: number }): Promise<string | null> {
+  try {
+    const maxDim = Math.max(up.origWidth || 0, up.origHeight || 0);
+    // Decoded and small: the 1280 copy already carries (nearly) every pixel — skip.
+    if (up.origWidth && maxDim <= 1400) return null;
+    let payload: Blob = file;
+    let name = file.name || 'photo.jpg';
+    if (up.origWidth) {
+      // A JPEG/PNG already at or under the cap uploads as-is (no second lossy pass —
+      // the PDF-raster pages land here); anything bigger is re-encoded down to the cap.
+      const asIs = maxDim <= HIRES_MAX_EDGE && (file.type === 'image/jpeg' || file.type === 'image/png');
+      if (!asIs) {
+        const hi = await fileToHiresBlob(file);
+        if (!hi) return null;
+        payload = hi; name = 'photo.jpg';
+      }
+    }
+    const tokenRes = await fetch(`/api/admin/mark-paper-annotated-token?type=original&filename=${encodeURIComponent(name)}`);
+    if (!tokenRes.ok) return null;
+    const { token, pathname } = await tokenRes.json();
+    const blob = await put(pathname, payload, {
+      access: 'public', token,
+      contentType: payload.type || 'application/octet-stream',
+      multipart: payload.size > 5 * 1024 * 1024,
+    });
+    return blob.url;
+  } catch { return null; }
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
@@ -368,9 +429,18 @@ export default function MarkPaperPage() {
       // worksheets where the printed questions are on the pages themselves).
       const pdfBase64 = pdf ? await pdfToBase64(pdf) : null;
       const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
+      // Full-res originals → Blob, so the bot's red pen lands on sharp pages instead of
+      // the 1280px marking copies. Must finish BEFORE the marking call — the URLs ride
+      // its body — but each one is best-effort: null just means that page stays small.
+      setRasterizing('Uploading full-resolution pages…');
+      const originalUrls = await Promise.all(images.map((f, i) => uploadOriginal(f, imgs[i]))).finally(() => setRasterizing(''));
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'direct', pdfBase64, images: imgs, paperName: workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`), model: markModel, style: markStyle }),
+        body: JSON.stringify({
+          phase: 'direct', pdfBase64,
+          images: imgs.map((im, i) => ({ base64: im.base64, mediaType: im.mediaType, originalUrl: originalUrls[i] || undefined })),
+          paperName: workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`), model: markModel, style: markStyle,
+        }),
       });
       const raw = await resp.text();
       let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
