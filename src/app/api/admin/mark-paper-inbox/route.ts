@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put, list, del } from '@vercel/blob';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { resolveInboxFileName } from '@/lib/inbox-filename';
+import { inboxKindFrom, parseInboxPath, resolveInboxFileName } from '@/lib/inbox-filename';
 
 // The iPad share-sheet inbox. A Shortcut on Adrian's iPad ("✍️ Mark paper", in the
 // WhatsApp/Files share sheet) POSTs the shared PDF or photos here; the mark-paper page
@@ -51,12 +51,13 @@ export async function POST(req: NextRequest) {
     try { form = await req.formData(); } catch { return NextResponse.json({ error: 'unreadable form-data' }, { status: 400 }); }
     const files = form.getAll('file').filter((f): f is File => f instanceof File);
     if (!files.length) return NextResponse.json({ error: 'no "file" field in the form' }, { status: 400 });
+    const kindDir = inboxKindFrom(req.headers.get('x-file-kind')) ?? '';
     for (const f of files) {
       const name = (f.name || 'shared.pdf').replace(/[^\w.\- ()]/g, '').slice(0, 120) || 'shared.pdf';
       if (!OK_EXT.test(name)) return NextResponse.json({ error: `${name}: only PDF and photo files` }, { status: 415 });
       if (f.size > MAX_BYTES) return NextResponse.json({ error: `${name}: over 50MB` }, { status: 413 });
       const buf = Buffer.from(await f.arrayBuffer());
-      await put(`${PREFIX}${Date.now()}-${name}`, buf, {
+      await put(`${PREFIX}${kindDir ? kindDir + '/' : ''}${Date.now()}-${name}`, buf, {
         access: 'public',
         contentType: f.type || (/\.pdf$/i.test(name) ? 'application/pdf' : 'application/octet-stream'),
       });
@@ -81,9 +82,11 @@ export async function POST(req: NextRequest) {
     // name — the raw File body itself has none. Ignoring this header while the page
     // recipe advertised it is why every share arrived as "shared.pdf" (2 Aug 2026).
     const name = resolveInboxFileName(req.headers.get('x-file-name'), ext);
+    // Optional share-time tag (Shortcut menu step) — rides as a path segment.
+    const kindDir = inboxKindFrom(req.headers.get('x-file-kind')) ?? '';
     const putType = TYPE_TO_EXT[contentType] ? contentType
       : (ext === 'pdf' ? 'application/pdf' : ext === 'png' ? 'image/png' : ext === 'heic' ? 'image/heic' : 'image/jpeg');
-    await put(`${PREFIX}${Date.now()}-${name}`, buf, { access: 'public', contentType: putType });
+    await put(`${PREFIX}${kindDir ? kindDir + '/' : ''}${Date.now()}-${name}`, buf, { access: 'public', contentType: putType });
     stored.push({ name, size: buf.length });
   }
   return NextResponse.json({ ok: true, stored: stored.length, files: stored });
@@ -95,14 +98,12 @@ export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { blobs } = await list({ prefix: PREFIX, limit: 100 });
   const files = blobs
-    .map(b => ({
-      pathname: b.pathname,
-      url: b.url,
-      // Strip the timestamp we prepended so the row reads as the shared filename.
-      name: b.pathname.slice(PREFIX.length).replace(/^\d+-/, ''),
-      size: b.size,
-      uploadedAt: b.uploadedAt,
-    }))
+    .map(b => {
+      // Strip the kind segment (if tagged) + the timestamp we prepended, so the
+      // row reads as the shared filename; the tag rides along for the banner.
+      const { kind, name } = parseInboxPath(b.pathname.slice(PREFIX.length));
+      return { pathname: b.pathname, url: b.url, name, kind, size: b.size, uploadedAt: b.uploadedAt };
+    })
     .sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
   const body: Record<string, unknown> = { files };
   if (req.nextUrl.searchParams.get('setup') === '1') {

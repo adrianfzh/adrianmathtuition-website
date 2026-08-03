@@ -23,3 +23,22 @@ export function resolveInboxFileName(headerName: string | null | undefined, snif
   const base = cleaned.replace(/\.(pdf|jpe?g|png|webp|heic|heif|\w{1,5})$/i, '').replace(/\.+$/, '');
   return `${base || 'shared'}.${sniffedExt}`;
 }
+
+// A share can be TAGGED at share time (the Shortcut's Choose-from-Menu step,
+// 3 Aug 2026): `x-file-kind: working|paper` becomes a path segment —
+// `inbox/working/<ts>-name` — so the banner can lead with the right attach button.
+// Untagged files sit at the inbox root exactly as before.
+export type InboxKind = 'working' | 'paper';
+
+export function inboxKindFrom(raw: string | null | undefined): InboxKind | null {
+  const k = String(raw || '').toLowerCase().trim();
+  return k === 'working' || k === 'paper' ? k : null;
+}
+
+/** pathname AFTER the inbox prefix → its kind tag + display name. */
+export function parseInboxPath(rest: string): { kind: InboxKind | null; name: string } {
+  const m = rest.match(/^(working|paper)\//);
+  const kind = (m ? m[1] : null) as InboxKind | null;
+  const name = rest.replace(/^(working|paper)\//, '').replace(/^\d+-/, '');
+  return { kind, name };
+}

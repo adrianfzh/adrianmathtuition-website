@@ -268,7 +268,7 @@ export default function MarkPaperPage() {
   const [paperName, setPaperName] = useState('');
   // iPad share-sheet inbox: files the "✍️ Mark paper" Shortcut posted from WhatsApp
   // (iPadOS keeps websites out of the share sheet; the Shortcut is the workaround).
-  const [inbox, setInbox] = useState<{ pathname: string; url: string; name: string; size: number }[]>([]);
+  const [inbox, setInbox] = useState<{ pathname: string; url: string; name: string; size: number; kind?: 'working' | 'paper' | null }[]>([]);
   // The working-PDF's filename ("xinmin EM p2") — the paper's natural name. Captured
   // at attach so it prefills the Paper name box, survives the mark-start reset, and
   // names the run in history (Adrian, 1 Aug 2026: "why don't we have it prefilled?").
@@ -790,17 +790,33 @@ export default function MarkPaperPage() {
         {inbox.length > 0 && (
           <div style={{ marginBottom: 14, padding: 12, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10 }}>
             <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>📥 From your iPad ({inbox.length})</div>
-            {inbox.map((f) => (
-              <div key={f.pathname} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '6px 0', fontSize: 14, opacity: inboxBusy === f.pathname ? 0.5 : 1 }}>
-                <span style={{ flex: 1, minWidth: 140, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
-                <span style={{ color: '#6b7280', fontSize: 12 }}>{(f.size / 1024 / 1024).toFixed(1)}MB</span>
-                <button style={{ ...btn, fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => useInboxFile(f, 'working')}>→ Working</button>
-                {/\.pdf$/i.test(f.name) && (
-                  <button style={{ ...btn, background: '#374151', fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => useInboxFile(f, 'paper')}>→ Question paper</button>
-                )}
-                <button style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 16 }} title="Dismiss" onClick={() => dismissInboxFile(f.pathname)}>✕</button>
-              </div>
-            ))}
+            {inbox.map((f) => {
+              // Share-time tag (the Shortcut's "Attach as?" menu): the tagged kind's
+              // button leads, dark; the other stays available for mis-taps. A photo
+              // can never be the question paper (that slot is a PDF).
+              const isPdf = /\.pdf$/i.test(f.name);
+              const workingBtn = (dark: boolean) => (
+                <button key="w" style={{ ...btn, background: dark ? '#111827' : '#9ca3af', fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => useInboxFile(f, 'working')}>→ Working</button>
+              );
+              const paperBtn = (dark: boolean) => isPdf ? (
+                <button key="p" style={{ ...btn, background: dark ? '#374151' : '#9ca3af', fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => useInboxFile(f, 'paper')}>→ Question paper</button>
+              ) : null;
+              return (
+                <div key={f.pathname} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '6px 0', fontSize: 14, opacity: inboxBusy === f.pathname ? 0.5 : 1 }}>
+                  <span style={{ flex: 1, minWidth: 140, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                  {f.kind && (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#1d4ed8', background: '#dbeafe', borderRadius: 999, padding: '2px 8px' }}>
+                      {f.kind === 'paper' ? '📄 question paper' : '✍️ working'}
+                    </span>
+                  )}
+                  <span style={{ color: '#6b7280', fontSize: 12 }}>{(f.size / 1024 / 1024).toFixed(1)}MB</span>
+                  {f.kind === 'paper' && isPdf ? [paperBtn(true), workingBtn(false)]
+                    : f.kind === 'working' ? [workingBtn(true), paperBtn(false)]
+                    : [workingBtn(true), paperBtn(true)]}
+                  <button style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 16 }} title="Dismiss" onClick={() => dismissInboxFile(f.pathname)}>✕</button>
+                </div>
+              );
+            })}
           </div>
         )}
         <FileDrop
@@ -884,6 +900,7 @@ export default function MarkPaperPage() {
                 <span style={{ color: '#b45309' }}>⚠ WhatsApp strips the real filename BEFORE Shortcuts sees it — documents arrive as a temp file literally named &quot;shared&quot;, so the header alone can&apos;t recover it. Fix: add an <b>Ask for Input</b> action (type Text, prompt &quot;Paper name?&quot;, Default Answer = Shortcut Input ▸ Name) BEFORE Get Contents of URL, and set <code>x-file-name</code> = <b>Provided Input</b> instead — you confirm or type the name in one tap at share time. Files shared from the Files app keep their real names either way.</span><br />
                 Request Body: <b>File</b> → <b>Shortcut Input</b>.</li>
               <li>Add <b>Show Notification</b> after it, with the body set to the <b>Contents of URL</b> magic variable — the notification then shows the server&apos;s real answer (<code>{'{"ok":true…}'}</code> or the error), not blind optimism.</li>
+              <li><b>Optional — choose Working vs Question paper at share time:</b> add a <b>Choose from Menu</b> action (prompt <code>Attach as?</code>, items <b>Working</b> and <b>Question paper</b>) BEFORE Get Contents of URL. Inside the <b>Working</b> item add <b>Text</b> = <code>working</code> then <b>Set Variable</b> <code>kind</code>; inside <b>Question paper</b> add <b>Text</b> = <code>paper</code> then <b>Set Variable</b> <code>kind</code>. Then in Get Contents of URL add a 3rd header: <code>x-file-kind</code> = the <code>kind</code> variable. Tagged files show up in the banner with the right attach button up front; without this step nothing changes — you pick on the page as before.</li>
             </ol>
             <div style={{ marginTop: 6, color: '#6b7280' }}>Then in any share sheet: tap the file → Share → <b>✍️ Mark paper</b> (it appears in the actions list — favourite it via Edit Actions to pin it near the top). Files land in a &quot;📥 From your iPad&quot; banner at the top of this page.</div>
           </div>
