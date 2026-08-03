@@ -172,7 +172,7 @@ async function uploadPaperPdf(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -763,6 +763,64 @@ export default function MarkPaperPage() {
     setBothStage(null); setGenerating(false);
   }
 
+  // 🌙 Queue for marking (4 Aug 2026): upload everything, SAVE the paper, tag it
+  // queued — the bot's worker marks it server-side and Telegrams the result. No
+  // babysitting, survives closing the tab, and the attachments clear so the next
+  // paper can go straight in ("drop five papers and walk away").
+  const [queueBusy, setQueueBusy] = useState(false);
+  const [queueNote, setQueueNote] = useState('');
+  async function queuePaper() {
+    if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
+    setQueueBusy(true); setError(''); setQueueNote('');
+    try {
+      const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
+      setRasterizing('Uploading full-resolution pages…');
+      const [originalUrls, paperPdfUrl] = await Promise.all([
+        Promise.all(images.map((f, i) => uploadOriginal(f, imgs[i]))),
+        pdf ? uploadPaperPdf(pdf) : Promise.resolve(null),
+      ]).finally(() => setRasterizing(''));
+      const photos = originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean);
+      if (!photos.length) throw new Error('The photo uploads failed — try again.');
+      const paperLabel = workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`);
+      const sp = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, source: { paper_pdf_url: paperPdfUrl || null, photos } }),
+      });
+      const spd = await sp.json();
+      if (!sp.ok || !spd.run_id) throw new Error(spd.error || 'could not save the paper');
+      const en = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'enqueue', id: spd.run_id, model: markModel, style: markStyle }),
+      });
+      const end = await en.json();
+      if (!en.ok || end.error) throw new Error(end.error || 'could not queue');
+      // Clear the slots — the whole point is attaching the NEXT paper immediately.
+      imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
+      setImages([]); setImgPreviews([]); setPdf(null); workingNameRef.current = '';
+      setQueueNote(`🌙 Queued (#${end.position || 1}) — you'll get a Telegram when it's marked. Attach the next paper.`);
+      loadStats();
+    } catch (e) { setError((e as Error).message); }
+    finally { setQueueBusy(false); }
+  }
+
+  // ⬇ House-style DOCX of the practice list, built server-side (pandoc on the bot).
+  const [docxBusy, setDocxBusy] = useState(false);
+  async function downloadPracticeDocx() {
+    if (!runId || docxBusy) return;
+    setDocxBusy(true); setError('');
+    try {
+      const r = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'practice-docx', id: runId }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.url) throw new Error(d.error || `docx failed (${r.status})`);
+      const fname = [...[sendStudentName, paperName].filter(Boolean), 'practice'].join(' — ') + '.docx';
+      window.open(downloadHref(d.url, fname, false), '_blank');
+    } catch (e) { setError((e as Error).message); }
+    finally { setDocxBusy(false); }
+  }
+
   // 📝 Practice questions — OPT-IN (Adrian, 3 Aug 2026: "put it as an option…
   // do not do this by default"): one QB-or-generated question per below-max
   // question, built only when the button is pressed. The bot stores the list on
@@ -852,7 +910,17 @@ export default function MarkPaperPage() {
                   // running server-side (markings finish even after a refresh) — ▶
                   // then would start a second, parallel, double-cost marking, so it
                   // waits out the window.
-                  Date.now() - new Date(run.created_at).getTime() < 4 * 60 * 1000 ? (
+                  run.queue_failed ? (
+                    <>
+                      <span style={{ color: '#b91c1c', fontSize: 12, fontWeight: 600 }}>⚠ queue failed twice</span>
+                      <button type="button" disabled={busy} onClick={() => markFromStored(run.id)}
+                        style={{ ...btn, background: '#b45309', padding: '4px 12px', fontSize: 12, opacity: busy ? 0.6 : 1 }}>
+                        ▶ Mark
+                      </button>
+                    </>
+                  ) : run.queued_at ? (
+                    <span style={{ color: '#4c1d95', fontSize: 12, fontWeight: 600 }}>🌙 queued — the bot will mark it and Telegram you</span>
+                  ) : Date.now() - new Date(run.created_at).getTime() < 4 * 60 * 1000 ? (
                     <span style={{ color: '#b45309', fontSize: 12, fontWeight: 600 }}>⏳ marking may still be running — check back in a minute</span>
                   ) : (
                   <>
@@ -961,6 +1029,10 @@ export default function MarkPaperPage() {
           <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={markPaper}>
             {phase === 'marking' ? 'Marking…' : 'Mark paper'}
           </button>
+          <button style={{ ...btn, background: '#4c1d95', opacity: busy || queueBusy ? 0.6 : 1 }} disabled={busy || queueBusy} onClick={queuePaper}
+            title="Upload now, mark in the background — Telegram pings you per paper">
+            {queueBusy ? 'Queueing…' : '🌙 Queue for marking'}
+          </button>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#374151' }}>
             <span>Model:</span>
             <select
@@ -986,6 +1058,7 @@ export default function MarkPaperPage() {
             </select>
           </label>
           <span style={{ color: '#6b7280', fontSize: 13 }}>{pdf ? 'Reads each photo against the paper and marks every question it finds (≈1–2 min).' : 'No paper attached — marks each photo standalone, reading the printed questions off the page (≈1–2 min).'}</span>
+          {queueNote && <span style={{ color: '#15803d', fontSize: 13, fontWeight: 600 }}>{queueNote}</span>}
         </div>
         {/* One-time Shortcut recipe — puts "✍️ Mark paper" into the iPad share sheet,
             posting straight into the inbox banner above. */}
@@ -1189,7 +1262,13 @@ export default function MarkPaperPage() {
           )}
           {practiceItems && (
             <div style={{ marginTop: 14, padding: 12, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10 }}>
-              <div style={{ fontWeight: 700, marginBottom: 6 }}>📝 Practice — one question per dropped-marks question</div>
+              <div style={{ fontWeight: 700, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <span>📝 Practice — one question per dropped-marks question</span>
+                <button style={{ ...btn, background: '#374151', fontSize: 12, padding: '5px 10px', opacity: docxBusy ? 0.6 : 1 }} disabled={docxBusy} onClick={downloadPracticeDocx}
+                  title="House-style Word file — typeset equations, working space, orange answers">
+                  {docxBusy ? 'Building…' : '⬇ DOCX'}
+                </button>
+              </div>
               {practiceItems.map((it, i) => (
                 <div key={i} style={{ padding: '10px 0', borderTop: i ? '1px solid #fef3c7' : 'none' }}>
                   <div style={{ fontSize: 12, color: '#92400e', fontWeight: 700, marginBottom: 4 }}>

@@ -93,7 +93,7 @@ Deep details for schedule/marking/kiosk pages live in `docs/` (see the table at 
 
 - `page.tsx` — homepage with schedule widget (fetches `/api/schedule`)
 - `chat/page.tsx` — web math solver (SSE to Fly.io `/api/chat`, NOT to Vercel)
-- `admin/page.tsx` — **admin hub**: status cards + launcher tile grid. Cookie-based auth (30-day), PWA-ready. Phone tile reorder = iOS-style arrange mode (dnd archaeology in `docs/SCHEDULE.md`).
+- `admin/page.tsx` — **admin hub**: status cards + launcher tile grid. Cookie-based auth (30-day), PWA-ready. Phone tile reorder = iOS-style arrange mode (dnd archaeology in `docs/SCHEDULE.md`). Since 2026-08-04 the hub also shows fail-soft attention cards (⏳ papers to mark, ❓ unmarked lessons, ⚠ exam-info gaps) — hidden at zero; see docs/MARKING.md + lib/unmarked-lessons.ts.
 - `admin/my-todos/page.tsx` — Adrian's personal to-do list (Supabase `admin_todos` via `/api/admin/my-todos`). NOT the loop queue.
 - `admin/todo/page.tsx` — **Loop Tasks**: dev-task queue for the build-test-fix `/loop` (Airtable `Todos` via `/api/admin/todo`).
 - `admin/schedule/page.tsx` — lesson management calendar → `docs/SCHEDULE.md`

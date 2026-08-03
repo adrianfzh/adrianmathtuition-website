@@ -65,6 +65,11 @@ interface Stats {
   invoices: { count: number; totalOwed: number };
   makeups: { count: number };
   thisWeek: { count: number; weekLabel: string };
+  // Attention counts (each null when its sub-fetch failed server-side;
+  // examGaps is also null outside an exam season) — cards hide on 0/null.
+  pendingPapers?: { count: number; possiblyMarking: number } | null;
+  unmarkedLessons?: number | null;
+  examGaps?: { examType: string; count: number } | null;
 }
 
 interface BotStats {
@@ -132,6 +137,21 @@ export default function AdminHub() {
     ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
 
+  // Attention cards (papers to mark · unmarked lessons · exam info gaps).
+  // Best-effort: a failed fetch just leaves the strip hidden — the launcher
+  // grid must never wait on (or break with) the stats endpoint. The session
+  // cookie rides same-origin fetches, so no Authorization header is needed.
+  const [stats, setStats] = useState<Stats | null>(null);
+  useEffect(() => {
+    if (!authed) return;
+    let cancelled = false;
+    fetch('/api/admin-stats')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled && d) setStats(d); })
+      .catch(() => { /* strip stays hidden */ });
+    return () => { cancelled = true; };
+  }, [authed]);
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setAuthError('');
@@ -174,6 +194,14 @@ export default function AdminHub() {
   }
 
   // ── Hub ──────────────────────────────────────────────────────────────────────
+  // Attention cards — shown only when the count is non-zero (a clean day keeps
+  // the hub as bare as before). Same .stat-card markup/classes as the original
+  // status strip (2×2 grid, whole card is the tap target).
+  const papersCard = stats?.pendingPapers && stats.pendingPapers.count > 0 ? stats.pendingPapers : null;
+  const unmarkedCard = typeof stats?.unmarkedLessons === 'number' && stats.unmarkedLessons > 0 ? stats.unmarkedLessons : null;
+  const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
+  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard);
+
   return (
     <>
       <style>{hubCSS}</style>
@@ -190,6 +218,42 @@ export default function AdminHub() {
         </div>
 
         <div className="hub-body">
+
+          {/* Status strip — live attention counts */}
+          {hasAttentionCards && (
+            <div className="status-grid">
+              {papersCard && (
+                <a href="/admin/mark-paper" className="stat-card" style={{ borderLeftColor: '#b45309' }}>
+                  <div className="stat-top">
+                    <span className="stat-num">{papersCard.count}</span>
+                    <span className="stat-arrow">›</span>
+                  </div>
+                  <div className="stat-label">⏳ Papers to mark</div>
+                  {papersCard.possiblyMarking > 0 && (
+                    <div className="stat-label">+{papersCard.possiblyMarking} possibly marking now</div>
+                  )}
+                </a>
+              )}
+              {unmarkedCard !== null && (
+                <a href="/admin/schedule" className="stat-card" style={{ borderLeftColor: '#b45309' }}>
+                  <div className="stat-top">
+                    <span className="stat-num">{unmarkedCard}</span>
+                    <span className="stat-arrow">›</span>
+                  </div>
+                  <div className="stat-label">❓ Unmarked lessons</div>
+                </a>
+              )}
+              {examGapsCard && (
+                <a href="/admin/schedule" className="stat-card" style={{ borderLeftColor: '#d97706' }}>
+                  <div className="stat-top">
+                    <span className="stat-num">{examGapsCard.count}</span>
+                    <span className="stat-arrow">›</span>
+                  </div>
+                  <div className="stat-label">⚠ {examGapsCard.examType} info gaps</div>
+                </a>
+              )}
+            </div>
+          )}
 
           <div className="hub-hint">
             {arrangeMode ? (

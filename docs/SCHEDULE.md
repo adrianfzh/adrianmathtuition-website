@@ -119,7 +119,7 @@ Regular weekly lessons exist as individual `Lessons` records. Three things creat
 | `/api/admin-schedule/lesson-prev-update` | POST | Save Homework Returned on previous lesson (14-day window) |
 | `/api/admin-schedule/quick-add-exam` | POST | Upsert Exams record for active exam type |
 | `/api/admin-schedule/student-contact` | GET | Lazy-load student contact info |
-| `/api/admin-schedule/unmarked-count` | GET | Count of past lessons needing status |
+| ~~`/api/admin-schedule/unmarked-count`~~ | — | NEVER EXISTED (stale doc, found 2026-08-04) — the count lives in `lib/unmarked-lessons.ts` (tested formula) and is served via `/api/admin-stats` for the hub card |
 
 ### LessonModal (retired on /admin/schedule 2026-07-24 — still used by /admin/lessons and /admin/students/[id])
 

@@ -15,6 +15,23 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
 - **Notability round trip (option B, 2026-07-30):** `✍️ Upload annotated` (or drag the PDF anywhere onto the send panel — iPad Split View drag from Notability works) uploads via `/api/admin/mark-paper-annotated-token` client tokens (Notability exports run 5–20MB, past the body cap), then links to the run via `phase:'link-pdf', kind:'annotated'` → `paper_marking_runs.annotated_pdf_url` (column added 2026-07-30; the bot's `linkPdf`/load/stats carry it). **Send-row preference: ✍️ annotated > 🖼 images > first** — once Adrian's pen is on a copy, that copy IS the paper. History rows show `✍️ Annotated ↗`.
 - **Option A (in-browser Pencil annotation) is spec'd AND built** — see [`../SPEC-ANNOTATE.md`](../SPEC-ANNOTATE.md) and the ✏️ Annotate section at the bottom of this file.
 - **iPad share-sheet inbox** (2026-07-31): iPadOS keeps websites out of the share sheet and WhatsApp's iPad app can't drag documents out, so a **Shortcut** ("✍️ Mark paper", recipe rendered in a one-time-setup `<details>` on the page) POSTs the shared PDF/photo with **`MARK_INBOX_TOKEN`** (dedicated Bearer token, minted 2026-07-31, scoped to inbox-upload only — the share-sheet automation never holds the admin password; page calls ride the admin session). **Uploads go to the BOT — `https://adrianmath-telegram-math-bot.fly.dev/api/mark-inbox` (express.raw to 60mb, Fly secret `MARK_INBOX_TOKEN`) — because Vercel hard-caps request bodies at 4.5MB at the PLATFORM level, before any handler runs**: Adrian's first real share (a 4.6MB CamScanner PDF) came back "Request Entity Too Large" from the Vercel route, and **`vercel.json` memory bumps do NOT lift that cap** (an earlier note here claimed they did — they don't; `mark-batch`'s big uploads survive because they CHUNK via `upload-chunk`). The Vercel `/api/admin/mark-paper-inbox` route keeps GET (list, `?setup=1` returns the token for the recipe), DELETE (consume), and a small-file POST that accepts both multipart AND raw bodies (magic-byte sniffed — Shortcuts' Content-Type varies by source app). Files land in Blob under `mark-paper/inbox/` (no DB — GET `list()`s the prefix), surface as a "📥 From your iPad" banner atop the mark page (re-checked on tab focus — the share happens in the OTHER Split View pane) with **→ Working / → Question paper / ✕** (attach = fetch → File → the same `onPickWorking`/`setPdf` path as the picker, then DELETE consumes it). Raw uploads have no filename (Apple sends none) — they arrive as `shared.pdf`/`shared.jpg`. The Shortcut's notification body should be the **Contents of URL** variable so it shows the server's real answer, not unconditional success.
+- **🌙 Marking queue (2026-08-04):** the Queue-for-marking button uploads originals
+  + paper PDF, saves the paper (save-paper) and tags it via `phase:'enqueue'`
+  (`result_json.queue` = model/style/queued_at/attempts); a 30s bot worker marks
+  queued papers ONE at a time from stored files (remarkRun fills in place),
+  Telegrams Adrian each result, retries once, then parks with `failed_at` + an
+  alert. Attachments clear after queueing so the next paper goes straight in.
+  History rows show 🌙 queued / ⚠ queue failed states (stats select carries
+  `queued_at`/`queue_failed` via JSON-path aliases). Worker is drain-aware.
+- **⬇ Practice DOCX (2026-08-04):** the practice panel's DOCX button posts
+  `phase:'practice-docx'`; the bot renders the list to a house-style Word file
+  (pandoc in the Docker image + `assets/worksheet-reference.docx` carrying the
+  create-worksheet styles — TNR 9.5, typeset equations, orange right-aligned
+  [Ans: …]) and stores the Blob URL in `result_json.practice.docx_url` (repeat
+  clicks free). Download rides mark-paper-download (content-type pass-through).
+- **Deploy drain (bot, 2026-08-04):** fly kill_timeout 300 + `lib/drain.js` —
+  deploys wait for in-flight markings; long phases 503 with a clear message
+  while draining. Deploy-killed 502s are history.
 - **⏳ Saved papers (2026-08-03, same day):** the uploads are SAVED as a run row
   BEFORE marking starts (`phase:'save-paper'` → row with `result_json.source`
   only, `total_max` null = the pending signal) and the marking FILLS that row
