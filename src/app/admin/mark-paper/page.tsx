@@ -594,7 +594,10 @@ export default function MarkPaperPage() {
   // while this page sits in another Split View pane — without this, a file sent after
   // the page loaded stayed invisible until a manual reload.
   useEffect(() => {
-    const onBack = () => { if (!document.hidden) loadInbox(); };
+    // loadStats too: marking and practice generation run SERVER-side to completion
+    // even if this tab navigates away mid-call — refreshing history on refocus is
+    // what makes the finished run just appear when Adrian comes back.
+    const onBack = () => { if (!document.hidden) { loadInbox(); loadStats(); } };
     window.addEventListener('focus', onBack);
     document.addEventListener('visibilitychange', onBack);
     return () => { window.removeEventListener('focus', onBack); document.removeEventListener('visibilitychange', onBack); };
@@ -845,6 +848,13 @@ export default function MarkPaperPage() {
                 {run.total_max == null ? (
                   // Saved uploads, never (successfully) marked — the row a 502 leaves
                   // behind. One tap marks it from the stored files; no re-uploading.
+                  // A row under 4 minutes old may have its ORIGINAL marking still
+                  // running server-side (markings finish even after a refresh) — ▶
+                  // then would start a second, parallel, double-cost marking, so it
+                  // waits out the window.
+                  Date.now() - new Date(run.created_at).getTime() < 4 * 60 * 1000 ? (
+                    <span style={{ color: '#b45309', fontSize: 12, fontWeight: 600 }}>⏳ marking may still be running — check back in a minute</span>
+                  ) : (
                   <>
                     <span style={{ color: '#b45309', fontSize: 12, fontWeight: 600 }}>⏳ uploaded — not marked yet</span>
                     <button type="button" disabled={busy} onClick={() => markFromStored(run.id)}
@@ -852,6 +862,7 @@ export default function MarkPaperPage() {
                       ▶ Mark
                     </button>
                   </>
+                  )
                 ) : (
                   <>
                     <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
