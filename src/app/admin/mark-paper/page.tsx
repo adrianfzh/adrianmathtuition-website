@@ -482,16 +482,44 @@ export default function MarkPaperPage() {
         Promise.all(images.map((f, i) => uploadOriginal(f, imgs[i]))),
         pdf ? uploadPaperPdf(pdf) : Promise.resolve(null),
       ]).finally(() => setRasterizing(''));
+      const paperLabel = workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`);
+      // SAVE the uploaded inputs as a run row BEFORE marking — a 502'd marking then
+      // leaves a "⏳ not marked yet" entry in history whose files are already in
+      // Blob, so retrying is one ▶ Mark tap, never a re-upload (Adrian, 3 Aug
+      // 2026, after two deploy-killed markings). Best-effort: if this fails,
+      // marking proceeds exactly as before.
+      let pendingId: string | null = null;
+      try {
+        const sp = await fetch('/api/admin/mark-paper', {
+          method: 'POST', headers: authHeaders,
+          body: JSON.stringify({
+            phase: 'save-paper', paperName: paperLabel,
+            source: {
+              paper_pdf_url: paperPdfUrl || null,
+              photos: originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean),
+            },
+          }),
+        });
+        const spd = await sp.json();
+        if (sp.ok && spd.run_id) pendingId = spd.run_id;
+      } catch { /* marking still works without the safety net */ }
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({
           phase: 'direct', pdfBase64, paperPdfUrl: paperPdfUrl || undefined,
+          runId: pendingId || undefined,
           images: imgs.map((im, i) => ({ base64: im.base64, mediaType: im.mediaType, originalUrl: originalUrls[i] || undefined })),
-          paperName: workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`), model: markModel, style: markStyle,
+          paperName: paperLabel, model: markModel, style: markStyle,
         }),
       });
       await applyMarkResponse(resp);
-    } catch (e) { setError((e as Error).message); setPhase('idle'); }
+    } catch (e) {
+      // The uploads survive a failed marking (the saved-paper row keeps them) —
+      // say so, or this reads as "start over".
+      setError(`${(e as Error).message} Your uploads are saved — this paper is in Recent marked papers with a ▶ Mark button; no need to re-attach anything.`);
+      setPhase('idle');
+      loadStats();
+    }
   }
 
   // 🔁 Re-mark: the loaded run's stored inputs (photo originals + paper PDF in Blob)
@@ -502,11 +530,19 @@ export default function MarkPaperPage() {
     if (images.length) { markPaper(); return; }
     if (!runId) return;
     if (!window.confirm('Re-mark this paper from its stored photos? Costs about the same as the original marking (~1–2 min).')) return;
+    await markFromStored(runId);
+  }
+
+  // Mark (or re-mark) a run from its server-stored inputs — the history-row ▶ Mark
+  // on a saved-but-unmarked paper, and the tail of remarkPaper above. The bot fills
+  // a never-marked row in place, so the ⏳ entry becomes the marked run.
+  async function markFromStored(id: string) {
     setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setPracticeItems(null);
+    if (historyRef.current) historyRef.current.open = false;
     try {
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'remark', id: runId, model: markModel, style: markStyle }),
+        body: JSON.stringify({ phase: 'remark', id, model: markModel, style: markStyle }),
       });
       await applyMarkResponse(resp);
     } catch (e) { setError((e as Error).message); setPhase('idle'); }
@@ -806,19 +842,33 @@ export default function MarkPaperPage() {
                   )}
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{run.paper_name || 'Paper'}</span>
                 </span>
-                <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
-                <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
-                {run.annotated_pdf_url && <a href={downloadHref(run.annotated_pdf_url, runFilename(run, 'annotated'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
-                {run.pdf_url && <a href={downloadHref(run.pdf_url, runFilename(run, ''), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
-                {run.photos_pdf_url && <a href={downloadHref(run.photos_pdf_url, runFilename(run, 'images'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
-                <button type="button" disabled={!!loadingRun} title="Load and write on it with the Pencil" onClick={() => annotateRun(run.id)}
-                  style={{ ...btn, background: '#0d9488', padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
-                  {loadingRun === run.id ? '…' : '✏️ Annotate'}
-                </button>
-                <button type="button" disabled={!!loadingRun} onClick={() => loadRun(run.id)}
-                  style={{ ...btn, padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
-                  {loadingRun === run.id ? 'Loading…' : 'Load'}
-                </button>
+                {run.total_max == null ? (
+                  // Saved uploads, never (successfully) marked — the row a 502 leaves
+                  // behind. One tap marks it from the stored files; no re-uploading.
+                  <>
+                    <span style={{ color: '#b45309', fontSize: 12, fontWeight: 600 }}>⏳ uploaded — not marked yet</span>
+                    <button type="button" disabled={busy} onClick={() => markFromStored(run.id)}
+                      style={{ ...btn, background: '#b45309', padding: '4px 12px', fontSize: 12, opacity: busy ? 0.6 : 1 }}>
+                      ▶ Mark
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
+                    <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
+                    {run.annotated_pdf_url && <a href={downloadHref(run.annotated_pdf_url, runFilename(run, 'annotated'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
+                    {run.pdf_url && <a href={downloadHref(run.pdf_url, runFilename(run, ''), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
+                    {run.photos_pdf_url && <a href={downloadHref(run.photos_pdf_url, runFilename(run, 'images'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
+                    <button type="button" disabled={!!loadingRun} title="Load and write on it with the Pencil" onClick={() => annotateRun(run.id)}
+                      style={{ ...btn, background: '#0d9488', padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
+                      {loadingRun === run.id ? '…' : '✏️ Annotate'}
+                    </button>
+                    <button type="button" disabled={!!loadingRun} onClick={() => loadRun(run.id)}
+                      style={{ ...btn, padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
+                      {loadingRun === run.id ? 'Loading…' : 'Load'}
+                    </button>
+                  </>
+                )}
               </div>
             ))}
           </div>
