@@ -204,9 +204,16 @@ Adrian asked for "better UX, like Notability" (1 Aug) and approved the full pack
   `n / N` remain as page jumps. Palm guard: touches are ignored while the pen is down
   and for 500ms after it lifts. If real-iPad testing shows palm-scroll jumps anyway, the
   fallback is dropping the 1-finger pan (`kind: 'maybe' → 'pan'` in AnnotateOverlay).
-- **Ink is pressure-tapered outline polygons** (`perfect-freehand`, wrapped + tested in
-  `lib/annotate/ink-outline.ts`), not the constant-width smoothed polylines of §4. The
-  §4 width formula is approximated by size/thinning params, not reproduced exactly.
+- **Ink is outline polygons** (`perfect-freehand`, wrapped + tested in
+  `lib/annotate/ink-outline.ts`), not the constant-width smoothed polylines of §4.
+  **Re-tuned near-uniform on 3 Aug 2026** (Adrian: "pen pressure affects the stroke…
+  my writing now looks shaky"): thinning 0.6 → 0.15 (width now spans only 0.85–1.0 ×
+  size — Notability-like, a whisper of pressure, not a taper), plus `smoothPoints()`
+  — a zero-phase forward+backward EMA over the raw points, applied at RENDER time
+  inside `strokeOutline` (stored points stay raw: old drafts smooth too, hit-test
+  geometry untouched, endpoints anchored so the live stroke still ends exactly at
+  the pen tip). perfect-freehand's `streamline` measurably does nothing for
+  point-level jitter — don't try to re-tune smoothness with it.
 - **Highlighter tool added** (yellow/green, uniform translucent ribbon, multiply blend,
   always rendered UNDER pen ink). Snappable like the pen (straight rule-offs).
 - **Viewport rendering** instead of §5's per-page capped canvases: two viewport-sized
