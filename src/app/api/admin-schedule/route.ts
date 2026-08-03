@@ -254,7 +254,9 @@ export async function GET(req: NextRequest) {
       dayName,
       time: r.fields['Time'] || '',
       level: r.fields['Level'] || '',
-      capacity: effectiveCapacity(r.fields['Normal Capacity'] || 0, r.fields['Level'], secCap) ?? 0,
+      capacity: r.fields['Normal Capacity'] || 0,
+      // EFFECTIVE per-date cap — the Sec toggle lowers this (6 → 5); the
+      // reschedule/add pickers and their "full" maths follow automatically.
       makeupCapacity: effectiveCapacity(r.fields['Makeup Capacity'] ?? null, r.fields['Level'], secCap),
       enrolledCount: r.fields['Enrolled Count'] || 0,
     };
@@ -275,7 +277,7 @@ export async function GET(req: NextRequest) {
         dayName,
         time: r.fields['Time'] || '',
         level: r.fields['Level'] || '',
-        capacity: effectiveCapacity(r.fields['Normal Capacity'] || 0, r.fields['Level'], secCap) ?? 0,
+        capacity: r.fields['Normal Capacity'] || 0,
         makeupCapacity: effectiveCapacity(r.fields['Makeup Capacity'] ?? null, r.fields['Level'], secCap),
         enrolledCount: r.fields['Enrolled Count'] || 0,
       });

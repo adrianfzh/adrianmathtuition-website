@@ -505,6 +505,28 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 - `touchAction: 'none'` on draggable chips (required for iOS Safari)
 - `DraggableLessonChip` and `DroppableLessonSlot` are **module-level components** (not inline) — required because they use `useDraggable`/`useDroppable` hooks
 
+### Sec-capacity toggle — the "Sec cap" pill (2026-08-03)
+
+- Header pill on `/admin/schedule` (mobile + desktop; amber while ON): caps Secondary slots'
+  per-date **MAKEUP capacity** at 5 (stored 6) so classes stay smaller — new
+  makeup/reschedule/additional bookings are refused once a date holds 5. **Scope is Makeup
+  Capacity ONLY** (Adrian, 2026-08-03): Normal Capacity (4, advisory, routinely exceeded) and
+  every enrollment path (signup, add-weekly-slot, switch) are deliberately ungated. Booked
+  lessons are untouched by construction — the cap is consulted only where a lesson is created.
+- State = Settings row `sec_capacity_override`, Value `{"secCap":5}` / `{"secCap":null}`;
+  API `/api/admin/capacity-override` GET/POST; pure logic in `lib/capacity-override.ts`
+  (unit-tested; min() semantics — the override only lowers, a null stored cap stays null).
+- Enforced in `admin-schedule/add` + `reschedule` (force semantics unchanged; 409 message
+  names the cap). `/api/admin-schedule` returns top-level `secCap` + EFFECTIVE `makeupCapacity`
+  per slot (`capacity` stays raw), so the reschedule pickers follow automatically.
+- **The bot respects it too** (repo `adrianmath-telegram-bot`, `lib/capacity-override.js`:
+  same Settings row, 60s cache, fail-open): `getRescheduleOptions` (Telegram /rs + WhatsApp +
+  trials), the admin-agent booking check, and the availability calendar/summary — parents are
+  never offered a (slot, date) the toggle would refuse. **Any new capacity-checking surface in
+  either repo must apply the same helper.**
+- Airtable's `Is Full` / `Spots Remaining` FORMULA fields can't see the override — never read
+  them on a surface that must respect it.
+
 ### Recurring lesson generation (Regular lessons)
 
 Regular weekly lessons exist as individual `Lessons` records. Three things create them, all using `src/lib/lesson-generation.ts > generateRegularLessonsForSlot` (9-week default horizon, dedup by date+slot, holidays → `Cancelled`):

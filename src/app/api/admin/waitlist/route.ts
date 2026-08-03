@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import { verifyAdminAuth, fetchSecCapOverride } from '@/lib/schedule-helpers';
-import { effectiveCapacity } from '@/lib/capacity-override';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
 
@@ -32,27 +31,13 @@ function mapRec(r: any) {
 }
 
 async function activeSlots() {
-  // The `Spots Remaining` FORMULA field knows nothing about the Sec-capacity
-  // toggle, so when the override is on we recompute from Normal Capacity +
-  // Enrolled Count (formula value kept as the fallback).
-  const [data, secCap] = await Promise.all([
-    airtableRequestAll('Slots',
-      `?filterByFormula=${encodeURIComponent('{Is Active}=TRUE()')}&fields[]=Day&fields[]=Time&fields[]=Level&fields[]=Spots Remaining&fields[]=Normal Capacity&fields[]=Enrolled Count`),
-    fetchSecCapOverride(),
-  ]);
-  return (data.records || []).map((r: any) => {
-    const formulaSpots = typeof r.fields['Spots Remaining'] === 'number' ? r.fields['Spots Remaining'] : null;
-    const eff = effectiveCapacity(r.fields['Normal Capacity'] ?? null, r.fields['Level'], secCap);
-    const enrolled = typeof r.fields['Enrolled Count'] === 'number' ? r.fields['Enrolled Count'] : null;
-    const spotsRemaining = secCap != null && eff != null && enrolled != null
-      ? Math.max(0, eff - enrolled)
-      : formulaSpots;
-    return {
-      id: r.id,
-      label: `${String(r.fields['Day'] || '').replace(/^\d+\s+/, '')} ${r.fields['Time'] || ''} (${r.fields['Level'] || ''})`.trim(),
-      spotsRemaining,
-    };
-  });
+  const data = await airtableRequestAll('Slots',
+    `?filterByFormula=${encodeURIComponent('{Is Active}=TRUE()')}&fields[]=Day&fields[]=Time&fields[]=Level&fields[]=Spots Remaining`);
+  return (data.records || []).map((r: any) => ({
+    id: r.id,
+    label: `${String(r.fields['Day'] || '').replace(/^\d+\s+/, '')} ${r.fields['Time'] || ''} (${r.fields['Level'] || ''})`.trim(),
+    spotsRemaining: typeof r.fields['Spots Remaining'] === 'number' ? r.fields['Spots Remaining'] : null,
+  }));
 }
 
 export async function GET(req: NextRequest) {

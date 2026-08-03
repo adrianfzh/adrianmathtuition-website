@@ -13,8 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import { verifyAdminAuth, fetchSecCapOverride } from '@/lib/schedule-helpers';
-import { secEnrollmentBlocked } from '@/lib/capacity-override';
+import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { generateRegularLessonsForSlot, DEFAULT_WEEKS_AHEAD } from '@/lib/lesson-generation';
 import { computeSwitchProration } from '@/lib/switch-proration';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
@@ -31,7 +30,7 @@ function fmtUTC(d: Date): string {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { lessonId?: string; studentId?: string; oldSlotId?: string; newSlotId: string; switchDate: string; force?: boolean };
+  let body: { lessonId?: string; studentId?: string; oldSlotId?: string; newSlotId: string; switchDate: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const { lessonId, newSlotId, switchDate } = body;
@@ -59,28 +58,6 @@ export async function POST(req: NextRequest) {
   const newSlotTime: string = newSlot.fields['Time'] || '';
   const targetDay = DAY_NAMES.indexOf(newDayRaw);
   if (targetDay === -1) return NextResponse.json({ error: `Unknown day: ${newDayRaw}` }, { status: 400 });
-
-  // Sec-capacity toggle: when ON, don't switch a student INTO a Secondary slot
-  // already holding secCap students (ceiling — stored Normal Capacity 4 is
-  // advisory; see lib/capacity-override.ts). Existing members are untouched —
-  // this gates only the new arrival. No gate when off; `force` bypasses.
-  if (!body.force) {
-    const secCap = await fetchSecCapOverride();
-    if (secCap != null) {
-      const enrolled = (newSlot.fields['Enrolled Count'] as number) ?? 0;
-      if (secEnrollmentBlocked(enrolled, newSlot.fields['Level'], secCap)) {
-        return NextResponse.json(
-          {
-            error: `Target slot full (Sec cap ${secCap} active)`,
-            currentCount: enrolled,
-            capacity: secCap,
-            secCapApplied: secCap,
-          },
-          { status: 409 }
-        );
-      }
-    }
-  }
 
   // Old slot name for notes
   const oldSlot = await airtableRequest('Slots', `/${oldSlotId}`);

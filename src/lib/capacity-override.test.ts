@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSecCapOverride, effectiveCapacity, isSecondaryLevel, secEnrollmentBlocked } from './capacity-override';
+import { parseSecCapOverride, effectiveCapacity, isSecondaryLevel } from './capacity-override';
 
 describe('parseSecCapOverride', () => {
   it('parses the on state', () => {
@@ -33,8 +33,8 @@ describe('isSecondaryLevel', () => {
   });
 });
 
-describe('effectiveCapacity', () => {
-  it('caps Secondary slots when the override is on', () => {
+describe('effectiveCapacity (per-date Makeup Capacity domain)', () => {
+  it('caps a Secondary slot\'s makeup capacity 6 → 5 when the override is on', () => {
     expect(effectiveCapacity(6, 'Secondary', 5)).toBe(5);
   });
   it('leaves everything untouched when the override is off', () => {
@@ -51,22 +51,5 @@ describe('effectiveCapacity', () => {
   it('null stored capacity stays null so "no capacity set" errors still fire', () => {
     expect(effectiveCapacity(null, 'Secondary', 5)).toBeNull();
     expect(effectiveCapacity(undefined, 'Secondary', 5)).toBeNull();
-  });
-});
-
-describe('secEnrollmentBlocked (ceiling semantics — stored Normal Capacity 4 is advisory)', () => {
-  it('blocks a Sec class already at/over the ceiling', () => {
-    expect(secEnrollmentBlocked(5, 'Secondary', 5)).toBe(true);
-    expect(secEnrollmentBlocked(6, 'Secondary', 5)).toBe(true);
-  });
-  it('classes below the ceiling stay addable — the stored 4 plays no part', () => {
-    expect(secEnrollmentBlocked(4, 'Secondary', 5)).toBe(false);
-    expect(secEnrollmentBlocked(0, 'Secondary', 5)).toBe(false);
-  });
-  it('never fires when off, for JC, or with missing count', () => {
-    expect(secEnrollmentBlocked(6, 'Secondary', null)).toBe(false);
-    expect(secEnrollmentBlocked(6, 'JC', 5)).toBe(false);
-    expect(secEnrollmentBlocked(null, 'Secondary', 5)).toBe(false);
-    expect(secEnrollmentBlocked(undefined, 'Secondary', 5)).toBe(false);
   });
 });

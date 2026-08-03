@@ -74,8 +74,8 @@ interface StudentContact {
 interface ScheduleData {
   weekStart: string;
   weekEnd: string;
-  // Sec-capacity toggle state (null = off). Slot capacities below are already
-  // EFFECTIVE values — the server applies the cap before responding.
+  // Sec-capacity toggle state (null = off). Slots' makeupCapacity below is the
+  // EFFECTIVE per-date cap — the server applies the toggle before responding.
   secCap?: number | null;
   slots: Slot[];
   enrollmentsBySlot: Record<string, string[]>;
@@ -1864,8 +1864,10 @@ export default function SchedulePage() {
     toastTimerRef.current = setTimeout(() => setToast(null), 3000);
   }
 
-  // Sec-capacity toggle: caps NEW bookings into Secondary slots at 5 while ON.
-  // Existing enrollments/lessons are untouched; OFF restores stored capacities.
+  // Sec-capacity toggle: while ON, Secondary slots' per-date MAKEUP CAPACITY
+  // is capped at 5 (6 stored) — new makeup/reschedule/additional bookings are
+  // refused once a date holds 5. Already-booked lessons are untouched; OFF
+  // restores the stored capacities. Enrollment (Normal Capacity) is not gated.
   async function toggleSecCap() {
     const next = data?.secCap != null ? null : 5;
     try {
@@ -1877,8 +1879,8 @@ export default function SchedulePage() {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || 'Failed to update Sec cap');
       showToast('success', next != null
-        ? `✓ Sec cap ${next} ON — new bookings capped; existing classes untouched`
-        : '✓ Sec cap off — stored capacities apply');
+        ? `✓ Sec cap ${next} ON — makeups/reschedules capped at ${next} per class; booked lessons untouched`
+        : '✓ Sec cap off — makeup capacity back to stored (6)');
       await fetchSchedule(monday);
     } catch (err: any) {
       showToast('error', err.message || 'Failed');
@@ -1893,31 +1895,16 @@ export default function SchedulePage() {
     if (!addSlotModal.startDate) { showToast('error', 'Pick a start date'); return; }
     setAddSlotSubmitting(true);
     try {
-      const payload = {
-        studentId: addSlotModal.studentId,
-        slotId: addSlotModal.slot.id,
-        startDate: addSlotModal.startDate,
-      };
-      let res = await fetch('/api/admin-schedule/add-weekly-slot', {
+      const res = await fetch('/api/admin-schedule/add-weekly-slot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          studentId: addSlotModal.studentId,
+          slotId: addSlotModal.slot.id,
+          startDate: addSlotModal.startDate,
+        }),
       });
-      let json = await res.json().catch(() => ({}));
-      // Sec-cap gate: admin may override after confirming (same pattern as a
-      // full-slot reschedule). Other 409s (duplicate enrollment) fall through.
-      if (res.status === 409 && json.secCapApplied) {
-        if (!window.confirm(`${json.error} — ${json.currentCount}/${json.capacity} enrolled.\nAdd anyway (admin override)?`)) {
-          setAddSlotSubmitting(false);
-          return;
-        }
-        res = await fetch('/api/admin-schedule/add-weekly-slot', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...payload, force: true }),
-        });
-        json = await res.json().catch(() => ({}));
-      }
+      const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || 'Failed to add weekly slot');
       setAddSlotModal(null);
       showToast('success', `✓ Added — ${json.lessonsCreated} lesson${json.lessonsCreated !== 1 ? 's' : ''} generated`);
@@ -1980,26 +1967,12 @@ export default function SchedulePage() {
         );
         if (!confirmed) { setSubmitting(false); return; }
         // Permanent slot switch: cancel future lessons, create new ones, update enrollment
-        let res = await fetch('/api/admin-schedule/switch', {
+        const res = await fetch('/api/admin-schedule/switch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId: lesson.id, newSlotId: toSlotId, switchDate: toDate }),
         });
-        let json = await res.json();
-        // Sec-cap gate on the target slot — admin may override after confirming.
-        if (res.status === 409 && json.secCapApplied) {
-          if (!window.confirm(`${json.error} — ${json.currentCount}/${json.capacity} enrolled.\nSwitch anyway (admin override)?`)) {
-            setModalError(`Target slot full — Sec cap ${json.secCapApplied} active (${json.currentCount}/${json.capacity})`);
-            setSubmitting(false);
-            return;
-          }
-          res = await fetch('/api/admin-schedule/switch', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lessonId: lesson.id, newSlotId: toSlotId, switchDate: toDate, force: true }),
-          });
-          json = await res.json();
-        }
+        const json = await res.json();
         if (!res.ok) throw new Error(json.error || 'Switch failed');
         setRescheduleModal(null);
         await fetchSchedule(monday);
@@ -3115,8 +3088,8 @@ export default function SchedulePage() {
               className={`today-pill-btn seccap-pill ${data.secCap != null ? 'on' : ''}`}
               onClick={toggleSecCap}
               title={data.secCap != null
-                ? `Sec class cap ${data.secCap} is ON — new bookings into Secondary slots are capped at ${data.secCap}. Existing classes are untouched. Tap to turn off.`
-                : 'Cap NEW bookings into Secondary slots at 5 (smaller classes). Existing classes untouched. Tap to turn on.'}
+                ? `Sec cap ${data.secCap} is ON — Secondary classes take makeups/reschedules only up to ${data.secCap} students per date (normally 6). Booked lessons are untouched. Tap to turn off.`
+                : 'Cap Secondary class size at 5 for makeups/reschedules (normally 6). Booked lessons untouched. Tap to turn on.'}
             >
               {data.secCap != null ? `Sec cap ${data.secCap} ✓` : 'Sec cap'}
             </button>
