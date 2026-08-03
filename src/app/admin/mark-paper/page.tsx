@@ -169,6 +169,10 @@ type Usage = { costUsd?: number; timeSec?: number; inputTokens?: number; outputT
 // transcript). Both are forwarded to the PDF route, which picks by mode. Absent on runs
 // marked before 29 Jul 2026, and on pages where nothing was wrong — then 🖼 uses `url`.
 type AnnotatedPhoto = { photo_index: number; url: string; url_with_solutions?: string | null; method?: string | null };
+// One practice question per below-max question — QB pick ('db', with its school/year
+// origin) or freshly generated. Built ON REQUEST only (📝 button) and stored on the
+// run, so a reload shows the same list without another model call.
+type PracticeItem = { for: string; source: 'db' | 'generated'; question: string; answer: string; origin?: string | null; topic?: string | null; note?: string };
 
 const card: CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, marginBottom: 16 };
 const btn: CSSProperties = { padding: '10px 18px', borderRadius: 8, border: 'none', background: '#111827', color: '#fff', fontWeight: 600, cursor: 'pointer' };
@@ -275,6 +279,8 @@ export default function MarkPaperPage() {
   const [inboxToken, setInboxToken] = useState<string | null>(null);
   const [annotatedBusy, setAnnotatedBusy] = useState(false);
   const [annotateOpen, setAnnotateOpen] = useState(false);
+  const [practiceItems, setPracticeItems] = useState<PracticeItem[] | null>(null);
+  const [practiceBusy, setPracticeBusy] = useState(false);
   const annotatedInputRef = useRef<HTMLInputElement>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
@@ -336,6 +342,7 @@ export default function MarkPaperPage() {
       setResults(results);
       setTotals(rj.totals || null);
       setAnnotatedPhotos(photos);
+      setPracticeItems(rj.practice?.items?.length ? rj.practice.items : null);
       setUnattempted([]);
       setRunId(d.run.id);
       setLoadedName(d.run.paper_name || 'Paper');
@@ -423,7 +430,7 @@ export default function MarkPaperPage() {
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName(workingNameRef.current);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName(workingNameRef.current); setPracticeItems(null);
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -674,6 +681,27 @@ export default function MarkPaperPage() {
     if (errs.length) setError(`PDF generation — ${errs.join(' · ')}`);
     setBothStage(null); setGenerating(false);
   }
+
+  // 📝 Practice questions — OPT-IN (Adrian, 3 Aug 2026: "put it as an option…
+  // do not do this by default"): one QB-or-generated question per below-max
+  // question, built only when the button is pressed. The bot stores the list on
+  // the run, so pressing again (or reloading the run) never pays twice.
+  async function loadPractice() {
+    if (!runId || practiceBusy) return;
+    setPracticeBusy(true); setError('');
+    try {
+      const r = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'practice', id: runId, model: markModel }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) throw new Error(d.error || `practice failed (${r.status})`);
+      if (!d.items?.length) { setError('No practice questions came back — try again, or the wrong questions had no usable match.'); return; }
+      setPracticeItems(d.items);
+    } catch (e) { setError((e as Error).message); }
+    finally { setPracticeBusy(false); }
+  }
+  const wrongCount = (results || []).filter((r) => (r.marking?.total_max ?? 0) > 0 && (r.marking?.total_awarded ?? 0) < (r.marking?.total_max ?? 0)).length;
 
   const busy = phase === 'proposing' || phase === 'marking' || !!rasterizing;
   // Photos the overlay marked per QUESTION rather than per line — i.e. the ones that
@@ -1018,6 +1046,34 @@ export default function MarkPaperPage() {
               {sendNote && (
                 <span style={{ fontSize: 13, color: sendNote.ok ? '#15803d' : '#b91c1c' }}>{sendNote.ok ? '✓ ' : '✗ '}{sendNote.text}</span>
               )}
+            </div>
+          )}
+          {/* 📝 Practice questions — opt-in, one per question that dropped marks. */}
+          {runId && wrongCount > 0 && !practiceItems && (
+            <div style={{ marginTop: 14 }}>
+              <button style={{ ...btn, background: '#b45309', opacity: practiceBusy ? 0.6 : 1 }} disabled={practiceBusy} onClick={loadPractice}>
+                {practiceBusy ? 'Finding practice questions…' : `📝 Practice questions (${wrongCount} wrong)`}
+              </button>
+              <span style={{ marginLeft: 10, color: '#6b7280', fontSize: 13 }}>One per wrong question — from the question bank when it has a match, freshly written when it doesn&rsquo;t. Takes ~a minute.</span>
+            </div>
+          )}
+          {practiceItems && (
+            <div style={{ marginTop: 14, padding: 12, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10 }}>
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>📝 Practice — one question per dropped-marks question</div>
+              {practiceItems.map((it, i) => (
+                <div key={i} style={{ padding: '10px 0', borderTop: i ? '1px solid #fef3c7' : 'none' }}>
+                  <div style={{ fontSize: 12, color: '#92400e', fontWeight: 700, marginBottom: 4 }}>
+                    For Q{it.for}
+                    {it.topic ? ` · ${it.topic}` : ''}
+                    {it.origin ? ` · ${it.origin}` : it.source === 'generated' ? ' · written for this error' : ''}
+                  </div>
+                  <div style={{ fontSize: 14, whiteSpace: 'pre-wrap' }}><MathText text={it.question} /></div>
+                  {it.answer && (
+                    <div style={{ fontSize: 13, color: '#b45309', marginTop: 6 }}>Ans: <MathText text={it.answer} /></div>
+                  )}
+                  {it.note && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, fontStyle: 'italic' }}><MathText text={it.note} /></div>}
+                </div>
+              ))}
             </div>
           )}
         </div>
