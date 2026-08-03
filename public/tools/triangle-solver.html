@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triangle Solver &amp; the Ambiguous Case</title>
+<style>
+  :root{
+    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
+    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
+    --line:#cfc6b6;
+    --panel:#fbf8f1; --panelb:#e7ded0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Georgia","Times New Roman",serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  header{padding:16px 20px 8px 118px}
+  h1{font-size:19px; font-weight:600; margin:0; letter-spacing:.2px}
+  .sub{font-size:13px; color:var(--muted); margin-top:3px; max-width:74em}
+  .controls{
+    display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px;
+    padding:12px 18px; border-bottom:1px solid var(--line);
+  }
+  .grp{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink)}
+  .grp label{font-size:12px; color:var(--muted)}
+  button{
+    font:inherit; font-size:13px; color:var(--ink); background:var(--panel);
+    border:1px solid var(--panelb); border-radius:8px; padding:7px 13px; cursor:pointer;
+  }
+  button:hover{border-color:var(--muted)}
+  button:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
+  .seg{display:inline-flex; border:1px solid var(--panelb); border-radius:8px; overflow:hidden}
+  .seg button{border:none; border-right:1px solid var(--panelb); border-radius:0; background:var(--panel)}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--ink); color:var(--bg)}
+  input[type=number]{
+    font:inherit; font-size:14px; color:var(--ink); background:var(--panel);
+    border:1px solid var(--panelb); border-radius:8px; padding:6px 8px; width:88px;
+  }
+  input[type=number]:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
+  .note{font-size:12px; color:var(--muted); font-style:italic}
+  .main{display:flex; flex:1 1 auto; min-height:0}
+  .stage{position:relative; flex:1 1 auto; min-height:340px}
+  canvas{display:block; width:100%; height:100%}
+  .sol{
+    width:400px; max-width:46%; overflow-y:auto; flex:0 0 auto;
+    border-left:1px solid var(--line); padding:13px 16px 18px;
+    font-size:13.5px; line-height:1.55;
+  }
+  .sol p{margin:7px 0}
+  .chip{
+    display:inline-block; font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    font-size:11px; letter-spacing:.6px; text-transform:uppercase;
+    background:var(--ink); color:var(--bg); border-radius:999px; padding:3px 10px; margin:2px 0 4px;
+  }
+  .klbox{
+    font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    font-size:12.5px; line-height:1.7; color:var(--ink);
+    background:var(--panel); border:1px solid var(--panelb); border-radius:10px;
+    padding:8px 11px; margin:8px 0; overflow-x:auto;
+  }
+  .klbox div{white-space:nowrap}
+  .klbox .dim{color:var(--muted)}
+  .banner{border-radius:10px; padding:10px 13px; margin:10px 0; font-size:13px; line-height:1.55}
+  .banner.warn{background:#f6e7c2; border:1px solid #d9b45b; color:#5c430a}
+  .banner.bad {background:#f2d9d3; border:1px solid #cf9a8e; color:#6e2f23}
+  .banner.good{background:#dfe9df; border:1px solid #a3bfa3; color:#2c4a2c}
+  .banner.info{background:#dee8ec; border:1px solid #a5bfcb; color:#1f4356}
+  .duo{display:flex; gap:10px; flex-wrap:wrap}
+  .pbox{
+    background:var(--panel); border:1px solid var(--panelb); border-radius:10px;
+    padding:8px 12px; margin:8px 0; flex:1 1 175px; min-width:175px; max-width:290px;
+  }
+  .pbox h4{margin:0 0 5px; font-size:12px; color:var(--muted); font-weight:600; font-style:italic}
+  .pgrid{
+    display:grid; grid-template-columns:auto auto; gap:2px 16px; justify-content:start;
+    font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace; font-size:12.5px; line-height:1.6;
+  }
+  .pgrid span{white-space:nowrap}
+  @media (max-width:760px){
+    html,body{height:auto}
+    .main{flex-direction:column}
+    .stage{flex:0 0 auto; height:44vh; min-height:250px}
+    .sol{width:auto; max-width:none; border-left:none; border-top:1px solid var(--line); flex:1 1 auto; overflow-y:visible}
+  }
+  @media (max-width:560px){
+    header{padding:52px 20px 8px}
+    input[type=number]{width:76px}
+  }
+</style>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<header>
+  <h1>Triangle solver — sine rule, cosine rule &amp; the ambiguous case</h1>
+  <div class="sub">Pick what you're given, type the three values, and the triangle is drawn to scale with every part solved — and the rule that solves it, shown with the substitution. SSA is the dangerous one: sin&nbsp;θ&nbsp;=&nbsp;k has <em>two</em> solutions between 0° and 180°, and the obtuse one is the mark everybody drops.</div>
+</header>
+
+<div class="controls">
+  <div class="grp">
+    <label>Given</label>
+    <div class="seg" id="modeSeg">
+      <button data-m="SSS">SSS</button><button data-m="SAS">SAS</button><button data-m="ASA">ASA</button><button data-m="SSA" class="on">SSA</button>
+    </div>
+  </div>
+  <div class="grp"><label id="l1">a</label><input type="number" id="in1" step="any" inputmode="decimal" autocomplete="off"></div>
+  <div class="grp"><label id="l2">b</label><input type="number" id="in2" step="any" inputmode="decimal" autocomplete="off"></div>
+  <div class="grp"><label id="l3">A (°)</label><input type="number" id="in3" step="any" inputmode="decimal" autocomplete="off"></div>
+  <div class="note" id="modeNote"></div>
+</div>
+
+<div class="main">
+  <div class="stage" id="stage"><canvas id="cv"></canvas></div>
+  <aside class="sol" id="sol"></aside>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===== SOLVER (pure math) ===== */
+  const D = Math.PI/180;
+  const TOL = 2e-4;               // relative tolerance for the tangent case a ≈ b·sinA
+  function clamp(x,lo,hi){ return Math.min(hi, Math.max(lo, x)); }
+  function s3(x){                 // sides: 3 significant figures
+    if(!isFinite(x)) return '—';
+    if(x===0) return '0';
+    return String(Number(x.toPrecision(3)));
+  }
+  function a1(x){ return x.toFixed(1); }        // angles: 1 d.p.
+  function d4(x){ return x.toFixed(4); }        // ratios like sinB, cosA
+  function gv(x){ return String(x); }           // a given value, as typed
+
+  // Convention: side a is opposite angle A (a = BC), b opposite B (b = CA), c opposite C (c = AB).
+  // Returns {status:'invalid', message} or
+  // {status:'ok', mode, tris:[{A,B,C,a,b,c}...], ssa:null|{a,b,A,h,k,case,B1,B2,valid1,valid2,noneReason}, work:{...}}
+  function solveTriangle(mode, x1, x2, x3){
+    function bad(m){ return {status:'invalid', message:m}; }
+    const nums=[x1,x2,x3];
+    if(nums.some(v => typeof v!=='number' || !isFinite(v)))
+      return bad('Enter a number in every box.');
+
+    if(mode==='SSS'){
+      const a=x1, b=x2, c=x3;
+      if(a<=0||b<=0||c<=0) return bad('Sides must be positive.');
+      const arr=[['a',a],['b',b],['c',c]].sort((p,q)=>q[1]-p[1]);
+      if(arr[1][1]+arr[2][1] <= arr[0][1])
+        return bad('Impossible: '+arr[1][0]+' + '+arr[2][0]+' = '+s3(arr[1][1])+' + '+s3(arr[2][1])+' = '+s3(arr[1][1]+arr[2][1])+' ≤ '+arr[0][0]+' = '+s3(arr[0][1])+'. Two sides together must be longer than the third (triangle inequality) — these two are too short to meet.');
+      const cosA=clamp((b*b+c*c-a*a)/(2*b*c),-1,1);
+      const cosB=clamp((a*a+c*c-b*b)/(2*a*c),-1,1);
+      const A=Math.acos(cosA)/D, B=Math.acos(cosB)/D, C=180-A-B;
+      return {status:'ok', mode, tris:[{A,B,C,a,b,c}], ssa:null, work:{cosA,cosB}};
+    }
+
+    if(mode==='SAS'){
+      const a=x1, b=x2, C=x3;
+      if(a<=0||b<=0) return bad('Sides must be positive.');
+      if(C<=0||C>=180) return bad('The included angle C must be between 0° and 180° (exclusive).');
+      const c2=a*a+b*b-2*a*b*Math.cos(C*D);
+      const c=Math.sqrt(Math.max(c2,0));
+      if(c<=1e-12) return bad('Degenerate: with that angle the two sides fold exactly onto each other.');
+      const cosA=clamp((b*b+c*c-a*a)/(2*b*c),-1,1);
+      const A=Math.acos(cosA)/D, B=180-C-A;
+      return {status:'ok', mode, tris:[{A,B,C,a,b,c}], ssa:null, work:{c2,cosA}};
+    }
+
+    if(mode==='ASA'){
+      const A=x1, B=x2, c=x3;
+      if(A<=0||A>=180||B<=0||B>=180) return bad('Angles must be between 0° and 180° (exclusive).');
+      if(c<=0) return bad('Side c must be positive.');
+      if(A+B>=180)
+        return bad('Impossible: A + B = '+gv(A)+'° + '+gv(B)+'° = '+s3(A+B)+'° ≥ 180°. The three angles of a triangle sum to exactly 180°, so nothing is left for C.');
+      const C=180-A-B;
+      const a=c*Math.sin(A*D)/Math.sin(C*D);
+      const b=c*Math.sin(B*D)/Math.sin(C*D);
+      return {status:'ok', mode, tris:[{A,B,C,a,b,c}], ssa:null};
+    }
+
+    // SSA — two sides and a NON-included angle: a, b, A (angle A opposite side a)
+    const a=x1, b=x2, A=x3;
+    if(a<=0||b<=0) return bad('Sides must be positive.');
+    if(A<=0||A>=180) return bad('Angle A must be between 0° and 180° (exclusive).');
+    const h=b*Math.sin(A*D);      // perpendicular distance from C to the base line
+    const k=h/a;                  // candidate sin B
+    const ssa={a,b,A,h,k,case:null,B1:null,B2:null,valid1:false,valid2:false,noneReason:null};
+
+    if(k>1+TOL){                  // side a shorter than the height — never reaches the base
+      ssa.case='none'; ssa.noneReason='short';
+      return {status:'ok', mode, tris:[], ssa};
+    }
+    if(Math.abs(k-1)<=TOL && A<90-1e-9){   // tangent case: a = b·sinA → B = 90°
+      const B=90, C=180-A-B, c=a*Math.sin(C*D)/Math.sin(A*D);
+      ssa.case='tangent'; ssa.B1=90; ssa.valid1=true;
+      return {status:'ok', mode, tris:[{A,B,C,a,b,c}], ssa};
+    }
+    const B1=Math.asin(clamp(k,-1,1))/D, B2=180-B1;
+    ssa.B1=B1; ssa.B2=B2;
+    function mk(B){
+      const C=180-A-B;
+      if(C<=0.05) return null;    // fails the angle sum (or degenerate sliver)
+      return {A,B,C,a,b,c:a*Math.sin(C*D)/Math.sin(A*D)};
+    }
+    const t1=mk(B1), t2=mk(B2);
+    ssa.valid1=!!t1; ssa.valid2=!!t2;
+    const tris=[t1,t2].filter(Boolean);
+    ssa.case = tris.length===2 ? 'two' : (tris.length===1 ? 'one' : 'none');
+    if(ssa.case==='none') ssa.noneReason='anglesum';
+    return {status:'ok', mode, tris, ssa};
+  }
+  /* ===== END SOLVER ===== */
+
+  // ---- DOM / state ----------------------------------------------------
+  const stage=document.getElementById('stage');
+  const cv=document.getElementById('cv');
+  const ctx=cv.getContext('2d');
+  const solEl=document.getElementById('sol');
+  const modeSeg=document.getElementById('modeSeg');
+  const ins=[1,2,3].map(i=>document.getElementById('in'+i));
+  const labs=[1,2,3].map(i=>document.getElementById('l'+i));
+  const noteEl=document.getElementById('modeNote');
+
+  const COL={ink:'#2b2b2b', muted:'#7d756a', rose:'#BC5A6E', teal:'#2E7C8F', orange:'#D8693C', plum:'#7B5EA7'};
+
+  const MODES={
+    SSS:{labels:['a','b','c'],           note:'three sides — cosine-rule territory'},
+    SAS:{labels:['a','b','C (°)'],       note:'C is the included angle, between sides a and b'},
+    ASA:{labels:['A (°)','B (°)','c'],   note:'side c joins the two given angles'},
+    SSA:{labels:['a','b','A (°)'],       note:'a is opposite the given angle A — the ambiguous case lives here'}
+  };
+  const store={SSS:[7,9,12], SAS:[7,9,40], ASA:[40,60,10], SSA:[7,9,40]};
+  let mode='SSA';
+  let sol=null;
+
+  // ---- sizing (devicePixelRatio-aware) --------------------------------
+  let W=0,H=0,DPR=1;
+  function resize(){
+    const r=stage.getBoundingClientRect();
+    DPR=Math.min(window.devicePixelRatio||1, 2.5);
+    W=r.width; H=r.height;
+    cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    draw();
+  }
+  window.addEventListener('resize', resize);
+  if(window.ResizeObserver){ new ResizeObserver(function(){ resize(); }).observe(stage); }
+
+  // ---- world -> screen ------------------------------------------------
+  let sc=1, ox=0, oy=0;
+  function fitPoints(pts, pad){
+    let minX=1e18,maxX=-1e18,minY=1e18,maxY=-1e18;
+    for(const p of pts){
+      if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x;
+      if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y;
+    }
+    const dw=Math.max(maxX-minX,1e-9), dh=Math.max(maxY-minY,1e-9);
+    sc=Math.min((W-2*pad)/dw, (H-2*pad)/dh);
+    if(!isFinite(sc)||sc<=0) sc=1;
+    ox=W/2 - sc*(minX+maxX)/2;
+    oy=H/2 + sc*(minY+maxY)/2;
+  }
+  function S(p){ return {x:ox+sc*p.x, y:oy-sc*p.y}; }
+
+  // ---- primitives (screen space) --------------------------------------
+  function vsub(p,q){return {x:p.x-q.x, y:p.y-q.y};}
+  function vadd(p,q){return {x:p.x+q.x, y:p.y+q.y};}
+  function vmul(p,s){return {x:p.x*s, y:p.y*s};}
+  function vlen(p){return Math.hypot(p.x,p.y);}
+  function vunit(p){const l=vlen(p)||1; return {x:p.x/l, y:p.y/l};}
+  function vmid(p,q){return {x:(p.x+q.x)/2, y:(p.y+q.y)/2};}
+
+  function lineS(p,q,color,w,alpha,dash){
+    ctx.save();
+    if(dash) ctx.setLineDash(dash);
+    ctx.globalAlpha=(alpha==null)?1:alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=w||1.5; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
+    ctx.restore();
+  }
+  function dotS(p,r,color,alpha){
+    ctx.save(); ctx.globalAlpha=(alpha==null)?1:alpha;
+    ctx.fillStyle=color; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  function textS(x,y,str,o){
+    o=o||{};
+    ctx.save();
+    ctx.globalAlpha=(o.alpha==null)?1:o.alpha;
+    ctx.fillStyle=o.color||COL.ink;
+    ctx.font=(o.italic?'italic ':'')+(o.bold?'600 ':'')+(o.size||13)+'px Georgia, serif';
+    ctx.textAlign=o.align||'center'; ctx.textBaseline=o.base||'middle';
+    ctx.fillText(str,x,y);
+    ctx.restore();
+  }
+
+  // small arc (or right-angle square) + value at a vertex.
+  // Vw = vertex, Pw/Qw = the two adjacent vertices (world coords).
+  function angleMark(Vw,Pw,Qw,valDeg,color,alpha,noVal){
+    const V=S(Vw), P=S(Pw), Q=S(Qw);
+    const u1=vunit(vsub(P,V)), u2=vunit(vsub(Q,V));
+    const r=Math.min(26, 0.30*Math.min(vlen(vsub(P,V)), vlen(vsub(Q,V))));
+    if(r<7) return;
+    ctx.save();
+    ctx.globalAlpha=(alpha==null)?1:alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=1.6;
+    if(Math.abs(valDeg-90)<0.15){
+      const s=r*0.72;
+      const c1=vadd(V,vmul(u1,s)), c2=vadd(V,vmul(u2,s)), c3=vadd(c1,vmul(u2,s));
+      ctx.beginPath(); ctx.moveTo(c1.x,c1.y); ctx.lineTo(c3.x,c3.y); ctx.lineTo(c2.x,c2.y); ctx.stroke();
+    } else {
+      const a1r=Math.atan2(P.y-V.y,P.x-V.x), a2r=Math.atan2(Q.y-V.y,Q.x-V.x);
+      let delta=a2r-a1r;
+      while(delta> Math.PI) delta-=2*Math.PI;
+      while(delta<-Math.PI) delta+=2*Math.PI;
+      ctx.beginPath(); ctx.arc(V.x,V.y,r,a1r,a1r+delta, delta<0); ctx.stroke();
+    }
+    if(!noVal){
+      const bis=vadd(u1,u2);
+      if(vlen(bis)>1e-6){
+        const d=vunit(bis), lp=vadd(V,vmul(d,r+14));
+        textS(lp.x,lp.y,a1(valDeg)+'°',{size:12,color:color});
+      }
+    }
+    ctx.restore();
+  }
+
+  // label at the midpoint of PQ, pushed away from the third vertex R
+  function sideLabel(Pw,Qw,Rw,str,color,alpha){
+    const P=S(Pw), Q=S(Qw), R=S(Rw);
+    const m=vmid(P,Q);
+    let d=vunit(vsub(m,R));
+    if(!isFinite(d.x)||vlen(d)<1e-6) d={x:0,y:-1};
+    const lp=vadd(m,vmul(d,16));
+    textS(lp.x,lp.y,str,{size:13,color:color,italic:true,alpha:alpha});
+  }
+  function vertexLabel(Vw,centw,str,color,alpha){
+    const V=S(Vw), c=S(centw);
+    const d=vunit(vsub(V,c));
+    const lp=vadd(V,vmul(d,18));
+    textS(lp.x,lp.y,str,{size:15,color:color,italic:true,bold:true,alpha:alpha});
+  }
+
+  // ---- main drawing ---------------------------------------------------
+  function draw(){
+    if(!ctx||!W||!H) return;
+    ctx.clearRect(0,0,W,H);
+    if(!sol) return;
+    if(sol.status!=='ok'){
+      textS(W/2,H/2,'fix the inputs to draw the triangle',{color:COL.muted,italic:true,size:13});
+      return;
+    }
+    if(sol.mode==='SSA' && sol.ssa && sol.ssa.case==='none'){ drawNone(sol.ssa); return; }
+    if(!sol.tris.length) return;
+
+    // vertices: A at origin, base AB along +x, C above (b at angle A)
+    const t1=sol.tris[0];
+    const Ar=t1.A*D;
+    const Apt={x:0,y:0};
+    const Cpt={x:t1.b*Math.cos(Ar), y:t1.b*Math.sin(Ar)};
+    const B1={x:t1.c, y:0};
+    const two=sol.tris.length===2;
+    const t2=two?sol.tris[1]:null;
+    const B2=two?{x:t2.c, y:0}:null;
+
+    const pts=[Apt,Cpt,B1]; if(two) pts.push(B2);
+    fitPoints(pts,60);
+    const cent={x:(Apt.x+Cpt.x+B1.x)/3, y:(Apt.y+Cpt.y+B1.y)/3};
+
+    // second triangle first (obtuse B) — dashed + faded, sharing side AC
+    if(two){
+      lineS(S(Cpt),S(B2),COL.plum,2,0.6,[7,6]);
+      lineS(S(Apt),S(B2),COL.plum,2,0.3,[7,6]);
+      angleMark(B2,Apt,Cpt,t2.B,COL.plum,0.85);
+      sideLabel(Cpt,B2,B1,'a = '+s3(t2.a),COL.plum,0.8);
+      dotS(S(B2),3.4,COL.plum,0.9);
+      textS(S(B2).x,S(B2).y+20,'B₂',{size:15,color:COL.plum,italic:true,bold:true,alpha:0.95});
+    }
+
+    // triangle 1 — solid
+    lineS(S(Apt),S(B1),COL.ink,2.2);
+    lineS(S(B1),S(Cpt),COL.ink,2.2);
+    lineS(S(Apt),S(Cpt),COL.ink,2.2);
+
+    angleMark(Apt,B1,Cpt,t1.A,COL.orange);
+    angleMark(B1,Cpt,Apt,t1.B,COL.orange);
+    angleMark(Cpt,Apt,B1,t1.C,COL.orange);
+
+    sideLabel(B1,Cpt,Apt,'a = '+s3(t1.a),COL.ink);
+    sideLabel(Apt,Cpt,B1,'b = '+s3(t1.b),COL.ink);
+    if(two){
+      const m1=vmid(S(Apt),S(B1));
+      textS(m1.x,m1.y+18,'c₁ = '+s3(t1.c),{size:13,color:COL.ink,italic:true});
+      const m2=vmid(S(Apt),S(B2));
+      textS(m2.x,m2.y+38,'c₂ = '+s3(t2.c),{size:13,color:COL.plum,italic:true,alpha:0.95});
+    } else {
+      sideLabel(Apt,B1,Cpt,'c = '+s3(t1.c),COL.ink);
+    }
+
+    dotS(S(Apt),3.6,COL.ink); dotS(S(B1),3.6,COL.ink); dotS(S(Cpt),3.6,COL.ink);
+    vertexLabel(Apt,cent,'A',COL.ink);
+    vertexLabel(B1,cent,two?'B₁':'B',COL.ink);
+    vertexLabel(Cpt,cent,'C',COL.ink);
+  }
+
+  // SSA with no triangle: the swinging-side construction
+  function drawNone(ss){
+    const Ar=ss.A*D;
+    const Apt={x:0,y:0};
+    const Cpt={x:ss.b*Math.cos(Ar), y:ss.b*Math.sin(Ar)};
+    const F={x:Cpt.x, y:0};                       // foot of the height from C
+    const right=Math.max(Cpt.x+ss.a*1.25, ss.b*1.05, ss.a*1.2, 1e-6);
+    const left=Math.min(0, Cpt.x-ss.a*1.15);
+    fitPoints([Apt,Cpt,F,{x:right,y:0},{x:left,y:0},
+      {x:Cpt.x-ss.a,y:Cpt.y},{x:Cpt.x+ss.a,y:Cpt.y},{x:Cpt.x,y:Cpt.y-ss.a}],60);
+
+    // base line: solid ray from A, dashed extension behind A
+    lineS(S(Apt),S({x:right,y:0}),COL.ink,2,0.85);
+    if(left<0) lineS(S({x:left,y:0}),S(Apt),COL.muted,1.4,0.6,[6,6]);
+    const re=S({x:right,y:0});
+    textS(re.x-4,re.y-14,'base line — B would have to sit here',{size:11.5,color:COL.muted,italic:true,align:'right'});
+
+    // side b + angle A
+    lineS(S(Apt),S(Cpt),COL.ink,2.2);
+    sideLabel(Apt,Cpt,{x:right*0.6,y:0},'b = '+s3(ss.b),COL.ink);
+    angleMark(Apt,{x:right,y:0},Cpt,ss.A,COL.orange);
+
+    // the height h = b sin A (dashed) with its right angle
+    lineS(S(Cpt),S(F),COL.teal,1.8,0.9,[6,5]);
+    angleMark(F,Cpt,{x:F.x+1,y:0},90,COL.teal,0.9,true);
+    const mh=vmid(S(Cpt),S(F));
+    textS(mh.x+10,mh.y,'h = b·sin A = '+s3(ss.h),{size:12.5,color:COL.teal,italic:true,align:'left'});
+
+    // side a swinging from C: two attempts + the arc its tip sweeps
+    function swing(angDeg,alpha,withLabel){
+      const e={x:Cpt.x+ss.a*Math.cos(angDeg*D), y:Cpt.y+ss.a*Math.sin(angDeg*D)};
+      lineS(S(Cpt),S(e),COL.rose,2.2,alpha);
+      dotS(S(e),3.2,COL.rose,alpha);
+      if(withLabel){
+        const m=vmid(S(Cpt),S(e));
+        textS(m.x+12,m.y,'a = '+s3(ss.a),{size:13,color:COL.rose,italic:true,align:'left'});
+      }
+    }
+    swing(-63,1,true);
+    swing(-117,0.4,false);
+    ctx.save();
+    ctx.setLineDash([7,6]); ctx.strokeStyle=COL.rose; ctx.globalAlpha=0.6; ctx.lineWidth=1.6;
+    ctx.beginPath();
+    for(let i=0;i<=60;i++){
+      const ang=(-160+(i/60)*140)*D;
+      const p=S({x:Cpt.x+ss.a*Math.cos(ang), y:Cpt.y+ss.a*Math.sin(ang)});
+      if(i===0)ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+    }
+    ctx.stroke(); ctx.restore();
+    const tip=S({x:Cpt.x, y:Cpt.y-ss.a});
+    textS(tip.x,tip.y+16,
+      ss.noneReason==='short' ? 'too short — the arc never reaches the base line'
+                              : 'the arc meets the line only behind A — no valid triangle',
+      {size:11.5,color:COL.rose,italic:true});
+
+    dotS(S(Apt),3.6,COL.ink); dotS(S(Cpt),3.6,COL.ink);
+    textS(S(Apt).x-14,S(Apt).y+12,'A',{size:15,italic:true,bold:true});
+    textS(S(Cpt).x,S(Cpt).y-16,'C',{size:15,italic:true,bold:true});
+  }
+
+  // ---- solution panel -------------------------------------------------
+  function chip(t){ return '<span class="chip">'+t+'</span>'; }
+  function para(t){ return '<p>'+t+'</p>'; }
+  function klbox(lines){ return '<div class="klbox">'+lines.map(function(l){return '<div>'+l+'</div>';}).join('')+'</div>'; }
+  function dim(t){ return '<span class="dim">'+t+'</span>'; }
+  function banner(cls,html){ return '<div class="banner '+cls+'">'+html+'</div>'; }
+  function partbox(t,title){
+    const g=['A = '+a1(t.A)+'°','a = '+s3(t.a),
+             'B = '+a1(t.B)+'°','b = '+s3(t.b),
+             'C = '+a1(t.C)+'°','c = '+s3(t.c)];
+    return '<div class="pbox">'+(title?'<h4>'+title+'</h4>':'')+
+      '<div class="pgrid">'+g.map(function(x){return '<span>'+x+'</span>';}).join('')+'</div></div>';
+  }
+
+  function renderPanel(){
+    if(!sol){ solEl.innerHTML=''; return; }
+    if(sol.status==='invalid'){
+      solEl.innerHTML=banner('bad','<b>Can’t build that triangle.</b> '+sol.message)+
+        '<p style="color:var(--muted);font-size:12.5px">Fix the values above and the drawing comes back.</p>';
+      return;
+    }
+    let html='';
+    const t=sol.tris[0]||null, w=sol.work||{};
+
+    if(sol.mode==='SSS'){
+      html+=chip('Cosine rule');
+      html+=para('All three sides, no angle — the sine rule can’t start (it needs a side <em>with</em> its opposite angle), so use the rearranged cosine rule to find an angle from three sides.');
+      html+=klbox([
+        dim('cos A = (b² + c² − a²) / (2bc)'),
+        'cos A = ('+gv(t.b)+'² + '+gv(t.c)+'² − '+gv(t.a)+'²) / (2·'+gv(t.b)+'·'+gv(t.c)+') = '+d4(w.cosA)+'  →  A = '+a1(t.A)+'°',
+        'cos B = ('+gv(t.a)+'² + '+gv(t.c)+'² − '+gv(t.b)+'²) / (2·'+gv(t.a)+'·'+gv(t.c)+') = '+d4(w.cosB)+'  →  B = '+a1(t.B)+'°',
+        'C = 180° − '+a1(t.A)+'° − '+a1(t.B)+'° = '+a1(t.C)+'°'
+      ]);
+      html+=partbox(t);
+    }
+    else if(sol.mode==='SAS'){
+      html+=chip('Cosine rule');
+      html+=para('Two sides with the angle <em>between</em> them — the cosine rule gives the third side directly. Then find a second angle (cosine-rule rearrangement is safest — it can’t miss an obtuse angle).');
+      html+=klbox([
+        dim('c² = a² + b² − 2ab·cos C   (C is the included angle)'),
+        'c² = '+gv(t.a)+'² + '+gv(t.b)+'² − 2·'+gv(t.a)+'·'+gv(t.b)+'·cos '+gv(t.C)+'° = '+s3(w.c2)+'  →  c = '+s3(t.c),
+        'cos A = (b² + c² − a²) / (2bc) = '+d4(w.cosA)+'  →  A = '+a1(t.A)+'°',
+        'B = 180° − '+gv(t.C)+'° − '+a1(t.A)+'° = '+a1(t.B)+'°'
+      ]);
+      html+=partbox(t);
+    }
+    else if(sol.mode==='ASA'){
+      html+=chip('Sine rule');
+      html+=para('Two angles give the third for free (angle sum = 180°). Side c pairs with angle C, and the sine rule scales out the other two sides.');
+      html+=klbox([
+        'C = 180° − '+gv(t.A)+'° − '+gv(t.B)+'° = '+a1(t.C)+'°',
+        dim('a / sin A = b / sin B = c / sin C'),
+        'a = '+gv(t.c)+' · sin '+gv(t.A)+'° / sin '+a1(t.C)+'° = '+s3(t.a),
+        'b = '+gv(t.c)+' · sin '+gv(t.B)+'° / sin '+a1(t.C)+'° = '+s3(t.b)
+      ]);
+      html+=partbox(t);
+    }
+    else { // SSA
+      const ss=sol.ssa;
+      html+=chip('Sine rule — ambiguous case');
+      html+=para('Two sides and a <em>non</em>-included angle. The sine rule finds B — but sine is positive in the 1st <em>and</em> 2nd quadrants, so sin B = k can mean two different angles. Always test both.');
+      const kl=[
+        dim('sin B / b = sin A / a   →   sin B = b·sin A / a'),
+        'sin B = '+gv(ss.b)+' × sin '+gv(ss.A)+'° / '+gv(ss.a)+' = '+d4(ss.k)
+      ];
+      if(ss.case==='two'){
+        const t2=sol.tris[1];
+        kl.push('B₁ = sin⁻¹('+d4(ss.k)+') = '+a1(ss.B1)+'°   →  C₁ = '+a1(t.C)+'°,  c₁ = a·sin C₁ / sin A = '+s3(t.c));
+        kl.push('B₂ = 180° − '+a1(ss.B1)+'° = '+a1(ss.B2)+'°  →  C₂ = '+a1(t2.C)+'°,  c₂ = '+s3(t2.c));
+        html+=klbox(kl);
+        html+=banner('warn','<b>⚠ Ambiguous case</b> — sin B = '+d4(ss.k)+' has <b>TWO</b> solutions between 0° and 180°: B = '+a1(ss.B1)+'° and B = 180° − '+a1(ss.B1)+'° = '+a1(ss.B2)+'°. Check both against the angle sum: here A + B stays under 180° <em>both</em> times, so <b>both triangles exist</b>. Quoting only the acute B loses the second triangle — and the marks.');
+        html+='<div class="duo">'+partbox(t,'Triangle 1 — B acute (solid)')+partbox(t2,'Triangle 2 — B obtuse (dashed)')+'</div>';
+      }
+      else if(ss.case==='one'){
+        kl.push('B = sin⁻¹('+d4(ss.k)+') = '+a1(ss.B1)+'°  or  180° − '+a1(ss.B1)+'° = '+a1(ss.B2)+'°');
+        kl.push('C = 180° − '+gv(ss.A)+'° − '+a1(t.B)+'° = '+a1(t.C)+'°,  c = a·sin C / sin A = '+s3(t.c));
+        html+=klbox(kl);
+        html+=banner('good','<b>✓ One triangle.</b> The obtuse candidate B = '+a1(ss.B2)+'° is <b>rejected</b>: A + B = '+gv(ss.A)+'° + '+a1(ss.B2)+'° = '+a1(ss.A+ss.B2)+'° ≥ 180°, leaving nothing for C.'+
+          (ss.a>=ss.b?' (Here a ≥ b, so B ≤ A and the obtuse option can never survive — the quick check worth memorising.)':''));
+        html+=partbox(t);
+      }
+      else if(ss.case==='tangent'){
+        kl.push('sin B = 1 (within rounding)  →  B = 90°');
+        kl.push('C = 180° − '+gv(ss.A)+'° − 90° = '+a1(t.C)+'°,  c = '+s3(t.c));
+        html+=klbox(kl);
+        html+=banner('info','<b>⟂ Tangent case.</b> a = b·sin A = '+s3(ss.h)+' (within rounding) — the swinging side is exactly the height from C, so it touches the base line at <b>one</b> point. B = 90°: exactly one triangle, and it’s right-angled.');
+        html+=partbox(t);
+      }
+      else { // none
+        html+=klbox(kl);
+        if(ss.noneReason==='short'){
+          html+=banner('bad','<b>✗ No triangle:</b> a &lt; b·sin A. The side opposite A must at least reach the height of C above the base: b·sin A = '+gv(ss.b)+' × sin '+gv(ss.A)+'° = '+s3(ss.h)+' would be needed, but a = '+gv(ss.a)+'. Equivalently sin B = '+d4(ss.k)+' &gt; 1 — impossible. The drawing shows side a swinging from C and missing the base line entirely.');
+        } else {
+          html+=banner('bad','<b>✗ No triangle.</b> sin B = '+d4(ss.k)+' gives B = '+a1(ss.B1)+'° or '+a1(ss.B2)+'°, but with A = '+gv(ss.A)+'° both fail the angle sum (A + B ≥ 180°). When A ≥ 90°, side a must be the <em>longest</em> side — here a = '+gv(ss.a)+' ≤ b = '+gv(ss.b)+'.');
+        }
+      }
+    }
+    solEl.innerHTML=html;
+  }
+
+  // ---- wiring ---------------------------------------------------------
+  function update(){
+    store[mode]=ins.map(function(e){ const v=parseFloat(e.value); return isFinite(v)?v:NaN; });
+    sol=solveTriangle(mode, store[mode][0], store[mode][1], store[mode][2]);
+    renderPanel();
+    draw();
+  }
+  function applyMode(m){
+    mode=m;
+    Array.prototype.forEach.call(modeSeg.children, function(b){
+      b.classList.toggle('on', b.dataset.m===m);
+    });
+    const cfg=MODES[m];
+    for(let i=0;i<3;i++){ labs[i].textContent=cfg.labels[i]; ins[i].value=store[m][i]; }
+    noteEl.textContent=cfg.note;
+    update();
+  }
+  modeSeg.addEventListener('click', function(e){
+    const b=e.target.closest('button'); if(!b) return;
+    applyMode(b.dataset.m);
+  });
+  ins.forEach(function(el){ el.addEventListener('input', update); });
+
+  resize();
+  applyMode('SSA');   // star feature first: a=7, b=9, A=40° — two triangles
+})();
+</script>
+</body>
+</html>

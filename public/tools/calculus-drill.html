@@ -115,6 +115,79 @@
     padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer;
     font-size: 15px;
   }
+
+  /* --- Diff-or-Int distinction mode --- */
+  .op-chip {
+    display: inline-block; padding: 10px 26px; border-radius: 999px;
+    font-size: 21px; font-weight: 800; letter-spacing: 0.14em;
+    margin-bottom: 14px;
+  }
+  .op-chip.diff { color: #ffa94d; background: rgba(255,169,77,0.12); border: 2px solid #ffa94d; }
+  .op-chip.int  { color: #b197fc; background: rgba(177,151,252,0.12); border: 2px solid #b197fc; }
+  .trap-line {
+    color: var(--text-dim); font-size: 12.5px; font-family: ui-monospace, monospace;
+    margin: -6px 0 12px; text-align: right;
+  }
+  .feedback {
+    margin-top: 16px; padding: 12px 14px; border-radius: 8px;
+    font-size: 14.5px; line-height: 1.5; text-align: left;
+    display: flex; align-items: center; gap: 12px; justify-content: space-between;
+  }
+  .feedback.fb-good { background: rgba(81,207,102,0.1); border: 1px solid var(--good); color: var(--good); }
+  .feedback.fb-bad  { background: rgba(255,107,107,0.1); border: 1px solid var(--bad); }
+  .fb-next {
+    flex: 0 0 auto; background: var(--accent); color: var(--bg); border: none;
+    padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer;
+  }
+
+  /* --- Hard (past papers) mode --- */
+  .hard-meta {
+    color: var(--text-dim); font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 14px; font-family: ui-monospace, monospace;
+  }
+  .hard-q { font-size: 17.5px; line-height: 1.7; text-align: left; overflow-wrap: break-word; }
+  .hard-ans {
+    margin-top: 18px; padding: 14px 16px; text-align: left;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-left: 3px solid var(--good); border-radius: 8px;
+    font-size: 17px; line-height: 1.7; overflow-wrap: break-word;
+  }
+  .hard-ans .lbl {
+    font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 6px; font-family: ui-monospace, monospace;
+  }
+  .hard-actions { margin-top: 20px; }
+  .hard-show {
+    width: 100%; padding: 13px; background: var(--accent); color: var(--bg);
+    border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .hard-show:hover { opacity: 0.9; }
+  .hard-marks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hard-marks button {
+    padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+    background: var(--bg-elev-2);
+  }
+  .mark-got { border: 2px solid var(--good); color: var(--good); }
+  .mark-got:hover { background: rgba(81,207,102,0.1); }
+  .mark-not { border: 2px solid var(--bad); color: var(--bad); }
+  .mark-not:hover { background: rgba(255,107,107,0.1); }
+  .hard-end-btn {
+    background: none; border: 1px solid var(--border); color: var(--text-dim);
+    padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12.5px;
+  }
+  .hard-end-btn:hover { color: var(--text); }
+
+  /* --- Results extras (confusion summary) --- */
+  .r-extra {
+    text-align: left; background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;
+    font-size: 14px; line-height: 1.8; color: var(--text);
+  }
+  .r-extra .hd {
+    font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.06em; margin: 8px 0 2px; font-family: ui-monospace, monospace;
+  }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -133,18 +206,31 @@
       <div class="opt active" data-val="diff">Differentiate</div>
       <div class="opt" data-val="int">Integrate</div>
       <div class="opt" data-val="mixed">Mixed</div>
+      <div class="opt" data-val="dvi">⚡ Diff or Int?</div>
+      <div class="opt" data-val="hard">🔥 Hard (past papers)</div>
     </div>
-    <h3>Difficulty</h3>
-    <div class="opt-row" data-group="level">
-      <div class="opt active" data-val="basic">Basic</div>
-      <div class="opt" data-val="inter">Intermediate</div>
-      <div class="opt" data-val="adv">Advanced</div>
+    <div id="sec-level">
+      <h3>Difficulty</h3>
+      <div class="opt-row" data-group="level">
+        <div class="opt active" data-val="basic">Basic</div>
+        <div class="opt" data-val="inter">Intermediate</div>
+        <div class="opt" data-val="adv">Advanced</div>
+      </div>
     </div>
-    <h3>Time limit</h3>
-    <div class="opt-row" data-group="time">
-      <div class="opt" data-val="60">60 s</div>
-      <div class="opt active" data-val="120">2 min</div>
-      <div class="opt" data-val="300">5 min</div>
+    <div id="sec-hardlevel" class="hidden">
+      <h3>Level</h3>
+      <div class="opt-row" data-group="hardlevel">
+        <div class="opt active" data-val="AM">AM</div>
+        <div class="opt" data-val="JC">JC</div>
+      </div>
+    </div>
+    <div id="sec-time">
+      <h3>Time limit</h3>
+      <div class="opt-row" data-group="time">
+        <div class="opt" data-val="60">60 s</div>
+        <div class="opt active" data-val="120">2 min</div>
+        <div class="opt" data-val="300">5 min</div>
+      </div>
     </div>
     <button class="start-btn" id="start-btn">Start drill</button>
   </div>
@@ -156,26 +242,60 @@
         <span><span class="ok" id="m-correct">0</span> correct</span>
         <span><span class="bad" id="m-wrong">0</span> wrong</span>
         <span><span id="m-total">0</span> total</span>
+        <span class="hidden" id="streak-wrap">🔥 <span id="m-streak">0</span></span>
       </div>
       <div class="timer" id="timer">2:00</div>
     </div>
+    <div class="trap-line hidden" id="trap-line"></div>
     <div class="quiz-card">
+      <div class="op-chip hidden" id="op-chip"></div>
       <div class="question-text" id="q-prompt">Differentiate with respect to x:</div>
       <div class="question-expr" id="q-expr"></div>
       <div class="options" id="options"></div>
+      <div class="feedback hidden" id="feedback">
+        <span id="fb-text"></span>
+        <button class="fb-next hidden" id="fb-next">Next ▸</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hard (past papers) -->
+  <div id="hard" class="hidden">
+    <div class="quiz-bar">
+      <div class="stats-mini">
+        <span><span class="ok" id="h-cleared">0/0</span> cleared</span>
+        <span><span id="h-left">0</span> in queue</span>
+      </div>
+      <button class="hard-end-btn" id="h-endbtn">End session</button>
+    </div>
+    <div class="quiz-card">
+      <div class="hard-meta" id="h-meta"></div>
+      <div class="hard-q" id="h-q"></div>
+      <div class="hard-ans hidden" id="h-ans">
+        <div class="lbl">Answer</div>
+        <div id="h-ans-body"></div>
+      </div>
+      <div class="hard-actions">
+        <button class="hard-show" id="h-show">Show answer</button>
+        <div class="hard-marks hidden" id="h-marks">
+          <button class="mark-got" id="h-got">✓ Got it</button>
+          <button class="mark-not" id="h-not">✗ Not yet</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Results -->
   <div id="results" class="hidden">
     <div class="results-card">
-      <h2 style="font-size: 18px; color: var(--text-dim); font-weight: 500;">Time's up!</h2>
+      <h2 style="font-size: 18px; color: var(--text-dim); font-weight: 500;" id="r-title">Time's up!</h2>
       <div class="big-score" id="r-score">0%</div>
       <div class="results-grid">
-        <div class="result-stat"><div class="l">Correct</div><div class="v" id="r-correct" style="color: var(--good);">0</div></div>
-        <div class="result-stat"><div class="l">Wrong</div><div class="v" id="r-wrong" style="color: var(--bad);">0</div></div>
-        <div class="result-stat"><div class="l">Avg time</div><div class="v" id="r-avg">—</div></div>
+        <div class="result-stat"><div class="l" id="rl-1">Correct</div><div class="v" id="r-correct" style="color: var(--good);">0</div></div>
+        <div class="result-stat"><div class="l" id="rl-2">Wrong</div><div class="v" id="r-wrong" style="color: var(--bad);">0</div></div>
+        <div class="result-stat"><div class="l" id="rl-3">Avg time</div><div class="v" id="r-avg">—</div></div>
       </div>
+      <div class="r-extra hidden" id="r-extra"></div>
       <button class="restart-btn" id="restart-btn">Try again</button>
     </div>
   </div>
@@ -187,6 +307,252 @@
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function nz(min, max) { let v = rand(min, max); while (v === 0) v = rand(min, max); return v; }
+
+// ==== DVI-CORE-START (DOM-free — "Diff or Int?" distinction mode generators) ====
+// One source of truth per family: expr/d/i are built from the same params via the
+// same coefficient formatter, so correct answers and traps can never drift apart.
+
+function shuffleArr(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function gcd2(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a || 1; }
+
+// (num/den) · body → clean LaTeX: reduces the fraction, drops 1·, keeps the sign out front.
+function coefBody(num, den, body) {
+  if (num === 0) return '0';
+  const neg = (num < 0) !== (den < 0);
+  let n = Math.abs(num), d = Math.abs(den);
+  const g = gcd2(n, d); n /= g; d /= g;
+  const s = neg ? '-' : '';
+  if (!body) return d === 1 ? s + n : s + '\\frac{' + n + '}{' + d + '}';
+  if (d === 1) return n === 1 ? s + body : s + n + body;
+  return s + '\\frac{' + n + '}{' + d + '}' + body;
+}
+
+function joinTerms(terms) {
+  let out = '';
+  for (const t of terms) {
+    if (!t || t === '0') continue;
+    if (!out) { out = t; continue; }
+    out += t.charAt(0) === '-' ? ' - ' + t.slice(1) : ' + ' + t;
+  }
+  return out || '0';
+}
+
+function powBody(m) { return m === 0 ? '' : m === 1 ? 'x' : 'x^{' + m + '}'; }
+function linPow(p, m) { const base = '(' + p.a + 'x+' + p.b + ')'; return m === 1 ? base : base + '^{' + m + '}'; }
+
+// Each family: gen() → params; expr(p) → f; d(p)/i(p) → { ans, sign, chain } (all
+// LaTeX, integrals WITHOUT the "+ c" — genDvi appends it). "sign" = sign-slip
+// variant of the correct answer; "chain" = missing/inverted ×b (or ×n / ÷(n+1)).
+const DVI_FAMILIES = [
+  { // a·sin(bx):  d → ab cos(bx),  ∫ → −(a/b) cos(bx) + c
+    id: 'sin',
+    gen: () => ({ a: rand(1, 5), b: rand(2, 5) }),
+    expr: p => coefBody(p.a, 1, '\\sin(' + p.b + 'x)'),
+    d: p => { const cos = '\\cos(' + p.b + 'x)'; return {
+      ans:   coefBody(p.a * p.b, 1, cos),
+      sign:  coefBody(-p.a * p.b, 1, cos),
+      chain: pick([coefBody(p.a, 1, cos), coefBody(p.a, p.b, cos)])
+    }; },
+    i: p => { const cos = '\\cos(' + p.b + 'x)'; return {
+      ans:   coefBody(-p.a, p.b, cos),
+      sign:  coefBody(p.a, p.b, cos),
+      chain: pick([coefBody(-p.a * p.b, 1, cos), coefBody(-p.a, 1, cos)])
+    }; }
+  },
+  { // a·cos(bx):  d → −ab sin(bx),  ∫ → (a/b) sin(bx) + c
+    id: 'cos',
+    gen: () => ({ a: rand(1, 5), b: rand(2, 5) }),
+    expr: p => coefBody(p.a, 1, '\\cos(' + p.b + 'x)'),
+    d: p => { const sin = '\\sin(' + p.b + 'x)'; return {
+      ans:   coefBody(-p.a * p.b, 1, sin),
+      sign:  coefBody(p.a * p.b, 1, sin),
+      chain: pick([coefBody(-p.a, 1, sin), coefBody(-p.a, p.b, sin)])
+    }; },
+    i: p => { const sin = '\\sin(' + p.b + 'x)'; return {
+      ans:   coefBody(p.a, p.b, sin),
+      sign:  coefBody(-p.a, p.b, sin),
+      chain: pick([coefBody(p.a * p.b, 1, sin), coefBody(p.a, 1, sin)])
+    }; }
+  },
+  { // e^{kx}:  d → k e^{kx},  ∫ → (1/k) e^{kx} + c
+    id: 'exp',
+    gen: () => ({ k: rand(2, 5) }),
+    expr: p => 'e^{' + p.k + 'x}',
+    d: p => { const e = 'e^{' + p.k + 'x}'; return {
+      ans:   coefBody(p.k, 1, e),
+      sign:  coefBody(-p.k, 1, e),
+      chain: pick([e, coefBody(1, p.k, e)])
+    }; },
+    i: p => { const e = 'e^{' + p.k + 'x}'; return {
+      ans:   coefBody(1, p.k, e),
+      sign:  coefBody(-1, p.k, e),
+      chain: pick([coefBody(p.k, 1, e), e])
+    }; }
+  },
+  { // x^n:  d → n x^{n−1},  ∫ → x^{n+1}/(n+1) + c
+    id: 'pow',
+    gen: () => ({ n: rand(2, 6) }),
+    expr: p => powBody(p.n),
+    d: p => ({
+      ans:   coefBody(p.n, 1, powBody(p.n - 1)),
+      sign:  coefBody(-p.n, 1, powBody(p.n - 1)),
+      chain: pick([powBody(p.n - 1), coefBody(p.n, 1, powBody(p.n))])
+    }),
+    i: p => ({
+      ans:   coefBody(1, p.n + 1, powBody(p.n + 1)),
+      sign:  coefBody(-1, p.n + 1, powBody(p.n + 1)),
+      chain: pick([powBody(p.n + 1), coefBody(1, p.n, powBody(p.n + 1))])
+    })
+  },
+  { // a/x:  d → −a/x²,  ∫ → a ln|x| + c
+    id: 'recip',
+    gen: () => ({ a: rand(1, 6) }),
+    expr: p => '\\frac{' + p.a + '}{x}',
+    d: p => ({
+      ans:   '-\\frac{' + p.a + '}{x^{2}}',
+      sign:  '\\frac{' + p.a + '}{x^{2}}',
+      chain: '-\\frac{' + p.a + '}{x}'
+    }),
+    i: p => ({
+      ans:   coefBody(p.a, 1, '\\ln|x|'),
+      sign:  coefBody(-p.a, 1, '\\ln|x|'),
+      chain: p.a === 1 ? '2\\ln|x|' : pick(['\\ln|x|', coefBody(1, p.a, '\\ln|x|')])
+    })
+  },
+  { // (ax+b)^n:  d → an(ax+b)^{n−1},  ∫ → (ax+b)^{n+1}/(a(n+1)) + c
+    id: 'linpow',
+    gen: () => ({ a: rand(2, 4), b: rand(1, 5), n: rand(2, 5) }),
+    expr: p => linPow(p, p.n),
+    d: p => ({
+      ans:   coefBody(p.n * p.a, 1, linPow(p, p.n - 1)),
+      sign:  coefBody(-p.n * p.a, 1, linPow(p, p.n - 1)),
+      chain: pick([coefBody(p.n, 1, linPow(p, p.n - 1)), coefBody(p.n, p.a, linPow(p, p.n - 1))])
+    }),
+    i: p => ({
+      ans:   coefBody(1, p.a * (p.n + 1), linPow(p, p.n + 1)),
+      sign:  coefBody(-1, p.a * (p.n + 1), linPow(p, p.n + 1)),
+      chain: pick([coefBody(1, p.n + 1, linPow(p, p.n + 1)), coefBody(p.a, p.n + 1, linPow(p, p.n + 1))])
+    })
+  },
+  { // a·x^n + b·x:  d → an x^{n−1} + b,  ∫ → a x^{n+1}/(n+1) + b x²/2 + c
+    id: 'poly',
+    gen: () => ({ a: rand(2, 5), n: rand(2, 4), b: rand(2, 6) }),
+    expr: p => joinTerms([coefBody(p.a, 1, powBody(p.n)), coefBody(p.b, 1, 'x')]),
+    d: p => ({
+      ans:   joinTerms([coefBody(p.a * p.n, 1, powBody(p.n - 1)), String(p.b)]),
+      sign:  joinTerms([coefBody(p.a * p.n, 1, powBody(p.n - 1)), String(-p.b)]),
+      chain: pick([
+        joinTerms([coefBody(p.a, 1, powBody(p.n - 1)), String(p.b)]),
+        joinTerms([coefBody(p.a * p.n, 1, powBody(p.n)), String(p.b)])
+      ])
+    }),
+    i: p => ({
+      ans:   joinTerms([coefBody(p.a, p.n + 1, powBody(p.n + 1)), coefBody(p.b, 2, powBody(2))]),
+      sign:  joinTerms([coefBody(p.a, p.n + 1, powBody(p.n + 1)), coefBody(-p.b, 2, powBody(2))]),
+      chain: pick([
+        joinTerms([coefBody(p.a, 1, powBody(p.n + 1)), coefBody(p.b, 1, powBody(2))]),
+        joinTerms([coefBody(p.a, p.n, powBody(p.n + 1)), coefBody(p.b, 2, powBody(2))])
+      ])
+    })
+  }
+];
+
+// Build one Diff-or-Int round: random family, random operation, 4 options =
+// correct + other-op answer + sign slip + chain-factor slip (shuffled).
+// For integrals the correct option carries "+ c"; the other-op trap (a
+// derivative) never does, so at least one wrong option always omits it.
+function genDvi() {
+  const withC = s => s + ' + c';
+  let q = null;
+  for (let tries = 0; tries < 8; tries++) {
+    const fam = pick(DVI_FAMILIES);
+    const p = fam.gen();
+    const op = Math.random() < 0.5 ? 'diff' : 'int';
+    const D = fam.d(p), I = fam.i(p);
+    const opts = op === 'diff' ? [
+      { latex: D.ans,        type: 'correct' },
+      { latex: withC(I.ans), type: 'otherOp' },
+      { latex: D.sign,       type: 'sign' },
+      { latex: D.chain,      type: 'chain' }
+    ] : [
+      { latex: withC(I.ans),   type: 'correct' },
+      { latex: D.ans,          type: 'otherOp' },
+      { latex: withC(I.sign),  type: 'sign' },
+      { latex: withC(I.chain), type: 'chain' }
+    ];
+    shuffleArr(opts);
+    const expr = op === 'diff'
+      ? '\\frac{d}{dx}\\Big[\\, ' + fam.expr(p) + ' \\,\\Big] = \\;?'
+      : '\\int ' + fam.expr(p) + ' \\;dx = \\;?';
+    q = {
+      op, prompt: '', latex: expr, family: fam.id,
+      options: opts.map(o => o.latex),
+      types: opts.map(o => o.type),
+      correctIndex: opts.findIndex(o => o.type === 'correct')
+    };
+    if (new Set(q.options).size === 4) return q;   // regenerate on the rare collision
+  }
+  return q;
+}
+
+// Feedback that NAMES the trap the student fell into.
+function dviTrapText(type, op) {
+  if (type === 'otherOp') {
+    return op === 'int'
+      ? "That's the DERIVATIVE — the question asked you to INTEGRATE. Look for the operation word first."
+      : "That's the INTEGRAL — the question asked you to DIFFERENTIATE. Look for the operation word first.";
+  }
+  if (type === 'sign') {
+    return 'Sign slip — right shape, wrong sign. Remember: d/dx[cos x] = −sin x, ∫ sin x dx = −cos x, and carry every minus through.';
+  }
+  if (type === 'chain') {
+    return op === 'int'
+      ? 'Chain-factor slip — integrating means DIVIDE by the inner coefficient (÷b) and by the new power (÷(n+1)), never multiply.'
+      : 'Chain-factor slip — differentiating means MULTIPLY by the inner coefficient (×b) and bring the power down (×n).';
+  }
+  return 'Not quite — check the operation word, the sign, and the chain factor.';
+}
+// ==== DVI-CORE-END ====
+
+// ---- 🔥 Hard mode bank: curated real past-paper questions (embedded — the tool
+// stays self-contained). Untrusted data: rendered as text/math only, never HTML.
+const HARD_BANK = [
+ { level: "AM", q: "Find $\\int (3x - 2)^5\\, dx$.", a: "$\\frac{(3x-2)^6}{18} + c$" },
+ { level: "AM", q: "Find $\\int \\left(\\frac{4}{2x+1} + e^{3x}\\right) dx$, where $x > -\\frac{1}{2}$.", a: "$2\\ln(2x+1) + \\frac{e^{3x}}{3} + c$" },
+ { level: "AM", q: "Find $\\int \\left(\\sqrt{x} - \\frac{1}{\\sqrt{x}}\\right)^2 dx$, where $x>0$.", a: "$\\frac{x^2}{2} - 2x + \\ln x + c$" },
+ { level: "AM", q: "Find $\\int \\cos\\left(3x - \\frac{\\pi}{4}\\right) dx$.", a: "$\\frac{1}{3}\\sin\\left(3x - \\frac{\\pi}{4}\\right) + c$" },
+ { level: "AM", q: "Find $\\int \\frac{6}{(1-2x)^2}\\, dx$.", a: "$\\frac{3}{1-2x} + c$" },
+ { level: "AM", q: "A curve is such that $\\frac{dy}{dx} = 4\\sin 2x$ and $y = 3$ when $x = 0$. Find the equation of the curve.", a: "$y = 5 - 2\\cos 2x$" },
+ { level: "AM", q: "Differentiate $y = x\\tan 2x$ with respect to $x$.", a: "$\\tan 2x + 2x\\sec^2 2x$" },
+ { level: "AM", q: "Differentiate $y = \\sin^3 x$ with respect to $x$.", a: "$3\\sin^2 x\\cos x$" },
+ { level: "AM", q: "Integrate $\\sin^2 x + \\frac{1}{x}$ with respect to $x$.", a: "$\\frac{1}{2}x - \\frac{\\sin 2x}{4} + \\ln x + c$" },
+ { level: "AM", q: "Integrate $\\frac{8}{2x-1} + \\frac{4}{x^3} + 1$ with respect to $x$.", a: "$4\\ln(2x-1) - \\frac{2}{x^2} + x + c$" },
+ { level: "AM", q: "Integrate $\\tan^2 2x$ with respect to $x$.", a: "$\\frac{\\tan 2x}{2} - x + c$" },
+ { level: "AM", q: "Integrate $3\\sqrt{4+5x} + \\frac{2}{x^3} + \\frac{6}{7x-1}$ with respect to $x$.", a: "$\\frac{2}{5}(4+5x)^{3/2} - \\frac{1}{x^2} + \\frac{6}{7}\\ln(7x-1) + c$" },
+ { level: "AM", q: "Integrate $\\frac{2}{3}(4x+3)^3 + \\frac{4}{x^2}$ with respect to $x$.", a: "$\\frac{1}{24}(4x+3)^4 - \\frac{4}{x} + c$" },
+ { level: "AM", q: "The curve $y = x^2 e^{-kx}$ ($k>0$) has a maximum point $M$ with $y$-coordinate $16e^{-2}$. Find $k$ and the coordinates of $M$.", a: "$k = \\frac{1}{2}$; $M = (4,\\ 16e^{-2})$" },
+ { level: "AM", q: "Given $y = e^{ax}\\cos bx$ with $a+b=8$ and $\\frac{d^2y}{dx^2} = 16$ at $x=0$, find $a$ and $b$.", a: "$a = 5$, $b = 3$" },
+ { level: "AM", q: "It is given that $f'(x) = 3\\sin x\\cos x$ and $\\left(\\frac{\\pi}{2}, 1\\right)$ lies on $f$. Find $f(x)$.", a: "$f(x) = -\\frac{3}{4}\\cos 2x + \\frac{1}{4}$" },
+ { level: "AM", q: "A curve is such that $\\frac{d^2y}{dx^2} = x + \\cos 2x$, passes through $P(0,1)$ and has gradient 2 at $P$. Find the equation of the curve.", a: "$y = \\frac{x^3}{6} - \\frac{\\cos 2x}{4} + 2x + \\frac{5}{4}$" },
+ { level: "AM", q: "A curve is such that $\\frac{d^2y}{dx^2} = 9e^{-3x}$, passes through $P(0,-9)$ and has a stationary point at $x = -\\frac{1}{3}$. Find the equation of the curve.", a: "$y = e^{-3x} + 3ex - 10$" },
+ { level: "AM", q: "The equation of a curve is $y = \\frac{5x}{6-2x}$. Find the $x$-coordinates of the points where the gradient is $7.5$.", a: "$x = 2$ or $x = 4$" },
+ { level: "AM", q: "Given $y = Me^{x} + Ne^{-5x}$ and $\\frac{dy}{dx} + 2y = e^{x} + e^{-5x}$, find $M$ and $N$.", a: "$M = \\frac{1}{3}$, $N = -\\frac{1}{3}$" },
+ { level: "JC2", q: "Find the exact value of $\\int_{-\\pi/4}^{\\pi/3} \\tan x\\, dx$.", a: "$\\ln\\sqrt{2}$" },
+ { level: "JC2", q: "Differentiate $e^{x^2+1}$ with respect to $x$. Hence find $\\int x^3 e^{x^2+1}\\, dx$.", a: "$2xe^{x^2+1}$; $\\frac{1}{2}(x^2-1)e^{x^2+1} + c$" },
+ { level: "JC1", q: "Differentiate $\\tan^{-1}\\left(\\frac{x}{\\sqrt{1-x^2}}\\right)$ with respect to $x$, simplifying fully.", a: "$\\frac{1}{\\sqrt{1-x^2}}$" },
+ { level: "JC1", q: "By using the substitution $u = 1 + t^3$, find $\\int_0^1 \\frac{t^5}{(1+t^3)^3}\\, dt$.", a: "$\\frac{1}{24}$" },
+ { level: "JC1", q: "Using the substitution $x = 5\\cos\\theta$, find the exact value of $\\int_{5/\\sqrt{2}}^{5} \\sqrt{1 - \\frac{x^2}{25}}\\, dx$.", a: "$\\frac{5\\pi}{8} - \\frac{5}{4}$" },
+ { level: "JC2", q: "Use the substitution $u = 5^x$ to find $\\int 5^x \\sin^2(5^x)\\, dx$.", a: "$\\frac{1}{2\\ln 5}\\left[5^x - \\frac{\\sin 2(5^x)}{2}\\right] + C$" },
+ { level: "JC2", q: "A curve has equation $y = x + 1 + \\frac{3}{x-1}$. Using differentiation, find the set of values of $x$ where the curve is strictly decreasing (exact form).", a: "$1 - \\sqrt{3} < x < 1$ or $1 < x < 1 + \\sqrt{3}$" },
+ { level: "JC1", q: "Given $\\cos^2(xy) = e^{y^2}$ ($x,y \\neq 0$), find $\\frac{dy}{dx}$ in terms of $x$ and $y$.", a: "$\\frac{dy}{dx} = \\frac{-y\\sin(2xy)}{2ye^{y^2} + x\\sin(2xy)}$" },
+ { level: "JC2", q: "Find $\\int (t^2-4)^{-3/2}\\, dt$ using the substitution $t = 2\\sec x$.", a: "$-\\frac{t}{4\\sqrt{t^2-4}} + c$" }
+];
 
 // Each generator returns { latex, answer (latex), distractors (array of latex strings) }
 function genDiffBasic() {
@@ -414,6 +780,7 @@ function genIntAdv() {
 }
 
 function generateQuestion(mode, level) {
+  if (mode === 'dvi') return genDvi();
   let m = mode;
   if (m === 'mixed') m = Math.random() < 0.5 ? 'diff' : 'int';
   let q;
@@ -445,8 +812,10 @@ function generateQuestion(mode, level) {
 }
 
 // ---- Game state ----
-const settings = { mode: 'diff', level: 'basic', time: 120 };
+const settings = { mode: 'diff', level: 'basic', time: 120, hardlevel: 'AM' };
 let timeLeft, timerInterval, currentQ, stats, qStartTime;
+let dvi = { streak: 0, best: 0, traps: { otherOp: 0, sign: 0, chain: 0 } };
+let hard = null;
 
 // Setup option toggling
 document.querySelectorAll('.opt-row').forEach(row => {
@@ -457,17 +826,34 @@ document.querySelectorAll('.opt-row').forEach(row => {
       opt.classList.add('active');
       const v = opt.dataset.val;
       settings[group] = group === 'time' ? parseInt(v) : v;
+      refreshSetupVisibility();
     });
   });
 });
 
+// dvi has fixed families (no difficulty); hard is self-paced (no timer) with its own level filter
+function refreshSetupVisibility() {
+  const m = settings.mode;
+  document.getElementById('sec-level').classList.toggle('hidden', m === 'dvi' || m === 'hard');
+  document.getElementById('sec-time').classList.toggle('hidden', m === 'hard');
+  document.getElementById('sec-hardlevel').classList.toggle('hidden', m !== 'hard');
+}
+refreshSetupVisibility();
+
 document.getElementById('start-btn').addEventListener('click', startQuiz);
 document.getElementById('restart-btn').addEventListener('click', () => {
   document.getElementById('results').classList.add('hidden');
+  document.getElementById('hard').classList.add('hidden');
   document.getElementById('setup').classList.remove('hidden');
 });
 
 function startQuiz() {
+  if (settings.mode === 'hard') { startHard(); return; }
+  const isDvi = settings.mode === 'dvi';
+  dvi = { streak: 0, best: 0, traps: { otherOp: 0, sign: 0, chain: 0 } };
+  document.getElementById('streak-wrap').classList.toggle('hidden', !isDvi);
+  document.getElementById('trap-line').classList.toggle('hidden', !isDvi);
+  updateTrapLine();
   document.getElementById('setup').classList.add('hidden');
   document.getElementById('results').classList.add('hidden');
   document.getElementById('quiz').classList.remove('hidden');
@@ -497,12 +883,33 @@ function updateStats() {
   document.getElementById('m-correct').textContent = stats.correct;
   document.getElementById('m-wrong').textContent = stats.wrong;
   document.getElementById('m-total').textContent = stats.total;
+  document.getElementById('m-streak').textContent = dvi.streak;
+}
+
+// Running "your confusions" tally — visible throughout a Diff-or-Int round
+function updateTrapLine() {
+  const t = dvi.traps;
+  document.getElementById('trap-line').textContent =
+    'Traps picked — mixed-up operation: ' + t.otherOp + ' · sign: ' + t.sign + ' · chain factor: ' + t.chain;
 }
 
 function nextQuestion() {
   currentQ = generateQuestion(settings.mode, settings.level);
   qStartTime = Date.now();
-  document.getElementById('q-prompt').textContent = currentQ.prompt;
+  const isDvi = settings.mode === 'dvi';
+  const chip = document.getElementById('op-chip');
+  const promptEl = document.getElementById('q-prompt');
+  document.getElementById('feedback').classList.add('hidden');
+  if (isDvi) {
+    // The operation word, LOUD — misreading it is the very error being trained
+    chip.className = 'op-chip ' + (currentQ.op === 'diff' ? 'diff' : 'int');
+    chip.textContent = currentQ.op === 'diff' ? 'DIFFERENTIATE' : 'INTEGRATE';
+    promptEl.classList.add('hidden');
+  } else {
+    chip.className = 'op-chip hidden';
+    promptEl.classList.remove('hidden');
+    promptEl.textContent = currentQ.prompt;
+  }
   const expr = document.getElementById('q-expr');
   if (window.katex) {
     try { katex.render(currentQ.latex, expr, { throwOnError: false, displayMode: true }); }
@@ -525,30 +932,59 @@ function nextQuestion() {
 
 function answer(idx, el) {
   if (timeLeft <= 0) return;
+  const isDvi = settings.mode === 'dvi';
   const isCorrect = idx === currentQ.correctIndex;
   stats.total++;
   stats.totalTime += (Date.now() - qStartTime);
   if (isCorrect) {
     stats.correct++;
     el.classList.add('correct');
+    if (isDvi) { dvi.streak++; if (dvi.streak > dvi.best) dvi.best = dvi.streak; }
   } else {
     stats.wrong++;
     el.classList.add('wrong');
     // Briefly highlight the correct one
     document.querySelectorAll('.option')[currentQ.correctIndex].classList.add('correct');
+    if (isDvi) {
+      dvi.streak = 0;
+      const trap = currentQ.types[idx];
+      if (dvi.traps[trap] !== undefined) dvi.traps[trap]++;
+      updateTrapLine();
+    }
   }
   updateStats();
   // Disable further clicks
   document.querySelectorAll('.option').forEach(o => o.style.pointerEvents = 'none');
+  if (isDvi) {
+    showDviFeedback(isCorrect, isCorrect ? null : currentQ.types[idx]);
+    // Correct → brief pause; wrong → wait for "Next" so the named trap gets read
+    if (isCorrect) setTimeout(() => { if (timeLeft > 0) nextQuestion(); }, 650);
+    return;
+  }
   setTimeout(() => {
     if (timeLeft > 0) nextQuestion();
   }, isCorrect ? 350 : 950);
 }
 
+function showDviFeedback(good, trapType) {
+  const fb = document.getElementById('feedback');
+  fb.classList.remove('hidden');
+  fb.classList.toggle('fb-good', good);
+  fb.classList.toggle('fb-bad', !good);
+  document.getElementById('fb-text').textContent = good ? '✓ Correct' : dviTrapText(trapType, currentQ.op);
+  document.getElementById('fb-next').classList.toggle('hidden', good);
+}
+
+document.getElementById('fb-next').addEventListener('click', () => {
+  if (timeLeft > 0) nextQuestion();
+});
+
 function endQuiz() {
   clearInterval(timerInterval);
   document.getElementById('quiz').classList.add('hidden');
   document.getElementById('results').classList.remove('hidden');
+  document.getElementById('r-title').textContent = "Time's up!";
+  setResultLabels('Correct', 'Wrong', 'Avg time');
   const pct = stats.total === 0 ? 0 : Math.round(100 * stats.correct / stats.total);
   const score = document.getElementById('r-score');
   score.textContent = pct + '%';
@@ -557,6 +993,128 @@ function endQuiz() {
   document.getElementById('r-wrong').textContent = stats.wrong;
   const avg = stats.total === 0 ? '—' : (stats.totalTime / stats.total / 1000).toFixed(1) + 's';
   document.getElementById('r-avg').textContent = avg;
+  renderResultExtra();
+}
+
+function setResultLabels(l1, l2, l3) {
+  document.getElementById('rl-1').textContent = l1;
+  document.getElementById('rl-2').textContent = l2;
+  document.getElementById('rl-3').textContent = l3;
+}
+
+// "Your confusions" summary on the results screen (Diff-or-Int mode only)
+function renderResultExtra() {
+  const extra = document.getElementById('r-extra');
+  extra.textContent = '';
+  if (settings.mode !== 'dvi') { extra.classList.add('hidden'); return; }
+  extra.classList.remove('hidden');
+  const t = dvi.traps;
+  const add = (txt, cls) => {
+    const d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = txt;
+    extra.appendChild(d);
+  };
+  add('Best streak: ' + dvi.best + ' 🔥');
+  add('Your confusions', 'hd');
+  add("Picked the other operation's answer: " + t.otherOp + '×');
+  add('Sign slips: ' + t.sign + '×');
+  add('Chain-factor slips: ' + t.chain + '×');
+  if (t.otherOp > 0) add('Tip: circle the operation word before you touch the algebra.');
+}
+
+// ---- 🔥 Hard (past papers) mode ----
+// Untrusted-data rule: bank strings are rendered as text nodes + KaTeX spans only —
+// never assigned to innerHTML. If KaTeX hasn't loaded, the $ signs are simply
+// stripped (plain-text fallback).
+function renderMixed(el, str) {
+  el.textContent = '';
+  const parts = String(str).split(/\$([^$]*)\$/);
+  for (let i = 0; i < parts.length; i++) {
+    const seg = parts[i];
+    if (!seg) continue;
+    if (i % 2 === 0) { el.appendChild(document.createTextNode(seg)); continue; }
+    const span = document.createElement('span');
+    if (window.katex) {
+      try { katex.render(seg, span, { throwOnError: false }); }
+      catch (e) { span.textContent = seg; }
+    } else span.textContent = seg;
+    el.appendChild(span);
+  }
+}
+
+function startHard() {
+  const lvl = settings.hardlevel;
+  const items = HARD_BANK
+    .filter(it => lvl === 'JC' ? String(it.level).indexOf('JC') === 0 : it.level === 'AM')
+    .map(it => ({ level: it.level, q: it.q, a: it.a, retried: false }));
+  if (!items.length) return;
+  shuffleArr(items);
+  hard = { queue: items, total: items.length, cleared: 0, firstTry: 0, retries: 0, cur: null };
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('hard').classList.remove('hidden');
+  hardNext();
+}
+
+function hardStatsRender() {
+  document.getElementById('h-cleared').textContent = hard.cleared + '/' + hard.total;
+  document.getElementById('h-left').textContent = hard.queue.length + (hard.cur ? 1 : 0);
+}
+
+function hardNext() {
+  if (!hard.queue.length) { hard.cur = null; hardEnd(); return; }
+  hard.cur = hard.queue.shift();
+  hardStatsRender();
+  document.getElementById('h-meta').textContent = hard.cur.level + (hard.cur.retried ? ' · RETRY' : '');
+  renderMixed(document.getElementById('h-q'), hard.cur.q);
+  document.getElementById('h-ans').classList.add('hidden');
+  document.getElementById('h-show').classList.remove('hidden');
+  document.getElementById('h-marks').classList.add('hidden');
+}
+
+document.getElementById('h-show').addEventListener('click', () => {
+  if (!hard || !hard.cur) return;
+  renderMixed(document.getElementById('h-ans-body'), hard.cur.a);
+  document.getElementById('h-ans').classList.remove('hidden');
+  document.getElementById('h-show').classList.add('hidden');
+  document.getElementById('h-marks').classList.remove('hidden');
+});
+
+document.getElementById('h-got').addEventListener('click', () => {
+  if (!hard || !hard.cur) return;
+  hard.cleared++;
+  if (!hard.cur.retried) hard.firstTry++;
+  hardNext();
+});
+
+document.getElementById('h-not').addEventListener('click', () => {
+  if (!hard || !hard.cur) return;
+  hard.retries++;
+  hard.cur.retried = true;
+  // Re-queue LATER in the session, never as the immediate next question
+  const q = hard.queue;
+  const pos = q.length <= 2 ? q.length : 2 + Math.floor(Math.random() * (q.length - 1));
+  q.splice(pos, 0, hard.cur);
+  hardNext();
+});
+
+document.getElementById('h-endbtn').addEventListener('click', () => { if (hard) hardEnd(); });
+
+function hardEnd() {
+  const complete = hard.queue.length === 0 && !hard.cur;
+  document.getElementById('hard').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('r-title').textContent = complete ? 'Set complete!' : 'Session ended';
+  setResultLabels('First try', 'Retries', 'Cleared');
+  const pct = hard.total ? Math.round(100 * hard.firstTry / hard.total) : 0;
+  const score = document.getElementById('r-score');
+  score.textContent = pct + '%';
+  score.style.color = pct >= 75 ? 'var(--good)' : pct >= 50 ? 'var(--accent)' : 'var(--bad)';
+  document.getElementById('r-correct').textContent = hard.firstTry;
+  document.getElementById('r-wrong').textContent = hard.retries;
+  document.getElementById('r-avg').textContent = hard.cleared + '/' + hard.total;
+  renderResultExtra();
 }
 </script>
 </body>

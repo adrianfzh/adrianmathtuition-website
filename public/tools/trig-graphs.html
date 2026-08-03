@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trigonometric Graphs Explorer</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -18,6 +16,8 @@
     --accent: #4cc2ff;
     --accent-dim: rgba(76, 194, 255, 0.25);
     --baseline: rgba(255, 217, 61, 0.4);
+    --asym: rgba(255, 107, 107, 0.65);
+    --midline: rgba(255, 159, 67, 0.7);
   }
   html, body {
     background: var(--bg);
@@ -33,15 +33,29 @@
   .subtitle { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
 
   .toggle-row {
-    display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;
+    display: flex; justify-content: center; align-items: center;
+    gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
   }
+  .fn-group, .unit-group { display: flex; gap: 8px; }
+  .unit-group { margin-left: 10px; padding-left: 18px; border-left: 1px solid var(--border); }
   .toggle-btn {
     background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim);
     padding: 9px 22px; border-radius: 8px; font-size: 15px; cursor: pointer;
     transition: all 0.15s; font-style: italic; min-width: 70px;
+    -webkit-tap-highlight-color: transparent;
   }
   .toggle-btn:hover { color: var(--text); }
   .toggle-btn.active {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+    font-weight: 700;
+  }
+  .unit-btn {
+    background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+  }
+  .unit-btn:hover { color: var(--text); }
+  .unit-btn.active {
     background: var(--accent); color: var(--bg); border-color: var(--accent);
     font-weight: 700;
   }
@@ -56,17 +70,25 @@
     border-radius: 12px; padding: 20px;
   }
   .equation {
-    text-align: center; padding: 14px 0 18px;
-    font-size: 22px;
+    text-align: center; padding: 14px 8px 18px;
+    font-size: 23px;
+    font-family: Georgia, 'Times New Roman', serif;
     border-bottom: 1px solid var(--border); margin-bottom: 16px;
-    min-height: 60px;
+    min-height: 60px; border-radius: 8px;
   }
+  .equation i { font-style: italic; padding: 0 1px; }
+  .equation .fn { font-style: normal; }
+  @keyframes eqflash {
+    0% { background: var(--accent-dim); }
+    100% { background: transparent; }
+  }
+  .equation.flash { animation: eqflash 0.7s ease-out; }
   canvas {
     width: 100%; display: block;
     background: transparent;
   }
   .legend {
-    display: flex; justify-content: center; gap: 24px; margin-top: 14px;
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-top: 14px;
     font-size: 12px; color: var(--text-dim);
   }
   .legend-item { display: flex; align-items: center; gap: 8px; }
@@ -121,14 +143,19 @@
   }
   .reset-btn:hover { color: var(--text); border-color: var(--accent); background: var(--bg-elev-2); }
 
+  .preset-heading {
+    margin-top: 18px; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-dim);
+  }
   .preset-row {
-    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
   }
   .preset {
     background: var(--bg-elev-2); border: 1px solid var(--border);
     color: var(--text-dim); padding: 5px 10px; border-radius: 5px;
     font-size: 11px; cursor: pointer; transition: all 0.15s;
     font-family: ui-monospace, monospace;
+    -webkit-tap-highlight-color: transparent;
   }
   .preset:hover { color: var(--accent); border-color: var(--accent); }
 </style>
@@ -138,22 +165,29 @@
 <div class="container">
   <header>
     <h1>Trigonometric Graphs Explorer</h1>
-    <p class="subtitle">y = a · trig(b · x) + c — adjust the sliders to see how each parameter shapes the curve</p>
+    <p class="subtitle">y = a · trig(bx + c) + d — adjust the sliders to see how each parameter shapes the curve</p>
   </header>
 
   <div class="toggle-row">
-    <button class="toggle-btn active" data-fn="sin">sin</button>
-    <button class="toggle-btn" data-fn="cos">cos</button>
-    <button class="toggle-btn" data-fn="tan">tan</button>
+    <div class="fn-group">
+      <button class="toggle-btn active" data-fn="sin">sin</button>
+      <button class="toggle-btn" data-fn="cos">cos</button>
+      <button class="toggle-btn" data-fn="tan">tan</button>
+    </div>
+    <div class="unit-group">
+      <button class="unit-btn active" data-unit="deg">degrees</button>
+      <button class="unit-btn" data-unit="rad">radians</button>
+    </div>
   </div>
 
   <div class="layout">
     <div class="canvas-wrap">
-      <div class="equation" id="equation">y = sin(x)</div>
+      <div class="equation" id="equation"><i>y</i> = <span class="fn">sin</span>(<i>x</i>)</div>
       <canvas id="canvas"></canvas>
       <div class="legend">
         <div class="legend-item"><div class="swatch" style="background: var(--accent);"></div> Your curve</div>
-        <div class="legend-item"><div class="swatch" style="background: var(--baseline);"></div> Baseline (a=1, b=1, c=0)</div>
+        <div class="legend-item"><div class="swatch" style="background: var(--baseline);"></div> Baseline (a=1, b=1, c=0, d=0)</div>
+        <div class="legend-item" id="legend-asym" style="display:none;"><div class="swatch" style="background: repeating-linear-gradient(90deg, var(--asym) 0 5px, transparent 5px 9px);"></div> Asymptote</div>
       </div>
     </div>
 
@@ -175,20 +209,35 @@
       </div>
       <div class="slider-group">
         <div class="slider-label">
-          <span class="slider-name">c <span class="role">vertical shift</span></span>
-          <span class="slider-value" id="c-val">0.0</span>
+          <span class="slider-name">c <span class="role">phase (inside)</span></span>
+          <span class="slider-value" id="c-val">0°</span>
         </div>
-        <input type="range" id="c-slider" min="-3" max="3" step="0.1" value="0">
+        <input type="range" id="c-slider" min="-180" max="180" step="15" value="0">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="slider-name">d <span class="role">vertical shift</span></span>
+          <span class="slider-value" id="d-val">0.0</span>
+        </div>
+        <input type="range" id="d-slider" min="-3" max="3" step="0.1" value="0">
       </div>
 
       <div class="features">
         <div class="feature-row">
-          <span class="feature-label">Amplitude</span>
+          <span class="feature-label">Amplitude |a|</span>
           <span class="feature-value" id="f-amplitude">1.00</span>
         </div>
         <div class="feature-row">
           <span class="feature-label">Period</span>
-          <span class="feature-value" id="f-period">2π</span>
+          <span class="feature-value" id="f-period">360°</span>
+        </div>
+        <div class="feature-row">
+          <span class="feature-label">Phase shift</span>
+          <span class="feature-value" id="f-phase">none</span>
+        </div>
+        <div class="feature-row">
+          <span class="feature-label">Midline</span>
+          <span class="feature-value" id="f-midline">y = 0</span>
         </div>
         <div class="feature-row">
           <span class="feature-label">Range</span>
@@ -204,12 +253,13 @@
         </div>
       </div>
 
+      <div class="preset-heading">Exam presets</div>
       <div class="preset-row">
-        <button class="preset" data-preset="1,1,0">y = sin x</button>
-        <button class="preset" data-preset="2,1,0">y = 2 sin x</button>
-        <button class="preset" data-preset="1,2,0">y = sin 2x</button>
-        <button class="preset" data-preset="-1,1,0">y = −sin x</button>
-        <button class="preset" data-preset="3,2,1">y = 3 sin 2x + 1</button>
+        <button class="preset" data-preset="sin,2,3,0,1">y = 2sin(3x) + 1</button>
+        <button class="preset" data-preset="cos,-1,2,0,0">y = −cos(2x)</button>
+        <button class="preset" data-preset="tan,1,0.5,0,0">y = tan(x/2)</button>
+        <button class="preset" data-preset="cos,3,1,-60,0">y = 3cos(x − 60°)</button>
+        <button class="preset" data-preset="sin,3,2,0,1">y = 3sin(2x) + 1</button>
       </div>
 
       <button class="reset-btn" id="reset">Reset all</button>
@@ -218,17 +268,31 @@
 </div>
 
 <script>
+(function () {
+'use strict';
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let W, H;
 
-const xMin = -2 * Math.PI, xMax = 2 * Math.PI;
+const DEG = Math.PI / 180;
+// Internal x is ALWAYS in degrees (−360°..360° ≡ −2π..2π); the unit toggle only
+// changes tick labels and readouts, never the geometry.
+const xMin = -360, xMax = 360;
 let yMin = -5, yMax = 5;
 
-let a = 1, b = 1, c = 0;
+// y = a · fn(b·x + c) + d   — c (phase) stored in degrees
+let a = 1, b = 1, c = 0, d = 0;
 let fnType = 'sin';
+let unit = 'deg';               // 'deg' | 'rad'
 
-const fnMap = { sin: Math.sin, cos: Math.cos, tan: Math.tan };
+const fnMap = {
+  sin: x => Math.sin(x * DEG),
+  cos: x => Math.cos(x * DEG),
+  tan: x => Math.tan(x * DEG)
+};
+
+function $(id) { return document.getElementById(id); }
 
 function setupCanvas() {
   const rect = canvas.parentElement.getBoundingClientRect();
@@ -244,17 +308,12 @@ function setupCanvas() {
 }
 
 function adjustYRange() {
-  // Adjust y range so curve fits comfortably
   if (fnType === 'tan') {
-    yMin = -5; yMax = 5;
+    // Branches centred on the midline y = d
+    yMin = d - 5;
+    yMax = d + 5;
   } else {
-    const peak = Math.abs(a) + Math.abs(c);
-    const pad = Math.max(1, peak * 0.3);
-    const span = Math.max(2, peak + pad);
-    yMin = -span + (c > 0 ? 0 : 0); // symmetric around 0 generally
-    yMax = span + (c < 0 ? 0 : 0);
-    // simpler: symmetric
-    const halfSpan = Math.max(2, Math.abs(a) + Math.abs(c) + 1);
+    const halfSpan = Math.max(2, Math.abs(a) + Math.abs(d) + 1);
     yMin = -halfSpan;
     yMax = halfSpan;
   }
@@ -267,20 +326,51 @@ function mathToCanvas(mx, my) {
   ];
 }
 
+// Vertical asymptotes of y = a·tan(b·x + c) + d occur where b·x + c = 90° + 180°k,
+// i.e. x = (90 + 180k − c) / b. Returns the sorted list inside [x0, x1].
+function tanAsymptotes(bVal, cVal, x0, x1) {
+  const out = [];
+  if (!bVal) return out;
+  const kAt = x => (bVal * x + cVal - 90) / 180;
+  const k0 = Math.ceil(Math.min(kAt(x0), kAt(x1)) - 1e-9);
+  const k1 = Math.floor(Math.max(kAt(x0), kAt(x1)) + 1e-9);
+  for (let k = k0; k <= k1; k++) {
+    const x = (90 + 180 * k - cVal) / bVal;
+    if (x >= x0 - 1e-9 && x <= x1 + 1e-9) out.push(x);
+  }
+  out.sort(function (p, q) { return p - q; });
+  return out;
+}
+
+function vLineAt(x) {
+  const cx = mathToCanvas(x, 0)[0];
+  ctx.beginPath();
+  ctx.moveTo(cx, 0);
+  ctx.lineTo(cx, H);
+  ctx.stroke();
+}
+
 function drawGrid() {
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
   ctx.lineWidth = 1;
-  // Vertical lines at π/2 intervals
-  for (let x = Math.ceil(xMin / (Math.PI / 2)) * (Math.PI / 2); x <= xMax; x += Math.PI / 2) {
-    const [cx] = mathToCanvas(x, 0);
-    ctx.beginPath();
-    ctx.moveTo(cx, 0);
-    ctx.lineTo(cx, H);
-    ctx.stroke();
+  if (unit === 'deg') {
+    // Subtle special-angle guides at multiples of 30° and 45° (not the 90° mains)
+    ctx.strokeStyle = 'rgba(255,255,255,0.022)';
+    for (let x = Math.ceil(xMin / 15) * 15; x <= xMax; x += 15) {
+      if (x % 90 === 0) continue;
+      if (x % 30 !== 0 && x % 45 !== 0) continue;
+      vLineAt(x);
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.055)';
+    for (let x = Math.ceil(xMin / 90) * 90; x <= xMax; x += 90) vLineAt(x);
+  } else {
+    // π/2 spacing (≡ 90° internally)
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    for (let x = Math.ceil(xMin / 90) * 90; x <= xMax; x += 90) vLineAt(x);
   }
   // Horizontal lines at unit intervals
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
   for (let y = Math.ceil(yMin); y <= yMax; y++) {
-    const [, cy] = mathToCanvas(0, y);
+    const cy = mathToCanvas(0, y)[1];
     ctx.beginPath();
     ctx.moveTo(0, cy);
     ctx.lineTo(W, cy);
@@ -291,8 +381,8 @@ function drawGrid() {
 function drawAxes() {
   ctx.strokeStyle = 'rgba(255,255,255,0.35)';
   ctx.lineWidth = 1.5;
-  const [, y0] = mathToCanvas(0, 0);
-  const [x0] = mathToCanvas(0, 0);
+  const y0 = mathToCanvas(0, 0)[1];
+  const x0 = mathToCanvas(0, 0)[0];
 
   if (y0 >= 0 && y0 <= H) {
     ctx.beginPath();
@@ -311,135 +401,217 @@ function drawAxes() {
   ctx.fillStyle = 'rgba(232,238,245,0.55)';
   ctx.font = '11px ui-monospace, monospace';
   ctx.textAlign = 'center';
-  const xLabels = [
-    [-2 * Math.PI, '−2π'], [-3 * Math.PI / 2, '−3π/2'], [-Math.PI, '−π'], [-Math.PI / 2, '−π/2'],
-    [Math.PI / 2, 'π/2'], [Math.PI, 'π'], [3 * Math.PI / 2, '3π/2'], [2 * Math.PI, '2π']
-  ];
-  xLabels.forEach(([x, label]) => {
-    const [cx] = mathToCanvas(x, 0);
-    if (cx > 12 && cx < W - 12) ctx.fillText(label, cx, Math.min(y0 + 14, H - 4));
+  const xLabels = [];
+  if (unit === 'deg') {
+    for (let x = -360; x <= 360; x += 90) {
+      if (x !== 0) xLabels.push([x, String(x).replace('-', '−') + '°']);
+    }
+  } else {
+    xLabels.push(
+      [-360, '−2π'], [-270, '−3π/2'], [-180, '−π'], [-90, '−π/2'],
+      [90, 'π/2'], [180, 'π'], [270, '3π/2'], [360, '2π']
+    );
+  }
+  const labelY = Math.min((y0 >= 0 && y0 <= H ? y0 : H) + 14, H - 4);
+  xLabels.forEach(function (pair) {
+    const cx = mathToCanvas(pair[0], 0)[0];
+    if (cx > 14 && cx < W - 14) ctx.fillText(pair[1], cx, labelY);
   });
   ctx.textAlign = 'right';
   for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
     if (y === 0) continue;
-    const [, cy] = mathToCanvas(0, y);
-    if (cy > 8 && cy < H - 4) ctx.fillText(y.toString().replace('-', '−'), Math.max(x0 - 6, 22), cy + 4);
+    const cy = mathToCanvas(0, y)[1];
+    if (cy > 8 && cy < H - 4) ctx.fillText(String(y).replace('-', '−'), Math.max(x0 - 6, 22), cy + 4);
   }
 }
 
-function drawCurve(aVal, bVal, cVal, fn, color, width = 2.5) {
+function dashedHLine(yVal, style, dash, width) {
+  const cy = mathToCanvas(0, yVal)[1];
+  if (cy < -2 || cy > H + 2) return null;
+  ctx.save();
+  ctx.strokeStyle = style;
+  ctx.lineWidth = width;
+  ctx.setLineDash(dash);
+  ctx.beginPath();
+  ctx.moveTo(0, cy);
+  ctx.lineTo(W, cy);
+  ctx.stroke();
+  ctx.restore();
+  return cy;
+}
+
+function guideLabel(txt, cy, color) {
+  ctx.fillStyle = color;
+  ctx.font = '10px ui-monospace, monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(txt, W - 6, Math.max(cy - 4, 10));
+}
+
+// Midline y = d always; max/min lines only for sin/cos
+function drawGuides() {
+  const cyMid = dashedHLine(d, 'rgba(255,159,67,0.55)', [8, 6], 1.25);
+  if (cyMid !== null) guideLabel('midline y = ' + fmtNum(d), cyMid, 'rgba(255,159,67,0.8)');
+  if (fnType !== 'tan' && Math.abs(a) > 0.001) {
+    const mx = d + Math.abs(a);
+    const mn = d - Math.abs(a);
+    const cy1 = dashedHLine(mx, 'rgba(255,255,255,0.20)', [4, 5], 1);
+    if (cy1 !== null) guideLabel('max = ' + fmtNum(mx), cy1, 'rgba(232,238,245,0.5)');
+    const cy2 = dashedHLine(mn, 'rgba(255,255,255,0.20)', [4, 5], 1);
+    if (cy2 !== null) guideLabel('min = ' + fmtNum(mn), cy2, 'rgba(232,238,245,0.5)');
+  }
+}
+
+// Dashed verticals at the ACTIVE curve's asymptotes (tan only)
+function drawAsymptotes() {
+  if (fnType !== 'tan') return;
+  const xs = tanAsymptotes(b, c, xMin, xMax);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,107,107,0.55)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([7, 5]);
+  xs.forEach(function (x) {
+    const cx = mathToCanvas(x, 0)[0];
+    ctx.beginPath();
+    ctx.moveTo(cx, 0);
+    ctx.lineTo(cx, H);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawCurve(aVal, bVal, cVal, dVal, fn, color, width) {
   const f = fnMap[fn];
   ctx.strokeStyle = color;
-  ctx.lineWidth = width;
+  ctx.lineWidth = width || 2.5;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
-  const samples = 2400;
-  const dx = (xMax - xMin) / samples;
-  let inPath = false;
-  ctx.beginPath();
+  // tan gets a generous overdraw so branches hug their asymptotes (canvas clips it);
+  // sin/cos only need a whisker of slack.
+  const pad = fn === 'tan' ? 2 * (yMax - yMin) : 0.5;
+  const clipLo = yMin - pad, clipHi = yMax + pad;
 
-  let prevY = null;
-  for (let i = 0; i <= samples; i++) {
-    const x = xMin + i * dx;
-    const arg = bVal * x;
-    const y = aVal * f(arg) + cVal;
-
-    // Asymptote detection for tan
-    if (!isFinite(y) || Math.abs(y) > 1000) {
-      inPath = false;
-      prevY = null;
-      continue;
+  function tracePiece(px0, px1) {
+    const span = px1 - px0;
+    if (span <= 0) return;
+    const n = Math.max(24, Math.round(2400 * span / (xMax - xMin)));
+    let inPath = false;
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const x = px0 + (span * i) / n;
+      const y = aVal * f(bVal * x + cVal) + dVal;
+      if (!isFinite(y) || y < clipLo || y > clipHi) { inPath = false; continue; }
+      const pt = mathToCanvas(x, y);
+      if (!inPath) { ctx.moveTo(pt[0], pt[1]); inPath = true; }
+      else ctx.lineTo(pt[0], pt[1]);
     }
-    // Discontinuity detection (large jump for tan)
-    if (prevY !== null && Math.abs(y - prevY) > Math.abs(yMax - yMin) * 0.7) {
-      inPath = false;
-    }
-
-    // Clip to visible y range
-    if (y < yMin - 0.5 || y > yMax + 0.5) {
-      inPath = false;
-      prevY = y;
-      continue;
-    }
-
-    const [cx, cy] = mathToCanvas(x, y);
-    if (!inPath) {
-      ctx.moveTo(cx, cy);
-      inPath = true;
-    } else {
-      ctx.lineTo(cx, cy);
-    }
-    prevY = y;
+    ctx.stroke();
   }
-  ctx.stroke();
+
+  if (fn === 'tan') {
+    // Sample each branch separately between exact asymptotes — no vertical joins.
+    const cuts = [xMin].concat(tanAsymptotes(bVal, cVal, xMin, xMax), [xMax]);
+    const eps = (xMax - xMin) / 4800;
+    for (let i = 0; i < cuts.length - 1; i++) tracePiece(cuts[i] + eps, cuts[i + 1] - eps);
+  } else {
+    tracePiece(xMin, xMax);
+  }
 }
 
-function nearlyEq(x, y, tol = 0.04) { return Math.abs(x - y) < tol; }
+function nearlyEq(x, y, tol) { return Math.abs(x - y) < (tol === undefined ? 0.04 : tol); }
 
-function formatPi(ratio) {
-  // ratio = 2/|b| (sin/cos) or 1/|b| (tan), where b is original
-  // Try to express as a fraction with π
-  if (nearlyEq(ratio, Math.round(ratio))) {
+function fmtNum(v) {
+  const r = Math.round(v * 100) / 100;
+  return String(Object.is(r, -0) ? 0 : r).replace('-', '−');
+}
+
+// ratio·π as a tidy π-fraction: 1 → 'π', 2/3 → '2π/3', 1/12 → 'π/12'
+function piFrac(ratio) {
+  if (nearlyEq(ratio, 0, 0.001)) return '0';
+  if (nearlyEq(ratio, Math.round(ratio), 0.001)) {
     const n = Math.round(ratio);
     return n === 1 ? 'π' : n + 'π';
   }
-  // Try halves, thirds, quarters
-  for (const den of [2, 3, 4, 6, 8]) {
+  const dens = [2, 3, 4, 6, 8, 12];
+  for (let i = 0; i < dens.length; i++) {
+    const den = dens[i];
     const num = ratio * den;
-    if (nearlyEq(num, Math.round(num))) {
-      const n = Math.round(num);
-      const numStr = n === 1 ? 'π' : n + 'π';
-      return numStr + '/' + den;
+    if (nearlyEq(num, Math.round(num), 0.001)) {
+      const nn = Math.round(num);
+      return (nn === 1 ? 'π' : nn + 'π') + '/' + den;
     }
   }
   return (ratio * Math.PI).toFixed(2);
 }
 
+function fmtAngle(degVal) {
+  const v = Math.abs(degVal);
+  return unit === 'deg' ? fmtNum(v) + '°' : piFrac(v / 180);
+}
+
+function fmtAngleSigned(degVal) {
+  if (nearlyEq(degVal, 0, 1e-6)) return unit === 'deg' ? '0°' : '0';
+  return (degVal < 0 ? '−' : '') + fmtAngle(degVal);
+}
+
+// b·x as '3x', 'x/2', '3x/2', else '0.55x'
+function fmtBx(bVal) {
+  const dens = [1, 2, 3, 4];
+  for (let i = 0; i < dens.length; i++) {
+    const den = dens[i];
+    const num = bVal * den;
+    if (nearlyEq(num, Math.round(num), 0.001)) {
+      const nn = Math.round(num);
+      const nStr = nn === 1 ? '' : String(nn);
+      return den === 1 ? nStr + '<i>x</i>' : nStr + '<i>x</i>/' + den;
+    }
+  }
+  return fmtNum(bVal) + '<i>x</i>';
+}
+
 function updateEquation() {
-  const aRound = parseFloat(a.toFixed(2));
-  const bRound = parseFloat(b.toFixed(2));
-  const cRound = parseFloat(c.toFixed(2));
+  let aPart = '';
+  if (nearlyEq(a, -1)) aPart = '−';
+  else if (!nearlyEq(a, 1)) aPart = fmtNum(a) + ' ';
+  let arg = fmtBx(b);
+  if (!nearlyEq(c, 0, 1e-6)) arg += (c > 0 ? ' + ' : ' − ') + fmtAngle(c);
+  let dPart = '';
+  if (!nearlyEq(d, 0)) dPart = (d > 0 ? ' + ' : ' − ') + fmtNum(Math.abs(d));
+  $('equation').innerHTML =
+    '<i>y</i> = ' + aPart + '<span class="fn">' + fnType + '</span>(' + arg + ')' + dPart;
+}
 
-  let eq = 'y = ';
-  if (nearlyEq(aRound, 1)) eq += '';
-  else if (nearlyEq(aRound, -1)) eq += '-';
-  else eq += aRound + ' ';
-  eq += '\\' + fnType + '(';
-  if (nearlyEq(bRound, 1)) eq += 'x';
-  else eq += bRound + 'x';
-  eq += ')';
-  if (!nearlyEq(cRound, 0)) {
-    eq += cRound > 0 ? ' + ' + cRound : ' - ' + Math.abs(cRound);
-  }
-
-  const target = document.getElementById('equation');
-  if (window.katex) {
-    try { katex.render(eq, target, { throwOnError: false, displayMode: true }); }
-    catch { target.textContent = eq; }
-  } else {
-    target.textContent = eq;
-  }
+function flashEquation() {
+  const el = $('equation');
+  el.classList.remove('flash');
+  void el.offsetWidth; // restart the animation
+  el.classList.add('flash');
 }
 
 function updateFeatures() {
   const aAbs = Math.abs(a);
   if (fnType === 'tan') {
-    document.getElementById('f-amplitude').textContent = '— (none)';
-    document.getElementById('f-range').textContent = '(−∞, ∞)';
-    document.getElementById('f-max').textContent = '— ';
-    document.getElementById('f-min').textContent = '— ';
+    $('f-amplitude').textContent = '— (none)';
+    $('f-range').textContent = '(−∞, ∞)';
+    $('f-max').textContent = '—';
+    $('f-min').textContent = '—';
   } else {
-    document.getElementById('f-amplitude').textContent = aAbs.toFixed(2);
-    const ymax = aAbs + c;
-    const ymin = -aAbs + c;
-    document.getElementById('f-range').textContent = `[${ymin.toFixed(2).replace('-', '−')}, ${ymax.toFixed(2).replace('-', '−')}]`;
-    document.getElementById('f-max').textContent = ymax.toFixed(2).replace('-', '−');
-    document.getElementById('f-min').textContent = ymin.toFixed(2).replace('-', '−');
+    $('f-amplitude').textContent = aAbs.toFixed(2);
+    const ymax = aAbs + d;
+    const ymin = -aAbs + d;
+    $('f-range').textContent = '[' + ymin.toFixed(2).replace('-', '−') + ', ' + ymax.toFixed(2).replace('-', '−') + ']';
+    $('f-max').textContent = ymax.toFixed(2).replace('-', '−');
+    $('f-min').textContent = ymin.toFixed(2).replace('-', '−');
   }
-  // Period: 2π/|b| for sin/cos, π/|b| for tan
-  const pNum = (fnType === 'tan') ? 1 : 2;
-  document.getElementById('f-period').textContent = formatPi(pNum / Math.abs(b));
+  // Period: 360°/|b| for sin/cos, 180°/|b| for tan (2π/|b| and π/|b| in radians)
+  const pDeg = (fnType === 'tan' ? 180 : 360) / Math.abs(b);
+  $('f-period').textContent = unit === 'deg' ? fmtNum(pDeg) + '°' : piFrac(pDeg / 180);
+  // Phase shift: solve b·x + c = 0 → the curve moves to x = −c/b
+  const shift = -c / b;
+  $('f-phase').textContent = nearlyEq(shift, 0, 1e-6)
+    ? 'none'
+    : fmtAngle(shift) + (shift > 0 ? ' right' : ' left');
+  $('f-midline').textContent = 'y = ' + fmtNum(d);
 }
 
 function render() {
@@ -447,78 +619,98 @@ function render() {
   adjustYRange();
   drawGrid();
   drawAxes();
-  // Baseline curve (a=1, b=1, c=0)
-  drawCurve(1, 1, 0, fnType, 'rgba(255, 217, 61, 0.4)', 2);
+  drawGuides();
+  drawAsymptotes();
+  // Baseline curve (a=1, b=1, c=0, d=0)
+  drawCurve(1, 1, 0, 0, fnType, 'rgba(255, 217, 61, 0.4)', 2);
   // Active curve
-  drawCurve(a, b, c, fnType, '#4cc2ff', 3);
+  drawCurve(a, b, c, d, fnType, '#4cc2ff', 3);
+  $('legend-asym').style.display = fnType === 'tan' ? 'flex' : 'none';
   updateEquation();
   updateFeatures();
 }
 
-// Slider hooks
-function bindSlider(key, decimals) {
-  const slider = document.getElementById(key + '-slider');
-  const valDisplay = document.getElementById(key + '-val');
-  const update = () => {
-    const v = parseFloat(slider.value);
-    if (key === 'a') a = v;
-    else if (key === 'b') b = v;
-    else c = v;
-    valDisplay.textContent = v.toFixed(decimals);
-    render();
-  };
-  slider.addEventListener('input', update);
-  return update;
+function syncVals() {
+  $('a-val').textContent = a.toFixed(1);
+  $('b-val').textContent = b.toFixed(2);
+  $('c-val').textContent = fmtAngleSigned(c);
+  $('d-val').textContent = d.toFixed(1);
 }
-bindSlider('a', 1);
-bindSlider('b', 2);
-bindSlider('c', 1);
 
-// Toggle buttons
-document.querySelectorAll('.toggle-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    fnType = btn.dataset.fn;
+function syncSliders() {
+  $('a-slider').value = a;
+  $('b-slider').value = b;
+  $('c-slider').value = c;
+  $('d-slider').value = d;
+}
+
+[['a-slider', function (v) { a = v; }],
+ ['b-slider', function (v) { b = v; }],
+ ['c-slider', function (v) { c = v; }],
+ ['d-slider', function (v) { d = v; }]
+].forEach(function (pair) {
+  $(pair[0]).addEventListener('input', function (e) {
+    pair[1](parseFloat(e.target.value));
+    syncVals();
     render();
   });
 });
 
-// Presets
-document.querySelectorAll('.preset').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const [pa, pb, pc] = btn.dataset.preset.split(',').map(parseFloat);
-    a = pa; b = pb; c = pc;
-    document.getElementById('a-slider').value = pa;
-    document.getElementById('b-slider').value = pb;
-    document.getElementById('c-slider').value = pc;
-    document.getElementById('a-val').textContent = pa.toFixed(1);
-    document.getElementById('b-val').textContent = pb.toFixed(2);
-    document.getElementById('c-val').textContent = pc.toFixed(1);
+function setFn(fn) {
+  fnType = fn;
+  document.querySelectorAll('.toggle-btn[data-fn]').forEach(function (x) {
+    x.classList.toggle('active', x.dataset.fn === fn);
+  });
+}
+
+document.querySelectorAll('.toggle-btn[data-fn]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    setFn(btn.dataset.fn);
     render();
   });
 });
 
-// Reset
-document.getElementById('reset').addEventListener('click', () => {
-  a = 1; b = 1; c = 0;
-  document.getElementById('a-slider').value = 1;
-  document.getElementById('b-slider').value = 1;
-  document.getElementById('c-slider').value = 0;
-  document.getElementById('a-val').textContent = '1.0';
-  document.getElementById('b-val').textContent = '1.00';
-  document.getElementById('c-val').textContent = '0.0';
+document.querySelectorAll('.unit-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    unit = btn.dataset.unit;
+    document.querySelectorAll('.unit-btn').forEach(function (x) {
+      x.classList.toggle('active', x === btn);
+    });
+    syncVals();
+    render();
+  });
+});
+
+// Exam presets: data-preset="fn,a,b,c,d" (c in degrees)
+document.querySelectorAll('.preset').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    const parts = btn.dataset.preset.split(',');
+    setFn(parts[0]);
+    a = parseFloat(parts[1]);
+    b = parseFloat(parts[2]);
+    c = parseFloat(parts[3]);
+    d = parseFloat(parts[4]);
+    syncSliders();
+    syncVals();
+    render();
+    flashEquation();
+  });
+});
+
+document.getElementById('reset').addEventListener('click', function () {
+  a = 1; b = 1; c = 0; d = 0;
+  syncSliders();
+  syncVals();
   render();
 });
 
-// Init
-window.addEventListener('resize', () => { setupCanvas(); render(); });
-window.addEventListener('load', () => {
-  setupCanvas();
-  setTimeout(render, 50); // wait for KaTeX
-});
+window.addEventListener('resize', function () { setupCanvas(); render(); });
+window.addEventListener('load', function () { setupCanvas(); render(); });
 setupCanvas();
+syncVals();
 render();
+
+})();
 </script>
 </body>
 </html>

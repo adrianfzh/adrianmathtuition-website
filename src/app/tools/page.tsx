@@ -24,6 +24,10 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'Rapid-fire differentiation and integration practice with instant feedback.' },
   { slug: 'mental-math', icon: '🧮', title: 'Mental Math Sprint',
     desc: 'Timed arithmetic drills to sharpen speed and accuracy.' },
+  { slug: 'triangle-solver', icon: '📐', title: 'Triangle Solver & the Ambiguous Case',
+    desc: 'Give it any three parts (SSS, SAS, ASA, SSA) — see the triangle drawn to scale, which rule applies, and BOTH triangles when sine gives two answers.' },
+  { slug: 'circle-theorems', icon: '⭕', title: 'Circle Geometry Theorem Explorer',
+    desc: 'Drag points around a circle and watch angle-at-centre, same-segment, semicircle, cyclic quad, tangent and alternate-segment theorems hold live.' },
   { slug: 'sincos-unwrap', icon: '🔄', title: 'Unit Circle → Sine, Cosine & Tangent',
     desc: 'Watch a point circle the unit circle and unroll into the sine, cosine and tangent curves — drag the dot, jump to special angles, and see exact values plus why tan blows up at 90°.' },
 ];

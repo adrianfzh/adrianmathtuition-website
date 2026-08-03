@@ -84,6 +84,35 @@
     font-size: 13px; transition: all 0.15s;
   }
   .reset-btn:hover { color: var(--text); border-color: var(--accent); }
+  /* ── Multiplication animation section (×i / ×−i / ×−1 / ×k) ── */
+  .mul-section {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; margin-bottom: 18px;
+  }
+  .mul-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .mul-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); font-weight: 500; margin-right: 4px;
+  }
+  .mul-btn {
+    background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 16px; border-radius: 8px; font-size: 14px; cursor: pointer;
+    transition: all 0.15s; font-family: inherit; min-width: 56px;
+  }
+  .mul-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .mul-btn:active { transform: scale(0.95); background: var(--accent); color: var(--bg); }
+  .k-wrap {
+    display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;
+    font-size: 13px; color: var(--text-dim); font-family: ui-monospace, monospace;
+  }
+  .k-wrap input[type="range"] { width: 110px; accent-color: var(--accent); }
+  #k-val { color: var(--text); min-width: 30px; }
+  .mul-out { margin-top: 12px; padding: 10px 12px; background: var(--bg-elev-2); border-radius: 8px; }
+  .mul-algebra { font-family: ui-monospace, monospace; font-size: 14px; color: var(--text); line-height: 1.5; }
+  .mul-modarg { font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--text-dim); margin-top: 5px; }
+  .mul-note { margin-top: 8px; font-size: 13px; color: var(--accent); font-weight: 600; }
+  .mul-hint { margin-top: 10px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .mul-hint strong { color: var(--c-z1); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -100,6 +129,23 @@
     <button class="op-btn" data-op="div">z₁ ÷ z₂</button>
     <button class="op-btn" data-op="conj1">z̄₁</button>
     <button class="op-btn" data-op="conj2">z̄₂</button>
+  </div>
+  <div class="mul-section">
+    <div class="mul-row">
+      <span class="mul-title">Multiply z₁ by:</span>
+      <button class="mul-btn" data-mul="i">×i</button>
+      <button class="mul-btn" data-mul="negi">×−i</button>
+      <button class="mul-btn" data-mul="neg1">×−1</button>
+      <button class="mul-btn" data-mul="k">×k</button>
+      <span class="k-wrap"><label for="k-slider">k =</label><span id="k-val">2</span>
+        <input type="range" id="k-slider" min="0.25" max="3" step="0.25" value="2"></span>
+    </div>
+    <div class="mul-out" id="mul-out" hidden>
+      <div class="mul-algebra" id="mul-algebra"></div>
+      <div class="mul-modarg" id="mul-modarg"></div>
+      <div class="mul-note" id="mul-note" hidden></div>
+    </div>
+    <div class="mul-hint">Acts on <strong>z₁</strong> (the cyan point), wherever it currently is — drag it first if you like. Each press compounds: z₁ becomes the result. ×i rotates 90° anticlockwise, ×−i rotates 90° clockwise, ×−1 rotates 180°, ×k stretches z₁ along its own ray.</div>
   </div>
   <div class="layout">
     <div class="canvas-wrap">
@@ -326,6 +372,7 @@ function render() {
   const result = compute();
 
   drawHelpers(result);
+  drawMulVis();
 
   // Vectors from origin
   drawArrow({ re: 0, im: 0 }, z1, 'var(--c-z1)'.replace('var(--c-z1)', '#4cc2ff'));
@@ -481,6 +528,240 @@ document.getElementById('reset').addEventListener('click', () => {
   z1 = { re: 2, im: 1 }; z2 = { re: 1, im: 2 };
   render();
 });
+
+// ── Multiplication animation section (×i / ×−i / ×−1 / ×k) ─────────────
+// Multiplies z₁ in place. Rotations interpolate the ARGUMENT (modulus held
+// constant); ×k interpolates the MODULUS along z₁'s own ray. The final value
+// is computed exactly in Cartesian form (×i is (a,b)→(−b,a), etc.), so four
+// ×i presses land exactly back on the start — only the sweep uses trig.
+const MUL_DUR = 600;
+let mulVis = null;      // ghost + trail state (persists after the animation)
+let mulAnim = null;     // in-flight animation, or null
+let mulStreak = { op: null, count: 0 };
+let kVal = 2;
+
+function mulReduced() {
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function mulFmtN(n) {
+  if (!isFinite(n)) return '—';
+  const r = Math.round(n);
+  const s = Math.abs(n - r) < 1e-9 ? String(r) : String(parseFloat(n.toFixed(2)));
+  return s.replace('-', '−');
+}
+
+function mulFmtC(re, im) {
+  const r = Math.abs(re) < 1e-9 ? 0 : re;
+  const i = Math.abs(im) < 1e-9 ? 0 : im;
+  if (r === 0 && i === 0) return '0';
+  const iTerm = (Math.abs(Math.abs(i) - 1) < 1e-9 ? '' : mulFmtN(Math.abs(i))) + 'i';
+  if (i === 0) return mulFmtN(r);
+  if (r === 0) return (i < 0 ? '−' : '') + iTerm;
+  return mulFmtN(r) + (i < 0 ? ' − ' : ' + ') + iTerm;
+}
+
+function mulTermChain(pairs) { // [[coef, suffix], …], zero coefs already removed
+  let s = '';
+  pairs.forEach(([c, suf], idx) => {
+    const mag = Math.abs(c);
+    const t = (Math.abs(mag - 1) < 1e-9 ? '' : mulFmtN(mag)) + suf;
+    if (idx === 0) s = (c < 0 ? '−' : '') + t;
+    else s += (c < 0 ? ' − ' : ' + ') + t;
+  });
+  return s || '0';
+}
+
+function mulAlgebraText(mul, a, b, k) {
+  const L = '(' + mulFmtC(a, b) + ')';
+  if (mul === 'i' || mul === 'negi') {
+    const s = mul === 'i' ? 1 : -1;          // (a+bi)(si) = sa·i + sb·i² = −sb + sa·i
+    const pairs = [];
+    if (Math.abs(a) > 1e-9) pairs.push([s * a, 'i']);
+    if (Math.abs(b) > 1e-9) pairs.push([s * b, 'i²']);
+    const mid = mulTermChain(pairs);
+    const fin = mulFmtC(-s * b, s * a);
+    const sym = mul === 'i' ? 'i' : '(−i)';
+    return mid === fin ? `${L} × ${sym} = ${fin}` : `${L} × ${sym} = ${mid} = ${fin}`;
+  }
+  if (mul === 'neg1') return `${L} × (−1) = ${mulFmtC(-a, -b)}`;
+  return `${mulFmtN(k)}${L} = ${mulFmtC(k * a, k * b)}`;
+}
+
+function mulModArgText(mul, before, after, k) {
+  const bm = modArg(before), am = modArg(after);
+  if (bm.mod < 1e-12) return '|z₁| = 0 — the origin is fixed by every multiplication';
+  const mB = bm.mod.toFixed(2), mA = am.mod.toFixed(2);
+  if (mul === 'k') {
+    if (k === 1) return `|z₁| unchanged (${mB}) · arg unchanged`;
+    const word = k === 2 ? 'doubled' : k === 3 ? 'tripled' : k === 0.5 ? 'halved' : 'scaled ×' + mulFmtN(k);
+    return `|z₁| ${word}: ${mB} → ${mA} · arg unchanged`;
+  }
+  const dArg = mul === 'i' ? Math.PI / 2 : mul === 'negi' ? -Math.PI / 2 : Math.PI;
+  const delta = mul === 'i' ? '+90° (anticlockwise)' : mul === 'negi' ? '−90° (clockwise)' : '+180°';
+  let s = `|z₁| unchanged (${mB}) · arg ${delta}: ${fmtArg(bm.arg)} → ${fmtArg(am.arg)}`;
+  const raw = bm.arg + dArg;
+  if (raw > Math.PI + 1e-9 || raw <= -Math.PI + 1e-9) s += ' (wrapped to principal range)';
+  return s;
+}
+
+function mulStreakNote(op, count) {
+  if (count > 0 && op === 'i' && count % 4 === 0) return '×i four times = back where you started: i⁴ = 1';
+  if (count > 0 && op === 'negi' && count % 4 === 0) return '×(−i) four times = back where you started: (−i)⁴ = 1';
+  if (count > 0 && op === 'neg1' && count % 2 === 0) return '×(−1) twice = back where you started: (−1)² = 1';
+  return null;
+}
+
+function finishMulAnim() {   // fast-forward an in-flight animation to its exact end
+  if (!mulAnim) return;
+  z1 = { re: mulAnim.target.re, im: mulAnim.target.im };
+  if (mulVis) {
+    mulVis.curArg = mulAnim.startArg + mulAnim.dArg;
+    mulVis.curMod = mulAnim.targetMod;
+  }
+  mulAnim = null;
+}
+
+function clearMulState() {   // z₁ changed by hand (drag / typed / reset)
+  mulAnim = null;            // abandon any animation, keep z₁ where the user put it
+  mulVis = null;
+  mulStreak = { op: null, count: 0 };
+  document.getElementById('mul-out').hidden = true;
+  document.getElementById('mul-note').hidden = true;
+}
+
+function mulTick(now) {
+  if (!mulAnim || !mulVis) return;
+  const p = Math.min(1, (now - mulAnim.t0) / MUL_DUR);
+  const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; // easeInOutCubic
+  if (mulAnim.kind === 'rotate') {
+    const arg = mulAnim.startArg + mulAnim.dArg * e;   // interpolate ARGUMENT, modulus fixed
+    z1 = { re: mulAnim.startMod * Math.cos(arg), im: mulAnim.startMod * Math.sin(arg) };
+    mulVis.curArg = arg;
+  } else {
+    const mod = mulAnim.startMod + (mulAnim.targetMod - mulAnim.startMod) * e; // interpolate MODULUS
+    z1 = { re: mod * Math.cos(mulAnim.startArg), im: mod * Math.sin(mulAnim.startArg) };
+    mulVis.curMod = mod;
+  }
+  if (p >= 1) {
+    finishMulAnim();          // snap to the exact Cartesian target
+    render();
+    return;
+  }
+  render();
+  requestAnimationFrame(mulTick);
+}
+
+function pressMul(mul) {
+  finishMulAnim();            // compounding: a new press starts from the finished result
+  const start = { re: z1.re, im: z1.im };
+  const k = kVal;
+  let target, kind = 'rotate', dArg = 0, label = '';
+  if (mul === 'i')         { target = { re: -start.im, im:  start.re };       dArg =  Math.PI / 2; label = '+90°'; }
+  else if (mul === 'negi') { target = { re:  start.im, im: -start.re };       dArg = -Math.PI / 2; label = '−90°'; }
+  else if (mul === 'neg1') { target = { re: -start.re, im: -start.im };       dArg =  Math.PI;     label = '+180°'; }
+  else                     { target = { re: k * start.re, im: k * start.im }; kind = 'scale';      label = '×' + mulFmtN(k); }
+
+  mulStreak = mulStreak.op === mul ? { op: mul, count: mulStreak.count + 1 } : { op: mul, count: 1 };
+
+  const sm = modArg(start);
+  mulVis = { kind, start, label, startArg: sm.arg, startMod: sm.mod, dArg, curArg: sm.arg, curMod: sm.mod };
+
+  document.getElementById('mul-out').hidden = false;
+  document.getElementById('mul-algebra').textContent = mulAlgebraText(mul, start.re, start.im, k);
+  document.getElementById('mul-modarg').textContent = mulModArgText(mul, start, target, k);
+  const note = mulStreakNote(mul, mulStreak.count);
+  document.getElementById('mul-note').hidden = !note;
+  document.getElementById('mul-note').textContent = note || '';
+
+  if (mulReduced() || sm.mod < 1e-12) {  // reduced motion (or nothing to sweep): jump, ghost stays
+    z1 = { re: target.re, im: target.im };
+    mulVis.curArg = sm.arg + (kind === 'rotate' ? dArg : 0);
+    mulVis.curMod = kind === 'scale' ? sm.mod * k : sm.mod;
+    render();
+    return;
+  }
+
+  mulAnim = {
+    kind, dArg, target, t0: performance.now(),
+    startArg: sm.arg, startMod: sm.mod,
+    targetMod: kind === 'scale' ? sm.mod * k : sm.mod
+  };
+  requestAnimationFrame(mulTick);
+}
+
+function drawMulVis() {
+  if (!mulVis) return;
+  const g = mulVis;
+  const [x0, y0] = m2c(0, 0);
+  const [gx, gy] = m2c(g.start.re, g.start.im);
+  const ghost = 'rgba(76,194,255,0.45)';
+  ctx.save();
+  // Dashed ghost of the pre-multiplication z₁ (kept after the animation)
+  ctx.strokeStyle = ghost;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 5]);
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(gx, gy); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(gx, gy, 6, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = ghost;
+  ctx.font = '11px ui-monospace, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('z₁ (before)', gx + 10, gy + 16);
+
+  const pxPerUnit = W / (xMax - xMin); // scale is isotropic (H is derived from W)
+  if (g.kind === 'rotate' && g.startMod > 1e-9) {
+    // Trail arc from the old argument to the current one (grows during the sweep).
+    // Canvas y is flipped, so math angle θ sits at canvas angle −θ; for dArg>0
+    // (anticlockwise in maths) the arc is drawn counterclockwise on screen.
+    const r = g.startMod * pxPerUnit;
+    ctx.strokeStyle = 'rgba(76,194,255,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath();
+    ctx.arc(x0, y0, r, -g.startArg, -g.curArg, g.dArg > 0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const midA = (g.startArg + g.curArg) / 2;
+    const lr = Math.max(22, r * 0.6);
+    ctx.fillStyle = 'rgba(76,194,255,0.85)';
+    ctx.textAlign = 'center';
+    ctx.fillText(g.label, x0 + lr * Math.cos(midA), y0 - lr * Math.sin(midA) + 4);
+  }
+  if (g.kind === 'scale') {
+    const [tx, ty] = m2c(g.curMod * Math.cos(g.startArg), g.curMod * Math.sin(g.startArg));
+    const mx = (gx + tx) / 2, my = (gy + ty) / 2;
+    const a = Math.atan2(ty - gy, tx - gx);
+    ctx.fillStyle = 'rgba(76,194,255,0.85)';
+    ctx.textAlign = 'center';
+    ctx.fillText(g.label, mx + 14 * Math.cos(a - Math.PI / 2), my + 14 * Math.sin(a - Math.PI / 2) + 4);
+  }
+  ctx.restore();
+}
+
+document.querySelectorAll('.mul-btn').forEach(btn => {
+  btn.addEventListener('click', () => pressMul(btn.dataset.mul));
+});
+
+document.getElementById('k-slider').addEventListener('input', e => {
+  kVal = parseFloat(e.target.value);
+  document.getElementById('k-val').textContent = mulFmtN(kVal);
+});
+
+// Hand-editing z₁ (drag / typed / reset) ends the multiply story: clear ghost + streak.
+// These listeners are registered AFTER the originals above, so they run second and
+// see the fresh `dragging` / z₁ values without touching the existing handlers.
+function mulCanvasDown() {
+  if (dragging === 'z1' && (mulAnim || mulVis)) { clearMulState(); render(); }
+}
+canvas.addEventListener('mousedown', mulCanvasDown);
+canvas.addEventListener('touchstart', mulCanvasDown);
+['z1-re', 'z1-im'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    if (mulAnim || mulVis) { clearMulState(); render(); }
+  });
+});
+document.getElementById('reset').addEventListener('click', () => { clearMulState(); render(); });
 
 window.addEventListener('resize', () => { setupCanvas(); render(); });
 setupCanvas();

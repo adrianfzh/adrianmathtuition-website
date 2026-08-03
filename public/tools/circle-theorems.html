@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Circle Geometry Theorem Explorer</title>
+<style>
+  :root{
+    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
+    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
+    --line:#cfc6b6;
+    --panel:#fbf8f1; --panelb:#e7ded0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Georgia","Times New Roman",serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  header{padding:18px 20px 4px}
+  h1{font-size:19px; font-weight:600; margin:0; letter-spacing:.2px}
+  .sub{font-size:13px; color:var(--muted); margin-top:3px}
+  button{
+    font:inherit; font-size:13px; color:var(--ink); background:var(--panel);
+    border:1px solid var(--panelb); border-radius:8px; padding:7px 13px; cursor:pointer;
+  }
+  button:hover{border-color:var(--muted)}
+  button:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
+  .picker{display:flex; flex-wrap:wrap; gap:6px; padding:10px 18px 0}
+  .picker button{font-size:12.5px; border-radius:999px; padding:6px 12px}
+  .picker button.on{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+  .statement{
+    margin:10px 18px 0; padding:8px 12px;
+    background:var(--panel); border:1px solid var(--panelb);
+    border-left:3px solid var(--orange); border-radius:8px;
+    font-size:13.5px; font-style:italic; line-height:1.45;
+  }
+  .statement b{font-style:normal}
+  .stage{position:relative; flex:1 1 auto; min-height:340px}
+  canvas{display:block; width:100%; height:100%; touch-action:none; cursor:default}
+  canvas.pt{cursor:grab}
+  canvas.drag{cursor:grabbing}
+  .readout{
+    position:absolute; top:12px; left:12px; max-width:min(92vw,560px);
+    background:var(--panel); border:1px solid var(--panelb);
+    border-radius:10px; padding:9px 12px;
+    font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    font-size:12.5px; line-height:1.55; color:var(--ink);
+    box-shadow:0 1px 0 rgba(0,0,0,.03);
+  }
+  .readout .o{color:var(--orange)} .readout .t{color:var(--teal)}
+  .readout .r{color:var(--rose)}   .readout .p{color:var(--plum)}
+  .readout .k{color:var(--muted)}
+  .readout .ok{color:var(--teal); font-weight:700}
+  .readout .bad{color:var(--rose); font-weight:700}
+  .hint{position:absolute; bottom:10px; right:12px; font-size:11.5px; color:var(--muted); font-family:ui-monospace,monospace}
+  .controls{
+    display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px;
+    padding:12px 18px 18px; border-top:1px solid var(--line);
+    background:linear-gradient(var(--bg),var(--bg));
+  }
+  .grp{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink)}
+  .grp label{font-size:12px; color:var(--muted)}
+  @media (max-width:560px){
+    .readout{font-size:11.5px; padding:7px 9px}
+    .statement{font-size:12.5px}
+  }
+</style>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<header>
+  <h1>Circle theorems, live — drag the points, the invariant holds</h1>
+  <div class="sub">Seven O-Level circle theorems as living diagrams. Pick one below, then drag the lettered points anywhere — the marked angles keep changing, but the theorem's equation never breaks.</div>
+</header>
+
+<div class="picker" id="picker"></div>
+<div class="statement" id="stmt"></div>
+
+<div class="stage">
+  <canvas id="cv"></canvas>
+  <div class="readout" id="ro"></div>
+  <div class="hint">drag the lettered points</div>
+</div>
+
+<div class="controls">
+  <button id="reset">Reset points</button>
+  <div class="grp"><label>Every angle updates live to 1 d.p. — watch the ✓ survive anything you do.</label></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const ro = document.getElementById('ro');
+  const stmt = document.getElementById('stmt');
+  const picker = document.getElementById('picker');
+  const resetBtn = document.getElementById('reset');
+
+  const TAU = Math.PI*2, DEG = 180/Math.PI;
+  const COL = {bg:'#F4EFE6', ink:'#2b2b2b', muted:'#7d756a', line:'#cfc6b6',
+               rose:'#BC5A6E', teal:'#2E7C8F', orange:'#D8693C', plum:'#7B5EA7'};
+  const GRAB = 24;    // generous grab radius (px)
+  const MS  = 0.12;   // min angular separation between points (rad ≈ 7°)
+  const MSQ = 0.26;   // min separation for cyclic-quad vertices (≈ 15°)
+
+  // ---- sizing ---------------------------------------------------------
+  let W=0, H=0, DPR=1;
+  function resize(){
+    const r = cv.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio||1, 2.5);
+    W = r.width; H = r.height;
+    cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    redraw();
+  }
+  window.addEventListener('resize', resize);
+
+  // circle geometry for the current scene (recomputed every draw)
+  let cx=0, cy=0, R=100;
+  function layout(){
+    const s = scenes[cur];
+    cx = W*(s.cxFrac||0.5);
+    cy = H*0.53;
+    R = Math.min(W,H)*(s.rFrac||0.34);
+  }
+
+  // ---- math helpers ---------------------------------------------------
+  function norm(a){ a%=TAU; return a<0 ? a+TAU : a; }
+  function sdiff(a,b){ let d=(a-b)%TAU; if(d<=-Math.PI)d+=TAU; if(d>Math.PI)d-=TAU; return d; }
+  function pt(a){ return {x:cx+R*Math.cos(a), y:cy+R*Math.sin(a)}; }
+  function angOf(m){ return Math.atan2(m.y-cy, m.x-cx); }
+  function sub(p,q){ return {x:p.x-q.x, y:p.y-q.y}; }
+  function unit(v){ const d=Math.hypot(v.x,v.y)||1; return {x:v.x/d, y:v.y/d}; }
+  function dot(u,v){ return u.x*v.x + u.y*v.y; }
+  function cross(u,v){ return u.x*v.y - u.y*v.x; }
+  // interior angle ∠P1 V P2, in [0, π]
+  function angAt(V,P1,P2){
+    const u=sub(P1,V), v=sub(P2,V);
+    const du=Math.hypot(u.x,u.y), dv=Math.hypot(v.x,v.y);
+    if(du<1e-9 || dv<1e-9) return 0;
+    let c=dot(u,v)/(du*dv); if(c>1)c=1; if(c<-1)c=-1;
+    return Math.acos(c);
+  }
+  // keep a at least ms away from every angle in others (allows crossing past them)
+  function clampAway(a, others, ms){
+    a = norm(a);
+    for(let it=0; it<3; it++)
+      for(const o of others){
+        const d = sdiff(a,o);
+        if(Math.abs(d)<ms) a = norm(o + (d>=0?ms:-ms));
+      }
+    return a;
+  }
+  // clamp a into the CCW arc (lo+ms … hi−ms) — used to keep quad vertices in order
+  function clampBetween(a, lo, hi, ms){
+    const span=norm(hi-lo), usable=span-2*ms;
+    if(usable<=0) return norm(lo+span/2);
+    const rel=norm(a-lo-ms);
+    if(rel<=usable) return norm(a);
+    return (rel-usable < TAU-rel) ? norm(lo+ms+usable) : norm(lo+ms);
+  }
+  // signed sweep of the arc from aA to aB that does NOT contain aX
+  function sweepAvoiding(aA,aB,aX){
+    let sw = norm(aB-aA);
+    if(norm(aX-aA) < sw) sw -= TAU;
+    return sw;
+  }
+  function fmt(x){ return x.toFixed(1); }
+  function okTick(good){ return good ? ' <span class="ok">✓</span>' : ' <span class="bad">✗</span>'; }
+
+  // ---- drawing helpers ------------------------------------------------
+  function line(p,q,color,w,alpha,dash){
+    ctx.globalAlpha = alpha==null?1:alpha;
+    ctx.strokeStyle=color; ctx.lineWidth=w||1;
+    if(dash) ctx.setLineDash(dash);
+    ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
+    if(dash) ctx.setLineDash([]);
+    ctx.globalAlpha=1;
+  }
+  function circleOutline(){
+    ctx.strokeStyle=COL.muted; ctx.lineWidth=1.6; ctx.globalAlpha=.85;
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,TAU); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+  function arcOn(a1,sw,color,w){ // emphasise an arc of the main circle
+    ctx.strokeStyle=color; ctx.lineWidth=w; ctx.lineCap='round'; ctx.globalAlpha=.9;
+    ctx.beginPath(); ctx.arc(cx,cy,R,a1,a1+sw,sw<0); ctx.stroke();
+    ctx.lineCap='butt'; ctx.globalAlpha=1;
+  }
+  function sector(V,r,a1,sw,color){ // filled angle mark with arc edge
+    ctx.fillStyle=color; ctx.globalAlpha=.18;
+    ctx.beginPath(); ctx.moveTo(V.x,V.y); ctx.arc(V.x,V.y,r,a1,a1+sw,sw<0); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=.9; ctx.strokeStyle=color; ctx.lineWidth=1.8;
+    ctx.beginPath(); ctx.arc(V.x,V.y,r,a1,a1+sw,sw<0); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+  // shade the (shortest-way) angle ∠P1 V P2; returns {a1,sw} for the value label
+  function angleSector(V,P1,P2,r,color){
+    const a1=Math.atan2(P1.y-V.y, P1.x-V.x);
+    const a2=Math.atan2(P2.y-V.y, P2.x-V.x);
+    const sw=sdiff(a2,a1);
+    sector(V,r,a1,sw,color);
+    return {a1,sw};
+  }
+  function haloText(str,x,y,color,font,align,base){
+    ctx.font=font; ctx.textAlign=align||'center'; ctx.textBaseline=base||'middle';
+    ctx.lineWidth=3.5; ctx.strokeStyle=COL.bg; ctx.strokeText(str,x,y);
+    ctx.fillStyle=color; ctx.fillText(str,x,y);
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  }
+  function angleValue(V,a1,sw,valDeg,color,r){ // degree value on the angle's bisector
+    const am=a1+sw/2, rr=r+15;
+    haloText(fmt(valDeg)+'°', V.x+rr*Math.cos(am), V.y+rr*Math.sin(am),
+             color, '600 12.5px Georgia, serif');
+  }
+  function handleDot(p){ // draggable point
+    ctx.fillStyle=COL.ink; ctx.beginPath(); ctx.arc(p.x,p.y,6,0,TAU); ctx.fill();
+    ctx.fillStyle=COL.orange; ctx.beginPath(); ctx.arc(p.x,p.y,3.2,0,TAU); ctx.fill();
+  }
+  function smallDot(p,color){
+    ctx.fillStyle=color||COL.ink; ctx.beginPath(); ctx.arc(p.x,p.y,3.5,0,TAU); ctx.fill();
+  }
+  function labelP(txt,p,dir,dist){
+    const d=dist==null?18:dist;
+    haloText(txt, p.x+dir.x*d, p.y+dir.y*d, COL.ink, 'italic 15px Georgia, serif');
+  }
+  function labelOnCircle(txt,a){ // letter just outside the circle at angle a
+    labelP(txt, pt(a), {x:Math.cos(a), y:Math.sin(a)}, 18);
+  }
+  function rightAngleMark(V,d1,d2,s,color){ // d1,d2 unit vectors along the two arms
+    const p1={x:V.x+d1.x*s, y:V.y+d1.y*s};
+    const p2={x:V.x+(d1.x+d2.x)*s, y:V.y+(d1.y+d2.y)*s};
+    const p3={x:V.x+d2.x*s, y:V.y+d2.y*s};
+    ctx.strokeStyle=color; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.lineTo(p3.x,p3.y); ctx.stroke();
+  }
+  function segFill(aFrom,aTo,aX,color){ // shade the segment (chord+arc) containing angle aX
+    let sw=norm(aTo-aFrom);
+    if(!(norm(aX-aFrom)<sw)) sw-=TAU;
+    ctx.fillStyle=color; ctx.globalAlpha=.08;
+    ctx.beginPath(); ctx.arc(cx,cy,R,aFrom,aFrom+sw,sw<0); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=1;
+  }
+
+  // ---- scenes ---------------------------------------------------------
+  const scenes = [
+
+  // 1 ── angle at centre = 2 × angle at circumference
+  {
+    label:'∠ at centre',
+    statement:'<b>∠ at centre = 2 × ∠ at circumference</b> — the angle arc AB subtends at the centre O is twice the angle it subtends at any point C on the remaining arc.',
+    init(){ this.aA=0.78*Math.PI; this.aB=0.22*Math.PI; this.aC=1.50*Math.PI; },
+    handles(){ return [{id:'A',p:pt(this.aA)},{id:'B',p:pt(this.aB)},{id:'C',p:pt(this.aC)}]; },
+    drag(id,m){
+      const a=angOf(m);
+      if(id==='A')      this.aA=clampAway(a,[this.aB,this.aC],MS);
+      else if(id==='B') this.aB=clampAway(a,[this.aA,this.aC],MS);
+      else              this.aC=clampAway(a,[this.aA,this.aB],MS);
+    },
+    // Display rule: the inscribed value is rounded to 1 d.p. and the shown central
+    // value is exactly 2 × that, so the printed equation is always arithmetically
+    // clean (independent rounding makes "135.7 = 2 × 67.9" half the time). The
+    // derived value sits within 0.1° of the true central angle; the ✓ check below
+    // still compares the two RAW, independently computed angles.
+    disp(){
+      const cen=Math.abs(sweepAvoiding(this.aA,this.aB,this.aC))*DEG;
+      const ins=angAt(pt(this.aC),pt(this.aA),pt(this.aB))*DEG;
+      const insD=Math.round(ins*10)/10;
+      return {cen, ins, insD, cenD:2*insD};
+    },
+    draw(){
+      const A=pt(this.aA), B=pt(this.aB), C=pt(this.aC), O={x:cx,y:cy};
+      circleOutline();
+      const sw=sweepAvoiding(this.aA,this.aB,this.aC);   // arc AB not containing C
+      const d=this.disp();
+      arcOn(this.aA,sw,COL.orange,4);
+      line(O,A,COL.orange,2); line(O,B,COL.orange,2);
+      line(C,A,COL.teal,2);   line(C,B,COL.teal,2);
+      sector(O,34,this.aA,sw,COL.orange);
+      angleValue(O,this.aA,sw,d.cenD,COL.orange,34);
+      const s2=angleSector(C,A,B,26,COL.teal);
+      angleValue(C,s2.a1,s2.sw,d.insD,COL.teal,26);
+      const away=this.aA+sw/2+Math.PI;
+      smallDot(O); labelP('O',O,{x:Math.cos(away),y:Math.sin(away)},16);
+      handleDot(A); labelOnCircle('A',this.aA);
+      handleDot(B); labelOnCircle('B',this.aB);
+      handleDot(C); labelOnCircle('C',this.aC);
+    },
+    readout(){
+      const d=this.disp();
+      const nm=d.cen>180.05?'reflex ∠AOB':'∠AOB';
+      return '<span class="o">'+nm+'</span> = 2 × <span class="t">∠ACB</span> → '+
+        '<span class="o">'+fmt(d.cenD)+'°</span> = 2 × <span class="t">'+fmt(d.insD)+'°</span>'+
+        okTick(Math.abs(d.cen-2*d.ins)<0.25)+
+        '<br><span class="k">both angles stand on the same (orange) arc AB</span>';
+    }
+  },
+
+  // 2 ── angles in the same segment
+  {
+    label:'Same segment',
+    statement:'<b>Angles in the same segment are equal</b> — ∠ACB = ∠ADB while C and D stay on the same side of chord AB. Drag one across the chord: angles in <b>opposite</b> segments are supplementary instead (that is the cyclic quadrilateral in disguise).',
+    init(){ this.aA=0.85*Math.PI; this.aB=0.15*Math.PI; this.aC=1.32*Math.PI; this.aD=1.68*Math.PI; },
+    handles(){ return [{id:'A',p:pt(this.aA)},{id:'B',p:pt(this.aB)},
+                       {id:'C',p:pt(this.aC)},{id:'D',p:pt(this.aD)}]; },
+    drag(id,m){
+      const a=angOf(m);
+      if(id==='A')      this.aA=clampAway(a,[this.aB,this.aC,this.aD],MS);
+      else if(id==='B') this.aB=clampAway(a,[this.aA,this.aC,this.aD],MS);
+      else if(id==='C') this.aC=clampAway(a,[this.aA,this.aB,this.aD],MS);
+      else              this.aD=clampAway(a,[this.aA,this.aB,this.aC],MS);
+    },
+    sameSide(){
+      const A=pt(this.aA), B=pt(this.aB), C=pt(this.aC), D=pt(this.aD);
+      const ab=sub(B,A);
+      return cross(ab,sub(C,A))*cross(ab,sub(D,A)) > 0;
+    },
+    draw(){
+      const A=pt(this.aA), B=pt(this.aB), C=pt(this.aC), D=pt(this.aD);
+      const same=this.sameSide();
+      circleOutline();
+      segFill(this.aA,this.aB,this.aC,COL.rose);
+      if(!same) segFill(this.aA,this.aB,this.aD,COL.plum);
+      line(A,B,COL.ink,2.2,.85);
+      const colD=same?COL.rose:COL.plum;
+      line(C,A,COL.rose,2); line(C,B,COL.rose,2);
+      line(D,A,colD,2);     line(D,B,colD,2);
+      const s1=angleSector(C,A,B,26,COL.rose);
+      angleValue(C,s1.a1,s1.sw,angAt(C,A,B)*DEG,COL.rose,26);
+      const s2=angleSector(D,A,B,26,colD);
+      angleValue(D,s2.a1,s2.sw,angAt(D,A,B)*DEG,colD,26);
+      handleDot(A); labelOnCircle('A',this.aA);
+      handleDot(B); labelOnCircle('B',this.aB);
+      handleDot(C); labelOnCircle('C',this.aC);
+      handleDot(D); labelOnCircle('D',this.aD);
+    },
+    readout(){
+      const A=pt(this.aA), B=pt(this.aB), C=pt(this.aC), D=pt(this.aD);
+      const acb=angAt(C,A,B)*DEG, adb=angAt(D,A,B)*DEG;
+      if(this.sameSide()){
+        return '<span class="r">∠ACB</span> = <span class="r">∠ADB</span> → '+
+          '<span class="r">'+fmt(acb)+'°</span> = <span class="r">'+fmt(adb)+'°</span>'+
+          okTick(Math.abs(acb-adb)<0.25)+
+          '<br><span class="k">C and D are in the same segment (same side of chord AB)</span>';
+      }
+      return '<span class="r">∠ACB</span> + <span class="p">∠ADB</span> = 180° → '+
+        '<span class="r">'+fmt(acb)+'°</span> + <span class="p">'+fmt(adb)+'°</span> = '+fmt(acb+adb)+'°'+
+        okTick(Math.abs(acb+adb-180)<0.25)+
+        '<br><span class="k">C and D are now in opposite segments → supplementary (ACBD is a cyclic quadrilateral)</span>';
+    }
+  },
+
+  // 3 ── angle in a semicircle
+  {
+    label:'∠ in semicircle',
+    statement:'<b>The angle in a semicircle is a right angle</b> — AB is a diameter, so ∠ACB = 90° wherever C sits on the circle.',
+    init(){ this.aA=0.80*Math.PI; this.aC=1.35*Math.PI; },
+    aB(){ return norm(this.aA+Math.PI); },
+    handles(){ return [{id:'A',p:pt(this.aA)},{id:'B',p:pt(this.aB())},{id:'C',p:pt(this.aC)}]; },
+    drag(id,m){
+      const a=angOf(m);
+      if(id==='C'){ this.aC=clampAway(a,[this.aA,this.aB()],MS); }
+      else{
+        const t=(id==='A') ? a : norm(a+Math.PI);   // dragging B spins the same diameter
+        this.aA=clampAway(t,[this.aC,norm(this.aC+Math.PI)],MS);
+      }
+    },
+    draw(){
+      const A=pt(this.aA), B=pt(this.aB()), C=pt(this.aC), O={x:cx,y:cy};
+      circleOutline();
+      line(A,B,COL.orange,2.5);
+      line(C,A,COL.teal,2); line(C,B,COL.teal,2);
+      const s=angleSector(C,A,B,26,COL.teal);
+      rightAngleMark(C,unit(sub(A,C)),unit(sub(B,C)),13,COL.teal);
+      angleValue(C,s.a1,s.sw,angAt(C,A,B)*DEG,COL.teal,26);
+      let n=unit({x:-(B.y-A.y), y:B.x-A.x});
+      if(dot(n,sub(C,O))>0) n={x:-n.x,y:-n.y};      // put the O label away from C
+      smallDot(O); labelP('O',O,n,14);
+      handleDot(A); labelOnCircle('A',this.aA);
+      handleDot(B); labelOnCircle('B',this.aB());
+      handleDot(C); labelOnCircle('C',this.aC);
+    },
+    readout(){
+      const A=pt(this.aA), B=pt(this.aB()), C=pt(this.aC);
+      const v=angAt(C,A,B)*DEG;
+      return '<span class="t">∠ACB</span> = <span class="t">'+fmt(v)+'°</span>'+
+        okTick(Math.abs(v-90)<0.25)+
+        '<br><span class="k">AB is a diameter — drag A or B to spin it, drag C anywhere</span>';
+    }
+  },
+
+  // 4 ── cyclic quadrilateral
+  {
+    label:'Cyclic quad',
+    statement:'<b>Opposite angles of a cyclic quadrilateral add up to 180°</b> — ∠A + ∠C = 180° and ∠B + ∠D = 180° (each pair sits in opposite segments).',
+    init(){ this.ang=[0.60*Math.PI, 1.00*Math.PI, 1.45*Math.PI, 1.90*Math.PI]; }, // A,B,C,D in cyclic order
+    handles(){ const L='ABCD'; return this.ang.map((a,i)=>({id:L[i], p:pt(a)})); },
+    drag(id,m){
+      const i='ABCD'.indexOf(id);
+      const lo=this.ang[(i+3)%4], hi=this.ang[(i+1)%4]; // stay between neighbours → quad stays simple
+      this.ang[i]=clampBetween(angOf(m),lo,hi,MSQ);
+    },
+    draw(){
+      const P4=this.ang.map(pt);
+      circleOutline();
+      for(let i=0;i<4;i++) line(P4[i],P4[(i+1)%4],COL.ink,2,.85);
+      const cols=[COL.rose,COL.teal,COL.rose,COL.teal];
+      for(let i=0;i<4;i++){
+        const V=P4[i], Pv=P4[(i+3)%4], Nx=P4[(i+1)%4];
+        const s=angleSector(V,Pv,Nx,24,cols[i]);
+        angleValue(V,s.a1,s.sw,angAt(V,Pv,Nx)*DEG,cols[i],24);
+      }
+      for(let i=0;i<4;i++){ handleDot(P4[i]); labelOnCircle('ABCD'[i],this.ang[i]); }
+    },
+    readout(){
+      const P4=this.ang.map(pt);
+      const v=[0,1,2,3].map(i=>angAt(P4[i],P4[(i+3)%4],P4[(i+1)%4])*DEG);
+      return '<span class="r">∠A</span> + <span class="r">∠C</span> = '+
+        '<span class="r">'+fmt(v[0])+'°</span> + <span class="r">'+fmt(v[2])+'°</span> = '+fmt(v[0]+v[2])+'°'+
+        okTick(Math.abs(v[0]+v[2]-180)<0.25)+
+        '<br><span class="t">∠B</span> + <span class="t">∠D</span> = '+
+        '<span class="t">'+fmt(v[1])+'°</span> + <span class="t">'+fmt(v[3])+'°</span> = '+fmt(v[1]+v[3])+'°'+
+        okTick(Math.abs(v[1]+v[3]-180)<0.25);
+    }
+  },
+
+  // 5 ── tangent ⊥ radius
+  {
+    label:'Tangent ⊥ radius',
+    statement:'<b>A tangent is perpendicular to the radius at the point of contact</b> — OP ⊥ tangent at P, so ∠OPT = 90°.',
+    init(){ this.aP=1.75*Math.PI; },
+    handles(){ return [{id:'P',p:pt(this.aP)}]; },
+    drag(id,m){ this.aP=norm(angOf(m)); },
+    draw(){
+      const P=pt(this.aP), O={x:cx,y:cy};
+      const t={x:-Math.sin(this.aP), y:Math.cos(this.aP)};
+      const L=R*0.95;
+      const T1={x:P.x+t.x*L, y:P.y+t.y*L}, T2={x:P.x-t.x*L, y:P.y-t.y*L};
+      circleOutline();
+      line(T2,T1,COL.plum,2.2);
+      line(O,P,COL.orange,2.5);
+      const uO=unit(sub(O,P));
+      rightAngleMark(P,uO,t,12,COL.teal);
+      const bis=unit({x:uO.x+t.x, y:uO.y+t.y});
+      haloText('90.0°', P.x+bis.x*32, P.y+bis.y*32, COL.teal, '600 12.5px Georgia, serif');
+      smallDot(O); labelP('O',O,uO,14);
+      labelP('T',T1,t,14);
+      handleDot(P); labelOnCircle('P',this.aP);
+    },
+    readout(){
+      const P=pt(this.aP), O={x:cx,y:cy};
+      const t={x:-Math.sin(this.aP), y:Math.cos(this.aP)};
+      const T1={x:P.x+t.x*R*0.95, y:P.y+t.y*R*0.95};
+      const v=angAt(P,O,T1)*DEG;
+      return 'OP ⊥ tangent → <span class="t">∠OPT</span> = <span class="t">'+fmt(v)+'°</span>'+
+        okTick(Math.abs(v-90)<0.25)+
+        '<br><span class="k">drag P — the radius chases the tangent and the right angle never budges</span>';
+    }
+  },
+
+  // 6 ── tangents from an external point
+  {
+    label:'Equal tangents', cxFrac:0.40, rFrac:0.30,
+    statement:'<b>Tangents from an external point are equal in length</b> — TA = TB, and each tangent meets its radius at 90° at the point of contact.',
+    init(){ this.tAng=0; this.tK=1.9; },
+    T(){ // resolve T from (angle, distance/R), clamped outside the circle and inside the canvas
+      let T={x:cx+Math.cos(this.tAng)*Math.max(1.15,this.tK)*R,
+             y:cy+Math.sin(this.tAng)*Math.max(1.15,this.tK)*R};
+      T.x=Math.min(W-16,Math.max(16,T.x));
+      T.y=Math.min(H-16,Math.max(16,T.y));
+      const v=sub(T,{x:cx,y:cy});
+      if(Math.hypot(v.x,v.y) < 1.15*R){
+        const u=unit(v);
+        T={x:cx+u.x*1.15*R, y:cy+u.y*1.15*R};
+      }
+      return T;
+    },
+    geo(){
+      const O={x:cx,y:cy}, T=this.T();
+      const v=sub(T,O), d=Math.hypot(v.x,v.y), phi=Math.atan2(v.y,v.x);
+      const b=Math.acos(Math.min(1,R/d));
+      return {O,T, A:pt(phi+b), B:pt(phi-b), d};
+    },
+    handles(){ return [{id:'T',p:this.T()}]; },
+    drag(id,m){
+      const v=sub(m,{x:cx,y:cy});
+      this.tAng=Math.atan2(v.y,v.x);
+      this.tK=Math.max(1.15, Math.hypot(v.x,v.y)/R);
+      const T=this.T(), v2=sub(T,{x:cx,y:cy});   // re-derive after bounds clamping
+      this.tAng=Math.atan2(v2.y,v2.x);
+      this.tK=Math.hypot(v2.x,v2.y)/R;
+    },
+    draw(){
+      const g=this.geo(), U=5/R;   // circle radius = 5 units
+      circleOutline();
+      line(g.O,g.T,COL.muted,1.2,.5,[5,5]);
+      line(g.O,g.A,COL.muted,1.5,.9,[5,4]);
+      line(g.O,g.B,COL.muted,1.5,.9,[5,4]);
+      line(g.T,g.A,COL.orange,2.4);
+      line(g.T,g.B,COL.orange,2.4);
+      rightAngleMark(g.A,unit(sub(g.O,g.A)),unit(sub(g.T,g.A)),10,COL.teal);
+      rightAngleMark(g.B,unit(sub(g.O,g.B)),unit(sub(g.T,g.B)),10,COL.teal);
+      const self=this;
+      function lenLabel(Pt,Qt,txt){
+        const mid={x:(Pt.x+Qt.x)/2, y:(Pt.y+Qt.y)/2};
+        let n=unit({x:-(Qt.y-Pt.y), y:Qt.x-Pt.x});
+        if(dot(n,sub(mid,g.O))<0) n={x:-n.x,y:-n.y};
+        haloText(txt, mid.x+n.x*14, mid.y+n.y*14, COL.orange, '600 12.5px Georgia, serif');
+      }
+      lenLabel(g.T,g.A,'TA = '+(Math.hypot(g.T.x-g.A.x,g.T.y-g.A.y)*U).toFixed(2));
+      lenLabel(g.T,g.B,'TB = '+(Math.hypot(g.T.x-g.B.x,g.T.y-g.B.y)*U).toFixed(2));
+      smallDot(g.O); labelP('O',g.O,unit(sub(g.O,g.T)),14);
+      smallDot(g.A); labelP('A',g.A,unit(sub(g.A,g.O)),15);
+      smallDot(g.B); labelP('B',g.B,unit(sub(g.B,g.O)),15);
+      handleDot(g.T); labelP('T',g.T,unit(sub(g.T,g.O)),16);
+    },
+    readout(){
+      const g=this.geo(), U=5/R;
+      const la=Math.hypot(g.T.x-g.A.x,g.T.y-g.A.y)*U;
+      const lb=Math.hypot(g.T.x-g.B.x,g.T.y-g.B.y)*U;
+      return '<span class="o">TA</span> = <span class="o">TB</span> → '+
+        '<span class="o">'+la.toFixed(2)+'</span> = <span class="o">'+lb.toFixed(2)+'</span>'+
+        okTick(Math.abs(la-lb)<0.01)+
+        '<br><span class="k">lengths in units (radius = 5) · OA ⊥ TA and OB ⊥ TB · drag T anywhere outside</span>';
+    }
+  },
+
+  // 7 ── alternate segment theorem
+  {
+    label:'Alternate segment',
+    statement:'<b>Tangent–chord angle = angle in the alternate segment</b> — the angle between tangent SP and chord PQ equals ∠PRQ measured in the segment on the other side of the chord.',
+    init(){ this.aP=0.50*Math.PI; this.aQ=0.00; this.aR=1.40*Math.PI; },
+    handles(){ return [{id:'P',p:pt(this.aP)},{id:'Q',p:pt(this.aQ)},{id:'R',p:pt(this.aR)}]; },
+    drag(id,m){
+      const a=angOf(m);
+      if(id==='P')      this.aP=clampAway(a,[this.aQ,this.aR],MS);
+      else if(id==='Q') this.aQ=clampAway(a,[this.aP,this.aR],MS);
+      else              this.aR=clampAway(a,[this.aP,this.aQ],MS);
+    },
+    geo(){
+      const P=pt(this.aP), Q=pt(this.aQ), Rr=pt(this.aR);
+      const phi=Math.abs(sweepAvoiding(this.aP,this.aQ,this.aR)); // arc PQ not containing R
+      const t0={x:-Math.sin(this.aP), y:Math.cos(this.aP)};       // tangent direction at P
+      const dq=unit(sub(Q,P));                                    // chord direction
+      const g0=Math.acos(Math.max(-1,Math.min(1,dot(t0,dq))));
+      // of the two tangent rays at P, exactly one makes the angle φ/2 with the chord —
+      // that ray's angle opens on the opposite side of PQ from R (the alternate segment's twin)
+      let t,g;
+      if(Math.abs(g0-phi/2) <= Math.abs(Math.PI-g0-phi/2)){ t=t0; g=g0; }
+      else { t={x:-t0.x,y:-t0.y}; g=Math.PI-g0; }
+      const S ={x:P.x+t.x*R*0.85, y:P.y+t.y*R*0.85};
+      const S2={x:P.x-t.x*R*0.60, y:P.y-t.y*R*0.60};
+      return {P,Q,Rr,phi,t,g,S,S2};
+    },
+    draw(){
+      const g=this.geo();
+      circleOutline();
+      segFill(this.aP,this.aQ,this.aR,COL.plum);   // the alternate segment (contains R)
+      line(g.S2,g.S,COL.muted,1.6,.8);             // the full tangent line
+      line(g.P,g.S,COL.plum,2.4);                  // the ray forming the tangent–chord angle
+      line(g.P,g.Q,COL.ink,2.2,.85);               // chord
+      line(g.Rr,g.P,COL.plum,2); line(g.Rr,g.Q,COL.plum,2);
+      const s1=angleSector(g.P,g.S,g.Q,26,COL.plum);
+      angleValue(g.P,s1.a1,s1.sw,g.g*DEG,COL.plum,26);
+      const s2=angleSector(g.Rr,g.P,g.Q,26,COL.plum);
+      angleValue(g.Rr,s2.a1,s2.sw,angAt(g.Rr,g.P,g.Q)*DEG,COL.plum,26);
+      labelP('S',g.S,g.t,12);
+      handleDot(g.P);  labelOnCircle('P',this.aP);
+      handleDot(g.Q);  labelOnCircle('Q',this.aQ);
+      handleDot(g.Rr); labelOnCircle('R',this.aR);
+    },
+    readout(){
+      const g=this.geo();
+      const tc=g.g*DEG, ins=angAt(g.Rr,g.P,g.Q)*DEG;
+      return '<span class="p">∠SPQ</span> (tangent–chord) = <span class="p">∠PRQ</span> → '+
+        '<span class="p">'+fmt(tc)+'°</span> = <span class="p">'+fmt(ins)+'°</span>'+
+        okTick(Math.abs(tc-ins)<0.25)+
+        '<br><span class="k">SP touches the circle only at P · R sits in the shaded alternate segment</span>';
+    }
+  }
+  ];
+
+  // ---- shell: picker, statement, redraw -------------------------------
+  let cur=0;
+  const btns=[];
+  scenes.forEach((s,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent=s.label;
+    b.addEventListener('click',()=>select(i));
+    picker.appendChild(b); btns.push(b);
+  });
+  function select(i){
+    cur=i;
+    btns.forEach((b,j)=>b.classList.toggle('on',j===i));
+    stmt.innerHTML=scenes[i].statement;
+    redraw();
+  }
+  resetBtn.addEventListener('click',()=>{ scenes[cur].init(); redraw(); });
+
+  function draw(){
+    layout();
+    ctx.clearRect(0,0,W,H);
+    scenes[cur].draw();
+    ro.innerHTML=scenes[cur].readout();
+  }
+  let raf=0;
+  function redraw(){ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; draw(); }); }
+
+  // ---- pointer input --------------------------------------------------
+  function xy(e){
+    const r=cv.getBoundingClientRect();
+    return {x:e.clientX-r.left, y:e.clientY-r.top};
+  }
+  let dragId=null;
+  function hitAt(m){
+    let best=null, bd=GRAB;
+    for(const h of scenes[cur].handles()){
+      const d=Math.hypot(h.p.x-m.x, h.p.y-m.y);
+      if(d<=bd){ bd=d; best=h.id; }
+    }
+    return best;
+  }
+  cv.addEventListener('pointerdown', e=>{
+    layout();
+    const m=xy(e), id=hitAt(m);
+    if(!id) return;
+    dragId=id;
+    cv.setPointerCapture(e.pointerId);
+    cv.classList.add('drag');
+    scenes[cur].drag(id,m);
+    redraw();
+  });
+  cv.addEventListener('pointermove', e=>{
+    if(dragId){ scenes[cur].drag(dragId,xy(e)); redraw(); return; }
+    cv.classList.toggle('pt', !!hitAt(xy(e)));
+  });
+  function endDrag(){ dragId=null; cv.classList.remove('drag'); }
+  cv.addEventListener('pointerup', endDrag);
+  cv.addEventListener('pointercancel', endDrag);
+
+  // ---- boot -----------------------------------------------------------
+  scenes.forEach(s=>s.init());
+  resize();
+  select(0);
+})();
+</script>
+</body>
+</html>
