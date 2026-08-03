@@ -74,6 +74,9 @@ interface StudentContact {
 interface ScheduleData {
   weekStart: string;
   weekEnd: string;
+  // Sec-capacity toggle state (null = off). Slot capacities below are already
+  // EFFECTIVE values — the server applies the cap before responding.
+  secCap?: number | null;
   slots: Slot[];
   enrollmentsBySlot: Record<string, string[]>;
   // Same entries with tenure dates — ghosts are gated per DAY with this (a mid-week
@@ -1861,6 +1864,27 @@ export default function SchedulePage() {
     toastTimerRef.current = setTimeout(() => setToast(null), 3000);
   }
 
+  // Sec-capacity toggle: caps NEW bookings into Secondary slots at 5 while ON.
+  // Existing enrollments/lessons are untouched; OFF restores stored capacities.
+  async function toggleSecCap() {
+    const next = data?.secCap != null ? null : 5;
+    try {
+      const res = await fetch('/api/admin/capacity-override', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secCap: next }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || 'Failed to update Sec cap');
+      showToast('success', next != null
+        ? `✓ Sec cap ${next} ON — new bookings capped; existing classes untouched`
+        : '✓ Sec cap off — stored capacities apply');
+      await fetchSchedule(monday);
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed');
+    }
+  }
+
   // Add a recurring weekly slot for a student: creates an Active enrollment +
   // generates 9 weeks of Regular lessons (server-side).
   async function submitAddWeeklySlot() {
@@ -1869,16 +1893,31 @@ export default function SchedulePage() {
     if (!addSlotModal.startDate) { showToast('error', 'Pick a start date'); return; }
     setAddSlotSubmitting(true);
     try {
-      const res = await fetch('/api/admin-schedule/add-weekly-slot', {
+      const payload = {
+        studentId: addSlotModal.studentId,
+        slotId: addSlotModal.slot.id,
+        startDate: addSlotModal.startDate,
+      };
+      let res = await fetch('/api/admin-schedule/add-weekly-slot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId: addSlotModal.studentId,
-          slotId: addSlotModal.slot.id,
-          startDate: addSlotModal.startDate,
-        }),
+        body: JSON.stringify(payload),
       });
-      const json = await res.json().catch(() => ({}));
+      let json = await res.json().catch(() => ({}));
+      // Sec-cap gate: admin may override after confirming (same pattern as a
+      // full-slot reschedule). Other 409s (duplicate enrollment) fall through.
+      if (res.status === 409 && json.secCapApplied) {
+        if (!window.confirm(`${json.error} — ${json.currentCount}/${json.capacity} enrolled.\nAdd anyway (admin override)?`)) {
+          setAddSlotSubmitting(false);
+          return;
+        }
+        res = await fetch('/api/admin-schedule/add-weekly-slot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, force: true }),
+        });
+        json = await res.json().catch(() => ({}));
+      }
       if (!res.ok) throw new Error(json.error || 'Failed to add weekly slot');
       setAddSlotModal(null);
       showToast('success', `✓ Added — ${json.lessonsCreated} lesson${json.lessonsCreated !== 1 ? 's' : ''} generated`);
@@ -1941,12 +1980,26 @@ export default function SchedulePage() {
         );
         if (!confirmed) { setSubmitting(false); return; }
         // Permanent slot switch: cancel future lessons, create new ones, update enrollment
-        const res = await fetch('/api/admin-schedule/switch', {
+        let res = await fetch('/api/admin-schedule/switch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonId: lesson.id, newSlotId: toSlotId, switchDate: toDate }),
         });
-        const json = await res.json();
+        let json = await res.json();
+        // Sec-cap gate on the target slot — admin may override after confirming.
+        if (res.status === 409 && json.secCapApplied) {
+          if (!window.confirm(`${json.error} — ${json.currentCount}/${json.capacity} enrolled.\nSwitch anyway (admin override)?`)) {
+            setModalError(`Target slot full — Sec cap ${json.secCapApplied} active (${json.currentCount}/${json.capacity})`);
+            setSubmitting(false);
+            return;
+          }
+          res = await fetch('/api/admin-schedule/switch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonId: lesson.id, newSlotId: toSlotId, switchDate: toDate, force: true }),
+          });
+          json = await res.json();
+        }
         if (!res.ok) throw new Error(json.error || 'Switch failed');
         setRescheduleModal(null);
         await fetchSchedule(monday);
@@ -3057,6 +3110,17 @@ export default function SchedulePage() {
             roster mode too now that the roster reflects the VIEWED week (so a
             past-week roster needs a one-tap way back to the present). */}
         <div className="view-tabs-side view-tabs-right">
+          {data && (
+            <button
+              className={`today-pill-btn seccap-pill ${data.secCap != null ? 'on' : ''}`}
+              onClick={toggleSecCap}
+              title={data.secCap != null
+                ? `Sec class cap ${data.secCap} is ON — new bookings into Secondary slots are capped at ${data.secCap}. Existing classes are untouched. Tap to turn off.`
+                : 'Cap NEW bookings into Secondary slots at 5 (smaller classes). Existing classes untouched. Tap to turn on.'}
+            >
+              {data.secCap != null ? `Sec cap ${data.secCap} ✓` : 'Sec cap'}
+            </button>
+          )}
           <button className="today-pill-btn" onClick={goToToday} title="Go to this week">
             {viewMode === 'roster' ? 'This week' : 'Today'}
           </button>
@@ -4648,14 +4712,23 @@ body {
   white-space: nowrap;
 }
 .today-pill-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+/* Sec-capacity toggle pill — amber while the cap is ON */
+.today-pill-btn.seccap-pill.on {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+.today-pill-btn.seccap-pill.on:hover { background: #fde68a; border-color: #d97706; }
 /* Voice-log header button: emoji-only on narrow screens */
 @media (max-width: 767px) {
   .voice-log-label { display: none; }
 }
-/* Hidden on desktop — the date strip handles navigation there */
+/* Today pill hidden on desktop — the date strip handles navigation there. The
+   Sec-cap pill is the exception (the toggle must be reachable on desktop too);
+   both flex spacers stay visible so the tabs remain centred. */
 @media (min-width: 768px) {
   .today-pill-btn { display: none; }
-  .view-tabs-side { display: none; }
+  .today-pill-btn.seccap-pill { display: inline-block; }
 }
 .date-pill {
   flex-shrink: 0;

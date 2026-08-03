@@ -9,6 +9,7 @@ import { sendWelcomeEmail } from '@/lib/welcome-email';
 import { displaySpanMonth } from '@/lib/invoice-month';
 import { firstInvoiceLessonDates } from '@/lib/billing-math';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
+import { SEC_CAP_SETTING, parseSecCapOverride, secEnrollmentBlocked } from '@/lib/capacity-override';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -117,6 +118,33 @@ export async function POST(request: NextRequest) {
         }
       } catch (err) {
         console.error('[signup] Slot validation failed (non-fatal, continuing):', (err as Error).message);
+      }
+    }
+
+    // Step 1b-ii: Sec-capacity toggle — when the override is ON, a Secondary
+    // slot already at the effective cap takes no NEW signups (existing
+    // enrollments untouched). No server-side capacity gate exists otherwise
+    // (fullness is curated at link-minting time), so toggle-off behavior is
+    // unchanged. The gate is a HARD stop when it fires, but any lookup failure
+    // fails open like the other validations — a Settings hiccup must not block
+    // a legitimate signup.
+    if (slotIds.length > 0) {
+      try {
+        const settings = await at('Settings',
+          `?filterByFormula=${encodeURIComponent(`{Setting Name}='${SEC_CAP_SETTING}'`)}&maxRecords=1`);
+        const secCap = parseSecCapOverride(settings.records?.[0]?.fields?.['Value'] ?? null);
+        if (secCap != null) {
+          const slotRec = await at('Slots', `/${slotIds[0]}`);
+          const f = slotRec.fields || {};
+          const enrolled = (f['Enrolled Count'] as number) ?? 0;
+          if (secEnrollmentBlocked(enrolled, f['Level'], secCap)) {
+            return NextResponse.json({
+              error: 'This class is currently at full capacity. Please contact Adrian directly to check availability or join the waitlist.',
+            }, { status: 409 });
+          }
+        }
+      } catch (err) {
+        console.error('[signup] Sec-cap check failed (non-fatal, continuing):', (err as Error).message);
       }
     }
 

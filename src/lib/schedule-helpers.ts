@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminSession, ADMIN_SESSION_COOKIE } from '@/lib/admin-session';
 import { nextDayISO } from '@/lib/billing-math';
+import { SEC_CAP_SETTING, parseSecCapOverride } from '@/lib/capacity-override';
 
 /** Number of days within which a lesson's progress fields may be edited. */
 export const EDIT_WINDOW_DAYS = 14;
@@ -99,5 +100,22 @@ export async function findStudentSlotConflict(
     }
   }
   return null;
+}
+
+/**
+ * Active Sec-capacity override (null = off). Read fresh on each booking check —
+ * one tiny Settings query; failure means "no override" so bookings never break
+ * on a Settings hiccup.
+ */
+export async function fetchSecCapOverride(): Promise<number | null> {
+  try {
+    const data = await airtableRequest(
+      'Settings',
+      `?filterByFormula=${encodeURIComponent(`{Setting Name}='${SEC_CAP_SETTING}'`)}&maxRecords=1`
+    );
+    return parseSecCapOverride(data.records?.[0]?.fields?.['Value'] ?? null);
+  } catch {
+    return null;
+  }
 }
 

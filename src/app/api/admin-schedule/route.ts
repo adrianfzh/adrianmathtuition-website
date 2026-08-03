@@ -5,6 +5,7 @@ import { resolveActiveExamType, ExamType } from '@/lib/exam-season';
 import { subjectsFromRevisionLineItems, assignRevisionSessions } from '@/lib/revision-sessions';
 import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
 import { cachedScheduleStatic } from '@/lib/schedule-static-cache';
+import { SEC_CAP_SETTING, parseSecCapOverride, effectiveCapacity } from '@/lib/capacity-override';
 
 export const runtime = 'nodejs';
 
@@ -83,7 +84,7 @@ export async function GET(req: NextRequest) {
       try { return await fetchAll('Lessons', baseQuery + `&fields[]=Booked Via`); }
       catch { return fetchAll('Lessons', baseQuery); }
     })(),
-    airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`{Setting Name}='exam_season_override'`)}&maxRecords=1`).catch(() => ({ records: [] })),
+    airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`OR({Setting Name}='exam_season_override',{Setting Name}='${SEC_CAP_SETTING}')`)}&maxRecords=2`).catch(() => ({ records: [] })),
     // Current topics ({Current}=1) AND planned next-lesson topics (no Started
     // date) — the chip shows both. Key is -v2: the old cached shape lacked the
     // Current/Started fields this split needs.
@@ -114,12 +115,21 @@ export async function GET(req: NextRequest) {
   ]);
 
   // Resolve exam season immediately (needed to include the exams fetch in stage 2).
+  // The Settings fetch now carries BOTH rows — pick each by name.
+  const settingsByName: Record<string, string> = {};
+  for (const r of settingsData.records ?? []) {
+    const name = r.fields?.['Setting Name'];
+    if (name) settingsByName[name] = r.fields?.['Value'] ?? '';
+  }
   let stage1ForceOn: ExamType | null = null;
   try {
-    const v = JSON.parse(settingsData.records?.[0]?.fields?.['Value'] || '{}');
+    const v = JSON.parse(settingsByName['exam_season_override'] || '{}');
     if (['WA1', 'WA2', 'WA3', 'EOY'].includes(v.forceOn)) stage1ForceOn = v.forceOn as ExamType;
   } catch {}
   const resolvedExamType = resolveActiveExamType(stage1ForceOn);
+  // Sec-capacity toggle: slots below carry EFFECTIVE capacities so every client
+  // surface (roster counts, full badges, slot pickers) follows automatically.
+  const secCap = parseSecCapOverride(settingsByName[SEC_CAP_SETTING] ?? null);
 
   // Split out cancelled lessons — they don't belong in the main lessons array
   // (which the grid renders), but the UI needs them to replace ghost chips.
@@ -244,8 +254,8 @@ export async function GET(req: NextRequest) {
       dayName,
       time: r.fields['Time'] || '',
       level: r.fields['Level'] || '',
-      capacity: r.fields['Normal Capacity'] || 0,
-      makeupCapacity: r.fields['Makeup Capacity'] ?? null,
+      capacity: effectiveCapacity(r.fields['Normal Capacity'] || 0, r.fields['Level'], secCap) ?? 0,
+      makeupCapacity: effectiveCapacity(r.fields['Makeup Capacity'] ?? null, r.fields['Level'], secCap),
       enrolledCount: r.fields['Enrolled Count'] || 0,
     };
   });
@@ -265,8 +275,8 @@ export async function GET(req: NextRequest) {
         dayName,
         time: r.fields['Time'] || '',
         level: r.fields['Level'] || '',
-        capacity: r.fields['Normal Capacity'] || 0,
-        makeupCapacity: r.fields['Makeup Capacity'] ?? null,
+        capacity: effectiveCapacity(r.fields['Normal Capacity'] || 0, r.fields['Level'], secCap) ?? 0,
+        makeupCapacity: effectiveCapacity(r.fields['Makeup Capacity'] ?? null, r.fields['Level'], secCap),
         enrolledCount: r.fields['Enrolled Count'] || 0,
       });
     }
@@ -506,6 +516,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     weekStart,
     weekEnd,
+    secCap,
     slots,
     enrollmentsBySlot,
     enrollmentTenureBySlot,

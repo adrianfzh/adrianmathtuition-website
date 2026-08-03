@@ -4,7 +4,9 @@ import {
   verifyAdminAuth,
   countLessonsInSlot,
   findStudentSlotConflict,
+  fetchSecCapOverride,
 } from '@/lib/schedule-helpers';
+import { effectiveCapacity } from '@/lib/capacity-override';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
 
@@ -70,19 +72,29 @@ export async function POST(req: NextRequest) {
     // Ad-hoc = a deliberately-scheduled one-off billable session; skip the makeup
     // capacity check (like Revision Makeup) so it's never blocked by a full slot.
     if (type !== 'Revision Makeup' && type !== 'Ad-hoc') {
-      const makeupCapacity: number | null = slotFields['Makeup Capacity'] ?? null;
+      const storedMakeupCapacity: number | null = slotFields['Makeup Capacity'] ?? null;
 
-      if (makeupCapacity == null) {
+      if (storedMakeupCapacity == null) {
         return NextResponse.json(
           { error: 'Target slot has no Makeup Capacity set' },
           { status: 400 }
         );
       }
 
+      // Sec-capacity toggle: lowers the effective cap on Secondary slots for
+      // NEW bookings only (already-booked lessons are untouched).
+      const secCap = await fetchSecCapOverride();
+      const makeupCapacity = effectiveCapacity(storedMakeupCapacity, slotFields['Level'], secCap)!;
+
       const currentCount = await countLessonsInSlot(slotId, date);
       if (currentCount >= makeupCapacity) {
         return NextResponse.json(
-          { error: 'Slot full', currentCount, capacity: makeupCapacity },
+          {
+            error: makeupCapacity < storedMakeupCapacity ? `Slot full (Sec cap ${secCap} active)` : 'Slot full',
+            currentCount,
+            capacity: makeupCapacity,
+            ...(makeupCapacity < storedMakeupCapacity ? { secCapApplied: secCap } : {}),
+          },
           { status: 409 }
         );
       }

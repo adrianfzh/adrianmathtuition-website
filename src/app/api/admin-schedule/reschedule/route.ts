@@ -8,7 +8,9 @@ import {
   verifyAdminAuth,
   countLessonsInSlot,
   findStudentSlotConflict,
+  fetchSecCapOverride,
 } from '@/lib/schedule-helpers';
+import { effectiveCapacity } from '@/lib/capacity-override';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
@@ -67,14 +69,19 @@ export async function POST(req: NextRequest) {
     // 2. Fetch target slot
     const targetSlot = await airtableRequest('Slots', `/${newSlotId}`);
     const targetFields = targetSlot.fields;
-    const makeupCapacity: number | null = targetFields['Makeup Capacity'] ?? null;
+    const storedMakeupCapacity: number | null = targetFields['Makeup Capacity'] ?? null;
 
-    if (makeupCapacity == null) {
+    if (storedMakeupCapacity == null) {
       return NextResponse.json(
         { error: 'Target slot has no Makeup Capacity set' },
         { status: 400 }
       );
     }
+
+    // Sec-capacity toggle: lowers the effective cap on Secondary slots for NEW
+    // bookings (force still overrides, same as a genuinely full slot).
+    const secCap = await fetchSecCapOverride();
+    const makeupCapacity = effectiveCapacity(storedMakeupCapacity, targetFields['Level'], secCap)!;
 
     // 3. Capacity + away-date checks (both skipped when the admin forces an override)
     const { ranges: blockedRanges } = await fetchBlockedRecord();
@@ -88,7 +95,12 @@ export async function POST(req: NextRequest) {
     const currentCount = await countLessonsInSlot(newSlotId, newDate);
     if (!force && currentCount >= makeupCapacity) {
       return NextResponse.json(
-        { error: 'Slot full', currentCount, capacity: makeupCapacity },
+        {
+          error: makeupCapacity < storedMakeupCapacity ? `Slot full (Sec cap ${secCap} active)` : 'Slot full',
+          currentCount,
+          capacity: makeupCapacity,
+          ...(makeupCapacity < storedMakeupCapacity ? { secCapApplied: secCap } : {}),
+        },
         { status: 409 }
       );
     }
