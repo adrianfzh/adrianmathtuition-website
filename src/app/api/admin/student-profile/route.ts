@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
   // both come from one query, and reschedule destinations are included.
   const windowStart = (() => { const d = new Date(today + 'T00:00:00'); d.setMonth(d.getMonth() - 6); return d.toISOString().slice(0, 10); })();
   const lessonsData = await airtableRequestAll('Lessons',
-    `?filterByFormula=${encodeURIComponent(`{Date}>='${windowStart}'`)}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&fields[]=Mastery&sort[0][field]=Date&sort[0][direction]=asc`);
+    `?filterByFormula=${encodeURIComponent(`{Date}>='${windowStart}'`)}&fields[]=Student&fields[]=Slot&fields[]=Date&fields[]=Type&fields[]=Status&fields[]=Notes&fields[]=Rescheduled Lesson ID&fields[]=Is Revision Makeup&fields[]=Mastery&fields[]=Topics Covered&fields[]=Topics Free Text&fields[]=Homework Returned&fields[]=Progress Logged&fields[]=Mood&sort[0][field]=Date&sort[0][direction]=asc`);
   const mine = lessonsData.records.filter((r: any) => r.fields['Student']?.[0] === id);
 
   // A makeup lesson = a reschedule destination OR a revision makeup. Computed up
@@ -164,6 +164,60 @@ export async function GET(req: NextRequest) {
     return r ? { date: r.fields['Date'] || '', mastery: (r.fields['Mastery'] || '') as string } : null;
   })();
 
+  // ── Progress (Phase 3) — 90-day aggregates + recent logged lessons ─────────
+  // Computed from the same window fetch (no extra Airtable call). Attendance
+  // counts each delivered/missed occurrence once: reschedule DESTINATION records
+  // carry the Completed/Absent outcome, source records sit at 'Rescheduled' and
+  // are excluded. Homework Returned is per lesson record (Yes/Partial/No).
+  const progress = (() => {
+    const d90 = (() => { const d = new Date(today + 'T00:00:00'); d.setDate(d.getDate() - 90); return d.toISOString().slice(0, 10); })();
+    const past90 = mine.filter((r: any) => { const dt = r.fields['Date'] || ''; return dt >= d90 && dt <= today; });
+    let attended = 0, missed = 0;
+    const homework = { yes: 0, partial: 0, no: 0 };
+    const mastery = { strong: 0, ok: 0, slow: 0 };
+    for (const r of past90) {
+      const st = r.fields['Status'] || '';
+      if (st === 'Completed') attended++; else if (st === 'Absent') missed++;
+      const hw = (r.fields['Homework Returned'] || '').toString().toLowerCase();
+      if (hw === 'yes') homework.yes++; else if (hw === 'partial') homework.partial++; else if (hw === 'no') homework.no++;
+      const m = (r.fields['Mastery'] || '').toString();
+      if (m === 'Strong') mastery.strong++; else if (m === 'OK') mastery.ok++; else if (m === 'Slow') mastery.slow++;
+    }
+    const hwTotal = homework.yes + homework.partial + homework.no;
+    // Topics Covered is a JSON array of canonical names; Topics Free Text a plain string.
+    const topicsOf = (r: any): string => {
+      const raw = (r.fields['Topics Covered'] || '').toString();
+      let t: string[] = [];
+      if (raw) { try { const j = JSON.parse(raw); t = Array.isArray(j) ? j.map(String) : [raw]; } catch { t = [raw]; } }
+      const free = (r.fields['Topics Free Text'] || '').toString().trim();
+      if (free) t.push(free);
+      return t.join(', ');
+    };
+    const recent = mine
+      .filter((r: any) => (r.fields['Date'] || '') <= today && (r.fields['Status'] === 'Completed' || r.fields['Progress Logged'] === true))
+      .sort((a: any, b: any) => (b.fields['Date'] || '').localeCompare(a.fields['Date'] || ''))
+      .slice(0, 12)
+      .map((r: any) => ({
+        id: r.id,
+        date: r.fields['Date'] || '',
+        type: r.fields['Type'] || 'Regular',
+        slotId: r.fields['Slot']?.[0] || null,
+        mastery: (r.fields['Mastery'] || '') as string,
+        mood: (r.fields['Mood'] || '') as string,
+        topics: topicsOf(r),
+        progressLogged: r.fields['Progress Logged'] === true,
+      }));
+    return {
+      attendancePct: attended + missed ? Math.round((attended / (attended + missed)) * 100) : null,
+      attended,
+      due: attended + missed,
+      homeworkPct: hwTotal ? Math.round((homework.yes / hwTotal) * 100) : null,
+      homework,
+      mastery,
+      recent,
+    };
+  })();
+
   // Invoices for this student — match in JS. `Line Items Extra` is needed to
   // strip the carry-forward lump when computing the true per-month breakdown.
   const invData = await airtableRequestAll('Invoices',
@@ -239,6 +293,7 @@ export async function GET(req: NextRequest) {
     attendance,
     makeups,
     lastLesson,
+    progress,
     invoices,
     payments,
     sentInvoices,

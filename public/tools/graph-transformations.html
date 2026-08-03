@@ -18,6 +18,7 @@
     --accent: #4cc2ff;
     --baseline: rgba(255, 217, 61, 0.45);
     --good: #51cf66;
+    --jc: #c792ea;
   }
   html, body {
     background: var(--bg);
@@ -130,6 +131,36 @@
     color: var(--accent); font-family: ui-monospace, monospace;
     background: transparent; padding: 0 2px;
   }
+
+  /* JC transforms row */
+  .jc-row {
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    margin: -8px 0 20px; flex-wrap: wrap;
+  }
+  .jc-tag {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-dim); margin-right: 4px;
+  }
+  .jc-btn {
+    background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; min-width: 60px;
+  }
+  .jc-btn:hover { color: var(--text); }
+  .jc-btn.active {
+    background: var(--jc); color: var(--bg); border-color: var(--jc); font-weight: 600;
+  }
+
+  /* JC rule caption under the equation */
+  .equation.with-caption { border-bottom: none; margin-bottom: 0; padding-bottom: 4px; }
+  .jc-caption {
+    text-align: center; padding: 0 8px 14px;
+    border-bottom: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .jc-caption .jc-rule { font-size: 13px; color: var(--text); }
+  .jc-caption .jc-order { font-size: 11.5px; color: var(--text-dim); margin-top: 4px; }
+
+  .swatch-dot { width: 10px !important; height: 10px !important; border-radius: 50% !important; }
 </style>
 </head>
 <body>
@@ -137,12 +168,14 @@
 <div class="container">
   <header>
     <h1>Graph Transformations Explorer</h1>
-    <p class="subtitle">Pick a base function f(x) and adjust a, b, c, d to see y = a · f(b(x + c)) + d in action</p>
+    <p class="subtitle">Pick a base function f(x), adjust a, b, c, d to see y = a · f(b(x + c)) + d — then apply a JC transform to the result</p>
   </header>
 
   <div class="fn-row">
     <button class="fn-btn active" data-fn="square">f(x) = x²</button>
+    <button class="fn-btn" data-fn="quadDown">f(x) = x² − 2</button>
     <button class="fn-btn" data-fn="cube">f(x) = x³</button>
+    <button class="fn-btn" data-fn="cubicTP">f(x) = x³ − 3x</button>
     <button class="fn-btn" data-fn="recip">f(x) = 1/x</button>
     <button class="fn-btn" data-fn="sqrt">f(x) = √x</button>
     <button class="fn-btn" data-fn="exp">f(x) = eˣ</button>
@@ -151,9 +184,22 @@
     <button class="fn-btn" data-fn="sin">f(x) = sin x</button>
   </div>
 
+  <div class="jc-row">
+    <span class="jc-tag">JC transforms</span>
+    <button class="jc-btn active" data-jc="none">None</button>
+    <button class="jc-btn" data-jc="absY">|f(x)|</button>
+    <button class="jc-btn" data-jc="absX">f(|x|)</button>
+    <button class="jc-btn" data-jc="recipY">1/f(x)</button>
+    <button class="jc-btn" data-jc="deriv">f′(x)</button>
+  </div>
+
   <div class="layout">
     <div class="canvas-wrap">
       <div class="equation" id="equation"></div>
+      <div class="jc-caption" id="jc-caption" hidden>
+        <div class="jc-rule" id="jc-rule"></div>
+        <div class="jc-order" id="jc-order"></div>
+      </div>
       <canvas id="canvas"></canvas>
       <div class="legend">
         <div class="legend-item"><div class="swatch" style="background: var(--baseline);"></div> Original f(x)</div>
@@ -223,11 +269,25 @@ let W, H;
 
 let a = 1, b = 1, c = 0, d = 0;
 let fnKey = 'square';
+let jcMode = null; // null | 'absY' | 'absX' | 'recipY' | 'deriv' — mutually exclusive
+
+// Colours for the JC layers
+const C_ORIG  = 'rgba(255, 217, 61, 0.45)'; // the curve the JC transform acts on (dashed)
+const C_TRANS = '#4cc2ff';                  // transformed curve
+const C_FLIP  = '#ff9e64';                  // |f(x)| flipped segments
+const C_SEAM  = '#ff9e64';                  // f(|x|) mirror line
+const C_ASYM  = '#ff6b6b';                  // 1/f vertical asymptotes
+const C_INV   = '#51cf66';                  // 1/f invariant points (y = ±1)
+const C_TP    = '#ffd93d';                  // turning point of f
+const C_ROOT  = '#51cf66';                  // matching root of f′
+const DASH_ORIG = [7, 5];
 
 // Each base function: {fn, label, latex, xRange, yRange}
 const fns = {
   square: { fn: x => x * x, latex: 'x^2', xRange: [-5, 5], yRange: [-3, 12] },
+  quadDown: { fn: x => x * x - 2, latex: 'x^2 - 2', xRange: [-4, 4], yRange: [-5, 8] },
   cube:   { fn: x => x * x * x, latex: 'x^3', xRange: [-3, 3], yRange: [-12, 12] },
+  cubicTP: { fn: x => x * x * x - 3 * x, latex: 'x^3 - 3x', xRange: [-3, 3], yRange: [-8, 8] },
   recip:  { fn: x => 1 / x, latex: '\\frac{1}{x}', xRange: [-5, 5], yRange: [-5, 5], hasSingularity: 0 },
   sqrt:   { fn: x => x >= 0 ? Math.sqrt(x) : NaN, latex: '\\sqrt{x}', xRange: [-2, 8], yRange: [-2, 4] },
   exp:    { fn: x => Math.exp(x), latex: 'e^x', xRange: [-3, 3], yRange: [-2, 12] },
@@ -359,30 +419,47 @@ function formatNum(n) {
   return n.toFixed(1);
 }
 
-function drawCurve(fnSpec, transform, color, width) {
-  const f = fnSpec.fn;
+function baseEval(x) { return fns[fnKey].fn(x); }
+// g(x) = a · f(b(x + c)) + d — the parameterised curve the JC transforms act on
+function gEval(x) { return a * fns[fnKey].fn(b * (x + c)) + d; }
+
+// Numerical derivative of g: central difference, one-sided at domain edges (√x, ln x)
+function derivAt(x) {
+  const h = Math.max((xMax - xMin) * 5e-4, 1e-6);
+  const yp = gEval(x + h), ym = gEval(x - h);
+  if (isFinite(yp) && isFinite(ym)) return (yp - ym) / (2 * h);
+  const yc = gEval(x);
+  if (isFinite(yc) && isFinite(yp)) return (yp - yc) / h; // forward (left domain edge)
+  if (isFinite(yc) && isFinite(ym)) return (yc - ym) / h; // backward (right domain edge)
+  return NaN;
+}
+
+// Generic curve plotter. Breaks the path on: non-finite y, off-scale jumps,
+// out-of-range y, and any x in breakXs (known vertical asymptotes — no join lines).
+function drawFn(evalY, opts) {
+  const { color, width, dash = null, breakXs = null } = opts;
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
+  if (dash) ctx.setLineDash(dash);
 
   const samples = 1500;
   const step = (xMax - xMin) / samples;
   let inPath = false;
   let prevY = null;
+  let prevX = null;
 
   ctx.beginPath();
   for (let i = 0; i <= samples; i++) {
     const x = xMin + i * step;
-    let y;
-    if (transform) {
-      // y = a * f(b * (x + c)) + d
-      const arg = b * (x + c);
-      const fy = f(arg);
-      y = a * fy + d;
-    } else {
-      y = f(x);
+    if (breakXs && prevX !== null) {
+      for (const bx of breakXs) {
+        if (prevX < bx && bx <= x) { inPath = false; prevY = null; break; }
+      }
     }
+    const y = evalY(x);
+    prevX = x;
     if (!isFinite(y)) {
       inPath = false;
       prevY = null;
@@ -402,45 +479,271 @@ function drawCurve(fnSpec, transform, color, width) {
     prevY = y;
   }
   ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+/* ---------- numeric root utilities (for asymptotes / invariants / turning points) ---------- */
+
+function dedupeXs(xs, minGap) {
+  xs.sort((p, q) => p - q);
+  const out = [];
+  for (const x of xs) {
+    if (!out.length || x - out[out.length - 1] > minGap) out.push(x);
+  }
+  return out;
+}
+
+// Sign-change roots of fn over the visible range, bisection-refined.
+// The residual check rejects pole "crossings" (e.g. 1/x jumping −∞ → +∞ is not a root).
+function scanRoots(fn, tol) {
+  const n = 1200;
+  const stepW = (xMax - xMin) / n;
+  const roots = [];
+  let px = xMin, pv = fn(xMin);
+  for (let i = 1; i <= n; i++) {
+    const x = xMin + i * stepW;
+    const v = fn(x);
+    if (isFinite(pv) && isFinite(v) && Math.sign(pv) !== Math.sign(v)) {
+      let lo = px, hi = x, vlo = pv;
+      for (let k = 0; k < 60; k++) {
+        const m = (lo + hi) / 2, vm = fn(m);
+        if (!isFinite(vm)) break;
+        if (vm !== 0 && Math.sign(vlo) !== Math.sign(vm)) hi = m;
+        else { lo = m; vlo = vm; }
+      }
+      const xr = (lo + hi) / 2;
+      const res = fn(xr);
+      if (isFinite(res) && Math.abs(res) < tol) roots.push(xr);
+    }
+    px = x; pv = v;
+  }
+  return dedupeXs(roots, stepW * 1.5);
+}
+
+// Even-multiplicity roots: the curve touches zero without a sign change (e.g. g = x²).
+// Local minima of |fn| are ternary-refined and accepted only if they truly reach ~0.
+function scanTouchRoots(fn) {
+  const n = 1200;
+  const stepW = (xMax - xMin) / n;
+  const va = [];
+  for (let i = 0; i <= n; i++) va.push(Math.abs(fn(xMin + i * stepW)));
+  const roots = [];
+  for (let i = 1; i < n; i++) {
+    if (!isFinite(va[i]) || !isFinite(va[i - 1]) || !isFinite(va[i + 1])) continue;
+    if (va[i] > 0.05 || va[i] >= va[i - 1] || va[i] > va[i + 1]) continue;
+    let lo = xMin + (i - 1) * stepW, hi = xMin + (i + 1) * stepW;
+    for (let k = 0; k < 80; k++) {
+      const m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3;
+      if (Math.abs(fn(m1)) <= Math.abs(fn(m2))) hi = m2; else lo = m1;
+    }
+    const xr = (lo + hi) / 2;
+    if (Math.abs(fn(xr)) < 1e-6) roots.push(xr);
+  }
+  return roots;
+}
+
+// Roots of g → vertical asymptotes of 1/g (odd crossings + even touch-roots)
+function findAsymptotes() {
+  const roots = scanRoots(gEval, 1e-3).concat(scanTouchRoots(gEval));
+  return dedupeXs(roots, (xMax - xMin) / 1200 * 1.5);
+}
+
+// Points where g = ±1, i.e. g = 1/g: invariant under the reciprocal transform
+function findInvariants() {
+  const pts = [];
+  for (const L of [1, -1]) {
+    for (const xr of scanRoots(x => gEval(x) - L, 1e-3)) pts.push({ x: xr, y: L });
+  }
+  return pts;
+}
+
+// Turning points of g = sign-change roots of g′
+function findTurningPoints() {
+  return scanRoots(derivAt, 0.05).filter(xr => isFinite(gEval(xr)));
+}
+
+/* ---------- JC marker drawing ---------- */
+
+function drawDot(mx, my, color) {
+  const [cx, cy] = mathToCanvas(mx, my);
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(15, 20, 25, 0.85)';
+  ctx.stroke();
+}
+
+function drawVLine(mx, color) {
+  if (mx < xMin || mx > xMax) return;
+  const [cx] = mathToCanvas(mx, 0);
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 5]);
+  ctx.beginPath();
+  ctx.moveTo(cx, 0);
+  ctx.lineTo(cx, H);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawConnector(mx, y1, y2) {
+  const [cx, cy1] = mathToCanvas(mx, y1);
+  const [, cy2] = mathToCanvas(mx, y2);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 4]);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy1);
+  ctx.lineTo(cx, cy2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawGuideY(level) {
+  if (level < yMin || level > yMax) return;
+  const [, cy] = mathToCanvas(0, level);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(81, 207, 102, 0.28)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(0, cy);
+  ctx.lineTo(W, cy);
+  ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = 'rgba(81, 207, 102, 0.75)';
+  ctx.font = '10px ui-monospace, monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('y = ' + (level === 1 ? '1' : '−1'), W - 6, cy - 4);
+}
+
+function drawSeamLine() {
+  if (xMin > 0 || xMax < 0) return;
+  drawVLine(0, C_SEAM);
+  const [cx] = mathToCanvas(0, 0);
+  ctx.fillStyle = C_SEAM;
+  ctx.font = '11px ui-monospace, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('mirror line', cx + 8, 16);
+}
+
+// Light shading between each below-axis arch of g and its reflection (the |f| flip)
+function fillFlippedLens() {
+  const samples = 1500;
+  const step = (xMax - xMin) / samples;
+  ctx.fillStyle = 'rgba(255, 158, 100, 0.10)';
+  let run = [];
+  const flush = () => {
+    if (run.length >= 2) {
+      ctx.beginPath();
+      run.forEach(([mx, my], i) => {
+        const [cx, cy] = mathToCanvas(mx, my);
+        if (i === 0) ctx.moveTo(cx, cy); else ctx.lineTo(cx, cy);
+      });
+      for (let i = run.length - 1; i >= 0; i--) {
+        const [mx, my] = run[i];
+        const [cx, cy] = mathToCanvas(mx, -my);
+        ctx.lineTo(cx, cy);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+    run = [];
+  };
+  for (let i = 0; i <= samples; i++) {
+    const x = xMin + i * step;
+    const y = gEval(x);
+    if (isFinite(y) && y < 0) run.push([x, y]); else flush();
+  }
+  flush();
+}
+
+function drawJC() {
+  if (jcMode === 'absY') {
+    fillFlippedLens();
+    drawFn(gEval, { color: C_ORIG, width: 2, dash: DASH_ORIG });
+    drawFn(x => Math.abs(gEval(x)), { color: C_TRANS, width: 3 });
+    // overdraw just the flipped segments (g < 0) in the highlight colour
+    drawFn(x => { const y = gEval(x); return y < 0 ? -y : NaN; }, { color: C_FLIP, width: 3 });
+  } else if (jcMode === 'absX') {
+    drawFn(gEval, { color: C_ORIG, width: 2, dash: DASH_ORIG });
+    drawFn(x => gEval(Math.abs(x)), { color: C_TRANS, width: 3 });
+    drawSeamLine();
+  } else if (jcMode === 'recipY') {
+    drawGuideY(1);
+    drawGuideY(-1);
+    const asym = findAsymptotes();
+    for (const r of asym) drawVLine(r, C_ASYM);
+    drawFn(gEval, { color: C_ORIG, width: 2, dash: DASH_ORIG });
+    drawFn(x => 1 / gEval(x), { color: C_TRANS, width: 3, breakXs: asym });
+    for (const p of findInvariants()) drawDot(p.x, p.y, C_INV);
+  } else if (jcMode === 'deriv') {
+    drawFn(gEval, { color: C_ORIG, width: 2, dash: DASH_ORIG });
+    drawFn(derivAt, { color: C_TRANS, width: 3 });
+    for (const xt of findTurningPoints()) {
+      const gy = gEval(xt);
+      drawConnector(xt, gy, 0);
+      drawDot(xt, gy, C_TP);
+      drawDot(xt, 0, C_ROOT);
+    }
+  }
 }
 
 function nearlyEq(x, y, tol = 0.04) { return Math.abs(x - y) < tol; }
 
-function updateEquation() {
+// Full a·f(b(v + c)) + d expression in LaTeX, with v = 'x' or '|x|' (for the f(|x|) mode)
+function buildRhsLatex(v) {
   const ar = parseFloat(a.toFixed(2));
   const br = parseFloat(b.toFixed(2));
   const cr = parseFloat(c.toFixed(2));
   const dr = parseFloat(d.toFixed(2));
-  const fLatex = fns[fnKey].latex;
 
-  // Build inner argument: b(x + c)
+  // Build inner argument: b(v + c)
   let innerArg;
-  if (nearlyEq(br, 1) && nearlyEq(cr, 0)) innerArg = 'x';
-  else if (nearlyEq(br, -1) && nearlyEq(cr, 0)) innerArg = '-x';
-  else if (nearlyEq(br, 1)) innerArg = cr > 0 ? `(x + ${cr})` : `(x - ${Math.abs(cr)})`;
-  else if (nearlyEq(cr, 0)) innerArg = `${br}x`;
-  else innerArg = `${br}(x ${cr > 0 ? '+ ' + cr : '- ' + Math.abs(cr)})`;
+  if (nearlyEq(br, 1) && nearlyEq(cr, 0)) innerArg = v;
+  else if (nearlyEq(br, -1) && nearlyEq(cr, 0)) innerArg = `-${v}`;
+  else if (nearlyEq(br, 1)) innerArg = cr > 0 ? `(${v} + ${cr})` : `(${v} - ${Math.abs(cr)})`;
+  else if (nearlyEq(cr, 0)) innerArg = `${br}${v}`;
+  else innerArg = `${br}(${v} ${cr > 0 ? '+ ' + cr : '- ' + Math.abs(cr)})`;
 
   // Substitute into f's latex template (replace x with innerArg)
+  const pw = innerArg.startsWith('(') ? innerArg : `(${innerArg})`;
   let inside;
+  let needsParens = false; // inside has a top-level + / − → parenthesise before scaling
   if (fnKey === 'recip') inside = `\\frac{1}{${innerArg}}`;
   else if (fnKey === 'sqrt') inside = `\\sqrt{${innerArg}}`;
   else if (fnKey === 'exp') inside = `e^{${innerArg}}`;
   else if (fnKey === 'ln') inside = `\\ln(${innerArg})`;
-  else if (fnKey === 'abs') inside = `|${innerArg}|`;
+  else if (fnKey === 'abs') inside = innerArg.includes('|') ? `\\left|${innerArg}\\right|` : `|${innerArg}|`;
   else if (fnKey === 'sin') inside = `\\sin(${innerArg})`;
-  else if (fnKey === 'square') inside = innerArg.startsWith('(') ? `${innerArg}^2` : `(${innerArg})^2`;
-  else if (fnKey === 'cube') inside = innerArg.startsWith('(') ? `${innerArg}^3` : `(${innerArg})^3`;
+  else if (fnKey === 'square') inside = `${pw}^2`;
+  else if (fnKey === 'cube') inside = `${pw}^3`;
+  else if (fnKey === 'quadDown') { inside = `${pw}^2 - 2`; needsParens = true; }
+  else if (fnKey === 'cubicTP') { inside = `${pw}^3 - 3${pw}`; needsParens = true; }
 
   // Apply a coefficient
   let body;
   if (nearlyEq(ar, 1)) body = inside;
-  else if (nearlyEq(ar, -1)) body = '-' + inside;
-  else body = `${ar} \\cdot ${inside}`;
+  else if (nearlyEq(ar, -1)) body = needsParens ? `-\\left(${inside}\\right)` : '-' + inside;
+  else body = needsParens ? `${ar}\\left(${inside}\\right)` : `${ar} \\cdot ${inside}`;
 
   // Apply d
-  let eq = `y = ${body}`;
-  if (!nearlyEq(dr, 0)) eq += dr > 0 ? ` + ${dr}` : ` - ${Math.abs(dr)}`;
+  let rhs = body;
+  if (!nearlyEq(dr, 0)) rhs += dr > 0 ? ` + ${dr}` : ` - ${Math.abs(dr)}`;
+  return rhs;
+}
+
+function updateEquation() {
+  let eq;
+  if (jcMode === 'absX') eq = `y = ${buildRhsLatex('|x|')}`;
+  else if (jcMode === 'absY') eq = `y = \\left|${buildRhsLatex('x')}\\right|`;
+  else if (jcMode === 'recipY') eq = `y = \\frac{1}{${buildRhsLatex('x')}}`;
+  else if (jcMode === 'deriv') eq = `y = \\frac{d}{dx}\\left[${buildRhsLatex('x')}\\right]`;
+  else eq = `y = ${buildRhsLatex('x')}`;
 
   const target = document.getElementById('equation');
   if (window.katex) {
@@ -491,15 +794,70 @@ function updateEffects() {
   }
 }
 
+const JC_INFO = {
+  absY:   { name: 'y = |f(x)|',
+            rule: '|f(x)|: parts below the x-axis reflect up; nothing else moves. Orange marks the segments that flipped.' },
+  absX:   { name: 'y = f(|x|)',
+            rule: 'f(|x|): the x ≥ 0 part is kept and mirrored to the left; the old x < 0 part is discarded.' },
+  recipY: { name: 'y = 1/f(x)',
+            rule: '1/f(x): roots of f become vertical asymptotes; asymptotes of f become roots; y = 1 and y = −1 stay fixed (f = 1/f there); big becomes small.' },
+  deriv:  { name: 'y = f′(x)',
+            rule: 'f′(x): turning points of f become roots of f′; where f increases, f′ is positive.' }
+};
+
+function updateCaption() {
+  const cap = document.getElementById('jc-caption');
+  const eqEl = document.getElementById('equation');
+  if (!jcMode) {
+    cap.hidden = true;
+    eqEl.classList.remove('with-caption');
+    return;
+  }
+  cap.hidden = false;
+  eqEl.classList.add('with-caption');
+  document.getElementById('jc-rule').textContent = JC_INFO[jcMode].rule;
+  document.getElementById('jc-order').textContent =
+    'Order matters: a, b, c, d are applied first — the JC transform acts on the whole of y = a · f(b(x + c)) + d (the dashed curve).';
+}
+
+function updateLegend() {
+  const el = document.querySelector('.legend');
+  const item = (sw, label) => `<div class="legend-item">${sw} ${label}</div>`;
+  const bar = col => `<div class="swatch" style="background:${col};"></div>`;
+  const dashBar = col => `<div class="swatch" style="background:repeating-linear-gradient(90deg, ${col} 0 5px, transparent 5px 9px);"></div>`;
+  const dotSw = col => `<div class="swatch swatch-dot" style="background:${col};"></div>`;
+  if (!jcMode) {
+    el.innerHTML =
+      item(bar('var(--baseline)'), 'Original f(x)') +
+      item(bar('var(--accent)'), 'Transformed');
+    return;
+  }
+  let extra = '';
+  if (jcMode === 'absY') extra = item(bar(C_FLIP), 'flipped segments');
+  else if (jcMode === 'absX') extra = item(dashBar(C_SEAM), 'mirror line x = 0');
+  else if (jcMode === 'recipY') extra = item(dashBar(C_ASYM), 'vertical asymptote') + item(dotSw(C_INV), 'invariant point (y = ±1)');
+  else if (jcMode === 'deriv') extra = item(dotSw(C_TP), 'turning point of f') + item(dotSw(C_ROOT), 'root of f′');
+  el.innerHTML =
+    item(dashBar('rgba(255, 217, 61, 0.75)'), 'before — y = a·f(b(x+c)) + d') +
+    item(bar('var(--accent)'), 'after — ' + JC_INFO[jcMode].name) +
+    extra;
+}
+
 function render() {
   setRange();
   ctx.clearRect(0, 0, W, H);
   drawGrid();
   drawAxes();
-  drawCurve(fns[fnKey], false, 'rgba(255, 217, 61, 0.45)', 2);
-  drawCurve(fns[fnKey], true, '#4cc2ff', 3);
+  if (jcMode) {
+    drawJC();
+  } else {
+    drawFn(baseEval, { color: C_ORIG, width: 2 });
+    drawFn(gEval, { color: C_TRANS, width: 3 });
+  }
   updateEquation();
   updateEffects();
+  updateCaption();
+  updateLegend();
 }
 
 // Slider hooks
@@ -527,6 +885,21 @@ document.querySelectorAll('.fn-btn').forEach(btn => {
   });
 });
 
+// JC transform buttons — mutually exclusive; "None" (or re-clicking the active one) turns them off
+function syncJcButtons() {
+  document.querySelectorAll('.jc-btn').forEach(b => {
+    b.classList.toggle('active', jcMode ? b.dataset.jc === jcMode : b.dataset.jc === 'none');
+  });
+}
+document.querySelectorAll('.jc-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const m = btn.dataset.jc;
+    jcMode = (m === 'none' || jcMode === m) ? null : m;
+    syncJcButtons();
+    render();
+  });
+});
+
 // Reset
 document.getElementById('reset').addEventListener('click', () => {
   a = 1; b = 1; c = 0; d = 0;
@@ -535,6 +908,8 @@ document.getElementById('reset').addEventListener('click', () => {
     document.getElementById(key + '-slider').value = init;
     document.getElementById(key + '-val').textContent = init.toFixed(1);
   });
+  jcMode = null;
+  syncJcButtons();
   render();
 });
 

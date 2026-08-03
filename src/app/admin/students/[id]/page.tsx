@@ -44,6 +44,13 @@ interface SlotOpt { id: string; label: string; level: string; }
 interface Contact { name: string; parentName: string; parentEmail: string; parentContact?: string; studentContact?: string; }
 interface MonthPayment { month: string; charge: number; paid: number; open: number; status: 'paid' | 'partial' | 'open' | 'nil'; invoices: { id: string; type: string; pdfUrl: string }[]; }
 interface PaymentSummary { months: MonthPayment[]; totalCharged: number; totalPaid: number; outstanding: number; credit: number; }
+interface ProgressRecent { id: string; date: string; type: string; slotId: string | null; mastery: string; mood: string; topics: string; progressLogged: boolean; }
+interface ProgressBlock {
+  attendancePct: number | null; attended: number; due: number;
+  homeworkPct: number | null; homework: { yes: number; partial: number; no: number };
+  mastery: { strong: number; ok: number; slow: number };
+  recent: ProgressRecent[];
+}
 interface Profile {
   student: { id: string; name: string; level: string; subjects: string[]; subjectLevel: string; status: string; juneRevision: string };
   enrollments: Enrollment[];
@@ -51,6 +58,7 @@ interface Profile {
   attendance: AttRow[];
   makeups: MakeupRow[];
   lastLesson: { date: string; mastery: string } | null;
+  progress?: ProgressBlock;
   invoices: Invoice[];
   payments: PaymentSummary;
   sentInvoices: SentInvoice[];
@@ -218,6 +226,7 @@ export default function StudentProfilePage() {
   const [addModal, setAddModal] = useState<{ slotId: string; date: string; saving: boolean } | null>(null);
   // Phase 2: lesson actions
   const [reschedModal, setReschedModal] = useState<{ lesson: UpLesson; date: string; slotId: string; saving: boolean } | null>(null);
+  const [removeModal, setRemoveModal] = useState<{ lesson: UpLesson; reason: string; saving: boolean } | null>(null);
   const [busyLesson, setBusyLesson] = useState('');
   const [openMonths, setOpenMonths] = useState<Set<string>>(new Set());   // attendance months expanded to detail
   // Phase 4: contact + exam quick-add
@@ -229,8 +238,7 @@ export default function StudentProfilePage() {
   const [examCell, setExamCell] = useState<Record<string, 'saving' | 'saved' | 'error'>>({});
   const [topicsOpen, setTopicsOpen] = useState<string | null>(null);
   const examTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  // Phase 3: progress history + lesson modal
-  const [history, setHistory] = useState<{ id: string; date: string; type: string; status: string; topicsCovered: string; mood: string; progressLogged: boolean }[]>([]);
+  // Phase 3: progress (aggregates + recent logged lessons ride data.progress) + lesson modal
   const [lessonModal, setLessonModal] = useState<LessonModalLesson | null>(null);
   const [tab, setTab] = useState<'overview' | 'billing'>('overview');
   const [glance, setGlance] = useState<Glance | null>(null);
@@ -253,12 +261,9 @@ export default function StudentProfilePage() {
     finally { setLoading(false); }
   }, [studentId]);
 
-  const fetchHistory = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/admin/progress/students/${studentId}/lessons`);
-      if (res.ok) setHistory(((await res.json()).lessons || []).filter((l: any) => l.status === 'Completed' || l.progressLogged));
-    } catch { /* non-fatal */ }
-  }, [studentId]);
+  // (The old fetchHistory hit /api/admin/progress/students/[id]/lessons, whose
+  // `{Student}='recXXX'` linked-record filter matches nothing — see CLAUDE.md
+  // gotcha — so the strip was always empty. Recent lessons now ride data.progress.)
 
   const fetchGlance = useCallback(async () => {
     try {
@@ -328,7 +333,7 @@ export default function StudentProfilePage() {
     // Signed httpOnly session (silently upgrades legacy plaintext cookies)
     ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);
-  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchHistory(); fetchGlance(); fetchExams(); fetchMarkedPapers(); } }, [authed, studentId, fetchProfile, fetchHistory, fetchGlance, fetchExams, fetchMarkedPapers]);
+  useEffect(() => { if (authed && studentId) { fetchProfile(); fetchGlance(); fetchExams(); fetchMarkedPapers(); } }, [authed, studentId, fetchProfile, fetchGlance, fetchExams, fetchMarkedPapers]);
 
   async function submitSwitch() {
     if (!switchModal || !switchModal.date || !switchModal.newSlotId) return;
@@ -394,32 +399,62 @@ export default function StudentProfilePage() {
     finally { setBusyLesson(''); }
   }
 
-  async function cancelLesson(lesson: UpLesson) {
-    if (!confirm(`Cancel the ${fmtDate(lesson.date)} lesson? This removes it from the schedule.`)) return;
-    setBusyLesson(lesson.id);
+  // Remove a lesson — the /api/admin-schedule/delete route supports exactly two
+  // actions: hard 'delete' (record gone; a reschedule destination's source lesson
+  // is restored) or 'absent' (record kept, Status='Absent', optional reason
+  // appended to Notes). The dialog offers both.
+  async function submitRemove(action: 'delete' | 'absent') {
+    if (!removeModal || removeModal.saving) return;
+    setRemoveModal({ ...removeModal, saving: true });
     try {
+      const reason = removeModal.reason.trim();
       const res = await fetch('/api/admin-schedule/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId: lesson.id, action: 'delete' }),
+        body: JSON.stringify({ lessonId: removeModal.lesson.id, action, ...(action === 'absent' && reason ? { reason } : {}) }),
       });
       if (!res.ok) throw new Error((await res.json()).error || 'Failed');
-      showToast('ok', 'Lesson cancelled');
+      setRemoveModal(null);
+      showToast('ok', action === 'delete' ? 'Lesson deleted' : 'Marked absent');
       await fetchProfile();
-    } catch (e: unknown) { showToast('err', e instanceof Error ? e.message.slice(0, 80) : 'Failed'); }
-    finally { setBusyLesson(''); }
+    } catch (e: unknown) {
+      setRemoveModal(m => m && { ...m, saving: false });
+      showToast('err', e instanceof Error ? e.message.slice(0, 80) : 'Failed');
+    }
   }
 
   async function submitReschedule() {
     if (!reschedModal || !reschedModal.date || !reschedModal.slotId) return;
     setReschedModal({ ...reschedModal, saving: true });
     try {
-      const res = await fetch('/api/admin-schedule/reschedule', {
+      const payload = { lessonId: reschedModal.lesson.id, newDate: reschedModal.date, newSlotId: reschedModal.slotId };
+      let res = await fetch('/api/admin-schedule/reschedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonId: reschedModal.lesson.id, newDate: reschedModal.date, newSlotId: reschedModal.slotId }),
+        body: JSON.stringify(payload),
       });
-      const json = await res.json();
+      let json = await res.json();
+      if (res.status === 409 && json.doubleBooked) {
+        // Same student already occupies that (date, slot) — physically
+        // impossible, so there is NO force override (same rule as
+        // /admin/schedule). Surface it and stop.
+        showToast('err', `${s?.name || 'Student'} already has a lesson in that slot on that date`);
+        setReschedModal(m => m && { ...m, saving: false });
+        return;
+      }
+      if (res.status === 409) {
+        // Full slot / away date — admin can override: confirm, then retry with force.
+        const prompt = json.blocked
+          ? `You're away on that date${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}.\nBook anyway (admin override)?`
+          : `Slot full — ${json.currentCount}/${json.capacity} booked.\nBook anyway (admin override)?`;
+        if (!window.confirm(prompt)) { setReschedModal(m => m && { ...m, saving: false }); return; }
+        res = await fetch('/api/admin-schedule/reschedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, force: true }),
+        });
+        json = await res.json();
+      }
       if (!res.ok) throw new Error(json.error || 'Failed');
       setReschedModal(null);
       showToast('ok', 'Lesson rescheduled');
@@ -841,26 +876,52 @@ export default function StudentProfilePage() {
                       {l.status !== 'Scheduled' && <button title="Reset to scheduled" style={iconBtn('#94a3b8', '#e2e8f0')} disabled={busy} onClick={() => setAttStatus(l.id, 'Scheduled')}>↺</button>}
                       {canReschedule && <button title="Reschedule" style={iconBtn('#1d4ed8', '#bfdbfe')} disabled={busy} onClick={() => setReschedModal({ lesson: l, date: '', slotId: '', saving: false })}>🔄</button>}
                       {l.type !== 'Revision Sprint' && <button title="Log progress" style={iconBtn('#7c3aed', '#e9d5ff')} disabled={busy} onClick={() => setLessonModal({ id: l.id, studentId, studentName: s.name, date: l.date, slotId: l.slotId, type: l.type })}>📝</button>}
-                      <button title="Cancel lesson" style={iconBtn('#b91c1c', '#fecaca')} disabled={busy} onClick={() => cancelLesson(l)}>🗑</button>
+                      <button title="Remove lesson…" style={iconBtn('#b91c1c', '#fecaca')} disabled={busy} onClick={() => setRemoveModal({ lesson: l, reason: '', saving: false })}>🗑</button>
                     </div>
                   </div>
                 );
               })}
             </Section>
 
-            {/* Progress history — click to log/edit progress */}
-            <Section title="Progress history" show={tab === 'overview'}>
-              {history.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No logged lessons yet.</div>}
-              {history.slice(0, 12).map(h => (
-                <button key={h.id} onClick={() => setLessonModal({ id: h.id, studentId, studentName: s.name, date: h.date, slotId: null, type: h.type })}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, width: '100%', background: 'none', border: 'none', borderBottomStyle: 'solid', cursor: 'pointer', textAlign: 'left' }}>
-                  <span style={{ width: 92, color: '#111', fontWeight: 600 }}>{fmtDate(h.date)}</span>
-                  <span style={{ flex: 1, minWidth: 0, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.topicsCovered || <span style={{ color: '#cbd5e1' }}>—</span>}</span>
-                  {h.mood && <span style={{ fontSize: 15 }}>{h.mood.split(' ')[0]}</span>}
-                  {h.progressLogged && <span title="Progress logged" style={{ color: '#16a34a', fontSize: 12 }}>●</span>}
-                  <span style={{ color: '#a78bfa', fontSize: 12 }}>📝</span>
-                </button>
-              ))}
+            {/* Progress — 90-day aggregates + recent logged lessons (tap a row to edit in LessonModal) */}
+            <Section title="Progress" show={tab === 'overview'}>
+              {(() => {
+                const p = data.progress;
+                const recent = p?.recent ?? [];
+                const masteryTotal = p ? p.mastery.strong + p.mastery.ok + p.mastery.slow : 0;
+                return (
+                  <>
+                    {p && (p.due > 0 || p.homeworkPct != null || masteryTotal > 0) && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', alignItems: 'center', background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: 10, padding: '9px 12px', marginBottom: 12, fontSize: 12.5, color: '#475569' }}>
+                        <span><span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>{p.attendancePct == null ? '—' : `${p.attendancePct}%`}</span> attendance <span style={{ color: '#94a3b8' }}>({p.attended}/{p.due})</span></span>
+                        <span><span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>{p.homeworkPct == null ? '—' : `${p.homeworkPct}%`}</span> homework <span style={{ color: '#94a3b8' }}>({p.homework.yes}✓{p.homework.partial ? ` ${p.homework.partial}◐` : ''}{p.homework.no ? ` ${p.homework.no}✗` : ''})</span></span>
+                        {masteryTotal > 0 && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                            {([['Strong', p.mastery.strong], ['OK', p.mastery.ok], ['Slow', p.mastery.slow]] as const).map(([k, n]) => n > 0 && (
+                              <span key={k} title={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: MASTERY_DOT[k], display: 'inline-block' }} />{n}
+                              </span>
+                            ))}
+                          </span>
+                        )}
+                        <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 11 }}>last 90 days</span>
+                      </div>
+                    )}
+                    {recent.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14 }}>No logged lessons yet.</div>}
+                    {recent.map(h => (
+                      <button key={h.id} onClick={() => setLessonModal({ id: h.id, studentId, studentName: s.name, date: h.date, slotId: h.slotId, type: h.type })}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: 14, width: '100%', background: 'none', border: 'none', borderBottomStyle: 'solid', cursor: 'pointer', textAlign: 'left' }}>
+                        <span style={{ width: 92, color: '#111', fontWeight: 600, flexShrink: 0 }}>{fmtDate(h.date)}</span>
+                        {h.mastery && MASTERY_DOT[h.mastery] && <span title={h.mastery} style={{ width: 9, height: 9, borderRadius: '50%', background: MASTERY_DOT[h.mastery], display: 'inline-block', flexShrink: 0 }} />}
+                        <span style={{ flex: 1, minWidth: 0, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.topics || <span style={{ color: '#cbd5e1' }}>—</span>}</span>
+                        {h.mood && <span style={{ fontSize: 15 }}>{h.mood.split(' ')[0]}</span>}
+                        {h.progressLogged && <span title="Progress logged" style={{ color: '#16a34a', fontSize: 12 }}>●</span>}
+                        <span style={{ color: '#a78bfa', fontSize: 12 }}>📝</span>
+                      </button>
+                    ))}
+                  </>
+                );
+              })()}
             </Section>
 
             {/* Exams — WA1/WA2/WA3/EOY rows for the current year, inline editable */}
@@ -1129,12 +1190,37 @@ export default function StudentProfilePage() {
         );
       })()}
 
+      {/* Remove lesson — hard-delete vs mark-absent (the two actions the delete route supports) */}
+      {removeModal && (
+        <ModalShell title="Remove lesson" onClose={() => !removeModal.saving && setRemoveModal(null)}>
+          <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 1.5 }}>
+            <strong>{fmtDate(removeModal.lesson.date)}</strong>{removeModal.lesson.slotLabel ? ` · ${removeModal.lesson.slotLabel}` : ''} · {removeModal.lesson.type}
+          </div>
+          <div style={{ fontSize: 12.5, color: '#64748b', lineHeight: 1.6, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', marginBottom: 12 }}>
+            <b>❌ Mark absent</b> — keeps the record (missed lesson, makeup owed).<br />
+            <b>🗑 Delete</b> — removes it from the schedule entirely; deleting a rescheduled/makeup lesson restores its original lesson.
+          </div>
+          <Label>Reason <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· optional, saved to Notes when marking absent</span></Label>
+          <input style={input} placeholder="e.g. sick, school event" value={removeModal.reason}
+            onChange={e => setRemoveModal({ ...removeModal, reason: e.target.value })} />
+          <div style={modalActions}>
+            <button style={btnCancel} onClick={() => setRemoveModal(null)} disabled={removeModal.saving}>Cancel</button>
+            <button style={{ ...btnCancel, color: '#b45309', borderColor: '#fcd34d' }} onClick={() => submitRemove('absent')} disabled={removeModal.saving}>
+              {removeModal.saving ? '…' : '❌ Mark absent'}
+            </button>
+            <button style={{ ...btnPrimary, background: '#b91c1c' }} onClick={() => submitRemove('delete')} disabled={removeModal.saving}>
+              {removeModal.saving ? 'Working…' : '🗑 Delete'}
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
       {/* Shared progress-logging modal */}
       {lessonModal && (
         <LessonModal
           lesson={lessonModal}
           slots={(data?.slots ?? []).map(sl => ({ id: sl.id, time: sl.label }))}
-          onClose={() => { setLessonModal(null); fetchHistory(); fetchProfile(); }}
+          onClose={() => { setLessonModal(null); fetchProfile(); }}
           onProgressLogged={() => { /* refreshed on close */ }}
         />
       )}
