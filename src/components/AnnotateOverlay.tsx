@@ -163,6 +163,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const gestureRef = useRef<{
     kind: 'maybe' | 'pan' | 'pinch';
     startT: number; maxTouches: number; moved: number;
+    // Largest touch-contact dimension seen this gesture (css px). A fingertip
+    // reports ~10–25; a resting PALM reports ~35–100 — the discriminator that
+    // keeps a palm replant from reading as a 2-finger tap (= undo) and silently
+    // deleting the previous stroke ("annotating misses a stroke", 3 Aug 2026).
+    maxContact: number;
     lastX: number; lastY: number;
     samples: { t: number; x: number; y: number }[];
     pinch?: { d0: number; zoom0: number; cx0: number; cy0: number; docX: number; docY: number };
@@ -766,21 +771,23 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       touchesRef.current.set(e.pointerId, cssPos(e));
       stopMomentum();
       const pts = [...touchesRef.current.values()];
+      const contact = Math.max(e.width || 0, e.height || 0);
       if (pts.length === 1) {
         gestureRef.current = {
-          kind: 'maybe', startT: Date.now(), maxTouches: 1, moved: 0,
+          kind: 'maybe', startT: Date.now(), maxTouches: 1, moved: 0, maxContact: contact,
           lastX: pts[0].x, lastY: pts[0].y, samples: [{ t: Date.now(), x: pts[0].x, y: pts[0].y }],
         };
       } else {
         // A second/third finger — join (or start) the gesture and switch to pinch.
         if (!gestureRef.current) {
           gestureRef.current = {
-            kind: 'maybe', startT: Date.now(), maxTouches: pts.length, moved: 0,
+            kind: 'maybe', startT: Date.now(), maxTouches: pts.length, moved: 0, maxContact: contact,
             lastX: pts[0].x, lastY: pts[0].y, samples: [],
           };
         }
         const g = gestureRef.current;
         g.maxTouches = Math.max(g.maxTouches, pts.length);
+        g.maxContact = Math.max(g.maxContact, contact);
         if (pts.length === 2) {
           const [a, b] = pts;
           const k = kFactor();
@@ -870,6 +877,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       touchesRef.current.set(e.pointerId, cssPos(e));
       const g = gestureRef.current;
       if (!g) return;
+      g.maxContact = Math.max(g.maxContact, e.width || 0, e.height || 0);
       const pts = [...touchesRef.current.values()];
       if (g.kind === 'pinch' && g.pinch && pts.length >= 2) {
         const [a, b] = pts;
@@ -996,7 +1004,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       // All fingers lifted — classify.
       const dur = Date.now() - g.startT;
       gestureRef.current = null;
-      if (dur < 320 && g.moved < 12 && g.maxTouches >= 2) {
+      // Undo/redo taps must come from FINGERTIPS: a palm replanting between words
+      // is also 2–3 brief, barely-moving contacts, and without the contact-size
+      // gate it fired undo and silently deleted the previous stroke. Devices that
+      // report no contact geometry (width 0) keep the old behaviour.
+      if (dur < 320 && g.moved < 12 && g.maxTouches >= 2 && g.maxContact < 30) {
         const pageIdx = pageNoRef.current - 1;
         if (g.maxTouches === 2) undo(pageIdx);
         else redo(pageIdx);
