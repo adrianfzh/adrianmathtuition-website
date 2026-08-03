@@ -47,6 +47,42 @@
     background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600;
   }
 
+  /* Custom function input (revealed by the ✏️ custom chip) */
+  .custom-row {
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+    margin: -8px 0 20px; flex-wrap: wrap;
+  }
+  .custom-row[hidden] { display: none; }
+  .custom-label { font-size: 15px; font-style: italic; color: var(--text); }
+  #custom-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 14px; color: var(--text); background: var(--bg-elev);
+    border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px;
+    width: min(340px, 70vw); outline: none;
+  }
+  #custom-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(76,194,255,0.15); }
+  #custom-input.bad { border-color: #ff6b6b; }
+  .custom-plot {
+    background: var(--accent); color: var(--bg); border: 1px solid var(--accent);
+    padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: filter 0.15s;
+  }
+  .custom-plot:hover { filter: brightness(1.12); }
+  .custom-err {
+    flex-basis: 100%; text-align: center; font-size: 12.5px; color: #ff6b6b;
+  }
+  .custom-hint {
+    flex-basis: 100%; text-align: center; font-size: 11.5px; color: var(--text-dim);
+  }
+
+  /* 📷 photo chip (vision-traced base function) */
+  .photo-row { text-align: center; margin: -12px 0 18px; }
+  .photo-hint { font-size: 11.5px; color: var(--text-dim); }
+  .photo-status { font-size: 12.5px; margin-top: 4px; }
+  .photo-status.err { color: #ff6b6b; }
+  .photo-status.note { color: var(--text-dim); }
+  .fn-btn:disabled { opacity: 0.55; cursor: default; }
+
   .layout {
     display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
   }
@@ -182,6 +218,22 @@
     <button class="fn-btn" data-fn="ln">f(x) = ln x</button>
     <button class="fn-btn" data-fn="abs">f(x) = |x|</button>
     <button class="fn-btn" data-fn="sin">f(x) = sin x</button>
+    <button class="fn-btn" data-fn="custom">✏️ custom</button>
+    <button class="fn-btn" data-fn="photo" id="photo-btn">📷 photo</button>
+  </div>
+
+  <div class="photo-row">
+    <span class="photo-hint">📷 snap the printed graph — I’ll trace it</span>
+    <div class="photo-status" id="photo-status" hidden></div>
+    <input type="file" id="photo-file" accept="image/*" hidden>
+  </div>
+
+  <div class="custom-row" id="custom-row" hidden>
+    <label class="custom-label" for="custom-input">y&nbsp;=</label>
+    <input type="text" id="custom-input" placeholder="e.g. x^3 - 3x or sin(2x)" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="custom function of x">
+    <button class="custom-plot" id="custom-plot">Plot</button>
+    <div class="custom-hint">use ^ for powers · allowed: x, pi, e, sin, cos, tan, exp, ln, log, sqrt, abs · e.g. (x^2-1)/(x-2)</div>
+    <div class="custom-err" id="custom-err" hidden></div>
   </div>
 
   <div class="jc-row">
@@ -294,7 +346,446 @@ const fns = {
   ln:     { fn: x => x > 0 ? Math.log(x) : NaN, latex: '\\ln x', xRange: [-2, 8], yRange: [-4, 3] },
   abs:    { fn: x => Math.abs(x), latex: '|x|', xRange: [-5, 5], yRange: [-2, 6] },
   sin:    { fn: Math.sin, latex: '\\sin x', xRange: [-2*Math.PI, 2*Math.PI], yRange: [-3, 3] }
+  // fns.custom is added at runtime by plotCustom(): { fn, ast, latex, xRange, yRange }
 };
+
+// =====================================================================
+// Custom f(x) — safe expression parsing, NO eval/Function anywhere.
+// Ported from public/tools/curve-sketcher.html (whitelist tokenizer +
+// recursive-descent parser, AST compiled to nested closures) — the two
+// copies are siblings; keep fixes in sync. Local additions here only:
+// constant tokens keep their `name` (pi / e) so the equation display
+// can typeset \pi instead of 3.14159…, and parseAtom carries it.
+// =====================================================================
+const FUNCS = {sin:Math.sin, cos:Math.cos, tan:Math.tan, exp:Math.exp,
+  ln:Math.log, log:Math.log10, sqrt:Math.sqrt, abs:Math.abs};
+const CONSTS = {pi:Math.PI, e:Math.E};
+// longest-first so "exp" wins over "e", "sqrt" over nothing shorter, etc.
+const NAMES = ['sqrt','sin','cos','tan','exp','abs','log','ln','pi','e','x'];
+
+function perr(message, pos){
+  const e = new Error(message + (isFinite(pos) && pos < 1e8 ? ' (at character ' + (pos+1) + ')' : ''));
+  e.friendly = true;
+  return e;
+}
+
+function tokenize(raw){
+  // forgiving unicode: minus sign, ×, ÷, π, ², ³ from pasted text
+  const src = raw
+    .replace(/−/g,'-').replace(/[×·]/g,'*').replace(/÷/g,'/')
+    .replace(/π/g,'pi').replace(/²/g,'^2').replace(/³/g,'^3')
+    .toLowerCase();
+  const toks = [];
+  let i = 0;
+  while(i < src.length){
+    const ch = src[i];
+    if(ch === ' ' || ch === '\t'){ i++; continue; }
+    if(/[0-9.]/.test(ch)){
+      let j = i;
+      while(j < src.length && /[0-9.]/.test(src[j])) j++;
+      const s = src.slice(i, j);
+      if(!/^(\d+\.?\d*|\.\d+)$/.test(s)) throw perr('"' + s + '" is not a number', i);
+      toks.push({t:'num', v:parseFloat(s), pos:i});
+      i = j; continue;
+    }
+    if(/[a-z]/.test(ch)){
+      let j = i;
+      while(j < src.length && /[a-z]/.test(src[j])) j++;
+      let run = src.slice(i, j), k = i;
+      while(run.length){
+        const name = NAMES.find(n => run.startsWith(n));
+        if(!name) throw perr('I don’t recognise "' + run + '" — allowed: x, pi, e, sin, cos, tan, exp, ln, log, sqrt, abs', k);
+        if(name === 'x') toks.push({t:'x', pos:k});
+        else if(name in CONSTS) toks.push({t:'num', v:CONSTS[name], name:name, pos:k});
+        else toks.push({t:'func', name:name, pos:k});
+        run = run.slice(name.length); k += name.length;
+      }
+      i = j; continue;
+    }
+    if('+-*/^(),'.indexOf(ch) !== -1){ toks.push({t:ch, pos:i}); i++; continue; }
+    throw perr('the character "' + ch + '" is not allowed', i);
+  }
+  // implicit multiplication: 2x, 3sin(x), (x-1)(x+2), x(x+1) ...
+  const out = [];
+  const endsVal   = t => t && (t.t==='num' || t.t==='x' || t.t===')');
+  const startsVal = t => t && (t.t==='num' || t.t==='x' || t.t==='func' || t.t==='(');
+  for(const tk of toks){
+    if(endsVal(out[out.length-1]) && startsVal(tk)) out.push({t:'*', pos:tk.pos});
+    out.push(tk);
+  }
+  return out;
+}
+
+function parseExpression(toks){
+  let p = 0;
+  const peek = () => toks[p];
+  const next = () => toks[p++];
+  function expect(t, msg){
+    const tk = next();
+    if(!tk || tk.t !== t) throw perr(msg, tk ? tk.pos : 1e9);
+    return tk;
+  }
+  function parseExpr(){
+    let n = parseTerm();
+    while(peek() && (peek().t === '+' || peek().t === '-')){
+      const op = next().t;
+      n = {t: op === '+' ? 'add' : 'sub', a:n, b:parseTerm()};
+    }
+    return n;
+  }
+  function parseTerm(){
+    let n = parseUnary();
+    while(peek() && (peek().t === '*' || peek().t === '/')){
+      const op = next().t;
+      n = {t: op === '*' ? 'mul' : 'div', a:n, b:parseUnary()};
+    }
+    return n;
+  }
+  function parseUnary(){
+    if(peek() && (peek().t === '-' || peek().t === '+')){
+      const op = next().t;
+      const n = parseUnary();
+      return op === '-' ? {t:'neg', a:n} : n;
+    }
+    return parsePow();
+  }
+  function parsePow(){
+    const base = parseAtom();
+    if(peek() && peek().t === '^'){
+      next();
+      return {t:'pow', a:base, b:parseUnary()};   // right-assoc; x^-2 works
+    }
+    return base;
+  }
+  function parseAtom(){
+    const tk = next();
+    if(!tk) throw perr('the expression ends too soon', 1e9);
+    if(tk.t === 'num') return {t:'num', v:tk.v, name:tk.name};
+    if(tk.t === 'x')   return {t:'x'};
+    if(tk.t === 'func'){
+      if(!peek() || peek().t !== '(')
+        throw perr(tk.name + ' needs brackets — write ' + tk.name + '(…)', tk.pos);
+      next();
+      const n = parseExpr();
+      expect(')', 'missing a closing bracket )');
+      return {t:'fn', name:tk.name, a:n};
+    }
+    if(tk.t === '('){
+      const n = parseExpr();
+      expect(')', 'missing a closing bracket )');
+      return n;
+    }
+    throw perr('unexpected "' + tk.t + '"', tk.pos);
+  }
+  const n = parseExpr();
+  if(p < toks.length) throw perr('unexpected "' + toks[p].t + '"', toks[p].pos);
+  return n;
+}
+
+function compileNode(n){
+  switch(n.t){
+    case 'num': { const v = n.v; return function(){ return v; }; }
+    case 'x':   return function(x){ return x; };
+    case 'add': { const A = compileNode(n.a), B = compileNode(n.b); return function(x){ return A(x) + B(x); }; }
+    case 'sub': { const A = compileNode(n.a), B = compileNode(n.b); return function(x){ return A(x) - B(x); }; }
+    case 'mul': { const A = compileNode(n.a), B = compileNode(n.b); return function(x){ return A(x) * B(x); }; }
+    case 'div': { const A = compileNode(n.a), B = compileNode(n.b); return function(x){ return A(x) / B(x); }; }
+    case 'neg': { const A = compileNode(n.a); return function(x){ return -A(x); }; }
+    case 'pow': { const A = compileNode(n.a), B = compileNode(n.b); return function(x){ return Math.pow(A(x), B(x)); }; }
+    case 'fn':  { const f = FUNCS[n.name], A = compileNode(n.a); return function(x){ return f(A(x)); }; }
+  }
+  throw perr('internal parse error', 0);
+}
+
+// LaTeX for the custom AST with `inner` (e.g. "2(x + 1.5)" or "|x|") substituted
+// for every x — this is what lets a, b, c, d and the JC modes typeset correctly
+// around a typed function. Precedence: 1 add/sub, 1.5 unary minus, 2 product,
+// 3 power, 4 atom (self-delimiting).
+function customAstLatex(node, inner) {
+  const innerPrec = (inner === 'x' || inner === '|x|' || /^\(.*\)$/.test(inner)) ? 4
+                  : inner.charAt(0) === '-' ? 1.5 : 2;
+  const wrap = s => `\\left(${s}\\right)`;
+  function go(n) {
+    switch (n.t) {
+      case 'num': return { s: n.name === 'pi' ? '\\pi' : n.name === 'e' ? 'e' : String(n.v), prec: 4 };
+      case 'x': return { s: inner, prec: innerPrec };
+      case 'add': case 'sub': {
+        const A = go(n.a), B = go(n.b);
+        const needB = (n.t === 'sub' && B.prec <= 1.5) || B.s.charAt(0) === '-';
+        return { s: A.s + (n.t === 'add' ? ' + ' : ' - ') + (needB ? wrap(B.s) : B.s), prec: 1 };
+      }
+      case 'mul': {
+        const A = go(n.a), B = go(n.b);
+        const as = A.prec < 2 ? wrap(A.s) : A.s;
+        const bs = (B.prec < 2 || B.s.charAt(0) === '-') ? wrap(B.s) : B.s;
+        const juxt = n.a.t === 'num' && !n.a.name && !/^[\d.]/.test(bs);
+        return { s: juxt ? as + bs : as + ' \\cdot ' + bs, prec: 2 };
+      }
+      case 'div': return { s: `\\frac{${go(n.a).s}}{${go(n.b).s}}`, prec: 4 };
+      case 'neg': {
+        const A = go(n.a);
+        return { s: '-' + ((A.prec <= 1 || A.s.charAt(0) === '-') ? wrap(A.s) : A.s), prec: 1.5 };
+      }
+      case 'pow': {
+        const A = go(n.a), B = go(n.b);
+        return { s: (A.prec < 4 ? wrap(A.s) : A.s) + '^{' + B.s + '}', prec: 3 };
+      }
+      case 'fn': {
+        const As = go(n.a).s;
+        if (n.name === 'sqrt') return { s: `\\sqrt{${As}}`, prec: 4 };
+        if (n.name === 'abs')  return { s: `\\left|${As}\\right|`, prec: 4 };
+        if (n.name === 'exp')  return { s: `e^{${As}}`, prec: 3 };
+        const nm = n.name === 'log' ? '\\lg' : '\\' + n.name; // \sin \cos \tan \ln; log = base 10 → \lg
+        return { s: `${nm}\\left(${As}\\right)`, prec: 4 };
+      }
+    }
+    return { s: '?', prec: 4 };
+  }
+  return go(node);
+}
+
+// Pick a sensible y-window for a custom f over its x-range: percentile fit
+// (so poles / exponential blow-ups don't swallow the view), biased to keep
+// the x-axis — and with it the y = ±1 reciprocal guides — in frame.
+function customYRange(fn, xr) {
+  const S = [];
+  for (let i = 0; i <= 800; i++) {
+    const y = fn(xr[0] + (xr[1] - xr[0]) * i / 800);
+    if (isFinite(y)) S.push(y);
+  }
+  if (!S.length) return null;
+  S.sort((p, q) => p - q);
+  const q = p => S[Math.max(0, Math.min(S.length - 1, Math.floor(p * (S.length - 1))))];
+  let lo = q(0.02), hi = q(0.98);
+  if (!(hi - lo > 1e-9)) { const m = (lo + hi) / 2; lo = m - 3; hi = m + 3; }
+  const pad = (hi - lo) * 0.18;
+  lo -= pad; hi += pad;
+  if (lo > -1.5 && hi + 1.5 <= 30) lo = -1.5;   // pull the x-axis into frame when cheap
+  if (hi < 1.5 && 1.5 - lo <= 30) hi = 1.5;
+  if (hi - lo > 30) {                            // too tall: crop the side far from 0
+    if (lo >= -15 && lo <= 0) hi = lo + 30;
+    else if (hi >= 0 && hi <= 15) lo = hi - 30;
+    else { lo = -15; hi = 15; }
+  }
+  return [lo, hi];
+}
+
+const customRow = document.getElementById('custom-row');
+const customInput = document.getElementById('custom-input');
+const customErr = document.getElementById('custom-err');
+
+// Parse + activate the typed function. On bad input the previous working
+// function stays plotted (never a blank canvas) — only the error line changes.
+function plotCustom() {
+  const src = customInput.value;
+  try {
+    const toks = tokenize(src);
+    if (!toks.length) throw perr('type a function of x', NaN);
+    const ast = parseExpression(toks);
+    const fn = compileNode(ast);
+    const xr = [-5, 5];
+    const yr = customYRange(fn, xr);
+    if (!yr) throw perr('that function has no real values for −5 ≤ x ≤ 5', NaN);
+    fns.custom = { fn, ast, latex: customAstLatex(ast, 'x').s, xRange: xr, yRange: yr };
+    fnKey = 'custom';
+    customErr.hidden = true;
+    customInput.classList.remove('bad');
+    syncFnButtons();
+    render();
+  } catch (ex) {
+    customErr.textContent = '⚠ ' + (ex && ex.friendly ? ex.message : 'could not read that expression');
+    customErr.hidden = false;
+    customInput.classList.add('bad');
+  }
+}
+
+// =====================================================================
+// 📷 From a photo — snap a printed graph; /api/tools/vision returns the
+// axes window, sampled points and any vertical asymptotes. A monotone
+// cubic interpolant (PCHIP, Fritsch–Carlson slopes) through the samples
+// becomes the active base function: smooth like the printed curve, no
+// natural-spline wobble. Branches split at each vertical asymptote and
+// f(x) is NaN in the gaps and beyond the sampled x-extent, so the
+// existing NaN-gap plumbing breaks the path — 1/f(x) and f′(x) never
+// bridge an asymptote, and nothing extrapolates.
+// =====================================================================
+
+// Fritsch–Carlson slopes: zero at local extrema, weighted-harmonic-mean
+// inside monotone runs, shape-preserving three-point formula at the ends.
+function pchipSlopes(xs, ys) {
+  const n = xs.length, m = new Array(n).fill(0);
+  const h = [], del = [];
+  for (let i = 0; i < n - 1; i++) {
+    h.push(xs[i + 1] - xs[i]);
+    del.push((ys[i + 1] - ys[i]) / h[i]);
+  }
+  if (n === 2) { m[0] = m[1] = del[0]; return m; }
+  const edge = (h0, h1, d0, d1) => {
+    let s = ((2 * h0 + h1) * d0 - h0 * d1) / (h0 + h1);
+    if (s * d0 <= 0) s = 0;
+    else if (d0 * d1 < 0 && Math.abs(s) > 3 * Math.abs(d0)) s = 3 * d0;
+    return s;
+  };
+  for (let i = 1; i < n - 1; i++) {
+    if (del[i - 1] * del[i] <= 0) m[i] = 0;
+    else {
+      const w1 = 2 * h[i] + h[i - 1], w2 = h[i] + 2 * h[i - 1];
+      m[i] = (w1 + w2) / (w1 / del[i - 1] + w2 / del[i]);
+    }
+  }
+  m[0] = edge(h[0], h[1], del[0], del[1]);
+  m[n - 1] = edge(h[n - 2], h[n - 3], del[n - 2], del[n - 3]);
+  return m;
+}
+
+// One smooth branch: cubic Hermite through the samples using PCHIP slopes
+function makePchip(pts) {
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const ms = pchipSlopes(xs, ys);
+  const n = xs.length;
+  return {
+    x0: xs[0], x1: xs[n - 1],
+    at(x) {
+      let lo = 0, hi = n - 1;
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1;
+        if (xs[mid] <= x) lo = mid; else hi = mid;
+      }
+      const h = xs[lo + 1] - xs[lo], t = (x - xs[lo]) / h, t2 = t * t, t3 = t2 * t;
+      return (2 * t3 - 3 * t2 + 1) * ys[lo] + (t3 - 2 * t2 + t) * h * ms[lo]
+           + (-2 * t3 + 3 * t2) * ys[lo + 1] + (t3 - t2) * h * ms[lo + 1];
+    }
+  };
+}
+
+// points [[x,y],…] + asymptote x's → {fn, x0, x1}, or null if too sparse.
+// fn is NaN between branches (the asymptote gaps) and outside [x0, x1].
+function buildPhotoFn(points, vasymptotes) {
+  const pts = (points || [])
+    .filter(p => Array.isArray(p) && isFinite(Number(p[0])) && isFinite(Number(p[1])))
+    .map(p => [Number(p[0]), Number(p[1])])
+    .sort((p, q) => p[0] - q[0])
+    .filter((p, i, arr) => i === 0 || p[0] - arr[i - 1][0] > 1e-9);
+  const va = (vasymptotes || []).map(Number).filter(isFinite).sort((p, q) => p - q);
+  const branches = [];
+  let run = [], vi = 0;
+  for (const p of pts) {
+    while (vi < va.length && p[0] > va[vi]) {
+      if (run.length) branches.push(run);
+      run = []; vi++;
+    }
+    if (vi < va.length && Math.abs(p[0] - va[vi]) < 1e-9) continue; // sample sitting on the asymptote: junk
+    run.push(p);
+  }
+  if (run.length) branches.push(run);
+  const interps = branches.filter(br => br.length >= 2).map(makePchip);
+  if (!interps.length) return null;
+  return {
+    x0: interps[0].x0,
+    x1: interps[interps.length - 1].x1,
+    fn: x => {
+      for (const it of interps) if (x >= it.x0 && x <= it.x1) return it.at(x);
+      return NaN;
+    }
+  };
+}
+
+const photoBtn = document.getElementById('photo-btn');
+const photoFile = document.getElementById('photo-file');
+const photoStatus = document.getElementById('photo-status');
+const PHOTO_LABEL = '📷 photo';
+let photoPending = false;
+
+function setPhotoStatus(msg, kind) {
+  if (!msg) { photoStatus.hidden = true; return; }
+  photoStatus.textContent = msg;
+  photoStatus.className = 'photo-status ' + kind;
+  photoStatus.hidden = false;
+}
+
+// Downscale client-side (≤ maxEdge px longest side, JPEG q0.85) so the
+// upload stays far below the API's body cap; flatten onto white first so
+// transparent PNGs don't turn black in the JPEG.
+function photoToDataURL(file, maxEdge, onDone, onErr) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    try {
+      const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * scale));
+      const h = Math.max(1, Math.round(img.naturalHeight * scale));
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      const cc = cv.getContext('2d');
+      cc.fillStyle = '#fff';
+      cc.fillRect(0, 0, w, h);
+      cc.drawImage(img, 0, 0, w, h);
+      onDone(cv.toDataURL('image/jpeg', 0.85));
+    } catch (e) { onErr(); }
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); onErr(); };
+  img.src = url;
+}
+
+function photoDone(errMsg) {
+  photoPending = false;
+  photoBtn.disabled = false;
+  photoBtn.textContent = PHOTO_LABEL;
+  if (errMsg) setPhotoStatus('⚠ ' + errMsg, 'err');
+}
+
+// Install the traced curve as the active base function. Same shape as
+// fns.custom: {fn, latex, xRange, yRange} — every JC mode and the
+// a, b, c, d parameters act on it unchanged.
+function applyPhotoCurve(data) {
+  const built = buildPhotoFn(data.points, data.vasymptotes);
+  if (!built) return 'couldn’t trace enough of that curve — try a clearer, straighter photo';
+  let xr = [Number(data.xmin), Number(data.xmax)];
+  if (!(isFinite(xr[0]) && isFinite(xr[1]) && xr[1] - xr[0] > 1e-6)) xr = [built.x0, built.x1];
+  let yr = customYRange(built.fn, xr);
+  if (!yr) {
+    yr = [Number(data.ymin), Number(data.ymax)];
+    if (!(isFinite(yr[0]) && isFinite(yr[1]) && yr[1] - yr[0] > 1e-6)) yr = [-5, 5];
+  }
+  fns.photo = { fn: built.fn, latex: 'f(x)\\ \\text{(from photo)}', xRange: xr, yRange: yr };
+  fnKey = 'photo';
+  syncFnButtons();
+  render();
+  return null;
+}
+
+function readPhoto(file) {
+  photoPending = true;
+  photoBtn.disabled = true;
+  photoBtn.textContent = 'reading the graph…';
+  setPhotoStatus('');
+  photoToDataURL(file, 1400, dataUrl => {
+    fetch('/api/tools/vision', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind: 'graph-curve', image: dataUrl })
+    })
+      .then(res => res.json().then(body => ({ ok: res.ok, body }), () => ({ ok: false, body: null })))
+      .then(({ ok, body }) => {
+        if (!body) return photoDone('the server reply was unreadable — try again in a moment');
+        if (body.error) return photoDone(body.error);
+        if (!ok) return photoDone('something went wrong reading the photo — try again');
+        if (!body.found) return photoDone(body.note || 'couldn’t see a graph in that photo — try a clearer shot');
+        const err = applyPhotoCurve(body);
+        if (err) return photoDone(err);
+        photoDone(null);
+        if (body.note) setPhotoStatus(body.note, 'note');
+      })
+      .catch(() => photoDone('couldn’t reach the server — check the connection and try again'));
+  }, () => photoDone('couldn’t read that image file — try a JPEG or PNG'));
+}
+
+photoFile.addEventListener('change', () => {
+  const file = photoFile.files && photoFile.files[0];
+  photoFile.value = ''; // so picking the same photo again re-fires change
+  if (file && !photoPending) readPhoto(file);
+});
 
 let xMin, xMax, yMin, yMax;
 
@@ -724,6 +1215,12 @@ function buildRhsLatex(v) {
   else if (fnKey === 'cube') inside = `${pw}^3`;
   else if (fnKey === 'quadDown') { inside = `${pw}^2 - 2`; needsParens = true; }
   else if (fnKey === 'cubicTP') { inside = `${pw}^3 - 3${pw}`; needsParens = true; }
+  else if (fnKey === 'photo') inside = `f\\left(${innerArg}\\right)`;
+  else if (fnKey === 'custom' && fns.custom) {
+    const r = customAstLatex(fns.custom.ast, innerArg);
+    inside = r.s;
+    needsParens = r.prec < 2; // top-level sum/difference or leading minus
+  }
 
   // Apply a coefficient
   let body;
@@ -744,6 +1241,7 @@ function updateEquation() {
   else if (jcMode === 'recipY') eq = `y = \\frac{1}{${buildRhsLatex('x')}}`;
   else if (jcMode === 'deriv') eq = `y = \\frac{d}{dx}\\left[${buildRhsLatex('x')}\\right]`;
   else eq = `y = ${buildRhsLatex('x')}`;
+  if (fnKey === 'photo') eq += '\\quad {\\small \\text{(f traced from photo)}}';
 
   const target = document.getElementById('equation');
   if (window.katex) {
@@ -875,14 +1373,53 @@ function render() {
   });
 });
 
-// Function buttons
+// Function buttons — the chip highlight always follows the *plotted* function.
+// "✏️ custom" reveals the input; if no custom function has been plotted yet the
+// previous preset stays active (and plotted) until Plot succeeds.
+function syncFnButtons() {
+  document.querySelectorAll('.fn-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.fn === fnKey));
+}
 document.querySelectorAll('.fn-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.fn-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if (btn.dataset.fn === 'custom') {
+      customRow.hidden = false;
+      if (fns.custom) fnKey = 'custom'; // last good custom re-activates at once
+      syncFnButtons();
+      render();
+      customInput.focus();
+      return;
+    }
+    if (btn.dataset.fn === 'photo') {
+      customRow.hidden = true;
+      customErr.hidden = true;
+      customInput.classList.remove('bad');
+      // an existing photo-function re-activates first; tap again for a new photo
+      if (fns.photo && fnKey !== 'photo') {
+        fnKey = 'photo';
+        syncFnButtons();
+        render();
+      } else if (!photoPending) {
+        photoFile.click();
+      }
+      return;
+    }
+    customRow.hidden = true;
+    customErr.hidden = true;
+    customInput.classList.remove('bad');
+    setPhotoStatus('');
     fnKey = btn.dataset.fn;
+    syncFnButtons();
     render();
   });
+});
+
+// Custom input wiring
+document.getElementById('custom-plot').addEventListener('click', plotCustom);
+customInput.addEventListener('keydown', e => { if (e.key === 'Enter') plotCustom(); });
+customInput.addEventListener('input', () => {
+  customInput.classList.remove('bad');
+  customErr.hidden = true;
 });
 
 // JC transform buttons — mutually exclusive; "None" (or re-clicking the active one) turns them off

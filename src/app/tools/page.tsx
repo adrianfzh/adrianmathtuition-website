@@ -13,7 +13,7 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
   { slug: 'trig-graphs', icon: '〰️', title: 'Trigonometric Graphs Explorer',
     desc: 'Plot y = a·sin(bx + c) and friends — drag, scale and shift to see how each parameter reshapes the wave.' },
   { slug: 'graph-transformations', icon: '↔️', title: 'Graph Transformations',
-    desc: 'Translations, stretches and reflections in real time — plus the JC set: |f(x)|, f(|x|), 1/f(x) and the derivative graph f′(x).' },
+    desc: 'Translations, stretches and reflections in real time — plus the JC set: |f(x)|, f(|x|), 1/f(x) and f′(x). Type your own y = f(x), or snap a photo of a printed graph and transform that.' },
   { slug: 'curve-sketcher', icon: '✏️', title: 'Curve Sketching Pad',
     desc: 'Sketch polynomials and rational curves; find the turning points, asymptotes and intercepts.' },
   { slug: 'argand-diagram', icon: '🧭', title: 'Argand Diagram & Complex Numbers',
@@ -27,7 +27,7 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
   { slug: 'area-ratios', icon: '🔺', title: 'Ratio of Areas',
     desc: 'Same height ⇒ areas follow the bases; similar figures ⇒ k, k², k³. Drag the figures and watch the exam ratios — including the trapezium-diagonals classic — hold live.' },
   { slug: 'linear-law', icon: '📈', title: 'Linear Law',
-    desc: 'Why plot lg y against x? Watch a curve straighten under the right axes, then recover a and b from the gradient and intercept — the whole AM topic in one picture.' },
+    desc: 'Why plot lg y against x? Watch a curve straighten under the right axes, then recover a and b from the gradient and intercept. Snap a photo of the question’s data table and it reads, fits and solves it for you.' },
   { slug: 'solution-stepper', icon: '🎞️', title: 'Animated Worked Solutions',
     desc: 'Watch an equation solve itself one operation at a time — each step glows with what was done to both sides, including the ± everyone forgets.' },
   { slug: 'first-principles', icon: '🎢', title: 'Differentiation from First Principles',
@@ -37,7 +37,7 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
   { slug: 'circle-theorems', icon: '⭕', title: 'Circle Geometry Theorem Explorer',
     desc: 'Drag points around a circle and watch angle-at-centre, same-segment, semicircle, cyclic quad, tangent and alternate-segment theorems hold live.' },
   { slug: 'sincos-unwrap', icon: '🔄', title: 'Unit Circle → Sine, Cosine & Tangent',
-    desc: 'Watch a point circle the unit circle and unroll into the sine, cosine and tangent curves — drag the dot, jump to special angles, and see exact values plus why tan blows up at 90°.' },
+    desc: 'The unit circle with the classic tangent-line construction, tracing all three graphs live beside it — drag the dot, jump to special angles, see exact values and why tan blows up at 90°. 3D unwrap view included.' },
 ];
 
 export default function ToolsPage() {

@@ -105,6 +105,18 @@
   .seg button.on{background:var(--ink); color:var(--bg)}
   #resample{display:none; font-size:12.5px; padding:6px 11px}
 
+  /* 📷 from-a-photo (vision-read data table) */
+  .grp.photo{align-items:flex-start}
+  .photocol{display:flex; flex-direction:column; gap:4px}
+  .photocol .prow{display:flex; align-items:center; gap:8px}
+  .photohint{font-size:11.5px; color:var(--muted); font-style:italic}
+  .photomsg{font-size:12px}
+  .photomsg.err{color:var(--rose)}
+  .photomsg.ok{color:var(--muted); font-style:italic}
+  #photoClear{display:none}
+  button:disabled{opacity:.55; cursor:default}
+  input[type=range]:disabled{opacity:.45; cursor:default}
+
   /* reading-back panel */
   .read{
     background:var(--panel); border:1px solid var(--panelb); border-radius:10px;
@@ -189,6 +201,17 @@
       </div>
       <button id="resample" title="Draw a fresh set of noisy measurements">&#8635; re-sample</button>
     </div>
+    <div class="grp photo">
+      <div class="photocol">
+        <div class="prow">
+          <button id="photoBtn" type="button">📷 From a photo</button>
+          <button id="photoClear" type="button" title="Drop the photo data and go back to the demo curve">✕ back to demo</button>
+        </div>
+        <div class="photohint">snap the question’s table — I’ll read it in</div>
+        <div class="photomsg" id="photoMsg" hidden></div>
+      </div>
+      <input type="file" id="photoFileInput" accept="image/*" hidden>
+    </div>
   </div>
 
   <div class="read" id="read"></div>
@@ -220,6 +243,11 @@
   function plain(x){ // for the x-row of tables: 0.5 stays "0.5"
     var s = String(Math.round(x*1000)/1000);
     return s.replace('-','−');
+  }
+  // variable names read off a photo go into innerHTML — strip markup, cap length
+  function cleanName(v, fb){
+    var s = (v==null ? '' : String(v)).replace(/[&<>"']/g,'').trim();
+    return (s && s.length<=10) ? s : fb;
   }
 
   // ---- least squares --------------------------------------------------
@@ -347,7 +375,9 @@
   };
 
   // ---- state ----------------------------------------------------------
-  var st = { model:'expb', a:3, b:2, noise:false, eps:[0,0,0,0,0,0,0] };
+  // st.data (📷 photo mode): {xs, ys, xname, yname} — replaces the demo
+  // slider-generated points until cleared; null = normal demo mode.
+  var st = { model:'expb', a:3, b:2, noise:false, eps:[0,0,0,0,0,0,0], data:null };
   function cur(){ return MODELS[st.model]; }
   function newEps(){
     var e=[], i;
@@ -361,6 +391,7 @@
   var examEl  = document.getElementById('exam');
   var truthEl = document.getElementById('truth');
   var linTitleEl = document.getElementById('linTitle');
+  var linNoteEl = document.getElementById('linNote');
   var tblRawEl = document.getElementById('tblRaw');
   var tblLinEl = document.getElementById('tblLin');
   var readEl  = document.getElementById('read');
@@ -454,50 +485,62 @@
   }
 
   // ---- LEFT: raw curve + measured points ------------------------------
-  function drawRaw(M, xs, yMeas){
+  // curveFn: the model curve to overlay (slider truth in demo mode, the
+  // FITTED model in photo mode; null = points only). In photo mode the
+  // curve never expands the view — a badly-matched model must not squash
+  // the data points out of sight.
+  function drawRaw(M, xs, yMeas, curveFn, xlab, ylab, dataMode){
     var ctx=ctxRaw, W=raw.W, H=raw.H;
     ctx.clearRect(0,0,W,H);
     var i, x, y;
+    if(!xs.length) return;
 
     // view: include x=0 and y=0 for grounding
     var x0=Math.min(0, xs[0]), x1=xs[xs.length-1];
-    var spanX=x1-x0; x0-=spanX*0.04; x1+=spanX*0.07;
+    var spanX=(x1-x0)||1; x0-=spanX*0.04; x1+=spanX*0.07;
     var lo=1/0, hi=-1/0;
     for(i=0;i<yMeas.length;i++){ if(yMeas[i]<lo)lo=yMeas[i]; if(yMeas[i]>hi)hi=yMeas[i]; }
     // sample the true curve too (a vertex can dip below the data)
     var cx0=(M.curveMinX!=null? Math.max(M.curveMinX, xs[0]*0.7) : Math.max(x0, 0));
-    for(i=0;i<=40;i++){
-      x=cx0+(x1-cx0)*i/40; y=M.f(st.a, st.b, x);
-      if(isFinite(y)){ if(y<lo)lo=y; if(y>hi)hi=y; }
+    if(curveFn && !dataMode){
+      for(i=0;i<=40;i++){
+        x=cx0+(x1-cx0)*i/40; y=curveFn(x);
+        if(isFinite(y)){ if(y<lo)lo=y; if(y>hi)hi=y; }
+      }
     }
     var y0=Math.min(0,lo), y1=hi;
     var spanY=(y1-y0)||1; y1+=spanY*0.09; if(y0<0) y0-=spanY*0.05;
     var v={x0:x0,x1:x1,y0:y0,y1:y1};
 
-    var A=axes(ctx,W,H,v,'x','y');
+    var A=axes(ctx,W,H,v,xlab,ylab);
 
-    // the true curve
+    // the model curve
     clipPlot(ctx,A);
-    ctx.strokeStyle=C.plum; ctx.lineWidth=2.2; ctx.globalAlpha=0.9;
-    ctx.beginPath();
-    var pen=false, N=240, xa=(M.curveMinX!=null? Math.max(M.curveMinX,x0) : x0);
-    for(i=0;i<=N;i++){
-      x=xa+(x1-xa)*i/N; y=M.f(st.a, st.b, x);
-      if(!isFinite(y) || y>y1+2*spanY || y<y0-2*spanY){ pen=false; continue; }
-      var sxp=A.px(x), syp=A.py(y);
-      if(!pen){ ctx.moveTo(sxp,syp); pen=true; } else ctx.lineTo(sxp,syp);
+    if(curveFn){
+      ctx.strokeStyle=C.plum; ctx.lineWidth=2.2; ctx.globalAlpha=0.9;
+      ctx.beginPath();
+      var pen=false, N=240, xa=(M.curveMinX!=null? Math.max(M.curveMinX,x0) : x0);
+      for(i=0;i<=N;i++){
+        x=xa+(x1-xa)*i/N; y=curveFn(x);
+        if(!isFinite(y) || y>y1+2*spanY || y<y0-2*spanY){ pen=false; continue; }
+        var sxp=A.px(x), syp=A.py(y);
+        if(!pen){ ctx.moveTo(sxp,syp); pen=true; } else ctx.lineTo(sxp,syp);
+      }
+      ctx.stroke(); ctx.globalAlpha=1;
     }
-    ctx.stroke(); ctx.globalAlpha=1;
     // the measured points
     for(i=0;i<xs.length;i++) dot(ctx, A.px(xs[i]), A.py(yMeas[i]), 4, C.orange);
     ctx.restore();
   }
 
   // ---- RIGHT: transformed points + best-fit line ----------------------
-  function drawLin(M, Xs, Ys, fit){
+  // canFit=false (photo data that dies under this model's transform, e.g.
+  // lg of a negative y): draw points only, skip every fit-derived mark.
+  function drawLin(M, Xs, Ys, fit, canFit, Xlab, Ylab){
     var ctx=ctxLin, W=lin.W, H=lin.H;
     ctx.clearRect(0,0,W,H);
     var i;
+    if(!Xs.length) return;
 
     // view: MUST include X=0 (that is where the intercept is read)
     var lox=1/0, hix=-1/0, loy=1/0, hiy=-1/0;
@@ -505,43 +548,48 @@
       if(Xs[i]<lox)lox=Xs[i]; if(Xs[i]>hix)hix=Xs[i];
       if(Ys[i]<loy)loy=Ys[i]; if(Ys[i]>hiy)hiy=Ys[i];
     }
+    var cRef = canFit ? fit.c : loy;
     var x0=Math.min(0,lox), x1=Math.max(0,hix);
     var spanX=(x1-x0)||1; x0-=spanX*0.06; x1+=spanX*0.07;
-    var y0=Math.min(loy, fit.c), y1=Math.max(hiy, fit.c);
+    var y0=Math.min(loy, cRef), y1=Math.max(hiy, cRef);
     var spanY=(y1-y0)||1; y0-=spanY*0.14; y1+=spanY*0.12;
     var v={x0:x0,x1:x1,y0:y0,y1:y1};
 
-    var A=axes(ctx,W,H,v,M.Xlab,M.Ylab);
+    var A=axes(ctx,W,H,v,Xlab,Ylab);
 
     // best-fit line across the whole view
     clipPlot(ctx,A);
     var xA=v.x0, xB=v.x1;
     var p1x=A.px(xA), p1y=A.py(fit.m*xA+fit.c);
     var p2x=A.px(xB), p2y=A.py(fit.m*xB+fit.c);
-    ctx.strokeStyle=C.ink; ctx.lineWidth=1.8;
-    ctx.beginPath(); ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y); ctx.stroke();
+    if(canFit){
+      ctx.strokeStyle=C.ink; ctx.lineWidth=1.8;
+      ctx.beginPath(); ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y); ctx.stroke();
 
-    // rise/run triangle: one grid step across, teal, dashed
-    var R=A.sx;
-    var Xa=Math.ceil((v.x0+spanX*0.20)/A.sx)*A.sx;
-    if(Xa+R > v.x1-spanX*0.06) Xa-=A.sx;
-    var Ya=fit.m*Xa+fit.c, Yb=fit.m*(Xa+R)+fit.c;
-    if(Xa>v.x0 && Ya>v.y0 && Ya<v.y1 && Yb>v.y0 && Yb<v.y1){
-      ctx.setLineDash([5,4]); ctx.strokeStyle=C.teal; ctx.lineWidth=1.2; ctx.globalAlpha=0.75;
-      ctx.beginPath();
-      ctx.moveTo(A.px(Xa),A.py(Ya)); ctx.lineTo(A.px(Xa+R),A.py(Ya));   // run
-      ctx.lineTo(A.px(Xa+R),A.py(Yb));                                   // rise
-      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
-      ctx.fillStyle=C.teal; ctx.font='10.5px Menlo, ui-monospace, monospace';
-      ctx.textAlign='center'; ctx.textBaseline='top';
-      ctx.fillText('run '+tickFmt(R,A.sx), A.px(Xa+R/2), A.py(Ya)+(fit.m>=0?4:-14));
-      ctx.textAlign='left'; ctx.textBaseline='middle';
-      ctx.fillText('rise '+sf3(fit.m*R), A.px(Xa+R)+5, A.py((Ya+Yb)/2));
+      // rise/run triangle: one grid step across, teal, dashed
+      var R=A.sx;
+      var Xa=Math.ceil((v.x0+spanX*0.20)/A.sx)*A.sx;
+      if(Xa+R > v.x1-spanX*0.06) Xa-=A.sx;
+      var Ya=fit.m*Xa+fit.c, Yb=fit.m*(Xa+R)+fit.c;
+      if(Xa>v.x0 && Ya>v.y0 && Ya<v.y1 && Yb>v.y0 && Yb<v.y1){
+        ctx.setLineDash([5,4]); ctx.strokeStyle=C.teal; ctx.lineWidth=1.2; ctx.globalAlpha=0.75;
+        ctx.beginPath();
+        ctx.moveTo(A.px(Xa),A.py(Ya)); ctx.lineTo(A.px(Xa+R),A.py(Ya));   // run
+        ctx.lineTo(A.px(Xa+R),A.py(Yb));                                   // rise
+        ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+        ctx.fillStyle=C.teal; ctx.font='10.5px Menlo, ui-monospace, monospace';
+        ctx.textAlign='center'; ctx.textBaseline='top';
+        ctx.fillText('run '+tickFmt(R,A.sx), A.px(Xa+R/2), A.py(Ya)+(fit.m>=0?4:-14));
+        ctx.textAlign='left'; ctx.textBaseline='middle';
+        ctx.fillText('rise '+sf3(fit.m*R), A.px(Xa+R)+5, A.py((Ya+Yb)/2));
+      }
     }
 
     // the transformed points, on top of the line
     for(i=0;i<Xs.length;i++) dot(ctx, A.px(Xs[i]), A.py(Ys[i]), 4, C.orange);
     ctx.restore();
+
+    if(!canFit) return;
 
     // gradient label riding the line (outside clip so it can sit in margins)
     var tmid=0.56;
@@ -586,25 +634,55 @@
 
   // ---- master update --------------------------------------------------
   function update(){
-    var M=cur(), i;
-    var xs=M.xs;
-    var yTrue=[], yMeas=[], Xs=[], Ys=[];
-    for(i=0;i<xs.length;i++){
-      var y=M.f(st.a, st.b, xs[i]);
-      yTrue.push(y);
-      var ym = st.noise ? y*(1+st.eps[i]) : y;
-      yMeas.push(ym);
-      var p=M.XY(xs[i], ym);
-      Xs.push(p[0]); Ys.push(p[1]);
+    var M=cur(), i, p;
+    var dataMode = !!st.data;
+    // Xs/Ys: every transformed point (tables); XsF/YsF: only the finite
+    // ones (fit + right-hand plot) — photo y ≤ 0 under a lg/ln transform
+    // must not poison the least squares.
+    var xs, yMeas=[], Xs=[], Ys=[], XsF=[], YsF=[];
+    if(dataMode){
+      xs = st.data.xs;
+      for(i=0;i<xs.length;i++){
+        yMeas.push(st.data.ys[i]);
+        p = M.XY(xs[i], st.data.ys[i]);
+        Xs.push(p[0]); Ys.push(p[1]);
+        if(isFinite(p[0]) && isFinite(p[1])){ XsF.push(p[0]); YsF.push(p[1]); }
+      }
+    } else {
+      xs = M.xs;
+      for(i=0;i<xs.length;i++){
+        var y=M.f(st.a, st.b, xs[i]);
+        var ym = st.noise ? y*(1+st.eps[i]) : y;
+        yMeas.push(ym);
+        p = M.XY(xs[i], ym);
+        Xs.push(p[0]); Ys.push(p[1]);
+        XsF.push(p[0]); YsF.push(p[1]);
+      }
     }
-    var fit=fitLine(Xs,Ys);
-    var rec=M.recover(fit.m, fit.c);
+    var fit = XsF.length>=2 ? fitLine(XsF,YsF) : {m:NaN,c:NaN};
+    var canFit = isFinite(fit.m) && isFinite(fit.c);
+    var rec = canFit ? M.recover(fit.m, fit.c) : {a:NaN,b:NaN};
 
-    drawRaw(M, xs, yMeas);
-    drawLin(M, Xs, Ys, fit);
+    // photo mode draws the model curve the FIT implies; demo, the slider truth
+    var curveFn = dataMode
+      ? (canFit ? function(xx){ return M.f(rec.a, rec.b, xx); } : null)
+      : function(xx){ return M.f(st.a, st.b, xx); };
 
-    truthEl.innerHTML = M.truth(st.a, st.b) + (st.noise ? ' <span style="color:var(--orange)">+ noise</span>' : '');
-    linTitleEl.innerHTML = '<b>'+M.Ylab+'</b> against <b>'+M.Xlab+'</b>';
+    // axis-variable labels — a photo table may name them (t, P, …)
+    var xn = dataMode ? st.data.xname : 'x';
+    var yn = dataMode ? st.data.yname : 'y';
+    function rl(s){ return s.replace(/[xy]/g, function(ch){ return ch==='x' ? xn : yn; }); }
+
+    drawRaw(M, xs, yMeas, curveFn, xn, yn, dataMode);
+    drawLin(M, XsF, YsF, fit, canFit, rl(M.Xlab), rl(M.Ylab));
+
+    truthEl.innerHTML = dataMode
+      ? 'photo data — '+xs.length+' points'+(canFit ? ' · curve shown = the fitted model' : '')
+      : M.truth(st.a, st.b) + (st.noise ? ' <span style="color:var(--orange)">+ noise</span>' : '');
+    linTitleEl.innerHTML = '<b>'+rl(M.Ylab)+'</b> against <b>'+rl(M.Xlab)+'</b>';
+    linNoteEl.textContent = dataMode
+      ? 'your '+xs.length+' points, transformed'
+      : 'the same seven points, transformed';
 
     // tables — the "extend the table" step students must do on paper
     var xRow=[], XRow=[], yRow=[], YRow=[];
@@ -614,19 +692,27 @@
       XRow.push(M.Xident ? plain(Xs[i]) : sf3(Xs[i]));
       YRow.push(sf3(Ys[i]));
     }
-    tblRawEl.innerHTML = tableHTML('x', xRow, 'y', yRow);
-    tblLinEl.innerHTML = tableHTML(M.Xlab, XRow, M.Ylab, YRow);
+    tblRawEl.innerHTML = tableHTML(xn, xRow, yn, yRow);
+    tblLinEl.innerHTML = tableHTML(rl(M.Xlab), XRow, rl(M.Ylab), YRow);
 
     // reading-back panel
     var sgn = fit.c>=0 ? ' + ' : ' − ';
-    var head = st.noise
-      ? 'Least-squares best-fit line through the noisy points:'
-      : 'The 7 points are exactly collinear — the line through them:';
-    var lines = M.read(fit, rec, st, okMark);
+    var head, lines;
+    if(dataMode){
+      head = canFit
+        ? 'Least-squares best-fit line through your '+XsF.length+' photo points:'
+        : 'These points don’t survive this model’s transform — try another model:';
+      lines = canFit ? M.read(fit, rec, st, function(){ return ''; }) : ['—','—'];
+    } else {
+      head = st.noise
+        ? 'Least-squares best-fit line through the noisy points:'
+        : 'The 7 points are exactly collinear — the line through them:';
+      lines = M.read(fit, rec, st, okMark);
+    }
     readEl.innerHTML =
       '<h3>Read the constants back off the line</h3>'+
-      '<div class="fitline"><span class="mut">'+head+'</span> &nbsp;<i>'+M.Ylab+'</i> = '+
-        sf3(fit.m)+'·<i>'+M.Xlab+'</i>'+sgn+sf3(Math.abs(fit.c))+
+      '<div class="fitline"><span class="mut">'+head+'</span> &nbsp;<i>'+rl(M.Ylab)+'</i> = '+
+        sf3(fit.m)+'·<i>'+rl(M.Xlab)+'</i>'+sgn+sf3(Math.abs(fit.c))+
         ' &nbsp;<span class="mut">(gradient <span class="gm">m = '+sf3(fit.m)+'</span>, intercept <span class="gc">c = '+sf3(fit.c)+'</span>)</span></div>'+
       '<div>'+lines[0]+'</div>'+
       '<div>'+lines[1]+'</div>';
@@ -678,6 +764,138 @@
     update();
   });
   resampleBtn.addEventListener('click', function(){ newEps(); update(); });
+
+  // ---- 📷 From a photo ------------------------------------------------
+  // Snap the question's printed (x, y) table; /api/tools/vision reads the
+  // pairs (and often the stated model). They replace the demo data, the
+  // matching model is auto-selected when recognisable, and the normal fit
+  // pipeline runs — straightened plot, gradient/intercept, recovered a, b.
+  var photoBtn=document.getElementById('photoBtn');
+  var photoClear=document.getElementById('photoClear');
+  var photoInput=document.getElementById('photoFileInput');
+  var photoMsg=document.getElementById('photoMsg');
+  var photoPending=false;
+
+  function setPhotoMsg(msg, kind){
+    if(!msg){ photoMsg.hidden=true; return; }
+    photoMsg.textContent=msg;
+    photoMsg.className='photomsg '+kind;
+    photoMsg.hidden=false;
+  }
+
+  // photo mode: sliders and noise drive nothing, so grey them out
+  function setDataModeUI(on){
+    aR.disabled=on; bR.disabled=on;
+    var nb=noiseSeg.querySelectorAll('button'), i;
+    for(i=0;i<nb.length;i++){
+      nb[i].disabled=on;
+      if(on) nb[i].classList.toggle('on', nb[i].dataset.n==='off');
+    }
+    if(on){ st.noise=false; resampleBtn.style.display='none'; }
+    photoClear.style.display = on ? 'inline-block' : 'none';
+  }
+
+  // loose model-string matching: "y = a b^x", "y=abˣ", "ax^n", "ae^(bx)",
+  // "ax² + bx", "xy = ax + b" / "y = a + b/x" … → a model key, else null
+  function matchModel(model){
+    if(!model) return null;
+    var s=String(model).toLowerCase()
+      .replace(/ⁿ/g,'^n').replace(/²/g,'^2').replace(/³/g,'^3').replace(/ˣ/g,'^x')
+      .replace(/[·×*\s{}\[\]()]/g,'').replace(/\^/g,'');
+    if(s.indexOf('aebx')>=0 || s.indexOf('ebx')>=0) return 'expe';
+    if(s.indexOf('abx')>=0) return 'expb';
+    if(s.indexOf('axn')>=0) return 'pow';
+    if(s.indexOf('ax2+bx')>=0 || s.indexOf('bx+ax2')>=0) return 'quad';
+    if(s.indexOf('xy=ax+b')>=0 || s.indexOf('xy=b+ax')>=0 || s.indexOf('a+b/x')>=0 || s.indexOf('b/x+a')>=0) return 'hyp';
+    return null;
+  }
+
+  function applyPhotoData(body){
+    var rx=body.x, ry=body.y, pairs=[], i;
+    if(!Array.isArray(rx) || !Array.isArray(ry)) return 'that reply had no data table in it';
+    for(i=0;i<Math.min(rx.length,ry.length);i++){
+      var px=Number(rx[i]), py=Number(ry[i]);
+      if(isFinite(px) && isFinite(py)) pairs.push([px,py]);
+    }
+    if(pairs.length<2) return 'couldn’t read enough (x, y) pairs — try a sharper photo of the table';
+    pairs.sort(function(pq,qq){ return pq[0]-qq[0]; });
+    var xs=[], ys=[];
+    for(i=0;i<pairs.length;i++){ xs.push(pairs[i][0]); ys.push(pairs[i][1]); }
+    st.data={ xs:xs, ys:ys, xname:cleanName(body.xname,'x'), yname:cleanName(body.yname,'y') };
+    setDataModeUI(true);
+    var mk=matchModel(body.model);
+    if(mk && MODELS[mk]) applyModel(mk); else update();
+    return null;
+  }
+
+  // downscale client-side (≤ maxEdge px longest side, JPEG q0.85) so the
+  // upload stays far below the API's body cap; flatten onto white first
+  // so transparent PNGs don't turn black in the JPEG
+  function photoToDataURL(file, maxEdge, onDone, onErr){
+    var url=URL.createObjectURL(file);
+    var img=new Image();
+    img.onload=function(){
+      URL.revokeObjectURL(url);
+      try{
+        var scale=Math.min(1, maxEdge/Math.max(img.naturalWidth, img.naturalHeight));
+        var w=Math.max(1, Math.round(img.naturalWidth*scale));
+        var h=Math.max(1, Math.round(img.naturalHeight*scale));
+        var cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        var cc=cv.getContext('2d');
+        cc.fillStyle='#fff'; cc.fillRect(0,0,w,h);
+        cc.drawImage(img,0,0,w,h);
+        onDone(cv.toDataURL('image/jpeg',0.85));
+      }catch(e){ onErr(); }
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); onErr(); };
+    img.src=url;
+  }
+
+  function photoDone(errMsg){
+    photoPending=false;
+    photoBtn.disabled=false;
+    photoBtn.textContent='📷 From a photo';
+    if(errMsg) setPhotoMsg('⚠ '+errMsg,'err');
+  }
+
+  function readPhoto(file){
+    photoPending=true;
+    photoBtn.disabled=true;
+    photoBtn.textContent='reading the photo…';
+    setPhotoMsg('');
+    photoToDataURL(file, 1400, function(dataUrl){
+      fetch('/api/tools/vision',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({kind:'linear-law', image:dataUrl})
+      }).then(function(res){
+        return res.json().then(function(body){ return {ok:res.ok, body:body}; },
+                               function(){ return {ok:false, body:null}; });
+      }).then(function(r){
+        if(!r.body) return photoDone('the server reply was unreadable — try again in a moment');
+        if(r.body.error) return photoDone(r.body.error);
+        if(!r.ok) return photoDone('something went wrong reading the photo — try again');
+        if(!r.body.found) return photoDone(r.body.note || 'couldn’t see a data table in that photo — try a clearer shot');
+        var err=applyPhotoData(r.body);
+        if(err) return photoDone(err);
+        photoDone(null);
+        if(r.body.note) setPhotoMsg(r.body.note,'ok');
+      }).catch(function(){ photoDone('couldn’t reach the server — check the connection and try again'); });
+    }, function(){ photoDone('couldn’t read that image file — try a JPEG or PNG'); });
+  }
+
+  photoBtn.addEventListener('click', function(){ if(!photoPending) photoInput.click(); });
+  photoInput.addEventListener('change', function(){
+    var f=photoInput.files && photoInput.files[0];
+    photoInput.value=''; // so picking the same photo again re-fires change
+    if(f && !photoPending) readPhoto(f);
+  });
+  photoClear.addEventListener('click', function(){
+    st.data=null;
+    setDataModeUI(false);
+    setPhotoMsg('');
+    update();
+  });
 
   // ---- go -------------------------------------------------------------
   sizeone(cvRaw,ctxRaw,raw); sizeone(cvLin,ctxLin,lin);

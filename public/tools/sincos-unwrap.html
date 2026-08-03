@@ -62,9 +62,16 @@
   input[type=range].theta{width:170px}
   input[type=range].speed{width:96px}
   .play{min-width:78px; font-weight:600}
+  .inset{position:absolute; right:12px; bottom:12px; width:min(300px,34vw);
+    background:rgba(255,253,248,.93); border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 3px 14px rgba(0,0,0,.10); overflow:hidden}
+  .inset .cap{font:italic 12.5px Georgia,serif; color:var(--muted); text-align:center; padding:6px 8px 0}
+  .inset canvas{display:block; width:100%; touch-action:none; cursor:grab}
   @media (max-width:560px){
     .readout{font-size:11.5px; padding:7px 9px}
     input[type=range].theta{width:130px}
+    .inset{width:196px; right:8px; bottom:8px}
+    .inset .cap{font-size:10.5px}
   }
 </style>
 </head>
@@ -72,13 +79,17 @@
 <a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
 <header>
   <h1>Unit circle, unwrapped — sin, cos &amp; tan from one rotating point</h1>
-  <div class="sub">A point rotates on the circle. Its height traces sin(x), its depth traces cos(x) — and the ray through it meets the tangent line (the crate's own front edge) at tan(x). Drag the dot to set the angle; drag anywhere else to orbit.</div>
+  <div class="sub">A point rotates on the circle. Its height is sin θ, its horizontal reach is cos θ — and the ray through it meets the vertical tangent line at tan θ. Watch all three trace their graphs beside the circle; drag the dot or scrub the graphs. Prefer the classic unwrap-around-a-box? Toggle 3D.</div>
 </header>
 
 <div class="stage">
   <canvas id="cv"></canvas>
   <div class="readout" id="ro"></div>
   <div class="hint">drag the dot to set θ · drag elsewhere to orbit</div>
+  <div class="inset" id="insetBox">
+    <div class="cap">the tangent construction — drag here too</div>
+    <canvas id="inset"></canvas>
+  </div>
 </div>
 
 <div class="controls">
@@ -99,6 +110,13 @@
       <button data-a="0">0°</button><button data-a="30">30°</button><button data-a="45">45°</button>
       <button data-a="60">60°</button><button data-a="90">90°</button><button data-a="180">180°</button>
       <button data-a="270">270°</button>
+    </div>
+  </div>
+  <div class="grp">
+    <label>View</label>
+    <div class="seg" id="viewSeg">
+      <button data-v="flat">2D</button>
+      <button data-v="crate">3D</button>
     </div>
   </div>
   <div class="grp">
@@ -263,7 +281,162 @@
   }
 
   // ---- scene ----------------------------------------------------------
+  // Two views of the same θ: 'flat' (2D — circle + tangent construction on the
+  // left, the three graphs unrolling beside it; Adrian: "perhaps 2d will be
+  // clearer") and 'crate' (the original 3D unwrap). Same controls drive both.
+  let view = 'flat';
+  try{ const v=localStorage.getItem('sincos_view'); if(v==='crate'||v==='flat') view=v; }catch(e){}
+
   function draw(){
+    const sinT=Math.sin(theta), cosT=Math.cos(theta), tanT=Math.tan(theta);
+    const tanDefined = Math.abs(cosT) > 1e-6;
+    if(view==='flat') draw2D(sinT,cosT,tanT,tanDefined);
+    else draw3D();
+    updateReadout(sinT,cosT,tanT,tanDefined);
+    const wantInset = view==='crate' && show.tan;
+    insetBox.style.display = wantInset ? '' : 'none';
+    if(wantInset) drawInset(sinT,cosT,tanT,tanDefined);
+  }
+
+  // ---- flat 2D scene --------------------------------------------------
+  let g2=null;   // geometry of the last 2D frame, for pointer hit-testing
+  function draw2D(sinT,cosT,tanT,tanDefined){
+    ctx.clearRect(0,0,W,H);
+    const narrow = W<640;
+    const R = Math.max(40, Math.min(H*0.30, W*(narrow?0.17:0.135)));
+    const cx0 = R + (narrow?34:60), cy = H*0.5;
+    const txl = cx0 + R;                          // the tangent line x=1
+    const gx0 = txl + (narrow?46:86), gx1 = W-(narrow?14:26);
+    const X = a => gx0 + (a/TAU)*(gx1-gx0);
+    const Y = v => cy - v*R;
+    const yMaxU = (Math.min(cy, H-cy) - 14)/R;    // vertical budget in units
+    g2 = {cx0, cy, R, gx0, gx1};
+    const fs = narrow?12:14;
+    ctx.font='italic '+fs+'px Georgia, serif'; ctx.textBaseline='middle';
+
+    // shared horizontal axis + graph grid
+    ctx.strokeStyle=P.grid; ctx.lineWidth=1.2;
+    for(const v of [1,-1]){ ctx.beginPath(); ctx.moveTo(gx0,Y(v)); ctx.lineTo(gx1,Y(v)); ctx.stroke(); }
+    ctx.strokeStyle=P.ink; ctx.lineWidth=1.3; ctx.globalAlpha=.75;
+    ctx.beginPath(); ctx.moveTo(cx0-R-20,cy); ctx.lineTo(gx1+6,cy); ctx.stroke(); ctx.globalAlpha=1;
+    ctx.fillStyle=P.muted; ctx.textAlign='center'; ctx.font=(fs-2)+'px Georgia, serif';
+    for(const d of [90,180,270,360]){
+      const gx=X(d*Math.PI/180);
+      ctx.strokeStyle=P.grid; ctx.beginPath(); ctx.moveTo(gx,Y(1)); ctx.lineTo(gx,Y(-1)); ctx.stroke();
+      ctx.fillText(d+'°', gx, cy+R+fs+4);
+    }
+    ctx.textAlign='right';
+    ctx.fillText('1', gx0-5, Y(1)); ctx.fillText('−1', gx0-5, Y(-1));
+    ctx.font='italic '+fs+'px Georgia, serif';
+
+    // tan asymptotes
+    if(show.tan){
+      ctx.setLineDash([7,5]); ctx.strokeStyle=P.plum; ctx.globalAlpha=.45; ctx.lineWidth=1.5;
+      for(const d of [90,270]){ const gx=X(d*Math.PI/180);
+        ctx.beginPath(); ctx.moveTo(gx,Y(yMaxU)); ctx.lineTo(gx,Y(-yMaxU)); ctx.stroke(); }
+      ctx.setLineDash([]); ctx.globalAlpha=1;
+    }
+
+    // the three curves — swept part bold, the road ahead faint
+    function curve(fn, color, clipU){
+      for(const seg of [[0,theta,2.6,.95],[theta,TAU,1.4,.28]]){
+        const [a0,a1,lw,al]=seg; if(a1-a0<1e-4) continue;
+        ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.globalAlpha=al;
+        ctx.beginPath(); let pen=false;
+        for(let a=a0; a<=a1+1e-9; a+=TAU/560){
+          const v=fn(a);
+          if(!isFinite(v)||Math.abs(v)>clipU){ pen=false; continue; }
+          if(!pen){ ctx.moveTo(X(a),Y(v)); pen=true; } else ctx.lineTo(X(a),Y(v));
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+    }
+    if(show.cos) curve(Math.cos, P.teal, 1.05);
+    if(show.sin) curve(Math.sin, P.rose, 1.05);
+    if(show.tan) curve(Math.tan, P.plum, yMaxU);
+
+    // cursor line through the graphs at the current angle
+    const gxc=X(theta);
+    ctx.setLineDash([3,4]); ctx.strokeStyle=P.muted; ctx.globalAlpha=.6; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(gxc,Y(yMaxU)); ctx.lineTo(gxc,Y(-yMaxU)); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+
+    // ---- the construction (left) ----
+    ctx.strokeStyle=P.ink; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx0,cy,R,0,TAU); ctx.stroke();
+    ctx.strokeStyle=P.grid; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(cx0,cy-R-16); ctx.lineTo(cx0,cy+R+16); ctx.stroke();
+    // tangent line at (1,0) + right-angle tick
+    ctx.setLineDash([7,5]); ctx.strokeStyle=P.plum; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(txl,Y(yMaxU)); ctx.lineTo(txl,Y(-yMaxU)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle=P.muted; ctx.lineWidth=1.2; ctx.strokeRect(txl-7,cy-7,7,7);
+    // θ arc
+    ctx.strokeStyle=P.orange; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx0,cy,R*0.22,0,-theta,true); ctx.stroke();
+    const px=cx0+cosT*R, py=cy-sinT*R;
+    if(show.cos){ ctx.strokeStyle=P.teal; ctx.lineWidth=3.5;
+      ctx.beginPath(); ctx.moveTo(cx0,cy); ctx.lineTo(px,cy); ctx.stroke(); }
+    if(show.sin){ ctx.strokeStyle=P.rose; ctx.lineWidth=3.5;
+      ctx.beginPath(); ctx.moveTo(px,cy); ctx.lineTo(px,py); ctx.stroke(); }
+    if(show.tan && tanDefined){
+      const hitY=Y(tanT), clip=Math.abs(tanT)>yMaxU;
+      // secant through O and P, extended (backwards too — QII/QIII)
+      ctx.setLineDash([4,4]); ctx.strokeStyle=P.muted; ctx.lineWidth=1.3;
+      ctx.beginPath();
+      ctx.moveTo(clip?cx0:cx0-(txl-cx0)*1.05, clip?cy:Math.min(Math.max(2*cy-hitY,6),H-6));
+      ctx.lineTo(txl, Math.min(Math.max(hitY,6),H-6)); ctx.stroke(); ctx.setLineDash([]);
+      const segY=clip?(tanT>0?Y(yMaxU):Y(-yMaxU)):hitY;
+      ctx.strokeStyle=P.plum; ctx.lineWidth=5;
+      ctx.beginPath(); ctx.moveTo(txl,cy); ctx.lineTo(txl,segY); ctx.stroke();
+      if(clip){ ctx.fillStyle=P.plum; ctx.beginPath();
+        const dir=tanT>0?1:-1, ay=segY;
+        ctx.moveTo(txl,ay-6*dir); ctx.lineTo(txl-6,ay+6*dir); ctx.lineTo(txl+6,ay+6*dir);
+        ctx.closePath(); ctx.fill();
+      } else { ctx.fillStyle=P.plum; ctx.beginPath(); ctx.arc(txl,hitY,4.5,0,TAU); ctx.fill(); }
+      // horizontal connector: the tan tip and the tan curve are the SAME height
+      if(!clip){ ctx.setLineDash([4,4]); ctx.strokeStyle=P.plum; ctx.globalAlpha=.5; ctx.lineWidth=1.3;
+        ctx.beginPath(); ctx.moveTo(txl,hitY); ctx.lineTo(gxc,hitY); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha=1; }
+    } else if(show.tan){
+      ctx.setLineDash([4,4]); ctx.strokeStyle=P.muted; ctx.lineWidth=1.3;
+      ctx.beginPath(); ctx.moveTo(cx0,cy); ctx.lineTo(cx0,Y(sinT>0?yMaxU:-yMaxU)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=P.plum; ctx.textAlign='left';
+      // under the curve legend — the top-left corner belongs to the readout card
+      ctx.fillText(narrow?'tan θ undefined':'tan θ undefined — radius ∥ tangent line', gx0+8, Y(yMaxU)+fs+12);
+    }
+    // sin connector: P and the sin curve are the same height too
+    if(show.sin){ ctx.setLineDash([4,4]); ctx.strokeStyle=P.rose; ctx.globalAlpha=.45; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(gxc,py); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha=1; }
+    // radius + point
+    ctx.strokeStyle=P.ink; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(cx0,cy); ctx.lineTo(px,py); ctx.stroke();
+    ctx.fillStyle=P.ink; ctx.beginPath(); ctx.arc(px,py,6,0,TAU); ctx.fill();
+    ctx.fillStyle=P.orange; ctx.beginPath(); ctx.arc(px,py,3.6,0,TAU); ctx.fill();
+
+    // moving dots on the curves
+    const dotOn=(v,color)=>{ ctx.fillStyle=color; ctx.beginPath(); ctx.arc(gxc,Y(v),4.6,0,TAU); ctx.fill(); };
+    if(show.cos) dotOn(cosT,P.teal);
+    if(show.sin) dotOn(sinT,P.rose);
+    if(show.tan && tanDefined && Math.abs(tanT)<=yMaxU) dotOn(tanT,P.plum);
+
+    // labels
+    ctx.textAlign='left';
+    if(!narrow){
+      if(show.sin){ ctx.fillStyle=P.rose; ctx.textAlign=cosT>=0?'right':'left';
+        ctx.fillText('sin θ', px+(cosT>=0?-6:6), (cy+py)/2); ctx.textAlign='left'; }
+      if(show.cos){ ctx.fillStyle=P.teal; ctx.fillText('cos θ', cx0-R*0.55, cy+fs+2); }
+    }
+    let lx=gx0+8;
+    for(const w of ['sin','cos','tan']){
+      if(!show[w]) continue;
+      ctx.fillStyle=w==='sin'?P.rose:(w==='cos'?P.teal:P.plum);
+      ctx.fillText(w+'(x)', lx, Y(yMaxU)+2); lx += ctx.measureText(w+'(x)').width+16;
+    }
+  }
+
+  function draw3D(){
     ctx.clearRect(0,0,W,H);
     fit();
 
@@ -400,7 +573,9 @@
     dot([0,sinT,cosT], 5.2, P.ink);
     dot([0,sinT,cosT], 3.0, P.orange);
 
-    // readout
+  }
+
+  function updateReadout(sinT,cosT,tanT,tanDefined){
     const deg=(theta*180/Math.PI)%360;
     const ex = exactFor(deg);
     const tanStr = !tanDefined
@@ -414,6 +589,108 @@
         ? '<br><span class="t">tan θ</span> = '+tanStr+(ex&&ex.t!=='—'?' <span class="ex">= '+ex.t+'</span>':'')
         : '');
   }
+
+  // ---- 2D tangent-construction inset ---------------------------------
+  // The 3D crate skews the tangent geometry, so the classic flat picture
+  // (GeoGebra pJqvn9pR) lives here: vertical tangent line at (1,0), the
+  // radius through P extended until it meets it — that meeting height IS
+  // tan θ. Drawn in plain 2D so the similar-triangle reading is obvious.
+  const insetBox=document.getElementById('insetBox');
+  const icv=document.getElementById('inset');
+  const ictx=icv.getContext('2d');
+  let iW=0,iH=0,iOx=0,iOy=0,iR=1;
+  function resizeInset(){
+    const w=icv.clientWidth||300, h=w;
+    const d=Math.min(window.devicePixelRatio||1,2.5);
+    icv.style.height=h+'px';
+    icv.width=Math.round(w*d); icv.height=Math.round(h*d);
+    ictx.setTransform(d,0,0,d,0,0);
+    iW=w; iH=h; iR=w*0.27; iOx=w*0.40; iOy=h*0.55;  // yMax ≈ 1.9 units — tan 60° (√3) still meets the line on-screen
+  }
+  const IX=u=>iOx+u*iR, IY=v=>iOy-v*iR;
+  function iline(x1,y1,x2,y2,c,w,dash){
+    ictx.strokeStyle=c; ictx.lineWidth=w; ictx.setLineDash(dash||[]);
+    ictx.beginPath(); ictx.moveTo(x1,y1); ictx.lineTo(x2,y2); ictx.stroke();
+    ictx.setLineDash([]);
+  }
+  function drawInset(sinT,cosT,tanT,tanDefined){
+    if(icv.clientWidth!==iW) resizeInset();
+    ictx.clearRect(0,0,iW,iH);
+    const small=iW<230, fs=small?10:12.5;
+    ictx.font='italic '+fs+'px Georgia,serif';
+    // axes + circle
+    iline(4,iOy,iW-4,iOy,P.grid,1.2);
+    iline(iOx,4,iOx,iH-4,P.grid,1.2);
+    ictx.strokeStyle=P.ink; ictx.lineWidth=1.8;
+    ictx.beginPath(); ictx.arc(iOx,iOy,iR,0,TAU); ictx.stroke();
+    // tangent line at (1,0), full height, unmistakable
+    const tx=IX(1);
+    iline(tx,4,tx,iH-4,P.plum,2.2,[7,5]);
+    // right-angle tick where radius meets tangent
+    ictx.strokeStyle=P.muted; ictx.lineWidth=1.2;
+    ictx.strokeRect(tx-7,iOy-7,7,7);
+    const px=IX(cosT), py=IY(sinT);
+    // θ arc
+    ictx.strokeStyle=P.orange; ictx.lineWidth=2;
+    ictx.beginPath(); ictx.arc(iOx,iOy,iR*0.24,0,-theta,true); ictx.stroke();
+    // cos + sin legs (only the ones toggled on, so colours stay in sync)
+    if(show.cos) iline(iOx,iOy,px,iOy,P.teal,3.5);
+    if(show.sin) iline(px,iOy,px,py,P.rose,3.5);
+    const yMaxU=(iOy-8)/iR;   // clip for the tan segment
+    if(tanDefined){
+      // the secant O→P extended (both ways — QII/QIII reach x=1 backwards)
+      const hitY=IY(tanT), clip=Math.abs(tanT)>yMaxU;
+      const ex2=iOx-(tx-iOx)*1.05, ey2=2*iOy-hitY;
+      iline(clip?iOx:ex2, clip?iOy:Math.min(Math.max(ey2,4),iH-4),
+            tx, Math.min(Math.max(hitY,4),iH-4), P.muted,1.3,[4,4]);
+      // THE tan segment, boldest thing in the panel
+      const segY=clip?(tanT>0?4:iH-4):hitY;
+      iline(tx,iOy,tx,segY,P.plum,5);
+      if(clip){ // arrowhead — it keeps going
+        ictx.fillStyle=P.plum; ictx.beginPath();
+        const dir=tanT>0?1:-1, ay=tanT>0?4:iH-4;
+        ictx.moveTo(tx,ay); ictx.lineTo(tx-6,ay+9*dir); ictx.lineTo(tx+6,ay+9*dir);
+        ictx.closePath(); ictx.fill();
+      } else {
+        ictx.fillStyle=P.plum; ictx.beginPath(); ictx.arc(tx,hitY,4,0,TAU); ictx.fill();
+      }
+      ictx.fillStyle=P.plum; ictx.textAlign='left';
+      const lv=Math.abs(tanT)>=100?tanT.toExponential(1):tanT.toFixed(2);
+      const lTxt='tan θ = '+lv, lW=ictx.measureText(lTxt).width;
+      ictx.fillText(lTxt, Math.min(tx+7,iW-lW-6), Math.min(Math.max(clip?(tanT>0?18:iH-10):hitY-8,14),iH-8));
+    } else {
+      // 90°/270°: radius is parallel to the tangent line — they never meet
+      iline(iOx,iOy,iOx,IY(sinT>0?yMaxU:-yMaxU),P.muted,1.3,[4,4]);
+      ictx.fillStyle=P.plum; ictx.textAlign='left';
+      ictx.fillText('tan θ undefined', tx-(small?70:88), 18);
+      ictx.font='italic '+(fs-1.5)+'px Georgia,serif'; ictx.fillStyle=P.muted;
+      ictx.fillText('radius ∥ tangent line', tx-(small?70:88), 18+fs+2);
+      ictx.font='italic '+fs+'px Georgia,serif';
+    }
+    // radius + point on top
+    iline(iOx,iOy,px,py,P.ink,2.2);
+    ictx.fillStyle=P.ink; ictx.beginPath(); ictx.arc(px,py,5,0,TAU); ictx.fill();
+    ictx.fillStyle=P.orange; ictx.beginPath(); ictx.arc(px,py,3,0,TAU); ictx.fill();
+    // small leg labels
+    if(!small){
+      if(show.sin){ ictx.fillStyle=P.rose; ictx.textAlign=cosT>=0?'right':'left';
+        ictx.fillText('sin', px+(cosT>=0?-5:5), (iOy+py)/2+4); }
+      if(show.cos){ ictx.fillStyle=P.teal; ictx.textAlign='center';
+        ictx.fillText('cos', (iOx+px)/2, iOy+fs+3); }
+    }
+  }
+  // drag anywhere in the inset to set θ from the flat picture
+  let iDrag=false;
+  function insetTheta(e){
+    const r=icv.getBoundingClientRect();
+    const a=Math.atan2(iOy-(e.clientY-r.top), (e.clientX-r.left)-iOx);
+    pause(); setTheta(a);
+  }
+  icv.addEventListener('pointerdown', e=>{ iDrag=true; icv.setPointerCapture(e.pointerId); icv.style.cursor='grabbing'; insetTheta(e); });
+  icv.addEventListener('pointermove', e=>{ if(iDrag) insetTheta(e); });
+  ['pointerup','pointercancel'].forEach(ev=>icv.addEventListener(ev, ()=>{ iDrag=false; icv.style.cursor='grab'; }));
+  window.addEventListener('resize', resizeInset);
+  resizeInset();
 
   // ---- loop -----------------------------------------------------------
   let last=performance.now();
@@ -474,6 +751,23 @@
   });
   resetBtn.addEventListener('click', ()=>{ az=az0; el=el0; });
 
+  const viewSeg=document.getElementById('viewSeg');
+  const hintEl=document.querySelector('.hint');
+  function applyView(){
+    [...viewSeg.children].forEach(b=>b.classList.toggle('on', b.dataset.v===view));
+    hintEl.textContent = view==='flat'
+      ? 'drag the dot to set θ · drag the graphs to scrub'
+      : 'drag the dot to set θ · drag elsewhere to orbit';
+    resetBtn.style.display = view==='flat' ? 'none' : '';
+  }
+  viewSeg.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    view=b.dataset.v;
+    try{ localStorage.setItem('sincos_view', view); }catch(err){}
+    applyView();
+  });
+  applyView();
+
   // pointer: drag the DOT to set θ, drag anywhere else to orbit the camera.
   let dragging=null, px=0, py=0;   // 'orbit' | 'theta' | null
   function canvasXY(e){
@@ -497,19 +791,35 @@
     }
     return ((best%TAU)+TAU)%TAU;
   }
+  function apply2DPointer(m){
+    if(!g2) return;
+    if(dragging==='scrub'){
+      const t=Math.max(0, Math.min(1, (m.x-g2.gx0)/(g2.gx1-g2.gx0)));
+      setTheta(t*TAU);
+    } else {
+      setTheta(Math.atan2(g2.cy-m.y, m.x-g2.cx0));
+    }
+  }
   cv.addEventListener('pointerdown', e=>{
     const m=canvasXY(e);
-    const pDot=S(0,Math.sin(theta),Math.cos(theta));
-    const grab=Math.hypot(pDot.x-m.x,pDot.y-m.y)<30;
-    dragging = grab ? 'theta' : 'orbit';
-    if(grab){ pause(); setTheta(nearestTheta(m.x,m.y)); }
+    if(view==='flat'){
+      dragging = (g2 && m.x>=g2.gx0-12) ? 'scrub' : 'theta2d';
+      pause(); apply2DPointer(m);
+    } else {
+      const pDot=S(0,Math.sin(theta),Math.cos(theta));
+      const grab=Math.hypot(pDot.x-m.x,pDot.y-m.y)<30;
+      dragging = grab ? 'theta' : 'orbit';
+      if(grab){ pause(); setTheta(nearestTheta(m.x,m.y)); }
+    }
     px=e.clientX; py=e.clientY;
     cv.classList.add('drag');
     cv.setPointerCapture(e.pointerId);
   });
   cv.addEventListener('pointermove', e=>{
     if(!dragging)return;
-    if(dragging==='theta'){
+    if(dragging==='scrub'||dragging==='theta2d'){
+      apply2DPointer(canvasXY(e));
+    } else if(dragging==='theta'){
       const m=canvasXY(e);
       setTheta(nearestTheta(m.x,m.y));
     } else {
