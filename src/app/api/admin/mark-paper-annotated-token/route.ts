@@ -22,6 +22,21 @@ export async function GET(req: NextRequest) {
 
   const kind = req.nextUrl.searchParams.get('type') || '';
 
+  // The question-paper PDF, stored so a run can be RE-MARKED later without the
+  // browser re-attaching it (phase:'remark'). Like originals: pre-run, no runId.
+  if (kind === 'paper') {
+    const pathname = `mark-paper/papers/${crypto.randomUUID()}.pdf`;
+    const token = await generateClientTokenFromReadWriteToken({
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
+      pathname,
+      onUploadCompleted: { callbackUrl: '' },
+      allowedContentTypes: ['application/pdf', 'application/octet-stream'],
+      maximumSizeInBytes: 60 * 1024 * 1024,
+      validUntil: Date.now() + 10 * 60 * 1000,
+    });
+    return NextResponse.json({ token, pathname });
+  }
+
   if (kind === 'original') {
     const filename = req.nextUrl.searchParams.get('filename') || '';
     const rawExt = (filename.match(/\.([a-z0-9]{2,5})$/i)?.[1] || 'jpg').toLowerCase();

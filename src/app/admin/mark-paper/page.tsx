@@ -129,8 +129,9 @@ async function fileToHiresBlob(file: File, maxEdge = HIRES_MAX_EDGE, quality = 0
 async function uploadOriginal(file: File, up: { mediaType: string; origWidth?: number; origHeight?: number }): Promise<string | null> {
   try {
     const maxDim = Math.max(up.origWidth || 0, up.origHeight || 0);
-    // Decoded and small: the 1280 copy already carries (nearly) every pixel — skip.
-    if (up.origWidth && maxDim <= 1400) return null;
+    // EVERY photo's original goes up (the old ≤1400px skip is gone, 3 Aug 2026):
+    // beyond the hi-res pen base, these are what phase:'remark' re-marks from —
+    // a skipped photo would be a hole in a re-marked paper.
     let payload: Blob = file;
     let name = file.name || 'photo.jpg';
     if (up.origWidth) {
@@ -150,6 +151,21 @@ async function uploadOriginal(file: File, up: { mediaType: string; origWidth?: n
       access: 'public', token,
       contentType: payload.type || 'application/octet-stream',
       multipart: payload.size > 5 * 1024 * 1024,
+    });
+    return blob.url;
+  } catch { return null; }
+}
+
+// The question paper too — solely so the run can be re-marked later (the marking
+// itself still reads the base64 in the request body). Best-effort like originals.
+async function uploadPaperPdf(file: File): Promise<string | null> {
+  try {
+    const tokenRes = await fetch('/api/admin/mark-paper-annotated-token?type=paper');
+    if (!tokenRes.ok) return null;
+    const { token, pathname } = await tokenRes.json();
+    const blob = await put(pathname, file, {
+      access: 'public', token, contentType: 'application/pdf',
+      multipart: file.size > 5 * 1024 * 1024,
     });
     return blob.url;
   } catch { return null; }
@@ -427,6 +443,28 @@ export default function MarkPaperPage() {
     setImages((prev) => prev.filter((_, j) => j !== idx));
   }
 
+  // Parse + apply a marking response (fresh mark AND re-mark share the shape).
+  async function applyMarkResponse(resp: Response) {
+    const raw = await resp.text();
+    let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
+    try { d = raw ? JSON.parse(raw) : {}; }
+    catch {
+      const hint = resp.status === 413
+        ? 'the upload is too large for the server — try fewer photos, or a smaller PDF'
+        : 'it likely timed out — try fewer photos at once';
+      throw new Error(`The marker didn't return a result (status ${resp.status}) — ${hint}.`);
+    }
+    if (!resp.ok) throw new Error(d.error || `Marking failed (status ${resp.status})`);
+    setResults(d.results || []);
+    setTotals(d.totals || null);
+    setUnattempted(d.unattempted_questions || []);
+    setAnnotatedPhotos(d.annotated_photos || []);
+    setRunId(d.run_id || null);
+    setUsage(d.usage || null);
+    setPhase('done');
+    loadStats();
+  }
+
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
@@ -436,37 +474,41 @@ export default function MarkPaperPage() {
       // worksheets where the printed questions are on the pages themselves).
       const pdfBase64 = pdf ? await pdfToBase64(pdf) : null;
       const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
-      // Full-res originals → Blob, so the bot's red pen lands on sharp pages instead of
-      // the 1280px marking copies. Must finish BEFORE the marking call — the URLs ride
-      // its body — but each one is best-effort: null just means that page stays small.
+      // Full-res originals + the paper PDF → Blob, BEFORE the marking call (the URLs
+      // ride its body). The originals feed the hi-res red pen; together with the PDF
+      // they are also what 🔁 Re-mark rebuilds from. Each upload is best-effort.
       setRasterizing('Uploading full-resolution pages…');
-      const originalUrls = await Promise.all(images.map((f, i) => uploadOriginal(f, imgs[i]))).finally(() => setRasterizing(''));
+      const [originalUrls, paperPdfUrl] = await Promise.all([
+        Promise.all(images.map((f, i) => uploadOriginal(f, imgs[i]))),
+        pdf ? uploadPaperPdf(pdf) : Promise.resolve(null),
+      ]).finally(() => setRasterizing(''));
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({
-          phase: 'direct', pdfBase64,
+          phase: 'direct', pdfBase64, paperPdfUrl: paperPdfUrl || undefined,
           images: imgs.map((im, i) => ({ base64: im.base64, mediaType: im.mediaType, originalUrl: originalUrls[i] || undefined })),
           paperName: workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`), model: markModel, style: markStyle,
         }),
       });
-      const raw = await resp.text();
-      let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
-      try { d = raw ? JSON.parse(raw) : {}; }
-      catch {
-        const hint = resp.status === 413
-          ? 'the upload is too large for the server — try fewer photos, or a smaller PDF'
-          : 'it likely timed out — try fewer photos at once';
-        throw new Error(`The marker didn't return a result (status ${resp.status}) — ${hint}.`);
-      }
-      if (!resp.ok) throw new Error(d.error || `Marking failed (status ${resp.status})`);
-      setResults(d.results || []);
-      setTotals(d.totals || null);
-      setUnattempted(d.unattempted_questions || []);
-      setAnnotatedPhotos(d.annotated_photos || []);
-      setRunId(d.run_id || null);
-      setUsage(d.usage || null);
-      setPhase('done');
-      loadStats();
+      await applyMarkResponse(resp);
+    } catch (e) { setError((e as Error).message); setPhase('idle'); }
+  }
+
+  // 🔁 Re-mark: the loaded run's stored inputs (photo originals + paper PDF in Blob)
+  // go through marking again server-side — nothing to re-attach. Full marking cost,
+  // hence the confirm. With photos still attached in the picker, plain markPaper()
+  // is the same thing from fresher bytes, so prefer it.
+  async function remarkPaper() {
+    if (images.length) { markPaper(); return; }
+    if (!runId) return;
+    if (!window.confirm('Re-mark this paper from its stored photos? Costs about the same as the original marking (~1–2 min).')) return;
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setPracticeItems(null);
+    try {
+      const resp = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'remark', id: runId, model: markModel, style: markStyle }),
+      });
+      await applyMarkResponse(resp);
     } catch (e) { setError((e as Error).message); setPhase('idle'); }
   }
 
@@ -958,6 +1000,16 @@ export default function MarkPaperPage() {
             {annotatedPhotos.length > 0 && (
               <button style={{ ...btn, background: '#374151', opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={() => generateMarked('photos')}>
                 {generating && !bothStage ? '…' : '🖼️ Images only'}
+              </button>
+            )}
+            {runId && (
+              <button
+                style={{ ...btn, background: '#4338ca', opacity: generating || busy ? 0.6 : 1 }}
+                disabled={generating || busy}
+                title="Mark this paper again from its stored photos — full marking cost"
+                onClick={remarkPaper}
+              >
+                🔁 Re-mark
               </button>
             )}
             {marked.map((m) => (
