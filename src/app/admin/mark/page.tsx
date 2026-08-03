@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import StudentPicker from '@/components/StudentPicker';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface Student { id: string; name: string; }
 
 interface DetectedQuestion {
   questionLabel: string;
@@ -357,9 +357,10 @@ function UploadFlow({ onDone, onCancel }: {
   onCancel: () => void;
 }) {
   const [uploadState, setUploadState] = useState<UploadState>('upload');
-  const [students, setStudents] = useState<Student[]>([]);
-  const [studentsLoading, setStudentsLoading] = useState(true);
+  // Student list + fetch live in <StudentPicker> (/api/admin/students-lite);
+  // this page keeps only the picked id + name.
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [selectedStudentName, setSelectedStudentName] = useState('');
   const [adHocName, setAdHocName] = useState('');
   const [studentLevel, setStudentLevel] = useState<StudentLevel>('unknown');
   const [files, setFiles] = useState<File[]>([]);
@@ -377,20 +378,14 @@ function UploadFlow({ onDone, onCancel }: {
     return () => { uploadAbortRef.current?.abort(); };
   }, []);
 
-  useEffect(() => {
-    fetch('/api/mark-batch/init')
-      .then(r => r.json()).then(d => setStudents(d.students || [])).catch(() => setStudents([]))
-      .finally(() => setStudentsLoading(false));
-  }, []);
-
-  const selectedStudent = students.find(s => s.id === selectedStudentId) || null;
   const isAdHoc = selectedStudentId === '__adhoc__';
+  const pickedStudentId = isAdHoc || !selectedStudentId ? null : selectedStudentId;
 
   // Auto-focus ad-hoc name input when user selects "Ad-hoc"
   useEffect(() => {
     if (isAdHoc) adHocInputRef.current?.focus();
   }, [isAdHoc]);
-  const studentName = isAdHoc ? adHocName.trim() : selectedStudent?.name || '';
+  const studentName = isAdHoc ? adHocName.trim() : selectedStudentName;
   const canUpload = files.length > 0 && studentName.length > 0;
 
   function handleFileDrop(e: React.DragEvent) {
@@ -451,7 +446,7 @@ function UploadFlow({ onDone, onCancel }: {
         const res = await fetch('/api/mark-batch/init', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pdfBlobUrl: blobUrl, studentName, studentId: selectedStudent?.id || null }),
+          body: JSON.stringify({ pdfBlobUrl: blobUrl, studentName, studentId: pickedStudentId }),
           signal: abortCtrl.signal,
         });
         if (!res.ok) {
@@ -471,7 +466,7 @@ function UploadFlow({ onDone, onCancel }: {
       setUploadState('uploading');
       const fd = new FormData();
       fd.append('studentName', studentName);
-      if (selectedStudent) fd.append('studentId', selectedStudent.id);
+      if (pickedStudentId) fd.append('studentId', pickedStudentId);
       files.forEach(f => fd.append('images[]', f));
       try {
         const res = await fetch('/api/mark-batch/init', {
@@ -559,12 +554,11 @@ function UploadFlow({ onDone, onCancel }: {
 
         <div className="field-group">
           <label className="field-label">Student</label>
-          <select className="field-select" value={selectedStudentId}
-            onChange={e => setSelectedStudentId(e.target.value)} disabled={studentsLoading}>
-            <option value="">{studentsLoading ? 'Loading…' : '— Select student —'}</option>
-            {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+          <StudentPicker className="field-select" value={selectedStudentId}
+            placeholder="— Select student —"
+            onChange={(id, s) => { setSelectedStudentId(id); setSelectedStudentName(s?.name || ''); }}>
             <option value="__adhoc__">Ad-hoc (enter name)</option>
-          </select>
+          </StudentPicker>
           {isAdHoc && (
             <input ref={adHocInputRef} type="text" className="field-input" placeholder="Student name"
               value={adHocName} onChange={e => setAdHocName(e.target.value)} style={{ marginTop: 8 }} />

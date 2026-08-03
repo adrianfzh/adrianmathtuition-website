@@ -7,6 +7,7 @@ import 'katex/dist/katex.min.css';
 import { ensureAdminSession } from '@/lib/admin-client';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
 import { mathHtml } from '@/lib/math-inline';
+import StudentPicker from '@/components/StudentPicker';
 
 // The ✏️ Annotate overlay (Apple Pencil ink over the marked pages) is heavy and
 // only opens on demand — load it when first rendered, never in the initial bundle.
@@ -272,7 +273,6 @@ export default function MarkPaperPage() {
   // Send / save block (the no-amendments fast path). Email only — WhatsApp goes out
   // from Adrian's PERSONAL number on the Mac by dragging the downloaded file in, so the
   // WhatsApp feature here is the nicely-named Download, not a send button.
-  const [students, setStudents] = useState<{ id: string; name: string }[] | null>(null);
   const [sendStudentId, setSendStudentId] = useState('');
   const [sendStudentName, setSendStudentName] = useState('');
   const [sendEmail, setSendEmail] = useState('');
@@ -640,25 +640,11 @@ export default function MarkPaperPage() {
   }
 
   // ── Send / save helpers ────────────────────────────────────────────────────
-  async function loadStudents() {
-    if (students) return;
-    try {
-      const r = await fetch('/api/mark-batch/init', { headers: authHeaders });
-      const d = await r.json();
-      if (r.ok) setStudents(d.students || []);
-    } catch { /* dropdown stays empty; email can still be typed */ }
-  }
-  // Eager-load once the send panel exists: an iPad opens the native picker BEFORE a
-  // focus-triggered fetch lands, and the open sheet doesn't refresh its options.
-  const sendPanelVisible = marked.length > 0;
-  useEffect(() => {
-    if (sendPanelVisible) loadStudents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sendPanelVisible]);
-  async function pickSendStudent(id: string) {
+  // Student list + eager-load live in <StudentPicker> now (shared fetch across
+  // the send row and the history retag; /api/admin/students-lite behind it).
+  async function pickSendStudent(id: string, name: string) {
     setSendStudentId(id); setSendNote(null);
-    const s = (students || []).find((x) => x.id === id);
-    setSendStudentName(s?.name || '');
+    setSendStudentName(name);
     if (!id) { setSendEmail(''); return; }
     // Tag the run with the student — this link is what makes the paper show up on the
     // student's profile page ("Marked papers"). Last pick WINS: re-picking corrects a
@@ -667,9 +653,9 @@ export default function MarkPaperPage() {
     if (runId) {
       fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'set-student', id: runId, studentId: id, studentName: s?.name || '' }),
+        body: JSON.stringify({ phase: 'set-student', id: runId, studentId: id, studentName: name }),
       }).then((r) => {
-        if (r.ok) setSendNote({ ok: true, text: `Filed under ${s?.name || 'student'} — re-pick to change` });
+        if (r.ok) setSendNote({ ok: true, text: `Filed under ${name || 'student'} — re-pick to change` });
         loadStats();
       }).catch(() => {});
     }
@@ -872,13 +858,13 @@ export default function MarkPaperPage() {
                 <span style={{ color: '#6b7280', minWidth: 120 }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                 <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {editTagId === run.id ? (
-                    <select
+                    <StudentPicker
                       autoFocus
                       value={run.student_id || ''}
+                      authHeaders={authHeaders}
                       onBlur={() => setEditTagId(null)}
-                      onChange={(e) => {
-                        const sid = e.target.value;
-                        const sname = (students || []).find((x) => x.id === sid)?.name || '';
+                      onChange={(sid, st) => {
+                        const sname = st?.name || '';
                         setEditTagId(null);
                         if (!sid) return;
                         setRecentRuns((prev) => prev.map((r) => r.id === run.id ? { ...r, student_id: sid, student_name: sname } : r));
@@ -888,14 +874,11 @@ export default function MarkPaperPage() {
                         }).catch(() => {});
                       }}
                       style={{ fontSize: 12, padding: '2px 4px', border: '1px solid #d1d5db', borderRadius: 6 }}
-                    >
-                      <option value="">Student…</option>
-                      {(students || []).map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
-                    </select>
+                    />
                   ) : (
                     <button
                       title="Tag / change student"
-                      onClick={() => { loadStudents(); setEditTagId(run.id); }}
+                      onClick={() => setEditTagId(run.id)}
                       style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#1d4ed8', fontWeight: 600, fontSize: 13 }}
                     >
                       {run.student_name || '＋ tag'}
@@ -1184,15 +1167,12 @@ export default function MarkPaperPage() {
               >
                 ⬇ Download for WhatsApp
               </a>
-              <select
+              <StudentPicker
                 value={sendStudentId}
-                onFocus={loadStudents}
-                onChange={(e) => pickSendStudent(e.target.value)}
+                authHeaders={authHeaders}
+                onChange={(id, s) => pickSendStudent(id, s?.name || '')}
                 style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, background: 'white' }}
-              >
-                <option value="">Student…</option>
-                {(students || []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
+              />
               <input
                 type="email"
                 value={sendEmail}
