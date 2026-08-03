@@ -173,6 +173,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     pinch?: { d0: number; zoom0: number; cx0: number; cy0: number; docX: number; docY: number };
   } | null>(null);
   const momentumRef = useRef<number | null>(null);
+  // ── ink event log ──────────────────────────────────────────────────────────
+  // Always-on ring buffer of pointer/gesture/commit events, for chasing "my
+  // stroke went missing" reports on the real iPad (3 Aug 2026 — palm-undo fix
+  // didn't end them). Triple-tap the page counter to copy it; also persisted to
+  // localStorage on every pen lift so a closed overlay still has the trail.
+  const inkLogRef = useRef<Record<string, unknown>[]>([]);
+  const inkT0Ref = useRef(Date.now());
+  const chipTapsRef = useRef<number[]>([]);
   const cursorRef = useRef<{ x: number; y: number; mode: 'dot' | 'ring' } | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const doneAtRef = useRef<number | null>(null);
@@ -615,6 +623,25 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     [mouseAllowed],
   );
 
+  const logInk = useCallback((k: string, d?: Record<string, unknown>) => {
+    const a = inkLogRef.current;
+    a.push({ t: Date.now() - inkT0Ref.current, k, ...(d || {}) });
+    if (a.length > 500) a.splice(0, a.length - 500);
+  }, []);
+
+  const copyInkLog = useCallback(() => {
+    const now = Date.now();
+    const taps = chipTapsRef.current.filter((t) => now - t < 800);
+    taps.push(now);
+    chipTapsRef.current = taps;
+    if (taps.length < 3) return;
+    chipTapsRef.current = [];
+    const payload = JSON.stringify({ ua: navigator.userAgent, at: new Date().toISOString(), log: inkLogRef.current });
+    navigator.clipboard?.writeText(payload)
+      .then(() => alert('Ink log copied — paste it into the Claude chat.'))
+      .catch(() => alert('Could not copy automatically — the log is also stored on this device.'));
+  }, []);
+
   const stopMomentum = useCallback(() => {
     if (momentumRef.current !== null) {
       cancelAnimationFrame(momentumRef.current);
@@ -633,13 +660,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const cssPerImg = (kFactor() * DOC_W) / d.w;
     const fit = fitStroke(cur.stroke.points, { minLength: SNAP_MIN_CSS / cssPerImg });
     if (fit) {
+      logInk('snap', { shape: fit.kind, nBefore: cur.fitAttemptAt, page: cur.pageIdx });
       cur.stroke.points = shapeToPolyline(fit);
       cur.stroke.snapped = fit.kind;
       cur.snapLocked = true;
       pathCache.current.delete(cur.stroke);
       scheduleLive();
     }
-  }, [scheduleLive]);
+  }, [logInk, scheduleLive]);
 
   const armHoldTimer = useCallback(() => {
     if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
@@ -702,11 +730,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      if (busyRef.current) return;
+      if (busyRef.current) { logInk('drop', { why: 'busy', pt: e.pointerType }); return; }
       // The selection chip's buttons live inside this element — a pen tap on them
       // must click, not start a lasso (preventDefault on pointerdown kills clicks).
-      if ((e.target as HTMLElement).closest?.('button')) return;
+      if ((e.target as HTMLElement).closest?.('button')) { logInk('drop', { why: 'button', pt: e.pointerType }); return; }
       if (isPenLike(e)) {
+        logInk('pen-down', { p: Math.round(e.pressure * 100) / 100, w: Math.round(e.width), h: Math.round(e.height), tool });
         e.preventDefault();
         stopMomentum();
         gestureRef.current = null;          // pen wins over any finger gesture
@@ -743,7 +772,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           return;
         }
         const pt = toImage(x, y);
-        if (!pt) { penDownRef.current = false; return; }   // page not loaded yet
+        if (!pt) { logInk('drop', { why: 'page-not-loaded' }); penDownRef.current = false; return; }
         const d = dimsRef.current[pt.pageIdx]!;
         const ptPerImg = d.w / PDF_PAGE_W;                  // 1 pt at page scale, in image px
         const widthPt = tool === 'highlighter' ? HL_WIDTH_PT : penWidthPt;
@@ -767,7 +796,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (e.pointerType !== 'touch') return;
       // Fingers: never draw. Ignore entirely while the pen is down or just lifted
       // (that's the resting palm), otherwise start a scroll/pinch/tap gesture.
-      if (penDownRef.current || Date.now() - lastPenUpRef.current < 500) return;
+      if (penDownRef.current || Date.now() - lastPenUpRef.current < 500) { logInk('touch-blocked', { w: Math.round(e.width), h: Math.round(e.height) }); return; }
+      logInk('touch-down', { w: Math.round(e.width), h: Math.round(e.height), n: touchesRef.current.size + 1 });
       touchesRef.current.set(e.pointerId, cssPos(e));
       stopMomentum();
       const pts = [...touchesRef.current.values()];
@@ -974,10 +1004,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const cur = currentRef.current;
       currentRef.current = null;
       if (cur && cur.stroke.points.length) {
+        logInk('commit', { n: cur.stroke.points.length, page: cur.pageIdx, snapped: cur.stroke.snapped || '' });
         strokesRef.current[cur.pageIdx].push(cur.stroke);
         pushUndo(cur.pageIdx, { t: 'add', stroke: cur.stroke });
         bumpInk();
+      } else if (tool === 'pen' || tool === 'highlighter') {
+        logInk('pen-up-empty', {});
       }
+      try { localStorage.setItem('annotate-inklog:v1', JSON.stringify(inkLogRef.current.slice(-300))); } catch { /* full/blocked */ }
       scheduleBase();
       void e;
     };
@@ -1008,7 +1042,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       // is also 2–3 brief, barely-moving contacts, and without the contact-size
       // gate it fired undo and silently deleted the previous stroke. Devices that
       // report no contact geometry (width 0) keep the old behaviour.
-      if (dur < 320 && g.moved < 12 && g.maxTouches >= 2 && g.maxContact < 30) {
+      const tapFires = dur < 320 && g.moved < 12 && g.maxTouches >= 2 && g.maxContact < 30;
+      logInk('touch-lift', { dur, moved: Math.round(g.moved), maxT: g.maxTouches, maxC: Math.round(g.maxContact), fired: tapFires ? (g.maxTouches === 2 ? 'undo' : 'redo') : '' });
+      if (tapFires) {
         const pageIdx = pageNoRef.current - 1;
         if (g.maxTouches === 2) undo(pageIdx);
         else redo(pageIdx);
@@ -1033,6 +1069,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     };
 
     const onPointerCancel = (e: PointerEvent) => {
+      logInk('cancel', { pt: e.pointerType, penDown: penDownRef.current });
       if (isPenLike(e)) {
         // Keep what was drawn — losing ink to a system gesture is worse than a blot.
         if (penDownRef.current) finishPen(e);
@@ -1087,7 +1124,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       el.removeEventListener('gesturestart', swallow as EventListener);
       el.removeEventListener('gesturechange', swallow as EventListener);
     };
-  }, [armHoldTimer, bumpInk, clampView, clearSelection, eraseAt, eraseAtPartial, eraserMode, hlColor, isPenLike, penColor, penWidthPt, pushUndo, redo, scheduleBase, scheduleLive, stopMomentum, toImage, tool, undo]);
+  }, [armHoldTimer, bumpInk, clampView, clearSelection, eraseAt, eraseAtPartial, eraserMode, hlColor, isPenLike, logInk, penColor, penWidthPt, pushUndo, redo, scheduleBase, scheduleLive, stopMomentum, toImage, tool, undo]);
 
   // ── mount: sizing, images, draft, wake lock, tool memory, misc listeners ────
   useEffect(() => {
@@ -1330,7 +1367,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <button style={btn} onClick={requestClose} aria-label="Close">✕</button>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
           <button style={btn} onClick={() => jumpToPage(currentPageIdx - 1)} disabled={pageNo <= 1} aria-label="Previous page">‹</button>
-          <span style={{ fontSize: 14, fontWeight: 600, minWidth: 52, textAlign: 'center' }}>{pageNo} / {n}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, minWidth: 52, textAlign: 'center' }} onClick={copyInkLog} title="Triple-tap to copy the ink debug log">{pageNo} / {n}</span>
           <button style={btn} onClick={() => jumpToPage(currentPageIdx + 1)} disabled={pageNo >= n} aria-label="Next page">›</button>
         </div>
 
