@@ -24,8 +24,8 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'Rapid-fire differentiation and integration practice with instant feedback.' },
   { slug: 'mental-math', icon: '🧮', title: 'Mental Math Sprint',
     desc: 'Timed arithmetic drills to sharpen speed and accuracy.' },
-  { slug: 'sincos-unwrap', icon: '🔄', title: 'Unit Circle → Sine & Cosine',
-    desc: "Watch a point circle the unit circle and unroll into the sine and cosine waves — see why they're the same motion, a quarter-turn apart." },
+  { slug: 'sincos-unwrap', icon: '🔄', title: 'Unit Circle → Sine, Cosine & Tangent',
+    desc: 'Watch a point circle the unit circle and unroll into the sine, cosine and tangent curves — drag the dot, jump to special angles, and see exact values plus why tan blows up at 90°.' },
 ];
 
 export default function ToolsPage() {

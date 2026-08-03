@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Unit Circle → Sine &amp; Cosine</title>
+<title>Unit Circle → Sine, Cosine &amp; Tangent</title>
 <style>
   :root{
     --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
-    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C;
+    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
     --grid:#e2daccc; --line:#cfc6b6;
     --panel:#fbf8f1; --panelb:#e7ded0;
   }
@@ -34,7 +34,8 @@
     box-shadow:0 1px 0 rgba(0,0,0,.03);
   }
   .readout .k{color:var(--muted)}
-  .readout .s{color:var(--rose)} .readout .c{color:var(--teal)}
+  .readout .s{color:var(--rose)} .readout .c{color:var(--teal)} .readout .t{color:var(--plum)}
+  .readout .ex{color:var(--muted)}
   .hint{position:absolute; bottom:10px; right:12px; font-size:11.5px; color:var(--muted); font-family:ui-monospace,monospace}
   .controls{
     display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px;
@@ -53,6 +54,10 @@
   .seg button{border:none; border-right:1px solid var(--panelb); border-radius:0; background:var(--panel)}
   .seg button:last-child{border-right:none}
   .seg button.on{background:var(--ink); color:var(--bg)}
+  .seg.show button.on[data-w="sin"]{background:var(--rose); color:#fff}
+  .seg.show button.on[data-w="cos"]{background:var(--teal); color:#fff}
+  .seg.show button.on[data-w="tan"]{background:var(--plum); color:#fff}
+  .seg.snaps button{font-size:12px; padding:6px 9px}
   input[type=range]{accent-color:var(--orange); cursor:pointer}
   input[type=range].theta{width:170px}
   input[type=range].speed{width:96px}
@@ -66,14 +71,14 @@
 <body>
 <a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
 <header>
-  <h1>Unit circle, unwrapped — sin &amp; cos as two shadows of one point</h1>
-  <div class="sub">A point rotates on the circle. Its height traces sin(x); its depth traces cos(x). One revolution = one full period. Drag the scene to orbit.</div>
+  <h1>Unit circle, unwrapped — sin, cos &amp; tan from one rotating point</h1>
+  <div class="sub">A point rotates on the circle. Its height traces sin(x), its depth traces cos(x) — and the ray through it meets the tangent line (the crate's own front edge) at tan(x). Drag the dot to set the angle; drag anywhere else to orbit.</div>
 </header>
 
 <div class="stage">
   <canvas id="cv"></canvas>
   <div class="readout" id="ro"></div>
-  <div class="hint">drag to orbit</div>
+  <div class="hint">drag the dot to set θ · drag elsewhere to orbit</div>
 </div>
 
 <div class="controls">
@@ -82,10 +87,18 @@
   <div class="grp"><label>θ</label><input type="range" class="theta" id="theta" min="0" max="360" step="0.5" value="0"></div>
   <div class="grp">
     <label>Show</label>
-    <div class="seg" id="mode">
-      <button data-m="both" class="on">Both</button>
-      <button data-m="sin">sin</button>
-      <button data-m="cos">cos</button>
+    <div class="seg show" id="show">
+      <button data-w="sin" class="on">sin</button>
+      <button data-w="cos" class="on">cos</button>
+      <button data-w="tan" class="on">tan</button>
+    </div>
+  </div>
+  <div class="grp">
+    <label>Jump to</label>
+    <div class="seg snaps" id="snaps">
+      <button data-a="0">0°</button><button data-a="30">30°</button><button data-a="45">45°</button>
+      <button data-a="60">60°</button><button data-a="90">90°</button><button data-a="180">180°</button>
+      <button data-a="270">270°</button>
     </div>
   </div>
   <div class="grp">
@@ -108,10 +121,10 @@
   // ---- palettes -------------------------------------------------------
   const PAL = {
     flow:  {bg:'#F4EFE6', ink:'#2b2b2b', muted:'#9b9081',
-            rose:'#BC5A6E', teal:'#2E7C8F', orange:'#D8693C',
+            rose:'#BC5A6E', teal:'#2E7C8F', orange:'#D8693C', plum:'#7B5EA7',
             grid:'#e6ddcd', line:'#cdc4b3'},
     house: {bg:'#FBFAF7', ink:'#1a1a1a', muted:'#9aa0a6',
-            rose:'#185FA5', teal:'#C2410C', orange:'#185FA5',
+            rose:'#185FA5', teal:'#C2410C', orange:'#185FA5', plum:'#0E7C4A',
             grid:'#ececec', line:'#dddddd'}
   };
   let P = PAL.flow;
@@ -120,10 +133,11 @@
   const TAU = Math.PI*2;
   const Xmax = 6.0;              // unrolled length for one period
   const xScale = Xmax / TAU;     // angle -> x
+  const TCLIP = 1.28;            // |tan| beyond this leaves the crate — clip + fade
   let theta = 0;                 // current angle (radians)
   let playing = true;
   let speed = 0.8;               // rad per second baseline * factor
-  let mode = 'both';
+  let show = {sin:true, cos:true, tan:true};
   let az = -0.62, el = 0.30;     // camera azimuth / elevation (radians)
   const az0 = -0.62, el0 = 0.30;
 
@@ -156,7 +170,7 @@
   let scale=80, ox=0, oy=0;
   function fit(){
     // fit using a generous bounding box incl. axis arrows & labels
-    const xs=[-0.3, Xmax+1.05], ys=[-1.2, 1.32], zs=[-1.05,1.05];
+    const xs=[-0.3, Xmax+1.05], ys=[-1.35, 1.42], zs=[-1.05,1.05];
     let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
     for(const X of xs) for(const Y of ys) for(const Z of zs){
       const b=base(X,Y,Z);
@@ -178,6 +192,11 @@
     ctx.globalAlpha=1;
   }
   function L(p1,p2,color,w,al){ line(S(p1[0],p1[1],p1[2]), S(p2[0],p2[1],p2[2]), color,w,al); }
+  function dashL(p1,p2,color,w,al){
+    ctx.setLineDash([6,5]);
+    L(p1,p2,color,w,al);
+    ctx.setLineDash([]);
+  }
   function dot(p,r,color){ const s=S(p[0],p[1],p[2]); ctx.fillStyle=color; ctx.beginPath(); ctx.arc(s.x,s.y,r,0,TAU); ctx.fill(); }
 
   function arrow(a,b,color,w){
@@ -216,6 +235,33 @@
     ctx.textAlign='left';
   }
 
+  // ---- exact values at special angles ---------------------------------
+  // Shown beside the decimals whenever θ sits on a multiple of 30° or 45° —
+  // these are the values students must know cold for O-Level and JC.
+  const EXACT = {
+    0:  {s:'0', c:'1', t:'0'},
+    30: {s:'1/2', c:'√3/2', t:'1/√3'},
+    45: {s:'1/√2', c:'1/√2', t:'1'},
+    60: {s:'√3/2', c:'1/2', t:'√3'},
+    90: {s:'1', c:'0', t:'—'},
+    120:{s:'√3/2', c:'−1/2', t:'−√3'},
+    135:{s:'1/√2', c:'−1/√2', t:'−1'},
+    150:{s:'1/2', c:'−√3/2', t:'−1/√3'},
+    180:{s:'0', c:'−1', t:'0'},
+    210:{s:'−1/2', c:'−√3/2', t:'1/√3'},
+    225:{s:'−1/√2', c:'−1/√2', t:'1'},
+    240:{s:'−√3/2', c:'−1/2', t:'√3'},
+    270:{s:'−1', c:'0', t:'—'},
+    300:{s:'−√3/2', c:'1/2', t:'−√3'},
+    315:{s:'−1/√2', c:'1/√2', t:'−1'},
+    330:{s:'−1/2', c:'√3/2', t:'−1/√3'},
+    360:{s:'0', c:'1', t:'0'}
+  };
+  function exactFor(deg){
+    for(const k in EXACT){ if(Math.abs(deg-k)<0.26) return EXACT[k]; }
+    return null;
+  }
+
   // ---- scene ----------------------------------------------------------
   function draw(){
     ctx.clearRect(0,0,W,H);
@@ -223,7 +269,7 @@
 
     // background faces' grids (left wall x=0, back wall z=1, floor y=-1)
     gridFace([0,-1,-1],[0,2,0],[0,0,2], 8, 8);      // left wall (circle sits here)
-    gridFace([0,-1,1],[Xmax,0,0],[0,2,0], 12, 8);   // back wall (sin)
+    gridFace([0,-1,1],[Xmax,0,0],[0,2,0], 12, 8);   // back wall (sin, tan)
     gridFace([0,-1,-1],[Xmax,0,0],[0,0,2], 12, 8);  // floor (cos)
 
     // box edges
@@ -236,18 +282,17 @@
     L([0,-1,-1],[Xmax,-1,-1],ed,1,.5); L([0,-1,1],[Xmax,-1,1],ed,1,.5);
 
     // axes (always shown for context)
-    arrow([0,0,1],[Xmax+0.9,0,1], P.ink, 1.4);      // sin x-axis (back wall mid height)
+    arrow([0,0,1],[Xmax+0.9,0,1], P.ink, 1.4);      // sin/tan x-axis (back wall mid height)
     arrow([0,-1,0],[Xmax+0.9,-1,0], P.ink, 1.4);    // cos x-axis (floor)
     text3([Xmax+0.15,1.05,1],'sin(x)', P.rose, 20, 'left');
     text3([Xmax+0.2,-1,0.18],'cos(x)', P.teal, 18, 'left');
+    if(show.tan) text3([Xmax+0.15,1.32,1],'tan(x)', P.plum, 18, 'left');
 
     const xc = theta*xScale;
-    const showS = (mode==='both'||mode==='sin');
-    const showC = (mode==='both'||mode==='cos');
     const stepPhi = TAU/72;
 
     // ---- cos wave on the floor (draw first, it's lowest) ----
-    if(showC){
+    if(show.cos){
       for(let phi=0; phi<=theta+1e-9; phi+=stepPhi){
         const x=phi*xScale, c=Math.cos(phi);
         L([x,-1,0],[x,-1,c], P.teal, 2.0, .92);
@@ -280,6 +325,30 @@
     ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
 
     const sinT=Math.sin(theta), cosT=Math.cos(theta);
+    const tanT=Math.tan(theta);
+    const tanDefined = Math.abs(cosT) > 1e-6;
+    const tanOnWall = tanDefined && Math.abs(tanT) <= TCLIP;
+
+    // ---- tangent construction on the left wall ----
+    // The crate's front-top edge (x=0, z=1) IS the tangent line to the circle at
+    // the θ=0 point — the line through O and P meets it at height tan θ. That the
+    // unwrap then continues along this very plane is why the tan curve lives on
+    // the back wall beside sin.
+    if(show.tan){
+      // the tangent line itself, emphasised
+      dashL([0,-TCLIP,1],[0,TCLIP,1], P.plum, 1.3, .5);
+      dot([0,0,1], 3.0, P.orange);   // point of tangency
+      if(tanDefined){
+        const yHit = Math.max(-TCLIP, Math.min(TCLIP, tanT));
+        // secant line through O and P, extended to the tangent line (dashed)
+        dashL([0,0,0],[0,yHit,yHit/tanT===0?1:(Math.abs(tanT)<=TCLIP?1:TCLIP/Math.abs(tanT))], P.muted, 1.1, .55);
+        if(tanOnWall){
+          // the tan segment standing on the tangent line
+          L([0,0,1],[0,tanT,1], P.plum, 3.0, .98);
+          dot([0,tanT,1], 3.6, P.plum);
+        }
+      }
+    }
 
     // solid right triangle: O -> (0,0,cosT) -> P
     // base = cos (along cos axis), height = sin, hypotenuse = radius
@@ -294,11 +363,32 @@
     L([0,0,0],[0,sinT,cosT], P.ink, 1.8, .95);      // radius / hypotenuse
 
     // ---- guide connectors (faint) ----
-    if(showS) L([0,sinT,cosT],[xc,sinT,1], P.ink, 1, .28);
-    if(showC) L([0,sinT,cosT],[xc,-1,cosT], P.ink, 1, .28);
+    if(show.sin) L([0,sinT,cosT],[xc,sinT,1], P.ink, 1, .28);
+    if(show.cos) L([0,sinT,cosT],[xc,-1,cosT], P.ink, 1, .28);
+    if(show.tan && tanOnWall) L([0,tanT,1],[xc,tanT,1], P.plum, 1, .3);
+
+    // ---- tan curve on the back wall (smooth line, so it reads apart from sin's comb) ----
+    if(show.tan){
+      // asymptotes at 90° and 270°
+      for(const aDeg of [90,270]){
+        const ax=(aDeg*Math.PI/180)*xScale;
+        if(ax <= Xmax+1e-9) dashL([ax,-TCLIP,1],[ax,TCLIP,1], P.plum, 1.1, .4);
+      }
+      ctx.strokeStyle=P.plum; ctx.lineWidth=2.2; ctx.globalAlpha=.9;
+      ctx.beginPath();
+      let pen=false;
+      for(let phi=0; phi<=theta+1e-9; phi+=TAU/240){
+        const t=Math.tan(phi);
+        if(Math.abs(t)>TCLIP){ pen=false; continue; }
+        const s=S(phi*xScale, t, 1);
+        if(!pen){ ctx.moveTo(s.x,s.y); pen=true; } else ctx.lineTo(s.x,s.y);
+      }
+      ctx.stroke(); ctx.globalAlpha=1;
+      if(tanOnWall) dot([xc,tanT,1], 4.0, P.plum);
+    }
 
     // ---- sin wave on the back wall (draw above circle) ----
-    if(showS){
+    if(show.sin){
       for(let phi=0; phi<=theta+1e-9; phi+=stepPhi){
         const x=phi*xScale, sv=Math.sin(phi);
         L([x,0,1],[x,sv,1], P.rose, 2.0, .92);
@@ -312,10 +402,17 @@
 
     // readout
     const deg=(theta*180/Math.PI)%360;
+    const ex = exactFor(deg);
+    const tanStr = !tanDefined
+      ? 'undefined'
+      : (Math.abs(tanT)>=1000 ? tanT.toExponential(1) : tanT.toFixed(3));
     ro.innerHTML =
       '<span class="k">θ</span> = '+deg.toFixed(1)+'°  ('+theta.toFixed(2)+' rad)<br>'+
-      '<span class="s">sin θ</span> = '+sinT.toFixed(3)+'<br>'+
-      '<span class="c">cos θ</span> = '+cosT.toFixed(3);
+      '<span class="s">sin θ</span> = '+sinT.toFixed(3)+(ex?' <span class="ex">= '+ex.s+'</span>':'')+'<br>'+
+      '<span class="c">cos θ</span> = '+cosT.toFixed(3)+(ex?' <span class="ex">= '+ex.c+'</span>':'')+
+      (show.tan
+        ? '<br><span class="t">tan θ</span> = '+tanStr+(ex&&ex.t!=='—'?' <span class="ex">= '+ex.t+'</span>':'')
+        : '');
   }
 
   // ---- loop -----------------------------------------------------------
@@ -335,17 +432,30 @@
   const playBtn=document.getElementById('play');
   const speedEl=document.getElementById('speed');
   const thetaEl=document.getElementById('theta');
-  const modeBox=document.getElementById('mode');
+  const showBox=document.getElementById('show');
+  const snapBox=document.getElementById('snaps');
   const palBox=document.getElementById('pal');
   const resetBtn=document.getElementById('reset');
 
+  function pause(){ playing=false; playBtn.textContent='Play'; }
+  function setTheta(rad){
+    theta=((rad%TAU)+TAU)%TAU;
+    thetaEl.value=(theta*180/Math.PI).toFixed(1);
+  }
+
   playBtn.addEventListener('click', ()=>{ playing=!playing; playBtn.textContent=playing?'Pause':'Play'; });
   speedEl.addEventListener('input', e=>{ speed=parseFloat(e.target.value); });
-  thetaEl.addEventListener('input', e=>{ playing=false; playBtn.textContent='Play'; theta=parseFloat(e.target.value)*Math.PI/180; });
-  modeBox.addEventListener('click', e=>{
+  thetaEl.addEventListener('input', e=>{ pause(); setTheta(parseFloat(e.target.value)*Math.PI/180); });
+  showBox.addEventListener('click', e=>{
     const b=e.target.closest('button'); if(!b)return;
-    mode=b.dataset.m;
-    [...modeBox.children].forEach(c=>c.classList.toggle('on', c===b));
+    const w=b.dataset.w;
+    show[w]=!show[w];
+    b.classList.toggle('on', show[w]);
+  });
+  snapBox.addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    pause();
+    setTheta(parseFloat(b.dataset.a)*Math.PI/180);
   });
   palBox.addEventListener('click', e=>{
     const b=e.target.closest('button'); if(!b)return;
@@ -357,23 +467,59 @@
     document.documentElement.style.setProperty('--rose', P.rose);
     document.documentElement.style.setProperty('--teal', P.teal);
     document.documentElement.style.setProperty('--orange', P.orange);
+    document.documentElement.style.setProperty('--plum', P.plum);
     document.documentElement.style.setProperty('--line', P.line);
     document.documentElement.style.setProperty('--grid', P.grid);
     document.body.style.background=P.bg;
   });
   resetBtn.addEventListener('click', ()=>{ az=az0; el=el0; });
 
-  // orbit (pointer drag)
-  let dragging=false, px=0, py=0;
-  cv.addEventListener('pointerdown', e=>{ dragging=true; px=e.clientX; py=e.clientY; cv.classList.add('drag'); cv.setPointerCapture(e.pointerId); });
+  // pointer: drag the DOT to set θ, drag anywhere else to orbit the camera.
+  let dragging=null, px=0, py=0;   // 'orbit' | 'theta' | null
+  function canvasXY(e){
+    const r=cv.getBoundingClientRect();
+    return {x:e.clientX-r.left, y:e.clientY-r.top};
+  }
+  function nearestTheta(mx,my){
+    // invert the projection numerically: nearest of 180 circle samples, then refine.
+    let best=0,bd=1e18;
+    for(let i=0;i<180;i++){
+      const a=i/180*TAU, s=S(0,Math.sin(a),Math.cos(a));
+      const d=(s.x-mx)*(s.x-mx)+(s.y-my)*(s.y-my);
+      if(d<bd){bd=d;best=a;}
+    }
+    for(let step=TAU/360; step>1e-4; step*=0.5){
+      for(const cand of [best-step,best+step]){
+        const s=S(0,Math.sin(cand),Math.cos(cand));
+        const d=(s.x-mx)*(s.x-mx)+(s.y-my)*(s.y-my);
+        if(d<bd){bd=d;best=cand;}
+      }
+    }
+    return ((best%TAU)+TAU)%TAU;
+  }
+  cv.addEventListener('pointerdown', e=>{
+    const m=canvasXY(e);
+    const pDot=S(0,Math.sin(theta),Math.cos(theta));
+    const grab=Math.hypot(pDot.x-m.x,pDot.y-m.y)<30;
+    dragging = grab ? 'theta' : 'orbit';
+    if(grab){ pause(); setTheta(nearestTheta(m.x,m.y)); }
+    px=e.clientX; py=e.clientY;
+    cv.classList.add('drag');
+    cv.setPointerCapture(e.pointerId);
+  });
   cv.addEventListener('pointermove', e=>{
     if(!dragging)return;
-    az += (e.clientX-px)*0.008;
-    el += (e.clientY-py)*0.008;
-    el = Math.max(-0.05, Math.min(0.9, el));
+    if(dragging==='theta'){
+      const m=canvasXY(e);
+      setTheta(nearestTheta(m.x,m.y));
+    } else {
+      az += (e.clientX-px)*0.008;
+      el += (e.clientY-py)*0.008;
+      el = Math.max(-0.05, Math.min(0.9, el));
+    }
     px=e.clientX; py=e.clientY;
   });
-  function endDrag(){ dragging=false; cv.classList.remove('drag'); }
+  function endDrag(){ dragging=null; cv.classList.remove('drag'); }
   cv.addEventListener('pointerup', endDrag);
   cv.addEventListener('pointercancel', endDrag);
 
