@@ -10,14 +10,25 @@ import {
   Section,
   SP,
 } from '@/components/LandingPage';
+import { ogCard } from '@/lib/og';
+
+const DESC =
+  'Small group H2 Math tuition for JC1 and JC2 students in Kovan, Singapore. A-Level focused, personalised coaching. Enquire now.';
 
 export const metadata: Metadata = {
   title: "JC H2 Mathematics Tuition Singapore | Adrian's Math Tuition",
-  description:
-    'Small group H2 Math tuition for JC1 and JC2 students in Kovan, Singapore. A-Level focused, personalised coaching. Enquire now.',
+  description: DESC,
   alternates: {
     canonical: 'https://adrianmathtuition.com/jc-h2-math-tuition',
   },
+  ...ogCard({
+    card: 'JC H2 Math Tuition',
+    cardSub: 'Small groups of up to 3 for JC1 and JC2, in Kovan, Singapore.',
+    tag: 'Kovan · Hougang',
+    title: 'JC H2 Math Tuition in Kovan, Singapore',
+    description: DESC,
+    path: '/jc-h2-math-tuition',
+  }),
 };
 
 const topics = [

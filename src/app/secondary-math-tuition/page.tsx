@@ -11,14 +11,25 @@ import {
   Section,
   SP,
 } from '@/components/LandingPage';
+import { ogCard } from '@/lib/og';
+
+const DESC =
+  'Build a strong math foundation in Secondary 1 and 2. Small group E Math tuition in Kovan, Singapore. Early start, better results.';
 
 export const metadata: Metadata = {
   title: "Secondary 1 & 2 Mathematics Tuition Singapore | Adrian's Math Tuition",
-  description:
-    'Build a strong math foundation in Secondary 1 and 2. Small group E Math tuition in Kovan, Singapore. Early start, better results.',
+  description: DESC,
   alternates: {
     canonical: 'https://adrianmathtuition.com/secondary-math-tuition',
   },
+  ...ogCard({
+    card: 'Secondary 1 & 2 Math Tuition',
+    cardSub: 'Build the foundation early — small group E Math in Kovan, Singapore.',
+    tag: 'Kovan · Hougang',
+    title: 'Secondary 1 & 2 Math Tuition in Kovan, Singapore',
+    description: DESC,
+    path: '/secondary-math-tuition',
+  }),
 };
 
 const topics = [

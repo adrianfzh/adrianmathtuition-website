@@ -2,14 +2,26 @@ import type { Metadata } from 'next';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import { WhatsAppCTA } from '@/components/LandingPage';
+import { ogCard } from '@/lib/og';
+
+const DESC =
+  'The three places O-Level A Math students lose marks in linear law — choosing the wrong axes, misreading the gradient and intercept, and forgetting to un-log — and the fix for each.';
 
 export const metadata: Metadata = {
   title: "How to Stop Losing Marks in Linear Law | Adrian's Math Tuition",
-  description:
-    'The three places O-Level A Math students lose marks in linear law — choosing the wrong axes, misreading the gradient and intercept, and forgetting to un-log — and the fix for each.',
+  description: DESC,
   alternates: {
     canonical: 'https://adrianmathtuition.com/articles/linear-law-marks',
   },
+  ...ogCard({
+    card: 'How to stop losing marks in Linear Law',
+    cardSub: 'Wrong axes, a misread gradient, forgetting to un-log — and the fix for each.',
+    tag: 'O-Level A Math',
+    title: 'How to stop losing marks in Linear Law',
+    description: DESC,
+    path: '/articles/linear-law-marks',
+    type: 'article',
+  }),
 };
 
 const articleSchema = {

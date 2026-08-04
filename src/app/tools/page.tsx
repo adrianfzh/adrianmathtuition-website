@@ -1,11 +1,23 @@
 import type { Metadata } from 'next';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import { ogCard } from '@/lib/og';
+
+const TOOLS_DESC =
+  'Free interactive visualisations for O-Level and JC math — trig graphs, graph transformations, Argand diagrams, 3D vectors, curve sketching, calculus drills and more.';
 
 export const metadata: Metadata = {
   title: "Interactive Math Tools | Adrian's Math Tuition",
-  description:
-    'Free interactive visualisations for O-Level and JC math — trig graphs, graph transformations, Argand diagrams, 3D vectors, curve sketching, calculus drills and more.',
+  description: TOOLS_DESC,
+  alternates: { canonical: 'https://adrianmathtuition.com/tools' },
+  ...ogCard({
+    card: 'Interactive Math Tools',
+    cardSub: 'Drag, play and explore the concepts that are hard to see on paper. Free, no sign-up.',
+    tag: 'O-Level & JC',
+    title: 'Interactive Math Tools',
+    description: TOOLS_DESC,
+    path: '/tools',
+  }),
 };
 
 // Each tool is a self-contained static HTML page served from public/tools/<slug>.html.

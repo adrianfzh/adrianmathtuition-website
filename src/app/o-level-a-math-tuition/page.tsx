@@ -10,14 +10,25 @@ import {
   Section,
   SP,
 } from '@/components/LandingPage';
+import { ogCard } from '@/lib/og';
+
+const DESC =
+  'Small group A Math tuition for Secondary 3 and 4 students in Kovan, Singapore. Personalised attention, proven results. Enquire now.';
 
 export const metadata: Metadata = {
   title: "O-Level Additional Mathematics (A Math) Tuition Singapore | Adrian's Math Tuition",
-  description:
-    'Small group A Math tuition for Secondary 3 and 4 students in Kovan, Singapore. Personalised attention, proven results. Enquire now.',
+  description: DESC,
   alternates: {
     canonical: 'https://adrianmathtuition.com/o-level-a-math-tuition',
   },
+  ...ogCard({
+    card: 'O-Level A Math Tuition',
+    cardSub: 'Small groups of 2–4 for Sec 3 and Sec 4, in Kovan, Singapore.',
+    tag: 'Kovan · Hougang',
+    title: 'O-Level A Math Tuition in Kovan, Singapore',
+    description: DESC,
+    path: '/o-level-a-math-tuition',
+  }),
 };
 
 const topics = [

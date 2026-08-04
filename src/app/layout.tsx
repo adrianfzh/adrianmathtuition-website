@@ -2,10 +2,44 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 
+const SITE_URL = "https://adrianmathtuition.com";
+const SITE_NAME = "Adrian's Math Tuition";
+const DEFAULT_TITLE = "Adrian's Math Tuition — Personalized Math Coaching";
+const DEFAULT_DESC =
+  "Small group math tuition in Singapore. Maximum 4 students per Secondary class, 3 per JC class. Personalized learning with 10+ years experience.";
+
+// metadataBase makes every relative og:image/canonical resolve to an absolute URL —
+// link-preview crawlers (WhatsApp, Telegram, iMessage, Slack) reject relative ones.
+// Pages inherit all of this and override only what differs; the static tool pages in
+// public/tools/*.html sit outside Next's metadata system and carry their own tags.
 export const metadata: Metadata = {
-  title: "Adrian's Math Tuition — Personalized Math Coaching",
-  description: "Small group math tuition in Singapore. Maximum 4 students per Secondary class, 3 per JC class. Personalized learning with 10+ years experience.",
+  metadataBase: new URL(SITE_URL),
+  title: DEFAULT_TITLE,
+  description: DEFAULT_DESC,
   icons: { icon: "/favicon.svg" },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_SG",
+    url: "/",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESC,
+    images: [
+      {
+        url: `/api/og?title=${encodeURIComponent("Adrian's Math Tuition")}&sub=${encodeURIComponent(
+          "Small-group math tuition in Kovan, Singapore — max 4 per Secondary class, 3 per JC class.",
+        )}`,
+        width: 1200,
+        height: 630,
+        alt: SITE_NAME,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESC,
+  },
 };
 
 export default function RootLayout({
