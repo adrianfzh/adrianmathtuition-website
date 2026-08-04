@@ -1328,6 +1328,33 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     // Window-capture diagnostic: distinguishes "Safari never dispatched the
     // pointer event" (nothing logged anywhere) from "a DOM layer swallowed it
     // before our handler" (pd-swallowed).
+    // Window-capture stylus TOUCH watcher — the last web-visible stream. If a
+    // stroke is eaten with no pointer trace AND no win-touch trace, iPadOS
+    // never delivered it to Safari's web layer at all (palm-rejection eating
+    // the contact) — beyond any website's reach; that's what the native shell
+    // is for. Engages the drawing fallback when the touch lands over the
+    // stage but the pointer path stays silent.
+    const onWinTouchStart = (e: TouchEvent) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i] as Touch & { touchType?: string };
+        if (t.touchType !== 'stylus') continue;
+        const tgt = e.target as HTMLElement | null;
+        const inEl = !!(tgt && el.contains(tgt));
+        if (!inEl) {
+          const target = tgt ? `${tgt.tagName}${tgt.id ? '#' + tgt.id : ''}` : 'null';
+          logInk('win-touch', { target });
+          // A stylus touch OVER the stage that missed el and isn't aimed at a
+          // real control: draw it anyway (drops must not eat ink).
+          const r = el.getBoundingClientRect();
+          const overStage = t.clientX >= r.left && t.clientX <= r.right && t.clientY >= r.top && t.clientY <= r.bottom;
+          const onControl = !!tgt && !!tgt.closest?.('button, a, input, select, [role="button"]');
+          if (overStage && !onControl && !penDownRef.current && !strokeSrcRef.current
+              && (tool === 'pen' || tool === 'highlighter') && !busyRef.current) {
+            onTouchStartFallback(e);
+          }
+        }
+      }
+    };
     const onWinPd = (e: PointerEvent) => {
       if (e.pointerType !== 'pen') return;
       const seen = Date.now();
@@ -1342,15 +1369,20 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       setTimeout(() => { if (winPdRef.current === seen) logInk('pd-swallowed', { target, inEl }); }, 30);
     };
     window.addEventListener('pointerdown', onWinPd, true);
+    window.addEventListener('touchstart', onWinTouchStart, { capture: true, passive: false });
 
     el.addEventListener('pointerdown', onPointerDown);
     el.addEventListener('pointermove', onPointerMove);
     el.addEventListener('pointerup', onPointerUp);
     el.addEventListener('pointercancel', onPointerCancel);
     el.addEventListener('touchstart', onTouchStartFallback, { passive: false });
-    el.addEventListener('touchmove', onTouchMoveFallback, { passive: false });
-    el.addEventListener('touchend', onTouchEndFallback, { passive: false });
-    el.addEventListener('touchcancel', onTouchEndFallback, { passive: false });
+    // move/end at WINDOW capture: a stroke rescued from a mis-targeted
+    // touchstart has its move/end events targeting that outside element too —
+    // el-scoped listeners would strand it. The strokeSrc guard makes these
+    // no-ops whenever the fallback doesn't own the stroke.
+    window.addEventListener('touchmove', onTouchMoveFallback, { capture: true, passive: false });
+    window.addEventListener('touchend', onTouchEndFallback, { capture: true, passive: false });
+    window.addEventListener('touchcancel', onTouchEndFallback, { capture: true, passive: false });
     el.addEventListener('pointerleave', onPointerLeave);
     el.addEventListener('wheel', onWheel, { passive: false });
     el.addEventListener('contextmenu', swallow);
@@ -1359,14 +1391,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     el.addEventListener('gesturechange', swallow as EventListener);
     return () => {
       window.removeEventListener('pointerdown', onWinPd, true);
+      window.removeEventListener('touchstart', onWinTouchStart, true);
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('pointermove', onPointerMove);
       el.removeEventListener('pointerup', onPointerUp);
       el.removeEventListener('pointercancel', onPointerCancel);
       el.removeEventListener('touchstart', onTouchStartFallback);
-      el.removeEventListener('touchmove', onTouchMoveFallback);
-      el.removeEventListener('touchend', onTouchEndFallback);
-      el.removeEventListener('touchcancel', onTouchEndFallback);
+      window.removeEventListener('touchmove', onTouchMoveFallback, true);
+      window.removeEventListener('touchend', onTouchEndFallback, true);
+      window.removeEventListener('touchcancel', onTouchEndFallback, true);
       el.removeEventListener('pointerleave', onPointerLeave);
       el.removeEventListener('wheel', onWheel);
       el.removeEventListener('contextmenu', swallow);
