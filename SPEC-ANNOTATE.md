@@ -323,3 +323,18 @@ as one 'page' op on pen-up — points AND widths scale, clamp 0.15–6×),
 moves to the clones), and drag-anywhere-inside-the-box moving (pre-existing).
 Hit-test order on pen-down over a selection: corner handles → inside-box move
 → new lasso. All three ops are page-level undo entries.
+
+### §12 resolution (2026-08-04, evening) — it was Live Text
+
+Adrian's field observation broke it open: strokes died ON the page photo,
+worked beside it. iPadOS **Live Text** detects printed text in the marked-page
+images and the system intercepts Pencil strokes over those regions for
+selection/Scribble — nothing is ever dispatched to the page, which is why every
+watcher at every web layer saw nothing. **Fix: the AdrianMarker shell sets
+`WKPreferences.isTextInteractionEnabled = false` — confirmed working on the
+real iPad.** Safari has no equivalent switch; hiding the background `<img>`s
+(the web-side guard, kept — it's free) was not sufficient, so **on-photo Pencil
+annotation in Safari remains unreliable — annotate in the app.** All the
+defence layers built during the hunt (rAF watchdog, compositor nudge, surface
+resets, stylus-touch fallback, native pencil bridge, ink log + probes) stay in
+place as instrumentation and defence in depth.

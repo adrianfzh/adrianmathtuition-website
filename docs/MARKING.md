@@ -734,8 +734,12 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 
 ## Mark-paper ✏️ Annotate (in-browser Apple Pencil ink) — 2026-08-01
 
-Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11). Status: built,
-pending the real-iPad checklist (§8). Replaces the Notability round trip on
+Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13). Status: built.
+> ⚠ **Annotate in the AdrianMarker shell app, not Safari** (resolved 2026-08-04):
+> iPadOS **Live Text** system-intercepts Pencil strokes over the printed text in
+> page photos — Safari offers no opt-out, so strokes intermittently vanish there;
+> the shell disables text interaction (`ios-shell/`, weekly re-sign recipe in its
+> README) and writes flawlessly. Full saga: SPEC-ANNOTATE.md §12. Replaces the Notability round trip on
 `/admin/mark-paper` (which stays as fallback): ✏️ Annotate button (gated
 `runId && annotatedPhotos.length`) opens a full-screen overlay over the marked pages
 (the `url_with_solutions ?? url` copy via `pickAnnotatedPhotoUrl(p,'photos')`); Done

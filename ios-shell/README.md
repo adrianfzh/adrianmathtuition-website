@@ -45,3 +45,21 @@ Settings ▸ Apple Pencil on the iPad — the double-tap gesture must be enabled
 - `webView.isInspectable = true` lets Safari on the Mac inspect the page
   (Develop menu) when the iPad is plugged in — useful for debugging.
 - External links open in Safari; adrianmathtuition.com stays in the shell.
+
+## Weekly re-sign (free Apple ID: installs expire after 7 days)
+
+Plug the iPad in (or have it awake on the same Wi-Fi), then from the repo root:
+
+```
+cd ios-shell/AdrianMarker
+xcodebuild -project AdrianMarker.xcodeproj -scheme AdrianMarker \
+  -destination 'generic/platform=iOS' -allowProvisioningUpdates \
+  -derivedDataPath /tmp/am-build DEVELOPMENT_TEAM=5F6356V2TB \
+  CODE_SIGN_STYLE=Automatic build
+xcrun devicectl device install app \
+  --device 5A9741E7-89DE-50F2-B957-31F39B030CC4 \
+  /tmp/am-build/Build/Products/Debug-iphoneos/AdrianMarker.app
+```
+
+(Adrian's iPad Pro CoreDevice id above; `xcrun devicectl list devices` to
+re-discover. Or just open the project in Xcode and press ▶.)
