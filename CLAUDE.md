@@ -106,7 +106,7 @@ Deep details for schedule/marking/kiosk pages live in `docs/` (see the table at 
 - `admin/mark/page.tsx` + `admin/mark/batch/[batchId]/page.tsx` — AI batch marking → `docs/MARKING.md`
 - `admin/revision-signups/page.tsx` — June Revision Sprint sign-ups + attendance → `docs/SCHEDULE.md`
 - `admin/notes/*` — printable notes hub → `docs/KIOSK.md`
-- `admin/edit-notes/page.tsx` — revision notes editor with editor mode toggle
+- `admin/edit-notes/page.tsx` — revision notes editor (content in Airtable `Notes`)
 - `admin/edit-cards/page.tsx` + `admin/edit-cards/[id]/page.tsx` — Cards editor (list: level/topic/subgroup, drag-to-reorder; single: markdown+KaTeX textarea, live preview, AI assist with diff/accept/reject)
 - `kiosk/page.tsx` — iPad print station → `docs/KIOSK.md`
 - `signup/page.tsx` — student registration form (HMAC-signed URL); `thankyou/`, `terms/`
@@ -152,7 +152,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `signup-data/route.ts` — validates HMAC-signed signup link, returns slot info
 
 ### Content / AI
-- `notes/route.ts` — revision notes CRUD; `revision/route.ts`; `generate-lesson`; `generate-tts`; `edit-notes-ai`; `learn`
+- `notes/route.ts` — revision notes CRUD (Airtable `Notes`); `edit-notes-ai`; `learn`
 - `admin-notes/` — Dropbox notes listing (`?level=&kind=notes|revision|prelim`), `counts`, `dropbox-open` → `docs/KIOSK.md`
 - `kiosk/` — `pair`, `print-log`, `topics`, `notes`, `worksheet` → `docs/KIOSK.md`
 - `render-marking/route.ts` — marking JSON → PNG via Puppeteer → `docs/MARKING.md`
@@ -167,9 +167,9 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 
 **Airtable** — student/lesson/invoice data. See bot project for full schema.
 
-Key tables used by website: `Slots`, `Students`, `Enrollments`, `Lessons` (progress fields table → `docs/SCHEDULE.md`), `Exams`, `Invoices`, `Tokens`, `Rates`, `Rate History`, `Settings` (global flags: `exam_season_override`, `sec_capacity_override`), `Questions` (bot Q&A log, has `Subject` since 2026-08-03).
+Key tables used by website: `Slots`, `Students`, `Enrollments`, `Lessons` (progress fields table → `docs/SCHEDULE.md`), `Exams`, `Invoices`, `Tokens`, `Rates`, `Rate History`, `Settings` (global flags: `exam_season_override`, `sec_capacity_override`), `Questions` (bot Q&A log, has `Subject` since 2026-08-03), `Notes` (revision notes markdown, `/api/notes`).
 
-**Supabase (math project)** — ⚠ `lesson_content` is RETIRED (dropped in the 2026-07 learning-units pivot; verified gone 2026-08-04 — `/api/generate-tts` still references it, flagged). Live content tables: `content_snippets` (742 swipe cards; `display_group` text column = student-facing section name, independent of `subgroup_id`, NULL falls back to sub-group name) + `subgroups`/`sections_meta` (the tree `/revise` reads), `lesson_concepts` (topic→concept checklists), `topic_cards`, `kiosk_pairings`, `kiosk_prints`, `admin_todos`, `paper_marking_runs`. Notes-portal build spec: [`SPEC-NOTES-PORTAL.md`](SPEC-NOTES-PORTAL.md).
+**Supabase (math project)** — `lesson_content` is RETIRED (dropped in the 2026-07 learning-units pivot; its last code reference — `/api/generate-tts` + the edit-notes lesson mode — was removed 2026-08-04). Live content tables: `content_snippets` (742 swipe cards; `display_group` text column = student-facing section name, independent of `subgroup_id`, NULL falls back to sub-group name) + `subgroups`/`sections_meta` (the tree `/revise` reads), `lesson_concepts` (topic→concept checklists), portal learning-units tables (`learning_units`, `lesson_cards`, `unit_events` → `PORTAL.md`), `topic_cards`, `kiosk_pairings`, `kiosk_prints`, `admin_todos`, `paper_marking_runs`. Notes-portal build spec: [`SPEC-NOTES-PORTAL.md`](SPEC-NOTES-PORTAL.md).
 
 ## Auth Patterns
 
@@ -226,7 +226,6 @@ This takes 2 seconds and returns **no student data** — only field names, types
 - Vercel serverless functions: 10s timeout (free) / 60s (Pro) — PDF generation is the bottleneck
 - **Vercel hard-caps request bodies at 4.5MB at the PLATFORM level** — `vercel.json` memory bumps do NOT lift it. Big uploads must chunk (`mark-batch`), go client-token → Blob, or go to the bot (`/api/mark-inbox`).
 - Signup link expiry is checked against `Date.now()` — links become invalid after the `expires` timestamp
-- Supabase table is `lesson_content`, NOT `revision_content` — easy to confuse
 - ⚠ `src/lib/latex-repair.ts` reads as binary to `grep` (non-printing mask sentinel) — use `grep -a`
 
 ## Pending Tasks

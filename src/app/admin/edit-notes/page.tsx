@@ -455,23 +455,6 @@ export default function EditNotesPage() {
   const aiDraftRef = useRef('');
   const aiPreviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Lesson mode
-  const [mode, setMode] = useState<'notes' | 'lesson'>('notes');
-  const [lessonJson, setLessonJson] = useState('');
-  const [lessonSlug, setLessonSlug] = useState('');
-  const [lessonStatus, setLessonStatus] = useState<'draft' | 'published'>('draft');
-  const [lessonGenerating, setLessonGenerating] = useState(false);
-  const [lessonSaving, setLessonSaving] = useState(false);
-  const lessonJsonRef = useRef('');
-  const lessonSlugRef = useRef('');
-
-  // TTS state
-  const [ttsProvider, setTtsProvider] = useState<'openai-tts-1' | 'openai-tts-1-hd' | 'elevenlabs'>('openai-tts-1');
-  const [ttsVoice, setTtsVoice] = useState('nova');
-  const [ttsGenerating, setTtsGenerating] = useState(false);
-  const [ttsStatus, setTtsStatus] = useState<string>('');
-  const [ttsGenerated, setTtsGenerated] = useState<number | null>(null);
-
   // DOM refs
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumsRef = useRef<HTMLDivElement>(null);
@@ -501,8 +484,6 @@ export default function EditNotesPage() {
   useEffect(() => { slugDisplayRef.current = slugDisplay; }, [slugDisplay]);
   useEffect(() => { currentSlugRef.current = currentSlug; }, [currentSlug]);
   useEffect(() => { aiInstructionRef.current = aiInstruction; }, [aiInstruction]);
-  useEffect(() => { lessonJsonRef.current = lessonJson; }, [lessonJson]);
-  useEffect(() => { lessonSlugRef.current = lessonSlug; }, [lessonSlug]);
 
   // Restore last AI instruction from sessionStorage
   useEffect(() => {
@@ -1252,166 +1233,6 @@ export default function EditNotesPage() {
     }
   }
 
-  function switchMode(next: 'notes' | 'lesson') {
-    setMode(next);
-    if (next === 'lesson' && !lessonSlugRef.current && metaTopicRef.current) {
-      const topicSlug = metaTopicRef.current.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      const lvl = metaLevelRef.current.toLowerCase() === 'jc' ? 'jc' : metaLevelRef.current.toLowerCase() === 'am' ? 'am' : 'em';
-      const newSlug = `${lvl}/notes/${topicSlug}`;
-      setLessonSlug(newSlug);
-      lessonSlugRef.current = newSlug;
-      loadLessonForSlug(newSlug);
-    }
-  }
-
-  async function loadLessonForSlug(slug: string) {
-    if (!slug) return;
-    try {
-      const r = await fetch(`/api/revision?slug=${encodeURIComponent(slug)}&admin=1&password=${encodeURIComponent(passwordRef.current)}`);
-      const d = await r.json();
-      if (d.lessonData) {
-        const j = JSON.stringify(d.lessonData, null, 2);
-        setLessonJson(j);
-        lessonJsonRef.current = j;
-        setLessonStatus(d.status || 'draft');
-      } else {
-        setLessonJson('');
-        lessonJsonRef.current = '';
-        setLessonStatus('draft');
-      }
-    } catch {
-      setLessonJson('');
-      lessonJsonRef.current = '';
-    }
-  }
-
-  async function generateLesson() {
-    setLessonGenerating(true);
-    try {
-      const r = await fetch('/api/generate-lesson', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic: metaTopicRef.current,
-          subtopic: lessonSlugRef.current.split('/')[2] || '',
-          level: metaLevelRef.current.toLowerCase(),
-          notes: fullContentRef.current,
-          password: passwordRef.current,
-        }),
-      });
-      const d = await r.json();
-      if (d.lessonData) {
-        const j = JSON.stringify(d.lessonData, null, 2);
-        setLessonJson(j);
-        lessonJsonRef.current = j;
-        showToast('Lesson generated!');
-      } else {
-        showToast(d.error || 'Generation failed', 'error');
-      }
-    } catch {
-      showToast('Generation failed', 'error');
-    } finally {
-      setLessonGenerating(false);
-    }
-  }
-
-  async function saveLesson() {
-    const slug = lessonSlugRef.current.trim();
-    if (!slug) { showToast('Lesson slug is required', 'error'); return; }
-    let parsedData;
-    try {
-      parsedData = JSON.parse(lessonJsonRef.current);
-    } catch {
-      showToast('Invalid JSON — fix before saving', 'error');
-      return;
-    }
-    setLessonSaving(true);
-    try {
-      const parts = slug.split('/');
-      const r = await fetch('/api/revision', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          slug,
-          level: parts[0] || metaLevelRef.current.toLowerCase(),
-          topic: parts[1] || '',
-          subtopic: parts[2] || '',
-          title: metaTopicRef.current || slug,
-          lesson_data: parsedData,
-          status: lessonStatus,
-          password: passwordRef.current,
-        }),
-      });
-      const d = await r.json();
-      if (d.success) {
-        showToast('Lesson saved!');
-      } else {
-        showToast(d.error || 'Save failed', 'error');
-      }
-    } catch {
-      showToast('Save failed', 'error');
-    } finally {
-      setLessonSaving(false);
-    }
-  }
-
-  function ttsEstimate(provider: string, json: string): string {
-    let parsed: { slides?: { narration?: string }[] };
-    try { parsed = JSON.parse(json); } catch { return '$0.000'; }
-    const chars = (parsed.slides || []).reduce((s: number, sl: { narration?: string }) => s + (sl.narration?.length || 0), 0);
-    const rate = provider === 'elevenlabs' ? 0.18 : provider === 'openai-tts-1-hd' ? 0.030 : 0.015;
-    return `$${((chars / 1000) * rate).toFixed(3)}`;
-  }
-
-  function ttsSlideCount(json: string): number {
-    try {
-      const p = JSON.parse(json);
-      return (p.slides || []).filter((s: { narration?: string }) => s.narration?.trim()).length;
-    } catch { return 0; }
-  }
-
-  async function generateTTS() {
-    if (!lessonSlugRef.current) { showToast('Save the lesson first (slug required)', 'error'); return; }
-    if (!lessonJsonRef.current) { showToast('No lesson JSON to generate audio for', 'error'); return; }
-    let parsedLesson;
-    try { parsedLesson = JSON.parse(lessonJsonRef.current); } catch { showToast('Invalid lesson JSON', 'error'); return; }
-    const slideCount = ttsSlideCount(lessonJsonRef.current);
-    setTtsGenerating(true);
-    setTtsStatus(`Generating audio for ${slideCount} slides…`);
-    try {
-      const r = await fetch('/api/generate-tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          slug: lessonSlugRef.current,
-          lessonData: parsedLesson,
-          provider: ttsProvider,
-          voice: ttsVoice,
-          password: passwordRef.current,
-        }),
-      });
-      const d = await r.json();
-      if (d.audioUrls) {
-        setTtsGenerated(d.generatedSlides);
-        setTtsStatus('');
-        // Update the in-memory lesson JSON with audio_urls
-        const updated = { ...parsedLesson, audio_urls: d.audioUrls };
-        const j = JSON.stringify(updated, null, 2);
-        setLessonJson(j);
-        lessonJsonRef.current = j;
-        showToast(`Audio generated for ${d.generatedSlides}/${d.totalSlides} slides (${d.cost})`);
-      } else {
-        showToast(d.error || 'TTS generation failed', 'error');
-        setTtsStatus('');
-      }
-    } catch {
-      showToast('TTS generation failed', 'error');
-      setTtsStatus('');
-    } finally {
-      setTtsGenerating(false);
-    }
-  }
-
   async function saveNotes() {
     const topic = metaTopicRef.current.trim();
     const level = metaLevelRef.current || 'AM';
@@ -1678,22 +1499,6 @@ export default function EditNotesPage() {
                 </div>
               ) : (
                 <div className="en-editor-shell">
-                  {/* Mode segmented control */}
-                  <div className="en-mode-control">
-                    <button
-                      className={`en-mode-seg${mode === 'notes' ? ' active' : ''}`}
-                      onClick={() => switchMode('notes')}
-                    >
-                      📝 Notes
-                    </button>
-                    <button
-                      className={`en-mode-seg${mode === 'lesson' ? ' active' : ''}`}
-                      onClick={() => switchMode('lesson')}
-                    >
-                      🎬 Revision Lesson
-                    </button>
-                  </div>
-
                   {/* Meta bar */}
                   <div className="en-meta-bar">
                     <div className="en-meta-field">
@@ -1761,12 +1566,10 @@ export default function EditNotesPage() {
                     </button>
                     <button
                       className={`en-btn-save${saveState === 'saved' ? ' saved' : ''}`}
-                      onClick={mode === 'lesson' ? saveLesson : saveNotes}
-                      disabled={mode === 'lesson' ? lessonSaving : saveState === 'saving'}
+                      onClick={saveNotes}
+                      disabled={saveState === 'saving'}
                     >
-                      {mode === 'lesson' ? (
-                        lessonSaving ? 'Saving…' : <><FloppyIcon /> Save Lesson</>
-                      ) : saveState === 'saving' ? (
+                      {saveState === 'saving' ? (
                         <>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'en-spin 1s linear infinite' }}>
                             <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0" />
@@ -1875,51 +1678,21 @@ export default function EditNotesPage() {
                         <span style={{ fontSize: 11, color: 'var(--color-muted-foreground)' }} title="Rendered exactly as it appears on the live /revise page">Matches live /revise page</span>
                       </div>
                       <div className="en-preview-body" ref={previewBodyRef}>
-                        {mode === 'lesson' ? (
-                          <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14, color: 'var(--color-muted-foreground)' }}>
-                            <p style={{ margin: 0, fontWeight: 600, color: 'var(--color-navy)' }}>Revision Lesson Mode</p>
-                            <p style={{ margin: 0 }}>Generate and save a structured lesson for the live /revise page.</p>
-                            {lessonSlug && (
-                              <a
-                                href={`/revise/${lessonSlug}/lesson`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: 'var(--color-amber)', fontWeight: 600 }}
-                              >
-                                ↗ View lesson: /revise/{lessonSlug}/lesson
-                              </a>
-                            )}
-                            {lessonJson && (() => {
-                              try {
-                                const d = JSON.parse(lessonJson);
-                                return (
-                                  <div style={{ marginTop: 8, background: 'var(--color-card)', borderRadius: 8, padding: 16, border: '1px solid var(--color-border)' }}>
-                                    <p style={{ margin: '0 0 8px', fontWeight: 600, color: 'var(--color-navy)' }}>{d.topic} — {d.subtopic}</p>
-                                    <p style={{ margin: 0 }}>{(d.slides || []).length} slides: {(d.slides || []).map((s: { type: string }) => s.type).join(', ')}</p>
-                                  </div>
-                                );
-                              } catch { return null; }
-                            })()}
-                          </div>
-                        ) : (
-                          <>
-                            <nav
-                              className="en-preview-sidebar"
-                              ref={previewTabsRef}
-                              style={sidebarWidthPx ? { width: sidebarWidthPx, flex: 'none' } : undefined}
-                            />
-                            <div
-                              className="en-sidebar-divider"
-                              onMouseDown={onSidebarDividerMouseDown}
-                              onTouchStart={onSidebarDividerTouchStart}
-                            >
-                              <div className="en-sidebar-grip" />
-                            </div>
-                            <div className="en-preview-wrap">
-                              <div className="en-preview" ref={previewRef} />
-                            </div>
-                          </>
-                        )}
+                        <nav
+                          className="en-preview-sidebar"
+                          ref={previewTabsRef}
+                          style={sidebarWidthPx ? { width: sidebarWidthPx, flex: 'none' } : undefined}
+                        />
+                        <div
+                          className="en-sidebar-divider"
+                          onMouseDown={onSidebarDividerMouseDown}
+                          onTouchStart={onSidebarDividerTouchStart}
+                        >
+                          <div className="en-sidebar-grip" />
+                        </div>
+                        <div className="en-preview-wrap">
+                          <div className="en-preview" ref={previewRef} />
+                        </div>
                       </div>
                     </div>
 
@@ -1936,172 +1709,53 @@ export default function EditNotesPage() {
                     <div className="en-pane en-pane-editor">
                       <div className="en-pane-header">
                         <span className="en-pane-label">
-                          {mode === 'lesson' ? 'Lesson JSON' : (previewSectionsRef.current[activeSectionRef.current]
+                          {previewSectionsRef.current[activeSectionRef.current]
                             ? `Editing: ${previewSectionsRef.current[activeSectionRef.current].title}`
-                            : 'Editor')}
+                            : 'Editor'}
                         </span>
-                        {mode === 'lesson' ? (
-                          <div className="en-editor-toolbar">
-                            <input
-                              className="en-lesson-slug-input"
-                              placeholder="slug: e.g. em/algebra/subject-of-formula"
-                              value={lessonSlug}
-                              onChange={e => { setLessonSlug(e.target.value); lessonSlugRef.current = e.target.value; }}
-                              onBlur={() => { if (lessonSlugRef.current) loadLessonForSlug(lessonSlugRef.current); }}
-                              title="3-part slug: {level}/{topic}/{subtopic}"
-                            />
-                            <select
-                              className="en-meta-select"
-                              value={lessonStatus}
-                              onChange={e => setLessonStatus(e.target.value as 'draft' | 'published')}
-                              style={{ fontSize: 12 }}
-                            >
-                              <option value="draft">Draft</option>
-                              <option value="published">Published</option>
-                            </select>
-                            <button
-                              className="en-tool-btn"
-                              onClick={generateLesson}
-                              disabled={lessonGenerating}
-                              title="Generate lesson from current notes using Claude"
-                            >
-                              {lessonGenerating ? '⏳ Generating…' : '✨ Generate'}
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="en-editor-toolbar">
-                            <button className="en-tool-btn" onClick={insertSection} title="Insert new section heading">+ Section</button>
-                            <button className="en-tool-btn" onClick={insertExample} title="Insert worked example">+ Example</button>
-                            <button className="en-tool-btn" onClick={insertSolution} title="Insert solution card with steps">+ Solution</button>
-                            <button className="en-tool-btn" onClick={insertPractice} title="Insert practice question">+ Practice</button>
-                            <button className="en-tool-btn" onClick={insertList} title="Insert bullet list">+ List</button>
-                            <button className="en-tool-btn" onClick={insertAligned} title="Insert aligned equations block">+ Aligned</button>
-                            <button
-                              className={`en-tool-btn en-tool-btn--help${syntaxOpen ? ' active' : ''}`}
-                              onClick={() => setSyntaxOpen(o => !o)}
-                              title="Syntax guide"
-                            >?</button>
-                          </div>
-                        )}
+                        <div className="en-editor-toolbar">
+                          <button className="en-tool-btn" onClick={insertSection} title="Insert new section heading">+ Section</button>
+                          <button className="en-tool-btn" onClick={insertExample} title="Insert worked example">+ Example</button>
+                          <button className="en-tool-btn" onClick={insertSolution} title="Insert solution card with steps">+ Solution</button>
+                          <button className="en-tool-btn" onClick={insertPractice} title="Insert practice question">+ Practice</button>
+                          <button className="en-tool-btn" onClick={insertList} title="Insert bullet list">+ List</button>
+                          <button className="en-tool-btn" onClick={insertAligned} title="Insert aligned equations block">+ Aligned</button>
+                          <button
+                            className={`en-tool-btn en-tool-btn--help${syntaxOpen ? ' active' : ''}`}
+                            onClick={() => setSyntaxOpen(o => !o)}
+                            title="Syntax guide"
+                          >?</button>
+                        </div>
                         <span className="en-line-count">{lineCount} line{lineCount !== 1 ? 's' : ''}</span>
                       </div>
-                      {mode === 'lesson' ? (
-                        <>
-                          <div className="en-editor-wrap">
-                            <textarea
-                              className="en-textarea"
-                              spellCheck={false}
-                              autoCorrect="off"
-                              autoCapitalize="off"
-                              value={lessonJson}
-                              placeholder={'Lesson JSON will appear here after generation.\n\nOr paste existing JSON directly.'}
-                              onChange={e => { setLessonJson(e.target.value); lessonJsonRef.current = e.target.value; }}
-                              onKeyDown={e => {
-                                if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                                  e.preventDefault();
-                                  saveLesson();
-                                }
-                              }}
-                              style={{ fontFamily: 'monospace', fontSize: 12 }}
-                            />
-                          </div>
-                          {lessonJson && (
-                            <div className="en-tts-panel">
-                              <div className="en-tts-header">🔊 Audio Narration</div>
-                              <div className="en-tts-row">
-                                <label className="en-tts-label">Provider</label>
-                                <select
-                                  className="en-meta-select"
-                                  value={ttsProvider}
-                                  onChange={e => {
-                                    const p = e.target.value as typeof ttsProvider;
-                                    setTtsProvider(p);
-                                    setTtsVoice(p === 'elevenlabs' ? 'EXAVITQu4vr4xnSDxMaL' : 'nova');
-                                  }}
-                                >
-                                  <option value="openai-tts-1">OpenAI tts-1 (fast, ~$0.015/1K chars)</option>
-                                  <option value="openai-tts-1-hd">OpenAI tts-1-hd (better, ~$0.030/1K chars)</option>
-                                  <option value="elevenlabs" disabled={!process.env.NEXT_PUBLIC_ELEVENLABS_ENABLED}>
-                                    ElevenLabs (best, ~$0.18/1K chars)
-                                  </option>
-                                </select>
-                              </div>
-                              <div className="en-tts-row">
-                                <label className="en-tts-label">Voice</label>
-                                {ttsProvider === 'elevenlabs' ? (
-                                  <input
-                                    className="en-lesson-slug-input"
-                                    placeholder="ElevenLabs voice_id"
-                                    value={ttsVoice}
-                                    onChange={e => setTtsVoice(e.target.value)}
-                                    style={{ minWidth: 200 }}
-                                  />
-                                ) : (
-                                  <select
-                                    className="en-meta-select"
-                                    value={ttsVoice}
-                                    onChange={e => setTtsVoice(e.target.value)}
-                                  >
-                                    {['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'].map(v => (
-                                      <option key={v} value={v}>{v}</option>
-                                    ))}
-                                  </select>
-                                )}
-                              </div>
-                              <div className="en-tts-row" style={{ gap: 12, alignItems: 'center' }}>
-                                <button
-                                  className="en-btn-save"
-                                  onClick={generateTTS}
-                                  disabled={ttsGenerating}
-                                  style={{ flex: 'none' }}
-                                >
-                                  {ttsGenerating ? '⏳ Generating…' : '🔊 Generate Audio'}
-                                </button>
-                                <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>
-                                  {ttsSlideCount(lessonJson)} slides · est. {ttsEstimate(ttsProvider, lessonJson)}
-                                </span>
-                                {ttsGenerating && ttsStatus && (
-                                  <span style={{ fontSize: 12, color: 'var(--color-navy)' }}>{ttsStatus}</span>
-                                )}
-                                {!ttsGenerating && ttsGenerated !== null && (
-                                  <span style={{ fontSize: 12, color: 'hsl(142,55%,38%)', fontWeight: 600 }}>
-                                    ✅ {ttsGenerated} slides generated
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="en-editor-wrap">
-                          <div className="en-line-numbers" ref={lineNumsRef} />
-                          <textarea
-                            ref={textareaRef}
-                            className="en-textarea"
-                            spellCheck={false}
-                            autoCorrect="off"
-                            autoCapitalize="off"
-                            placeholder={"Start writing content here…\n\nUse **bold headings** for sections:\n\n**1. Binomial Expansion**\nThe binomial theorem states...\n\n**Example 1:**\nExpand $(1+x)^4$\n\n[Try: Expand $(2+x)^3$]\n[Ans: $8 + 12x + 6x^2 + x^3$]"}
-                            onChange={handleEditorChange}
-                            onScroll={syncLineNumbers}
-                            onKeyDown={e => {
-                              if (e.key === 'Tab') {
-                                e.preventDefault();
-                                const el = textareaRef.current!;
-                                const start = el.selectionStart;
-                                const end = el.selectionEnd;
-                                el.value = el.value.substring(0, start) + '    ' + el.value.substring(end);
-                                el.selectionStart = el.selectionEnd = start + 4;
-                                updateLineNumbers();
-                              }
-                              if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                                e.preventDefault();
-                                saveNotes();
-                              }
-                            }}
-                          />
-                        </div>
-                      )}
+                      <div className="en-editor-wrap">
+                        <div className="en-line-numbers" ref={lineNumsRef} />
+                        <textarea
+                          ref={textareaRef}
+                          className="en-textarea"
+                          spellCheck={false}
+                          autoCorrect="off"
+                          autoCapitalize="off"
+                          placeholder={"Start writing content here…\n\nUse **bold headings** for sections:\n\n**1. Binomial Expansion**\nThe binomial theorem states...\n\n**Example 1:**\nExpand $(1+x)^4$\n\n[Try: Expand $(2+x)^3$]\n[Ans: $8 + 12x + 6x^2 + x^3$]"}
+                          onChange={handleEditorChange}
+                          onScroll={syncLineNumbers}
+                          onKeyDown={e => {
+                            if (e.key === 'Tab') {
+                              e.preventDefault();
+                              const el = textareaRef.current!;
+                              const start = el.selectionStart;
+                              const end = el.selectionEnd;
+                              el.value = el.value.substring(0, start) + '    ' + el.value.substring(end);
+                              el.selectionStart = el.selectionEnd = start + 4;
+                              updateLineNumbers();
+                            }
+                            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                              e.preventDefault();
+                              saveNotes();
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
