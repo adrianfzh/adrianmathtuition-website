@@ -187,6 +187,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const dirtyRef = useRef(false);
   const renderQueuedRef = useRef(false);
   const liveQueuedRef = useRef(false);
+  const baseWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const liveWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastStallLogRef = useRef(0);
   const pageNoRef = useRef(1);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mouseAllowed = useMemo(
@@ -514,24 +517,52 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     }
   }, [drawStrokes, hlColor, penColor, tool]);
 
+  // Every scheduled render RACES a timer against requestAnimationFrame.
+  // iPadOS Safari parks the rAF display-link right after Apple Pencil
+  // interactions: queued frames simply don't fire until some other input wakes
+  // the compositor. That was Adrian's "missing strokes" (4 Aug 2026, ink logs):
+  // every stroke committed (input was never lost) but the live stroke and the
+  // post-commit repaint sat in parked rAFs until the NEXT touch flushed them —
+  // so his retry looked like it "made" the previous stroke appear. Timers keep
+  // running while the link is parked, so the watchdog paints within ~35ms.
+  // 'raf-stall' in the ink log (≤1/s) records each time the watchdog won.
+  const logRafStall = useCallback((which: string) => {
+    const now = Date.now();
+    if (now - lastStallLogRef.current < 1000) return;
+    lastStallLogRef.current = now;
+    const a = inkLogRef.current;
+    a.push({ t: now - inkT0Ref.current, k: 'raf-stall', which });
+    if (a.length > 500) a.splice(0, a.length - 500);
+  }, []);
+
   const scheduleBase = useCallback(() => {
     if (renderQueuedRef.current) return;
     renderQueuedRef.current = true;
-    requestAnimationFrame(() => {
+    const run = (fromWatchdog: boolean) => {
+      if (!renderQueuedRef.current) return;
       renderQueuedRef.current = false;
+      if (baseWatchdogRef.current) { clearTimeout(baseWatchdogRef.current); baseWatchdogRef.current = null; }
+      if (fromWatchdog) logRafStall('base');
       renderBase();
       renderLive();
-    });
-  }, [renderBase, renderLive]);
+    };
+    baseWatchdogRef.current = setTimeout(() => run(true), 35);
+    requestAnimationFrame(() => run(false));
+  }, [logRafStall, renderBase, renderLive]);
 
   const scheduleLive = useCallback(() => {
     if (liveQueuedRef.current) return;
     liveQueuedRef.current = true;
-    requestAnimationFrame(() => {
+    const run = (fromWatchdog: boolean) => {
+      if (!liveQueuedRef.current) return;
       liveQueuedRef.current = false;
+      if (liveWatchdogRef.current) { clearTimeout(liveWatchdogRef.current); liveWatchdogRef.current = null; }
+      if (fromWatchdog) logRafStall('live');
       renderLive();
-    });
-  }, [renderLive]);
+    };
+    liveWatchdogRef.current = setTimeout(() => run(true), 35);
+    requestAnimationFrame(() => run(false));
+  }, [logRafStall, renderLive]);
 
   // ── ink mutations ───────────────────────────────────────────────────────────
   const pushUndo = useCallback((pageIdx: number, op: Op) => {

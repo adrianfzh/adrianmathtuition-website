@@ -274,3 +274,23 @@ Second feature round (2 Aug 2026, evening) — Adrian's picks, all shipped:
   fall back to the event itself; `setPointerCapture` wrapped (throws on already-lifted
   pointers); all btn style overrides use full `border` shorthand (React 19 warns on
   shorthand/longhand mixes).
+
+## 12. The missing-strokes saga (2026-08-04) — rAF watchdog + ink log
+
+Adrian kept losing strokes ("the stroke after a lift does nothing; my retry
+draws"). Two instruments + one fix, all in `AnnotateOverlay.tsx`:
+
+- **Ink event log**: always-on ring buffer (500 events) of pen/touch/commit/
+  cancel events. Triple-tap the "1 / N" page counter to copy it as JSON;
+  persisted to `localStorage 'annotate-inklog:v1'` on every pen lift.
+- **The diagnosis** (from his real-iPad logs): every pen-down had a matching
+  `commit` with healthy point counts — input was NEVER lost. iPadOS Safari
+  parks the requestAnimationFrame display-link right after Pencil
+  interactions, so the live stroke and the post-commit repaint sat in queued
+  rAFs until the next touch woke the compositor — the retry "making" the
+  previous stroke appear.
+- **The fix**: `scheduleBase`/`scheduleLive` race a 35ms `setTimeout` watchdog
+  against the rAF (timers keep firing while the link is parked); whichever
+  runs first renders, idempotently. Each watchdog win logs `raf-stall`
+  (rate-limited 1/s) — a later ink log showing `raf-stall` events is live
+  confirmation of the mechanism.
