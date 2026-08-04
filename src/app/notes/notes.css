@@ -1,0 +1,74 @@
+/* ── Fumadocs styles, scoped to /notes ────────────────────────────────────────
+ *
+ * Imported by src/app/notes/layout.tsx ONLY, never by globals.css. Next.js emits
+ * this as a route-segment stylesheet, so it loads on /notes and nowhere else.
+ *
+ * Why the isolation matters: fumadocs-ui/css/preset.css ships an `@layer base`
+ * block that repaints `body` (background + colour) and sets a global
+ * `*, ::before, ::after { border-color: … }`. Imported into globals.css that
+ * would restyle every page on the site — homepage, admin, kiosk, the lot.
+ *
+ * Tailwind is re-imported here because the fumadocs preset relies on `@apply`,
+ * `@utility`, `@variant` and `@plugin`, which need a Tailwind context in this
+ * entry point. Fumadocs safelists its own class names via `@source inline(…)`
+ * in its generated CSS, so nothing under node_modules needs scanning.
+ */
+
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* The site's globals.css sets an unlayered `body { background; color;
+ * font-size: 17px; line-height: 1.75 }`. Unlayered rules beat `@layer base`, so
+ * fumadocs' own body styling loses the cascade and dark mode would leave a cream
+ * page behind a dark sidebar. Re-assert the theme on the notes shell itself
+ * rather than fighting over `body`. */
+.notes-shell {
+  background-color: var(--color-fd-background);
+  color: var(--color-fd-foreground);
+  font-size: 16px;
+  line-height: 1.6;
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+/* ── KaTeX inside docs prose ───────────────────────────────────────────────────
+ * Same overrides the /revise swipe cards use: keep math at body size, and let a
+ * long display equation scroll horizontally instead of widening the page. On an
+ * iPad an un-scrollable `\begin{aligned}` block is what breaks the layout. */
+.notes-prose .katex {
+  font-size: 1em !important;
+}
+.notes-prose .katex-display {
+  margin: 0.9em 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  /* room for the scrollbar so descenders aren't clipped mid-scroll */
+  padding-bottom: 2px;
+}
+.notes-prose .katex-display > .katex {
+  text-align: left;
+}
+
+/* Fumadocs styles blockquotes as editorial pullquotes — italic, with decorative
+ * curly quote glyphs injected via ::before/::after. Our authors use `>` for
+ * formula panels ("Distance … Midpoint … Gradient …"), so those quote marks read
+ * as if the maths were being quoted from somewhere. Strip the decoration and
+ * keep the rule as a plain callout. */
+.notes-prose blockquote {
+  font-style: normal;
+}
+.notes-prose blockquote p::before,
+.notes-prose blockquote p::after {
+  content: none;
+}
+
+/* Snippet bodies are authored as standalone cards; kill the leading/trailing
+ * margins so they sit flush inside their section. */
+.notes-prose > :first-child {
+  margin-top: 0;
+}
+.notes-prose > :last-child {
+  margin-bottom: 0;
+}

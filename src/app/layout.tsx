@@ -48,7 +48,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the /notes portal's theme provider (next-themes,
+    // via fumadocs) stamps `class` and `color-scheme` onto <html> before React
+    // hydrates, which is a deliberate mismatch. React only suppresses warnings
+    // for this element's own attributes — descendants are unaffected.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

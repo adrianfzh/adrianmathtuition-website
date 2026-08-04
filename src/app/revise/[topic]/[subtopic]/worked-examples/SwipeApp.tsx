@@ -2,12 +2,8 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, type PanInfo } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
-import remarkMath from 'remark-math';
-import remarkGfm from 'remark-gfm';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
-import 'katex/dist/katex.min.css';
+import type { Components } from 'react-markdown';
+import { MathMarkdown } from '@/lib/math-markdown';
 
 interface Card {
   id: string;
@@ -60,48 +56,24 @@ const katexStyles = `
   [data-katex-scrollable] .katex-display::-webkit-scrollbar { display: none; }
 `;
 
-// ── Problem 6 fix: remark-math v6 requires $$ on its own line (fence model).
-//    DB content uses $$\begin{aligned}...$$\end{aligned}$$ format.
-//    Pre-process: ensure newlines around $$ delimiters. ─────────────────────
-function fixMathFences(src: string): string {
-  return src
-    // If $$ is immediately followed by non-whitespace, insert a newline after it
-    .replace(/\$\$(?=\S)/g, () => '$$\n')
-    // If $$ is immediately preceded by non-whitespace, insert a newline before it
-    .replace(/([^\n\s])\$\$/g, (_, c: string) => `${c}\n$$`);
-}
+// ── Swipe-card typography over the shared math pipeline ───────────────────────
+// The plugins/KaTeX options live in lib/math-markdown; only the card-specific
+// element styling belongs here.
+const cardComponents = {
+  p: ({ node: _n, ...props }) => (
+    <p style={{ margin: '0 0 12px 0', lineHeight: 1.65 }} {...props} />
+  ),
+  strong: ({ node: _n, ...props }) => (
+    <strong style={{ fontWeight: 700, color: '#1a1a1a' }} {...props} />
+  ),
+  em: ({ node: _n, ...props }) => <em style={{ color: '#555' }} {...props} />,
+  hr: ({ node: _n, ...props }) => (
+    <hr style={{ border: 0, borderTop: '1px dashed #d0c8b8', margin: '14px 0' }} {...props} />
+  ),
+} satisfies Components;
 
-// ── Rehype-KaTeX options (Problem 6) ─────────────────────────────────────────
-const katexOptions = {
-  strict: false,
-  trust: true,
-  throwOnError: false,
-  output: 'htmlAndMathml' as const,
-  macros: { '\\tfrac': '\\frac' },
-};
-
-// ── Shared markdown renderer ──────────────────────────────────────────────────
 function CardMarkdown({ content }: { content: string }) {
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkMath, remarkGfm]}
-      rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}
-      components={{
-        p: ({ node: _n, ...props }) => (
-          <p style={{ margin: '0 0 12px 0', lineHeight: 1.65 }} {...props} />
-        ),
-        strong: ({ node: _n, ...props }) => (
-          <strong style={{ fontWeight: 700, color: '#1a1a1a' }} {...props} />
-        ),
-        em: ({ node: _n, ...props }) => <em style={{ color: '#555' }} {...props} />,
-        hr: ({ node: _n, ...props }) => (
-          <hr style={{ border: 0, borderTop: '1px dashed #d0c8b8', margin: '14px 0' }} {...props} />
-        ),
-      }}
-    >
-      {fixMathFences(content)}
-    </ReactMarkdown>
-  );
+  return <MathMarkdown content={content} components={cardComponents} />;
 }
 
 // ── Desktop list view ─────────────────────────────────────────────────────────
