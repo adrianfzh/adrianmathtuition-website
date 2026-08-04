@@ -1,4 +1,4 @@
-# AdrianMarker — the Pencil double-tap shell
+# AdrianMarker — the native-Pencil shell
 
 A ~100-line native iPad app that is nothing but a full-screen browser showing
 adrianmathtuition.com/admin/mark-paper — plus the one thing Safari can never do:
@@ -20,6 +20,18 @@ Login cookies persist; everything else behaves exactly like the site.
 With a free Apple ID the install expires after 7 days (re-run from Xcode to
 refresh); a paid Apple Developer account ($99/yr) makes it last a year and
 enables TestFlight. Worth upgrading only if the shell earns its keep.
+
+## Why this app exists (updated 4 Aug 2026)
+
+Two things Safari can never do:
+
+1. **No more missing strokes.** iPadOS 26 Safari intermittently drops Apple
+   Pencil strokes before the web page sees any event (field-proven via the ink
+   logs — strokes vanished with zero events at window level). This app mirrors
+   every pencil touch **natively** (UIKit's raw stream, upstream of the buggy
+   layer) into the page via `window.__nativePencil`; the overlay draws from it
+   whenever Safari's own events stay silent. Ink cannot be lost.
+2. **Pencil double-tap** switches pen ⇄ eraser.
 
 ## What double-tap does
 

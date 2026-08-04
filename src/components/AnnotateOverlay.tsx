@@ -197,9 +197,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // parallel WebKit TOUCH event stream (touchType 'stylus') is synthesized
   // separately and survives these dropouts — a fallback below draws from it
   // whenever the pointer path stays silent. strokeSrc arbitrates the two.
-  const strokeSrcRef = useRef<null | 'pointer' | 'touch'>(null);
+  const strokeSrcRef = useRef<null | 'pointer' | 'touch' | 'native'>(null);
   const touchStrokeIdRef = useRef<number | null>(null);
   const winPdRef = useRef(0);
+  // AdrianMarker shell only: buffered native-pencil events awaiting the 60ms
+  // web-silence verdict (see window.__nativePencil below).
+  const nativePendingRef = useRef<{ pts: { x: number; y: number; f: number }[]; downAt: number } | null>(null);
   const pageNoRef = useRef(1);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mouseAllowed = useMemo(
@@ -884,12 +887,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         e.preventDefault();
         stopMomentum();
         gestureRef.current = null;          // pen wins over any finger gesture
-        // If the stylus-touch fallback engaged first (event-order surprise),
-        // the pointer path wins: discard its 1-2 points and start clean.
-        if (strokeSrcRef.current === 'touch') {
-          logInk('adopt', { n: currentRef.current?.stroke.points.length ?? 0 });
+        // If the stylus-touch or native fallback engaged first (event-order
+        // surprise), the pointer path wins: discard and start clean.
+        if (strokeSrcRef.current === 'touch' || strokeSrcRef.current === 'native') {
+          logInk('adopt', { from: strokeSrcRef.current, n: currentRef.current?.stroke.points.length ?? 0 });
           currentRef.current = null;
           touchStrokeIdRef.current = null;
+          nativePendingRef.current = null;
         }
         strokeSrcRef.current = 'pointer';
         try { el.setPointerCapture(e.pointerId); } catch { /* pointer already inactive */ }
@@ -1368,6 +1372,64 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const inEl = !!(t && el.contains(t));
       setTimeout(() => { if (winPdRef.current === seen) logInk('pd-swallowed', { target, inEl }); }, 30);
     };
+    // ── native pencil bridge (AdrianMarker shell) ──────────────────────────────
+    // The shell mirrors raw UIKit pencil touches here — upstream of WebKit's
+    // event synthesis, so it still fires when Safari eats a stroke. Engage rule:
+    // buffer from 'd'; if no web-path stroke starts within 60ms, this stream
+    // owns the stroke (replaying the buffer, so the wait costs no ink).
+    type NativeEvt = { k: 'd' | 'm' | 'u'; x: number; y: number; f: number };
+    const nativeEngage = (): boolean => {
+      const pend = nativePendingRef.current;
+      if (!pend || penDownRef.current || strokeSrcRef.current || currentRef.current) return false;
+      if (tool !== 'pen' && tool !== 'highlighter') { nativePendingRef.current = null; return false; }
+      if (busyRef.current) { nativePendingRef.current = null; return false; }
+      const [first, ...rest] = pend.pts;
+      const p0 = cssPos({ clientX: first.x, clientY: first.y });
+      logInk('native-pen-down', { buffered: pend.pts.length });
+      stopMomentum();
+      gestureRef.current = null;
+      strokeSrcRef.current = 'native';
+      penDownRef.current = true;
+      resetSurface(liveRef.current);
+      cursorRef.current = { x: p0.x, y: p0.y, mode: 'dot' };
+      if (!beginPenStroke(p0.x, p0.y, first.f)) {
+        penDownRef.current = false;
+        strokeSrcRef.current = null;
+        nativePendingRef.current = null;
+        return false;
+      }
+      for (const q of rest) {
+        const p = cssPos({ clientX: q.x, clientY: q.y });
+        extendPenStroke(p.x, p.y, q.f);
+      }
+      return true;
+    };
+    const onNativePencil = (batch: NativeEvt[]) => {
+      for (const ev of batch) {
+        if (ev.k === 'd') {
+          nativePendingRef.current = { pts: [{ x: ev.x, y: ev.y, f: ev.f }], downAt: Date.now() };
+          setTimeout(nativeEngage, 60);
+        } else if (ev.k === 'm') {
+          if (strokeSrcRef.current === 'native') {
+            const p = cssPos({ clientX: ev.x, clientY: ev.y });
+            cursorRef.current = { x: p.x, y: p.y, mode: 'dot' };
+            extendPenStroke(p.x, p.y, ev.f);
+          } else if (nativePendingRef.current) {
+            nativePendingRef.current.pts.push({ x: ev.x, y: ev.y, f: ev.f });
+          }
+        } else {
+          if (strokeSrcRef.current === 'native') {
+            finishPen({} as PointerEvent);   // pen-tool tail: commit + probe + repaint
+          } else if (nativePendingRef.current && Date.now() - nativePendingRef.current.downAt < 60) {
+            // Stroke ended before the verdict — decide NOW so short taps aren't lost.
+            if (nativeEngage()) finishPen({} as PointerEvent);
+          }
+          nativePendingRef.current = null;
+        }
+      }
+    };
+    (window as unknown as { __nativePencil?: (b: NativeEvt[]) => void }).__nativePencil = onNativePencil;
+
     window.addEventListener('pointerdown', onWinPd, true);
     window.addEventListener('touchstart', onWinTouchStart, { capture: true, passive: false });
 
@@ -1390,6 +1452,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     el.addEventListener('gesturestart', swallow as EventListener);
     el.addEventListener('gesturechange', swallow as EventListener);
     return () => {
+      delete (window as unknown as { __nativePencil?: unknown }).__nativePencil;
       window.removeEventListener('pointerdown', onWinPd, true);
       window.removeEventListener('touchstart', onWinTouchStart, true);
       el.removeEventListener('pointerdown', onPointerDown);
