@@ -544,10 +544,23 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // zero layout/paint cost.
   const nudgeFlipRef = useRef(false);
   const nudgeCompositor = useCallback(() => {
+    // Real, distinct transform matrices — an opacity 1↔0.9999 flip proved
+    // coalesce-able on iPadOS 26 (field-tested 4 Aug: still froze).
     nudgeFlipRef.current = !nudgeFlipRef.current;
-    const o = nudgeFlipRef.current ? '0.9999' : '1';
-    if (baseRef.current) baseRef.current.style.opacity = o;
-    if (liveRef.current) liveRef.current.style.opacity = o;
+    const t = nudgeFlipRef.current ? 'translateZ(0)' : 'translate(0px, 0px)';
+    if (baseRef.current) baseRef.current.style.transform = t;
+    if (liveRef.current) liveRef.current.style.transform = t;
+  }, []);
+
+  // The sledgehammer: destroy + recreate a canvas's backing surface. iPadOS 26
+  // Safari kept presenting a STALE canvas surface for entire strokes (field
+  // logs: points captured, backing store inked per commit-px, frames running,
+  // glass blank from the first touch) — a frozen layer cannot survive surface
+  // realloc, so the live canvas gets this at every pen-down and the base
+  // canvas at every commit (renderBase fully repaints right after).
+  const baseResetPendingRef = useRef(false);
+  const resetSurface = useCallback((canvas: HTMLCanvasElement | null) => {
+    if (canvas && canvas.width > 0) canvas.width = canvas.width; // eslint-disable-line no-self-assign
   }, []);
 
   const scheduleBase = useCallback(() => {
@@ -558,13 +571,17 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       renderQueuedRef.current = false;
       if (baseWatchdogRef.current) { clearTimeout(baseWatchdogRef.current); baseWatchdogRef.current = null; }
       if (fromWatchdog) logRafStall('base');
+      if (baseResetPendingRef.current) {
+        baseResetPendingRef.current = false;
+        resetSurface(baseRef.current);
+      }
       renderBase();
       renderLive();
       nudgeCompositor();
     };
     baseWatchdogRef.current = setTimeout(() => run(true), 35);
     requestAnimationFrame(() => run(false));
-  }, [logRafStall, nudgeCompositor, renderBase, renderLive]);
+  }, [logRafStall, nudgeCompositor, renderBase, renderLive, resetSurface]);
 
   const scheduleLive = useCallback(() => {
     if (liveQueuedRef.current) return;
@@ -789,6 +806,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         gestureRef.current = null;          // pen wins over any finger gesture
         try { el.setPointerCapture(e.pointerId); } catch { /* pointer already inactive */ }
         penDownRef.current = true;
+        // Fresh live surface per stroke — the frozen-layer symptom starts at
+        // exactly this moment ("nothing under the tip even when writing").
+        resetSurface(liveRef.current);
         const { x, y } = cssPos(e);
         cursorRef.current = { x, y, mode: tool === 'eraser' ? 'ring' : 'dot' };
         if (tool === 'eraser') {
@@ -839,6 +859,33 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         };
         armHoldTimer();
         scheduleLive();
+        // Live-layer probe (missing-strokes hunt): 150ms into the stroke,
+        // check whether the LIVE canvas backing store carries ink at the
+        // newest point. ink:true + a blank tip on glass = the live layer's
+        // surface is the one the compositor is freezing.
+        const liveProbeStroke = currentRef.current;
+        setTimeout(() => {
+          try {
+            const canvas = liveRef.current;
+            const curNow = currentRef.current;
+            if (!canvas || !curNow || curNow.stroke !== liveProbeStroke?.stroke) return;
+            const d = dimsRef.current[curNow.pageIdx];
+            if (!d) return;
+            // A few points back from the newest — the tip itself may be a frame
+            // from being painted; 4 back is definitely in the drawn body.
+            const last = curNow.stroke.points[Math.max(0, curNow.stroke.points.length - 5)];
+            const { dpr } = sizeRef.current;
+            const k = kFactor();
+            const f2 = (DOC_W * k) / d.w;
+            const lx = Math.round(dpr * (viewRef.current.ox + last.x * f2));
+            const ly = Math.round(dpr * (viewRef.current.oy + layoutRef.current.tops[curNow.pageIdx] * k + last.y * f2));
+            if (lx < 2 || ly < 2 || lx >= canvas.width - 2 || ly >= canvas.height - 2) return;
+            const data = canvas.getContext('2d')!.getImageData(lx - 2, ly - 2, 5, 5).data;
+            let ink = false;
+            for (let i = 3; i < data.length; i += 4) if (data[i] > 0) { ink = true; break; }
+            logInk('live-px', { ink, n: curNow.stroke.points.length });
+          } catch { /* best-effort */ }
+        }, 150);
         return;
       }
       if (e.pointerType !== 'touch') return;
@@ -1055,6 +1102,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         logInk('commit', { n: cur.stroke.points.length, page: cur.pageIdx, snapped: cur.stroke.snapped || '' });
         strokesRef.current[cur.pageIdx].push(cur.stroke);
         pushUndo(cur.pageIdx, { t: 'add', stroke: cur.stroke });
+        baseResetPendingRef.current = true;   // fresh base surface under the commit repaint
         bumpInk();
         // Post-commit pixel probe (missing-strokes hunt, 4 Aug 2026): 120ms
         // after the commit repaint, read the base canvas back at the stroke's
