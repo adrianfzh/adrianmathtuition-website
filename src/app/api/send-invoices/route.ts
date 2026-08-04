@@ -25,6 +25,7 @@ function buildEmailHtml(invoice: {
   finalAmount: number;
   dueDate: string;
   paymentRef: string;
+  studentId?: string; // powers the referral-link footer; older callers may omit
 }) {
   // One-time apology for the delayed July 2026 batch (was due to go out 18 June). Remove after July.
   const delayApology = invoice.month === 'July 2026'
@@ -46,6 +47,7 @@ function buildEmailHtml(invoice: {
       <li>Book additional lessons</li>
     </ul>
     <p style="font-size: 14px; color: #6b7280;">Search <strong>@AdrianMathBot</strong> on Telegram to get started. If you haven't registered yet, ask Adrian for your registration code.</p>
+    ${invoice.studentId ? `<p style="font-size: 14px; color: #6b7280;">💛 <strong>Know a family who'd benefit?</strong> Share your referral link — you'll receive <strong>one free month of lessons</strong> once they join and complete 3 months: <a href="https://www.adrianmathtuition.com/r/${invoice.studentId}">adrianmathtuition.com/r/${invoice.studentId.slice(0, 6)}…</a></p>` : ''}
     <p>Best regards,<br>Adrian</p>
   `;
 }
@@ -302,6 +304,7 @@ export async function POST(req: NextRequest) {
       const studentName = (stu.fields['Student Name'] || '') as string;
       const invoice = {
         id: rec.id,
+        studentId: sid, // referral-link footer in buildEmailHtml
         studentName,
         parentEmail: (stu.fields['Parent Email'] || '') as string,
         month,
@@ -521,6 +524,7 @@ export async function POST(req: NextRequest) {
       const sendDisplayMonth = displaySpanMonth((invoiceRecord.fields['Month'] || '') as string, invoiceRecord.fields['Line Items'] as string | undefined);
       const invoice = {
         id: invoiceRecord.id,
+        studentId, // referral-link footer in buildEmailHtml
         studentName: student['Student Name'],
         parentEmail: student['Parent Email'],
         month: sendDisplayMonth,

@@ -67,6 +67,13 @@ function SignupContent() {
   const [studentName, setStudentName] = useState(namePrefill);
   const [howHeard, setHowHeard]   = useState('');
   const [showReferral, setShowReferral] = useState(false);
+  // Referral-link attribution (see lib/referral-link.ts): the /r/<recId> landing
+  // drops an am_ref cookie; ?ref=recXXX on the signup URL also works. When
+  // present we prefill the referral fields and send the exact record id, so the
+  // reward automation never has to fuzzy-match a typed name.
+  const [refPrefill, setRefPrefill] = useState<{ id: string; name: string } | null>(null);
+  const [referralTypeVal, setReferralTypeVal] = useState('');
+  const [referredByVal, setReferredByVal] = useState('');
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [fpReady, setFpReady]     = useState(false);
@@ -83,6 +90,33 @@ function SignupContent() {
     link.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
     document.head.appendChild(link);
     return () => { document.head.removeChild(link); };
+  }, []);
+
+  // Pick up referral-link attribution: ?ref= param wins, else the am_ref cookie
+  // (dropped by /r/<recId>), else localStorage. Runs once, client-only, so the
+  // uncontrolled→controlled referral inputs never hydrate mismatched.
+  useEffect(() => {
+    try {
+      const fromParam = params.get('ref') || '';
+      let found: { id: string; name: string } | null = null;
+      if (/^rec[A-Za-z0-9]{14}$/.test(fromParam)) found = { id: fromParam, name: '' };
+      if (!found) {
+        const m = document.cookie.match(/(?:^|;\s*)am_ref=([^;]+)/);
+        const raw = m ? decodeURIComponent(m[1]) : localStorage.getItem('am_ref');
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (p && /^rec[A-Za-z0-9]{14}$/.test(p.id || '')) found = { id: p.id, name: String(p.name || '') };
+        }
+      }
+      if (found) {
+        setRefPrefill(found);
+        setHowHeard('Referral');
+        setShowReferral(true);
+        setReferralTypeVal('Current Student');
+        if (found.name) setReferredByVal(found.name);
+      }
+    } catch { /* attribution is best-effort; the form works without it */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Validate link and load slot data
@@ -208,6 +242,7 @@ function SignupContent() {
       howHeard:       fd.get('howHeard'),
       referralType:   fd.get('referralType') || '',
       referredBy:     fd.get('referredBy')   || '',
+      referredById:   refPrefill?.id         || '',
     };
 
     try {
@@ -487,7 +522,11 @@ function SignupContent() {
                         <label htmlFor="referralType" className="block text-[15px] font-medium mb-1.5">
                           Referral Type <span className="text-red-500">*</span>
                         </label>
-                        <select id="referralType" name="referralType" className="sg-input" required>
+                        <select
+                          id="referralType" name="referralType" className="sg-input" required
+                          value={referralTypeVal}
+                          onChange={e => setReferralTypeVal(e.target.value)}
+                        >
                           <option value="" disabled>Select one…</option>
                           <option value="Current Student">Current Student</option>
                           <option value="Past Student">Past Student</option>
@@ -503,7 +542,14 @@ function SignupContent() {
                           type="text" id="referredBy" name="referredBy"
                           className="sg-input" placeholder="Who referred you?"
                           required
+                          value={referredByVal}
+                          onChange={e => setReferredByVal(e.target.value)}
                         />
+                        {refPrefill && (
+                          <p className="mt-1.5 text-[13px] text-green-700">
+                            🎁 Linked via {refPrefill.name ? `${refPrefill.name}'s` : 'a'} referral link — their reward is tracked automatically.
+                          </p>
+                        )}
                       </div>
                     </>
                   )}

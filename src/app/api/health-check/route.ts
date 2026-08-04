@@ -98,6 +98,16 @@ export async function GET(req: NextRequest) {
       if (pdfs === 0) throw new Error('EM notes folder returned 0 files');
       return `${pdfs} files`;
     }),
+    // Referral landing (/r/<code> — parent-facing invite links in invoice emails).
+    // Probes with a syntactically-valid-but-unknown id: the page must still 200
+    // with the generic invite (no Airtable data dependency in the check).
+    timed('referral-landing', async () => {
+      const r = await fetch('https://www.adrianmathtuition.com/r/recAAAAAAAAAAAAAA', { signal: T(10000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const html = await r.text();
+      if (!html.includes('Adrian')) throw new Error('landing rendered without expected content');
+      return 'ok';
+    }),
     // Resend (welcome emails, invoices, receipts)
     timed('resend', async () => {
       if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY missing');

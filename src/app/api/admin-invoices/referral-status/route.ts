@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { parseReferrerMarker } from '@/lib/referral-link';
 
 export const runtime = 'nodejs';
 
@@ -59,16 +60,25 @@ export async function GET(req: NextRequest) {
       continue;
     }
     if (referralType === 'Current Student' && referrerName) {
-      const nl = referrerName.toLowerCase().trim();
-      for (const a of allActive.records) {
-        const name = ((a.fields['Student Name'] || '') as string).toLowerCase();
-        if (name === nl) { matchedName = a.fields['Student Name'] as string; matchConfidence = 'exact'; break; }
-        if (!matchedName) {
-          const rw = nl.split(/\s+/);
-          const nw = name.split(/\s+/);
-          if (rw.filter((w: string) => w.length > 1 && nw.includes(w)).length >= 1) {
-            matchedName = a.fields['Student Name'] as string;
-            matchConfidence = 'fuzzy';
+      // Referral-LINK marker first (lib/referral-link.ts) — exact record link,
+      // no guessing. Fuzzy stays for plainly typed names.
+      const { name: plainName, recId } = parseReferrerMarker(referrerName);
+      if (recId) {
+        const linked = allActive.records.find((a: any) => a.id === recId);
+        if (linked) { matchedName = linked.fields['Student Name'] as string; matchConfidence = 'exact'; }
+      }
+      if (!matchedName) {
+        const nl = plainName.toLowerCase().trim();
+        for (const a of allActive.records) {
+          const name = ((a.fields['Student Name'] || '') as string).toLowerCase();
+          if (name === nl) { matchedName = a.fields['Student Name'] as string; matchConfidence = 'exact'; break; }
+          if (!matchedName) {
+            const rw = nl.split(/\s+/);
+            const nw = name.split(/\s+/);
+            if (rw.filter((w: string) => w.length > 1 && nw.includes(w)).length >= 1) {
+              matchedName = a.fields['Student Name'] as string;
+              matchConfidence = 'fuzzy';
+            }
           }
         }
       }

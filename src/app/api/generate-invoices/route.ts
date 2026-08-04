@@ -5,6 +5,7 @@ import { sendTelegram } from '@/lib/telegram';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { applyPriorBalance } from '@/lib/invoice-consolidate';
+import { parseReferrerMarker } from '@/lib/referral-link';
 import { NO_LESSON_DATES } from '@/lib/holidays';
 import { billableAdditionalFor, mapAdditionalRecord } from '@/lib/additional-lessons';
 import { nextDayISO } from '@/lib/billing-math';
@@ -493,10 +494,23 @@ export async function POST(req: NextRequest) {
           if (completedCount < 12) continue; // Not yet eligible
 
           if (referralType === 'Current Student') {
-            // Fuzzy match referrer name against active students
-            const referrerNameLower = referrerName.toLowerCase().trim();
+            // Referral-LINK first (lib/referral-link.ts): signups via /r/<recId>
+            // carry the referrer's record id as a "[recXXX]" marker inside
+            // Referred By Name — an exact link, no guessing. Fuzzy name-matching
+            // stays as the fallback for plainly typed names (pre-link rows).
+            const { name: referrerPlainName, recId: referrerRecId } = parseReferrerMarker(referrerName);
             let matchedReferrer: any = null;
             let matchConfidence = 'none';
+            if (referrerRecId) {
+              matchedReferrer = allActiveStudents.records.find((s: any) => s.id === referrerRecId) || null;
+              if (matchedReferrer) matchConfidence = 'exact';
+              // Marker present but referrer no longer active → fall through to
+              // fuzzy on the plain name, which will surface for manual review.
+            }
+
+            if (!matchedReferrer) {
+            // Fuzzy match referrer name against active students
+            const referrerNameLower = referrerPlainName.toLowerCase().trim();
 
             // Score every candidate by shared name-words and pick the UNIQUE best match.
             // (The old first-shared-word-wins logic mis-resolved partial names on common
@@ -524,6 +538,7 @@ export async function POST(req: NextRequest) {
                 matchedReferrer = null; matchConfidence = 'none';
               }
             }
+            } // end fuzzy fallback
 
             if (matchedReferrer) {
               // Find referrer's enrollment to get rate

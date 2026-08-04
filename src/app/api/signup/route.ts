@@ -9,6 +9,7 @@ import { sendWelcomeEmail } from '@/lib/welcome-email';
 import { displaySpanMonth } from '@/lib/invoice-month';
 import { firstInvoiceLessonDates } from '@/lib/billing-math';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
+import { REC_ID_RE, appendReferrerMarker } from '@/lib/referral-link';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
     trialLessonId, lockedStartDate,
     expires, sig, studentName, school, studentContact,
     parentName, parentContact, parentEmail, startDate, howHeard, referralType, referredBy,
+    referredById,
   } = body;
 
   if (!slotId || !expires || !sig || !studentName || !parentName || !parentContact || !parentEmail || !startDate || !howHeard) {
@@ -165,6 +167,26 @@ export async function POST(request: NextRequest) {
     if (studentContact) studentFields['Student Contact'] = sanitize(studentContact);
     if (referralType) studentFields['Referral Type'] = sanitize(referralType);
     if (referredBy) studentFields['Referred By Name'] = sanitize(referredBy);
+
+    // Referral-LINK attribution (lib/referral-link.ts): a valid referrer record
+    // id arrived from the /r/<recId> cookie or ?ref= param. Verify it resolves
+    // to a real student (unverified input!), then ride it inside the existing
+    // Referred By Name field as a "[recXXX]" marker — the reward automation
+    // prefers the marker and only fuzzy-matches names without one. Blanks-only
+    // fill: never overwrite what the parent actually chose/typed.
+    if (typeof referredById === 'string' && REC_ID_RE.test(referredById)) {
+      try {
+        const refRec = await at('Students', `/${referredById}`);
+        if (refRec?.id) {
+          const typedName = sanitize(referredBy || '') || String(refRec.fields?.['Student Name'] || '');
+          studentFields['Referred By Name'] = appendReferrerMarker(typedName, referredById);
+          if (!studentFields['How Heard']) studentFields['How Heard'] = 'Referral';
+          if (!studentFields['Referral Type']) studentFields['Referral Type'] = 'Current Student';
+        }
+      } catch (e) {
+        console.warn('[signup] referral id did not resolve — keeping typed name only:', referredById);
+      }
+    }
 
     const studentRecord = await at('Students', '', {
       method: 'POST',

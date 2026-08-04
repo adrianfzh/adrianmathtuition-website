@@ -566,6 +566,19 @@ export default function StudentProfilePage() {
                     </div>
                   )}
                   <button style={btnGhost} onClick={askForReview} disabled={reviewBusy}>{reviewBusy ? 'Preparing…' : '⭐ Ask for review'}</button>
+                  <button
+                    style={btnGhost}
+                    onClick={() => {
+                      // The family's shareable referral link (see lib/referral-link.ts):
+                      // signups via this URL attach the referrer exactly — no fuzzy match.
+                      const url = `https://www.adrianmathtuition.com/r/${studentId}`;
+                      navigator.clipboard?.writeText(url)
+                        .then(() => alert(`Referral link copied:\n${url}`))
+                        .catch(() => prompt('Referral link (copy manually):', url));
+                    }}
+                  >
+                    🔗 Copy referral link
+                  </button>
                 </div>
               </div>
               <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
