@@ -1554,6 +1554,25 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   }, [armHoldTimer, bumpInk, clampView, clearSelection, eraseAt, eraseAtPartial, eraserMode, hlColor, isPenLike, logInk, penColor, penWidthPt, pushUndo, redo, scheduleBase, scheduleLive, stopMomentum, toImage, tool, undo]);
 
   // ── mount: sizing, images, draft, wake lock, tool memory, misc listeners ────
+  // Live Text guard (4 Aug 2026 — THE missing-strokes root cause): iPadOS
+  // detects printed text in the marked-page photos and the SYSTEM intercepts
+  // Pencil strokes over those regions for selection/Scribble — the page never
+  // receives an event. The AdrianMarker shell disables text interaction
+  // outright (isTextInteractionEnabled=false); Safari has no such switch, so
+  // starve the detector instead: while annotating, hide the page's <img>
+  // elements (they sit behind the opaque overlay anyway — zero visual cost).
+  // Our page bitmaps live on canvas, which the overlay draws itself.
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = 'body.annotating-livetext-guard img { visibility: hidden !important; }';
+    document.head.appendChild(style);
+    document.body.classList.add('annotating-livetext-guard');
+    return () => {
+      document.body.classList.remove('annotating-livetext-guard');
+      style.remove();
+    };
+  }, []);
+
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;

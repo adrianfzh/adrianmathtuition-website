@@ -57,14 +57,30 @@ final class ViewController: UIViewController, WKNavigationDelegate, UIPencilInte
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .default()          // persistent cookies → admin login sticks
         config.allowsInlineMediaPlayback = true
+        // THE missing-strokes root cause (found 4 Aug 2026 from the spatial
+        // pattern: ink died over the page photo, worked beside it): iPadOS
+        // Live Text detects printed text in the marked-page images and the
+        // SYSTEM intercepts Pencil strokes over those regions for text
+        // selection/Scribble — nothing ever reaches the page. Safari has no
+        // opt-out; a WKWebView does:
+        if #available(iOS 15.0, *) { config.preferences.isTextInteractionEnabled = false }
 
-        webView = WKWebView(frame: view.bounds, configuration: config)
-        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        webView = WKWebView(frame: .zero, configuration: config)
+        webView.translatesAutoresizingMaskIntoConstraints = false
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = true
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         if #available(iOS 16.4, *) { webView.isInspectable = true }   // Safari devtools from the Mac
+        view.backgroundColor = .systemBackground
         view.addSubview(webView)
+        // Respect the status bar: fullscreen web content put the annotate
+        // toolbar under the clock and made the page counter untappable.
+        NSLayoutConstraint.activate([
+            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
 
         // The whole point of this app: Safari never hears the Pencil's double-tap,
         // a native view does. Forward it as the event the overlay already handles.
