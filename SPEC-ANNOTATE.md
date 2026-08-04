@@ -294,3 +294,21 @@ draws"). Two instruments + one fix, all in `AnnotateOverlay.tsx`:
   runs first renders, idempotently. Each watchdog win logs `raf-stall`
   (rate-limited 1/s) — a later ink log showing `raf-stall` events is live
   confirmation of the mechanism.
+- **The REAL diagnosis** (same day, after the watchdog + a compositor-nudge +
+  surface-reset round all failed in the field): a screenshot finally aligned
+  with a log — Adrian wrote ~22 strokes ("hello this is not working"), the log
+  recorded exactly 14 pen-downs, all 14 committed AND painted (live-px /
+  commit-px probes ink:true). The missing strokes never produced ANY events:
+  **iPadOS 26 Safari intermittently drops the Pencil's pointer events
+  outright.** Every earlier log looked "healthy" because eaten strokes are
+  invisible to an event log.
+- **The mitigation**: a stylus TOUCH-events fallback (`touchType 'stylus'` —
+  WebKit's parallel input stream, synthesized separately from pointer events).
+  It engages only when the pointer path stays silent at touchstart; a healthy
+  stroke (pointerdown first) bypasses it, and if event order inverts the
+  pointer path adopts (`adopt` log). Fallback engagements log
+  `touch-pen-down` — those in a field log are dropped pointer events being
+  caught. `pd-swallowed` (window-capture diagnostic) would instead mean a DOM
+  layer ate the event. Belt-and-braces layers from the same hunt kept: rAF
+  watchdog, transform-alternating compositor nudge, per-stroke live-canvas +
+  per-commit base-canvas surface resets, live-px/commit-px probes.

@@ -190,6 +190,16 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const baseWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const liveWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastStallLogRef = useRef(0);
+  // Missing-strokes endgame (4 Aug 2026): the screenshot + log finally aligned —
+  // ~22 strokes written, exactly 14 pen-downs logged, all 14 committed AND
+  // painted. The eaten strokes never produced ANY events: iPadOS 26 Safari
+  // intermittently drops the Pencil's pointer events outright. Mitigation: the
+  // parallel WebKit TOUCH event stream (touchType 'stylus') is synthesized
+  // separately and survives these dropouts — a fallback below draws from it
+  // whenever the pointer path stays silent. strokeSrc arbitrates the two.
+  const strokeSrcRef = useRef<null | 'pointer' | 'touch'>(null);
+  const touchStrokeIdRef = useRef<number | null>(null);
+  const winPdRef = useRef(0);
   const pageNoRef = useRef(1);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mouseAllowed = useMemo(
@@ -789,9 +799,78 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const el = wrapRef.current;
     if (!el) return;
 
-    const cssPos = (e: PointerEvent) => {
+    const cssPos = (e: { clientX: number; clientY: number }) => {
       const r = el.getBoundingClientRect();
       return { x: e.clientX - r.left, y: e.clientY - r.top };
+    };
+
+    // Start a pen/highlighter stroke at css coords — shared by the pointer path
+    // and the stylus-touch fallback. Returns false if the page isn't ready.
+    const beginPenStroke = (x: number, y: number, pressure: number): boolean => {
+      const pt = toImage(x, y);
+      if (!pt) { logInk('drop', { why: 'page-not-loaded' }); return false; }
+      const d = dimsRef.current[pt.pageIdx]!;
+      const ptPerImg = d.w / PDF_PAGE_W;                  // 1 pt at page scale, in image px
+      const widthPt = tool === 'highlighter' ? HL_WIDTH_PT : penWidthPt;
+      currentRef.current = {
+        stroke: {
+          tool: tool as ToolKind,
+          color: tool === 'highlighter' ? hlColor : penColor,
+          width: widthPt * ptPerImg,
+          points: [{ x: pt.x, y: pt.y, p: pressure > 0 ? pressure : 0.5 }],
+        },
+        pageIdx: pt.pageIdx,
+        snapLocked: false,
+        lastMoveT: Date.now(),
+        lastStable: { x, y },
+        fitAttemptAt: 0,
+      };
+      armHoldTimer();
+      scheduleLive();
+      // Live-layer probe (missing-strokes hunt): 150ms into the stroke,
+      // check whether the LIVE canvas backing store carries ink at the
+      // newest point. ink:true + a blank tip on glass = the live layer's
+      // surface is the one the compositor is freezing.
+      const liveProbeStroke = currentRef.current;
+      setTimeout(() => {
+        try {
+          const canvas = liveRef.current;
+          const curNow = currentRef.current;
+          if (!canvas || !curNow || curNow.stroke !== liveProbeStroke?.stroke) return;
+          const d2 = dimsRef.current[curNow.pageIdx];
+          if (!d2) return;
+          // A few points back from the newest — the tip itself may be a frame
+          // from being painted; 4 back is definitely in the drawn body.
+          const last = curNow.stroke.points[Math.max(0, curNow.stroke.points.length - 5)];
+          const { dpr } = sizeRef.current;
+          const k = kFactor();
+          const f2 = (DOC_W * k) / d2.w;
+          const lx = Math.round(dpr * (viewRef.current.ox + last.x * f2));
+          const ly = Math.round(dpr * (viewRef.current.oy + layoutRef.current.tops[curNow.pageIdx] * k + last.y * f2));
+          if (lx < 2 || ly < 2 || lx >= canvas.width - 2 || ly >= canvas.height - 2) return;
+          const data = canvas.getContext('2d')!.getImageData(lx - 2, ly - 2, 5, 5).data;
+          let ink = false;
+          for (let i = 3; i < data.length; i += 4) if (data[i] > 0) { ink = true; break; }
+          logInk('live-px', { ink, n: curNow.stroke.points.length });
+        } catch { /* best-effort */ }
+      }, 150);
+      return true;
+    };
+
+    // Append to the in-flight stroke — used by the stylus-touch fallback (the
+    // pointer path keeps its own coalesced-events loop below).
+    const extendPenStroke = (x: number, y: number, pressure: number) => {
+      const cur = currentRef.current;
+      if (!cur || cur.snapLocked) return;
+      const pt = toImage(x, y, cur.pageIdx);
+      if (pt) cur.stroke.points.push({ x: pt.x, y: pt.y, p: pressure > 0 ? pressure : 0.5 });
+      pathCache.current.delete(cur.stroke);
+      if (Math.hypot(x - cur.lastStable.x, y - cur.lastStable.y) > HOLD_MOVE_PX) {
+        cur.lastStable = { x, y };
+        cur.lastMoveT = Date.now();
+        armHoldTimer();
+      }
+      scheduleLive();
     };
 
     const onPointerDown = (e: PointerEvent) => {
@@ -800,10 +879,19 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       // must click, not start a lasso (preventDefault on pointerdown kills clicks).
       if ((e.target as HTMLElement).closest?.('button')) { logInk('drop', { why: 'button', pt: e.pointerType }); return; }
       if (isPenLike(e)) {
+        winPdRef.current = 0;               // pointer event reached us — not swallowed
         logInk('pen-down', { p: Math.round(e.pressure * 100) / 100, w: Math.round(e.width), h: Math.round(e.height), tool });
         e.preventDefault();
         stopMomentum();
         gestureRef.current = null;          // pen wins over any finger gesture
+        // If the stylus-touch fallback engaged first (event-order surprise),
+        // the pointer path wins: discard its 1-2 points and start clean.
+        if (strokeSrcRef.current === 'touch') {
+          logInk('adopt', { n: currentRef.current?.stroke.points.length ?? 0 });
+          currentRef.current = null;
+          touchStrokeIdRef.current = null;
+        }
+        strokeSrcRef.current = 'pointer';
         try { el.setPointerCapture(e.pointerId); } catch { /* pointer already inactive */ }
         penDownRef.current = true;
         // Fresh live surface per stroke — the frozen-layer symptom starts at
@@ -839,53 +927,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           scheduleLive();
           return;
         }
-        const pt = toImage(x, y);
-        if (!pt) { logInk('drop', { why: 'page-not-loaded' }); penDownRef.current = false; return; }
-        const d = dimsRef.current[pt.pageIdx]!;
-        const ptPerImg = d.w / PDF_PAGE_W;                  // 1 pt at page scale, in image px
-        const widthPt = tool === 'highlighter' ? HL_WIDTH_PT : penWidthPt;
-        currentRef.current = {
-          stroke: {
-            tool: tool as ToolKind,
-            color: tool === 'highlighter' ? hlColor : penColor,
-            width: widthPt * ptPerImg,
-            points: [{ x: pt.x, y: pt.y, p: e.pressure > 0 ? e.pressure : 0.5 }],
-          },
-          pageIdx: pt.pageIdx,
-          snapLocked: false,
-          lastMoveT: Date.now(),
-          lastStable: { x, y },
-          fitAttemptAt: 0,
-        };
-        armHoldTimer();
-        scheduleLive();
-        // Live-layer probe (missing-strokes hunt): 150ms into the stroke,
-        // check whether the LIVE canvas backing store carries ink at the
-        // newest point. ink:true + a blank tip on glass = the live layer's
-        // surface is the one the compositor is freezing.
-        const liveProbeStroke = currentRef.current;
-        setTimeout(() => {
-          try {
-            const canvas = liveRef.current;
-            const curNow = currentRef.current;
-            if (!canvas || !curNow || curNow.stroke !== liveProbeStroke?.stroke) return;
-            const d = dimsRef.current[curNow.pageIdx];
-            if (!d) return;
-            // A few points back from the newest — the tip itself may be a frame
-            // from being painted; 4 back is definitely in the drawn body.
-            const last = curNow.stroke.points[Math.max(0, curNow.stroke.points.length - 5)];
-            const { dpr } = sizeRef.current;
-            const k = kFactor();
-            const f2 = (DOC_W * k) / d.w;
-            const lx = Math.round(dpr * (viewRef.current.ox + last.x * f2));
-            const ly = Math.round(dpr * (viewRef.current.oy + layoutRef.current.tops[curNow.pageIdx] * k + last.y * f2));
-            if (lx < 2 || ly < 2 || lx >= canvas.width - 2 || ly >= canvas.height - 2) return;
-            const data = canvas.getContext('2d')!.getImageData(lx - 2, ly - 2, 5, 5).data;
-            let ink = false;
-            for (let i = 3; i < data.length; i += 4) if (data[i] > 0) { ink = true; break; }
-            logInk('live-px', { ink, n: curNow.stroke.points.length });
-          } catch { /* best-effort */ }
-        }, 150);
+        if (!beginPenStroke(x, y, e.pressure)) { penDownRef.current = false; strokeSrcRef.current = null; }
         return;
       }
       if (e.pointerType !== 'touch') return;
@@ -1035,6 +1077,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const finishPen = (e: PointerEvent) => {
       penDownRef.current = false;
       lastPenUpRef.current = Date.now();
+      strokeSrcRef.current = null;
+      touchStrokeIdRef.current = null;
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
       if (tool === 'lasso') {
         const mv = moveSelRef.current;
@@ -1229,10 +1273,77 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
 
     const swallow = (e: Event) => e.preventDefault();
 
+    // ── stylus-touch fallback ──────────────────────────────────────────────────
+    // iPadOS 26 Safari intermittently drops the Pencil's POINTER events outright
+    // (whole strokes, no events at all — proven by the 4 Aug field screenshot:
+    // ~22 strokes written, 14 logged, all 14 fine). WebKit's parallel TOUCH
+    // stream (touchType 'stylus') is synthesized separately and survives. These
+    // handlers draw from it ONLY when the pointer path stayed silent; a healthy
+    // stroke has penDownRef already true by touchstart and is ignored here.
+    const stylusIn = (e: TouchEvent, id: number | null) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i] as Touch & { touchType?: string };
+        if (id !== null ? t.identifier === id : t.touchType === 'stylus') return t;
+      }
+      return null;
+    };
+    const onTouchStartFallback = (e: TouchEvent) => {
+      const t = stylusIn(e, null);
+      if (!t) return;
+      if (penDownRef.current || strokeSrcRef.current || currentRef.current) return;
+      if (tool !== 'pen' && tool !== 'highlighter') return;
+      if (busyRef.current) return;
+      e.preventDefault();
+      logInk('touch-pen-down', { p: Math.round((t.force || 0) * 100) / 100 });
+      stopMomentum();
+      gestureRef.current = null;
+      strokeSrcRef.current = 'touch';
+      touchStrokeIdRef.current = t.identifier;
+      penDownRef.current = true;
+      resetSurface(liveRef.current);
+      const { x, y } = cssPos(t);
+      cursorRef.current = { x, y, mode: 'dot' };
+      if (!beginPenStroke(x, y, t.force || 0.5)) {
+        penDownRef.current = false;
+        strokeSrcRef.current = null;
+        touchStrokeIdRef.current = null;
+      }
+    };
+    const onTouchMoveFallback = (e: TouchEvent) => {
+      if (strokeSrcRef.current !== 'touch') return;
+      const t = stylusIn(e, touchStrokeIdRef.current);
+      if (!t) return;
+      e.preventDefault();
+      const { x, y } = cssPos(t);
+      cursorRef.current = { x, y, mode: 'dot' };
+      extendPenStroke(x, y, t.force || 0.5);
+    };
+    const onTouchEndFallback = (e: TouchEvent) => {
+      if (strokeSrcRef.current !== 'touch') return;
+      const t = stylusIn(e, touchStrokeIdRef.current);
+      if (!t) return;
+      e.preventDefault();
+      finishPen(e as unknown as PointerEvent);   // pen-tool tail: commit + probe + repaint
+    };
+    // Window-capture diagnostic: distinguishes "Safari never dispatched the
+    // pointer event" (nothing logged anywhere) from "a DOM layer swallowed it
+    // before our handler" (pd-swallowed).
+    const onWinPd = (e: PointerEvent) => {
+      if (e.pointerType !== 'pen') return;
+      const seen = Date.now();
+      winPdRef.current = seen;
+      setTimeout(() => { if (winPdRef.current === seen) logInk('pd-swallowed', {}); }, 30);
+    };
+    window.addEventListener('pointerdown', onWinPd, true);
+
     el.addEventListener('pointerdown', onPointerDown);
     el.addEventListener('pointermove', onPointerMove);
     el.addEventListener('pointerup', onPointerUp);
     el.addEventListener('pointercancel', onPointerCancel);
+    el.addEventListener('touchstart', onTouchStartFallback, { passive: false });
+    el.addEventListener('touchmove', onTouchMoveFallback, { passive: false });
+    el.addEventListener('touchend', onTouchEndFallback, { passive: false });
+    el.addEventListener('touchcancel', onTouchEndFallback, { passive: false });
     el.addEventListener('pointerleave', onPointerLeave);
     el.addEventListener('wheel', onWheel, { passive: false });
     el.addEventListener('contextmenu', swallow);
@@ -1240,10 +1351,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     el.addEventListener('gesturestart', swallow as EventListener);
     el.addEventListener('gesturechange', swallow as EventListener);
     return () => {
+      window.removeEventListener('pointerdown', onWinPd, true);
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('pointermove', onPointerMove);
       el.removeEventListener('pointerup', onPointerUp);
       el.removeEventListener('pointercancel', onPointerCancel);
+      el.removeEventListener('touchstart', onTouchStartFallback);
+      el.removeEventListener('touchmove', onTouchMoveFallback);
+      el.removeEventListener('touchend', onTouchEndFallback);
+      el.removeEventListener('touchcancel', onTouchEndFallback);
       el.removeEventListener('pointerleave', onPointerLeave);
       el.removeEventListener('wheel', onWheel);
       el.removeEventListener('contextmenu', swallow);
