@@ -1332,7 +1332,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (e.pointerType !== 'pen') return;
       const seen = Date.now();
       winPdRef.current = seen;
-      setTimeout(() => { if (winPdRef.current === seen) logInk('pd-swallowed', {}); }, 30);
+      // Name the element that received the event — a toolbar BUTTON is a
+      // legitimate miss; anything else covering the stage is the thief.
+      const t = e.target as HTMLElement | null;
+      const target = t
+        ? `${t.tagName}${t.id ? '#' + t.id : ''}${t.className && typeof t.className === 'string' ? '.' + t.className.split(' ')[0].slice(0, 24) : ''}`
+        : 'null';
+      const inEl = !!(t && el.contains(t));
+      setTimeout(() => { if (winPdRef.current === seen) logInk('pd-swallowed', { target, inEl }); }, 30);
     };
     window.addEventListener('pointerdown', onWinPd, true);
 
