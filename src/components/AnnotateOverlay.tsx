@@ -535,6 +535,21 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     if (a.length > 500) a.splice(0, a.length - 500);
   }, []);
 
+  // The 4 Aug field log killed the parked-rAF theory alone: no raf-stall fired
+  // during the strokes, yet ink still failed to appear. Next suspect is WebKit
+  // skipping the canvas LAYER'S composite (backing store updated, GPU tile
+  // not re-uploaded — a known iPadOS canvas failure). Opacity is a
+  // composite-only property, so flipping it between two near-identical values
+  // after every paint forces the compositor to refresh both canvas layers at
+  // zero layout/paint cost.
+  const nudgeFlipRef = useRef(false);
+  const nudgeCompositor = useCallback(() => {
+    nudgeFlipRef.current = !nudgeFlipRef.current;
+    const o = nudgeFlipRef.current ? '0.9999' : '1';
+    if (baseRef.current) baseRef.current.style.opacity = o;
+    if (liveRef.current) liveRef.current.style.opacity = o;
+  }, []);
+
   const scheduleBase = useCallback(() => {
     if (renderQueuedRef.current) return;
     renderQueuedRef.current = true;
@@ -545,10 +560,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (fromWatchdog) logRafStall('base');
       renderBase();
       renderLive();
+      nudgeCompositor();
     };
     baseWatchdogRef.current = setTimeout(() => run(true), 35);
     requestAnimationFrame(() => run(false));
-  }, [logRafStall, renderBase, renderLive]);
+  }, [logRafStall, nudgeCompositor, renderBase, renderLive]);
 
   const scheduleLive = useCallback(() => {
     if (liveQueuedRef.current) return;
@@ -559,10 +575,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       if (liveWatchdogRef.current) { clearTimeout(liveWatchdogRef.current); liveWatchdogRef.current = null; }
       if (fromWatchdog) logRafStall('live');
       renderLive();
+      nudgeCompositor();
     };
     liveWatchdogRef.current = setTimeout(() => run(true), 35);
     requestAnimationFrame(() => run(false));
-  }, [logRafStall, renderLive]);
+  }, [logRafStall, nudgeCompositor, renderLive]);
 
   // ── ink mutations ───────────────────────────────────────────────────────────
   const pushUndo = useCallback((pageIdx: number, op: Op) => {
@@ -1039,6 +1056,36 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         strokesRef.current[cur.pageIdx].push(cur.stroke);
         pushUndo(cur.pageIdx, { t: 'add', stroke: cur.stroke });
         bumpInk();
+        // Post-commit pixel probe (missing-strokes hunt, 4 Aug 2026): 120ms
+        // after the commit repaint, read the base canvas back at the stroke's
+        // midpoint and log whether its ink truly landed in the backing store.
+        // ink:true in the log + still nothing on glass = compositor skip,
+        // proven from the field. Best-effort; 5×5 readback per commit is cheap.
+        const probe = { stroke: cur.stroke, pageIdx: cur.pageIdx };
+        setTimeout(() => {
+          try {
+            const canvas = baseRef.current;
+            const d = dimsRef.current[probe.pageIdx];
+            if (!canvas || !d) return;
+            const mid = probe.stroke.points[Math.floor(probe.stroke.points.length / 2)];
+            const { dpr } = sizeRef.current;
+            const k = kFactor();
+            const f2 = (DOC_W * k) / d.w;
+            const px = Math.round(dpr * (viewRef.current.ox + mid.x * f2));
+            const py = Math.round(dpr * (viewRef.current.oy + layoutRef.current.tops[probe.pageIdx] * k + mid.y * f2));
+            if (px < 2 || py < 2 || px >= canvas.width - 2 || py >= canvas.height - 2) { logInk('commit-px', { ink: 'offscreen' }); return; }
+            const data = canvas.getContext('2d')!.getImageData(px - 2, py - 2, 5, 5).data;
+            const hex = /^([0-9a-f]{6})$/i.exec(probe.stroke.color.replace('#', ''));
+            let ink = false;
+            if (hex) {
+              const tr = parseInt(hex[1].slice(0, 2), 16), tg = parseInt(hex[1].slice(2, 4), 16), tb = parseInt(hex[1].slice(4, 6), 16);
+              for (let i = 0; i < data.length; i += 4) {
+                if (Math.abs(data[i] - tr) + Math.abs(data[i + 1] - tg) + Math.abs(data[i + 2] - tb) < 150) { ink = true; break; }
+              }
+            }
+            logInk('commit-px', { ink, page: probe.pageIdx });
+          } catch { /* probe is best-effort */ }
+        }, 120);
       } else if (tool === 'pen' || tool === 'highlighter') {
         logInk('pen-up-empty', {});
       }
