@@ -312,3 +312,14 @@ draws"). Two instruments + one fix, all in `AnnotateOverlay.tsx`:
   layer ate the event. Belt-and-braces layers from the same hunt kept: rAF
   watchdog, transform-alternating compositor nudge, per-stroke live-canvas +
   per-commit base-canvas surface resets, live-px/commit-px probes.
+
+## 13. Notability-style lasso (2026-08-04)
+
+Selection upgrades on the lasso tool: **corner resize handles** (white/blue
+squares on the dashed box; dragging one scales the whole selection uniformly
+about the opposite corner, live-previewed via a canvas transform and committed
+as one 'page' op on pen-up — points AND widths scale, clamp 0.15–6×),
+**⧉ Duplicate** on the action chip (clones offset ~2% of page width, selection
+moves to the clones), and drag-anywhere-inside-the-box moving (pre-existing).
+Hit-test order on pen-down over a selection: corner handles → inside-box move
+→ new lasso. All three ops are page-level undo entries.

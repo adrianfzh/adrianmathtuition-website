@@ -203,6 +203,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // AdrianMarker shell only: buffered native-pencil events awaiting the 60ms
   // web-silence verdict (see window.__nativePencil below).
   const nativePendingRef = useRef<{ pts: { x: number; y: number; f: number }[]; downAt: number } | null>(null);
+  // Notability-style lasso resize: dragging a corner handle scales the whole
+  // selection uniformly about the OPPOSITE corner. Live preview only — strokes
+  // are untouched until pen-up commits one 'page' op.
+  const resizeSelRef = useRef<{ anchor: { x: number; y: number }; startDist: number; scale: number } | null>(null);
   const pageNoRef = useRef(1);
   const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mouseAllowed = useMemo(
@@ -231,6 +235,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const clearSelection = useCallback(() => {
     selRef.current = null;
     moveSelRef.current = null;
+    resizeSelRef.current = null;
     lassoPathRef.current = null;
     chipPosRef.current = null;
     setSelChip(null);
@@ -423,25 +428,43 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           drawStrokes(ctx, rest, 'hl');
           drawStrokes(ctx, rest, 'pen');
           const mv = moveSelRef.current;
+          const rs = resizeSelRef.current;
           ctx.save();
-          if (mv) ctx.translate(mv.dx, mv.dy);
+          if (rs) {
+            ctx.translate(rs.anchor.x, rs.anchor.y);
+            ctx.scale(rs.scale, rs.scale);
+            ctx.translate(-rs.anchor.x, -rs.anchor.y);
+          } else if (mv) {
+            ctx.translate(mv.dx, mv.dy);
+          }
           drawStrokes(ctx, chosen, 'hl');
           drawStrokes(ctx, chosen, 'pen');
           ctx.restore();
           const bb = strokesBBox(chosen);
           if (bb) {
+            // The displayed box under the in-flight transform (move or resize).
+            const tf = (px2: number, py2: number) => rs
+              ? { x: rs.anchor.x + (px2 - rs.anchor.x) * rs.scale, y: rs.anchor.y + (py2 - rs.anchor.y) * rs.scale }
+              : { x: px2 + (mv?.dx ?? 0), y: py2 + (mv?.dy ?? 0) };
+            const c1 = tf(bb.minX, bb.minY), c2 = tf(bb.maxX, bb.maxY);
             const pad = 6 / f2;
+            const bx = Math.min(c1.x, c2.x) - pad, by = Math.min(c1.y, c2.y) - pad;
+            const bw = Math.abs(c2.x - c1.x) + pad * 2, bh = Math.abs(c2.y - c1.y) + pad * 2;
             ctx.strokeStyle = '#2563eb';
             ctx.lineWidth = 1.5 / f2;
             ctx.setLineDash([6 / f2, 4 / f2]);
-            ctx.strokeRect(
-              bb.minX - pad + (mv?.dx ?? 0), bb.minY - pad + (mv?.dy ?? 0),
-              bb.maxX - bb.minX + pad * 2, bb.maxY - bb.minY + pad * 2,
-            );
+            ctx.strokeRect(bx, by, bw, bh);
             ctx.setLineDash([]);
-            // Anchor the Delete/Deselect chip just above the box (css coords).
-            const cssX = x + (bb.minX - pad + (mv?.dx ?? 0)) * f2;
-            const cssY = y + (bb.minY - pad + (mv?.dy ?? 0)) * f2;
+            // Corner resize handles (Notability-style): white squares, blue border.
+            const hs = 9 / f2;
+            for (const [hx2, hy2] of [[bx, by], [bx + bw, by], [bx, by + bh], [bx + bw, by + bh]]) {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(hx2 - hs / 2, hy2 - hs / 2, hs, hs);
+              ctx.strokeRect(hx2 - hs / 2, hy2 - hs / 2, hs, hs);
+            }
+            // Anchor the action chip just above the box (css coords).
+            const cssX = x + bx * f2;
+            const cssY = y + by * f2;
             const next = { x: Math.max(8, cssX), y: Math.max(58, cssY - 44) };
             const prev = chipPosRef.current;
             if (!prev || Math.abs(prev.x - next.x) > 1 || Math.abs(prev.y - next.y) > 1) {
@@ -920,9 +943,27 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             const bb = strokesBBox([...sel.set]);
             const d = dimsRef.current[pt.pageIdx]!;
             const grab = 14 * (d.w / (kFactor() * DOC_W));   // 14 css px of grab slack
-            if (bb && pt.x >= bb.minX - grab && pt.x <= bb.maxX + grab && pt.y >= bb.minY - grab && pt.y <= bb.maxY + grab) {
-              moveSelRef.current = { startX: pt.x, startY: pt.y, dx: 0, dy: 0 };
-              return;
+            if (bb) {
+              // Corner handles first — dragging one scales about the OPPOSITE corner.
+              const pad = 6 * (d.w / (kFactor() * DOC_W));
+              const corners = [
+                { cx: bb.minX - pad, cy: bb.minY - pad, ax: bb.maxX, ay: bb.maxY },
+                { cx: bb.maxX + pad, cy: bb.minY - pad, ax: bb.minX, ay: bb.maxY },
+                { cx: bb.minX - pad, cy: bb.maxY + pad, ax: bb.maxX, ay: bb.minY },
+                { cx: bb.maxX + pad, cy: bb.maxY + pad, ax: bb.minX, ay: bb.minY },
+              ];
+              for (const c of corners) {
+                if (Math.hypot(pt.x - c.cx, pt.y - c.cy) < grab) {
+                  const anchor = { x: c.ax, y: c.ay };
+                  const startDist = Math.max(1e-6, Math.hypot(pt.x - anchor.x, pt.y - anchor.y));
+                  resizeSelRef.current = { anchor, startDist, scale: 1 };
+                  return;
+                }
+              }
+              if (pt.x >= bb.minX - grab && pt.x <= bb.maxX + grab && pt.y >= bb.minY - grab && pt.y <= bb.maxY + grab) {
+                moveSelRef.current = { startX: pt.x, startY: pt.y, dx: 0, dy: 0 };
+                return;
+              }
             }
           }
           clearSelection();
@@ -990,6 +1031,16 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           return;
         }
         if (tool === 'lasso') {
+          if (resizeSelRef.current && selRef.current) {
+            const pt = toImage(x, y, selRef.current.pageIdx);
+            if (pt) {
+              const rs = resizeSelRef.current;
+              const dNow = Math.hypot(pt.x - rs.anchor.x, pt.y - rs.anchor.y);
+              rs.scale = Math.min(6, Math.max(0.15, dNow / rs.startDist));
+              scheduleBase();
+            }
+            return;
+          }
           if (moveSelRef.current && selRef.current) {
             const pt = toImage(x, y, selRef.current.pageIdx);
             if (pt) {
@@ -1085,6 +1136,37 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       touchStrokeIdRef.current = null;
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
       if (tool === 'lasso') {
+        const rs = resizeSelRef.current;
+        const selR = selRef.current;
+        if (rs && selR) {
+          // Commit the resize: scale points + widths about the anchor, one op.
+          if (Math.abs(rs.scale - 1) > 0.005) {
+            const strokes = strokesRef.current[selR.pageIdx];
+            const before = strokes.slice();
+            const map = new Map<Stroke, Stroke>();
+            for (const s of selR.set) {
+              map.set(s, {
+                ...s,
+                width: s.width * rs.scale,
+                points: s.points.map((p) => ({
+                  x: rs.anchor.x + (p.x - rs.anchor.x) * rs.scale,
+                  y: rs.anchor.y + (p.y - rs.anchor.y) * rs.scale,
+                  p: p.p,
+                })),
+              });
+            }
+            for (let i = 0; i < strokes.length; i++) {
+              const m = map.get(strokes[i]);
+              if (m) strokes[i] = m;
+            }
+            selR.set = new Set(map.values());
+            pushUndo(selR.pageIdx, { t: 'page', before, after: strokes.slice() });
+            bumpInk();
+          }
+          resizeSelRef.current = null;
+          scheduleBase();
+          return;
+        }
         const mv = moveSelRef.current;
         const sel = selRef.current;
         if (mv && sel) {
@@ -1582,6 +1664,26 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     scheduleBase();
   }, [bumpInk, clearSelection, pushUndo, scheduleBase]);
 
+  // Notability-style: clone the selection offset a little, select the clones —
+  // repeat-marking the same correction across a page becomes two taps.
+  const duplicateSelection = useCallback(() => {
+    const sel = selRef.current;
+    if (!sel || !sel.set.size) return;
+    const strokes = strokesRef.current[sel.pageIdx];
+    const before = strokes.slice();
+    const d = dimsRef.current[sel.pageIdx];
+    const off = d ? d.w * 0.02 : 24;   // ~2% of page width, visible at any zoom
+    const clones = [...sel.set].map((s) => ({
+      ...s,
+      points: s.points.map((p) => ({ x: p.x + off, y: p.y + off, p: p.p })),
+    }));
+    strokes.push(...clones);
+    pushUndo(sel.pageIdx, { t: 'page', before, after: strokes.slice() });
+    selRef.current = { pageIdx: sel.pageIdx, set: new Set(clones) };
+    bumpInk();
+    scheduleBase();
+  }, [bumpInk, pushUndo, scheduleBase]);
+
   // ── Done: flatten inked pages → upload → assemble → link ───────────────────
   const runDone = useCallback(async () => {
     if (!hasInk() || busyRef.current) return;
@@ -1821,6 +1923,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             borderRadius: 10, padding: 5, boxShadow: '0 4px 14px rgba(0,0,0,0.16)',
           }}>
             <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={deleteSelection}>🗑 Delete</button>
+            <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={duplicateSelection}>⧉ Duplicate</button>
             <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>
           </div>
         )}
