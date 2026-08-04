@@ -169,7 +169,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 
 Key tables used by website: `Slots`, `Students`, `Enrollments`, `Lessons` (progress fields table → `docs/SCHEDULE.md`), `Exams`, `Invoices`, `Tokens`, `Rates`, `Rate History`, `Settings` (global flags: `exam_season_override`, `sec_capacity_override`), `Questions` (bot Q&A log, has `Subject` since 2026-08-03).
 
-**Supabase (math project)** — revision lesson content in `lesson_content` table (NOT `revision_content`). Holds both notes (`content_type='notes'`) and revision lessons (`content_type='lesson'`). Also: `content_snippets` (swipe cards; `display_group` text column = student-facing section name, independent of `subgroup_id`, NULL falls back to sub-group name), `topic_cards`, `kiosk_pairings`, `kiosk_prints`, `admin_todos`, `paper_marking_runs`.
+**Supabase (math project)** — ⚠ `lesson_content` is RETIRED (dropped in the 2026-07 learning-units pivot; verified gone 2026-08-04 — `/api/generate-tts` still references it, flagged). Live content tables: `content_snippets` (742 swipe cards; `display_group` text column = student-facing section name, independent of `subgroup_id`, NULL falls back to sub-group name) + `subgroups`/`sections_meta` (the tree `/revise` reads), `lesson_concepts` (topic→concept checklists), `topic_cards`, `kiosk_pairings`, `kiosk_prints`, `admin_todos`, `paper_marking_runs`. Notes-portal build spec: [`SPEC-NOTES-PORTAL.md`](SPEC-NOTES-PORTAL.md).
 
 ## Auth Patterns
 
