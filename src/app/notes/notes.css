@@ -559,29 +559,43 @@ a.nx-eyebrow:hover {
 .nx-rc-body .katex-display {
   margin: 0 0 0.7rem !important;
   padding: 0.7rem 0.6rem;
-  background: var(--nx-wash);
   border: 1px solid var(--nx-hairline);
   border-radius: 9px;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+
+  /* 4 of the 11 A-Math reflexes hold a formula wider than a half-column card
+   * (the full (a+b)^n expansion runs ~677px into a 280px box) and shrinking the
+   * type enough to fit makes it unreadable — at 0.78em three still overflow. So
+   * they scroll, and need an affordance, or the card just reads as truncated.
+   *
+   * ⚠ A ::-webkit-scrollbar height does NOT give you one here: Chrome on macOS
+   * paints overlay scrollbars that take no space and stay invisible until you
+   * already know to swipe (measured: offsetHeight - clientHeight = 2px, i.e.
+   * the borders alone). Hence the classic local/scroll background pair instead
+   * — the `local` covers scroll away with the content, revealing the `scroll`
+   * shadow underneath, so the hint appears only on the edge you can actually
+   * scroll towards and never on a formula that fits. Cover (24px) must stay
+   * wider than the shadow but narrower than the real overflow, or it masks the
+   * shadow permanently. */
+  background-color: var(--nx-wash);
+  background-image:
+    linear-gradient(to right, var(--nx-wash) 60%, transparent),
+    linear-gradient(to left, var(--nx-wash) 60%, transparent),
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.13), transparent),
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.13), transparent);
+  background-position: 0 0, 100% 0, 0 0, 100% 0;
+  background-repeat: no-repeat;
+  background-size: 24px 100%, 24px 100%, 9px 100%, 9px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
-/* 4 of the 11 A-Math reflexes hold a formula wider than a half-column card (the
- * full (a+b)^n expansion runs ~677px into a 280px box) and shrinking the type
- * enough to fit makes it unreadable — at 0.78em three still overflow. So they
- * scroll, and they get a permanent bar: without one the card just reads as
- * truncated. Same ::-webkit-scrollbar / @supports split as .notes-prose — see
- * the note there; setting scrollbar-width here would disable both rules. */
-.nx-rc-body .katex-display::-webkit-scrollbar { height: 6px; }
-.nx-rc-body .katex-display::-webkit-scrollbar-thumb {
-  background: var(--nx-line);
-  border-radius: 999px;
-}
-@supports not selector(::-webkit-scrollbar) {
-  .nx-rc-body .katex-display {
-    scrollbar-width: thin;
-    scrollbar-color: var(--nx-line) transparent;
-  }
+.dark .nx-rc-body .katex-display {
+  background-image:
+    linear-gradient(to right, var(--nx-wash) 60%, transparent),
+    linear-gradient(to left, var(--nx-wash) 60%, transparent),
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.5), transparent),
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.5), transparent);
 }
 .nx-rc-body .katex-display > .katex {
   text-align: center;
@@ -830,16 +844,22 @@ a.nx-eyebrow:hover {
   padding-bottom: 2px;
 }
 /* An `\begin{aligned}` product of four fractions is wider than an iPad's content
- * column however the page is laid out, so give the overflow a permanent bar
- * rather than relying on macOS/iOS overlay scrollbars, which only appear once
- * you already know to swipe — a binomial expansion that runs 25px past the step
- * column just reads as truncated.
+ * column however the page is laid out, so style the overflow bar (1 of 61 unit
+ * equations hits this, by 25px).
+ *
+ * ⚠ These rules buy nothing on macOS/iOS — measured. Chrome there paints overlay
+ * scrollbars that take no space and stay hidden until you already know to swipe,
+ * and a ::-webkit-scrollbar height does not opt out of that. They only pay off on
+ * Windows/Linux Chrome, and on Firefox via the @supports block. Treat "the bar
+ * makes the overflow discoverable" as FALSE on Adrian's devices. The reflex cards
+ * have the same problem and solve it with a local/scroll background shadow (see
+ * .nx-rc-body .katex-display); that trick needs a known solid backdrop to paint
+ * its cover, which unit math — sitting on tinted panels — does not have.
  *
  * ⚠ Do NOT add `scrollbar-width` here. Chrome ignores every ::-webkit-scrollbar
  * rule on an element that sets it, so `scrollbar-width: thin` (which lived here
- * until 2026-08-05) silently reverted these to overlay scrollbars — the bar was
- * never permanent, and the equations above looked cut off. Firefox, which has no
- * ::-webkit-scrollbar, gets the thin bar from the @supports block instead. */
+ * until 2026-08-05) silently reverted these to overlay scrollbars. Firefox, which
+ * has no ::-webkit-scrollbar, gets the thin bar from the @supports block. */
 .notes-prose .katex-display::-webkit-scrollbar {
   height: 6px;
 }
