@@ -12,6 +12,7 @@ import {
   matchBySlug,
   sortSubgroups,
   subgroupUrl,
+  topicUrl,
   type NotesSection,
   type SectionMetaRow,
   type SnippetRow,
@@ -122,6 +123,45 @@ export const getNotesTree = cache(async (level: string): Promise<TreeRoot> => {
     loadSnippetCounts(level),
   ]);
   return buildPageTree(level, subgroups, counts);
+});
+
+export interface LevelTopic {
+  topic: string;
+  url: string;
+  /** Sub-group pages under the topic that have something to show. */
+  pages: number;
+  examples: number;
+}
+
+/**
+ * Level index: one row per topic with its page and example counts.
+ *
+ * Shares `loadSubgroups`/`loadSnippetCounts` with the tree, so the counts on the
+ * cards and the pages in the sidebar can't disagree — and, both being `cache()`d,
+ * rendering the index costs no extra Supabase round-trips.
+ */
+export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> => {
+  const [subgroups, counts] = await Promise.all([
+    loadSubgroups(level),
+    loadSnippetCounts(level),
+  ]);
+
+  const out: LevelTopic[] = [];
+  for (const row of subgroups) {
+    if (row.level.toUpperCase() !== level.toUpperCase()) continue;
+    const examples = counts.get(row.id) ?? 0;
+    if (examples === 0) continue; // empty sub-groups aren't pages
+
+    const seen = out.find(t => t.topic === row.topic);
+    if (seen) {
+      seen.pages += 1;
+      seen.examples += examples;
+    } else {
+      out.push({ topic: row.topic, url: topicUrl(level, row.topic), pages: 1, examples });
+    }
+  }
+  // Same ordering as buildPageTree, so the grid and the sidebar agree.
+  return out.sort((a, b) => a.topic.localeCompare(b.topic));
 });
 
 export interface TopicPageData {

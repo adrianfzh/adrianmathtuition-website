@@ -22,16 +22,24 @@ function SidebarFilter({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="relative">
+      <div className="nx-filter">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          aria-hidden
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
         <input
           type="search"
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder="Filter topics…"
           aria-label="Filter notes by topic or page name"
-          className="w-full rounded-lg border border-fd-border bg-fd-secondary/50 px-3 py-2 text-sm
-                     text-fd-foreground placeholder:text-fd-muted-foreground
-                     focus:border-fd-primary focus:outline-none focus:ring-1 focus:ring-fd-primary"
         />
       </div>
       {value.trim() !== '' && (
@@ -63,7 +71,14 @@ export default function NotesShell({
     >
       <DocsLayout
         tree={filtered as unknown as Root}
-        nav={{ title: 'Notes' }}
+        nav={{
+          title: (
+            <span className="nx-brand">
+              <span className="nx-brand-name">Notes</span>
+              <span className="nx-brand-chip">A-Math</span>
+            </span>
+          ),
+        }}
         searchToggle={{ enabled: false }}
         sidebar={{
           defaultOpenLevel: 0,

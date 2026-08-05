@@ -9,6 +9,7 @@
 // re-declare plugins.
 
 import ReactMarkdown, { type Components } from 'react-markdown';
+import type { PluggableList } from 'unified';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
@@ -43,17 +44,26 @@ export const katexOptions = {
 /**
  * Shared renderer. `components` overrides let each surface keep its own
  * typography (swipe cards vs. docs prose) without forking the math pipeline.
+ *
+ * `extraRemarkPlugins` runs AFTER the two core plugins and is for presentation
+ * only — /notes uses it to group the authored `**Step 1.**` paragraphs into
+ * styleable blocks. The math pipeline itself stays single-sourced: additions go
+ * on the end, they never replace remark-math/remark-gfm. Note the array has to
+ * be built inside a client module; plugin functions can't cross the RSC
+ * boundary.
  */
 export function MathMarkdown({
   content,
   components,
+  extraRemarkPlugins,
 }: {
   content: string;
   components?: Components;
+  extraRemarkPlugins?: PluggableList;
 }) {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkMath, remarkGfm]}
+      remarkPlugins={[remarkMath, remarkGfm, ...(extraRemarkPlugins ?? [])]}
       rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}
       components={components}
     >

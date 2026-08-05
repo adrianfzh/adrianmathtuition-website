@@ -1,4 +1,4 @@
-/* ── Fumadocs styles, scoped to /notes ────────────────────────────────────────
+/* ── Notes portal styles, scoped to /notes ────────────────────────────────────
  *
  * Imported by src/app/notes/layout.tsx ONLY, never by globals.css. Next.js emits
  * this as a route-segment stylesheet, so it loads on /notes and nowhere else.
@@ -12,30 +12,503 @@
  * `@utility`, `@variant` and `@plugin`, which need a Tailwind context in this
  * entry point. Fumadocs safelists its own class names via `@source inline(…)`
  * in its generated CSS, so nothing under node_modules needs scanning.
+ *
+ * Everything below the token block is unlayered on purpose: Tailwind v4 emits
+ * its utilities inside `@layer utilities`, and an unlayered rule beats a layered
+ * one whatever the specificity. That is how `.nx-title` overrides the
+ * `text-3xl font-semibold` fumadocs puts on DocsTitle without `!important`.
  */
 
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 
-/* The site's globals.css sets an unlayered `body { background; color;
- * font-size: 17px; line-height: 1.75 }`. Unlayered rules beat `@layer base`, so
- * fumadocs' own body styling loses the cascade and dark mode would leave a cream
- * page behind a dark sidebar. Re-assert the theme on the notes shell itself
- * rather than fighting over `body`. */
+/* ── Theme ────────────────────────────────────────────────────────────────────
+ * fumadocs' neutral theme is greyscale. The site's own palette (globals.css) is
+ * navy + amber on a warm off-white, in DM Sans / DM Serif Display — all three
+ * families are already loaded in the root layout, so the portal can look like
+ * the rest of AdrianMath rather than like stock documentation.
+ *
+ * The `--color-fd-*` names are fumadocs' contract (see
+ * fumadocs-ui/css/lib/default-colors.css); overriding them on the shell
+ * repaints the sidebar, TOC, popovers and footer in one go. `.dark` sits on
+ * <html>, i.e. OUTSIDE the shell, so the dark block below outranks it. */
+
 .notes-shell {
+  --color-fd-background: hsl(213, 30%, 98.5%);
+  --color-fd-foreground: hsl(220, 42%, 14%);
+  --color-fd-muted: hsl(216, 28%, 96%);
+  --color-fd-muted-foreground: hsl(220, 13%, 44%);
+  --color-fd-popover: hsl(0, 0%, 100%);
+  --color-fd-popover-foreground: hsl(220, 42%, 14%);
+  --color-fd-card: hsl(0, 0%, 100%);
+  --color-fd-card-foreground: hsl(220, 42%, 14%);
+  --color-fd-border: hsl(217, 22%, 90%);
+  --color-fd-primary: hsl(220, 58%, 27%);
+  --color-fd-primary-foreground: hsl(0, 0%, 100%);
+  --color-fd-secondary: hsl(216, 30%, 96%);
+  --color-fd-secondary-foreground: hsl(220, 50%, 20%);
+  --color-fd-accent: hsl(216, 40%, 94%);
+  --color-fd-accent-foreground: hsl(220, 55%, 22%);
+  --color-fd-ring: hsl(220, 55%, 45%);
+
+  --nx-ink: hsl(220, 44%, 14%);
+  --nx-navy: hsl(220, 58%, 25%);
+  --nx-navy-soft: hsl(220, 38%, 40%);
+  --nx-amber-deep: hsl(35, 82%, 36%);
+  --nx-amber-line: hsl(45, 68%, 80%);
+  --nx-amber-wash: hsl(46, 88%, 96%);
+  --nx-rose-deep: hsl(350, 58%, 42%);
+  --nx-rose-line: hsl(350, 52%, 88%);
+  --nx-rose-wash: hsl(350, 70%, 97.5%);
+  --nx-line: hsl(217, 22%, 90%);
+  --nx-hairline: hsl(217, 24%, 94%);
+  --nx-wash: hsl(216, 34%, 97.5%);
+  --nx-shadow: 0 1px 2px hsl(220 30% 20% / 0.04), 0 10px 26px -14px hsl(220 40% 20% / 0.14);
+  --nx-shadow-lift: 0 2px 4px hsl(220 30% 20% / 0.05), 0 16px 34px -16px hsl(220 45% 22% / 0.24);
+
+  --nx-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --nx-serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --nx-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --nx-radius: 14px;
+
   background-color: var(--color-fd-background);
   color: var(--color-fd-foreground);
+  font-family: var(--nx-sans);
   font-size: 16px;
-  line-height: 1.6;
-  font-family: var(--font-sans);
+  line-height: 1.65;
   min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── KaTeX inside docs prose ───────────────────────────────────────────────────
- * Same overrides the /revise swipe cards use: keep math at body size, and let a
- * long display equation scroll horizontally instead of widening the page. On an
- * iPad an un-scrollable `\begin{aligned}` block is what breaks the layout. */
+.dark .notes-shell {
+  --color-fd-background: hsl(222, 30%, 8%);
+  --color-fd-foreground: hsl(214, 30%, 92%);
+  --color-fd-muted: hsl(222, 24%, 14%);
+  --color-fd-muted-foreground: hsl(215, 16%, 66%);
+  --color-fd-popover: hsl(222, 26%, 12%);
+  --color-fd-popover-foreground: hsl(214, 30%, 92%);
+  --color-fd-card: hsl(222, 26%, 11%);
+  --color-fd-card-foreground: hsl(214, 30%, 92%);
+  --color-fd-border: hsl(220, 18%, 22%);
+  --color-fd-primary: hsl(210, 80%, 74%);
+  --color-fd-primary-foreground: hsl(222, 40%, 10%);
+  --color-fd-secondary: hsl(222, 22%, 15%);
+  --color-fd-secondary-foreground: hsl(214, 30%, 90%);
+  --color-fd-accent: hsl(220, 24%, 18%);
+  --color-fd-accent-foreground: hsl(214, 34%, 92%);
+  --color-fd-ring: hsl(210, 70%, 60%);
+
+  --nx-ink: hsl(213, 34%, 94%);
+  --nx-navy: hsl(210, 72%, 76%);
+  --nx-navy-soft: hsl(211, 40%, 72%);
+  --nx-amber-deep: hsl(43, 86%, 66%);
+  --nx-amber-line: hsl(40, 40%, 30%);
+  --nx-amber-wash: hsl(40, 34%, 13%);
+  --nx-rose-deep: hsl(350, 72%, 76%);
+  --nx-rose-line: hsl(350, 30%, 30%);
+  --nx-rose-wash: hsl(350, 28%, 13%);
+  --nx-line: hsl(220, 18%, 22%);
+  --nx-hairline: hsl(220, 16%, 18%);
+  --nx-wash: hsl(222, 22%, 13.5%);
+  --nx-shadow: 0 1px 2px hsl(0 0% 0% / 0.3), 0 10px 26px -14px hsl(0 0% 0% / 0.6);
+  --nx-shadow-lift: 0 2px 4px hsl(0 0% 0% / 0.35), 0 16px 34px -16px hsl(0 0% 0% / 0.7);
+}
+
+/* neutral.css re-greys these three inside the sidebar with an id selector, which
+ * outranks `.dark .notes-shell`. Win it back rather than living with a grey
+ * sidebar against a navy page. */
+.dark .notes-shell #nd-sidebar {
+  --color-fd-muted: hsl(222, 24%, 13%);
+  --color-fd-secondary: hsl(222, 22%, 15%);
+  --color-fd-muted-foreground: hsl(215, 16%, 68%);
+}
+
+/* ── Chrome: sidebar, brand, filter ──────────────────────────────────────────*/
+
+.notes-shell #nd-sidebar {
+  background-color: var(--nx-wash);
+  border-right: 1px solid var(--nx-line);
+}
+.notes-shell #nd-sidebar a {
+  font-size: 0.875rem;
+}
+
+.nx-brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.nx-brand-name {
+  font-family: var(--nx-serif);
+  font-size: 1.375rem;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  color: var(--nx-ink);
+}
+.nx-brand-chip {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nx-amber-deep);
+  background: var(--nx-amber-wash);
+  border: 1px solid var(--nx-amber-line);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+.nx-filter {
+  position: relative;
+}
+.nx-filter svg {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  width: 0.95rem;
+  height: 0.95rem;
+  translate: 0 -50%;
+  color: var(--color-fd-muted-foreground);
+  pointer-events: none;
+}
+.nx-filter input {
+  width: 100%;
+  border: 1px solid var(--nx-line);
+  border-radius: 999px;
+  background: var(--color-fd-card);
+  padding: 0.5rem 0.85rem 0.5rem 2.15rem;
+  font-size: 0.875rem;
+  color: var(--color-fd-foreground);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.nx-filter input::placeholder {
+  color: var(--color-fd-muted-foreground);
+}
+.nx-filter input:focus {
+  outline: none;
+  border-color: var(--color-fd-ring);
+  box-shadow: 0 0 0 3px hsl(220 55% 45% / 0.12);
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────────*/
+
+.nx-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--nx-amber-deep);
+  text-decoration: none;
+}
+a.nx-eyebrow:hover {
+  color: var(--nx-navy);
+}
+
+.nx-title {
+  font-family: var(--nx-serif);
+  font-weight: 400;
+  font-size: clamp(1.95rem, 1.45rem + 1.7vw, 2.65rem);
+  line-height: 1.14;
+  letter-spacing: -0.008em;
+  color: var(--nx-ink);
+  margin: 0 0 0.6rem;
+}
+
+.nx-lede {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--color-fd-muted-foreground);
+  max-width: 62ch;
+  margin: 0;
+}
+
+.nx-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+  margin-top: 1.15rem;
+}
+.nx-pill {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--nx-navy-soft);
+  background: var(--nx-wash);
+  border: 1px solid var(--nx-line);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+}
+.nx-eg {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-fd-muted-foreground);
+  max-width: 62ch;
+}
+.nx-eg b {
+  font-weight: 700;
+  font-size: 0.6875rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--nx-amber-deep);
+  margin-right: 0.4rem;
+}
+
+/* A hairline between the header and the content, drawn once. */
+.nx-rule {
+  height: 1px;
+  border: 0;
+  background: var(--nx-line);
+  margin: 1.6rem 0 0;
+}
+
+/* ── Cards: topic grid + sub-group list ──────────────────────────────────────*/
+
+.nx-grid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 760px) {
+  .nx-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.nx-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.nx-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--nx-line);
+  border-radius: 12px;
+  background: var(--color-fd-card);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.16s, box-shadow 0.16s, transform 0.16s;
+}
+.nx-item:hover {
+  border-color: hsl(220 45% 72%);
+  box-shadow: var(--nx-shadow-lift);
+  transform: translateY(-1px);
+}
+.dark .nx-item:hover {
+  border-color: hsl(212 40% 42%);
+}
+.nx-item-main {
+  flex: 1;
+  min-width: 0;
+}
+.nx-item-title {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--nx-ink);
+}
+.nx-item-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 0.28rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-item-side {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: none;
+  color: var(--nx-navy-soft);
+}
+.nx-count {
+  font-family: var(--nx-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--nx-navy-soft);
+  background: var(--nx-wash);
+  border: 1px solid var(--nx-line);
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  white-space: nowrap;
+}
+.nx-chevron {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  transition: transform 0.16s;
+}
+.nx-item:hover .nx-chevron {
+  transform: translateX(2px);
+}
+
+/* ── Quick-revision card (topic index) ───────────────────────────────────────*/
+
+.nx-revision {
+  margin: 0 0 2.25rem;
+  padding: 1.4rem 1.55rem 1.5rem;
+  border: 1px solid var(--nx-line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--nx-wash), var(--color-fd-card) 60%);
+  box-shadow: var(--nx-shadow);
+}
+.nx-revision-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.nx-revision-head .nx-eyebrow {
+  margin: 0;
+}
+.nx-draft {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--nx-amber-deep);
+  background: var(--nx-amber-wash);
+  border: 1px solid var(--nx-amber-line);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+/* The card's own `## Key facts` / `## Techniques` headings are section labels
+ * inside a card, not page headings — size them accordingly. */
+.nx-revision-body h2 {
+  font-family: var(--nx-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--nx-navy-soft);
+  margin: 1.75rem 0 0.65rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--nx-hairline);
+}
+.nx-revision-body > :first-child {
+  margin-top: 0;
+}
+.nx-revision-body ol > li::marker {
+  color: var(--nx-navy-soft);
+  font-weight: 700;
+}
+
+/* ── Worked-example cards ────────────────────────────────────────────────────*/
+
+.nx-section {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-family: var(--nx-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--nx-navy-soft);
+  margin: 2.5rem 0 0.4rem;
+  scroll-margin-top: 6rem;
+}
+.nx-section::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--nx-line);
+}
+.nx-section:first-of-type {
+  margin-top: 1.6rem;
+}
+
+.nx-ex {
+  margin: 1.1rem 0 0;
+  padding: 1.35rem 1.55rem 1.45rem;
+  background: var(--color-fd-card);
+  border: 1px solid var(--nx-line);
+  border-radius: var(--nx-radius);
+  box-shadow: var(--nx-shadow);
+}
+.nx-ex-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--nx-hairline);
+}
+.nx-ex-no {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  font-family: var(--nx-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--nx-navy);
+  background: var(--nx-wash);
+  border: 1px solid var(--nx-line);
+}
+.nx-ex-title {
+  font-family: var(--nx-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.35;
+  color: var(--nx-ink);
+  margin: 0;
+}
+
+/* ── Prose inside a card ─────────────────────────────────────────────────────*/
+
+.notes-prose {
+  font-size: 1rem;
+  line-height: 1.68;
+}
+.notes-prose p {
+  margin: 0 0 0.7rem;
+}
+.notes-prose ul,
+.notes-prose ol {
+  margin: 0.45rem 0 0.75rem;
+  padding-left: 1.3rem;
+}
+.notes-prose li {
+  margin: 0.22rem 0;
+}
+.notes-prose strong {
+  font-weight: 600;
+  color: var(--nx-ink);
+}
+.notes-prose a {
+  color: var(--nx-navy);
+  text-decoration-color: var(--nx-amber-line);
+  text-underline-offset: 3px;
+}
+.notes-prose > :first-child,
+.notes-prose .nb > :first-child {
+  margin-top: 0;
+}
+.notes-prose > :last-child,
+.notes-prose .nb > :last-child {
+  margin-bottom: 0;
+}
+
+/* KaTeX: keep maths at body size, and let a long display equation scroll
+ * horizontally instead of widening the page. On an iPad an un-scrollable
+ * `\begin{aligned}` block is what breaks the layout. */
 .notes-prose .katex {
   font-size: 1em !important;
 }
@@ -46,29 +519,233 @@
   max-width: 100%;
   /* room for the scrollbar so descenders aren't clipped mid-scroll */
   padding-bottom: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--nx-line) transparent;
+}
+/* An `\begin{aligned}` product of four fractions is wider than an iPad's content
+ * column however the page is laid out, so give the overflow a permanent bar
+ * rather than relying on macOS/iOS overlay scrollbars, which only appear once
+ * you already know to swipe. */
+.notes-prose .katex-display::-webkit-scrollbar {
+  height: 6px;
+}
+.notes-prose .katex-display::-webkit-scrollbar-thumb {
+  background: var(--nx-line);
+  border-radius: 999px;
 }
 .notes-prose .katex-display > .katex {
   text-align: left;
 }
 
-/* Fumadocs styles blockquotes as editorial pullquotes — italic, with decorative
- * curly quote glyphs injected via ::before/::after. Our authors use `>` for
- * formula panels ("Distance … Midpoint … Gradient …"), so those quote marks read
- * as if the maths were being quoted from somewhere. Strip the decoration and
- * keep the rule as a plain callout. */
+/* Formula panels. Authors write these as blockquotes, one formula per line —
+ * remarkNotesBlocks keeps the line breaks; this makes the labels line up in a
+ * column so the panel reads as a reference table rather than a quotation. */
 .notes-prose blockquote {
   font-style: normal;
+  margin: 1rem 0;
+  padding: 0.9rem 1.1rem;
+  background: var(--nx-wash);
+  border: 1px solid var(--nx-hairline);
+  border-left: 3px solid var(--nx-amber-line);
+  border-radius: 0 10px 10px 0;
+}
+.notes-prose blockquote p {
+  margin: 0;
+  line-height: 2.1;
 }
 .notes-prose blockquote p::before,
 .notes-prose blockquote p::after {
   content: none;
 }
-
-/* Snippet bodies are authored as standalone cards; kill the leading/trailing
- * margins so they sit flush inside their section. */
-.notes-prose > :first-child {
-  margin-top: 0;
+.notes-prose blockquote strong {
+  display: inline-block;
+  min-width: 6.5rem;
+  color: var(--nx-navy);
 }
-.notes-prose > :last-child {
-  margin-bottom: 0;
+
+/* ── Semantic blocks (see lib/notes-blocks.ts) ───────────────────────────────*/
+
+.nb-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.nb[data-nb='question'] {
+  margin: 0 0 1.15rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px dashed var(--nx-line);
+}
+.nb[data-nb='question'] .nb-label {
+  color: var(--nx-amber-deep);
+  margin-bottom: 0.4rem;
+}
+.nb[data-nb='question'] p {
+  font-size: 1.0625rem;
+  line-height: 1.62;
+  color: var(--nx-ink);
+}
+
+.nb[data-nb='solution'] {
+  margin: 1.1rem 0 0.9rem;
+}
+.nb[data-nb='solution'] .nb-label {
+  color: var(--nx-navy-soft);
+  margin-bottom: 0.45rem;
+}
+
+/* Steps sit on a continuous spine with a node per step — consecutive steps have
+ * no vertical margin between them so the rule joins up into one timeline. */
+.nb[data-nb='step'] {
+  position: relative;
+  margin: 0;
+  padding: 0 0 1.05rem 1.4rem;
+  border-left: 2px solid var(--nx-line);
+}
+.nb[data-nb='step'] .nb-label {
+  color: var(--nx-navy-soft);
+  margin-bottom: 0.3rem;
+}
+.nb[data-nb='step'] .nb-label::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 0.3rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-fd-card);
+  border: 2px solid var(--nx-navy-soft);
+}
+/* End of a run of steps: stop the rule at the last line of content. */
+.nb[data-nb='step']:not(:has(+ .nb[data-nb='step'])) {
+  padding-bottom: 0.2rem;
+}
+.nb[data-nb='step'] + .nb:not([data-nb='step']) {
+  margin-top: 1.15rem;
+}
+
+.nb[data-nb='part'] {
+  margin: 1.5rem 0 0.8rem;
+}
+.nb[data-nb='part'] .nb-label {
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 0.75rem;
+  color: var(--color-fd-primary-foreground);
+  background: var(--color-fd-primary);
+  border-radius: 6px;
+  padding: 0.15rem 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.nb[data-nb='answer'],
+.nb[data-nb='check'],
+.nb[data-nb='tip'],
+.nb[data-nb='warn'] {
+  margin: 1.15rem 0 0;
+  padding: 0.85rem 1.05rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--nx-hairline);
+  background: var(--nx-wash);
+}
+.nb[data-nb='answer'] {
+  background: var(--nx-amber-wash);
+  border-color: var(--nx-amber-line);
+}
+.nb[data-nb='answer'] .nb-label {
+  color: var(--nx-amber-deep);
+  margin-bottom: 0.3rem;
+}
+.nb[data-nb='answer'] p {
+  font-weight: 500;
+  color: var(--nx-ink);
+}
+.nb[data-nb='check'] .nb-label,
+.nb[data-nb='tip'] .nb-label {
+  color: var(--nx-navy-soft);
+  margin-bottom: 0.28rem;
+}
+.nb[data-nb='warn'] {
+  background: var(--nx-rose-wash);
+  border-color: var(--nx-rose-line);
+}
+.nb[data-nb='warn'] .nb-label {
+  color: var(--nx-rose-deep);
+  margin-bottom: 0.28rem;
+}
+.nb[data-nb='check'] p,
+.nb[data-nb='tip'] p,
+.nb[data-nb='warn'] p {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* Two callouts in a row shouldn't double up their gap. */
+.nb + .nb[data-nb='answer'],
+.nb + .nb[data-nb='check'],
+.nb + .nb[data-nb='tip'],
+.nb + .nb[data-nb='warn'] {
+  margin-top: 0.7rem;
+}
+
+/* ── Narrow screens ──────────────────────────────────────────────────────────*/
+
+/* On a phone (and an iPad in portrait with the sidebar open) every millimetre of
+ * the content column is maths width — pull the card padding in rather than let
+ * an equation scroll that would otherwise have fitted. */
+@media (max-width: 560px) {
+  .nx-ex,
+  .nx-revision {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .nb[data-nb='step'] {
+    padding-left: 1.05rem;
+  }
+}
+
+/* ── Print ───────────────────────────────────────────────────────────────────
+ * These pages get printed for lessons, so make a print actually usable: drop
+ * the app chrome, flatten the cards to rules, and keep a worked example whole
+ * on one sheet instead of letting a page break land mid-solution. */
+@media print {
+  .notes-shell #nd-sidebar,
+  .notes-shell #nd-tocnav,
+  .notes-shell #nd-toc,
+  .notes-shell #nd-subnav,
+  .nx-eyebrow,
+  .nx-chevron {
+    display: none !important;
+  }
+
+  .notes-shell {
+    background: #fff;
+    font-size: 11pt;
+  }
+
+  .nx-ex,
+  .nx-revision,
+  .nx-item {
+    box-shadow: none;
+    background: #fff;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .nx-section {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .nb[data-nb='answer'],
+  .nb[data-nb='tip'],
+  .nb[data-nb='check'],
+  .nb[data-nb='warn'] {
+    background: #fff;
+    border-color: var(--nx-line);
+  }
 }
