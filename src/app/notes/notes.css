@@ -24,10 +24,15 @@
 @import 'fumadocs-ui/css/preset.css';
 
 /* ── Theme ────────────────────────────────────────────────────────────────────
- * fumadocs' neutral theme is greyscale. The site's own palette (globals.css) is
- * navy + amber on a warm off-white, in DM Sans / DM Serif Display — all three
- * families are already loaded in the root layout, so the portal can look like
- * the rest of AdrianMath rather than like stock documentation.
+ * A documentation surface, styled like one: white ground, one green accent, and
+ * a single sans family at a comfortable reading size.
+ *
+ * This deliberately does NOT follow the warm-paper house style used by
+ * public/tools/*.html and the /revise swipe cards. Those are single-purpose
+ * apps; this is a reference manual, and a reference manual wants to disappear
+ * behind its content. Where the two meet — an embedded tool — the tool is
+ * framed as media (`.nx-tool`) so the change of palette reads as a deliberate
+ * boundary rather than a clash.
  *
  * The `--color-fd-*` names are fumadocs' contract (see
  * fumadocs-ui/css/lib/default-colors.css); overriding them on the shell
@@ -35,127 +40,181 @@
  * <html>, i.e. OUTSIDE the shell, so the dark block below outranks it. */
 
 .notes-shell {
-  --color-fd-background: hsl(213, 30%, 98.5%);
-  --color-fd-foreground: hsl(220, 42%, 14%);
-  --color-fd-muted: hsl(216, 28%, 96%);
-  --color-fd-muted-foreground: hsl(220, 13%, 44%);
+  --color-fd-background: hsl(0, 0%, 100%);
+  --color-fd-foreground: hsl(220, 12%, 13%);
+  --color-fd-muted: hsl(220, 14%, 97%);
+  --color-fd-muted-foreground: hsl(220, 8%, 46%);
   --color-fd-popover: hsl(0, 0%, 100%);
-  --color-fd-popover-foreground: hsl(220, 42%, 14%);
+  --color-fd-popover-foreground: hsl(220, 12%, 13%);
   --color-fd-card: hsl(0, 0%, 100%);
-  --color-fd-card-foreground: hsl(220, 42%, 14%);
-  --color-fd-border: hsl(217, 22%, 90%);
-  --color-fd-primary: hsl(220, 58%, 27%);
+  --color-fd-card-foreground: hsl(220, 12%, 13%);
+  --color-fd-border: hsl(220, 13%, 91%);
+  --color-fd-primary: hsl(162, 88%, 27%);
   --color-fd-primary-foreground: hsl(0, 0%, 100%);
-  --color-fd-secondary: hsl(216, 30%, 96%);
-  --color-fd-secondary-foreground: hsl(220, 50%, 20%);
-  --color-fd-accent: hsl(216, 40%, 94%);
-  --color-fd-accent-foreground: hsl(220, 55%, 22%);
-  --color-fd-ring: hsl(220, 55%, 45%);
+  --color-fd-secondary: hsl(220, 14%, 97%);
+  --color-fd-secondary-foreground: hsl(220, 12%, 20%);
+  --color-fd-accent: hsl(158, 60%, 96%);
+  --color-fd-accent-foreground: hsl(162, 88%, 22%);
+  --color-fd-ring: hsl(160, 72%, 38%);
 
-  --nx-ink: hsl(220, 44%, 14%);
-  --nx-navy: hsl(220, 58%, 25%);
-  --nx-navy-soft: hsl(220, 38%, 40%);
-  --nx-amber-deep: hsl(35, 82%, 36%);
-  --nx-amber-line: hsl(45, 68%, 80%);
-  --nx-amber-wash: hsl(46, 88%, 96%);
-  --nx-rose-deep: hsl(350, 58%, 42%);
-  --nx-rose-line: hsl(350, 52%, 88%);
-  --nx-rose-wash: hsl(350, 70%, 97.5%);
-  --nx-line: hsl(217, 22%, 90%);
-  --nx-hairline: hsl(217, 24%, 94%);
-  --nx-wash: hsl(216, 34%, 97.5%);
-  --nx-shadow: 0 1px 2px hsl(220 30% 20% / 0.04), 0 10px 26px -14px hsl(220 40% 20% / 0.14);
-  --nx-shadow-lift: 0 2px 4px hsl(220 30% 20% / 0.05), 0 16px 34px -16px hsl(220 45% 22% / 0.24);
+  --nx-ink: hsl(220, 14%, 11%);
+  --nx-ink-soft: hsl(220, 9%, 34%);
+  --nx-green: hsl(162, 88%, 27%);
+  --nx-green-mid: hsl(160, 72%, 38%);
+  --nx-green-line: hsl(158, 45%, 82%);
+  --nx-green-wash: hsl(158, 65%, 96.5%);
+  --nx-amber-deep: hsl(32, 88%, 38%);
+  --nx-amber-line: hsl(40, 78%, 82%);
+  --nx-amber-wash: hsl(44, 92%, 96.5%);
+  --nx-rose-deep: hsl(349, 66%, 45%);
+  --nx-rose-line: hsl(350, 60%, 89%);
+  --nx-rose-wash: hsl(350, 80%, 97.5%);
+  --nx-line: hsl(220, 13%, 91%);
+  --nx-hairline: hsl(220, 14%, 94.5%);
+  --nx-wash: hsl(220, 20%, 98%);
+  --nx-shadow: 0 1px 2px hsl(220 20% 20% / 0.05);
+  --nx-shadow-lift: 0 1px 2px hsl(220 20% 20% / 0.06), 0 10px 24px -14px hsl(220 25% 20% / 0.22);
 
-  --nx-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --nx-serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
-  --nx-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --nx-radius: 14px;
+  --nx-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --nx-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --nx-radius: 12px;
 
   background-color: var(--color-fd-background);
   color: var(--color-fd-foreground);
   font-family: var(--nx-sans);
   font-size: 16px;
-  line-height: 1.65;
+  line-height: 1.7;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
 }
 
 .dark .notes-shell {
-  --color-fd-background: hsl(222, 30%, 8%);
-  --color-fd-foreground: hsl(214, 30%, 92%);
-  --color-fd-muted: hsl(222, 24%, 14%);
-  --color-fd-muted-foreground: hsl(215, 16%, 66%);
-  --color-fd-popover: hsl(222, 26%, 12%);
-  --color-fd-popover-foreground: hsl(214, 30%, 92%);
-  --color-fd-card: hsl(222, 26%, 11%);
-  --color-fd-card-foreground: hsl(214, 30%, 92%);
-  --color-fd-border: hsl(220, 18%, 22%);
-  --color-fd-primary: hsl(210, 80%, 74%);
-  --color-fd-primary-foreground: hsl(222, 40%, 10%);
-  --color-fd-secondary: hsl(222, 22%, 15%);
-  --color-fd-secondary-foreground: hsl(214, 30%, 90%);
-  --color-fd-accent: hsl(220, 24%, 18%);
-  --color-fd-accent-foreground: hsl(214, 34%, 92%);
-  --color-fd-ring: hsl(210, 70%, 60%);
+  --color-fd-background: hsl(220, 18%, 9%);
+  --color-fd-foreground: hsl(220, 14%, 92%);
+  --color-fd-muted: hsl(220, 16%, 14%);
+  --color-fd-muted-foreground: hsl(220, 10%, 64%);
+  --color-fd-popover: hsl(220, 17%, 12%);
+  --color-fd-popover-foreground: hsl(220, 14%, 92%);
+  --color-fd-card: hsl(220, 17%, 11.5%);
+  --color-fd-card-foreground: hsl(220, 14%, 92%);
+  --color-fd-border: hsl(220, 12%, 21%);
+  --color-fd-primary: hsl(158, 64%, 56%);
+  --color-fd-primary-foreground: hsl(220, 30%, 8%);
+  --color-fd-secondary: hsl(220, 15%, 15%);
+  --color-fd-secondary-foreground: hsl(220, 14%, 90%);
+  --color-fd-accent: hsl(160, 22%, 18%);
+  --color-fd-accent-foreground: hsl(158, 60%, 82%);
+  --color-fd-ring: hsl(158, 60%, 48%);
 
-  --nx-ink: hsl(213, 34%, 94%);
-  --nx-navy: hsl(210, 72%, 76%);
-  --nx-navy-soft: hsl(211, 40%, 72%);
-  --nx-amber-deep: hsl(43, 86%, 66%);
-  --nx-amber-line: hsl(40, 40%, 30%);
-  --nx-amber-wash: hsl(40, 34%, 13%);
-  --nx-rose-deep: hsl(350, 72%, 76%);
-  --nx-rose-line: hsl(350, 30%, 30%);
-  --nx-rose-wash: hsl(350, 28%, 13%);
-  --nx-line: hsl(220, 18%, 22%);
-  --nx-hairline: hsl(220, 16%, 18%);
-  --nx-wash: hsl(222, 22%, 13.5%);
-  --nx-shadow: 0 1px 2px hsl(0 0% 0% / 0.3), 0 10px 26px -14px hsl(0 0% 0% / 0.6);
-  --nx-shadow-lift: 0 2px 4px hsl(0 0% 0% / 0.35), 0 16px 34px -16px hsl(0 0% 0% / 0.7);
+  --nx-ink: hsl(220, 16%, 95%);
+  --nx-ink-soft: hsl(220, 12%, 70%);
+  --nx-green: hsl(158, 64%, 58%);
+  --nx-green-mid: hsl(158, 60%, 46%);
+  --nx-green-line: hsl(160, 26%, 28%);
+  --nx-green-wash: hsl(162, 26%, 13%);
+  --nx-amber-deep: hsl(40, 86%, 66%);
+  --nx-amber-line: hsl(38, 32%, 28%);
+  --nx-amber-wash: hsl(38, 26%, 13%);
+  --nx-rose-deep: hsl(350, 72%, 74%);
+  --nx-rose-line: hsl(350, 26%, 30%);
+  --nx-rose-wash: hsl(350, 24%, 13%);
+  --nx-line: hsl(220, 12%, 21%);
+  --nx-hairline: hsl(220, 12%, 17%);
+  --nx-wash: hsl(220, 16%, 13%);
+  --nx-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+  --nx-shadow-lift: 0 1px 2px hsl(0 0% 0% / 0.35), 0 12px 28px -16px hsl(0 0% 0% / 0.7);
 }
 
 /* neutral.css re-greys these three inside the sidebar with an id selector, which
  * outranks `.dark .notes-shell`. Win it back rather than living with a grey
- * sidebar against a navy page. */
+ * sidebar against the page. */
 .dark .notes-shell #nd-sidebar {
-  --color-fd-muted: hsl(222, 24%, 13%);
-  --color-fd-secondary: hsl(222, 22%, 15%);
-  --color-fd-muted-foreground: hsl(215, 16%, 68%);
+  --color-fd-muted: hsl(220, 16%, 13%);
+  --color-fd-secondary: hsl(220, 15%, 15%);
+  --color-fd-muted-foreground: hsl(220, 10%, 66%);
 }
 
-/* ── Chrome: sidebar, brand, filter ──────────────────────────────────────────*/
+/* ── Chrome: sidebar ─────────────────────────────────────────────────────────*/
 
 .notes-shell #nd-sidebar {
-  background-color: var(--nx-wash);
+  background-color: var(--color-fd-background);
   border-right: 1px solid var(--nx-line);
 }
 .notes-shell #nd-sidebar a {
   font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+/* Family headings between groups of topics. Rendered through the `Separator`
+ * component override in NotesShell — fumadocs' own separator markup carries no
+ * stable class name, so relying on its Tailwind utilities would break on any
+ * upgrade. */
+.nx-sep {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 1.6rem 0 0.35rem;
+  padding: 0 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-sep:first-child {
+  margin-top: 0.25rem;
+}
+/* The active page: green label with a green spine, the docs-site convention. */
+.notes-shell #nd-sidebar a[data-active='true'] {
+  position: relative;
+  color: var(--nx-green);
+  font-weight: 600;
+  background-color: var(--color-fd-accent);
+}
+.notes-shell #nd-sidebar a[data-active='true']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--nx-green-mid);
 }
 
 .nx-brand {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
 }
+.nx-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 7px;
+  background: var(--nx-green);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
 .nx-brand-name {
-  font-family: var(--nx-serif);
-  font-size: 1.375rem;
-  font-weight: 400;
-  letter-spacing: 0.005em;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--nx-ink);
 }
 .nx-brand-chip {
   font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--nx-amber-deep);
-  background: var(--nx-amber-wash);
-  border: 1px solid var(--nx-amber-line);
+  color: var(--nx-green);
+  background: var(--nx-green-wash);
+  border: 1px solid var(--nx-green-line);
   border-radius: 999px;
-  padding: 0.1rem 0.45rem;
+  padding: 0.12rem 0.45rem;
 }
 
 .nx-filter {
@@ -174,7 +233,7 @@
 .nx-filter input {
   width: 100%;
   border: 1px solid var(--nx-line);
-  border-radius: 999px;
+  border-radius: 9px;
   background: var(--color-fd-card);
   padding: 0.5rem 0.85rem 0.5rem 2.15rem;
   font-size: 0.875rem;
@@ -186,8 +245,15 @@
 }
 .nx-filter input:focus {
   outline: none;
-  border-color: var(--color-fd-ring);
-  box-shadow: 0 0 0 3px hsl(220 55% 45% / 0.12);
+  border-color: var(--nx-green-mid);
+  box-shadow: 0 0 0 3px hsl(160 72% 38% / 0.14);
+}
+
+/* ── Chrome: table of contents ───────────────────────────────────────────────*/
+
+.notes-shell #nd-toc a[data-active='true'] {
+  color: var(--nx-green);
+  font-weight: 600;
 }
 
 /* ── Page header ─────────────────────────────────────────────────────────────*/
@@ -196,33 +262,36 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.7rem;
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--nx-amber-deep);
+  color: var(--color-fd-muted-foreground);
   text-decoration: none;
+  transition: color 0.15s;
 }
 a.nx-eyebrow:hover {
-  color: var(--nx-navy);
+  color: var(--nx-green);
 }
 
 .nx-title {
-  font-family: var(--nx-serif);
-  font-weight: 400;
-  font-size: clamp(1.95rem, 1.45rem + 1.7vw, 2.65rem);
-  line-height: 1.14;
-  letter-spacing: -0.008em;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--nx-sans);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 1.35rem + 1.9vw, 2.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
   color: var(--nx-ink);
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.65rem;
 }
-
 .nx-lede {
   font-size: 1.0625rem;
-  line-height: 1.6;
+  line-height: 1.62;
   color: var(--color-fd-muted-foreground);
-  max-width: 62ch;
+  max-width: 64ch;
   margin: 0;
 }
 
@@ -230,48 +299,114 @@ a.nx-eyebrow:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.9rem;
-  margin-top: 1.15rem;
+  gap: 0.45rem 0.6rem;
+  margin-top: 1.05rem;
 }
 .nx-pill {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--nx-navy-soft);
-  background: var(--nx-wash);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--nx-ink-soft);
+  background: var(--color-fd-muted);
   border: 1px solid var(--nx-line);
   border-radius: 999px;
-  padding: 0.28rem 0.7rem;
+  padding: 0.2rem 0.65rem;
+}
+.nx-pill-green {
+  color: var(--nx-green);
+  background: var(--nx-green-wash);
+  border-color: var(--nx-green-line);
 }
 .nx-eg {
   font-size: 0.875rem;
   line-height: 1.5;
   color: var(--color-fd-muted-foreground);
-  max-width: 62ch;
+  max-width: 64ch;
 }
 .nx-eg b {
   font-weight: 700;
   font-size: 0.6875rem;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--nx-amber-deep);
+  color: var(--nx-green);
   margin-right: 0.4rem;
 }
 
-/* A hairline between the header and the content, drawn once. */
 .nx-rule {
   height: 1px;
   border: 0;
   background: var(--nx-line);
-  margin: 1.6rem 0 0;
+  margin: 1.5rem 0 0;
 }
 
-/* ── Cards: topic grid + sub-group list ──────────────────────────────────────*/
+/* ── Call-to-action buttons ──────────────────────────────────────────────────*/
 
+.nx-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.35rem;
+}
+.nx-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.6rem 1.15rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.nx-cta-primary {
+  background: var(--nx-green-mid);
+  color: #fff;
+}
+.nx-cta-primary:hover {
+  background: var(--nx-green);
+}
+.dark .nx-cta-primary {
+  color: hsl(220, 30%, 8%);
+}
+.nx-cta-ghost {
+  border-color: var(--nx-line);
+  color: var(--nx-ink-soft);
+  background: var(--color-fd-background);
+}
+.nx-cta-ghost:hover {
+  border-color: var(--nx-green-line);
+  color: var(--nx-green);
+}
+
+/* ── Level index: families of topic cards ────────────────────────────────────*/
+
+.nx-family {
+  margin-top: 2.1rem;
+}
+.nx-family:first-of-type {
+  margin-top: 1.5rem;
+}
+.nx-family-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+  scroll-margin-top: 6rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-family-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--nx-line);
+}
 .nx-grid {
   display: grid;
-  gap: 0.7rem;
+  gap: 0.6rem;
   grid-template-columns: 1fr;
 }
 @media (min-width: 760px) {
@@ -282,28 +417,25 @@ a.nx-eyebrow:hover {
 
 .nx-list {
   display: grid;
-  gap: 0.65rem;
+  gap: 0.55rem;
 }
 
 .nx-item {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.15rem;
+  padding: 0.9rem 1.1rem;
   border: 1px solid var(--nx-line);
-  border-radius: 12px;
+  border-radius: var(--nx-radius);
   background: var(--color-fd-card);
   color: inherit;
   text-decoration: none;
-  transition: border-color 0.16s, box-shadow 0.16s, transform 0.16s;
+  transition: border-color 0.16s, box-shadow 0.16s, background-color 0.16s;
 }
 .nx-item:hover {
-  border-color: hsl(220 45% 72%);
+  border-color: var(--nx-green-line);
+  background: var(--nx-green-wash);
   box-shadow: var(--nx-shadow-lift);
-  transform: translateY(-1px);
-}
-.dark .nx-item:hover {
-  border-color: hsl(212 40% 42%);
 }
 .nx-item-main {
   flex: 1;
@@ -311,10 +443,13 @@ a.nx-eyebrow:hover {
 }
 .nx-item-title {
   display: block;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.01em;
   color: var(--nx-ink);
+}
+.nx-item:hover .nx-item-title {
+  color: var(--nx-green);
 }
 .nx-item-desc {
   display: -webkit-box;
@@ -322,57 +457,129 @@ a.nx-eyebrow:hover {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-top: 0.28rem;
-  font-size: 0.875rem;
-  line-height: 1.55;
+  margin-top: 0.2rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
   color: var(--color-fd-muted-foreground);
 }
 .nx-item-side {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.6rem;
   flex: none;
-  color: var(--nx-navy-soft);
+  color: var(--color-fd-muted-foreground);
 }
 .nx-count {
-  font-family: var(--nx-mono);
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--nx-navy-soft);
-  background: var(--nx-wash);
-  border: 1px solid var(--nx-line);
-  border-radius: 999px;
-  padding: 0.18rem 0.55rem;
+  color: var(--color-fd-muted-foreground);
   white-space: nowrap;
 }
 .nx-chevron {
-  width: 1rem;
-  height: 1rem;
+  width: 0.95rem;
+  height: 0.95rem;
   flex: none;
   transition: transform 0.16s;
 }
 .nx-item:hover .nx-chevron {
   transform: translateX(2px);
+  color: var(--nx-green);
 }
 
-/* ── Quick-revision card (topic index) ───────────────────────────────────────*/
+/* ── Formula reflexes (recall cards) ─────────────────────────────────────────
+ * 179 AM recall cards carry no sub-group, so nothing in the sub-group tree
+ * could ever show them. They are a topic's cheat sheet — formula, when to use
+ * it, and the one reflex to fire — so they open the topic page. */
+
+.nx-reflexes {
+  margin: 1.6rem 0 0;
+}
+/* Section lead-in used by the reflexes strip and the tool panels alike. */
+.nx-subhead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.55rem;
+  margin: 1.9rem 0 0.9rem;
+}
+.nx-subhead .nx-eyebrow {
+  margin: 0;
+  color: var(--nx-green);
+  scroll-margin-top: 6rem;
+}
+.nx-subhead-note {
+  font-size: 0.8125rem;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-reflexes .nx-subhead {
+  margin-top: 0;
+}
+.nx-reflex-grid {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .nx-reflex-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.nx-rc {
+  display: flex;
+  flex-direction: column;
+  padding: 0.95rem 1.1rem 1rem;
+  border: 1px solid var(--nx-line);
+  border-radius: var(--nx-radius);
+  background: var(--color-fd-card);
+}
+.nx-rc-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  line-height: 1.35;
+  color: var(--nx-ink);
+  margin: 0 0 0.6rem;
+}
+.nx-rc-body {
+  font-size: 0.9375rem;
+}
+.nx-rc-body p {
+  margin: 0 0 0.45rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--color-fd-muted-foreground);
+}
+/* The formula is the point of the card — give it a panel of its own. */
+.nx-rc-body .katex-display {
+  margin: 0 0 0.7rem !important;
+  padding: 0.7rem 0.6rem;
+  background: var(--nx-wash);
+  border: 1px solid var(--nx-hairline);
+  border-radius: 9px;
+}
+.nx-rc-body .katex-display > .katex {
+  text-align: center;
+}
+
+/* ── Quick-revision card (topic_cards, when one exists) ──────────────────────*/
 
 .nx-revision {
-  margin: 0 0 2.25rem;
-  padding: 1.4rem 1.55rem 1.5rem;
+  margin: 1.8rem 0 0;
+  padding: 1.25rem 1.4rem 1.35rem;
   border: 1px solid var(--nx-line);
-  border-radius: 16px;
-  background: linear-gradient(180deg, var(--nx-wash), var(--color-fd-card) 60%);
-  box-shadow: var(--nx-shadow);
+  border-radius: var(--nx-radius);
+  background: var(--color-fd-card);
 }
 .nx-revision-head {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.9rem;
 }
 .nx-revision-head .nx-eyebrow {
   margin: 0;
+  scroll-margin-top: 6rem;
 }
 .nx-draft {
   font-size: 0.625rem;
@@ -385,25 +592,95 @@ a.nx-eyebrow:hover {
   border-radius: 999px;
   padding: 0.1rem 0.45rem;
 }
-/* The card's own `## Key facts` / `## Techniques` headings are section labels
- * inside a card, not page headings — size them accordingly. */
 .nx-revision-body h2 {
   font-family: var(--nx-sans);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: var(--nx-navy-soft);
-  margin: 1.75rem 0 0.65rem;
-  padding-bottom: 0.45rem;
+  color: var(--color-fd-muted-foreground);
+  margin: 1.6rem 0 0.6rem;
+  padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--nx-hairline);
 }
 .nx-revision-body > :first-child {
   margin-top: 0;
 }
 .nx-revision-body ol > li::marker {
-  color: var(--nx-navy-soft);
+  color: var(--nx-green);
   font-weight: 700;
+}
+
+/* ── Embedded interactive tools ──────────────────────────────────────────────
+ * The tools in public/tools/ carry their own warm-paper house style. Rather
+ * than fight that, frame them the way a docs page frames a screenshot: a
+ * bordered card with a caption, so the palette change reads as "this is an
+ * embedded app", not as a styling mistake. */
+
+.nx-tool {
+  margin: 1.1rem 0 0;
+  scroll-margin-top: 6rem;
+  border: 1px solid var(--nx-line);
+  border-radius: var(--nx-radius);
+  background: var(--color-fd-muted);
+  overflow: hidden;
+}
+.nx-tool-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--nx-line);
+  background: var(--color-fd-card);
+}
+.nx-tool-heading {
+  flex: 1;
+  min-width: 0;
+}
+.nx-tool-title {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--nx-ink);
+}
+.nx-tool-blurb {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-tool-open {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--nx-green);
+  text-decoration: none;
+  border: 1px solid var(--nx-green-line);
+  background: var(--nx-green-wash);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  white-space: nowrap;
+}
+.nx-tool-open:hover {
+  background: var(--nx-green-line);
+}
+.nx-tool-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: #fff;
+}
+@media (max-width: 560px) {
+  .nx-tool-head {
+    flex-wrap: wrap;
+  }
+  .nx-tool-open {
+    order: 3;
+  }
 }
 
 /* ── Worked-example cards ────────────────────────────────────────────────────*/
@@ -411,14 +688,14 @@ a.nx-eyebrow:hover {
 .nx-section {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.75rem;
   font-family: var(--nx-sans);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--nx-navy-soft);
-  margin: 2.5rem 0 0.4rem;
+  color: var(--color-fd-muted-foreground);
+  margin: 2.4rem 0 0.3rem;
   scroll-margin-top: 6rem;
 }
 .nx-section::after {
@@ -428,45 +705,44 @@ a.nx-eyebrow:hover {
   background: var(--nx-line);
 }
 .nx-section:first-of-type {
-  margin-top: 1.6rem;
+  margin-top: 1.5rem;
 }
 
 .nx-ex {
-  margin: 1.1rem 0 0;
-  padding: 1.35rem 1.55rem 1.45rem;
+  margin: 1rem 0 0;
+  padding: 1.25rem 1.4rem 1.35rem;
   background: var(--color-fd-card);
   border: 1px solid var(--nx-line);
   border-radius: var(--nx-radius);
-  box-shadow: var(--nx-shadow);
 }
 .nx-ex-head {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin: 0 0 1rem;
-  padding-bottom: 0.85rem;
+  gap: 0.7rem;
+  margin: 0 0 0.95rem;
+  padding-bottom: 0.8rem;
   border-bottom: 1px solid var(--nx-hairline);
 }
 .nx-ex-no {
   flex: none;
   display: grid;
   place-items: center;
-  width: 1.7rem;
-  height: 1.7rem;
-  border-radius: 50%;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 7px;
   font-family: var(--nx-mono);
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--nx-navy);
-  background: var(--nx-wash);
-  border: 1px solid var(--nx-line);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--nx-green);
+  background: var(--nx-green-wash);
+  border: 1px solid var(--nx-green-line);
 }
 .nx-ex-title {
   font-family: var(--nx-sans);
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  letter-spacing: -0.005em;
-  line-height: 1.35;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
   color: var(--nx-ink);
   margin: 0;
 }
@@ -475,7 +751,7 @@ a.nx-eyebrow:hover {
 
 .notes-prose {
   font-size: 1rem;
-  line-height: 1.68;
+  line-height: 1.7;
 }
 .notes-prose p {
   margin: 0 0 0.7rem;
@@ -493,9 +769,17 @@ a.nx-eyebrow:hover {
   color: var(--nx-ink);
 }
 .notes-prose a {
-  color: var(--nx-navy);
-  text-decoration-color: var(--nx-amber-line);
+  color: var(--nx-green);
+  text-decoration-color: var(--nx-green-line);
   text-underline-offset: 3px;
+}
+.notes-prose code {
+  font-family: var(--nx-mono);
+  font-size: 0.875em;
+  background: var(--color-fd-muted);
+  border: 1px solid var(--nx-hairline);
+  border-radius: 5px;
+  padding: 0.1em 0.35em;
 }
 .notes-prose > :first-child,
 .notes-prose .nb > :first-child {
@@ -543,11 +827,11 @@ a.nx-eyebrow:hover {
 .notes-prose blockquote {
   font-style: normal;
   margin: 1rem 0;
-  padding: 0.9rem 1.1rem;
+  padding: 0.85rem 1.05rem;
   background: var(--nx-wash);
   border: 1px solid var(--nx-hairline);
-  border-left: 3px solid var(--nx-amber-line);
-  border-radius: 0 10px 10px 0;
+  border-left: 3px solid var(--nx-green-line);
+  border-radius: 0 9px 9px 0;
 }
 .notes-prose blockquote p {
   margin: 0;
@@ -560,7 +844,7 @@ a.nx-eyebrow:hover {
 .notes-prose blockquote strong {
   display: inline-block;
   min-width: 6.5rem;
-  color: var(--nx-navy);
+  color: var(--nx-green);
 }
 
 /* ── Semantic blocks (see lib/notes-blocks.ts) ───────────────────────────────*/
@@ -574,12 +858,12 @@ a.nx-eyebrow:hover {
 }
 
 .nb[data-nb='question'] {
-  margin: 0 0 1.15rem;
-  padding-bottom: 1.1rem;
+  margin: 0 0 1.1rem;
+  padding-bottom: 1rem;
   border-bottom: 1px dashed var(--nx-line);
 }
 .nb[data-nb='question'] .nb-label {
-  color: var(--nx-amber-deep);
+  color: var(--nx-green);
   margin-bottom: 0.4rem;
 }
 .nb[data-nb='question'] p {
@@ -589,10 +873,10 @@ a.nx-eyebrow:hover {
 }
 
 .nb[data-nb='solution'] {
-  margin: 1.1rem 0 0.9rem;
+  margin: 1.05rem 0 0.85rem;
 }
 .nb[data-nb='solution'] .nb-label {
-  color: var(--nx-navy-soft);
+  color: var(--color-fd-muted-foreground);
   margin-bottom: 0.45rem;
 }
 
@@ -601,39 +885,39 @@ a.nx-eyebrow:hover {
 .nb[data-nb='step'] {
   position: relative;
   margin: 0;
-  padding: 0 0 1.05rem 1.4rem;
+  padding: 0 0 1rem 1.4rem;
   border-left: 2px solid var(--nx-line);
 }
 .nb[data-nb='step'] .nb-label {
-  color: var(--nx-navy-soft);
+  color: var(--color-fd-muted-foreground);
   margin-bottom: 0.3rem;
 }
 .nb[data-nb='step'] .nb-label::before {
   content: '';
   position: absolute;
   left: -5px;
-  top: 0.3rem;
+  top: 0.35rem;
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--color-fd-card);
-  border: 2px solid var(--nx-navy-soft);
+  border: 2px solid var(--nx-green-mid);
 }
 /* End of a run of steps: stop the rule at the last line of content. */
 .nb[data-nb='step']:not(:has(+ .nb[data-nb='step'])) {
   padding-bottom: 0.2rem;
 }
 .nb[data-nb='step'] + .nb:not([data-nb='step']) {
-  margin-top: 1.15rem;
+  margin-top: 1.1rem;
 }
 
 .nb[data-nb='part'] {
-  margin: 1.5rem 0 0.8rem;
+  margin: 1.45rem 0 0.75rem;
 }
 .nb[data-nb='part'] .nb-label {
   display: inline-block;
   text-transform: none;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   font-size: 0.75rem;
   color: var(--color-fd-primary-foreground);
   background: var(--color-fd-primary);
@@ -646,18 +930,18 @@ a.nx-eyebrow:hover {
 .nb[data-nb='check'],
 .nb[data-nb='tip'],
 .nb[data-nb='warn'] {
-  margin: 1.15rem 0 0;
-  padding: 0.85rem 1.05rem 0.9rem;
-  border-radius: 12px;
+  margin: 1.1rem 0 0;
+  padding: 0.8rem 1rem 0.85rem;
+  border-radius: 10px;
   border: 1px solid var(--nx-hairline);
   background: var(--nx-wash);
 }
 .nb[data-nb='answer'] {
-  background: var(--nx-amber-wash);
-  border-color: var(--nx-amber-line);
+  background: var(--nx-green-wash);
+  border-color: var(--nx-green-line);
 }
 .nb[data-nb='answer'] .nb-label {
-  color: var(--nx-amber-deep);
+  color: var(--nx-green);
   margin-bottom: 0.3rem;
 }
 .nb[data-nb='answer'] p {
@@ -666,7 +950,7 @@ a.nx-eyebrow:hover {
 }
 .nb[data-nb='check'] .nb-label,
 .nb[data-nb='tip'] .nb-label {
-  color: var(--nx-navy-soft);
+  color: var(--color-fd-muted-foreground);
   margin-bottom: 0.28rem;
 }
 .nb[data-nb='warn'] {
@@ -684,6 +968,26 @@ a.nx-eyebrow:hover {
   line-height: 1.6;
 }
 
+/* The closing line of a recall card: one sentence, fired without thinking. Set
+ * as a single green rule-marked line rather than a boxed callout — inside a
+ * compact card another box would be one border too many. */
+.nb[data-nb='reflex'] {
+  margin: 0.55rem 0 0;
+  padding: 0.3rem 0 0.05rem 0.7rem;
+  border-left: 2px solid var(--nx-green-mid);
+}
+.nb[data-nb='reflex'] .nb-label {
+  color: var(--nx-green);
+  margin-bottom: 0.15rem;
+}
+.nb[data-nb='reflex'] p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--nx-ink);
+}
+
 /* Two callouts in a row shouldn't double up their gap. */
 .nb + .nb[data-nb='answer'],
 .nb + .nb[data-nb='check'],
@@ -699,9 +1003,10 @@ a.nx-eyebrow:hover {
  * an equation scroll that would otherwise have fitted. */
 @media (max-width: 560px) {
   .nx-ex,
-  .nx-revision {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .nx-revision,
+  .nx-rc {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
   }
   .nb[data-nb='step'] {
     padding-left: 1.05rem;
@@ -718,7 +1023,11 @@ a.nx-eyebrow:hover {
   .notes-shell #nd-toc,
   .notes-shell #nd-subnav,
   .nx-eyebrow,
-  .nx-chevron {
+  .nx-chevron,
+  .nx-cta-row,
+  /* An iframe prints as an empty rectangle at best — the tool is interactive,
+     so on paper it is nothing but a hole in the page. */
+  .nx-tool {
     display: none !important;
   }
 
@@ -729,6 +1038,7 @@ a.nx-eyebrow:hover {
 
   .nx-ex,
   .nx-revision,
+  .nx-rc,
   .nx-item {
     box-shadow: none;
     background: #fff;
@@ -736,7 +1046,9 @@ a.nx-eyebrow:hover {
     page-break-inside: avoid;
   }
 
-  .nx-section {
+  .nx-section,
+  .nx-family-head,
+  .nx-subhead {
     break-after: avoid;
     page-break-after: avoid;
   }

@@ -14,6 +14,7 @@ import {
   subgroupUrl,
   topicUrl,
   type NotesSection,
+  type RecallCardRow,
   type SectionMetaRow,
   type SnippetRow,
   type SubgroupRow,
@@ -84,6 +85,41 @@ const loadSnippetCounts = cache(async (level: string): Promise<Map<number, numbe
   return counts;
 });
 
+/**
+ * Recall cards for a level, keyed by topic.
+ *
+ * These are the 179 AM rows the sub-group tree could never reach: `subgroup_id`
+ * is NULL on every one of them, so `loadSnippetCounts` skips them and no page
+ * in the tree owns them. They hang off `topic` instead, which is why this is a
+ * separate loader rather than another filter over the sub-group snippets.
+ */
+const loadRecallCards = cache(
+  async (level: string): Promise<Map<string, RecallCardRow[]>> => {
+    const supa = getSupabase();
+    const rows = await fetchAllRows<RecallCardRow>((from, to) =>
+      supa
+        .from('content_snippets')
+        .select('id, topic, card_title, content, order_index')
+        .eq('level', level.toUpperCase())
+        .eq('content_kind', 'recall_card')
+        .in('feature', [...PUBLISHABLE.features])
+        .eq('is_published', true)
+        .range(from, to),
+    );
+
+    const byTopic = new Map<string, RecallCardRow[]>();
+    for (const row of rows) {
+      const list = byTopic.get(row.topic);
+      if (list) list.push(row);
+      else byTopic.set(row.topic, [row]);
+    }
+    for (const list of byTopic.values()) {
+      list.sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+    }
+    return byTopic;
+  },
+);
+
 const loadSectionsMeta = cache(async (level: string): Promise<SectionMetaRow[]> => {
   const supa = getSupabase();
   return fetchAllRows<SectionMetaRow>((from, to) =>
@@ -131,6 +167,8 @@ export interface LevelTopic {
   /** Sub-group pages under the topic that have something to show. */
   pages: number;
   examples: number;
+  /** Formula reflexes on the topic page. */
+  recall: number;
 }
 
 /**
@@ -141,9 +179,10 @@ export interface LevelTopic {
  * rendering the index costs no extra Supabase round-trips.
  */
 export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> => {
-  const [subgroups, counts] = await Promise.all([
+  const [subgroups, counts, recall] = await Promise.all([
     loadSubgroups(level),
     loadSnippetCounts(level),
+    loadRecallCards(level),
   ]);
 
   const out: LevelTopic[] = [];
@@ -157,7 +196,13 @@ export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> 
       seen.pages += 1;
       seen.examples += examples;
     } else {
-      out.push({ topic: row.topic, url: topicUrl(level, row.topic), pages: 1, examples });
+      out.push({
+        topic: row.topic,
+        url: topicUrl(level, row.topic),
+        pages: 1,
+        examples,
+        recall: recall.get(row.topic)?.length ?? 0,
+      });
     }
   }
   // Same ordering as buildPageTree, so the grid and the sidebar agree.
@@ -167,16 +212,19 @@ export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> 
 export interface TopicPageData {
   topic: string;
   card: TopicCardRow | null;
+  /** Formula reflexes — the page hero when the topic has them. */
+  recall: RecallCardRow[];
   subgroups: { name: string; url: string; description: string | null; count: number }[];
 }
 
-/** Topic index page: the topic card (when one exists) plus its sub-group list. */
+/** Topic index page: reflexes and the topic card, then its sub-group list. */
 export const getTopicPage = cache(
   async (level: string, slug: string): Promise<TopicPageData | null> => {
-    const [subgroups, counts, cards] = await Promise.all([
+    const [subgroups, counts, cards, recall] = await Promise.all([
       loadSubgroups(level),
       loadSnippetCounts(level),
       loadTopicCards(level),
+      loadRecallCards(level),
     ]);
 
     const levelRows = subgroups.filter(
@@ -201,6 +249,7 @@ export const getTopicPage = cache(
     return {
       topic,
       card: cards.find(c => c.topic === topic && c.content_md) ?? null,
+      recall: recall.get(topic) ?? [],
       subgroups: list,
     };
   },

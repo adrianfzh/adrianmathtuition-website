@@ -34,7 +34,8 @@ export type NotesBlockKind =
   | 'answer'
   | 'check'
   | 'tip'
-  | 'warn';
+  | 'warn'
+  | 'reflex';
 
 export interface LabelMatch {
   kind: NotesBlockKind;
@@ -75,6 +76,11 @@ const ROLES: Record<string, NotesBlockKind> = {
   warning: 'warn',
   pitfall: 'warn',
   trap: 'warn',
+
+  // Every one of the 179 recall cards closes on a `**Reflex:**` line — the one
+  // sentence a student should be able to fire without thinking. It reads as the
+  // point of the card, so it gets its own role rather than becoming a tip.
+  reflex: 'reflex',
 
   tip: 'tip',
   'why this works': 'tip',
@@ -130,13 +136,18 @@ function plainText(node: PhrasingContent): string | null {
   return out;
 }
 
+/** A bold/italic run that classifies as a label — `**Reflex:**`, `**Step 2.**`. */
+function labelOf(node: PhrasingContent): LabelMatch | null {
+  if (node.type !== 'strong' && node.type !== 'emphasis') return null;
+  const text = plainText(node);
+  return text === null ? null : classifyLabel(text);
+}
+
 /** The role of a root-level node, if it opens with a recognised label. */
 function leadingLabel(node: RootContent): LabelMatch | null {
   if (node.type !== 'paragraph') return null;
   const first = node.children[0];
-  if (!first || (first.type !== 'strong' && first.type !== 'emphasis')) return null;
-  const text = plainText(first);
-  return text === null ? null : classifyLabel(text);
+  return first ? labelOf(first) : null;
 }
 
 /**
@@ -155,6 +166,64 @@ function stripLabel(paragraph: Paragraph): Paragraph | null {
     else rest.shift();
   }
   return rest.length ? { ...paragraph, children: rest } : null;
+}
+
+// ── Labels that start a line, not a paragraph ────────────────────────────────
+
+/**
+ * Split a paragraph wherever a recognised label starts a NEW LINE inside it.
+ *
+ * The 179 recall cards separate their three parts with single newlines:
+ *
+ *     $$Y = mX + c$$
+ *     Y, X are the new plotted variables; m is the gradient…
+ *     **Reflex:** Apply all straight-line rules to X and Y, not x and y.
+ *
+ * Markdown treats a lone newline as a soft break, so the prose and the reflex
+ * arrive as ONE paragraph and `groupNotesBlocks` — which only looks at a
+ * paragraph's first child — never sees the label. Every reflex rendered as a
+ * bold run-in mid-sentence, which is precisely the wall-of-bold this whole
+ * module exists to undo.
+ *
+ * Splitting first means the same rule covers both authoring styles, and worked
+ * examples that soft-wrap an `**Answer:**` onto its own line get the block they
+ * were always meant to have.
+ */
+function splitAtLineLabels(paragraph: Paragraph): Paragraph[] {
+  const parts: PhrasingContent[][] = [[]];
+
+  for (const child of paragraph.children) {
+    const current = parts[parts.length - 1];
+    const prev = current[current.length - 1];
+    // Only a label that OPENS a line splits — mid-sentence bold stays inline, so
+    // `…gradient, **Reflex:** of the line` is left exactly as written.
+    const startsLine =
+      prev !== undefined &&
+      (prev.type === 'break' || (prev.type === 'text' && /\n[^\S\n]*$/u.test(prev.value)));
+
+    if (startsLine && labelOf(child)) {
+      // The break belonged to the join, not to either side — drop it.
+      if (prev.type === 'break') current.pop();
+      else {
+        const value = prev.value.replace(/\s+$/u, '');
+        if (value) current[current.length - 1] = { ...prev, value };
+        else current.pop();
+      }
+      parts.push([child]);
+      continue;
+    }
+
+    current.push(child);
+  }
+
+  return parts.filter(part => part.length > 0).map(children => ({ ...paragraph, children }));
+}
+
+/** Apply `splitAtLineLabels` to every top-level paragraph. */
+export function splitLineLabels(tree: Root): void {
+  tree.children = tree.children.flatMap<RootContent>(node =>
+    node.type === 'paragraph' ? splitAtLineLabels(node) : [node],
+  );
 }
 
 interface OpenBlock extends LabelMatch {
@@ -265,5 +334,6 @@ function breakLines(paragraph: Paragraph): void {
 /** The notes-only remark plugin: run after remark-math and remark-gfm. */
 export const remarkNotesBlocks: Plugin<[], Root> = () => (tree: Root) => {
   hardBreaksInBlockquotes(tree);
+  splitLineLabels(tree);
   groupNotesBlocks(tree);
 };

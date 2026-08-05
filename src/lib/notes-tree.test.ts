@@ -4,16 +4,28 @@ import {
   buildSections,
   filterTree,
   flattenPages,
+  groupByFamily,
   matchBySlug,
   neighbours,
   sectionRanker,
   sortSubgroups,
   subgroupUrl,
   topicUrl,
+  toolPageUrl,
+  treeFolders,
   type SectionMetaRow,
   type SnippetRow,
   type SubgroupRow,
+  type TreeRoot,
 } from './notes-tree';
+
+/** Topic folders only — `children` also carries the family separators. */
+const folders = (tree: TreeRoot) => treeFolders(tree);
+const folderNames = (tree: TreeRoot) => folders(tree).map(f => f.name);
+const folderNamed = (tree: TreeRoot, name: string) =>
+  folders(tree).find(f => f.name === name);
+const separators = (tree: TreeRoot) =>
+  tree.children.filter(n => n.type === 'separator').map(n => n.name);
 
 const sg = (
   id: number,
@@ -150,41 +162,99 @@ describe('buildPageTree', () => {
 
   it('nests sub-group pages under topic folders', () => {
     const tree = buildPageTree('AM', rows, counts(1, 2, 3));
-    expect(tree.children.map(f => f.name)).toEqual(['Indices', 'Surds']);
-    const surds = tree.children.find(f => f.name === 'Surds');
-    expect(surds?.children.map(c => c.name)).toEqual(['Rationalising', 'Simplifying']);
+    expect(folderNames(tree)).toEqual(['Indices', 'Surds']);
+    expect(folderNamed(tree, 'Surds')?.children.map(c => c.name)).toEqual([
+      'Rationalising',
+      'Simplifying',
+    ]);
   });
 
   it('gives every topic folder an index page pointing at the topic url', () => {
     const tree = buildPageTree('AM', rows, counts(1, 2, 3));
-    const indices = tree.children.find(f => f.name === 'Indices');
-    expect(indices?.index.url).toBe('/notes/am/indices');
+    expect(folderNamed(tree, 'Indices')?.index.url).toBe('/notes/am/indices');
   });
 
   it('drops sub-groups that have no renderable snippets', () => {
     const tree = buildPageTree('AM', rows, counts(1, 3));
-    const surds = tree.children.find(f => f.name === 'Surds');
-    expect(surds?.children.map(c => c.name)).toEqual(['Rationalising']);
+    expect(folderNamed(tree, 'Surds')?.children.map(c => c.name)).toEqual([
+      'Rationalising',
+    ]);
   });
 
   it('drops a topic entirely when none of its sub-groups have content', () => {
     const tree = buildPageTree('AM', rows, counts(3));
-    expect(tree.children.map(f => f.name)).toEqual(['Indices']);
+    expect(folderNames(tree)).toEqual(['Indices']);
   });
 
   it('ignores sub-groups from other levels', () => {
     const mixed = [...rows, sg(9, 'Numbers', 'Ordering', 0, 'S1')];
     const tree = buildPageTree('AM', mixed, counts(1, 2, 3, 9));
-    expect(tree.children.map(f => f.name)).not.toContain('Numbers');
+    expect(folderNames(tree)).not.toContain('Numbers');
   });
 
   it('matches level case-insensitively', () => {
     const tree = buildPageTree('am', rows, counts(1, 2, 3));
-    expect(tree.children).toHaveLength(2);
+    expect(folders(tree)).toHaveLength(2);
   });
 
   it('returns an empty tree rather than throwing when there is no content', () => {
     expect(buildPageTree('AM', rows, new Map()).children).toEqual([]);
+  });
+
+  it('heads each family with a separator, in syllabus order', () => {
+    const tree = buildPageTree(
+      'AM',
+      [sg(1, 'Surds', 'Rationalising', 0), sg(2, 'Kinematics', 'Velocity', 0)],
+      counts(1, 2),
+    );
+    expect(separators(tree)).toEqual(['Algebra & Functions', 'Calculus']);
+    expect(tree.children.map(n => n.name)).toEqual([
+      'Algebra & Functions',
+      'Surds',
+      'Calculus',
+      'Kinematics',
+    ]);
+  });
+
+  // The tool page shares the sub-group slug space, so it has to appear in the
+  // tree — otherwise prev/next would walk straight past it.
+  it('appends a tool page to a topic whose tool teaches the topic', () => {
+    const tree = buildPageTree('AM', [sg(1, 'Linear Law', 'Plotting', 0)], counts(1));
+    const folder = folderNamed(tree, 'Linear Law');
+    expect(folder?.children.at(-1)?.url).toBe(toolPageUrl('AM', 'Linear Law'));
+  });
+
+  it('adds no tool page to a topic with no lesson-grade tool', () => {
+    const tree = buildPageTree('AM', [sg(1, 'Surds', 'Rationalising', 0)], counts(1));
+    expect(folderNamed(tree, 'Surds')?.children.map(c => c.url)).toEqual([
+      '/notes/am/surds/rationalising',
+    ]);
+  });
+});
+
+describe('groupByFamily', () => {
+  const item = (topic: string) => ({ topic });
+
+  it('buckets topics into their syllabus families, dropping empty ones', () => {
+    const out = groupByFamily('AM', [item('Surds'), item('Circles')], i => i.topic);
+    expect(out.map(g => g.family.label)).toEqual(['Algebra & Functions', 'Geometry']);
+  });
+
+  it('collects unrecognised topics into a trailing bucket rather than dropping them', () => {
+    const out = groupByFamily('AM', [item('Sudoku'), item('Surds')], i => i.topic);
+    expect(out.map(g => g.family.label)).toEqual(['Algebra & Functions', 'Other topics']);
+    expect(out[1].items).toEqual([item('Sudoku')]);
+  });
+
+  it('keeps every item when a level has no family grouping', () => {
+    const out = groupByFamily('S1', [item('Numbers')], i => i.topic);
+    expect(out).toHaveLength(1);
+    expect(out[0].items).toEqual([item('Numbers')]);
+  });
+
+  it('returns nothing for no items', () => {
+    expect(groupByFamily('AM', [], (i: { topic: string }) => i.topic)).toEqual([]);
+    expect(groupByFamily('S1', [], (i: { topic: string }) => i.topic)).toEqual([]);
   });
 });
 
@@ -240,8 +310,8 @@ describe('filterTree', () => {
 
   it('keeps every page of a topic whose name matches', () => {
     const out = filterTree(tree, 'surds');
-    expect(out.children.map(f => f.name)).toEqual(['Surds']);
-    expect(out.children[0].children.map(c => c.name)).toEqual([
+    expect(folderNames(out)).toEqual(['Surds']);
+    expect(folders(out)[0].children.map(c => c.name)).toEqual([
       'Rationalising',
       'Simplifying',
     ]);
@@ -249,16 +319,16 @@ describe('filterTree', () => {
 
   it('keeps only matching pages when the topic name does not match', () => {
     const out = filterTree(tree, 'rationalis');
-    expect(out.children.map(f => f.name)).toEqual(['Surds']);
-    expect(out.children[0].children.map(c => c.name)).toEqual(['Rationalising']);
+    expect(folderNames(out)).toEqual(['Surds']);
+    expect(folders(out)[0].children.map(c => c.name)).toEqual(['Rationalising']);
   });
 
   it('is case-insensitive', () => {
-    expect(filterTree(tree, 'LAWS').children[0].children[0].name).toBe('Laws of Indices');
+    expect(folders(filterTree(tree, 'LAWS'))[0].children[0].name).toBe('Laws of Indices');
   });
 
   it('force-opens surviving folders so hits are visible', () => {
-    expect(filterTree(tree, 'change').children[0].defaultOpen).toBe(true);
+    expect(folders(filterTree(tree, 'change'))[0].defaultOpen).toBe(true);
   });
 
   it('drops topics with no match at all', () => {
@@ -267,10 +337,18 @@ describe('filterTree', () => {
 
   it('matches across several topics at once', () => {
     // "of" appears in "Laws of Indices" and "Change of Base"
-    expect(filterTree(tree, 'of ').children.map(f => f.name)).toEqual([
-      'Indices',
-      'Logarithms',
-    ]);
+    expect(folderNames(filterTree(tree, 'of '))).toEqual(['Indices', 'Logarithms']);
+  });
+
+  // A family heading with nothing under it is worse than no heading: it reads as
+  // a section the filter emptied by accident.
+  it('takes a family heading away with its last topic', () => {
+    const mixed = buildPageTree(
+      'AM',
+      [sg(1, 'Surds', 'Rationalising', 0), sg(2, 'Kinematics', 'Velocity', 0)],
+      counts(1, 2),
+    );
+    expect(separators(filterTree(mixed, 'surds'))).toEqual(['Algebra & Functions']);
   });
 
   it('does not mutate the source tree', () => {

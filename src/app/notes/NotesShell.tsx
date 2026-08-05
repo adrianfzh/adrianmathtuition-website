@@ -6,8 +6,19 @@
 import { useMemo, useState } from 'react';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import type { Root } from 'fumadocs-core/page-tree';
-import { filterTree, type TreeRoot } from '@/lib/notes-tree';
+import type { Root, Separator } from 'fumadocs-core/page-tree';
+import { filterTree, treeFolders, type TreeRoot } from '@/lib/notes-tree';
+
+/**
+ * Family headings between groups of topics ("TRIGONOMETRY", "CALCULUS").
+ *
+ * Overridden rather than styled in CSS: fumadocs' own separator is a bare <p>
+ * carrying nothing but Tailwind utilities, so any selector targeting it would be
+ * keyed to class names that are free to change on a minor upgrade.
+ */
+function FamilyHeading({ item }: { item: Separator }) {
+  return <p className="nx-sep">{item.name}</p>;
+}
 
 function SidebarFilter({
   value,
@@ -62,6 +73,10 @@ export default function NotesShell({
 }) {
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => filterTree(tree, query), [tree, query]);
+  // Count folders, not children — `children` also holds the family separators,
+  // which would inflate "12 of 31 topics" into nonsense.
+  const total = treeFolders(tree).length;
+  const shown = treeFolders(filtered).length;
 
   return (
     <RootProvider
@@ -74,6 +89,9 @@ export default function NotesShell({
         nav={{
           title: (
             <span className="nx-brand">
+              <span className="nx-brand-mark" aria-hidden>
+                ∑
+              </span>
               <span className="nx-brand-name">Notes</span>
               <span className="nx-brand-chip">A-Math</span>
             </span>
@@ -82,13 +100,9 @@ export default function NotesShell({
         searchToggle={{ enabled: false }}
         sidebar={{
           defaultOpenLevel: 0,
+          components: { Separator: FamilyHeading },
           banner: (
-            <SidebarFilter
-              value={query}
-              onChange={setQuery}
-              total={tree.children.length}
-              shown={filtered.children.length}
-            />
+            <SidebarFilter value={query} onChange={setQuery} total={total} shown={shown} />
           ),
         }}
       >

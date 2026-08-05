@@ -6,18 +6,21 @@ import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
 import { toHast } from 'mdast-util-to-hast';
 import { toHtml } from 'hast-util-to-html';
+import { fixMathFences } from './math-markdown';
 import { classifyLabel, remarkNotesBlocks } from './notes-blocks';
 
-// End-to-end through the same plugin order the notes surface uses, then out to
-// HTML — the point of this module is the markup it produces, so assert on that
-// rather than on mdast internals.
+// End-to-end through the same pre-pass and plugin order the notes surface uses,
+// then out to HTML — the point of this module is the markup it produces, so
+// assert on that rather than on mdast internals. Content goes in verbatim, the
+// way it sits in `content_snippets`.
 function render(markdown: string): string {
   const processor = unified()
     .use(remarkParse)
     .use(remarkMath)
     .use(remarkGfm)
     .use(remarkNotesBlocks);
-  const tree = processor.runSync(processor.parse(markdown)) as Root;
+  const source = fixMathFences(markdown);
+  const tree = processor.runSync(processor.parse(source)) as Root;
   return toHtml(toHast(tree));
 }
 
@@ -131,6 +134,74 @@ describe('remarkNotesBlocks', () => {
 
   it('recognises an italic label too', () => {
     expect(render('*Reading:* every 10 dB is 10x.')).toContain('data-nb="tip"');
+  });
+});
+
+describe('splitLineLabels', () => {
+  // Verbatim from content_snippets — the recall cards separate their formula,
+  // their gloss and their reflex with SINGLE newlines, so markdown hands the
+  // gloss and the reflex over as one paragraph. Without the split the label
+  // renders as bold mid-sentence, which is the wall-of-bold this module undoes.
+  const DISTANCE_CARD = [
+    '$$\\text{Distance} = \\sqrt{(x_1-x_2)^2 + (y_1-y_2)^2}$$',
+    'Legs: $x_1-x_2$ and $y_1-y_2$, then Pythagoras.',
+    '**Reflex:** Subtract coordinates in the same order in both brackets.',
+  ].join('\n');
+
+  it('lifts a reflex that is only soft-broken off the line above', () => {
+    const html = render(DISTANCE_CARD);
+    expect(html).toContain('data-nb="reflex"');
+    expect(html).toContain('<span class="nb-label">Reflex</span>');
+    expect(html).toContain('Subtract coordinates in the same order');
+    expect(html).not.toContain('<strong>Reflex');
+  });
+
+  it('leaves the gloss above it outside the block', () => {
+    const html = render(DISTANCE_CARD);
+    const reflex = html.indexOf('data-nb="reflex"');
+    expect(html.indexOf('then Pythagoras.')).toBeLessThan(reflex);
+    // The newline that joined them is gone, not stranded as a trailing break.
+    expect(html).not.toContain('<br>');
+  });
+
+  it('still lifts a reflex separated by a blank line', () => {
+    // Some cards were authored with a paragraph break instead; both shapes are
+    // in the table, and both have to land on the same markup.
+    const html = render(
+      [
+        'Parallel lines have the same gradient.',
+        '',
+        '**Reflex:** See "parallel to" → copy that line’s gradient.',
+      ].join('\n'),
+    );
+    expect(html).toContain('data-nb="reflex"');
+  });
+
+  it('splits a run of labels that share one paragraph', () => {
+    const html = render(['**Question:** Find $k$.', '**Answer:** $k=5$.'].join('\n'));
+    expect(html.match(/data-nb="question"/g)).toHaveLength(1);
+    expect(html.match(/data-nb="answer"/g)).toHaveLength(1);
+  });
+
+  it('leaves a label mid-sentence inline', () => {
+    // Only a label that OPENS a line is structural. A bold word that happens to
+    // be a role name inside a sentence is just emphasis.
+    const html = render('Read the gradient, **Answer:** style, off the axis.');
+    expect(html).not.toContain('data-nb=');
+    expect(html).toContain('<strong>Answer:</strong>');
+  });
+
+  it('leaves an unrecognised bold lead-in on its own line alone', () => {
+    const html = render('The line is straight.\n**Coefficient:** the gradient.');
+    expect(html).not.toContain('data-nb=');
+  });
+
+  it('keeps hard-broken formula panels intact', () => {
+    // The blockquote pass runs first and turns those newlines into breaks; the
+    // split must not then eat the panel's line structure.
+    const html = render(['> **Distance** $AB$', '> **Midpoint** $M$'].join('\n'));
+    expect(html.match(/<br>/g)).toHaveLength(1);
+    expect(html).not.toContain('data-nb=');
   });
 });
 

@@ -5,6 +5,8 @@
 //
 // Tree shape (SPEC-NOTES-PORTAL Phase 1): Level → Topic → one page per sub-group.
 
+import { A_MATH_EXAM_TOPICS } from './canonical-topics';
+import { lessonToolsForTopic, TOOL_SLUG } from './notes-tools';
 import { topicSlug } from './topic-slug';
 
 export const NOTES_BASE = '/notes';
@@ -47,6 +49,80 @@ export interface TopicCardRow {
   status: string | null;
 }
 
+/**
+ * A `content_kind='recall_card'` row. These carry no `subgroup_id` — they hang
+ * off the TOPIC, which is why the sub-group tree never had anywhere to put them
+ * and all 179 stayed invisible until the topic pages grew a reflexes strip.
+ */
+export interface RecallCardRow {
+  id: string;
+  topic: string;
+  card_title: string | null;
+  content: string;
+  order_index: number | null;
+}
+
+// ── Topic families ───────────────────────────────────────────────────────────
+//
+// 31 AM topics in one flat list is a wall. `canonical-topics.ts` already groups
+// them the way the syllabus does — reuse that rather than invent a second
+// grouping that could drift from the one the admin pages use.
+
+export interface TopicFamily {
+  label: string;
+  topics: string[];
+}
+
+/** Topics with no home in the canonical list still need somewhere to go. */
+const OTHER_FAMILY = 'Other topics';
+
+/** Families for a level, in syllabus order. Levels without a grouping get none. */
+export function topicFamilies(level: string): TopicFamily[] {
+  if (level.toUpperCase() !== 'AM') return [];
+  return A_MATH_EXAM_TOPICS.map(c => ({ label: c.label, topics: c.topics }));
+}
+
+/**
+ * Bucket items into their topic families, in syllabus order. Families with
+ * nothing in them are dropped, and anything unrecognised falls into a trailing
+ * "Other topics" group rather than vanishing.
+ *
+ * Generic over the item so the sidebar (folders) and the level index (topic
+ * cards) group identically instead of each rolling their own.
+ */
+export function groupByFamily<T>(
+  level: string,
+  items: T[],
+  topicOf: (item: T) => string,
+): { family: TopicFamily; items: T[] }[] {
+  const families = topicFamilies(level);
+  if (families.length === 0) {
+    return items.length ? [{ family: { label: OTHER_FAMILY, topics: [] }, items }] : [];
+  }
+
+  const home = new Map<string, string>();
+  for (const family of families) {
+    for (const topic of family.topics) home.set(topic, family.label);
+  }
+
+  const buckets = new Map<string, T[]>();
+  for (const item of items) {
+    const label = home.get(topicOf(item)) ?? OTHER_FAMILY;
+    const list = buckets.get(label);
+    if (list) list.push(item);
+    else buckets.set(label, [item]);
+  }
+
+  const out: { family: TopicFamily; items: T[] }[] = [];
+  for (const family of families) {
+    const bucket = buckets.get(family.label);
+    if (bucket?.length) out.push({ family, items: bucket });
+  }
+  const rest = buckets.get(OTHER_FAMILY);
+  if (rest?.length) out.push({ family: { label: OTHER_FAMILY, topics: [] }, items: rest });
+  return out;
+}
+
 /** URL path for a topic index page. */
 export function topicUrl(level: string, topic: string): string {
   return `${NOTES_BASE}/${level.toLowerCase()}/${topicSlug(topic)}`;
@@ -55,6 +131,15 @@ export function topicUrl(level: string, topic: string): string {
 /** URL path for one sub-group page. */
 export function subgroupUrl(level: string, topic: string, name: string): string {
   return `${topicUrl(level, topic)}/${topicSlug(name)}`;
+}
+
+/**
+ * URL path for a topic's interactive-tool page. `TOOL_SLUG` shares the sub-group
+ * slug space, so the router must resolve it BEFORE looking a sub-group up —
+ * otherwise a sub-group that happened to be called "Tool" would shadow it.
+ */
+export function toolPageUrl(level: string, topic: string): string {
+  return `${topicUrl(level, topic)}/${TOOL_SLUG}`;
 }
 
 /**
@@ -167,9 +252,20 @@ export interface TreeFolder {
   defaultOpen?: boolean;
 }
 
+/** A family heading in the sidebar — fumadocs renders these as a plain label. */
+export interface TreeSeparator {
+  type: 'separator';
+  name: string;
+  $id: string;
+}
+
+export type TreeNode = TreeFolder | TreeSeparator;
+
 export interface TreeRoot {
   name: string;
-  children: TreeFolder[];
+  /** Level code the tree was built for, so `filterTree` can re-group by family. */
+  level: string;
+  children: TreeNode[];
   /**
    * Identity of this particular tree. Not decoration: fumadocs' TreeContextProvider
    * memoises with `useMemo(() => rawTree, [rawTree.$id])`, so a re-render carrying
@@ -177,6 +273,25 @@ export interface TreeRoot {
    * filter therefore has to vary this — see `filterTree`.
    */
   $id: string;
+}
+
+/** The topic folders, without the family separators between them. */
+export function treeFolders(tree: TreeRoot): TreeFolder[] {
+  return tree.children.filter((n): n is TreeFolder => n.type === 'folder');
+}
+
+/** Interleave family separators between topic folders, in syllabus order. */
+function withFamilySeparators(level: string, folders: TreeFolder[]): TreeNode[] {
+  const out: TreeNode[] = [];
+  for (const { family, items } of groupByFamily(level, folders, f => f.name)) {
+    out.push({
+      type: 'separator',
+      name: family.label,
+      $id: `family-${level.toLowerCase()}-${topicSlug(family.label)}`,
+    });
+    out.push(...items);
+  }
+  return out;
 }
 
 /**
@@ -215,6 +330,19 @@ export function buildPageTree(
 
     if (children.length === 0) continue;
 
+    // A topic whose tool teaches the topic gets the tool as a real page, last
+    // in the folder. One page per topic however many tools it maps to — the
+    // page shows them all, so a second entry would just point at itself.
+    const lessonTools = lessonToolsForTopic(level, topic);
+    if (lessonTools.length > 0) {
+      children.push({
+        type: 'page',
+        name: lessonTools.length === 1 ? lessonTools[0].title : 'Interactive tools',
+        url: toolPageUrl(level, topic),
+        $id: `tool-${level.toLowerCase()}-${topicSlug(topic)}`,
+      });
+    }
+
     folders.push({
       type: 'folder',
       name: topic,
@@ -231,7 +359,8 @@ export function buildPageTree(
 
   return {
     name: levelLabel(level),
-    children: folders,
+    level,
+    children: withFamilySeparators(level, folders),
     $id: `notes-${level.toLowerCase()}`,
   };
 }
@@ -249,19 +378,25 @@ export function filterTree(tree: TreeRoot, query: string): TreeRoot {
   const q = query.trim().toLowerCase();
   if (!q) return tree;
 
-  const children: TreeFolder[] = [];
-  for (const folder of tree.children) {
+  const kept: TreeFolder[] = [];
+  for (const folder of treeFolders(tree)) {
     const topicHit = folder.name.toLowerCase().includes(q);
-    const kept = topicHit
+    const children = topicHit
       ? folder.children
       : folder.children.filter(c => c.name.toLowerCase().includes(q));
-    if (kept.length === 0) continue;
-    children.push({ ...folder, children: kept, defaultOpen: true });
+    if (children.length === 0) continue;
+    kept.push({ ...folder, children, defaultOpen: true });
   }
+  // Re-grouped from the survivors rather than filtered in place, so a family
+  // whose every topic was filtered out takes its heading with it.
   // `$id` MUST encode the query — fumadocs re-reads the tree only when `$id`
   // changes, so returning the filtered tree under the root's own id renders the
   // filter completely inert (it did, until this was caught).
-  return { ...tree, children, $id: `${tree.$id}::q=${q}` };
+  return {
+    ...tree,
+    children: withFamilySeparators(tree.level, kept),
+    $id: `${tree.$id}::q=${q}`,
+  };
 }
 
 export function levelLabel(level: string): string {
@@ -286,7 +421,7 @@ export function matchBySlug<T>(
  */
 export function flattenPages(tree: TreeRoot): { name: string; url: string }[] {
   const out: { name: string; url: string }[] = [];
-  for (const folder of tree.children) {
+  for (const folder of treeFolders(tree)) {
     out.push({ name: folder.index.name, url: folder.index.url });
     for (const child of folder.children) {
       out.push({ name: child.name, url: child.url });
