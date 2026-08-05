@@ -1026,7 +1026,7 @@ export default function ChatPage() {
       // prefix (all completed paragraphs, re-rendered only when a paragraph
       // completes) and a short live tail (re-rendered every frame, cheap) — so
       // the per-frame cost stays constant however long the answer gets.
-      const TYPE_CPS = 30;
+      const TYPE_CPS = 38;
       let displayedLen = 0;
       let lastShownLen = -1;
       let typerRAF: number | null = null;
@@ -1040,7 +1040,7 @@ export default function ChatPage() {
           stable = document.createElement('div'); stable.className = 'stream-stable';
           tail = document.createElement('div'); tail.className = 'stream-tail';
           streamDiv.appendChild(stable); streamDiv.appendChild(tail);
-          stablePrefix = ' '; // force a prefix re-render after the layers were rebuilt
+          stablePrefix = '\u0000'; // force a prefix re-render after the layers were rebuilt
         }
         return { stable, tail };
       };
@@ -1150,6 +1150,16 @@ export default function ChatPage() {
                 lastStatus = { status: parsed.status, chars: parsed.chars, glimpse: parsed.glimpse ?? lastStatus?.glimpse ?? null };
                 renderStatusLabel();
                 if (!statusTicker) statusTicker = setInterval(renderStatusLabel, 1000);
+              } else if (parsed.status === 'checking') {
+                // Image answers now stream LIVE; the handwriting check runs after.
+                // Show a small trailing indicator under the already-visible answer.
+                if (!document.getElementById('postCheck')) {
+                  const chk = document.createElement('div');
+                  chk.id = 'postCheck';
+                  chk.style.cssText = 'margin-top:8px;font-size:0.82em;color:hsl(220,10%,55%);display:flex;align-items:center;gap:6px;';
+                  chk.innerHTML = '<span style="display:inline-block;width:11px;height:11px;border:2px solid #ccc;border-top-color:#888;border-radius:50%;animation:spin 0.8s linear infinite;"></span> double-checking the reading…';
+                  streamDiv.parentElement?.appendChild(chk);
+                }
               }
               continue;
             }
@@ -1158,6 +1168,23 @@ export default function ChatPage() {
               stopStatusTicker();
               fullText += parsed.chunk;
               startTyper();
+            }
+
+            if (parsed.correction) {
+              // Rare: the post-stream verifier changed the answer. Replace the
+              // shown text instantly and say so honestly.
+              document.getElementById('postCheck')?.remove();
+              fullText = parsed.correction;
+              displayedLen = fullText.length;
+              lastShownLen = -1;
+              renderToElement(streamDiv, fullText);
+              if (parsed.note) {
+                const badge = document.createElement('div');
+                badge.style.cssText = 'margin-top:8px;font-size:0.82em;color:hsl(35,60%,38%);';
+                badge.textContent = `✍️ ${parsed.note}`;
+                streamDiv.parentElement?.appendChild(badge);
+              }
+              continue;
             }
 
             if (parsed.graphLoading === true) {
@@ -1185,6 +1212,7 @@ export default function ChatPage() {
             }
 
             if (parsed.done) {
+              document.getElementById('postCheck')?.remove();
               sawDone = true;
               if (typeof parsed.messageId === 'number') doneMessageId = parsed.messageId;
               stopStatusTicker();
