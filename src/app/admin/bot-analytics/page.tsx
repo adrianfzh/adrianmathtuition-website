@@ -266,7 +266,7 @@ export default function BotAnalytics() {
   const [revalidating, setRevalidating] = useState(false);
   // One-shot guard for the 401→session-upgraded→retry path in load().
   const retriedRef = useRef(false);
-  const [qTab, setQTab]             = useState<'flagged' | 'all' | 'mine' | 'tests'>('flagged');
+  const [qTab, setQTab]             = useState<'flagged' | 'all' | 'mine' | 'science' | 'tests'>('flagged');
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
   const [selected, setSelected]     = useState<Question | null>(null);
   const [opusOpen, setOpusOpen]     = useState(false);
@@ -529,7 +529,8 @@ export default function BotAnalytics() {
   const allVisible = questions.filter(q => !dismissed.has(q.id) && !q.isAdminUpload && !isTestChat(q));
   const myUploads = questions.filter(q => q.isAdminUpload && !dismissed.has(q.id) && !isTestChat(q));
   const testRows = questions.filter(q => isTestChat(q) && !dismissed.has(q.id));
-  const displayList = qTab === 'mine' ? myUploads : qTab === 'flagged' ? flagged : qTab === 'tests' ? testRows : allVisible;
+  const scienceRows = questions.filter(q => q.subject && q.subject !== 'Math' && !dismissed.has(q.id));
+  const displayList = qTab === 'mine' ? myUploads : qTab === 'flagged' ? flagged : qTab === 'tests' ? testRows : qTab === 'science' ? scienceRows : allVisible;
 
   // Group adjacent turns of the same conversation (same chatId + <30min gap) into
   // threads. displayList is newest-first, so a conversation's turns are adjacent.
@@ -723,17 +724,22 @@ export default function BotAnalytics() {
             {/* Questions section */}
             <div style={{ padding: '12px 16px 0' }}>
               <div style={{ display: 'flex', gap: 0, marginBottom: 10, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
-                {(['flagged', 'all', 'mine', 'tests'] as const).map(tab => (
+                {(['flagged', 'all', 'mine', 'science', 'tests'] as const).map(tab => (
                   <button key={tab} onClick={() => setQTab(tab)} style={{
                     flex: 1, padding: '7px 0', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
                     background: qTab === tab ? '#1e3a5f' : 'transparent',
                     color: qTab === tab ? '#fff' : '#64748b',
                   }}>
-                    {tab === 'flagged' ? `🔴 Flagged (${flagged.length})` : tab === 'all' ? `All (${allVisible.length})` : tab === 'mine' ? `📤 Mine (${myUploads.length})` : `🧪 Tests (${testRows.length})`}
+                    {tab === 'flagged' ? `🔴 Flagged (${flagged.length})` : tab === 'all' ? `All (${allVisible.length})` : tab === 'mine' ? `📤 Mine (${myUploads.length})` : tab === 'science' ? `🧪 Science (${scienceRows.length})` : `🔬 Tests (${testRows.length})`}
                   </button>
                 ))}
               </div>
 
+              {qTab === 'science' && scienceRows.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#94a3b8', padding: '24px 0', fontSize: 13 }}>
+                  No science questions in this period — chem/phys/bio answers appear here once students ask them (live since 4 Aug)
+                </div>
+              )}
               {qTab === 'flagged' && flagged.length === 0 && (
                 <div style={{ textAlign: 'center', color: '#94a3b8', padding: '24px 0', fontSize: 13 }}>
                   ✅ No flagged responses in this period
