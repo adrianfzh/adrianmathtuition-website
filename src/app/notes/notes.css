@@ -528,6 +528,11 @@ a.nx-eyebrow:hover {
 .nx-rc {
   display: flex;
   flex-direction: column;
+  /* Grid items default to min-width:auto, so a card holding one unbreakable wide
+   * formula grows its own track past the content column and slides under the TOC
+   * (measured 741px in a 680px grid). min-width:0 lets the track hold 1fr and
+   * hands the overflow to the formula panel below, which scrolls. */
+  min-width: 0;
   padding: 0.95rem 1.1rem 1rem;
   border: 1px solid var(--nx-line);
   border-radius: var(--nx-radius);
@@ -557,6 +562,26 @@ a.nx-eyebrow:hover {
   background: var(--nx-wash);
   border: 1px solid var(--nx-hairline);
   border-radius: 9px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+/* 4 of the 11 A-Math reflexes hold a formula wider than a half-column card (the
+ * full (a+b)^n expansion runs ~677px into a 280px box) and shrinking the type
+ * enough to fit makes it unreadable — at 0.78em three still overflow. So they
+ * scroll, and they get a permanent bar: without one the card just reads as
+ * truncated. Same ::-webkit-scrollbar / @supports split as .notes-prose — see
+ * the note there; setting scrollbar-width here would disable both rules. */
+.nx-rc-body .katex-display::-webkit-scrollbar { height: 6px; }
+.nx-rc-body .katex-display::-webkit-scrollbar-thumb {
+  background: var(--nx-line);
+  border-radius: 999px;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .nx-rc-body .katex-display {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nx-line) transparent;
+  }
 }
 .nx-rc-body .katex-display > .katex {
   text-align: center;
@@ -803,19 +828,30 @@ a.nx-eyebrow:hover {
   max-width: 100%;
   /* room for the scrollbar so descenders aren't clipped mid-scroll */
   padding-bottom: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--nx-line) transparent;
 }
 /* An `\begin{aligned}` product of four fractions is wider than an iPad's content
  * column however the page is laid out, so give the overflow a permanent bar
  * rather than relying on macOS/iOS overlay scrollbars, which only appear once
- * you already know to swipe. */
+ * you already know to swipe — a binomial expansion that runs 25px past the step
+ * column just reads as truncated.
+ *
+ * ⚠ Do NOT add `scrollbar-width` here. Chrome ignores every ::-webkit-scrollbar
+ * rule on an element that sets it, so `scrollbar-width: thin` (which lived here
+ * until 2026-08-05) silently reverted these to overlay scrollbars — the bar was
+ * never permanent, and the equations above looked cut off. Firefox, which has no
+ * ::-webkit-scrollbar, gets the thin bar from the @supports block instead. */
 .notes-prose .katex-display::-webkit-scrollbar {
   height: 6px;
 }
 .notes-prose .katex-display::-webkit-scrollbar-thumb {
   background: var(--nx-line);
   border-radius: 999px;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .notes-prose .katex-display {
+    scrollbar-width: thin;
+    scrollbar-color: var(--nx-line) transparent;
+  }
 }
 .notes-prose .katex-display > .katex {
   text-align: left;
@@ -1013,6 +1049,402 @@ a.nx-eyebrow:hover {
   }
 }
 
+/* ── Learning units ──────────────────────────────────────────────────────────
+ * The blocks in NotesUnits.tsx. Colour carries meaning and nothing else:
+ *   green = answer, correct option, the fix
+ *   amber = remember, and Adrian's arrow comments on a step
+ *   rose  = the wrong line, and why it is wrong
+ *   wash  = the problem statement and the formula — the neutral "given"
+ * A card that also tinted itself would drown that out, so the cards stay on
+ * card background and let the kind chip do the labelling. */
+
+.nx-u-section {
+  margin-bottom: 2.2rem;
+}
+
+/* The section's core unit: the idea itself, so it reads as the section's
+ * opening statement rather than as the first of the cards under it. */
+.nx-u-intro {
+  margin: 0.9rem 0 0.4rem;
+}
+.nx-u-lead {
+  font-size: 1.0625rem;
+}
+.nx-u-lead p {
+  color: var(--nx-ink);
+}
+
+.nx-u-formula {
+  margin: 0.9rem 0;
+  padding: 0.85rem 1rem;
+  background: var(--nx-wash);
+  border: 1px solid var(--nx-line);
+  border-radius: var(--nx-radius);
+}
+.nx-u-formula .katex-display {
+  margin: 0 !important;
+  font-size: 1.06em;
+}
+
+/* ── One unit ────────────────────────────────────────────────────────────────*/
+
+.nx-u {
+  margin: 1rem 0 0;
+  padding: 1.15rem 1.3rem 1.25rem;
+  background: var(--color-fd-card);
+  border: 1px solid var(--nx-line);
+  border-radius: var(--nx-radius);
+}
+.nx-u-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.65rem;
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--nx-hairline);
+}
+.nx-u-title {
+  font-family: var(--nx-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--nx-ink);
+  margin: 0;
+}
+
+/* Kind chip. Soft for the two kinds you read, filled green for the one you are
+ * meant to stop and do. */
+.nx-u-kind {
+  flex: none;
+  align-self: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 0.14rem 0.5rem;
+  border: 1px solid transparent;
+}
+.nx-u[data-kind='example'] .nx-u-kind {
+  color: var(--nx-green);
+  background: var(--nx-green-wash);
+  border-color: var(--nx-green-line);
+}
+.nx-u[data-kind='check'] .nx-u-kind {
+  color: var(--nx-amber-deep);
+  background: var(--nx-amber-wash);
+  border-color: var(--nx-amber-line);
+}
+.nx-u[data-kind='autopsy'] .nx-u-kind {
+  color: var(--nx-rose-deep);
+  background: var(--nx-rose-wash);
+  border-color: var(--nx-rose-line);
+}
+.nx-u[data-kind='try'] .nx-u-kind {
+  color: var(--color-fd-primary-foreground);
+  background: var(--nx-green);
+  border-color: var(--nx-green);
+}
+
+/* ── Panels ──────────────────────────────────────────────────────────────────*/
+
+.nx-u-panel {
+  margin: 0.85rem 0;
+  padding: 0.85rem 1rem 0.9rem;
+  border-radius: var(--nx-radius);
+  border: 1px solid var(--nx-line);
+  background: var(--nx-wash);
+}
+.nx-u-panel-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+  margin: 0 0 0.4rem;
+}
+.nx-u-panel[data-tone='answer'] {
+  background: var(--nx-green-wash);
+  border-color: var(--nx-green-line);
+}
+.nx-u-panel[data-tone='answer'] .nx-u-panel-label {
+  color: var(--nx-green);
+}
+.nx-u-panel[data-tone='remember'] {
+  background: var(--nx-amber-wash);
+  border-color: var(--nx-amber-line);
+}
+.nx-u-panel[data-tone='remember'] .nx-u-panel-label {
+  color: var(--nx-amber-deep);
+}
+.nx-u-panel[data-tone='wrong'] {
+  background: var(--nx-rose-wash);
+  border-color: var(--nx-rose-line);
+}
+.nx-u-panel[data-tone='wrong'] .nx-u-panel-label {
+  color: var(--nx-rose-deep);
+}
+.nx-u-panel .katex-display {
+  margin: 0.35rem 0 !important;
+}
+
+/* ── Example steps ───────────────────────────────────────────────────────────
+ * A spine rather than a box per step: an eight-step solution nested inside a
+ * card turns into boxes three deep, and the working stops being readable. */
+
+.nx-u-steps {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0 0 0 1.15rem;
+  border-left: 2px solid var(--nx-hairline);
+}
+.nx-u-step {
+  position: relative;
+  margin: 0 0 1.1rem;
+}
+.nx-u-step:last-child {
+  margin-bottom: 0;
+}
+.nx-u-step-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-height: 1.4rem;
+}
+.nx-u-step-no {
+  position: absolute;
+  left: -1.15rem;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  font-family: var(--nx-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--nx-green);
+  background: var(--nx-green-wash);
+  border: 1px solid var(--nx-green-line);
+}
+.nx-u-step-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--nx-ink);
+}
+.nx-u-math {
+  margin: 0.15rem 0 0;
+}
+.nx-u-math .katex-display {
+  margin: 0.35rem 0 !important;
+}
+
+/* Adrian's arrow comment on a step — the bit that says why, in his voice. */
+.nx-u-cue {
+  margin: 0.45rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--nx-amber-line);
+  border-radius: 0 8px 8px 0;
+  background: var(--nx-amber-wash);
+}
+.nx-u-cue .notes-prose,
+.nx-u-cue p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.nx-u-more,
+.nx-u-reveal {
+  margin: 0.5rem 0 0;
+}
+.nx-u-more > summary,
+.nx-u-reveal > summary {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--nx-green);
+  list-style: none;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--nx-green-line);
+  border-radius: 999px;
+  background: var(--nx-green-wash);
+}
+.nx-u-more > summary::-webkit-details-marker,
+.nx-u-reveal > summary::-webkit-details-marker {
+  display: none;
+}
+.nx-u-more > summary::after,
+.nx-u-reveal > summary::after {
+  content: '▾';
+  font-size: 0.7em;
+}
+.nx-u-more[open] > summary::after,
+.nx-u-reveal[open] > summary::after {
+  content: '▴';
+}
+.nx-u-more > summary:hover,
+.nx-u-reveal > summary:hover {
+  border-color: var(--nx-green-mid);
+}
+.nx-u-more > .notes-prose {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* ── Quick check: shown answered ─────────────────────────────────────────────
+ * The teaching here is why the wrong options are wrong, which a student who
+ * guesses in silence never reads. So every option carries its feedback. */
+
+.nx-u-prompt {
+  font-size: 1rem;
+}
+.nx-u-prompt p {
+  font-weight: 500;
+  color: var(--nx-ink);
+}
+.nx-u-opts {
+  list-style: none;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.nx-u-opt {
+  display: grid;
+  grid-template-columns: 1.15rem 1fr;
+  gap: 0.55rem;
+  padding: 0.65rem 0.85rem 0.7rem;
+  border: 1px solid var(--nx-line);
+  border-radius: 10px;
+  background: var(--color-fd-background);
+}
+.nx-u-opt[data-ok='true'] {
+  border-color: var(--nx-green-line);
+  background: var(--nx-green-wash);
+}
+.nx-u-opt-mark {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.7;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-u-opt[data-ok='true'] .nx-u-opt-mark {
+  color: var(--nx-green);
+}
+.nx-u-opt-body {
+  min-width: 0;
+}
+.nx-u-opt-why {
+  margin-top: 0.2rem;
+  font-size: 0.8125rem;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-u-opt-why p {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+/* ── Autopsy working ─────────────────────────────────────────────────────────*/
+
+.nx-u-working {
+  list-style: none;
+  margin: 0.85rem 0;
+  padding: 0;
+  border: 1px solid var(--nx-line);
+  border-radius: var(--nx-radius);
+  overflow: hidden;
+}
+.nx-u-line {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr auto;
+  align-items: start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  border-top: 1px solid var(--nx-hairline);
+}
+.nx-u-line:first-child {
+  border-top: 0;
+}
+.nx-u-line[data-wrong='true'] {
+  background: var(--nx-rose-wash);
+  box-shadow: inset 3px 0 0 var(--nx-rose-deep);
+}
+.nx-u-line-no {
+  font-family: var(--nx-mono);
+  font-size: 0.75rem;
+  line-height: 1.85;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-u-line-flag {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.7;
+  color: var(--nx-rose-deep);
+}
+.nx-u-line .notes-prose {
+  font-size: 0.9375rem;
+  min-width: 0;
+}
+
+/* ── Practice ────────────────────────────────────────────────────────────────*/
+
+.nx-u-reveal > .nx-u-panel {
+  margin-top: 0.6rem;
+}
+.nx-u-aside {
+  margin: 0.75rem 0 0;
+  padding-left: 0.85rem;
+  border-left: 2px solid var(--nx-hairline);
+  color: var(--color-fd-muted-foreground);
+}
+.nx-u-aside p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.nx-u-figure {
+  display: flex;
+  justify-content: center;
+  margin: 0.6rem 0;
+}
+.nx-u-figure svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.nx-u-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .nx-u {
+    padding: 1rem 1.05rem 1.1rem;
+  }
+  .nx-u-steps {
+    padding-left: 0.95rem;
+  }
+  .nx-u-step-no {
+    left: -0.95rem;
+  }
+}
+
 /* ── Print ───────────────────────────────────────────────────────────────────
  * These pages get printed for lessons, so make a print actually usable: drop
  * the app chrome, flatten the cards to rules, and keep a worked example whole
@@ -1039,11 +1471,20 @@ a.nx-eyebrow:hover {
   .nx-ex,
   .nx-revision,
   .nx-rc,
-  .nx-item {
+  .nx-item,
+  .nx-u {
     box-shadow: none;
     background: #fff;
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  /* A collapsed <details> cannot be forced open from CSS, so the practice
+     answers print hidden — which is what a worksheet wants anyway. The prompt
+     to click, though, is meaningless on paper. */
+  .nx-u-reveal > summary,
+  .nx-u-more > summary {
+    display: none;
   }
 
   .nx-section,

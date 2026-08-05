@@ -7,6 +7,13 @@
 import { cache } from 'react';
 import { getSupabase, getSupabaseAdmin } from './supabase';
 import {
+  groupIntoSections,
+  toUnit,
+  unitsEnabledFor,
+  type UnitRow,
+  type UnitSection,
+} from './notes-units';
+import {
   buildPageTree,
   buildSections,
   matchBySlug,
@@ -152,6 +159,35 @@ const loadTopicCards = cache(async (level: string): Promise<TopicCardRow[]> => {
   );
 });
 
+/**
+ * Learning units for one topic, split into sections.
+ *
+ * Reads through the privileged client for two reasons. `learning_units` is not
+ * anon-readable — the same RLS shape as `topic_cards`. And every unit is still
+ * `pending`: only 2 rows in the whole table have been approved in
+ * /admin/learn-review, so an `status='approved'` filter would render the pilot
+ * topic empty. They come back flagged `draft` and the page badges them, which is
+ * the right trade while /notes is behind the admin cookie.
+ *
+ * ⚠ Phase 3 (student login): same gate as `loadTopicCards` — this must become an
+ * approved-only filter before a student can reach the page, or unreviewed
+ * teaching goes out over Adrian's name.
+ */
+const loadTopicUnits = cache(
+  async (level: string, topic: string): Promise<UnitSection[]> => {
+    const supa = getSupabaseAdmin();
+    const rows = await fetchAllRows<UnitRow>((from, to) =>
+      supa
+        .from('learning_units')
+        .select('id, topic, kind, title, unit_order, status, payload')
+        .eq('subject', level.toUpperCase())
+        .eq('topic', topic)
+        .range(from, to),
+    );
+    return groupIntoSections(rows.map(toUnit).filter(u => u !== null));
+  },
+);
+
 /** The sidebar tree for a level. */
 export const getNotesTree = cache(async (level: string): Promise<TreeRoot> => {
   const [subgroups, counts] = await Promise.all([
@@ -214,6 +250,8 @@ export interface TopicPageData {
   card: TopicCardRow | null;
   /** Formula reflexes — the page hero when the topic has them. */
   recall: RecallCardRow[];
+  /** Learning units, on pilot topics only. Empty everywhere else. */
+  unitSections: UnitSection[];
   subgroups: { name: string; url: string; description: string | null; count: number }[];
 }
 
@@ -250,6 +288,8 @@ export const getTopicPage = cache(
       topic,
       card: cards.find(c => c.topic === topic && c.content_md) ?? null,
       recall: recall.get(topic) ?? [],
+      // Only the pilot topic pays for this query; everywhere else it's not run.
+      unitSections: unitsEnabledFor(topic) ? await loadTopicUnits(level, topic) : [],
       subgroups: list,
     };
   },

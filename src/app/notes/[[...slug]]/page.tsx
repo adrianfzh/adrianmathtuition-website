@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DocsPage, DocsBody, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
 import NotesMarkdown from '../NotesMarkdown';
+import NotesUnits from '../NotesUnits';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
@@ -30,13 +31,15 @@ const PHASE_1_LEVEL = 'AM';
 // Cookie-gated, so always rendered per request.
 export const dynamic = 'force-dynamic';
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+/** `-s` covers every word here except "reflex", so the plural is passed in. */
+const plural = (n: number, word: string, many = `${word}s`) => `${n} ${n === 1 ? word : many}`;
 
 /** Anchor ids for the in-page sections the table of contents links to. */
 const ANCHOR = {
   reflexes: 'formula-reflexes',
   revision: 'quick-revision',
   tools: 'interactive',
+  lesson: 'the-lesson',
   pages: 'pages',
 } as const;
 
@@ -241,7 +244,7 @@ async function LevelIndex() {
         <span className="nx-pill">{plural(topics.length, 'topic')}</span>
         <span className="nx-pill">{plural(examples, 'worked example')}</span>
         {reflexes > 0 && (
-          <span className="nx-pill nx-pill-green">{plural(reflexes, 'formula reflex')}</span>
+          <span className="nx-pill nx-pill-green">{plural(reflexes, 'formula reflex', 'formula reflexes')}</span>
         )}
       </div>
       <hr className="nx-rule" />
@@ -284,14 +287,24 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
   const examples = data.subgroups.reduce((sum, s) => sum + s.count, 0);
   const tools = toolsForTopic(PHASE_1_LEVEL, data.topic);
 
+  // Learning units — the pilot. Present on one topic today; see notes-units.ts.
+  const sections = data.unitSections;
+  const units = sections.reduce((n, s) => n + s.units.length + (s.lead ? 1 : 0), 0);
+  const unreviewed = sections.reduce(
+    (n, s) => n + s.units.filter(u => u.draft).length + (s.lead?.draft ? 1 : 0),
+    0,
+  );
+
   const toc = [
-    data.recall.length > 0 && { title: 'Formula reflexes', url: `#${ANCHOR.reflexes}` },
-    data.card?.content_md && { title: 'Quick revision', url: `#${ANCHOR.revision}` },
-    tools.length > 0 && { title: 'Interactive', url: `#${ANCHOR.tools}` },
-    { title: 'Pages', url: `#${ANCHOR.pages}` },
-  ]
-    .filter(Boolean)
-    .map(item => ({ ...(item as { title: string; url: string }), depth: 2 }));
+    data.recall.length > 0 && { title: 'Formula reflexes', url: `#${ANCHOR.reflexes}`, depth: 2 },
+    data.card?.content_md && { title: 'Quick revision', url: `#${ANCHOR.revision}`, depth: 2 },
+    tools.length > 0 && { title: 'Interactive', url: `#${ANCHOR.tools}`, depth: 2 },
+    sections.length > 0 && { title: 'The lesson', url: `#${ANCHOR.lesson}`, depth: 2 },
+    // Nested one level: a 52-unit topic needs its own sections in the contents,
+    // but not competing with the four things above them.
+    ...sections.map(s => ({ title: s.title, url: `#${s.id}`, depth: 3 })),
+    { title: 'Pages', url: `#${ANCHOR.pages}`, depth: 2 },
+  ].filter(Boolean) as { title: string; url: string; depth: number }[];
 
   return (
     <DocsPage toc={toc} footer={await footerFor(url)} breadcrumb={{ enabled: false }}>
@@ -304,9 +317,10 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
         <span className="nx-pill">{plural(examples, 'worked example')}</span>
         {data.recall.length > 0 && (
           <span className="nx-pill nx-pill-green">
-            {plural(data.recall.length, 'formula reflex')}
+            {plural(data.recall.length, 'formula reflex', 'formula reflexes')}
           </span>
         )}
+        {units > 0 && <span className="nx-pill nx-pill-green">{plural(units, 'lesson block')}</span>}
       </div>
       <hr className="nx-rule" />
       <DocsBody>
@@ -338,6 +352,24 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
             {tools.map(tool => (
               <ToolPanel key={tool.file} tool={tool} />
             ))}
+          </section>
+        )}
+
+        {/* The lesson itself, block by block. Additive for now: the sub-group
+            pages below still serve the same topic from `content_snippets`, so
+            both formats can be judged side by side before either moves. */}
+        {sections.length > 0 && (
+          <section>
+            <SectionHead
+              id={ANCHOR.lesson}
+              label="The lesson"
+              note={
+                unreviewed > 0
+                  ? `${plural(units, 'block')} · ${unreviewed} not yet reviewed`
+                  : plural(units, 'block')
+              }
+            />
+            <NotesUnits sections={sections} />
           </section>
         )}
 
