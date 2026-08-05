@@ -80,6 +80,7 @@ function WebMathRenderer({ text }: { text: string }) {
 type Question = {
   id: string; timestamp: string; studentName: string; chatId: string;
   caption: string; aiResponse: string; modelUsed: string; topic: string;
+  subject?: string; // Math (default) | Chemistry | Physics | Biology — science went live 2026-08-04
   timeTaken: number | null; confidence: string; status: string; imageUrl?: string; isAdminUpload?: boolean;
   tokensIn?: number; tokensOut?: number;
   suggestions: { id: string; issue: string; suggestion: string; status: string }[];
@@ -88,6 +89,23 @@ type Question = {
   confusedFollowUp?: string;
   dismissed?: boolean;
 };
+
+// Science chip — Math is the overwhelming default and stays unlabelled; only
+// science questions get a coloured tag so they pop in the list.
+const SUBJECT_CHIP: Record<string, { emoji: string; bg: string; fg: string }> = {
+  Chemistry: { emoji: '🧪', bg: '#ecfdf5', fg: '#047857' },
+  Physics: { emoji: '⚡', bg: '#eff6ff', fg: '#1d4ed8' },
+  Biology: { emoji: '🌱', bg: '#f0fdf4', fg: '#15803d' },
+};
+function subjectChip(subject?: string, compact = false) {
+  const c = subject ? SUBJECT_CHIP[subject] : null;
+  if (!c) return null;
+  return (
+    <span style={{ background: c.bg, color: c.fg, borderRadius: 999, padding: compact ? '0 6px' : '1px 8px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+      {c.emoji} {subject}
+    </span>
+  );
+}
 type Cluster = { theme: string; proposed_rule: string; confidence: string; affects_topics: string[]; suggestion_ids: number[] };
 
 // Compact token count, e.g. 8123 -> "8.1k", 45678 -> "46k".
@@ -581,7 +599,9 @@ export default function BotAnalytics() {
         </select>
         <button onClick={load} style={{ padding: '4px 12px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 13, opacity: revalidating ? 0.6 : 1 }}>{revalidating ? '↻ Updating…' : '↻ Refresh'}</button>
         <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 12 }}>
-          {allVisible.length} questions · {flagged.length} flagged
+          {allVisible.length} questions
+          {(() => { const sci = allVisible.filter(q => q.subject && q.subject !== 'Math').length; return sci ? ` · 🧪 ${sci} science` : ''; })()}
+          {' · '}{flagged.length} flagged
         </span>
       </div>
 
@@ -736,7 +756,7 @@ export default function BotAnalytics() {
                         outline: isSelected ? '2px solid #3b82f6' : 'none',
                       }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 11, marginBottom: 3, gap: 4 }}>
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 5 }}>{subjectChip(q.subject, true)}<span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.studentName} · {q.topic || 'no topic'} · {q.modelUsed?.replace('Claude Sonnet 4.6','Sonnet').replace('Claude Opus 4.6','Opus').replace('claude-sonnet-4-6','Sonnet')}</span></span>
                         <span style={{ display: 'flex', gap: 4, alignItems: 'center', flexShrink: 0 }}>
                           {q.timeTaken ? <span title="response time" style={{ color: '#94a3b8' }}>{q.timeTaken.toFixed(1)}s</span> : null}
                           {(q.tokensIn || q.tokensOut) ? <span title={`${(q.tokensIn || 0).toLocaleString()} tokens in / ${(q.tokensOut || 0).toLocaleString()} out`} style={{ fontFamily: 'monospace', color: '#94a3b8' }}>{fmtTok(q.tokensIn || 0)}↑{fmtTok(q.tokensOut || 0)}↓</span> : null}
@@ -1000,6 +1020,7 @@ export default function BotAnalytics() {
                 {/* Detail header */}
                 <div style={{ padding: '10px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 600, fontSize: 13 }}>{selected.studentName}</span>
+                  {subjectChip(selected.subject)}
                   <span style={{ color: '#94a3b8', fontSize: 12 }}>·</span>
                   <span style={{ color: '#64748b', fontSize: 12 }}>{selected.topic || 'no topic'}</span>
                   <span style={{ color: '#94a3b8', fontSize: 12 }}>·</span>
