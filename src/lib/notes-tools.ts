@@ -119,20 +119,9 @@ const AM_TOOLS: Record<string, NotesTool[]> = {
       height: 660,
     },
   ],
-  'Power Graphs': [
-    {
-      file: 'graph-transformations',
-      title: 'Graph transformations explorer',
-      blurb: 'Translate, stretch and reflect a curve and watch the equation change with it.',
-      height: 700,
-    },
-    {
-      file: 'curve-sketcher',
-      title: 'Curve sketching pad',
-      blurb: 'Sketch a curve and check it against the real one.',
-      height: 680,
-    },
-  ],
+  // Power Graphs left the syllabus (2026-08-07). Its two tools —
+  // graph-transformations and curve-sketcher — still live in public/tools,
+  // unmapped until another topic claims them.
 };
 
 const BY_LEVEL: Record<string, Record<string, NotesTool[]>> = { AM: AM_TOOLS };

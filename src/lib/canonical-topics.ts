@@ -189,7 +189,8 @@ export const E_MATH_EXAM_TOPICS: TopicCategory[] = [
   ...S1_EXAM_TOPICS.map(c => ({ ...c, label: `[S1] ${c.label}` })),
 ];
 
-// ─── O-Level A Math (33 topics) ───────────────────────────────────────────────
+// ─── O-Level A Math (31 topics) ───────────────────────────────────────────────
+// Power Graphs + Proof removed 2026-08-07 — no longer in the syllabus (Adrian).
 export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
   {
     label: 'Algebra & Functions',
@@ -202,7 +203,6 @@ export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
       'Nature of Roots',
       'Partial Fractions',
       'Polynomials',
-      'Power Graphs',
       'Quadratic Functions',
       'Quadratic Inequalities',
       'Simultaneous Equations',
@@ -215,7 +215,6 @@ export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
       'Circles',
       'Coordinate Geometry',
       'Plane Geometry',
-      'Proof',
     ],
   },
   {
