@@ -53,6 +53,12 @@ async function fetchAllRows<T>(
   }
 }
 
+// Topics no longer in the syllabus: kept in the data, dropped from every
+// /notes surface (sidebar, level index, direct URLs). Everything downstream
+// enumerates topics from loadSubgroups, so this is the one chokepoint.
+// Adrian, 2026-08-06: Modulus Functions is no longer examined.
+const RETIRED_TOPICS = new Set(['Modulus Functions']);
+
 /** All sub-groups for a level, ordered for display. */
 const loadSubgroups = cache(async (level: string): Promise<SubgroupRow[]> => {
   const supa = getSupabase();
@@ -63,7 +69,7 @@ const loadSubgroups = cache(async (level: string): Promise<SubgroupRow[]> => {
       .eq('level', level.toUpperCase())
       .range(from, to),
   );
-  return sortSubgroups(rows);
+  return sortSubgroups(rows.filter(r => !RETIRED_TOPICS.has(r.topic)));
 });
 
 /**
