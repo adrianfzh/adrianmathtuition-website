@@ -305,7 +305,6 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
 
   const url = topicUrl(PHASE_1_LEVEL, data.topic);
   const examples = data.subgroups.reduce((sum, s) => sum + s.count, 0);
-  const tools = toolsForTopic(PHASE_1_LEVEL, data.topic);
 
   // Learning units. The reviewer reads everything; a student reads what has
   // been approved. Approving a topic also retires its old sub-group list —
@@ -329,7 +328,6 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
   const toc = [
     data.recall.length > 0 && { title: 'Formula reflexes', url: `#${ANCHOR.reflexes}`, depth: 2 },
     data.card?.content_md && { title: 'Quick revision', url: `#${ANCHOR.revision}`, depth: 2 },
-    tools.length > 0 && { title: 'Interactive', url: `#${ANCHOR.tools}`, depth: 2 },
     sections.length > 0 && { title: 'The lesson', url: `#${ANCHOR.lesson}`, depth: 2 },
     // Nested one level: a 52-unit topic needs its own sections in the contents,
     // but not competing with the four things above them.
@@ -392,18 +390,10 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
           </section>
         )}
 
-        {tools.length > 0 && (
-          <section>
-            <SectionHead
-              id={ANCHOR.tools}
-              label="Interactive"
-              note="Drag it, and the rule stops being something to memorise"
-            />
-            {tools.map(tool => (
-              <ToolPanel key={tool.file} tool={tool} />
-            ))}
-          </section>
-        )}
+        {/* Interactive tools deliberately do NOT render here (Adrian,
+            2026-08-06): the recap page is for reading; tools belong to the
+            interactive lesson-unit surface. The dedicated tool pages still
+            exist for unconverted topics via the sidebar. */}
 
         {/* The lesson itself, block by block. On an unapproved topic it renders
             above the old sub-group list so both formats can be compared; the
