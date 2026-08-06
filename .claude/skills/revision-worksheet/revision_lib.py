@@ -111,14 +111,20 @@ COLOR_ORANGE = "843C0C"
 LINE_15 = "360"     # 1.5 line spacing, w:lineRule="auto"
 IND_Q_LEFT, IND_Q_HANG = 567, 567       # 1 cm
 IND_SQ_LEFT, IND_SQ_HANG = 1134, 567    # 2 cm / 1 cm
-# [n] sits a small fixed gap after the question text, the way Adrian's hand-made
-# sheets read ("…in their simplest forms.  [3]") — NOT flung out to the right
-# margin. The spacer is a NO-BREAK SPACE (Unicode line-break class GL, which
-# forbids a break on either side) widened by character spacing, so the gap is
-# ~0.4 cm at 9.5 pt and "text.  [3]" stays one unbreakable unit: when the line
-# runs out the mark wraps down WITH the last word instead of stranding itself.
-MARKS_GAP_TEXT = "\u00a0"             # NBSP: 0.25 em = 2.375 pt at 9.5 pt
-MARKS_GAP_TRACK = 180                   # + 9 pt tracking -> 11.375 pt ~= 0.40 cm
+# [n] is RIGHT-ALIGNED on a tab stop at 15.5 cm — Adrian's house position, set
+# explicitly 2026-08-06 ("tab stops should be 15.5"). The text column is 16 cm
+# (A4 less 2.5 cm margins), so every practice paragraph also carries a 0.5 cm
+# RIGHT INDENT: that pulls the wrap width in to 15.5 cm, exactly where the mark
+# lands, so a long question can never run under [n] and strand it on the next
+# line — the failure mode of the first version, which tabbed to the 16 cm
+# margin with no reserved gutter.
+MARKS_TAB_POS = 8788                    # 15.5 cm in twips (15.5 x 567)
+MARKS_RIGHT_IND = 283                   # 0.5 cm gutter: wrap width == tab stop
+# A tab stop at or past this point in the CLONED base is one of Adrian's own
+# right-margin stops (his sheets use 16 cm); _normalize_house_style pulls it
+# back to MARKS_TAB_POS so base and appended practice line up.
+FAR_TAB_MIN = 8000                      # 14.1 cm
+TEXT_WIDTH = 9072                       # 16 cm: A4 less 2 x 2.5 cm margins
 
 # Page setup forced onto the OUTPUT regardless of what the base carries: the
 # notes fragments inherit formula-sheet layouts (wide/narrow margins, sometimes
@@ -958,12 +964,14 @@ def _run(p, text, bold=False, italic=False, color=None, size=SZ_BODY, track=0):
 
 
 def _marks_run(p, marks):
-    """`[n]` a small fixed gap after the question text, on the SAME line.
+    """`[n]` right-aligned on the 15.5 cm tab stop, on the SAME line as the text.
 
-    No tab stop is involved: the mark trails the text the way Adrian writes it
-    by hand. See MARKS_GAP_TEXT for why the spacer is a widened no-break space.
+    The paragraph reserves a 0.5 cm right gutter (see MARKS_RIGHT_IND), so the
+    text wraps exactly at the stop and the mark can never be pushed off the line.
     """
-    _run(p, MARKS_GAP_TEXT, track=MARKS_GAP_TRACK)
+    r = etree.SubElement(p, w("r"))
+    _rpr(r)
+    etree.SubElement(r, w("tab"))
     _run(p, "[%s]" % marks)
 
 
@@ -1016,8 +1024,9 @@ def _para(left=0, hanging=0, align=None, space_after=0,
     # explicit on purpose: a hanging indent gives Word an implicit stop there,
     # but a custom tab stop also clears the default stops before it, so spelling
     # every column out makes the number/label layout renderer-independent.
-    # There is no marks stop — [n] trails the text (see _marks_run).
-    stops = []
+    # The RIGHT stop at 15.5 cm is where [n] lands (see _marks_run); it is on
+    # every paragraph, marked or not, so the column is identical down the page.
+    stops = [("right", MARKS_TAB_POS)]
     if hanging and left:
         stops.append(("left", left))
     for pos in left_tabs:                 # intermediate columns, e.g. the (a) column
@@ -1034,8 +1043,11 @@ def _para(left=0, hanging=0, align=None, space_after=0,
     sp.set(w("after"), str(space_after))
     sp.set(w("line"), LINE_15)
     sp.set(w("lineRule"), "auto")
+    # right indent is unconditional: it reserves the gutter that keeps the wrap
+    # width equal to the marks tab stop.
+    ind = etree.SubElement(pPr, w("ind"))
+    ind.set(w("right"), str(MARKS_RIGHT_IND))
     if left or hanging:
-        ind = etree.SubElement(pPr, w("ind"))
         ind.set(w("left"), str(left))
         if hanging:
             ind.set(w("hanging"), str(hanging))
@@ -1236,6 +1248,191 @@ def collect_latex(questions: list) -> list:
 # Assembly — clone base docx, inject before <w:sectPr>
 # --------------------------------------------------------------------------
 
+# CT_PPr is an ordered sequence too (same trap as CT_RPr): a <w:spacing>
+# appended in the wrong place makes Word declare the file unreadable.
+_PPR_ORDER = ["pStyle", "keepNext", "keepLines", "pageBreakBefore", "framePr",
+              "widowControl", "numPr", "suppressLineNumbers", "pBdr", "shd",
+              "tabs", "suppressAutoHyphens", "kinsoku", "wordWrap",
+              "overflowPunct", "topLinePunct", "autoSpaceDE", "autoSpaceDN",
+              "bidi", "adjustRightInd", "snapToGrid", "spacing", "ind",
+              "contextualSpacing", "mirrorIndents", "suppressOverlap", "jc",
+              "textDirection", "textAlignment", "textboxTightWrap", "outlineLvl",
+              "divId", "cnfStyle", "rPr", "sectPr", "pPrChange"]
+
+
+def _order_ppr(pPr):
+    kids = list(pPr)
+    kids.sort(key=lambda e: _PPR_ORDER.index(etree.QName(e).localname)
+              if etree.QName(e).localname in _PPR_ORDER else len(_PPR_ORDER))
+    for k in kids:
+        pPr.append(k)
+
+
+# "[3]" / "[ 12 ]" — a marks label, the only thing that belongs on the far stop.
+_MARK_RE = re.compile(r"^\[\s*\d+\s*\]$")
+# the same label sitting at the END of a run of ordinary text
+_TRAIL_MARK_RE = re.compile(r"[ \t\u00a0]*(\[\s*\d+\s*\])$")
+
+
+def _ensure_marks_stop(pPr) -> bool:
+    """Give a paragraph the 15.5 cm right stop AND the gutter that protects it.
+
+    Returns True if anything changed. The gutter is the whole point: a stop at
+    15.5 cm with text free to wrap at 16 cm leaves the tab nowhere to go, and
+    Word drops [n] onto the next line by itself.
+    """
+    changed = False
+    ind = pPr.find(w("ind"))
+    try:
+        cur_right = int(ind.get(w("right")) or 0) if ind is not None else 0
+    except ValueError:
+        cur_right = 0
+    if cur_right < MARKS_RIGHT_IND:
+        if ind is None:
+            ind = etree.SubElement(pPr, w("ind"))
+        ind.set(w("right"), str(MARKS_RIGHT_IND))
+        cur_right = MARKS_RIGHT_IND
+        changed = True
+    want = min(MARKS_TAB_POS, TEXT_WIDTH - cur_right)
+    tabs = pPr.find(w("tabs"))
+    if tabs is None:
+        tabs = etree.SubElement(pPr, w("tabs"))
+        changed = True
+    far = [t for t in tabs.findall(w("tab"))
+           if (t.get(w("pos")) or "0").isdigit() and int(t.get(w("pos"))) >= FAR_TAB_MIN]
+    if not far:
+        t = etree.SubElement(tabs, w("tab"))
+        far = [t]
+        changed = True
+    for t in far:
+        if t.get(w("pos")) != str(want) or t.get(w("val")) != "right":
+            t.set(w("val"), "right")
+            t.set(w("pos"), str(want))
+            changed = True
+    for extra in far[1:]:
+        tabs.remove(extra)
+    # tabs must sort ascending, and pPr children must sit in schema order
+    kids = sorted(tabs.findall(w("tab")), key=lambda t: int(t.get(w("pos")) or 0))
+    for k in kids:
+        tabs.append(k)
+    _order_ppr(pPr)
+    return changed
+
+
+def _normalize_house_style(root) -> dict:
+    """Impose font size, line spacing and the marks tab stop on the WHOLE body.
+
+    Everything above the Practice heading is byte-cloned from Adrian's own
+    formula sheet or worked-examples sheet, and those carry their author's
+    formatting: the S4 AM fragment renders its heading and base-level equation
+    runs at 6.5 pt, some paragraphs are single-spaced, and his marks stop sits
+    at 16 cm — i.e. at the wrap width, which is what pushed [n] onto the next
+    line. Generating a house-style practice block and leaving the base alone
+    produced a two-formats worksheet, so the normaliser now covers both.
+
+    Superscripts stay smaller: Word derives OMML script sizes from the base run
+    size automatically (the fragment proves it — base `a` and exponent `n` are
+    both stored at 6.5 pt and render at different sizes), so pinning every run
+    to 9.5 pt scales the whole equation rather than flattening it.
+    """
+    st = {"sizes": 0, "spacing": 0, "tabs": 0, "math": 0}
+
+    for m in root.iter("{%s}oMath" % M_NS):          # incl. ctrlPr glyph sizing
+        style_omml(m, size=SZ_BODY)
+        st["math"] += 1
+
+    for tag in ("sz", "szCs"):
+        for e in root.iter(w(tag)):
+            if e.get(w("val")) != str(SZ_BODY):
+                e.set(w("val"), str(SZ_BODY))
+                st["sizes"] += 1
+
+    # runs with no explicit size inherit the base's docDefaults (11 pt in some
+    # fragments) — pin them rather than rewriting styles.xml
+    for r in root.iter(w("r")):
+        rPr = r.find(w("rPr"))
+        if rPr is None:
+            rPr = etree.Element(w("rPr"))
+            r.insert(0, rPr)
+        if rPr.find(w("sz")) is None:
+            _sub(rPr, "sz", val=SZ_BODY)
+            _sub(rPr, "szCs", val=SZ_BODY)
+            _order_rpr(rPr)
+            st["sizes"] += 1
+
+    for para in root.iter(w("p")):
+        pPr = para.find(w("pPr"))
+        if pPr is None:
+            pPr = etree.Element(w("pPr"))
+            para.insert(0, pPr)
+        sp = pPr.find(w("spacing"))
+        if sp is None:
+            sp = etree.SubElement(pPr, w("spacing"))
+        if sp.get(w("line")) != LINE_15 or sp.get(w("lineRule")) != "auto":
+            sp.set(w("line"), LINE_15)
+            sp.set(w("lineRule"), "auto")
+            st["spacing"] += 1
+        _order_ppr(pPr)
+
+    # Every paragraph that ENDS in a marks label reached by a tab gets the stop,
+    # whether or not the base ever defined one: Adrian's sheets sometimes tab to
+    # the document default grid, which put a [4] at 1.6 cm instead of 15.5 cm.
+    for para in root.iter(w("p")):
+        runs = para.findall(w("r"))
+        if not runs:
+            continue
+        last = runs[-1]
+        tail_t = [t for t in last.iter(w("t"))]
+        tail = "".join(t.text or "" for t in tail_t)
+        # ANY tab run in the paragraph, including the last one: Adrian's sheets
+        # put <w:tab/> and the [n] text inside a SINGLE run, so checking only
+        # runs[:-1] read those as untabbed and added a second tab, which wrapped
+        # 54 marks onto their own line.
+        tabbed = any(r.find(w("tab")) is not None for r in runs)
+        m = _TRAIL_MARK_RE.search(tail)
+        if not (tabbed and _MARK_RE.match(tail.strip())) and not m:
+            continue
+        if m and not tabbed:
+            # Adrian typed "…show that k = -2. [4]" — a plain space, so the mark
+            # wraps with the sentence and lands wherever the line breaks. Split
+            # it onto the marks stop like every other [n] on the sheet.
+            t = tail_t[-1]
+            t.text = (t.text or "")[: len(t.text or "") - len(m.group(0))]
+            if not t.text:
+                t.text = ""
+            idx = list(para).index(last)
+            tabr = etree.Element(w("r"))
+            rpr = last.find(w("rPr"))
+            if rpr is not None:
+                tabr.append(copy.deepcopy(rpr))
+            etree.SubElement(tabr, w("tab"))
+            markr = etree.Element(w("r"))
+            if rpr is not None:
+                markr.append(copy.deepcopy(rpr))
+            mt = etree.SubElement(markr, w("t"))
+            mt.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+            mt.text = m.group(1)
+            para.insert(idx + 1, tabr)
+            para.insert(idx + 2, markr)
+            st["inline_marks"] = st.get("inline_marks", 0) + 1
+        pPr = para.find(w("pPr"))
+        if pPr is None:
+            pPr = etree.Element(w("pPr"))
+            para.insert(0, pPr)
+        if _ensure_marks_stop(pPr):
+            st["tabs"] += 1
+
+    # …and any other far stop the base carries is pulled onto the same column.
+    for tabs in root.iter(w("tabs")):
+        if any((t.get(w("pos")) or "0").isdigit() and int(t.get(w("pos"))) >= FAR_TAB_MIN
+               for t in tabs.findall(w("tab"))):
+            pPr = tabs.getparent()
+            if pPr is not None and etree.QName(pPr).localname == "pPr":
+                if _ensure_marks_stop(pPr):
+                    st["tabs"] += 1
+    return st
+
+
 def _normalize_page(root) -> dict:
     """Impose the worksheet page setup on EVERY sectPr in the document.
 
@@ -1326,6 +1523,8 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     for offset, el in enumerate(els):
         body.insert(insert_at + offset, el)
 
+    house = _normalize_house_style(root)
+
     xml = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
     # same OOXML schema fix create-worksheet applies: <m:count> must precede <m:mcJc>
     xml = re.sub(rb'(<m:mcJc m:val="[^"]*"/>)(<m:count m:val="[^"]*"/>)', rb"\2\1", xml)
@@ -1337,7 +1536,7 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
         for n in names:
             zout.writestr(n, items[n])
 
-    return {"paragraphs": len(els), "page": page,
+    return {"paragraphs": len(els), "page": page, "house": house,
             "equations": sum(1 for v in omml.cache.values() if v is not None),
             "fallbacks": list(omml.fallbacks)}
 
