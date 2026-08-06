@@ -62,7 +62,7 @@ Default question count is **8**. Always print the run report (below) back to Adr
 | `--fragment "<name>"` | force a specific notes fragment, skipping resolution |
 | `--base <path.docx>` | force any base document outright |
 | `--level AM\|S3_AM\|EM\|S3_EM\|S1\|S2\|JC` | override the level mapping |
-| `--out <path>` / `--suffix " (TEST)"` | output path / filename suffix |
+| `--out <path>` / `--suffix " (TEST)"` | override the output path (default is the Revision folder, below) / filename suffix |
 | `--seed N` | reproducible question pick |
 | `--no-ai` | exclude `AI Generated` rows (real past papers only) |
 | `--show-source` | print school/year/paper under each question |
@@ -188,17 +188,38 @@ Appended after the base content, in the house style inherited from `create-works
 (Times New Roman 9.5 pt, 1.5 line spacing, marks right-aligned, `[Ans: …]` right-aligned
 in orange `#843C0C`, navy `#1F4E79` heading):
 
-- `Practice` heading, optionally preceded by a page break (`<w:br w:type="page"/>` in its
-  own paragraph — default **off** for `notes` so the formulas stay visible beside the
-  questions, **on** for `worked` so the practice starts clean).
-- Questions auto-numbered `1.`, `2.`, … with hanging indents; sub-parts `(a)`, `(b)`, …
-  built from the row's `parts` json.
-- Marks as `[3]`, right-aligned at a tab stop computed from the **base document's own
-  `sectPr`** (page width − margins − 0.5 cm), so it lines up with whatever page geometry
-  that particular base uses.
+- `Practice` heading (TNR 12 pt bold navy), optionally preceded by a page break
+  (`<w:br w:type="page"/>` in its own paragraph — default **off** for `notes` so the
+  formulas stay visible beside the questions, **on** for `worked` so the practice starts
+  clean).
+- **Every run is Times New Roman 9.5 pt** — question text, part labels, marks, answers —
+  written as explicit `w:rFonts` (ascii/hAnsi/eastAsia/cs) + `w:sz`/`w:szCs` = 19 on each
+  run, never inherited. Only the heading differs (12 pt navy).
+- **The question number never sits alone on a line.** When a question is all sub-parts
+  (the common shape in this bank) the first part rides up onto the number's line:
+  `1.<tab>(a)<tab>Write down, and simplify, …`, with the hanging indent set to the text
+  column so wraps and the following `(b)`, `(c)` line up under it. Columns: number at the
+  margin, labels at 1 cm, text at 2 cm. When the question *has* stem text, the number
+  goes with the stem and `(a)` starts its own line.
+- Marks as `[3]`, right-aligned at a tab stop computed from the **final** page geometry
+  (page width − margins − 0.5 cm), i.e. after the margin override below.
 - Working space: `marks + 2` blank lines (min 3, max 12; tune with `--space`).
-- `[Ans: …]` right-aligned orange, from the row's `answer`, or assembled from sub-part
-  answers as `(a) …; (b) …`.
+- `[Ans: …]` right-aligned and **entirely orange, converted equations included** — see the
+  OMML note under assembly.
+
+### Page setup is imposed on the output
+
+The notes fragments inherit formula-sheet layouts (odd margins, US Letter, the occasional
+landscape section), so the output rewrites **every** `sectPr` — the body-level one and any
+mid-document section break in `w:pPr/w:sectPr`:
+
+| | |
+|---|---|
+| Margins | top 2 cm (1134), bottom 1 cm (567), left 2.5 cm (1417), right 2.5 cm (1417) |
+| Header/footer bands | clamped inside the new margins |
+| Page size | forced to A4 portrait (11906 × 16838) whenever it isn't already — landscape or Letter. A size within 0.05 cm of A4 is left alone. |
+
+The run report says how many sections were normalised and names any page size it changed.
 
 ### Assembly rules (why it doesn't corrupt Adrian's documents)
 
@@ -221,14 +242,26 @@ in orange `#843C0C`, navy `#1F4E79` heading):
   per-expression retry through `worksheet_lib._latex_to_omml`. Anything still unconvertible
   degrades to plain text for that one expression and is listed in the report as
   `FALLBACK (plain text): …`. The worksheet is always produced.
+- **OMML runs are restyled after conversion** (`style_omml`). Pandoc emits `m:r` with no
+  `w:sz` and no `w:rFonts`, so an equation inherits the *base document's* default size and
+  body font — it comes out visibly larger than the 9.5 pt text beside it, and inside an
+  orange `[Ans: …]` it stays black. Each math run gets `w:sz`/`w:szCs` = 19, `Cambria Math`
+  (what Word itself writes on math runs), and the answer colour where applicable. `w:rPr`
+  is a *sequence*, not a bag, so the injected children are re-sorted into CT_RPr order —
+  out-of-order children make Word declare the file unreadable.
 
 ## Output
 
-Default: `~/Desktop/REV <BANK-or-FOLDER> <Topic> (Notes|Worked Examples).docx`
+Default: `Dropbox/Apps/AdrianMathNotes/Revision/<folder>/REV <BANK-or-FOLDER> <Topic> (Notes|Worked Examples).docx`
 
-**Never write into the Dropbox folders.** Adrian reviews the file on his Desktop and moves
-the approved ones into `Dropbox/Apps/AdrianMathNotes/Revision/` himself. The skill reads
-Dropbox; it does not write there.
+| Kind | Folder |
+|---|---|
+| `worked` | the folder the base sheet came from — the worksheet lands beside its source |
+| `notes` | `S4_AM`/`S3_AM` → `AM`, `S4_EM`/`S3_EM` → `EM` (a notes bank has no folder of its own) |
+| `--base` with no bank/folder | `~/Desktop` |
+
+`--out <path>` overrides it. The finished file goes straight into the Revision library;
+say where it landed so Adrian can open it from Dropbox on any device.
 
 ## Run report — print all of it, every time
 
@@ -242,13 +275,14 @@ Practice  : 6 question(s)  [levels AM:148]
     1. Presbyterian High School 2024 Prelim P2 Q1     5 marks, Standard
     2. Anderson 2024 Prelim P1 Q3                     6 marks, Standard, verified
     …
+Page      : margins 2/1/2.5/2.5 cm forced on 1 section(s)
 Equations : 38 converted, 0 fallback(s)
-Output    : /Users/adrianfong/Desktop/REV S4_AM Binomial Theorem (Notes).docx
+Output    : …/Dropbox/Apps/AdrianMathNotes/Revision/AM/REV S4_AM Binomial Theorem (Notes).docx
 ```
 
 Non-negotiable contents: **which base/fragment was used and how it was resolved**, the
-question count with **per-question school/year provenance**, and **any equation
-fallbacks**.
+question count with **per-question school/year provenance**, **any equation fallbacks**,
+and **where the file was written**.
 
 ## Verification
 
@@ -275,4 +309,4 @@ print(rep.text())
 `make_worksheet(...)` returns a `RunReport`; `--dry-run` resolves and selects without
 writing. Other useful entry points: `resolve_fragment(bank, topic)`, `resolve_worked(folder,
 topic)`, `fetch_pool(env, level, topic)`, `list_topics(env, level)`, `select_questions(...)`,
-`clone_with_practice(...)`.
+`clone_with_practice(...)`, `style_omml(elem, size, color)`, `out_folder(kind, bank, folder)`.

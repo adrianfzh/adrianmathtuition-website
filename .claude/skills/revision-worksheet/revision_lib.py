@@ -57,10 +57,15 @@ from lxml import etree
 DROPBOX = Path.home() / "Library/CloudStorage/Dropbox/Apps/AdrianMathNotes"
 NOTES_BANK = DROPBOX / "notes_bank"
 REVISION_ROOT = DROPBOX / "Revision"
+# Fallback only (explicit --base with no bank/folder to place it beside).
 DEFAULT_OUT_DIR = Path.home() / "Desktop"
 
 BANKS = ["S3_AM", "S4_AM", "S3_EM", "S4_EM"]
 WORKED_FOLDERS = ["AM", "EM", "S1", "S2", "JC", "AM G2", "EM G2"]
+
+# Finished worksheets land in Revision/<folder>: a notes bank has no folder of
+# its own, so S3/S4 of a subject share one.
+BANK_OUT_FOLDER = {"S4_AM": "AM", "S3_AM": "AM", "S4_EM": "EM", "S3_EM": "EM"}
 
 # bank -> (primary questions.level, top-up level or None)
 BANK_LEVELS = {
@@ -85,6 +90,7 @@ FOLDER_LEVELS = {
 # --------------------------------------------------------------------------
 
 FONT = "Times New Roman"
+MATH_FONT = "Cambria Math"   # glyph font inside OMML; Word's own default
 SZ_BODY = 19        # half-points -> 9.5 pt
 SZ_HEAD = 24        # 12 pt
 COLOR_NAVY = "1F4E79"
@@ -94,6 +100,12 @@ IND_Q_LEFT, IND_Q_HANG = 567, 567       # 1 cm
 IND_SQ_LEFT, IND_SQ_HANG = 1134, 567    # 2 cm / 1 cm
 MARKS_INSET = 283                       # 0.5 cm — marks sit just inside the margin
 FALLBACK_TAB_TWIPS = 8789               # 15.5 cm, used if sectPr can't be read
+
+# Page setup forced onto the OUTPUT regardless of what the base carries: the
+# notes fragments inherit formula-sheet layouts (wide/narrow margins, sometimes
+# landscape) and a revision worksheet has to print consistently.
+PG_MAR = {"top": 1134, "bottom": 567, "left": 1417, "right": 1417}   # 2 / 1 / 2.5 / 2.5 cm
+PG_A4 = (11906, 16838)                  # A4 portrait, twips
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
@@ -830,6 +842,58 @@ def _rpr(run, bold=False, italic=False, color=None, size=SZ_BODY):
     return rPr
 
 
+# CT_RPr is a sequence, not a bag: children out of order make Word declare the
+# file unreadable. Used to slot size/colour into run properties pandoc wrote.
+_RPR_ORDER = ["rStyle", "rFonts", "b", "bCs", "i", "iCs", "caps", "smallCaps",
+              "strike", "dstrike", "outline", "shadow", "emboss", "imprint",
+              "noProof", "snapToGrid", "vanish", "webHidden", "color", "spacing",
+              "w", "kern", "position", "sz", "szCs", "highlight", "u", "effect",
+              "bdr", "shd", "fitText", "vertAlign", "rtl", "cs", "em", "lang",
+              "eastAsianLayout", "specVanish", "oMath"]
+
+
+def _order_rpr(rPr):
+    kids = list(rPr)
+    kids.sort(key=lambda e: _RPR_ORDER.index(etree.QName(e).localname)
+              if etree.QName(e).localname in _RPR_ORDER else len(_RPR_ORDER))
+    for k in kids:
+        rPr.append(k)          # stable: re-appending in sorted order
+
+
+def style_omml(elem, size=SZ_BODY, color=None):
+    """Force size (and optionally colour) onto every run inside an OMML tree.
+
+    Pandoc emits <m:r> whose <w:rPr> names Cambria Math but carries no w:sz, so
+    the equation inherits the BASE document's default size and comes out bigger
+    than the 9.5 pt text beside it. Colour is the same story: an orange [Ans: …]
+    label left its converted math black. Cambria Math stays (Word's normal math
+    font); only sz/szCs/color are imposed.
+    """
+    if elem is None:
+        return elem
+    for r in elem.iter("{%s}r" % M_NS):
+        rPr = r.find(w("rPr"))
+        if rPr is None:
+            rPr = etree.Element(w("rPr"))
+            mrPr = r.find("{%s}rPr" % M_NS)      # m:rPr must stay first
+            r.insert(list(r).index(mrPr) + 1 if mrPr is not None else 0, rPr)
+        for tag in ("sz", "szCs") + (("color",) if color else ()):
+            for old in rPr.findall(w(tag)):
+                rPr.remove(old)
+        if rPr.find(w("rFonts")) is None:
+            # what Word itself writes on a math run; pandoc leaves it off, which
+            # makes the glyphs inherit the base document's body font
+            rf = etree.SubElement(rPr, w("rFonts"))
+            rf.set(w("ascii"), MATH_FONT)
+            rf.set(w("hAnsi"), MATH_FONT)
+        if color:
+            _sub(rPr, "color", val=color)
+        _sub(rPr, "sz", val=size)
+        _sub(rPr, "szCs", val=size)
+        _order_rpr(rPr)
+    return elem
+
+
 def _run(p, text, bold=False, italic=False, color=None, size=SZ_BODY):
     r = etree.SubElement(p, w("r"))
     _rpr(r, bold, italic, color, size)
@@ -868,7 +932,7 @@ CLEAR_NUMBERING = False
 
 
 def _para(left=0, hanging=0, align=None, tab_at=None, space_after=0,
-          keep_next=False, page_break_before=False):
+          keep_next=False, page_break_before=False, left_tabs=()):
     """Blank paragraph with fully inline properties.
 
     CT_PPr child order matters: keepNext, pageBreakBefore, numPr, tabs,
@@ -892,6 +956,9 @@ def _para(left=0, hanging=0, align=None, tab_at=None, space_after=0,
     stops = []
     if hanging and left:
         stops.append(("left", left))
+    for pos in left_tabs:                 # intermediate columns, e.g. the (a) column
+        if pos and pos != left:
+            stops.append(("left", pos))
     if tab_at:
         stops.append(("right", tab_at))
     if stops:
@@ -919,20 +986,20 @@ def _para(left=0, hanging=0, align=None, tab_at=None, space_after=0,
     return p
 
 
-def _emit_parts(p, parts, omml: OmmlCache):
+def _emit_parts(p, parts, omml: OmmlCache, color=None):
     for part in parts:
         kind = part[0]
         if kind == "text":
             attrs = part[2] if len(part) > 2 else {}
             _run(p, part[1], bold=attrs.get("bold", False), italic=attrs.get("italic", False),
-                 color=attrs.get("color"))
+                 color=attrs.get("color", color))
         else:
             display = (kind == "math_display")
-            elem = omml.get(part[1], display=display)
+            elem = style_omml(omml.get(part[1], display=display), color=color)
             if elem is not None:
                 p.append(elem)
             else:
-                _run(p, part[1], italic=True)   # plain-text fallback, never abort
+                _run(p, part[1], italic=True, color=color)  # plain text, never abort
 
 
 def _text_blocks(text: str) -> list:
@@ -979,66 +1046,89 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
         stem_blocks = _text_blocks(row.get("question_text") or "")
         marks_here = None if parts else row.get("total_marks")
 
-        # -- stem
-        first = _para(left=IND_Q_LEFT, hanging=IND_Q_HANG,
-                            tab_at=tab_at if marks_here else None, keep_next=True)
-        _run(first, "%d." % i)
-        _tab_run(first)
-        if stem_blocks:
-            _emit_parts(first, split_math(stem_blocks[0]), omml)
-        if show_source:
-            src = provenance(row)
-            if src:
-                _run(first, "  [%s]" % src, italic=True, color="808080")
-        if marks_here:
+        # The number never sits alone on a line. When a question is all
+        # sub-parts (no stem text — the common shape in this bank), "(a)" rides
+        # up onto the number's line: "1.<tab>(a)<tab>text", with the hanging
+        # indent set to the text column so wraps and (b), (c) … line up under it.
+        merged = bool(parts) and not stem_blocks
+        if merged:
+            head, parts = parts[0], parts[1:]
+            blocks = _text_blocks(head.get("text") or "")
+            pm = head.get("marks")
+            first = _para(left=IND_SQ_LEFT, hanging=IND_SQ_LEFT,
+                          left_tabs=(IND_Q_LEFT,),
+                          tab_at=tab_at if pm else None, keep_next=True)
+            _run(first, "%d." % i)
             _tab_run(first)
-            _run(first, "[%s]" % marks_here)
-        els.append(first)
-
-        for extra in stem_blocks[1:]:
-            p = _para(left=IND_Q_LEFT, keep_next=True)
-            _emit_parts(p, split_math(extra), omml)
-            els.append(p)
-
-        # -- sub-parts
-        if parts:
-            for part in parts:
-                blocks = _text_blocks(part.get("text") or "")
-                pm = part.get("marks")
-                sp = _para(left=IND_SQ_LEFT, hanging=IND_SQ_HANG,
-                                 tab_at=tab_at if pm else None, keep_next=True)
-                _run(sp, _label(part.get("label")))
-                _tab_run(sp)
-                if blocks:
-                    _emit_parts(sp, split_math(blocks[0]), omml)
-                if pm:
-                    _tab_run(sp)
-                    _run(sp, "[%s]" % pm)
-                els.append(sp)
-                for extra in blocks[1:]:
-                    p = _para(left=IND_SQ_LEFT, keep_next=True)
-                    _emit_parts(p, split_math(extra), omml)
-                    els.append(p)
-                for _ in range(_working_lines(pm, extra=space)):
-                    els.append(_para(left=IND_SQ_LEFT))
+            _run(first, _label(head.get("label")))
+            _tab_run(first)
+            if blocks:
+                _emit_parts(first, split_math(blocks[0]), omml)
+            if show_source:
+                src = provenance(row)
+                if src:
+                    _run(first, "  [%s]" % src, italic=True, color="808080")
+            if pm:
+                _tab_run(first)
+                _run(first, "[%s]" % pm)
+            els.append(first)
+            for extra in blocks[1:]:
+                p = _para(left=IND_SQ_LEFT, keep_next=True)
+                _emit_parts(p, split_math(extra), omml)
+                els.append(p)
+            for _ in range(_working_lines(pm, extra=space)):
+                els.append(_para(left=IND_SQ_LEFT))
         else:
-            for _ in range(_working_lines(row.get("total_marks"), extra=space + 1)):
-                els.append(_para(left=IND_Q_LEFT))
+            # -- stem
+            first = _para(left=IND_Q_LEFT, hanging=IND_Q_HANG,
+                          tab_at=tab_at if marks_here else None, keep_next=True)
+            _run(first, "%d." % i)
+            _tab_run(first)
+            if stem_blocks:
+                _emit_parts(first, split_math(stem_blocks[0]), omml)
+            if show_source:
+                src = provenance(row)
+                if src:
+                    _run(first, "  [%s]" % src, italic=True, color="808080")
+            if marks_here:
+                _tab_run(first)
+                _run(first, "[%s]" % marks_here)
+            els.append(first)
 
-        # -- answer
-        ans_parts = _answer_parts(row)
+            for extra in stem_blocks[1:]:
+                p = _para(left=IND_Q_LEFT, keep_next=True)
+                _emit_parts(p, split_math(extra), omml)
+                els.append(p)
+
+            if not parts:
+                for _ in range(_working_lines(row.get("total_marks"), extra=space + 1)):
+                    els.append(_para(left=IND_Q_LEFT))
+
+        # -- remaining sub-parts, each starting at the (a) column
+        for part in parts:
+            blocks = _text_blocks(part.get("text") or "")
+            pm = part.get("marks")
+            sp = _para(left=IND_SQ_LEFT, hanging=IND_SQ_HANG,
+                       tab_at=tab_at if pm else None, keep_next=True)
+            _run(sp, _label(part.get("label")))
+            _tab_run(sp)
+            if blocks:
+                _emit_parts(sp, split_math(blocks[0]), omml)
+            if pm:
+                _tab_run(sp)
+                _run(sp, "[%s]" % pm)
+            els.append(sp)
+            for extra in blocks[1:]:
+                p = _para(left=IND_SQ_LEFT, keep_next=True)
+                _emit_parts(p, split_math(extra), omml)
+                els.append(p)
+            for _ in range(_working_lines(pm, extra=space)):
+                els.append(_para(left=IND_SQ_LEFT))
+
+        # -- answer: right-aligned and orange all the way through, math included
         a = _para(align="right", space_after=180)
         _run(a, "[Ans: ", color=COLOR_ORANGE)
-        for kind, *rest in ans_parts:
-            if kind == "text":
-                _run(a, rest[0], color=COLOR_ORANGE,
-                     bold=(rest[1].get("bold", False) if len(rest) > 1 else False))
-            else:
-                elem = omml.get(rest[0], display=False)
-                if elem is not None:
-                    a.append(elem)
-                else:
-                    _run(a, rest[0], color=COLOR_ORANGE, italic=True)
+        _emit_parts(a, _answer_parts(row), omml, color=COLOR_ORANGE)
         _run(a, "]", color=COLOR_ORANGE)
         els.append(a)
 
@@ -1046,9 +1136,14 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
 
 
 def _answer_parts(row) -> list:
+    # display math would break out of the right-aligned answer line, so any
+    # $$…$$ in an answer is rendered inline
+    def inline(bits):
+        return [(("math" if k == "math_display" else k), *rest) for k, *rest in bits]
+
     top = (row.get("answer") or "").strip()
     if top:
-        return split_math(top)
+        return inline(split_math(top))
     out = []
     for part in _parts(row):
         a = (part.get("answer") or "").strip()
@@ -1059,7 +1154,7 @@ def _answer_parts(row) -> list:
         lab = _label(part.get("label"))
         if lab:
             out.append(("text", lab + " "))
-        out += split_math(a)
+        out += inline(split_math(a))
     return out or [("text", "see solution")]
 
 
@@ -1070,13 +1165,15 @@ def collect_latex(questions: list) -> list:
         blobs = [row.get("question_text") or ""]
         for p in _parts(row):
             blobs.append(p.get("text") or "")
-        blobs.append(row.get("answer") or "")
-        for p in _parts(row):
-            blobs.append(p.get("answer") or "")
         for b in blobs:
             for kind, *rest in split_math(b):
                 if kind in ("math", "math_display"):
                     need.append((rest[0], kind == "math_display"))
+        # answers go through _answer_parts, which forces display math inline —
+        # ask for the same (latex, display) keys the renderer will look up
+        for kind, *rest in _answer_parts(row):
+            if kind == "math":
+                need.append((rest[0], False))
     return list(dict.fromkeys(need))
 
 
@@ -1098,6 +1195,54 @@ def _tab_from_sectpr(body) -> int:
     except Exception:
         pass
     return FALLBACK_TAB_TWIPS
+
+
+def _normalize_page(root) -> dict:
+    """Impose the worksheet page setup on EVERY sectPr in the document.
+
+    The base is whatever Adrian's fragment/sheet happened to use — formula
+    sheets carry odd margins, some are US Letter, and a landscape section turns
+    up now and then. Margins are forced unconditionally; page size is rewritten
+    to A4 portrait whenever it isn't already that (landscape, Letter, …).
+    Mid-document section breaks live in w:pPr/w:sectPr, so iterate, don't just
+    take the body-level one.
+    """
+    changed = {"sections": 0, "resized": []}
+    for sect in root.iter(w("sectPr")):
+        changed["sections"] += 1
+        mar = sect.find(w("pgMar"))
+        if mar is None:
+            mar = etree.SubElement(sect, w("pgMar"))
+        for k, v in PG_MAR.items():
+            mar.set(w(k), str(v))
+        # keep header/footer bands inside the new margins
+        for band, limit in (("header", PG_MAR["top"]), ("footer", PG_MAR["bottom"])):
+            try:
+                cur = int(mar.get(w(band)) or 0)
+            except ValueError:
+                cur = 0
+            if cur >= limit or not mar.get(w(band)):
+                mar.set(w(band), str(max(0, limit // 2)))
+        pg = sect.find(w("pgSz"))
+        if pg is None:
+            pg = etree.Element(w("pgSz"))
+            sect.insert(0, pg)
+        try:
+            pw, ph = int(pg.get(w("w")) or 0), int(pg.get(w("h")) or 0)
+        except ValueError:
+            pw = ph = 0
+        # 30 twips (0.05 cm) of slack: several fragments carry 11900x16840,
+        # which is A4 rounded to the nearest 10 and not worth rewriting.
+        near_a4 = abs(pw - PG_A4[0]) <= 30 and abs(ph - PG_A4[1]) <= 30
+        if pg.get(w("orient")) == "landscape" or not near_a4:
+            was = ("landscape %dx%d" % (pw, ph) if pg.get(w("orient")) == "landscape" or pw > ph
+                   else "%dx%d" % (pw, ph))
+            pg.set(w("w"), str(PG_A4[0]))
+            pg.set(w("h"), str(PG_A4[1]))
+            if pg.get(w("orient")) is not None:
+                del pg.attrib[w("orient")]
+            changed["resized"].append(was)
+    return changed
 
 
 def _default_style_numbers(styles_xml: bytes) -> bool:
@@ -1132,6 +1277,8 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     if body is None:
         raise RuntimeError("base docx has no <w:body>: %s" % base_path)
 
+    # page setup first — the marks tab stop is measured off the FINAL margins
+    page = _normalize_page(root)
     tab_at = _tab_from_sectpr(body)
     omml.prime(collect_latex(questions))
     els = build_practice(questions, omml, tab_at, heading=heading,
@@ -1153,7 +1300,7 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
         for n in names:
             zout.writestr(n, items[n])
 
-    return {"paragraphs": len(els), "tab_twips": tab_at,
+    return {"paragraphs": len(els), "tab_twips": tab_at, "page": page,
             "equations": sum(1 for v in omml.cache.values() if v is not None),
             "fallbacks": list(omml.fallbacks)}
 
@@ -1191,6 +1338,11 @@ class RunReport:
                         q.get("difficulty") or "?",
                         ", verified" if q.get("verified") else ""))
         if self.build:
+            pg = self.build.get("page") or {}
+            L.append("Page      : margins 2/1/2.5/2.5 cm forced on %d section(s)%s"
+                     % (pg.get("sections", 0),
+                        "; page size %s -> A4 portrait" % ", ".join(pg["resized"])
+                        if pg.get("resized") else ""))
             L.append("Equations : %d converted, %d fallback(s)"
                      % (self.build.get("equations", 0), len(self.build.get("fallbacks", []))))
             for f in self.build.get("fallbacks", []):
@@ -1200,10 +1352,18 @@ class RunReport:
         return "\n".join(L)
 
 
-def default_out_path(bank_label: str, topic: str, kind: str) -> Path:
+def out_folder(kind: str, bank: str | None = None, folder: str | None = None) -> Path:
+    """Revision/<folder>: worked sheets go back beside their source, notes banks
+    map S3/S4 onto the subject folder (S4_AM|S3_AM -> AM, S4_EM|S3_EM -> EM)."""
+    name = folder if kind == "worked" else BANK_OUT_FOLDER.get(bank or "")
+    return REVISION_ROOT / name if name else DEFAULT_OUT_DIR
+
+
+def default_out_path(bank_label: str, topic: str, kind: str,
+                     bank: str | None = None, folder: str | None = None) -> Path:
     tag = "Notes" if kind == "notes" else "Worked Examples"
     safe = re.sub(r"[/:]", "-", topic)
-    return DEFAULT_OUT_DIR / f"REV {bank_label} {safe} ({tag}).docx"
+    return out_folder(kind, bank, folder) / f"REV {bank_label} {safe} ({tag}).docx"
 
 
 def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str | None = None,
@@ -1282,7 +1442,8 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     if dry_run:
         return report
 
-    out_path = Path(out).expanduser() if out else default_out_path(label, topic, kind)
+    out_path = (Path(out).expanduser() if out
+                else default_out_path(label, topic, kind, bank=bank, folder=folder))
     if suffix:
         out_path = out_path.with_name(out_path.stem + suffix + out_path.suffix)
     omml = OmmlCache()
@@ -1304,7 +1465,8 @@ def main(argv=None):
     ap.add_argument("--bank", choices=BANKS, help="notes bank (kind=notes)")
     ap.add_argument("--folder", help="Revision folder (kind=worked): " + ", ".join(WORKED_FOLDERS))
     ap.add_argument("-n", "--questions", type=int, default=8)
-    ap.add_argument("--out")
+    ap.add_argument("--out", help="override the output path (default: "
+                                  "Dropbox/Apps/AdrianMathNotes/Revision/<AM|EM|folder>/)")
     ap.add_argument("--suffix", default="", help="appended to the default filename, e.g. ' (TEST)'")
     ap.add_argument("--practice-topic", help="DB topic if different from the fragment topic")
     ap.add_argument("--fragment", help="force a specific notes fragment by name")
