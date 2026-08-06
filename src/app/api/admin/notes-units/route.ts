@@ -6,7 +6,9 @@
 // was wrong enough to flag deserves a second read after the fix.
 
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { isNotesAuthed } from '@/lib/notes-auth';
+import { NOTES_CACHE_TAG } from '@/lib/notes-data';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function POST(req: Request) {
@@ -34,6 +36,7 @@ export async function POST(req: Request) {
       // sight-unseen — they stay pending for the Learn player's own review.
       .neq('kind', 'check');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true, approved: count ?? 0 });
   }
 
@@ -57,6 +60,7 @@ export async function POST(req: Request) {
       .eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!count) return NextResponse.json({ error: 'unit not found' }, { status: 404 });
+    revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true });
   }
 
@@ -79,6 +83,7 @@ export async function POST(req: Request) {
     else delete payload.review_note;
     const { error } = await supa.from('learning_units').update({ payload }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true });
   }
 
@@ -90,6 +95,7 @@ export async function POST(req: Request) {
     }
     const cleared = await clearPayloadKey(supa, id, 'fixed_note');
     if (cleared) return cleared;
+    revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true });
   }
 

@@ -5,6 +5,7 @@
 // page body hits Supabase once, not twice.
 
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { getSupabase, getSupabaseAdmin } from './supabase';
 import {
   groupIntoSections,
@@ -59,18 +60,42 @@ async function fetchAllRows<T>(
 // Adrian, 2026-08-06: Modulus Functions is no longer examined.
 const RETIRED_TOPICS = new Set(['Modulus Functions']);
 
+/**
+ * Tag for every /notes read. The review routes call `revalidateTag(NOTES_CACHE_TAG)`
+ * after each write, and /api/notes-revalidate exposes the same for the content
+ * scripts that write to Supabase directly — so the cache is busted the moment
+ * content changes, and the TTL below is only a safety net.
+ */
+export const NOTES_CACHE_TAG = 'notes';
+
+/**
+ * Persistent data cache around a Supabase read (Adrian, 2026-08-07: refresh was
+ * paying every query cross-region on every request). `cache()` still dedupes
+ * within one request; this survives across requests until a write invalidates
+ * the tag. Cached values are serialized — callers that want a Map or Set build
+ * it OUTSIDE the cached fn, from cached plain rows.
+ */
+function notesCache<T>(keyParts: (string | number)[], fn: () => Promise<T>): Promise<T> {
+  return unstable_cache(fn, ['notes', ...keyParts.map(String)], {
+    tags: [NOTES_CACHE_TAG],
+    revalidate: 300,
+  })();
+}
+
 /** All sub-groups for a level, ordered for display. */
-const loadSubgroups = cache(async (level: string): Promise<SubgroupRow[]> => {
-  const supa = getSupabase();
-  const rows = await fetchAllRows<SubgroupRow>((from, to) =>
-    supa
-      .from('subgroups')
-      .select('id, level, topic, name, description, order_index')
-      .eq('level', level.toUpperCase())
-      .range(from, to),
-  );
-  return sortSubgroups(rows.filter(r => !RETIRED_TOPICS.has(r.topic)));
-});
+const loadSubgroups = cache((level: string): Promise<SubgroupRow[]> =>
+  notesCache(['subgroups', level], async () => {
+    const supa = getSupabase();
+    const rows = await fetchAllRows<SubgroupRow>((from, to) =>
+      supa
+        .from('subgroups')
+        .select('id, level, topic, name, description, order_index')
+        .eq('level', level.toUpperCase())
+        .range(from, to),
+    );
+    return sortSubgroups(rows.filter(r => !RETIRED_TOPICS.has(r.topic)));
+  }),
+);
 
 /**
  * How many renderable snippets each sub-group has. Deliberately selects no
@@ -78,17 +103,19 @@ const loadSubgroups = cache(async (level: string): Promise<SubgroupRow[]> => {
  * pulling every snippet body on every request would be wasteful.
  */
 const loadSnippetCounts = cache(async (level: string): Promise<Map<number, number>> => {
-  const supa = getSupabase();
-  const rows = await fetchAllRows<{ subgroup_id: number | null }>((from, to) =>
-    supa
-      .from('content_snippets')
-      .select('subgroup_id')
-      .eq('level', level.toUpperCase())
-      .eq('content_kind', PUBLISHABLE.content_kind)
-      .in('feature', [...PUBLISHABLE.features])
-      .eq('is_published', true)
-      .range(from, to),
-  );
+  const rows = await notesCache(['snippet-counts', level], async () => {
+    const supa = getSupabase();
+    return fetchAllRows<{ subgroup_id: number | null }>((from, to) =>
+      supa
+        .from('content_snippets')
+        .select('subgroup_id')
+        .eq('level', level.toUpperCase())
+        .eq('content_kind', PUBLISHABLE.content_kind)
+        .in('feature', [...PUBLISHABLE.features])
+        .eq('is_published', true)
+        .range(from, to),
+    );
+  });
   const counts = new Map<number, number>();
   for (const r of rows) {
     if (r.subgroup_id == null) continue; // recall cards carry no sub-group
@@ -107,17 +134,19 @@ const loadSnippetCounts = cache(async (level: string): Promise<Map<number, numbe
  */
 const loadRecallCards = cache(
   async (level: string): Promise<Map<string, RecallCardRow[]>> => {
-    const supa = getSupabase();
-    const rows = await fetchAllRows<RecallCardRow>((from, to) =>
-      supa
-        .from('content_snippets')
-        .select('id, topic, card_title, content, order_index')
-        .eq('level', level.toUpperCase())
-        .eq('content_kind', 'recall_card')
-        .in('feature', [...PUBLISHABLE.features])
-        .eq('is_published', true)
-        .range(from, to),
-    );
+    const rows = await notesCache(['recall-cards', level], async () => {
+      const supa = getSupabase();
+      return fetchAllRows<RecallCardRow>((from, to) =>
+        supa
+          .from('content_snippets')
+          .select('id, topic, card_title, content, order_index')
+          .eq('level', level.toUpperCase())
+          .eq('content_kind', 'recall_card')
+          .in('feature', [...PUBLISHABLE.features])
+          .eq('is_published', true)
+          .range(from, to),
+      );
+    });
 
     const byTopic = new Map<string, RecallCardRow[]>();
     for (const row of rows) {
@@ -132,16 +161,18 @@ const loadRecallCards = cache(
   },
 );
 
-const loadSectionsMeta = cache(async (level: string): Promise<SectionMetaRow[]> => {
-  const supa = getSupabase();
-  return fetchAllRows<SectionMetaRow>((from, to) =>
-    supa
-      .from('sections_meta')
-      .select('level, topic, name, order_index')
-      .eq('level', level.toUpperCase())
-      .range(from, to),
-  );
-});
+const loadSectionsMeta = cache((level: string): Promise<SectionMetaRow[]> =>
+  notesCache(['sections-meta', level], async () => {
+    const supa = getSupabase();
+    return fetchAllRows<SectionMetaRow>((from, to) =>
+      supa
+        .from('sections_meta')
+        .select('level, topic, name, order_index')
+        .eq('level', level.toUpperCase())
+        .range(from, to),
+    );
+  }),
+);
 
 /**
  * Topic cards, unlike the snippet tables, are NOT anon-readable — RLS returns
@@ -153,16 +184,18 @@ const loadSectionsMeta = cache(async (level: string): Promise<SectionMetaRow[]> 
  * ⚠ Phase 3 (student login): this bypass must become a `status='published'`
  * filter, or the RLS policy must be widened — otherwise drafts leak to students.
  */
-const loadTopicCards = cache(async (level: string): Promise<TopicCardRow[]> => {
-  const supa = getSupabaseAdmin();
-  return fetchAllRows<TopicCardRow>((from, to) =>
-    supa
-      .from('topic_cards')
-      .select('level, topic, title, content_md, status')
-      .eq('level', level.toUpperCase())
-      .range(from, to),
-  );
-});
+const loadTopicCards = cache((level: string): Promise<TopicCardRow[]> =>
+  notesCache(['topic-cards', level], async () => {
+    const supa = getSupabaseAdmin();
+    return fetchAllRows<TopicCardRow>((from, to) =>
+      supa
+        .from('topic_cards')
+        .select('level, topic, title, content_md, status')
+        .eq('level', level.toUpperCase())
+        .range(from, to),
+    );
+  }),
+);
 
 /**
  * Learning units for one topic, split into sections — every status, because
@@ -175,8 +208,8 @@ const loadTopicCards = cache(async (level: string): Promise<TopicCardRow[]> => {
  * a public cache in front of it, revisit: at that point filtering at the query
  * is the safer shape.
  */
-const loadTopicUnits = cache(
-  async (level: string, topic: string): Promise<UnitSection[]> => {
+const loadTopicUnits = cache((level: string, topic: string): Promise<UnitSection[]> =>
+  notesCache(['units', level, topic], async () => {
     const supa = getSupabaseAdmin();
     const rows = await fetchAllRows<UnitRow>((from, to) =>
       supa
@@ -191,7 +224,7 @@ const loadTopicUnits = cache(
         .range(from, to),
     );
     return groupIntoSections(rows.map(toUnit).filter(u => u !== null));
-  },
+  }),
 );
 
 /**
@@ -200,16 +233,19 @@ const loadTopicUnits = cache(
  * One row per approved unit comes back; the Set dedupes.
  */
 const loadConvertedTopics = cache(async (level: string): Promise<Set<string>> => {
-  const supa = getSupabaseAdmin();
-  const rows = await fetchAllRows<{ topic: string }>((from, to) =>
-    supa
-      .from('learning_units')
-      .select('topic')
-      .eq('subject', level.toUpperCase())
-      .eq('status', 'approved')
-      .range(from, to),
-  );
-  return new Set(rows.map(r => r.topic));
+  const topics = await notesCache(['converted-topics', level], async () => {
+    const supa = getSupabaseAdmin();
+    const rows = await fetchAllRows<{ topic: string }>((from, to) =>
+      supa
+        .from('learning_units')
+        .select('topic')
+        .eq('subject', level.toUpperCase())
+        .eq('status', 'approved')
+        .range(from, to),
+    );
+    return [...new Set(rows.map(r => r.topic))];
+  });
+  return new Set(topics);
 });
 
 /** The sidebar tree for a level. */
@@ -351,17 +387,19 @@ export const getSubgroupPage = cache(
     );
     if (!subgroup) return null;
 
-    const supa = getSupabase();
-    const snippets = await fetchAllRows<SnippetRow>((from, to) =>
-      supa
-        .from('content_snippets')
-        .select('id, subgroup_id, display_group, order_index, card_title, content')
-        .eq('subgroup_id', subgroup.id)
-        .eq('content_kind', PUBLISHABLE.content_kind)
-        .in('feature', [...PUBLISHABLE.features])
-        .eq('is_published', true)
-        .range(from, to),
-    );
+    const snippets = await notesCache(['subgroup-snippets', subgroup.id], async () => {
+      const supa = getSupabase();
+      return fetchAllRows<SnippetRow>((from, to) =>
+        supa
+          .from('content_snippets')
+          .select('id, subgroup_id, display_group, order_index, card_title, content')
+          .eq('subgroup_id', subgroup.id)
+          .eq('content_kind', PUBLISHABLE.content_kind)
+          .in('feature', [...PUBLISHABLE.features])
+          .eq('is_published', true)
+          .range(from, to),
+      );
+    });
     if (snippets.length === 0) return null;
 
     return {

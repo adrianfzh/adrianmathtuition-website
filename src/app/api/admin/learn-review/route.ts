@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { NOTES_CACHE_TAG } from '@/lib/notes-data';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 // /admin/learn-review — approve / reject / edit interactive learning_units.
@@ -92,6 +94,7 @@ export async function POST(req: NextRequest) {
       .eq('status', 'pending')
       .select('id');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true, updated: data?.length ?? 0 });
   }
 
@@ -129,6 +132,7 @@ export async function POST(req: NextRequest) {
         changed++;
       }
     }
+    if (changed > 0) revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true, changed });
   }
 
@@ -151,6 +155,7 @@ export async function POST(req: NextRequest) {
       .select('id, subject, topic, unit_order, kind, title, payload, status, updated_at')
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    revalidateTag(NOTES_CACHE_TAG, 'max');
     return NextResponse.json({ ok: true, unit: data });
   }
 
@@ -166,5 +171,6 @@ export async function POST(req: NextRequest) {
     .select('id, status, updated_at')
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  revalidateTag(NOTES_CACHE_TAG, 'max');
   return NextResponse.json({ ok: true, unit: data });
 }
