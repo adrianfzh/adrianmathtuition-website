@@ -188,13 +188,32 @@ const loadTopicUnits = cache(
   },
 );
 
+/**
+ * Topics whose learning units have been approved — the sidebar drops their old
+ * sub-group children (the page students read no longer has those sections).
+ * One row per approved unit comes back; the Set dedupes.
+ */
+const loadConvertedTopics = cache(async (level: string): Promise<Set<string>> => {
+  const supa = getSupabaseAdmin();
+  const rows = await fetchAllRows<{ topic: string }>((from, to) =>
+    supa
+      .from('learning_units')
+      .select('topic')
+      .eq('subject', level.toUpperCase())
+      .eq('status', 'approved')
+      .range(from, to),
+  );
+  return new Set(rows.map(r => r.topic));
+});
+
 /** The sidebar tree for a level. */
 export const getNotesTree = cache(async (level: string): Promise<TreeRoot> => {
-  const [subgroups, counts] = await Promise.all([
+  const [subgroups, counts, converted] = await Promise.all([
     loadSubgroups(level),
     loadSnippetCounts(level),
+    loadConvertedTopics(level),
   ]);
-  return buildPageTree(level, subgroups, counts);
+  return buildPageTree(level, subgroups, counts, converted);
 });
 
 export interface LevelTopic {

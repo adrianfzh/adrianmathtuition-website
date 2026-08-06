@@ -2055,3 +2055,15 @@ a.nx-eyebrow:hover {
     display: none !important;
   }
 }
+
+/* The theme toggle was a 16px whisper in the sidebar footer — make it read as
+ * a control. (Students asked how to switch to dark mode.) */
+.notes-shell #nd-sidebar button[aria-label='Toggle Theme'] {
+  border: 1px solid var(--nx-line);
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+}
+.notes-shell #nd-sidebar button[aria-label='Toggle Theme'] svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}

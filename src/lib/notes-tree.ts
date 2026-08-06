@@ -305,6 +305,7 @@ export function buildPageTree(
   level: string,
   subgroups: SubgroupRow[],
   snippetCountBySubgroup: Map<number, number>,
+  convertedTopics: Set<string> = new Set(),
 ): TreeRoot {
   const levelRows = subgroups.filter(
     s => s.level.toUpperCase() === level.toUpperCase(),
@@ -319,16 +320,22 @@ export function buildPageTree(
 
   const folders: TreeFolder[] = [];
   for (const topic of [...byTopic.keys()].sort((a, b) => a.localeCompare(b))) {
-    const children = sortSubgroups(byTopic.get(topic) as SubgroupRow[])
-      .filter(sg => (snippetCountBySubgroup.get(sg.id) ?? 0) > 0)
-      .map<TreeItem>(sg => ({
-        type: 'page',
-        name: sg.name,
-        url: subgroupUrl(level, topic, sg.name),
-        $id: `sg-${sg.id}`,
-      }));
+    // A converted topic (approved learning units) reads as one page whose
+    // sections the right-hand contents already lists — its old sub-group pages
+    // stay off the sidebar, where they no longer match what students read.
+    const converted = convertedTopics.has(topic);
+    const children = converted
+      ? []
+      : sortSubgroups(byTopic.get(topic) as SubgroupRow[])
+          .filter(sg => (snippetCountBySubgroup.get(sg.id) ?? 0) > 0)
+          .map<TreeItem>(sg => ({
+            type: 'page',
+            name: sg.name,
+            url: subgroupUrl(level, topic, sg.name),
+            $id: `sg-${sg.id}`,
+          }));
 
-    if (children.length === 0) continue;
+    if (children.length === 0 && !converted) continue;
 
     // A topic whose tool teaches the topic gets the tool as a real page, last
     // in the folder. One page per topic however many tools it maps to — the
