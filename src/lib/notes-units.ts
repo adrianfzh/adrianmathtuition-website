@@ -54,6 +54,11 @@ export interface NotesUnit {
    * his words, typed on the page. Cleared when the block is unflagged.
    */
   reviewNote: string | null;
+  /**
+   * Claude's one-line changelog (`payload.fixed_note`), written when a flag is
+   * fixed — the green "✓ Fixed" strip Adrian sees, dismissed with OK.
+   */
+  fixedNote: string | null;
   payload: unknown;
 }
 
@@ -103,9 +108,10 @@ export function toUnit(row: UnitRow): NotesUnit | null {
   if (!row.payload || typeof row.payload !== 'object' || Array.isArray(row.payload)) {
     return null;
   }
-  const { title_q: titleQ, review_note: note } = row.payload as {
+  const { title_q: titleQ, review_note: note, fixed_note: fixedNote } = row.payload as {
     title_q?: unknown;
     review_note?: unknown;
+    fixed_note?: unknown;
   };
   return {
     id: row.id,
@@ -116,6 +122,7 @@ export function toUnit(row: UnitRow): NotesUnit | null {
     draft: row.status !== 'approved',
     flagged: row.status === 'rejected',
     reviewNote: typeof note === 'string' && note.trim() ? note.trim() : null,
+    fixedNote: typeof fixedNote === 'string' && fixedNote.trim() ? fixedNote.trim() : null,
     payload: row.payload,
   };
 }

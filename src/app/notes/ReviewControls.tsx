@@ -34,11 +34,13 @@ export function ReviewBar({
   topic,
   pending,
   flagged,
+  fixed = 0,
 }: {
   level: string;
   topic: string;
   pending: number;
   flagged: number;
+  fixed?: number;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -61,11 +63,14 @@ export function ReviewBar({
     <div className="nx-reviewbar" role="region" aria-label="Review">
       <span className="nx-reviewbar-title">Review</span>
       <span className="nx-reviewbar-note">
-        {pending > 0
-          ? `${pending} pending${flagged > 0 ? ` · ${flagged} flagged` : ''}`
-          : flagged > 0
-            ? `all approved · ${flagged} flagged`
-            : 'all blocks approved ✓'}
+        {[
+          pending > 0 ? `${pending} pending` : 'all blocks approved ✓',
+          flagged > 0 ? `${flagged} flagged` : null,
+          // Points at the green strips below — each one is a fix to glance at.
+          fixed > 0 ? `${fixed} fixed ✓ (green strips)` : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
       </span>
       {error && <span className="nx-reviewbar-err">{error}</span>}
       {pending > 0 && (
@@ -125,30 +130,43 @@ function NoteBox({
 }
 
 /**
- * One block's review controls: the flag pill, and — the moment it's clicked —
- * the flagged strip with the note box, no server round-trip first (the old
- * flow waited on router.refresh() before showing the box, which read as "the
- * button is broken" on a slow connection). The POST happens in the background
- * and the state rolls back if it fails; the server render agrees on the next
- * navigation.
+ * One block's review controls, one component owning all three states:
+ *
+ *   fixed  — the green receipt on a block Claude fixed: one line saying what
+ *            changed (payload.fixed_note), so a fixed flag is something Adrian
+ *            can SEE, not just trust. OK accepts it; ⚑ Flag disputes it and
+ *            drops straight into the flagged state.
+ *   flagged — the rose strip with the note box.
+ *   quiet  — just the flag pill.
+ *
+ * Every transition renders instantly and POSTs in the background (the old flow
+ * waited on router.refresh() before showing the note box, which read as "the
+ * button is broken" on a slow connection). Flag rolls back if the POST fails;
+ * the server render agrees on the next navigation.
  */
 export function BlockReview({
   id,
   flagged: initialFlagged,
   note,
+  fixedNote = null,
   inline = false,
 }: {
   id: string;
   flagged: boolean;
   note: string | null;
+  fixedNote?: string | null;
   inline?: boolean;
 }) {
   const [flagged, setFlagged] = useState(initialFlagged);
+  const [fixedGone, setFixedGone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
 
   const toggle = async (on: boolean) => {
     setFlagged(on);
+    // Flagging a fixed block disputes the fix — the server clears the receipt
+    // on `flag`, so the strip must not come back when he unflags again.
+    if (on) setFixedGone(true);
     setError(false);
     setBusy(true);
     const err = await post({ action: on ? 'flag' : 'unflag', id });
@@ -159,33 +177,51 @@ export function BlockReview({
     }
   };
 
-  if (!flagged) {
+  if (flagged) {
     return (
-      <button
-        className={inline ? 'nx-flagbtn nx-flagbtn-inline' : 'nx-flagbtn nx-flagbtn-abs'}
-        data-on="false"
-        disabled={busy}
-        onClick={() => toggle(true)}
-      >
-        {error ? '⚑ Flag (retry)' : '⚑ Flag'}
-      </button>
+      <div className="nx-u-reviewrow">
+        <div className="nx-u-flagstrip">
+          <span>⚑ Flagged — hidden from students until fixed</span>
+          <button
+            className="nx-flagbtn"
+            data-on="true"
+            disabled={busy}
+            onClick={() => toggle(false)}
+          >
+            Unflag
+          </button>
+        </div>
+        <NoteBox id={id} initial={note} autoFocus={!initialFlagged} />
+      </div>
+    );
+  }
+
+  if (fixedNote && !fixedGone) {
+    const ack = async () => {
+      setFixedGone(true);
+      post({ action: 'ack', id });
+    };
+    return (
+      <div className="nx-u-fixedstrip">
+        <span>✓ Fixed — {fixedNote}</span>
+        <button className="nx-fixedbtn-flag" disabled={busy} onClick={() => toggle(true)}>
+          ⚑ Flag
+        </button>
+        <button disabled={busy} onClick={ack}>
+          OK
+        </button>
+      </div>
     );
   }
 
   return (
-    <div className="nx-u-reviewrow">
-      <div className="nx-u-flagstrip">
-        <span>⚑ Flagged — hidden from students until fixed</span>
-        <button
-          className="nx-flagbtn"
-          data-on="true"
-          disabled={busy}
-          onClick={() => toggle(false)}
-        >
-          Unflag
-        </button>
-      </div>
-      <NoteBox id={id} initial={note} autoFocus={!initialFlagged} />
-    </div>
+    <button
+      className={inline ? 'nx-flagbtn nx-flagbtn-inline' : 'nx-flagbtn nx-flagbtn-abs'}
+      data-on="false"
+      disabled={busy}
+      onClick={() => toggle(true)}
+    >
+      {error ? '⚑ Flag (retry)' : '⚑ Flag'}
+    </button>
   );
 }

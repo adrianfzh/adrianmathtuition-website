@@ -324,6 +324,10 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
     (n, s) => n + s.units.filter(u => u.flagged).length + (s.lead?.flagged ? 1 : 0),
     0,
   );
+  const fixed = data.unitSections.reduce(
+    (n, s) => n + s.units.filter(u => u.fixedNote).length + (s.lead?.fixedNote ? 1 : 0),
+    0,
+  );
 
   const toc = [
     data.recall.length > 0 && { title: 'Formula reflexes', url: `#${ANCHOR.reflexes}`, depth: 2 },
@@ -368,6 +372,7 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
             topic={data.topic}
             pending={pending}
             flagged={flagged}
+            fixed={fixed}
           />
         )}
 

@@ -134,7 +134,13 @@ function Example({ unit }: { unit: NotesUnit }) {
           <li key={i} className="nx-u-step">
             <div className="nx-u-step-head">
               <span className="nx-u-step-no">{i + 1}</span>
-              {step.label && <span className="nx-u-step-label">{step.label}</span>}
+              {/* Through the math renderer, not plain text — ingested labels
+                  carry $…$ ("Sub $x=\tfrac{7}{11}$ into (3)"). */}
+              {step.label && (
+                <div className="nx-u-step-label">
+                  <UnitMd content={step.label} />
+                </div>
+              )}
             </div>
             <Figure svg={step.figure_svg} />
             {step.math && <Math tex={step.math} />}
@@ -288,7 +294,14 @@ function Unit({ unit, admin }: { unit: NotesUnit; admin: boolean }) {
   const title = simplifyTitle(unit.title, unit.kind);
   return (
     <article className="nx-u" data-kind={unit.kind}>
-      {admin && <BlockReview id={unit.id} flagged={unit.flagged} note={unit.reviewNote} />}
+      {admin && (
+        <BlockReview
+          id={unit.id}
+          flagged={unit.flagged}
+          note={unit.reviewNote}
+          fixedNote={unit.fixedNote}
+        />
+      )}
       <header className="nx-u-head">
         <span className="nx-u-kind">{KIND_DISPLAY[unit.kind]}</span>
         {title && <h3 className="nx-u-title">{title}</h3>}
@@ -334,6 +347,7 @@ export default function NotesUnits({
                     id={section.lead.id}
                     flagged={section.lead.flagged}
                     note={section.lead.reviewNote}
+                    fixedNote={section.lead.fixedNote}
                   />
                 )}
                 <Core unit={section.lead} />

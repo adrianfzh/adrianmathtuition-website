@@ -43,11 +43,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'id required' }, { status: 400 });
     }
     // Unflagging also clears the review note: the note describes a problem, and
-    // unflag is the assertion that the problem is gone.
-    if (action === 'unflag') {
-      const cleared = await clearNote(supa, id);
-      if (cleared) return cleared;
-    }
+    // unflag is the assertion that the problem is gone. Flagging clears any
+    // fix receipt — re-flagging a "fixed" block is Adrian disputing the fix.
+    const cleared = await clearPayloadKey(
+      supa,
+      id,
+      action === 'unflag' ? 'review_note' : 'fixed_note',
+    );
+    if (cleared) return cleared;
     const { error, count } = await supa
       .from('learning_units')
       .update({ status: action === 'flag' ? 'rejected' : 'pending' }, { count: 'exact' })
@@ -79,16 +82,31 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  // Adrian dismissing a green "✓ Fixed" strip: seen it, done with it.
+  if (action === 'ack') {
+    const id = body?.id;
+    if (typeof id !== 'string' || !id) {
+      return NextResponse.json({ error: 'id required' }, { status: 400 });
+    }
+    const cleared = await clearPayloadKey(supa, id, 'fixed_note');
+    if (cleared) return cleared;
+    return NextResponse.json({ ok: true });
+  }
+
   return NextResponse.json({ error: 'unknown action' }, { status: 400 });
 }
 
-async function clearNote(supa: ReturnType<typeof getSupabaseAdmin>, id: string) {
+async function clearPayloadKey(
+  supa: ReturnType<typeof getSupabaseAdmin>,
+  id: string,
+  key: 'review_note' | 'fixed_note',
+) {
   const { data: row } = await supa.from('learning_units').select('payload').eq('id', id).single();
   if (!row) return NextResponse.json({ error: 'unit not found' }, { status: 404 });
   const payload = row.payload as Record<string, unknown>;
-  if ('review_note' in payload) {
+  if (key in payload) {
     const next = { ...payload };
-    delete next.review_note;
+    delete next[key];
     const { error } = await supa.from('learning_units').update({ payload: next }).eq('id', id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }

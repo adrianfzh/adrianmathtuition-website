@@ -1250,7 +1250,7 @@ a.nx-eyebrow:hover {
   border-radius: 18px;
   box-shadow: var(--nx-shadow);
 }
-.nx-u > *:not(.nx-u-head):not(.nx-u-reviewrow) {
+.nx-u > *:not(.nx-u-head):not(.nx-u-reviewrow):not(.nx-u-fixedstrip) {
   margin-left: 1.4rem;
   margin-right: 1.4rem;
 }
@@ -1381,6 +1381,58 @@ a.nx-eyebrow:hover {
   background: var(--nx-rose-wash);
 }
 
+/* Claude's fix receipt — the green mirror of the flag strip. One line of what
+ * changed sits on the block it changed; OK dismisses it. */
+.nx-u-fixedstrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.55rem 1.4rem;
+  background: var(--nx-green-wash);
+  border-bottom: 1px solid var(--nx-green-line);
+  color: var(--nx-green);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.nx-u-fixedstrip span {
+  flex: 1;
+  min-width: 0;
+}
+.nx-u-fixedstrip button {
+  flex: none;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.2rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--nx-green);
+  background: transparent;
+  color: var(--nx-green);
+  cursor: pointer;
+}
+.nx-u-fixedstrip button:hover {
+  background: var(--nx-green);
+  color: #fff;
+}
+/* Disputing the fix — quieter than OK, turns rose on hover to say what it does. */
+.nx-u-fixedstrip .nx-fixedbtn-flag {
+  border-color: var(--nx-green-line);
+  opacity: 0.85;
+}
+.nx-u-fixedstrip .nx-fixedbtn-flag:hover {
+  background: var(--nx-rose-wash);
+  border-color: var(--nx-rose-deep);
+  color: var(--nx-rose-deep);
+  opacity: 1;
+}
+/* On a lead there is no card to sit flush inside — a bordered row instead. */
+.nx-u-intro .nx-u-fixedstrip {
+  border: 1px solid var(--nx-green-line);
+  border-radius: 12px;
+  margin: 0 0 0.8rem;
+}
+
 /* ── Panels ──────────────────────────────────────────────────────────────────*/
 
 .nx-u-panel {
@@ -1472,6 +1524,15 @@ a.nx-eyebrow:hover {
   font-weight: 800;
   line-height: 1.4;
   color: var(--nx-ink);
+}
+/* The label runs through the math renderer (labels carry $…$), which wraps it
+ * in prose markup — flatten that back to a heading line. */
+.nx-u-step-label p {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
 }
 .nx-u-math {
   margin: 0.15rem 0 0;
@@ -1693,12 +1754,13 @@ a.nx-eyebrow:hover {
 }
 
 @media (max-width: 640px) {
-  .nx-u > *:not(.nx-u-head):not(.nx-u-flagstrip) {
+  .nx-u > *:not(.nx-u-head):not(.nx-u-flagstrip):not(.nx-u-fixedstrip) {
     margin-left: 1rem;
     margin-right: 1rem;
   }
   .nx-u-head,
-  .nx-u-flagstrip {
+  .nx-u-flagstrip,
+  .nx-u-fixedstrip {
     padding-left: 1rem;
     padding-right: 1rem;
   }
@@ -1821,7 +1883,8 @@ a.nx-eyebrow:hover {
   .nx-reviewbar,
   .nx-flagbtn,
   .nx-u-reviewrow,
-  .nx-u-flagstrip {
+  .nx-u-flagstrip,
+  .nx-u-fixedstrip {
     display: none !important;
   }
 
