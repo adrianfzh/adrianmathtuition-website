@@ -77,6 +77,43 @@ export function ReviewBar({
   );
 }
 
+/**
+ * Adrian's note box on a flagged block — type what's wrong right on the page.
+ * Saved into the unit's payload; Claude reads the notes from there and fixes.
+ */
+export function NoteBox({ id, initial }: { id: string; initial: string | null }) {
+  const [note, setNote] = useState(initial ?? '');
+  const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  const save = async () => {
+    setState('saving');
+    const err = await post({ action: 'note', id, note });
+    setState(err ? 'error' : 'saved');
+  };
+
+  return (
+    <div className="nx-notebox">
+      <textarea
+        value={note}
+        onChange={e => {
+          setNote(e.target.value);
+          setState('idle');
+        }}
+        placeholder="What's wrong? Type it here — Claude reads this and fixes it."
+        rows={2}
+      />
+      <div className="nx-notebox-row">
+        <span className="nx-notebox-state">
+          {state === 'saved' ? 'Saved ✓' : state === 'error' ? 'Could not save — try again' : ''}
+        </span>
+        <button onClick={save} disabled={state === 'saving' || (note.trim() === (initial ?? ''))}>
+          {state === 'saving' ? 'Saving…' : 'Save note'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** Flag / unflag one block. Flagged blocks stay hidden from students. */
 export function FlagButton({ id, flagged }: { id: string; flagged: boolean }) {
   const router = useRouter();

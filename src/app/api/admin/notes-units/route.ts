@@ -39,6 +39,12 @@ export async function POST(req: Request) {
     if (typeof id !== 'string' || !id) {
       return NextResponse.json({ error: 'id required' }, { status: 400 });
     }
+    // Unflagging also clears the review note: the note describes a problem, and
+    // unflag is the assertion that the problem is gone.
+    if (action === 'unflag') {
+      const cleared = await clearNote(supa, id);
+      if (cleared) return cleared;
+    }
     const { error, count } = await supa
       .from('learning_units')
       .update({ status: action === 'flag' ? 'rejected' : 'pending' }, { count: 'exact' })
@@ -48,5 +54,40 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  // Adrian's on-page note on a flagged block: what's wrong, in his words.
+  // Stored as payload.review_note; an empty note deletes the key.
+  if (action === 'note') {
+    const id = body?.id;
+    const note = body?.note;
+    if (typeof id !== 'string' || !id || typeof note !== 'string' || note.length > 4000) {
+      return NextResponse.json({ error: 'id and note (≤4000 chars) required' }, { status: 400 });
+    }
+    const { data: row, error: readErr } = await supa
+      .from('learning_units')
+      .select('payload')
+      .eq('id', id)
+      .single();
+    if (readErr || !row) return NextResponse.json({ error: 'unit not found' }, { status: 404 });
+    const payload = { ...(row.payload as Record<string, unknown>) };
+    if (note.trim()) payload.review_note = note.trim();
+    else delete payload.review_note;
+    const { error } = await supa.from('learning_units').update({ payload }).eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
   return NextResponse.json({ error: 'unknown action' }, { status: 400 });
+}
+
+async function clearNote(supa: ReturnType<typeof getSupabaseAdmin>, id: string) {
+  const { data: row } = await supa.from('learning_units').select('payload').eq('id', id).single();
+  if (!row) return NextResponse.json({ error: 'unit not found' }, { status: 404 });
+  const payload = row.payload as Record<string, unknown>;
+  if ('review_note' in payload) {
+    const next = { ...payload };
+    delete next.review_note;
+    const { error } = await supa.from('learning_units').update({ payload: next }).eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return null;
 }

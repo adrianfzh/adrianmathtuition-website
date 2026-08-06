@@ -49,6 +49,11 @@ export interface NotesUnit {
   draft: boolean;
   /** Flagged in review (`status = 'rejected'`): hidden from students until fixed. */
   flagged: boolean;
+  /**
+   * Adrian's note on a flagged block (`payload.review_note`) — what's wrong, in
+   * his words, typed on the page. Cleared when the block is unflagged.
+   */
+  reviewNote: string | null;
   payload: unknown;
 }
 
@@ -94,7 +99,10 @@ export function toUnit(row: UnitRow): NotesUnit | null {
   if (!row.payload || typeof row.payload !== 'object' || Array.isArray(row.payload)) {
     return null;
   }
-  const titleQ = (row.payload as { title_q?: unknown }).title_q;
+  const { title_q: titleQ, review_note: note } = row.payload as {
+    title_q?: unknown;
+    review_note?: unknown;
+  };
   return {
     id: row.id,
     kind: row.kind,
@@ -103,6 +111,7 @@ export function toUnit(row: UnitRow): NotesUnit | null {
     order: row.unit_order ?? 0,
     draft: row.status !== 'approved',
     flagged: row.status === 'rejected',
+    reviewNote: typeof note === 'string' && note.trim() ? note.trim() : null,
     payload: row.payload,
   };
 }

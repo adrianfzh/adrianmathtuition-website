@@ -35,6 +35,7 @@ const unit = (order: number, over: Partial<NotesUnit> = {}): NotesUnit => ({
   order,
   draft: false,
   flagged: false,
+  reviewNote: null,
   payload: {},
   ...over,
 });
@@ -49,8 +50,16 @@ describe('toUnit', () => {
       order: 112.01,
       draft: false,
       flagged: false,
+      reviewNote: null,
       payload: { summary_md: 'x' },
     });
+  });
+
+  it("reads Adrian's review note out of the payload", () => {
+    expect(
+      toUnit(row({ payload: { review_note: 'tip on step 2 is wrong' } }))?.reviewNote,
+    ).toBe('tip on step 2 is wrong');
+    expect(toUnit(row({ payload: { review_note: '  ' } }))?.reviewNote).toBeNull();
   });
 
   it('flags anything not approved as a draft', () => {

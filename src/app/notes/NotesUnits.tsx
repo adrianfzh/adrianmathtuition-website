@@ -16,7 +16,7 @@
 
 import type { ReactNode } from 'react';
 import { UnitMd } from './UnitMarkdown';
-import { FlagButton } from './ReviewControls';
+import { FlagButton, NoteBox } from './ReviewControls';
 import {
   asAutopsy,
   asCheck,
@@ -293,6 +293,7 @@ function Unit({ unit, admin }: { unit: NotesUnit; admin: boolean }) {
           <FlagButton id={unit.id} flagged />
         </div>
       )}
+      {admin && unit.flagged && <NoteBox id={unit.id} initial={unit.reviewNote} />}
       <header className="nx-u-head">
         <span className="nx-u-kind">{KIND_DISPLAY[unit.kind]}</span>
         <h3 className="nx-u-title">{title}</h3>
@@ -336,6 +337,9 @@ export default function NotesUnits({
                   <span>⚑ Flagged — hidden from students until fixed</span>
                   <FlagButton id={section.lead.id} flagged />
                 </div>
+              )}
+              {admin && section.lead.flagged && (
+                <NoteBox id={section.lead.id} initial={section.lead.reviewNote} />
               )}
               <Core unit={section.lead} />
               {admin && !section.lead.flagged && (
