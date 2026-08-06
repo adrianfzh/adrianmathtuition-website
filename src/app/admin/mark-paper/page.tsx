@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, memo, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import { put } from '@vercel/blob/client';
 import 'katex/dist/katex.min.css';
 import { ensureAdminSession } from '@/lib/admin-client';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
 import { mathHtml } from '@/lib/math-inline';
+import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
 import StudentPicker from '@/components/StudentPicker';
 
 // The ✏️ Annotate overlay (Apple Pencil ink over the marked pages) is heavy and
@@ -197,9 +198,13 @@ const btn: CSSProperties = { padding: '10px 18px', borderRadius: 8, border: 'non
 // Marker comments carry inline $…$ TeX (and $ as currency) — lib/math-inline decides
 // which is which and KaTeXes only the math. Raw \tfrac soup in the results panel was
 // the "rendering issues" complaint (Adrian, 2 Aug 2026).
-function MathText({ text }: { text: string }) {
+//
+// memo'd on a plain string prop: a 27-question paper renders ~76 of these, and
+// without it every unrelated state change (a keystroke in the paper name, a busy
+// flag flipping) re-ran KaTeX across the whole results panel.
+const MathText = memo(function MathText({ text }: { text: string }) {
   return <span dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
-}
+});
 
 // Download links carry the filename as the LAST PATH SEGMENT (plus ?name= for the
 // Content-Disposition): Safari's share sheet titles an inline-viewed PDF from the URL
@@ -333,6 +338,10 @@ export default function MarkPaperPage() {
   // Establish the admin session first (silently upgrades a legacy cookie); if not
   // logged in, send to the admin hub instead of failing with a bare "unauthorized".
   useEffect(() => {
+    // Park the shell's native Pencil mirror until ✏️ Annotate wants it — outside the
+    // overlay it was firing an IPC per frame for a function that doesn't exist, which
+    // is what made the whole app drag (lib/native-pencil-bridge.ts).
+    setNativePencilMirror(false);
     ensureAdminSession().then(ok => {
       if (!ok) { window.location.href = '/admin'; return; }
       loadStats();

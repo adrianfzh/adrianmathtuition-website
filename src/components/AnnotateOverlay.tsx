@@ -28,6 +28,7 @@ import { hitStrokes, strokeHit } from '@/lib/annotate/hit-test';
 import { splitStrokeAtCircle } from '@/lib/annotate/stroke-split';
 import { lassoSelect, strokesBBox } from '@/lib/annotate/lasso';
 import { planFlatten } from '@/lib/annotate/flatten-plan';
+import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
 import {
   draftIsEmpty, draftKey, makeDraft, parseDraft, serializeDraft,
 } from '@/lib/annotate/draft-store';
@@ -1511,6 +1512,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       }
     };
     (window as unknown as { __nativePencil?: (b: NativeEvt[]) => void }).__nativePencil = onNativePencil;
+    // Wake the shell's native mirror. It sleeps everywhere else in the app — see
+    // lib/native-pencil-bridge.ts for why (per-frame IPC made the whole app lag).
+    setNativePencilMirror(true);
 
     window.addEventListener('pointerdown', onWinPd, true);
     window.addEventListener('touchstart', onWinTouchStart, { capture: true, passive: false });
@@ -1535,6 +1539,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     el.addEventListener('gesturechange', swallow as EventListener);
     return () => {
       delete (window as unknown as { __nativePencil?: unknown }).__nativePencil;
+      setNativePencilMirror(false);
       window.removeEventListener('pointerdown', onWinPd, true);
       window.removeEventListener('touchstart', onWinTouchStart, true);
       el.removeEventListener('pointerdown', onPointerDown);

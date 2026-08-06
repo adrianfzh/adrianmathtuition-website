@@ -49,12 +49,15 @@ final class PencilObserver: UIGestureRecognizer {
     }
 }
 
-final class ViewController: UIViewController, WKNavigationDelegate, UIPencilInteractionDelegate {
+final class ViewController: UIViewController, WKNavigationDelegate, UIPencilInteractionDelegate, WKScriptMessageHandler {
     private var webView: WKWebView!
+    private var pencilObserver: PencilObserver!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         let config = WKWebViewConfiguration()
+        // The page switches the pencil mirror on and off (see below).
+        config.userContentController.add(self, name: "pencilBridge")
         config.websiteDataStore = .default()          // persistent cookies → admin login sticks
         config.allowsInlineMediaPlayback = true
         // THE missing-strokes root cause (found 4 Aug 2026 from the spatial
@@ -89,6 +92,19 @@ final class ViewController: UIViewController, WKNavigationDelegate, UIPencilInte
         webView.addInteraction(pencil)
 
         // Native pencil mirror → window.__nativePencil (see PencilObserver).
+        //
+        // It used to run app-wide and all the time, so every Pencil contact ANYWHERE
+        // — scrolling the results list, tapping a button, resting a hand — pushed an
+        // evaluateJavaScript across the process boundary once per frame for a
+        // function that only exists inside the ✏️ Annotate overlay. That is what made
+        // the whole app drag (Adrian, 6 Aug 2026: "VERY laggy. not functionable").
+        //
+        // The page now owns the switch via the pencilBridge handler below. It starts
+        // ENABLED on purpose: a page that never speaks (an old cached build, or some
+        // other page on the site) then behaves exactly as it did before, so a silent
+        // page can never leave the mirror dead and take the missing-strokes fix with
+        // it. Disabling a recognizer stops UIKit delivering touches to it at all —
+        // the cost really does go to zero, not just the IPC.
         let observer = PencilObserver()
         observer.cancelsTouchesInView = false
         observer.delaysTouchesBegan = false
@@ -99,12 +115,21 @@ final class ViewController: UIViewController, WKNavigationDelegate, UIPencilInte
             self?.webView.evaluateJavaScript("window.__nativePencil && window.__nativePencil(\(json))")
         }
         webView.addGestureRecognizer(observer)
+        pencilObserver = observer
 
         webView.load(URLRequest(url: URL(string: "https://www.adrianmathtuition.com/admin/mark-paper")!))
     }
 
     func pencilInteractionDidTap(_ interaction: UIPencilInteraction) {
         webView.evaluateJavaScript("window.dispatchEvent(new Event('annotate-pencil-doubletap'))")
+    }
+
+    // window.webkit.messageHandlers.pencilBridge.postMessage(true|false) — the page
+    // turning the native mirror on for the annotate overlay and off everywhere else.
+    // Anything that isn't a bool is ignored rather than guessed at.
+    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.name == "pencilBridge", let on = message.body as? Bool else { return }
+        pencilObserver.isEnabled = on
     }
 
     // Keep navigation inside the app for our own site; anything external opens in Safari.
