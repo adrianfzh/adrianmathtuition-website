@@ -9,8 +9,12 @@ description: >
   Trigger whenever Adrian asks for a revision worksheet / revision sheet / notes-plus-practice
   for a topic — e.g. "revision worksheet, S4 AM Binomial Theorem, notes, 8 questions",
   "make the worked-examples revision sheet for AM Partial Fractions", "revision sheet for
-  S4 EM Matrices with 10 questions". NOT the same as create-worksheet: that one authors a
-  worksheet from scratch; this one clones an existing document and appends practice.
+  S4 EM Matrices with 10 questions". ALSO trigger on the shorthand "rw" as the first word of
+  a terse comma-separated request — "rw, am circles, worked", "rw am partial fractions notes
+  10", "rw jc integration worked" — where the remaining fields are, in any order, the folder
+  or bank, the topic, the kind (notes|worked), and optionally a question count. NOT the same
+  as create-worksheet: that one authors a worksheet from scratch; this one clones an existing
+  document and appends practice.
 ---
 
 # Revision Worksheet Skill
@@ -41,6 +45,21 @@ Adrian phrases it in prose. Map it to a CLI call:
 | "revision worksheet, S4 AM Binomial Theorem, worked" | `--kind worked --folder AM --topic "Binomial Theorem"` |
 | "revision sheet for S4 EM Matrices, 10 questions" | `--kind notes --bank S4_EM --topic "Matrices" -n 10` |
 | "…using fragment 'Calculus Applications (All)', practice from 'Integration (Applications)'" | `--fragment "Calculus Applications (All)" --practice-topic "Integration (Applications)"` |
+
+**The `rw` shorthand.** `rw, am circles, worked` is the same request in four words. Fields
+come in any order and case doesn't matter: `rw` first, then the folder/bank, the topic, the
+kind, and optionally a bare number for the question count.
+
+| He types | You run |
+|---|---|
+| `rw, am circles, worked` | `--kind worked --folder AM --topic "Circles"` |
+| `rw am partial fractions notes 10` | `--kind notes --bank S3_AM --topic "Partial Fractions" -n 10` |
+| `rw, em matrices, notes` | `--kind notes --bank S4_EM --topic "Matrices"` |
+
+Resolve it, then **say what you resolved it to before building** — `am` alone does not say
+S3 or S4, and a bare topic can match more than one sheet (`Polynomials` vs `Polynomials 2`).
+One line naming the base file is enough; do not stop and ask unless resolution is genuinely
+ambiguous, in which case list the candidates rather than guessing.
 
 ```bash
 python3 <skill-dir>/revision_lib.py --kind notes  --bank S4_AM --topic "Binomial Theorem" -n 8
