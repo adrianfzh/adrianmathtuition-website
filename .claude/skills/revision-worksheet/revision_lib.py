@@ -85,6 +85,15 @@ BANK_LEVELS = {
     "S4_EM": ("EM", None),
     "S3_EM": ("S3_EM", "EM"),
 }
+# Bank -> the level line Adrian puts at the top of his own worked sheets.
+# A notes fragment has no title of its own (it opens straight on the topic name),
+# so kind=notes builds this block to match them — Adrian, 2026-08-06.
+BANK_TITLES = {
+    "S3_AM": "Sec 3 Additional Math",
+    "S4_AM": "Sec 4 Additional Math",
+    "S3_EM": "Sec 3 Elementary Math",
+    "S4_EM": "Sec 4 Elementary Math",
+}
 # worked-sheet folder -> (primary level, top-up level or None)
 FOLDER_LEVELS = {
     "AM": ("AM", None),
@@ -107,8 +116,20 @@ SZ_BODY = 19        # half-points -> 9.5 pt
 # bold 9.5, no colour. A big navy heading looked like a different document
 # grafted onto Adrian's sheet.
 SZ_HEAD = SZ_BODY
+# The title block is the ONE place we depart from 9.5 pt, because it is copied
+# glyph-for-glyph off Adrian's worked sheets: level line 9.5 bold, topic 11 bold,
+# "Notes:" 10 bold underlined. It is written after the house-style pass for that
+# reason — the normaliser would otherwise pull it back to 9.5.
+SZ_TITLE = 22       # 11 pt
+SZ_SECTION = 20     # 10 pt
 COLOR_ORANGE = "843C0C"
 LINE_15 = "360"     # 1.5 line spacing, w:lineRule="auto"
+# Inside a worked-solution box the 1.5 that makes the question section readable
+# is just height: nobody writes in a solution box, and Adrian asked for the
+# examples to stop spilling onto a second page (2026-08-06). 1.15 is not an
+# invented value — it is the tighter spacing HE already uses elsewhere on the
+# same sheet, so it is known-readable, and it takes ~23 % off every box.
+LINE_TABLE = "276"  # 1.15, for paragraphs inside tables
 IND_Q_LEFT, IND_Q_HANG = 567, 567       # 1 cm
 IND_SQ_LEFT, IND_SQ_HANG = 1134, 567    # 2 cm / 1 cm
 # [n] is RIGHT-ALIGNED on a tab stop at 15.5 cm — Adrian's house position, set
@@ -1102,6 +1123,52 @@ def _working_lines(marks, extra=2, minimum=3, maximum=12) -> int:
     return max(minimum, min(maximum, m + extra))
 
 
+def _keep_with_next(p) -> None:
+    pPr = p.find(w("pPr"))
+    if pPr is None:
+        pPr = etree.Element(w("pPr"))
+        p.insert(0, pPr)
+    if pPr.find(w("keepNext")) is None:
+        _sub(pPr, "keepNext", val="1")
+        _order_ppr(pPr)
+
+
+def _unit(paras: list, closed: bool = True) -> list:
+    """Bind a question or part to its writing space so a page break can't split it.
+
+    Adrian: "questions or parts of questions should start on a new page, do not
+    want writing space to span across two pages" (2026-08-06). keepNext on every
+    paragraph but the last makes Word move the whole block down rather than
+    break inside it; the last one stays free so breaks CAN fall between units,
+    which is where they belong. A unit taller than a page still breaks — Word
+    drops keepNext when it has no choice, and that is the wanted behaviour.
+
+    `closed=False` keeps the final paragraph bound too, for a group that must
+    stay with whatever follows: a bare stem has no writing space of its own and
+    belongs with part (a).
+    """
+    for p in (paras if not closed else paras[:-1]):
+        _keep_with_next(p)
+    return paras
+
+
+def build_title(level_label: str, topic: str) -> list:
+    """Adrian's own two-line heading, copied off his worked-examples sheets."""
+    lvl = _para(align="center")
+    _run(lvl, "%s Revision" % level_label, bold=True)
+    top = _para(align="center", space_after=60)
+    _run(top, topic, bold=True, size=SZ_TITLE)
+    return [lvl, top]
+
+
+def _notes_label():
+    p = _para()
+    r = _run(p, "Notes:", bold=True, size=SZ_SECTION)
+    _sub(r.find(w("rPr")), "u", val="single")
+    _order_rpr(r.find(w("rPr")))
+    return p
+
+
 def build_practice(questions: list, omml: OmmlCache,
                    heading: str = "Practice", show_source: bool = False,
                    page_break: bool = True, space: int = 2) -> list:
@@ -1109,12 +1176,19 @@ def build_practice(questions: list, omml: OmmlCache,
     els = []
     if page_break:
         els.append(_page_break_para())
+    else:
+        # A blank line between the fragment's last Reminder and the heading —
+        # without it "Practice" sits flush under the bullets (Adrian, 2026-08-06).
+        els.append(_para())
 
     h = _para(space_after=180, keep_next=True)
     _run(h, heading, bold=True, size=SZ_HEAD)
     els.append(h)
 
     for i, row in enumerate(questions, 1):
+        # Paragraphs are collected per unit — a question or part together with
+        # its writing space — and bound by _unit() before they reach `els`.
+        units = []
         parts = _parts(row)
         stem_blocks = _text_blocks(row.get("question_text") or "")
         marks_here = None if parts else row.get("total_marks")
@@ -1142,13 +1216,14 @@ def build_practice(questions: list, omml: OmmlCache,
                     _run(first, "  [%s]" % src, italic=True, color="808080")
             if pm:
                 _marks_run(first, pm)
-            els.append(first)
+            unit = [first]
             for extra in blocks[1:]:
                 p = _para(left=IND_SQ_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
-                els.append(p)
+                unit.append(p)
             for _ in range(_working_lines(pm, extra=space)):
-                els.append(_para(left=IND_SQ_LEFT))
+                unit.append(_para(left=IND_SQ_LEFT))
+            units.append(unit)
         else:
             # -- stem
             first = _para(left=IND_Q_LEFT, hanging=IND_Q_HANG, keep_next=True)
@@ -1162,16 +1237,21 @@ def build_practice(questions: list, omml: OmmlCache,
                     _run(first, "  [%s]" % src, italic=True, color="808080")
             if marks_here:
                 _marks_run(first, marks_here)
-            els.append(first)
+            unit = [first]
 
             for extra in stem_blocks[1:]:
                 p = _para(left=IND_Q_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
-                els.append(p)
+                unit.append(p)
 
             if not parts:
                 for _ in range(_working_lines(row.get("total_marks"), extra=space + 1)):
-                    els.append(_para(left=IND_Q_LEFT))
+                    unit.append(_para(left=IND_Q_LEFT))
+                units.append(unit)
+            else:
+                # A stem with sub-parts has no writing space of its own, so it
+                # is not a unit — it rides with part (a).
+                units.append(_unit(unit, closed=False))
 
         # -- remaining sub-parts, each starting at the (a) column
         for part in parts:
@@ -1184,20 +1264,26 @@ def build_practice(questions: list, omml: OmmlCache,
                 _emit_parts(sp, split_math(blocks[0]), omml)
             if pm:
                 _marks_run(sp, pm)
-            els.append(sp)
+            unit = [sp]
             for extra in blocks[1:]:
                 p = _para(left=IND_SQ_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
-                els.append(p)
+                unit.append(p)
             for _ in range(_working_lines(pm, extra=space)):
-                els.append(_para(left=IND_SQ_LEFT))
+                unit.append(_para(left=IND_SQ_LEFT))
+            units.append(unit)
 
-        # -- answer: right-aligned and orange all the way through, math included
+        # -- answer: right-aligned and orange all the way through, math included.
+        # It belongs to the last unit: stranded at the top of the next page on
+        # its own it reads as the answer to the wrong question.
         a = _para(align="right", space_after=180)
         _run(a, "[Ans: ", color=COLOR_ORANGE)
         _emit_parts(a, _answer_parts(row), omml, color=COLOR_ORANGE)
         _run(a, "]", color=COLOR_ORANGE)
-        els.append(a)
+        units[-1].append(a)
+
+        for unit in units:
+            els += _unit(unit)
 
     return els
 
@@ -1360,16 +1446,24 @@ def _normalize_house_style(root) -> dict:
             _order_rpr(rPr)
             st["sizes"] += 1
 
+    # 1.5 spacing is for reading and for writing space, NOT for the insides of
+    # Adrian's worked-solution boxes: nobody writes in a solution box, so there
+    # the extra half-line is pure height, and it is what pushed a box's tail
+    # onto a second page ("they should not span two pages if they can fit into
+    # one", 2026-08-06). Table paragraphs are tightened to 1.15 instead — his
+    # own tighter spacing from the same sheet, ~23 % shorter than 1.5. They
+    # still get the 9.5 pt pass above, so the document stays one document.
     for para in root.iter(w("p")):
         pPr = para.find(w("pPr"))
         if pPr is None:
             pPr = etree.Element(w("pPr"))
             para.insert(0, pPr)
+        want = LINE_TABLE if _in_table(para) else LINE_15
         sp = pPr.find(w("spacing"))
         if sp is None:
             sp = etree.SubElement(pPr, w("spacing"))
-        if sp.get(w("line")) != LINE_15 or sp.get(w("lineRule")) != "auto":
-            sp.set(w("line"), LINE_15)
+        if sp.get(w("line")) != want or sp.get(w("lineRule")) != "auto":
+            sp.set(w("line"), want)
             sp.set(w("lineRule"), "auto")
             st["spacing"] += 1
         _order_ppr(pPr)
@@ -1431,6 +1525,129 @@ def _normalize_house_style(root) -> dict:
                 if _ensure_marks_stop(pPr):
                     st["tabs"] += 1
     return st
+
+
+def _in_table(p) -> bool:
+    """Is this paragraph inside a table cell?
+
+    Walks ancestors rather than pre-collecting the paragraphs of every table:
+    lxml hands out element PROXIES, so a set of `id(p)` built in a comprehension
+    is meaningless the moment those proxies are collected — the ids get recycled
+    and the test silently answers at random. That bug made the whole table
+    exemption a no-op while looking like it worked.
+    """
+    for anc in p.iterancestors():
+        if etree.QName(anc).localname == "tbl":
+            return True
+    return False
+
+
+def _is_blank_para(p) -> bool:
+    """No text, no equation, no picture, no break — a pure spacer."""
+    if p.find(".//{%s}oMath" % M_NS) is not None:
+        return False
+    for tag in ("drawing", "pict", "object", "br", "tab"):
+        if p.find(".//" + w(tag)) is not None:
+            return False
+    return not "".join(t.text or "" for t in p.iter(w("t"))).strip()
+
+
+def _compact_blanks(body, keep: int = 1) -> int:
+    """Collapse runs of empty spacer paragraphs in the BASE document.
+
+    Adrian's sheets are padded with stacks of empty paragraphs — the tail of a
+    page he was writing into. They cost vertical space that pushes worked
+    examples over a page boundary, and unlike his real content they carry no
+    meaning. Runs longer than `keep` are trimmed to `keep`.
+
+    Must run BEFORE the practice block is inserted: our writing space is made of
+    exactly these paragraphs, and collapsing it would delete the space students
+    write in.
+    """
+    removed, run = 0, []
+    for el in list(body) + [None]:
+        if el is not None and etree.QName(el).localname == "p" and _is_blank_para(el):
+            run.append(el)
+            continue
+        for extra in run[keep:]:
+            body.remove(extra)
+            removed += 1
+        run = []
+    return removed
+
+
+_Q_START_RE = re.compile(r"^\s*\(?\d{1,2}[.)]")   # "3.", "12.", "(4)" — a question number
+_WALK_LIMIT = 40                                  # runaway guard on the backward walk
+
+
+def _para_plain_text(p) -> str:
+    return "".join(t.text or "" for t in p.iter(w("t")))
+
+
+def _example_head(tbl):
+    """The paragraphs above a solution table that belong to the same example.
+
+    A worked example is question stem + "Solution:" + the bordered box, and
+    binding only the paragraph directly above the table left the stem stranded
+    at the foot of the previous page (Q3 on 2026-08-06: "3. (i) Write down…" on
+    page 2, its whole solution on page 3). So the walk runs backwards to the
+    numbered question paragraph and takes one more line if that is a short
+    section heading like "Finding n".
+
+    It stops at the previous table or an explicit page break so examples never
+    chain into one another, and gives up after `_WALK_LIMIT` paragraphs rather
+    than swallowing the document if a sheet has no question numbers at all.
+    """
+    head, el = [], tbl.getprevious()
+    while el is not None and len(head) < _WALK_LIMIT:
+        if etree.QName(el).localname != "p":
+            break                                  # previous table / sectPr
+        if el.find(".//" + w("br")) is not None and any(
+                b.get(w("type")) == "page" for b in el.iter(w("br"))):
+            break
+        head.append(el)
+        if _Q_START_RE.match(_para_plain_text(el)):
+            prev = el.getprevious()                # optional "Finding n" heading
+            if (prev is not None and etree.QName(prev).localname == "p"
+                    and 0 < len(_para_plain_text(prev).strip()) <= 60
+                    and not _Q_START_RE.match(_para_plain_text(prev))):
+                head.append(prev)
+            break
+        el = el.getprevious()
+    return head
+
+
+def _keep_blocks_together(body) -> int:
+    """Stop a worked example from being split across a page break.
+
+    Adrian's worked solutions are bordered tables, and Word breaks one mid-row
+    without hesitation — which is how the tail of a solution ended up alone at
+    the top of the next page. OOXML has no "keep this table together" property,
+    so it is spelled out: every row is marked cantSplit, every paragraph up to
+    the last row keeps with the next, and the question stem above the table
+    (see `_example_head`) joins the block. A block taller than a page still
+    breaks — Word drops keepNext when it cannot honour it, which is exactly the
+    "unless it's a really big example" escape Adrian asked for.
+    """
+    bound = 0
+    for tbl in body.iter(w("tbl")):
+        rows = tbl.findall(w("tr"))
+        if not rows:
+            continue
+        for tr in rows:
+            trPr = tr.find(w("trPr"))
+            if trPr is None:
+                trPr = etree.Element(w("trPr"))
+                tr.insert(0, trPr)
+            if trPr.find(w("cantSplit")) is None:
+                etree.SubElement(trPr, w("cantSplit"))
+        for tr in rows[:-1]:
+            for p in tr.iter(w("p")):
+                _keep_with_next(p)
+        for p in _example_head(tbl):
+            _keep_with_next(p)
+        bound += 1
+    return bound
 
 
 def _normalize_page(root) -> dict:
@@ -1497,9 +1714,41 @@ def _default_style_numbers(styles_xml: bytes) -> bool:
     return False
 
 
+def _apply_title(body, level_label: str, topic: str, base_stem: str = "") -> str:
+    """Put Adrian's two-line heading on a notes fragment, and label the notes.
+
+    A fragment opens on its own bold topic name and nothing else. That line is
+    what the title's second line says, so it is REPLACED by the "Notes:" label
+    rather than left to repeat the title two lines further down. A fragment that
+    opens on something else keeps it, and gets the label inserted above.
+    """
+    kids = list(body)
+    first = next((el for el in kids if etree.QName(el).localname == "p"), None)
+    head = ""
+    if first is not None:
+        head = "".join(t.text or "" for t in first.iter(w("t"))).strip()
+
+    # …or the grouped sheet's own name, when the topic resolved into one:
+    # 'Integration (Applications)' lands in 'Calculus Applications (All)'.
+    same = {norm(topic), norm(base_stem)} - {""}
+    label = _notes_label()
+    if first is not None and head and norm(head) in same:
+        body.replace(first, label)
+        mode = "replaced the fragment's %r heading" % head
+    else:
+        at = kids.index(first) if first is not None else 0
+        body.insert(at, label)
+        mode = "inserted above %r" % (head[:40] or "the fragment")
+
+    for offset, el in enumerate(build_title(level_label, topic)):
+        body.insert(offset, el)
+    return mode
+
+
 def clone_with_practice(base_path: Path, out_path: Path, questions: list,
                         omml: OmmlCache, heading="Practice",
-                        show_source=False, page_break=True, space=2) -> dict:
+                        show_source=False, page_break=True, space=2,
+                        title: tuple | None = None) -> dict:
     """Byte-clone the base docx and append the practice paragraphs to its body."""
     global CLEAR_NUMBERING
     with zipfile.ZipFile(base_path) as z:
@@ -1514,6 +1763,9 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
         raise RuntimeError("base docx has no <w:body>: %s" % base_path)
 
     page = _normalize_page(root)
+    # Trim the base's own padding BEFORE the practice block goes in — after, it
+    # would eat the writing space, which is made of the same empty paragraphs.
+    blanks = _compact_blanks(body)
     omml.prime(collect_latex(questions))
     els = build_practice(questions, omml, heading=heading,
                          show_source=show_source, page_break=page_break, space=space)
@@ -1523,7 +1775,13 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     for offset, el in enumerate(els):
         body.insert(insert_at + offset, el)
 
+    tables = _keep_blocks_together(body)
     house = _normalize_house_style(root)
+    house.update(blanks_removed=blanks, tables_bound=tables)
+    # The title is written last: it is the one block that is deliberately not
+    # 9.5 pt, so the house-style pass must already be behind us.
+    if title:
+        house["title"] = _apply_title(body, *title)
 
     xml = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
     # same OOXML schema fix create-worksheet applies: <m:count> must precede <m:mcJc>
@@ -1685,10 +1943,13 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
         out_path = default_out_path(label, topic, kind, bank=bank, folder=folder)
         if suffix:
             out_path = out_path.with_name(out_path.stem + suffix + out_path.suffix)
+    # Worked sheets already carry Adrian's title; notes fragments never do.
+    lvl = BANK_TITLES.get(bank or "") if kind == "notes" else None
     omml = OmmlCache()
     report.build = clone_with_practice(resolved.path, out_path, chosen, omml,
                                        show_source=show_source, page_break=page_break,
-                                       space=space)
+                                       space=space,
+                                       title=(lvl, topic, resolved.path.stem) if lvl else None)
     report.out_path = str(out_path)
     return report
 

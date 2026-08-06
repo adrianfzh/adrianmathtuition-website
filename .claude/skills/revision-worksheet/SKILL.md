@@ -114,6 +114,27 @@ Fragment  : Calculus Applications (All)
               the grouped sheet 'Calculus Applications (All)'
 ```
 
+### Notes sheets get a title block (kind=notes only)
+
+A fragment opens straight on its bold topic name — fine as a bank entry, wrong as a
+handout. Adrian's own worked sheets carry a two-line centred heading, and he asked for the
+same on notes (*"should have a title for notes (like examples)"*, 2026-08-06), so
+`build_title` reproduces it glyph-for-glyph:
+
+```
+        Sec 3 Additional Math Revision      ← TNR bold 9.5, centred (BANK_TITLES[bank])
+              Binomial Theorem              ← TNR bold 11, centred
+Notes:                                      ← TNR bold 10, underlined, left
+```
+
+This is the **one** place the document departs from 9.5 pt, which is why `_apply_title`
+runs *last*, after `_normalize_house_style` — the normaliser would otherwise pull the
+title back to body size. `_apply_title` also **replaces** the fragment's own leading
+heading when it is just the topic name or the file stem (so the topic isn't printed
+twice); otherwise it inserts above it.
+
+`kind=worked` is untouched — those sheets already have Adrian's heading.
+
 ### The Reminders bullets are real equations (converted 2026-08-06)
 
 Every fragment's **Reminders** block was originally typed as plain text with Unicode
@@ -224,7 +245,9 @@ in orange `#843C0C`, navy `#1F4E79` heading):
   sheet), optionally preceded by a page break
   (`<w:br w:type="page"/>` in its own paragraph — default **off** for `notes` so the
   formulas stay visible beside the questions, **on** for `worked` so the practice starts
-  clean).
+  clean). Where there is no page break there is a **blank paragraph** instead — without it
+  `Practice` sat flush under the last Reminders bullet (*"should have a newline between
+  reminders and practice"*, 2026-08-06).
 - **Every run is Times New Roman 9.5 pt** — question text, part labels, marks, answers —
   written as explicit `w:rFonts` (ascii/hAnsi/eastAsia/cs) + `w:sz`/`w:szCs` = 19 on each
   run, never inherited — the heading too (it is bold, same size).
@@ -245,7 +268,8 @@ in orange `#843C0C`, navy `#1F4E79` heading):
   drops the mark onto a line of its own. That was the bug, twice.
   Measured in Word's own PDF export: worked 83/83 and notes 16/16 marks at exactly
   15.5 cm, 0 orphaned.
-- Working space: `marks + 2` blank lines (min 3, max 12; tune with `--space`).
+- Working space: `marks + 2` blank lines (min 3, max 12; tune with `--space`). It is bound
+  to its question — see *Nothing straddles a page break*.
 - `[Ans: …]` right-aligned and **entirely orange, converted equations included** — see the
   OMML note under assembly.
 
@@ -275,7 +299,7 @@ the practice is inserted, so base and practice are normalised together:
 |---|---|
 | Size | every `w:sz`/`w:szCs` → 19 (9.5 pt), and runs that carried **no** size get one, so nothing inherits the base's `docDefaults` (typically 11 pt) |
 | Equations | `style_omml` over every `m:oMath`, including the `ctrlPr` glyphs Word draws itself — brackets, fraction bars, radicals |
-| Line spacing | `w:line="360" w:lineRule="auto"` on every paragraph = 1.5 lines |
+| Line spacing | `w:line="360" w:lineRule="auto"` = 1.5 lines outside tables, `"276"` = 1.15 inside them (see below) |
 | Marks | any far tab stop (≥ 14.1 cm — Adrian's sheets use 16 cm) is pulled back to 15.5 cm and given the 0.5 cm gutter |
 | Inline marks | a trailing `" [n]"` typed as ordinary text, with no tab, is split out of its run and put on the stop |
 
@@ -293,6 +317,50 @@ The `tabbed` test in the inline-marks pass checks **every** run in the paragraph
 `runs[:-1]`: Adrian's sheets put `<w:tab/>` and the `[n]` text inside a *single* run, so
 the narrower test read those as untabbed, appended a second tab, and wrapped 54 marks onto
 their own line.
+
+### Nothing straddles a page break (2026-08-06)
+
+Adrian asked for two things in one breath: *"questions or parts of questions should start
+on a new page, do not want writing space to span across two pages"* and *"worked examples
+… should not span two pages if they can fit into one (unless its a really big example)"*.
+Both are the same mechanic — bind a block, then make the block short enough to fit.
+
+**Binding.** OOXML has no "keep this together" property, so it is spelled out:
+
+- **Practice** — `build_practice` groups each question, or each sub-part, with its own
+  writing space into a *unit*, and `_unit()` puts `w:keepNext` on every paragraph but the
+  last. The answer line joins the final unit. A stem that only introduces sub-parts is
+  left open (`closed=False`) so it stays glued to the first part.
+- **Worked examples** — `_keep_blocks_together` marks every `w:tr` `cantSplit`, puts
+  `keepNext` on every row except the last, and walks *backwards* from the table via
+  `_example_head` to pick up the question stem and an optional section heading
+  (`"Finding n"`). Binding only the paragraph directly above the table is not enough: it
+  left `3. (i) Write down…` at the foot of page 2 with its whole solution on page 3.
+  The walk stops at the previous table or a page break so examples never chain, and gives
+  up after 40 paragraphs.
+
+**Shortening.** Binding alone made things *worse* — a box that no longer fit moved
+wholesale to the next page and left a near-empty one behind (13 pages, one ending at
+y=143). The fix is the in-table line spacing: 1.5 is for reading and for writing space,
+but nobody writes inside a solution box, so there it is pure height. Table paragraphs are
+set to **1.15** — not an invented value, it is the tighter spacing Adrian already uses
+elsewhere on the same sheets — which takes ~23 % off every box.
+
+Measured on `3 REV AM Binomial Theorem`: 13 pages → **12**, and the notes portion lands on
+**8 pages, exactly matching Adrian's untouched source**. Across three AM sheets (Binomial,
+Partial Fractions, Polynomials) 22 solution boxes render with **1** split, and that one
+example is 784 pt against ~757 pt of page — a genuine overflow, i.e. the "really big
+example" escape working as intended. Word drops `keepNext` when it cannot honour it, so
+oversized blocks degrade instead of looping.
+
+> Blank spacer paragraphs are collapsed by `_compact_blanks`, which **must** run before the
+> practice block is inserted — our writing space is made of exactly those paragraphs, and
+> collapsing it afterwards would delete the space students write in.
+
+> ⚠ `_in_table` walks `iterancestors()` rather than pre-collecting table paragraphs into a
+> set of `id(p)`. lxml hands out element **proxies**: the ids get recycled as proxies are
+> collected, so the set silently answers at random. That bug made the whole table rule a
+> no-op while every count still looked plausible.
 
 ### Assembly rules (why it doesn't corrupt Adrian's documents)
 
@@ -412,6 +480,27 @@ print(sorted({round(w["x1"] - LEFT - STOP, 1) for w in marks}))   # want [0.0] o
 
 # line spacing — consecutive line tops in one block, want ~16.8 pt at 9.5 pt / 1.5 lines
 ```
+
+**Page-break integrity needs the same PDF, and it has two distinct checks.** Neither is
+visible in the XML — `keepNext` is a *request*, and whether Word honoured it only shows in
+the render.
+
+```python
+# 1. no writing space carried over: EVERY page must start at the top margin (~56-58 pt).
+#    A page whose first glyph sits lower began with the tail of the previous question.
+print([(i, round(min(c["top"] for c in p.chars if c["text"].strip()), 1))
+       for i, p in enumerate(pdf.pages, 1)])
+
+# 2. no example split from its question. Word draws each solution-box border as thin
+#    filled rects, NOT one big rect, so find_tables()/page.rects miss them entirely —
+#    look for a tall LEFT vertical edge instead, then check the nearest preceding
+#    numbered stem is on the same page.
+boxes = [(i, e["top"], e["bottom"]) for i, p in enumerate(pdf.pages, 1) for e in p.edges
+         if e["orientation"] == "v" and e["bottom"] - e["top"] > 40 and e["x0"] < 160]
+```
+
+Expect **0** on check 1. On check 2 a split is only acceptable when the example really is
+taller than the ~757 pt text column — measure it before accepting it.
 
 **Word can wedge behind an invisible modal.** If `open_document` starts timing out on
 *every* file — including one it opened a minute earlier — Word is sitting on a dialog with
