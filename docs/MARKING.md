@@ -23,6 +23,37 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   alert. Attachments clear after queueing so the next paper goes straight in.
   History rows show 🌙 queued / ⚠ queue failed states (stats select carries
   `queued_at`/`queue_failed` via JSON-path aliases). Worker is drain-aware.
+  **The worker runs on PROD ONLY** — staging shares the same Supabase table, so
+  its worker is guarded off (`FLY_APP_NAME` ends in `-staging` → not started;
+  2026-08-06). Before the guard, staging and prod raced the non-atomic claim:
+  the loser's remark overwrote the winner's finished row back to pending
+  mid-build, which is why some queued runs "lost" their 🖼 images PDF and
+  Telegram messages arrived from the staging bot.
+- **🌙 A queued paper arrives FINISHED (2026-08-06):** after the queue worker
+  marks a run, `deliverQueuedRun` (bot `handlers/webchat.js`) builds BOTH PDFs
+  via the site's `/api/admin/mark-paper-pdf` (photos first, then full — neither
+  costs a model call), `linkPdf`s them onto the run, files the images PDF into
+  Dropbox via `/api/admin/mark-paper-dropbox`, and the Telegram alert carries
+  the images PDF as a **document attachment** (`notifyQueue` fetches ≤45MB and
+  `sendDocument`s; any failure degrades to the plain link). Every step is
+  best-effort — a delivery hiccup never re-marks the paper.
+- **📁 To Dropbox (2026-08-06):** `/api/admin/mark-paper-dropbox` (admin auth,
+  60s) fetches a run PDF **from our Blob store only** (`isOurBlobUrl` gate — an
+  open URL would make an authenticated write-proxy into Adrian's Dropbox) and
+  uploads to `Apps/AdrianMathNotes/Marked papers/YYYY-MM/YYYY-MM-DD <name>.pdf`
+  (SGT date, `autorename` on collisions). First WRITE path in `lib/dropbox.ts`
+  (`uploadFile`; `Dropbox-API-Arg` is ASCII-escaped — the header rejects raw
+  Unicode). The mark page's 📁 button next to ⬇ Download uses it too. ⚠ The
+  Dropbox refresh token must carry `files.content.write` — the token on Vercel
+  predated that scope and failed `missing_scope` until swapped 2026-08-06 (probe
+  with a REAL write: Dropbox validates the path header BEFORE the scope gate, so
+  an invalid-path 400 proves nothing about scopes).
+- **Paper name is editable everywhere (2026-08-06):** a name input sits above
+  Mark/Queue (placeholder = working-file name), the send row keeps its input,
+  and history rows' names click into an inline rename (Enter saves, Esc
+  cancels). All of them persist via `phase:'rename'` (bot updates
+  `paper_marking_runs.paper_name`, 120-char cap) so the queue's Telegram/Dropbox
+  delivery uses the same name Adrian typed.
 - **⬇ Practice DOCX (2026-08-04):** the practice panel's DOCX button posts
   `phase:'practice-docx'`; the bot renders the list to a house-style Word file
   (pandoc in the Docker image + `assets/worksheet-reference.docx` carrying the
@@ -739,7 +770,15 @@ Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13). 
 > iPadOS **Live Text** system-intercepts Pencil strokes over the printed text in
 > page photos — Safari offers no opt-out, so strokes intermittently vanish there;
 > the shell disables text interaction (`ios-shell/`, weekly re-sign recipe in its
-> README) and writes flawlessly. Full saga: SPEC-ANNOTATE.md §12. Replaces the Notability round trip on
+> README) and writes flawlessly. Full saga: SPEC-ANNOTATE.md §12.
+> **Shell lag fix (2026-08-06):** the shell's native Pencil mirror (a
+> UIGestureRecognizer firing `evaluateJavaScript` per frame into
+> `window.__nativePencil`) used to run app-wide, dragging the whole app
+> ("VERY laggy") — now the page owns the switch via
+> `lib/native-pencil-bridge.ts` (`pencilBridge` message handler: off on page
+> load, on only while the ✏️ overlay is mounted). Shell starts ENABLED so a
+> stale cached page keeps the missing-strokes fix; an old shell ignores the
+> messages. Needs an Xcode rebuild to land on the iPad. Replaces the Notability round trip on
 `/admin/mark-paper` (which stays as fallback): ✏️ Annotate button (gated
 `runId && annotatedPhotos.length`) opens a full-screen overlay over the marked pages
 (the `url_with_solutions ?? url` copy via `pickAnnotatedPhotoUrl(p,'photos')`); Done
