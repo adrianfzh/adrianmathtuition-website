@@ -327,3 +327,25 @@ export function stripKindPrefix(title: string, kind: UnitKind): string {
   if (!prefixed) return title;
   return rest[0].toUpperCase() + rest.slice(1);
 }
+
+/**
+ * Student-facing block title. Adrian's worksheet numbering — "Practice 1a Q1:",
+ * "5b Q2–Q3:", "Challenge Q1:", "Assignment:" — is bookkeeping from the source
+ * documents, not teaching; on the page it read as noise (Adrian: "the naming
+ * 1a Q1 is weird — make it simple"), so display drops it and keeps only the
+ * descriptive part. The stored titles keep the numbering for mapping back to
+ * the printed worksheets. Returns '' when the title was ONLY numbering, and
+ * the block header then shows just its kind.
+ */
+export function simplifyTitle(title: string, kind: UnitKind): string {
+  const base = stripKindPrefix(title, kind).trim();
+  const rest = base
+    .replace(
+      /^(?:practice|challenge|assignment|homework)?\s*\d*[a-z]?\s*q\s*\d+(?:\s*[–—-]\s*q?\s*\d+)?\s*[:.]?\s*/i,
+      '',
+    )
+    .replace(/^(?:practice|challenge|assignment|homework)\s*\d*[a-z]?\s*[:.]\s*/i, '')
+    .trim();
+  if (!rest) return '';
+  return rest[0].toUpperCase() + rest.slice(1);
+}

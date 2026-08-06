@@ -81,7 +81,15 @@ export function ReviewBar({
  * Adrian's note box on a flagged block — type what's wrong right on the page.
  * Saved into the unit's payload; Claude reads the notes from there and fixes.
  */
-export function NoteBox({ id, initial }: { id: string; initial: string | null }) {
+function NoteBox({
+  id,
+  initial,
+  autoFocus = false,
+}: {
+  id: string;
+  initial: string | null;
+  autoFocus?: boolean;
+}) {
   const [note, setNote] = useState(initial ?? '');
   const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
@@ -95,6 +103,7 @@ export function NoteBox({ id, initial }: { id: string; initial: string | null })
     <div className="nx-notebox">
       <textarea
         value={note}
+        autoFocus={autoFocus}
         onChange={e => {
           setNote(e.target.value);
           setState('idle');
@@ -114,26 +123,68 @@ export function NoteBox({ id, initial }: { id: string; initial: string | null })
   );
 }
 
-/** Flag / unflag one block. Flagged blocks stay hidden from students. */
-export function FlagButton({ id, flagged }: { id: string; flagged: boolean }) {
-  const router = useRouter();
+/**
+ * One block's review controls: the flag pill, and — the moment it's clicked —
+ * the flagged strip with the note box, no server round-trip first (the old
+ * flow waited on router.refresh() before showing the box, which read as "the
+ * button is broken" on a slow connection). The POST happens in the background
+ * and the state rolls back if it fails; the server render agrees on the next
+ * navigation.
+ */
+export function BlockReview({
+  id,
+  flagged: initialFlagged,
+  note,
+  inline = false,
+}: {
+  id: string;
+  flagged: boolean;
+  note: string | null;
+  inline?: boolean;
+}) {
+  const [flagged, setFlagged] = useState(initialFlagged);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
 
-  const toggle = async () => {
+  const toggle = async (on: boolean) => {
+    setFlagged(on);
+    setError(false);
     setBusy(true);
-    await post({ action: flagged ? 'unflag' : 'flag', id });
+    const err = await post({ action: on ? 'flag' : 'unflag', id });
     setBusy(false);
-    router.refresh();
+    if (err) {
+      setFlagged(!on);
+      setError(true);
+    }
   };
 
+  if (!flagged) {
+    return (
+      <button
+        className={inline ? 'nx-flagbtn nx-flagbtn-inline' : 'nx-flagbtn nx-flagbtn-abs'}
+        data-on="false"
+        disabled={busy}
+        onClick={() => toggle(true)}
+      >
+        {error ? '⚑ Flag (retry)' : '⚑ Flag'}
+      </button>
+    );
+  }
+
   return (
-    <button
-      className="nx-flagbtn"
-      data-on={flagged ? 'true' : 'false'}
-      onClick={toggle}
-      disabled={busy}
-    >
-      {busy ? '…' : flagged ? '⚑ Flagged' : '⚑ Flag'}
-    </button>
+    <div className="nx-u-reviewrow">
+      <div className="nx-u-flagstrip">
+        <span>⚑ Flagged — hidden from students until fixed</span>
+        <button
+          className="nx-flagbtn"
+          data-on="true"
+          disabled={busy}
+          onClick={() => toggle(false)}
+        >
+          Unflag
+        </button>
+      </div>
+      <NoteBox id={id} initial={note} autoFocus={!initialFlagged} />
+    </div>
   );
 }

@@ -1241,6 +1241,7 @@ a.nx-eyebrow:hover {
  * a 50-block page and see its rhythm. */
 
 .nx-u {
+  position: relative;
   margin: 1.1rem 0 0;
   padding: 0;
   overflow: hidden;
@@ -1249,7 +1250,7 @@ a.nx-eyebrow:hover {
   border-radius: 18px;
   box-shadow: var(--nx-shadow);
 }
-.nx-u > *:not(.nx-u-head):not(.nx-u-flagstrip) {
+.nx-u > *:not(.nx-u-head):not(.nx-u-reviewrow) {
   margin-left: 1.4rem;
   margin-right: 1.4rem;
 }
@@ -1305,10 +1306,17 @@ a.nx-eyebrow:hover {
   background: var(--nx-bar-try);
 }
 
-/* Flagged in review: rose ring, and the strip that says so (admin only). */
-.nx-u[data-flagged='true'] {
+/* Flagged in review: rose ring, and the strip that says so (admin only).
+ * Keyed off the presence of the review row, not a server attribute, so the
+ * ring appears and disappears with the optimistic flag state instantly. */
+.nx-u:has(> .nx-u-reviewrow),
+.nx-u-intro:has(> .nx-u-reviewrow) {
   border-color: var(--nx-rose-deep);
   box-shadow: 0 0 0 2px var(--nx-rose-deep);
+}
+.nx-u-intro:has(> .nx-u-reviewrow) {
+  border-radius: 18px;
+  padding: 0 0 0.6rem;
 }
 .nx-u-flagstrip {
   display: flex;
@@ -1339,20 +1347,38 @@ a.nx-eyebrow:hover {
   background: rgb(255 255 255 / 0.14);
 }
 .nx-flagbtn[data-on='true'],
-.nx-u-flagstrip .nx-flagbtn,
-.nx-u-introflag .nx-flagbtn {
+.nx-u-flagstrip .nx-flagbtn {
   border-color: var(--nx-rose-deep);
   color: var(--nx-rose-deep);
   background: transparent;
 }
-.nx-u-flagstrip .nx-flagbtn:hover,
-.nx-u-introflag .nx-flagbtn:hover {
+.nx-u-flagstrip .nx-flagbtn:hover {
   background: var(--nx-rose-wash);
 }
-.nx-u-introflag .nx-flagbtn {
+
+/* The unflagged pill floats over the block's colour bar; the header reserves
+ * room for it so a long title never runs underneath. */
+.nx-flagbtn-abs {
+  position: absolute;
+  top: 0.85rem;
+  right: 1.4rem;
+  z-index: 2;
   margin-left: 0;
+}
+.nx-u:has(> .nx-flagbtn-abs) .nx-u-head {
+  padding-right: 6.5rem;
+}
+/* The lead core has no colour bar to float over — a quiet inline pill. */
+.nx-flagbtn-inline {
+  margin-left: 0;
+  margin-bottom: 0.5rem;
   border-color: var(--nx-line);
   color: var(--color-fd-muted-foreground);
+}
+.nx-flagbtn-inline:hover {
+  border-color: var(--nx-rose-line);
+  color: var(--nx-rose-deep);
+  background: var(--nx-rose-wash);
 }
 
 /* ── Panels ──────────────────────────────────────────────────────────────────*/
@@ -1794,6 +1820,7 @@ a.nx-eyebrow:hover {
   /* Review chrome is Adrian's, never the handout's. */
   .nx-reviewbar,
   .nx-flagbtn,
+  .nx-u-reviewrow,
   .nx-u-flagstrip {
     display: none !important;
   }

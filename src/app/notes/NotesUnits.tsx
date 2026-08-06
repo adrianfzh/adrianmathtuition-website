@@ -16,7 +16,7 @@
 
 import type { ReactNode } from 'react';
 import { UnitMd } from './UnitMarkdown';
-import { FlagButton, NoteBox } from './ReviewControls';
+import { BlockReview } from './ReviewControls';
 import {
   asAutopsy,
   asCheck,
@@ -27,7 +27,7 @@ import {
   leadToBullets,
   readingMinutes,
   sanitiseFigure,
-  stripKindPrefix,
+  simplifyTitle,
   unitFigures,
   wrongIndex,
   type NotesUnit,
@@ -284,20 +284,13 @@ function Body({ unit }: { unit: NotesUnit }) {
 }
 
 function Unit({ unit, admin }: { unit: NotesUnit; admin: boolean }) {
-  const title = stripKindPrefix(unit.title, unit.kind);
+  const title = simplifyTitle(unit.title, unit.kind);
   return (
-    <article className="nx-u" data-kind={unit.kind} data-flagged={unit.flagged ? 'true' : 'false'}>
-      {admin && unit.flagged && (
-        <div className="nx-u-flagstrip">
-          <span>⚑ Flagged — hidden from students until fixed</span>
-          <FlagButton id={unit.id} flagged />
-        </div>
-      )}
-      {admin && unit.flagged && <NoteBox id={unit.id} initial={unit.reviewNote} />}
+    <article className="nx-u" data-kind={unit.kind}>
+      {admin && <BlockReview id={unit.id} flagged={unit.flagged} note={unit.reviewNote} />}
       <header className="nx-u-head">
         <span className="nx-u-kind">{KIND_DISPLAY[unit.kind]}</span>
-        <h3 className="nx-u-title">{title}</h3>
-        {admin && !unit.flagged && <FlagButton id={unit.id} flagged={false} />}
+        {title && <h3 className="nx-u-title">{title}</h3>}
       </header>
       <Body unit={unit} />
     </article>
@@ -332,21 +325,15 @@ export default function NotesUnits({
           <div className="nx-swoosh" aria-hidden />
           {section.lead && (
             <div className="nx-u-intro">
-              {admin && section.lead.flagged && (
-                <div className="nx-u-flagstrip">
-                  <span>⚑ Flagged — hidden from students until fixed</span>
-                  <FlagButton id={section.lead.id} flagged />
-                </div>
-              )}
-              {admin && section.lead.flagged && (
-                <NoteBox id={section.lead.id} initial={section.lead.reviewNote} />
+              {admin && (
+                <BlockReview
+                  inline
+                  id={section.lead.id}
+                  flagged={section.lead.flagged}
+                  note={section.lead.reviewNote}
+                />
               )}
               <Core unit={section.lead} />
-              {admin && !section.lead.flagged && (
-                <div className="nx-u-introflag">
-                  <FlagButton id={section.lead.id} flagged={false} />
-                </div>
-              )}
             </div>
           )}
           {section.units.map(unit => (

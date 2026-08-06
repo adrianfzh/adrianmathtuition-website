@@ -7,6 +7,7 @@ import {
   leadToBullets,
   readingMinutes,
   sanitiseFigure,
+  simplifyTitle,
   stripKindPrefix,
   toUnit,
   unitFigures,
@@ -228,6 +229,39 @@ describe('stripKindPrefix', () => {
   it('leaves a title that is only the label', () => {
     expect(stripKindPrefix('Spot the error', 'autopsy')).toBe('Spot the error');
     expect(stripKindPrefix('Spot the error: ', 'autopsy')).toBe('Spot the error: ');
+  });
+});
+
+describe('simplifyTitle', () => {
+  it("drops Adrian's worksheet numbering, keeps the description", () => {
+    expect(simplifyTitle('Practice 1a Q1: read centre and radius', 'try')).toBe(
+      'Read centre and radius',
+    );
+    expect(simplifyTitle('Practice 3a Q5: bisector, circle, range of k, reflection', 'try')).toBe(
+      'Bisector, circle, range of k, reflection',
+    );
+    expect(simplifyTitle('5b Q2–Q3: estimation and a proof', 'try')).toBe(
+      'Estimation and a proof',
+    );
+    expect(simplifyTitle('Challenge Q1: two tangents meeting above the centre', 'try')).toBe(
+      'Two tangents meeting above the centre',
+    );
+    expect(simplifyTitle('Assignment: six exam-style questions', 'try')).toBe(
+      'Six exam-style questions',
+    );
+  });
+
+  it('leaves descriptive titles alone', () => {
+    expect(simplifyTitle('Read the centre and radius: (x−3)² + (y+5)² = 36', 'example')).toBe(
+      'Read the centre and radius: (x−3)² + (y+5)² = 36',
+    );
+    expect(simplifyTitle('Diameter parallel to 2x + y + 5 = 0', 'example')).toBe(
+      'Diameter parallel to 2x + y + 5 = 0',
+    );
+  });
+
+  it('returns empty for a title that was only numbering', () => {
+    expect(simplifyTitle('Practice 2 Q1', 'try')).toBe('');
   });
 });
 
