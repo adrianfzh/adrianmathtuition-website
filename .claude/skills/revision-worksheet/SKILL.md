@@ -338,6 +338,9 @@ Both are the same mechanic — bind a block, then make the block short enough to
   left `3. (i) Write down…` at the foot of page 2 with its whole solution on page 3.
   The walk stops at the previous table or a page break so examples never chain, and gives
   up after 40 paragraphs.
+- **Section headings** — `_bind_section_heads` chains a heading to the whole of the first
+  question beneath it, so a heading with no room under it moves to the next page instead of
+  clinging to the last inch. See *A section heading moves with its first question*.
 
 **Shortening.** Binding alone made things *worse* — a box that no longer fit moved
 wholesale to the next page and left a near-empty one behind (13 pages, one ending at
@@ -361,6 +364,43 @@ oversized blocks degrade instead of looping.
 > set of `id(p)`. lxml hands out element **proxies**: the ids get recycled as proxies are
 > collected, so the set silently answers at random. That bug made the whole table rule a
 > no-op while every count still looked plausible.
+
+### A section heading moves with its first question (2026-08-06)
+
+*"Practice should be on a new page IF THERE IS NOT ENOUGH SPACE AT THE CURRENT ONE … so
+that it is not cluttered."* — Adrian, on a page whose last inch held his own
+**"Binomial Theorem Practice"** heading plus question 1, with the `[Ans: 71/9]` stranded
+alone at the top of the next page.
+
+Note **whose** heading that was. Our generated Practice block always starts a fresh page
+(`page_break=True`), so it was never the culprit; the cluttered heading was authored inside
+the source worked-examples document. The fix therefore had to reach into the *cloned base
+content*, not the generator — check which one you are looking at before debugging this.
+
+There is no OOXML "start a new page if short of room". The way to express it is `keepNext`,
+so `_bind_section_heads` chains the heading to the whole of question 1 and lets Word
+relocate the group:
+
+- **What counts as a heading** (`_is_section_head`) — a top-level paragraph, ≤ 60 chars,
+  every text-bearing run bold, not itself a question. That catches
+  `Binomial Theorem Practice`, `Finding n`, `Solution:` and the bracketed source tags
+  (`[Binomial Theorem - AM Prelim 2019 Bowen P2 Q2]`), which must never be orphaned either.
+- **Where the run ends** — at question 2, at the next heading, at a table (from there
+  `_example_head` owns the chain), or after 10 paragraphs. The **last** paragraph of the run
+  is deliberately left unbound, or the block would drag question 2 along behind it.
+- **Finding question 2 is not a text match.** Adrian's practice questions are Word
+  *autonumbered*: the number is not in the text at all, it lives in `w:numPr`. Only
+  `ilvl` 0 opens a question — the deeper levels are its (i)/(ii) parts. `_is_item_start`
+  reads `numPr` first and falls back to the `_Q_START_RE` text form our own generator emits.
+
+Verified with a **seeded A/B** (`--seed 7`, same questions, only the code differing) on
+`3 REV AM Binomial Theorem`: 12 pages → 12, 18 boxes → 18, 0 splits → 0, and exactly one
+page changed — p4 now opens with `Binomial Theorem Practice` instead of the orphaned answer.
+Notes sheets came out byte-identical.
+
+> ⚠ Practice questions are **randomly sampled**, so two unseeded runs pick different
+> questions and any page-count comparison between them is noise. An earlier "3 → 4 pages"
+> scare on the notes sheet was exactly this. Always pass `--seed` when comparing layouts.
 
 ### Assembly rules (why it doesn't corrupt Adrian's documents)
 
@@ -430,6 +470,7 @@ Practice  : 6 question(s)  [levels AM:148]
     2. Anderson 2024 Prelim P1 Q3                     6 marks, Standard, verified
     …
 Page      : margins 2/1/2.5/2.5 cm forced on 1 section(s)
+Keep      : 9 solution box(es), 14 section heading(s) bound to what follows
 Equations : 38 converted, 0 fallback(s)
 Output    : …/Dropbox/Apps/AdrianMathNotes/Revision/AM/REV S4_AM Binomial Theorem (Notes).docx
 ```
@@ -437,6 +478,10 @@ Output    : …/Dropbox/Apps/AdrianMathNotes/Revision/AM/REV S4_AM Binomial Theo
 Non-negotiable contents: **which base/fragment was used and how it was resolved**, the
 question count with **per-question school/year provenance**, **any equation fallbacks**,
 and **where the file was written**.
+
+The `Keep` line exists because `keepNext` is invisible in both the XML checks and a casual
+read of the render — if it says `0 section heading(s)` on a sheet that plainly has headings,
+the detector missed them, and no amount of staring at the PDF will tell you that.
 
 ## Verification
 
@@ -502,12 +547,39 @@ boxes = [(i, e["top"], e["bottom"]) for i, p in enumerate(pdf.pages, 1) for e in
 Expect **0** on check 1. On check 2 a split is only acceptable when the example really is
 taller than the ~757 pt text column — measure it before accepting it.
 
+```python
+# 3. no heading clinging to the foot of a page. Print each page's first line and read it:
+#    a section heading should open a page or sit well above the bottom, never introduce
+#    one or two lines and hand the rest to the next page.
+for i, p in enumerate(pdf.pages, 1):
+    ws = p.extract_words(); top = min(x["top"] for x in ws)
+    print(i, round(top, 1), " ".join(x["text"] for x in ws if x["top"] < top + 3)[:50])
+```
+
+**Compare layouts only with `--seed`.** Practice questions are randomly sampled, so two
+unseeded runs of the same command pick different questions and differ in length for reasons
+that have nothing to do with the code. Generate the before and after with the *same* seed,
+or the comparison is worthless — this produced a false "the change costs a page" panic once
+already.
+
 **Word can wedge behind an invisible modal.** If `open_document` starts timing out on
 *every* file — including one it opened a minute earlier — Word is sitting on a dialog with
 no visible window; nothing in the skill causes it and only a human dismiss clears it
-(`System Events` needs assistive access we don't have). Confirm it's environmental by
-opening an untouched original, then fall back to a **pandoc round-trip**, which reads the
-real OMML back out without Word at all:
+(`System Events` needs assistive access we don't have). A milder variant: Word keeps
+exporting but every `close` verb starts answering *"doesn't understand the close message"*,
+which leaves documents open — and an open document exports its **stale in-memory copy**, so
+from then on always export to a fresh filename. Plain AppleScript often still works when
+the MCP tool times out:
+
+```bash
+osascript -e 'tell application "Microsoft Word"
+  set d to open file name POSIX file "/abs/path/in.docx"
+  save as d file name "/abs/path/out.pdf" file format format PDF
+end tell'
+```
+
+Confirm a hard wedge is environmental by opening an untouched original, then fall back to a
+**pandoc round-trip**, which reads the real OMML back out without Word at all:
 
 ```bash
 pandoc "out.docx" -t markdown --wrap=none        # equations come back as LaTeX

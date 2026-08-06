@@ -1578,10 +1578,84 @@ def _compact_blanks(body, keep: int = 1) -> int:
 
 _Q_START_RE = re.compile(r"^\s*\(?\d{1,2}[.)]")   # "3.", "12.", "(4)" — a question number
 _WALK_LIMIT = 40                                  # runaway guard on the backward walk
+_HEAD_CHARS = 60                                  # longer than this is prose, not a heading
+_SECTION_LIMIT = 10                               # cap on the run bound to one heading
 
 
 def _para_plain_text(p) -> str:
     return "".join(t.text or "" for t in p.iter(w("t")))
+
+
+def _is_item_start(p) -> bool:
+    """True when this paragraph opens a new top-level question.
+
+    Adrian's practice questions are Word-autonumbered, so the number is not in
+    the text at all — it lives in <w:numPr>, and only ilvl 0 is a question (the
+    deeper levels are its (i)/(ii) parts). Our own generated questions spell the
+    number out, hence the text fallback.
+    """
+    pPr = p.find(w("pPr"))
+    numPr = pPr.find(w("numPr")) if pPr is not None else None
+    if numPr is not None:
+        ilvl = numPr.find(w("ilvl"))
+        if ilvl is None or ilvl.get(w("val")) == "0":
+            return True
+    return bool(_Q_START_RE.match(_para_plain_text(p)))
+
+
+def _is_section_head(p) -> bool:
+    """A short, fully bold line that introduces what follows.
+
+    That covers "Binomial Theorem Practice", "Finding n", "Solution:" and the
+    bracketed source tags — everything Adrian sets in bold to open a block.
+    """
+    text = _para_plain_text(p).strip()
+    if not text or len(text) > _HEAD_CHARS or _is_item_start(p):
+        return False
+    runs = [r for r in p.findall(w("r"))
+            if "".join(t.text or "" for t in r.iter(w("t"))).strip()]
+    if not runs:
+        return False
+    return all(r.find(w("rPr")) is not None and r.find(w("rPr")).find(w("b")) is not None
+               for r in runs)
+
+
+def _bind_section_heads(body) -> int:
+    """Move a heading to the next page when its first question won't fit under it.
+
+    Adrian's own "Binomial Theorem Practice" heading landed in the last ~60 pt of
+    page 3 with question 1 wrapping and its [Ans: …] alone on page 4 — "the
+    practice could be on a new page so that it is not cluttered" (2026-08-06).
+    There is no OOXML "start on a new page if short of room"; the way to say it
+    is keepNext, so the heading is chained to the whole of question 1 and Word
+    relocates the group as a unit.
+
+    The run ends at question 2, at the next heading, or at a table (from there
+    `_example_head` owns the chain), and the last paragraph of the run is left
+    unbound so the block does not drag question 2 along behind it.
+    """
+    bound = 0
+    for head in list(body):
+        if etree.QName(head).localname != "p" or not _is_section_head(head):
+            continue
+        run, el, seen_item = [], head.getnext(), False
+        while el is not None and len(run) < _SECTION_LIMIT:
+            if etree.QName(el).localname != "p":
+                break                              # the solution table
+            if _is_section_head(el) and run:
+                break
+            if _is_item_start(el):
+                if seen_item:
+                    break                          # question 2 — the block is done
+                seen_item = True
+            run.append(el)
+            el = el.getnext()
+        if not run:
+            continue
+        for p in [head] + run[:-1]:
+            _keep_with_next(p)
+        bound += 1
+    return bound
 
 
 def _example_head(tbl):
@@ -1776,8 +1850,9 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
         body.insert(insert_at + offset, el)
 
     tables = _keep_blocks_together(body)
+    heads = _bind_section_heads(body)
     house = _normalize_house_style(root)
-    house.update(blanks_removed=blanks, tables_bound=tables)
+    house.update(blanks_removed=blanks, tables_bound=tables, heads_bound=heads)
     # The title is written last: it is the one block that is deliberately not
     # 9.5 pt, so the house-style pass must already be behind us.
     if title:
@@ -1837,6 +1912,11 @@ class RunReport:
                      % (pg.get("sections", 0),
                         "; page size %s -> A4 portrait" % ", ".join(pg["resized"])
                         if pg.get("resized") else ""))
+            hs = self.build.get("house") or {}
+            if "tables_bound" in hs or "heads_bound" in hs:
+                # keepNext leaves no trace in the render, so say it out loud here
+                L.append("Keep      : %d solution box(es), %d section heading(s) bound to "
+                         "what follows" % (hs.get("tables_bound", 0), hs.get("heads_bound", 0)))
             L.append("Equations : %d converted, %d fallback(s)"
                      % (self.build.get("equations", 0), len(self.build.get("fallbacks", []))))
             for f in self.build.get("fallbacks", []):
