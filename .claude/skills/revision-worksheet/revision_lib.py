@@ -67,6 +67,17 @@ WORKED_FOLDERS = ["AM", "EM", "S1", "S2", "JC", "AM G2", "EM G2"]
 # its own, so S3/S4 of a subject share one.
 BANK_OUT_FOLDER = {"S4_AM": "AM", "S3_AM": "AM", "S4_EM": "EM", "S3_EM": "EM"}
 
+# …which means this skill's own output sits in the folder it later scans for
+# BASES. Without this filter, a second run clones the first run's worksheet and
+# the Practice section compounds. Adrian's real sheets are "3 REV AM … (With
+# Worked Examples)" / "O REV 08 …"; ours are exactly "REV <label> <topic>
+# (Notes|Worked Examples)" — see default_out_path.
+GENERATED_RE = re.compile(r"^REV .+\((?:Notes|Worked Examples)\)$")
+
+
+def _is_generated(stem: str) -> bool:
+    return bool(GENERATED_RE.match(stem))
+
 # bank -> (primary questions.level, top-up level or None)
 BANK_LEVELS = {
     "S4_AM": ("AM", None),
@@ -92,15 +103,22 @@ FOLDER_LEVELS = {
 FONT = "Times New Roman"
 MATH_FONT = "Cambria Math"   # glyph font inside OMML; Word's own default
 SZ_BODY = 19        # half-points -> 9.5 pt
-SZ_HEAD = 24        # 12 pt
-COLOR_NAVY = "1F4E79"
+# The "Practice" heading is ours, not the base's, so it follows the body: TNR
+# bold 9.5, no colour. A big navy heading looked like a different document
+# grafted onto Adrian's sheet.
+SZ_HEAD = SZ_BODY
 COLOR_ORANGE = "843C0C"
 LINE_15 = "360"     # 1.5 line spacing, w:lineRule="auto"
 IND_Q_LEFT, IND_Q_HANG = 567, 567       # 1 cm
 IND_SQ_LEFT, IND_SQ_HANG = 1134, 567    # 2 cm / 1 cm
-MARKS_INSET = 283                       # 0.5 cm — marks sit just inside the margin
-MARKS_GUTTER = 680                      # 1.2 cm reserved at the right for [n]
-FALLBACK_TAB_TWIPS = 8789               # 15.5 cm, used if sectPr can't be read
+# [n] sits a small fixed gap after the question text, the way Adrian's hand-made
+# sheets read ("…in their simplest forms.  [3]") — NOT flung out to the right
+# margin. The spacer is a NO-BREAK SPACE (Unicode line-break class GL, which
+# forbids a break on either side) widened by character spacing, so the gap is
+# ~0.4 cm at 9.5 pt and "text.  [3]" stays one unbreakable unit: when the line
+# runs out the mark wraps down WITH the last word instead of stranding itself.
+MARKS_GAP_TEXT = "\u00a0"             # NBSP: 0.25 em = 2.375 pt at 9.5 pt
+MARKS_GAP_TRACK = 180                   # + 9 pt tracking -> 11.375 pt ~= 0.40 cm
 
 # Page setup forced onto the OUTPUT regardless of what the base carries: the
 # notes fragments inherit formula-sheet layouts (wide/narrow margins, sometimes
@@ -327,7 +345,8 @@ def list_fragments(bank: str) -> list:
     if not d.is_dir():
         raise ResolutionError(
             "Notes bank %r not found at %s (banks: %s)" % (bank, d, ", ".join(BANKS)))
-    return sorted(p.stem for p in d.glob("*.docx") if not p.name.startswith("~$"))
+    return sorted(p.stem for p in d.glob("*.docx")
+                  if not p.name.startswith("~$") and not _is_generated(p.stem))
 
 
 def resolve_fragment(bank: str, topic: str) -> Resolved:
@@ -466,7 +485,8 @@ def list_worked(folder: str) -> list:
         raise ResolutionError(
             "Revision folder %r not found at %s (folders: %s)"
             % (folder, d, ", ".join(WORKED_FOLDERS)))
-    return sorted(p.stem for p in d.glob("*.docx") if not p.name.startswith("~$"))
+    return sorted(p.stem for p in d.glob("*.docx")
+                  if not p.name.startswith("~$") and not _is_generated(p.stem))
 
 
 def resolve_worked(folder: str, topic: str) -> Resolved:
@@ -826,8 +846,8 @@ def _sub(parent, tag, **attrs):
     return el
 
 
-def _rpr(run, bold=False, italic=False, color=None, size=SZ_BODY):
-    """CT_RPr child order: rFonts, b, i, color, sz, szCs."""
+def _rpr(run, bold=False, italic=False, color=None, size=SZ_BODY, track=0):
+    """CT_RPr child order: rFonts, b, i, color, spacing, sz, szCs."""
     rPr = etree.SubElement(run, w("rPr"))
     rf = etree.SubElement(rPr, w("rFonts"))
     for a in ("ascii", "hAnsi", "eastAsia", "cs"):
@@ -838,6 +858,8 @@ def _rpr(run, bold=False, italic=False, color=None, size=SZ_BODY):
         _sub(rPr, "i", val="1")
     if color:
         _sub(rPr, "color", val=color)
+    if track:
+        _sub(rPr, "spacing", val=track)      # character spacing, 20ths of a point
     _sub(rPr, "sz", val=size)
     _sub(rPr, "szCs", val=size)
     return rPr
@@ -861,14 +883,43 @@ def _order_rpr(rPr):
         rPr.append(k)          # stable: re-appending in sorted order
 
 
+# OMML elements that draw a glyph of their OWN — brackets, fraction bar, radical
+# sign, big operators — rather than through an <m:r>. Word takes that glyph's
+# size/colour from the element's <m:ctrlPr>, and pandoc emits no ctrlPr at all,
+# so those glyphs silently fell back to the BASE document's default (12 pt: the
+# tall parentheses and √ in a 9.5 pt equation). Every one of these has its
+# properties element named <tag>Pr, always first child, with ctrlPr last inside.
+_CTRL_TAGS = ("acc", "bar", "borderBox", "box", "d", "eqArr", "f", "func",
+              "groupChr", "limLow", "limUpp", "m", "nary", "phant", "rad",
+              "sPre", "sSub", "sSubSup", "sSup")
+
+
+def _style_math_rpr(rPr, size, color):
+    for tag in ("sz", "szCs") + (("color",) if color else ()):
+        for old in rPr.findall(w(tag)):
+            rPr.remove(old)
+    if rPr.find(w("rFonts")) is None:
+        # what Word itself writes on a math run; pandoc leaves it off, which
+        # makes the glyphs inherit the base document's body font
+        rf = etree.SubElement(rPr, w("rFonts"))
+        rf.set(w("ascii"), MATH_FONT)
+        rf.set(w("hAnsi"), MATH_FONT)
+    if color:
+        _sub(rPr, "color", val=color)
+    _sub(rPr, "sz", val=size)
+    _sub(rPr, "szCs", val=size)
+    _order_rpr(rPr)
+
+
 def style_omml(elem, size=SZ_BODY, color=None):
-    """Force size (and optionally colour) onto every run inside an OMML tree.
+    """Force size (and optionally colour) onto everything inside an OMML tree.
 
     Pandoc emits <m:r> whose <w:rPr> names Cambria Math but carries no w:sz, so
     the equation inherits the BASE document's default size and comes out bigger
     than the 9.5 pt text beside it. Colour is the same story: an orange [Ans: …]
     label left its converted math black. Cambria Math stays (Word's normal math
-    font); only sz/szCs/color are imposed.
+    font); only sz/szCs/color are imposed — on the runs AND on the control
+    properties that size delimiters, fraction bars and radicals.
     """
     if elem is None:
         return elem
@@ -878,30 +929,42 @@ def style_omml(elem, size=SZ_BODY, color=None):
             rPr = etree.Element(w("rPr"))
             mrPr = r.find("{%s}rPr" % M_NS)      # m:rPr must stay first
             r.insert(list(r).index(mrPr) + 1 if mrPr is not None else 0, rPr)
-        for tag in ("sz", "szCs") + (("color",) if color else ()):
-            for old in rPr.findall(w(tag)):
-                rPr.remove(old)
-        if rPr.find(w("rFonts")) is None:
-            # what Word itself writes on a math run; pandoc leaves it off, which
-            # makes the glyphs inherit the base document's body font
-            rf = etree.SubElement(rPr, w("rFonts"))
-            rf.set(w("ascii"), MATH_FONT)
-            rf.set(w("hAnsi"), MATH_FONT)
-        if color:
-            _sub(rPr, "color", val=color)
-        _sub(rPr, "sz", val=size)
-        _sub(rPr, "szCs", val=size)
-        _order_rpr(rPr)
+        _style_math_rpr(rPr, size, color)
+    for tag in _CTRL_TAGS:
+        for node in elem.iter("{%s}%s" % (M_NS, tag)):
+            pr_tag = "{%s}%sPr" % (M_NS, tag)
+            pr = node.find(pr_tag)
+            if pr is None:
+                pr = etree.Element(pr_tag)
+                node.insert(0, pr)               # <tag>Pr is always first child
+            ctrl_tag = "{%s}ctrlPr" % M_NS
+            ctrl = pr.find(ctrl_tag)
+            if ctrl is None:
+                ctrl = etree.SubElement(pr, ctrl_tag)   # …and ctrlPr last in it
+            rPr = ctrl.find(w("rPr"))
+            if rPr is None:
+                rPr = etree.SubElement(ctrl, w("rPr"))
+            _style_math_rpr(rPr, size, color)
     return elem
 
 
-def _run(p, text, bold=False, italic=False, color=None, size=SZ_BODY):
+def _run(p, text, bold=False, italic=False, color=None, size=SZ_BODY, track=0):
     r = etree.SubElement(p, w("r"))
-    _rpr(r, bold, italic, color, size)
+    _rpr(r, bold, italic, color, size, track)
     t = etree.SubElement(r, w("t"))
     t.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
     t.text = text
     return r
+
+
+def _marks_run(p, marks):
+    """`[n]` a small fixed gap after the question text, on the SAME line.
+
+    No tab stop is involved: the mark trails the text the way Adrian writes it
+    by hand. See MARKS_GAP_TEXT for why the spacer is a widened no-break space.
+    """
+    _run(p, MARKS_GAP_TEXT, track=MARKS_GAP_TRACK)
+    _run(p, "[%s]" % marks)
 
 
 def _tab_run(p):
@@ -932,8 +995,8 @@ def _page_break_para():
 CLEAR_NUMBERING = False
 
 
-def _para(left=0, hanging=0, align=None, tab_at=None, space_after=0,
-          keep_next=False, page_break_before=False, left_tabs=(), right=0):
+def _para(left=0, hanging=0, align=None, space_after=0,
+          keep_next=False, page_break_before=False, left_tabs=()):
     """Blank paragraph with fully inline properties.
 
     CT_PPr child order matters: keepNext, pageBreakBefore, numPr, tabs,
@@ -951,17 +1014,15 @@ def _para(left=0, hanging=0, align=None, tab_at=None, space_after=0,
         _sub(numPr, "numId", val="0")
     # Tab stops, ascending. The LEFT stop at the paragraph's left indent is
     # explicit on purpose: a hanging indent gives Word an implicit stop there,
-    # but a custom tab stop also clears the default stops before it, so without
-    # this the label tab could shoot straight to the right-aligned marks stop.
-    # Spelling both out makes the label/marks layout renderer-independent.
+    # but a custom tab stop also clears the default stops before it, so spelling
+    # every column out makes the number/label layout renderer-independent.
+    # There is no marks stop — [n] trails the text (see _marks_run).
     stops = []
     if hanging and left:
         stops.append(("left", left))
     for pos in left_tabs:                 # intermediate columns, e.g. the (a) column
         if pos and pos != left:
             stops.append(("left", pos))
-    if tab_at:
-        stops.append(("right", tab_at))
     if stops:
         tabs = etree.SubElement(pPr, w("tabs"))
         for val, pos in sorted(stops, key=lambda s: s[1]):
@@ -973,12 +1034,11 @@ def _para(left=0, hanging=0, align=None, tab_at=None, space_after=0,
     sp.set(w("after"), str(space_after))
     sp.set(w("line"), LINE_15)
     sp.set(w("lineRule"), "auto")
-    if left or hanging or right:
+    if left or hanging:
         ind = etree.SubElement(pPr, w("ind"))
         ind.set(w("left"), str(left))
         if hanging:
             ind.set(w("hanging"), str(hanging))
-        ind.set(w("right"), str(right))
     if align:
         _sub(pPr, "jc", val=align)
     # paragraph-mark run properties (last child of pPr): keeps empty
@@ -1030,7 +1090,7 @@ def _working_lines(marks, extra=2, minimum=3, maximum=12) -> int:
     return max(minimum, min(maximum, m + extra))
 
 
-def build_practice(questions: list, omml: OmmlCache, tab_at: int,
+def build_practice(questions: list, omml: OmmlCache,
                    heading: str = "Practice", show_source: bool = False,
                    page_break: bool = True, space: int = 2) -> list:
     """Return the list of <w:p> elements forming the Practice section."""
@@ -1039,7 +1099,7 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
         els.append(_page_break_para())
 
     h = _para(space_after=180, keep_next=True)
-    _run(h, heading, bold=True, color=COLOR_NAVY, size=SZ_HEAD)
+    _run(h, heading, bold=True, size=SZ_HEAD)
     els.append(h)
 
     for i, row in enumerate(questions, 1):
@@ -1057,8 +1117,7 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
             blocks = _text_blocks(head.get("text") or "")
             pm = head.get("marks")
             first = _para(left=IND_SQ_LEFT, hanging=IND_SQ_LEFT,
-                          left_tabs=(IND_Q_LEFT,), right=MARKS_GUTTER,
-                          tab_at=tab_at if pm else None, keep_next=True)
+                          left_tabs=(IND_Q_LEFT,), keep_next=True)
             _run(first, "%d." % i)
             _tab_run(first)
             _run(first, _label(head.get("label")))
@@ -1070,19 +1129,17 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
                 if src:
                     _run(first, "  [%s]" % src, italic=True, color="808080")
             if pm:
-                _tab_run(first)
-                _run(first, "[%s]" % pm)
+                _marks_run(first, pm)
             els.append(first)
             for extra in blocks[1:]:
-                p = _para(left=IND_SQ_LEFT, right=MARKS_GUTTER, keep_next=True)
+                p = _para(left=IND_SQ_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 els.append(p)
             for _ in range(_working_lines(pm, extra=space)):
                 els.append(_para(left=IND_SQ_LEFT))
         else:
             # -- stem
-            first = _para(left=IND_Q_LEFT, hanging=IND_Q_HANG, right=MARKS_GUTTER,
-                          tab_at=tab_at if marks_here else None, keep_next=True)
+            first = _para(left=IND_Q_LEFT, hanging=IND_Q_HANG, keep_next=True)
             _run(first, "%d." % i)
             _tab_run(first)
             if stem_blocks:
@@ -1092,12 +1149,11 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
                 if src:
                     _run(first, "  [%s]" % src, italic=True, color="808080")
             if marks_here:
-                _tab_run(first)
-                _run(first, "[%s]" % marks_here)
+                _marks_run(first, marks_here)
             els.append(first)
 
             for extra in stem_blocks[1:]:
-                p = _para(left=IND_Q_LEFT, right=MARKS_GUTTER, keep_next=True)
+                p = _para(left=IND_Q_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 els.append(p)
 
@@ -1109,18 +1165,16 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
         for part in parts:
             blocks = _text_blocks(part.get("text") or "")
             pm = part.get("marks")
-            sp = _para(left=IND_SQ_LEFT, hanging=IND_SQ_HANG, right=MARKS_GUTTER,
-                       tab_at=tab_at if pm else None, keep_next=True)
+            sp = _para(left=IND_SQ_LEFT, hanging=IND_SQ_HANG, keep_next=True)
             _run(sp, _label(part.get("label")))
             _tab_run(sp)
             if blocks:
                 _emit_parts(sp, split_math(blocks[0]), omml)
             if pm:
-                _tab_run(sp)
-                _run(sp, "[%s]" % pm)
+                _marks_run(sp, pm)
             els.append(sp)
             for extra in blocks[1:]:
-                p = _para(left=IND_SQ_LEFT, right=MARKS_GUTTER, keep_next=True)
+                p = _para(left=IND_SQ_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 els.append(p)
             for _ in range(_working_lines(pm, extra=space)):
@@ -1181,22 +1235,6 @@ def collect_latex(questions: list) -> list:
 # --------------------------------------------------------------------------
 # Assembly — clone base docx, inject before <w:sectPr>
 # --------------------------------------------------------------------------
-
-def _tab_from_sectpr(body) -> int:
-    try:
-        sect = body.find(w("sectPr"))
-        pg = sect.find(w("pgSz"))
-        mar = sect.find(w("pgMar"))
-        width = int(pg.get(w("w")))
-        left = int(mar.get(w("left")))
-        right = int(mar.get(w("right")))
-        span = width - left - right - MARKS_INSET
-        if 2000 < span < 20000:
-            return span
-    except Exception:
-        pass
-    return FALLBACK_TAB_TWIPS
-
 
 def _normalize_page(root) -> dict:
     """Impose the worksheet page setup on EVERY sectPr in the document.
@@ -1278,11 +1316,9 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     if body is None:
         raise RuntimeError("base docx has no <w:body>: %s" % base_path)
 
-    # page setup first — the marks tab stop is measured off the FINAL margins
     page = _normalize_page(root)
-    tab_at = _tab_from_sectpr(body)
     omml.prime(collect_latex(questions))
-    els = build_practice(questions, omml, tab_at, heading=heading,
+    els = build_practice(questions, omml, heading=heading,
                          show_source=show_source, page_break=page_break, space=space)
 
     sect = body.find(w("sectPr"))
@@ -1301,7 +1337,7 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
         for n in names:
             zout.writestr(n, items[n])
 
-    return {"paragraphs": len(els), "tab_twips": tab_at, "page": page,
+    return {"paragraphs": len(els), "page": page,
             "equations": sum(1 for v in omml.cache.values() if v is not None),
             "fallbacks": list(omml.fallbacks)}
 
@@ -1443,10 +1479,13 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     if dry_run:
         return report
 
-    out_path = (Path(out).expanduser() if out
-                else default_out_path(label, topic, kind, bank=bank, folder=folder))
-    if suffix:
-        out_path = out_path.with_name(out_path.stem + suffix + out_path.suffix)
+    # --suffix decorates the DEFAULT filename; an explicit --out is taken verbatim
+    if out:
+        out_path = Path(out).expanduser()
+    else:
+        out_path = default_out_path(label, topic, kind, bank=bank, folder=folder)
+        if suffix:
+            out_path = out_path.with_name(out_path.stem + suffix + out_path.suffix)
     omml = OmmlCache()
     report.build = clone_with_practice(resolved.path, out_path, chosen, omml,
                                        show_source=show_source, page_break=page_break,

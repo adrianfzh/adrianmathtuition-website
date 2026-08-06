@@ -62,7 +62,7 @@ Default question count is **8**. Always print the run report (below) back to Adr
 | `--fragment "<name>"` | force a specific notes fragment, skipping resolution |
 | `--base <path.docx>` | force any base document outright |
 | `--level AM\|S3_AM\|EM\|S3_EM\|S1\|S2\|JC` | override the level mapping |
-| `--out <path>` / `--suffix " (TEST)"` | override the output path (default is the Revision folder, below) / filename suffix |
+| `--out <path>` / `--suffix " (TEST)"` | exact output path, taken verbatim / suffix on the **default** filename (ignored when `--out` is given) |
 | `--seed N` | reproducible question pick |
 | `--no-ai` | exclude `AI Generated` rows (real past papers only) |
 | `--show-source` | print school/year/paper under each question |
@@ -188,28 +188,29 @@ Appended after the base content, in the house style inherited from `create-works
 (Times New Roman 9.5 pt, 1.5 line spacing, marks right-aligned, `[Ans: …]` right-aligned
 in orange `#843C0C`, navy `#1F4E79` heading):
 
-- `Practice` heading (TNR 12 pt bold navy), optionally preceded by a page break
+- `Practice` heading (TNR **bold 9.5 pt, no colour** — it is our paragraph, not the
+  base's, and a big navy heading read like a different document grafted onto Adrian's
+  sheet), optionally preceded by a page break
   (`<w:br w:type="page"/>` in its own paragraph — default **off** for `notes` so the
   formulas stay visible beside the questions, **on** for `worked` so the practice starts
   clean).
 - **Every run is Times New Roman 9.5 pt** — question text, part labels, marks, answers —
   written as explicit `w:rFonts` (ascii/hAnsi/eastAsia/cs) + `w:sz`/`w:szCs` = 19 on each
-  run, never inherited. Only the heading differs (12 pt navy).
+  run, never inherited — the heading too (it is bold, same size).
 - **The question number never sits alone on a line.** When a question is all sub-parts
   (the common shape in this bank) the first part rides up onto the number's line:
   `1.<tab>(a)<tab>Write down, and simplify, …`, with the hanging indent set to the text
   column so wraps and the following `(b)`, `(c)` line up under it. Columns: number at the
   margin, labels at 1 cm, text at 2 cm. When the question *has* stem text, the number
   goes with the stem and `(a)` starts its own line.
-- Marks as `[3]`, right-aligned at a tab stop computed from the **final** page geometry
-  (page width − margins − 0.5 cm), i.e. after the margin override below, with a
-  **reserved marks gutter** so the mark always lands on the question's last text line:
-  every question/part paragraph carries `w:ind w:right="680"` (1.2 cm) so the text wraps
-  early, while the right tab stop stays out at the full text width — *past* the right
-  indent. Word honours a tab stop beyond the right indent; without the gutter, a question
-  whose text ran to the margin (wide inline OMML) pushed its `[2]` onto a line of its own.
-  Verified by exporting the generated files to PDF **from Word itself**: same question,
-  no gutter → 3 stray mark lines; with the gutter → 0.
+- Marks as `[3]` **a small fixed gap after the question text, on the same line** — the way
+  Adrian writes them by hand ("…in their simplest forms.  [3]"). No tab stop, no right
+  indent, nothing flung out to the right margin. The spacer is a NO-BREAK SPACE widened
+  by 9 pt of character spacing (`w:spacing` in the run's `rPr`), giving 11.375 pt ≈ 0.40 cm
+  at 9.5 pt. NBSP is Unicode line-break class GL, which forbids a break on either side, so
+  `text.··[3]` is one unbreakable unit: when the line runs out the mark wraps down **with**
+  the last word instead of stranding itself on a line of its own. Measured in Word's own
+  PDF export: every mark 0.400 cm after the text, 0 strays.
 - Working space: `marks + 2` blank lines (min 3, max 12; tune with `--space`).
 - `[Ans: …]` right-aligned and **entirely orange, converted equations included** — see the
   OMML note under assembly.
@@ -241,9 +242,15 @@ The run report says how many sections were normalised and names any page size it
 - **Numbering is cleared only when it needs to be.** `<w:numPr><w:numId w:val="0"/></w:numPr>`
   is emitted *only* if the base's `docDefaults`/default paragraph style actually carries
   numbering. Emitting it unconditionally put a phantom bullet on every practice line.
-- **Explicit LEFT tab stop as well as the right marks stop.** A custom tab stop clears
-  Word's default stops before it, so the tab after `(a)` would otherwise jump all the way
-  to the marks stop.
+- **Every column gets an explicit LEFT tab stop.** A custom tab stop clears Word's default
+  stops before it, so the number/label columns are spelled out rather than left to the
+  hanging indent's implicit stop.
+- **The skill's own output is excluded from base resolution.** Worksheets land in
+  `Revision/<folder>` — the very folder scanned for `worked` bases — so a second run would
+  otherwise clone the first run's worksheet and compound the Practice section (this
+  happened: 25 `[Ans:]` lines instead of 6). `list_worked`/`list_fragments` skip any stem
+  matching `^REV .+\((Notes|Worked Examples)\)$`, which is exactly `default_out_path`'s
+  naming and never matches Adrian's own `3 REV AM … (With Worked Examples)`.
 - **Equations never abort the run.** All LaTeX in the selected questions is converted in a
   single batched `pandoc` call (≈38 equations in a couple of seconds), with a
   per-expression retry through `worksheet_lib._latex_to_omml`. Anything still unconvertible
@@ -256,6 +263,13 @@ The run report says how many sections were normalised and names any page size it
   (what Word itself writes on math runs), and the answer colour where applicable. `w:rPr`
   is a *sequence*, not a bag, so the injected children are re-sorted into CT_RPr order —
   out-of-order children make Word declare the file unreadable.
+- **…and so do the OMML control properties.** Brackets, fraction bars, radical signs and
+  big operators are glyphs the *element* draws, not an `m:r`: Word sizes them from the
+  element's `m:ctrlPr`. Pandoc emits none, so those glyphs fell back to the base
+  document's 12 pt default — tall parentheses and √ towering over a 9.5 pt equation, which
+  only a rendered PDF shows (the XML check passed the whole time). `style_omml` now also
+  injects `<tag>Pr/m:ctrlPr/w:rPr` on `m:d`, `m:f`, `m:rad`, `m:nary`, `m:sSub`, `m:sSup`,
+  … — `<tag>Pr` first child, `m:ctrlPr` last inside it.
 
 ## Output
 
@@ -299,11 +313,28 @@ unzip -p "out.docx" word/document.xml | grep -o "m:oMath" | wc -l   # equations 
 python3 -c "from docx import Document; print(len(Document('out.docx').paragraphs))"
 ```
 
-**Quick Look lies about this file.** `qlmanage`/Preview renders OMML as blank and ignores
-custom tab stops, so equations look missing and `[3]` looks mid-line. A control file
-generated by the proven `create-worksheet` skill renders exactly the same way in Quick
-Look. Judge the output in **MS Word**, or by the XML checks above — not by a thumbnail.
-(Same root cause as the LibreOffice/Cambria Math caveat in `create-worksheet`.)
+**Quick Look lies about this file.** `qlmanage`/Preview renders OMML as blank, so equations
+look missing. A control file generated by the proven `create-worksheet` skill renders
+exactly the same way in Quick Look. Judge the output in **MS Word**, or by the XML checks
+above — not by a thumbnail. (Same root cause as the LibreOffice/Cambria Math caveat in
+`create-worksheet`.)
+
+**Font problems are invisible to the XML checks — verify by RENDER.** The oversized
+brackets/radicals bug passed every structural assertion (`w:sz` was 19 on every run,
+because the offending glyphs are not runs). Export the file to PDF *from Word* (Word MCP
+`open_document` → `export_pdf` → `close_document`) and inventory the glyphs:
+
+```python
+import pdfplumber, collections
+with pdfplumber.open("out.pdf") as pdf:
+    inv = collections.Counter((c["fontname"].split("+")[-1], round(c["size"], 2))
+                              for p in pdf.pages for c in p.chars if c["text"].strip())
+```
+
+Read the sizes **relatively**, not absolutely: macOS Word's PDF export quantises font
+sizes, so 9.5 pt comes out as `9.6` and 9 pt as `9.12`. The test that means something is
+that our practice runs report the *same* number as Adrian's own `w:sz=19` body text in the
+same PDF. Anything reporting the document default (12 pt → `12.0`) is a real bug.
 
 ## Programmatic use
 
