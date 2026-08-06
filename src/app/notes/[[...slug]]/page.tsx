@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DocsPage, DocsBody, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
+import BackToReflexes from '../BackToReflexes';
 import NotesMarkdown from '../NotesMarkdown';
 import NotesUnits from '../NotesUnits';
 import { ReviewBar } from '../ReviewControls';
@@ -375,6 +376,7 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
         {/* Reflexes lead the page: the sub-group list below duplicates the
             sidebar, but these 179 cards appear nowhere else in the portal. */}
         {data.recall.length > 0 && <Reflexes cards={data.recall} sections={sections} />}
+        {data.recall.length > 0 && <BackToReflexes anchor={ANCHOR.reflexes} />}
 
         {/* Quick-revision card, when the topic has one. Its own title is dropped:
             it always restates the topic, which is already the page heading. */}

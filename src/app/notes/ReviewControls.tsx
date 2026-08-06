@@ -109,7 +109,8 @@ function NoteBox({
           setState('idle');
         }}
         placeholder="What's wrong? Type it here — Claude reads this and fixes it."
-        rows={2}
+        // Grow with the saved note — a 2-row box hid everything below the fold.
+        rows={Math.min(8, Math.max(2, note.split('\n').length + 1))}
       />
       <div className="nx-notebox-row">
         <span className="nx-notebox-state">
