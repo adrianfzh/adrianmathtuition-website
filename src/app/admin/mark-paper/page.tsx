@@ -387,6 +387,35 @@ export default function MarkPaperPage() {
     finally { setLoadingRun(''); }
   }
 
+  // ── Paper name ─────────────────────────────────────────────────────────────
+  // The name is the name of the thing EVERYWHERE now: the file Adrian downloads,
+  // the Dropbox file the queue worker files, the Telegram document, the email
+  // subject and the history row. It used to be a write-once box on the SEND row —
+  // reachable only after a PDF existed — so a queued paper carried "worksheet
+  // (3 photos)" through all of those forever. It is now editable before marking,
+  // after marking, and inline in history, and every edit saves (Adrian, 6 Aug 2026).
+  function autoPaperLabel() {
+    return workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`);
+  }
+  // Save silently. A rename is cosmetic — a failed one must not throw an error
+  // banner over a perfectly good marking, so it degrades to the old behaviour
+  // (the typed name still drives this session's filenames and email).
+  async function saveRunName(id: string, name: string) {
+    try {
+      const r = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'rename', id, paperName: name }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) return false;
+      setRecentRuns((prev) => prev.map((x) => x.id === id ? { ...x, paper_name: d.paper_name } : x));
+      return true;
+    } catch { return false; }
+  }
+  // Which history run's name is being edited inline (run id, or null) + its draft.
+  const [editNameId, setEditNameId] = useState<string | null>(null);
+  const [editNameDraft, setEditNameDraft] = useState('');
+
   // History-row ✏️: load the run, then jump straight into the annotate overlay —
   // "allow annotation option in recently marked papers directly" (Adrian, 2 Aug 2026).
   async function annotateRun(id: string) {
@@ -408,7 +437,10 @@ export default function MarkPaperPage() {
     const pdfs = arr.filter(isPdf);
     if (pdfs.length && pdfs[0].name && !/^shared\.pdf$/i.test(pdfs[0].name)) {
       const nice = pdfs[0].name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
-      if (nice) { workingNameRef.current = nice; setPaperName((prev) => prev || nice); }
+      // A newly dropped working PDF is a NEW paper, so it takes the name back from a
+      // run that was loaded into the page — otherwise the next marking inherited the
+      // previous paper's name and filed itself under it.
+      if (nice) { workingNameRef.current = nice; setPaperName((prev) => (runId ? nice : (prev || nice))); }
     }
     const photos = arr.filter((f) => !isPdf(f) && (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(f.name)));
     if (photos.length) await onPickImages(photos);
@@ -468,7 +500,10 @@ export default function MarkPaperPage() {
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
   async function markPaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName(workingNameRef.current); setPracticeItems(null);
+    // Keep a name Adrian typed before hitting Mark — the box is now above this
+    // button, so blanking it back to the filename would throw away the thing he
+    // just wrote. Only an untouched box falls back to the working PDF's name.
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setPracticeItems(null);
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -482,7 +517,7 @@ export default function MarkPaperPage() {
         Promise.all(images.map((f, i) => uploadOriginal(f, imgs[i]))),
         pdf ? uploadPaperPdf(pdf) : Promise.resolve(null),
       ]).finally(() => setRasterizing(''));
-      const paperLabel = workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`);
+      const paperLabel = paperName.trim() || autoPaperLabel();
       // SAVE the uploaded inputs as a run row BEFORE marking — a 502'd marking then
       // leaves a "⏳ not marked yet" entry in history whose files are already in
       // Blob, so retrying is one ▶ Mark tap, never a re-upload (Adrian, 3 Aug
@@ -675,6 +710,28 @@ export default function MarkPaperPage() {
   // 30 Jul 2026); the score already sits in the PDF's total strip.
   const sendDateStr = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' });
   const sendFilename = [...[sendStudentName, paperName].filter(Boolean), sendDateStr].join(' — ').replace(/^(?=\d)/, 'Marked paper — ') + '.pdf';
+
+  // 📁 File it into Dropbox. Adrian's ask (6 Aug 2026) was to skip the download step
+  // entirely on the iPad — the marked copy should already be in a folder in the Files
+  // app. Queued papers get this automatically from the bot worker; this button is the
+  // same route for papers marked here at the keyboard.
+  const [dbxBusy, setDbxBusy] = useState(false);
+  const [dbxNote, setDbxNote] = useState('');
+  async function fileToDropbox() {
+    if (!sendPdf || dbxBusy) return;
+    setDbxBusy(true); setDbxNote(''); setError('');
+    try {
+      const name = [sendStudentName, paperName].filter(Boolean).join(' — ') || 'marked paper';
+      const r = await fetch('/api/admin/mark-paper-dropbox', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ url: sendPdf.url, name }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
+      setDbxNote(`📁 Saved to Dropbox: ${d.name}`);
+    } catch (e) { setError((e as Error).message); }
+    finally { setDbxBusy(false); }
+  }
   async function sendMarkedEmail() {
     if (!sendPdf) return;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sendEmail.trim())) { setSendNote({ ok: false, text: 'Enter a valid email address first.' }); return; }
@@ -767,7 +824,10 @@ export default function MarkPaperPage() {
       ]).finally(() => setRasterizing(''));
       const photos = originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean);
       if (!photos.length) throw new Error('The photo uploads failed — try again.');
-      const paperLabel = workingNameRef.current || (pdf ? pdf.name : `worksheet (${images.length} photo${images.length === 1 ? '' : 's'})`);
+      // A queued paper is named ONCE, here — nobody is at the keyboard when it
+      // finishes, and this name is what the Telegram document and the Dropbox file
+      // are called.
+      const paperLabel = paperName.trim() || autoPaperLabel();
       const sp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, source: { paper_pdf_url: paperPdfUrl || null, photos } }),
@@ -782,8 +842,8 @@ export default function MarkPaperPage() {
       if (!en.ok || end.error) throw new Error(end.error || 'could not queue');
       // Clear the slots — the whole point is attaching the NEXT paper immediately.
       imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
-      setImages([]); setImgPreviews([]); setPdf(null); workingNameRef.current = '';
-      setQueueNote(`🌙 Queued (#${end.position || 1}) — you'll get a Telegram when it's marked. Attach the next paper.`);
+      setImages([]); setImgPreviews([]); setPdf(null); workingNameRef.current = ''; setPaperName('');
+      setQueueNote(`🌙 Queued as “${paperLabel}” (#${end.position || 1}) — you'll get the marked PDF on Telegram and in Dropbox. Attach the next paper.`);
       loadStats();
     } catch (e) { setError((e as Error).message); }
     finally { setQueueBusy(false); }
@@ -884,7 +944,32 @@ export default function MarkPaperPage() {
                       {run.student_name || '＋ tag'}
                     </button>
                   )}
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{run.paper_name || 'Paper'}</span>
+                  {/* Tap the name to rename it. A paper's name is set before anyone
+                      knows what it is (the working PDF's filename, or nothing at all
+                      for a phone photo), so the moment it needs fixing is here, in
+                      the list, not back on the send row. */}
+                  {editNameId === run.id ? (
+                    <input
+                      autoFocus
+                      value={editNameDraft}
+                      onChange={(e) => setEditNameDraft(e.target.value)}
+                      onBlur={() => { setEditNameId(null); saveRunName(run.id, editNameDraft.trim()); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                        if (e.key === 'Escape') { setEditNameId(null); }
+                      }}
+                      placeholder="Paper name"
+                      style={{ fontSize: 13, padding: '2px 6px', border: '1px solid #d1d5db', borderRadius: 6, minWidth: 180, flex: 1 }}
+                    />
+                  ) : (
+                    <button
+                      title="Rename this paper"
+                      onClick={() => { setEditNameDraft(run.paper_name || ''); setEditNameId(run.id); }}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', color: 'inherit', textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    >
+                      {run.paper_name || 'Paper'} <span style={{ color: '#9ca3af', fontWeight: 400 }}>✎</span>
+                    </button>
+                  )}
                 </span>
                 {run.total_max == null ? (
                   // Saved uploads, never (successfully) marked — the row a 502 leaves
@@ -1008,7 +1093,22 @@ export default function MarkPaperPage() {
             ))}
           </div>
         )}
-        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        {/* Name it BEFORE marking. This is the only moment Adrian is definitely at the
+            keyboard for a 🌙 queued paper, and the name he types here becomes the
+            Telegram document, the Dropbox filename and the history row. */}
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <label htmlFor="paper-name" style={{ fontSize: 13, color: '#374151', fontWeight: 600 }}>Paper name</label>
+          <input
+            id="paper-name"
+            type="text"
+            value={paperName}
+            onChange={(e) => setPaperName(e.target.value)}
+            onBlur={() => { if (runId) saveRunName(runId, paperName.trim()); }}
+            placeholder={autoPaperLabel()}
+            style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, flex: 1, minWidth: 240 }}
+          />
+        </div>
+        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={markPaper}>
             {phase === 'marking' ? 'Marking…' : 'Mark paper'}
           </button>
@@ -1158,6 +1258,7 @@ export default function MarkPaperPage() {
                 type="text"
                 value={paperName}
                 onChange={(e) => setPaperName(e.target.value)}
+                onBlur={() => { if (runId) saveRunName(runId, paperName.trim()); }}
                 placeholder="Paper name (e.g. Zhonghua Prelim AM P1)"
                 style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, minWidth: 230 }}
               />
@@ -1167,6 +1268,15 @@ export default function MarkPaperPage() {
               >
                 ⬇ Download for WhatsApp
               </a>
+              <button
+                style={{ ...btn, background: '#0061ff', fontSize: 14, padding: '8px 14px', opacity: dbxBusy ? 0.6 : 1 }}
+                disabled={dbxBusy}
+                title="Save this PDF into Dropbox → Marked papers (opens in the Files app on the iPad)"
+                onClick={fileToDropbox}
+              >
+                {dbxBusy ? 'Saving…' : '📁 To Dropbox'}
+              </button>
+              {dbxNote && <span style={{ fontSize: 12, color: '#15803d', fontWeight: 600 }}>{dbxNote}</span>}
               <StudentPicker
                 value={sendStudentId}
                 authHeaders={authHeaders}

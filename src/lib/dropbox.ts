@@ -92,3 +92,45 @@ export async function getTemporaryLink(path: string): Promise<string> {
   const data = await rpc<{ link: string }>('/files/get_temporary_link', { path });
   return data.link;
 }
+
+// Escape every non-ASCII code unit as \uXXXX. Dropbox-API-Arg is an HTTP header,
+// so anything above 0x7e (a curly apostrophe pasted from Notes, an accented name)
+// throws "Invalid character in header content" before the request leaves Node.
+// Dropbox parses the JSON after unescaping, so the path arrives intact.
+function asciiHeader(json: string): string {
+  return json.replace(/[^\x20-\x7e]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
+}
+
+/**
+ * Upload bytes to the app folder. Added 6 Aug 2026 so queue-marked papers land in
+ * Dropbox by themselves — Adrian opens the Files app on the iPad instead of the site.
+ *
+ * ⚠ This is the FIRST write this app does. The Dropbox app previously only needed
+ * `files.content.read`; if `files.content.write` was never granted, every call here
+ * 401s with `missing_scope` and the refresh token has to be re-minted with the
+ * wider scope. The caller must treat a failure as cosmetic, never fatal.
+ *
+ * `autorename` is on deliberately: re-marking the same paper should sit beside the
+ * first copy (" (1)"), not silently replace a version Adrian may already have
+ * annotated and handed back.
+ */
+export async function uploadFile(path: string, body: Buffer | Uint8Array, contentType = 'application/octet-stream'): Promise<{ path: string; name: string }> {
+  const token = await getAccessToken();
+  const arg = { path, mode: 'add', autorename: true, mute: false, strict_conflict: false };
+  const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // Dropbox-API-Arg is an HTTP header, so it must be pure ASCII — a student
+      // name with an accent or a curly apostrophe in the filename would otherwise
+      // throw "Invalid character in header content" before the request even leaves.
+      'Dropbox-API-Arg': asciiHeader(JSON.stringify(arg)),
+      'Content-Type': 'application/octet-stream',
+      'X-Upload-Content-Type': contentType,
+    },
+    body: body as unknown as BodyInit,
+  });
+  if (!res.ok) throw new Error(`Dropbox upload failed: ${res.status} ${await res.text()}`);
+  const data = await res.json() as { path_lower: string; name: string };
+  return { path: data.path_lower, name: data.name };
+}
