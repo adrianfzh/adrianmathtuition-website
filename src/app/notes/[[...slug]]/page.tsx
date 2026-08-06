@@ -205,11 +205,11 @@ function ReflexCard({ card, anchor }: { card: RecallCardRow; anchor: string | nu
 function Reflexes({ cards, sections }: { cards: RecallCardRow[]; sections: UnitSection[] }) {
   return (
     <section className="nx-reflexes">
-      {/* "Key formulas", not "Formula reflexes" — Adrian, 2026-08-07: plain
+      {/* "Key concepts", not "Formula reflexes" — Adrian, 2026-08-07: plain
           names over fancy ones, here as much as on the cards themselves. */}
       <SectionHead
         id={ANCHOR.reflexes}
-        label="Key formulas"
+        label="Key concepts"
         note={`${cards.length} to know cold`}
       />
       <div className="not-prose nx-reflex-grid">
@@ -262,7 +262,7 @@ async function LevelIndex() {
         <span className="nx-pill">{plural(topics.length, 'topic')}</span>
         <span className="nx-pill">{plural(examples, 'worked example')}</span>
         {reflexes > 0 && (
-          <span className="nx-pill nx-pill-green">{plural(reflexes, 'key formula')}</span>
+          <span className="nx-pill nx-pill-green">{plural(reflexes, 'key concept')}</span>
         )}
       </div>
       <hr className="nx-rule" />
@@ -281,7 +281,7 @@ async function LevelIndex() {
                   description={[
                     plural(t.pages, 'page'),
                     plural(t.examples, 'example'),
-                    t.recall > 0 ? `${t.recall} key formulas` : null,
+                    t.recall > 0 ? `${t.recall} key concepts` : null,
                   ]
                     .filter(Boolean)
                     .join(' · ')}
@@ -331,7 +331,7 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
   );
 
   const toc = [
-    data.recall.length > 0 && { title: 'Key formulas', url: `#${ANCHOR.reflexes}`, depth: 2 },
+    data.recall.length > 0 && { title: 'Key concepts', url: `#${ANCHOR.reflexes}`, depth: 2 },
     data.card?.content_md && { title: 'Quick revision', url: `#${ANCHOR.revision}`, depth: 2 },
     sections.length > 0 && { title: 'The lesson', url: `#${ANCHOR.lesson}`, depth: 2 },
     // Nested one level: a 52-unit topic needs its own sections in the contents,
@@ -360,7 +360,7 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
         {showPages && <span className="nx-pill">{plural(examples, 'worked example')}</span>}
         {data.recall.length > 0 && (
           <span className="nx-pill nx-pill-green">
-            {plural(data.recall.length, 'key formula')}
+            {plural(data.recall.length, 'key concept')}
           </span>
         )}
         {units > 0 && <span className="nx-pill nx-pill-gold">{plural(units, 'lesson block')}</span>}

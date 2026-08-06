@@ -27,7 +27,7 @@ export default function BackToReflexes({ anchor }: { anchor: string }) {
         setShow(false);
       }}
     >
-      ↩ Back to formulas
+      ↩ Back to concepts
     </button>
   );
 }
