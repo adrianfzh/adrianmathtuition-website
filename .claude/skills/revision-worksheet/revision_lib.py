@@ -99,6 +99,7 @@ LINE_15 = "360"     # 1.5 line spacing, w:lineRule="auto"
 IND_Q_LEFT, IND_Q_HANG = 567, 567       # 1 cm
 IND_SQ_LEFT, IND_SQ_HANG = 1134, 567    # 2 cm / 1 cm
 MARKS_INSET = 283                       # 0.5 cm — marks sit just inside the margin
+MARKS_GUTTER = 680                      # 1.2 cm reserved at the right for [n]
 FALLBACK_TAB_TWIPS = 8789               # 15.5 cm, used if sectPr can't be read
 
 # Page setup forced onto the OUTPUT regardless of what the base carries: the
@@ -932,7 +933,7 @@ CLEAR_NUMBERING = False
 
 
 def _para(left=0, hanging=0, align=None, tab_at=None, space_after=0,
-          keep_next=False, page_break_before=False, left_tabs=()):
+          keep_next=False, page_break_before=False, left_tabs=(), right=0):
     """Blank paragraph with fully inline properties.
 
     CT_PPr child order matters: keepNext, pageBreakBefore, numPr, tabs,
@@ -972,12 +973,12 @@ def _para(left=0, hanging=0, align=None, tab_at=None, space_after=0,
     sp.set(w("after"), str(space_after))
     sp.set(w("line"), LINE_15)
     sp.set(w("lineRule"), "auto")
-    if left or hanging:
+    if left or hanging or right:
         ind = etree.SubElement(pPr, w("ind"))
         ind.set(w("left"), str(left))
         if hanging:
             ind.set(w("hanging"), str(hanging))
-        ind.set(w("right"), "0")
+        ind.set(w("right"), str(right))
     if align:
         _sub(pPr, "jc", val=align)
     # paragraph-mark run properties (last child of pPr): keeps empty
@@ -1056,7 +1057,7 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
             blocks = _text_blocks(head.get("text") or "")
             pm = head.get("marks")
             first = _para(left=IND_SQ_LEFT, hanging=IND_SQ_LEFT,
-                          left_tabs=(IND_Q_LEFT,),
+                          left_tabs=(IND_Q_LEFT,), right=MARKS_GUTTER,
                           tab_at=tab_at if pm else None, keep_next=True)
             _run(first, "%d." % i)
             _tab_run(first)
@@ -1073,14 +1074,14 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
                 _run(first, "[%s]" % pm)
             els.append(first)
             for extra in blocks[1:]:
-                p = _para(left=IND_SQ_LEFT, keep_next=True)
+                p = _para(left=IND_SQ_LEFT, right=MARKS_GUTTER, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 els.append(p)
             for _ in range(_working_lines(pm, extra=space)):
                 els.append(_para(left=IND_SQ_LEFT))
         else:
             # -- stem
-            first = _para(left=IND_Q_LEFT, hanging=IND_Q_HANG,
+            first = _para(left=IND_Q_LEFT, hanging=IND_Q_HANG, right=MARKS_GUTTER,
                           tab_at=tab_at if marks_here else None, keep_next=True)
             _run(first, "%d." % i)
             _tab_run(first)
@@ -1096,7 +1097,7 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
             els.append(first)
 
             for extra in stem_blocks[1:]:
-                p = _para(left=IND_Q_LEFT, keep_next=True)
+                p = _para(left=IND_Q_LEFT, right=MARKS_GUTTER, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 els.append(p)
 
@@ -1108,7 +1109,7 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
         for part in parts:
             blocks = _text_blocks(part.get("text") or "")
             pm = part.get("marks")
-            sp = _para(left=IND_SQ_LEFT, hanging=IND_SQ_HANG,
+            sp = _para(left=IND_SQ_LEFT, hanging=IND_SQ_HANG, right=MARKS_GUTTER,
                        tab_at=tab_at if pm else None, keep_next=True)
             _run(sp, _label(part.get("label")))
             _tab_run(sp)
@@ -1119,7 +1120,7 @@ def build_practice(questions: list, omml: OmmlCache, tab_at: int,
                 _run(sp, "[%s]" % pm)
             els.append(sp)
             for extra in blocks[1:]:
-                p = _para(left=IND_SQ_LEFT, keep_next=True)
+                p = _para(left=IND_SQ_LEFT, right=MARKS_GUTTER, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 els.append(p)
             for _ in range(_working_lines(pm, extra=space)):

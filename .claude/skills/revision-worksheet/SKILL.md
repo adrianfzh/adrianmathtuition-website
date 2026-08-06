@@ -202,7 +202,14 @@ in orange `#843C0C`, navy `#1F4E79` heading):
   margin, labels at 1 cm, text at 2 cm. When the question *has* stem text, the number
   goes with the stem and `(a)` starts its own line.
 - Marks as `[3]`, right-aligned at a tab stop computed from the **final** page geometry
-  (page width − margins − 0.5 cm), i.e. after the margin override below.
+  (page width − margins − 0.5 cm), i.e. after the margin override below, with a
+  **reserved marks gutter** so the mark always lands on the question's last text line:
+  every question/part paragraph carries `w:ind w:right="680"` (1.2 cm) so the text wraps
+  early, while the right tab stop stays out at the full text width — *past* the right
+  indent. Word honours a tab stop beyond the right indent; without the gutter, a question
+  whose text ran to the margin (wide inline OMML) pushed its `[2]` onto a line of its own.
+  Verified by exporting the generated files to PDF **from Word itself**: same question,
+  no gutter → 3 stray mark lines; with the gutter → 0.
 - Working space: `marks + 2` blank lines (min 3, max 12; tune with `--space`).
 - `[Ans: …]` right-aligned and **entirely orange, converted equations included** — see the
   OMML note under assembly.
