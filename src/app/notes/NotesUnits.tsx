@@ -28,8 +28,10 @@ import {
   readingMinutes,
   sanitiseFigure,
   stripKindPrefix,
+  unitFigures,
   wrongIndex,
   type NotesUnit,
+  type UnitFigure,
   type UnitSection,
 } from '@/lib/notes-units';
 import type { DecisionOption } from '@/lib/learn-types';
@@ -43,6 +45,28 @@ function Figure({ svg }: { svg?: string }) {
   const clean = sanitiseFigure(svg);
   if (!clean) return null;
   return <div className="nx-u-figure" dangerouslySetInnerHTML={{ __html: clean }} />;
+}
+
+/**
+ * Raster figures extracted from Adrian's DOCX notes. Only our own storage
+ * origin renders — a payload URL pointing anywhere else is dropped, not
+ * proxied. Plain <img>: dimensions are unknown at build time, and these are
+ * small scans (25–180 KB) already behind lazy loading.
+ */
+function FigureImgs({ unit, slot }: { unit: NotesUnit; slot: UnitFigure['slot'] }) {
+  const origin = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!origin) return null;
+  const base = `${origin.replace(/\/$/, '')}/storage/v1/object/public/`;
+  const figs = unitFigures(unit.payload, slot).filter(f => f.url.startsWith(base));
+  if (figs.length === 0) return null;
+  return (
+    <div className="nx-u-figs">
+      {figs.map(f => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={f.url} src={f.url} alt={f.alt} loading="lazy" />
+      ))}
+    </div>
+  );
 }
 
 /** A labelled panel — problem, answer, remember, why, fix. */
@@ -74,6 +98,7 @@ function Core({ unit }: { unit: NotesUnit }) {
     <>
       <Figure svg={p.figure_svg} />
       {lead && <UnitMd content={lead} className="nx-u-lead" />}
+      <FigureImgs unit={unit} slot="lead" />
       {p.formula_md && (
         <div className="nx-u-formula nx-u-keyformula">
           <span className="nx-u-keyformula-label" aria-hidden>
@@ -100,6 +125,7 @@ function Example({ unit }: { unit: NotesUnit }) {
       {p.problem_md && (
         <Panel tone="neutral" label="Problem">
           <UnitMd content={p.problem_md} />
+          <FigureImgs unit={unit} slot="problem" />
         </Panel>
       )}
       <ol className="nx-u-steps">
@@ -125,6 +151,7 @@ function Example({ unit }: { unit: NotesUnit }) {
           </li>
         ))}
       </ol>
+      <FigureImgs unit={unit} slot="solution" />
       {p.answer_md && (
         <Panel tone="answer" label="Answer">
           <UnitMd content={p.answer_md} />
@@ -219,6 +246,7 @@ function Try({ unit }: { unit: NotesUnit }) {
         <Panel tone="neutral" label="Try it">
           <Figure svg={p.figure_svg} />
           <UnitMd content={p.problem_md} />
+          <FigureImgs unit={unit} slot="problem" />
         </Panel>
       )}
       {p.answer_md && (

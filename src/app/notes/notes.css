@@ -1852,3 +1852,28 @@ a.nx-eyebrow:hover {
     border-color: var(--nx-line);
   }
 }
+
+/* ── Extracted figures ────────────────────────────────────────────────────────
+ * Raster diagrams pulled from Adrian's DOCX notes. Always on a white plate:
+ * they are scans of white paper, and floating a white-background PNG straight
+ * on the dark theme reads as a glitch, while a framed white card reads as an
+ * exhibit. */
+.nx-u-figs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: center;
+  margin: 0.9rem 0 0.3rem;
+}
+.nx-u-figs img {
+  max-width: min(100%, 420px);
+  height: auto;
+  background: #fff;
+  border: 1px solid var(--nx-line);
+  border-radius: 14px;
+  padding: 0.6rem;
+  box-shadow: var(--nx-shadow);
+}
+.nx-u-panel .nx-u-figs {
+  margin-bottom: 0;
+}

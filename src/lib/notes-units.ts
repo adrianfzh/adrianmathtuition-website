@@ -260,6 +260,34 @@ export function sanitiseFigure(svg: string | undefined): string | null {
   return /^\s*<svg[\s>]/i.test(clean) ? clean : null;
 }
 
+// ── Extracted figures ────────────────────────────────────────────────────────
+
+export interface UnitFigure {
+  url: string;
+  alt: string;
+  /** Where in the block it belongs: with the lead prose, the problem, or the working. */
+  slot: 'lead' | 'problem' | 'solution';
+}
+
+/**
+ * A unit's extracted figures for one slot. `payload.figures` is written by the
+ * DOCX-extraction pass — raster images pulled from Adrian's own notes, uploaded
+ * to Supabase Storage. Shape-validated here; the renderer additionally refuses
+ * any URL outside our own storage origin, so a corrupted payload can never turn
+ * the page into an <img> to an arbitrary host.
+ */
+export function unitFigures(payload: unknown, slot: UnitFigure['slot']): UnitFigure[] {
+  const raw = (payload as { figures?: unknown } | null)?.figures;
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap(f => {
+    if (!f || typeof f !== 'object') return [];
+    const { url, alt, slot: s } = f as Record<string, unknown>;
+    if (typeof url !== 'string' || !url.startsWith('https://')) return [];
+    if ((typeof s === 'string' ? s : 'problem') !== slot) return [];
+    return [{ url, alt: typeof alt === 'string' ? alt : '', slot }];
+  });
+}
+
 /**
  * Which working line an autopsy marks wrong, as a 0-based index — or -1 when
  * the payload's 1-based `wrong_line` points outside the working it shipped with.

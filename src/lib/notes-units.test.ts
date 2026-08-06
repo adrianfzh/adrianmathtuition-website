@@ -9,6 +9,7 @@ import {
   sanitiseFigure,
   stripKindPrefix,
   toUnit,
+  unitFigures,
   wrongIndex,
   type NotesUnit,
   type UnitRow,
@@ -294,6 +295,40 @@ describe('readingMinutes', () => {
       unit(5, { kind: 'try' }),
     ]);
     expect(readingMinutes(five[0])).toBe(3);
+  });
+});
+
+describe('unitFigures', () => {
+  const fig = (over = {}) => ({
+    url: 'https://x.supabase.co/storage/v1/object/public/notes-figures/circles/01.png',
+    alt: 'a circle',
+    slot: 'problem',
+    ...over,
+  });
+
+  it('returns figures for the asked slot only', () => {
+    const payload = { figures: [fig(), fig({ slot: 'solution' })] };
+    expect(unitFigures(payload, 'problem')).toHaveLength(1);
+    expect(unitFigures(payload, 'solution')).toHaveLength(1);
+    expect(unitFigures(payload, 'lead')).toHaveLength(0);
+  });
+
+  it('defaults a missing slot to problem and a missing alt to empty', () => {
+    const [f] = unitFigures({ figures: [{ url: fig().url }] }, 'problem');
+    expect(f.alt).toBe('');
+  });
+
+  it('drops non-https urls and malformed entries', () => {
+    const payload = {
+      figures: [fig({ url: 'http://x.co/a.png' }), 'junk', null, { alt: 'no url' }],
+    };
+    expect(unitFigures(payload, 'problem')).toHaveLength(0);
+  });
+
+  it('survives payloads without figures', () => {
+    expect(unitFigures({}, 'problem')).toEqual([]);
+    expect(unitFigures(null, 'problem')).toEqual([]);
+    expect(unitFigures({ figures: 'nope' }, 'problem')).toEqual([]);
   });
 });
 
