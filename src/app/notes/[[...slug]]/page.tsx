@@ -21,17 +21,9 @@ import {
   neighbours,
   subgroupUrl,
   topicUrl,
-  toolPageUrl,
   type NotesSection,
   type RecallCardRow,
 } from '@/lib/notes-tree';
-import {
-  lessonToolsForTopic,
-  toolHref,
-  toolsForTopic,
-  TOOL_SLUG,
-  type NotesTool,
-} from '@/lib/notes-tools';
 import { topicSlug } from '@/lib/topic-slug';
 
 const PHASE_1_LEVEL = 'AM';
@@ -45,7 +37,6 @@ const plural = (n: number, word: string, many = `${word}s`) => `${n} ${n === 1 ?
 const ANCHOR = {
   reflexes: 'formula-reflexes',
   revision: 'quick-revision',
-  tools: 'interactive',
   lesson: 'the-lesson',
   pages: 'pages',
 } as const;
@@ -142,46 +133,6 @@ function SectionHead({ id, label, note }: { id: string; label: string; note?: st
       </p>
       {note && <span className="nx-subhead-note">{note}</span>}
     </header>
-  );
-}
-
-// ── Interactive tools ────────────────────────────────────────────────────────
-//
-// Same-origin static files under public/tools, so no sandbox: they load no
-// third-party code and several keep state in localStorage, which `sandbox`
-// without `allow-same-origin` would break. `loading="lazy"` keeps a panel that
-// nobody scrolls to off the critical path.
-
-/**
- * `head` labels the frame with the tool's own title and blurb. The dedicated
- * tool page turns it off for the panel it is already named after — otherwise the
- * title, the lede and the full-screen link all appear twice, once in the page
- * header and again 40px below it.
- */
-function ToolPanel({ tool, head = true }: { tool: NotesTool; head?: boolean }) {
-  const href = toolHref(tool);
-  const height = tool.height ?? 680;
-  return (
-    <section className="nx-tool">
-      {head && (
-        <header className="nx-tool-head">
-          <span className="nx-tool-heading">
-            <span className="nx-tool-title">{tool.title}</span>
-            <span className="nx-tool-blurb">{tool.blurb}</span>
-          </span>
-          <a className="nx-tool-open" href={href} target="_blank" rel="noreferrer">
-            Full screen ↗
-          </a>
-        </header>
-      )}
-      <iframe
-        className="nx-tool-frame"
-        src={href}
-        title={tool.title}
-        loading="lazy"
-        style={{ height }}
-      />
-    </section>
   );
 }
 
@@ -442,58 +393,6 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
   );
 }
 
-// ── Tool page ────────────────────────────────────────────────────────────────
-//
-// Only topics with a lesson-grade tool get one, which is exactly the set the
-// sidebar links — so a URL that exists here always exists in the tree too.
-
-async function ToolPage({ topicSlugParam }: { topicSlugParam: string }) {
-  const data = await getTopicPage(PHASE_1_LEVEL, topicSlugParam);
-  if (!data) notFound();
-
-  const lesson = lessonToolsForTopic(PHASE_1_LEVEL, data.topic);
-  if (lesson.length === 0) notFound();
-
-  // The page shows every tool the topic has, not just the lesson-grade one:
-  // having arrived, a student should see the drill next to the explainer.
-  const tools = toolsForTopic(PHASE_1_LEVEL, data.topic);
-  const url = toolPageUrl(PHASE_1_LEVEL, data.topic);
-  const title = lesson.length === 1 ? lesson[0].title : 'Interactive tools';
-
-  return (
-    <DocsPage
-      toc={tools.map(t => ({ title: t.title, url: `#tool-${t.file}`, depth: 2 }))}
-      footer={await footerFor(url)}
-      breadcrumb={{ enabled: false }}
-    >
-      <BackLink href={topicUrl(PHASE_1_LEVEL, data.topic)}>{data.topic}</BackLink>
-      <DocsTitle className="nx-title">{title}</DocsTitle>
-      <p className="nx-lede">{lesson[0].blurb}</p>
-      <div className="nx-cta-row">
-        <a
-          className="nx-cta nx-cta-primary"
-          href={toolHref(lesson[0])}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Open full screen ↗
-        </a>
-        <Link className="nx-cta nx-cta-ghost" href={topicUrl(PHASE_1_LEVEL, data.topic)}>
-          Worked examples
-        </Link>
-      </div>
-      <hr className="nx-rule" />
-      <DocsBody>
-        {tools.map(tool => (
-          <div key={tool.file} id={`tool-${tool.file}`}>
-            <ToolPanel tool={tool} head={tool.title !== title} />
-          </div>
-        ))}
-      </DocsBody>
-    </DocsPage>
-  );
-}
-
 // ── Sub-group page (the actual notes) ────────────────────────────────────────
 
 interface NumberedSnippet {
@@ -609,9 +508,6 @@ export default async function Page({
   if (slug.length === 1) return <LevelIndex />;
   if (slug.length === 2) return <TopicIndex topicSlugParam={slug[1]} />;
   if (slug.length === 3) {
-    // `tool` shares the sub-group slug space, so it has to win before a
-    // sub-group lookup — otherwise a sub-group named "Tool" would shadow it.
-    if (slug[2].toLowerCase() === TOOL_SLUG) return <ToolPage topicSlugParam={slug[1]} />;
     return <SubgroupPage topicSlugParam={slug[1]} subgroupSlug={slug[2]} />;
   }
   notFound();

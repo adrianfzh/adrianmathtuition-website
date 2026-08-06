@@ -38,9 +38,9 @@ const AM_TOOLS: Record<string, NotesTool[]> = {
   'Linear Law': [
     {
       file: 'linear-law',
-      title: 'What to plot to get a straight line',
+      title: 'What would you plot?',
       blurb:
-        'Pick the substitution and watch the curve straighten. The Y, X, gradient and intercept update together.',
+        'You choose the axes; the graph answers. A wrong pick stays curved — the right one straightens and hands you the constants. Rebuilt 2026-08-07 (Adrian: the old always-straight demo taught nothing).',
       lesson: true,
       height: 720,
     },

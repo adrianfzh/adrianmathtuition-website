@@ -149,6 +149,24 @@
   .read .near{color:var(--orange); font-weight:700}
   .read sup{font-size:.75em}
   .read b{color:var(--ink)}
+  .read button{font-size:12px; padding:5px 10px; margin-left:6px}
+
+  /* your-call chooser — the drill IS choosing the axes */
+  .call{
+    background:var(--panel); border:1px solid var(--panelb); border-radius:10px;
+    padding:11px 16px 12px; margin-bottom:8px;
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px;
+  }
+  .call .clab{font:600 10.5px ui-monospace,Menlo,Consolas,monospace; letter-spacing:.12em; color:var(--muted)}
+  .call .ctext{font-style:italic; font-size:14px}
+  .call .chips{display:inline-flex; flex-wrap:wrap; gap:6px}
+  .call .chips button{
+    font-style:italic; font-size:14px; padding:6px 12px; border-radius:8px;
+  }
+  .call .chips button.on{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+  .call .chips button sup{font-size:.72em}
+  .pill.wait{background:rgba(155,144,129,.16); color:var(--muted)}
+  .pill.wrong{background:rgba(188,90,110,.14); color:var(--rose)}
 
   @media (max-width:760px){
     .plots{grid-template-columns:1fr}
@@ -164,8 +182,8 @@
 <body>
 <a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
 <header>
-  <h1>Linear Law — choose the right axes and the curve straightens</h1>
-  <div class="sub">Every model below is curved in x and y, but a straight line in the right disguise. The whole exam skill is knowing <em>what to plot</em>: get that right and the unknown constants stop being unknowns — one is sitting in the gradient, the other in the intercept. Move the sliders and watch both plots update; the right-hand plot never stops being a line.</div>
+  <h1>Linear Law — what would you plot?</h1>
+  <div class="sub">Every model below is curved in x and y, but a straight line in the right disguise — and the whole exam skill is choosing that disguise. So this page doesn&rsquo;t tell you: <em>you</em> pick what to plot against what. A wrong pick stays bent. The right one snaps straight, and the unknown constants fall out of the gradient and the intercept.</div>
 </header>
 
 <div class="wrap">
@@ -178,8 +196,9 @@
     <button data-m="hyp">xy = ax + b</button>
   </div>
 
-  <div class="law" id="law"></div>
-  <div class="exam" id="exam"></div>
+  <div class="call" id="call"></div>
+  <div class="law" id="law" hidden></div>
+  <div class="exam" id="exam" hidden></div>
 
   <div class="plots">
     <section class="plotpanel">
@@ -189,8 +208,8 @@
       <div class="tbl" id="tblRaw"></div>
     </section>
     <section class="plotpanel">
-      <div class="ptitle"><span class="pill straight">STRAIGHT &#10003;</span> <span id="linTitle"></span></div>
-      <div class="truth" id="linNote">the same seven points, transformed</div>
+      <div class="ptitle"><span class="pill wait" id="linPill">YOUR PLOT</span> <span id="linTitle"></span></div>
+      <div class="truth" id="linNote"></div>
       <canvas id="cvLin"></canvas>
       <div class="tbl" id="tblLin"></div>
     </section>
@@ -388,10 +407,48 @@
     }
   };
 
+  // ---- the drill: axis choices ---------------------------------------
+  // The student picks Y and X; the page only then draws. Straightness is
+  // decided NUMERICALLY (R² of the least-squares fit), so every genuinely
+  // linear disguise passes — including ones this page doesn't canonise.
+  var YOPTS = {
+    y:    {lab:'y',              f:function(x,y){ return y; }},
+    lgy:  {lab:'lg y',           f:function(x,y){ return Math.log10(y); }},
+    lny:  {lab:'ln y',           f:function(x,y){ return Math.log(y); }},
+    yox:  {lab:'y/x',            f:function(x,y){ return y/x; }},
+    yox2: {lab:'y/x<sup>2</sup>',f:function(x,y){ return y/(x*x); }},
+    xy:   {lab:'xy',             f:function(x,y){ return x*y; }}
+  };
+  var XOPTS = {
+    x:   {lab:'x',              f:function(x){ return x; }, ident:true},
+    x2:  {lab:'x<sup>2</sup>',  f:function(x){ return x*x; }},
+    lgx: {lab:'lg x',           f:function(x){ return Math.log10(x); }},
+    lnx: {lab:'ln x',           f:function(x){ return Math.log(x); }},
+    invx:{lab:'1/x',            f:function(x){ return 1/x; }},
+    sqx: {lab:'&radic;x',       f:function(x){ return Math.sqrt(x); }}
+  };
+  // Per model: which chips to offer, the canonical pair (full read-back),
+  // and notes for straight-but-not-canonical picks worth naming.
+  var PICKS = {
+    expb: { Y:['lgy','lny','y','yox'], X:['x','lgx','x2','invx'], can:['lgy','x'],
+      alts:{ 'lny|x':'ln works just as well here — now b = e<sup>m</sup> and a = e<sup>c</sup>. This page reads the constants off the lg version.' } },
+    pow:  { Y:['lgy','lny','y','xy'], X:['lgx','lnx','x','x2'], can:['lgy','lgx'],
+      alts:{ 'lny|lnx':'ln against ln works too — n is still the gradient, and a = e<sup>c</sup>. This page reads constants off the lg version.' } },
+    expe: { Y:['lny','lgy','y','yox'], X:['x','x2','lnx','invx'], can:['lny','x'],
+      alts:{ 'lgy|x':'Straight — but the base is e, so the gradient comes out as b·lg&thinsp;e, not b. ln is the clean choice.' } },
+    quad: { Y:['yox','y','yox2','lgy'], X:['x','x2','invx','lgx'], can:['yox','x'],
+      alts:{ 'yox2|invx':'Straight too: y/x&sup2; = a + b·(1/x) — the constants swap seats (gradient b, intercept a). This page reads them off y/x against x.' } },
+    hyp:  { Y:['xy','y','lgy','yox'], X:['x','invx','x2','lgx'], can:['xy','x'],
+      alts:{ 'y|invx':'Straight too: y = b·(1/x) + a — gradient b, intercept a, seats swapped. This page reads them off xy against x.' } }
+  };
+
   // ---- state ----------------------------------------------------------
   // st.data (📷 photo mode): {xs, ys, xname, yname} — replaces the demo
   // slider-generated points until cleared; null = normal demo mode.
-  var st = { model:'expb', a:3, b:2, noise:false, eps:[0,0,0,0,0,0,0], data:null };
+  // pickY/pickX: the student's axis call; solved: canonical found once
+  // (keeps the banner up while they experiment); tries: wrong picks so far.
+  var st = { model:'expb', a:3, b:2, noise:false, eps:[0,0,0,0,0,0,0], data:null,
+             pickY:null, pickX:null, solved:false, tries:0 };
   function cur(){ return MODELS[st.model]; }
   function newEps(){
     var e=[], i;
@@ -401,6 +458,8 @@
 
   // ---- elements -------------------------------------------------------
   var modelsBox = document.getElementById('models');
+  var callEl  = document.getElementById('call');
+  var linPill = document.getElementById('linPill');
   var lawEl   = document.getElementById('law');
   var examEl  = document.getElementById('exam');
   var truthEl = document.getElementById('truth');
@@ -646,40 +705,114 @@
     return '<span class="near">≈</span> <span class="mut">slider '+name+' = '+d2(tru)+' — the gap is the noise; more points would tighten it</span>';
   }
 
+  // ---- the chooser ----------------------------------------------------
+  function chipsHTML(keys, opts, group){
+    var h='', i, k;
+    for(i=0;i<keys.length;i++){
+      k=keys[i];
+      h+='<button data-g="'+group+'" data-k="'+k+'">'+opts[k].lab+'</button>';
+    }
+    return h;
+  }
+  function renderCall(){
+    var P=PICKS[st.model];
+    callEl.innerHTML =
+      '<span class="clab">YOUR CALL</span>'+
+      '<span class="ctext">plot</span>'+
+      '<span class="chips" data-cg="Y">'+chipsHTML(P.Y, YOPTS, 'Y')+'</span>'+
+      '<span class="ctext">against</span>'+
+      '<span class="chips" data-cg="X">'+chipsHTML(P.X, XOPTS, 'X')+'</span>';
+    syncChips();
+  }
+  function syncChips(){
+    var btns=callEl.querySelectorAll('button'), i, b;
+    for(i=0;i<btns.length;i++){
+      b=btns[i];
+      b.classList.toggle('on',
+        (b.dataset.g==='Y' && b.dataset.k===st.pickY) ||
+        (b.dataset.g==='X' && b.dataset.k===st.pickX));
+    }
+  }
+  var lastJudged='';
+  function resetDrill(){
+    st.pickY=null; st.pickX=null; st.solved=false; st.tries=0; lastJudged='';
+    lawEl.hidden=true; examEl.hidden=true;
+  }
+  function pickCanonical(){
+    var P=PICKS[st.model];
+    st.pickY=P.can[0]; st.pickX=P.can[1];
+    syncChips(); update();
+  }
+  callEl.addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.g==='Y') st.pickY=b.dataset.k; else st.pickX=b.dataset.k;
+    syncChips(); update();
+  });
+
+  // R² of the fit — the numeric judge of "did it straighten?"
+  function rSquared(Xs, Ys, fit){
+    var n=Ys.length, mean=0, ssTot=0, ssRes=0, i, r;
+    for(i=0;i<n;i++) mean+=Ys[i];
+    mean/=n;
+    for(i=0;i<n;i++){
+      r = Ys[i]-(fit.m*Xs[i]+fit.c);
+      ssRes += r*r;
+      ssTot += (Ys[i]-mean)*(Ys[i]-mean);
+    }
+    if(ssTot===0) return 1;
+    return 1 - ssRes/ssTot;
+  }
+
   // ---- master update --------------------------------------------------
   function update(){
     var M=cur(), i, p;
     var dataMode = !!st.data;
+    var picked = !!(st.pickY && st.pickX);
+    var P=PICKS[st.model];
+    var canonical = picked && st.pickY===P.can[0] && st.pickX===P.can[1];
+    var Yo = picked ? YOPTS[st.pickY] : null;
+    var Xo = picked ? XOPTS[st.pickX] : null;
+    var Ylab = picked ? Yo.lab : M.Ylab, Xlab = picked ? Xo.lab : M.Xlab;
     // Xs/Ys: every transformed point (tables); XsF/YsF: only the finite
     // ones (fit + right-hand plot) — photo y ≤ 0 under a lg/ln transform
     // must not poison the least squares.
     var xs, yMeas=[], Xs=[], Ys=[], XsF=[], YsF=[];
     if(dataMode){
       xs = st.data.xs;
-      for(i=0;i<xs.length;i++){
-        yMeas.push(st.data.ys[i]);
-        p = M.XY(xs[i], st.data.ys[i]);
-        Xs.push(p[0]); Ys.push(p[1]);
-        if(isFinite(p[0]) && isFinite(p[1])){ XsF.push(p[0]); YsF.push(p[1]); }
-      }
+      for(i=0;i<xs.length;i++) yMeas.push(st.data.ys[i]);
     } else {
       xs = M.xs;
       for(i=0;i<xs.length;i++){
         var y=M.f(st.a, st.b, xs[i]);
-        var ym = st.noise ? y*(1+st.eps[i]) : y;
-        yMeas.push(ym);
-        p = M.XY(xs[i], ym);
+        yMeas.push(st.noise ? y*(1+st.eps[i]) : y);
+      }
+    }
+    if(picked){
+      for(i=0;i<xs.length;i++){
+        p = [Xo.f(xs[i]), Yo.f(xs[i], yMeas[i])];
         Xs.push(p[0]); Ys.push(p[1]);
-        XsF.push(p[0]); YsF.push(p[1]);
+        if(isFinite(p[0]) && isFinite(p[1])){ XsF.push(p[0]); YsF.push(p[1]); }
       }
     }
     var fit = XsF.length>=2 ? fitLine(XsF,YsF) : {m:NaN,c:NaN};
     var canFit = isFinite(fit.m) && isFinite(fit.c);
-    var rec = canFit ? M.recover(fit.m, fit.c) : {a:NaN,b:NaN};
+    var r2 = canFit ? rSquared(XsF, YsF, fit) : 0;
+    var straight = canFit && r2 >= ((dataMode || st.noise) ? 0.985 : 0.9999);
+    if(canonical && straight && !st.solved){
+      st.solved=true;
+    }
+    if(st.solved){ lawEl.hidden=false; examEl.hidden=false; }
+    // one try per DISTINCT wrong pair — sliders/resizes must not inflate it
+    if(picked){
+      var pk = st.pickY+'|'+st.pickX;
+      if(!straight && pk!==lastJudged) st.tries++;
+      lastJudged = pk;
+    }
+    var rec = (canonical && straight) ? M.recover(fit.m, fit.c) : {a:NaN,b:NaN};
 
-    // photo mode draws the model curve the FIT implies; demo, the slider truth
+    // left curve: slider truth in demo; the fitted model once solved on photo data
     var curveFn = dataMode
-      ? (canFit ? function(xx){ return M.f(rec.a, rec.b, xx); } : null)
+      ? ((st.solved && canonical && straight) ? function(xx){ return M.f(rec.a, rec.b, xx); } : null)
       : function(xx){ return M.f(st.a, st.b, xx); };
 
     // axis-variable labels — a photo table may name them (t, P, …)
@@ -688,35 +821,81 @@
     function rl(s){ return s.replace(/[xy]/g, function(ch){ return ch==='x' ? xn : yn; }); }
 
     drawRaw(M, xs, yMeas, curveFn, xn, yn, dataMode);
-    drawLin(M, XsF, YsF, fit, canFit, rl(M.Xlab), rl(M.Ylab));
 
     truthEl.innerHTML = dataMode
-      ? 'photo data — '+xs.length+' points'+(canFit ? ' · curve shown = the fitted model' : '')
+      ? 'photo data — '+xs.length+' points'+(curveFn ? ' · curve shown = the fitted model' : '')
       : M.truth(st.a, st.b) + (st.noise ? ' <span style="color:var(--orange)">+ noise</span>' : '');
-    linTitleEl.innerHTML = '<b>'+rl(M.Ylab)+'</b> against <b>'+rl(M.Xlab)+'</b>';
-    linNoteEl.textContent = dataMode
-      ? 'your '+xs.length+' points, transformed'
-      : 'the same seven points, transformed';
 
-    // tables — the "extend the table" step students must do on paper
-    var xRow=[], XRow=[], yRow=[], YRow=[];
-    for(i=0;i<xs.length;i++){
-      xRow.push(plain(xs[i]));
-      yRow.push(sf3(yMeas[i]));
-      XRow.push(M.Xident ? plain(Xs[i]) : sf3(Xs[i]));
-      YRow.push(sf3(Ys[i]));
-    }
+    // left table always — the raw data students start from
+    var xRow=[], yRow=[];
+    for(i=0;i<xs.length;i++){ xRow.push(plain(xs[i])); yRow.push(sf3(yMeas[i])); }
     tblRawEl.innerHTML = tableHTML(xn, xRow, yn, yRow);
-    tblLinEl.innerHTML = tableHTML(rl(M.Xlab), XRow, rl(M.Ylab), YRow);
 
-    // reading-back panel
+    // ---- right panel: only what the student asked for ------------------
+    if(!picked){
+      ctxLin.clearRect(0,0,lin.W,lin.H);
+      ctxLin.fillStyle=C.muted; ctxLin.font='italic 14px Georgia, serif';
+      ctxLin.textAlign='center'; ctxLin.textBaseline='middle';
+      ctxLin.fillText('pick what to plot — the graph will answer', lin.W/2, lin.H/2);
+      linPill.className='pill wait'; linPill.innerHTML='YOUR PLOT';
+      linTitleEl.innerHTML='<span style="color:var(--muted)">choose both axes above</span>';
+      linNoteEl.textContent='';
+      tblLinEl.innerHTML='';
+      readEl.innerHTML =
+        '<h3>Your call first</h3>'+
+        '<div class="mut">Pick a vertical and a horizontal variable. If the points come out straight, the constants are yours — gradient and intercept. If they bend, pick again.</div>';
+      return;
+    }
+
+    drawLin(M, XsF, YsF, fit, straight, rl(Xlab), rl(Ylab));
+    linTitleEl.innerHTML = '<b>'+rl(Ylab)+'</b> against <b>'+rl(Xlab)+'</b>';
+    if(straight){
+      linPill.className='pill straight'; linPill.innerHTML='STRAIGHT &#10003;';
+    } else {
+      linPill.className='pill wrong'; linPill.innerHTML='STILL CURVED &#10007;';
+    }
+    var nDropped = Xs.length - XsF.length;
+    linNoteEl.textContent =
+      (dataMode ? 'your '+xs.length+' points, transformed' : 'the same seven points, transformed')+
+      (nDropped>0 ? ' — '+nDropped+' of them '+(nDropped===1?'dies':'die')+' under this transform (÷0, or log of ≤ 0)' : '');
+
+    // right table — the "extend the table" step, for the CHOSEN transform
+    var XRow=[], YRow=[];
+    for(i=0;i<Xs.length;i++){
+      XRow.push(!isFinite(Xs[i]) ? '—' : (Xo.ident ? plain(Xs[i]) : sf3(Xs[i])));
+      YRow.push(!isFinite(Ys[i]) ? '—' : sf3(Ys[i]));
+    }
+    tblLinEl.innerHTML = tableHTML(rl(Xlab), XRow, rl(Ylab), YRow);
+
+    // ---- reading-back panel -------------------------------------------
+    if(!straight){
+      var showme = st.tries>=2
+        ? ' <button type="button" id="showBtn">show me the plot that works</button>'
+        : '';
+      readEl.innerHTML =
+        '<h3>Not this pair</h3>'+
+        '<div><span class="near">✗</span> <i>'+rl(Ylab)+'</i> against <i>'+rl(Xlab)+'</i> still bends — '+
+        'this pair doesn&rsquo;t separate the constants into gradient and intercept. Try again.'+showme+'</div>';
+      var sb=document.getElementById('showBtn');
+      if(sb) sb.onclick=pickCanonical;
+      return;
+    }
+    if(!canonical){
+      var note = P.alts[st.pickY+'|'+st.pickX] ||
+        'a genuinely straight disguise — but not the one this page reads constants off. The clean plot here is <b>'+YOPTS[P.can[0]].lab+'</b> against <b>'+XOPTS[P.can[1]].lab+'</b>.';
+      readEl.innerHTML =
+        '<h3>Straight — nice find</h3>'+
+        '<div><span class="ok">✓</span> '+note+
+        ' <button type="button" id="cleanBtn">switch to it</button></div>';
+      var cb=document.getElementById('cleanBtn');
+      if(cb) cb.onclick=pickCanonical;
+      return;
+    }
     var sgn = fit.c>=0 ? ' + ' : ' − ';
     var head, lines;
     if(dataMode){
-      head = canFit
-        ? 'Least-squares best-fit line through your '+XsF.length+' photo points:'
-        : 'These points don’t survive this model’s transform — try another model:';
-      lines = canFit ? M.read(fit, rec, st, function(){ return ''; }) : ['—','—'];
+      head = 'Least-squares best-fit line through your '+XsF.length+' photo points:';
+      lines = M.read(fit, rec, st, function(){ return ''; });
     } else {
       head = st.noise
         ? 'Least-squares best-fit line through the noisy points:'
@@ -724,9 +903,9 @@
       lines = M.read(fit, rec, st, okMark);
     }
     readEl.innerHTML =
-      '<h3>Read the constants back off the line</h3>'+
-      '<div class="fitline"><span class="mut">'+head+'</span> &nbsp;<i>'+rl(M.Ylab)+'</i> = '+
-        sf3(fit.m)+'·<i>'+rl(M.Xlab)+'</i>'+sgn+sf3(Math.abs(fit.c))+
+      '<h3>&#10003; That&rsquo;s the plot — read the constants off the line</h3>'+
+      '<div class="fitline"><span class="mut">'+head+'</span> &nbsp;<i>'+rl(Ylab)+'</i> = '+
+        sf3(fit.m)+'·<i>'+rl(Xlab)+'</i>'+sgn+sf3(Math.abs(fit.c))+
         ' &nbsp;<span class="mut">(gradient <span class="gm">m = '+sf3(fit.m)+'</span>, intercept <span class="gc">c = '+sf3(fit.c)+'</span>)</span></div>'+
       '<div>'+lines[0]+'</div>'+
       '<div>'+lines[1]+'</div>';
@@ -735,6 +914,8 @@
   // ---- model switching ------------------------------------------------
   function applyModel(key){
     st.model=key;
+    resetDrill();
+    renderCall();
     var M=cur();
     var btns=modelsBox.querySelectorAll('button'), i;
     for(i=0;i<btns.length;i++) btns[i].classList.toggle('on', btns[i].dataset.m===key);
@@ -837,8 +1018,11 @@
     for(i=0;i<pairs.length;i++){ xs.push(pairs[i][0]); ys.push(pairs[i][1]); }
     st.data={ xs:xs, ys:ys, xname:cleanName(body.xname,'x'), yname:cleanName(body.yname,'y') };
     setDataModeUI(true);
+    // fresh drill on the photo data — reading the table doesn't answer
+    // "what would you plot?"; the student still makes that call
     var mk=matchModel(body.model);
-    if(mk && MODELS[mk]) applyModel(mk); else update();
+    if(mk && MODELS[mk]){ applyModel(mk); }
+    else { resetDrill(); syncChips(); update(); }
     return null;
   }
 
@@ -908,6 +1092,8 @@
     st.data=null;
     setDataModeUI(false);
     setPhotoMsg('');
+    resetDrill();
+    syncChips();
     update();
   });
 

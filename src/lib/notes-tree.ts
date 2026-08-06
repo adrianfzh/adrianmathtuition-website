@@ -6,7 +6,6 @@
 // Tree shape (SPEC-NOTES-PORTAL Phase 1): Level → Topic → one page per sub-group.
 
 import { A_MATH_EXAM_TOPICS } from './canonical-topics';
-import { lessonToolsForTopic, TOOL_SLUG } from './notes-tools';
 import { topicSlug } from './topic-slug';
 
 export const NOTES_BASE = '/notes';
@@ -131,15 +130,6 @@ export function topicUrl(level: string, topic: string): string {
 /** URL path for one sub-group page. */
 export function subgroupUrl(level: string, topic: string, name: string): string {
   return `${topicUrl(level, topic)}/${topicSlug(name)}`;
-}
-
-/**
- * URL path for a topic's interactive-tool page. `TOOL_SLUG` shares the sub-group
- * slug space, so the router must resolve it BEFORE looking a sub-group up —
- * otherwise a sub-group that happened to be called "Tool" would shadow it.
- */
-export function toolPageUrl(level: string, topic: string): string {
-  return `${topicUrl(level, topic)}/${TOOL_SLUG}`;
 }
 
 /**
@@ -337,18 +327,9 @@ export function buildPageTree(
 
     if (children.length === 0 && !converted) continue;
 
-    // A topic whose tool teaches the topic gets the tool as a real page, last
-    // in the folder. One page per topic however many tools it maps to — the
-    // page shows them all, so a second entry would just point at itself.
-    const lessonTools = lessonToolsForTopic(level, topic);
-    if (lessonTools.length > 0) {
-      children.push({
-        type: 'page',
-        name: lessonTools.length === 1 ? lessonTools[0].title : 'Interactive tools',
-        url: toolPageUrl(level, topic),
-        $id: `tool-${level.toLowerCase()}-${topicSlug(topic)}`,
-      });
-    }
+    // No tool pages in the sidebar — /notes surfaces no tools at all (Adrian,
+    // 2026-08-07, closing the 2026-08-06 decision: the recap surface is for
+    // reading; tools belong to the lesson-unit player, or /tools directly).
 
     folders.push({
       type: 'folder',

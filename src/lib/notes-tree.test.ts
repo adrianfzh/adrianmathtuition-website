@@ -11,7 +11,6 @@ import {
   sortSubgroups,
   subgroupUrl,
   topicUrl,
-  toolPageUrl,
   treeFolders,
   type SectionMetaRow,
   type SnippetRow,
@@ -216,18 +215,12 @@ describe('buildPageTree', () => {
     ]);
   });
 
-  // The tool page shares the sub-group slug space, so it has to appear in the
-  // tree — otherwise prev/next would walk straight past it.
-  it('appends a tool page to a topic whose tool teaches the topic', () => {
+  // Tools left /notes entirely (Adrian, 2026-08-07) — even a topic with a
+  // lesson-grade tool gets no tool page in its folder.
+  it('never appends a tool page, even for a topic with a lesson-grade tool', () => {
     const tree = buildPageTree('AM', [sg(1, 'Linear Law', 'Plotting', 0)], counts(1));
-    const folder = folderNamed(tree, 'Linear Law');
-    expect(folder?.children.at(-1)?.url).toBe(toolPageUrl('AM', 'Linear Law'));
-  });
-
-  it('adds no tool page to a topic with no lesson-grade tool', () => {
-    const tree = buildPageTree('AM', [sg(1, 'Surds', 'Rationalising', 0)], counts(1));
-    expect(folderNamed(tree, 'Surds')?.children.map(c => c.url)).toEqual([
-      '/notes/am/surds/rationalising',
+    expect(folderNamed(tree, 'Linear Law')?.children.map(c => c.url)).toEqual([
+      '/notes/am/linear-law/plotting',
     ]);
   });
 });
