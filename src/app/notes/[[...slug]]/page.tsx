@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation';
 import { DocsPage, DocsBody, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
 import NotesMarkdown from '../NotesMarkdown';
 import NotesUnits from '../NotesUnits';
+import { ReviewBar } from '../ReviewControls';
 import { isNotesAuthed } from '@/lib/notes-auth';
+import { approvedSections, hasApprovedUnits } from '@/lib/notes-units';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
 import {
@@ -280,18 +282,32 @@ async function LevelIndex() {
 // ── Topic index ──────────────────────────────────────────────────────────────
 
 async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
-  const data = await getTopicPage(PHASE_1_LEVEL, topicSlugParam);
+  const [data, admin] = await Promise.all([
+    getTopicPage(PHASE_1_LEVEL, topicSlugParam),
+    isNotesAuthed(),
+  ]);
   if (!data) notFound();
 
   const url = topicUrl(PHASE_1_LEVEL, data.topic);
   const examples = data.subgroups.reduce((sum, s) => sum + s.count, 0);
   const tools = toolsForTopic(PHASE_1_LEVEL, data.topic);
 
-  // Learning units — the pilot. Present on one topic today; see notes-units.ts.
-  const sections = data.unitSections;
+  // Learning units. The reviewer reads everything; a student reads what has
+  // been approved. Approving a topic also retires its old sub-group list —
+  // that's `converted` below, and it flips per topic as Adrian reviews.
+  const sections = admin ? data.unitSections : approvedSections(data.unitSections);
+  const converted = hasApprovedUnits(data.unitSections);
+  const showPages = !converted;
   const units = sections.reduce((n, s) => n + s.units.length + (s.lead ? 1 : 0), 0);
-  const unreviewed = sections.reduce(
-    (n, s) => n + s.units.filter(u => u.draft).length + (s.lead?.draft ? 1 : 0),
+  const pending = data.unitSections.reduce(
+    (n, s) =>
+      n +
+      s.units.filter(u => u.draft && !u.flagged).length +
+      (s.lead && s.lead.draft && !s.lead.flagged ? 1 : 0),
+    0,
+  );
+  const flagged = data.unitSections.reduce(
+    (n, s) => n + s.units.filter(u => u.flagged).length + (s.lead?.flagged ? 1 : 0),
     0,
   );
 
@@ -303,7 +319,7 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
     // Nested one level: a 52-unit topic needs its own sections in the contents,
     // but not competing with the four things above them.
     ...sections.map(s => ({ title: s.title, url: `#${s.id}`, depth: 3 })),
-    { title: 'Pages', url: `#${ANCHOR.pages}`, depth: 2 },
+    showPages && { title: 'Pages', url: `#${ANCHOR.pages}`, depth: 2 },
   ].filter(Boolean) as { title: string; url: string; depth: number }[];
 
   return (
@@ -312,18 +328,36 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
         {levelLabel(PHASE_1_LEVEL)}
       </BackLink>
       <DocsTitle className="nx-title">{data.topic}</DocsTitle>
+      <div className="nx-byline">
+        <span className="nx-byline-avatar" aria-hidden>
+          A
+        </span>
+        <span className="nx-byline-text">
+          <span className="nx-byline-name">Taught by Adrian</span>
+          <span className="nx-byline-sub">{levelLabel(PHASE_1_LEVEL)} specialist</span>
+        </span>
+      </div>
       <div className="nx-meta">
-        <span className="nx-pill">{plural(data.subgroups.length, 'page')}</span>
-        <span className="nx-pill">{plural(examples, 'worked example')}</span>
+        {showPages && <span className="nx-pill">{plural(data.subgroups.length, 'page')}</span>}
+        {showPages && <span className="nx-pill">{plural(examples, 'worked example')}</span>}
         {data.recall.length > 0 && (
           <span className="nx-pill nx-pill-green">
             {plural(data.recall.length, 'formula reflex', 'formula reflexes')}
           </span>
         )}
-        {units > 0 && <span className="nx-pill nx-pill-green">{plural(units, 'lesson block')}</span>}
+        {units > 0 && <span className="nx-pill nx-pill-gold">{plural(units, 'lesson block')}</span>}
       </div>
       <hr className="nx-rule" />
       <DocsBody>
+        {admin && data.unitSections.length > 0 && (
+          <ReviewBar
+            level={PHASE_1_LEVEL}
+            topic={data.topic}
+            pending={pending}
+            flagged={flagged}
+          />
+        )}
+
         {/* Reflexes lead the page: the sub-group list below duplicates the
             sidebar, but these 179 cards appear nowhere else in the portal. */}
         {data.recall.length > 0 && <Reflexes cards={data.recall} />}
@@ -355,40 +389,42 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
           </section>
         )}
 
-        {/* The lesson itself, block by block. Additive for now: the sub-group
-            pages below still serve the same topic from `content_snippets`, so
-            both formats can be judged side by side before either moves. */}
+        {/* The lesson itself, block by block. On an unapproved topic it renders
+            above the old sub-group list so both formats can be compared; the
+            moment the topic has approved blocks, the old list retires. */}
         {sections.length > 0 && (
           <section>
             <SectionHead
               id={ANCHOR.lesson}
               label="The lesson"
               note={
-                unreviewed > 0
-                  ? `${plural(units, 'block')} · ${unreviewed} not yet reviewed`
+                admin && pending + flagged > 0
+                  ? `${plural(units, 'block')} · ${pending} pending${flagged > 0 ? ` · ${flagged} flagged` : ''}`
                   : plural(units, 'block')
               }
             />
-            <NotesUnits sections={sections} />
+            <NotesUnits sections={sections} admin={admin} />
           </section>
         )}
 
-        <section>
-          <h2 id={ANCHOR.pages} className="nx-section">
-            Pages
-          </h2>
-          <div className="not-prose nx-list">
-            {data.subgroups.map(s => (
-              <CardLink
-                key={s.url}
-                href={s.url}
-                title={cleanTitle(s.name)}
-                description={cleanDescription(s.description).summary}
-                count={plural(s.count, 'example')}
-              />
-            ))}
-          </div>
-        </section>
+        {showPages && (
+          <section>
+            <h2 id={ANCHOR.pages} className="nx-section">
+              Pages
+            </h2>
+            <div className="not-prose nx-list">
+              {data.subgroups.map(s => (
+                <CardLink
+                  key={s.url}
+                  href={s.url}
+                  title={cleanTitle(s.name)}
+                  description={cleanDescription(s.description).summary}
+                  count={plural(s.count, 'example')}
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </DocsBody>
     </DocsPage>
   );

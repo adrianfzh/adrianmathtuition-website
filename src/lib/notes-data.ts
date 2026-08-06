@@ -9,7 +9,6 @@ import { getSupabase, getSupabaseAdmin } from './supabase';
 import {
   groupIntoSections,
   toUnit,
-  unitsEnabledFor,
   type UnitRow,
   type UnitSection,
 } from './notes-units';
@@ -160,18 +159,15 @@ const loadTopicCards = cache(async (level: string): Promise<TopicCardRow[]> => {
 });
 
 /**
- * Learning units for one topic, split into sections.
+ * Learning units for one topic, split into sections — every status, because
+ * this is the reviewer's read. Privileged client: `learning_units` is not
+ * anon-readable, same RLS shape as `topic_cards`.
  *
- * Reads through the privileged client for two reasons. `learning_units` is not
- * anon-readable — the same RLS shape as `topic_cards`. And every unit is still
- * `pending`: only 2 rows in the whole table have been approved in
- * /admin/learn-review, so an `status='approved'` filter would render the pilot
- * topic empty. They come back flagged `draft` and the page badges them, which is
- * the right trade while /notes is behind the admin cookie.
- *
- * ⚠ Phase 3 (student login): same gate as `loadTopicCards` — this must become an
- * approved-only filter before a student can reach the page, or unreviewed
- * teaching goes out over Adrian's name.
+ * The student's view is NOT a different query — the page derives it with
+ * `approvedSections()` when the viewer isn't the admin, so the two views can
+ * never disagree about what exists, only about what shows. If /notes ever gets
+ * a public cache in front of it, revisit: at that point filtering at the query
+ * is the safer shape.
  */
 const loadTopicUnits = cache(
   async (level: string, topic: string): Promise<UnitSection[]> => {
@@ -250,7 +246,7 @@ export interface TopicPageData {
   card: TopicCardRow | null;
   /** Formula reflexes — the page hero when the topic has them. */
   recall: RecallCardRow[];
-  /** Learning units, on pilot topics only. Empty everywhere else. */
+  /** Learning units, every status — the reviewer's view. Empty when none exist. */
   unitSections: UnitSection[];
   subgroups: { name: string; url: string; description: string | null; count: number }[];
 }
@@ -288,8 +284,7 @@ export const getTopicPage = cache(
       topic,
       card: cards.find(c => c.topic === topic && c.content_md) ?? null,
       recall: recall.get(topic) ?? [],
-      // Only the pilot topic pays for this query; everywhere else it's not run.
-      unitSections: unitsEnabledFor(topic) ? await loadTopicUnits(level, topic) : [],
+      unitSections: await loadTopicUnits(level, topic),
       subgroups: list,
     };
   },

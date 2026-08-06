@@ -49,23 +49,34 @@
   --color-fd-card: hsl(0, 0%, 100%);
   --color-fd-card-foreground: hsl(220, 12%, 13%);
   --color-fd-border: hsl(220, 13%, 91%);
-  --color-fd-primary: hsl(162, 88%, 27%);
-  --color-fd-primary-foreground: hsl(0, 0%, 100%);
+  --color-fd-primary: hsl(220, 60%, 20%);
+  --color-fd-primary-foreground: hsl(45, 100%, 96%);
   --color-fd-secondary: hsl(220, 14%, 97%);
   --color-fd-secondary-foreground: hsl(220, 12%, 20%);
-  --color-fd-accent: hsl(158, 60%, 96%);
-  --color-fd-accent-foreground: hsl(162, 88%, 22%);
-  --color-fd-ring: hsl(160, 72%, 38%);
+  --color-fd-accent: hsl(220, 50%, 95.5%);
+  --color-fd-accent-foreground: hsl(220, 60%, 22%);
+  --color-fd-ring: hsl(45, 90%, 50%);
 
   --nx-ink: hsl(220, 14%, 11%);
   --nx-ink-soft: hsl(220, 9%, 34%);
+  /* Site brand (globals.css): navy carries structure, gold carries attention. */
+  --nx-navy: hsl(220, 60%, 20%);
+  --nx-navy-soft: hsl(220, 50%, 95.5%);
+  --nx-navy-line: hsl(220, 40%, 85%);
+  --nx-gold: hsl(45, 90%, 55%);
   --nx-green: hsl(162, 88%, 27%);
   --nx-green-mid: hsl(160, 72%, 38%);
   --nx-green-line: hsl(158, 45%, 82%);
   --nx-green-wash: hsl(158, 65%, 96.5%);
-  --nx-amber-deep: hsl(32, 88%, 38%);
-  --nx-amber-line: hsl(40, 78%, 82%);
-  --nx-amber-wash: hsl(44, 92%, 96.5%);
+  --nx-amber-deep: hsl(40, 80%, 38%);
+  --nx-amber-line: hsl(45, 85%, 74%);
+  --nx-amber-wash: hsl(45, 90%, 93.5%);
+  /* Solid block-header bars — deep enough for white text in both themes. */
+  --nx-bar-core: var(--nx-navy);
+  --nx-bar-example: hsl(168, 75%, 26%);
+  --nx-bar-check: hsl(262, 48%, 42%);
+  --nx-bar-autopsy: hsl(349, 70%, 40%);
+  --nx-bar-try: hsl(22, 85%, 42%);
   --nx-rose-deep: hsl(349, 66%, 45%);
   --nx-rose-line: hsl(350, 60%, 89%);
   --nx-rose-wash: hsl(350, 80%, 97.5%);
@@ -98,23 +109,32 @@
   --color-fd-card: hsl(220, 17%, 11.5%);
   --color-fd-card-foreground: hsl(220, 14%, 92%);
   --color-fd-border: hsl(220, 12%, 21%);
-  --color-fd-primary: hsl(158, 64%, 56%);
-  --color-fd-primary-foreground: hsl(220, 30%, 8%);
+  --color-fd-primary: hsl(220, 70%, 76%);
+  --color-fd-primary-foreground: hsl(220, 40%, 10%);
   --color-fd-secondary: hsl(220, 15%, 15%);
   --color-fd-secondary-foreground: hsl(220, 14%, 90%);
-  --color-fd-accent: hsl(160, 22%, 18%);
-  --color-fd-accent-foreground: hsl(158, 60%, 82%);
-  --color-fd-ring: hsl(158, 60%, 48%);
+  --color-fd-accent: hsl(220, 26%, 20%);
+  --color-fd-accent-foreground: hsl(220, 60%, 86%);
+  --color-fd-ring: hsl(45, 80%, 55%);
 
   --nx-ink: hsl(220, 16%, 95%);
   --nx-ink-soft: hsl(220, 12%, 70%);
+  --nx-navy: hsl(220, 45%, 30%);
+  --nx-navy-soft: hsl(220, 30%, 17%);
+  --nx-navy-line: hsl(220, 28%, 30%);
+  --nx-gold: hsl(45, 85%, 55%);
   --nx-green: hsl(158, 64%, 58%);
   --nx-green-mid: hsl(158, 60%, 46%);
   --nx-green-line: hsl(160, 26%, 28%);
   --nx-green-wash: hsl(162, 26%, 13%);
-  --nx-amber-deep: hsl(40, 86%, 66%);
-  --nx-amber-line: hsl(38, 32%, 28%);
-  --nx-amber-wash: hsl(38, 26%, 13%);
+  --nx-amber-deep: hsl(42, 80%, 64%);
+  --nx-amber-line: hsl(42, 34%, 30%);
+  --nx-amber-wash: hsl(42, 28%, 13%);
+  --nx-bar-core: var(--nx-navy);
+  --nx-bar-example: hsl(168, 52%, 25%);
+  --nx-bar-check: hsl(262, 38%, 42%);
+  --nx-bar-autopsy: hsl(349, 55%, 40%);
+  --nx-bar-try: hsl(22, 70%, 40%);
   --nx-rose-deep: hsl(350, 72%, 74%);
   --nx-rose-line: hsl(350, 26%, 30%);
   --nx-rose-wash: hsl(350, 24%, 13%);
@@ -141,8 +161,14 @@
   border-right: 1px solid var(--nx-line);
 }
 .notes-shell #nd-sidebar a {
-  font-size: 0.875rem;
+  /* v3: students read the rails too — 14px sidebar type read as chrome. */
+  font-size: 1rem;
   line-height: 1.45;
+}
+.notes-shell #nd-sidebar a[data-active='true'] {
+  border-left: 3px solid var(--nx-gold);
+  border-radius: 0 8px 8px 0;
+  font-weight: 700;
 }
 
 /* Family headings between groups of topics. Rendered through the `Separator`
@@ -251,9 +277,13 @@
 
 /* ── Chrome: table of contents ───────────────────────────────────────────────*/
 
+.notes-shell #nd-toc a {
+  font-size: 0.96rem;
+  line-height: 1.5;
+}
 .notes-shell #nd-toc a[data-active='true'] {
-  color: var(--nx-green);
-  font-weight: 600;
+  color: var(--color-fd-primary);
+  font-weight: 700;
 }
 
 /* ── Page header ─────────────────────────────────────────────────────────────*/
@@ -280,10 +310,10 @@ a.nx-eyebrow:hover {
   align-items: center;
   gap: 0.6rem;
   font-family: var(--nx-sans);
-  font-weight: 700;
-  font-size: clamp(1.9rem, 1.35rem + 1.9vw, 2.6rem);
-  line-height: 1.12;
-  letter-spacing: -0.03em;
+  font-weight: 800;
+  font-size: clamp(2.3rem, 1.6rem + 2.3vw, 3.1rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   color: var(--nx-ink);
   margin: 0 0 0.65rem;
 }
@@ -303,18 +333,23 @@ a.nx-eyebrow:hover {
   margin-top: 1.05rem;
 }
 .nx-pill {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--nx-ink-soft);
   background: var(--color-fd-muted);
   border: 1px solid var(--nx-line);
   border-radius: 999px;
-  padding: 0.2rem 0.65rem;
+  padding: 0.25rem 0.7rem;
 }
 .nx-pill-green {
   color: var(--nx-green);
   background: var(--nx-green-wash);
   border-color: var(--nx-green-line);
+}
+.nx-pill-gold {
+  color: var(--nx-amber-deep);
+  background: var(--nx-amber-wash);
+  border-color: var(--nx-amber-line);
 }
 .nx-eg {
   font-size: 0.875rem;
@@ -1025,21 +1060,22 @@ a.nx-eyebrow:hover {
 }
 
 /* The closing line of a recall card: one sentence, fired without thinking. Set
- * as a single green rule-marked line rather than a boxed callout — inside a
- * compact card another box would be one border too many. */
+ * as a single gold rule-marked line rather than a boxed callout — inside a
+ * compact card another box would be one border too many. Gold, not green: the
+ * v3 system spends amber on "Adrian's voice" (tips, reflexes) everywhere. */
 .nb[data-nb='reflex'] {
   margin: 0.55rem 0 0;
   padding: 0.3rem 0 0.05rem 0.7rem;
-  border-left: 2px solid var(--nx-green-mid);
+  border-left: 3px solid var(--nx-gold);
 }
 .nb[data-nb='reflex'] .nb-label {
-  color: var(--nx-green);
+  color: var(--nx-amber-deep);
   margin-bottom: 0.15rem;
 }
 .nb[data-nb='reflex'] p {
   margin: 0;
-  font-size: 0.875rem;
-  line-height: 1.55;
+  font-size: 0.9375rem;
+  line-height: 1.58;
   font-weight: 500;
   color: var(--nx-ink);
 }
@@ -1079,7 +1115,58 @@ a.nx-eyebrow:hover {
  * card background and let the kind chip do the labelling. */
 
 .nx-u-section {
-  margin-bottom: 2.2rem;
+  margin-bottom: 3rem;
+}
+
+/* Section furniture: kicker → question → gold swoosh. The kicker turns a long
+ * page into a sequence of small wins; the question heading is how a student
+ * finds the answer they came for; the swoosh is the brand's underline. */
+.nx-kicker {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--nx-amber-deep);
+  background: var(--nx-amber-wash);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  margin: 2.4rem 0 0.6rem;
+}
+.nx-u-section:first-of-type .nx-kicker {
+  margin-top: 0.6rem;
+}
+.nx-u-h {
+  font-family: var(--nx-sans);
+  font-size: clamp(1.7rem, 1.3rem + 1.4vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--nx-ink);
+  margin: 0.2rem 0 0;
+  scroll-margin-top: 5rem;
+}
+.nx-swoosh {
+  width: 62px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--nx-gold);
+  margin: 0.7rem 0 1.2rem;
+}
+.nx-timechip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.8rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--nx-amber-deep);
+  background: var(--nx-amber-wash);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  vertical-align: 0.45rem;
+  white-space: nowrap;
 }
 
 /* The section's core unit: the idea itself, so it reads as the section's
@@ -1088,10 +1175,25 @@ a.nx-eyebrow:hover {
   margin: 0.9rem 0 0.4rem;
 }
 .nx-u-lead {
-  font-size: 1.0625rem;
+  font-size: 1.2rem;
+  line-height: 1.7;
 }
-.nx-u-lead p {
+.nx-u-lead p,
+.nx-u-lead li {
   color: var(--nx-ink);
+}
+.nx-u-lead ul {
+  padding-left: 1.4rem;
+  margin: 0 0 0.9rem;
+}
+.nx-u-lead li {
+  margin-bottom: 0.5rem;
+}
+.nx-u-lead li::marker {
+  color: var(--nx-amber-deep);
+}
+.nx-u-introflag {
+  margin-top: 0.4rem;
 }
 
 .nx-u-formula {
@@ -1106,85 +1208,174 @@ a.nx-eyebrow:hover {
   font-size: 1.06em;
 }
 
-/* ── One unit ────────────────────────────────────────────────────────────────*/
+/* The lead's formula, spotlit in brand gold. One per section by construction —
+ * only `core` payloads carry `formula_md`, and only the lead is a core. */
+.nx-u-keyformula {
+  position: relative;
+  background: var(--nx-amber-wash);
+  border: 2px solid var(--nx-gold);
+  border-radius: 16px;
+  padding: 2.3rem 1.1rem 0.95rem;
+  box-shadow: 0 2px 10px hsl(45 90% 55% / 0.22);
+}
+.nx-u-keyformula .katex-display {
+  font-size: 1.35em;
+}
+.nx-u-keyformula-label {
+  position: absolute;
+  top: 0.6rem;
+  left: 1.05rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--nx-amber-deep);
+}
+.dark .nx-u-keyformula {
+  box-shadow: 0 2px 10px hsl(45 85% 40% / 0.18);
+}
+
+/* ── One unit ────────────────────────────────────────────────────────────────
+ * v3: a white card opened by a solid colour-block header — the block's kind is
+ * a colour and an icon before it is a word, which is what lets a student scan
+ * a 50-block page and see its rhythm. */
 
 .nx-u {
-  margin: 1rem 0 0;
-  padding: 1.15rem 1.3rem 1.25rem;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  overflow: hidden;
   background: var(--color-fd-card);
   border: 1px solid var(--nx-line);
-  border-radius: var(--nx-radius);
+  border-radius: 18px;
+  box-shadow: var(--nx-shadow);
+}
+.nx-u > *:not(.nx-u-head):not(.nx-u-flagstrip) {
+  margin-left: 1.4rem;
+  margin-right: 1.4rem;
+}
+.nx-u > *:last-child {
+  margin-bottom: 1.25rem;
 }
 .nx-u-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 0.35rem 0.65rem;
-  margin: 0 0 0.9rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--nx-hairline);
+  gap: 0.5rem 0.85rem;
+  margin: 0 0 1rem;
+  padding: 0.8rem 1.4rem;
+  color: #fff;
 }
 .nx-u-title {
   font-family: var(--nx-sans);
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 800;
   letter-spacing: -0.01em;
-  line-height: 1.4;
-  color: var(--nx-ink);
+  line-height: 1.35;
+  color: inherit;
   margin: 0;
 }
 
-/* Kind chip. Soft for the two kinds you read, filled green for the one you are
- * meant to stop and do. */
+/* Kind chip: white-outline pill on the bar's own colour. */
 .nx-u-kind {
   flex: none;
   align-self: center;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   border-radius: 999px;
-  padding: 0.14rem 0.5rem;
-  border: 1px solid transparent;
+  padding: 0.3rem 0.85rem;
+  color: #fff;
+  background: rgb(255 255 255 / 0.16);
+  border: 1px solid rgb(255 255 255 / 0.45);
 }
-.nx-u[data-kind='example'] .nx-u-kind {
-  color: var(--nx-green);
-  background: var(--nx-green-wash);
-  border-color: var(--nx-green-line);
+.nx-u[data-kind='core'] .nx-u-head {
+  background: var(--nx-bar-core);
 }
-.nx-u[data-kind='check'] .nx-u-kind {
-  color: var(--nx-amber-deep);
-  background: var(--nx-amber-wash);
-  border-color: var(--nx-amber-line);
+.nx-u[data-kind='example'] .nx-u-head {
+  background: var(--nx-bar-example);
 }
-.nx-u[data-kind='autopsy'] .nx-u-kind {
-  color: var(--nx-rose-deep);
+.nx-u[data-kind='check'] .nx-u-head {
+  background: var(--nx-bar-check);
+}
+.nx-u[data-kind='autopsy'] .nx-u-head {
+  background: var(--nx-bar-autopsy);
+}
+.nx-u[data-kind='try'] .nx-u-head {
+  background: var(--nx-bar-try);
+}
+
+/* Flagged in review: rose ring, and the strip that says so (admin only). */
+.nx-u[data-flagged='true'] {
+  border-color: var(--nx-rose-deep);
+  box-shadow: 0 0 0 2px var(--nx-rose-deep);
+}
+.nx-u-flagstrip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.55rem 1.4rem;
   background: var(--nx-rose-wash);
-  border-color: var(--nx-rose-line);
+  border-bottom: 1px solid var(--nx-rose-line);
+  color: var(--nx-rose-deep);
+  font-size: 0.875rem;
+  font-weight: 700;
 }
-.nx-u[data-kind='try'] .nx-u-kind {
-  color: var(--color-fd-primary-foreground);
-  background: var(--nx-green);
-  border-color: var(--nx-green);
+.nx-flagbtn {
+  flex: none;
+  margin-left: auto;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  background: transparent;
+  color: rgb(255 255 255 / 0.85);
+  cursor: pointer;
+}
+.nx-flagbtn:hover {
+  background: rgb(255 255 255 / 0.14);
+}
+.nx-flagbtn[data-on='true'],
+.nx-u-flagstrip .nx-flagbtn,
+.nx-u-introflag .nx-flagbtn {
+  border-color: var(--nx-rose-deep);
+  color: var(--nx-rose-deep);
+  background: transparent;
+}
+.nx-u-flagstrip .nx-flagbtn:hover,
+.nx-u-introflag .nx-flagbtn:hover {
+  background: var(--nx-rose-wash);
+}
+.nx-u-introflag .nx-flagbtn {
+  margin-left: 0;
+  border-color: var(--nx-line);
+  color: var(--color-fd-muted-foreground);
 }
 
 /* ── Panels ──────────────────────────────────────────────────────────────────*/
 
 .nx-u-panel {
   margin: 0.85rem 0;
-  padding: 0.85rem 1rem 0.9rem;
-  border-radius: var(--nx-radius);
-  border: 1px solid var(--nx-line);
-  background: var(--nx-wash);
+  padding: 0.95rem 1.1rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--nx-navy-line);
+  background: var(--nx-navy-soft);
 }
 .nx-u-panel-label {
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-fd-muted-foreground);
-  margin: 0 0 0.4rem;
+  color: var(--color-fd-primary);
+  margin: 0 0 0.45rem;
+}
+.nx-u-panel p,
+.nx-u-panel li {
+  font-size: 1.1rem;
+  line-height: 1.68;
 }
 .nx-u-panel[data-tone='answer'] {
   background: var(--nx-green-wash);
@@ -1240,20 +1431,20 @@ a.nx-eyebrow:hover {
   transform: translateX(-50%);
   display: grid;
   place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border-radius: 999px;
-  font-family: var(--nx-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--nx-green);
-  background: var(--nx-green-wash);
-  border: 1px solid var(--nx-green-line);
+  font-family: var(--nx-sans);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--nx-bar-core);
+  border: none;
 }
 .nx-u-step-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.45;
+  font-size: 1.19rem;
+  font-weight: 800;
+  line-height: 1.4;
   color: var(--nx-ink);
 }
 .nx-u-math {
@@ -1263,18 +1454,30 @@ a.nx-eyebrow:hover {
   margin: 0.35rem 0 !important;
 }
 
-/* Adrian's arrow comment on a step — the bit that says why, in his voice. */
+/* Adrian's arrow comment on a step — the bit that says why, in his voice.
+ * Branded as such: this box is the product's "Examiner Tips". */
 .nx-u-cue {
-  margin: 0.45rem 0 0;
-  padding: 0.5rem 0.75rem;
-  border-left: 3px solid var(--nx-amber-line);
-  border-radius: 0 8px 8px 0;
+  margin: 0.55rem 0 0;
+  padding: 0.75rem 1rem 0.8rem;
+  border: none;
+  border-left: 5px solid var(--nx-gold);
+  border-radius: 0 12px 12px 0;
   background: var(--nx-amber-wash);
+}
+.nx-u-cue::before {
+  content: '💡 Adrian’s Tip';
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--nx-amber-deep);
+  margin-bottom: 0.3rem;
 }
 .nx-u-cue .notes-prose,
 .nx-u-cue p {
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-size: 1.03rem;
+  line-height: 1.62;
 }
 
 .nx-u-more,
@@ -1325,11 +1528,18 @@ a.nx-eyebrow:hover {
  * guesses in silence never reads. So every option carries its feedback. */
 
 .nx-u-prompt {
-  font-size: 1rem;
+  font-size: 1.15rem;
 }
 .nx-u-prompt p {
   font-weight: 500;
   color: var(--nx-ink);
+}
+/* v3 body size inside blocks; the narrower rules below (option feedback,
+ * asides) stay smaller by coming later in the file at equal specificity. */
+.nx-u .notes-prose p,
+.nx-u .notes-prose li {
+  font-size: 1.1rem;
+  line-height: 1.68;
 }
 .nx-u-opts {
   list-style: none;
@@ -1365,12 +1575,12 @@ a.nx-eyebrow:hover {
 }
 .nx-u-opt-why {
   margin-top: 0.2rem;
-  font-size: 0.8125rem;
+  font-size: 0.95rem;
   color: var(--color-fd-muted-foreground);
 }
 .nx-u-opt-why p {
-  font-size: 0.8125rem;
-  line-height: 1.55;
+  font-size: 0.95rem;
+  line-height: 1.58;
 }
 
 /* ── Autopsy working ─────────────────────────────────────────────────────────*/
@@ -1411,8 +1621,11 @@ a.nx-eyebrow:hover {
   color: var(--nx-rose-deep);
 }
 .nx-u-line .notes-prose {
-  font-size: 0.9375rem;
+  font-size: 1.05rem;
   min-width: 0;
+}
+.nx-u-line .notes-prose p {
+  font-size: 1.05rem;
 }
 
 /* ── Practice ────────────────────────────────────────────────────────────────*/
@@ -1454,8 +1667,14 @@ a.nx-eyebrow:hover {
 }
 
 @media (max-width: 640px) {
-  .nx-u {
-    padding: 1rem 1.05rem 1.1rem;
+  .nx-u > *:not(.nx-u-head):not(.nx-u-flagstrip) {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  .nx-u-head,
+  .nx-u-flagstrip {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
   .nx-u-steps {
     padding-left: 0.95rem;
@@ -1463,6 +1682,98 @@ a.nx-eyebrow:hover {
   .nx-u-step-no {
     left: -0.95rem;
   }
+  .nx-timechip {
+    display: none;
+  }
+}
+
+/* ── Byline + review bar ─────────────────────────────────────────────────────*/
+
+.nx-byline {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.9rem 0 0.2rem;
+}
+.nx-byline-avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: var(--nx-navy);
+  border: 2.5px solid var(--nx-gold);
+  color: var(--nx-gold);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+.nx-byline-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+.nx-byline-name {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--nx-ink);
+}
+.nx-byline-sub {
+  font-size: 0.875rem;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* Adrian's review bar: reading the page is the review; this is where it ends. */
+.nx-reviewbar {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  margin: 0 0 1.2rem;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid var(--nx-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-fd-card) 88%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--nx-shadow-lift);
+}
+.nx-reviewbar-title {
+  font-weight: 800;
+  font-size: 0.9375rem;
+  color: var(--nx-ink);
+}
+.nx-reviewbar-note {
+  font-size: 0.875rem;
+  color: var(--color-fd-muted-foreground);
+}
+.nx-reviewbar-err {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--nx-rose-deep);
+}
+.nx-reviewbar-approve {
+  margin-left: auto;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--nx-green);
+  color: #fff;
+  cursor: pointer;
+}
+.nx-reviewbar-approve:hover {
+  background: var(--nx-green-mid);
+}
+.nx-reviewbar-approve:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.dark .nx-reviewbar-approve {
+  color: hsl(220, 30%, 8%);
 }
 
 /* ── Print ───────────────────────────────────────────────────────────────────
@@ -1479,8 +1790,27 @@ a.nx-eyebrow:hover {
   .nx-cta-row,
   /* An iframe prints as an empty rectangle at best — the tool is interactive,
      so on paper it is nothing but a hole in the page. */
-  .nx-tool {
+  .nx-tool,
+  /* Review chrome is Adrian's, never the handout's. */
+  .nx-reviewbar,
+  .nx-flagbtn,
+  .nx-u-flagstrip {
     display: none !important;
+  }
+
+  /* Solid colour bars burn toner and photocopy to mud — flatten to rules. */
+  .nx-u-head {
+    background: #fff !important;
+    color: var(--nx-ink) !important;
+    border-bottom: 1px solid var(--nx-line);
+  }
+  .nx-u-kind {
+    color: var(--nx-ink) !important;
+    background: none !important;
+    border-color: var(--nx-line) !important;
+  }
+  .nx-u-keyformula {
+    box-shadow: none;
   }
 
   .notes-shell {

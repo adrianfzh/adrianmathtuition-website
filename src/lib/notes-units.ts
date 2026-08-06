@@ -22,20 +22,6 @@ import type {
 } from './learn-types';
 import { topicSlug } from './topic-slug';
 
-/**
- * Topics rendering their learning units, while this is a pilot.
- *
- * Every AM topic in `learning_units` already has units written, so lifting the
- * gate is deleting the filter in `unitsEnabledFor` — it is here so the first
- * look at the new format changes exactly one page, and the other 28 topics keep
- * rendering from `content_snippets` untouched.
- */
-export const UNITS_PILOT_TOPICS = ['Binomial Theorem'] as const;
-
-export function unitsEnabledFor(topic: string): boolean {
-  return (UNITS_PILOT_TOPICS as readonly string[]).includes(topic);
-}
-
 /** A `learning_units` row, as selected by `notes-data`. */
 export interface UnitRow {
   id: string;
@@ -51,17 +37,24 @@ export interface NotesUnit {
   id: string;
   kind: UnitKind;
   title: string;
+  /**
+   * Question-form title (`payload.title_q`), when the style pass has written
+   * one — "How do I find a specific term without expanding?" against a stored
+   * title of "The general term T(r+1)". Section headings prefer it: students
+   * navigate by the question they have, not by the name of the technique.
+   */
+  question: string | null;
   order: number;
-  /** Not yet approved in /admin/learn-review — shown to Adrian, badged. */
+  /** Not yet approved — rendered for Adrian, filtered out for students. */
   draft: boolean;
+  /** Flagged in review (`status = 'rejected'`): hidden from students until fixed. */
+  flagged: boolean;
   payload: unknown;
 }
 
 /**
- * Student-facing name for each kind. The review page tags these with emoji;
- * /notes doesn't — the family icons were dropped from the sidebar in the same
- * repaint for reading as muddy blobs at small sizes, and a label that has to
- * survive next to KaTeX is exactly where that goes wrong.
+ * Plain name for each kind. Still what `stripKindPrefix` matches against —
+ * stored titles say "Worked example: …", not the display label below.
  */
 export const KIND_LABEL: Record<UnitKind, string> = {
   core: 'Concept',
@@ -69,6 +62,20 @@ export const KIND_LABEL: Record<UnitKind, string> = {
   check: 'Quick check',
   autopsy: 'Spot the error',
   try: 'Practice',
+};
+
+/**
+ * What the block header bar says. Emoji went from unusable to load-bearing in
+ * the v3 redesign: the old design set kind chips at 10px where an emoji is a
+ * muddy blob, the solid colour bars set them at 13.5px on their own colour
+ * field, where they scan as the block's icon.
+ */
+export const KIND_DISPLAY: Record<UnitKind, string> = {
+  core: '💡 The Big Idea',
+  example: '✏️ Worked Example',
+  check: '✅ Quick Check',
+  autopsy: '🔍 Spot the Error',
+  try: '💪 Your Turn',
 };
 
 const KINDS = Object.keys(KIND_LABEL) as UnitKind[];
@@ -87,12 +94,15 @@ export function toUnit(row: UnitRow): NotesUnit | null {
   if (!row.payload || typeof row.payload !== 'object' || Array.isArray(row.payload)) {
     return null;
   }
+  const titleQ = (row.payload as { title_q?: unknown }).title_q;
   return {
     id: row.id,
     kind: row.kind,
     title: row.title,
+    question: typeof titleQ === 'string' && titleQ.trim() ? titleQ.trim() : null,
     order: row.unit_order ?? 0,
     draft: row.status !== 'approved',
+    flagged: row.status === 'rejected',
     payload: row.payload,
   };
 }
@@ -143,12 +153,73 @@ export function groupIntoSections(units: NotesUnit[]): UnitSection[] {
 
   for (const unit of ordered) {
     if (unit.kind === 'core' || sections.length === 0) {
-      open(unit.kind === 'core' ? unit.title : FIRST_SECTION, unit.kind === 'core' ? unit : null);
-      if (unit.kind === 'core') continue;
+      const isCore = unit.kind === 'core';
+      open(isCore ? (unit.question ?? unit.title) : FIRST_SECTION, isCore ? unit : null);
+      if (isCore) continue;
     }
     sections[sections.length - 1].units.push(unit);
   }
   return sections;
+}
+
+/**
+ * The student's view of a topic: approved units only. A section whose lead is
+ * still draft keeps its heading (the units under it need their context) but
+ * loses the lead body; a section with nothing approved at all disappears.
+ * Flagged units are `draft` too, so one filter covers both.
+ */
+export function approvedSections(sections: UnitSection[]): UnitSection[] {
+  return sections
+    .map(s => ({
+      ...s,
+      lead: s.lead && !s.lead.draft ? s.lead : null,
+      units: s.units.filter(u => !u.draft),
+    }))
+    .filter(s => s.lead !== null || s.units.length > 0);
+}
+
+/** Whether any unit in these sections has been approved. */
+export function hasApprovedUnits(sections: UnitSection[]): boolean {
+  return sections.some(s => (s.lead && !s.lead.draft) || s.units.some(u => !u.draft));
+}
+
+/**
+ * Reading time for one section, in whole minutes. Deliberately coarse — the
+ * chip exists to say "this is a 3-minute read, not homework", so it only has
+ * to be believable, and a per-word count over KaTeX source is not more honest.
+ */
+export function readingMinutes(section: UnitSection): number {
+  const n = section.units.length + (section.lead ? 1 : 0);
+  return Math.max(2, Math.ceil(n * 0.6));
+}
+
+/**
+ * A core lead's prose, one sentence per bullet — the SME register: short lines
+ * a student can hold, instead of a paragraph they skim. Returns null when the
+ * prose shouldn't be touched: already-structured markdown (lists, headings,
+ * fences, display math) renders as authored, and a single sentence gains
+ * nothing from a lone bullet.
+ */
+export function leadToBullets(md: string): string | null {
+  if (!md || md.includes('$$')) return null;
+  if (/^\s*([-*+]\s|\d+\.\s|#|```|\|)/m.test(md)) return null;
+
+  // Mask inline math so a full stop inside $…$ can't end a sentence.
+  const spans: string[] = [];
+  const masked = md.replace(/\$[^$\n]*\$/g, m => {
+    spans.push(m);
+    return `\u0000${spans.length - 1}\u0000`;
+  });
+
+  const sentences = masked
+    .split(/\n{2,}/)
+    .flatMap(p => p.split(/(?<=[.!?])\s+(?=[A-Z([\d\u0000])/))
+    .map(s => s.trim().replace(/\s+/g, ' '))
+    .filter(Boolean);
+  if (sentences.length < 2) return null;
+
+  const unmask = (s: string) => s.replace(/\u0000(\d+)\u0000/g, (_, i) => spans[Number(i)]);
+  return sentences.map(s => `- ${unmask(s)}`).join('\n');
 }
 
 /** How many units of each kind a topic has, for the page's summary pills. */

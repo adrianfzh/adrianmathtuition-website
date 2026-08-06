@@ -16,13 +16,16 @@
 
 import type { ReactNode } from 'react';
 import { UnitMd } from './UnitMarkdown';
+import { FlagButton } from './ReviewControls';
 import {
   asAutopsy,
   asCheck,
   asCore,
   asExample,
   asTry,
-  KIND_LABEL,
+  KIND_DISPLAY,
+  leadToBullets,
+  readingMinutes,
   sanitiseFigure,
   stripKindPrefix,
   wrongIndex,
@@ -64,12 +67,18 @@ function Panel({
 
 function Core({ unit }: { unit: NotesUnit }) {
   const p = asCore(unit.payload);
+  // One sentence per bullet where the prose allows it — the register students
+  // actually read. Falls back to the authored paragraphs untouched.
+  const lead = p.summary_md ? (leadToBullets(p.summary_md) ?? p.summary_md) : null;
   return (
     <>
       <Figure svg={p.figure_svg} />
-      {p.summary_md && <UnitMd content={p.summary_md} className="nx-u-lead" />}
+      {lead && <UnitMd content={lead} className="nx-u-lead" />}
       {p.formula_md && (
-        <div className="nx-u-formula">
+        <div className="nx-u-formula nx-u-keyformula">
+          <span className="nx-u-keyformula-label" aria-hidden>
+            ⭐ Key formula
+          </span>
           <UnitMd content={p.formula_md} />
         </div>
       )}
@@ -246,13 +255,20 @@ function Body({ unit }: { unit: NotesUnit }) {
   }
 }
 
-function Unit({ unit }: { unit: NotesUnit }) {
+function Unit({ unit, admin }: { unit: NotesUnit; admin: boolean }) {
   const title = stripKindPrefix(unit.title, unit.kind);
   return (
-    <article className="nx-u" data-kind={unit.kind}>
+    <article className="nx-u" data-kind={unit.kind} data-flagged={unit.flagged ? 'true' : 'false'}>
+      {admin && unit.flagged && (
+        <div className="nx-u-flagstrip">
+          <span>⚑ Flagged — hidden from students until fixed</span>
+          <FlagButton id={unit.id} flagged />
+        </div>
+      )}
       <header className="nx-u-head">
-        <span className="nx-u-kind">{KIND_LABEL[unit.kind]}</span>
+        <span className="nx-u-kind">{KIND_DISPLAY[unit.kind]}</span>
         <h3 className="nx-u-title">{title}</h3>
+        {admin && !unit.flagged && <FlagButton id={unit.id} flagged={false} />}
       </header>
       <Body unit={unit} />
     </article>
@@ -263,23 +279,46 @@ function Unit({ unit }: { unit: NotesUnit }) {
  * A topic's units. The section's `core` unit is the heading and the opening
  * statement — its own body renders under the h2 rather than inside a card, so
  * the idea reads as the section's subject and the blocks under it read as work
- * on that idea.
+ * on that idea. With `admin`, every block grows a flag control and flagged
+ * blocks render with their warning strip; the student render has neither.
  */
-export default function NotesUnits({ sections }: { sections: UnitSection[] }) {
+export default function NotesUnits({
+  sections,
+  admin = false,
+}: {
+  sections: UnitSection[];
+  admin?: boolean;
+}) {
   return (
     <>
-      {sections.map(section => (
+      {sections.map((section, i) => (
         <section key={section.id} className="nx-u-section">
-          <h2 id={section.id} className="nx-section">
+          <p className="nx-kicker">
+            Part {i + 1} of {sections.length}
+          </p>
+          <h2 id={section.id} className="nx-u-h">
             {section.title}
+            <span className="nx-timechip">⏱ {readingMinutes(section)} min</span>
           </h2>
+          <div className="nx-swoosh" aria-hidden />
           {section.lead && (
             <div className="nx-u-intro">
+              {admin && section.lead.flagged && (
+                <div className="nx-u-flagstrip">
+                  <span>⚑ Flagged — hidden from students until fixed</span>
+                  <FlagButton id={section.lead.id} flagged />
+                </div>
+              )}
               <Core unit={section.lead} />
+              {admin && !section.lead.flagged && (
+                <div className="nx-u-introflag">
+                  <FlagButton id={section.lead.id} flagged={false} />
+                </div>
+              )}
             </div>
           )}
           {section.units.map(unit => (
-            <Unit key={unit.id} unit={unit} />
+            <Unit key={unit.id} unit={unit} admin={admin} />
           ))}
         </section>
       ))}
