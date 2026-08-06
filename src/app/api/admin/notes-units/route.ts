@@ -29,7 +29,10 @@ export async function POST(req: Request) {
       .update({ status: 'approved' }, { count: 'exact' })
       .eq('subject', level.toUpperCase())
       .eq('topic', topic)
-      .eq('status', 'pending');
+      .eq('status', 'pending')
+      // Checks never render on /notes, so approve-all must not sign them off
+      // sight-unseen — they stay pending for the Learn player's own review.
+      .neq('kind', 'check');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true, approved: count ?? 0 });
   }

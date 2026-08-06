@@ -178,6 +178,10 @@ const loadTopicUnits = cache(
         .select('id, topic, kind, title, unit_order, status, payload')
         .eq('subject', level.toUpperCase())
         .eq('topic', topic)
+        // Quick checks are player material, not recap material — /notes never
+        // fetches them, and approve-topic never approves them (they get their
+        // own review when the Learn player surfaces them).
+        .neq('kind', 'check')
         .range(from, to),
     );
     return groupIntoSections(rows.map(toUnit).filter(u => u !== null));

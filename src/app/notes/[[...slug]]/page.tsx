@@ -6,7 +6,12 @@ import NotesMarkdown from '../NotesMarkdown';
 import NotesUnits from '../NotesUnits';
 import { ReviewBar } from '../ReviewControls';
 import { isNotesAuthed } from '@/lib/notes-auth';
-import { approvedSections, hasApprovedUnits } from '@/lib/notes-units';
+import {
+  approvedSections,
+  hasApprovedUnits,
+  reflexAnchor,
+  type UnitSection,
+} from '@/lib/notes-units';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
 import {
@@ -182,17 +187,22 @@ function ToolPanel({ tool, head = true }: { tool: NotesTool; head?: boolean }) {
 
 // ── Formula reflexes (recall cards) ──────────────────────────────────────────
 
-function ReflexCard({ card }: { card: RecallCardRow }) {
+function ReflexCard({ card, anchor }: { card: RecallCardRow; anchor: string | null }) {
   const title = cleanTitle(card.card_title);
   return (
     <article className="nx-rc">
       {title && <h3 className="nx-rc-title">{title}</h3>}
       <NotesMarkdown content={card.content} className="nx-rc-body" />
+      {anchor && (
+        <a className="nx-rc-link" href={`#${anchor}`}>
+          See why →
+        </a>
+      )}
     </article>
   );
 }
 
-function Reflexes({ cards }: { cards: RecallCardRow[] }) {
+function Reflexes({ cards, sections }: { cards: RecallCardRow[]; sections: UnitSection[] }) {
   return (
     <section className="nx-reflexes">
       <SectionHead
@@ -202,7 +212,11 @@ function Reflexes({ cards }: { cards: RecallCardRow[] }) {
       />
       <div className="not-prose nx-reflex-grid">
         {cards.map(card => (
-          <ReflexCard key={card.id} card={card} />
+          <ReflexCard
+            key={card.id}
+            card={card}
+            anchor={reflexAnchor(card.card_title ?? '', card.content ?? '', sections)}
+          />
         ))}
       </div>
     </section>
@@ -360,7 +374,7 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
 
         {/* Reflexes lead the page: the sub-group list below duplicates the
             sidebar, but these 179 cards appear nowhere else in the portal. */}
-        {data.recall.length > 0 && <Reflexes cards={data.recall} />}
+        {data.recall.length > 0 && <Reflexes cards={data.recall} sections={sections} />}
 
         {/* Quick-revision card, when the topic has one. Its own title is dropped:
             it always restates the topic, which is already the page heading. */}

@@ -78,8 +78,12 @@ export const KIND_LABEL: Record<UnitKind, string> = {
 export const KIND_DISPLAY: Record<UnitKind, string> = {
   core: '💡 The Big Idea',
   example: '✏️ Worked Example',
+  // Not rendered on /notes (see loadTopicUnits) — the label survives for the day
+  // another surface wants it.
   check: '✅ Quick Check',
-  autopsy: '🔍 Spot the Error',
+  // Adrian's framing: on a recap page this block IS the "common mistakes"
+  // teaching — wrong working, why it's wrong, the fix.
+  autopsy: '⚠️ Common Mistake',
   try: '💪 Your Turn',
 };
 
@@ -191,6 +195,74 @@ export function approvedSections(sections: UnitSection[]): UnitSection[] {
 export function hasApprovedUnits(sections: UnitSection[]): boolean {
   return sections.some(s => (s.lead && !s.lead.draft) || s.units.some(u => !u.draft));
 }
+
+/**
+ * A section's units split for the recap page: teaching (examples, common
+ * mistakes) reads inline; practice collapses into a "Practice — n questions"
+ * expander at the section's end. Adrian: /notes is for recapping directly —
+ * doing questions is opt-in, not part of the scroll.
+ */
+export function partitionPractice(units: NotesUnit[]): {
+  teaching: NotesUnit[];
+  practice: NotesUnit[];
+} {
+  return {
+    teaching: units.filter(u => u.kind !== 'try'),
+    practice: units.filter(u => u.kind === 'try'),
+  };
+}
+
+/**
+ * Which lesson section a formula-reflex card should deep-link to, by word
+ * overlap between the card and each section's title + lead prose. Reflexes and
+ * sections come from the same source notes, so the vocabulary usually agrees;
+ * when nothing scores ≥ 2 the card gets no link rather than a wrong one.
+ */
+export function reflexAnchor(
+  cardTitle: string,
+  cardContent: string,
+  sections: UnitSection[],
+): string | null {
+  const words = (text: string) =>
+    new Set(
+      text
+        .toLowerCase()
+        .replace(/\$[^$]*\$/g, ' ')
+        .replace(/[^a-z0-9\s-]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 3 && !STOP.has(w)),
+    );
+  const needle = words(`${cardTitle} ${cardContent}`);
+  let best: { id: string; score: number } | null = null;
+  for (const s of sections) {
+    const lead = (s.lead?.payload as { summary_md?: string } | null)?.summary_md ?? '';
+    const hay = words(`${s.title} ${lead}`);
+    let score = 0;
+    for (const w of needle) if (hay.has(w)) score += 1;
+    if (score > (best?.score ?? 0)) best = { id: s.id, score };
+  }
+  return best && best.score >= 2 ? best.id : null;
+}
+
+const STOP = new Set([
+  'circle',
+  'circles',
+  'with',
+  'from',
+  'that',
+  'this',
+  'then',
+  'them',
+  'your',
+  'into',
+  'every',
+  'when',
+  'what',
+  'have',
+  'need',
+  'just',
+  'form',
+]);
 
 /**
  * Reading time for one section, in whole minutes. Deliberately coarse — the

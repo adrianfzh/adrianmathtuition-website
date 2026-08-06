@@ -5,7 +5,9 @@ import {
   groupIntoSections,
   hasApprovedUnits,
   leadToBullets,
+  partitionPractice,
   readingMinutes,
+  reflexAnchor,
   sanitiseFigure,
   simplifyTitle,
   stripKindPrefix,
@@ -338,6 +340,47 @@ describe('readingMinutes', () => {
       unit(5, { kind: 'try' }),
     ]);
     expect(readingMinutes(five[0])).toBe(3);
+  });
+});
+
+describe('partitionPractice', () => {
+  it('splits try units out, keeping order in both halves', () => {
+    const { teaching, practice } = partitionPractice([
+      unit(1, { kind: 'example' }),
+      unit(2, { kind: 'try' }),
+      unit(3, { kind: 'autopsy' }),
+      unit(4, { kind: 'try' }),
+    ]);
+    expect(teaching.map(u => u.kind)).toEqual(['example', 'autopsy']);
+    expect(practice.map(u => u.order)).toEqual([2, 4]);
+  });
+});
+
+describe('reflexAnchor', () => {
+  const sections = groupIntoSections([
+    unit(1, {
+      kind: 'core',
+      title: 'Circle equation — expanded form',
+      payload: { summary_md: 'Expand the square form; divide the coefficients by minus 2, radius formula.' },
+    }),
+    unit(2, {
+      kind: 'core',
+      title: 'Lines through the centre',
+      payload: { summary_md: 'The perpendicular bisector of any chord passes through the centre; the normal too.' },
+    }),
+  ]);
+
+  it('links a reflex to the section sharing its vocabulary', () => {
+    expect(
+      reflexAnchor('Divide by Minus 2', 'Divide by MINUS 2 — the sign flips back. Radius needs its own formula.', sections),
+    ).toBe(sections[0].id);
+    expect(
+      reflexAnchor('Bisector Finds the Centre', 'Draw two chords, bisect both — intersection IS the centre.', sections),
+    ).toBe(sections[1].id);
+  });
+
+  it('returns no link rather than a weak guess', () => {
+    expect(reflexAnchor('Estimation', 'Keep x small.', sections)).toBeNull();
   });
 });
 

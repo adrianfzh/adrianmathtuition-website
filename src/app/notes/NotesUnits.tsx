@@ -25,6 +25,7 @@ import {
   asTry,
   KIND_DISPLAY,
   leadToBullets,
+  partitionPractice,
   readingMinutes,
   sanitiseFigure,
   simplifyTitle,
@@ -313,34 +314,53 @@ export default function NotesUnits({
 }) {
   return (
     <>
-      {sections.map((section, i) => (
-        <section key={section.id} className="nx-u-section">
-          <p className="nx-kicker">
-            Part {i + 1} of {sections.length}
-          </p>
-          <h2 id={section.id} className="nx-u-h">
-            {section.title}
-            <span className="nx-timechip">⏱ {readingMinutes(section)} min</span>
-          </h2>
-          <div className="nx-swoosh" aria-hidden />
-          {section.lead && (
-            <div className="nx-u-intro">
-              {admin && (
-                <BlockReview
-                  inline
-                  id={section.lead.id}
-                  flagged={section.lead.flagged}
-                  note={section.lead.reviewNote}
-                />
-              )}
-              <Core unit={section.lead} />
-            </div>
-          )}
-          {section.units.map(unit => (
-            <Unit key={unit.id} unit={unit} admin={admin} />
-          ))}
-        </section>
-      ))}
+      {sections.map((section, i) => {
+        const { teaching, practice } = partitionPractice(section.units);
+        return (
+          <section key={section.id} className="nx-u-section">
+            <p className="nx-kicker">
+              Part {i + 1} of {sections.length}
+            </p>
+            <h2 id={section.id} className="nx-u-h">
+              {section.title}
+              <span className="nx-timechip">⏱ {readingMinutes(section)} min</span>
+            </h2>
+            <div className="nx-swoosh" aria-hidden />
+            {section.lead && (
+              <div className="nx-u-intro">
+                {admin && (
+                  <BlockReview
+                    inline
+                    id={section.lead.id}
+                    flagged={section.lead.flagged}
+                    note={section.lead.reviewNote}
+                  />
+                )}
+                <Core unit={section.lead} />
+              </div>
+            )}
+            {teaching.map(unit => (
+              <Unit key={unit.id} unit={unit} admin={admin} />
+            ))}
+            {practice.length > 0 && (
+              // Closed by default: the page is a recap, the questions are
+              // opt-in. Forced open for Adrian when one of them is flagged —
+              // a flag hidden inside a collapsed expander would be lost.
+              <details
+                className="nx-practice"
+                open={admin && practice.some(u => u.flagged) ? true : undefined}
+              >
+                <summary>
+                  💪 Practice — {practice.length} question{practice.length === 1 ? '' : 's'}
+                </summary>
+                {practice.map(unit => (
+                  <Unit key={unit.id} unit={unit} admin={admin} />
+                ))}
+              </details>
+            )}
+          </section>
+        );
+      })}
     </>
   );
 }

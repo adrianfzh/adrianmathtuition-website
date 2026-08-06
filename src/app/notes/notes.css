@@ -1860,6 +1860,7 @@ a.nx-eyebrow:hover {
      answers print hidden — which is what a worksheet wants anyway. The prompt
      to click, though, is meaningless on paper. */
   .nx-u-reveal > summary,
+  .nx-practice > summary,
   .nx-u-more > summary {
     display: none;
   }
@@ -1964,4 +1965,64 @@ a.nx-eyebrow:hover {
   .nx-notebox {
     display: none !important;
   }
+}
+
+/* ── Practice expander ────────────────────────────────────────────────────────
+ * The recap page reads Big Idea → Worked Examples → Common Mistakes; doing
+ * questions is opt-in behind this. Native <details>, so it costs no JS and
+ * prints collapsed (the summary itself is hidden in print with the others). */
+.nx-practice {
+  margin: 1.3rem 0 0;
+}
+.nx-practice > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #fff;
+  background: var(--nx-bar-try);
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+}
+.nx-practice > summary::-webkit-details-marker {
+  display: none;
+}
+.nx-practice > summary::after {
+  content: '▾';
+  font-size: 0.8em;
+}
+.nx-practice[open] > summary::after {
+  content: '▴';
+}
+.nx-practice > summary:hover {
+  filter: brightness(1.1);
+}
+
+/* Reflex deep-link into the lesson section that teaches it. */
+.nx-rc-link {
+  margin-top: auto;
+  padding-top: 0.6rem;
+  align-self: flex-start;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-fd-primary);
+  text-decoration: none;
+}
+.nx-rc-link:hover {
+  text-decoration: underline;
+}
+
+/* Diagrams inside the quick-revision card (markdown images from storage). */
+.nx-revision-body img {
+  display: block;
+  max-width: min(100%, 560px);
+  height: auto;
+  margin: 0.8rem auto;
+  background: #fff;
+  border: 1px solid var(--nx-line);
+  border-radius: 14px;
+  padding: 0.6rem;
 }
