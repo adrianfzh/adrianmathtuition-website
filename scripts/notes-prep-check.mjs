@@ -125,7 +125,14 @@ const everyString = visit => {
 
 everyString((s, at) => {
   if (/\\qquad/.test(s)) fail(`\\qquad at ${at} — stack cases with gathered/aligned instead`);
-  if (/\\\\(sqrt|frac|tfrac|begin|end|times|text)/.test(s)) fail(`doubled backslash at ${at}`);
+  // E''-style doubling doubles every backslash, so a macro preceded by an EVEN
+  // run of backslashes is broken; an odd run is a row-break (\\) plus a macro.
+  for (const m of s.matchAll(/(\\+)(sqrt|frac|tfrac|begin|end|times|text|qquad)/g)) {
+    if (m[1].length % 2 === 0) {
+      fail(`doubled backslash at ${at}`);
+      break;
+    }
+  }
   const open = (s.match(/\\begin\{(aligned|gathered)\}/g) ?? []).length;
   const close = (s.match(/\\end\{(aligned|gathered)\}/g) ?? []).length;
   if (open !== close) fail(`unbalanced aligned/gathered at ${at}`);
