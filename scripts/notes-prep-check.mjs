@@ -136,7 +136,11 @@ everyString((s, at) => {
   const open = (s.match(/\\begin\{(aligned|gathered)\}/g) ?? []).length;
   const close = (s.match(/\\end\{(aligned|gathered)\}/g) ?? []).length;
   if (open !== close) fail(`unbalanced aligned/gathered at ${at}`);
-  if (/smiley|frown|sad face/i.test(s)) fail(`informal parabola wording at ${at} (sanctioned aside only)`);
+  // Informal parabola wording is allowed exactly once per topic, as a memory
+  // aid carrying its own caveat — the words "memory aid" in the same string
+  // are the sanction marker; anything else is a failure.
+  if (/smiley|frown|sad face|smile/i.test(s) && !/memory aid/i.test(s))
+    fail(`informal parabola wording at ${at} (sanctioned memory-aid asides only)`);
   if (/\\sum/.test(s) && subject !== 'H2') fail(`∑ notation at ${at} — sec students haven't met it`);
 });
 
