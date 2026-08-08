@@ -127,15 +127,19 @@ function trimUnclosedMath(t: string): string {
   // Unclosed backtick segment (converted to math later in the pipeline)
   const ticks = t.match(/`/g) || [];
   if (ticks.length % 2 === 1) t = t.slice(0, t.lastIndexOf('`'));
-  // Hold back a partially-streamed trailing CONFIDENCE tag (stripped fully on final render)
-  t = t.replace(/\n\s*CONF[A-Z]*\s*:?\s*[A-Z]*\s*$/, '');
+  // Hold back trailing marker lines while streaming (stripped fully on final
+  // render): CONFIDENCE:…, DIAGRAM:REQUEST …, DATA:MISSING … — the bot's
+  // machine-readable tail markers, which may stack after the answer.
+  t = t.replace(/(\n\s*(?:CONFIDENCE|DIAGRAM|DATA)\s*:[^\n]*)+\s*$/i, '');
+  // …and a partially-streamed marker keyword ("CONFID", "DIAGR", "DATA:")
+  t = t.replace(/\n\s*[A-Z]{2,10}\s*:?\s*$/, '');
   return t;
 }
 
 /* ── renderToElement (KaTeX inline render) ── */
 function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
   if (streaming) text = trimUnclosedMath(text);
-  text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
+  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*)(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
 
   // Fix 1: bare \begin{matrix} has no brackets in KaTeX — upgrade to \begin{pmatrix}
@@ -199,7 +203,7 @@ function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
 
 /* ── formatMessage (for final display of user messages) ── */
 function formatMessage(text: string): string {
-  text = text.replace(/\n*CONFIDENCE\s*:\s*(HIGH|LOW)\s*$/i, '').trimEnd();
+  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*)(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
   text = text.replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
