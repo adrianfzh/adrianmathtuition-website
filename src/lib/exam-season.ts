@@ -61,6 +61,17 @@ export interface ExamRecord {
 }
 
 /**
+ * Exam Type values that satisfy a season. Some levels sit a level-specific
+ * exam instead of the seasonal WA: Sec 4 / JC2 sit Prelims (WA3 window),
+ * JC1 sits its Promo (EOY window) — so a Prelim/Promo record counts for the
+ * season everywhere the ⚠ "missing exam info" criteria run. Mirrors the
+ * schedule route's Exams fetch, which OR-includes Prelim + Promo year-round.
+ */
+export function seasonSatisfyingTypes(activeType: ExamType): string[] {
+  return [activeType, 'Prelim', 'Promo'];
+}
+
+/**
  * Given a student's exam records and the active exam type, determine
  * whether the student's exam info is complete for the current season.
  *
@@ -77,7 +88,8 @@ export function checkExamInfoStatus(
       missing: { hasNoRecord: false, missingDate: false, missingTopics: false },
     };
   }
-  const matching = studentExams.filter(e => e.examType === activeType);
+  const satisfying = new Set(seasonSatisfyingTypes(activeType));
+  const matching = studentExams.filter(e => satisfying.has(e.examType));
   if (matching.length === 0) {
     return {
       complete: false,

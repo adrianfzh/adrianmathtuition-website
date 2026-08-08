@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import { resolveActiveExamType, checkExamInfoStatus, ExamType, ExamRecord } from '@/lib/exam-season';
+import { resolveActiveExamType, checkExamInfoStatus, seasonSatisfyingTypes, ExamType, ExamRecord } from '@/lib/exam-season';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -92,9 +92,11 @@ export async function GET(req: NextRequest) {
     try {
       // Fetch all exams for this exam type — ARRAYJOIN filter on linked record fields is
       // unreliable (returns names, not IDs). Filter by student in JS instead.
+      // Prelim/Promo satisfy the season (Sec4/JC2 Prelims, JC1 Promo), so the
+      // quick-add banner doesn't nag students whose real exam is recorded.
       const examsData = await airtableRequestAll(
         'Exams',
-        `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeType}'`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`
+        `?filterByFormula=${encodeURIComponent(`OR(${seasonSatisfyingTypes(activeType).map(t => `{Exam Type}='${t}'`).join(',')})`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`
       );
       for (const r of (examsData.records ?? [])) {
         const sid = r.fields['Student']?.[0];

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { unmarkedLessonsFilterFormula } from '@/lib/unmarked-lessons';
-import { resolveActiveExamType, checkExamInfoStatus, ExamType, ExamRecord } from '@/lib/exam-season';
+import { resolveActiveExamType, checkExamInfoStatus, seasonSatisfyingTypes, ExamType, ExamRecord } from '@/lib/exam-season';
 
 export const runtime = 'nodejs';
 
@@ -112,7 +112,9 @@ async function fetchExamGaps(): Promise<{ examType: ExamType; count: number } | 
       airtableRequestAll('Students', `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student Name`),
       // Linked-record filters are unreliable (ARRAYJOIN returns display names,
       // not IDs) — fetch this exam type's records and match Student in JS.
-      airtableRequestAll('Exams', `?filterByFormula=${encodeURIComponent(`{Exam Type}='${activeType}'`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`),
+      // Prelim/Promo satisfy the season (Sec4/JC2 Prelims, JC1 Promo) — same
+      // OR-include as the schedule route, else complete students count as gaps.
+      airtableRequestAll('Exams', `?filterByFormula=${encodeURIComponent(`OR(${seasonSatisfyingTypes(activeType).map(t => `{Exam Type}='${t}'`).join(',')})`)}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam`),
     ]);
 
     const examsByStudent: Record<string, ExamRecord[]> = {};
