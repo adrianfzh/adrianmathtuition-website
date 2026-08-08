@@ -124,7 +124,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `schedule/route.ts` — public schedule data from Airtable Slots table
 
 ### Admin schedule (details + full table → `docs/SCHEDULE.md`)
-- `admin-schedule/` — weekly calendar data; sub-routes: `reschedule`, `add`, `add-weekly-slot`, `switch`, `delete`, `attendance`, `lesson-context`, `lesson-update`, `lesson-prev-update`, `quick-add-exam`, `student-contact`, `unmarked-count`, `topic-timeline`, `set-exams`
+- `admin-schedule/` — weekly calendar data; sub-routes: `reschedule`, `add`, `add-weekly-slot`, `switch`, `delete`, `attendance`, `lesson-context`, `lesson-update`, `lesson-prev-update`, `quick-add-exam`, `student-contact`, `unmarked-count`, `topic-timeline`, `set-exams`, `extract-exam-topics`
 - `admin-revision-attendance/`, `admin-revision-signup/`, `admin-revision-revert/` — Revision Sprint → `docs/SCHEDULE.md`
 - `admin/capacity-override/` — Sec-cap toggle GET/POST → `docs/SCHEDULE.md`
 

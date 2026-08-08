@@ -582,6 +582,26 @@ function examSummaryLines(lesson: EnrichedLesson): string[] {
   return lines;
 }
 
+// Downscale a photo to a ≤1400px JPEG data-URL for the topics-from-photo
+// extraction (keeps the payload far under Vercel's 4.5MB body cap). Returns
+// null when the browser can't decode the file (e.g. HEIC outside Safari).
+async function photoToJpegDataUrl(file: File, maxEdge = 1400, quality = 0.8): Promise<string | null> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, maxEdge / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width * scale));
+    const h = Math.max(1, Math.round(bmp.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d')!.drawImage(bmp, 0, 0, w, h);
+    bmp.close?.();
+    return canvas.toDataURL('image/jpeg', quality);
+  } catch {
+    return null;
+  }
+}
+
 // Agoda-style tap-tap range picker: first tap sets the start, second tap (on
 // or after the start) sets the end; tapping earlier restarts the range. Used
 // by the 🏖 Away-dates modal.
@@ -1220,6 +1240,12 @@ export default function SchedulePage() {
   // split, others to a single paper (with an option to split).
   type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean };
   const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; lessonId: string; examType: string; noExam: boolean; pwaa: string; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work'; applyTo: string[] } | null>(null);
+  // "📷 From photo" — which exam row is currently extracting topics from an
+  // uploaded photo (null = none). One hidden file input serves all rows;
+  // photoRowRef remembers which row's button was tapped.
+  const [photoExtracting, setPhotoExtracting] = useState<number | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const photoRowRef = useRef(0);
   // Prelim rows hide the topic picker by default (all topics tested) — this
   // tracks which row indices the admin has expanded to add specific topics.
   const [prelimTopicsOpen, setPrelimTopicsOpen] = useState<Set<number>>(new Set());
@@ -2550,11 +2576,13 @@ export default function SchedulePage() {
     if (lv === 'jc2' && s.includes('h2')) return true;
     return false;
   }
-  // Sec 4 / JC2 in the WA3 window sit their Prelims, not "WA3".
+  // Sec 4 / JC2 in the WA3 window sit their Prelims, not "WA3"; JC1's EOY is
+  // their Promo exam.
   function levelExamType(level: string): string {
     const active = data?.activeExamType || 'WA3';
     const lv = (level || '').toLowerCase();
     if (active === 'WA3' && (lv.includes('sec 4') || lv === 'jc2')) return 'Prelim';
+    if (active === 'EOY' && lv === 'jc1') return 'Promo';
     return active;
   }
   // Build the per-subject editor rows from saved exam entries. Shared by
@@ -2727,6 +2755,57 @@ export default function SchedulePage() {
   }
   function setExamRow(i: number, patch: Partial<ExamSubjectRow>) {
     setExamEdit(prev => prev ? { ...prev, rows: prev.rows.map((r, idx) => idx === i ? { ...r, ...patch } : r) } : prev);
+  }
+  // "📷 From photo": send the student's photo (school topics list / timetable /
+  // teacher's message) to the extraction route, then tick the returned
+  // canonical topics on the row — plus fill the date/note when empty.
+  async function extractExamTopicsFromPhoto(file: File) {
+    const i = photoRowRef.current;
+    if (!examEdit || photoExtracting !== null) return;
+    const subject = examEdit.rows[i]?.subject || '';
+    setPhotoExtracting(i);
+    try {
+      const dataUrl = await photoToJpegDataUrl(file);
+      if (!dataUrl) throw new Error("Couldn't read that image — try a screenshot or JPEG");
+      const res = await fetch('/api/admin-schedule/extract-exam-topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: dataUrl, level: examEdit.studentLevel, subject }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || 'Extraction failed');
+      const topics: string[] = Array.isArray(d.topics) ? d.topics : [];
+      if (!topics.length && !d.examDate) {
+        showToast('error', 'No exam topics recognised in that photo');
+        return;
+      }
+      // Decide date/note fills from the pre-extraction row (state updaters run
+      // after this handler, so deciding inside one would desync the toast).
+      const row0 = examEdit.rows[i];
+      const dateSet = !!(d.examDate && row0?.mode === 'single' && !row0.date);
+      const noteSet = !!(d.note && !(row0?.notes || '').trim());
+      setExamEdit(prev => {
+        if (!prev) return prev;
+        const rows = prev.rows.map((r, idx) => {
+          if (idx !== i) return r;
+          const sel = new Set((r.topics || '').split(',').map(s => s.trim()).filter(Boolean));
+          for (const t of topics) sel.add(t);
+          const patch: Partial<ExamSubjectRow> = { topics: [...sel].join(', ') };
+          if (dateSet) patch.date = d.examDate;
+          if (noteSet) patch.notes = d.note;
+          return { ...r, ...patch };
+        });
+        return { ...prev, rows };
+      });
+      const bits = topics.length ? [`${topics.length} topic${topics.length === 1 ? '' : 's'} ticked`] : [];
+      if (dateSet) bits.push('date filled');
+      if (noteSet) bits.push('note added');
+      showToast('success', `📷 ${bits.join(' · ') || 'Done'} — check, then Save`);
+    } catch (e: unknown) {
+      showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Extraction failed');
+    } finally {
+      setPhotoExtracting(null);
+    }
   }
   async function saveExamEdit() {
     if (!examEdit || examEdit.saving) return;
@@ -3295,9 +3374,14 @@ export default function SchedulePage() {
               <div className="form-group" style={{ marginBottom: 12 }}>
                 <span className="form-label">Exam</span>
                 <select className="modal-select" value={examEdit.examType} onChange={e => setExamEdit({ ...examEdit, examType: e.target.value })}>
-                  {['Prelim', 'WA3', 'WA1', 'WA2', 'EOY'].map(t => <option key={t} value={t}>{t}</option>)}
+                  {['Prelim', 'WA3', 'WA1', 'WA2', 'EOY', 'Promo'].map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
+              {/* One hidden file input serves every row's 📷 From photo button
+                  (photoRowRef carries the row index). Value is cleared so the
+                  same photo can be re-picked after an error. */}
+              <input ref={photoInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void extractExamTopicsFromPhoto(f); }} />
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: '#334155', cursor: 'pointer', marginBottom: 10 }}>
                 <input type="checkbox" checked={examEdit.noExam} onChange={e => setExamEdit({ ...examEdit, noExam: e.target.checked, ...(e.target.checked ? { pwaa: '' } : {}) })} />
                 No exam this season
@@ -3389,7 +3473,15 @@ export default function SchedulePage() {
                     }
                     return (
                   <div className="form-group" style={{ marginTop: 10 }}>
-                    <span className="form-label">Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>{isPrelim ? '· optional (all tested by default)' : '· tap to toggle · optional'}</span></span>
+                    <span className="form-label" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                      <span>Topics tested <span style={{ color: '#cbd5e1', fontWeight: 400 }}>{isPrelim ? '· optional (all tested by default)' : '· tap to toggle · optional'}</span></span>
+                      {/* Students send "topics tested" photos — extract + auto-tick. */}
+                      <button type="button" disabled={photoExtracting !== null}
+                        onClick={() => { photoRowRef.current = i; photoInputRef.current?.click(); }}
+                        style={{ marginLeft: 'auto', fontSize: 11.5, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', opacity: photoExtracting !== null && photoExtracting !== i ? 0.5 : 1 }}>
+                        {photoExtracting === i ? '⏳ Reading photo…' : '📷 From photo'}
+                      </button>
+                    </span>
                     {(() => {
                       const sel = new Set((row.topics || '').split(',').map(s => s.trim()).filter(Boolean));
                       const toggle = (t: string) => { const s = new Set(sel); if (s.has(t)) s.delete(t); else s.add(t); setExamRow(i, { topics: [...s].join(', ') }); };
@@ -3505,7 +3597,7 @@ export default function SchedulePage() {
                 examDetailModal.exams
                   .slice()
                   .sort((a: any, b: any) => {
-                    const order = ['WA1', 'WA2', 'WA3', 'EOY'];
+                    const order = ['WA1', 'WA2', 'WA3', 'EOY', 'Promo'];
                     return order.indexOf(a.examType) - order.indexOf(b.examType);
                   })
                   .map((exam: any) => (

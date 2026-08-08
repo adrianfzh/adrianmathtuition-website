@@ -85,7 +85,8 @@ export async function POST(req: NextRequest) {
       }
     }
     if (!markerKept) {
-      await airtableRequest('Exams', '', { method: 'POST', body: JSON.stringify({ fields: { Student: [studentId], 'Exam Type': examType, 'No Exam': true, 'Exam Notes': pwaaNote } }) });
+      // typecast: new Exam Type options (e.g. Promo) are created on write.
+      await airtableRequest('Exams', '', { method: 'POST', body: JSON.stringify({ typecast: true, fields: { Student: [studentId], 'Exam Type': examType, 'No Exam': true, 'Exam Notes': pwaaNote } }) });
       result.created++;
     }
     return NextResponse.json({ ok: true, ...result });

@@ -55,11 +55,12 @@ export const RESULT_TONE_COLORS: Record<ResultTone, { fg: string; bg: string }> 
   weak: { fg: '#dc2626', bg: '#fee2e2' },
 };
 
-/** EOY is labelled "Prelims" for Sec 4 / Sec 5 students. */
+/** EOY is labelled "Prelims" for Sec 4 / Sec 5 students, "Promo" for JC1. */
 export function examTypeLabel(examType: string, studentLevel: string): string {
   if (examType === 'EOY') {
     const l = (studentLevel || '').toLowerCase();
     if (l === 'sec 4' || l === 'sec 5') return 'Prelims';
+    if (l === 'jc1') return 'Promo';
   }
   return examType;
 }

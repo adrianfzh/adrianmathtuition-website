@@ -187,7 +187,7 @@ export async function GET(req: NextRequest) {
       ? fetchAll('Invoices', `?filterByFormula=${encodeURIComponent(`AND({Invoice Type}='Revision Sprint',{Status}!='Voided')`)}&fields[]=Student&fields[]=Line Items`)
       : Promise.resolve([] as any[]),
     resolvedExamType
-      ? fetchAll('Exams', `?filterByFormula=${encodeURIComponent(`OR({Exam Type}='${resolvedExamType}',{Exam Type}='Prelim')`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam&fields[]=Exam Type`).catch(() => [] as any[])
+      ? fetchAll('Exams', `?filterByFormula=${encodeURIComponent(`OR({Exam Type}='${resolvedExamType}',{Exam Type}='Prelim',{Exam Type}='Promo')`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam&fields[]=Exam Type`).catch(() => [] as any[])
       : Promise.resolve([] as any[]),
   ]);
 

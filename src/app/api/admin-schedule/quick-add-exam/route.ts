@@ -89,7 +89,8 @@ export async function POST(req: NextRequest) {
 
   const created = await airtableRequest('Exams', '', {
     method: 'POST',
-    body: JSON.stringify({ fields: newFields }),
+    // typecast: new Exam Type options (e.g. Promo) are created on write.
+    body: JSON.stringify({ typecast: true, fields: newFields }),
   });
   return NextResponse.json({
     id: created.id,
