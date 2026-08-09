@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speed-time graphs — gradient is acceleration, area is distance</title>
+<style>
+  :root{
+    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
+    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
+    --grid:#e6ddcd; --line:#cfc6b6;
+    --panel:#fbf8f1; --panelb:#e7ded0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Georgia","Times New Roman",serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+  header{padding:16px 20px 6px 116px}
+  h1{font-size:19px; font-weight:600; margin:0; letter-spacing:.2px}
+  .sub{font-size:13px; color:var(--muted); margin-top:3px; max-width:70ch}
+
+  /* the two facts — the whole topic, always on screen */
+  .facts{display:flex; align-items:center; justify-content:center; gap:8px 10px;
+         flex-wrap:wrap; padding:9px 14px 10px}
+  .fact{font-size:12px; font-weight:600; letter-spacing:.05em; padding:5px 13px;
+        border-radius:999px; border:1px solid; white-space:nowrap}
+  .fact b{font-weight:700}
+  .f-rose{color:var(--rose); border-color:rgba(188,90,110,.38); background:rgba(188,90,110,.07)}
+  .f-teal{color:var(--teal); border-color:rgba(46,124,143,.38); background:rgba(46,124,143,.07)}
+  .fdot{color:var(--muted)}
+
+  .stage{position:relative; height:max(330px,50vh); border-top:1px solid var(--line);
+         border-bottom:1px solid var(--line)}
+  canvas{display:block; width:100%; height:100%; touch-action:none; cursor:default}
+  .readout{
+    position:absolute; top:10px; right:12px;
+    background:rgba(251,248,241,.93); border:1px solid var(--panelb);
+    border-radius:10px; padding:7px 11px;
+    font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    font-size:12.5px; color:var(--ink); pointer-events:none;
+    box-shadow:0 1px 0 rgba(0,0,0,.03); transition:opacity .25s;
+  }
+  .readout.off{opacity:0}
+  .hint{position:absolute; bottom:8px; right:12px; font-size:11.5px; color:var(--muted);
+        font-family:ui-monospace,monospace; pointer-events:none; text-align:right}
+
+  .panel{width:100%; max-width:940px; margin:0 auto; padding:12px 18px 26px}
+  .prow{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .pill{display:inline-flex; align-items:center; padding:4px 11px; border-radius:999px;
+        border:1px solid var(--panelb); background:var(--panel);
+        font-size:12px; color:var(--muted); white-space:nowrap}
+  .pill.on{border-color:var(--orange); color:var(--ink); background:rgba(216,105,60,.08)}
+  .pill.done{border-color:var(--teal); color:var(--teal); background:rgba(46,124,143,.10)}
+  .qcount{margin-left:auto; font-family:ui-monospace,monospace; font-size:11.5px; color:var(--muted)}
+
+  .story{font-size:15.5px; line-height:1.6; margin:12px 0 10px; max-width:74ch}
+
+  button{
+    font:inherit; font-size:13px; color:var(--ink); background:var(--panel);
+    border:1px solid var(--panelb); border-radius:8px; padding:7px 13px; cursor:pointer;
+    min-height:44px;
+  }
+  button:hover{border-color:var(--muted)}
+  button:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
+  button:disabled{opacity:.4; cursor:default}
+  button:disabled:hover{border-color:var(--panelb)}
+  button.primary{background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:600}
+  button.primary:hover{background:#000}
+
+  .fb{margin-top:10px; font-size:14px; line-height:1.6; min-height:1.4em; max-width:76ch}
+  .fb .bad{color:var(--rose)}
+  .fb .good{color:var(--teal)}
+  .fb .nb{color:var(--orange)}
+
+  .qhead{font-family:ui-monospace,monospace; font-size:11.5px; color:var(--muted); margin:2px 0 4px}
+  .qtext{font-size:15px; line-height:1.55; margin:0 0 10px; max-width:74ch}
+  .chiprow{display:flex; align-items:center; gap:10px 12px; flex-wrap:wrap}
+  .chip{
+    width:104px; min-height:44px; text-align:center;
+    background:var(--panel); border:1.5px solid var(--panelb); border-radius:10px;
+    font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace; font-size:15.5px; color:var(--ink);
+  }
+  .chip:focus-visible{outline:2px solid var(--orange); outline-offset:1px}
+  .chip.ok{border-color:var(--teal); background:rgba(46,124,143,.10); color:#1F5D6E}
+  .chip.bad{border-color:var(--rose); background:rgba(188,90,110,.10)}
+  .unit{font-size:14.5px; color:var(--muted)}
+
+  .navrow{display:flex; align-items:center; gap:12px; margin-top:16px}
+  .dots{display:flex; gap:7px; align-items:center; margin:0 auto}
+  .dot{width:11px; height:11px; min-height:0; border-radius:50%; border:1.4px solid var(--muted);
+       background:transparent; padding:0; cursor:pointer; position:relative}
+  .dot::after{content:""; position:absolute; inset:-11px}
+  .dot:hover{border-color:var(--ink)}
+  .dot.done{background:var(--panelb); border-color:var(--panelb)}
+  .dot.on{background:var(--orange); border-color:var(--orange)}
+
+  .endcard{background:var(--panel); border:1px solid var(--panelb); border-radius:14px;
+           padding:20px 22px; max-width:600px; margin:8px 0 2px;
+           box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  .endcard h2{font-size:17px; font-weight:600; margin:0 0 12px}
+  .starrow{display:flex; gap:6px 14px; flex-wrap:wrap; margin:4px 0 12px}
+  .staritem{display:flex; flex-direction:column; align-items:center; gap:1px}
+  .star{font-size:22px; line-height:1; color:var(--orange)}
+  .star.off{color:var(--line)}
+  .srlab{font-family:ui-monospace,monospace; font-size:10.5px; color:var(--muted)}
+  .estat{display:flex; align-items:baseline; gap:12px; margin:7px 0}
+  .ebig{font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+        font-size:22px; font-weight:600; color:var(--orange); min-width:64px}
+  .elab{font-size:14px; color:var(--ink)}
+  .endfacts{margin:12px 0 4px; display:flex; gap:8px; flex-wrap:wrap}
+  .endnote{font-size:13.5px; font-style:italic; color:var(--muted); line-height:1.55; margin:12px 0 14px}
+
+  [hidden]{display:none !important}
+
+  @media (max-width:560px){
+    header{padding:50px 16px 6px 16px}
+    .facts{padding:8px 10px}
+    .fact{font-size:11px; padding:4px 10px}
+    .stage{height:max(300px,44vh)}
+    .panel{padding:10px 14px 22px}
+    .story{font-size:14.5px}
+    .qtext{font-size:14.5px}
+    .qcount{width:100%; margin-left:0; order:9}
+    .readout{font-size:11px; padding:6px 9px}
+    .hint{top:4px; bottom:auto; left:110px; right:8px; text-align:right;
+          background:rgba(244,239,230,.78); padding:2px 6px; border-radius:6px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition-duration:.01ms !important; animation:none !important}
+  }
+</style>
+</head>
+<body>
+<a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
+<header>
+  <h1>Speed-time graphs</h1>
+  <div class="sub">The whole topic is two facts: gradient is acceleration, area is distance. Draw the journey, then make the graph pay.</div>
+</header>
+
+<div class="facts" id="facts">
+  <span class="fact f-rose"><b>GRADIENT</b> = acceleration</span>
+  <span class="fdot">·</span>
+  <span class="fact f-teal"><b>AREA</b> under graph = distance</span>
+</div>
+
+<div class="stage" id="stage">
+  <canvas id="cv" aria-label="speed-time graph paper; in drawing rounds, drag the round handles to build the journey"></canvas>
+  <div class="readout off" id="ro"></div>
+  <div class="hint" id="chint"></div>
+</div>
+
+<div class="panel">
+  <div class="prow" id="prow">
+    <span class="pill" id="pillA">① draw the journey</span>
+    <span class="pill" id="pillB">② make it pay</span>
+    <span class="qcount" id="qcount"></span>
+  </div>
+
+  <p class="story" id="story"></p>
+
+  <div id="phD">
+    <button type="button" id="checkGraphBtn" class="primary">Check my graph</button>
+    <div class="fb" id="fbD" aria-live="polite"></div>
+  </div>
+
+  <div id="phQ" hidden>
+    <p class="qhead" id="qhead"></p>
+    <p class="qtext" id="qtext"></p>
+    <div class="chiprow">
+      <input class="chip" id="ansIn" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="your answer">
+      <span class="unit" id="unitEl"></span>
+      <button type="button" id="checkBtn" class="primary">Check</button>
+      <button type="button" id="contBtn" class="primary" hidden>Next question ›</button>
+    </div>
+    <div class="fb" id="fbQ" aria-live="polite"></div>
+  </div>
+
+  <div class="endcard" id="endcard" hidden>
+    <h2>The graph has paid up</h2>
+    <div class="starrow" id="starrow"></div>
+    <div class="estat"><span class="ebig" id="statStars"></span><span class="elab">rounds clean — right graph, right numbers, first go</span></div>
+    <div class="endfacts">
+      <span class="fact f-rose"><b>GRADIENT</b> = acceleration</span>
+      <span class="fact f-teal"><b>AREA</b> under graph = distance</span>
+    </div>
+    <p class="endnote" id="endnote"></p>
+    <button type="button" id="againBtn" class="primary">Try again</button>
+  </div>
+
+  <div class="navrow">
+    <button type="button" id="prevBtn">‹ Prev</button>
+    <div class="dots" id="rdots"></div>
+    <button type="button" id="nextBtn">Next ›</button>
+  </div>
+
+  <noscript><p style="color:#7d756a">This tool needs JavaScript — the grid, the draggable journey, all of it.</p></noscript>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =====================================================================
+     SPEED-TIME GRAPHER — seven rounds of the O-Level kinematics ritual.
+     Rounds 1–5: the journey is words; the student drags vertices to draw
+     the v-t polyline, then answers gradient/area questions. Rounds 6–7:
+     the graph is given (round 6 with an unknown T) and only the questions
+     remain. Every annotation, area and gradient on the canvas is computed
+     from the vertex lists at runtime — nothing numeric is duplicated.
+     ===================================================================== */
+
+  const $ = id => document.getElementById(id);
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const stage = $('stage'), ro = $('ro'), chint = $('chint');
+  const pillA = $('pillA'), pillB = $('pillB'), qcount = $('qcount');
+  const storyEl = $('story');
+  const phD = $('phD'), fbD = $('fbD'), checkGraphBtn = $('checkGraphBtn');
+  const phQ = $('phQ'), qhead = $('qhead'), qtext = $('qtext');
+  const ansIn = $('ansIn'), unitEl = $('unitEl');
+  const checkBtn = $('checkBtn'), contBtn = $('contBtn'), fbQ = $('fbQ');
+  const endcard = $('endcard'), starrow = $('starrow'), endnote = $('endnote');
+  const prevBtn = $('prevBtn'), nextBtn = $('nextBtn'), dotsEl = $('rdots');
+
+  const REDUCED = !!(window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  const C = { ink:'#2b2b2b', muted:'#7d756a', rose:'#BC5A6E', teal:'#2E7C8F',
+              orange:'#D8693C', plum:'#7B5EA7', grid:'#e6ddcd', gridMaj:'#dcd2c1',
+              line:'#cfc6b6', paper:'#F4EFE6', halo:'rgba(244,239,230,.9)' };
+  const TEAL_FILL = 'rgba(46,124,143,.18)';
+  const MONO = '"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace';
+  const SQ = '²';                       // ² for m/s²
+  const MINUS = '−';
+
+  const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+  const ease = t => { t = clamp(t,0,1); return t*t*(3-2*t); };
+  const fmt = v => {
+    const r = Math.round(v*100)/100;
+    return String(r).replace('-', MINUS);
+  };
+  function parseNum(s){
+    s = String(s).trim().replace(/−/g,'-').replace(/\s+/g,'');
+    const fr = s.match(/^(-?(?:\d+\.?\d*|\.\d+))\/(-?(?:\d+\.?\d*|\.\d+))$/);
+    if (fr){ const d = parseFloat(fr[2]); return d ? parseFloat(fr[1])/d : NaN; }
+    if (!/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
+    return parseFloat(s);
+  }
+
+  /* ---- geometry: every number on screen comes from these --------------- */
+  const grad = (vs,i) => (vs[i+1][1]-vs[i][1]) / (vs[i+1][0]-vs[i][0]);
+  const stripArea = (vs,i) => 0.5*(vs[i][1]+vs[i+1][1])*(vs[i+1][0]-vs[i][0]);
+  const totalArea = vs => { let s=0; for (let i=0;i<vs.length-1;i++) s+=stripArea(vs,i); return s; };
+
+  /* ---- the round bank (answers verified against these vertex lists) ---- */
+  const MS2 = 'm/s'+SQ;
+  const ROUNDS = [
+    { verts:[[0,0],[8,12],[28,12],[40,0]],
+      story:'A car starts from rest and accelerates uniformly, reaching 12 m/s after 8 s. It holds this steady 12 m/s for 20 s, then decelerates uniformly, coming to rest 12 s later.',
+      qs:[
+        { kind:'grad', seg:0, unit:MS2, ans:1.5, text:'Find the acceleration during the first 8 s.' },
+        { kind:'decel', seg:2, unit:MS2, ans:1, text:'Find the deceleration during the final 12 s.' },
+        { kind:'area', regions:[0,1,2], unit:'m', ans:360, text:'Find the total distance travelled.' },
+      ]},
+    { verts:[[0,20],[10,20],[20,5],[30,5]],
+      story:'A van travels at a steady 20 m/s for 10 s. The driver brakes, and the van slows uniformly to 5 m/s over the next 10 s, then holds that steady 5 m/s for 10 s.',
+      qs:[
+        { kind:'decel', seg:1, unit:MS2, ans:1.5, text:'Find the deceleration while the van is braking.' },
+        { kind:'area', regions:[0,1,2], unit:'m', ans:375, text:'Find the total distance travelled in the 30 s.' },
+        { kind:'avg', unit:'m/s', ans:12.5, text:'Hence find the average speed for the whole journey.' },
+      ]},
+    { verts:[[0,4],[6,16],[18,16],[26,0]],
+      story:'A motorcycle is already moving at 4 m/s. It accelerates uniformly to 16 m/s in 6 s, keeps that speed for 12 s, then decelerates uniformly to rest in 8 s.',
+      qs:[
+        { kind:'grad', seg:0, unit:MS2, ans:2, text:'Find the acceleration during the first 6 s.' },
+        { kind:'area', regions:[0], unit:'m', ans:60, note:'½(4 + 16) × 6 — the trapezium pays out.',
+          text:'Find the distance travelled in the first 6 s. Careful — that strip is a trapezium, not a triangle.' },
+        { kind:'area', regions:[0,1,2], unit:'m', ans:316, text:'Find the total distance travelled.' },
+      ]},
+    { verts:[[0,0],[2,4],[10,4],[12,0]],
+      story:'A lift starts from rest and reaches 4 m/s in 2 s. It travels at 4 m/s for 8 s, then slows uniformly to rest in a final 2 s.',
+      qs:[
+        { kind:'area', regions:[0,1,2], unit:'m', ans:40, text:'Find the total distance travelled by the lift.' },
+        { kind:'avg', unit:'m/s', ans:10/3, ansLabel:'10/3 ≈ 3.33',
+          text:'Find the average speed for the whole trip. Give 3 s.f. — or type the exact fraction.' },
+      ]},
+    { verts:[[0,10],[6,25],[16,25],[24,5],[30,5]],
+      story:'A car travelling at 10 m/s accelerates uniformly for 6 s to reach 25 m/s. It holds 25 m/s for 10 s, decelerates uniformly to 5 m/s over 8 s, then keeps a steady 5 m/s for 6 s.',
+      qs:[
+        { kind:'grad', seg:0, unit:MS2, ans:2.5, text:'Find the acceleration during the first 6 s.' },
+        { kind:'decel', seg:2, unit:MS2, ans:2.5, text:'Find the deceleration between t = 16 and t = 24.' },
+        { kind:'area', regions:[0,1,2,3], unit:'m', ans:505, text:'Find the total distance travelled.' },
+      ]},
+    { verts:[[0,0],[10,18],[31,18],[37,0]], readonly:true, r6:true, provisionalT:16,
+      story:'A car starts from rest and accelerates uniformly to 18 m/s in 10 s. It holds 18 m/s for T seconds, then decelerates uniformly, coming to rest in a further 6 s. In total the car travels 522 m.',
+      qs:[
+        { kind:'findT', unit:'s', ans:21, text:'Find T.' },
+        { kind:'avg', unit:'m/s', ans:522/37, tol:0.1, ansLabel:'≈ 14.1',
+          text:'Hence find the average speed for the whole journey, correct to 1 decimal place.' },
+      ]},
+    { verts:[[0,24],[12,24],[20,8],[28,8],[36,0]], readonly:true,
+      story:'No story this time — the graph is the whole story. Read everything straight off it.',
+      qs:[
+        { kind:'decel', seg:1, unit:MS2, ans:2, text:'Find the deceleration between t = 12 and t = 20.' },
+        { kind:'decel', seg:3, unit:MS2, ans:1, text:'Find the deceleration in the final 8 s.' },
+        { kind:'area', regions:[0,1,2,3], unit:'m', ans:512, text:'Find the total distance travelled.' },
+      ]},
+  ];
+
+  /* ---- per-round state ------------------------------------------------- */
+  function freshState(r){
+    const n = r.verts.length;
+    const pts = r.readonly
+      ? r.verts.map(p => p.slice())
+      : Array.from({length:n}, (_,i) => [Math.round(4 + i*36/(n-1)), 2]);
+    return {
+      pts, marks: r.verts.map(() => ''),
+      drawn: !!(r.readonly && !r.r6),
+      checks:0, revealed:false, fbD:'',
+      qi:0, qst: r.qs.map(() => ({ done:false, wrong:0, entry:'', msg:'' })),
+      annT0:0, annVis: r.verts.map(() => false),   // per-seg labels (read-only rounds)
+      shownVals:{},                                // region index -> value label visible
+      pulse:null, decomp:null, gradHint:null, avgHint:false, showPieces:false,
+      tFound:false, completeT0:0,
+    };
+  }
+  let RS = ROUNDS.map(freshState);
+  let ri = 0, endMode = false, forceChip = false;
+
+  const roundDone = st => st.qst.every(q => q.done);
+  const starOf = st => !st.revealed && st.qst.every(q => q.done && q.wrong === 0);
+  const graphReady = (r,st) => r.readonly ? (!r.r6 || st.tFound) : st.drawn;
+
+  /* ---- sizing + view --------------------------------------------------- */
+  const T1 = 44, V1 = 26;                      // world window 0..44 s, 0..26 m/s
+  const ML = 46, MR = 14, MT = 20, MB = 38;    // canvas margins
+  let W = 0, H = 0, DPR = 1;
+  function resize(){
+    const r = cv.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+    W = Math.max(60, r.width); H = Math.max(60, r.height);
+    cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    scheduleDraw();
+  }
+  window.addEventListener('resize', resize);
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+
+  const px = t => ML + t/T1*(W-ML-MR);
+  const py = v => MT + (1 - v/V1)*(H-MT-MB);
+  const wt = x => (x-ML)/(W-ML-MR)*T1;
+  const wv = y => (1 - (y-MT)/(H-MT-MB))*V1;
+
+  /* ---- canvas text helpers --------------------------------------------- */
+  function txt(str, x, y, o){
+    o = o || {};
+    ctx.globalAlpha = o.a == null ? 1 : clamp(o.a,0,1);
+    if (ctx.globalAlpha <= 0){ ctx.globalAlpha = 1; return; }
+    ctx.font = (o.italic?'italic ':'') + (o.bold?'600 ':'') + (o.size||12.5) + 'px Georgia, serif';
+    ctx.textAlign = o.align || 'center'; ctx.textBaseline = o.base || 'middle';
+    ctx.strokeStyle = C.halo; ctx.lineWidth = 4; ctx.lineJoin = 'round';
+    ctx.strokeText(str, x, y);
+    ctx.fillStyle = o.color || C.ink;
+    ctx.fillText(str, x, y);
+    ctx.textAlign = 'left'; ctx.globalAlpha = 1;
+  }
+  function monoText(str, x, y, o){
+    o = o || {};
+    ctx.globalAlpha = o.a == null ? 1 : clamp(o.a,0,1);
+    ctx.font = (o.bold?'600 ':'') + (o.size||10.5) + 'px ' + MONO;
+    ctx.textAlign = o.align || 'center'; ctx.textBaseline = o.base || 'middle';
+    ctx.strokeStyle = C.halo; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+    ctx.strokeText(str, x, y);
+    ctx.fillStyle = o.color || C.muted;
+    ctx.fillText(str, x, y);
+    ctx.textAlign = 'left'; ctx.globalAlpha = 1;
+  }
+  function textW(str, size, italic){
+    ctx.font = (italic?'italic ':'') + (size||11.5) + 'px Georgia, serif';
+    return ctx.measureText(str).width;
+  }
+
+  /* ---- grid ------------------------------------------------------------ */
+  const tLabelStep = () => (px(4)-px(0) >= 30) ? 4 : 8;  // 4s labels, 8s when cramped
+  function drawGrid(){
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = C.grid;                            // minors every 2
+    for (let t = 0; t <= T1; t += 2){
+      const x = px(t); ctx.beginPath(); ctx.moveTo(x, MT); ctx.lineTo(x, py(0)); ctx.stroke();
+    }
+    for (let v = 0; v <= V1; v += 2){
+      const y = py(v); ctx.beginPath(); ctx.moveTo(ML, y); ctx.lineTo(px(T1), y); ctx.stroke();
+    }
+    ctx.strokeStyle = C.gridMaj;                         // majors every 4
+    for (let t = 0; t <= T1; t += 4){
+      const x = px(t); ctx.beginPath(); ctx.moveTo(x, MT); ctx.lineTo(x, py(0)); ctx.stroke();
+    }
+    for (let v = 0; v <= V1; v += 4){
+      const y = py(v); ctx.beginPath(); ctx.moveTo(ML, y); ctx.lineTo(px(T1), y); ctx.stroke();
+    }
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1.6;       // axes
+    ctx.beginPath(); ctx.moveTo(ML, MT); ctx.lineTo(ML, py(0)); ctx.lineTo(px(T1), py(0)); ctx.stroke();
+    const tStep = tLabelStep();
+    for (let t = 0; t <= T1; t += tStep) monoText(String(t), px(t), py(0)+12);
+    for (let v = 4; v <= 24; v += 4) monoText(String(v), ML-7, py(v), {align:'right'});
+    monoText('time (s)', (ML+px(T1))/2, py(0)+27);
+    monoText('speed (m/s)', 6, 10, {align:'left'});
+  }
+
+  /* ---- annotation builders (all from vertices) ------------------------- */
+  function gradLabelStr(vs,i){
+    const [t1,v1] = vs[i], [t2,v2] = vs[i+1];
+    return 'a = ('+fmt(v2)+MINUS+fmt(v1)+')/'+fmt(t2-t1)+' = '+fmt(grad(vs,i))+' '+MS2;
+  }
+  function piecesOf(vs,i){                       // strip = rectangle + triangle
+    const [t1,v1] = vs[i], [t2,v2] = vs[i+1];
+    const dt = t2-t1, lo = Math.min(v1,v2), dv = Math.abs(v2-v1);
+    const out = [];
+    if (lo > 0 || dv === 0)
+      out.push({ shape:'rect', area:dt*lo, formula:fmt(dt)+' × '+fmt(lo) });
+    if (dv > 0)
+      out.push({ shape:'tri', area:0.5*dt*dv, formula:'½ × '+fmt(dt)+' × '+fmt(dv) });
+    return out;
+  }
+
+  function shadeRegion(vs,i,alpha){
+    const [t1,v1] = vs[i], [t2,v2] = vs[i+1];
+    ctx.globalAlpha = clamp(alpha,0,1);
+    ctx.fillStyle = TEAL_FILL;
+    ctx.beginPath();
+    ctx.moveTo(px(t1), py(0)); ctx.lineTo(px(t1), py(v1));
+    ctx.lineTo(px(t2), py(v2)); ctx.lineTo(px(t2), py(0));
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawPolyline(vs, color, width, dash, alpha){
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.strokeStyle = color; ctx.lineWidth = width;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    if (dash) ctx.setLineDash(dash);
+    ctx.beginPath();
+    vs.forEach(([t,v],i) => { const x = px(t), y = py(v); i ? ctx.lineTo(x,y) : ctx.moveTo(x,y); });
+    ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+  }
+
+  /* ---- the working (drawing-phase) picture ----------------------------- */
+  function drawWorking(r, st){
+    if (st.revealed) drawPolyline(r.verts, 'rgba(43,43,43,.30)', 2, [6,5]);
+    if (dragIdx >= 0){                                   // guides to both axes
+      const [t,v] = st.pts[dragIdx];
+      ctx.strokeStyle = C.orange; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+      ctx.globalAlpha = .55;
+      ctx.beginPath(); ctx.moveTo(px(t), py(v)); ctx.lineTo(px(t), py(0)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px(t), py(v)); ctx.lineTo(ML, py(v)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      monoText(fmt(t), px(t), py(0)+12, {color:C.orange, bold:true});
+      monoText(fmt(v), ML-7, py(v), {align:'right', color:C.orange, bold:true});
+    }
+    drawPolyline(st.pts, C.orange, 2);
+    st.pts.forEach(([t,v], i) => {                       // round handles
+      const x = px(t), y = py(v);
+      const col = st.marks[i] === 'bad' ? C.rose : st.marks[i] === 'ok' ? C.teal : C.orange;
+      ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI*2);
+      ctx.fillStyle = st.marks[i] === 'bad' ? 'rgba(188,90,110,.15)' : C.paper; ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI*2);
+      ctx.fillStyle = col; ctx.fill();
+    });
+  }
+
+  /* ---- the finished (annotated) picture -------------------------------- */
+  function annAlpha(st, idx, now){                       // staggered reveal
+    if (!st.annT0 || REDUCED) return st.annT0 ? 1 : 0;
+    return ease((now - st.annT0 - 200 - idx*150) / 320);
+  }
+
+  function drawFinal(r, st, now){
+    let vs = r.verts;
+    let k = 1;
+    if (r.r6 && st.completeT0){                          // graph completes itself
+      k = REDUCED ? 1 : ease((now - st.completeT0)/700);
+      if (k < 1){
+        const P = [[0,0],[10,18],[10+r.provisionalT,18],[16+r.provisionalT,0]];
+        vs = r.verts.map((p,i) => [P[i][0]+(p[0]-P[i][0])*k, P[i][1]+(p[1]-P[i][1])*k]);
+        bumpAnim(now+40);
+      }
+    }
+    const n = vs.length - 1;
+    const shadeAll = !r.readonly || (r.r6 ? st.tFound && k >= 1 : true);
+    const baseA = st.annT0 && !REDUCED ? ease((now - st.annT0)/500) : 1;
+
+    for (let i = 0; i < n; i++){                         // teal area, always first
+      if (!shadeAll) continue;
+      shadeRegion(vs, i, baseA);                         // fill carries .18 alpha itself
+      if (st.pulse && st.pulse.regions && st.pulse.regions.indexOf(i) >= 0)
+        shadeRegion(vs, i, pulseK(st.pulse.t0, now));    // pulse = second coat
+    }
+    if (st.decomp) drawDecomp(vs, st.decomp);
+
+    drawPolyline(vs, C.teal, 2.5);
+    vs.forEach(([t,v]) => {                              // small solid vertices
+      ctx.beginPath(); ctx.arc(px(t), py(v), 3.5, 0, Math.PI*2);
+      ctx.fillStyle = C.teal; ctx.fill();
+    });
+
+    if (r.readonly && k >= 1) drawReadOffs(r, st, vs);
+
+    if (k < 1) return;
+    let ai = 0;
+    for (let i = 0; i < n; i++){                         // per-segment labels
+      const vis = r.readonly && !r.r6 ? (st.annVis[i] ? 1 : 0) : annAlpha(st, ai, now);
+      const g = grad(vs, i);
+      const [t1,v1] = vs[i], [t2,v2] = vs[i+1];
+      const cx = clamp(px((t1+t2)/2), ML+78, W-MR-86);
+      let cy = py((v1+v2)/2) - 16;
+      if (cy < MT + 10) cy = py((v1+v2)/2) + 18;
+      if (g !== 0){
+        if (vis > 0) txt(gradLabelStr(vs,i), cx, cy, {color:C.rose, bold:true, italic:true, size:12.5, a:vis});
+        ai++;
+      } else if ((!r.readonly || r.r6) && px(t2)-px(t1) > 76){
+        if (vis > 0) txt('steady '+fmt(v1)+' m/s', cx, cy, {color:C.muted, italic:true, size:11.5, a:vis});
+        ai++;
+      }
+      if (st.shownVals[i]){                              // region value, once earned
+        const av = stripArea(vs, i);
+        txt(fmt(av), px((t1+t2)/2), py(Math.min((v1+v2)/4, V1/2)),
+            {color:C.teal, bold:true, size:13.5});
+      }
+    }
+    if (st.gradHint) drawGradHint(vs, st.gradHint.seg);
+    if (st.avgHint) drawAvgHint(vs);
+    if (st.annT0 && !REDUCED && now < st.annT0 + 200 + (ai+1)*150 + 400) bumpAnim(now+40);
+  }
+
+  function pulseK(t0, now){
+    if (REDUCED) return now - t0 < 1200 ? .8 : 0;
+    const k = (now - t0)/1200;
+    if (k >= 1) return 0;
+    bumpAnim(now+30);
+    return Math.abs(Math.sin(k*Math.PI*2)) * .9;
+  }
+
+  function drawDecomp(vs, d){                            // the teaching moment
+    for (const i of d.regions){
+      const [t1,v1] = vs[i], [t2,v2] = vs[i+1];
+      const dt = t2-t1, lo = Math.min(v1,v2), dv = Math.abs(v2-v1);
+      const stripW = px(t2)-px(t1);
+      ctx.strokeStyle = C.teal; ctx.lineWidth = 1.3; ctx.setLineDash([5,4]);
+      ctx.globalAlpha = .85;
+      ctx.beginPath();                                   // strip outline
+      ctx.moveTo(px(t1), py(0)); ctx.lineTo(px(t1), py(v1));
+      ctx.moveTo(px(t2), py(0)); ctx.lineTo(px(t2), py(v2));
+      ctx.stroke();
+      if (lo > 0 && dv > 0){                             // divider: rect | triangle
+        ctx.beginPath(); ctx.moveTo(px(t1), py(lo)); ctx.lineTo(px(t2), py(lo)); ctx.stroke();
+      }
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      for (const p of piecesOf(vs, i)){
+        const full = p.formula + ' = ' + fmt(p.area);
+        const label = textW(full, 11.5, true) + 8 < stripW ? full
+                    : textW(fmt(p.area), 11.5) + 6 < stripW ? fmt(p.area) : '';
+        if (!label) continue;
+        const yc = p.shape === 'rect' ? lo/2
+                 : lo + dv*(dv > 10 ? .3 : .38);
+        const xc = p.shape === 'rect' ? (t1+t2)/2
+                 : t1 + dt*(v2 > v1 ? .58 : .42);
+        txt(label, px(xc), py(yc), {color:C.teal, italic:true, size:11.5});
+      }
+    }
+  }
+
+  function drawGradHint(vs, i){                          // rise/run triangle, in rose
+    const [t1,v1] = vs[i], [t2,v2] = vs[i+1];
+    ctx.strokeStyle = C.rose; ctx.lineWidth = 1.6; ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    ctx.moveTo(px(t1), py(v1)); ctx.lineTo(px(t2), py(v1));
+    ctx.lineTo(px(t2), py(v2));
+    ctx.stroke(); ctx.setLineDash([]);
+    const dy = v2 > v1 ? 13 : -13;
+    txt('Δt = '+fmt(t2-t1)+' s', px((t1+t2)/2), py(v1)+dy, {color:C.rose, italic:true, size:11.5});
+    txt('Δv = '+fmt(Math.abs(v2-v1))+' m/s', px(t2)+(v2>v1?8:-8), py((v1+v2)/2),
+        {color:C.rose, italic:true, size:11.5, align:v2>v1?'left':'right'});
+  }
+
+  function drawAvgHint(vs){                              // total-time bracket, top
+    const tEnd = vs[vs.length-1][0], y = MT + 12;
+    ctx.strokeStyle = C.plum; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(px(0), y); ctx.lineTo(px(tEnd), y);
+    ctx.moveTo(px(0), y-4); ctx.lineTo(px(0), y+4);
+    ctx.moveTo(px(tEnd), y-4); ctx.lineTo(px(tEnd), y+4);
+    ctx.stroke();
+    txt('total time = '+fmt(tEnd)+' s', px(tEnd/2), y+12, {color:C.plum, italic:true, size:12});
+  }
+
+  function drawReadOffs(r, st, vs){                      // dashed drop lines + odd labels
+    const seen = {}, tStep = tLabelStep();
+    vs.forEach(([t,v]) => {
+      if (v <= 0){ if (t % tStep !== 0) monoText(fmt(t), px(t), py(0)+12, {color:C.plum, bold:true}); return; }
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1; ctx.setLineDash([3,4]);
+      ctx.beginPath();
+      ctx.moveTo(px(t), py(v)); ctx.lineTo(px(t), py(0));
+      ctx.moveTo(px(t), py(v)); ctx.lineTo(ML, py(v));
+      ctx.stroke(); ctx.setLineDash([]);
+      if (t % tStep !== 0 && t > 0) monoText(fmt(t), px(t), py(0)+12, {color:C.plum, bold:true});
+      if (v % 4 !== 0 && !seen[v]){ seen[v] = 1; monoText(fmt(v), ML-7, py(v), {align:'right', color:C.plum, bold:true}); }
+    });
+  }
+
+  /* ---- round 6, before T is found -------------------------------------- */
+  function drawR6Partial(r, st){
+    const Tp = r.provisionalT, e1 = 10+Tp, e2 = 16+Tp;   // provisional stretch
+    const P = [[0,0],[10,18],[e1,18],[e2,0]];
+    shadeRegion(P, 0, 1);
+    if (st.showPieces){ shadeRegion(P, 1, .5); shadeRegion(P, 2, .5); }
+    drawPolyline([[0,0],[10,18]], C.teal, 2.5);
+    drawPolyline([[10,18],[e1,18],[e2,0]], C.teal, 2.2, [7,6], .85);
+    drawReadOffs(r, st, [[0,0],[10,18]]);
+    const y = py(18) - 14;                               // the unknown stretch
+    ctx.strokeStyle = C.plum; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(px(10), y); ctx.lineTo(px(e1), y);
+    ctx.moveTo(px(10), y-4); ctx.lineTo(px(10), y+4);
+    ctx.moveTo(px(e1), y-4); ctx.lineTo(px(e1), y+4);
+    ctx.stroke();
+    txt('T s', px((10+e1)/2), y-10, {color:C.plum, bold:true, italic:true, size:13});
+    txt('6 s', px(e1+3)+10, py(9), {color:C.plum, italic:true, size:12, align:'left'});
+    txt('?', px(e1), py(20), {color:C.plum, bold:true, size:16});
+    if (st.showPieces){                                  // area pieces, with T left in
+      txt('½ × 10 × 18 = 90', px(6.5), py(5), {color:C.teal, italic:true, size:11.5});
+      txt('18 × T', px((10+e1)/2), py(9), {color:C.teal, italic:true, size:12.5});
+      txt('½ × 6 × 18 = 54', px(e2+1), py(2.5), {color:C.teal, italic:true, size:11.5, align:'left'});
+    }
+  }
+
+  /* ---- draw loop -------------------------------------------------------- */
+  let rafPending = false, animUntil = 0;
+  function bumpAnim(until){ if (until > animUntil) animUntil = until; }
+  function scheduleDraw(){
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(t => { rafPending = false; draw(t); });
+  }
+  function draw(now){
+    ctx.clearRect(0, 0, W, H);
+    drawGrid();
+    const r = ROUNDS[ri], st = RS[ri];
+    if (r.r6 && !st.tFound) drawR6Partial(r, st);
+    else if (graphReady(r, st)) drawFinal(r, st, now);
+    else drawWorking(r, st);
+    if (now < animUntil) scheduleDraw();
+  }
+
+  /* ---- pointer: dragging vertices --------------------------------------- */
+  let dragIdx = -1;
+  function canvasPos(e){
+    const r = cv.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  function vertexHit(st, p){
+    let best = -1, bd = 24;                              // generous >=22px targets
+    st.pts.forEach(([t,v], i) => {
+      const d = Math.hypot(p.x - px(t), p.y - py(v));
+      if (d <= bd){ bd = d; best = i; }
+    });
+    return best;
+  }
+  cv.addEventListener('pointerdown', e => {
+    const r = ROUNDS[ri], st = RS[ri];
+    if (endMode || r.readonly || st.drawn) return;
+    const i = vertexHit(st, canvasPos(e));
+    if (i < 0) return;
+    dragIdx = i;
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){ }
+    cv.style.cursor = 'grabbing';
+    moveVertex(e);
+  });
+  cv.addEventListener('pointermove', e => {
+    const r = ROUNDS[ri], st = RS[ri];
+    if (dragIdx >= 0){ moveVertex(e); return; }
+    if (!endMode && !r.readonly && !st.drawn)
+      cv.style.cursor = vertexHit(st, canvasPos(e)) >= 0 ? 'grab' : 'default';
+    else cv.style.cursor = 'default';
+  });
+  function moveVertex(e){
+    const st = RS[ri], p = canvasPos(e), i = dragIdx;
+    let t = Math.round(clamp(wt(p.x), 0, T1));
+    let v = Math.round(clamp(wv(p.y), 0, V1));
+    const lo = i > 0 ? st.pts[i-1][0] + 1 : 0;           // times strictly increasing
+    const hi = i < st.pts.length-1 ? st.pts[i+1][0] - 1 : T1;
+    t = clamp(t, lo, hi);
+    st.pts[i] = [t, v];
+    if (st.marks[i]){ st.marks[i] = ''; }
+    ro.classList.remove('off');
+    ro.textContent = 't = ' + t + ' s · v = ' + v + ' m/s';
+    scheduleDraw();
+  }
+  function endPointer(e){
+    if (dragIdx < 0) return;
+    if (e && e.type === 'pointerup') moveVertex(e);   // honour the release position
+    dragIdx = -1;
+    cv.style.cursor = 'default';
+    ro.classList.add('off');
+    scheduleDraw();
+  }
+  cv.addEventListener('pointerup', endPointer);
+  cv.addEventListener('pointercancel', endPointer);
+
+  /* ---- check the drawn graph -------------------------------------------- */
+  function checkGraph(){
+    const r = ROUNDS[ri], st = RS[ri];
+    if (st.drawn) return;
+    let firstWrong = -1;
+    st.pts.forEach((p, i) => {
+      const ok = p[0] === r.verts[i][0] && p[1] === r.verts[i][1];
+      st.marks[i] = ok ? 'ok' : 'bad';
+      if (!ok && firstWrong < 0) firstWrong = i;
+    });
+    if (firstWrong < 0){
+      st.drawn = true;
+      st.annT0 = performance.now();
+      bumpAnim(st.annT0 + 3000);
+      st.fbD = '<span class="good"><b>✓ That’s the journey.</b></span> Every slope now carries its gradient, every region shades teal — the graph is ready to pay.';
+    } else {
+      st.checks++;
+      const tw = r.verts[firstWrong][0];
+      if (st.checks === 1){
+        st.fbD = '<span class="bad"><b>✗ Not the journey yet</b></span> — the rose vertices are off. Read the story again: what speed should the graph show at t = ' + tw + ' s?';
+      } else {
+        if (!st.revealed){
+          st.revealed = true;
+          st.fbD = '<span class="bad"><b>✗ Still off.</b></span> The correct graph is ghosted in — match it exactly, then check again. <span class="nb">(No star for this round.)</span>';
+        } else {
+          st.fbD = '<span class="bad"><b>✗ Closer?</b></span> Match the ghost exactly — every vertex on its grid point.';
+        }
+      }
+    }
+    sync();
+  }
+
+  /* ---- questions --------------------------------------------------------- */
+  function fmtList(vals){ return vals.map(fmt).join(' + '); }
+
+  function checkAnswer(){
+    const r = ROUNDS[ri], st = RS[ri];
+    const q = r.qs[st.qi], qst = st.qst[st.qi];
+    if (qst.done) return;
+    qst.entry = ansIn.value;
+    const val = parseNum(ansIn.value);
+    if (isNaN(val)){
+      qst.msg = 'Type a number — decimals or a fraction like 10/3 are fine.';
+      sync(); return;
+    }
+    const tol = q.tol == null ? 0.01 : q.tol;
+    const hit = Math.abs(val - q.ans) <= tol + 1e-9;
+
+    if (hit){
+      qst.done = true;
+      st.decomp = null; st.gradHint = null; st.avgHint = false; st.showPieces = false;
+      const now = performance.now();
+      if (q.kind === 'grad' || q.kind === 'decel'){
+        if (r.readonly) st.annVis[q.seg] = true;
+        const g = grad(r.verts, q.seg);
+        qst.msg = q.kind === 'grad'
+          ? '<span class="good"><b>✓ ' + gradLabelStr(r.verts, q.seg) + '.</b></span> Rise over run — nothing more to it.'
+          : '<span class="good"><b>✓ ' + fmt(q.ans) + ' ' + MS2 + '.</b></span> The gradient is ' + fmt(g) + ' ' + MS2 + '; the deceleration is its size, stated positive.';
+      } else if (q.kind === 'area'){
+        q.regions.forEach(i => { st.shownVals[i] = true; });
+        st.pulse = { regions:q.regions.slice(), t0:now };
+        bumpAnim(now + 1300);
+        const areas = q.regions.map(i => stripArea(r.verts, i));
+        qst.msg = '<span class="good"><b>✓ ' + fmt(q.ans) + ' m.</b></span> ' +
+          (q.note ? q.note : (areas.length > 1 ? fmtList(areas) + ' — every strip pays.' : 'The area pays out.'));
+      } else if (q.kind === 'avg'){
+        st.pulse = { regions:r.verts.slice(0,-1).map((_,i)=>i), t0:now };
+        bumpAnim(now + 1300);
+        const D = totalArea(r.verts), Tt = r.verts[r.verts.length-1][0];
+        qst.msg = '<span class="good"><b>✓ ' + (q.ansLabel || fmt(q.ans)) + ' m/s.</b></span> Total distance ÷ total time = ' + fmt(D) + ' ÷ ' + fmt(Tt) + '. All of it read off the graph.';
+      } else if (q.kind === 'findT'){
+        st.tFound = true;
+        st.completeT0 = now;
+        st.annT0 = now + (REDUCED ? 0 : 750);
+        r.verts.slice(0,-1).forEach((_,i) => { st.shownVals[i] = true; });
+        bumpAnim(now + 4000);
+        qst.msg = '<span class="good"><b>✓ T = ' + fmt(q.ans) + '.</b></span> 90 + 18T + 54 = 522, so 18T = 378. Watch the graph complete itself.';
+      }
+    } else {
+      // the classic trap: a negative deceleration
+      if (q.kind === 'decel' && Math.abs(-val - q.ans) <= tol + 1e-9){
+        qst.wrong++;
+        qst.msg = '<span class="bad"><b>Nearly.</b></span> The gradient is indeed ' + fmt(-q.ans) + ' ' + MS2 + ', but <b>deceleration is stated as a positive size</b>. Drop the minus and take the mark.';
+        sync(); return;
+      }
+      qst.wrong++;
+      if (q.kind === 'grad' || q.kind === 'decel'){
+        st.gradHint = { seg:q.seg, t0:performance.now() };
+        qst.msg = '<span class="bad"><b>✗ Rise over run.</b></span> The triangle is drawn on the graph: change in speed ÷ time taken for that segment.';
+      } else if (q.kind === 'area'){
+        st.decomp = { regions:q.regions.slice(), t0:performance.now() };
+        const fs = q.regions.map(i => piecesOf(r.verts, i).map(p => p.formula + ' = ' + fmt(p.area)).join(', ')).join('; ');
+        qst.msg = '<span class="bad"><b>✗ Not yet.</b></span> The shading has split into its pieces: ' + fs + '. Add them up.';
+      } else if (q.kind === 'avg'){
+        st.avgHint = true;
+        qst.msg = '<span class="bad"><b>✗ Average speed is total distance ÷ total time</b></span> — not the average of the speeds. Both numbers are already on the graph.';
+      } else if (q.kind === 'findT'){
+        st.showPieces = true;
+        qst.msg = '<span class="bad"><b>✗ Write the total area in pieces:</b></span> ½ × 10 × 18 + 18T + ½ × 6 × 18 = 522. Solve for T.';
+      }
+    }
+    sync();
+  }
+
+  function advance(){
+    const r = ROUNDS[ri], st = RS[ri];
+    st.pulse = null;
+    forceChip = true;                                    // repaint chip even if focused
+    if (st.qi < r.qs.length - 1){ st.qi++; sync(); }
+    else if (ri < ROUNDS.length - 1) goto(ri + 1);
+    else showEnd();
+  }
+
+  /* ---- panel sync -------------------------------------------------------- */
+  function setPill(el, state){
+    el.classList.toggle('on', state === 'on');
+    el.classList.toggle('done', state === 'done');
+  }
+  function sync(){
+    const r = ROUNDS[ri], st = RS[ri];
+    const ready = graphReady(r, st);
+    const done = roundDone(st);
+
+    qcount.textContent = 'round ' + (ri+1) + ' of ' + ROUNDS.length;
+    pillA.textContent = r.readonly ? '① graph given' : '① draw the journey';
+    setPill(pillA, (r.readonly || st.drawn) ? 'done' : 'on');
+    setPill(pillB, done ? 'done' : (ready || r.readonly) ? 'on' : '');
+
+    storyEl.hidden = endMode;
+    storyEl.textContent = r.story;
+    document.getElementById('prow').hidden = endMode;
+
+    phD.hidden = endMode || r.readonly;
+    checkGraphBtn.hidden = st.drawn;
+    fbD.innerHTML = st.fbD;
+
+    phQ.hidden = endMode || !(ready || r.readonly);
+    if (!phQ.hidden){
+      const q = r.qs[st.qi], qst = st.qst[st.qi];
+      qhead.textContent = 'question ' + (st.qi+1) + ' of ' + r.qs.length;
+      qtext.textContent = q.text;
+      unitEl.textContent = q.unit;
+      if (forceChip || document.activeElement !== ansIn){ ansIn.value = qst.entry; forceChip = false; }
+      ansIn.readOnly = qst.done;
+      ansIn.classList.toggle('ok', qst.done);
+      ansIn.classList.toggle('bad', !qst.done && qst.wrong > 0 && qst.entry !== '' && ansIn.value === qst.entry);
+      checkBtn.hidden = qst.done;
+      contBtn.hidden = !qst.done;
+      contBtn.textContent = st.qi < r.qs.length-1 ? 'Next question ›'
+                          : ri < ROUNDS.length-1 ? 'Next round ›' : 'Finish ›';
+      fbQ.innerHTML = qst.msg;
+    }
+
+    endcard.hidden = !endMode;
+    if (endMode){
+      starrow.textContent = '';
+      let stars = 0;
+      RS.forEach((s, i) => {
+        const got = starOf(s);
+        if (got) stars++;
+        const item = document.createElement('span');
+        item.className = 'staritem';
+        const sp = document.createElement('span');
+        sp.className = 'star' + (got ? '' : ' off');
+        sp.textContent = got ? '★' : '☆';
+        const lb = document.createElement('span');
+        lb.className = 'srlab'; lb.textContent = 'R' + (i+1);
+        item.appendChild(sp); item.appendChild(lb);
+        starrow.appendChild(item);
+      });
+      $('statStars').textContent = stars + '/' + ROUNDS.length;
+      endnote.textContent = stars === ROUNDS.length
+        ? 'Seven journeys, zero wasted marks. Gradient, area — that really is the whole topic.'
+        : 'The two facts do all the work: steeper line, harder push; bigger area, longer trip. Run it again and collect the full row.';
+    }
+
+    prevBtn.disabled = ri === 0 && !endMode;
+    nextBtn.disabled = endMode;
+    nextBtn.textContent = ri === ROUNDS.length-1 ? 'Finish ›' : 'Next ›';
+
+    const dots = dotsEl.children;
+    for (let i = 0; i < dots.length; i++){
+      dots[i].classList.toggle('on', i === ri && !endMode);
+      dots[i].classList.toggle('done', roundDone(RS[i]) && !(i === ri && !endMode));
+    }
+
+    chint.textContent = endMode ? '' :
+      !ready && !r.readonly ? 'drag the round handles · snaps to the grid' :
+      r.r6 && !st.tFound ? 'the dashed stretch is the unknown T' :
+      done ? '' : 'everything you need is on the graph';
+
+    scheduleDraw();
+  }
+
+  function goto(i){
+    ri = clamp(i, 0, ROUNDS.length-1);
+    endMode = false;
+    dragIdx = -1;
+    forceChip = true;
+    sync();
+  }
+  function showEnd(){ endMode = true; sync(); }
+
+  /* ---- wiring ------------------------------------------------------------ */
+  checkGraphBtn.addEventListener('click', checkGraph);
+  checkBtn.addEventListener('click', checkAnswer);
+  contBtn.addEventListener('click', advance);
+  ansIn.addEventListener('input', () => {
+    const st = RS[ri], qst = st.qst[st.qi];
+    if (!qst.done){ qst.entry = ansIn.value; ansIn.classList.remove('bad'); }
+  });
+  ansIn.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const qst = RS[ri].qst[RS[ri].qi];
+    if (qst.done) advance(); else checkAnswer();
+  });
+
+  for (let i = 0; i < ROUNDS.length; i++){
+    const b = document.createElement('button');
+    b.className = 'dot'; b.type = 'button';
+    b.setAttribute('aria-label', 'round ' + (i+1));
+    b.addEventListener('click', () => goto(i));
+    dotsEl.appendChild(b);
+  }
+  prevBtn.addEventListener('click', () => {
+    if (endMode){ endMode = false; sync(); return; }
+    goto(ri - 1);
+  });
+  nextBtn.addEventListener('click', () => {
+    if (ri === ROUNDS.length-1) showEnd();
+    else goto(ri + 1);
+  });
+  $('againBtn').addEventListener('click', () => { RS = ROUNDS.map(freshState); goto(0); });
+  document.addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    if (e.key === 'ArrowRight'){ e.preventDefault(); if (!nextBtn.disabled) nextBtn.click(); }
+    else if (e.key === 'ArrowLeft'){ e.preventDefault(); if (!prevBtn.disabled) prevBtn.click(); }
+  });
+
+  /* ---- go ---------------------------------------------------------------- */
+  resize();
+  goto(0);
+})();
+</script>
+</body>
+</html>
