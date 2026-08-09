@@ -56,6 +56,16 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'Narrated 20-second explainers made for WhatsApp — watch once, remember the idea. First up: why tan blows up at 90°.' },
   { slug: 'sincos-unwrap', icon: '🔄', title: 'Unit Circle → Sine, Cosine & Tangent',
     desc: 'The unit circle with the classic tangent-line construction, tracing all three graphs live beside it — drag the dot, jump to special angles, see exact values and why tan blows up at 90°. 3D unwrap view included.' },
+  { slug: 'spot-the-error', icon: '🕵️', title: 'Spot the Error',
+    desc: 'Real exam working with exactly one illegal line hidden inside — tap it, then see why. Trained on the slips that actually cost marks: signs, logs, illegal cancelling, the forgotten ±.' },
+  { slug: 'probability-tree', icon: '🌳', title: 'Probability Tree Builder',
+    desc: 'Fill in every branch, then multiply along the path and add across paths — with and without replacement, plus the trees where the second branch depends on the first.' },
+  { slug: 'draw-the-line', icon: '📏', title: 'Draw the Line',
+    desc: 'The classic "add a suitable straight line to solve…" question, live: work out the line, drag it onto the drawn curve, read the roots off the graph like the real paper.' },
+  { slug: 'sign-table', icon: '🚦', title: 'Inequalities: the Sign Test',
+    desc: 'Critical values → signs → answer. Solve quadratic, rational and modulus inequalities the systematic way — including the denominator values you must never include.' },
+  { slug: 'hypothesis-conclusion', icon: '⚖️', title: 'Hypothesis Tests: the Conclusion Mark',
+    desc: 'Every H2 test ends with one sentence worth one mark. Assemble it — the comparison, the decision, the strength, the claim in context — and never say "accept H₀".' },
 ];
 
 export default function ToolsPage() {
