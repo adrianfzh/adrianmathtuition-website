@@ -159,9 +159,11 @@ describe('buildPageTree', () => {
     sg(3, 'Indices', 'Laws of Indices', 0),
   ];
 
-  it('nests sub-group pages under topic folders', () => {
+  it('nests sub-group pages under topic folders, in learning order', () => {
     const tree = buildPageTree('AM', rows, counts(1, 2, 3));
-    expect(folderNames(tree)).toEqual(['Indices', 'Surds']);
+    // Learning order (canonical family arrays), not alphabetical: Surds is
+    // taught before Indices — Adrian, 2026-08-09.
+    expect(folderNames(tree)).toEqual(['Surds', 'Indices']);
     expect(folderNamed(tree, 'Surds')?.children.map(c => c.name)).toEqual([
       'Rationalising',
       'Simplifying',
@@ -259,24 +261,25 @@ describe('flattenPages / neighbours', () => {
   );
 
   it('walks topic index then its sub-groups, in sidebar order', () => {
+    // Sidebar order is learning order: Surds before Indices.
     expect(flattenPages(tree).map(p => p.url)).toEqual([
-      '/notes/am/indices',
-      '/notes/am/indices/laws',
       '/notes/am/surds',
       '/notes/am/surds/rationalising',
       '/notes/am/surds/simplifying',
+      '/notes/am/indices',
+      '/notes/am/indices/laws',
     ]);
   });
 
   it('links prev/next across a topic boundary', () => {
-    const n = neighbours(tree, '/notes/am/indices/laws');
-    expect(n.previous?.url).toBe('/notes/am/indices');
-    expect(n.next?.url).toBe('/notes/am/surds');
+    const n = neighbours(tree, '/notes/am/indices');
+    expect(n.previous?.url).toBe('/notes/am/surds/simplifying');
+    expect(n.next?.url).toBe('/notes/am/indices/laws');
   });
 
   it('has no previous on the first page and no next on the last', () => {
-    expect(neighbours(tree, '/notes/am/indices').previous).toBeUndefined();
-    expect(neighbours(tree, '/notes/am/surds/simplifying').next).toBeUndefined();
+    expect(neighbours(tree, '/notes/am/surds').previous).toBeUndefined();
+    expect(neighbours(tree, '/notes/am/indices/laws').next).toBeUndefined();
   });
 
   it('returns nothing for a url not in the tree', () => {

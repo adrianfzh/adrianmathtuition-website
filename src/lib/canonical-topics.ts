@@ -191,55 +191,59 @@ export const E_MATH_EXAM_TOPICS: TopicCategory[] = [
 
 // ─── O-Level A Math (31 topics) ───────────────────────────────────────────────
 // Power Graphs + Proof removed 2026-08-07 — no longer in the syllabus (Adrian).
+// Within each family, topics are in LEARNING order (Supabase `topic_spine`,
+// mirrored 2026-08-09 — Adrian: the notes sidebar must read in teaching
+// sequence, not alphabetically). Modulus Functions and Integration
+// (Applications) have no spine row; they sit where they are taught.
 export const A_MATH_EXAM_TOPICS: TopicCategory[] = [
   {
     label: 'Algebra & Functions',
     topics: [
-      'Binomial Theorem',
-      'Indices',
-      'Linear Law',
-      'Logarithms',
-      'Modulus Functions',
+      'Quadratic Functions',
+      'Simultaneous Equations',
+      'Quadratic Inequalities',
       'Nature of Roots',
+      'Modulus Functions',
       'Partial Fractions',
       'Polynomials',
-      'Quadratic Functions',
-      'Quadratic Inequalities',
-      'Simultaneous Equations',
       'Surds',
+      'Indices',
+      'Logarithms',
+      'Binomial Theorem',
+      'Linear Law',
     ],
   },
   {
     label: 'Geometry',
     topics: [
-      'Circles',
       'Coordinate Geometry',
+      'Circles',
       'Plane Geometry',
     ],
   },
   {
     label: 'Trigonometry',
     topics: [
-      'Trigonometry (Applications)',
-      'Trigonometry (Equations)',
+      'Trigonometry (Ratios)',
       'Trigonometry (Graphs)',
       'Trigonometry (Identities)',
+      'Trigonometry (Equations)',
       'Trigonometry (R-Formula)',
-      'Trigonometry (Ratios)',
+      'Trigonometry (Applications)',
     ],
   },
   {
     label: 'Calculus',
     topics: [
-      'Differentiation (Increasing and Decreasing Functions)',
-      'Differentiation (Maximum and Minimum)',
-      'Differentiation (Rates of Change)',
-      'Differentiation (Tangents and Normals)',
       'Differentiation (Techniques)',
-      'Integration (Applications)',
+      'Differentiation (Tangents and Normals)',
+      'Differentiation (Rates of Change)',
+      'Differentiation (Maximum and Minimum)',
+      'Differentiation (Increasing and Decreasing Functions)',
+      'Integration (Techniques)',
       'Integration (Area)',
       'Integration (Definite Integrals)',
-      'Integration (Techniques)',
+      'Integration (Applications)',
       'Kinematics',
     ],
   },

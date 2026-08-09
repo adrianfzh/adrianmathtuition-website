@@ -19,6 +19,7 @@ import {
   matchBySlug,
   sortSubgroups,
   subgroupUrl,
+  topicOrderComparator,
   topicUrl,
   type NotesSection,
   type RecallCardRow,
@@ -303,7 +304,8 @@ export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> 
     }
   }
   // Same ordering as buildPageTree, so the grid and the sidebar agree.
-  return out.sort((a, b) => a.topic.localeCompare(b.topic));
+  const byLearningOrder = topicOrderComparator(level);
+  return out.sort((a, b) => byLearningOrder(a.topic, b.topic));
 });
 
 export interface TopicPageData {

@@ -122,6 +122,26 @@ export function groupByFamily<T>(
   return out;
 }
 
+/**
+ * Comparator placing topics in learning order — the order the canonical family
+ * arrays list them (which mirror `topic_spine`). Topics outside the canonical
+ * list fall to the end, alphabetically, matching groupByFamily's "Other topics".
+ */
+export function topicOrderComparator(level: string): (a: string, b: string) => number {
+  const rank = new Map<string, number>();
+  topicFamilies(level).forEach((family, fi) =>
+    family.topics.forEach((topic, ti) => rank.set(topic, fi * 1000 + ti)),
+  );
+  return (a, b) => {
+    const ra = rank.get(a);
+    const rb = rank.get(b);
+    if (ra !== undefined && rb !== undefined) return ra - rb || a.localeCompare(b);
+    if (ra !== undefined) return -1;
+    if (rb !== undefined) return 1;
+    return a.localeCompare(b);
+  };
+}
+
 /** URL path for a topic index page. */
 export function topicUrl(level: string, topic: string): string {
   return `${NOTES_BASE}/${level.toLowerCase()}/${topicSlug(topic)}`;
@@ -309,7 +329,7 @@ export function buildPageTree(
   }
 
   const folders: TreeFolder[] = [];
-  for (const topic of [...byTopic.keys()].sort((a, b) => a.localeCompare(b))) {
+  for (const topic of [...byTopic.keys()].sort(topicOrderComparator(level))) {
     // A converted topic (approved learning units) reads as one page whose
     // sections the right-hand contents already lists — its old sub-group pages
     // stay off the sidebar, where they no longer match what students read.
