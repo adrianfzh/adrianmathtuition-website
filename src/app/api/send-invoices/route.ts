@@ -19,6 +19,20 @@ function checkAuth(req: NextRequest): boolean {
   return verifyAdminAuth(req);
 }
 
+// ── Self-service footer (shared by regular / first-invoice / amended emails) ──
+// WhatsApp leads: it needs no registration — the bot matches the parent's number
+// against Airtable and opens a tap-through menu (reschedule, makeup, switch,
+// additional lessons). Telegram stays the math-help channel (needs a reg code).
+// "Hi" as the prefill is deliberate: it matches the bot's greeting detector,
+// which opens the interactive menu.
+const WA_SELF_SERVICE_LINK = 'https://wa.me/6591397985?text=Hi';
+function buildSelfServiceFooterHtml(): string {
+  return `<p style="font-size: 14px; color: #6b7280;"><strong>📅 Reschedules &amp; makeups — one WhatsApp away</strong></p>
+    <p style="font-size: 14px; color: #6b7280;">Need to change a lesson? <a href="${WA_SELF_SERVICE_LINK}"><strong>WhatsApp us at 9139 7985</strong></a> — just send "Hi" and our assistant will recognise your number and open a menu to reschedule, book a makeup for a missed class, switch timeslot, or add extra lessons. Instant confirmation, any time of day, no registration needed.</p>
+    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 Math help on Telegram</strong></p>
+    <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly. Search <strong>@AdrianMathBot</strong> on Telegram (if not yet registered, ask Adrian for your registration code).</p>`;
+}
+
 function buildEmailHtml(invoice: {
   studentName: string;
   month: string;
@@ -37,16 +51,7 @@ function buildEmailHtml(invoice: {
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
     <p>Please feel free to reach out if you have any questions.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 AdrianMath Telegram Bot</strong></p>
-    <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly.</p>
-    <p style="font-size: 14px; color: #6b7280;">Parents and students can also use the bot to:</p>
-    <ul style="font-size: 14px; color: #6b7280; padding-left: 20px;">
-      <li>Reschedule upcoming lessons</li>
-      <li>Book makeup lessons for missed classes</li>
-      <li>Switch to a different regular timeslot</li>
-      <li>Book additional lessons</li>
-    </ul>
-    <p style="font-size: 14px; color: #6b7280;">Search <strong>@AdrianMathBot</strong> on Telegram to get started. If you haven't registered yet, ask Adrian for your registration code.</p>
+    ${buildSelfServiceFooterHtml()}
     ${invoice.studentId ? `<p style="font-size: 14px; color: #6b7280;">💛 <strong>Know a family who'd benefit?</strong> Share your referral link — you'll receive <strong>one free month of lessons</strong> once they join and complete 3 months: <a href="https://www.adrianmathtuition.com/r/${invoice.studentId}">adrianmathtuition.com/r/${invoice.studentId.slice(0, 6)}…</a></p>` : ''}
     <p>Best regards,<br>Adrian</p>
   `;
@@ -81,16 +86,7 @@ function buildFirstInvoiceEmailHtml(invoice: {
     ${prorationLine}
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${paymentRef}</strong>.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 AdrianMath Telegram Bot</strong></p>
-    <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly.</p>
-    <p style="font-size: 14px; color: #6b7280;">Parents and students can also use the bot to:</p>
-    <ul style="font-size: 14px; color: #6b7280; padding-left: 20px;">
-      <li>Reschedule upcoming lessons</li>
-      <li>Book makeup lessons for missed classes</li>
-      <li>Switch to a different regular timeslot</li>
-      <li>Book additional lessons</li>
-    </ul>
-    <p style="font-size: 14px; color: #6b7280;">Search <strong>@AdrianMathBot</strong> on Telegram to get started. If you haven't registered yet, ask Adrian for your registration code.</p>
+    ${buildSelfServiceFooterHtml()}
     <p>I am looking forward to working with ${studentName}. Please reach out anytime if you have any questions.</p>
     <p>Best regards,<br>Adrian</p>
   `;
@@ -205,16 +201,7 @@ function buildAmendedEmailHtml(invoice: {
     <p>To pay, PayNow to <strong>91397985</strong> with reference <strong>${invoice.paymentRef}</strong>.</p>
     <p>Please feel free to reach out if you have any questions.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 AdrianMath Telegram Bot</strong></p>
-    <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly.</p>
-    <p style="font-size: 14px; color: #6b7280;">Parents and students can also use the bot to:</p>
-    <ul style="font-size: 14px; color: #6b7280; padding-left: 20px;">
-      <li>Reschedule upcoming lessons</li>
-      <li>Book makeup lessons for missed classes</li>
-      <li>Switch to a different regular timeslot</li>
-      <li>Book additional lessons</li>
-    </ul>
-    <p style="font-size: 14px; color: #6b7280;">Search <strong>@AdrianMathBot</strong> on Telegram to get started. If you haven't registered yet, ask Adrian for your registration code.</p>
+    ${buildSelfServiceFooterHtml()}
     <p>Best regards,<br>Adrian</p>
   `;
 }
