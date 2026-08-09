@@ -66,6 +66,12 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'Critical values → signs → answer. Solve quadratic, rational and modulus inequalities the systematic way — including the denominator values you must never include.' },
   { slug: 'hypothesis-conclusion', icon: '⚖️', title: 'Hypothesis Tests: the Conclusion Mark',
     desc: 'Every H2 test ends with one sentence worth one mark. Assemble it — the comparison, the decision, the strength, the claim in context — and never say "accept H₀".' },
+  { slug: 'trig-proofs', icon: '✍️', title: 'Prove It: Trig Identities',
+    desc: 'Proving is choosing the right next move. Build ten proofs line by line and learn the five moves that crack almost every identity — Pythagoras in disguise, the conjugate, and friends.' },
+  { slug: 'speed-time', icon: '🚗', title: 'Speed-Time Graphs',
+    desc: 'The whole topic is two facts: gradient is acceleration, area is distance. Draw the journey from the story, then make the graph pay — trapezium areas, unknown times and all.' },
+  { slug: 'bar-model', icon: '🧱', title: 'Bar Model Builder',
+    desc: 'Draw the problem before you solve it: units, stubs and brackets for ratio, percentage and before-after problems — then see the algebra your bars secretly were. Sec 1–2, and the PSLE bridge.' },
 ];
 
 export default function ToolsPage() {
