@@ -73,10 +73,14 @@ byte-identical server-side copy ("same diagram" ask). **Integration (Techniques)
 0 REJECT; every antiderivative differentiated back; n≠−1 exclusion and
 +C discipline restored on formula cards, Summary Q1 key completed
 (6 unanswered parts), one verbatim duplicate re-angled, ambiguous
-ln(3x)² pinned. Running total 179 units, 59 APPROVE / 120 FIX /
-0 REJECT. Next: Rates of Change 18 in flight; then T&N 16, R-Formula 14,
-Area 12, Incr/Decr 8, Definite 5, then the 83-unit check-only tail
-(proposal: one batched 3-agent sweep across those 15 micro-topics). ⚠ unit_order "ties" seen via ::numeric casts are
+ln(3x)² pinned. **Rates of Change DONE** — 18 units, 4 APPROVE / 14 FIX / 0 REJECT;
+every rate chain-rebuilt AND finite-difference-simulated; cone-card
+orientation error fixed (tip-up vs tip-down proven by slicing integral),
+implicit-diff hint replaced with in-scope substitution route, shapeless/
+figure-lost problems restored. Running total 197 units, 63 APPROVE /
+134 FIX / 0 REJECT. Next: T&N 16 in flight; then R-Formula 14, Area 12,
+Incr/Decr 8, Definite 5, then the 83-unit check-only tail (proposal:
+one batched 3-agent sweep across those 15 micro-topics). ⚠ unit_order "ties" seen via ::numeric casts are
 PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
 GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
 actually collided; no ordering fix needed there.
