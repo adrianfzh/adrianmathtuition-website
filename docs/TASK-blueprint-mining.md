@@ -1,8 +1,11 @@
 # TASK — Prelim-paper blueprint mining (handoff-able)
 
-> **Status (2026-08-10 ~09:40):** an agent is running this on Adrian's main Mac.
+> **Status (2026-08-10 ~09:50):** an agent is running this on Adrian's main Mac.
 > If it died (usage limit / machine off), any Claude Code session on any machine
 > can pick this up by running the brief below verbatim as an agent task.
+> **Check `data/prelim-rows.json` first** (uncommitted, working tree of the main
+> Mac): the running agent stages its dense rows dump there with a progress
+> header — if present and complete, skip the fetch and go straight to analysis.
 > Prereq: the Supabase MCP for the math project (`nempslbewxtlikfzachi`) must be
 > connected (read-only `execute_sql` is all it uses). Delete this file once
 > `data/paper-blueprints.json` + `scripts/derive-paper-blueprints.mjs` are
