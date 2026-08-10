@@ -89,9 +89,23 @@ pending EM autopsies have wrong_line:0 vs the 1-indexed convention —
 EM Circle Properties ae8866b6 "the 90° that isn't ∠CAD" and EM Matrices
 24340501 "Spot the swapped multipliers" — fix when the EM pass reaches
 them (0 may be deliberate for figure-label errors; check the renderer).
-Running total 227 units, 73 APPROVE / 154 FIX / 0 REJECT. Next:
-Integration (Area) 12 in flight; then Incr/Decr 8, Definite 5, then the
-83-unit check-only tail (proposal: one batched 3-agent sweep). ⚠ unit_order "ties" seen via ::numeric casts are
+**Integration (Area) DONE** — 12 units, 0/12/0; found the rollout's 2nd
+truly broken item (composite part whose published areas match NO region —
+re-posed + verified); figure-lost problems reconstructed; SEAB check:
+"area between 2 curves" is officially EXCLUDED from 4049 (card framing
+flagged). **Incr/Decr DONE** — 8 units, 2/6/0 ("(x+2)² always positive"
+falsehood fixed). **Definite Integrals DONE** — 5 units, 0/5/0; PHYSICAL
+KEY ERRATUM: Assignment 2 Q2(a) key says 20, correct is 16; three
+orphan answers (problems never digitised) removed pending source.
+**ALL AM LESSON-TOPICS COMPLETE: 252 units, 75 APPROVE / 177 FIX /
+0 REJECT** (plus the 26-unit Trig Identities pilot) — statuses all still
+pending. Binary tie-check across all AM: zero real unit_order ties
+(every reported "tie" was the float4 display trap). Remaining AM: the
+83-unit check-only tail (15 micro-topics) — sweep proposal with Adrian.
+Task 4 v1 SHIPPED to dev (commit 1bf3957): /admin/prelim-builder
+(deterministic assembly API+UI, paper_drafts, per-slot pin/swap/reroll,
+/setter-pass skill); e2e-verified on preview (AM-P2 std + hard, EM-P2
+all land 90/90; EM closes on Real-World-Context ✓). PDF export pending. ⚠ unit_order "ties" seen via ::numeric casts are
 PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
 GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
 actually collided; no ordering fix needed there.
