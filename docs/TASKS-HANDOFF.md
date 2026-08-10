@@ -50,8 +50,12 @@ Progress (2026-08-10, second-Mac session): **Kinematics DONE** — 17 units,
 with Adrian, statuses untouched. **Differentiation (Techniques) DONE** —
 37 units, 3 APPROVE / 34 FIX / 0 REJECT, ~200 numeric checks clean, all
 four "(…corrected)" title claims independently verified true; printed-notes
-misprint list + title-rename proposals with Adrian. Next: Differentiation
-(Max/Min) in flight. ⚠ unit_order "ties" seen via ::numeric casts are
+misprint list + title-rename proposals with Adrian. **Differentiation
+(Max/Min) DONE** — 19 units, 1 APPROVE / 18 FIX / 0 REJECT, ~240 checks;
+FOUND ONE TRULY WRONG UNIT (Ex 3b min-gradient: digitisation "correction"
+had broken a correct print answer — fixed to (2,1), min grad −3) plus a
+degree-mode trig example rebuilt in radians and two ill-posed drill
+problems repaired. Next: Trigonometry (Equations) in flight. ⚠ unit_order "ties" seen via ::numeric casts are
 PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
 GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
 actually collided; no ordering fix needed there.
