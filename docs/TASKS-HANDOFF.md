@@ -59,8 +59,13 @@ problems repaired. **Trigonometry (Equations) DONE** — 28 units (incl.
 first autopsy/check kinds; planted errors verified genuine + preserved),
 7 APPROVE / 21 FIX / 0 REJECT; every solution set brute-force-scanned
 against its interval — one wrong published value found (5.17→5.18, a
-truncation), both autopsies confirmed correct (255° stands). Next:
-Trigonometry (Ratios) in flight. ⚠ unit_order "ties" seen via ::numeric casts are
+truncation), both autopsies confirmed correct (255° stands).
+**Trigonometry (Ratios) DONE** — 31 units, 23 APPROVE / 8 FIX / 0 REJECT;
+signs verified in-quadrant everywhere incl. parametric k/p/t answers; one
+degenerate drill part restored, two verbatim Assignment-1 duplicates
+re-angled, autopsy sound. Five priority topics complete (132 units,
+37 APPROVE / 95 FIX / 0 REJECT, statuses untouched). Next: remaining AM
+by pending count — Trigonometry (Graphs) in flight. ⚠ unit_order "ties" seen via ::numeric casts are
 PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
 GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
 actually collided; no ordering fix needed there.
