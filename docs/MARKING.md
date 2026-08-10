@@ -95,7 +95,7 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   excluded in both paths** (Adrian's rule: practice the raw skill, not the story).
   The list persists in `paper_marking_runs.result_json.practice`, so re-click and
   run reload show the stored list instead of paying for another call.
-- **Exact-form deduction (2026-08-10):** `MARK_SEVERITY_RULES` (bot `ai/paper-marker.js`, shared by the direct AND standalone prompts) docks 1 mark when a final answer that has a reasonable exact form (terminating decimal, fraction, surd, π-multiple) is written only as a rounded decimal — the cover page instructs exact-or-3-s.f. (Adrian 2026-08-10; the trigger was 10.375 km rounded to "10.4" scoring 1/1 with just a *"leave exact if possible"* comment.) Not penalised when the question fixes the accuracy (2 d.p., money to the cent, angles to 1 d.p.) or no reasonable exact form exists.
+- **Exact-form deduction (2026-08-10):** `MARK_SEVERITY_RULES` (bot `ai/paper-marker.js`, shared by the direct AND standalone prompts) docks 1 mark when a final answer whose exact value is a **TERMINATING decimal** is written further-rounded — the cover page instructs exact-or-3-s.f. (The trigger was 10.375 km rounded to "10.4" scoring 1/1 with just a *"leave exact if possible"* comment.) **Terminating decimals ONLY** (Adrian, same day: *"should not include surd or π-multiple"*): surd/π/non-terminating answers are fine at 3 s.f. — the marker must never demand surd or π form — and nothing is penalised where the question fixes the accuracy (2 d.p., money to the cent, angles to 1 d.p.).
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
 ## /admin/mark-paper — scanned-PDF working (client-side rasterisation)
@@ -591,7 +591,13 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   the 25/min cap, and 8 CLEAN pages fell past BOTH Gemini rungs to the bare margin rung —
   no ticks, no comments, no solutions footer — because the instant question-rung retry
   ran into the same wall Google had said to wait ≤21s for. Any other error still throws
-  so the ladder steps down; do NOT blanket-retry real grounding failures.
+  so the ladder steps down; do NOT blanket-retry real grounding failures. **Prevention
+  layer (same day):** `visionThrottle()` paces every Gemini call START (retries included)
+  through a rolling-minute token bucket — `GEMINI_RPM_BUDGET`, default 20 vs the 25/min
+  cap — so the burst never forms; a ≤20-photo paper is unaffected (first 20 tokens are
+  free). Concurrency caps alone can't bound RPM (8 concurrent 7s calls ≈ 68 starts/min).
+  Rotation checks, spread retries and `vision-extract.js` all ride `visionGenerate`, so
+  one bucket covers the whole process.
 - **Font: Patrick Hand** (SIL OFL, vendored at `assets/fonts/`), installed system-wide by the
   Dockerfile via `fc-cache -f`. sharp draws SVG text through librsvg → fontconfig, so a face
   sitting in the repo is invisible to it and every annotation silently falls back to DejaVu
