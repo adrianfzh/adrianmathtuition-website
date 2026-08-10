@@ -215,6 +215,10 @@ function downloadHref(url: string, filename: string, inline: boolean): string {
 }
 
 // A history row's download filename — same shape as the send panel's, from run fields.
+// The 🖼 images PDF gets the BARE name (no "images" — Adrian 2026-08-10: it is the copy
+// he hands out) and the 📄 full PDF carries "full", matching the bot's Telegram delivery
+// (`name.pdf` / `name (full).pdf` in handlers/webchat.js). Swapping the suffixes back
+// makes the two files indistinguishable in Downloads.
 function runFilename(run: Run, suffix: string): string {
   const d = new Date(run.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' });
   const pn = run.paper_name && !/^worksheet \(\d+ photos?\)$/i.test(run.paper_name) && !/^shared\.pdf$/i.test(run.paper_name)
@@ -1013,8 +1017,8 @@ export default function MarkPaperPage() {
                     <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
                     <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
                     {run.annotated_pdf_url && <a href={downloadHref(run.annotated_pdf_url, runFilename(run, 'annotated'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
-                    {run.pdf_url && <a href={downloadHref(run.pdf_url, runFilename(run, ''), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
-                    {run.photos_pdf_url && <a href={downloadHref(run.photos_pdf_url, runFilename(run, 'images'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
+                    {run.pdf_url && <a href={downloadHref(run.pdf_url, runFilename(run, 'full'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
+                    {run.photos_pdf_url && <a href={downloadHref(run.photos_pdf_url, runFilename(run, ''), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
                     <button type="button" disabled={!!loadingRun} title="Load and write on it with the Pencil" onClick={() => annotateRun(run.id)}
                       style={{ ...btn, background: '#0d9488', padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
                       {loadingRun === run.id ? '…' : '✏️ Annotate'}
