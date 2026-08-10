@@ -100,8 +100,16 @@ orphan answers (problems never digitised) removed pending source.
 **ALL AM LESSON-TOPICS COMPLETE: 252 units, 75 APPROVE / 177 FIX /
 0 REJECT** (plus the 26-unit Trig Identities pilot) — statuses all still
 pending. Binary tie-check across all AM: zero real unit_order ties
-(every reported "tie" was the float4 display trap). Remaining AM: the
-83-unit check-only tail (15 micro-topics) — sweep proposal with Adrian.
+(every reported "tie" was the float4 display trap). **Check-tail sweep DONE (Adrian-approved)** — 83 units across 15
+micro-topics, 78 APPROVE / 5 FIX / 0 REJECT (two mathematically-false
+feedback claims fixed, one impossible point on an x²-axis, generation
+debris in one feedback). **AM IS 100% REVIEWED: 335 units this session,
+153 APPROVE / 182 FIX / 0 REJECT** (+26-unit Trig Identities pilot).
+Also SHIPPED (Adrian-directed): the 'targeted' builder preset — new
+bleed_topic_aggregate() SQL fn + bleedOverlay() matcher turn
+paper_marking_runs into live topic weights (e2e-verified on preview:
+Logs 1.5×, Linear Law 1.30×, Kinematics 1.26×). EM rollout STARTED
+per Adrian: EM Trigonometry (60 units) first, two waves.
 Task 4 v1 SHIPPED to dev (commit 1bf3957): /admin/prelim-builder
 (deterministic assembly API+UI, paper_drafts, per-slot pin/swap/reroll,
 /setter-pass skill); e2e-verified on preview (AM-P2 std + hard, EM-P2
