@@ -69,11 +69,14 @@ re-angled, autopsy sound. Five priority topics complete (132 units,
 autopsies sound (c=2 boundary verified by exact roots), one false
 teaching note fixed ("half a cycle" → one period), one ill-posed
 constants question pinned (k=3 witness), .21 gained .19's figure by
-byte-identical server-side copy ("same diagram" ask). Running total
-157 units, 52 APPROVE / 105 FIX / 0 REJECT. Next: Integration
-(Techniques) in flight; then Rates 18, T&N 16, R-Formula 14, Area 12,
-Incr/Decr 8, Definite 5, then the 83-unit check-only tail (proposal:
-one batched 3-agent sweep across those 15 micro-topics). ⚠ unit_order "ties" seen via ::numeric casts are
+byte-identical server-side copy ("same diagram" ask). **Integration (Techniques) DONE** — 22 units, 7 APPROVE / 15 FIX /
+0 REJECT; every antiderivative differentiated back; n≠−1 exclusion and
++C discipline restored on formula cards, Summary Q1 key completed
+(6 unanswered parts), one verbatim duplicate re-angled, ambiguous
+ln(3x)² pinned. Running total 179 units, 59 APPROVE / 120 FIX /
+0 REJECT. Next: Rates of Change 18 in flight; then T&N 16, R-Formula 14,
+Area 12, Incr/Decr 8, Definite 5, then the 83-unit check-only tail
+(proposal: one batched 3-agent sweep across those 15 micro-topics). ⚠ unit_order "ties" seen via ::numeric casts are
 PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
 GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
 actually collided; no ordering fix needed there.
