@@ -109,7 +109,22 @@ Also SHIPPED (Adrian-directed): the 'targeted' builder preset — new
 bleed_topic_aggregate() SQL fn + bleedOverlay() matcher turn
 paper_marking_runs into live topic weights (e2e-verified on preview:
 Logs 1.5×, Linear Law 1.30×, Kinematics 1.26×). EM rollout STARTED
-per Adrian: EM Trigonometry (60 units) first, two waves.
+per Adrian: EM Trigonometry (60 units) first, two waves. **Wave 1 DONE**
+(strands 1081/1082/1083 = 37 units, 13 APPROVE / 24 FIX / 0 REJECT):
+found TWO autopsy wrong_line off-by-one bugs (tapping the planted error
+graded "Not here" — fixed, planted content byte-preserved; AUDIT
+wrong_line on every future autopsy), one factually wrong core claim
+(△UQP is right-angled, not cosine-rule), wrong key values 8.73→8.74,
+24.3→24.4, 34.3°→34.2°, 5.07→5.06, and a rounding-boundary trap
+(displayed 14.15 ⇒ 49.4° vs keyed 49.3° — carry-full-values note added).
+Wave 2 (1084 elevation/depression + 1085 bearings) in flight.
+Also per Adrian: 18 unit TITLES cleaned (changelog "(…corrected)" tags
+stripped, DiffTech applications renumbered Ex 5a–5d, TrigEq double-angle
+prefixes); **/qb-enrich Tier A RUNNING** — wave 1 done: 997 answers
+extracted (13,040→10,279 gap), 8 skips (constructions/self-contradictory),
+Sonnet agents ~1.2k tok/row; wave 2 (4×250) in flight. QB data flags:
+136 solutions contain '' double-apostrophe ingestion artifact; pure
+construction rows need a one-time no-answer flag.
 Task 4 v1 SHIPPED to dev (commit 1bf3957): /admin/prelim-builder
 (deterministic assembly API+UI, paper_drafts, per-slot pin/swap/reroll,
 /setter-pass skill); e2e-verified on preview (AM-P2 std + hard, EM-P2
