@@ -117,7 +117,14 @@ wrong_line on every future autopsy), one factually wrong core claim
 (△UQP is right-angled, not cosine-rule), wrong key values 8.73→8.74,
 24.3→24.4, 34.3°→34.2°, 5.07→5.06, and a rounding-boundary trap
 (displayed 14.15 ⇒ 49.4° vs keyed 49.3° — carry-full-values note added).
-Wave 2 (1084 elevation/depression + 1085 bearings) in flight.
+**Wave 2 DONE → EM TRIGONOMETRY COMPLETE: 60 units, 16 APPROVE /
+44 FIX / 0 REJECT.** Systemic find: ALL FOUR EM Trig autopsies shipped
+wrong_line off-by-one (EM digitisation numbered lines 0-based, player is
+1-based) — every future EM/S1/S2 autopsy gets a wrong_line audit; the
+two wrong_line:0 autopsies (EM Circle Properties, EM Matrices) are the
+same bug. More wrong keys fixed: 50.9°→50.8°, 75.6→75.7 m², 8.07→8.08 m.
+Session totals: 395 units reviewed, 169 APPROVE / 226 FIX / 0 REJECT.
+Next: EM Probability (36) in flight.
 Also per Adrian: 18 unit TITLES cleaned (changelog "(…corrected)" tags
 stripped, DiffTech applications renumbered Ex 5a–5d, TrigEq double-angle
 prefixes); **/qb-enrich Tier A RUNNING** — wave 1 done: 997 answers
