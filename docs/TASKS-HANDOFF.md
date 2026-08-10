@@ -124,7 +124,15 @@ wrong_line off-by-one (EM digitisation numbered lines 0-based, player is
 two wrong_line:0 autopsies (EM Circle Properties, EM Matrices) are the
 same bug. More wrong keys fixed: 50.9°→50.8°, 75.6→75.7 m², 8.07→8.08 m.
 Session totals: 395 units reviewed, 169 APPROVE / 226 FIX / 0 REJECT.
-Next: EM Probability (36) in flight.
+**EM Probability DONE** — 36 units, 16 APPROVE / 20 FIX / 0 REJECT,
+ZERO math errors (fixes were "✓ key" QA-leak strips, run-on formatting,
+provenance); all 3 autopsies' wrong_line verified CORRECT as stored (the
+0-based bug was EM-Trig-batch-specific; keep auditing anyway). Topic-wide
+style question for Adrian: bare per-answer "✓" stamps pervade Probability
+try units (authoring residue; approved corpus never stamps) — global
+strip is a one-word decision. Progress: 457/1297 reviewed (35.2%);
+AM 100%, EM 96/456. Next: EM Vectors (34) in flight; Tier A wave 3
+running (backlog 12,914→8,718 after two waves).
 Also per Adrian: 18 unit TITLES cleaned (changelog "(…corrected)" tags
 stripped, DiffTech applications renumbered Ex 5a–5d, TrigEq double-angle
 prefixes); **/qb-enrich Tier A RUNNING** — wave 1 done: 997 answers
