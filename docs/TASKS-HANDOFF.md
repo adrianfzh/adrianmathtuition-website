@@ -81,10 +81,17 @@ figure-lost problems restored. **T&N DONE** — 16 units, 4 APPROVE / 12 FIX / 0
 session-limit interruption + clean relaunch); "Q8 key corrected"
 CONFIRMED (q=11; old q=13 wrong); false "flip happens twice" core claim
 fixed; two ill-posed drill problems repaired (undefined P; undefined Q
-reconstructed via exact identity k=1/5). Running total 213 units,
-67 APPROVE / 146 FIX / 0 REJECT. Next: R-Formula 14 in flight; then
-Area 12, Incr/Decr 8, Definite 5, then the 83-unit check-only tail
-(proposal: one batched 3-agent sweep across those 15 micro-topics). ⚠ unit_order "ties" seen via ::numeric casts are
+reconstructed via exact identity k=1/5). **R-Formula DONE** — 14 units, 6 APPROVE / 8 FIX / 0 REJECT; autopsy
+sound (boundary-min trap verified by 360k-pt scan); drill stub question
+reconstructed from the autopsy's own quote; missing solve target
+L=11.8 reverse-engineered + verified unique. ⚠ Cross-topic find: TWO
+pending EM autopsies have wrong_line:0 vs the 1-indexed convention —
+EM Circle Properties ae8866b6 "the 90° that isn't ∠CAD" and EM Matrices
+24340501 "Spot the swapped multipliers" — fix when the EM pass reaches
+them (0 may be deliberate for figure-label errors; check the renderer).
+Running total 227 units, 73 APPROVE / 154 FIX / 0 REJECT. Next:
+Integration (Area) 12 in flight; then Incr/Decr 8, Definite 5, then the
+83-unit check-only tail (proposal: one batched 3-agent sweep). ⚠ unit_order "ties" seen via ::numeric casts are
 PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
 GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
 actually collided; no ordering fix needed there.
