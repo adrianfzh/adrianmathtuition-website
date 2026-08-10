@@ -45,6 +45,14 @@ Priority order (bleed table × pending counts): Kinematics, Differentiation
 (Techniques), Differentiation (Max/Min), Trigonometry (Equations),
 Trigonometry (Ratios), then remaining AM; EM/S1/S2 after AM.
 
+Progress (2026-08-10, second-Mac session): **Kinematics DONE** — 17 units,
+3 reviewers, 14 payload fixes applied (0 rejects), order verified, report
+with Adrian, statuses untouched. **Differentiation (Techniques) in flight**
+(37 units, 3 reviewers). ⚠ unit_order "ties" seen via ::numeric casts are
+PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
+GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
+actually collided; no ordering fix needed there.
+
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
 
 Deterministic, no model calls: a TS API route ports the skill's slot-walk

@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-07-08T01:31:32.078Z
+// Last synced: 2026-08-10T02:15:03.595Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -56,6 +56,9 @@ export const SCHEMA = {
       },
       "Student Contact": {
         "type": "phoneNumber"
+      },
+      "Student Email": {
+        "type": "email"
       },
       "Parent Name": {
         "type": "singleLineText"
@@ -159,6 +162,18 @@ export const SCHEMA = {
           "Signed Up",
           "Opted Out"
         ]
+      },
+      "Topic Timeline": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Topic Timeline"
+      },
+      "Payments": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Payments"
+      },
+      "Follow-ups": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Follow-ups"
       }
     }
   },
@@ -395,6 +410,13 @@ export const SCHEMA = {
       "Outcome": {
         "type": "formula"
       },
+      "Booked Via": {
+        "type": "singleSelect",
+        "options": [
+          "Web admin",
+          "Bot (student)"
+        ]
+      },
       "Rescheduled Lesson ID": {
         "type": "multipleRecordLinks",
         "linkedTable": "Lessons"
@@ -490,6 +512,12 @@ export const SCHEMA = {
       },
       "Replacement Status": {
         "type": "multipleLookupValues"
+      },
+      "Dupe Key": {
+        "type": "formula"
+      },
+      "Billed": {
+        "type": "checkbox"
       }
     }
   },
@@ -604,6 +632,13 @@ export const SCHEMA = {
       },
       "Deferred Applied": {
         "type": "checkbox"
+      },
+      "Payment Allocations": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Payment Allocations"
+      },
+      "Paid (ledger)": {
+        "type": "rollup"
       }
     }
   },
@@ -706,7 +741,9 @@ export const SCHEMA = {
         "options": [
           "New",
           "Kept",
-          "Deleted"
+          "Deleted",
+          "student_correction",
+          "low_confidence"
         ]
       },
       "Topic": {
@@ -736,6 +773,15 @@ export const SCHEMA = {
         "options": [
           "Good",
           "Bad"
+        ]
+      },
+      "Subject": {
+        "type": "singleSelect",
+        "options": [
+          "Math",
+          "Chemistry",
+          "Physics",
+          "Biology"
         ]
       }
     }
@@ -956,7 +1002,8 @@ export const SCHEMA = {
           "receipt",
           "partial_receipt",
           "overpayment_receipt",
-          "correction"
+          "correction",
+          "welcome"
         ]
       },
       "To Email": {
@@ -1007,7 +1054,8 @@ export const SCHEMA = {
           "WA2",
           "WA3",
           "EOY",
-          "Custom"
+          "Custom",
+          "Prelim"
         ]
       },
       "Custom Name": {
@@ -1019,7 +1067,13 @@ export const SCHEMA = {
           "Math",
           "E Math",
           "A Math",
-          "H2 Math"
+          "H2 Math",
+          "E Math (P1)",
+          "E Math (P2)",
+          "A Math (P1)",
+          "A Math (P2)",
+          "H2 Math (P1)",
+          "H2 Math (P2)"
         ]
       },
       "Exam Date": {
@@ -1181,6 +1235,9 @@ export const SCHEMA = {
           "telegram",
           "batch_web"
         ]
+      },
+      "Cost (USD)": {
+        "type": "number"
       }
     }
   },
@@ -1319,6 +1376,119 @@ export const SCHEMA = {
       },
       "Notes": {
         "type": "multilineText"
+      }
+    }
+  },
+  "Topic Timeline": {
+    "tableId": "tblpjuO5e8Bb0qziS",
+    "fields": {
+      "Topic": {
+        "type": "singleLineText"
+      },
+      "Student": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Students"
+      },
+      "Subject": {
+        "type": "singleLineText"
+      },
+      "Started": {
+        "type": "date"
+      },
+      "Ended": {
+        "type": "date"
+      },
+      "Current": {
+        "type": "checkbox"
+      }
+    }
+  },
+  "Payments": {
+    "tableId": "tblrirziKYUscO4fb",
+    "fields": {
+      "Label": {
+        "type": "formula"
+      },
+      "Date": {
+        "type": "date"
+      },
+      "Amount": {
+        "type": "currency"
+      },
+      "Payer Name": {
+        "type": "singleLineText"
+      },
+      "Student": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Students"
+      },
+      "Source Email ID": {
+        "type": "singleLineText"
+      },
+      "Method": {
+        "type": "singleSelect",
+        "options": [
+          "PayNow",
+          "FAST",
+          "GIRO",
+          "Other"
+        ]
+      },
+      "Notes": {
+        "type": "multilineText"
+      },
+      "Payment Allocations": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Payment Allocations"
+      },
+      "Allocated": {
+        "type": "rollup"
+      },
+      "Unallocated": {
+        "type": "formula"
+      },
+      "Status": {
+        "type": "formula"
+      }
+    }
+  },
+  "Payment Allocations": {
+    "tableId": "tbl5SChH5mJ814ftW",
+    "fields": {
+      "Label": {
+        "type": "formula"
+      },
+      "Amount": {
+        "type": "currency"
+      },
+      "Applied At": {
+        "type": "date"
+      },
+      "Payment": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Payments"
+      },
+      "Invoice": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Invoices"
+      }
+    }
+  },
+  "Follow-ups": {
+    "tableId": "tblpMTOnu7VJ9h4MZ",
+    "fields": {
+      "Note": {
+        "type": "singleLineText"
+      },
+      "Student": {
+        "type": "multipleRecordLinks",
+        "linkedTable": "Students"
+      },
+      "Due": {
+        "type": "date"
+      },
+      "Done": {
+        "type": "checkbox"
       }
     }
   }
