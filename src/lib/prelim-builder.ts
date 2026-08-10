@@ -307,6 +307,61 @@ export function pickForSlot(
   return { pick, alternates };
 }
 
+// ---- targeted preset: turn marking-history bleed into topic weights ----
+// Rows come from bleed_topic_aggregate(): topic is FREE TEXT written by the
+// marker ("Kinematics — distance vs displacement"), so match blueprint topics
+// by stemmed tokens. A row naming several topics credits each matched one.
+export interface BleedRow {
+  topic: string;
+  marks_lost: number | string;
+  marks_total: number | string;
+}
+
+const STOP = new Set(['and', 'of', 'the', 'with', 'in', 'vs', 'their', 'a', 'an', 'via', 'to']);
+
+function tokens(s: string): string[] {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .split(' ')
+    .filter((t) => t.length > 0 && !STOP.has(t));
+}
+
+function tokenMatches(want: string, have: string[]): boolean {
+  if (want.length <= 3) return have.includes(want);
+  return have.some((h) => {
+    if ((h.length >= 4 && want.startsWith(h)) || h.startsWith(want)) return true;
+    // stem match: 'maximum'/'maxima', 'minimum'/'minima' share a ≥5-char prefix
+    let i = 0;
+    while (i < want.length && i < h.length && want[i] === h[i]) i++;
+    return i >= 5;
+  });
+}
+
+// Multipliers in [1, 1.5]: the worst-bleeding matched topic gets 1.5, others
+// scale by their share of its lost marks. Unmatched rows are simply ignored.
+export function bleedOverlay(rows: BleedRow[], blueprintTopics: string[]): Record<string, number> {
+  const lostByTopic = new Map<string, number>();
+  for (const row of rows) {
+    const rowTokens = tokens(row.topic);
+    const lost = Number(row.marks_lost);
+    if (!Number.isFinite(lost) || lost <= 0) continue;
+    for (const bt of blueprintTopics) {
+      const need = tokens(bt);
+      if (need.length > 0 && need.every((w) => tokenMatches(w, rowTokens))) {
+        lostByTopic.set(bt, (lostByTopic.get(bt) ?? 0) + lost);
+      }
+    }
+  }
+  const max = Math.max(0, ...lostByTopic.values());
+  if (max === 0) return {};
+  const overlay: Record<string, number> = {};
+  for (const [topic, lost] of lostByTopic) {
+    overlay[topic] = Math.round((1 + 0.5 * (lost / max)) * 1000) / 1000;
+  }
+  return overlay;
+}
+
 // Land the exact paper total by swapping picks for alternates inside slot bands.
 export function landTotal(picks: SlotPick[], totalTarget: number): { landed: boolean } {
   const sum = () =>

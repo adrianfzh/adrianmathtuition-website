@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   applyPreset,
+  bleedOverlay,
   countParts,
   landTotal,
   mulberry32,
@@ -128,6 +129,47 @@ describe('pickForSlot', () => {
       rng
     );
     expect(pick?.id).toBe('c');
+  });
+});
+
+describe('bleedOverlay', () => {
+  const blueprintTopics = [
+    'Kinematics',
+    'Differentiation (Maximum and Minimum)',
+    'Linear Law',
+    'Logarithms',
+    'Binomial Theorem',
+    'Circles',
+    'Trigonometry (R-Formula)',
+  ];
+
+  it('matches free-text marker topics to blueprint names, crediting multi-topic rows to each', () => {
+    const overlay = bleedOverlay(
+      [
+        { topic: 'Kinematics — distance vs displacement', marks_lost: '4', marks_total: '5' },
+        { topic: 'Kinematics with trigonometric functions', marks_lost: 6, marks_total: 18 },
+        { topic: 'Differentiation — stationary points and their nature (maxima/minima)', marks_lost: 6, marks_total: 6 },
+        { topic: 'Linear law / logarithms and straight-line graphs', marks_lost: 5, marks_total: 11 },
+        { topic: 'Binomial Theorem', marks_lost: 4, marks_total: 41 },
+        { topic: 'Circle geometry — tangent–chord and similar triangles', marks_lost: 4, marks_total: 5 },
+        { topic: 'Completely unrelated free text', marks_lost: 9, marks_total: 9 },
+      ],
+      blueprintTopics
+    );
+    expect(overlay['Kinematics']).toBe(1.5); // 10 lost = the max
+    expect(overlay['Differentiation (Maximum and Minimum)']).toBeCloseTo(1.3);
+    expect(overlay['Linear Law']).toBeCloseTo(1.25);
+    expect(overlay['Logarithms']).toBeCloseTo(1.25); // multi-topic row credits both
+    expect(overlay['Binomial Theorem']).toBeCloseTo(1.2);
+    expect(overlay['Circles']).toBeCloseTo(1.2); // 'circle' prefix-matches 'circles'
+    expect(overlay['Trigonometry (R-Formula)']).toBeUndefined();
+  });
+
+  it('returns an empty overlay when nothing matches or no marks were lost', () => {
+    expect(bleedOverlay([], blueprintTopics)).toEqual({});
+    expect(
+      bleedOverlay([{ topic: 'Mensuration', marks_lost: 0, marks_total: 5 }], blueprintTopics)
+    ).toEqual({});
   });
 });
 

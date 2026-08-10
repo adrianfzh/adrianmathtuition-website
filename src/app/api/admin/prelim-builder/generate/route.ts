@@ -9,12 +9,14 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { createServiceClient } from '@/lib/supabase-server';
 import {
   applyPreset,
+  bleedOverlay,
   countParts,
   landTotal,
   mulberry32,
   pickForSlot,
   targetMarks,
   walkTopics,
+  type BleedRow,
   type Candidate,
   type Difficulty,
   type PaperDef,
@@ -120,11 +122,19 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     derivedAt: blueprint.derived_at,
     papers: Object.keys(blueprint.papers),
-    presets: Object.entries(blueprint.presets).map(([name, p]) => ({
-      name,
-      description: p.description ?? '',
-      appliesTo: p.applies_to ?? null,
-    })),
+    presets: [
+      ...Object.entries(blueprint.presets).map(([name, p]) => ({
+        name,
+        description: p.description ?? '',
+        appliesTo: p.applies_to ?? null,
+      })),
+      {
+        name: 'targeted',
+        description:
+          'Closes the loop: overweights the topics your students lost the most marks on in recent AI-marked papers (bleed table).',
+        appliesTo: null,
+      },
+    ],
   });
 }
 
@@ -143,14 +153,33 @@ export async function POST(req: NextRequest) {
     const blueprint = loadBlueprint();
     const paperDef = blueprint.papers[key];
     if (!paperDef) return NextResponse.json({ error: `Unknown paper ${key}` }, { status: 400 });
-    const preset = blueprint.presets[presetName];
-    if (!preset) return NextResponse.json({ error: `Unknown preset ${presetName}` }, { status: 400 });
-    if (preset.applies_to && !preset.applies_to.includes(key)) {
-      return NextResponse.json({ error: `Preset ${presetName} does not apply to ${key}` }, { status: 400 });
-    }
 
     const rng = mulberry32(seed);
     const supabase = createServiceClient();
+
+    // 'targeted' is a dynamic preset: its overlay is computed fresh from the
+    // marking-history bleed (bleed_topic_aggregate) instead of the blueprint.
+    let preset: Preset;
+    let targetedTopics: Record<string, number> | null = null;
+    if (presetName === 'targeted') {
+      const { data: bleedRows, error: bleedErr } = await supabase.rpc('bleed_topic_aggregate', {
+        level_filter: level,
+      });
+      if (bleedErr) return NextResponse.json({ error: `bleed query: ${bleedErr.message}` }, { status: 500 });
+      const poolTopics = [
+        ...new Set(paperDef.slots.flatMap((s) => s.topic_pool.map((p) => p.topic))),
+      ];
+      targetedTopics = bleedOverlay((bleedRows ?? []) as BleedRow[], poolTopics);
+      preset = { overlay: { topic_weight_multipliers: targetedTopics } };
+    } else {
+      const found = blueprint.presets[presetName];
+      if (!found) return NextResponse.json({ error: `Unknown preset ${presetName}` }, { status: 400 });
+      if (found.applies_to && !found.applies_to.includes(key)) {
+        return NextResponse.json({ error: `Preset ${presetName} does not apply to ${key}` }, { status: 400 });
+      }
+      preset = found;
+    }
+
     const overlaid = applyPreset(paperDef, preset.overlay);
     const targets = targetMarks(overlaid, { difficulty, markBand: preset.overlay?.mark_band });
 
@@ -226,6 +255,7 @@ export async function POST(req: NextRequest) {
       excludeSchool: excludeSchool ?? null,
       seed,
       blueprintDerivedAt: blueprint.derived_at,
+      targetedTopics,
       totalTarget: overlaid.total_marks,
       total,
       landed,
