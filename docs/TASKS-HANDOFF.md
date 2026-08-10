@@ -147,8 +147,49 @@ all land 90/90; EM closes on Real-World-Context ✓). PDF export pending. ⚠ un
 PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
 GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
 actually collided; no ordering fix needed there.
+**2026-08-11.** Task 4 CLOSED: PDF export shipped —
+`/api/admin/prelim-builder/export?id=` renders a saved draft as a real
+mock-exam PDF (src/lib/render-prelim.ts: exam header + instructions box,
+marks-scaled working space, consolidated ANSWER KEY page; e2e on preview:
+AM-P2 draft → 9-page 240KB PDF) — plus 📄 Prelim Builder tile on the
+admin hub. **EM VECTORS DONE: 34 units, 11 APPROVE / 23 FIX / 0 REJECT**
+(strands 1141 4A/8F, 1142 5A/7F, 1143 2A/8F; sympy-verified throughout —
+89/89 + 65/65 named checks + three full verification scripts on 1141).
+Finds: two lost-figure units repaired with basis-free consistency proofs
+(keyed values first proven basis-independent, so reconstruction cannot
+contradict the printed keys); Assignment 1 Q2 used an UNDEFINED point F —
+the parallel-line construction is provably the only one matching both
+published answers (rival guess ruled out numerically); triangle-inequality
+statement strengthened (missing absolute value); autopsy wrong_line=3
+audited CORRECT (the 0-based bug stays EM-Trig-batch-only so far).
+Printed-sheet errata (physical materials, Vectors): Assignment 1 Q2 key
+`4/5·SP` is a mis-copy of `¾·SP`; Ex 3 sheet swaps part values (½ belongs
+to (ii), ⅔ to (iii)); Ex 4 printed working has a sign slip (correct value
+2m − 2n). Progress: **491/1,297 reviewed (37.9%)** — AM 361/361 (100%),
+EM 130/456, S1 (301) + S2 (179) untouched. Next launched: EM Algebra
+(Quadratic Equations), 28 units, 3 strands (1012.01–.09 /
+1012.10–1013.05 / 1013.06–.14; autopsies ac30e2d5 + b9a5bf49 get the
+wrong_line audit). Tier A: wave 3 DONE — 987 answers (backlog
+12,914 → 7,731, 40% of the gap closed); wave 4 (4 agents × ~250) in
+flight.
+**QB errata / suspect-flag list (consolidated; for a later verification
+pass — check each row before editing, none are confirmed-safe bulk edits):**
+- 136 solutions carry a `''` double-apostrophe ingestion artifact.
+- "See parts." stub solutions: c0afa114, cc0d1a50, 114caab4, 02f4c3cd —
+  find the rest via `length(solution) < 15`.
+- Concatenated double solution: 4a6a2ffd. Final answers never summed:
+  c91d75e0. Part (d) missing from solution: 4a685eff.
+- Suspect final lines (solution reaches a doubtful conclusion): 8b6c5c9f,
+  108f5bf2, ca4677b4, d2efa235 (IQR subtracted backwards), 8fa30be6
+  (sign of k), 918e326d (velodrome), 9787f5d1 (SD 6 vs 5), 9932e0f0.
+- Pure-construction rows (`[construction]`/`[sketch]` answers) deserve a
+  one-time no-answer flag so enrichment sweeps stop re-reading them.
 
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
+
+> ✅ **DONE (2026-08-10/11, second-Mac session)** — API + UI + paper_drafts
+> + per-slot pin/swap/reroll + /setter-pass skill + PDF export + admin-hub
+> tile, all e2e-verified on the preview. Kept below for design context only.
 
 Deterministic, no model calls: a TS API route ports the skill's slot-walk
 (read data/paper-blueprints.json + preset overlays; QB queries with
