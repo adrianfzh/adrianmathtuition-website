@@ -185,6 +185,57 @@ pass — check each row before editing, none are confirmed-safe bulk edits):**
 - Pure-construction rows (`[construction]`/`[sketch]` answers) deserve a
   one-time no-answer flag so enrichment sweeps stop re-reading them.
 
+**2026-08-11 (cont'd). EM ALGEBRA (QUADRATIC EQUATIONS) DONE: 28 units,
+18 APPROVE / 10 FIX / 0 REJECT**, 210 sympy checks across 3 strands; BOTH
+autopsies' wrong_line audited CORRECT as stored (2 and 1 — the 0-based bug
+remains EM-Trig-batch-only). Zero wrong keys in the DB; fixes were one
+ill-posed premise (cyclists example never said the roads cross at O —
+proven the unique configuration matching the keyed equation, premise
+written in), a provably-false justification inside a check option
+(deleted), one mid-rounded speed 117.925→117.924, a missing
+root-rejection statement, run-on reflows, and "All keys/Keys verified."
+QA-leak strips. Progress: **519/1,297 reviewed (40.0%)** — AM 361/361,
+EM 158/456. Printed-sheet errata (physical materials, quadratics):
+**Assignment Q1 is misprinted** — "solve $5y^2=18y+9$ by factorization"
+is irreducible (disc 504); the printed key {3/5, 3} belongs to
+$5y^2=18y-9$ (autopsy 1012.14 teaches exactly this; fix the sign on the
+sheet). Also: cyclists print concludes "3.49 h" against its own 3.4796
+line (→3.48), and 1013.05 Q2's key $9.40 reuses the 1-d.p. root
+(full-precision $9.42) — both kept as verified teaching notes in the DB.
+**Tier A WAVE 4 DONE: 946 answers** (slices 0-3: 247, 4-7: 247,
+8-b: 216, c-f: 236); backlog 12,914 → 6,785 = **47.5% of the gap
+closed**; per-slice remaining 1,626 / 1,673 / 1,706 / 1,780. End-of-wave
+doubled-apostrophe sweep across ALL stored answers: clean (only 2 hits,
+both legitimate $f''$/$B''$ double-primes). Process rules for future
+waves: fetch at **OFFSET 0 always** (answered rows leave the pool; any
+nonzero offset silently skips unprocessed rows — two agents proved and
+self-repaired this); apostrophe SQL ratio is `''` → one stored `'`; run
+the `answer LIKE '%'||chr(39)||chr(39)||'%'` sweep at end of run.
+**QB flag list additions (wave 4):**
+- **Wrong solution↔question pairing**: 174a3181 (card-drawing stem,
+  spinner solution) — new severity class: DB pairing bug, not a bad solve.
+- Corrupted solution: 549b6daf (sign-flipped function, contradicted
+  domain, negative "area", literal `\\sin` import artifact).
+- New stubs: 15703230 (graph-reading, no values), d798815f, d5a352bc
+  ("See sketch."), 97be2504, 97ce49ea.
+- Suspect finals (solution contradicts its own working): 157ce613
+  ((150,100,150) fails its own equations; (350,150,50) verified),
+  163dd8b5, 16967eb6 (0.4775 vs deferred "printed 0.490"), 18c67c19
+  (~$900 method disagreement + GC-table off-by-one), 196d3ef0 (integral
+  89760/81 vs recomputed ≈10240/81), 546ffc52 (perimeter 10.3 vs
+  components ≈12.3), d4bee214 (8/27 vs own 6/18=1/3), d63ae88a,
+  d70cd3a0, d7f65872 (cm/m unit typo), 90079e1a (18 leaves vs "19
+  students"), 9412f3b8 (iv), 94372819 (two valid methods 17.5 vs
+  20.0 cm² — question data inconsistent), 97f95e7a (y=−9/40 vs −9/10
+  both ways), 98feaaff (derived 7.95 km + stray "13.0 km").
+- Low-confidence notes: 959db93d, 965d93a0 (finals unaffected).
+- Partial extractions (one sub-part omitted as unreconcilable): 4255073d
+  (a), 442835b8 (a).
+**STOPPED here per Adrian ("don't launch new task")** — no wave 5, no
+next review topic. Next in line when he says go: EM Coordinate Geometry
+(26 units), then Circular Measure / Statistics / Circle Properties /
+Real-World Context (24 each); Tier A wave 5 (4 slices, OFFSET-0 rule).
+
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
 
 > ✅ **DONE (2026-08-10/11, second-Mac session)** — API + UI + paper_drafts
