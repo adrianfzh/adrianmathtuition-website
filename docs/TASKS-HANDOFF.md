@@ -64,8 +64,16 @@ truncation), both autopsies confirmed correct (255° stands).
 signs verified in-quadrant everywhere incl. parametric k/p/t answers; one
 degenerate drill part restored, two verbatim Assignment-1 duplicates
 re-angled, autopsy sound. Five priority topics complete (132 units,
-37 APPROVE / 95 FIX / 0 REJECT, statuses untouched). Next: remaining AM
-by pending count — Trigonometry (Graphs) in flight. ⚠ unit_order "ties" seen via ::numeric casts are
+37 APPROVE / 95 FIX / 0 REJECT, statuses untouched). **Trigonometry
+(Graphs) DONE** — 25 units, 15 APPROVE / 10 FIX / 0 REJECT; both
+autopsies sound (c=2 boundary verified by exact roots), one false
+teaching note fixed ("half a cycle" → one period), one ill-posed
+constants question pinned (k=3 witness), .21 gained .19's figure by
+byte-identical server-side copy ("same diagram" ask). Running total
+157 units, 52 APPROVE / 105 FIX / 0 REJECT. Next: Integration
+(Techniques) in flight; then Rates 18, T&N 16, R-Formula 14, Area 12,
+Incr/Decr 8, Definite 5, then the 83-unit check-only tail (proposal:
+one batched 3-agent sweep across those 15 micro-topics). ⚠ unit_order "ties" seen via ::numeric casts are
 PHANTOM — float4 renders 6 sig figs there; compare `unit_order::float8` or
 GROUP BY unit_order HAVING count(*)>1. Trig (Identities) block 2 was never
 actually collided; no ordering fix needed there.
