@@ -70,6 +70,7 @@ interface Stats {
   pendingPapers?: { count: number; possiblyMarking: number } | null;
   unmarkedLessons?: number | null;
   examGaps?: { examType: string; count: number } | null;
+  triage?: { flagged: number; readyToRelease: number } | null;
 }
 
 interface BotStats {
@@ -200,7 +201,8 @@ export default function AdminHub() {
   const papersCard = stats?.pendingPapers && stats.pendingPapers.count > 0 ? stats.pendingPapers : null;
   const unmarkedCard = typeof stats?.unmarkedLessons === 'number' && stats.unmarkedLessons > 0 ? stats.unmarkedLessons : null;
   const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
-  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard);
+  const triageCard = stats?.triage && (stats.triage.flagged > 0 || stats.triage.readyToRelease > 0) ? stats.triage : null;
+  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard);
 
   return (
     <>
@@ -231,6 +233,20 @@ export default function AdminHub() {
                   <div className="stat-label">⏳ Papers to mark</div>
                   {papersCard.possiblyMarking > 0 && (
                     <div className="stat-label">+{papersCard.possiblyMarking} possibly marking now</div>
+                  )}
+                </a>
+              )}
+              {triageCard && (
+                <a href="/admin/mark/triage" className="stat-card" style={{ borderLeftColor: '#7c3aed' }}>
+                  <div className="stat-top">
+                    <span className="stat-num">{triageCard.flagged || triageCard.readyToRelease}</span>
+                    <span className="stat-arrow">›</span>
+                  </div>
+                  <div className="stat-label">
+                    {triageCard.flagged > 0 ? '🔍 Questions to check' : '📤 Scripts ready to release'}
+                  </div>
+                  {triageCard.flagged > 0 && triageCard.readyToRelease > 0 && (
+                    <div className="stat-label">+{triageCard.readyToRelease} ready to release</div>
                   )}
                 </a>
               )}
@@ -309,6 +325,7 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '📬', title: 'Parent Digests', sub: 'Weekly · monthly · term drafts',       href: '/admin/digests'      },
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
+  { emoji: '🔍', title: 'Triage marking',  sub: 'Check flagged questions · release to students', href: '/admin/mark/triage' },
   { emoji: '🧩', title: 'Worksheet Builder', sub: 'Pick QB questions · roles · PDF',   href: '/admin/worksheet-builder' },
   { emoji: '📄', title: 'Prelim Builder', sub: 'Assemble full papers from the blueprint', href: '/admin/prelim-builder' },
   { emoji: '🎓', title: 'Learn Review', sub: 'Approve · edit interactive units', href: '/admin/learn-review' },

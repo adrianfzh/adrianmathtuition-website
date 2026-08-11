@@ -17,7 +17,25 @@
 | `Homework Assigned` | Long text | What was set |
 | `Homework Returned` | Single select | `Yes` / `Partial` / `No` — written to the **previous** lesson record |
 | `Homework Returned Reason` | Long text | Optional reason if partial/no |
-| `Progress Logged` | Checkbox | Auto-set `true` when any content field is non-empty |
+| `Progress Logged` | Checkbox | Auto-set `true` when any content field is non-empty — **excluding `Next Lesson Plan`** (a forward-looking plan doesn't mean this lesson was written up) |
+| `Next Lesson Plan` | Long text | What this student starts on NEXT lesson. Written on the lesson just taught; read back by `/api/kiosk/plan` for the kiosk's "📌 For you today" card, and shown in the LessonModal recap as **📌 Planned for today** off `prev`. |
+
+> ⚠ **`Next Lesson Plan` must be created by hand in Airtable** — the API token has
+> `schema.bases:read` but not `:write`, so the field could not be added
+> programmatically (2026-08-11). Until it exists:
+> - `lesson-update` catches the 422, **drops the field, retries**, and returns
+>   `droppedFields` — the rest of the progress log still saves and the modal shows
+>   `⚠ Next Lesson Plan not saved — field missing in Airtable` instead of a false ✓.
+> - `lesson-context` retries its prev-lesson query without the `fields[]` entry
+>   (an unknown name 422s a **list** endpoint too, which would take the whole modal down).
+> - `/api/kiosk/plan` returns `{plan: null}` and the kiosk card simply doesn't render.
+> - `/api/health-check` `next-lesson-plan` probe fails until the field exists — so
+>   promoting to prod before adding it will Telegram-alert every 6h. That's deliberate.
+>
+> The escaped-quote gotcha: `airtableRequest` wraps the **raw** body, so the error text
+> reads `Unknown field name: \"Next Lesson Plan\"`. A regex expecting a bare `"` never
+> fires and the fallback looks absent. (Also: Turbopack served a stale route module
+> through three edits here — restart `next dev` before concluding a fix didn't work.)
 
 ## Notification Policy
 

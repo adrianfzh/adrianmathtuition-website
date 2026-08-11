@@ -139,6 +139,30 @@ export async function GET(req: NextRequest) {
       const r = await fetch(`${base}/api/kiosk/status`, { signal: T(10000) });
       if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
     }),
+    // Marking triage: the released_at column the release gate writes. Without it
+    // every marked script silently re-appears in the queue forever.
+    timed('mark-triage', async () => {
+      const r = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/paper_marking_runs?select=id,released_at&limit=1`,
+        {
+          headers: {
+            apikey: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+            Authorization: `Bearer ${process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+          },
+          signal: T(10000),
+        }
+      );
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 120)}`);
+    }),
+    // The Next Lesson Plan field the kiosk "📌 For you today" card reads. A
+    // missing field means students land on the kiosk with no starting point.
+    timed('next-lesson-plan', async () => {
+      const r = await fetch(
+        `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/Lessons?maxRecords=1&fields%5B%5D=${encodeURIComponent('Next Lesson Plan')}`,
+        { headers: { Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}` }, signal: T(10000) }
+      );
+      if (!r.ok) throw new Error(`field missing? HTTP ${r.status}: ${(await r.text()).slice(0, 120)}`);
+    }),
     // Telegram bot machine on Fly (deploys have left it stopped before)
     timed('telegram-bot', async () => {
       const r = await fetch('https://adrianmath-telegram-math-bot.fly.dev/', { signal: T(15000) });

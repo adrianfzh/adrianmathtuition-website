@@ -131,6 +131,9 @@ export default function KioskClient() {
   const [pairErr, setPairErr] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [printsUsed, setPrintsUsed] = useState<{ used: number; remaining: number } | null>(null);
+  // What Adrian wrote at the end of their last lesson — shown on arrival so they
+  // can start without queueing to ask him.
+  const [plan, setPlan] = useState<{ plan: string; from: string | null } | null>(null);
 
   // Where we are: the three-button home, or one of the three piles.
   const [screen, setScreen] = useState<Screen>('home');
@@ -217,6 +220,7 @@ export default function KioskClient() {
     setPairing(null);
     setQrDataUrl(null);
     setPrintsUsed(null);
+    setPlan(null);
     setSelectedTopic(null);
     setWorksheet(null);
     // Back to the front screen — the next student must not land mid-flow.
@@ -348,6 +352,11 @@ export default function KioskClient() {
       .then((r) => r.json())
       .then((j) => setPrintsUsed({ used: j.used ?? 0, remaining: j.remaining ?? 0 }))
       .catch(() => setPrintsUsed(null));
+    // Their plan for today, if Adrian left one. Silent on failure.
+    fetch('/api/kiosk/plan', { headers: contentHeaders() })
+      .then((r) => r.json())
+      .then((j) => setPlan(j?.plan ? { plan: j.plan, from: j.from ?? null } : null))
+      .catch(() => setPlan(null));
   }, [student, contentHeaders]);
 
   // ── Fetch topics whenever level changes (once unlocked) ──────────────
@@ -581,7 +590,14 @@ export default function KioskClient() {
               <div className="brand-sub">{SCREEN_SUB[screen === 'practice' ? (practiceMode ?? 'practice') : screen]}</div>
             </header>
 
-            {/* ── HOME: the three big buttons ── */}
+            {/* ── HOME: today's plan, then the three big buttons ── */}
+            {screen === 'home' && plan && (
+              <section className="plan-card">
+                <div className="plan-head">📌 For you today</div>
+                <div className="plan-body">{plan.plan}</div>
+              </section>
+            )}
+
             {screen === 'home' && (
               <section className="home-grid">
                 {HOME_TILES.filter((t) => (t.key === 'practice' ? canPdf || canGenerate : canPdf)).map((t) => (
@@ -949,6 +965,23 @@ const PRINT_CSS = `
     transition: background .15s, color .15s;
   }
   .seg-on { background: var(--navy); color: #fff; }
+
+  /* Adrian's note-to-self from last lesson, read across a room. Sits above the
+     tiles so it's seen before they choose, not after. */
+  .plan-card {
+    max-width: 900px; margin: 0 auto 18px;
+    background: #fffbeb; border: 2px solid var(--gold); border-radius: 20px;
+    padding: 18px 22px;
+  }
+  .plan-head {
+    font-size: 14px; font-weight: 800; letter-spacing: .04em;
+    text-transform: uppercase; color: #8a6d1f; margin-bottom: 6px;
+  }
+  .plan-body {
+    font-size: 22px; line-height: 1.4; color: var(--navy);
+    white-space: pre-wrap; font-weight: 600;
+  }
+  @media (max-width: 760px) { .plan-body { font-size: 18px; } }
 
   /* Front screen: three tap targets sized for a standing iPad — one row on
      landscape, stacking on portrait/phone. */

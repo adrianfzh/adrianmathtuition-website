@@ -30,6 +30,7 @@ interface LessonContextData {
     mastery: string;
     mood: string;
     lessonNotes: string;
+    nextLessonPlan: string;
     progressLogged: boolean;
   };
   prev: {
@@ -38,6 +39,7 @@ interface LessonContextData {
     topicsCovered: string;
     homeworkAssigned: string;
     homeworkReturned: string;
+    nextLessonPlan: string;
   } | null;
   studentLevel: string;
   studentSubjects: string[];
@@ -232,6 +234,7 @@ export default function LessonModal({
   const [mood, setMood] = useState('');
   const [hwAssigned, setHwAssigned] = useState('');
   const [lessonNotes, setLessonNotes] = useState('');
+  const [nextPlan, setNextPlan] = useState('');
 
   // Prev lesson homework returned
   const [prevHwReturned, setPrevHwReturned] = useState('');
@@ -276,6 +279,7 @@ export default function LessonModal({
         setMood(data.current.mood ?? '');
         setHwAssigned(data.current.homeworkAssigned ?? '');
         setLessonNotes(data.current.lessonNotes ?? '');
+        setNextPlan(data.current.nextLessonPlan ?? '');
         setPrevHwReturned(data.prev?.homeworkReturned ?? '');
         // Initialise fieldsRef FIRST so autosave always has something to send even if
         // the exam-parsing block below throws.
@@ -285,6 +289,7 @@ export default function LessonModal({
           mood: data.current.mood ?? '',
           homeworkAssigned: data.current.homeworkAssigned ?? '',
           lessonNotes: data.current.lessonNotes ?? '',
+          nextLessonPlan: data.current.nextLessonPlan ?? '',
         };
         // Exam section setup (wrapped in try-catch so a shape mismatch never blocks saves)
         try {
@@ -340,6 +345,15 @@ export default function LessonModal({
         setSaveError(json.error ?? `HTTP ${res.status}`);
         return;
       }
+      // The route drops fields the base doesn't have rather than failing the
+      // whole write — say so, or "✓ Autosaved" claims a save that didn't happen.
+      const json = await res.json().catch(() => ({}));
+      if (json.droppedFields?.length) {
+        setSaveStatus('error');
+        setSaveError(`${json.droppedFields.join(', ')} not saved — field missing in Airtable`);
+        onProgressLogged(lesson.id);
+        return;
+      }
       setSaveStatus('saved');
       setSaveError('');
       onProgressLogged(lesson.id);
@@ -393,6 +407,11 @@ export default function LessonModal({
   function handleLessonNotesChange(val: string) {
     setLessonNotes(val);
     scheduleAutosave({ lessonNotes: val });
+  }
+
+  function handleNextPlanChange(val: string) {
+    setNextPlan(val);
+    scheduleAutosave({ nextLessonPlan: val });
   }
 
   function handlePrevHwChange(val: string) {
@@ -557,6 +576,17 @@ export default function LessonModal({
                     Last lesson
                     <span className="lm-section-date">{formatExamDate(ctx.prev.date)}</span>
                   </div>
+                  {/* The plan Adrian left himself last time — the whole point of
+                      the field is that he reads it here, not that it's stored. */}
+                  {ctx.prev.nextLessonPlan && (
+                    <div style={{
+                      background: '#fefce8', border: '1px solid #fde68a', borderRadius: 8,
+                      padding: '8px 10px', marginBottom: 8, fontSize: 13, color: '#713f12',
+                      whiteSpace: 'pre-wrap',
+                    }}>
+                      <strong>📌 Planned for today:</strong> {ctx.prev.nextLessonPlan}
+                    </div>
+                  )}
                   {ctx.prev.topicsCovered && (
                     <div className="lm-recap-row">
                       <span className="lm-recap-label">Topics</span>
@@ -812,6 +842,24 @@ export default function LessonModal({
                     disabled={!ctx.isEditable}
                     style={{ fontSize: 13 }}
                   />
+                </div>
+
+                {/* Next lesson plan — read by the kiosk, so the student can start
+                    without asking. Written now, while the lesson is fresh. */}
+                <div className="lm-field-group">
+                  <div className="lm-field-label">📌 Start next lesson with</div>
+                  <textarea
+                    className="modal-textarea"
+                    rows={2}
+                    placeholder="e.g. Practice: Differentiation Q5–12, then the 2023 prelim P2"
+                    value={nextPlan}
+                    onChange={e => { if (ctx.isEditable) handleNextPlanChange(e.target.value); }}
+                    disabled={!ctx.isEditable}
+                    style={{ fontSize: 13 }}
+                  />
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+                    Shows on the kiosk when they arrive next time.
+                  </div>
                 </div>
               </div>
             </>

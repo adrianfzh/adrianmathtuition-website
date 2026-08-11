@@ -98,6 +98,58 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
 - **Exact-form deduction (2026-08-10):** `MARK_SEVERITY_RULES` (bot `ai/paper-marker.js`, shared by the direct AND standalone prompts) docks 1 mark when a final answer whose exact value is a **TERMINATING decimal** is written further-rounded — the cover page instructs exact-or-3-s.f. (The trigger was 10.375 km rounded to "10.4" scoring 1/1 with just a *"leave exact if possible"* comment.) **Terminating decimals ONLY** (Adrian, same day: *"should not include surd or π-multiple"*): surd/π/non-terminating answers are fine at 3 s.f. — the marker must never demand surd or π form — and nothing is penalised where the question fixes the accuracy (2 d.p., money to the cent, angles to 1 d.p.).
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
+## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
+
+The screen that makes AI marking safe to hand back at scale. **Nothing reaches a
+student until Adrian taps Release** — that tap is the trust gate (locked decision 2
+in [`../HANDOFF-MARKING-LOOP.md`](../HANDOFF-MARKING-LOOP.md); do NOT add an auto-release
+path or un-gate student-facing marking on Telegram).
+
+- **It shows flagged questions only.** The bot's marker already writes
+  `review_recommended` + `review_reasons[]` per question in `result_json.results[]`
+  (question not found, uncertain match, marker uncertainty note, low marking
+  confidence). Triage renders *those*; the confident majority is released untouched
+  and never opened. Measured on the live backlog (14 days, 2026-08-11): **607
+  questions across 30 unreleased scripts → 174 flagged, 433 auto-skipped.** The 71%
+  is the whole point of the screen.
+- **Logic lives in [`../src/lib/mark-triage.ts`](../src/lib/mark-triage.ts)** (pure,
+  non-mutating, 20 unit tests) — `extractFlagged`, `applyAgree`, `applyOverride`,
+  `recomputeTotals`, `isReleasable`, `pendingCount`. Marks arithmetic must never be
+  re-implemented in the route or the component (repo testing policy). Non-mutating is
+  deliberate: callers read-modify-write `result_json`, and an in-place edit would leave
+  a half-written object behind on a failed write.
+- **Agree / Override.** Both stamp `triage_reviewed: true` so the row drops off and
+  can't re-appear on the next load. Override also writes `triage_override
+  {awarded, previous, note, at}`, clamped to `[0, total_max]`, and **keeps the first
+  `previous`** across repeated edits — that's the AI's original mark, unrecoverable
+  the moment a second edit overwrites it. Overriding an already-released run 409s:
+  released marks are final.
+- ⚠ **An override corrects the RECORD, not the annotated PDF.** The PDF is drawn once
+  at marking time by the bot's `deliverQueuedRun`; nothing on this screen can redraw
+  it. `total_awarded` (score chip, `/admin/students/[id]`, the bleed table) reflects the
+  override while the PDF the student opens still shows the AI's original red pen. Say
+  the correction out loud — the release nudge carries the note.
+- **Release** (`action:'release'`, single or batch) resolves the recipient
+  portal → Airtable (`portal_accounts.telegram_chat_id` first, then the Student
+  record's `Student Telegram ID`), sends the portal link when
+  `NEXT_PUBLIC_PORTAL_ENABLED`, else the annotated PDF as a Telegram document, else a
+  plain "ready" nudge. It then stamps `released_at` + `released_via` **whether or not a
+  nudge landed** — the release IS Adrian's decision, and a student with no Telegram
+  must not sit in the queue forever. `released_via: 'none'` is the record that this one
+  needs a physical hand-back.
+- **Only ~2 of 43 runs carry `student_id`** (2026-08-11) — a run is tagged only when
+  Adrian picks a student in the mark-paper send row. Untagged runs can be triaged and
+  released but have nobody to notify; they land as `via: 'none'`. Tag at send time to
+  close that gap.
+- **Runs still in the queue are skipped** — the GET filters on
+  `Array.isArray(result_json.results)`. A queued run has no results yet, and showing it
+  as "0 flagged, ready to release" would invite releasing nothing.
+- **Discoverability:** a purple attention card on `/admin` (hidden at zero flags, from
+  `/api/admin-stats` → `triage {flagged, readyToRelease}`) **plus** a permanent
+  🔍 Triage marking launcher tile, so the screen is reachable when the count is zero.
+- **Health check:** `mark-triage` probes `paper_marking_runs?select=id,released_at` —
+  without that column every marked script silently re-enters the queue forever.
+
 ## /admin/mark-paper — scanned-PDF working (client-side rasterisation)
 
 Adrian can drop the student's working in as **a scanned PDF** instead of phone photos.

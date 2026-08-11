@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
     mood:              'Mood',
     homeworkAssigned:  'Homework Assigned',
     lessonNotes:       'Lesson Notes',
+    nextLessonPlan:    'Next Lesson Plan',
   };
 
   const patchFields: Record<string, any> = {};
@@ -63,20 +64,59 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No recognised fields to update' }, { status: 400 });
   }
 
-  // Mark Progress Logged = true when any meaningful content field is non-empty
-  const hasContent = Object.values(patchFields).some(v => typeof v === 'string' && v.trim() !== '');
+  // Mark Progress Logged = true when any meaningful content field is non-empty.
+  // 'Next Lesson Plan' is deliberately excluded — it describes the NEXT lesson,
+  // so a plan on its own doesn't mean this lesson was written up.
+  const hasContent = Object.entries(patchFields).some(
+    ([f, v]) => f !== 'Next Lesson Plan' && typeof v === 'string' && v.trim() !== ''
+  );
   if (hasContent) {
     patchFields['Progress Logged'] = true;
   }
 
   try {
-    const updated = await airtableRequest('Lessons', `/${lessonId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ fields: patchFields }),
+    const updated = await patchWithUnknownFieldFallback(lessonId, patchFields);
+    return NextResponse.json({
+      id: updated.id,
+      progressLogged: updated.fields['Progress Logged'] ?? false,
+      ...(updated.droppedFields.length ? { droppedFields: updated.droppedFields } : {}),
     });
-    return NextResponse.json({ id: updated.id, progressLogged: updated.fields['Progress Logged'] ?? false });
   } catch (err: any) {
     console.error('[lesson-update] patch failed:', err);
     return NextResponse.json({ error: err.message || 'Airtable error' }, { status: 500 });
+  }
+}
+
+/**
+ * Airtable rejects the ENTIRE patch with 422 UNKNOWN_FIELD_NAME if one field
+ * doesn't exist in the base — so a field that hasn't been created yet would
+ * take the whole progress log down with it. Strip the named field and retry
+ * once, reporting what was dropped rather than silently losing the lesson write.
+ */
+async function patchWithUnknownFieldFallback(
+  lessonId: string,
+  patchFields: Record<string, any>
+): Promise<{ id: string; fields: Record<string, any>; droppedFields: string[] }> {
+  const send = (f: Record<string, any>) =>
+    airtableRequest('Lessons', `/${lessonId}`, { method: 'PATCH', body: JSON.stringify({ fields: f }) });
+
+  try {
+    const r = await send(patchFields);
+    return { ...r, droppedFields: [] };
+  } catch (err: any) {
+    const msg = String(err?.message ?? '');
+    if (!msg.includes('UNKNOWN_FIELD_NAME')) throw err;
+    // airtableRequest wraps the RAW response body, so the quotes around the
+    // field name arrive backslash-escaped:
+    //   ...{"message":"Unknown field name: \"Next Lesson Plan\""}...
+    // Match with or without the escape — a regex expecting a bare `"` silently
+    // never fires and the fallback looks like it isn't there at all.
+    const named = msg.match(/Unknown field name:\s*\\?"([^"\\]+)/)?.[1];
+    if (!named || !(named in patchFields)) throw err; // can't tell what to drop
+    const retry = { ...patchFields };
+    delete retry[named];
+    if (!Object.keys(retry).length) throw err;
+    console.warn(`[lesson-update] dropped unknown Airtable field "${named}" and retried`);
+    return { ...(await send(retry)), droppedFields: [named] };
   }
 }

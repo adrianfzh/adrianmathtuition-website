@@ -3,6 +3,8 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { unmarkedLessonsFilterFormula } from '@/lib/unmarked-lessons';
 import { resolveActiveExamType, checkExamInfoStatus, seasonSatisfyingTypes, ExamType, ExamRecord } from '@/lib/exam-season';
+import { getSupabaseAdmin, getSecretKey } from '@/lib/supabase';
+import { extractFlagged } from '@/lib/mark-triage';
 
 export const runtime = 'nodejs';
 
@@ -71,6 +73,38 @@ async function fetchPendingPapers(): Promise<{ count: number; possiblyMarking: n
       return Number.isFinite(t) && t > cutoff;
     }).length;
     return { count: pending.length, possiblyMarking };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Marked scripts waiting on Adrian at /admin/mark/triage: flagged questions he
+ * hasn't resolved, plus whole scripts that are clean and just need releasing.
+ * Reads Supabase directly (the runs table), not the bot.
+ */
+async function fetchTriage(): Promise<{ flagged: number; readyToRelease: number } | null> {
+  if (!getSecretKey()) return null;
+  try {
+    const since = new Date(Date.now() - 14 * 86400_000).toISOString();
+    const { data, error } = await getSupabaseAdmin()
+      .from('paper_marking_runs')
+      .select('result_json')
+      .is('released_at', null)
+      .gte('created_at', since);
+    if (error) return null;
+
+    let flagged = 0;
+    let readyToRelease = 0;
+    for (const row of data ?? []) {
+      // Queued-but-unmarked runs have no results[] — not reviewable, and counting
+      // them as "ready" would invite releasing an empty script.
+      if (!Array.isArray((row.result_json as { results?: unknown })?.results)) continue;
+      const n = extractFlagged(row.result_json).flagged.length;
+      flagged += n;
+      if (n === 0) readyToRelease++;
+    }
+    return { flagged, readyToRelease };
   } catch {
     return null;
   }
@@ -158,7 +192,7 @@ export async function GET(req: NextRequest) {
   );
   const absentFilter = encodeURIComponent(`{Status}='Absent'`);
 
-  const [todayLessons, weekLessons, invoices, absentLessons, pendingPapers, unmarkedLessons, examGaps] = await Promise.all([
+  const [todayLessons, weekLessons, invoices, absentLessons, pendingPapers, unmarkedLessons, examGaps, triage] = await Promise.all([
     airtableRequestAll('Lessons', `?filterByFormula=${todayFilter}&fields[]=Topics+Covered`),
     airtableRequestAll('Lessons', `?filterByFormula=${weekFilter}&fields[]=Date`),
     airtableRequestAll('Invoices', `?filterByFormula=${invoiceFilter}&fields[]=Final+Amount`),
@@ -167,6 +201,7 @@ export async function GET(req: NextRequest) {
     fetchPendingPapers(),
     fetchUnmarkedLessons(today),
     fetchExamGaps(),
+    fetchTriage(),
   ]);
 
   const todayTotal = todayLessons.records.length;
@@ -196,6 +231,7 @@ export async function GET(req: NextRequest) {
       pendingPapers,
       unmarkedLessons,
       examGaps,
+      triage,
     },
     {
       headers: {

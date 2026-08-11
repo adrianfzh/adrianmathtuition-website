@@ -33,16 +33,20 @@ export async function GET(req: NextRequest) {
     mastery: lesson.fields['Mastery'] ?? '',
     mood: lesson.fields['Mood'] ?? '',
     lessonNotes: lesson.fields['Lesson Notes'] ?? '',
+    nextLessonPlan: lesson.fields['Next Lesson Plan'] ?? '',
     progressLogged: lesson.fields['Progress Logged'] ?? false,
   };
 
-  // Fetch previous lesson for this student (most recent before this date)
+  // Fetch previous lesson for this student (most recent before this date).
+  // `nextLessonPlan` here is the one that matters in the room: what Adrian
+  // decided LAST time this student should start on today.
   let prev: {
     id: string;
     date: string;
     topicsCovered: string;
     homeworkAssigned: string;
     homeworkReturned: string;
+    nextLessonPlan: string;
   } | null = null;
 
   let studentLevel = '';
@@ -51,14 +55,23 @@ export async function GET(req: NextRequest) {
   if (studentId) {
     // NOTE: ARRAYJOIN({Student}) returns display names not record IDs, so we
     // filter by date/status in Airtable and match student in JS.
-    const [prevLessons, studentData] = await Promise.all([
+    const prevQuery = (extraFields: string) =>
       airtableRequestAll(
         'Lessons',
         `?filterByFormula=${encodeURIComponent(
           `AND({Date}<'${lessonDate}',{Status}!='Absent',{Status}!='Cancelled',{Status}!='Rescheduled')`
         )}&sort[0][field]=Date&sort[0][direction]=desc` +
-        `&fields[]=Date&fields[]=Student&fields[]=Topics Covered&fields[]=Homework Assigned&fields[]=Homework Returned`
-      ),
+        `&fields[]=Date&fields[]=Student&fields[]=Topics Covered&fields[]=Homework Assigned&fields[]=Homework Returned` +
+        extraFields
+      );
+
+    const [prevLessons, studentData] = await Promise.all([
+      // fields[] 422s on a field the base doesn't have — retry without the
+      // optional one rather than take the whole modal down with it.
+      prevQuery('&fields[]=Next Lesson Plan').catch(err => {
+        if (!String(err?.message ?? '').includes('UNKNOWN_FIELD_NAME')) throw err;
+        return prevQuery('');
+      }),
       airtableRequest('Students', `/${studentId}`).catch(() => ({ fields: {} })),
     ]);
 
@@ -74,6 +87,7 @@ export async function GET(req: NextRequest) {
         topicsCovered: r.fields['Topics Covered'] ?? '',
         homeworkAssigned: r.fields['Homework Assigned'] ?? '',
         homeworkReturned: r.fields['Homework Returned'] ?? '',
+        nextLessonPlan: r.fields['Next Lesson Plan'] ?? '',
       };
     }
 

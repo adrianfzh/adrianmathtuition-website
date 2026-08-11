@@ -30,6 +30,18 @@ to their own level.** No anonymous browsing.
    — the button only picks the `kind` passed to `/api/kiosk/notes`. Tiles self-hide when a student
    has nothing behind them (`canPdf` = any entitled notes level, `canGenerate` = any entitled
    practice level); Practice skips its sub-choice when only one side is available.
+3c. **📌 "For you today" card (2026-08-11)** — above the three tiles, a gold card showing the
+   plan Adrian typed at the END of the student's last lesson (`Next Lesson Plan` on Airtable
+   `Lessons`, written in the 📌 *Start next lesson with* box in `LessonModal`). Fetched from
+   GET `/api/kiosk/plan` (kiosk device cookie + open-hours gate + signed student token), which
+   windows Lessons over the last 28 days with an exclusive upper bound `{Date}<today`, excludes
+   Cancelled/Rescheduled, sorts desc and matches `Student[0] === student.id` **in JS** (linked
+   records can't be filtered in Airtable — see root CLAUDE.md). Purpose: the student starts work
+   without asking Adrian what to do, which is the whole start-of-lesson bottleneck.
+   ⚠ **Every failure path returns `{plan: null}`, never an error** — an empty card is invisible;
+   an error banner over the three big buttons is a broken kiosk. The `Next Lesson Plan` field
+   must exist in Airtable or the card is permanently blank (see `docs/SCHEDULE.md` — the API
+   token can't create it, Adrian adds it by hand).
 4. Entitlements from Level+Subjects (`deriveEntitlements`): Sec 3–5 E/A Math → EM/AM; IP Math →
    both; JC (H2/H1) → JC2; **Sec 1/2 → S1/S2 practice + notes** (enabled 2026-07-16 — unblocked by
    the sub-group backfill; the `practice_topics` RPC counts via sub-group joins, now also counts
