@@ -124,7 +124,29 @@ runs can be released without opening anything.
 **Tests:** flag-extraction + total-recompute as pure functions in `src/lib/` with a
 sibling `.test.ts` (repo testing policy — money/marks logic never inline in routes).
 
-## Build 2 — Kiosk "Submit paper" tile (web repo; small bot change only if needed)
+## Build 2 — ❌ REJECTED as specced (2026-08-12) — student submission
+
+> ⛔ **The iPad-kiosk version is DEAD. Do not re-propose it.** Adrian, 2026-08-12:
+> *"administratively, i don't think kiosk 'Submit paper' would work well. it would
+> take a long time for students to photograph using the ipad. and i don't want them
+> to carry the ipad around. the ipad is just fixed at a position for them to tap
+> buttons to print."* The kiosk is a **fixed print station** — tap, print, walk away.
+> It is not a capture device. Any future feature that asks a student to pick the iPad
+> up, aim it, or stand at it for more than a few taps is out of scope by definition.
+>
+> **The goal survives; the surface changes.** The replacement direction is
+> **student's own phone → WhatsApp → the bot**: the kiosk QR pairing already proves
+> phone number → student, so `identify()` can tag a run without anyone choosing a
+> name. That needs a bot change (accept photos from a non-admin student, create +
+> enqueue a run pre-tagged) and inherits every gate below — auto-enqueue is fine
+> (locked decision 6), release still requires Adrian's tap (locked decision 2), and
+> it does NOT touch the `isAdmin` gate on Telegram marking (locked decision 4:
+> submission is not the same as un-gating student-facing marking). Until that ships,
+> intake stays Adrian's iX-scanner lane.
+>
+> Everything below is the original spec, kept only for the upload-path research
+> (the `save-paper` → `set-student` → `enqueue` phase chain is still the right
+> mechanism whatever the capture surface is).
 
 **Goal:** end-of-lesson ritual — students scan/photograph their own script at the
 iPad kiosk (or their phone); a run appears pre-named, pre-linked, auto-enqueued.
