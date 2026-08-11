@@ -20,24 +20,31 @@
 <title>Trigonometric Graphs Explorer</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* House style: warm paper, Georgia, rose/teal/orange/plum — same as the
+     rest of /tools. Every canvas colour in the script below is picked to
+     read on this background, so they move together. */
   :root {
-    --bg: #0f1419;
-    --bg-elev: #1a2028;
-    --bg-elev-2: #232b35;
-    --text: #e8eef5;
-    --text-dim: #8b9bab;
-    --border: #2a3440;
-    --accent: #4cc2ff;
-    --accent-dim: rgba(76, 194, 255, 0.25);
-    --baseline: rgba(255, 217, 61, 0.4);
-    --asym: rgba(255, 107, 107, 0.65);
-    --midline: rgba(255, 159, 67, 0.7);
-    --bad: #ff6b6b;
+    --bg: #F4EFE6;
+    --bg-elev: #fbf8f1;
+    --bg-elev-2: #f0e9db;
+    --text: #2b2b2b;
+    --text-dim: #7d756a;
+    --border: #e7ded0;
+    --rose: #BC5A6E;
+    --teal: #2E7C8F;
+    --orange: #D8693C;
+    --plum: #7B5EA7;
+    --accent: var(--teal);
+    --accent-dim: rgba(46, 124, 143, 0.18);
+    --baseline: rgba(123, 94, 167, 0.5);
+    --asym: rgba(188, 90, 110, 0.7);
+    --midline: var(--orange);
+    --bad: var(--rose);
   }
   html, body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-family: "Georgia", "Times New Roman", serif;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
@@ -82,7 +89,7 @@
 
   .canvas-wrap {
     background: var(--bg-elev); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px;
+    border-radius: 12px; padding: 20px; box-shadow: 0 1px 0 rgba(0,0,0,.03);
   }
   .equation {
     text-align: center; padding: 14px 8px 18px;
@@ -109,7 +116,7 @@
 
   .panel {
     background: var(--bg-elev); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px;
+    border-radius: 12px; padding: 20px; box-shadow: 0 1px 0 rgba(0,0,0,.03);
   }
   .panel + .panel { margin-top: 16px; }
   .panel h3 {
@@ -161,8 +168,8 @@
     border-left: 3px solid var(--accent);
     border-radius: 8px; padding: 11px 13px;
   }
-  .card.k-b { border-left-color: #ffd93d; }
-  .card.k-c { border-left-color: var(--midline); }
+  .card.k-b { border-left-color: var(--plum); }
+  .card.k-c { border-left-color: var(--orange); }
   .card .ttl {
     font-size: 13.5px; font-weight: 700; color: var(--text); margin-bottom: 5px;
     font-family: Georgia, 'Times New Roman', serif;
@@ -173,7 +180,7 @@
   .card .body .num {
     font-family: ui-monospace, monospace; color: var(--accent); font-weight: 600;
   }
-  .card .body .warn { color: #ffd93d; }
+  .card .body .warn { color: var(--rose); font-weight: 600; }
 
   .facts { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
   .fact-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; gap: 10px; }
@@ -447,16 +454,29 @@ function tickStep() {
   return cands[cands.length - 1];
 }
 
+// Canvas palette — must track the CSS custom properties above.
+const C = {
+  grid:  '#e6ddcd',
+  axis:  'rgba(43,43,43,0.42)',
+  label: '#7d756a',
+  guide: 'rgba(125,117,106,0.42)',
+  guideText: 'rgba(125,117,106,0.95)',
+  rose:  '#BC5A6E',
+  teal:  '#2E7C8F',
+  orange:'#D8693C',
+  plum:  '#7B5EA7'
+};
+
 function drawGrid() {
   const step = tickStep();
   ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.strokeStyle = C.grid;
   for (let x = Math.ceil(x0 / step) * step; x <= x1 + 1e-9; x += step) {
     const cx = X(x);
     ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
   }
   const yStep = niceYStep();
-  ctx.strokeStyle = 'rgba(255,255,255,0.045)';
+  ctx.strokeStyle = C.grid;
   for (let y = Math.ceil(yLo / yStep) * yStep; y <= yHi + 1e-9; y += yStep) {
     const cy = Y(y);
     ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
@@ -469,7 +489,7 @@ function niceYStep() {
 }
 
 function drawAxes() {
-  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.strokeStyle = C.axis;
   ctx.lineWidth = 1.5;
   const cy0 = Y(0), cx0 = X(0);
   if (cy0 >= 0 && cy0 <= H) {
@@ -479,7 +499,7 @@ function drawAxes() {
     ctx.beginPath(); ctx.moveTo(cx0, 0); ctx.lineTo(cx0, H); ctx.stroke();
   }
 
-  ctx.fillStyle = 'rgba(232,238,245,0.6)';
+  ctx.fillStyle = C.label;
   ctx.font = '11px ui-monospace, monospace';
   ctx.textAlign = 'center';
   const step = tickStep();
@@ -519,14 +539,14 @@ function guideLabel(txt, cy, color) {
 }
 
 function drawGuides() {
-  const cyMid = dashedHLine(c, 'rgba(255,159,67,0.6)', [8, 6], 1.3);
-  if (cyMid !== null) guideLabel('y = ' + fmtNum(c), cyMid, 'rgba(255,159,67,0.85)');
+  const cyMid = dashedHLine(c, C.orange, [8, 6], 1.4);
+  if (cyMid !== null) guideLabel('y = ' + fmtNum(c), cyMid, C.orange);
   if (fnType !== 'tan' && Math.abs(a) > 1e-9) {
     const mx = c + Math.abs(a), mn = c - Math.abs(a);
-    const cy1 = dashedHLine(mx, 'rgba(255,255,255,0.20)', [4, 5], 1);
-    if (cy1 !== null) guideLabel('max = ' + fmtNum(mx), cy1, 'rgba(232,238,245,0.5)');
-    const cy2 = dashedHLine(mn, 'rgba(255,255,255,0.20)', [4, 5], 1);
-    if (cy2 !== null) guideLabel('min = ' + fmtNum(mn), cy2, 'rgba(232,238,245,0.5)');
+    const cy1 = dashedHLine(mx, C.guide, [4, 5], 1);
+    if (cy1 !== null) guideLabel('max = ' + fmtNum(mx), cy1, C.guideText);
+    const cy2 = dashedHLine(mn, C.guide, [4, 5], 1);
+    if (cy2 !== null) guideLabel('min = ' + fmtNum(mn), cy2, C.guideText);
   }
 }
 
@@ -534,7 +554,7 @@ function drawAsymptotes() {
   if (fnType !== 'tan') return;
   const xs = tanAsymptotes(b, x0, x1);
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,107,107,0.55)';
+  ctx.strokeStyle = 'rgba(188,90,110,0.7)';
   ctx.lineWidth = 1.5; ctx.setLineDash([7, 5]);
   xs.forEach(function (x) {
     const cx = X(x);
@@ -724,8 +744,8 @@ function render() {
   drawAxes();
   drawGuides();
   drawAsymptotes();
-  drawCurve(1, 1, 0, fnType, 'rgba(255, 217, 61, 0.4)', 2);   // y = fn x, for comparison
-  drawCurve(a, b, c, fnType, '#4cc2ff', 3);
+  drawCurve(1, 1, 0, fnType, 'rgba(123,94,167,0.5)', 2);   // y = fn x, for comparison
+  drawCurve(a, b, c, fnType, C.teal, 3.2);
   $('legend-asym').style.display = fnType === 'tan' ? 'flex' : 'none';
   $('baselabel').textContent = 'y = ' + fnType + ' x';
   $('equation').innerHTML = equationHTML(true);
