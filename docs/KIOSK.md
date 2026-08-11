@@ -97,7 +97,7 @@ website. **Nothing is copied or synced**: every page load lists Dropbox live, an
 click mints a fresh ~4h temporary link (`/api/admin-notes/dropbox-open`), so a listed
 link is never stale. Auth: refresh-token OAuth (`DROPBOX_APP_KEY` / `DROPBOX_APP_SECRET`
 / `DROPBOX_REFRESH_TOKEN`), app-folder scoped to `Dropbox/Apps/AdrianMathNotes/` — the
-site can see nothing else in his Dropbox. Health-checked every 6h (`dropbox-notes`).
+site can see nothing else in his Dropbox. Health-checked every 6h (see the probes below).
 
 **Four kinds, one folder layout — encoded ONLY in `dropboxFolderFor()` (`lib/notes-list.ts`,
 unit-tested). Never re-derive a folder path in a route:**
