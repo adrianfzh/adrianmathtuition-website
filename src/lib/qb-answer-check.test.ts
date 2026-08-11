@@ -7,6 +7,7 @@ import {
   numbersIn,
   partLabels,
   normalise,
+  decodeEntities,
 } from './qb-answer-check';
 
 const row = (solution: string, extra: Partial<{ question_text: string; answer: string | null }> = {}) => ({
@@ -177,5 +178,55 @@ describe('checkBatch + buildUpdates', () => {
     );
     const sql = buildUpdates(rep, [{ id: 'a', answer: "it's $12$", evidence: 'final answer is $12$' }]);
     expect(sql[0]).toContain("it''s");
+  });
+});
+
+// ── Regressions found by the 2026-08-12 calibration run ──────────────────────
+// Both extraction workers emitted HTML-escaped inequalities and LaTeX-spaced
+// digit groups. Zero of the 6,785 Tier-A solutions contain either, so these are
+// output artifacts — and left unhandled they would have held correct rows with
+// "evidence_not_in_solution" / "number_not_in_solution", which reads as
+// fabrication rather than an encoding mismatch.
+
+describe('HTML entities in worker output', () => {
+  it('matches evidence against a solution that uses raw < and >', () => {
+    const r = checkProposal(
+      { id: 'r1', answer: '(b) $-9 &lt; m &lt; -1$', evidence: '$(m + 1)(m + 9) < 0$\n$-9 < m < -1$' },
+      { id: 'r1', solution: '(b) so $(m + 1)(m + 9) < 0$\n$-9 < m < -1$', answer: null },
+    );
+    expect(r.ok).toBe(true);
+    expect(r.entitiesDecoded).toBe(true);
+  });
+
+  it('writes the decoded answer, never the escaped one', () => {
+    const rows = [{ id: 'a', solution: 'gives $x < 5$', answer: null }];
+    const props = [{ id: 'a', answer: '$x &lt; 5$', evidence: 'gives $x < 5$' }];
+    const sql = buildUpdates(checkBatch(props, rows), props);
+    expect(sql[0]).toContain('$x < 5$');
+    expect(sql[0]).not.toContain('&lt;');
+  });
+
+  it('decodes &amp;lt; to &lt; rather than <', () => {
+    expect(decodeEntities('&amp;lt;')).toBe('&lt;');
+  });
+
+  it('counts decoded rows in the report so it is not silent', () => {
+    const rows = [{ id: 'a', solution: 'gives $x < 5$', answer: null }];
+    const props = [{ id: 'a', answer: '$x &lt; 5$', evidence: 'gives $x < 5$' }];
+    expect(checkBatch(props, rows).entitiesDecoded).toBe(1);
+  });
+});
+
+describe('LaTeX digit-group spacing', () => {
+  it('reads $65\\,536$ as one number', () => {
+    expect(numbersIn('$65\\,536$')).toEqual(['65536']);
+  });
+
+  it('accepts a plain answer against a thin-spaced solution', () => {
+    expect(unjustifiedNumbers('$q = -34816$', '$= 30\\,720 - 65\\,536 = -34\\,816$')).toEqual([]);
+  });
+
+  it('still flags a genuinely invented number alongside spaced ones', () => {
+    expect(unjustifiedNumbers('$q = -99999$', '$= 30\\,720 - 65\\,536$')).toEqual(['99999']);
   });
 });

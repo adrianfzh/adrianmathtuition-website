@@ -46,14 +46,40 @@ export interface CheckResult {
   detail: string[];
   /** True when the answer carries no digits at all (proof / prose answers). */
   prose: boolean;
+  /** True when the proposed answer arrived HTML-escaped and was decoded before writing. */
+  entitiesDecoded: boolean;
 }
 
 /** Existing answers average 78 chars; anything near this is transcription, not extraction. */
 const MAX_ANSWER_CHARS = 300;
 
+/**
+ * Decode the HTML entities that show up in model output but never in the bank.
+ * Verified 2026-08-12: zero of the 6,785 Tier-A solutions contain `&lt;`/`&gt;`, yet
+ * extraction workers emit them for `<`/`>` in inequalities. Left alone they would
+ * (a) fail the evidence substring check on every inequality row, which reads as
+ * fabricated evidence when it is only an encoding artifact, and (b) land literal
+ * `&lt;` in the answer column, which renders as garbage on a worksheet.
+ */
+export function decodeEntities(s: string): string {
+  return (s || '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0*39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&'); // last — so &amp;lt; decodes to &lt;, not <
+}
+
+/** True when the text still carries an HTML entity we would have had to decode. */
+export function hasEntities(s: string): boolean {
+  return /&(lt|gt|amp|quot|apos|nbsp|#0*39);/.test(s || '');
+}
+
 /** Collapse whitespace and normalise unicode minus/quotes so substring checks survive reflow. */
 export function normalise(s: string): string {
-  return (s || '')
+  return decodeEntities(s || '')
     .replace(/[‐-―−]/g, '-')
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
@@ -68,9 +94,14 @@ export function normalise(s: string): string {
  * and would be caught by the evidence check anyway).
  */
 export function numbersIn(text: string): string[] {
-  const cleaned = (text || '').replace(/(\d),(?=\d{3}\b)/g, '$1'); // 1,234 -> 1234
-  const out = cleaned.match(/\d+(?:\.\d+)?/g) || [];
-  return out;
+  const cleaned = decodeEntities(text || '')
+    // LaTeX digit-group spacing: solutions write $65\,536$ where the answer says 65536.
+    // Without this the two sides tokenise differently and a correct answer is held.
+    .replace(/(\d)\s*\\[,;:! ]\s*(?=\d)/g, '$1')
+    .replace(/(\d)\\thinspace(?=\d)/g, '$1')
+    .replace(/(\d),(?=\d{3}\b)/g, '$1') // 1,234 -> 1234
+    .replace(/(\d)\s+(?=\d{3}\b)/g, '$1'); // 65 536 -> 65536
+  return cleaned.match(/\d+(?:\.\d+)?/g) || [];
 }
 
 /** Does `a` look like `s` rounded — to a's decimal places, or to a's significant figures? */
@@ -123,10 +154,11 @@ export function checkProposal(p: Proposal, row: SourceRow | undefined): CheckRes
 
   const answer = (p.answer || '').trim();
   const prose = numbersIn(answer).length === 0;
+  const entitiesDecoded = hasEntities(answer);
 
   if (!row) {
     fail('missing_row', `no source row supplied for ${p.id}`);
-    return { id: p.id, ok: false, reasons, detail, prose };
+    return { id: p.id, ok: false, reasons, detail, prose, entitiesDecoded };
   }
   if (!answer) fail('empty_answer', 'proposed answer is empty');
   if (answer.length > MAX_ANSWER_CHARS)
@@ -160,7 +192,7 @@ export function checkProposal(p: Proposal, row: SourceRow | undefined): CheckRes
       fail('part_label_unknown', `part label(s) ${unknown.join(', ')} not present in the source`);
   }
 
-  return { id: p.id, ok: reasons.length === 0, reasons, detail, prose };
+  return { id: p.id, ok: reasons.length === 0, reasons, detail, prose, entitiesDecoded };
 }
 
 export interface BatchReport {
@@ -169,6 +201,8 @@ export interface BatchReport {
   held: CheckResult[];
   /** Accepted rows whose answer carries no digits — worth an eyeball, not a rejection. */
   proseAccepted: number;
+  /** Accepted rows whose answer arrived HTML-escaped; decoded on write, but a spec smell. */
+  entitiesDecoded: number;
   byReason: Record<string, number>;
 }
 
@@ -184,6 +218,7 @@ export function checkBatch(proposals: Proposal[], rows: SourceRow[]): BatchRepor
     accepted,
     held,
     proseAccepted: accepted.filter((r) => r.prose).length,
+    entitiesDecoded: accepted.filter((r) => r.entitiesDecoded).length,
     byReason,
   };
 }
@@ -203,7 +238,7 @@ export function buildUpdates(report: BatchReport, proposals: Proposal[]): string
     .filter((p) => okIds.has(p.id))
     .map(
       (p) =>
-        `UPDATE questions SET answer = ${sqlLiteral(p.answer.trim())} ` +
+        `UPDATE questions SET answer = ${sqlLiteral(decodeEntities(p.answer).trim())} ` +
         `WHERE id = ${sqlLiteral(p.id)} AND (answer IS NULL OR answer = '');`,
     );
 }
