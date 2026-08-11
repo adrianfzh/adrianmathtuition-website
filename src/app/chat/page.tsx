@@ -535,6 +535,10 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewSrc, setPreviewSrc] = useState('');
+  // Extra pages (multi-image, 2026-08-11): up to 3 more photos ride along as
+  // one question — earlier parts, data tables, second pages.
+  const [extraFiles, setExtraFiles] = useState<File[]>([]);
+  const [extraPreviews, setExtraPreviews] = useState<string[]>([]);
   const [showDragOverlay, setShowDragOverlay] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -671,6 +675,17 @@ export default function ChatPage() {
   /* ── Image handling ── */
   const setImage = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) { showError('Please upload an image file.'); return; }
+    if (selectedFileRef.current) {
+      // A photo is already attached — this one becomes an extra page (cap 4 total)
+      if (extraFilesRef.current.length >= 3) { showError('Up to 4 photos per question.'); return; }
+      const rd = new FileReader();
+      rd.onload = ev => {
+        setExtraFiles(prev => [...prev, file]);
+        setExtraPreviews(prev => [...prev, ev.target?.result as string]);
+      };
+      rd.readAsDataURL(file);
+      return;
+    }
     setSelectedFile(file);
     const reader = new FileReader();
     reader.onload = ev => setPreviewSrc(ev.target?.result as string);
@@ -684,7 +699,18 @@ export default function ChatPage() {
   const removeImage = useCallback(() => {
     setSelectedFile(null);
     setPreviewSrc('');
+    setExtraFiles([]);
+    setExtraPreviews([]);
   }, []);
+  const removeExtra = useCallback((idx: number) => {
+    setExtraFiles(prev => prev.filter((_, i) => i !== idx));
+    setExtraPreviews(prev => prev.filter((_, i) => i !== idx));
+  }, []);
+  // Refs mirror state so setImage (stable callback) sees current values
+  const selectedFileRef = useRef<File | null>(null);
+  useEffect(() => { selectedFileRef.current = selectedFile; }, [selectedFile]);
+  const extraFilesRef = useRef<File[]>([]);
+  useEffect(() => { extraFilesRef.current = extraFiles; }, [extraFiles]);
 
   /* ── scheduleRender ── */
   const scheduleRender = useCallback((el: HTMLDivElement, text: string) => {
@@ -942,6 +968,8 @@ export default function ChatPage() {
 
     const capturedPreviewSrc = previewSrc;
     const capturedFile = selectedFile;
+    const capturedExtraFiles = extraFiles;
+    const capturedExtraPreviews = extraPreviews;
 
     // Transition to chat
     if (!conversationStarted) {
@@ -984,6 +1012,12 @@ export default function ChatPage() {
         body.image = capturedPreviewSrc.split(',')[1];
         body.mediaType = capturedFile.type;
         body.caption = text || '';
+        if (capturedExtraFiles.length) {
+          body.images = [
+            { data: capturedPreviewSrc.split(',')[1], mediaType: capturedFile.type },
+            ...capturedExtraPreviews.map((src, i) => ({ data: src.split(',')[1], mediaType: capturedExtraFiles[i]?.type || 'image/jpeg' })),
+          ];
+        }
       } else {
         body.message = text;
       }
@@ -1291,7 +1325,7 @@ export default function ChatPage() {
       setIsLoading(false);
       fixedInputRef.current?.focus();
     }
-  }, [isLoading, conversationStarted, selectedFile, previewSrc, removeImage, addMessageToDOM, addTypingToDOM, removeTypingFromDOM, addStreamingMessage, scheduleRender, showError, attachFeedbackRow, maybeShowRegistrationNudge]);
+  }, [isLoading, conversationStarted, selectedFile, previewSrc, extraFiles, extraPreviews, removeImage, addMessageToDOM, addTypingToDOM, removeTypingFromDOM, addStreamingMessage, scheduleRender, showError, attachFeedbackRow, maybeShowRegistrationNudge]);
 
   /* ── Keyboard listeners ── */
   useEffect(() => {
@@ -1399,6 +1433,17 @@ export default function ChatPage() {
           }}>✕</button>
         </div>
       )}
+      {extraPreviews.length > 0 && (
+        <div style={{ display: 'flex', gap: 6, alignSelf: 'flex-start', flexWrap: 'wrap' }}>
+          {extraPreviews.map((src, i) => (
+            <div key={i} style={{ position: 'relative' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt={`page ${i + 2}`} style={{ height: 44, maxWidth: 66, objectFit: 'cover', borderRadius: 6, display: 'block', border: '1px solid hsl(220,15%,88%)' }} />
+              <button onClick={() => removeExtra(i)} style={{ position: 'absolute', top: -6, right: -6, width: 16, height: 16, background: 'hsl(220,30%,25%)', border: 'none', borderRadius: '50%', color: 'white', fontSize: 8, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>✕</button>
+            </div>
+          ))}
+        </div>
+      )}
       {/* Textarea + buttons row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <textarea
@@ -1428,7 +1473,8 @@ export default function ChatPage() {
             id="fileInput"
             accept="image/*"
             style={{ display: 'none' }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) setImage(f); e.target.value = ''; }}
+            multiple
+            onChange={e => { Array.from(e.target.files || []).forEach(f => setImage(f)); e.target.value = ''; }}
           />
           <button
             type="button"
