@@ -13,6 +13,13 @@ the card 404s). Conventions, all load-bearing:
 - `curve-sketcher.html` holds the **safe expression parser** (whitelist tokenizer +
   recursive descent, no `eval`); `graph-transformations.html` carries a ported copy —
   they're commented as siblings, keep fixes in sync.
+- The **maths mini-renderer** (`^2`/`^{…}` superscript, `{a}/{b}` stacked fraction, no
+  KaTeX) lives in three copies: `solution-stepper.html` (origin), `trig-proofs.html`
+  and `trig-proof-steps.html`. Same "keep in sync" deal as the parser above.
+- `trig-proofs.html` and `trig-proof-steps.html` are a deliberate **pair over the same
+  identities**: the first asks for the next line, the second shows it and explains the
+  choice (`see` → `rule` → `buys` per step). They share the five-move vocabulary and
+  cross-link, so proof lines edited in one should be edited in the other.
 - `sincos-unwrap.html` has a **2D/3D view toggle** (localStorage `sincos_view`,
   default 2D): 2D = flat unit circle + tangent construction (GeoGebra pJqvn9pR style)
   with the three graphs unrolling beside it; 3D = the original crate unwrap (its

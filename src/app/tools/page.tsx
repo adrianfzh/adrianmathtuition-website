@@ -68,6 +68,8 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'Every H2 test ends with one sentence worth one mark. Assemble it — the comparison, the decision, the strength, the claim in context — and never say "accept H₀".' },
   { slug: 'trig-proofs', icon: '✍️', title: 'Prove It: Trig Identities',
     desc: 'Proving is choosing the right next move. Build ten proofs line by line and learn the five moves that crack almost every identity — Pythagoras in disguise, the conjugate, and friends.' },
+  { slug: 'trig-proof-steps', icon: '🧩', title: 'Trig Identities: Why Each Step',
+    desc: 'The companion to the trainer: a proof unfolds line by line, and each line tells you what you spotted, which identity you used and what it bought you. Read the plan before writing anything.' },
   { slug: 'speed-time', icon: '🚗', title: 'Speed-Time Graphs',
     desc: 'The whole topic is two facts: gradient is acceleration, area is distance. Draw the journey from the story, then make the graph pay — trapezium areas, unknown times and all.' },
   { slug: 'bar-model', icon: '🧱', title: 'Bar Model Builder',
