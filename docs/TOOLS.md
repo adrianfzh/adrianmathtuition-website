@@ -17,6 +17,21 @@ the card 404s). Conventions, all load-bearing:
   default 2D): 2D = flat unit circle + tangent construction (GeoGebra pJqvn9pR style)
   with the three graphs unrolling beside it; 3D = the original crate unwrap (its
   tangent-construction inset shows only in 3D — in 2D it IS the main view).
+- `constructions.html` is the one page built as a **scrubbable video**: the whole
+  picture is a pure function of the clock `t`, so dragging the timeline backwards is
+  free (nothing is stored as "already drawn"). Traps that bit during the build:
+  an arc sweep must go the *short* way (`a0 + normalised delta`, never the raw
+  `atan2` of the second arm, or arms straddling ±π sweep a whole circle), and a
+  half-plane is named by its **normal** — the perpendicular bisector runs along
+  `n`, so shading "nearer to A" takes `u`. Passing `n` clips the region to nothing.
+- `ratio-drill.html` is the only **question generator** in `/tools`: 9 families ×
+  variants, each returning figure + wording + answer + worked steps in one object.
+  Its step fade is rAF-driven **with a `setTimeout` backstop** — rAF never fires in a
+  throttled/background tab, which left the highlights stuck at alpha 0. Any new
+  canvas fade here needs the same guaranteed final frame.
+- Both pages keep an info panel overlaid on the canvas on desktop; below 640px
+  `constructions.html` **moves that node into the lesson bar** (`placeBadge`) rather
+  than shrinking the figure to make room.
 
 ## Photo extraction (`/api/tools/vision` → bot `/api/tools-vision`)
 

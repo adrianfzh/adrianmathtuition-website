@@ -72,6 +72,10 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'The whole topic is two facts: gradient is acceleration, area is distance. Draw the journey from the story, then make the graph pay — trapezium areas, unknown times and all.' },
   { slug: 'bar-model', icon: '🧱', title: 'Bar Model Builder',
     desc: 'Draw the problem before you solve it: units, stubs and brackets for ratio, percentage and before-after problems — then see the algebra your bars secretly were. Sec 1–2, and the PSLE bridge.' },
+  { slug: 'constructions', icon: '🧭', title: 'Constructions, Drawn For You',
+    desc: 'Watch the compass actually swing: the perpendicular bisector and the angle bisector built arc by arc, like a video you can pause and scrub. Then drag the points and it rebuilds on your figure — plus the loci question where you shade the region.' },
+  { slug: 'ratio-drill', icon: '⚖️', title: 'Ratio of Areas — Endless Practice',
+    desc: 'A fresh figure every time with the ratios marked: key in the area ratio, and the working builds itself step by step over the diagram. Every family that shows up in E-Math vectors, congruence and similarity.' },
 ];
 
 export default function ToolsPage() {
