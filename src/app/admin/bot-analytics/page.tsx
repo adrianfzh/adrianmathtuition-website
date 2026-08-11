@@ -272,6 +272,34 @@ export default function BotAnalytics() {
   const [opusOpen, setOpusOpen]     = useState(false);
   const [responseView, setResponseView] = useState<'raw' | 'telegram' | 'web'>('telegram');
   const [imgRotation, setImgRotation] = useState(0);
+  // Thread viewer + teach capture (2026-08-11, per Adrian)
+  const [threadOpen, setThreadOpen] = useState(false);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadData, setThreadData] = useState<{ source: string; messages: { role: string; content: string; imageUrl?: string | null; model?: string | null; feedback?: string | null; hadImage?: boolean; at?: string }[]; images: { url: string; at: string }[] } | null>(null);
+  const [teachText, setTeachText] = useState('');
+  const [teachStatus, setTeachStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  useEffect(() => { setThreadOpen(false); setThreadData(null); setTeachStatus('idle'); }, [selected?.id]);
+  async function openThread() {
+    if (!selected?.chatId) return;
+    setThreadOpen(true); setThreadLoading(true);
+    try {
+      const r = await fetch(`/api/admin/cockpit/thread?chatId=${encodeURIComponent(selected.chatId)}`);
+      setThreadData(r.ok ? await r.json() : null);
+    } catch { setThreadData(null); }
+    setThreadLoading(false);
+  }
+  async function sendTeach() {
+    if (teachText.trim().length < 10 || !selected) return;
+    setTeachStatus('sending');
+    try {
+      const r = await fetch('/api/admin/cockpit/teach', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: teachText.trim(), questionCaption: selected.caption || '(image question)', topic: selected.topic || null, questionId: selected.id }),
+      });
+      setTeachStatus(r.ok ? 'sent' : 'error');
+      if (r.ok) setTeachText('');
+    } catch { setTeachStatus('error'); }
+  }
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput]   = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -1036,11 +1064,67 @@ export default function BotAnalytics() {
                   <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: 11 }}>
                     {selected.timestamp ? new Date(selected.timestamp).toLocaleString('en-SG', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : ''}
                   </span>
+                  <button onClick={() => threadOpen ? setThreadOpen(false) : openThread()}
+                    style={{ fontSize: 11, background: threadOpen ? '#1e3a5f' : '#eff6ff', color: threadOpen ? '#fff' : '#1d4ed8', border: '1px solid #bfdbfe', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }}>
+                    💬 Thread
+                  </button>
                   <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
                 </div>
 
                 {/* Scrollable detail body */}
                 <div style={{ flex: opusOpen ? '0 0 auto' : 1, overflowY: 'auto', maxHeight: opusOpen ? '35%' : undefined, padding: '14px 16px', borderBottom: opusOpen ? '1px solid #e2e8f0' : 'none' }}>
+
+                  {/* Thread viewer + teach box */}
+                  {threadOpen && (
+                    <div style={{ marginBottom: 12, border: '1px solid #bfdbfe', borderRadius: 8, background: '#f8fafc', overflow: 'hidden' }}>
+                      <div style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        💬 Full thread{threadData ? ` — ${threadData.source} · ${threadData.messages.length} messages` : ''}
+                      </div>
+                      <div style={{ maxHeight: 340, overflowY: 'auto', padding: '2px 10px 8px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {threadLoading && <div style={{ fontSize: 12, color: '#94a3b8', padding: 8 }}>Loading conversation…</div>}
+                        {!threadLoading && threadData && threadData.messages.length === 0 && (
+                          <div style={{ fontSize: 12, color: '#94a3b8', padding: 8 }}>No stored history for this chat.</div>
+                        )}
+                        {!threadLoading && !threadData && <div style={{ fontSize: 12, color: '#b91c1c', padding: 8 }}>Couldn&apos;t load the thread.</div>}
+                        {threadData?.messages.map((m, i) => (
+                          <div key={i} style={{
+                            alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '88%',
+                            background: m.role === 'user' ? '#dbeafe' : '#fff', border: '1px solid #e2e8f0',
+                            borderRadius: 8, padding: '6px 9px', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                          }}>
+                            {m.hadImage && <div style={{ fontSize: 11, color: '#64748b', marginBottom: 2 }}>📷 sent a photo</div>}
+                            {m.imageUrl && <img src={m.imageUrl} alt="" style={{ maxWidth: 180, borderRadius: 6, display: 'block', marginBottom: 4 }} />}
+                            {(m.content || '').substring(0, 1500)}{(m.content || '').length > 1500 ? '…' : ''}
+                            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 3 }}>
+                              {m.role === 'assistant' ? `${m.model || 'bot'} · ` : ''}
+                              {m.at ? new Date(m.at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                              {m.feedback === 'up' ? ' · 👍' : m.feedback === 'down' ? ' · 👎' : ''}
+                            </div>
+                          </div>
+                        ))}
+                        {threadData?.images?.length ? (
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+                            {threadData.images.slice(0, 8).map((im, i) => (
+                              <a key={i} href={im.url} target="_blank" rel="noreferrer"><img src={im.url} alt="" style={{ height: 60, borderRadius: 6, border: '1px solid #e2e8f0' }} /></a>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div style={{ borderTop: '1px solid #e2e8f0', padding: '8px 10px', background: '#fff' }}>
+                        <textarea value={teachText} onChange={e => setTeachText(e.target.value)}
+                          placeholder="✏️ Teach the bot: how would YOU answer this? (method, steps, what to avoid)"
+                          style={{ width: '100%', minHeight: 54, fontSize: 12, border: '1px solid #e2e8f0', borderRadius: 6, padding: '6px 8px', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
+                          <button onClick={sendTeach} disabled={teachStatus === 'sending' || teachText.trim().length < 10}
+                            style={{ fontSize: 12, fontWeight: 600, background: teachText.trim().length < 10 ? '#e2e8f0' : '#1e3a5f', color: teachText.trim().length < 10 ? '#94a3b8' : '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: teachText.trim().length < 10 ? 'default' : 'pointer' }}>
+                            {teachStatus === 'sending' ? 'Queuing…' : '📤 Queue for prompt session'}
+                          </button>
+                          {teachStatus === 'sent' && <span style={{ fontSize: 11, color: '#047857' }}>✓ queued — will be encoded + eval-gated next session</span>}
+                          {teachStatus === 'error' && <span style={{ fontSize: 11, color: '#b91c1c' }}>failed — try again</span>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Flag banner */}
                   {selected.flagReason && (
