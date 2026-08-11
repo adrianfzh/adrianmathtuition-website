@@ -154,6 +154,27 @@ export async function GET(req: NextRequest) {
       );
       if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 120)}`);
     }),
+    // /app/marking — where the release nudge sends the student. This check is
+    // here because that link shipped BEFORE the page did and 404'd silently:
+    // nothing on Adrian's side goes red when a student taps a dead link. An
+    // unauthenticated GET must redirect to /login (the auth gate), so anything
+    // that isn't a redirect — 404 especially — means the route is gone. The
+    // second half proves the two columns that scope a student to their OWN
+    // papers still resolve; lose either and the page shows the wrong scripts or
+    // none at all.
+    timed('portal-marking', async () => {
+      const r = await fetch(`${base}/app/marking`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/marking is missing — release links 404');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/paper_marking_runs?select=id,student_id,released_at&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return `page ${r.status}`;
+    }),
     // The parent-report store the monthly cron writes into. It runs unattended
     // on the 1st, so a broken table or renamed column would mean parents simply
     // stop hearing anything, with nothing on screen to say why.

@@ -183,6 +183,51 @@ it), and **tag the backlog**.
 - Filters: student, "Needs tagging", Clear. Default view is everything — filtering
   by student first would have shown an empty list and read as broken.
 
+## /app/marking — where the student reads their own marks (2026-08-12)
+
+The student-facing end of the loop, and the destination the release nudge has
+always pointed at. `mark-triage`'s `deliver()` has sent `…/app/marking` since the
+release gate shipped — **the page did not exist until now**, so the moment
+`NEXT_PUBLIC_PORTAL_ENABLED` flipped on, every released paper would have sent a
+student to a 404. `timed('portal-marking', …)` in `/api/health-check` now asserts
+that route is not a 404 precisely because nothing on Adrian's side goes red when
+a student taps a dead link.
+
+- **Two invariants, both enforced twice.** `page.tsx` queries with
+  `.eq('student_id', …).not('released_at', 'is', null)`, and
+  `buildStudentMarking()` re-applies the release filter on its own input. Adrian's
+  review is the trust gate on AI marking (HANDOFF-MARKING-LOOP.md, locked decision
+  2); one forgotten `.not(...)` in a future query must not be the only thing
+  between a student and an unreviewed mark. There is a test for exactly that.
+- **No triage internals reach the student.** `review_recommended`,
+  `match_confidence`, `marking_confidence` and the override note are Adrian's
+  working notes about how far to trust the machine — a student reading "marking
+  confidence: low" learns nothing about their maths. A test JSON-stringifies the
+  whole output and asserts none of those strings appear.
+- **`paper_marking_runs` has no per-student RLS policy.** The page reads with the
+  service key, so the `student_id` filter *is* the access control — it must never
+  be driven by anything the client can set. It comes from `currentStudent()`.
+- **Stored totals win over `result_json`.** A triage override writes
+  `total_awarded`/`total_max` on the row but cannot redraw the already-rendered
+  annotated PDF (see the ⚠ in `lib/mark-triage.ts`). So the score the student sees
+  is Adrian's corrected one while the red pen on the PDF is still the AI's
+  original. That gap is real; it is why an override note is meant to be said out
+  loud.
+- **Per question it shows only parts that actually lost marks.** Some markers write
+  `error_summary: "no errors"` on a correct part; printed under a heading called
+  "where you lost marks" that reads as a criticism of a right answer.
+- **"Work on next" uses the same thresholds as the parent report** (≥4 marks
+  behind a topic, <75%, top 3, via `aggregateTopicBleed`). Deliberate: the student
+  and their parent must never be shown two different focus lists.
+- Logic lives in `src/lib/portal-marking.ts` + `.test.ts` (repo policy: marks logic
+  never inline in a route or component). The page is a server component and uses
+  `<details>` for the per-paper breakdown so opening it ships no client JS.
+- ⚠ **Not verifiable on `localhost`**: `SUPABASE_SECRET_KEY` is a Sensitive Vercel
+  var, so `vercel env pull` writes `[SENSITIVE]` and the query cannot run locally.
+  Unauthenticated it 307s to `/login` (that much is checkable anywhere); the
+  rendered page needs a preview/prod session on a student account with a released,
+  tagged run.
+
 ## /admin/mark-paper — scanned-PDF working (client-side rasterisation)
 
 Adrian can drop the student's working in as **a scanned PDF** instead of phone photos.

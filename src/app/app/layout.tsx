@@ -23,6 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <Link href="/app" className="text-sm text-gray-600 hover:text-navy">Dashboard</Link>
               <Link href="/app/practice" className="text-sm text-gray-600 hover:text-navy">Practice</Link>
               <Link href="/app/learn" className="text-sm text-gray-600 hover:text-navy">Learn</Link>
+              <Link href="/app/marking" className="text-sm text-gray-600 hover:text-navy">Marked</Link>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -36,7 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       {/* Mobile bottom tabs */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/5">
-        <div className="grid grid-cols-3 h-14 text-center text-[11px] text-gray-600">
+        <div className="grid grid-cols-4 h-14 text-center text-[11px] text-gray-600">
           <Link href="/app" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
             <span className="text-lg leading-none">🏠</span>Home
           </Link>
@@ -45,6 +46,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <Link href="/app/learn" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
             <span className="text-lg leading-none">📚</span>Learn
+          </Link>
+          <Link href="/app/marking" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
+            <span className="text-lg leading-none">📄</span>Marked
           </Link>
         </div>
       </nav>

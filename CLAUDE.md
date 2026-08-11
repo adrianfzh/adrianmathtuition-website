@@ -13,7 +13,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | Touching… | Read FIRST |
 |---|---|
 | `/admin/schedule`, `/admin/progress`, lessons, reschedules, capacity, recurring generation, Revision Sprint, exam season, Lessons progress fields | [`docs/SCHEDULE.md`](docs/SCHEDULE.md) |
-| Marking — `/admin/mark-paper`, `/admin/mark` (batch), `mark-paper-*`/`mark-batch/*` routes, `render-marking`, marked-PDF assembly, ✏️ Annotate overlay | [`docs/MARKING.md`](docs/MARKING.md) |
+| Marking — `/admin/mark-paper`, `/admin/mark` (batch), `/admin/papers`, `/admin/mark/triage`, **`/app/marking`** (student-facing), `mark-paper-*`/`mark-batch/*` routes, `render-marking`, marked-PDF assembly, ✏️ Annotate overlay | [`docs/MARKING.md`](docs/MARKING.md) |
 | `/kiosk`, `/api/kiosk/*`, `/admin/notes`, Dropbox notes/revision/practice/prelim PDFs | [`docs/KIOSK.md`](docs/KIOSK.md) |
 | Invoices, deferred adjustments, Resend email delivery | [`docs/INVOICES.md`](docs/INVOICES.md) |
 | `/tools` static pages, house style, photo-extraction service (`/api/tools/vision`) | [`docs/TOOLS.md`](docs/TOOLS.md) |
@@ -112,6 +112,7 @@ Deep details for schedule/marking/kiosk pages live in `docs/` (see the table at 
 - `admin/edit-notes/page.tsx` — revision notes editor (content in Airtable `Notes`)
 - `admin/edit-cards/page.tsx` + `admin/edit-cards/[id]/page.tsx` — Cards editor (list: level/topic/subgroup, drag-to-reorder; single: markdown+KaTeX textarea, live preview, AI assist with diff/accept/reject)
 - `kiosk/page.tsx` — iPad print station → `docs/KIOSK.md`
+- `app/*` — **Student Portal** (`/app` dashboard, `practice`, `learn`, `notes`, `reference`, `settings`). `app/marking/page.tsx` = the student's own released marked scripts — the destination `mark-triage`'s release nudge links to → `docs/MARKING.md`
 - `signup/page.tsx` — student registration form (HMAC-signed URL); `thankyou/`, `terms/`
 - `revise/page.tsx`, `revise/[topic]/…` — revision notes landing/topic/lesson player; `revise/[topic]/[subtopic]/worked-examples/page.tsx` — TikTok-style swipe cards over `content_snippets` (accepts `?subgroup={id}`)
 - `explain/[id]/page.tsx` — public annotated-explanation page (`explanations` table, KaTeX, full `\underbrace`); deep-links into Teach Me
