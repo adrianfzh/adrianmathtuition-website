@@ -20,16 +20,17 @@
 <title>Trigonometric Graphs Explorer</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  /* House style: warm paper, Georgia, rose/teal/orange/plum — same as the
-     rest of /tools. Every canvas colour in the script below is picked to
-     read on this background, so they move together. */
+  /* Cool grey page with white panels — Adrian's pick over the warm-paper house
+     style, which he found monotonous across /tools. Accents stay rose/teal/
+     orange/plum. Every canvas colour in the script below is picked to read on
+     this background, so the two must move together. */
   :root {
-    --bg: #F4EFE6;
-    --bg-elev: #fbf8f1;
-    --bg-elev-2: #f0e9db;
-    --text: #2b2b2b;
-    --text-dim: #7d756a;
-    --border: #e7ded0;
+    --bg: #F4F6F8;
+    --bg-elev: #FFFFFF;
+    --bg-elev-2: #EDF1F5;
+    --text: #1F2933;
+    --text-dim: #6B7A8C;
+    --border: #DFE4EA;
     --rose: #BC5A6E;
     --teal: #2E7C8F;
     --orange: #D8693C;
@@ -456,11 +457,11 @@ function tickStep() {
 
 // Canvas palette — must track the CSS custom properties above.
 const C = {
-  grid:  '#e6ddcd',
-  axis:  'rgba(43,43,43,0.42)',
-  label: '#7d756a',
-  guide: 'rgba(125,117,106,0.42)',
-  guideText: 'rgba(125,117,106,0.95)',
+  grid:  '#E3E9EF',
+  axis:  'rgba(31,41,51,0.42)',
+  label: '#6B7A8C',
+  guide: 'rgba(107,122,140,0.40)',
+  guideText: 'rgba(107,122,140,0.95)',
   rose:  '#BC5A6E',
   teal:  '#2E7C8F',
   orange:'#D8693C',
