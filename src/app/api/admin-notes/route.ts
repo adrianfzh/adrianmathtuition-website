@@ -4,7 +4,7 @@ import { NOTE_SLUG_TO_LEVELS, listPrintablesForLevel, isPrintableKind } from '@/
 
 export const runtime = 'nodejs';
 
-// GET /api/admin-notes?level=am[&kind=notes|revision|prelim]
+// GET /api/admin-notes?level=am[&kind=notes|revision|practice|prelim]
 // Listing logic lives in lib/notes-list.ts — shared with /api/kiosk/notes so the
 // two surfaces can't drift (they used to hold separate copies of it).
 export async function GET(req: NextRequest) {
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid level' }, { status: 400 });
   }
   if (!isPrintableKind(kindParam)) {
-    return NextResponse.json({ error: "kind must be 'notes', 'revision' or 'prelim'" }, { status: 400 });
+    return NextResponse.json({ error: "kind must be 'notes', 'revision', 'practice' or 'prelim'" }, { status: 400 });
   }
 
   return NextResponse.json(await listPrintablesForLevel(kindParam, level));

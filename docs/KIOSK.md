@@ -6,7 +6,7 @@
 
 ## Kiosk (`/kiosk`) — iPad print station with WhatsApp QR sign-in
 
-Self-service iPad kiosk at the centre: students print practice worksheets + revision notes.
+Self-service iPad kiosk at the centre: students print notes, revision worksheets and practice.
 Device authorised once (admin password → 180-day `kiosk_session` cookie); open/closed gate =
 `kiosk_config` mode (closed/open/scheduled) + opening hours in `lib/kiosk-hours.ts`; admin
 control at `/admin/kiosk`.
@@ -22,6 +22,14 @@ to their own level.** No anonymous browsing.
 3. Kiosk polls GET `/api/kiosk/pair?code=` (2.5s) → one-shot `{student, token}` (signed HMAC
    student token, 30 min, `lib/kiosk-student.ts`). UI greets by name, shows only entitled levels,
    5-min idle reset ("Done ✓" button ends session).
+3b. **Three-button home screen (2026-08-11)** — a signed-in student lands on 📘 **Learn** /
+   📝 **Revise** / ✏️ **Practice**, one big tile each (`KioskClient.tsx`, `HOME_TILES`), with a
+   `← Back` on every sub-screen. Learn → `Notes/<LEVEL>` PDFs, Revise → `Revision/<LEVEL>` PDFs,
+   Practice → a two-tile choice: 🖨️ **Printed sheets** (`Practice/<LEVEL>` PDFs) or ⚡ **Make me
+   one** (the seeded question-bank generator, 5–5d below). The PDF browser is one shared component
+   — the button only picks the `kind` passed to `/api/kiosk/notes`. Tiles self-hide when a student
+   has nothing behind them (`canPdf` = any entitled notes level, `canGenerate` = any entitled
+   practice level); Practice skips its sub-choice when only one side is available.
 4. Entitlements from Level+Subjects (`deriveEntitlements`): Sec 3–5 E/A Math → EM/AM; IP Math →
    both; JC (H2/H1) → JC2; **Sec 1/2 → S1/S2 practice + notes** (enabled 2026-07-16 — unblocked by
    the sub-group backfill; the `practice_topics` RPC counts via sub-group joins, now also counts
@@ -29,8 +37,11 @@ to their own level.** No anonymous browsing.
    what the sheet can actually serve — diagram-heavy topics show honest small counts until their
    figures are verified). Content routes (`topics`/`notes`/`worksheet`) 401 without the
    `x-kiosk-student` token and 403 on a non-entitled level — enforced server-side, admin bypasses.
-5. **Print cap 4 worksheets/day per student** (SGT day) via POST `/api/kiosk/print-log` (gates
-   `window.print()`, logs to `kiosk_prints`). GET returns `{used, remaining}` for the "n/4" chip.
+5. **Print cap 4 GENERATED worksheets/day per student** (SGT day) via POST `/api/kiosk/print-log`
+   (gates `window.print()`, logs to `kiosk_prints`). GET returns `{used, remaining}` for the "n/4"
+   chip, which now renders only on the generator screen. **Dropbox PDFs are uncapped** (Adrian,
+   2026-08-11) — a Learn/Revise/Practice tile opens the temporary link and the iPad's own print
+   dialog does the rest, so there is no `window.print()` to gate and nothing is logged.
 5b. **Deterministic daily draw** — the worksheet is seeded on `SGT-date|level|topic|tier`
    (seeded Fisher–Yates over an `.order('id')`-pinned pool; helpers in `lib/kiosk-draw.ts`,
    unit-tested incl. a pinned permutation), so students printing the same topic+tier the same
@@ -79,7 +90,7 @@ commits) — the full sign-in loop is live end-to-end on the preview. Phase 2 (p
 recommended-for-you topics from lesson progress, homework pickup, exam-season packs.
 Phase 3: print → photograph → AI-mark loop.
 
-## Printable PDFs — Dropbox drop-in folder (`/admin/notes`, kiosk Notes tab)
+## Printable PDFs — Dropbox drop-in folder (`/admin/notes`, kiosk Learn/Revise/Practice)
 
 Adrian saves a DOCX → exports a PDF into his Dropbox app folder → it appears on the
 website. **Nothing is copied or synced**: every page load lists Dropbox live, and each
@@ -88,14 +99,20 @@ link is never stale. Auth: refresh-token OAuth (`DROPBOX_APP_KEY` / `DROPBOX_APP
 / `DROPBOX_REFRESH_TOKEN`), app-folder scoped to `Dropbox/Apps/AdrianMathNotes/` — the
 site can see nothing else in his Dropbox. Health-checked every 6h (`dropbox-notes`).
 
-**Three kinds, one folder layout — encoded ONLY in `dropboxFolderFor()` (`lib/notes-list.ts`,
+**Four kinds, one folder layout — encoded ONLY in `dropboxFolderFor()` (`lib/notes-list.ts`,
 unit-tested). Never re-derive a folder path in a route:**
 
 | Kind | Dropbox path | Surfaces | Legacy Airtable/Blob merge |
 |---|---|---|---|
-| `notes` | `/Notes/<LEVEL>` e.g. `/Notes/AM` | `/admin/notes/<level>` + student kiosk | yes (`PrintNotes` table) |
-| `revision` | `/Revision/<LEVEL>` e.g. `/Revision/AM` | `/admin/notes/<level>` only (2026-07-28) | no — Dropbox only |
+| `notes` | `/Notes/<LEVEL>` e.g. `/Notes/AM` | `/admin/notes/<level>` + kiosk 📘 **Learn** | yes (`PrintNotes` table) |
+| `revision` | `/Revision/<LEVEL>` e.g. `/Revision/AM` | `/admin/notes/<level>` + kiosk 📝 **Revise** (opened to students 2026-08-11) — worksheets WITH worked examples | no — Dropbox only |
+| `practice` | `/Practice/<LEVEL>` e.g. `/Practice/AM` | `/admin/notes/<level>` + kiosk ✏️ **Practice → Printed sheets** (both new 2026-08-11) — summary/formula page + questions, no worked solutions | no — Dropbox only |
 | `prelim` | `/Prelim/<LEVEL>` e.g. `/Prelim/AM` | `/admin/notes/<level>` only (2026-07-30) — 🎯 Prelim segment; O-Level EM/AM + JC prelim practice sets (S1/S2 valid but unused) | no — Dropbox only |
+
+`KIOSK_KINDS` (same file) is the student-visible subset — `notes`/`revision`/`practice`.
+`/api/kiosk/notes` validates against it, so `prelim` 400s there and stays admin-only.
+Entitlements are per-LEVEL, not per-kind: one `entitlements.notes` list gates all three
+student kinds (`entitlements.practice` separately gates the question-bank generator).
 
 - Levels are the same five slugs everywhere: `s1 s2 em am jc`.
 - **Legacy-root fallback (transition shim, 2026-07-28)** — notes used to sit loose at the
@@ -107,13 +124,24 @@ unit-tested). Never re-derive a folder path in a route:**
   (Dropbox `not_found` is swallowed), so a typo'd path fails SILENTLY — hence the test.
 - The site NEVER writes to Dropbox (`lib/dropbox.ts` = `listFolder` + `getTemporaryLink`
   only), so it can't create these folders — they're made by hand in Dropbox.
+- **The `revision-worksheet` skill writes into these same folders**, and its `kind` decides
+  the kiosk button: `worked` → `Revision/<folder>` (Revise), `notes` → `Practice/<folder>`
+  (Practice, S3/S4 collapsed onto the subject folder). Both kinds landed in `Revision/`
+  until 2026-08-11, which filed summary+questions sheets in the worked-examples pile —
+  routing now lives in `out_folder()` (`.claude/skills/revision-worksheet/revision_lib.py`).
 - Filename is the display title (`titleFromFilename`: strip `.pdf`, `-`/`_` → spaces).
-- `/api/admin-notes?level=am&kind=notes|revision|prelim` (400 on a bad kind);
-  `/api/admin-notes/counts` returns `{counts, revisionCounts, prelimCounts, total}` for the hub pills.
-- Revision worksheets and prelim practice sets are **admin-only** (Adrian: revision
-  2026-07-28, prelim 2026-07-30) — the kiosk still serves `notes` only, so no
-  student-facing surface changed and the 4/day print cap is untouched. Opening either
-  to students = add a kind param to `/api/kiosk/notes` + an entitlement check + a
-  health-check entry.
+- `/api/admin-notes?level=am&kind=notes|revision|practice|prelim` (400 on a bad kind);
+  `/api/admin-notes/counts` returns `{counts, revisionCounts, practiceCounts, prelimCounts, total}`
+  for the hub pills (📝 revision, ✏️ practice; each hidden at zero).
+- **Health-checked every 6h**, one probe per student-facing folder: `dropbox-notes` and
+  `dropbox-revision` go through `listPrintablesForLevel` on EM and FAIL at 0 files;
+  `dropbox-practice` uses raw `listFolder` instead and treats 0 PDFs as OK — Practice/ is
+  still filling up, but a *missing* folder must still alert, and `listPrintablesForLevel`
+  would swallow that `not_found` as "no files". Flip it to fail-at-0 once Practice is stocked.
+- Prelim practice sets stay **admin-only** (Adrian, 2026-07-30). Opening a new kind to
+  students = add it to `KIOSK_KINDS` + a tile in `KioskClient` + a health-check entry.
+- **New folders are made by hand in Dropbox** — the site can't create them. `Practice/`
+  and its seven level folders were created 2026-08-11 (AM, AM G2, EM, EM G2, JC, S1, S2).
 - The Blob-upload path (`upload-token`/`register`, rename/replace/delete in Edit mode) is
-  the LEGACY notes source and stays notes-only; revision and prelim have no upload UI.
+  the LEGACY notes source and stays notes-only; revision, practice and prelim have no
+  upload UI — they're Dropbox drop-ins only.

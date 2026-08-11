@@ -34,8 +34,11 @@ const LEVELS: { key: string; label: string }[] = [
   { key: 'JC2', label: 'H2 Math' },
 ];
 
-// Notes exist for more levels than practice (S1/S2 too). Slugs match
-// NOTE_SLUG_TO_LEVELS in src/lib/notes-list.ts.
+// Dropbox PDF levels — used by all three of Learn/Revise/Practice, which read
+// their own folder for the SAME level set. Slugs match NOTE_SLUG_TO_LEVELS in
+// src/lib/notes-list.ts. More levels than the generator has (S1/S2 too), and
+// entitlements are per-level, not per-kind — one `entitlements.notes` list
+// gates all three folders.
 const NOTE_LEVELS: { key: string; label: string }[] = [
   { key: 's1', label: 'Sec 1' },
   { key: 's2', label: 'Sec 2' },
@@ -72,6 +75,35 @@ function wsSpaceMm(marks: number | null): number {
   return Math.min(100, Math.max(36, (marks ?? 3) * 17));
 }
 
+// Front screen is three large buttons (Adrian 2026-08-11); each opens one pile.
+//   learn    → Dropbox Notes/<LEVEL>
+//   revise   → Dropbox Revision/<LEVEL>  (worksheets with worked examples)
+//   practice → Dropbox Practice/<LEVEL>  (summary + questions) OR the
+//              question-bank generator, chosen on a second tap
+type Screen = 'home' | 'learn' | 'revise' | 'practice';
+type PracticeMode = 'pdf' | 'generate';
+
+const HOME_TILES: { key: Screen; emoji: string; title: string; sub: string }[] = [
+  { key: 'learn', emoji: '📘', title: 'Learn', sub: 'Topic notes to read and keep' },
+  { key: 'revise', emoji: '📝', title: 'Revise', sub: 'Worksheets with worked examples' },
+  { key: 'practice', emoji: '✏️', title: 'Practice', sub: 'Questions to try yourself' },
+];
+
+const SCREEN_SUB: Record<string, string> = {
+  home: 'What would you like to print?',
+  learn: 'Topic notes — tap one to open and print',
+  revise: 'Revision worksheets with worked examples',
+  practice: 'Practice — printed sheets or a fresh worksheet',
+  pdf: 'Practice worksheets — tap one to open and print',
+  generate: 'Print a practice worksheet',
+};
+
+const PDF_EMPTY: Record<string, string> = {
+  notes: 'No notes for this level yet.',
+  revision: 'No revision worksheets for this level yet.',
+  practice: 'No practice worksheets for this level yet.',
+};
+
 type AuthState = 'checking' | 'setup' | 'ready';
 type Student = {
   id: string;
@@ -100,10 +132,13 @@ export default function KioskClient() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [printsUsed, setPrintsUsed] = useState<{ used: number; remaining: number } | null>(null);
 
-  // Mode: quick practice worksheet (default) or browse/print notes.
-  const [mode, setMode] = useState<'practice' | 'notes'>('practice');
+  // Where we are: the three-button home, or one of the three piles.
+  const [screen, setScreen] = useState<Screen>('home');
+  // Inside Practice only: Adrian's printed sheets, or a generated worksheet.
+  // null = showing the two-way choice.
+  const [practiceMode, setPracticeMode] = useState<PracticeMode | null>(null);
 
-  // Notes browser
+  // Dropbox PDF browser (shared by Learn / Revise / Practice→printed sheets)
   const [noteLevel, setNoteLevel] = useState<string>('am');
   const [notes, setNotes] = useState<{ id: string; title: string; pdfUrl: string }[] | null>(null);
   const [notesBusy, setNotesBusy] = useState(false);
@@ -138,6 +173,37 @@ export default function KioskClient() {
   // Levels this session may see (admin sees everything).
   const visibleLevels = isAdmin ? LEVELS : LEVELS.filter((l) => student?.entitlements.practice.includes(l.key));
   const visibleNoteLevels = isAdmin ? NOTE_LEVELS : NOTE_LEVELS.filter((l) => student?.entitlements.notes.includes(l.key));
+  // What this session can actually do: browse Adrian's PDFs, generate a sheet, or both.
+  const canPdf = visibleNoteLevels.length > 0;
+  const canGenerate = visibleLevels.length > 0;
+
+  // Which Dropbox folder the PDF browser is reading, or null when it isn't showing.
+  const pdfKind = screen === 'learn' ? 'notes'
+    : screen === 'revise' ? 'revision'
+    : screen === 'practice' && practiceMode === 'pdf' ? 'practice'
+    : null;
+  const generating = screen === 'practice' && practiceMode === 'generate';
+  // Practice offers a two-way choice only when both halves are actually
+  // available — a lower-sec student (no question-bank levels) goes straight to
+  // the printed sheets rather than through a one-option menu.
+  const practiceHasChoice = canPdf && canGenerate;
+
+  function openScreen(next: Screen) {
+    setScreen(next);
+    setSelectedTopic(null);
+    setPracticeMode(next !== 'practice' ? null : practiceHasChoice ? null : canPdf ? 'pdf' : 'generate');
+  }
+  function goBack() {
+    // Inside Practice, step back to its own choice screen first.
+    if (screen === 'practice' && practiceMode && practiceHasChoice) {
+      setPracticeMode(null);
+      setSelectedTopic(null);
+      return;
+    }
+    setScreen('home');
+    setPracticeMode(null);
+    setSelectedTopic(null);
+  }
 
   // Headers for content fetches — carries the signed student token when present.
   const contentHeaders = useCallback((): HeadersInit => {
@@ -153,6 +219,10 @@ export default function KioskClient() {
     setPrintsUsed(null);
     setSelectedTopic(null);
     setWorksheet(null);
+    // Back to the front screen — the next student must not land mid-flow.
+    setScreen('home');
+    setPracticeMode(null);
+    setNotes(null);
   }, []);
 
   // ── Auth check on mount ──────────────────────────────────────────────
@@ -269,12 +339,9 @@ export default function KioskClient() {
     if (!student) return;
     const p = student.entitlements.practice;
     const n = student.entitlements.notes;
-    if (p.length > 0) {
-      setMode('practice');
-      setLevel(p[0]);
-    } else {
-      setMode('notes'); // lower sec: notes only
-    }
+    setScreen('home');
+    setPracticeMode(null);
+    if (p.length > 0) setLevel(p[0]);
     if (n.length > 0) setNoteLevel(n[0]);
     // Pull the day's print usage for the indicator.
     fetch('/api/kiosk/print-log', { headers: contentHeaders() })
@@ -305,23 +372,24 @@ export default function KioskClient() {
   }, [contentHeaders, endStudentSession]);
 
   useEffect(() => {
-    if (auth !== 'ready' || !unlocked) return;
+    if (auth !== 'ready' || !unlocked || !generating) return;
     setSelectedTopic(null);
     loadTopics(level);
-  }, [auth, unlocked, level, loadTopics]);
+  }, [auth, unlocked, generating, level, loadTopics]);
 
-  // ── Fetch notes whenever the notes level changes (in notes mode) ─────
+  // ── Fetch the PDF list whenever the folder or level changes ──────────
   useEffect(() => {
-    if (auth !== 'ready' || !unlocked || mode !== 'notes') return;
+    if (auth !== 'ready' || !unlocked || !pdfKind) return;
     let alive = true;
+    setNotes(null);
     setNotesBusy(true);
-    fetch(`/api/kiosk/notes?level=${encodeURIComponent(noteLevel)}`, { headers: contentHeaders() })
+    fetch(`/api/kiosk/notes?kind=${pdfKind}&level=${encodeURIComponent(noteLevel)}`, { headers: contentHeaders() })
       .then((r) => r.json().catch(() => ({})))
       .then((j) => { if (alive) setNotes(Array.isArray(j.notes) ? j.notes : []); })
       .catch(() => { if (alive) setNotes([]); })
       .finally(() => { if (alive) setNotesBusy(false); });
     return () => { alive = false; };
-  }, [auth, unlocked, mode, noteLevel, contentHeaders]);
+  }, [auth, unlocked, pdfKind, noteLevel, contentHeaders]);
 
   // ── Print once the worksheet DOM is committed ────────────────────────
   useEffect(() => {
@@ -497,8 +565,11 @@ export default function KioskClient() {
                 <div className="greet-who">
                   👋 Hi <strong>{firstName}</strong>
                   <span className="greet-level">{student.level}</span>
-                  {printsUsed && (
-                    <span className="greet-prints">{printsUsed.used}/4 prints today</span>
+                  {/* The daily cap covers generated worksheets only — Adrian's
+                      own PDFs print freely (Adrian 2026-08-11), so the counter
+                      only appears where it applies. */}
+                  {generating && printsUsed && (
+                    <span className="greet-prints">{printsUsed.used}/4 worksheets today</span>
                   )}
                 </div>
                 <button className="greet-done" onClick={endStudentSession}>Done ✓</button>
@@ -507,30 +578,51 @@ export default function KioskClient() {
 
             <header className="picker-head">
               <div className="brand">AdrianMath Tuition</div>
-              <div className="brand-sub">{mode === 'notes' ? 'Open and print revision notes' : 'Print a practice worksheet'}</div>
+              <div className="brand-sub">{SCREEN_SUB[screen === 'practice' ? (practiceMode ?? 'practice') : screen]}</div>
             </header>
 
-            {/* Mode toggle — only when the student has both surfaces */}
-            {(isAdmin || (visibleLevels.length > 0 && visibleNoteLevels.length > 0)) && (
-              <div className="segmented" role="tablist" aria-label="Mode" style={{ marginBottom: 14 }}>
-                <button role="tab" aria-selected={mode === 'practice'}
-                  className={`seg ${mode === 'practice' ? 'seg-on' : ''}`}
-                  onClick={() => { setMode('practice'); setSelectedTopic(null); }}>
-                  ✏️ Practice
-                </button>
-                <button role="tab" aria-selected={mode === 'notes'}
-                  className={`seg ${mode === 'notes' ? 'seg-on' : ''}`}
-                  onClick={() => setMode('notes')}>
-                  📄 Notes
-                </button>
-              </div>
+            {/* ── HOME: the three big buttons ── */}
+            {screen === 'home' && (
+              <section className="home-grid">
+                {HOME_TILES.filter((t) => (t.key === 'practice' ? canPdf || canGenerate : canPdf)).map((t) => (
+                  <button key={t.key} className="home-tile" onClick={() => openScreen(t.key)}>
+                    <span className="home-emoji" aria-hidden>{t.emoji}</span>
+                    <span className="home-title">{t.title}</span>
+                    <span className="home-sub">{t.sub}</span>
+                  </button>
+                ))}
+                {!canPdf && !canGenerate && (
+                  <div className="muted pad">Nothing set up for your level yet — tell Adrian.</div>
+                )}
+              </section>
             )}
 
-            {/* ── NOTES MODE ── */}
-            {mode === 'notes' && (
+            {/* Back out of any pile */}
+            {screen !== 'home' && (
+              <button className="back back-top" onClick={goBack}>← Back</button>
+            )}
+
+            {/* ── PRACTICE: printed sheets or a generated one ── */}
+            {screen === 'practice' && !practiceMode && (
+              <section className="home-grid two">
+                <button className="home-tile" onClick={() => setPracticeMode('pdf')}>
+                  <span className="home-emoji" aria-hidden>🖨️</span>
+                  <span className="home-title">Printed sheets</span>
+                  <span className="home-sub">Adrian&apos;s practice worksheets</span>
+                </button>
+                <button className="home-tile" onClick={() => setPracticeMode('generate')}>
+                  <span className="home-emoji" aria-hidden>⚡</span>
+                  <span className="home-title">Make me one</span>
+                  <span className="home-sub">Fresh questions on any topic</span>
+                </button>
+              </section>
+            )}
+
+            {/* ── PDF BROWSER — Learn, Revise, or Practice→printed sheets ── */}
+            {pdfKind && (
               <>
                 {visibleNoteLevels.length > 1 && (
-                  <div className="segmented" role="tablist" aria-label="Notes level">
+                  <div className="segmented" role="tablist" aria-label="Level">
                     {visibleNoteLevels.map((l) => (
                       <button key={l.key} role="tab" aria-selected={noteLevel === l.key}
                         className={`seg ${noteLevel === l.key ? 'seg-on' : ''}`}
@@ -541,9 +633,9 @@ export default function KioskClient() {
                   </div>
                 )}
                 <section className="topics-wrap">
-                  {notesBusy && <div className="muted pad">Loading notes…</div>}
+                  {notesBusy && <div className="muted pad">Loading…</div>}
                   {!notesBusy && notes && notes.length === 0 && (
-                    <div className="muted pad">No notes for this level yet.</div>
+                    <div className="muted pad">{PDF_EMPTY[pdfKind]}</div>
                   )}
                   <div className="topic-grid">
                     {(notes ?? []).map((n) => (
@@ -557,8 +649,8 @@ export default function KioskClient() {
               </>
             )}
 
-            {/* ── PRACTICE MODE ── */}
-            {mode === 'practice' && (<>
+            {/* ── GENERATOR ── */}
+            {generating && (<>
             {/* Level segmented control — hidden when the student has exactly one level */}
             {visibleLevels.length > 1 && (
               <div className="segmented" role="tablist" aria-label="Level">
@@ -857,6 +949,32 @@ const PRINT_CSS = `
     transition: background .15s, color .15s;
   }
   .seg-on { background: var(--navy); color: #fff; }
+
+  /* Front screen: three tap targets sized for a standing iPad — one row on
+     landscape, stacking on portrait/phone. */
+  .home-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+    max-width: 900px; margin: 0 auto;
+  }
+  .home-grid.two { grid-template-columns: repeat(2, 1fr); max-width: 620px; }
+  @media (max-width: 760px) {
+    .home-grid, .home-grid.two { grid-template-columns: 1fr; }
+  }
+  .home-tile {
+    cursor: pointer; text-align: center;
+    background: #fff; border: 2px solid #e6ddc4; border-radius: 24px;
+    padding: 34px 18px 30px; min-height: 220px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    color: var(--navy);
+    transition: transform .08s, box-shadow .15s, border-color .15s;
+  }
+  .home-tile:active { transform: scale(.97); }
+  .home-tile:hover { border-color: var(--gold); box-shadow: 0 10px 26px rgba(28,58,94,0.12); }
+  .home-emoji { font-size: 56px; line-height: 1; }
+  .home-title { font-size: 30px; font-weight: 800; }
+  .home-sub { font-size: 16px; color: #5b6b7d; line-height: 1.3; }
+
+  .back-top { display: block; margin: 0 0 10px; }
 
   .topic-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

@@ -14,7 +14,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 |---|---|
 | `/admin/schedule`, `/admin/progress`, lessons, reschedules, capacity, recurring generation, Revision Sprint, exam season, Lessons progress fields | [`docs/SCHEDULE.md`](docs/SCHEDULE.md) |
 | Marking — `/admin/mark-paper`, `/admin/mark` (batch), `mark-paper-*`/`mark-batch/*` routes, `render-marking`, marked-PDF assembly, ✏️ Annotate overlay | [`docs/MARKING.md`](docs/MARKING.md) |
-| `/kiosk`, `/api/kiosk/*`, `/admin/notes`, Dropbox notes/revision/prelim PDFs | [`docs/KIOSK.md`](docs/KIOSK.md) |
+| `/kiosk`, `/api/kiosk/*`, `/admin/notes`, Dropbox notes/revision/practice/prelim PDFs | [`docs/KIOSK.md`](docs/KIOSK.md) |
 | Invoices, deferred adjustments, Resend email delivery | [`docs/INVOICES.md`](docs/INVOICES.md) |
 | `/tools` static pages, house style, photo-extraction service (`/api/tools/vision`) | [`docs/TOOLS.md`](docs/TOOLS.md) |
 | Student Portal | [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) |
@@ -153,7 +153,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 
 ### Content / AI
 - `notes/route.ts` — revision notes CRUD (Airtable `Notes`); `edit-notes-ai`; `learn`
-- `admin-notes/` — Dropbox notes listing (`?level=&kind=notes|revision|prelim`), `counts`, `dropbox-open` → `docs/KIOSK.md`
+- `admin-notes/` — Dropbox notes listing (`?level=&kind=notes|revision|practice|prelim`), `counts`, `dropbox-open` → `docs/KIOSK.md`
 - `kiosk/` — `pair`, `print-log`, `topics`, `notes`, `worksheet` → `docs/KIOSK.md`
 - `render-marking/route.ts` — marking JSON → PNG via Puppeteer → `docs/MARKING.md`
 - `admin/mark-paper*` routes (proxy, pdf, download, send, annotated-token, annotate-pdf, inbox) → `docs/MARKING.md`

@@ -37,13 +37,14 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
   const [error, setError] = useState('');
   const [dropboxFolder, setDropboxFolder] = useState('');
 
-  // Which pile of PDFs: notes (Dropbox Notes/<LEVEL> + legacy Blob uploads), revision
-  // worksheets (Dropbox Revision/<LEVEL>) or prelim practice sets (Dropbox
-  // Prelim/<LEVEL>). Only notes have a Blob path + edit mode — the other two are
-  // managed entirely in Dropbox.
-  const [kind, setKind] = useState<'notes' | 'revision' | 'prelim'>('notes');
+  // Which pile of PDFs: notes (Dropbox Notes/<LEVEL> + legacy Blob uploads),
+  // revision worksheets (Dropbox Revision/<LEVEL> — worked examples), practice
+  // worksheets (Dropbox Practice/<LEVEL> — summary + questions) or prelim
+  // practice sets (Dropbox Prelim/<LEVEL>). Only notes have a Blob path + edit
+  // mode — the other three are managed entirely in Dropbox.
+  const [kind, setKind] = useState<'notes' | 'revision' | 'practice' | 'prelim'>('notes');
   const isDropboxOnly = kind !== 'notes';
-  const kindLabel = kind === 'revision' ? 'Revision' : kind === 'prelim' ? 'Prelim Sets' : 'Notes';
+  const kindLabel = kind === 'revision' ? 'Revision' : kind === 'practice' ? 'Practice' : kind === 'prelim' ? 'Prelim Sets' : 'Notes';
 
   // Edit mode
   const [editMode, setEditMode] = useState(false);
@@ -265,6 +266,8 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
               onClick={() => { setKind('notes'); }}>📘 Notes</button>
             <button className={`nl-seg-btn${kind === 'revision' ? ' on' : ''}`}
               onClick={() => { setKind('revision'); setEditMode(false); setRenamingId(null); setUploadOpen(false); }}>📝 Revision</button>
+            <button className={`nl-seg-btn${kind === 'practice' ? ' on' : ''}`}
+              onClick={() => { setKind('practice'); setEditMode(false); setRenamingId(null); setUploadOpen(false); }}>✏️ Practice</button>
             <button className={`nl-seg-btn${kind === 'prelim' ? ' on' : ''}`}
               onClick={() => { setKind('prelim'); setEditMode(false); setRenamingId(null); setUploadOpen(false); }}>🎯 Prelim</button>
           </div>
@@ -286,7 +289,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
           ) : notes.length === 0 ? (
             // In revision mode the Dropbox hint below carries the folder path,
             // so the empty state stays short.
-            <div className="nl-empty">{kind === 'revision' ? 'No revision worksheets yet' : kind === 'prelim' ? 'No prelim practice sets yet' : 'No notes yet — upload below'}</div>
+            <div className="nl-empty">{kind === 'revision' ? 'No revision worksheets yet' : kind === 'practice' ? 'No practice worksheets yet' : kind === 'prelim' ? 'No prelim practice sets yet' : 'No notes yet — upload below'}</div>
           ) : (
             <div className="nl-grid">
               {notes.map(note => (

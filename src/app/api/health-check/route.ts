@@ -3,8 +3,8 @@ import { createHmac } from 'crypto';
 import { airtableRequest } from '@/lib/airtable';
 import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
-import { dropboxConfigured } from '@/lib/dropbox';
-import { listPrintablesForLevel } from '@/lib/notes-list';
+import { dropboxConfigured, listFolder } from '@/lib/dropbox';
+import { listPrintablesForLevel, dropboxFolderFor } from '@/lib/notes-list';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
       if (buf.byteLength < 5_000) throw new Error(`blob suspiciously small (${buf.byteLength}b)`);
       return `${Math.round(buf.byteLength / 1024)}KB`;
     }),
-    // Dropbox notes (admin/kiosk printing)
+    // Dropbox notes — kiosk "Learn" + /admin/notes
     timed('dropbox-notes', async () => {
       if (!dropboxConfigured()) return 'not configured (skipped)';
       // Probe through the real listing path (incl. the legacy-root fallback) so
@@ -97,6 +97,26 @@ export async function GET(req: NextRequest) {
       const pdfs = notes.filter(n => n.source === 'dropbox').length;
       if (pdfs === 0) throw new Error('EM notes folder returned 0 files');
       return `${pdfs} files`;
+    }),
+    // Dropbox revision worksheets — kiosk "Revise" (student-facing since 2026-08-11)
+    timed('dropbox-revision', async () => {
+      if (!dropboxConfigured()) return 'not configured (skipped)';
+      const { notes } = await listPrintablesForLevel('revision', 'em');
+      const pdfs = notes.filter(n => n.source === 'dropbox').length;
+      if (pdfs === 0) throw new Error('EM revision folder returned 0 files');
+      return `${pdfs} files`;
+    }),
+    // Dropbox practice worksheets — kiosk "Practice" → printed sheets.
+    // Practice/ is new and fills up as Adrian uploads, so 0 PDFs is not yet a
+    // failure — but a MISSING folder is, and listFolder surfaces that as
+    // not_found where listPrintablesForLevel would swallow it as "no files".
+    timed('dropbox-practice', async () => {
+      if (!dropboxConfigured()) return 'not configured (skipped)';
+      const folder = dropboxFolderFor('practice', 'em');
+      if (!folder) throw new Error('no Practice folder mapped for EM');
+      const entries = await listFolder(`/${folder}`);
+      const pdfs = entries.filter(e => e.tag === 'file' && /\.pdf$/i.test(e.name)).length;
+      return pdfs > 0 ? `${pdfs} files` : 'folder ok, 0 PDFs yet';
     }),
     // Referral landing (/r/<code> — parent-facing invite links in invoice emails).
     // Probes with a syntactically-valid-but-unknown id: the page must still 200

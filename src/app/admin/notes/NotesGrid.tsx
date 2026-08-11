@@ -17,6 +17,7 @@ const LEVELS = [
 export default function NotesGrid() {
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
   const [revision, setRevision] = useState<Record<string, number>>({});
+  const [practice, setPractice] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let alive = true;
@@ -28,6 +29,7 @@ export default function NotesGrid() {
         const data = await res.json();
         setCounts(data.counts ?? {});
         setRevision(data.revisionCounts ?? {});
+        setPractice(data.practiceCounts ?? {});
       } catch { /* pill just stays blank */ }
     })();
     return () => { alive = false; };
@@ -39,6 +41,7 @@ export default function NotesGrid() {
         const isLast = i === LEVELS.length - 1 && LEVELS.length % 2 !== 0;
         const n = counts?.[atLevel];
         const rev = revision[atLevel] ?? 0;
+        const prac = practice[atLevel] ?? 0;
         return (
           <Link
             key={slug}
@@ -65,7 +68,7 @@ export default function NotesGrid() {
               }}>
                 {n === undefined ? '·' : n === 0 ? 'No notes yet' : `${n} note${n === 1 ? '' : 's'}`}
               </span>
-              {/* Revision-worksheet pill — only when the level has any. */}
+              {/* Worksheet pills — only when the level has any of that kind. */}
               {rev > 0 && (
                 <span style={{
                   fontSize: 11.5, fontWeight: 700, color: '#fff',
@@ -73,6 +76,15 @@ export default function NotesGrid() {
                   backdropFilter: 'blur(2px)', whiteSpace: 'nowrap',
                 }}>
                   📝 {rev}
+                </span>
+              )}
+              {prac > 0 && (
+                <span style={{
+                  fontSize: 11.5, fontWeight: 700, color: '#fff',
+                  background: 'rgba(0,0,0,0.20)', padding: '3px 10px', borderRadius: 20,
+                  backdropFilter: 'blur(2px)', whiteSpace: 'nowrap',
+                }}>
+                  ✏️ {prac}
                 </span>
               )}
             </div>

@@ -57,6 +57,11 @@ from lxml import etree
 DROPBOX = Path.home() / "Library/CloudStorage/Dropbox/Apps/AdrianMathNotes"
 NOTES_BANK = DROPBOX / "notes_bank"
 REVISION_ROOT = DROPBOX / "Revision"
+# The two kinds print to two different kiosk buttons, so they go to two folders:
+# worked → Revision/<folder> (kiosk "Revise"), notes → Practice/<folder> (kiosk
+# "Practice"). Both were writing into Revision/ until 2026-08-11, which put the
+# summary+questions sheets in the worked-examples pile.
+PRACTICE_ROOT = DROPBOX / "Practice"
 # Fallback only (explicit --base with no bank/folder to place it beside).
 DEFAULT_OUT_DIR = Path.home() / "Desktop"
 
@@ -1927,10 +1932,16 @@ class RunReport:
 
 
 def out_folder(kind: str, bank: str | None = None, folder: str | None = None) -> Path:
-    """Revision/<folder>: worked sheets go back beside their source, notes banks
-    map S3/S4 onto the subject folder (S4_AM|S3_AM -> AM, S4_EM|S3_EM -> EM)."""
-    name = folder if kind == "worked" else BANK_OUT_FOLDER.get(bank or "")
-    return REVISION_ROOT / name if name else DEFAULT_OUT_DIR
+    """Where a finished sheet lands, per kind — these are the folders the kiosk
+    reads, so the kind decides the button a student finds it under:
+      worked -> Revision/<folder>, beside the source sheet   (kiosk "Revise")
+      notes  -> Practice/<folder>, S3/S4 collapsed onto the  (kiosk "Practice")
+                subject folder (S4_AM|S3_AM -> AM, S4_EM|S3_EM -> EM)
+    """
+    if kind == "worked":
+        return REVISION_ROOT / folder if folder else DEFAULT_OUT_DIR
+    name = BANK_OUT_FOLDER.get(bank or "")
+    return PRACTICE_ROOT / name if name else DEFAULT_OUT_DIR
 
 
 def default_out_path(bank_label: str, topic: str, kind: str,

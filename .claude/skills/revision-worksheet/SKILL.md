@@ -25,10 +25,10 @@ re-rendered, re-styled, or re-flowed — his fonts, OMML equations, images, head
 relationships survive exactly because the file is cloned and only `word/document.xml` is
 mutated.
 
-| Kind | Base document | Result |
-|---|---|---|
-| `notes` | Notes-bank fragment (`notes_bank/<BANK>/<Topic>.docx`) — Adrian's formulas + his "Reminders" section | Fragment verbatim, then `Practice` |
-| `worked` | Existing revision sheet (`Revision/<FOLDER>/… (With Worked Examples).docx`) | Whole worked sheet verbatim, then `Practice` |
+| Kind | Base document | Result | Lands in → kiosk button |
+|---|---|---|---|
+| `notes` | Notes-bank fragment (`notes_bank/<BANK>/<Topic>.docx`) — Adrian's formulas + his "Reminders" section | Fragment verbatim, then `Practice` | `Practice/<folder>` → **Practice** |
+| `worked` | Existing revision sheet (`Revision/<FOLDER>/… (With Worked Examples).docx`) | Whole worked sheet verbatim, then `Practice` | `Revision/<folder>` → **Revise** |
 
 Requires `pandoc` (equation conversion), `python-docx` + `lxml`, and the sibling
 [`create-worksheet`](../create-worksheet/SKILL.md) skill — its `worksheet_lib.py` is the
@@ -437,7 +437,7 @@ Notes sheets came out byte-identical.
 - **Every column gets an explicit LEFT tab stop.** A custom tab stop clears Word's default
   stops before it, so the number/label columns are spelled out rather than left to the
   hanging indent's implicit stop.
-- **The skill's own output is excluded from base resolution.** Worksheets land in
+- **The skill's own output is excluded from base resolution.** `worked` worksheets land in
   `Revision/<folder>` — the very folder scanned for `worked` bases — so a second run would
   otherwise clone the first run's worksheet and compound the Practice section (this
   happened: 25 `[Ans:]` lines instead of 6). `list_worked`/`list_fragments` skip any stem
@@ -465,16 +465,23 @@ Notes sheets came out byte-identical.
 
 ## Output
 
-Default: `Dropbox/Apps/AdrianMathNotes/Revision/<folder>/REV <BANK-or-FOLDER> <Topic> (Notes|Worked Examples).docx`
+Default: `Dropbox/Apps/AdrianMathNotes/<Revision|Practice>/<folder>/REV <BANK-or-FOLDER> <Topic> (Notes|Worked Examples).docx`
+
+**The kind picks the root folder, and the root folder picks the kiosk button.** Since
+2026-08-11 `/kiosk` shows students three buttons — Learn (`Notes/`), Revise (`Revision/`),
+Practice (`Practice/`) — each reading one folder per level. A `worked` sheet is what
+"Revise" means (worked examples first); a `notes` sheet is what "Practice" means (summary
++ formulas, then questions). Both kinds wrote into `Revision/` before that date, which
+would now file every practice sheet under the wrong button.
 
 | Kind | Folder |
 |---|---|
-| `worked` | the folder the base sheet came from — the worksheet lands beside its source |
-| `notes` | `S4_AM`/`S3_AM` → `AM`, `S4_EM`/`S3_EM` → `EM` (a notes bank has no folder of its own) |
+| `worked` | `Revision/<folder>` — the folder the base sheet came from, so the worksheet lands beside its source |
+| `notes` | `Practice/<folder>`, with `S4_AM`/`S3_AM` → `AM`, `S4_EM`/`S3_EM` → `EM` (a notes bank has no folder of its own) |
 | `--base` with no bank/folder | `~/Desktop` |
 
-`--out <path>` overrides it. The finished file goes straight into the Revision library;
-say where it landed so Adrian can open it from Dropbox on any device.
+`--out <path>` overrides it. Say where it landed so Adrian can open it from Dropbox on any
+device — and name the button (Revise / Practice) it will show up under on the iPad.
 
 ## Run report — print all of it, every time
 
@@ -491,7 +498,7 @@ Practice  : 6 question(s)  [levels AM:148]
 Page      : margins 2/1/2.5/2.5 cm forced on 1 section(s)
 Keep      : 9 solution box(es), 14 section heading(s) bound to what follows
 Equations : 38 converted, 0 fallback(s)
-Output    : …/Dropbox/Apps/AdrianMathNotes/Revision/AM/REV S4_AM Binomial Theorem (Notes).docx
+Output    : …/Dropbox/Apps/AdrianMathNotes/Practice/AM/REV S4_AM Binomial Theorem (Notes).docx
 ```
 
 Non-negotiable contents: **which base/fragment was used and how it was resolved**, the
