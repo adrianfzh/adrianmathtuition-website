@@ -150,6 +150,39 @@ path or un-gate student-facing marking on Telegram).
 - **Health check:** `mark-triage` probes `paper_marking_runs?select=id,released_at` —
   without that column every marked script silently re-enters the queue forever.
 
+## /admin/papers — the marked-script library (2026-08-12)
+
+Every marked script in one filterable list. Built for the two things the mark-paper
+page can't do: **pull up an old script during a lesson** (its history list reaches
+back only a handful of runs, so going through last month's paper meant re-marking
+it), and **tag the backlog**.
+
+- **Reads Supabase directly**, not through the bot. `/api/admin/mark-paper` is a pure
+  proxy to Fly, and its `phase:'by-student'` is useless here — 41 of 43 runs carry no
+  `student_id`, so a by-student view would show an empty page. The website already has
+  service-role access to `paper_marking_runs`, so `/api/admin/papers` queries it
+  itself and no bot deploy is involved.
+- **Tagging is the point.** An untagged run reaches neither `/admin/students/[id]`
+  nor a parent report — it is marking that exists but counts for nothing. Every row
+  carries an inline `StudentPicker`; POST `{runId, studentId|null}` writes
+  `student_id` **and re-resolves `student_name` from Airtable server-side** (the name
+  is denormalised into the row and shows up in triage, so a stale or mistyped one
+  would outlive whatever screen produced it). Passing `studentId: null` untags.
+- **Runs with no `result_json.results` array are dropped** (same rule as triage): a
+  run with no stored marking is a failed or still-queued attempt, and listing it as
+  0/0 reads as a paper the student scored nothing on.
+- **Topic chips are weakest-first**, from `aggregateTopicBleed` — the same function
+  behind the bleed table, so the chips and the reports agree. The API returns up to
+  `MAX_TOPICS_PER_RUN = 8`; the row shows 3 and expands.
+- **✍️ Annotate deep-links** to `/admin/mark-paper?run=<id>&annotate=1`. The
+  mark-paper mount effect reads `?run=` and calls `loadRun` (or `annotateRun` when
+  `annotate=1`), so the library hands the run to the page that already knows how to
+  open it. ⚠ Both go through the bot proxy, so this leg **cannot be exercised on
+  `localhost`** — `BOT_BASE_URL`/`BOT_INTERNAL_SECRET` are Preview/Production-scoped
+  and a local load 503s with "bot not configured". Verify it on the preview URL.
+- Filters: student, "Needs tagging", Clear. Default view is everything — filtering
+  by student first would have shown an empty list and read as broken.
+
 ## /admin/mark-paper — scanned-PDF working (client-side rasterisation)
 
 Adrian can drop the student's working in as **a scanned PDF** instead of phone photos.

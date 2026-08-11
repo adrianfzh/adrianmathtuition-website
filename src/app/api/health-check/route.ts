@@ -154,6 +154,17 @@ export async function GET(req: NextRequest) {
       );
       if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 120)}`);
     }),
+    // The parent-report store the monthly cron writes into. It runs unattended
+    // on the 1st, so a broken table or renamed column would mean parents simply
+    // stop hearing anything, with nothing on screen to say why.
+    timed('parent-digests', async () => {
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const r = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/parent_digests?select=id,period,period_label,body_md,status&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 120)}`);
+    }),
     // The Next Lesson Plan field the kiosk "📌 For you today" card reads. A
     // missing field means students land on the kiosk with no starting point.
     timed('next-lesson-plan', async () => {

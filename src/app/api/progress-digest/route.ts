@@ -25,7 +25,9 @@ import {
   fetchActiveStudents, fetchLessonsInRange, fetchExamsForType,
   buildWeeklyDigest, generateParentDrafts,
   TERM_LESSON_WINDOWS,
+  type DigestLesson,
 } from '@/lib/progress-digest';
+import { buildReportFacts, type ReportFacts, type ReportPaper } from '@/lib/report-facts';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // month/term generate one AI call per student
@@ -142,12 +144,15 @@ async function generateAndStore(opts: {
   exams?: Awaited<ReturnType<typeof fetchExamsForType>>;
 }) {
   const { period, periodLabel, start, endExclusive, exams } = opts;
-  const [students, lessons] = await Promise.all([
+  const [students, lessons, papers] = await Promise.all([
     fetchActiveStudents(),
     fetchLessonsInRange(start, endExclusive),
+    fetchMarkedPapers(start, endExclusive),
   ]);
 
-  const { drafts, errors } = await generateParentDrafts({ period, periodLabel, lessons, students, exams });
+  const facts = buildFactsByStudent(lessons, papers, isoDate(new Date()));
+
+  const { drafts, errors } = await generateParentDrafts({ period, periodLabel, lessons, students, exams, facts });
 
   const supabase = createServiceClient();
   let stored = 0;
@@ -180,10 +185,95 @@ async function generateAndStore(opts: {
     }
   }
 
+  // Cron runs are unattended — a silent success is a success nobody acts on.
+  // One nudge, only when there is something waiting.
+  if (stored > 0) {
+    const withPapers = [...facts.values()].filter(f => f.papers.length > 0).length;
+    await sendTelegram(
+      `\ud83d\udcec <b>${stored} parent draft${stored === 1 ? '' : 's'} ready</b> \u2014 ${periodLabel}\n` +
+      `${withPapers} include marked-paper scores.\n` +
+      `Review and send: ${SITE_URL}/admin/digests`
+    ).catch(e => console.error('[progress-digest] nudge failed:', e?.message || e));
+  }
+
   return NextResponse.json({
     ok: true, period, periodLabel, range: { start, endExclusive },
     drafted: stored,
     skipped: students.size - drafts.length,
+    papersFound: papers.length,
     errors,
   });
+}
+
+// ── Marked papers → per-student facts ─────────────────────────────────────────
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.adrianmathtuition.com';
+
+/**
+ * Marked papers in [start, endExclusive), from Supabase `paper_marking_runs`.
+ *
+ * ⚠ Only runs TAGGED with a student can feed a report — `student_id` is set
+ * when Adrian picks the student in the mark-paper send row, and historically
+ * most runs were never tagged. An untagged run is simply invisible here; it
+ * does not corrupt anyone's report, it just doesn't appear in one. /admin/papers
+ * exists to tag the backlog.
+ *
+ * Failures are non-fatal: a report built from lesson logs alone is still worth
+ * sending, so a Supabase outage degrades the report instead of killing the run.
+ */
+async function fetchMarkedPapers(start: string, endExclusive: string): Promise<(ReportPaper & { studentId: string })[]> {
+  try {
+    const supabase = createServiceClient();
+    const { data, error } = await supabase
+      .from('paper_marking_runs')
+      .select('id, created_at, paper_name, student_id, total_awarded, total_max, result_json')
+      .not('student_id', 'is', null)
+      .gte('created_at', `${start}T00:00:00Z`)
+      .lt('created_at', `${endExclusive}T00:00:00Z`)
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('[progress-digest] marked-paper fetch failed:', error.message);
+      return [];
+    }
+    return (data ?? []).map(r => ({
+      id: r.id,
+      studentId: r.student_id as string,
+      date: String(r.created_at).slice(0, 10),
+      name: r.paper_name || 'Paper',
+      totalAwarded: r.total_awarded,
+      totalMax: r.total_max,
+      resultJson: r.result_json,
+    }));
+  } catch (e: any) {
+    console.error('[progress-digest] marked-paper fetch threw:', e?.message || e);
+    return [];
+  }
+}
+
+/** One ReportFacts per student that has any lesson OR any marked paper. */
+function buildFactsByStudent(
+  lessons: DigestLesson[],
+  papers: (ReportPaper & { studentId: string })[],
+  today: string
+): Map<string, ReportFacts> {
+  const lessonsBy = new Map<string, DigestLesson[]>();
+  for (const l of lessons) {
+    if (!lessonsBy.has(l.studentId)) lessonsBy.set(l.studentId, []);
+    lessonsBy.get(l.studentId)!.push(l);
+  }
+  const papersBy = new Map<string, ReportPaper[]>();
+  for (const p of papers) {
+    if (!papersBy.has(p.studentId)) papersBy.set(p.studentId, []);
+    papersBy.get(p.studentId)!.push(p);
+  }
+
+  const out = new Map<string, ReportFacts>();
+  for (const sid of new Set([...lessonsBy.keys(), ...papersBy.keys()])) {
+    out.set(sid, buildReportFacts({
+      lessons: lessonsBy.get(sid) ?? [],
+      papers: papersBy.get(sid) ?? [],
+      today,
+    }));
+  }
+  return out;
 }

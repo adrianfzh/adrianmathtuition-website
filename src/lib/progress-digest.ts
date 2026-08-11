@@ -11,6 +11,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import pLimit from 'p-limit';
 import { airtableRequestAll } from '@/lib/airtable';
 import type { ExamType } from '@/lib/exam-season';
+// Value import is safe despite report-facts importing DigestLesson back: that
+// side is `import type`, which is erased, so there is no runtime cycle.
+import { renderFactsForPrompt, renderFactsMarkdown, type ReportFacts } from '@/lib/report-facts';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -146,18 +149,38 @@ export async function fetchExamsForType(examType: ExamType, year: number): Promi
     }));
 }
 
-// Topics Covered (JSON array of canonical names) + Topics Free Text (comma list).
-// Same parse as /api/admin-revision-attendance.
-function parseTopics(fields: any): string[] {
+/**
+ * Topics for one lesson, merged from `Topics Covered` + `Topics Free Text`.
+ *
+ * ⚠ `Topics Covered` has TWO live formats and a parser that only handles one
+ * silently loses every topic Adrian has ever tapped:
+ *   - a COMMA STRING — what LessonModal writes ("Differentiation, Vectors")
+ *     and what /admin/progress writes ("E Math: Differentiation, ...")
+ *   - a JSON ARRAY — legacy rows
+ * The old parser here called JSON.parse and swallowed the throw, so every
+ * modal-logged lesson reported zero topics to the weekly digest and to parent
+ * drafts. Fall back to comma-splitting when the value isn't a JSON array.
+ */
+export function parseTopicsField(fields: Record<string, any>): string[] {
   const out: string[] = [];
-  try {
-    const arr = JSON.parse(fields['Topics Covered'] || '[]');
-    if (Array.isArray(arr)) out.push(...arr.map((t: any) => String(t).trim()).filter(Boolean));
-  } catch { /* ignore malformed */ }
-  const free = (fields['Topics Free Text'] || '').trim();
-  if (free) out.push(...free.split(/[,\n]/).map((s: string) => s.trim()).filter(Boolean));
+  const raw = String(fields['Topics Covered'] ?? '').trim();
+  if (raw) {
+    let parsed = false;
+    try {
+      const j = JSON.parse(raw);
+      if (Array.isArray(j)) {
+        out.push(...j.map((t: any) => String(t).trim()).filter(Boolean));
+        parsed = true;
+      }
+    } catch { /* not JSON — it's the comma format */ }
+    if (!parsed) out.push(...raw.split(/[,\n]/).map(s => s.trim()).filter(Boolean));
+  }
+  const free = String(fields['Topics Free Text'] ?? '').trim();
+  if (free) out.push(...free.split(/[,\n]/).map(s => s.trim()).filter(Boolean));
   return [...new Set(out)];
 }
+
+const parseTopics = parseTopicsField;
 
 // ── 1. Weekly admin digest (Telegram HTML) ─────────────────────────────────────
 
@@ -256,7 +279,8 @@ Rules:
 - UNDER 150 words. Plain markdown (short paragraphs and/or a few bullets). No heading, no salutation ("Dear..."), no sign-off — Adrian adds those when sending.
 - Cover: topics covered this period, genuine strengths observed, 1–2 focus areas, and homework consistency.
 - Be honest but constructive about weak spots ("we're reinforcing...", "worth extra practice on...").
-- If the logs are sparse, keep it shorter rather than padding.`;
+- If the logs are sparse, keep it shorter rather than padding.
+- A COMPUTED FACTS block may be supplied. It is arithmetic over the records and is printed above your text for the parent to read — it is authoritative. Never contradict it, never restate its numbers verbatim (that reads as duplication), and never quote a figure it doesn't contain.`;
 
 const TERM_SYSTEM = `You write end-of-term progress reports for parents of students at a Singapore math tuition centre (O-Level E/A Math and JC H2 Math), on behalf of the tutor, Adrian.
 
@@ -267,7 +291,8 @@ Rules:
 - UNDER 250 words. Plain markdown (short paragraphs and/or a few bullets). No heading, no salutation, no sign-off — Adrian adds those when sending.
 - Consolidate the term: topics covered, how mastery developed across the term, homework consistency, genuine strengths, and 1–2 focus areas going forward.
 - If an exam result is given, weave it into the picture (score/percentage/grade, and what it reflects). If no result is given, do NOT mention or speculate about the exam.
-- Be honest but constructive about weak spots.`;
+- Be honest but constructive about weak spots.
+- A COMPUTED FACTS block may be supplied. It is arithmetic over the records and is printed above your text for the parent to read — it is authoritative. Never contradict it, never restate its numbers verbatim, and never quote a figure it doesn't contain.`;
 
 function lessonLogBlock(lessons: DigestLesson[]): string {
   return lessons.slice(0, 45).map(l => {
@@ -315,8 +340,10 @@ export async function generateParentDrafts(opts: {
   lessons: DigestLesson[];
   students: Map<string, DigestStudent>;
   exams?: DigestExam[];
+  /** Computed facts by Airtable student id — see lib/report-facts.ts. */
+  facts?: Map<string, ReportFacts>;
 }): Promise<{ drafts: DraftGenResult[]; errors: { studentName: string; error: string }[] }> {
-  const { period, periodLabel, lessons, students, exams = [] } = opts;
+  const { period, periodLabel, lessons, students, exams = [], facts = new Map() } = opts;
 
   const byStudent = new Map<string, DigestLesson[]>();
   for (const l of lessons) {
@@ -335,17 +362,22 @@ export async function generateParentDrafts(opts: {
     .map(([sid, ls]) => ({ student: students.get(sid), ls }))
     .filter(({ student, ls }) => {
       if (!student) return false;
-      // Only draft when there's actually something logged to summarise.
-      return ls.some(l => l.progressLogged || l.topics.length > 0 || l.mastery);
+      // Only draft when there's actually something to summarise. A marked paper
+      // counts on its own — a month where the only record is a graded script is
+      // still a month a parent should hear about.
+      if (ls.some(l => l.progressLogged || l.topics.length > 0 || l.mastery)) return true;
+      return (facts.get(student.id)?.papers.length ?? 0) > 0;
     });
 
   await Promise.all(tasks.map(({ student, ls }) => limit(async () => {
     const s = student!;
     const exam = period === 'term' ? examByStudent.get(s.id) : undefined;
+    const f = facts.get(s.id);
     const user = [
       `STUDENT: ${s.name} (${s.level}${s.subjects.length ? `, ${s.subjects.join(' + ')}` : ''})`,
       `PERIOD: ${periodLabel}`,
       exam ? `EXAM RESULT: ${examBlock(exam)}` : '',
+      f ? `COMPUTED FACTS (authoritative — printed above your text):\n${renderFactsForPrompt(f)}` : '',
       `LESSON LOGS (${ls.length} lessons):`,
       lessonLogBlock(ls),
     ].filter(Boolean).join('\n\n');
@@ -363,10 +395,14 @@ export async function generateParentDrafts(opts: {
         .join('')
         .trim();
       if (!text) throw new Error('empty response');
+      // Facts first, prose second, separated by a rule. The parent sees numbers
+      // that came from arithmetic, then a paragraph that came from a model —
+      // and if the model ever drifts, the numbers above it are still correct.
+      const factsMd = f ? renderFactsMarkdown(f, periodLabel) : '';
       drafts.push({
         studentId: s.id,
         studentName: s.name,
-        bodyMd: text,
+        bodyMd: factsMd ? `${factsMd}\n\n---\n\n${text}` : text,
         examJson: exam ? {
           examType: exam.examType,
           examDate: exam.examDate,

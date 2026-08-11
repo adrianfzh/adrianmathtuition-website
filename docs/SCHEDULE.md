@@ -243,6 +243,36 @@ Read-only student history view. Cookie-auth protected (same 30-day session), PWA
 | `lib/exam-season.ts` | `EXAM_WINDOWS`, `resolveActiveExamType()`, `checkExamInfoStatus()` |
 | `lib/canonical-topics.ts` | Canonical topic lists for O-Level Sec and JC H2 |
 
+## /admin/log — one-tap end-of-day lesson logging (2026-08-12)
+
+Every lesson still waiting to be written up, on one scrolling screen, with the taps
+inline. **The fields were never the problem** — `LessonModal` has had one-tap mastery
+chips for months; the navigation around them was (open schedule → find the day → find
+the student → open the modal → close → repeat). Measured when this shipped: **126
+lessons waiting, and zero lessons in the previous fortnight carried a mastery tap.**
+That backlog is exactly what makes a monthly parent report expensive, since
+[`../src/lib/report-facts.ts`](../src/lib/report-facts.ts) can only count what was logged.
+
+- **It owns no write logic.** Saves go through the existing `lesson-update`,
+  `lesson-prev-update` and `attendance` routes, so `EDIT_WINDOW_DAYS`, the
+  `Progress Logged` auto-set and the `Next Lesson Plan` 422-fallback stay defined in
+  exactly one place. The page's own `EDIT_WINDOW_DAYS` const is **display only**.
+- **Read half is `/api/admin/log-queue`.** "Waiting" = date ≤ today, status
+  `Scheduled` or `Completed`, `Progress Logged` false, inside the edit window. It also
+  returns `prev` per lesson (the homework that was set, and the plan written last time)
+  and `topicsByLevel` so the topic chips need no second call.
+- **Newest first**, because writing up the day you just taught is the everyday case.
+  An oldest-first list buries today under a fortnight of backlog; the lessons about to
+  expire are surfaced by a ⏳ banner with an anchor jump instead of by the sort order.
+- **Re-tap semantics differ by field on purpose:** re-tapping mastery clears it
+  (`''`), re-tapping homework does nothing — `lesson-prev-update` rejects an empty
+  value. Text fields (notes, next plan) debounce 700ms per field.
+- **Topics are written as a comma string**, matching every current writer; reads go
+  through `parseTopicsField` from `progress-digest.ts`, which accepts both that and
+  the legacy JSON-array format. Do not re-implement the parse.
+- Marking a lesson **Absent removes the row** (nothing to write up); anything else
+  patches status to `Completed`.
+
 ## June 2026 Revision Sprint
 
 `/admin/revision-signups` has two tabs: **Sign-ups** (manage sign-ups) and **Attendance**.

@@ -68,6 +68,10 @@
       "schedule": "0 0 * * *"
     },
     {
+      "path": "/api/progress-digest?period=month",
+      "schedule": "0 0 1 * *"
+    },
+    {
       "path": "/api/health-check",
       "schedule": "0 */6 * * *"
     }

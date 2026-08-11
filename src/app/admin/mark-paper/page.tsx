@@ -350,6 +350,13 @@ export default function MarkPaperPage() {
       if (!ok) { window.location.href = '/admin'; return; }
       loadStats();
       loadInbox();
+      // Deep link from the marked-paper library: /admin/mark-paper?run=<id>[&annotate=1].
+      // History here only reaches back a few runs, so going through an older
+      // script with a student meant re-marking it. /admin/papers lists them all
+      // and hands the run over to this page's loader.
+      const q = new URLSearchParams(window.location.search);
+      const runParam = q.get('run');
+      if (runParam) (q.get('annotate') === '1' ? annotateRun : loadRun)(runParam);
     });
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
