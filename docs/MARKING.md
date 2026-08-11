@@ -96,6 +96,7 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   The list persists in `paper_marking_runs.result_json.practice`, so re-click and
   run reload show the stored list instead of paying for another call.
 - **Exact-form deduction (2026-08-10):** `MARK_SEVERITY_RULES` (bot `ai/paper-marker.js`, shared by the direct AND standalone prompts) docks 1 mark when a final answer whose exact value is a **TERMINATING decimal** is written further-rounded — the cover page instructs exact-or-3-s.f. (The trigger was 10.375 km rounded to "10.4" scoring 1/1 with just a *"leave exact if possible"* comment.) **Terminating decimals ONLY** (Adrian, same day: *"should not include surd or π-multiple"*): surd/π/non-terminating answers are fine at 3 s.f. — the marker must never demand surd or π form — and nothing is penalised where the question fixes the accuracy (2 d.p., money to the cent, angles to 1 d.p.).
+- **✂️ Two-page spreads split at intake (2026-08-12):** `onPickImages` runs every picked photo (and every PDF-raster page, and every inbox attach — they all funnel through it) through `splitFileIfSpread` (`lib/spread-split.ts`, pure geometry unit-tested): landscape past `w > h·1.15` is cut into left/right halves at FULL resolution (3%-of-width gutter overlap each side) BEFORE the 1280px marking copy and 2600px hi-res original are made. Fixes BOTH spread problems at once: printed size (one wide PDF page fit one A4 sheet → each exam page ~A5; split halves each print full-page) and annotation grounding (a spread shrunk to 1280 gave each page ~640px → measured 10/10 margin-fallback correlation with low-res intake). A green `✂️ Split N…` receipt line shows under the drop zone. The same splitter runs on `/app/submit`, so student hand-ins get the same hygiene.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
@@ -227,6 +228,35 @@ a student taps a dead link.
   Unauthenticated it 307s to `/login` (that much is checkable anywhere); the
   rendered page needs a preview/prod session on a student account with a released,
   tagged run.
+
+## /app/submit — student paper hand-ins (2026-08-12)
+
+The door IN from the student side: photograph the worked paper on a phone →
+auto spread-split + ≤2600px downscale (`lib/spread-split.ts`, same hygiene as
+Adrian's own intake) → straight-to-Blob via client token → one POST files it.
+
+- **A submission IS a saved run.** `/api/portal/submit` calls the bot's
+  `phase:'save-paper'` + `phase:'set-student'`, so it lands as the same
+  "⏳ uploaded — not marked yet" row Adrian's own uploads make: visible in
+  /admin/mark-paper history with ▶ Mark, counted by the hub's ⏳ card, marked
+  by the existing remark machinery. Nothing new to mark FROM — only a new door
+  in. **The release gate is untouched**: it reaches `/app/marking` only when
+  Adrian releases it in triage. A Telegram doorbell (`📬 <name> submitted…`)
+  fires on every hand-in.
+- **Ownership is the pathname.** `/api/portal/submit-token` (portal session
+  only — Adrian tests as his own student account) pins uploads under
+  `mark-paper/portal/<studentId>/…`; the submit route accepts only our-Blob
+  URLs under the CALLER'S OWN prefix, and the student id comes from the
+  session, never the body. Rate brake: 3 portal submissions / 10 min / student
+  (counted via the `result_json->>portal_submission` stamp).
+- **`result_json.portal_submission: true`** is stamped site-side right after
+  creation — it is what lets `/app/marking`'s "With Mr Fong" strip list the
+  student's own pending hand-ins (name + date + pages, never a mark) without
+  ever surfacing papers Adrian uploaded himself and chose not to release.
+- Health check: `timed('portal-submit', …)` asserts the token route answers
+  401 unauthenticated (route alive + auth gate up).
+- ⚠ Same localhost caveat as /app/marking: the full flow needs a preview/prod
+  student session; locally only the 401/redirect gates are checkable.
 
 ## /admin/mark-paper — scanned-PDF working (client-side rasterisation)
 
@@ -475,6 +505,19 @@ on the ORIGINAL photo: a **boxed `awarded/max` in the right margin** aligned to 
 each part's working, and — for parts that dropped marks only — the part's **one-line
 `error_summary` placed in real white space** with a leader curve to the crossed step.
 Ticks/crosses stay, but they're decoration; the box and the sentence are the product.
+
+- **Side strip (bot `ai/annotate.js`, 2026-08-12): the comment ladder is in-page white
+  space → manufactured right margin → footer.** When a part's note fits nowhere on a
+  dense page, the canvas now grows a cream strip (26% of width) to the RIGHT and the
+  note is written there — captioned (`Q1(a): …`), level with its part, leadered back
+  into the page — instead of dropping to the footer. Adrian: *"write the mistakes at
+  the side of their working… there are usually no space"* — so the space is
+  manufactured rather than shrinking the pen below legibility (that was tried
+  30 Jul: 0.85× was the floor). Single-column photos only (on a two-up scan the strip
+  is the facing page's margin — those spill to the footer as before, and client-side
+  spread-split makes them rare anyway); notes that overflow the strip's height still
+  footer. Hi-res composites extend by the same fraction through the existing viewBox
+  mapping. Footer lines may now run the widened canvas.
 
 - **Placement is arithmetic, not vibes** — `ai/whitespace.js` (pure, no sharp, 20 tests)
   thresholds the page to an ink/no-ink grid, dilates by a cell, and searches a summed-area

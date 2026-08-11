@@ -43,7 +43,8 @@ function niceDate(d: string): string {
 export default async function MarkingPage() {
   const { account } = await currentStudent();
 
-  const { data } = await getSupabaseAdmin()
+  const sb = getSupabaseAdmin();
+  const { data } = await sb
     .from('paper_marking_runs')
     .select(COLUMNS)
     .eq('student_id', account.airtable_student_id)
@@ -51,17 +52,63 @@ export default async function MarkingPage() {
     .order('created_at', { ascending: false })
     .limit(MAX_PAPERS);
 
+  // Papers this student handed in through /app/submit that Adrian hasn't
+  // released yet. Portal submissions ONLY (the result_json stamp) — a paper
+  // Adrian uploaded himself and chose not to release must never surface as a
+  // phantom "being marked". Name + date + page count, never a mark.
+  const { data: pendingRows } = await sb
+    .from('paper_marking_runs')
+    .select('id, created_at, paper_name, num_photos')
+    .eq('student_id', account.airtable_student_id)
+    .eq('result_json->>portal_submission', 'true')
+    .is('released_at', null)
+    .order('created_at', { ascending: false })
+    .limit(5);
+  const pending = pendingRows ?? [];
+
   const { papers, averagePct, trendPts, focus } = buildStudentMarking((data ?? []) as MarkingRunRow[]);
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <h1 className="text-xl font-bold text-navy pt-1">Marked papers</h1>
+      <div className="flex items-center justify-between pt-1">
+        <h1 className="text-xl font-bold text-navy">Marked papers</h1>
+        <Link
+          href="/app/submit"
+          className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-2 hover:opacity-90"
+        >
+          📤 Submit a paper
+        </Link>
+      </div>
+
+      {pending.length > 0 && (
+        <div className={`${CARD} p-4`}>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">With Mr Fong</p>
+          <ul className="space-y-1.5">
+            {pending.map(p => (
+              <li key={p.id} className="text-sm text-gray-700 flex items-baseline justify-between gap-3">
+                <span className="min-w-0 break-words">
+                  ⏳ {p.paper_name || 'Submitted paper'}
+                  {typeof p.num_photos === 'number' && p.num_photos > 0 && (
+                    <span className="text-gray-400"> · {p.num_photos} page{p.num_photos === 1 ? '' : 's'}</span>
+                  )}
+                </span>
+                <span className="shrink-0 text-xs text-gray-400">{niceDate(String(p.created_at).slice(0, 10))}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[11px] text-gray-400 mt-2">Handed in — it appears below once marked and released.</p>
+        </div>
+      )}
 
       {papers.length === 0 ? (
         <div className={`${CARD} p-5`}>
           <p className="text-sm text-gray-600">
             Nothing here yet. When Adrian marks a paper for you it appears here — with the marks,
             what went wrong on each question, and your script with the red pen on it.
+          </p>
+          <p className="text-sm text-gray-600 mt-2">
+            Finished a paper at home? <Link href="/app/submit" className="font-semibold text-navy hover:underline">Photograph and submit it</Link> and
+            it comes back marked, right here.
           </p>
           <Link href="/app" className="inline-block mt-3 text-sm font-semibold text-navy hover:underline">
             ‹ Back to dashboard

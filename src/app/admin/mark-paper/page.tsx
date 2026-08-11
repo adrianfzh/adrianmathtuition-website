@@ -8,6 +8,7 @@ import { ensureAdminSession } from '@/lib/admin-client';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
 import { mathHtml } from '@/lib/math-inline';
 import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
+import { splitFileIfSpread } from '@/lib/spread-split';
 import StudentPicker from '@/components/StudentPicker';
 
 // The ✏️ Annotate overlay (Apple Pencil ink over the marked pages) is heavy and
@@ -269,6 +270,8 @@ export default function MarkPaperPage() {
   const [images, setImages] = useState<File[]>([]);
   const [imgPreviews, setImgPreviews] = useState<(string | null)[]>([]);
   const [rasterizing, setRasterizing] = useState('');
+  // One-line receipt when spread photos were auto-split ("✂️ Split 1 two-page photo…").
+  const [splitNote, setSplitNote] = useState('');
 
   const [results, setResults] = useState<Result[] | null>(null);
   const [totals, setTotals] = useState<{ awarded: number; max: number } | null>(null);
@@ -479,10 +482,21 @@ export default function MarkPaperPage() {
 
   // Accept all picked photos (HEIC included). Preview those the browser can decode; the rest
   // still upload and get converted on the server. Appends, so you can build the set up.
+  // Two-page spreads are split into two full-res portrait pages FIRST — before the 1280px
+  // marking copy and the 2600px hi-res original are cut from them — so each page keeps the
+  // whole pixel budget and prints at full A4 instead of half-size (Adrian, 2026-08-12).
   async function onPickImages(arr: File[]) {
     if (!arr.length) return;
     setError('');
-    const withPreview = await Promise.all(arr.map(async (f) => ({
+    const expanded: File[] = [];
+    let splits = 0;
+    for (const f of arr) {
+      const r = await splitFileIfSpread(f);
+      if (r.split) splits += 1;
+      expanded.push(...r.files);
+    }
+    if (splits) setSplitNote(`✂️ Split ${splits} two-page photo${splits > 1 ? 's' : ''} into ${splits * 2} single pages`);
+    const withPreview = await Promise.all(expanded.map(async (f) => ({
       file: f,
       url: (await canDecode(f)) ? URL.createObjectURL(f) : null,
     })));
@@ -862,7 +876,7 @@ export default function MarkPaperPage() {
       if (!en.ok || end.error) throw new Error(end.error || 'could not queue');
       // Clear the slots — the whole point is attaching the NEXT paper immediately.
       imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
-      setImages([]); setImgPreviews([]); setPdf(null); workingNameRef.current = ''; setPaperName('');
+      setImages([]); setImgPreviews([]); setPdf(null); setSplitNote(''); workingNameRef.current = ''; setPaperName('');
       setQueueNote(`🌙 Queued as “${paperLabel}” (#${end.position || 1}) — you'll get the marked PDF on Telegram and in Dropbox. Attach the next paper.`);
       loadStats();
     } catch (e) { setError((e as Error).message); }
@@ -1098,6 +1112,9 @@ export default function MarkPaperPage() {
         />
         {rasterizing && (
           <div style={{ marginTop: 8, fontSize: 13, color: '#2563eb' }}>📄 {rasterizing}</div>
+        )}
+        {splitNote && images.length > 0 && (
+          <div style={{ marginTop: 8, fontSize: 13, color: '#059669' }}>{splitNote}</div>
         )}
         {imgPreviews.length > 0 && (
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>

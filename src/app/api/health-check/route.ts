@@ -175,6 +175,15 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return `page ${r.status}`;
     }),
+    // Student paper hand-ins (/app/submit). The token route must answer — 401
+    // without a session is the healthy signal (the route is deployed and its
+    // auth gate is up); a 404 means students silently lose the submit path,
+    // and a 500 usually means the Blob token env broke.
+    timed('portal-submit', async () => {
+      const r = await fetch(`${base}/api/portal/submit-token?filename=probe.jpg`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // The parent-report store the monthly cron writes into. It runs unattended
     // on the 1st, so a broken table or renamed column would mean parents simply
     // stop hearing anything, with nothing on screen to say why.

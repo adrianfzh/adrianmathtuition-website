@@ -112,7 +112,7 @@ Deep details for schedule/marking/kiosk pages live in `docs/` (see the table at 
 - `admin/edit-notes/page.tsx` — revision notes editor (content in Airtable `Notes`)
 - `admin/edit-cards/page.tsx` + `admin/edit-cards/[id]/page.tsx` — Cards editor (list: level/topic/subgroup, drag-to-reorder; single: markdown+KaTeX textarea, live preview, AI assist with diff/accept/reject)
 - `kiosk/page.tsx` — iPad print station → `docs/KIOSK.md`
-- `app/*` — **Student Portal** (`/app` dashboard, `practice`, `learn`, `notes`, `reference`, `settings`). `app/marking/page.tsx` = the student's own released marked scripts — the destination `mark-triage`'s release nudge links to → `docs/MARKING.md`
+- `app/*` — **Student Portal** (`/app` dashboard, `practice`, `learn`, `notes`, `reference`, `settings`). `app/marking/page.tsx` = the student's own released marked scripts — the destination `mark-triage`'s release nudge links to; `app/submit/page.tsx` = phone-first paper hand-in (spread-split + Blob client tokens → a ⏳ pending run + Telegram doorbell) → `docs/MARKING.md`
 - `signup/page.tsx` — student registration form (HMAC-signed URL); `thankyou/`, `terms/`
 - `revise/page.tsx`, `revise/[topic]/…` — revision notes landing/topic/lesson player; `revise/[topic]/[subtopic]/worked-examples/page.tsx` — TikTok-style swipe cards over `content_snippets` (accepts `?subgroup={id}`)
 - `explain/[id]/page.tsx` — public annotated-explanation page (`explanations` table, KaTeX, full `\underbrace`); deep-links into Teach Me
