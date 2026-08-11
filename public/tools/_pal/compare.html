@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Palette compare — temporary</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{display:flex;flex-direction:column;background:#14171c;color:#e8eef5;
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+  .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;
+       border-bottom:1px solid #2a3038;background:#191d23}
+  .bar strong{font-size:13px;font-weight:600;margin-right:4px}
+  .bar .hint{font-size:12px;color:#8b9bab;margin-left:auto}
+  button{font:inherit;font-size:13px;cursor:pointer;border-radius:999px;
+         padding:8px 15px;border:1px solid #39424d;background:#20262e;color:#c7d2dd;
+         display:inline-flex;align-items:center;gap:8px;min-height:40px}
+  button:hover{border-color:#6d7c8c;color:#fff}
+  button.on{background:#e8eef5;color:#14171c;border-color:#e8eef5;font-weight:600}
+  .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.25)}
+  iframe{flex:1 1 auto;width:100%;border:0;background:#fff}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <strong>Background:</strong>
+    <button data-f="d-current" class="on"><span class="sw" style="background:#F4EFE6"></span>Current beige</button>
+    <button data-f="a-white"><span class="sw" style="background:#FAF9F7"></span>Soft white</button>
+    <button data-f="b-grey"><span class="sw" style="background:#F4F6F8"></span>Cool grey</button>
+    <button data-f="c-blue"><span class="sw" style="background:#EEF2F6"></span>Pale blue</button>
+    <span class="hint">Same tool, same graph — only the background and its supporting colours change. Temporary page.</span>
+  </div>
+  <iframe id="fr" src="d-current.html" title="palette preview"></iframe>
+<script>
+(function(){
+  "use strict";
+  var fr = document.getElementById('fr');
+  document.querySelectorAll('.bar button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.bar button').forEach(function(x){ x.classList.toggle('on', x === b); });
+      // reload with the preset already applied so the graph is worth looking at
+      fr.src = b.dataset.f + '.html';
+    });
+  });
+  // apply the 3sin2x+1 preset inside the frame on every load
+  fr.addEventListener('load', function(){
+    try {
+      var d = fr.contentDocument;
+      var p = d && d.querySelector('.preset[data-preset="sin,3,2,1"]');
+      if (p) p.click();
+    } catch (e) { /* same-origin only; ignore */ }
+  });
+})();
+</script>
+</body>
+</html>
