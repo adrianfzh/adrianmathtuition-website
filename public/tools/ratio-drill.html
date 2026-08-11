@@ -785,6 +785,7 @@
   function draw(){
     if (!q) return;
     if (!W) resize();
+    if (W < 2 || H < 2) return;      // laid out at zero size; the observer redraws
     ctx.clearRect(0,0,W,H);
     fit(q.pts);
     const hi = revealed && q.steps[si] ? q.steps[si] : null;
@@ -901,7 +902,7 @@
     famLbl.textContent = q.fam;
     qnEl.textContent = String(done + 1);
     givenEl.innerHTML = q.given;
-    qtext.innerHTML = q.ask + (q.ansType === 'ratio' ? '' : '');
+    qtext.innerHTML = q.ask;
     buildInputs();
     checkBtn.disabled = false;
     showBtn.textContent = 'Show me';
