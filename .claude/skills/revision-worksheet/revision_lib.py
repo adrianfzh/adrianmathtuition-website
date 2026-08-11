@@ -111,6 +111,18 @@ FOLDER_LEVELS = {
 }
 
 # --------------------------------------------------------------------------
+# Sheet shape (Adrian's four rules, 2026-08-11)
+# --------------------------------------------------------------------------
+
+# A revision sheet is a SITTING, not a paper. 1.5 min/mark is the O-Level and
+# H2 rate (EM P1: 80 marks in 2 h; AM P1: 80 in 2 h), so the 45-60 min sitting
+# Adrian wants is 30-40 marks. The bands are advisory — the run report prints
+# where the sheet landed and warns when it is outside; it never refuses.
+MINUTES_PER_MARK = 1.5
+SIZE_BAND_Q = (8, 14)           # questions
+SIZE_BAND_MIN = (45, 60)        # estimated working minutes
+
+# --------------------------------------------------------------------------
 # House style (mirrors create-worksheet/worksheet_lib.py)
 # --------------------------------------------------------------------------
 
@@ -582,15 +594,19 @@ def _http_json(url: str, headers: dict):
         return json.loads(r.read().decode("utf-8")), dict(r.headers)
 
 
-def fetch_pool(env: dict, level: str, topic: str, page: int = 1000, cap: int = 4000) -> list:
+def fetch_pool(env: dict, level: str, topic, page: int = 1000, cap: int = 4000) -> list:
     """All non-deleted, image-free rows tagged with `topic` at `level`.
+
+    `topic` may be a list, in which case `cs` means "tagged with ALL of them" —
+    that is how the linking question (rule 4) is found.
 
     Paged with a STABLE order (id.asc) — paging without an explicit stable order
     silently drops and duplicates rows.
     """
     base, key = supabase_creds(env)
     headers = {"apikey": key, "Authorization": "Bearer " + key}
-    topic_filter = urllib.parse.quote('{"%s"}' % topic, safe="")
+    topics = [topic] if isinstance(topic, str) else list(topic)
+    topic_filter = urllib.parse.quote("{%s}" % ",".join('"%s"' % t for t in topics), safe="")
     rows, offset = [], 0
     while offset < cap:
         url = (f"{base}/rest/v1/questions?select={QCOLS}"
@@ -737,6 +753,166 @@ def select_questions(pool: list, n: int, seed: int | None = None,
     stats = {"pool": len(pool), "usable": len(kept), "rejected": rejected,
              "tiers": {k: len(v) for k, v in tiers.items()}}
     return chosen, stats
+
+
+def _marks_of(row) -> int:
+    try:
+        return int(row.get("total_marks") or 0)
+    except Exception:
+        return 0
+
+
+def trim_to_minutes(questions: list, minutes: int, floor: int) -> tuple[list, str]:
+    """Rule 1 — spend the sitting, then stop.
+
+    Questions arrive sorted ascending by marks, so trimming from the END drops
+    the longest first and leaves the ramp intact. `floor` is the number of
+    questions below which we stop trimming and warn instead: a 40-mark topic
+    should not turn into a 3-question sheet just to hit a clock.
+    """
+    if not minutes or not questions:
+        return questions, ""
+    kept = list(questions)
+    dropped = 0
+    while len(kept) > floor and sum(_marks_of(q) for q in kept) * MINUTES_PER_MARK > minutes:
+        kept.pop()
+        dropped += 1
+    if not dropped:
+        return kept, ""
+    return kept, ("trimmed %d question(s) to fit a %d min sitting (%d left, %d marks)"
+                  % (dropped, minutes, len(kept), sum(_marks_of(q) for q in kept)))
+
+
+def size_budget(questions: list) -> dict:
+    """Rule 1 — is this a sitting or a paper? Advisory, never enforced."""
+    marks = sum(_marks_of(q) for q in questions)
+    minutes = int(round(marks * MINUTES_PER_MARK))
+    warn = []
+    if len(questions) < SIZE_BAND_Q[0]:
+        warn.append("only %d questions (house band %d-%d)"
+                    % (len(questions), *SIZE_BAND_Q))
+    elif len(questions) > SIZE_BAND_Q[1]:
+        warn.append("%d questions — over the %d-question band; this reads as a paper, not a sitting"
+                    % (len(questions), SIZE_BAND_Q[1]))
+    if minutes > SIZE_BAND_MIN[1]:
+        warn.append("~%d min of working — over the %d min sitting"
+                    % (minutes, SIZE_BAND_MIN[1]))
+    elif minutes < SIZE_BAND_MIN[0]:
+        warn.append("~%d min of working — under the %d min sitting"
+                    % (minutes, SIZE_BAND_MIN[0]))
+    return {"questions": len(questions), "marks": marks, "minutes": minutes, "warnings": warn}
+
+
+def _norm_label(raw) -> str:
+    """'(a)' / 'a.' / ' A ' all key on 'a'."""
+    return re.sub(r"[^a-z0-9]", "", str(raw or "").lower())
+
+
+def parse_drop_parts(spec: str) -> dict:
+    """Rule 3 — '3:a,b; 7:a' -> {3: {'a','b'}, 7: {'a'}} (keys are SHEET numbers)."""
+    out = {}
+    for chunk in re.split(r"[;\s]+", str(spec or "").strip()):
+        if not chunk:
+            continue
+        if ":" not in chunk:
+            raise ValueError("--drop-parts wants 'Q:labels', got %r" % chunk)
+        qn, labels = chunk.split(":", 1)
+        try:
+            q = int(qn.strip())
+        except ValueError:
+            raise ValueError("--drop-parts question number must be an integer, got %r" % qn)
+        got = {_norm_label(l) for l in labels.split(",") if _norm_label(l)}
+        if not got:
+            raise ValueError("--drop-parts has no labels for question %d" % q)
+        out.setdefault(q, set()).update(got)
+    return out
+
+
+def apply_scope(questions: list, drop: dict) -> tuple[list, list]:
+    """Rule 3 — take the sub-parts a student has been taught, drop the rest.
+
+    Returns (questions, notes). Rows are COPIED, never mutated in place: the
+    same row object can sit in the pool and in another run's report.
+
+    Two things travel with a dropped part and are easy to forget:
+      * the marks total, which drives the writing space and the size budget;
+      * the answer line. `_answer_parts` prefers a row-level `answer`, which
+        covers parts we just removed — so it is cleared when every surviving
+        part carries its own answer, and kept (with a loud note) when it is the
+        only answer there is.
+    """
+    if not drop:
+        return questions, []
+    out, notes = [], []
+    for i, row in enumerate(questions, 1):
+        wanted = drop.get(i)
+        if not wanted:
+            out.append(row)
+            continue
+        parts = _parts(row)
+        if not parts:
+            notes.append("Q%d has no sub-parts — --drop-parts %s ignored"
+                         % (i, ",".join(sorted(wanted))))
+            out.append(row)
+            continue
+        keep = [p for p in parts if _norm_label(p.get("label")) not in wanted]
+        gone = [p for p in parts if _norm_label(p.get("label")) in wanted]
+        missing = wanted - {_norm_label(p.get("label")) for p in parts}
+        if missing:
+            notes.append("Q%d has no part(s) %s — its parts are %s"
+                         % (i, ", ".join("(%s)" % m for m in sorted(missing)),
+                            ", ".join(_label(p.get("label")) for p in parts)))
+        if not gone:
+            out.append(row)
+            continue
+        if not keep:
+            notes.append("Q%d: dropping %s would leave nothing — question kept whole"
+                         % (i, ", ".join(_label(p.get("label")) for p in gone)))
+            out.append(row)
+            continue
+        new = dict(row)
+        new["parts"] = keep
+        part_marks = [p.get("marks") for p in keep]
+        if all(m for m in part_marks):
+            new["total_marks"] = sum(int(m) for m in part_marks)
+        if _nonempty(row.get("answer")):
+            if all(_nonempty(p.get("answer")) for p in keep):
+                new["answer"] = ""      # rebuild from the surviving parts
+            else:
+                notes.append("Q%d: the [Ans: …] line is the whole question's — it still "
+                             "answers the dropped part(s). Check it." % i)
+        notes.append("Q%d: dropped %s, kept %s"
+                     % (i, ", ".join(_label(p.get("label")) for p in gone),
+                        ", ".join(_label(p.get("label")) for p in keep)))
+        out.append(new)
+    return out, notes
+
+
+def find_link_question(env: dict, levels: list, topics: list, exclude: set,
+                       allow_ai: bool = True):
+    """Rule 4 — one question tagged with BOTH topics, best tier first.
+
+    Returns (row, level) or (None, None). The bank tags every topic a question
+    touches, so "contains both" is exactly the cross-topic question Adrian wants
+    as the capstone; there is no need to infer the link from the text.
+    """
+    best, best_level = None, None
+    for lv in levels:
+        rows = fetch_pool(env, lv, topics)
+        for r in rows:
+            if r["id"] in exclude:
+                continue
+            ok, _ = usable(r)
+            if not ok:
+                continue
+            t = _tier(r)
+            if t >= 2 and not allow_ai:
+                continue
+            if best is None or t < _tier(best):
+                best, best_level = r, lv
+        if best is not None and _tier(best) == 0:
+            break
+    return best, best_level
 
 
 def provenance(row) -> str:
@@ -1029,7 +1205,7 @@ def _page_break_para():
 CLEAR_NUMBERING = False
 
 
-def _para(left=0, hanging=0, align=None, space_after=0,
+def _para(left=0, hanging=0, align=None, space_after=0, space_before=0,
           keep_next=False, page_break_before=False, left_tabs=()):
     """Blank paragraph with fully inline properties.
 
@@ -1065,7 +1241,7 @@ def _para(left=0, hanging=0, align=None, space_after=0,
             tab.set(w("val"), val)
             tab.set(w("pos"), str(pos))
     sp = etree.SubElement(pPr, w("spacing"))
-    sp.set(w("before"), "0")
+    sp.set(w("before"), str(space_before))
     sp.set(w("after"), str(space_after))
     sp.set(w("line"), LINE_15)
     sp.set(w("lineRule"), "auto")
@@ -1174,10 +1350,30 @@ def _notes_label():
     return p
 
 
+def _optional_divider():
+    """Rule 2 — ONE line that says "everything below here is extra".
+
+    Deliberately not a per-question tag. A "(Challenge)" hung off individual
+    questions tells a student mid-sheet that they may skip this one; a single
+    divider tells them where the sheet they must finish ends, which is the thing
+    Adrian actually wants them to know. Bold and short, so _bind_section_heads
+    treats it as a heading and chains it to the question below — a divider
+    stranded at the foot of a page marks the wrong boundary.
+    """
+    p = _para(space_after=120, space_before=180, keep_next=True)
+    _run(p, "(Optional)", bold=True)
+    return p
+
+
 def build_practice(questions: list, omml: OmmlCache,
                    heading: str = "Practice", show_source: bool = False,
-                   page_break: bool = True, space: int = 2) -> list:
-    """Return the list of <w:p> elements forming the Practice section."""
+                   page_break: bool = True, space: int = 2,
+                   optional_from: int | None = None) -> list:
+    """Return the list of <w:p> elements forming the Practice section.
+
+    `optional_from` is the 1-based number of the first question below the
+    `(Optional)` divider.
+    """
     els = []
     if page_break:
         els.append(_page_break_para())
@@ -1191,6 +1387,9 @@ def build_practice(questions: list, omml: OmmlCache,
     els.append(h)
 
     for i, row in enumerate(questions, 1):
+        if optional_from and i == optional_from:
+            els.append(_optional_divider())
+
         # Paragraphs are collected per unit — a question or part together with
         # its writing space — and bound by _unit() before they reach `els`.
         units = []
@@ -1827,7 +2026,8 @@ def _apply_title(body, level_label: str, topic: str, base_stem: str = "") -> str
 def clone_with_practice(base_path: Path, out_path: Path, questions: list,
                         omml: OmmlCache, heading="Practice",
                         show_source=False, page_break=True, space=2,
-                        title: tuple | None = None) -> dict:
+                        title: tuple | None = None,
+                        optional_from: int | None = None) -> dict:
     """Byte-clone the base docx and append the practice paragraphs to its body."""
     global CLEAR_NUMBERING
     with zipfile.ZipFile(base_path) as z:
@@ -1847,7 +2047,8 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     blanks = _compact_blanks(body)
     omml.prime(collect_latex(questions))
     els = build_practice(questions, omml, heading=heading,
-                         show_source=show_source, page_break=page_break, space=space)
+                         show_source=show_source, page_break=page_break, space=space,
+                         optional_from=optional_from)
 
     sect = body.find(w("sectPr"))
     insert_at = list(body).index(sect) if sect is not None else len(body)
@@ -1892,6 +2093,27 @@ class RunReport:
     stats: dict = field(default_factory=dict)
     build: dict = field(default_factory=dict)
     out_path: str = ""
+    size: dict = field(default_factory=dict)
+    scope_notes: list = field(default_factory=list)
+    link_note: str = ""
+    optional_from: int | None = None
+
+    def selection_json(self) -> str:
+        """The chosen questions, in full, for deciding sub-part scope (rule 3).
+
+        The sheet numbers here are the ones --drop-parts takes.
+        """
+        out = []
+        for i, q in enumerate(self.questions, 1):
+            out.append({
+                "n": i, "id": q.get("id"), "source": provenance(q),
+                "marks": q.get("total_marks"), "difficulty": q.get("difficulty"),
+                "topics": q.get("topics"),
+                "question_text": q.get("question_text"),
+                "parts": [{"label": p.get("label"), "marks": p.get("marks"),
+                           "text": p.get("text")} for p in _parts(q)],
+            })
+        return json.dumps(out, indent=2, ensure_ascii=False)
 
     def text(self) -> str:
         L = []
@@ -1907,10 +2129,23 @@ class RunReport:
         for why, cnt in sorted(self.stats.get("rejected", {}).items(), key=lambda x: -x[1]):
             L.append("            skipped %2d: %s" % (cnt, why))
         for i, q in enumerate(self.questions, 1):
-            L.append("   %2d. %-58s %s marks, %s%s"
-                     % (i, provenance(q) or "(no provenance)", q.get("total_marks"),
+            L.append("   %2d.%s %-56s %s marks, %s%s"
+                     % (i, " *" if self.optional_from and i >= self.optional_from else "  ",
+                        provenance(q) or "(no provenance)", q.get("total_marks"),
                         q.get("difficulty") or "?",
                         ", verified" if q.get("verified") else ""))
+        if self.size:
+            L.append("Size      : %d question(s), %d marks, ~%d min of working"
+                     % (self.size["questions"], self.size["marks"], self.size["minutes"]))
+            for warn in self.size.get("warnings", []):
+                L.append("            !! %s" % warn)
+        if self.optional_from:
+            L.append("Optional  : divider before Q%d — Q%d-%d marked * above are the tail"
+                     % (self.optional_from, self.optional_from, len(self.questions)))
+        if self.link_note:
+            L.append("Link      : %s" % self.link_note)
+        for note in self.scope_notes:
+            L.append("Scope     : %s" % note)
         if self.build:
             pg = self.build.get("page") or {}
             L.append("Page      : margins 2/1/2.5/2.5 cm forced on %d section(s)%s"
@@ -1957,7 +2192,9 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
                    seed: int | None = None, allow_ai: bool = True, show_source: bool = False,
                    page_break: bool | None = None, level: str | None = None,
                    env: dict | None = None, dry_run: bool = False,
-                   suffix: str = "", space: int = 2) -> RunReport:
+                   suffix: str = "", space: int = 2, optional: int = 0,
+                   drop_parts: str | None = None, link: str | None = None,
+                   minutes: int = 0) -> RunReport:
     env = env or load_env()
     # notes: the fragment is short, keep the practice on the same page so the
     # formulas stay in view while the student works. worked: the sheet already
@@ -2022,8 +2259,49 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
         raise RuntimeError("No usable practice questions for topic %r at level(s) %s.%s"
                            % (ptopic, "/".join(levels), hint))
 
+    # ---- rule 1: spend the sitting, then stop. Before the link question, which
+    # is a deliberate addition and must survive the trim.
+    trim_note = ""
+    if minutes:
+        chosen, trim_note = trim_to_minutes(chosen, minutes, min(n, SIZE_BAND_Q[0]))
+
+    # ---- rule 4: one question that links this topic to another named one.
+    # Force-placed LAST, after the ascending-marks sort, so it reads as the
+    # capstone rather than turning up third and unbalancing the ramp.
+    link_note = ""
+    if link:
+        row, lv = find_link_question(env, levels, [ptopic, link],
+                                     {r["id"] for r in chosen}, allow_ai=allow_ai)
+        if row is None:
+            link_note = ("no question in the bank is tagged with both %r and %r — "
+                         "none added (pick the link topic from the sheet's own topics, "
+                         "or write one with create-worksheet)" % (ptopic, link))
+        else:
+            if len(chosen) >= n and n > 0:
+                chosen = chosen[:n - 1]
+            chosen.append(row)
+            link_note = "Q%d links %s + %s  [%s, level %s]" % (
+                len(chosen), ptopic, link, provenance(row) or "no provenance", lv)
+
+    # ---- rule 3: scope to what the student has been taught
+    scope_notes = [trim_note] if trim_note else []
+    if drop_parts:
+        chosen, notes = apply_scope(chosen, parse_drop_parts(drop_parts))
+        scope_notes += notes
+
+    # ---- rule 2: where the optional tail starts (1-based question number)
+    optional_from = None
+    if optional:
+        if optional >= len(chosen):
+            scope_notes.append("--optional %d covers the whole sheet — divider not written"
+                               % optional)
+        else:
+            optional_from = len(chosen) - optional + 1
+
     report = RunReport(base=resolved, kind=kind, level_used=level_used,
-                       questions=chosen, stats=stats)
+                       questions=chosen, stats=stats, size=size_budget(chosen),
+                       scope_notes=scope_notes, link_note=link_note,
+                       optional_from=optional_from)
     if dry_run:
         return report
 
@@ -2039,7 +2317,7 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     omml = OmmlCache()
     report.build = clone_with_practice(resolved.path, out_path, chosen, omml,
                                        show_source=show_source, page_break=page_break,
-                                       space=space,
+                                       space=space, optional_from=optional_from,
                                        title=(lvl, topic, resolved.path.stem) if lvl else None)
     report.out_path = str(out_path)
     return report
@@ -2071,6 +2349,19 @@ def main(argv=None):
     ap.add_argument("--no-page-break", dest="page_break", action="store_false")
     ap.add_argument("--space", type=int, default=2,
                     help="extra blank working lines per sub-part (default 2)")
+    ap.add_argument("--minutes", type=int, default=0, metavar="M",
+                    help="trim the sheet to ~M minutes of working (%g min/mark); "
+                         "never below %d questions" % (MINUTES_PER_MARK, SIZE_BAND_Q[0]))
+    ap.add_argument("--optional", type=int, default=0, metavar="N",
+                    help="put an '(Optional)' divider before the last N questions")
+    ap.add_argument("--drop-parts", metavar="SPEC",
+                    help="scope sub-parts, e.g. '3:a,b 7:a' (numbers are sheet numbers "
+                         "from a --dry-run with the same --seed)")
+    ap.add_argument("--link", metavar="TOPIC",
+                    help="add one question tagged with BOTH --topic and this one, last")
+    ap.add_argument("--json", action="store_true",
+                    help="print the selected questions in full as JSON (with --dry-run, "
+                         "this is what you read to choose --drop-parts)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--list", action="store_true", help="list fragments / sheets and exit")
     a = ap.parse_args(argv)
@@ -2094,7 +2385,11 @@ def main(argv=None):
             out=a.out, practice_topic=a.practice_topic, fragment=a.fragment, base=a.base,
             seed=a.seed, allow_ai=not a.no_ai, show_source=a.show_source,
             page_break=a.page_break, level=a.level, dry_run=a.dry_run,
-            suffix=a.suffix, space=a.space)
+            suffix=a.suffix, space=a.space, optional=a.optional,
+            drop_parts=a.drop_parts, link=a.link, minutes=a.minutes)
+    except ValueError as e:
+        print("BAD ARGUMENT: %s" % e, file=sys.stderr)
+        return 2
     except ResolutionError as e:
         print("RESOLUTION FAILED: %s" % e, file=sys.stderr)
         if e.candidates:
@@ -2105,6 +2400,9 @@ def main(argv=None):
             print("Present in another bank: %s" % ", ".join(e.elsewhere), file=sys.stderr)
         return 2
     print(rep.text())
+    if a.json:
+        print("\n--- selected questions (sheet numbers are what --drop-parts takes) ---")
+        print(rep.selection_json())
     return 0
 
 

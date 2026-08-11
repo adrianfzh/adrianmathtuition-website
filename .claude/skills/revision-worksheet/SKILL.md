@@ -66,7 +66,9 @@ python3 <skill-dir>/revision_lib.py --kind notes  --bank S4_AM --topic "Binomial
 python3 <skill-dir>/revision_lib.py --kind worked --folder AM  --topic "Binomial Theorem" -n 8
 ```
 
-Default question count is **8**. Always print the run report (below) back to Adrian.
+Default question count is **8**. When Adrian does *not* name a count, prefer
+`-n 12 --minutes 55` and let the size budget decide — see *Sheet shape*, rule 1.
+Always print the run report (below) back to Adrian.
 
 ### Flags
 
@@ -83,6 +85,11 @@ Default question count is **8**. Always print the run report (below) back to Adr
 | `--level AM\|S3_AM\|EM\|S3_EM\|S1\|S2\|JC` | override the level mapping |
 | `--out <path>` / `--suffix " (TEST)"` | exact output path, taken verbatim / suffix on the **default** filename (ignored when `--out` is given) |
 | `--seed N` | reproducible question pick |
+| `--minutes M` | trim to ~M minutes of working (rule 1); never below 8 questions |
+| `--optional N` | `(Optional)` divider before the last N questions (rule 2) |
+| `--drop-parts "3:a,b 7:a"` | keep only the sub-parts taught (rule 3); numbers are sheet numbers |
+| `--link "<Topic>"` | append one question tagged with BOTH topics (rule 4) |
+| `--json` | print the selected questions in full — read this to choose `--drop-parts` |
 | `--no-ai` | exclude `AI Generated` rows (real past papers only) |
 | `--show-source` | print school/year/paper under each question |
 | `--space N` | extra blank working lines beyond `marks` (default 2) |
@@ -252,6 +259,89 @@ plainly if Adrian asks why a topic returns fewer questions than he expects — f
 topics (Matrices, Vectors, geometry) the figure exclusion removes a third or more of the
 pool, and the report's `skipped NN: refers to a figure/table we cannot render` line shows
 exactly how many.
+
+## Sheet shape — Adrian's four rules (2026-08-11)
+
+These came out of comparing a sheet Adrian built by hand against one another model
+built from the same request. They are what makes a sheet *his*, and none of them are
+about formatting — they are about what goes on the page and how much of it.
+
+### 1. A sitting, not a paper — 8–14 questions, 45–60 minutes
+
+A revision sheet is one sitting a student can finish in a evening, not a mock paper.
+The count band is 8–14; the real constraint is **time**, estimated at
+`MINUTES_PER_MARK = 1.5` (the O-Level/H2 exam rate: EM P1 is 80 marks in 2 h), so
+45–60 min is **30–40 marks**.
+
+- The run report always prints `Size : N question(s), M marks, ~T min of working`
+  and warns when it lands outside either band. It never refuses.
+- **Pass `--minutes 55` whenever Adrian doesn't name a count** (with `-n 12` or `-n 14`
+  so there is something to trim from). The trim drops from the END — questions are
+  sorted ascending by marks, so the longest go first and the ramp survives — and stops
+  at 8 questions, warning instead of cutting deeper.
+- Mark-heavy topics blow the budget at the floor: 8 Binomial Theorem questions is
+  ~50 marks ≈ 75 min. Say so rather than silently shipping a 75-minute "45-minute
+  sheet"; the fix is Adrian's call (fewer questions, or scope the sub-parts — rule 3).
+
+### 2. One `(Optional)` divider, never per-question challenge tags
+
+`--optional 2` writes a single bold `(Optional)` line before the last 2 questions.
+Everything below it is extra; everything above is the sheet.
+
+**Do not tag individual questions `(Challenge)` / `(Harder)` / `*`.** A tag hung off a
+question tells a student mid-sheet that they may skip *this one*, and they will. One
+divider tells them where the part they must finish ends — which is the thing worth
+telling them. Because the set is sorted ascending by marks, the tail is already the
+hard end; the divider just names it.
+
+The divider is short and bold, so `_bind_section_heads` treats it as a heading and
+chains it to the question below — a divider stranded at the foot of a page marks the
+wrong boundary. The report stars the tail questions.
+
+### 3. Scope the sub-parts to what has been taught
+
+When Adrian says *"they've only done up to the product rule"* or *"they haven't seen
+integration by parts"*, that is not a filter on topics — it is a filter on **sub-parts**.
+A past-paper question whose (a)–(b) need untaught material and whose (c)–(d) don't is
+still a good question: take (c)–(d).
+
+The workflow, because sheet numbers only exist after selection:
+
+```bash
+# 1. see the actual questions (same seed AND same -n/--minutes/--link as the real run)
+python3 <skill-dir>/revision_lib.py --kind notes --bank S4_AM --topic "Binomial Theorem" \
+    -n 10 --seed 7 --dry-run --json
+# 2. read the parts, decide, rebuild with the identical selection args + --drop-parts
+python3 <skill-dir>/revision_lib.py --kind notes --bank S4_AM --topic "Binomial Theorem" \
+    -n 10 --seed 7 --drop-parts "3:a,b 7:i"
+```
+
+⚠ **The selection is only reproducible when every selection argument matches** — same
+`--seed`, same `-n`, same `--minutes`/`--link`. The picker is greedy over a seeded
+shuffle, so a different `-n` is a different sheet, not a longer one. Label matching is
+punctuation- and case-insensitive (`(a)`, `a.`, `A` all key on `a`) and this bank uses
+`(i)`/`(ii)` at least as often as `(a)`/`(b)` — read the labels from `--json`, don't
+assume.
+
+Two things travel with a dropped part, both handled: the **marks total** (recomputed
+from the surviving parts, which moves the writing space and the size budget) and the
+**answer line** (a row-level `[Ans: …]` covers parts we just removed — it is rebuilt
+from the surviving parts when they all carry answers, and kept with a loud
+`Scope : … Check it.` note when it is the only answer there is). A drop that would
+empty a question is refused, not silently applied.
+
+### 4. One question that links two named sub-topics
+
+When Adrian names two things — *"differentiation and kinematics"* — at least one
+question should need both, and it goes **last**, as the capstone. `--link "Kinematics"`
+finds a question tagged with both topics (the bank tags every topic a question touches,
+so containment is exactly the right test), best tier first, and force-places it after
+the ascending-marks sort.
+
+If nothing in the bank carries both tags, the report says so plainly and adds nothing.
+Do not fake it by picking a question that merely looks like it links — either choose a
+different second topic (one that appears in the sheet's own `topics`) or write the
+capstone with the [`create-worksheet`](../create-worksheet/SKILL.md) skill.
 
 ## The Practice section
 
