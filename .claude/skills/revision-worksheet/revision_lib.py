@@ -573,7 +573,8 @@ def resolve_worked(folder: str, topic: str) -> Resolved:
 # --------------------------------------------------------------------------
 
 QCOLS = ("id,question_text,answer,parts,total_marks,topics,level,school,year,"
-         "exam_type,paper,question_number,difficulty,has_image,verified")
+         "exam_type,paper,question_number,difficulty,has_image,verified,"
+         "image_url,image_size")
 
 AI_SCHOOL = "ai generated"
 
@@ -594,8 +595,13 @@ def _http_json(url: str, headers: dict):
         return json.loads(r.read().decode("utf-8")), dict(r.headers)
 
 
-def fetch_pool(env: dict, level: str, topic, page: int = 1000, cap: int = 4000) -> list:
-    """All non-deleted, image-free rows tagged with `topic` at `level`.
+def fetch_pool(env: dict, level: str, topic, page: int = 1000, cap: int = 4000,
+               figures: bool = True) -> list:
+    """All non-deleted rows tagged with `topic` at `level`.
+
+    `figures=False` restores the pre-2026-08-12 behaviour: figure questions are
+    excluded at the query. By default they are INCLUDED — their stored images
+    are embedded into the sheet (see fetch_figures / FigureStore).
 
     `topic` may be a list, in which case `cs` means "tagged with ALL of them" —
     that is how the linking question (rule 4) is found.
@@ -607,10 +613,11 @@ def fetch_pool(env: dict, level: str, topic, page: int = 1000, cap: int = 4000) 
     headers = {"apikey": key, "Authorization": "Bearer " + key}
     topics = [topic] if isinstance(topic, str) else list(topic)
     topic_filter = urllib.parse.quote("{%s}" % ",".join('"%s"' % t for t in topics), safe="")
+    img_filter = "" if figures else "&has_image=is.false"
     rows, offset = [], 0
     while offset < cap:
         url = (f"{base}/rest/v1/questions?select={QCOLS}"
-               f"&deleted_at=is.null&has_image=is.false"
+               f"&deleted_at=is.null{img_filter}"
                f"&level=eq.{urllib.parse.quote(level, safe='')}"
                f"&topics=cs.{topic_filter}"
                f"&order=id.asc&offset={offset}&limit={page}")
@@ -659,15 +666,44 @@ def _nonempty(s) -> bool:
     return bool(s and str(s).strip())
 
 
-def usable(row) -> tuple[bool, str]:
-    """v1 quality gate. Returns (ok, reason_if_not)."""
+def _images(row) -> list:
+    """Storage paths of the row's question figures.
+
+    `image_url` is a JSON array of bucket-relative paths
+    ("question_images/<uuid>.png") — text in PostgREST output, list if already
+    decoded. Anything else counts as no images.
+    """
+    v = row.get("image_url")
+    if isinstance(v, str):
+        try:
+            v = json.loads(v)
+        except Exception:
+            return []
+    if not isinstance(v, list):
+        return []
+    return [p for p in v if isinstance(p, str) and p.strip()]
+
+
+def usable(row, figures: bool = True) -> tuple[bool, str]:
+    """Quality gate. Returns (ok, reason_if_not).
+
+    With `figures` on (the default since 2026-08-12), a question whose diagram
+    is stored in the bank is USABLE — the sheet embeds it. The old exclusions
+    remain for rows that NEED a picture we do not have: flagged with no stored
+    file, or text that references a figure with nothing behind it.
+    """
     parts = _parts(row)
     stem = (row.get("question_text") or "").strip()
+    imgs = _images(row) if figures else []
+
+    if row.get("has_image") and not imgs:
+        return False, ("figure question (--no-figures)" if not figures
+                       else "figure flagged but no stored image file")
 
     if parts:
         if any(not _nonempty(p.get("text")) for p in parts):
             return False, "a sub-part has no text (incomplete extraction)"
-    elif not stem:
+    elif not stem and not imgs:
         return False, "no question text"
 
     has_ans = _nonempty(row.get("answer")) or any(_nonempty(p.get("answer")) for p in parts)
@@ -675,8 +711,8 @@ def usable(row) -> tuple[bool, str]:
         return False, "no answer"
 
     blob = " ".join([stem] + [str(p.get("text") or "") for p in parts])
-    if FIGURE_REF.search(blob):
-        return False, "refers to a figure/table we cannot render (v1: no figures)"
+    if not imgs and FIGURE_REF.search(blob):
+        return False, "refers to a figure/table it has no stored image for"
     if MD_TABLE.search(blob) or MD_IMAGE.search(blob):
         return False, "contains a markdown table/image"
     return True, ""
@@ -706,12 +742,12 @@ def _marks_bucket(row) -> str:
 
 
 def select_questions(pool: list, n: int, seed: int | None = None,
-                     allow_ai: bool = True) -> tuple[list, dict]:
+                     allow_ai: bool = True, figures: bool = True) -> tuple[list, dict]:
     """Tiered + diversity-spread selection, no duplicates."""
     rng = random.Random(seed)
     kept, rejected = [], {}
     for r in pool:
-        ok, why = usable(r)
+        ok, why = usable(r, figures=figures)
         if ok:
             kept.append(r)
         else:
@@ -888,8 +924,167 @@ def apply_scope(questions: list, drop: dict) -> tuple[list, list]:
     return out, notes
 
 
+# --------------------------------------------------------------------------
+# Question figures — fetched from Supabase Storage, embedded as inline drawings
+# --------------------------------------------------------------------------
+# The bank stores every extracted diagram in the public `question_images`
+# bucket (image_url = JSON array of paths, image_size = sm|md|lg print hint).
+# The sheet embeds them under the question stem; a question whose figure cannot
+# be fetched is SWAPPED for another rather than printed diagram-less.
+
+EMU_PER_CM = 360000
+EMU_PER_PX = 9525            # Word assumes 96 dpi for pixel-dimensioned images
+FIG_WIDTH_CM = {"sm": 7.0, "md": 10.5, "lg": 14.0}
+
+NS_WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+NS_A = "http://schemas.openxmlformats.org/drawingml/2006/main"
+NS_PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture"
+NS_R_OD = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+NS_REL = "http://schemas.openxmlformats.org/package/2006/relationships"
+NS_CT = "http://schemas.openxmlformats.org/package/2006/content-types"
+
+
+def _png_dims(b: bytes):
+    if len(b) > 24 and b[:8] == b"\x89PNG\r\n\x1a\n":
+        return int.from_bytes(b[16:20], "big"), int.from_bytes(b[20:24], "big")
+    return None
+
+
+def _jpeg_dims(b: bytes):
+    if len(b) < 4 or b[:2] != b"\xff\xd8":
+        return None
+    i = 2
+    while i + 9 < len(b):
+        if b[i] != 0xFF:
+            i += 1
+            continue
+        marker = b[i + 1]
+        if marker in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7,
+                      0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+            return (int.from_bytes(b[i + 7:i + 9], "big"),
+                    int.from_bytes(b[i + 5:i + 7], "big"))
+        i += 2 + int.from_bytes(b[i + 2:i + 4], "big")
+    return None
+
+
+def _img_dims(b: bytes, ext: str):
+    return _png_dims(b) if ext == "png" else _jpeg_dims(b)
+
+
+def fetch_figures(env: dict, rows: list) -> list:
+    """Download each row's figures in place (row['_figures']).
+
+    A row ends with `_figures` = list of {bytes, ext, px} on success, [] when it
+    has no figures, or None when ANY of its figures failed — half a diagram is
+    worse than swapping the question out. Returns human-readable failure notes.
+    """
+    base, _ = supabase_creds(env)
+    notes = []
+    for row in rows:
+        if row.get("_figures") is not None:
+            continue
+        paths = _images(row)
+        if not paths:
+            row["_figures"] = []
+            continue
+        who = provenance(row) or str(row.get("id"))
+        figs = []
+        for p in paths:
+            ext = (p.rsplit(".", 1)[-1] if "." in p else "png").lower()
+            ext = {"jpeg": "jpg"}.get(ext, ext)
+            if ext not in ("png", "jpg"):
+                notes.append("%s: unsupported figure type .%s" % (who, ext))
+                figs = None
+                break
+            url = "%s/storage/v1/object/public/%s" % (base, urllib.parse.quote(p))
+            try:
+                with urllib.request.urlopen(urllib.request.Request(url), timeout=30) as r:
+                    data = r.read()
+            except Exception as e:
+                notes.append("%s: figure fetch failed (%s)" % (who, e))
+                figs = None
+                break
+            dims = _img_dims(data, ext)
+            if not dims or not dims[0] or not dims[1]:
+                notes.append("%s: could not read figure dimensions" % who)
+                figs = None
+                break
+            figs.append({"bytes": data, "ext": ext, "px": dims})
+        row["_figures"] = figs
+    return notes
+
+
+class FigureStore:
+    """Media the finished docx must carry.
+
+    build_practice adds entries while laying questions out (each add returns the
+    relationship id the drawing references); clone_with_practice then writes the
+    bytes into word/media/, the relationships into document.xml.rels and the
+    content-type defaults — the two halves can never disagree about a name.
+    """
+
+    def __init__(self):
+        self.entries = []        # {relid, name, bytes, ext}
+        self._docpr = 9000       # drawing ids, clear of anything in the base docx
+
+    def add(self, data: bytes, ext: str) -> tuple:
+        n = len(self.entries) + 1
+        relid = "rIdRevFig%d" % n
+        self.entries.append({"relid": relid, "name": "revfig%d.%s" % (n, ext),
+                             "bytes": data, "ext": ext})
+        self._docpr += 1
+        return relid, self._docpr
+
+
+def _fig_emu(hint, px) -> tuple:
+    """Print size in EMU: the image_size hint caps the width; never upscale a
+    small scan past its natural 96-dpi size (it would only blur)."""
+    w_px, h_px = px
+    cap = int(FIG_WIDTH_CM.get(hint or "", FIG_WIDTH_CM["md"]) * EMU_PER_CM)
+    cx = min(cap, w_px * EMU_PER_PX)
+    return cx, max(1, round(cx * h_px / w_px))
+
+
+def _figure_para(relid: str, docpr: int, cx: int, cy: int, left: int):
+    """One paragraph holding one inline picture at the question's text column.
+
+    Namespaces are declared locally on <wp:inline> — the base document.xml never
+    declares the drawingml prefixes on its root, and touching the root risks
+    re-serialising every paragraph of Adrian's notes.
+    """
+    p = _para(left=left, keep_next=True, space_after=120)
+    r = etree.SubElement(p, w("r"))
+    drawing = etree.SubElement(r, w("drawing"))
+    inline = etree.SubElement(drawing, "{%s}inline" % NS_WP,
+                              nsmap={"wp": NS_WP, "a": NS_A, "pic": NS_PIC, "r": NS_R_OD})
+    for k in ("distT", "distB", "distL", "distR"):
+        inline.set(k, "0")
+    etree.SubElement(inline, "{%s}extent" % NS_WP, cx=str(cx), cy=str(cy))
+    etree.SubElement(inline, "{%s}effectExtent" % NS_WP, l="0", t="0", r="0", b="0")
+    etree.SubElement(inline, "{%s}docPr" % NS_WP, id=str(docpr), name="Figure %d" % docpr)
+    fr = etree.SubElement(inline, "{%s}cNvGraphicFramePr" % NS_WP)
+    etree.SubElement(fr, "{%s}graphicFrameLocks" % NS_A, noChangeAspect="1")
+    g = etree.SubElement(inline, "{%s}graphic" % NS_A)
+    gd = etree.SubElement(g, "{%s}graphicData" % NS_A, uri=NS_PIC)
+    pic = etree.SubElement(gd, "{%s}pic" % NS_PIC)
+    nv = etree.SubElement(pic, "{%s}nvPicPr" % NS_PIC)
+    etree.SubElement(nv, "{%s}cNvPr" % NS_PIC, id=str(docpr), name="Figure %d" % docpr)
+    etree.SubElement(nv, "{%s}cNvPicPr" % NS_PIC)
+    bf = etree.SubElement(pic, "{%s}blipFill" % NS_PIC)
+    etree.SubElement(bf, "{%s}blip" % NS_A, {"{%s}embed" % NS_R_OD: relid})
+    st = etree.SubElement(bf, "{%s}stretch" % NS_A)
+    etree.SubElement(st, "{%s}fillRect" % NS_A)
+    sp = etree.SubElement(pic, "{%s}spPr" % NS_PIC)
+    xf = etree.SubElement(sp, "{%s}xfrm" % NS_A)
+    etree.SubElement(xf, "{%s}off" % NS_A, x="0", y="0")
+    etree.SubElement(xf, "{%s}ext" % NS_A, cx=str(cx), cy=str(cy))
+    pg = etree.SubElement(sp, "{%s}prstGeom" % NS_A, prst="rect")
+    etree.SubElement(pg, "{%s}avLst" % NS_A)
+    return p
+
+
 def find_link_question(env: dict, levels: list, topics: list, exclude: set,
-                       allow_ai: bool = True):
+                       allow_ai: bool = True, figures: bool = True):
     """Rule 4 — one question tagged with BOTH topics, best tier first.
 
     Returns (row, level) or (None, None). The bank tags every topic a question
@@ -898,11 +1093,11 @@ def find_link_question(env: dict, levels: list, topics: list, exclude: set,
     """
     best, best_level = None, None
     for lv in levels:
-        rows = fetch_pool(env, lv, topics)
+        rows = fetch_pool(env, lv, topics, figures=figures)
         for r in rows:
             if r["id"] in exclude:
                 continue
-            ok, _ = usable(r)
+            ok, _ = usable(r, figures=figures)
             if not ok:
                 continue
             t = _tier(r)
@@ -1368,12 +1563,24 @@ def _optional_divider():
 def build_practice(questions: list, omml: OmmlCache,
                    heading: str = "Practice", show_source: bool = False,
                    page_break: bool = True, space: int = 2,
-                   optional_from: int | None = None) -> list:
+                   optional_from: int | None = None,
+                   figures: "FigureStore | None" = None) -> list:
     """Return the list of <w:p> elements forming the Practice section.
 
     `optional_from` is the 1-based number of the first question below the
-    `(Optional)` divider.
+    `(Optional)` divider. `figures` collects embedded images (fetched onto the
+    rows by fetch_figures) so clone_with_practice can write them into the zip.
     """
+    def _fig_paras(row, indent):
+        out = []
+        if figures is None:
+            return out
+        for f in (row.get("_figures") or []):
+            relid, docpr = figures.add(f["bytes"], f["ext"])
+            cx, cy = _fig_emu(row.get("image_size"), f["px"])
+            out.append(_figure_para(relid, docpr, cx, cy, left=indent))
+        return out
+
     els = []
     if page_break:
         els.append(_page_break_para())
@@ -1425,6 +1632,7 @@ def build_practice(questions: list, omml: OmmlCache,
                 p = _para(left=IND_SQ_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 unit.append(p)
+            unit.extend(_fig_paras(row, IND_SQ_LEFT))
             for _ in range(_working_lines(pm, extra=space)):
                 unit.append(_para(left=IND_SQ_LEFT))
             units.append(unit)
@@ -1447,6 +1655,9 @@ def build_practice(questions: list, omml: OmmlCache,
                 p = _para(left=IND_Q_LEFT, keep_next=True)
                 _emit_parts(p, split_math(extra), omml)
                 unit.append(p)
+
+            # The figure sits with the stem — students read it before part (a).
+            unit.extend(_fig_paras(row, IND_Q_LEFT))
 
             if not parts:
                 for _ in range(_working_lines(row.get("total_marks"), extra=space + 1)):
@@ -2027,7 +2238,8 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
                         omml: OmmlCache, heading="Practice",
                         show_source=False, page_break=True, space=2,
                         title: tuple | None = None,
-                        optional_from: int | None = None) -> dict:
+                        optional_from: int | None = None,
+                        figures: "FigureStore | None" = None) -> dict:
     """Byte-clone the base docx and append the practice paragraphs to its body."""
     global CLEAR_NUMBERING
     with zipfile.ZipFile(base_path) as z:
@@ -2048,7 +2260,7 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     omml.prime(collect_latex(questions))
     els = build_practice(questions, omml, heading=heading,
                          show_source=show_source, page_break=page_break, space=space,
-                         optional_from=optional_from)
+                         optional_from=optional_from, figures=figures)
 
     sect = body.find(w("sectPr"))
     insert_at = list(body).index(sect) if sect is not None else len(body)
@@ -2069,6 +2281,39 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
     xml = re.sub(rb'(<m:mcJc m:val="[^"]*"/>)(<m:count m:val="[^"]*"/>)', rb"\2\1", xml)
     items["word/document.xml"] = xml
 
+    # Embedded figures: bytes into word/media/, one Relationship per image, and
+    # content-type defaults for extensions the base doc never carried. All three
+    # come from the SAME FigureStore entries the drawings reference.
+    if figures and figures.entries:
+        rels_name = "word/_rels/document.xml.rels"
+        rels = (etree.fromstring(items[rels_name]) if rels_name in items
+                else etree.fromstring(
+                    ('<Relationships xmlns="%s"/>' % NS_REL).encode()))
+        for e in figures.entries:
+            etree.SubElement(
+                rels, "{%s}Relationship" % NS_REL, Id=e["relid"],
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+                Target="media/%s" % e["name"])
+            media = "word/media/%s" % e["name"]
+            items[media] = e["bytes"]
+            if media not in names:
+                names.append(media)
+        items[rels_name] = etree.tostring(rels, xml_declaration=True,
+                                          encoding="UTF-8", standalone=True)
+        if rels_name not in names:
+            names.append(rels_name)
+
+        ct = etree.fromstring(items["[Content_Types].xml"])
+        have = {d.get("Extension") for d in ct
+                if etree.QName(d).localname == "Default"}
+        need = {e["ext"] for e in figures.entries}
+        for ext, mime in (("png", "image/png"), ("jpg", "image/jpeg")):
+            if ext in need and ext not in have:
+                etree.SubElement(ct, "{%s}Default" % NS_CT,
+                                 Extension=ext, ContentType=mime)
+        items["[Content_Types].xml"] = etree.tostring(
+            ct, xml_declaration=True, encoding="UTF-8", standalone=True)
+
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(out_path, "w", zipfile.ZIP_DEFLATED) as zout:
@@ -2077,7 +2322,8 @@ def clone_with_practice(base_path: Path, out_path: Path, questions: list,
 
     return {"paragraphs": len(els), "page": page, "house": house,
             "equations": sum(1 for v in omml.cache.values() if v is not None),
-            "fallbacks": list(omml.fallbacks)}
+            "fallbacks": list(omml.fallbacks),
+            "figures": len(figures.entries) if figures else 0}
 
 
 # --------------------------------------------------------------------------
@@ -2097,6 +2343,7 @@ class RunReport:
     scope_notes: list = field(default_factory=list)
     link_note: str = ""
     optional_from: int | None = None
+    figure_notes: list = field(default_factory=list)
 
     def selection_json(self) -> str:
         """The chosen questions, in full, for deciding sub-part scope (rule 3).
@@ -2139,6 +2386,12 @@ class RunReport:
                      % (self.size["questions"], self.size["marks"], self.size["minutes"]))
             for warn in self.size.get("warnings", []):
                 L.append("            !! %s" % warn)
+        nfig = sum(len(q.get("_figures") or []) for q in self.questions)
+        nq = sum(1 for q in self.questions if q.get("_figures"))
+        if nfig or self.figure_notes:
+            L.append("Figures   : %d image(s) embedded on %d question(s)" % (nfig, nq))
+            for note in self.figure_notes:
+                L.append("            ~ %s" % note)
         if self.optional_from:
             L.append("Optional  : divider before Q%d — Q%d-%d marked * above are the tail"
                      % (self.optional_from, self.optional_from, len(self.questions)))
@@ -2194,7 +2447,7 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
                    env: dict | None = None, dry_run: bool = False,
                    suffix: str = "", space: int = 2, optional: int = 0,
                    drop_parts: str | None = None, link: str | None = None,
-                   minutes: int = 0) -> RunReport:
+                   minutes: int = 0, figures: bool = True) -> RunReport:
     env = env or load_env()
     # notes: the fragment is short, keep the practice on the same page so the
     # formulas stay in view while the student works. worked: the sheet already
@@ -2238,15 +2491,15 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     pool, level_used = [], {}
     seen = set()
     for lv in levels:
-        rows = fetch_pool(env, lv, ptopic)
+        rows = fetch_pool(env, lv, ptopic, figures=figures)
         fresh = [r for r in rows if r["id"] not in seen]
         seen.update(r["id"] for r in fresh)
         pool += fresh
         level_used[lv] = len(fresh)
-        chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai)
+        chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai, figures=figures)
         if len(chosen) >= n:
             break
-    chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai)
+    chosen, stats = select_questions(pool, n, seed=seed, allow_ai=allow_ai, figures=figures)
 
     if not chosen:
         hint = ""
@@ -2258,6 +2511,35 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
             pass
         raise RuntimeError("No usable practice questions for topic %r at level(s) %s.%s"
                            % (ptopic, "/".join(levels), hint))
+
+    # ---- figures: download BEFORE anything numbers the sheet (dry-run included,
+    # so --drop-parts numbers from a dry run stay valid). A question whose figure
+    # cannot be fetched is swapped for the next usable candidate, never printed
+    # without its diagram.
+    figure_notes = []
+    if figures:
+        figure_notes += fetch_figures(env, chosen)
+        broken = [r for r in chosen if r.get("_figures") is None]
+        if broken:
+            kept = [r for r in chosen if r.get("_figures") is not None]
+            used = {r["id"] for r in chosen}
+            spares, _ = select_questions([r for r in pool if r["id"] not in used],
+                                         len(broken) + 4, seed=seed,
+                                         allow_ai=allow_ai, figures=figures)
+            for s in spares:
+                if len(kept) >= len(chosen):
+                    break
+                figure_notes += fetch_figures(env, [s])
+                if s.get("_figures") is not None:
+                    kept.append(s)
+                    figure_notes.append("swapped in %s" % (provenance(s) or s["id"]))
+            if len(kept) < len(chosen):
+                figure_notes.append("%d question(s) dropped — no fetchable replacement"
+                                    % (len(chosen) - len(kept)))
+            # Restore the ascending-marks ramp the swaps disturbed (same key as
+            # select_questions).
+            kept.sort(key=lambda r: (r.get("total_marks") or 0, str(r.get("year") or "")))
+            chosen = kept
 
     # ---- rule 1: spend the sitting, then stop. Before the link question, which
     # is a deliberate addition and must survive the trim.
@@ -2271,7 +2553,14 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     link_note = ""
     if link:
         row, lv = find_link_question(env, levels, [ptopic, link],
-                                     {r["id"] for r in chosen}, allow_ai=allow_ai)
+                                     {r["id"] for r in chosen}, allow_ai=allow_ai,
+                                     figures=figures)
+        if row is not None and figures:
+            figure_notes += fetch_figures(env, [row])
+            if row.get("_figures") is None:
+                figure_notes.append("link question %s dropped — its figure would not fetch"
+                                    % (provenance(row) or row["id"]))
+                row = None
         if row is None:
             link_note = ("no question in the bank is tagged with both %r and %r — "
                          "none added (pick the link topic from the sheet's own topics, "
@@ -2301,7 +2590,7 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     report = RunReport(base=resolved, kind=kind, level_used=level_used,
                        questions=chosen, stats=stats, size=size_budget(chosen),
                        scope_notes=scope_notes, link_note=link_note,
-                       optional_from=optional_from)
+                       optional_from=optional_from, figure_notes=figure_notes)
     if dry_run:
         return report
 
@@ -2315,10 +2604,12 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     # Worked sheets already carry Adrian's title; notes fragments never do.
     lvl = BANK_TITLES.get(bank or "") if kind == "notes" else None
     omml = OmmlCache()
+    store = FigureStore() if figures else None
     report.build = clone_with_practice(resolved.path, out_path, chosen, omml,
                                        show_source=show_source, page_break=page_break,
                                        space=space, optional_from=optional_from,
-                                       title=(lvl, topic, resolved.path.stem) if lvl else None)
+                                       title=(lvl, topic, resolved.path.stem) if lvl else None,
+                                       figures=store)
     report.out_path = str(out_path)
     return report
 
@@ -2362,6 +2653,9 @@ def main(argv=None):
     ap.add_argument("--json", action="store_true",
                     help="print the selected questions in full as JSON (with --dry-run, "
                          "this is what you read to choose --drop-parts)")
+    ap.add_argument("--no-figures", action="store_true",
+                    help="exclude figure questions instead of embedding their images "
+                         "(pre-2026-08-12 behaviour)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--list", action="store_true", help="list fragments / sheets and exit")
     a = ap.parse_args(argv)
@@ -2386,7 +2680,8 @@ def main(argv=None):
             seed=a.seed, allow_ai=not a.no_ai, show_source=a.show_source,
             page_break=a.page_break, level=a.level, dry_run=a.dry_run,
             suffix=a.suffix, space=a.space, optional=a.optional,
-            drop_parts=a.drop_parts, link=a.link, minutes=a.minutes)
+            drop_parts=a.drop_parts, link=a.link, minutes=a.minutes,
+            figures=not a.no_figures)
     except ValueError as e:
         print("BAD ARGUMENT: %s" % e, file=sys.stderr)
         return 2

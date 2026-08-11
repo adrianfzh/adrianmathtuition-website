@@ -90,6 +90,7 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 | `ws.para(parts, marks=None)` | Plain paragraph with no numbering. |
 | `ws.math_block(latex)` | Centred display equation (no surrounding text). |
 | `ws.ans(parts)` | `[Ans: ...]` line — right-aligned, orange. The wrapper `[Ans: ` and `]` are added automatically; pass only the inner content. |
+| `ws.figure(path, width_cm=10.5)` | Embed a rendered figure PNG, centred under the current question. Cap 16 cm; never upscales a small image. Render the PNG with `figure_lib.render` first — see **Figures** below. |
 | `ws.page_break()` | Manual page break. |
 | `ws.save(path)` | Write the final docx to disk. |
 
@@ -121,6 +122,55 @@ ws.Q([('text', 'Find '),
 - Use **raw strings** for math-only fragments: `r'\dfrac{a}{b}'` so backslashes pass through.
 - Inside `\begin{pmatrix}...\end{pmatrix}`, the row separator `\\` becomes `\\\\` in a regular string. Or use `r'...'` to keep it as `\\`.
 - Always put math in `('math', ...)` tuples — never embed `$...$` directly in text strings.
+
+## Figures (2026-08-12)
+
+Generated questions may carry diagrams — but **never freehand one**. The iron
+rule is a single source of truth: define the question's parameters ONCE in the
+script, and derive the question text, the answer, **and the figure spec** from
+those same variables. A figure that is drawn from the numbers the answer is
+computed from cannot contradict the mark scheme.
+
+```python
+import figure_lib      # copy from the skill dir alongside worksheet_lib.py
+
+# ONE set of parameters drives everything:
+mu, sigma, cut = 50, 5, 55
+
+ws.Q([('text', f'The masses of oranges are normally distributed with mean {mu} g '
+               f'and standard deviation {sigma} g. Find the probability that a '
+               f'randomly chosen orange has mass greater than {cut} g.')], marks=2)
+fig = figure_lib.render({'kind': 'normal', 'mu': mu, 'sigma': sigma,
+                         'shade': [cut, None], 'xticks': [mu, cut],
+                         'xlabel': 'mass (g)'}, 'q1_fig.png')
+ws.figure(fig)
+ws.ans([('text', '0.159 (3 s.f.)')])   # computed from THE SAME mu/sigma/cut
+```
+
+Supported genres (`figure_lib.GENRES`) and their key spec fields:
+
+| kind | fields |
+|---|---|
+| `graph` | `curves: [{expr, domain, label, label_at?}]`, `points`, `vlines`/`hlines`, `shade: {expr, from, to, to_expr?}`, `xticks`/`yticks`, `xlim`/`ylim`, `clip_y` (asymptotes) |
+| `normal` | `mu`, `sigma`, `shade: [lo, hi]` (`None` = tail), `xticks`, `xlabel` |
+| `histogram` | `bins: [[lo, hi, freq], …]`, `density: true` for unequal widths, `xlabel` |
+| `boxplot` | `min, q1, median, q3, max`, `xticks`, `xlabel` |
+| `cumulative` | `points: [[x, cf], …]`, `xlabel` (ogive with grid) |
+| `points` | `points: {A: [x,y], …}`, `segments: [[A,B] or [A,B,'dashed']]`, `circles`, `right_angles: [[A,B,C]]` (mark at B), `angle_arcs: [{at, from, to, label}]`, `labels`, `axes: true` for coordinate questions |
+
+- `expr` strings use a whitelisted namespace: `x`, `sin cos tan exp ln log sqrt abs pi e`.
+  `render` raises on anything else — a bad spec must fail the script, never ship a blank box.
+- **If the question needs a genre that doesn't exist** (3-D solids, bearings with
+  scale, complicated circle-theorem configs), write the question WITHOUT a figure
+  or pick a different question. A described-but-missing diagram is the one output
+  this system exists to prevent.
+- Real past-paper diagrams are a different pipeline: the `revision-worksheet`
+  skill embeds the bank's stored `question_images` — don't re-render those here.
+- Requires `matplotlib` (present on Adrian's Mac; in Cowork check with
+  `python3 -c "import matplotlib"` and `pip install matplotlib` if missing).
+- Verify visually: after building, extract and LOOK at each figure
+  (`unzip -o out.docx 'word/media/*' -d check/`) the same way equations get an
+  OMML count — a wrong diagram is worse than a missing one.
 
 ## House Style
 

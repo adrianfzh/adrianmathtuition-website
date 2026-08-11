@@ -262,6 +262,24 @@ class Worksheet:
         full = [('text', '[Ans: ')] + list(parts) + [('text', ']')]
         return self._add(full, style='Answer', alignment=WD_ALIGN_PARAGRAPH.RIGHT)
 
+    def figure(self, path, width_cm=10.5):
+        """Embed a rendered figure (see figure_lib.py) under the current question.
+
+        Centred, capped at width_cm (16 cm is the text column) and never
+        upscaled past the image's natural 96-dpi size — a small render should
+        stay small, not blur.
+        """
+        from PIL import Image  # python-docx already depends on Pillow
+        with Image.open(path) as im:
+            natural_cm = im.width / 96 * 2.54
+        p = self.doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(4)
+        p.paragraph_format.space_after = Pt(4)
+        run = p.add_run()
+        run.add_picture(path, width=Cm(min(width_cm, 16, natural_cm)))
+        return p
+
     def page_break(self):
         self.doc.add_page_break()
 

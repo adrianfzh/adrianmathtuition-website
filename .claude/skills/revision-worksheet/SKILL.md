@@ -222,7 +222,8 @@ Filter (all applied server-side):
 
 - `deleted_at=is.null`
 - `topics=cs.{"<CanonicalTopic>"}` — array containment
-- `has_image=is.false` — **v1 excludes every figure question, deliberately** (see below)
+- figure questions are INCLUDED since 2026-08-12 (their images embed — see below);
+  `--no-figures` restores the old `has_image=is.false` exclusion
 - `level=eq.<mapped level>`
 - `order=id.asc` — **paging is only stable with the explicit `.asc`.** Plain `order=id`
   silently drops and duplicates rows across pages (it once turned a 148-row topic into 8).
@@ -241,7 +242,9 @@ Rows are then quality-gated in Python; every rejection reason is counted in the 
 
 - answer must be non-empty, or every sub-part in `parts` must carry an `answer`
 - no sub-part with empty text (incomplete extraction)
-- no question whose text references a figure/diagram/table we cannot render
+- `has_image=true` with no stored image file → rejected (flagged but nothing to embed)
+- text references a figure/diagram/table AND the row has no stored image → rejected
+  (with a stored image, the reference is fine — the figure is on the sheet)
 - no markdown tables or image links in the body
 
 Selection is tiered — real past-paper + `verified` first, then real, then verified
@@ -250,15 +253,28 @@ a diversity-greedy pick spreading marks bucket, difficulty and school, seeded by
 when reproducibility matters, and the final set is sorted ascending by total marks so the
 sheet ramps up. No duplicates.
 
-### Figures are out of scope in v1
+### Figures are embedded (2026-08-12)
 
-Questions with `has_image=true` are excluded, full stop. Rendering them means embedding
-the cropped figure, which needs the verified-figure gate from the question-bank work.
-Until that exists, a figure question on a revision sheet would be unanswerable. Say this
-plainly if Adrian asks why a topic returns fewer questions than he expects — for some
-topics (Matrices, Vectors, geometry) the figure exclusion removes a third or more of the
-pool, and the report's `skipped NN: refers to a figure/table we cannot render` line shows
-exactly how many.
+Figure questions are IN. The bank stores every extracted diagram in the public
+`question_images` Supabase Storage bucket (`image_url` = JSON array of paths,
+`image_size` = `sm|md|lg` print hint), and the builder embeds them under the question
+stem as inline drawings — `fetch_figures` downloads after selection, `FigureStore`
+carries the bytes, and `clone_with_practice` writes `word/media/` + relationships +
+content-type defaults so the two halves can never disagree. Width: sm 7 cm / md 10.5 cm
+/ lg 14 cm, never upscaled past the image's natural 96-dpi size.
+
+- **A question whose figure cannot be fetched is SWAPPED, never printed diagram-less**
+  — the report's `Figures :` block lists every swap (`~ swapped in <school year …>`).
+- Figures download on `--dry-run` too, so the sheet numbering a dry run shows (which
+  `--drop-parts` takes) is identical to the real build's.
+- Rows the sheet still cannot carry are skipped with honest reasons: `figure flagged
+  but no stored image file`, `refers to a figure/table it has no stored image for`
+  (text mentions a diagram, bank has nothing behind it), markdown tables.
+- Empty-stem rows whose question IS the image (the extractor stored the whole question
+  as a picture) are usable — the sheet shows the number, the image, and the marks.
+- `--no-figures` restores the old exclude-at-query behaviour end to end.
+- This unblocked the diagram-heavy topics: JC1 *Differentiation (Maximum and Minimum)*
+  went from ~30% usable to 152/165 in the first live build (4 images on 3 questions).
 
 ## Sheet shape — Adrian's four rules (2026-08-11)
 
