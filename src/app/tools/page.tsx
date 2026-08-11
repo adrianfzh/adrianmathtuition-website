@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import { ogCard } from '@/lib/og';
+import ToolsGrid, { type Tool, type ToolLevel } from './ToolsGrid';
 
 const TOOLS_DESC =
   'Free interactive visualisations for O-Level and JC math — trig graphs, graph transformations, Argand diagrams, 3D vectors, curve sketching, calculus drills and more.';
@@ -80,13 +81,29 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'A fresh figure every time with the ratios marked: key in the area ratio, and the working builds itself step by step over the diagram. Every family that shows up in E-Math vectors, congruence and similarity.' },
 ];
 
+// Level tagging for the Sec / JC filter, kept OUT of the TOOLS objects above so
+// scripts/og-tools.mjs can keep parsing that array with its {slug,icon,title,desc}
+// regex. Anything not listed here serves both levels — which is most of them.
+const JC_ONLY = new Set(['argand-diagram', 'vectors-3d', 'hypothesis-conclusion']);
+const SEC_ONLY = new Set([
+  'mental-math', 'area-ratios', 'linear-law', 'solution-stepper', 'completing-square',
+  'r-formula', 'triangle-solver', 'circle-theorems', 'clips', 'probability-tree',
+  'draw-the-line', 'speed-time', 'bar-model', 'constructions', 'ratio-drill',
+]);
+function levelsFor(slug: string): ToolLevel[] {
+  if (JC_ONLY.has(slug)) return ['jc'];
+  if (SEC_ONLY.has(slug)) return ['sec'];
+  return ['sec', 'jc'];
+}
+
 export default function ToolsPage() {
+  const tools: Tool[] = TOOLS.map((t) => ({ ...t, levels: levelsFor(t.slug) }));
   return (
     <>
       <Nav />
       <main className="pt-16 min-h-screen bg-background">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-16">
-          <header className="text-center mb-10 md:mb-12">
+          <header className="text-center mb-8 md:mb-9">
             <h1 className="font-display font-bold text-3xl md:text-4xl text-navy tracking-tight">Interactive Math Tools</h1>
             <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-[15px] md:text-base leading-relaxed">
               Free, hands-on visualisations for O-Level and JC math — drag, play and explore the
@@ -94,22 +111,7 @@ export default function ToolsPage() {
             </p>
           </header>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            {TOOLS.map((t) => (
-              <a
-                key={t.slug}
-                href={`/tools/${t.slug}.html`}
-                className="group flex flex-col bg-card border border-border rounded-2xl p-5 md:p-6 hover:border-amber hover:shadow-lg transition-all"
-              >
-                <div className="text-3xl mb-3" aria-hidden>{t.icon}</div>
-                <h2 className="font-semibold text-[17px] text-navy group-hover:text-amber-dark transition-colors">{t.title}</h2>
-                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed flex-1">{t.desc}</p>
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-navy mt-4 group-hover:gap-2 transition-all">
-                  Open <span aria-hidden>→</span>
-                </span>
-              </a>
-            ))}
-          </div>
+          <ToolsGrid tools={tools} />
         </div>
       </main>
       <Footer />
