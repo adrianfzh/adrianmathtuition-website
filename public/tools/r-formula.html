@@ -547,8 +547,8 @@
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       const v = makeView(WIN_MAIN, fullRect());
       dgrid(v); daxes(v, 2);
-      clipRect(v.rect, () => wave(v, sinW, X0D, X1D, C.teal, 1.6, 0.13));
-      clipRect(v.rect, () => wave(v, cosW, X0D, X1D, C.rose, 1.6, 0.13));
+      clipRect(v.rect, () => wave(v, sinW, X0D, X1D, C.teal, 1.8, 0.34));
+      clipRect(v.rect, () => wave(v, cosW, X0D, X1D, C.rose, 1.8, 0.34));
       clipRect(v.rect, () => wave(v, sumW, X0D, X1D, C.orange, 3, 0.97));
       // amplitude guides ±R
       const gA = REDUCED ? 1 : smooth((lt-0.35)/0.7);

@@ -189,7 +189,7 @@
 
   const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
               orange:'#C85A2E', plum:'#6B4E9C', line:'#AEBDCE', grid:'#E3E9F1',
-              paper:'#F8FAFC', halo:'rgba(248,250,252,.9)' };
+              paper:'#F8FAFC', ring:'#8FA2B8', halo:'rgba(248,250,252,.9)' };
   const DEG = Math.PI/180;
   const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
   const smooth = t => { t = clamp(t,0,1); return t*t*(3-2*t); };
@@ -418,7 +418,7 @@
       // placed so the drawn angle really is the 35° it is labelled:
       // arc AB (not containing P or Q) = 70°
       const A = circPt(O, R, 250), B = circPt(O, R, 320), Q = circPt(O, R, 130), Pt = circPt(O, R, 30);
-      circle(O, R, C.line, 1.8, 1);
+      circle(O, R, C.ring, 2, 1);
       line(A, Q, C.ink, 1.8, 1); line(B, Q, C.ink, 1.8, 1);
       line(A, Pt, C.ink, 1.8, 1); line(B, Pt, C.ink, 1.8, 1);
       [[A,'A'],[B,'B'],[Q,'Q'],[Pt,'P']].forEach(([p,t]) => { dot(p, 4, C.ink); label(p, t, O, 1); });
@@ -605,7 +605,7 @@
     figure(O, R, step){
       const A = circPt(O, R, 200), B = circPt(O, R, 340), Cp = circPt(O, R, 80);
       const D = circPt(O, R, 260);              // C through O, out the other side
-      circle(O, R, C.line, 1.8, 1);
+      circle(O, R, C.ring, 2, 1);
       if (step >= 3 && step <= 4) poly([O, A, Cp], 'rgba(31,111,132,.13)', null, 1);
       if (step === 5) poly([O, B, Cp], 'rgba(31,111,132,.13)', null, 1);
       line(Cp, A, C.ink, 1.8, 1); line(Cp, B, C.ink, 1.8, 1);
@@ -668,7 +668,7 @@
       ][step];
     },
     figure(O, R, step){
-      circle(O, R, C.line, 1.8, 1);
+      circle(O, R, C.ring, 2, 1);
       if (step <= 3){
         const A = circPt(O,R,205), B = circPt(O,R,335), Pp = circPt(O,R,55), Q = circPt(O,R,120);
         line(A,B,C.muted,1.4,0.55);
@@ -739,7 +739,7 @@
     },
     figure(O, R, step){
       const A = circPt(O,R,160), B = circPt(O,R,235), Cp = circPt(O,R,325), D = circPt(O,R,70);
-      circle(O, R, C.line, 1.8, 1);
+      circle(O, R, C.ring, 2, 1);
       poly([A,B,Cp,D], step >= 5 ? 'rgba(200,90,46,.07)' : null, C.ink, 1, 1.8);
       [[A,'A'],[B,'B'],[Cp,'C'],[D,'D']].forEach(([p,t]) => { dot(p,4,C.ink); label(p,t,O,1); });
       if (step >= 1 && step <= 4){
@@ -810,7 +810,7 @@
       // at R / cos(half the angle between the radii) from the centre
       const half = (315 - 225)/2;
       const T = circPt(O, R/Math.cos(half*DEG), 270);
-      circle(O, R, C.line, 1.8, 1);
+      circle(O, R, C.ring, 2, 1);
       if (step >= 4){
         poly([O,A,T], 'rgba(31,111,132,.12)', null, 1);
         poly([O,B,T], 'rgba(200,90,46,.10)', null, 1);
@@ -876,7 +876,7 @@
       const u = unit(O,A), t = P(-u.y, u.x);
       const T1 = P(A.x - t.x*R*0.95, A.y - t.y*R*0.95);
       const T2 = P(A.x + t.x*R*0.95, A.y + t.y*R*0.95);
-      circle(O, R, C.line, 1.8, 1);
+      circle(O, R, C.ring, 2, 1);
       line(T1, T2, C.ink, 1.9, 1);
       line(A, B, C.ink, 1.8, 1);
       if (step >= 5 || step === 0){ line(Cp, A, C.ink, 1.8, 1); line(Cp, B, C.ink, 1.8, 1); }
@@ -938,7 +938,7 @@
       const u = unit(O,A), t = P(-u.y, u.x);
       const Q = P(A.x + t.x*R*1.0, A.y + t.y*R*1.0);
       const Pp = P(A.x - t.x*R*1.0, A.y - t.y*R*1.0);
-      circle(O, R, C.line, 1.8, 1);
+      circle(O, R, C.ring, 2, 1);
       poly([A,B,Cp,D], null, C.ink, 1, 1.8);
       line(Pp, Q, C.ink, 1.9, 1);
       line(A, Cp, C.muted, 1.5, 0.6);
@@ -998,7 +998,7 @@
      why:'OA and OC are radii of the same circle — isosceles triangle again, so the base angles match.'}
   ];
   function drillFigure(kind, O, R){
-    circle(O, R, C.line, 1.8, 1);
+    circle(O, R, C.ring, 2, 1);
     if (kind === 'centre'){
       const A = circPt(O,R,200), B = circPt(O,R,340), Cp = circPt(O,R,80);
       line(O,A,C.ink,1.7,1); line(O,B,C.ink,1.7,1); line(Cp,A,C.ink,1.7,1); line(Cp,B,C.ink,1.7,1);

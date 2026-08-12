@@ -201,7 +201,7 @@
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
-              orange:'#C85A2E', plum:'#6B4E9C', grid:'#E3E9F1', line:'#AEBDCE',
+              orange:'#C85A2E', plum:'#6B4E9C', grid:'#D8E1EC', line:'#AEBDCE',
               paper:'#F8FAFC', halo:'rgba(248,250,252,.88)' };
   const MINUS = '−';
   const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
@@ -379,12 +379,12 @@
   function grid(v, a){
     const al = a==null?1:a;
     for (let gx = Math.ceil(v.win.x0); gx <= v.win.x1; gx++){
-      ga(al*(gx===0?0.9:0.45));
+      ga(al*(gx===0?0.95:0.8));
       ctx.strokeStyle = gx===0 ? C.line : C.grid; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(v.X(gx), v.rect.y0); ctx.lineTo(v.X(gx), v.rect.y0+v.rect.h); ctx.stroke();
     }
     for (let gy = Math.ceil(v.win.y0); gy <= v.win.y1; gy++){
-      ga(al*(gy===0?0.9:0.45));
+      ga(al*(gy===0?0.95:0.8));
       ctx.strokeStyle = gy===0 ? C.line : C.grid; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(v.rect.x0, v.Y(gy)); ctx.lineTo(v.rect.x0+v.rect.w, v.Y(gy)); ctx.stroke();
     }
@@ -619,8 +619,10 @@
         const a = REDUCED ? 1 : smooth(st/1.0);
         clipRect(v.rect, () => plot(v, x => -x*x, C.rose, 3, 0.97*a));
         drawMath('y = '+MINUS+'x^2', v.X(2.35), v.Y(-4.6), {size:15, color:C.rose, bold:true, a});
-        txt('a > 0 · smile · minimum', v.X(-4.0), v.Y(4.9),
-          {color:C.orange, bold:true, size:13.5});
+        // top-RIGHT: the top-left corner is under the readout panel, which is
+        // opaque enough to swallow this label completely
+        txt('a > 0 · smile · minimum', v.X(4.0), v.Y(4.9),
+          {color:C.orange, bold:true, size:13.5, align:'right'});
         txt('a < 0 · frown · maximum', v.X(-4.0), v.Y(-4.9),
           {color:C.rose, bold:true, size:13.5, a});
       }

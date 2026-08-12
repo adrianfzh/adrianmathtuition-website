@@ -82,7 +82,7 @@
 
   /* ---- stage cards ---- */
   .scard{transition:opacity .3s}
-  .scard.locked{opacity:.68}
+  .scard.locked{opacity:.84}
   .scard.locked .sbody,.scard.locked .srow{pointer-events:none}
   .shead{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap}
   .snum{font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted);
@@ -596,7 +596,9 @@
         var gt = svgEl('text', { x:(bounds[ri]+bounds[ri+1])/2, y:ay+2, 'text-anchor':'middle',
           'dominant-baseline':'central', 'font-family':MONO, 'font-size':38, 'font-weight':700,
           fill: st === 1 ? COL.teal : st === 2 ? COL.rose : COL.muted,
-          opacity: st === 0 ? 0.45 : 0.95, 'pointer-events':'none' });
+          // the '?' is the tap affordance for stage 2 — at .45 the muted ink
+          // composited to ~1.9:1 on the new lighter panel and read as disabled
+          opacity: st === 0 ? 0.75 : 0.95, 'pointer-events':'none' });
         gt.textContent = glyph;
         svg.appendChild(gt);
       }
