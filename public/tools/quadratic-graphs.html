@@ -235,6 +235,49 @@
     if (W < 900) return base;
     return {x0:base.x0+200, y0:base.y0, w:Math.max(200, base.w-200), h:base.h};
   }
+  /* Graph on the left, WORKING on the right (stacked on a phone). Scenes that
+     show working drop the readout panel: the same numbers twice — once as a
+     summary, once as working — only crowds the figure. */
+  function splitRects(){
+    const f = fullRect();
+    if (W < 820)
+      return {fig:{x0:f.x0, y0:f.y0, w:f.w, h:f.h*0.52},
+              work:{x:f.x0+6, y:f.y0 + f.h*0.60, w:f.w-12, narrow:true}};
+    return {fig:{x0:f.x0, y0:f.y0, w:f.w*0.52, h:f.h},
+            work:{x:f.x0 + f.w*0.57, y:f.y0 + 26, w:f.w*0.43, narrow:false}};
+  }
+  /* A line of working:  {t, step, head, note, colour, bold, indent}
+     `step` is the lesson step it appears on, so the working builds in time with
+     the figure. On a phone only the CURRENT step's lines are shown — the whole
+     accumulated block does not fit, and a squeezed unreadable panel is worse
+     than a short one. */
+  function workingPanel(box, lines, upto, now, t0, o){
+    o = o || {};
+    const S = o.size || (box.narrow ? 13 : 14.5);
+    let y = box.y;
+    lines.forEach(l => {
+      if (l.step != null && l.step > upto) return;
+      if (box.narrow && l.step != null && l.step !== upto) return;
+      const isNew = l.step === upto;
+      const a = (REDUCED || o.instant || !isNew) ? 1 : smooth((now - t0)/380);
+      const dy = (REDUCED || o.instant || !isNew) ? 0 : (1-a)*8;
+      if (l.head){
+        y += S*0.5;
+        txt(l.head, box.x, y + dy, {size:S*0.9, color:C.muted, italic:true, a});
+        y += S*1.6;
+        return;
+      }
+      drawMath(l.t, box.x + (l.indent ? 20 : 0), y + dy,
+        {size:S, color:l.colour || C.ink, bold:!!l.bold, a});
+      if (l.note) txt(l.note, box.x + box.w, y + dy,
+        {size:S*0.8, color:C.plum, italic:true, align:'right', a});
+      y += S*1.75;
+    });
+  }
+  // "= " when the rounded value is exact, "≈ " when it is not — so the working
+  // never quietly claims a rounded decimal is the answer
+  const approx = v => Math.abs(v - Math.round(v*100)/100) > 1e-9;
+  const eqs = v => approx(v) ? '≈ ' : '= ';
 
   let GA = 1;
   function ga(a){ ctx.globalAlpha = GA * (a==null?1:clamp(a,0,1)); }
@@ -436,6 +479,99 @@
   }
 
   // =====================================================================
+  //  THE WORKING  — every substitution written out, in the order the scene
+  //  reveals it. These are the lines a student is expected to put on paper.
+  // =====================================================================
+  const M = MINUS;
+  const WORK_MARKS = [                                   // scene 2
+    {head:'shape', step:0},
+    {t:'a = 1 > 0  ⇒  ∪  (a smile)', step:0, colour:C.muted},
+    {head:'x-intercepts — sub y = 0', step:1},
+    {t:'x^2 '+M+' 6x + 5 = 0', step:1},
+    {t:'(x '+M+' 1)(x '+M+' 5) = 0', step:1, indent:true, note:'factorise'},
+    {t:'x = 1   or   x = 5', step:1, indent:true, colour:C.rose, bold:true},
+    {head:'y-intercept — sub x = 0', step:2},
+    {t:'y = 0^2 '+M+' 6(0) + 5 = 5', step:2, colour:C.teal, bold:true},
+    {head:'turning point', step:3},
+    {t:'x = '+M+'b/2a = 6 ÷ 2 = 3', step:3},
+    {t:'sub x = 3:  y = 3^2 '+M+' 6(3) + 5', step:3, indent:true},
+    {t:'= 9 '+M+' 18 + 5 = '+M+'4', step:3, indent:true},
+    {t:'TP ( 3, '+M+'4 )', step:3, indent:true, colour:C.plum, bold:true}
+  ];
+  const WORK_FACT = [                                    // scene 3
+    {head:'x-intercepts — sub y = 0', step:1},
+    {t:'(x '+M+' 1)(x '+M+' 5) = 0', step:1},
+    {t:'x '+M+' 1 = 0    or    x '+M+' 5 = 0', step:1, indent:true},
+    {t:'x = 1        or    x = 5', step:1, indent:true, colour:C.rose, bold:true},
+    {head:'line of symmetry — halfway between the roots', step:2},
+    {t:'x = (1 + 5) ÷ 2 = 3', step:2, colour:C.plum, bold:true},
+    {head:'turning point — sub x = 3', step:3},
+    {t:'y = (3 '+M+' 1)(3 '+M+' 5)', step:3},
+    {t:'= (2)('+M+'2) = '+M+'4', step:3, indent:true},
+    {t:'TP ( 3, '+M+'4 )', step:3, indent:true, colour:C.plum, bold:true},
+    {head:'y-intercept — sub x = 0', step:3},
+    {t:'y = (0 '+M+' 1)(0 '+M+' 5) = ('+M+'1)('+M+'5) = 5', step:3},
+    {t:'( 0, 5 )', step:3, indent:true, colour:C.teal, bold:true}
+  ];
+  const WORK_CS = [                                      // scene 4
+    {head:'y = a(x '+M+' h)^2 + k   ⇒   turning point (h, k)', step:0},
+    {head:'turning point — read it off', step:1},
+    {t:'(x '+M+' 3)^2 ≥ 0, and it is 0 when x = 3', step:1},
+    {t:'then y = 0 '+M+' 4 = '+M+'4', step:1, indent:true},
+    {t:'TP ( 3, '+M+'4 ),  minimum value '+M+'4', step:1, indent:true,
+     colour:C.plum, bold:true},
+    {head:'y-intercept — sub x = 0', step:2},
+    {t:'y = (0 '+M+' 3)^2 '+M+' 4 = 9 '+M+' 4 = 5', step:2, colour:C.teal, bold:true},
+    {head:'x-intercepts — sub y = 0', step:2},
+    {t:'(x '+M+' 3)^2 '+M+' 4 = 0', step:2},
+    {t:'(x '+M+' 3)^2 = 4', step:2, indent:true},
+    {t:'x '+M+' 3 = ±2', step:2, indent:true, note:'both roots'},
+    {t:'x = 5    or    x = 1', step:2, indent:true, colour:C.rose, bold:true}
+  ];
+  const WORK_GEN = [                                     // scene 5
+    {head:'y-intercept — sub x = 0', step:0},
+    {t:'y = 0^2 '+M+' 6(0) + 5 = 5', step:0, colour:C.teal, bold:true},
+    {head:'x-intercepts — sub y = 0', step:1},
+    {t:'x^2 '+M+' 6x + 5 = 0', step:1},
+    {t:'(x '+M+' 1)(x '+M+' 5) = 0', step:1, indent:true, note:'×5, +'+M+'6'},
+    {t:'x = 1   or   x = 5', step:1, indent:true, colour:C.rose, bold:true},
+    {head:'line of symmetry', step:2},
+    {t:'x = '+M+'b/2a = '+M+'('+M+'6) ÷ 2(1) = 3', step:2, colour:C.plum, bold:true},
+    {head:'turning point — sub x = 3', step:3},
+    {t:'y = 3^2 '+M+' 6(3) + 5', step:3},
+    {t:'= 9 '+M+' 18 + 5 = '+M+'4', step:3, indent:true},
+    {t:'TP ( 3, '+M+'4 )', step:3, indent:true, colour:C.plum, bold:true}
+  ];
+  const WORK_NEG = [                                     // scene 7, step 0
+    {head:'shape', step:0},
+    {t:'a = '+M+'1 < 0  ⇒  ∩,  so the TP is a MAXIMUM', step:0, colour:C.muted},
+    {head:'x-intercepts — sub y = 0', step:0},
+    {t:M+'x^2 + 4x '+M+' 3 = 0', step:0},
+    {t:'x^2 '+M+' 4x + 3 = 0', step:0, indent:true, note:'× ('+M+'1)'},
+    {t:'(x '+M+' 1)(x '+M+' 3) = 0', step:0, indent:true},
+    {t:'x = 1   or   x = 3', step:0, indent:true, colour:C.rose, bold:true},
+    {head:'y-intercept — sub x = 0', step:0},
+    {t:'y = '+M+'0 + 0 '+M+' 3 = '+M+'3', step:0, colour:C.teal, bold:true},
+    {head:'turning point', step:0},
+    {t:'x = '+M+'b/2a = '+M+'4 ÷ 2('+M+'1) = 2', step:0},
+    {t:'y = '+M+'(2^2) + 4(2) '+M+' 3 = '+M+'4 + 8 '+M+' 3 = 1', step:0, indent:true},
+    {t:'max ( 2, 1 )', step:0, indent:true, colour:C.plum, bold:true}
+  ];
+  const WORK_NOROOT = [                                  // scene 7, step 1
+    {head:'does it cut the x-axis?  —  test b² '+M+' 4ac', step:0},
+    {t:'b^2 '+M+' 4ac = 2^2 '+M+' 4(1)(5)', step:0},
+    {t:'= 4 '+M+' 20 = '+M+'16', step:0, indent:true},
+    {t:M+'16 < 0  ⇒  no real roots', step:0, indent:true, colour:C.rose, bold:true},
+    {head:'turning point — complete the square', step:0},
+    {t:'y = x^2 + 2x + 5', step:0},
+    {t:'= (x + 1)^2 '+M+' 1 + 5', step:0, indent:true},
+    {t:'= (x + 1)^2 + 4', step:0, indent:true},
+    {t:'TP ( '+M+'1, 4 ),  minimum value 4', step:0, indent:true, colour:C.plum, bold:true},
+    {head:'y-intercept — sub x = 0', step:0},
+    {t:'y = 0 + 0 + 5 = 5', step:0, colour:C.teal, bold:true}
+  ];
+
+  // =====================================================================
   //  SCENES
   // =====================================================================
 
@@ -518,11 +654,11 @@
     onStep(step, now){ this.stepT0 = now; },
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
-      const base = clearOfReadout(fullRect());
-      const v = makeView(WIN, bandRect(base, 30));
+      const R = splitRects();
+      const v = makeView(WIN, bandRect(R.fig, 30));
       grid(v); axes(v);
       const a = REDUCED ? 1 : smooth(st/0.8);
-      drawMath(LESSON.general(), base.x0 + base.w/2, base.y0 + 14,
+      drawMath(LESSON.general(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:17, color:C.orange, bold:true, align:'center'});
       parabola(v, LESSON, {
         roots: step >= 1 ? a : 0,
@@ -535,17 +671,9 @@
         pxSeg(v.X(1), v.Y(0.9), v.X(5), v.Y(0.9), C.plum, 1.4, mid*0.8, [4,4]);
         txt('halfway', v.X(3), v.Y(1.5), {color:C.plum, size:12, align:'center', bold:true, a:mid});
       }
+      workingPanel(R.work, WORK_MARKS, step, now, this.stepT0);
     },
-    ui(step){
-      const rows = [
-        '<span class="k">shape</span> a = 1 &gt; 0 ⇒ smile',
-        '<span class="k">sub y = 0:</span> <span class="r-root">x = 1, x = 5</span>',
-        '<span class="k">sub x = 0:</span> <span class="r-yint">y = 5</span>',
-        '<span class="k">turning point</span> <span class="r-tp">(3, '+MINUS+'4)</span>'
-      ];
-      return {readout: rows.slice(0, step+1).join('<br>'),
-              hint:'shape · x-intercepts · y-intercept · turning point'};
-    }
+    ui(){ return {readout:'', hint:'shape · x-intercepts · y-intercept · turning point'}; }
   };
 
   // -- 3 · factorised form -----------------------------------------------
@@ -569,11 +697,11 @@
     onStep(step, now){ this.stepT0 = now; },
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
-      const base = clearOfReadout(fullRect());
-      const v = makeView(WIN, bandRect(base, 30));
+      const R = splitRects();
+      const v = makeView(WIN, bandRect(R.fig, 30));
       grid(v); axes(v);
       const a = REDUCED ? 1 : smooth(st/0.8);
-      drawMath(LESSON.factorised(), base.x0 + base.w/2, base.y0 + 14,
+      drawMath(LESSON.factorised(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:17, color:C.orange, bold:true, align:'center'});
       parabola(v, LESSON, {
         roots: step >= 1 ? a : 0,
@@ -586,13 +714,9 @@
         txt('(1 + 5) ÷ 2 = 3', v.X(3), v.Y(1.6),
           {color:C.plum, size:13, align:'center', bold:true, a});
       }
+      workingPanel(R.work, WORK_FACT, step, now, this.stepT0);
     },
-    ui(step){ return {readout:
-      '<span class="k">y = (x '+MINUS+' 1)(x '+MINUS+' 5)</span><br>'+
-      '<span class="k">roots</span> <span class="r-root">1, 5</span> — free'+
-      (step >= 2 ? '<br><span class="k">line of symmetry</span> <span class="r-tp">x = 3</span>' : '')+
-      (step >= 3 ? '<br><span class="k">turning point</span> <span class="r-tp">(3, '+MINUS+'4)</span>' : ''),
-      hint:'(x − 1) ⇒ root x = +1'}; }
+    ui(){ return {readout:'', hint:'(x − 1) ⇒ root x = +1'}; }
   };
 
   // -- 4 · completed square form -----------------------------------------
@@ -616,11 +740,11 @@
     onStep(step, now){ this.stepT0 = now; },
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
-      const base = clearOfReadout(fullRect());
-      const v = makeView(WIN, bandRect(base, 30));
+      const R = splitRects();
+      const v = makeView(WIN, bandRect(R.fig, 30));
       grid(v); axes(v);
       const a = REDUCED ? 1 : smooth(st/0.8);
-      drawMath(LESSON.completed(), base.x0 + base.w/2, base.y0 + 14,
+      drawMath(LESSON.completed(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:17, color:C.orange, bold:true, align:'center'});
       parabola(v, LESSON, {
         tp: step >= 1 ? a : 0,
@@ -637,12 +761,9 @@
         txt('(x '+MINUS+' 3)² is never negative — so y is never below '+MINUS+'4',
           v.X(3), v.Y(-5.6), {color:C.plum, italic:true, size:13, align:'center'});
       }
+      workingPanel(R.work, WORK_CS, step, now, this.stepT0);
     },
-    ui(step){ return {readout:
-      '<span class="k">y = a(x '+MINUS+' h)² + k</span><br>'+
-      '<span class="k">turning point</span> <span class="r-tp">(h, k) = (3, '+MINUS+'4)</span>'+
-      (step >= 2 ? '<br><span class="k">sub y = 0:</span> x '+MINUS+' 3 = ±2 ⇒ <span class="r-root">1, 5</span>' : ''),
-      hint:'h flips sign, k does not'}; }
+    ui(){ return {readout:'', hint:'h flips sign, k does not'}; }
   };
 
   // -- 5 · general form ---------------------------------------------------
@@ -668,11 +789,11 @@
     onStep(step, now){ this.stepT0 = now; },
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
-      const base = clearOfReadout(fullRect());
-      const v = makeView(WIN, bandRect(base, 30));
+      const R = splitRects();
+      const v = makeView(WIN, bandRect(R.fig, 30));
       grid(v); axes(v);
       const a = REDUCED ? 1 : smooth(st/0.8);
-      drawMath(LESSON.general(), base.x0 + base.w/2, base.y0 + 14,
+      drawMath(LESSON.general(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:17, color:C.orange, bold:true, align:'center'});
       parabola(v, LESSON, {
         yint: step >= 0 ? a : 0,
@@ -682,16 +803,9 @@
       });
       if (step === 2)
         txt('x = '+MINUS+'b / 2a', v.X(3)+10, v.Y(8.4), {color:C.plum, bold:true, size:14, a});
+      workingPanel(R.work, WORK_GEN, step, now, this.stepT0);
     },
-    ui(step){
-      const rows = [
-        '<span class="k">c = 5</span> ⇒ <span class="r-yint">y-intercept 5</span>',
-        '<span class="k">factorise</span> ⇒ <span class="r-root">x = 1, 5</span>',
-        '<span class="k">x = '+MINUS+'b/2a</span> = <span class="r-tp">3</span>',
-        '<span class="k">sub back</span> ⇒ <span class="r-tp">(3, '+MINUS+'4)</span>'
-      ];
-      return {readout: rows.slice(0, step+1).join('<br>'), hint:'x = −b/2a always works'};
-    }
+    ui(){ return {readout:'', hint:'x = −b/2a always works'}; }
   };
 
   // -- 6 · three forms, one curve ----------------------------------------
@@ -754,17 +868,17 @@
     onStep(step, now){ this.stepT0 = now; },
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
-      const base = clearOfReadout(fullRect());
+      const R = splitRects();
       const v = makeView(step === 0 ? {x0:-1.6, x1:5.6, y0:-4.4, y1:3.2}
                                     : {x0:-5.4, x1:3.4, y0:-1.6, y1:11.4},
-                         bandRect(base, 46));
+                         bandRect(R.fig, 46));
       grid(v); axes(v);
       const q = step === 0 ? NEG : NOROOT;
       const a = REDUCED ? 1 : smooth(st/0.9);
-      drawMath(q.general(), base.x0 + base.w/2, base.y0 + 14,
+      drawMath(q.general(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:17, color:C.orange, bold:true, align:'center'});
       drawMath(step === 0 ? q.factorised() + '   ·   ' + q.completed() : q.completed(),
-        base.x0 + base.w/2, base.y0 + 36,
+        R.fig.x0 + R.fig.w/2, R.fig.y0 + 36,
         {size:13.5, color:C.muted, align:'center', a});
       parabola(v, q, {roots:a, yint:a, tp:a, axis:a});
       if (step === 1){
@@ -773,18 +887,12 @@
           seg(v, v.win.x0, 4, v.win.x1, 4, C.rose, 1.4, b*0.8, [7,5]);
           txt('lowest value is 4 — the curve never gets down to the x-axis',
             v.X(-1)+14, v.Y(4)-16, {color:C.rose, bold:true, size:13, a:b});
-          txt('b² '+MINUS+' 4ac = 4 '+MINUS+' 20 = '+MINUS+'16 < 0  ⇒  no real roots',
-            v.X(-1), v.Y(9.8), {color:C.rose, italic:true, size:13.5, align:'center', a:b});
         }
       }
+      // each step is its own question, so its working stands alone
+      workingPanel(R.work, step === 0 ? WORK_NEG : WORK_NOROOT, 0, now, this.stepT0);
     },
-    ui(step){ return {readout: step === 0
-      ? '<span class="k">a = '+MINUS+'1 &lt; 0</span> ⇒ frown, <span class="r-tp">maximum</span><br>'+
-        '<span class="k">max value</span> <span class="r-tp">1</span> at x = 2<br>'+
-        '<span class="k">roots</span> <span class="r-root">1, 3</span>'
-      : '<span class="k">b² '+MINUS+' 4ac</span> = <span class="r-root">'+MINUS+'16 &lt; 0</span><br>'+
-        '<span class="k">so</span> <span class="r-no">no x-intercepts</span><br>'+
-        '<span class="k">minimum</span> <span class="r-tp">('+MINUS+'1, 4)</span>',
+    ui(step){ return {readout:'',
       hint: step === 1 ? 'complete the square to see the minimum' : 'the minus only flips it over'}; }
   };
 
@@ -795,7 +903,8 @@
       'the sketch with them. Things worth trying: make <b>a negative</b> (it flips); make '+
       '<b>b²&nbsp;−&nbsp;4ac</b> negative and watch the <span class="c-root">roots disappear</span> '+
       'while the turning point stays; change <b>c</b> alone and see the whole curve slide up and '+
-      'down. Predict each move before you drag.'; },
+      'down. (a = 0 is skipped — that is a straight line, not a quadratic.) '+
+      'Predict each move before you drag.'; },
     enter(){ this.sync(); },
     sync(){
       aS.value = String(this.a); bS.value = String(this.b); cS.value = String(this.c);
@@ -803,33 +912,59 @@
       bV.textContent = 'b = '+fmtN(this.b);
       cV.textContent = 'c = '+fmtN(this.c);
     },
-    q(){ return Q(this.a === 0 ? 0.25 : this.a, this.b, this.c); },
+    // a = 0 is a straight line, not a quadratic — the slider skips it
+    q(){ return Q(this.a === 0 ? 0.5 : this.a, this.b, this.c); },
+    // the same working as the taught examples, rebuilt for whatever is on the
+    // sliders — including the ± formula when the roots are not whole numbers
+    work(){
+      const q = this.q(), a = q.a, b = q.b, c = q.c;
+      const term = (co, tail) => (co < 0 ? MINUS + ' ' : '+ ') + fmtN(Math.abs(co)) + tail;
+      const L = [];
+      L.push({head:'shape', step:0});
+      L.push({t:'a = '+fmtN(a)+(a > 0 ? ' > 0  ⇒  ∪' : ' < 0  ⇒  ∩'), step:0, colour:C.muted});
+      L.push({head:'y-intercept — sub x = 0', step:0});
+      L.push({t:'y = c = '+fmtN(c), step:0, colour:C.teal, bold:true});
+      L.push({head:'turning point', step:0});
+      const den = 2*a < 0 ? '('+fmtN(2*a)+')' : fmtN(2*a);
+      L.push({t:'x = '+MINUS+'b/2a = '+fmtN(-b)+' ÷ '+den+' '+eqs(q.h)+fmtN(q.h), step:0});
+      L.push({t:'y = '+fmtN(a)+'('+fmtN(q.h)+')^2 '+term(b, '('+fmtN(q.h)+')')+' '+term(c, ''),
+              step:0, indent:true});
+      L.push({t:eqs(q.k)+fmtN(q.k), step:0, indent:true});
+      L.push({t:'TP ( '+fmtN(q.h)+', '+fmtN(q.k)+' )', step:0, indent:true,
+              colour:C.plum, bold:true});
+      L.push({head:'x-intercepts — sub y = 0', step:0});
+      L.push({t:'b^2 '+MINUS+' 4ac = '+fmtN(b*b)+' '+(4*a*c < 0 ? '+ '+fmtN(-4*a*c) : MINUS+' '+fmtN(4*a*c))+
+                ' = '+fmtN(q.D), step:0});
+      if (q.roots){
+        L.push({t:'x = ('+MINUS+'b ± √(b² '+MINUS+' 4ac)) ÷ 2a', step:0, indent:true});
+        L.push({t:'x '+eqs(q.roots[0])+fmtN(q.roots[0])+'   or   x '+eqs(q.roots[1])+fmtN(q.roots[1]),
+                step:0, indent:true, colour:C.rose, bold:true});
+      } else {
+        L.push({t:fmtN(q.D)+' < 0  ⇒  no real roots', step:0, indent:true,
+                colour:C.rose, bold:true});
+      }
+      return L;
+    },
     draw(){
       const q = this.q();
-      const base = clearOfReadout(fullRect());
-      const v = makeView({x0:-8.4, x1:8.4, y0:-11, y1:13}, bandRect(base, 66));
+      const R = splitRects();
+      const v = makeView({x0:-8.4, x1:8.4, y0:-11, y1:13}, bandRect(R.fig, 62));
       grid(v); axes(v, 1, 2);
       parabola(v, q, {roots:1, yint:1, tp:1, axis:1});
-      drawMath(q.general(), base.x0 + base.w/2, base.y0 + 14,
+      drawMath(q.general(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:17, color:C.orange, bold:true, align:'center'});
       const fac = q.factorised();
-      drawMath(fac || 'does not factorise  (b² '+MINUS+' 4ac < 0)',
-        base.x0 + base.w*0.28, base.y0 + 40,
-        {size:13.5, color:fac ? C.rose : C.muted, align:'center', italic:!fac});
-      drawMath(q.completed(), base.x0 + base.w*0.72, base.y0 + 40,
-        {size:13.5, color:C.plum, align:'center'});
+      const rough = q.roots && (approx(q.roots[0]) || approx(q.roots[1]));
+      drawMath(fac ? (rough ? fac.replace('y = ', 'y ≈ ') : fac) : 'does not factorise',
+        R.fig.x0 + R.fig.w*0.28, R.fig.y0 + 38,
+        {size:12.5, color:fac ? C.rose : C.muted, align:'center', italic:!fac});
+      const cs = q.completed();
+      drawMath((approx(q.h) || approx(q.k)) ? cs.replace('y = ', 'y ≈ ') : cs,
+        R.fig.x0 + R.fig.w*0.72, R.fig.y0 + 38,
+        {size:12.5, color:C.plum, align:'center'});
+      workingPanel(R.work, this.work(), 0, 0, 0, {instant:true});
     },
-    ui(){
-      const q = this.q();
-      return {readout:
-        '<span class="k">shape</span> '+(q.a > 0 ? 'smile ∪' : 'frown ∩')+'<br>'+
-        '<span class="k">y-intercept</span> <span class="r-yint">'+fmtN(q.c)+'</span><br>'+
-        '<span class="k">roots</span> '+(q.roots
-          ? '<span class="r-root">'+fmtN(q.roots[0])+', '+fmtN(q.roots[1])+'</span>'
-          : '<span class="r-no">none (b² − 4ac = '+fmtN(q.D)+')</span>')+'<br>'+
-        '<span class="k">turning point</span> <span class="r-tp">('+fmtN(q.h)+', '+fmtN(q.k)+')</span>',
-        hint:'predict, then drag'};
-    }
+    ui(){ return {readout:'', hint:'predict, then drag'}; }
   };
 
   // -- 9 · drill ----------------------------------------------------------
@@ -1043,7 +1178,10 @@
   });
   function onABC(){
     pauseAuto();
-    s8.a = parseFloat(aS.value); s8.b = parseFloat(bS.value); s8.c = parseFloat(cS.value);
+    let a = parseFloat(aS.value);
+    // a = 0 makes it a straight line, not a quadratic — step over it
+    if (a === 0) a = s8.a > 0 ? -0.5 : 0.5;
+    s8.a = a; s8.b = parseFloat(bS.value); s8.c = parseFloat(cS.value);
     s8.sync();
   }
   aS.addEventListener('input', onABC);

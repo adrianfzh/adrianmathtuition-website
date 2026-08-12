@@ -55,6 +55,15 @@ the card 404s). Conventions, all load-bearing:
   - `quadratic-graphs.html` draws ONE parabola (y = x² − 6x + 5) in every scene so
     "three forms, one curve" is seen rather than asserted; `Q(a,b,c)` derives all three
     forms, so the sandbox can never print a factorised form that disagrees with the curve.
+    Every scene shows its **working** beside the figure (`splitRects` + `workingPanel`):
+    the substitutions that produce each intercept and the turning point, revealed in step
+    with the graph. Three rules there: the panel replaces the readout on those scenes (the
+    same numbers twice just crowds the figure); on a phone only the CURRENT step's lines
+    are drawn, since the accumulated block does not fit; and rounded values are printed
+    with `≈` (via `approx`/`eqs`), including the factorised and completed-square headers,
+    so the sandbox never claims a rounded decimal is exact. `workingPanel` fades the newest
+    line in from a step clock — the sandbox has no such clock, so it passes `{instant:true}`
+    or every line renders at alpha 0.
   - `em-graphs.html` covers the EM *Graphs* page (x^n for n = −2…3, a^x, the minus flip,
     shifting). `plotBreak` starts a new subpath when the pixel jump exceeds the plot
     height — without it 1/x is drawn with a false vertical line through the asymptote.
