@@ -607,6 +607,55 @@
     txt(label, v.X(x)+9, py+d, {color:color, bold:true, size:15, a:a});
   }
 
+
+  /* ---- the four-shape board -------------------------------------------
+     Four curves on one set of axes was "a bunch of information all at once"
+     (Adrian, 2026-08-12) — you cannot tell which curve is which. So each shape
+     gets its OWN little axes, and the layout itself carries the rule:
+         across  = flip in the y-axis        down = flip in the x-axis
+     Panels fade in one at a time, and the one being introduced is outlined. */
+  function fourBoard(base, items, now, t0, o){
+    o = o || {};
+    const narrow = W < 820;
+    const gapX = narrow ? 26 : 150, gapY = narrow ? 52 : 76;
+    const padTop = narrow ? 26 : 42, padBottom = narrow ? 34 : 44;
+    const pw = Math.min(narrow ? 150 : 290, (base.w - gapX - 40)/2);
+    const ph = Math.min(narrow ? 96 : 190, (base.h - gapY - padTop - padBottom)/2);
+    const x0 = base.x0 + (base.w - (pw*2 + gapX))/2;
+    const y0 = base.y0 + padTop + Math.max(0, (base.h - padTop - padBottom - (ph*2 + gapY))/2);
+    items.forEach((it, i) => {
+      const a = REDUCED ? 1 : smooth((now - t0)/1000 - i*0.45);
+      if (a <= 0) return;
+      const col = i % 2, row = Math.floor(i/2);
+      const px = x0 + col*(pw + gapX), py = y0 + row*(ph + gapY);
+      const v = makeView(o.win || {x0:-3.4, x1:3.4, y0:-3.4, y1:3.4},
+                         {x0:px, y0:py, w:pw, h:ph});
+      // a soft card so each shape is visibly its own thing
+      ga(a*0.7); ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#DDE3EC'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.rect(px, py, pw, ph); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
+      seg(v, v.win.x0, 0, v.win.x1, 0, C.line, 1.8, a*0.95);
+      seg(v, 0, v.win.y0, 0, v.win.y1, C.line, 1.8, a*0.95);
+      clipRect(v.rect, () => o.draw(v, it, a));
+      drawMath(it.t, px + pw/2, py - (narrow ? 13 : 17),
+        {size: narrow ? 16 : 21, color:it.c, bold:true, align:'center', a});
+      if (it.sub) txt(it.sub, px + pw/2, py + ph + (narrow ? 15 : 19),
+        {size: narrow ? 12 : 14.5, color:C.muted, italic:true, align:'center', a});
+    });
+    // the two rules, written where the layout shows them
+    const aa = REDUCED ? 1 : smooth((now - t0)/1000 - 2.0);
+    if (aa > 0 && !narrow){
+      const midX = x0 + pw + gapX/2, midY = y0 + ph + gapY/2;
+      txt('flip in the y-axis  →', midX, y0 - 30,
+        {size:15, color:C.muted, italic:true, align:'center', a:aa});
+      // horizontal, not rotated: sideways text reads bottom-up and the arrow
+      // ends up pointing the wrong way for a downward rule
+      txt('flip in the', x0 - 22, midY - 11,
+        {size:15, color:C.muted, italic:true, align:'right', a:aa});
+      txt('x-axis  ↓', x0 - 22, midY + 10,
+        {size:15, color:C.muted, italic:true, align:'right', a:aa});
+    }
+  }
+
   // =====================================================================
   //  SCENES
   // =====================================================================
@@ -730,7 +779,7 @@
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       const v = makeView(WEXP, fullRect());
-      axes(v);
+      if (step < 2) axes(v);          // the board draws its own little axes
       const src = sampleExp(P_EXP, v.win.x0, 2.2, 200);
       const s = REDUCED ? 1 : smooth(clamp((st-0.45)/FLIP_D, 0, 1));
       const lam = 1 - 2*s;                     // 1 → −1, squashing through the mirror
@@ -749,41 +798,37 @@
         dotAt(v, P[0], P[1], 4.6, C.orange, C.paper, 0.5);
         dotAt(v, Q[0], Q[1], 5.2, step === 0 ? C.rose : C.teal, C.paper, 1);
         seg(v, P[0], P[1], Q[0], Q[1], C.muted, 1.2, 0.45, [3,4]);
+        const newCol = step === 0 ? C.rose : C.teal;
+        // one big heading, top-left like a slide title — centred would land on
+        // the y-axis letter, and the corner is free now the readout is gone
+        txt(step === 0 ? 'flip in the x-axis' : 'flip in the y-axis',
+            v.rect.x0 + 16, v.rect.y0 + 24, {color:newCol, bold:true, size: W < 640 ? 18 : 27});
         drawMath('y = e^x', v.X(2.1), v.Y(4.6),
-          {size:16.5, color:C.orange, bold:true, align:'right', a:0.55});
-        // bottom-left for both flips: it is the one corner neither curve reaches,
-        // and the top-left belongs to the readout panel
-        const ly = -4.15;
+          {size:17, color:C.orange, bold:true, align:'right', a:0.6});
+        txt('before', v.X(2.1), v.Y(4.05), {size:14, color:C.muted, italic:true, align:'right', a:0.6});
+        // bottom-left: the one corner neither curve reaches
         drawMath(step === 0 ? [{t:'y = '}, {t:MINUS+'e^x', c:C.rose}]
                             : [{t:'y = '}, {t:'e^{'+MINUS+'x}', c:C.teal}],
-          v.X(-4.0), v.Y(ly), {size:18.5, color:step === 0 ? C.rose : C.teal, bold:true});
-        txt(step === 0 ? 'flip in the x-axis' : 'flip in the y-axis',
-            v.X(-4.0), v.Y(ly - 0.62),
-            {color:C.muted, italic:true, size:15});
+          v.X(-4.0), v.Y(-4.15), {size:22, color:newCol, bold:true});
+        txt('after', v.X(-4.0), v.Y(-4.8), {color:C.muted, italic:true, size:14});
       } else {
-        // all four at once — the picture to memorise
-        const fr = REDUCED ? 1 : smooth(st/1.1);
-        const four = [
-          {p:P_EXP,                          c:FAM[0], t:'y = e^x',            lx:2.9,  ly:4.5},
-          {p:{A:-1,base:E,k:1,c:0},          c:FAM[1], t:'y = '+MINUS+'e^x',   lx:2.9,  ly:-4.5},
-          {p:P_EXPN,                         c:FAM[2], t:'y = e^{'+MINUS+'x}', lx:-2.9, ly:4.5},
-          {p:{A:-1,base:E,k:-1,c:0},         c:FAM[3], t:'y = '+MINUS+'e^{'+MINUS+'x}', lx:-2.9, ly:-4.5}
-        ];
-        four.forEach((f,i) => {
-          const a = REDUCED ? 1 : smooth((st - i*0.28)/0.8);
-          if (a <= 0) return;
-          clipRect(v.rect, () => expCurve(v, f.p, f.c, 2.8, 0.95*a));
-          drawMath(f.t, v.X(f.lx), v.Y(f.ly), {size:17, color:f.c, bold:true, align:'center', a});
-        });
-        if (fr > 0.6) mark(v, 0, 1, C.muted, null, (fr-0.6)/0.4);
-        if (fr > 0.6) mark(v, 0, -1, C.muted, null, (fr-0.6)/0.4);
+        // one shape per panel — see fourBoard()
+        fourBoard(fullRect(), [
+          {p:P_EXP,                  c:FAM[0], t:'y = e^x',            sub:'the original'},
+          {p:P_EXPN,                 c:FAM[2], t:'y = e^{'+MINUS+'x}', sub:'minus in front of x'},
+          {p:{A:-1,base:E,k:1,c:0},  c:FAM[1], t:'y = '+MINUS+'e^x',   sub:'minus in front of the graph'},
+          {p:{A:-1,base:E,k:-1,c:0}, c:FAM[3], t:'y = '+MINUS+'e^{'+MINUS+'x}', sub:'both'}
+        ], now, this.stepT0, {
+          win:{x0:-3.2, x1:3.2, y0:-3.4, y1:3.4},
+          draw:(v, it, a) => expCurve(v, it.p, it.c, 3.4, 0.97*a)
+        })
       }
     },
+    // no readout in this scene at all: the heading on the canvas already names
+    // the flip, and a second box saying the same thing is exactly the "everything
+    // at once" that made this hard to read
     ui(step){
-      return {readout:
-        '<span class="k">−</span> in front of graph &nbsp;⇒ flip in <span class="r-hero">x-axis</span><br>'+
-        '<span class="k">−</span> in front of x &nbsp;&nbsp;&nbsp;&nbsp;⇒ flip in <span class="r-hero">y-axis</span><br>'+
-        '<span class="k">both</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⇒ flipped twice',
+      return {readout:'',
         hint: step === 2 ? 'these four are the whole vocabulary' : 'watch the marked point cross over'};
     }
   };
@@ -1009,7 +1054,7 @@
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       const v = makeView(WLOG, fullRect());
-      axes(v);
+      if (step < 2) axes(v);          // the board draws its own little axes
       const s = REDUCED ? 1 : smooth(clamp((st-0.45)/FLIP_D, 0, 1));
       const lam = 1 - 2*s;
       if (step < 2){
@@ -1025,37 +1070,36 @@
         dotAt(v, P[0], P[1], 4.6, C.orange, C.paper, 0.5);
         dotAt(v, Q[0], Q[1], 5.2, step === 0 ? C.rose : C.teal, C.paper, 1);
         seg(v, P[0], P[1], Q[0], Q[1], C.muted, 1.2, 0.45, [3,4]);
-        drawMath('y = ln x', v.X(4.4), v.Y(1.9), {size:16.5, color:C.orange, bold:true, align:'center', a:0.55});
+        const newCol2 = step === 0 ? C.rose : C.teal;
+        txt(step === 0 ? 'flip in the x-axis' : 'flip in the y-axis',
+            v.rect.x0 + 16, v.rect.y0 + 24, {color:newCol2, bold:true, size: W < 640 ? 18 : 27});
+        drawMath('y = ln x', v.X(4.4), v.Y(1.9),
+          {size:17, color:C.orange, bold:true, align:'center', a:0.6});
+        txt('before', v.X(4.4), v.Y(1.35), {size:14, color:C.muted, italic:true, align:'center', a:0.6});
         drawMath(step === 0 ? [{t:'y = '}, {t:MINUS+'ln x', c:C.rose}]
                             : [{t:'y = '}, {t:'ln('+MINUS+'x)', c:C.teal}],
-          v.X(step === 0 ? 3.4 : -3.4), v.Y(step === 0 ? -3.3 : 3.3),
-          {size:18.5, color:step === 0 ? C.rose : C.teal, bold:true, align:'center'});
-        txt(step === 0 ? 'flip in the x-axis' : 'flip in the y-axis',
-            v.X(step === 0 ? -3.2 : 3.2), v.Y(step === 0 ? 3.4 : -3.4),
-            {color:C.muted, italic:true, size:15, align:'center'});
+          v.X(step === 0 ? 3.4 : -3.4), v.Y(-2.3),
+          {size:22, color:newCol2, bold:true, align:'center'});
+        txt('after', v.X(step === 0 ? 3.4 : -3.4), v.Y(-2.85),
+            {color:C.muted, italic:true, size:14, align:'center'});
       } else {
-        const four = [
-          {p:P_LN,                    c:FAM[0], t:'y = ln x',                     lx:3.7,  ly:2.2},
-          {p:{A:-1,base:E,m:1,n:0},   c:FAM[1], t:'y = '+MINUS+'ln x',            lx:3.7,  ly:-2.2},
-          {p:P_LNN,                   c:FAM[2], t:'y = ln('+MINUS+'x)',           lx:-3.7, ly:2.2},
-          {p:{A:-1,base:E,m:-1,n:0},  c:FAM[3], t:'y = '+MINUS+'ln('+MINUS+'x)',  lx:-3.7, ly:-2.2}
-        ];
-        four.forEach((f,i) => {
-          const a = REDUCED ? 1 : smooth((st - i*0.28)/0.8);
-          if (a <= 0) return;
-          clipRect(v.rect, () => logCurve(v, f.p, f.c, 2.8, 0.95*a));
-          drawMath(f.t, v.X(f.lx), v.Y(f.ly), {size:16.5, color:f.c, bold:true, align:'center', a});
-        });
-        const ma = REDUCED ? 1 : smooth((st-1.0)/0.8);
-        if (ma > 0){ mark(v, 1, 0, C.muted, null, ma); mark(v, -1, 0, C.muted, null, ma); }
+        // one shape per panel — same board as the exponentials, so the two
+        // families are learnt with the same picture
+        fourBoard(fullRect(), [
+          {p:P_LN,                   c:FAM[0], t:'y = ln x',            sub:'the original'},
+          {p:P_LNN,                  c:FAM[2], t:'y = ln('+MINUS+'x)',  sub:'minus in front of x'},
+          {p:{A:-1,base:E,m:1,n:0},  c:FAM[1], t:'y = '+MINUS+'ln x',   sub:'minus in front of the graph'},
+          {p:{A:-1,base:E,m:-1,n:0}, c:FAM[3], t:'y = '+MINUS+'ln('+MINUS+'x)', sub:'both'}
+        ], now, this.stepT0, {
+          win:{x0:-3.4, x1:3.4, y0:-2.6, y1:2.6},
+          draw:(v, it, a) => logCurve(v, it.p, it.c, 3.4, 0.97*a)
+        })
       }
     },
     ui(step){
-      return {readout:
-        '<span class="k">−</span> in front of graph &nbsp;⇒ flip in <span class="r-hero">x-axis</span><br>'+
-        '<span class="k">−</span> in front of x &nbsp;&nbsp;&nbsp;&nbsp;⇒ flip in <span class="r-hero">y-axis</span><br>'+
-        '<span class="k">log needs</span> inside &gt; 0',
-        hint: step === 1 ? 'ln(−x) needs −x > 0, so x < 0' : 'same two rules as the exponentials'};
+      return {readout:'',
+        hint: step === 2 ? 'same two rules as the exponentials'
+            : step === 1 ? 'ln(−x) needs −x > 0, so x < 0' : 'one flip at a time'};
     }
   };
 

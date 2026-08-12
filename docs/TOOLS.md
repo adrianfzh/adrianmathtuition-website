@@ -81,9 +81,18 @@ the card 404s). Conventions, all load-bearing:
   - `em-graphs.html` covers the EM *Graphs* page (x^n for n = −2…3, a^x, the minus flip,
     shifting). `plotBreak` starts a new subpath when the pixel jump exceeds the plot
     height — without it 1/x is drawn with a false vertical line through the asymptote.
-  - **The two graph lessons draw sketch figures, not plots** (2026-08-12 — Adrian: the
-    flips are the main point, keep the graphs simple and the type large). `exp-log-graphs`
-    and `em-graphs` have **no grid and no tick numbers**: `grid()` is gone and `axes()`
+  - **The four basic shapes are shown one per panel, never four on one axes**
+    (2026-08-12 — Adrian: "it is not clear which graph is which, there are no
+    emphasis, it's a bunch of information altogether at once"). `fourBoard()` in
+    `exp-log-graphs.html` lays the four out on a 2×2 board where **the layout is the
+    rule**: across = flip in the y-axis, down = flip in the x-axis. Each panel gets its
+    own little axes, one curve, a large equation and a plain-English subtitle. The flip
+    steps that lead up to it show ONE flip at a time, with a big heading naming it and
+    the two curves labelled *before* / *after* — and those scenes carry **no readout
+    panel**, because it repeated the heading word for word. When adding to these scenes,
+    the test is: can a student say what changed without reading the caption?
+  - **The three graph lessons draw sketch figures, not plots** (2026-08-12 — Adrian: the
+    flips are the main point, keep the graphs simple and the type large). `exp-log-graphs`, `em-graphs` and `quadratic-graphs` have **no grid and no tick numbers**: `grid()` is gone and `axes()`
     draws two thicker rules plus the x / y letters. Numbers on the axes invite reading
     coordinates off a curve that is only schematic, and they cost the room the large
     labels need; points that matter carry their own coordinate label. Canvas type and
