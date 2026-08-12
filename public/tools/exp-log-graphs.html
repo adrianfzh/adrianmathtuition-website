@@ -579,17 +579,35 @@
     return out;
   }
   // dashed asymptote + label. kind 'h' → y = value, 'v' → x = value.
-  // labelLow puts a vertical asymptote's label at the bottom instead of the top:
-  // the curve's near-asymptote branch runs off one end, and the label has to go
-  // to the other one or it sits on the curve.
+  /* labelLow puts a vertical asymptote's label at the bottom instead of the top:
+     the curve's near-asymptote branch runs off one end, and the label has to go
+     to the other one or it sits on the curve.
+
+     When the asymptote IS an axis (y = 0, x = 0) NO dashed line is drawn — a
+     dashed line painted along the axis just makes the axis look dashed, and it
+     blurs the very distinction the lesson is teaching. The axis is the
+     asymptote; the label says so. Otherwise the dashed line is inset from the
+     plot edge so it reads as an annotation rather than a border. */
   function asymptote(v, kind, value, a, label, labelLow){
     const al = a==null?1:a;
-    if (kind === 'h') seg(v, v.win.x0, value, v.win.x1, value, C.plum, 1.7, al*0.9, [8,6]);
-    else seg(v, value, v.win.y0, value, v.win.y1, C.plum, 1.7, al*0.9, [8,6]);
+    const onAxis = Math.abs(value) < 1e-9;
+    const inset = 9;
+    if (!onAxis){
+      if (kind === 'h'){
+        const py = v.Y(value);
+        pxSeg(v.rect.x0+inset, py, v.rect.x0+v.rect.w-inset, py, C.plum, 1.7, al*0.9, [8,6]);
+      } else {
+        const px = v.X(value);
+        pxSeg(px, v.rect.y0+inset, px, v.rect.y0+v.rect.h-inset, C.plum, 1.7, al*0.9, [8,6]);
+      }
+    }
     if (label){
-      if (kind === 'h') txt(label, v.X(v.win.x1)-6, v.Y(value)-11,
+      const full = onAxis ? label + (kind === 'h' ? '  (the x-axis)' : '  (the y-axis)') : label;
+      // an on-axis label has to clear the axis letter drawn in the same corner
+      if (kind === 'h') txt(full, v.X(v.win.x1) - (onAxis ? 26 : 6), v.Y(value)-11,
         {color:C.plum, bold:true, size:12.5, align:'right', a:al});
-      else txt(label, v.X(value)+8, labelLow ? v.Y(v.win.y0)-13 : v.Y(v.win.y1)+13,
+      else txt(full, v.X(value)+8,
+        labelLow ? v.Y(v.win.y0)-13 : v.Y(v.win.y1) + (onAxis ? 29 : 13),
         {color:C.plum, bold:true, size:12.5, a:al});
     }
   }
@@ -835,7 +853,7 @@
         {size:13.5, color:e.bc, italic:true, align:'center', a:ga1*0.95});
       const ma = REDUCED ? 1 : smooth((st-1.5)/0.7);
       if (ma > 0){
-        asymptote(v, 'h', 0, ma*0.85, null);
+        asymptote(v, 'h', 0, ma*0.85, 'y = 0');
         mark(v, 0, e.yint, C.teal, '(0, '+e.yint+')', ma, e.yint < 0 ? 16 : -13);
       }
     },

@@ -67,6 +67,14 @@ the card 404s). Conventions, all load-bearing:
   - `em-graphs.html` covers the EM *Graphs* page (x^n for n = −2…3, a^x, the minus flip,
     shifting). `plotBreak` starts a new subpath when the pixel jump exceeds the plot
     height — without it 1/x is drawn with a false vertical line through the asymptote.
+  - **Asymptotes are never drawn on top of an axis** (`asymptote()` in exp-log-graphs,
+    `asym()` in em-graphs, both check `|value| < 1e-9`). A dashed line painted along the
+    x-axis makes the axis itself look dashed and blurs the distinction the lesson is
+    teaching; when the axis IS the asymptote the label says so — "y = 0 (the x-axis)" —
+    exactly as Adrian's notes phrase it (flagged 2026-08-12). Off-axis asymptotes keep
+    their dashed line, inset ~9 px from the plot edge so it reads as an annotation rather
+    than a border. An on-axis label is also nudged clear of the little x / y axis letters,
+    which live in the same corner.
   - `geometry-proofs.html` is the **proof** half of plane geometry — `circle-theorems.html`
     shows the theorems holding as you drag; this one writes the proof, statement then
     reason, with the figure highlighting only what the current line talks about. Two
