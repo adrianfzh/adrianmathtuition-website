@@ -783,22 +783,42 @@ def _nonempty(s) -> bool:
     return bool(s and str(s).strip())
 
 
+_IMG_PUBLIC_PREFIX = re.compile(r"^https?://[^/]+/storage/v1/object/public/", re.I)
+
+
+def _norm_img_path(v):
+    """One image entry → bucket-relative path, or None if unrecognisable."""
+    if isinstance(v, dict):
+        v = v.get("url") or v.get("path")
+    if not isinstance(v, str):
+        return None
+    return _IMG_PUBLIC_PREFIX.sub("", v.strip()) or None
+
+
 def _images(row) -> list:
     """Storage paths of the row's question figures.
 
-    `image_url` is a JSON array of bucket-relative paths
-    ("question_images/<uuid>.png") — text in PostgREST output, list if already
-    decoded. Anything else counts as no images.
+    `image_url` grew several shapes across extractor generations: a JSON array
+    of bucket-relative paths ("question_images/<uuid>.png"), a bare relative
+    path, a bare full public-bucket URL, and a JSON array of {url, mm} objects.
+    Normalise ALL of them to bucket-relative paths — accepting only the first
+    shape silently rejected 287 stored figures as "no stored image file"
+    (caught 2026-08-13). Anything unrecognisable counts as no images.
     """
     v = row.get("image_url")
     if isinstance(v, str):
-        try:
-            v = json.loads(v)
-        except Exception:
+        s = v.strip()
+        if not s:
             return []
+        try:
+            v = json.loads(s)
+        except Exception:
+            v = [s]  # bare path or bare URL, not JSON
+    if isinstance(v, (str, dict)):
+        v = [v]
     if not isinstance(v, list):
         return []
-    return [p for p in v if isinstance(p, str) and p.strip()]
+    return [p for p in (_norm_img_path(item) for item in v) if p]
 
 
 def usable(row, figures: bool = True) -> tuple[bool, str]:
