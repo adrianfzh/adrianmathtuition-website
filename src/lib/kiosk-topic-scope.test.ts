@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { topicNumber, secYear, inScope, scopeToStudent, SEC3_LAST_TOPIC } from './kiosk-topic-scope';
+import { topicNumber, secYear, inScope, scopeToStudent, yearTag, SEC3_LAST_TOPIC } from './kiosk-topic-scope';
 
 describe('topicNumber', () => {
   it('reads the leading number off a real filename', () => {
@@ -16,6 +16,40 @@ describe('topicNumber', () => {
   it('returns null for the old scheme and for unnumbered sheets', () => {
     expect(topicNumber('REV S4_AM Circles (Notes)')).toBe(null);
     expect(topicNumber('Quadratic Functions Practice')).toBe(null);
+  });
+
+  it('reads JC\'s letter-suffixed numbering', () => {
+    expect(topicNumber('03A Graphing Techniques 1 Conics and Rational Graphs')).toBe(3);
+  });
+
+  // The bug this guards: every one of the 19 `3 REV` PDFs in Revision/AM parsed
+  // as "topic 3". `3 REV AM Circles` is topic 12; the 3 is the Sec 3 SERIES.
+  it('does not read a series prefix as a topic number', () => {
+    expect(topicNumber('3 REV AM Circles (With Worked Examples)')).toBe(null);
+    expect(topicNumber('3 REV AM ALL TOPICS (With Worked Examples)')).toBe(null);
+    expect(topicNumber('2 REV Algebra 8 (Quadratic Graphs) (2019) (Optional)')).toBe(null);
+    expect(topicNumber('1 Revision Pack')).toBe(null);
+  });
+});
+
+describe('yearTag', () => {
+  it('reads an explicit year tag', () => {
+    expect(yearTag('07 Surds Revision (S3)')).toBe(3);
+    expect(yearTag('07 Surds Revision (S4)')).toBe(4);
+    expect(yearTag('12 Circles Revision (Sec 4)')).toBe(4);
+  });
+
+  // Load-bearing: "(S4 Prelim)" says where the QUESTIONS came from, not which
+  // year the sheet is for. Reading it as a year tag would hide an S3-topic
+  // sheet from the Sec 3 students it was built for.
+  it('does not mistake a prelim-source note for a year tag', () => {
+    expect(yearTag('04 Nature of Roots Practice (S4 Prelim)')).toBe(null);
+    expect(yearTag('04 Nature of Roots and Inequalities Practice (S3 EOY)')).toBe(null);
+  });
+
+  it('returns null when there is no tag', () => {
+    expect(yearTag('12 Circles Practice')).toBe(null);
+    expect(yearTag('')).toBe(null);
   });
 });
 
@@ -55,6 +89,32 @@ describe('inScope — the AM Sec 3 cutoff', () => {
     const t = '04 Nature of Roots Practice (S4 Prelim)';
     expect(inScope(t, 'am', 'Sec 3')).toBe(true);
     expect(inScope(t, 'am', 'Sec 4')).toBe(true);
+  });
+});
+
+describe('inScope — the year tag beats the topic number', () => {
+  // O REV 03 Surds is topic 07 — early in the syllabus, but Adrian's O-Level
+  // (Sec 4) series. Topic-number inference shows it to Sec 3; the tag must not.
+  it('hides a Sec 4 sheet even when its topic is an early one', () => {
+    expect(inScope('07 Surds Revision (S4)', 'am', 'Sec 3')).toBe(false);
+    expect(inScope('12 Circles Revision (S4)', 'am', 'Sec 3')).toBe(false);
+  });
+
+  it('shows the Sec 3 twin of the same topic', () => {
+    expect(inScope('07 Surds Revision (S3)', 'am', 'Sec 3')).toBe(true);
+    expect(inScope('12 Circles Revision (S3)', 'am', 'Sec 3')).toBe(true);
+  });
+
+  // Superset rule is unchanged: Sec 4 sits the O-Level on the whole syllabus.
+  it('still gives a Sec 4 student both series', () => {
+    expect(inScope('07 Surds Revision (S3)', 'am', 'Sec 4')).toBe(true);
+    expect(inScope('07 Surds Revision (S4)', 'am', 'Sec 4')).toBe(true);
+  });
+
+  // A tagged sheet past the cap is still shown to Sec 3 if tagged S3 — the tag
+  // is Adrian's explicit statement and outranks the inferred boundary.
+  it('lets an explicit S3 tag override the topic cap', () => {
+    expect(inScope('25 Differentiation Maximum and Minimum Revision (S3)', 'am', 'Sec 3')).toBe(true);
   });
 });
 
