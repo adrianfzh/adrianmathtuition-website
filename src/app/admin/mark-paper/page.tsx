@@ -315,6 +315,11 @@ export default function MarkPaperPage() {
   const [annotatedPhotos, setAnnotatedPhotos] = useState<AnnotatedPhoto[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
   const [recentRuns, setRecentRuns] = useState<Run[]>([]);
+  // Server-side paging for the history list. `runsTotal` is an exact count
+  // from Supabase, so the summary can say "25 of 118" instead of a constant.
+  const [runsTotal, setRunsTotal] = useState(0);
+  const [runsMore, setRunsMore] = useState(false);
+  const [runsLoading, setRunsLoading] = useState(false);
   const [markModel, setMarkModel] = useState<'opus' | 'sonnet'>('opus');
   // Red pen is the default everywhere else — the bot safelists `style` and falls through to
   // 'teacher', and a Telegram photo needs a "classic" caption to opt back into pills. This
@@ -333,14 +338,19 @@ export default function MarkPaperPage() {
   const authHeaders = { 'Content-Type': 'application/json' };
 
   // Lifetime cost metrics + recent runs (for the history list). Re-callable after mark/generate.
-  async function loadStats() {
+  async function loadStats(offset = 0) {
     try {
-      const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'stats' }) });
+      if (offset) setRunsLoading(true);
+      const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'stats', offset }) });
       if (!r.ok) return;
       const d = await r.json();
       setStats(d);
-      setRecentRuns(d.runs || []);
-    } catch { /* ignore */ }
+      // offset 0 is a refresh (after marking) and must REPLACE — appending there
+      // would duplicate the newest run every time a paper finishes.
+      setRecentRuns((prev) => (offset ? [...prev, ...(d.runs || [])] : (d.runs || [])));
+      setRunsTotal(Number(d.total) || 0);
+      setRunsMore(Boolean(d.hasMore));
+    } catch { /* ignore */ } finally { setRunsLoading(false); }
   }
   // Establish the admin session first (silently upgrades a legacy cookie); if not
   // logged in, send to the admin hub instead of failing with a bare "unauthorized".
@@ -945,7 +955,9 @@ export default function MarkPaperPage() {
 
       {recentRuns.length > 0 && (
         <details ref={historyRef} style={card}>
-          <summary style={{ fontWeight: 700, cursor: 'pointer' }}>🗂️ Recent marked papers ({recentRuns.length})</summary>
+          <summary style={{ fontWeight: 700, cursor: 'pointer' }}>
+            🗂️ Recent marked papers ({recentRuns.length}{runsTotal > recentRuns.length ? ` of ${runsTotal}` : ''})
+          </summary>
           <div style={{ marginTop: 8 }}>
             {recentRuns.map((run) => (
               <div key={run.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
@@ -1052,6 +1064,18 @@ export default function MarkPaperPage() {
                 )}
               </div>
             ))}
+          
+            {runsMore && (
+              <div style={{ paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
+                <button
+                  onClick={() => loadStats(recentRuns.length)}
+                  disabled={runsLoading}
+                  style={{ padding: '6px 14px', fontSize: 13, borderRadius: 8, border: '1px solid #d1d5db', background: '#fff', cursor: runsLoading ? 'default' : 'pointer' }}
+                >
+                  {runsLoading ? 'Loading…' : `Load 25 more (${runsTotal - recentRuns.length} left)`}
+                </button>
+              </div>
+            )}
           </div>
         </details>
       )}
