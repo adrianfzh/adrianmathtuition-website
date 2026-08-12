@@ -4,7 +4,7 @@ description: >
   Build Adrian's revision worksheets as .docx by taking one of his EXISTING documents as
   the base and appending a fresh "Practice" section of real past-paper questions pulled
   from the math Supabase question bank. Two kinds: "notes" (base = a notes-bank fragment
-  from Dropbox/AdrianMathNotes/notes_bank, i.e. Adrian's own formulas + Reminders) and
+  from Dropbox/AdrianMathNotes/Practice/<folder>/notes_bank, i.e. Adrian's own formulas + Reminders) and
   "worked" (base = an existing "(With Worked Examples)" sheet from Dropbox/AdrianMathNotes/Revision).
   Trigger whenever Adrian asks for a revision worksheet / revision sheet / notes-plus-practice
   for a topic — e.g. "revision worksheet, S4 AM Binomial Theorem, notes, 8 questions",
@@ -100,8 +100,17 @@ Always print the run report (below) back to Adrian.
 ## Content source 1 — notes bank (kind=notes)
 
 ```
-~/Library/CloudStorage/Dropbox/Apps/AdrianMathNotes/notes_bank/{S3_AM,S4_AM,S3_EM,S4_EM}/<Topic>.docx
+~/…/AdrianMathNotes/Practice/AM/notes_bank/{S3_AM,S4_AM}/<Topic>.docx
+~/…/AdrianMathNotes/Practice/EM/notes_bank/{S3_EM,S4_EM}/<Topic>.docx
 ```
+
+**Moved here 2026-08-12** from a single top-level `notes_bank/`. Adrian: "put the
+notes_bank into the corresponding practice folders and their corresponding levels
+themselves, so it's easy to manage" — the fragments now sit beside the sheets they
+feed. Resolve with `revision_lib.bank_dir(bank)`; never join a path by hand, and note
+there is no longer a single root that contains all four banks. Nesting under
+`Practice/` is safe only because every base scan is a NON-recursive `glob("*.docx")`
+— make one of them recursive and the fragments get picked up as worksheet bases.
 
 **The filenames are the registry.** Adrian adds new fragment files whenever he likes;
 nothing in this skill hardcodes a topic list, and no fragment ever needs registering.
@@ -190,7 +199,25 @@ adds after 2026-08-06 simply isn't in the map and is left alone** — write its 
 equations in Word, or add its bullets to the JSON.
 
 > ⚠ These are **Adrian's editable sources**, not generated output. Back the bank up before
-> any real run: `tar -czf notes_bank_backup.tar.gz notes_bank`.
+> any real run, from `AdrianMathNotes/`:
+> `tar -czf notes_bank_backup.tar.gz Practice/AM/notes_bank Practice/EM/notes_bank`.
+
+### Font size — one pass, already applied
+
+Every fragment was authored from a different formula sheet, so sizes were mixed: on
+2026-08-12 all 66 files carried more than one, and most content sat at **6.5–7 pt**
+against 9.5 pt prose — a tiny heading over tiny equations with normal-size bullets.
+Output never showed it (`_normalize_house_style` pins the build to 9.5 pt), only the
+sources did. `normalize_notes_bank.py` applies that same size pass to the bank:
+
+```
+python3 normalize_notes_bank.py            # dry run
+python3 normalize_notes_bank.py --apply
+```
+
+Size only — line spacing and page geometry are left as Adrian authored them. It skips
+any file with a `~$` Word lock, because a rewrite would be silently undone by the next
+save in Word. Run it after adding a fragment from a new source sheet.
 
 ## Content source 2 — worked-examples sheets (kind=worked)
 

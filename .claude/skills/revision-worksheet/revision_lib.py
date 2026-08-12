@@ -55,7 +55,6 @@ from lxml import etree
 # --------------------------------------------------------------------------
 
 DROPBOX = Path.home() / "Library/CloudStorage/Dropbox/Apps/AdrianMathNotes"
-NOTES_BANK = DROPBOX / "notes_bank"
 REVISION_ROOT = DROPBOX / "Revision"
 # The two kinds print to two different kiosk buttons, so they go to two folders:
 # worked → Revision/<folder> (kiosk "Revise"), notes → Practice/<folder> (kiosk
@@ -71,6 +70,33 @@ WORKED_FOLDERS = ["AM", "EM", "S1", "S2", "JC", "AM G2", "EM G2"]
 # Finished worksheets land in Revision/<folder>: a notes bank has no folder of
 # its own, so S3/S4 of a subject share one.
 BANK_OUT_FOLDER = {"S4_AM": "AM", "S3_AM": "AM", "S4_EM": "EM", "S3_EM": "EM"}
+
+
+def bank_dir(bank: str) -> Path:
+    """Where a notes bank's fragments live.
+
+    Moved 2026-08-12 from a single top-level `notes_bank/` to one bank folder
+    per practice folder, so the fragments sit beside the sheets they feed:
+
+        Practice/AM/notes_bank/{S3_AM,S4_AM}
+        Practice/EM/notes_bank/{S3_EM,S4_EM}
+
+    Adrian: "put the notes_bank into the corresponding practice folders and
+    their corresponding levels themselves, so it's easy to manage."
+
+    The bank keeps its `S3_`/`S4_` folder name rather than collapsing to
+    `S3`/`S4`: it stays self-describing if a folder is ever copied elsewhere in
+    Dropbox, and it still matches the `--bank` value typed on the command line.
+
+    Safe to nest under Practice/ because every base scan uses a NON-recursive
+    `glob("*.docx")` — a recursive scan would pick the fragments up as bases and
+    clone a formula sheet as if it were a worksheet.
+    """
+    folder = BANK_OUT_FOLDER.get(bank)
+    if folder is None:
+        raise ResolutionError(
+            "Unknown bank %r (banks: %s)" % (bank, ", ".join(BANKS)))
+    return PRACTICE_ROOT / folder / "notes_bank" / bank
 
 # …which means this skill's own output sits in the folder it later scans for
 # BASES. Without this filter, a second run clones the first run's worksheet and
@@ -476,7 +502,7 @@ QUALIFIER_HINTS = {
 
 
 def list_fragments(bank: str) -> list:
-    d = NOTES_BANK / bank
+    d = bank_dir(bank)
     if not d.is_dir():
         raise ResolutionError(
             "Notes bank %r not found at %s (banks: %s)" % (bank, d, ", ".join(BANKS)))
@@ -486,7 +512,7 @@ def list_fragments(bank: str) -> list:
 
 def resolve_fragment(bank: str, topic: str) -> Resolved:
     """exact filename -> fuzzy -> grouped '(All)' -> error with 5 closest names."""
-    d = NOTES_BANK / bank
+    d = bank_dir(bank)
     names = list_fragments(bank)
     by_norm = {norm(n): n for n in names}
 

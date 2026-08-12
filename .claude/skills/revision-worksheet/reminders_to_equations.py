@@ -174,7 +174,7 @@ def rebuild_bullet(p, latex: str, omml: OmmlCache) -> None:
     R._emit_parts(p, bullet_parts(latex), omml)
 
 
-def apply(bank_root: Path, mapping: dict, only: str | None, dry_run: bool) -> dict:
+def apply(bank_root: Path | None, mapping: dict, only: str | None, dry_run: bool) -> dict:
     drop = math_vocabulary(mapping)
     omml = OmmlCache()
     if not dry_run:
@@ -190,7 +190,15 @@ def apply(bank_root: Path, mapping: dict, only: str | None, dry_run: bool) -> di
     for key in sorted(mapping):
         if only and only.lower() not in key.lower():
             continue
-        path = bank_root / key
+        # `key` is "<BANK>/<Topic>.docx". Since 2026-08-12 each bank lives under
+        # its own practice folder, so there is no single root to join onto —
+        # resolve through revision_lib. An explicit --bank root still wins, for
+        # running against a copy of the bank.
+        if bank_root is not None:
+            path = bank_root / key
+        else:
+            bank_name, _, fname = key.partition("/")
+            path = R.bank_dir(bank_name) / fname
         if not path.exists():
             report["problems"].append("%s — file not found" % key)
             continue
@@ -252,13 +260,15 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--map", default=str(LATEX_MAP), help="fragment -> bullets JSON")
-    ap.add_argument("--bank", default=str(R.NOTES_BANK), help="notes_bank root")
+    ap.add_argument("--bank", default=None,
+                    help="override root holding <BANK>/<Topic>.docx "
+                         "(default: resolve each bank under its practice folder)")
     ap.add_argument("--only", help="substring filter on the fragment key")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
     mapping = json.loads(Path(args.map).read_text(encoding="utf-8"))
-    rep = apply(Path(args.bank), mapping, args.only, args.dry_run)
+    rep = apply(Path(args.bank) if args.bank else None, mapping, args.only, args.dry_run)
 
     verb = "would rewrite" if args.dry_run else "rewrote"
     print("%s %d fragment(s), %d already converted" % (verb, len(rep["written"]), len(rep["skipped"])))
