@@ -79,6 +79,8 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'Watch the compass actually swing: the perpendicular bisector and the angle bisector built arc by arc, like a video you can pause and scrub. Then drag the points and it rebuilds on your figure — plus the loci question where you shade the region.' },
   { slug: 'ratio-drill', icon: '⚖️', title: 'Ratio of Areas — Endless Practice',
     desc: 'A fresh figure every time with the ratios marked: key in the area ratio, and the working builds itself step by step over the diagram. Every family that shows up in E-Math vectors, congruence and similarity.' },
+  { slug: 'exp-log-graphs', icon: '🪞', title: 'Exponential & Logarithmic Graphs',
+    desc: 'Every one of these graphs is one of four shapes, flipped. Watch a curve flip in each axis, then sketch y = ln(2 − x) the exam way — asymptote, shape, draw, intercepts. Build your own, then drill the shape ID.' },
 ];
 
 // Level tagging for the Sec / JC filter, kept OUT of the TOOLS objects above so

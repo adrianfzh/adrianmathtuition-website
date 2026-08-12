@@ -39,6 +39,29 @@ the card 404s). Conventions, all load-bearing:
 - Both pages keep an info panel overlaid on the canvas on desktop; below 640px
   `constructions.html` **moves that node into the lesson bar** (`placeBadge`) rather
   than shrinking the figure to make room.
+- `exp-log-graphs.html` is the fourth **guided animated lesson** (same scene engine as
+  `first-principles` / `completing-square` / `r-formula`: scenes × steps, dots, ▶ Play
+  all, 500 ms crossfade), and the first to end in a **drill** — 9 scenes, the last two
+  being a live sandbox and a two-stage quiz (shape, then asymptote). Things that bit
+  during the build, all still load-bearing:
+  - **Log curves are sampled in equal steps of y** (`t = ln(inside)`), never by x: it
+    is the only way the near-vertical run beside the asymptote and the flat tail are
+    both accurate, and `frac` then draws the curve outward *from* the asymptote, the
+    way it is sketched by hand. Exponentials sample by x at ~1 px, which is exact for
+    a single-valued y = f(x) however steep.
+  - It carries its own **canvas maths renderer** (`drawMath`: `^{…}` / `_{…}`, string
+    or `{t,c}` runs) plus `htmlMath` for the same markup in the answer buttons. It is
+    NOT the `solution-stepper` HTML mini-renderer — that one does stacked fractions and
+    lives in the DOM; this one draws to canvas. Passing a bare string inside the parts
+    array throws, which is why the array form is normalised.
+  - The rAF loop wraps its body in `try/finally` so a bad frame can never stop the
+    scheduling — an uncaught throw inside `frame()` used to freeze the whole lesson on
+    a half-drawn canvas with no console trace visible to the student.
+  - Label placement is deliberate, not decorative: `bandRect` reserves a strip above
+    the plot for the equation title (a centred title inside the plot lands on the
+    y-axis), `clearOfReadout` insets the plot on wide screens so the readout panel
+    never covers the curve, `mark()` flips an intercept label that would fall off an
+    edge, and a vertical asymptote's label goes to the end the curve does NOT run off.
 
 ## Photo extraction (`/api/tools/vision` → bot `/api/tools-vision`)
 

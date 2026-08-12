@@ -45,6 +45,16 @@ const AM_TOOLS: Record<string, NotesTool[]> = {
       height: 720,
     },
   ],
+  'Logarithms': [
+    {
+      file: 'exp-log-graphs',
+      title: 'Exponential and logarithmic graphs',
+      blurb:
+        'The four basic shapes and the two minus signs that make them, then the exam recipe on y = ln(2 − x): asymptote, shape, draw, intercepts. Ends with a shape-and-asymptote drill.',
+      lesson: true,
+      height: 760,
+    },
+  ],
   'Trigonometry (R-Formula)': [
     {
       file: 'r-formula',
