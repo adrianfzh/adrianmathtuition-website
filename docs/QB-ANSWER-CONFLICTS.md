@@ -157,10 +157,8 @@ sin 2x = ½; a brute-force scan of the real equation returns exactly 30/90/150) 
 `496246ba` EM_NA (a) `√97` → `√80` · ⚠ `ba82cf34` JC2 (iii) — **this file's proposed `0.718` was itself wrong**; see below ·
 `88c84298` JC2 (iv) `1565 mm` → `1216` · `458c441e` EM (a) `2145` → `214.5` ·
 `16052364` JC2 (i) `0.192` → `0.182` · `c98d0a4f` AM (b) answers shifted one part ·
-`ff0a9d4b` JC2 (i) `μ = 500` → `50` · `1086925c` JC2 (ii) — **fix `question_text`**, it has a
-typo that makes a 5-mark question trivial · `7124ff0f` AM (b) and `7677438c` AM (a),(b) and
-`1d4077d0` AM (ii),(iii) — all four trace to corrupted `question_text`, fix the stem first ·
-`5941deef` JC2 — all five part answers belong to a different question
+`ff0a9d4b` JC2 (i) `μ = 500` → `50` · `1086925c`, `7124ff0f`, `7677438c`, `1d4077d0`, `5941deef` — all corrupted-stem cases,
+**now diagnosed and 4 of 5 repaired; see section 7**
 
 ### Section 4 exceptions
 
@@ -226,6 +224,57 @@ happened to agree. Numeric cross-checks pass; only re-reading what the question 
 
 **The 176 unadjudicated parts** whose mismatch is in an intermediate rather than the final
 numeric token. Expected to be mostly artifacts, but unmeasured.
+
+## 7. Corrupted stems — ✅ 4 of 6 WRITTEN 2026-08-12
+
+The rows section 4 traced to damaged `question_text`. Diagnosed by back-solving: the stored
+answers are evidence about what the stem originally said. In three of them the corruption
+propagated — the part answers are exactly what you get by computing from the broken stem,
+the signature of an answer-backfill that trusted an already-corrupt stem.
+
+✅ **`7677438c` · AM — stem `$8378.58` → `$3878.58`.** Fingerprint-grade: 3878.58/2400 = 1.616075
+is verbatim the `e^{3k} = 1.616075` the solution prints, and it back-solves to k = 0.16000012 —
+the setter picked V(3) so that k = 0.16 exactly. V(10) = 2400e^1.6 = $11,887.28, matching the
+solution to the cent. The stored 8378.58 gives k = 0.4167 and V(10) = $154,908, a figure that
+appears nowhere. Part answers ($28,090 and 2023) were junk under every reading → $11,887 and 2009.
+
+✅ **`1086925c` · JC2 — stem numerator `x^2` → `x^3`.** As written the equation is not a curve:
+it collapses to the line pair y = 0 and y = −3x/2, whose gradients (0 and −3/2) and angle
+(56.3°) are *exactly* the stored part answers — a 5-mark implicit-differentiation part reduced
+to inspection. With x³ both P(1,0) and Q(1,−3/2) lie on C exactly, gradients are 1/3 and −11/6,
+angle 79.82° — matching the row-level answer and both solutions. Part answers corrected.
+
+✅ **`7124ff0f` · AM — stem perimeter `4630` → `4430`, part (a) target `\frac{5}{2}x^2` → `\frac{1}{2}`,
+part (b) `163` → `815`.** Both pinned by algebra, no diagram needed: A = ½(800+x)(P−2000−x) has an
+x²-coefficient of −½ for **any** perimeter, so 5/2 is impossible; and 400(P−2000) = 972000 forces
+P = 4430, which independently reproduces the target's x-coefficient of 815 and matches the
+solution's own first line. The broken 5/2 is what produced the stored x = 163 (= 815/5).
+⚠ Left alone: the stem labels `AE = y`, but AECD is a rectangle so AE = CD = 800; the length the
+solution uses is the height AD. Fixing the label needs the diagram. Separately, BC = 1200 rigid is
+geometrically inconsistent with a varying x — that is inherited from the paper, not a typo.
+
+✅ **`5941deef` · JC2 — all five part answers were foreign; replaced from the row's own solutions.**
+Confirmed: 0.2304 = C(5,2)(0.6)²(0.4)³ exactly, 0.6826 = P(−1<Z<1), 9.6 = a binomial mean np — a
+different question entirely (nice p ≈ 0.6, normal approximation), source unidentified. Nothing in
+that set is reachable from B(15, 0.02). The row's own `answer` and every `parts[].solution` were
+correct and self-consistent, so the fix needed no external information. `question_text` is an
+empty string here; the preamble lives in part (i)'s text and renders fine, so it was left as is
+rather than duplicated.
+
+⚠ **`1d4077d0` · AM — NOT WRITTEN.** The corruption is in part (i)'s "show that" target,
+`L = 58 + 40sinθ − 16cosθ`; evidence favours **18**, not 16 (R = 2√481, α = 24.228°, θ = 45.62°
+are the three stored solution values, and the stem's PQ = 18 and PS = 40 give the constant
+58 = 18 + 40; 16 would need a fourth unstated length). But a printed "show that" line must match
+the paper exactly, and the diagram was not readable from here. Note the stored part (iii) answer
+46.5° matches *neither* reading, so that answer layer is unreliable on its own terms.
+
+**Lead worth pulling:** all five rows were touched by large batch writes (~3,096 rows within
+±30 min of `7124ff0f`; ~1,945 around `1086925c`; ~993 around `5941deef`). And `5941deef` is not
+alone in its source file — at least four more rows from `JC PRELIM 2025 SAJC.docx` have part
+answers contradicting their own solutions: `17c69bd6` (Q4 series), `4d31d717` (Q5 APGP),
+`4504bbbb` (Q6 graphing), `4008a5aa` (Q3 Maclaurin). A file-level audit is warranted.
+
+---
 
 ## Corrupted source text found in passing
 
