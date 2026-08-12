@@ -37,6 +37,14 @@ const HEX = {
   '#a89d8c': '#94A3B8',
   '#9b9081': '#8494A8',
   '#8d8578': '#8494A8',
+  // instrument / grid tones found in the first visual sweep
+  '#8a7b63': '#6B7A8C',
+  '#6f6a63': '#5A6B80',
+  '#d9d2c6': '#D3DBE5',
+  '#dad0bf': '#D6DEE8',
+  '#f1ebdd': '#EEF2F7',
+  '#f4b183': '#EDA98A',
+  '#9fd6c7': '#8FC6D6',
   // answer-feedback tints
   '#e9f1ef': '#E8F2F6',
   '#f6e9ec': '#FBEAEE',

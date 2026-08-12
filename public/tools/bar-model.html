@@ -48,12 +48,14 @@
   }
   .chips button:hover{border-color:var(--muted)}
   .chips button.on{background:var(--ink); color:var(--bg); border-color:var(--ink)}
-  .chips button:disabled{opacity:.45; cursor:default}
+  /* .45 was fine on warm paper; on the lighter background a locked chip fell
+     under 3:1, so it reads as damage rather than as "not yet unlocked" */
+  .chips button:disabled{opacity:.6; cursor:default}
   .chips button:disabled:hover{border-color:var(--panelb)}
   .chips .star{color:var(--orange); margin-left:5px}
-  .chips button.on .star{color:#f4b183}
+  .chips button.on .star{color:#EDA98A}
   .chips .tick{color:var(--teal); margin-left:5px}
-  .chips button.on .tick{color:#9fd6c7}
+  .chips button.on .tick{color:#8FC6D6}
 
   .story{font-size:15px; line-height:1.58; margin:10px 0 6px; max-width:74ch}
 

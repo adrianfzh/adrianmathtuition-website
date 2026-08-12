@@ -113,7 +113,10 @@
   .ctlrow label{font-size:12px; color:var(--muted)}
   .ctlrow .slid{display:flex; align-items:center; gap:9px; min-width:210px; flex:0 1 300px}
   .ctlrow .slid input{width:100%}
-  .mono{font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace; font-size:12px}
+  /* the value sits in a flex row, so without a floor it wraps to three cramped
+     lines ("r =" / "0.62 x" / "AB") once the label is long */
+  .mono{font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace; font-size:12px;
+        white-space:nowrap; min-width:96px}
   .spacer{margin-left:auto}
 
   @media (max-width:640px){
@@ -214,7 +217,7 @@
   const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
               orange:'#C85A2E', plum:'#6B4E9C', grid:'#E3E9F1', line:'#AEBDCE',
               paper:'#F8FAFC', halo:'rgba(248,250,252,.9)',
-              brass:'#8a7b63', steel:'#6f6a63' };
+              brass:'#6B7A8C', steel:'#5A6B80' };
 
   // ---- small vector helpers (board coordinates, y grows downward) -----
   const V = (x,y) => ({x,y});
@@ -375,7 +378,7 @@
     ctx.fillStyle = C.brass;
     ctx.beginPath(); ctx.arc(Hg.x, Hg.y-25, 5.2, 0, Math.PI*2); ctx.fill();
     // hinge
-    ctx.fillStyle = '#d9d2c6'; ctx.strokeStyle = C.steel; ctx.lineWidth = 1.6;
+    ctx.fillStyle = '#D3DBE5'; ctx.strokeStyle = C.steel; ctx.lineWidth = 1.6;
     ctx.beginPath(); ctx.arc(Hg.x, Hg.y, 6.2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
     // needle foot
     const un = { x:(N.x-Hg.x), y:(N.y-Hg.y) }, ln = Math.hypot(un.x,un.y)||1;
