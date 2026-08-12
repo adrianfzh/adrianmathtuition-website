@@ -114,6 +114,13 @@ const AM_TOOLS: Record<string, NotesTool[]> = {
       blurb: 'The algebra shown as area, so the constant you add and subtract has a reason.',
       height: 680,
     },
+    {
+      file: 'quadratic-graphs',
+      title: 'The three forms, one curve',
+      blurb:
+        'General, factorised and completed-square are the same parabola — this shows what each form hands you free (y-intercept, roots, turning point), then lets you drag a, b and c.',
+      height: 720,
+    },
   ],
   'Plane Geometry': [
     {

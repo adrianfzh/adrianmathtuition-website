@@ -81,6 +81,16 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'A fresh figure every time with the ratios marked: key in the area ratio, and the working builds itself step by step over the diagram. Every family that shows up in E-Math vectors, congruence and similarity.' },
   { slug: 'exp-log-graphs', icon: '🪞', title: 'Exponential & Logarithmic Graphs',
     desc: 'Every one of these graphs is one of four shapes, flipped. Watch a curve flip in each axis, then sketch y = ln(2 − x) the exam way — asymptote, shape, draw, intercepts. Build your own, then drill the shape ID.' },
+  { slug: 'add-fractions', icon: '➗', title: 'Adding Algebraic Fractions',
+    desc: 'Why you can’t add across, shown with bars — then every common-denominator move, one line at a time: cross-multiplying, the minus that bites, factorising first, and the 6 − 5y swap. Sec 2 algebra.' },
+  { slug: 'quadratic-graphs', icon: '🙂', title: 'Quadratic Graphs — the Three Forms',
+    desc: 'y = x² − 6x + 5, y = (x − 1)(x − 5) and y = (x − 3)² − 4 are the same parabola. See what each form hands you for free — roots, turning point, y-intercept — then drag a, b and c and watch all three rewrite.' },
+  { slug: 'em-graphs', icon: '🖼️', title: 'Graphs of Functions — the Seven Shapes',
+    desc: 'Every E-Math sketching question is one of seven shapes: y = xⁿ for n = −2 to 3, and y = aˣ. Learn the gallery, see what a minus does, then slide them up and down and find the intercepts.' },
+  { slug: 'matrix-multiply', icon: '🔢', title: 'Multiplying Matrices',
+    desc: 'Check the sizes, then build the answer one entry at a time with the row and column lit up — 2×2, 2×3 with 3×2, and the pair that shows why order matters: 1×3 with 3×1 gives a number, 3×1 with 1×3 gives a 3×3.' },
+  { slug: 'matrix-calc', icon: '⌨️', title: 'Matrix Multiplier — Your Own Numbers',
+    desc: 'Type any two matrices and step through the product entry by entry, with the row, the column and the full working shown. Tells you when the multiplication is impossible, and why.' },
 ];
 
 // Level tagging for the Sec / JC filter, kept OUT of the TOOLS objects above so
@@ -91,6 +101,7 @@ const SEC_ONLY = new Set([
   'mental-math', 'area-ratios', 'linear-law', 'solution-stepper', 'completing-square',
   'r-formula', 'triangle-solver', 'circle-theorems', 'clips', 'probability-tree',
   'draw-the-line', 'speed-time', 'bar-model', 'constructions', 'ratio-drill',
+  'add-fractions', 'quadratic-graphs', 'em-graphs', 'matrix-multiply', 'matrix-calc',
 ]);
 function levelsFor(slug: string): ToolLevel[] {
   if (JC_ONLY.has(slug)) return ['jc'];

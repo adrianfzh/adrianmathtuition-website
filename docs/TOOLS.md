@@ -39,6 +39,28 @@ the card 404s). Conventions, all load-bearing:
 - Both pages keep an info panel overlaid on the canvas on desktop; below 640px
   `constructions.html` **moves that node into the lesson bar** (`placeBadge`) rather
   than shrinking the figure to make room.
+- The **guided-lesson family** is now `first-principles`, `completing-square`, `r-formula`,
+  `exp-log-graphs`, `add-fractions`, `quadratic-graphs`, `em-graphs` and `matrix-multiply`.
+  They share one engine by copy (scenes × steps, dots, Prev/Next, ← →, ▶ Play all, 500 ms
+  crossfade, DPR resize, `REDUCED`), and the four newest also share the canvas maths
+  renderer + `bandRect`/`clearOfReadout` layout helpers. A fix to the engine or those
+  helpers should be applied across the set — they are copies, not imports, because the
+  tools stay single-file and zero-request.
+  - `add-fractions.html` (S2 algebra, from Adrian's *Algebra 3: Fractions* notes) is the
+    only one that **typesets rather than plots**: `drawAtoms` lays out lines of fractions
+    with ×n tags, highlight washes and per-line annotations. Two layout rules are
+    load-bearing: a ×n tag gets its **own left gutter** (`tagPad`) or it lands on the
+    preceding operator, and a line carrying an `under` note gets **extra vertical room**
+    or the note collides with the numerator below it.
+  - `quadratic-graphs.html` draws ONE parabola (y = x² − 6x + 5) in every scene so
+    "three forms, one curve" is seen rather than asserted; `Q(a,b,c)` derives all three
+    forms, so the sandbox can never print a factorised form that disagrees with the curve.
+  - `em-graphs.html` covers the EM *Graphs* page (x^n for n = −2…3, a^x, the minus flip,
+    shifting). `plotBreak` starts a new subpath when the pixel jump exceeds the plot
+    height — without it 1/x is drawn with a false vertical line through the asymptote.
+  - `matrix-multiply.html` + `matrix-calc.html` are a **deliberate pair** (lesson, then
+    your own numbers) and share `drawMatrix`/`multiply`/`entryWorking` by copy — keep
+    them in sync, same deal as the parser and the trig-proof pages.
 - `exp-log-graphs.html` is the fourth **guided animated lesson** (same scene engine as
   `first-principles` / `completing-square` / `r-formula`: scenes × steps, dots, ▶ Play
   all, 500 ms crossfade), and the first to end in a **drill** — 9 scenes, the last two
