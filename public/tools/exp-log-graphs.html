@@ -20,10 +20,10 @@
 <title>Exponential and logarithmic graphs, animated — the four shapes</title>
 <style>
   :root{
-    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
-    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
-    --grid:#e6ddcd; --line:#cfc6b6;
-    --panel:#fbf8f1; --panelb:#e7ded0;
+    --bg:#F8FAFC; --ink:#142033; --muted:#5A6B80;
+    --rose:#B04A62; --teal:#1F6F84; --orange:#C85A2E; --plum:#6B4E9C;
+    --grid:#E3E9F1; --line:#AEBDCE;
+    --panel:#FFFFFF; --panelb:#DDE3EC;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -34,21 +34,21 @@
     display:flex; flex-direction:column; min-height:100vh;
   }
   header{padding:16px 20px 6px 116px}
-  h1{font-size:19px; font-weight:600; margin:0; letter-spacing:.2px}
-  .sub{font-size:13px; color:var(--muted); margin-top:3px}
+  h1{font-size:22px; font-weight:600; margin:0; letter-spacing:.2px}
+  .sub{font-size:15px; color:var(--muted); margin-top:3px}
 
   .stage{position:relative; flex:1 1 auto; min-height:340px}
   canvas{display:block; width:100%; height:100%; touch-action:none; cursor:default}
 
   .readout{
     position:absolute; top:12px; left:12px;
-    background:rgba(251,248,241,.93); border:1px solid var(--panelb);
+    background:rgba(255,255,255,.93); border:1px solid var(--panelb);
     border-radius:10px; padding:9px 12px;
     font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
-    font-size:12.5px; line-height:1.6; color:var(--ink);
+    font-size:17px; line-height:1.6; color:var(--ink);
     box-shadow:0 1px 0 rgba(0,0,0,.03);
     transition:opacity .35s; pointer-events:none;
-    max-width:min(400px, 66%);
+    max-width:min(480px, 62%);
   }
   .readout.off{opacity:0}
   .readout .k{color:var(--muted)}
@@ -57,7 +57,7 @@
   .readout .r-yint{color:var(--teal); font-weight:700}
   .readout .r-xint{color:var(--rose); font-weight:700}
   .readout .r-no{color:var(--muted); font-style:italic}
-  .hint{position:absolute; bottom:10px; right:12px; font-size:11.5px; color:var(--muted);
+  .hint{position:absolute; bottom:10px; right:12px; font-size:13px; color:var(--muted);
         font-family:ui-monospace,monospace; transition:opacity .35s; pointer-events:none}
   .hint.off{opacity:0}
 
@@ -65,10 +65,10 @@
   .algebra{
     position:absolute; right:14px; top:14px; left:auto;
     width:min(430px, 46%);
-    background:rgba(251,248,241,.95); border:1px solid var(--panelb);
+    background:rgba(255,255,255,.95); border:1px solid var(--panelb);
     border-radius:12px; padding:14px 17px 8px;
     box-shadow:0 2px 10px rgba(0,0,0,.05);
-    font-size:14.5px; line-height:1.45;
+    font-size:17px; line-height:1.45;
     transition:opacity .4s; pointer-events:none;
   }
   .algebra.off{opacity:0}
@@ -95,9 +95,9 @@
   .dot:hover{border-color:var(--ink)}
   .dot.done{background:var(--panelb); border-color:var(--panelb)}
   .dot.on{background:var(--orange); border-color:var(--orange)}
-  .scenetitle{font-size:14px; font-weight:600}
-  .stepmark{font-size:11.5px; color:var(--muted); font-family:ui-monospace,monospace}
-  .caption{padding:7px 18px 4px; font-size:14.5px; line-height:1.58; max-width:940px;
+  .scenetitle{font-size:16px; font-weight:600}
+  .stepmark{font-size:13px; color:var(--muted); font-family:ui-monospace,monospace}
+  .caption{padding:7px 18px 4px; font-size:17px; line-height:1.58; max-width:940px;
            min-height:4.75em; transition:opacity .3s; font-style:italic}
   .caption b{font-style:normal}
   .caption .c-hero{color:var(--orange); font-weight:600}
@@ -112,7 +112,7 @@
   .navrow{display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap;
           padding:8px 18px 16px}
   button{
-    font:inherit; font-size:13px; color:var(--ink); background:var(--panel);
+    font:inherit; font-size:15px; color:var(--ink); background:var(--panel);
     border:1px solid var(--panelb); border-radius:8px; padding:7px 13px; cursor:pointer;
   }
   button:hover{border-color:var(--muted)}
@@ -125,8 +125,8 @@
   button.on{background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:600}
   .scenectl{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
   .scenectl[hidden]{display:none}
-  .scenectl label{font-size:13px; color:var(--muted); font-style:italic}
-  .scenectl .mono{font-family:ui-monospace,monospace; font-size:12px; min-width:56px}
+  .scenectl label{font-size:15px; color:var(--muted); font-style:italic}
+  .scenectl .mono{font-family:ui-monospace,monospace; font-size:13.5px; min-width:56px}
   .seg{display:inline-flex; border:1px solid var(--panelb); border-radius:8px; overflow:hidden}
   .seg button{border:0; border-radius:0; padding:7px 11px}
   .seg button + button{border-left:1px solid var(--panelb)}
@@ -137,20 +137,20 @@
   .optrow{display:flex; gap:7px; flex-wrap:wrap; align-items:center}
   .opt{display:inline-flex; align-items:center; gap:7px; padding:5px 10px 5px 6px}
   .opt svg{display:block}
-  .opt.right{background:#e9f1ef; border-color:var(--teal); color:var(--teal); font-weight:700}
-  .opt.wrong{background:#f6e9ec; border-color:var(--rose); color:var(--rose)}
-  .score{font-family:ui-monospace,monospace; font-size:12px; color:var(--muted)}
+  .opt.right{background:#E8F2F6; border-color:var(--teal); color:var(--teal); font-weight:700}
+  .opt.wrong{background:#FBEAEE; border-color:var(--rose); color:var(--rose)}
+  .score{font-family:ui-monospace,monospace; font-size:13.5px; color:var(--muted)}
 
   @media (max-width:640px){
     header{padding:50px 16px 6px 16px}
-    .readout{font-size:10.5px; padding:7px 9px; max-width:76%}
+    .readout{font-size:12.5px; padding:7px 9px; max-width:78%}
     .algebra{left:10px; right:10px; width:auto; top:auto; bottom:10px;
-             font-size:13px; padding:11px 12px 5px}
+             font-size:15px; padding:11px 12px 5px}
     .aline{margin:0 0 8px}
     /* the working panel takes the bottom of the stage here — the hint would sit
        underneath it, so it stands down while the panel is up */
     .algebra:not(.off) ~ .hint{display:none}
-    .caption{font-size:13.8px; min-height:6.6em; padding:7px 16px 4px}
+    .caption{font-size:15.5px; min-height:6.6em; padding:7px 16px 4px}
     .scenehead{padding:9px 16px 0}
     .navrow{padding:8px 16px 14px}
     input[type=range]{width:100px}
@@ -289,9 +289,9 @@
   const REDUCED = !!(window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  const C = { ink:'#2b2b2b', muted:'#7d756a', rose:'#BC5A6E', teal:'#2E7C8F',
-              orange:'#D8693C', plum:'#7B5EA7', grid:'#e6ddcd', line:'#cfc6b6',
-              paper:'#F4EFE6', halo:'rgba(244,239,230,.88)' };
+  const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
+              orange:'#C85A2E', plum:'#6B4E9C', grid:'#E3E9F1', line:'#AEBDCE',
+              paper:'#F8FAFC', halo:'rgba(248,250,252,.88)' };
   // the four family members, in build order (also the drill thumbnail order)
   const FAM = [C.orange, C.rose, C.teal, C.plum];
 
@@ -460,39 +460,14 @@
     ctx.rect(rect.x0, rect.y0, rect.w, rect.h); ctx.clip();
     fn(); ctx.restore();
   }
-  function grid(v, a){
+  function axes(v, a){
     const al = a==null?1:a;
-    for (let gx = Math.ceil(v.win.x0); gx <= v.win.x1; gx++){
-      ga(al*(gx===0?0.9:0.5));
-      ctx.strokeStyle = gx===0 ? C.line : C.grid; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(v.X(gx), v.rect.y0); ctx.lineTo(v.X(gx), v.rect.y0+v.rect.h); ctx.stroke();
-    }
-    for (let gy = Math.ceil(v.win.y0); gy <= v.win.y1; gy++){
-      ga(al*(gy===0?0.9:0.5));
-      ctx.strokeStyle = gy===0 ? C.line : C.grid; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(v.rect.x0, v.Y(gy)); ctx.lineTo(v.rect.x0+v.rect.w, v.Y(gy)); ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-  }
-  function axes(v, a, o){
-    o = o || {}; const al = a==null?1:a;
     const yA = clamp(0, v.win.y0, v.win.y1), xA = clamp(0, v.win.x0, v.win.x1);
-    seg(v, v.win.x0, yA, v.win.x1, yA, C.line, 1.5, al);
-    seg(v, xA, v.win.y0, xA, v.win.y1, C.line, 1.5, al);
-    const step = o.step || 1;
-    for (let gx = Math.ceil(v.win.x0/step)*step; gx <= v.win.x1; gx += step){
-      if (Math.abs(gx) < 1e-9) continue;
-      txt(String(Math.round(gx*100)/100).replace('-', MINUS), v.X(gx), v.Y(yA)+11,
-          {size:10.5, color:C.muted, align:'center', a:al*0.85});
-    }
-    for (let gy = Math.ceil(v.win.y0/step)*step; gy <= v.win.y1; gy += step){
-      if (Math.abs(gy) < 1e-9) continue;
-      txt(String(Math.round(gy*100)/100).replace('-', MINUS), v.X(xA)-6, v.Y(gy),
-          {size:10.5, color:C.muted, align:'right', a:al*0.85});
-    }
-    txt('x', v.X(v.win.x1)-8, v.Y(yA)-11, {italic:true, size:12.5, color:C.muted, a:al*0.9});
-    txt('y', v.X(xA)+11, v.Y(v.win.y1)+10, {italic:true, size:12.5, color:C.muted, a:al*0.9});
-    txt('0', v.X(xA)-7, v.Y(yA)+11, {size:10.5, color:C.muted, align:'right', a:al*0.7});
+    seg(v, v.win.x0, yA, v.win.x1, yA, C.line, 2.2, al);
+    seg(v, xA, v.win.y0, xA, v.win.y1, C.line, 2.2, al);
+    txt('x', v.X(v.win.x1)-10, v.Y(yA)-15, {italic:true, size:19, color:C.muted, a:al*0.9});
+    txt('y', v.X(xA)+14, v.Y(v.win.y1)+12, {italic:true, size:19, color:C.muted, a:al*0.9});
+    txt('0', v.X(xA)-9, v.Y(yA)+14, {size:16, color:C.muted, align:'right', a:al*0.7});
   }
 
   // ---- the two curve families ------------------------------------------
@@ -605,10 +580,10 @@
       const full = onAxis ? label + (kind === 'h' ? '  (the x-axis)' : '  (the y-axis)') : label;
       // an on-axis label has to clear the axis letter drawn in the same corner
       if (kind === 'h') txt(full, v.X(v.win.x1) - (onAxis ? 26 : 6), v.Y(value)-11,
-        {color:C.plum, bold:true, size:12.5, align:'right', a:al});
+        {color:C.plum, bold:true, size:15, align:'right', a:al});
       else txt(full, v.X(value)+8,
         labelLow ? v.Y(v.win.y0)-13 : v.Y(v.win.y1) + (onAxis ? 29 : 13),
-        {color:C.plum, bold:true, size:12.5, a:al});
+        {color:C.plum, bold:true, size:15, a:al});
     }
   }
   function legend(items, px, py, a){
@@ -616,7 +591,7 @@
     items.forEach((it,i) => {
       const y = py + i*19;
       pxSeg(px, y, px+22, y, it.c, 2.6, al, it.dash);
-      drawMath(it.t, px+29, y, {size:13, color:it.c, bold:true, a:al});
+      drawMath(it.t, px+29, y, {size:15, color:it.c, bold:true, a:al});
     });
   }
   // marks an intercept: dot + label, teal for y-intercepts, rose for x.
@@ -629,7 +604,7 @@
     const py = v.Y(y);
     if (py + d > v.rect.y0 + v.rect.h - 6) d = -Math.abs(d);
     else if (py + d < v.rect.y0 + 8) d = Math.abs(d);
-    txt(label, v.X(x)+9, py+d, {color:color, bold:true, size:12.5, a:a});
+    txt(label, v.X(x)+9, py+d, {color:color, bold:true, size:15, a:a});
   }
 
   // =====================================================================
@@ -664,7 +639,7 @@
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       if (step === 0){
         const v = makeView(WEXP, fullRect());
-        grid(v); axes(v);
+        axes(v);
         const fams = [
           {p:{A:1,base:2,k:1,c:0}, c:C.teal,   t:'y = 2^x'},
           {p:P_EXP,                c:C.orange, t:'y = e^x'},
@@ -683,14 +658,14 @@
         if (pa > 0){
           mark(v, 0, 1, C.teal, null, pa);
           txt('(0, 1) — all of them', v.X(0)+14, v.Y(0.45),
-              {color:C.teal, bold:true, size:13, a:pa});
+              {color:C.teal, bold:true, size:15, a:pa});
         }
       } else {
         // the ×2 ladder: y = 2^x sampled at whole numbers
         const v = makeView({x0:-3.4, x1:3.6, y0:-1.6, y1:9.4}, fullRect());
-        grid(v); axes(v);
-        clipRect(v.rect, () => expCurve(v, {A:1,base:2,k:1,c:0}, C.orange, 3, 0.95));
-        drawMath('y = 2^x', v.X(0.9), v.Y(8.7), {size:15, color:C.orange, bold:true, align:'center'});
+        axes(v);
+        clipRect(v.rect, () => expCurve(v, {A:1,base:2,k:1,c:0}, C.orange, 3.8, 0.95));
+        drawMath('y = 2^x', v.X(0.9), v.Y(8.7), {size:18, color:C.orange, bold:true, align:'center'});
         const steps = [-3,-2,-1,0,1,2,3];
         steps.forEach((x,i) => {
           const app = REDUCED ? 1 : smooth((st - 0.35 - i*0.42)/0.5);
@@ -699,7 +674,7 @@
           seg(v, x, 0, x, y, C.muted, 1.4, app*0.5, [3,4]);
           dotAt(v, x, y, 4.6, C.orange, C.paper, app);
           const lab = x < 0 ? (x === -1 ? '½' : x === -2 ? '¼' : '⅛') : String(y);
-          txt(lab, v.X(x)+8, v.Y(y)-10, {color:C.ink, bold:true, size:12.5, a:app});
+          txt(lab, v.X(x)+8, v.Y(y)-10, {color:C.ink, bold:true, size:15, a:app});
         });
         // ×2 arrows between consecutive heights
         for (let i = 0; i < steps.length-1; i++){
@@ -710,13 +685,13 @@
           // left of the y-axis the curve hugs the axis — put the ×2 above it there,
           // below it on the right, so nothing lands on the asymptote label
           txt('×2', (v.X(x0)+v.X(x1))/2, v.Y(ym)+(x0 < 0 ? -13 : 15),
-              {color:C.teal, bold:true, size:11.5, align:'center', a:app*0.95});
+              {color:C.teal, bold:true, size:13.5, align:'center', a:app*0.95});
         }
         const aa = REDUCED ? 1 : smooth((st-2.4)/0.9);
         if (aa > 0){
           asymptote(v, 'h', 0, aa, null);
           txt('asymptote y = 0 — halving forever, never reaching it',
-              v.X(-3.25), v.Y(-0.75), {color:C.plum, bold:true, size:12.5, a:aa});
+              v.X(-3.25), v.Y(-0.75), {color:C.plum, bold:true, size:15, a:aa});
         }
       }
     },
@@ -755,15 +730,15 @@
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       const v = makeView(WEXP, fullRect());
-      grid(v); axes(v);
+      axes(v);
       const src = sampleExp(P_EXP, v.win.x0, 2.2, 200);
       const s = REDUCED ? 1 : smooth(clamp((st-0.45)/FLIP_D, 0, 1));
       const lam = 1 - 2*s;                     // 1 → −1, squashing through the mirror
       if (step < 2){
         // the original stays put, faint, so the flip reads as a reflection
-        clipRect(v.rect, () => expCurve(v, P_EXP, C.orange, 2.2, s > 0.05 ? 0.3 : 0.95));
+        clipRect(v.rect, () => expCurve(v, P_EXP, C.orange, 2.8, s > 0.05 ? 0.3 : 0.95));
         const moved = src.map(pt => step === 0 ? [pt[0], pt[1]*lam] : [pt[0]*lam, pt[1]]);
-        clipRect(v.rect, () => polyCurve(v, moved, step === 0 ? C.rose : C.teal, 3, 0.97));
+        clipRect(v.rect, () => polyCurve(v, moved, step === 0 ? C.rose : C.teal, 3.8, 0.97));
         // the mirror line, lit up while it flips
         const lit = 0.35 + 0.6*Math.sin(Math.PI*clamp((st-0.45)/FLIP_D,0,1));
         if (step === 0) seg(v, v.win.x0, 0, v.win.x1, 0, C.ink, 2.4, lit);
@@ -775,16 +750,16 @@
         dotAt(v, Q[0], Q[1], 5.2, step === 0 ? C.rose : C.teal, C.paper, 1);
         seg(v, P[0], P[1], Q[0], Q[1], C.muted, 1.2, 0.45, [3,4]);
         drawMath('y = e^x', v.X(2.1), v.Y(4.6),
-          {size:14, color:C.orange, bold:true, align:'right', a:0.55});
+          {size:16.5, color:C.orange, bold:true, align:'right', a:0.55});
         // bottom-left for both flips: it is the one corner neither curve reaches,
         // and the top-left belongs to the readout panel
         const ly = -4.15;
         drawMath(step === 0 ? [{t:'y = '}, {t:MINUS+'e^x', c:C.rose}]
                             : [{t:'y = '}, {t:'e^{'+MINUS+'x}', c:C.teal}],
-          v.X(-4.0), v.Y(ly), {size:15.5, color:step === 0 ? C.rose : C.teal, bold:true});
+          v.X(-4.0), v.Y(ly), {size:18.5, color:step === 0 ? C.rose : C.teal, bold:true});
         txt(step === 0 ? 'flip in the x-axis' : 'flip in the y-axis',
             v.X(-4.0), v.Y(ly - 0.62),
-            {color:C.muted, italic:true, size:13});
+            {color:C.muted, italic:true, size:15});
       } else {
         // all four at once — the picture to memorise
         const fr = REDUCED ? 1 : smooth(st/1.1);
@@ -798,7 +773,7 @@
           const a = REDUCED ? 1 : smooth((st - i*0.28)/0.8);
           if (a <= 0) return;
           clipRect(v.rect, () => expCurve(v, f.p, f.c, 2.8, 0.95*a));
-          drawMath(f.t, v.X(f.lx), v.Y(f.ly), {size:14.5, color:f.c, bold:true, align:'center', a});
+          drawMath(f.t, v.X(f.lx), v.Y(f.ly), {size:17, color:f.c, bold:true, align:'center', a});
         });
         if (fr > 0.6) mark(v, 0, 1, C.muted, null, (fr-0.6)/0.4);
         if (fr > 0.6) mark(v, 0, -1, C.muted, null, (fr-0.6)/0.4);
@@ -841,16 +816,16 @@
       const e = EX3[step];
       const base = fullRect();
       const v = makeView(WEXP, bandRect(base, 50));
-      grid(v); axes(v);
+      axes(v);
       const ga1 = REDUCED ? 1 : smooth(st/0.9);
       clipRect(v.rect, () => expCurve(v, e.basic, e.bc, 2, 0.5*ga1, [7,5]));
       const fr = REDUCED ? 1 : smooth((st-0.35)/1.3);
-      clipRect(v.rect, () => expCurve(v, e.p, C.orange, 3.2, 0.97, null,
+      clipRect(v.rect, () => expCurve(v, e.p, C.orange, 4, 0.97, null,
         v.win.x0 + (v.win.x1-v.win.x0)*fr));
       drawMath(e.eq, base.x0 + base.w/2, base.y0 + 14,
-        {size:18, color:C.orange, bold:true, align:'center'});
+        {size:22, color:C.orange, bold:true, align:'center'});
       drawMath('follows  '+e.bt, base.x0 + base.w/2, base.y0 + 37,
-        {size:13.5, color:e.bc, italic:true, align:'center', a:ga1*0.95});
+        {size:16, color:e.bc, italic:true, align:'center', a:ga1*0.95});
       const ma = REDUCED ? 1 : smooth((st-1.5)/0.7);
       if (ma > 0){
         asymptote(v, 'h', 0, ma*0.85, 'y = 0');
@@ -907,20 +882,20 @@
       const e = EX4[step], c = this.c;
       const base = fullRect();
       const v = makeView(WEXP, bandRect(base, 32));
-      grid(v); axes(v);
+      axes(v);
       // slide-up animation on entry; once the slider is touched it's live
       const sl = (REDUCED || this.slid) ? 1 : smooth((st-1.0)/1.4);
       const cNow = c*sl;
       const p = {A:e.A, base:e.base, k:e.k, c:cNow};
       if (sl < 1){
-        clipRect(v.rect, () => expCurve(v, {A:e.A,base:e.base,k:e.k,c:0}, C.muted, 2, 0.35, [6,5]));
+        clipRect(v.rect, () => expCurve(v, {A:e.A,base:e.base,k:e.k,c:0}, C.muted, 2.6, 0.35, [6,5]));
         asymptote(v, 'h', 0, 0.3, null);
       }
-      clipRect(v.rect, () => expCurve(v, p, C.orange, 3.2, 0.97));
+      clipRect(v.rect, () => expCurve(v, p, C.orange, 4, 0.97));
       asymptote(v, 'h', cNow, 1, 'y = '+fmtN(cNow));
       const f = this.facts(step);
       drawMath(e.eq0 + (c >= 0 ? ' + '+fmtN(c) : ' '+MINUS+' '+fmtN(-c)),
-        base.x0 + base.w/2, base.y0 + 14, {size:18, color:C.orange, bold:true, align:'center'});
+        base.x0 + base.w/2, base.y0 + 14, {size:22, color:C.orange, bold:true, align:'center'});
       if (sl > 0.95){
         mark(v, 0, f.yint, C.teal, '(0, '+fmtN(f.yint)+')', 1, f.yint < cNow ? 16 : -13);
         if (f.has && f.x > v.win.x0 && f.x < v.win.x1)
@@ -930,7 +905,7 @@
         const px = v.X(-3.4);
         pxSeg(px, v.Y(0), px, v.Y(cNow), C.plum, 2, 0.8);
         txt((c > 0 ? 'up ' : 'down ')+fmtN(Math.abs(c)), px+8, (v.Y(0)+v.Y(cNow))/2,
-            {color:C.plum, bold:true, size:12.5});
+            {color:C.plum, bold:true, size:15});
       }
     },
     ui(step){
@@ -970,38 +945,38 @@
       const b = fullRect();
       const sw = Math.min(b.w, b.h*1.55);
       const v = squareView(1.4, 1.4, 3.9, {x0:b.x0 + (b.w-sw)/2, y0:b.y0, w:sw, h:b.h});
-      grid(v); axes(v);
+      axes(v);
       // the mirror
       seg(v, v.win.x0, v.win.x0, v.win.x1, v.win.x1, C.muted, 1.5, 0.6, [6,5]);
       txt('y = x', v.X(v.win.x1)-30, v.Y(v.win.x1)-14,
-          {color:C.muted, italic:true, size:12.5, align:'right'});
+          {color:C.muted, italic:true, size:15, align:'right'});
       if (step === 0){
         const s = REDUCED ? 1 : smooth((st-0.6)/2.0);
         const src = sampleExp(P_EXP, -4.2, 2.3, 220);
-        clipRect(v.rect, () => expCurve(v, P_EXP, C.orange, 3, s > 0.05 ? 0.35 : 0.97));
+        clipRect(v.rect, () => expCurve(v, P_EXP, C.orange, 3.8, s > 0.05 ? 0.35 : 0.97));
         // fold: P → its mirror image, straight-line morph through y = x
         const moved = src.map(pt => [pt[0]*(1-s) + pt[1]*s, pt[1]*(1-s) + pt[0]*s]);
-        clipRect(v.rect, () => polyCurve(v, moved, C.teal, 3, 0.97));
+        clipRect(v.rect, () => polyCurve(v, moved, C.teal, 3.8, 0.97));
         [[0,1],[1,Math.E]].forEach(P => {
           const Q = [P[0]*(1-s)+P[1]*s, P[1]*(1-s)+P[0]*s];
           dotAt(v, P[0], P[1], 4.4, C.orange, C.paper, 0.5);
           seg(v, P[0], P[1], Q[0], Q[1], C.muted, 1.2, 0.5, [3,4]);
           dotAt(v, Q[0], Q[1], 5, C.teal, C.paper, 1);
         });
-        drawMath('y = e^x', v.X(1.35), v.Y(3.9), {size:15, color:C.orange, bold:true, a:0.75});
+        drawMath('y = e^x', v.X(1.35), v.Y(3.9), {size:18, color:C.orange, bold:true, a:0.75});
         if (s > 0.75) drawMath('y = ln x', v.X(4.0), v.Y(1.05),
-          {size:15, color:C.teal, bold:true, a:(s-0.75)/0.25});
+          {size:18, color:C.teal, bold:true, a:(s-0.75)/0.25});
       } else {
         const a2 = REDUCED ? 1 : smooth(st/0.9);
-        clipRect(v.rect, () => expCurve(v, P_EXP, C.orange, 2, 0.28));
+        clipRect(v.rect, () => expCurve(v, P_EXP, C.orange, 2.6, 0.28));
         clipRect(v.rect, () => logCurve(v, {A:1,base:2,m:1,n:0}, C.muted, 1.8, 0.4*a2, [6,5]));
         clipRect(v.rect, () => logCurve(v, {A:1,base:10,m:1,n:0}, C.muted, 1.8, 0.4*a2, [6,5]));
-        clipRect(v.rect, () => logCurve(v, P_LN, C.teal, 3, 0.97));
+        clipRect(v.rect, () => logCurve(v, P_LN, C.teal, 3.8, 0.97));
         asymptote(v, 'v', 0, a2, 'x = 0');
         mark(v, 1, 0, C.rose, '(1, 0)', a2, 17);
-        drawMath('y = log_2 x', v.X(3.6), v.Y(1.95), {size:12.5, color:C.muted, a:a2*0.9});
-        drawMath('y = ln x',   v.X(4.3), v.Y(1.35), {size:14, color:C.teal, bold:true, a:a2});
-        drawMath('y = lg x',   v.X(4.3), v.Y(0.35), {size:12.5, color:C.muted, a:a2*0.9});
+        drawMath('y = log_2 x', v.X(3.6), v.Y(1.95), {size:15, color:C.muted, a:a2*0.9});
+        drawMath('y = ln x',   v.X(4.3), v.Y(1.35), {size:16.5, color:C.teal, bold:true, a:a2});
+        drawMath('y = lg x',   v.X(4.3), v.Y(0.35), {size:15, color:C.muted, a:a2*0.9});
       }
     },
     ui(step){
@@ -1034,14 +1009,14 @@
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       const v = makeView(WLOG, fullRect());
-      grid(v); axes(v);
+      axes(v);
       const s = REDUCED ? 1 : smooth(clamp((st-0.45)/FLIP_D, 0, 1));
       const lam = 1 - 2*s;
       if (step < 2){
         const src = sampleLog(P_LN, -3.9, 3.9, 240);
-        clipRect(v.rect, () => logCurve(v, P_LN, C.orange, 2.2, s > 0.05 ? 0.3 : 0.95));
+        clipRect(v.rect, () => logCurve(v, P_LN, C.orange, 2.8, s > 0.05 ? 0.3 : 0.95));
         const moved = src.map(pt => step === 0 ? [pt[0], pt[1]*lam] : [pt[0]*lam, pt[1]]);
-        clipRect(v.rect, () => polyCurve(v, moved, step === 0 ? C.rose : C.teal, 3, 0.97));
+        clipRect(v.rect, () => polyCurve(v, moved, step === 0 ? C.rose : C.teal, 3.8, 0.97));
         const lit = 0.35 + 0.6*Math.sin(Math.PI*clamp((st-0.45)/FLIP_D,0,1));
         if (step === 0) seg(v, v.win.x0, 0, v.win.x1, 0, C.ink, 2.4, lit);
         else seg(v, 0, v.win.y0, 0, v.win.y1, C.ink, 2.4, lit);
@@ -1050,14 +1025,14 @@
         dotAt(v, P[0], P[1], 4.6, C.orange, C.paper, 0.5);
         dotAt(v, Q[0], Q[1], 5.2, step === 0 ? C.rose : C.teal, C.paper, 1);
         seg(v, P[0], P[1], Q[0], Q[1], C.muted, 1.2, 0.45, [3,4]);
-        drawMath('y = ln x', v.X(4.4), v.Y(1.9), {size:14, color:C.orange, bold:true, align:'center', a:0.55});
+        drawMath('y = ln x', v.X(4.4), v.Y(1.9), {size:16.5, color:C.orange, bold:true, align:'center', a:0.55});
         drawMath(step === 0 ? [{t:'y = '}, {t:MINUS+'ln x', c:C.rose}]
                             : [{t:'y = '}, {t:'ln('+MINUS+'x)', c:C.teal}],
           v.X(step === 0 ? 3.4 : -3.4), v.Y(step === 0 ? -3.3 : 3.3),
-          {size:15.5, color:step === 0 ? C.rose : C.teal, bold:true, align:'center'});
+          {size:18.5, color:step === 0 ? C.rose : C.teal, bold:true, align:'center'});
         txt(step === 0 ? 'flip in the x-axis' : 'flip in the y-axis',
             v.X(step === 0 ? -3.2 : 3.2), v.Y(step === 0 ? 3.4 : -3.4),
-            {color:C.muted, italic:true, size:13, align:'center'});
+            {color:C.muted, italic:true, size:15, align:'center'});
       } else {
         const four = [
           {p:P_LN,                    c:FAM[0], t:'y = ln x',                     lx:3.7,  ly:2.2},
@@ -1069,7 +1044,7 @@
           const a = REDUCED ? 1 : smooth((st - i*0.28)/0.8);
           if (a <= 0) return;
           clipRect(v.rect, () => logCurve(v, f.p, f.c, 2.8, 0.95*a));
-          drawMath(f.t, v.X(f.lx), v.Y(f.ly), {size:14, color:f.c, bold:true, align:'center', a});
+          drawMath(f.t, v.X(f.lx), v.Y(f.ly), {size:16.5, color:f.c, bold:true, align:'center', a});
         });
         const ma = REDUCED ? 1 : smooth((st-1.0)/0.8);
         if (ma > 0){ mark(v, 1, 0, C.muted, null, ma); mark(v, -1, 0, C.muted, null, ma); }
@@ -1111,35 +1086,35 @@
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       const base = plotRect();
       const v = makeView({x0:-3.6, x1:5.0, y0:-3.2, y1:3.2}, bandRect(base, 32));
-      grid(v); axes(v);
+      axes(v);
       drawMath('y = ln(2 '+MINUS+' x)', base.x0 + base.w/2, base.y0 + 14,
-        {size:18, color:C.orange, bold:true, align:'center'});
+        {size:22, color:C.orange, bold:true, align:'center'});
       const aA = REDUCED ? 1 : smooth(st/0.7);
       if (step >= 0) asymptote(v, 'v', 2, step === 0 ? aA : 1, 'x = 2');
       if (step === 1){
         const a = REDUCED ? 1 : smooth(st/0.9);
         clipRect(v.rect, () => logCurve(v, P_LNN, FAM[2], 2.8, 0.9*a));
         drawMath('y = ln('+MINUS+'x)', v.X(-2.4), v.Y(1.9),
-          {size:14.5, color:FAM[2], bold:true, align:'center', a});
+          {size:17, color:FAM[2], bold:true, align:'center', a});
         txt('the basic shape — not yet in the right place', v.X(-2.4), v.Y(2.55),
-            {color:C.muted, italic:true, size:12, align:'center', a});
+            {color:C.muted, italic:true, size:14, align:'center', a});
       }
       if (step === 2){
         const s = REDUCED ? 1 : smooth((st-0.5)/1.6);
         const shift = 2*s;                       // ln(−x) slides right onto x = 2
         clipRect(v.rect, () => logCurve(v, P_LNN, FAM[2], 2, 0.28*(1-s)+0.1, [6,5]));
-        clipRect(v.rect, () => logCurve(v, {A:1,base:E,m:-1,n:shift}, C.orange, 3.2, 0.97));
+        clipRect(v.rect, () => logCurve(v, {A:1,base:E,m:-1,n:shift}, C.orange, 4, 0.97));
         if (s < 0.99){
           const y0 = v.Y(-2.6);
           pxSeg(v.X(0), y0, v.X(shift), y0, C.plum, 1.8, 0.75);
           pxSeg(v.X(shift), y0, v.X(shift)-7, y0-4, C.plum, 1.8, 0.75);
           pxSeg(v.X(shift), y0, v.X(shift)-7, y0+4, C.plum, 1.8, 0.75);
           txt('slide 2 right', (v.X(0)+v.X(shift))/2, y0-13,
-              {color:C.plum, bold:true, size:12, align:'center'});
+              {color:C.plum, bold:true, size:14, align:'center'});
         }
       }
       if (step === 3){
-        clipRect(v.rect, () => logCurve(v, P7, C.orange, 3.2, 0.97));
+        clipRect(v.rect, () => logCurve(v, P7, C.orange, 4, 0.97));
         const a1 = REDUCED ? 1 : smooth((st-0.3)/0.7);
         const a2 = REDUCED ? 1 : smooth((st-1.2)/0.7);
         if (a1 > 0){
@@ -1225,22 +1200,22 @@
       const f = this.facts();
       const base = clearOfReadout(fullRect());
       const v = makeView(this.kind === 'exp' ? WEXP : WLOG, bandRect(base, 50));
-      grid(v); axes(v);
+      axes(v);
       clipRect(v.rect, () => {
         if (this.kind === 'exp'){
           expCurve(v, this.basicP(), this.famColour(), 2, 0.32, [7,5]);
-          expCurve(v, this.liveP(), C.orange, 3.2, 0.97);
+          expCurve(v, this.liveP(), C.orange, 4, 0.97);
         } else {
           logCurve(v, this.basicP(), this.famColour(), 2, 0.32, [7,5]);
-          logCurve(v, this.liveP(), C.orange, 3.2, 0.97);
+          logCurve(v, this.liveP(), C.orange, 4, 0.97);
         }
       });
       asymptote(v, f.asym.kind, f.asym.v, 1,
         (f.asym.kind === 'h' ? 'y = ' : 'x = ') + fmtN(f.asym.v), this.sA < 0);
       drawMath(this.eq(), base.x0 + base.w/2, base.y0 + 14,
-        {size:18, color:C.orange, bold:true, align:'center'});
+        {size:22, color:C.orange, bold:true, align:'center'});
       drawMath('follows  '+this.basicText(), base.x0 + base.w/2, base.y0 + 37,
-        {size:13, color:this.famColour(), italic:true, align:'center'});
+        {size:15, color:this.famColour(), italic:true, align:'center'});
       if (f.yint.has && f.yint.v > v.win.y0 && f.yint.v < v.win.y1)
         mark(v, 0, f.yint.v, C.teal, '(0, '+fmtN(f.yint.v)+')', 1, -13);
       if (f.xint.has && f.xint.v > v.win.x0 && f.xint.v < v.win.x1)
@@ -1358,8 +1333,8 @@
       started = true;
     });
     return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" aria-hidden="true">'+
-      '<line x1="1" y1="'+cy+'" x2="'+(w-1)+'" y2="'+cy+'" stroke="#cfc6b6" stroke-width="1"/>'+
-      '<line x1="'+cx+'" y1="1" x2="'+cx+'" y2="'+(h-1)+'" stroke="#cfc6b6" stroke-width="1"/>'+
+      '<line x1="1" y1="'+cy+'" x2="'+(w-1)+'" y2="'+cy+'" stroke="#AEBDCE" stroke-width="1"/>'+
+      '<line x1="'+cx+'" y1="1" x2="'+cx+'" y2="'+(h-1)+'" stroke="#AEBDCE" stroke-width="1"/>'+
       '<path d="'+d+'" fill="none" stroke="'+FAM[i]+'" stroke-width="2" '+
         'stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
@@ -1454,12 +1429,12 @@
       const q = this.q; if (!q) return;
       const base = clearOfReadout(fullRect());
       const v = makeView(q.kind === 'exp' ? WEXP : WLOG, bandRect(base, 68));
-      grid(v); axes(v);
+      axes(v);
       drawMath(q.eq, base.x0 + base.w/2, base.y0 + 22,
-        {size:26, color:C.ink, bold:true, align:'center'});
+        {size:30, color:C.ink, bold:true, align:'center'});
       if (this.stage === 0){
         txt('which basic shape does it follow?', base.x0 + base.w/2, base.y0 + 50,
-            {color:C.muted, italic:true, size:13, align:'center'});
+            {color:C.muted, italic:true, size:15, align:'center'});
         return;
       }
       // once the shape is answered, show it — then the real curve at stage 2
@@ -1469,11 +1444,11 @@
         ? expCurve(v, sh.p, FAM[q.shape], 2, 0.35, [7,5])
         : logCurve(v, sh.p, FAM[q.shape], 2, 0.35, [7,5]));
       drawMath('follows  '+sh.t, base.x0 + base.w/2, base.y0 + 50,
-        {size:13.5, color:FAM[q.shape], italic:true, align:'center'});
+        {size:16, color:FAM[q.shape], italic:true, align:'center'});
       if (this.stage === 2){
         clipRect(v.rect, () => isExp
-          ? expCurve(v, q.p, C.orange, 3.2, 0.97)
-          : logCurve(v, q.p, C.orange, 3.2, 0.97));
+          ? expCurve(v, q.p, C.orange, 4, 0.97)
+          : logCurve(v, q.p, C.orange, 4, 0.97));
         if (isExp) asymptote(v, 'h', q.p.c || 0, 1, q.asym);
         else asymptote(v, 'v', logAsym(q.p), 1, q.asym, q.p.A < 0);
       }

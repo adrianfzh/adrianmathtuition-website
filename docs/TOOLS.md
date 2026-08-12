@@ -7,8 +7,22 @@ the card 404s). Conventions, all load-bearing:
 - **Fully self-contained**: inline CSS+JS, IIFE, `"use strict"`, zero external requests
   (KaTeX CDN tags in the older pages are the grandfathered exception). No build step —
   a deploy ships the file byte-for-byte.
-- **House style**: warm paper `#F4EFE6`, Georgia serif, palette rose/teal/orange/plum;
-  copy the `‹ All tools` backlink chip from `sincos-unwrap.html` verbatim.
+- **House style** (re-paletted 2026-08-12 — Adrian: "don't want beige"): the tools now
+  use the **site palette**, so they read as part of adrianmathtuition.com rather than a
+  separate warm-paper world — background `#F8FAFC`, ink `#142033`, muted `#5A6B80`,
+  grid `#E3E9F1`, axis/rule `#AEBDCE`, panel `#FFFFFF` on `#DDE3EC`, and the four curve
+  colours deepened for contrast on white: teal `#1F6F84`, orange `#C85A2E`,
+  rose `#B04A62`, plum `#6B4E9C`. Georgia serif and the `‹ All tools` backlink chip
+  (copy it from `sincos-unwrap.html` verbatim) are unchanged.
+  - `scripts/tools-palette.mjs` performed the swap and is the record of the mapping —
+    it is idempotent, so re-run it after porting an old page in. It deliberately
+    **skips the five dark tools** (`argand-diagram`, `calculus-drill`,
+    `graph-transformations`, `mental-math`, `vectors-3d`, all `--bg:#0f1419`) and
+    `trig-graphs` (already cool): they were never beige, and dark suits those canvases.
+  - Watch for **white-on-near-white**: fills that were `#fff` against warm paper now sit
+    on `#F8FAFC` and need their border to carry them (the bar model in `add-fractions`,
+    the matrix boxes). Anything still warm — cream card fills, tan greys — is a leftover
+    the swap missed; the amber highlight tones are intentional and stay.
 - DPR-aware canvas, pointer events with `touch-action:none`, generous drag targets.
 - `curve-sketcher.html` holds the **safe expression parser** (whitelist tokenizer +
   recursive descent, no `eval`); `graph-transformations.html` carries a ported copy —
@@ -67,6 +81,14 @@ the card 404s). Conventions, all load-bearing:
   - `em-graphs.html` covers the EM *Graphs* page (x^n for n = −2…3, a^x, the minus flip,
     shifting). `plotBreak` starts a new subpath when the pixel jump exceeds the plot
     height — without it 1/x is drawn with a false vertical line through the asymptote.
+  - **The two graph lessons draw sketch figures, not plots** (2026-08-12 — Adrian: the
+    flips are the main point, keep the graphs simple and the type large). `exp-log-graphs`
+    and `em-graphs` have **no grid and no tick numbers**: `grid()` is gone and `axes()`
+    draws two thicker rules plus the x / y letters. Numbers on the axes invite reading
+    coordinates off a curve that is only schematic, and they cost the room the large
+    labels need; points that matter carry their own coordinate label. Canvas type and
+    curve widths in those two files are ~25% up on the rest of the family — if you port
+    a scene between tools, expect to re-size it.
   - **Asymptotes are never drawn on top of an axis** (`asymptote()` in exp-log-graphs,
     `asym()` in em-graphs, both check `|value| < 1e-9`). A dashed line painted along the
     x-axis makes the axis itself look dashed and blurs the distinction the lesson is

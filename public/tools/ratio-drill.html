@@ -20,10 +20,10 @@
 <title>Ratio of areas — endless practice</title>
 <style>
   :root{
-    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
-    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
-    --grid:#e6ddcd; --line:#cfc6b6;
-    --panel:#fbf8f1; --panelb:#e7ded0;
+    --bg:#F8FAFC; --ink:#142033; --muted:#5A6B80;
+    --rose:#B04A62; --teal:#1F6F84; --orange:#C85A2E; --plum:#6B4E9C;
+    --grid:#E3E9F1; --line:#AEBDCE;
+    --panel:#FFFFFF; --panelb:#DDE3EC;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -94,7 +94,7 @@
     border:1.6px solid var(--muted); border-radius:10px; padding:9px 6px;
     width:78px; min-height:46px; text-align:center;
   }
-  .ansrow input:focus{outline:none; border-color:var(--orange); box-shadow:0 0 0 3px rgba(216,105,60,.15)}
+  .ansrow input:focus{outline:none; border-color:var(--orange); box-shadow:0 0 0 3px rgba(200,90,46,.15)}
   .ansrow input.okk{border-color:var(--teal); color:var(--teal)}
   .ansrow input.badd{border-color:var(--rose)}
   .ansrow .sep{font-size:20px; color:var(--muted)}
@@ -214,11 +214,11 @@
   const REDUCED = !!(window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  const C = { ink:'#2b2b2b', muted:'#7d756a', rose:'#BC5A6E', teal:'#2E7C8F',
-              orange:'#D8693C', plum:'#7B5EA7', line:'#cfc6b6', paper:'#fbf8f1',
-              halo:'rgba(251,248,241,.92)' };
-  const FILL = { rose:'rgba(188,90,110,.26)', teal:'rgba(46,124,143,.24)',
-                 orange:'rgba(216,105,60,.26)', plum:'rgba(123,94,167,.24)' };
+  const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
+              orange:'#C85A2E', plum:'#6B4E9C', line:'#AEBDCE', paper:'#FFFFFF',
+              halo:'rgba(255,255,255,.92)' };
+  const FILL = { rose:'rgba(176,74,98,.26)', teal:'rgba(31,111,132,.24)',
+                 orange:'rgba(200,90,46,.26)', plum:'rgba(107,78,156,.24)' };
 
   // ---- little maths helpers -------------------------------------------
   const ri = (a,b) => a + Math.floor(Math.random()*(b-a+1));

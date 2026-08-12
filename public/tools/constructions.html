@@ -20,10 +20,10 @@
 <title>Constructions, drawn for you — perpendicular &amp; angle bisectors</title>
 <style>
   :root{
-    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
-    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
-    --grid:#e6ddcd; --line:#cfc6b6;
-    --panel:#fbf8f1; --panelb:#e7ded0;
+    --bg:#F8FAFC; --ink:#142033; --muted:#5A6B80;
+    --rose:#B04A62; --teal:#1F6F84; --orange:#C85A2E; --plum:#6B4E9C;
+    --grid:#E3E9F1; --line:#AEBDCE;
+    --panel:#FFFFFF; --panelb:#DDE3EC;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -61,7 +61,7 @@
 
   .badge{
     position:absolute; top:12px; right:12px; max-width:min(46vw,320px);
-    background:rgba(251,248,241,.94); border:1px solid var(--panelb);
+    background:rgba(255,255,255,.94); border:1px solid var(--panelb);
     border-left:3px solid var(--teal); border-radius:10px; padding:8px 11px;
     font-size:12.5px; line-height:1.5; color:var(--ink);
     transition:opacity .3s; pointer-events:none;
@@ -211,9 +211,9 @@
   const REDUCED = !!(window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  const C = { ink:'#2b2b2b', muted:'#7d756a', rose:'#BC5A6E', teal:'#2E7C8F',
-              orange:'#D8693C', plum:'#7B5EA7', grid:'#e6ddcd', line:'#cfc6b6',
-              paper:'#F4EFE6', halo:'rgba(244,239,230,.9)',
+  const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
+              orange:'#C85A2E', plum:'#6B4E9C', grid:'#E3E9F1', line:'#AEBDCE',
+              paper:'#F8FAFC', halo:'rgba(248,250,252,.9)',
               brass:'#8a7b63', steel:'#6f6a63' };
 
   // ---- small vector helpers (board coordinates, y grows downward) -----
@@ -418,9 +418,9 @@
     ctx.lineTo(A.x - nn.x*wpx, A.y - nn.y*wpx);
     ctx.closePath();
     ctx.fillStyle = 'rgba(226,236,238,.42)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(46,124,143,.55)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.strokeStyle = 'rgba(31,111,132,.55)'; ctx.lineWidth = 1.4; ctx.stroke();
     // graduations along the working edge
-    ctx.strokeStyle = 'rgba(46,124,143,.5)'; ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(31,111,132,.5)'; ctx.lineWidth = 1;
     const total = Math.hypot(B.x-A.x, B.y-A.y), ux = (B.x-A.x)/total, uy = (B.y-A.y)/total;
     for (let d = 12; d < total-6; d += 16){
       const h = (Math.round(d/16) % 5 === 0) ? 11 : 6;
@@ -656,7 +656,7 @@
 
       // "why it works" overlay: APBQ has four equal sides
       if (why){
-        poly([g.A, g.P, g.B, g.Q], 'rgba(123,94,167,.10)', 1);
+        poly([g.A, g.P, g.B, g.Q], 'rgba(107,78,156,.10)', 1);
         [[g.A,g.P],[g.P,g.B],[g.B,g.Q],[g.Q,g.A]].forEach(e => seg(e[0], e[1], C.plum, 1.8, 0.8, [6,4]));
         [[g.A,g.P],[g.P,g.B],[g.B,g.Q],[g.Q,g.A]].forEach(e => ticks(e[0], e[1], 1, C.plum, 0.95));
       }
@@ -765,7 +765,7 @@
       }
 
       if (why){
-        poly([g.V, g.X, g.Z, g.Y], 'rgba(123,94,167,.10)', 1);
+        poly([g.V, g.X, g.Z, g.Y], 'rgba(107,78,156,.10)', 1);
         [[g.V,g.X],[g.X,g.Z],[g.Z,g.Y],[g.Y,g.V]].forEach(e => seg(e[0], e[1], C.plum, 1.8, 0.8, [6,4]));
         ticks(g.V, g.X, 1, C.plum, .95); ticks(g.V, g.Y, 1, C.plum, .95);
         ticks(g.X, g.Z, 2, C.plum, .95); ticks(g.Y, g.Z, 2, C.plum, .95);
@@ -842,15 +842,15 @@
       const s1 = smooth((p(2))/0.8), s2 = smooth((p(4))/0.8), both = smooth(p(5)/0.55);
       // the half-planes are named by their NORMAL, not by the boundary's
       // direction: the perpendicular bisector runs along n, so its normal is u
-      if (g1.ok && s1 > 0) clipTri(tri, () => halfPlane(g1.M, g1.u, a.A, 'rgba(46,124,143,.26)', s1*(1-both*0.5)));
-      if (s2 > 0) clipTri(tri, () => halfPlane(g2.V, perp(g2.bis), a.A, 'rgba(216,105,60,.24)', s2*(1-both*0.5)));
+      if (g1.ok && s1 > 0) clipTri(tri, () => halfPlane(g1.M, g1.u, a.A, 'rgba(31,111,132,.26)', s1*(1-both*0.5)));
+      if (s2 > 0) clipTri(tri, () => halfPlane(g2.V, perp(g2.bis), a.A, 'rgba(200,90,46,.24)', s2*(1-both*0.5)));
       if (both > 0 && g1.ok){
         clipTri(tri, () => {
           ctx.save();
           clipHalf(g1.M, g1.u, a.A);
           clipHalf(g2.V, perp(g2.bis), a.A);
-          bigFill('rgba(123,94,167,.22)', both);
-          hatch('rgba(123,94,167,.6)', both);
+          bigFill('rgba(107,78,156,.22)', both);
+          hatch('rgba(107,78,156,.6)', both);
           ctx.restore();
         });
       }

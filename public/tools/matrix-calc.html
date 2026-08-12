@@ -20,10 +20,10 @@
 <title>Matrix multiplier — type your own, see every step</title>
 <style>
   :root{
-    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
-    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
-    --grid:#e6ddcd; --line:#cfc6b6;
-    --panel:#fbf8f1; --panelb:#e7ded0;
+    --bg:#F8FAFC; --ink:#142033; --muted:#5A6B80;
+    --rose:#B04A62; --teal:#1F6F84; --orange:#C85A2E; --plum:#6B4E9C;
+    --grid:#E3E9F1; --line:#AEBDCE;
+    --panel:#FFFFFF; --panelb:#DDE3EC;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -42,7 +42,7 @@
 
   .readout{
     position:absolute; top:12px; left:12px;
-    background:rgba(251,248,241,.93); border:1px solid var(--panelb);
+    background:rgba(255,255,255,.93); border:1px solid var(--panelb);
     border-radius:10px; padding:9px 12px;
     font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
     font-size:12.5px; line-height:1.6;
@@ -102,7 +102,7 @@
 <a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
 <header>
   <h1>Matrix multiplier — your matrices, every step shown</h1>
-  <div class="sub">Type any two matrices, then walk through the answer <b>one entry at a time</b>: the row and column being used light up, and the working is written out. Learn the method first in <a href="/tools/matrix-multiply.html" style="color:#2E7C8F">the animated lesson</a>.</div>
+  <div class="sub">Type any two matrices, then walk through the answer <b>one entry at a time</b>: the row and column being used light up, and the working is written out. Learn the method first in <a href="/tools/matrix-multiply.html" style="color:#1F6F84">the animated lesson</a>.</div>
 </header>
 
 <div class="stage" id="stage">
@@ -163,9 +163,9 @@
   const randBtn = document.getElementById('randBtn');
   const swapBtn = document.getElementById('swapBtn');
 
-  const C = { ink:'#2b2b2b', muted:'#7d756a', rose:'#BC5A6E', teal:'#2E7C8F',
-              orange:'#D8693C', plum:'#7B5EA7', line:'#cfc6b6', paper:'#F4EFE6',
-              halo:'rgba(244,239,230,.9)' };
+  const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
+              orange:'#C85A2E', plum:'#6B4E9C', line:'#AEBDCE', paper:'#F8FAFC',
+              halo:'rgba(248,250,252,.9)' };
   const MINUS = '−';
   const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
   const fmtN = n => {
@@ -252,10 +252,10 @@
     const inX = x + 9, inY = y + 5;
     if (o.hlRow != null && o.hlRow >= 0)
       rect(inX - 4, inY + o.hlRow*cell.h, colsOf(m)*cell.w + 8, cell.h,
-           'rgba(216,105,60,.18)', null, a, 5);
+           'rgba(200,90,46,.18)', null, a, 5);
     if (o.hlCol != null && o.hlCol >= 0)
       rect(inX + o.hlCol*cell.w, inY - 4, cell.w, rowsOf(m)*cell.h + 8,
-           'rgba(46,124,143,.18)', null, a, 5);
+           'rgba(31,111,132,.18)', null, a, 5);
     const bw = 7;
     ga(a); ctx.strokeStyle = o.colour || C.ink; ctx.lineWidth = 1.8;
     ctx.beginPath();
@@ -269,7 +269,7 @@
         const cx = inX + j*cell.w + cell.w/2, cy = inY + i*cell.h + cell.h/2;
         const isHl = o.hlCell && o.hlCell[0] === i && o.hlCell[1] === j;
         if (isHl) rect(cx - cell.w/2 + 3, cy - cell.h/2 + 2, cell.w - 6, cell.h - 4,
-                       'rgba(123,94,167,.18)', C.plum, a, 5);
+                       'rgba(107,78,156,.18)', C.plum, a, 5);
         txt(fmtN(m[i][j]), cx, cy,
           {size:o.size || 17, color: isHl ? C.plum : (o.colour || C.ink),
            bold: isHl || o.bold, align:'center', a});

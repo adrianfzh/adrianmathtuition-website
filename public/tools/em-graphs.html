@@ -20,10 +20,10 @@
 <title>Graphs of functions, animated — the seven shapes</title>
 <style>
   :root{
-    --bg:#F4EFE6; --ink:#2b2b2b; --muted:#7d756a;
-    --rose:#BC5A6E; --teal:#2E7C8F; --orange:#D8693C; --plum:#7B5EA7;
-    --grid:#e6ddcd; --line:#cfc6b6;
-    --panel:#fbf8f1; --panelb:#e7ded0;
+    --bg:#F8FAFC; --ink:#142033; --muted:#5A6B80;
+    --rose:#B04A62; --teal:#1F6F84; --orange:#C85A2E; --plum:#6B4E9C;
+    --grid:#E3E9F1; --line:#AEBDCE;
+    --panel:#FFFFFF; --panelb:#DDE3EC;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -34,21 +34,21 @@
     display:flex; flex-direction:column; min-height:100vh;
   }
   header{padding:16px 20px 6px 116px}
-  h1{font-size:19px; font-weight:600; margin:0; letter-spacing:.2px}
-  .sub{font-size:13px; color:var(--muted); margin-top:3px}
+  h1{font-size:22px; font-weight:600; margin:0; letter-spacing:.2px}
+  .sub{font-size:15px; color:var(--muted); margin-top:3px}
 
   .stage{position:relative; flex:1 1 auto; min-height:340px}
   canvas{display:block; width:100%; height:100%; touch-action:none; cursor:default}
 
   .readout{
     position:absolute; top:12px; left:12px;
-    background:rgba(251,248,241,.93); border:1px solid var(--panelb);
+    background:rgba(255,255,255,.93); border:1px solid var(--panelb);
     border-radius:10px; padding:9px 12px;
     font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
-    font-size:12.5px; line-height:1.6; color:var(--ink);
+    font-size:17px; line-height:1.6; color:var(--ink);
     box-shadow:0 1px 0 rgba(0,0,0,.03);
     transition:opacity .35s; pointer-events:none;
-    max-width:min(330px, 46%);
+    max-width:min(420px, 52%);
   }
   .readout.off{opacity:0}
   .readout .k{color:var(--muted)}
@@ -57,7 +57,7 @@
   .readout .r-yint{color:var(--teal); font-weight:700}
   .readout .r-hero{color:var(--orange); font-weight:700}
   .readout .r-no{color:var(--muted); font-style:italic}
-  .hint{position:absolute; bottom:10px; right:12px; font-size:11.5px; color:var(--muted);
+  .hint{position:absolute; bottom:10px; right:12px; font-size:13px; color:var(--muted);
         font-family:ui-monospace,monospace; transition:opacity .35s; pointer-events:none}
   .hint.off{opacity:0}
 
@@ -69,9 +69,9 @@
   .dot:hover{border-color:var(--ink)}
   .dot.done{background:var(--panelb); border-color:var(--panelb)}
   .dot.on{background:var(--orange); border-color:var(--orange)}
-  .scenetitle{font-size:14px; font-weight:600}
-  .stepmark{font-size:11.5px; color:var(--muted); font-family:ui-monospace,monospace}
-  .caption{padding:7px 18px 4px; font-size:14.5px; line-height:1.58; max-width:940px;
+  .scenetitle{font-size:16px; font-weight:600}
+  .stepmark{font-size:13px; color:var(--muted); font-family:ui-monospace,monospace}
+  .caption{padding:7px 18px 4px; font-size:17px; line-height:1.58; max-width:940px;
            min-height:4.75em; transition:opacity .3s; font-style:italic}
   .caption b{font-style:normal}
   .caption .c-root{color:var(--rose); font-weight:600}
@@ -82,7 +82,7 @@
   .navrow{display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap;
           padding:8px 18px 16px}
   button{
-    font:inherit; font-size:13px; color:var(--ink); background:var(--panel);
+    font:inherit; font-size:15px; color:var(--ink); background:var(--panel);
     border:1px solid var(--panelb); border-radius:8px; padding:7px 13px; cursor:pointer;
   }
   button:hover{border-color:var(--muted)}
@@ -94,8 +94,8 @@
   button.primary:hover{background:#000}
   .scenectl{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
   .scenectl[hidden]{display:none}
-  .scenectl label{font-size:13px; color:var(--muted); font-style:italic}
-  .scenectl .mono{font-family:ui-monospace,monospace; font-size:12px; min-width:48px}
+  .scenectl label{font-size:15px; color:var(--muted); font-style:italic}
+  .scenectl .mono{font-family:ui-monospace,monospace; font-size:13.5px; min-width:48px}
   input[type=range]{accent-color:var(--orange); cursor:pointer; width:110px}
   .seg{display:inline-flex; border:1px solid var(--panelb); border-radius:8px; overflow:hidden}
   .seg button{border:0; border-radius:0; padding:7px 9px}
@@ -103,16 +103,16 @@
   button.on{background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:600}
   .readout .r-no{color:var(--muted); font-style:italic}
   .optrow{display:flex; gap:7px; flex-wrap:wrap; align-items:center}
-  .opt.right{background:#e9f1ef; border-color:var(--teal); color:var(--teal); font-weight:700}
-  .opt.wrong{background:#f6e9ec; border-color:var(--rose); color:var(--rose)}
-  .score{font-family:ui-monospace,monospace; font-size:12px; color:var(--muted)}
-  .askk{font-size:12.5px; color:var(--muted); font-style:italic}
+  .opt.right{background:#E8F2F6; border-color:var(--teal); color:var(--teal); font-weight:700}
+  .opt.wrong{background:#FBEAEE; border-color:var(--rose); color:var(--rose)}
+  .score{font-family:ui-monospace,monospace; font-size:13.5px; color:var(--muted)}
+  .askk{font-size:17px; color:var(--muted); font-style:italic}
   .spacer{margin-left:auto}
 
   @media (max-width:640px){
     header{padding:50px 16px 6px 16px}
-    .readout{font-size:10.5px; padding:7px 9px; max-width:62%}
-    .caption{font-size:13.8px; min-height:6.6em; padding:7px 16px 4px}
+    .readout{font-size:12.5px; padding:7px 9px; max-width:72%}
+    .caption{font-size:15.5px; min-height:6.6em; padding:7px 16px 4px}
     .scenehead{padding:9px 16px 0}
     .navrow{padding:8px 16px 14px}
     input[type=range]{width:88px}
@@ -216,9 +216,9 @@
   const REDUCED = !!(window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  const C = { ink:'#2b2b2b', muted:'#7d756a', rose:'#BC5A6E', teal:'#2E7C8F',
-              orange:'#D8693C', plum:'#7B5EA7', grid:'#e6ddcd', line:'#cfc6b6',
-              paper:'#F4EFE6', halo:'rgba(244,239,230,.88)' };
+  const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
+              orange:'#C85A2E', plum:'#6B4E9C', grid:'#E3E9F1', line:'#AEBDCE',
+              paper:'#F8FAFC', halo:'rgba(248,250,252,.88)' };
   const MINUS = '−';
   const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
   const smooth = t => { t = clamp(t,0,1); return t*t*(3-2*t); };
@@ -349,35 +349,14 @@
     ctx.rect(rect.x0, rect.y0, rect.w, rect.h); ctx.clip();
     fn(); ctx.restore();
   }
-  function grid(v, a){
-    const al = a==null?1:a;
-    for (let gx = Math.ceil(v.win.x0); gx <= v.win.x1; gx++){
-      ga(al*(gx===0?0.9:0.45));
-      ctx.strokeStyle = gx===0 ? C.line : C.grid; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(v.X(gx), v.rect.y0); ctx.lineTo(v.X(gx), v.rect.y0+v.rect.h); ctx.stroke();
-    }
-    for (let gy = Math.ceil(v.win.y0); gy <= v.win.y1; gy++){
-      ga(al*(gy===0?0.9:0.45));
-      ctx.strokeStyle = gy===0 ? C.line : C.grid; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(v.rect.x0, v.Y(gy)); ctx.lineTo(v.rect.x0+v.rect.w, v.Y(gy)); ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-  }
   function axes(v, a, step){
-    const al = a==null?1:a, s = step || 1;
+    const al = a==null?1:a;
     const yA = clamp(0, v.win.y0, v.win.y1), xA = clamp(0, v.win.x0, v.win.x1);
-    seg(v, v.win.x0, yA, v.win.x1, yA, C.line, 1.5, al);
-    seg(v, xA, v.win.y0, xA, v.win.y1, C.line, 1.5, al);
-    for (let gx = Math.ceil(v.win.x0/s)*s; gx <= v.win.x1; gx += s){
-      if (Math.abs(gx) < 1e-9) continue;
-      txt(fmtN(gx), v.X(gx), v.Y(yA)+11, {size:10.5, color:C.muted, align:'center', a:al*0.85});
-    }
-    for (let gy = Math.ceil(v.win.y0/s)*s; gy <= v.win.y1; gy += s){
-      if (Math.abs(gy) < 1e-9) continue;
-      txt(fmtN(gy), v.X(xA)-6, v.Y(gy), {size:10.5, color:C.muted, align:'right', a:al*0.85});
-    }
-    txt('x', v.X(v.win.x1)-8, v.Y(yA)-11, {italic:true, size:12.5, color:C.muted, a:al*0.9});
-    txt('y', v.X(xA)+11, v.Y(v.win.y1)+10, {italic:true, size:12.5, color:C.muted, a:al*0.9});
+    seg(v, v.win.x0, yA, v.win.x1, yA, C.line, 2.2, al);
+    seg(v, xA, v.win.y0, xA, v.win.y1, C.line, 2.2, al);
+    txt('x', v.X(v.win.x1)-10, v.Y(yA)-15, {italic:true, size:19, color:C.muted, a:al*0.9});
+    txt('y', v.X(xA)+14, v.Y(v.win.y1)+12, {italic:true, size:19, color:C.muted, a:al*0.9});
+    txt('0', v.X(xA)-9, v.Y(yA)+14, {size:16, color:C.muted, align:'right', a:al*0.7});
   }
   // y = f(x), sampled at ~1 px, clipped by the caller
   function plot(v, f, color, w, a, dash, xEnd){
@@ -403,7 +382,7 @@
     const py = v.Y(y);
     if (py + d > v.rect.y0 + v.rect.h - 8) d = -Math.abs(d);
     else if (py + d < v.rect.y0 + 10) d = Math.abs(d);
-    txt(label, v.X(x)+9, py+d, {color:color, bold:true, size:12.5, a:a});
+    txt(label, v.X(x)+9, py+d, {color:color, bold:true, size:15, a:a});
   }
 
   // =====================================================================
@@ -464,9 +443,9 @@
       const full = onAxis ? label + (kind === 'h' ? '  (the x-axis)' : '  (the y-axis)') : label;
       // an on-axis label has to clear the axis letter drawn in the same corner
       if (kind === 'h') txt(full, v.X(v.win.x1) - (onAxis ? 26 : 6), v.Y(value)-11,
-        {color:C.plum, bold:true, size:12.5, align:'right', a:al});
+        {color:C.plum, bold:true, size:15, align:'right', a:al});
       else txt(full, v.X(value)+8, v.Y(v.win.y1) + (onAxis ? 29 : 13),
-        {color:C.plum, bold:true, size:12.5, a:al});
+        {color:C.plum, bold:true, size:15, a:al});
     }
   }
   // a small labelled panel used by the gallery scene
@@ -478,7 +457,7 @@
     seg(v, v.win.x0, 0, v.win.x1, 0, C.line, 1.2, a*0.9);
     seg(v, 0, v.win.y0, 0, v.win.y1, C.line, 1.2, a*0.9);
     clipRect(v.rect, () => plotBreak(v, f, colour, 2.4, a*0.95));
-    drawMath(label, x + w/2, y + h + 15, {size:12.5, color:colour, bold:true, align:'center', a});
+    drawMath(label, x + w/2, y + h + 15, {size:15, color:colour, bold:true, align:'center', a});
   }
 
   // -- 1 · the positive powers -------------------------------------------
@@ -500,7 +479,7 @@
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       const v = makeView(WIN, fullRect());
-      grid(v); axes(v);
+      axes(v);
       const fams = [
         {f:powF(1), c:C.orange, t:'y = x', lx:3.3, ly:3.7},
         {f:powF(2), c:C.rose,   t:'y = x^2', lx:2.6, ly:4.6},
@@ -510,25 +489,25 @@
         const a = REDUCED ? 1 : smooth((st - i*0.5)/1.0);
         if (a <= 0) return;
         clipRect(v.rect, () => plotBreak(v, fm.f, fm.c, 2.8, 0.95*a));
-        drawMath(fm.t, v.X(fm.lx), v.Y(fm.ly), {size:14.5, color:fm.c, bold:true, a});
+        drawMath(fm.t, v.X(fm.lx), v.Y(fm.ly), {size:17, color:fm.c, bold:true, a});
       });
       if (step === 0){
         const a = REDUCED ? 1 : smooth((st-1.8)/0.8);
         if (a > 0) mark(v, 0, 0, C.plum, 'all through (0, 0)', a, 20);
       } else {
         const a = REDUCED ? 1 : smooth(st/0.9);
-        clipRect(v.rect, () => plotBreak(v, powF(0), C.plum, 2.4, 0.9*a, [7,5]));
-        drawMath('y = x^0 = 1', v.X(-4.35), v.Y(1.42), {size:14, color:C.plum, bold:true, a});
+        clipRect(v.rect, () => plotBreak(v, powF(0), C.plum, 3, 0.9*a, [7,5]));
+        drawMath('y = x^0 = 1', v.X(-4.35), v.Y(1.42), {size:16.5, color:C.plum, bold:true, a});
         [[-1.4, C.rose], [1.4, C.rose]].forEach(p => {
           dotAt(v, p[0], p[0]*p[0], 4.6, C.rose, C.paper, a);
         });
         txt('x² : both sides go UP', v.X(-4.35), v.Y(4.7),
-          {color:C.rose, bold:true, size:13, a});
+          {color:C.rose, bold:true, size:15, a});
         [[-1.35, C.teal], [1.35, C.teal]].forEach(p => {
           dotAt(v, p[0], Math.pow(p[0],3), 4.6, C.teal, C.paper, a);
         });
         txt('x³ : left side goes DOWN', v.X(-4.35), v.Y(-4.7),
-          {color:C.teal, bold:true, size:13, a});
+          {color:C.teal, bold:true, size:15, a});
       }
     },
     ui(){ return {readout:
@@ -558,18 +537,18 @@
     draw(now, step){
       const st = REDUCED ? 99 : (now-this.stepT0)/1000;
       const v = makeView(WIN, fullRect());
-      grid(v); axes(v);
+      axes(v);
       const a = REDUCED ? 1 : smooth(st/1.0);
       if (step === 0){
-        clipRect(v.rect, () => plotBreak(v, powF(-1), C.orange, 2.9, 0.95*a));
-        drawMath('y = 1/x', v.X(2.5), v.Y(1.1), {size:15, color:C.orange, bold:true, a});
-        txt('x > 0 ⇒ y > 0', v.X(1.6), v.Y(3.6), {color:C.muted, italic:true, size:13, a});
-        txt('x < 0 ⇒ y < 0', v.X(-4.3), v.Y(-3.6), {color:C.muted, italic:true, size:13, a});
+        clipRect(v.rect, () => plotBreak(v, powF(-1), C.orange, 3.6, 0.95*a));
+        drawMath('y = 1/x', v.X(2.5), v.Y(1.1), {size:18, color:C.orange, bold:true, a});
+        txt('x > 0 ⇒ y > 0', v.X(1.6), v.Y(3.6), {color:C.muted, italic:true, size:15, a});
+        txt('x < 0 ⇒ y < 0', v.X(-4.3), v.Y(-3.6), {color:C.muted, italic:true, size:15, a});
       } else {
-        clipRect(v.rect, () => plotBreak(v, powF(-1), C.muted, 2, 0.25));
-        clipRect(v.rect, () => plotBreak(v, powF(-2), C.rose, 2.9, 0.95*a));
-        drawMath('y = 1/x^2', v.X(2.2), v.Y(1.4), {size:15, color:C.rose, bold:true, a});
-        txt('never negative', v.X(-4.3), v.Y(-3.6), {color:C.rose, italic:true, size:13, a});
+        clipRect(v.rect, () => plotBreak(v, powF(-1), C.muted, 2.6, 0.25));
+        clipRect(v.rect, () => plotBreak(v, powF(-2), C.rose, 3.6, 0.95*a));
+        drawMath('y = 1/x^2', v.X(2.2), v.Y(1.4), {size:18, color:C.rose, bold:true, a});
+        txt('never negative', v.X(-4.3), v.Y(-3.6), {color:C.rose, italic:true, size:15, a});
       }
       const b = REDUCED ? 1 : smooth((st-0.9)/0.8);
       if (b > 0){
@@ -578,7 +557,7 @@
         // top-right: the top-left corner is under the readout panel, and this
         // line is now the only asymptote marker (no dashes are drawn on an axis)
         txt('asymptotes: x = 0 (the y-axis) and y = 0 (the x-axis)', v.X(4.4), v.Y(4.7),
-          {color:C.plum, bold:true, size:13, align:'right', a:b});
+          {color:C.plum, bold:true, size:15, align:'right', a:b});
       }
     },
     ui(step){ return {readout:
@@ -600,7 +579,7 @@
     draw(now){
       const lt = REDUCED ? 99 : (now-this.t0)/1000;
       const v = makeView(WIN, fullRect());
-      grid(v); axes(v);
+      axes(v);
       const fams = [
         {f:x => Math.pow(2,x),  c:C.orange, t:'y = 2^x'},
         {f:x => Math.pow(3,x),  c:C.rose,   t:'y = 3^x'},
@@ -611,13 +590,13 @@
         if (a <= 0) return;
         clipRect(v.rect, () => plotBreak(v, fm.f, fm.c, 2.7, 0.95*a));
         drawMath(fm.t, v.rect.x0 + v.rect.w - 118, v.rect.y0 + 24 + i*20,
-          {size:13.5, color:fm.c, bold:true, a});
+          {size:16, color:fm.c, bold:true, a});
       });
       const b = REDUCED ? 1 : smooth((lt-1.6)/0.8);
       if (b > 0){
         mark(v, 0, 1, C.teal, '(0, 1) — every base', b, 22);
         asym(v, 'h', 0, b, null);
-        txt('asymptote y = 0', v.X(-4.3), v.Y(-0.75), {color:C.plum, bold:true, size:13, a:b});
+        txt('asymptote y = 0', v.X(-4.3), v.Y(-0.75), {color:C.plum, bold:true, size:15, a:b});
       }
     },
     ui(){ return {readout:
@@ -649,8 +628,8 @@
       ];
       const cols = W < 760 ? 3 : W < 1050 ? 4 : 7;
       const rows = Math.ceil(items.length/cols);
-      const pw = Math.min(190, (base.w - 24*(cols+1))/cols);
-      const ph = Math.min(150, (base.h - 90*rows)/rows);
+      const pw = Math.min(215, (base.w - 22*(cols+1))/cols);
+      const ph = Math.min(200, (base.h - 96*rows)/rows);
       const totalW = cols*pw + 24*(cols-1);
       const x0 = base.x0 + (base.w - totalW)/2;
       const y0 = base.y0 + Math.max(16, (base.h - rows*(ph+56))/2);
@@ -661,18 +640,17 @@
         const px = x0 + cIdx*(pw+24), py = y0 + r*(ph+56);
         panel(px, py, pw, ph, it.f, it.t, it.c, a);
         if (it.sub) txt(it.sub, px + pw/2, py + ph + 31,
-          {size:11.5, color:C.muted, italic:true, align:'center', a});
+          {size:13.5, color:C.muted, italic:true, align:'center', a});
       });
       const b = REDUCED ? 1 : smooth((lt-2.2)/0.8);
       // sits right under the gallery, not stranded at the bottom of the stage
       if (b > 0) txt('a minus in front of the whole graph flips it in the x-axis',
         base.x0 + base.w/2, y0 + rows*(ph+56) + 16,
-        {size:14, color:C.plum, bold:true, align:'center', a:b});
+        {size:16.5, color:C.plum, bold:true, align:'center', a:b});
     },
-    ui(){ return {readout:'<span class="k">n =</span> '+MINUS+'2, '+MINUS+'1, 0, 1, 2, 3<br>'+
-      '<span class="k">plus</span> y = a<sup class="k">x</sup><br>'+
-      '<span class="k">that is the whole gallery</span>',
-      hint:'learn them as pictures'}; }
+    // no readout: the gallery fills the stage, and the panel would sit on the
+    // first shape in the grid
+    ui(){ return {readout:'', hint:'learn them as pictures'}; }
   };
 
   // -- 5 · the minus flip --------------------------------------------------
@@ -706,11 +684,11 @@
         ctx.strokeRect(px, y0, pw, ph); ctx.globalAlpha = 1;
         seg(v, v.win.x0, 0, v.win.x1, 0, C.ink, 1.6, a*0.75);
         seg(v, 0, v.win.y0, 0, v.win.y1, C.line, 1.2, a*0.9);
-        clipRect(v.rect, () => plotBreak(v, p.f, C.muted, 2, a*0.35, [6,4]));
+        clipRect(v.rect, () => plotBreak(v, p.f, C.muted, 2.6, a*0.35, [6,4]));
         clipRect(v.rect, () => plotBreak(v, p.g, p.c, 2.8, a*0.95));
-        drawMath(p.t, px + pw/2, y0 + ph + 20, {size:14, color:p.c, bold:true, align:'center', a});
+        drawMath(p.t, px + pw/2, y0 + ph + 20, {size:16.5, color:p.c, bold:true, align:'center', a});
         txt('(dashed = before the minus)', px + pw/2, y0 + ph + 40,
-          {size:11.5, color:C.muted, italic:true, align:'center', a:a*0.9});
+          {size:13.5, color:C.muted, italic:true, align:'center', a:a*0.9});
       });
     },
     ui(){ return {readout:
@@ -746,22 +724,22 @@
       const e = SHIFT[step];
       const base = clearOfReadout(fullRect());
       const v = makeView(WIN, bandRect(base, 34));
-      grid(v); axes(v);
+      axes(v);
       drawMath(e.eq, base.x0 + base.w/2, base.y0 + 15,
-        {size:17, color:C.orange, bold:true, align:'center'});
+        {size:21, color:C.orange, bold:true, align:'center'});
       const sl = REDUCED ? 1 : smooth((st-0.9)/1.3);
       const cNow = e.c*sl;
       if (sl < 1){
-        clipRect(v.rect, () => plotBreak(v, powF(e.n, e.s, 0), C.muted, 2, 0.35, [6,5]));
-        drawMath(e.basic, v.X(-4.3), v.Y(-4.6), {size:13.5, color:C.muted, italic:true});
+        clipRect(v.rect, () => plotBreak(v, powF(e.n, e.s, 0), C.muted, 2.6, 0.35, [6,5]));
+        drawMath(e.basic, v.X(-4.3), v.Y(-4.6), {size:16, color:C.muted, italic:true});
       }
-      clipRect(v.rect, () => plotBreak(v, powF(e.n, e.s, cNow), C.orange, 3, 0.97));
+      clipRect(v.rect, () => plotBreak(v, powF(e.n, e.s, cNow), C.orange, 3.8, 0.97));
       asym(v, 'v', 0, 1, null);
       asym(v, 'h', cNow, 1, 'y = ' + fmtN(cNow));
       if (sl > 0.95){
         if (e.xint != null) mark(v, e.xint, 0, C.rose, '(' + fmtN(e.xint) + ', 0)', 1, 26);
         txt(e.yint == null ? 'no y-intercept — x = 0 is an asymptote' : '',
-          v.X(-4.3), v.Y(4.7), {color:C.muted, italic:true, size:13});
+          v.X(-4.3), v.Y(4.7), {color:C.muted, italic:true, size:15});
       }
     },
     ui(step){
@@ -805,11 +783,11 @@
       const e = INT[step];
       const base = clearOfReadout(fullRect());
       const v = makeView(e.win, bandRect(base, 50));
-      grid(v); axes(v);
+      axes(v);
       drawMath(e.eq, base.x0 + base.w/2, base.y0 + 15,
-        {size:17, color:C.orange, bold:true, align:'center'});
+        {size:21, color:C.orange, bold:true, align:'center'});
       txt(e.work, base.x0 + base.w/2, base.y0 + 38,
-        {size:13, color:C.muted, italic:true, align:'center'});
+        {size:15, color:C.muted, italic:true, align:'center'});
       const fr = REDUCED ? 1 : smooth(st/1.1);
       clipRect(v.rect, () => plot(v, e.f, C.orange, 3, 0.97, null,
         v.win.x0 + (v.win.x1-v.win.x0)*fr));
@@ -878,11 +856,11 @@
       const f = this.f(), ft = this.facts();
       const base = clearOfReadout(fullRect());
       const v = makeView(WIN, bandRect(base, 44));
-      grid(v); axes(v);
-      clipRect(v.rect, () => plotBreak(v, powF(this.n === 9 ? 1 : this.n, this.s, 0), C.muted, 2, 0.25, [6,5]));
-      clipRect(v.rect, () => plotBreak(v, f, C.orange, 3, 0.97));
+      axes(v);
+      clipRect(v.rect, () => plotBreak(v, powF(this.n === 9 ? 1 : this.n, this.s, 0), C.muted, 2.6, 0.25, [6,5]));
+      clipRect(v.rect, () => plotBreak(v, f, C.orange, 3.8, 0.97));
       drawMath(this.eq(), base.x0 + base.w/2, base.y0 + 15,
-        {size:18, color:C.orange, bold:true, align:'center'});
+        {size:22, color:C.orange, bold:true, align:'center'});
       if (ft.hasVA) asym(v, 'v', 0, 1, 'x = 0');
       if (ft.hasHA) asym(v, 'h', ft.ha, 1, 'y = ' + fmtN(ft.ha));
       if (ft.yint != null && ft.yint > v.win.y0 && ft.yint < v.win.y1)
@@ -997,15 +975,15 @@
       const item = this.q; if (!item) return;
       const base = clearOfReadout(fullRect());
       const v = makeView(item.win, bandRect(base, 56));
-      grid(v); axes(v);
+      axes(v);
       drawMath(item.eq, base.x0 + base.w/2, base.y0 + 20,
-        {size:22, color:C.ink, bold:true, align:'center'});
+        {size:26, color:C.ink, bold:true, align:'center'});
       if (this.stage === 0){
         txt(item.ask, base.x0 + base.w/2, base.y0 + 44,
-          {size:13, color:C.muted, italic:true, align:'center'});
+          {size:15, color:C.muted, italic:true, align:'center'});
         return;
       }
-      clipRect(v.rect, () => plotBreak(v, item.f, C.orange, 3, 0.97));
+      clipRect(v.rect, () => plotBreak(v, item.f, C.orange, 3.8, 0.97));
     },
     ui(){
       if (!this.q || this.stage === 0) return {readout:'', hint:'which of the seven shapes is it?'};
