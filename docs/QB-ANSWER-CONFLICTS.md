@@ -133,17 +133,28 @@ figure, and `has_image = true`. Reading the curve once fixes a whole branch.
 
 ---
 
-## 4. Part-level only — row-level answer is already correct
+## 4. Part-level defects — ✅ WRITTEN 2026-08-12
 
-Lower priority: nothing student-facing is wrong, but the part data is.
+> ⚠ **This section's original framing was wrong and cost it priority it should have had.**
+> It read "nothing student-facing is wrong, but the part data is." In fact
+> `collectScheme()` in `src/lib/practice-grade.ts` emits **every** `parts[].answer` and
+> `parts[].solution` into the grading prompt, exactly like the row-level fields. A wrong
+> part answer fails a correct student just as hard as a wrong row-level key. These were
+> live all along.
+
+18 defects across 16 rows, each recomputed from the stem by an independent verifier and
+then re-checked before writing. In every one the damage was confined to `parts[].answer`
+— the row-level fields and `parts[].solution` were already right, which is why they
+survived earlier review, and which gives a cheap detector for the next sweep: flag any
+part whose stored answer contradicts the value its own solution derives.
 
 `affcfa5e` AM (b) roots `15°,75°,90°,195°,255°` → `30°,90°,150°` (the stored set solves
-sin 2x = ½) · `4a9d08e0` JC2 (ii),(iii) part answers shifted one part late · `2e93f44a` EM (b)
+sin 2x = ½; a brute-force scan of the real equation returns exactly 30/90/150) · `4a9d08e0` JC2 (ii),(iii) part answers shifted one part late · `2e93f44a` EM (b)
 `$3402` → `$3042` · `8a822552` AM (b) `13.3` → `15.3` min · `9e445cf6` EM (b) `$1071.71` →
-`$1074.71` · `cd282a12` AM (b) `137/394` → `137/384` · `44c7edf3` EM (b) `$6.70` → `$5.60` ·
+`$1074.71` · `cd282a12` AM (b) `137/394` → `137/384` · ⚠ `44c7edf3` EM (b) `$6.70` → `$5.60` — **NOT WRITTEN**, see below ·
 `05658b01` JC2 (iii) `0.184` → `0.183` · `99b2cea6` EM (a) `259.2°` → `250.2°`, (b) `36.7°` →
 `26.2°` · `849953c9` JC2 (a) `0.389` → `0.379` · `0f39ba5a` EM (e) `689 m` → `675` ·
-`496246ba` EM_NA (a) `√97` → `√80` · `ba82cf34` JC2 (iii) `0.178 rad` → `0.718` ·
+`496246ba` EM_NA (a) `√97` → `√80` · ⚠ `ba82cf34` JC2 (iii) — **this file's proposed `0.718` was itself wrong**; see below ·
 `88c84298` JC2 (iv) `1565 mm` → `1216` · `458c441e` EM (a) `2145` → `214.5` ·
 `16052364` JC2 (i) `0.192` → `0.182` · `c98d0a4f` AM (b) answers shifted one part ·
 `ff0a9d4b` JC2 (i) `μ = 500` → `50` · `1086925c` JC2 (ii) — **fix `question_text`**, it has a
@@ -151,11 +162,39 @@ typo that makes a 5-mark question trivial · `7124ff0f` AM (b) and `7677438c` AM
 `1d4077d0` AM (ii),(iii) — all four trace to corrupted `question_text`, fix the stem first ·
 `5941deef` JC2 — all five part answers belong to a different question
 
+### Section 4 exceptions
+
+⚠ **`ba82cf34` · JC2 · (iii) — the proposed fix was wrong; corrected to a third value.**
+Stored `41.1° / 0.178 rad`, this file proposed `0.718 rad`. Both are wrong. Part (iii) gives
+the line's own equation — `x − 6 = (y−15)/3 = −(z+3)/3`, direction `(1, 3, −3)` — and asks for
+the inclination of **EF**; the stored solution instead used `DF = (1, 3, 2)`, and D is not on
+EF. With n = (1,1,8): sin θ = 20/(√66·√19) = 20/√1254, **θ = 34.4° (1 d.p.) or 0.600 rad**.
+The row corroborates this twice over: part (iv) derives direction `(1,3,−3)` from the same
+equation, and part (v)'s answer is `√19 km` = |EF| (|DF| would be √14). Answer and solution
+both rewritten to use EF. **The coincidence that made this invisible: n·DF and n·EF both
+equal 20**, so only the magnitude differs and the working looks clean.
+
+⚠ **`44c7edf3` · EM · (b) — NOT WRITTEN.** Stored `$6.70`, the row's own solution says `$5.60`.
+`$5.60` could not be confirmed: the parcel weight/dimension limits and the postage price table
+are image-only (no extracted text anywhere in the row), and the stored working charges the
+18 kg rate for a parcel its own book count puts at 19.5 kg, then reverse-engineers the count
+("*900 − 6×128 = 132 mm? Actually … the marking scheme uses 260*"). Both `$5.60` and `$6.70`
+are reachable from plausible table values. Needs the figure read before either is written.
+
+⚠ **`4a9d08e0` · JC2 · (i) — left alone deliberately.** The one-part-late shift also stripped
+part (i)'s probability, leaving it with the assumption text only. Restoring `0.380` is the
+obvious move, but part (i)'s stem reads "at most 3" while the solution, the row-level answer
+and part (iv) all require "fewer than 3" — under "at most 3" the correct value is 0.618 and
+parts (i) and (ii) would be identical. A missing key grades weakly; a wrong key fails correct
+students, so it stays missing until the stem is checked against the original paper.
+
 ---
 
-## 5. Reverse cases — the solution is wrong, the key is right
+## 5. Reverse cases — ✅ WRITTEN 2026-08-12
 
-Fix the worked solution; a student following it lands on the wrong value.
+All eight verified and repaired in both the row-level `solution` and the `parts[].solution`
+copy. Every stored answer was confirmed correct first — the premise "only the solution is
+wrong" was itself tested, not assumed.
 
 `f0e8d95a` AM a(iii) — solution solves for 48.75 mg where the question says 40 · `32d528d2`
 EM (a) — solution computes the base diagonal AC and labels it BE · `0850ef8e` S2 (c) —
@@ -177,6 +216,10 @@ differentiating `y = x(x−2)(x+1)` at `x = −0.2` gives **`−1.48`** (−0.72
 x = −0.4). ✅ **WRITTEN 2026-08-12** — key set to −1.48 and the accept band re-cut to
 `[−1.7, −1.3]`, since the old band would itself have failed a correct student.
 This class is the argument for a sweep that recomputes rather than cross-checks.
+
+**Wrong-vector / wrong-object errors.** `ba82cf34` (section 4) is the sharpest example: the
+solution computed a real quantity correctly, just for the wrong segment, and the dot product
+happened to agree. Numeric cross-checks pass; only re-reading what the question asks catches it.
 
 **Non-numeric conflicts.** Two rows have correct values reached by invalid reasoning
 (`ccf6858e`, `efde1ba5`) — right answer, wrong justification.
