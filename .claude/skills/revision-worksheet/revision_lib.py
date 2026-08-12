@@ -93,6 +93,97 @@ BANK_LEVELS = {
 # Bank -> the level line Adrian puts at the top of his own worked sheets.
 # A notes fragment has no title of its own (it opens straight on the topic name),
 # so kind=notes builds this block to match them — Adrian, 2026-08-06.
+# ── Syllabus order: which topics a Sec 3 student has been taught ─────────────
+# Adrian, 2026-08-12: "For Sec 3 practice/revision worksheets, should not put
+# other topics that they may not have learnt before. Okay for Sec 4 worksheets."
+#
+# A past-paper question carries EVERY topic it touches, so a question tagged
+# ['Nature of Roots', 'Polynomials'] is a legitimate Nature-of-Roots question
+# that a Sec 3 class cannot yet attempt. Matching on the requested topic alone
+# lets it through; this map is what lets the picker see the second tag.
+#
+# Numbers are Adrian's own teaching order, taken from the filenames in
+# Dropbox/Apps/AdrianMathNotes/Notes/AM (01 Quadratic Functions .. 31 Plane
+# Geometry). Sec 3 runs to 20 (Applications of Trigonometry); Sec 4 picks up at
+# 21 (Differentiation) and has the whole syllabus available.
+AM_TOPIC_ORDER = {
+    "Quadratic Functions": 1,
+    "Simultaneous Equations": 2,
+    "Quadratic Inequalities": 3,
+    "Nature of Roots": 4,
+    "Polynomials": 5,
+    "Partial Fractions": 6,
+    "Surds": 7,
+    "Indices": 8,
+    "Logarithms": 9,
+    "Logarithmic and Exponential Functions": 9,
+    "Power Graphs": 10,
+    "Graphs of Functions": 10,
+    "Coordinate Geometry": 11,
+    "Circles": 12,
+    "Binomial Theorem": 13,
+    "Linear Law": 14,
+    "Trigonometry (Ratios)": 15,
+    "Trigonometry (Graphs)": 16,
+    "Trigonometry (Identities)": 17,
+    "Trigonometry (Equations)": 18,
+    "Trigonometry (R-Formula)": 19,
+    "Trigonometry (Applications)": 20,
+    # ── Sec 4 from here ──
+    "Differentiation (Techniques)": 21,
+    "Differentiation (Tangents and Normals)": 22,
+    "Differentiation (Increasing and Decreasing Functions)": 23,
+    "Differentiation (Rates of Change)": 24,
+    "Differentiation (Maximum and Minimum)": 25,
+    "Differentiation (Product/Quotient/Chain Rule)": 26,
+    "Differentiation (Trigonometric)": 26,
+    "Differentiation (Logarithmic and Exponential)": 26,
+    "Integration (Techniques)": 28,
+    "Integration (Indefinite)": 28,
+    "Integration (Area)": 29,
+    "Integration (Definite Integrals)": 29,
+    "Integration (Definite)": 29,
+    "Integration (Applications)": 29,
+    "Kinematics": 30,
+    "Plane Geometry": 31,
+}
+# Deliberately NOT mapped, and both would do harm if they were:
+#
+#   "Proof"  — a KIND marker, not a syllabus position. Of 109 AM proof questions,
+#              91 also carry "Plane Geometry" (so they are already caught by that
+#              tag) and 15 carry a Trigonometry topic. Mapping Proof to 31 would
+#              have blocked those 15 trig proofs from Sec 3 sheets while adding
+#              nothing — the plane-geometry ones were covered either way.
+#   "Modulus Functions", "Mensuration" — absent from Notes/AM, so there is no
+#              teaching position to read off. The map mirrors that folder; a tag
+#              it does not define is left to fail open.
+
+
+# Last topic number taught, per notes bank. A bank absent from this map is never
+# narrowed — EM's order is not yet established, and every Sec 4 bank has the
+# whole syllabus by definition.
+BANK_TOPIC_CAP = {
+    "S3_AM": 20,
+}
+
+
+def out_of_scope(row, cap: int | None) -> str | None:
+    """The topic that puts this question beyond what the class has been taught,
+    or None when it is safe to use.
+
+    Fails OPEN: a topic missing from AM_TOPIC_ORDER is allowed through. A new or
+    renamed tag should not silently empty a worksheet, and the map is a hand-kept
+    mirror of Adrian's notes folder rather than anything the DB guarantees.
+    """
+    if cap is None:
+        return None
+    for t in (row.get("topics") or []):
+        n = AM_TOPIC_ORDER.get((t or "").strip())
+        if n is not None and n > cap:
+            return t
+    return None
+
+
 BANK_TITLES = {
     "S3_AM": "Sec 3 Additional Math",
     "S4_AM": "Sec 4 Additional Math",
@@ -2488,10 +2579,24 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     if not levels:
         raise ValueError("could not infer a questions.level; pass --level")
 
+    # Sec 3 banks drop any question that also carries a topic taught later —
+    # see AM_TOPIC_ORDER. Sec 4 banks have the whole syllabus, so cap is None.
+    cap = BANK_TOPIC_CAP.get((bank or "").upper())
+    scope_skips: dict[str, int] = {}
+
     pool, level_used = [], {}
     seen = set()
     for lv in levels:
         rows = fetch_pool(env, lv, ptopic, figures=figures)
+        if cap is not None:
+            kept = []
+            for r in rows:
+                bad = out_of_scope(r, cap)
+                if bad:
+                    scope_skips[bad] = scope_skips.get(bad, 0) + 1
+                else:
+                    kept.append(r)
+            rows = kept
         fresh = [r for r in rows if r["id"] not in seen]
         seen.update(r["id"] for r in fresh)
         pool += fresh
@@ -2509,6 +2614,11 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
                     % (levels[0], ", ".join(repr(t) for t in closest(ptopic, topics, 5))))
         except Exception:
             pass
+        if scope_skips:
+            hint += ("\nSec 3 scope dropped %d question(s) that also need: %s"
+                     % (sum(scope_skips.values()),
+                        ", ".join("%s (%d)" % (t, n) for t, n in
+                                  sorted(scope_skips.items(), key=lambda kv: -kv[1]))))
         raise RuntimeError("No usable practice questions for topic %r at level(s) %s.%s"
                            % (ptopic, "/".join(levels), hint))
 
@@ -2586,6 +2696,13 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
                                % optional)
         else:
             optional_from = len(chosen) - optional + 1
+
+    if scope_skips:
+        scope_notes.append(
+            "Sec 3 scope: dropped %d question(s) needing a later topic — %s"
+            % (sum(scope_skips.values()),
+               ", ".join("%s (%d)" % (t, n) for t, n in
+                         sorted(scope_skips.items(), key=lambda kv: -kv[1])[:6])))
 
     report = RunReport(base=resolved, kind=kind, level_used=level_used,
                        questions=chosen, stats=stats, size=size_budget(chosen),
