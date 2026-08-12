@@ -58,6 +58,15 @@ the card 404s). Conventions, all load-bearing:
   - `em-graphs.html` covers the EM *Graphs* page (x^n for n = −2…3, a^x, the minus flip,
     shifting). `plotBreak` starts a new subpath when the pixel jump exceeds the plot
     height — without it 1/x is drawn with a false vertical line through the asymptote.
+  - `geometry-proofs.html` is the **proof** half of plane geometry — `circle-theorems.html`
+    shows the theorems holding as you drag; this one writes the proof, statement then
+    reason, with the figure highlighting only what the current line talks about. Two
+    rules kept it honest: angle arcs **always sweep the short way** (normalise the delta
+    into (−π, π] — the raw `atan2` of the second arm sweeps a whole circle when the arms
+    straddle ±π, the same trap as `constructions.html`), and **every figure is drawn to
+    its own labelled angles** — the arcs in the worked question are chosen so ∠ACB really
+    is 58° and ∠ADC really is 106°, so a student who measures is not misled. Proofs are
+    hand-written and checked; the tool never generates one.
   - `matrix-multiply.html` + `matrix-calc.html` are a **deliberate pair** (lesson, then
     your own numbers) and share `drawMatrix`/`multiply`/`entryWorking` by copy — keep
     them in sync, same deal as the parser and the trig-proof pages.

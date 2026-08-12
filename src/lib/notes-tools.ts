@@ -130,6 +130,14 @@ const AM_TOOLS: Record<string, NotesTool[]> = {
       height: 700,
     },
     {
+      file: 'geometry-proofs',
+      title: 'Circle proofs, line by line',
+      blurb:
+        'The companion to the explorer: once you know which theorem applies, this builds the proof one line at a time — statement, then the reason that earns the mark.',
+      lesson: true,
+      height: 740,
+    },
+    {
       file: 'area-ratios',
       title: 'Ratio of areas',
       blurb: 'Triangles on a shared base, and area ratios in similar figures.',

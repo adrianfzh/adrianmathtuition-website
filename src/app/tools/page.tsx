@@ -91,6 +91,8 @@ const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
     desc: 'Check the sizes, then build the answer one entry at a time with the row and column lit up — 2×2, 2×3 with 3×2, and the pair that shows why order matters: 1×3 with 3×1 gives a number, 3×1 with 1×3 gives a 3×3.' },
   { slug: 'matrix-calc', icon: '⌨️', title: 'Matrix Multiplier — Your Own Numbers',
     desc: 'Type any two matrices and step through the product entry by entry, with the row, the column and the full working shown. Tells you when the multiplication is impossible, and why.' },
+  { slug: 'geometry-proofs', icon: '🧿', title: 'Circle Proofs — Statement and Reason',
+    desc: 'The eight theorems as a toolkit, then real proofs built one line at a time — each line lights up the part of the figure it is about and names the reason that earns the mark. Ends with a name-the-reason drill.' },
 ];
 
 // Level tagging for the Sec / JC filter, kept OUT of the TOOLS objects above so
