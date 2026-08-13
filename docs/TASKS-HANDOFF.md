@@ -270,6 +270,47 @@ S2 64, S1 51, EM 30, EM_NA 27, S3_AM 13, S3_EM 5. Wave 1 = calibration,
 3 agents × 40 (AM / EM-family / S3_EM_NA), strong model, MANDATORY
 sympy verification of every final value before writing, empty-guarded
 `SET solution=…, answer=…`, `verified`/`ai_generated` untouched.
+
+**2026-08-12/13. STEM RECOVERY PHASE 1 COMPLETE — the "590 lost stems"
+were ~98% FALSE POSITIVES of the discovery heuristic.** 590/590 rows
+checked question-by-question against the source PDFs (14 Sonnet agents,
+~65 papers, Dropbox "3 Exam Papers" archive + papers/processed):
+**579 verified stem-less-by-convention** (print goes straight into
+(a)/(i); full content already in parts[].text — same convention as
+5,667 other bank rows), only **2 genuine stems recovered** (0d7490c2
+SAJC MY-Q2 — the print's own copy-paste artifact, transcribed as
+printed; bfecc92a AJC "give answers in exact form" instruction line),
+**~20 parts fidelity fixes** (TKG 891c4ae3 missing table row + both
+graph-scale sentences; Mayflower LaTeX de-mangling ×3 incl. a subpart
+tree rebuild; d08e5f20 EJC integrand missing its 2 — e^{2tan⁻¹x},
+proven by the paper's own key; I then fixed its stale parts answer to
+½e^{2tan⁻¹x}+c; RJC birthdate 28→27 Mar; assorted verbatim-wording
+restorations), **6 unrecoverable** (3× NYJC JC1 Promo 2023 — every
+archive variant is byte-identical to the EOY exam, Promo absent:
+381568db a2ff1061 04a44e88; 3× RVHS JC2 Prelim 2021 P1 — file absent
+AND the rows are near-exact dupes of the verified 2022 rows → DEDUPE
+CANDIDATES: 2b72e61a ff0a7516 3837fab2 vs keepers 929dbc16 c4c1d84f
+deaf5d30; 2b72e61a's 2|x|+1 contradicts the 2022-print-verified
+2|x|−1), **2 figure-dependent rows found + has_image set** (3296099f
+box-and-whisker, ba37db3b probability tree). NEW FLAGS for Adrian:
+**8 marks-vs-print discrepancies** (ac3118f8 print 12 vs stored 8;
+5a77d0cb ii [3]; d7f9d9f5 a(ii) [4]; 8af65470 ii [3]; 516fda09 print 7
+vs 5; 1f15e649 print 11 vs 12; SRJC missing marks keys 8d784b99 +
+9f78baf1; split oddity 79dea8fb) — marks/total_marks were out of
+transcription scope, need a decision pass; **TJC/TMJC school-tag
+mixup** (92162eef + 566103a4 tagged TJC 2021 but match the TMJC 2021
+print byte-perfect — relabel school/source_file?); one worker's
+single-space stem convention experiment was normalized back to '' (19
+rows). Archive quirks catalogued in the agent reports (Monfort
+misspelling, "AM PRELIM 2022 Monfort" is really the 2021 SA2 file,
+St Gabriel 2025 lives only in papers/processed, MI PREU1 pdf holds 3
+sittings, SAJC MY pdf's P2 section carries a "Paper 1" header).
+**PHASE 2 LAUNCHED — Fable solve wave over the 582 now-confirmed
+text-complete rows** (582 = 590 − 6 unrecoverable − 2 has_image):
+wave 1 = Sec-level 5 agents (S3_EM_NA ×2, AM+S3_AM, S1+S2, EM-family);
+wave 2 = JC (JC2 ×2, JC1) + AM remainder. Standard Tier-B protocol:
+independent solve from parts text, sympy gate, empty-guarded row-level
+solution+answer, constructions skip+report.
 **Tier B WAVE 1 DONE — 122 solutions, 511/511 independent sympy checks
 passed FIRST attempt, 0 abandoned.** AM 131→91 (40 written), EM-family
 75→33 (42), S3_EM_NA 178→138 (40). Skips: 3 pure ruler-and-compass
