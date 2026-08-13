@@ -1212,7 +1212,13 @@ export default function BotAnalytics() {
                   {/* Bot answer — with view toggle */}
                   <div style={{ marginBottom: 12 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Bot answer</div>
-                    <ResponseViewer aiResponse={selected.aiResponse || ''} responseView={responseView} setResponseView={setResponseView} />
+                    <ResponseViewer
+                      aiResponse={selected.aiResponse || ''}
+                      questionId={selected.id}
+                      source={/^(web-|tg-)/.test(String(selected.chatId || '')) || /\(web\)/i.test(selected.modelUsed || '') ? 'web' : 'telegram'}
+                      responseView={responseView}
+                      setResponseView={setResponseView}
+                    />
                   </div>
 
                   {/* Actions */}
@@ -1335,8 +1341,10 @@ export default function BotAnalytics() {
 }
 
 // ─── ResponseViewer — module-level so it never remounts on parent re-render ──
-function ResponseViewer({ aiResponse, responseView, setResponseView }: {
+function ResponseViewer({ aiResponse, questionId, source, responseView, setResponseView }: {
   aiResponse: string;
+  questionId: string;
+  source: 'telegram' | 'web'; // channel the student actually asked on
   responseView: 'raw' | 'telegram' | 'web';
   setResponseView: (v: 'raw' | 'telegram' | 'web') => void;
 }) {
@@ -1349,6 +1357,12 @@ function ResponseViewer({ aiResponse, responseView, setResponseView }: {
     setTelegramText(null);
     lastFetchedResponse.current = '';
   }, [aiResponse]);
+
+  // Default the tab to the student's actual channel (2026-08-13 — a Telegram
+  // answer viewed in the Web tab shows plain text, which reads as broken KaTeX)
+  useEffect(() => {
+    setResponseView(source);
+  }, [questionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (responseView !== 'telegram' || !aiResponse) return;
@@ -1381,12 +1395,18 @@ function ResponseViewer({ aiResponse, responseView, setResponseView }: {
       {responseView === 'telegram' && (
         <div style={{ fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', background: '#f0fdf4', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto', fontFamily: 'system-ui, sans-serif' }}>
           <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it in Telegram</div>
+          {source === 'web' && (
+            <div style={{ fontSize: 11, color: '#b45309', marginBottom: 6 }}>🌐 This question was asked on web — the student saw the Web (KaTeX) view. This is only a Telegram-format preview.</div>
+          )}
           {telegramLoading ? <span style={{ color: '#94a3b8' }}>Rendering…</span> : (telegramText ?? '')}
         </div>
       )}
       {responseView === 'web' && (
         <div style={{ fontSize: 13, lineHeight: 1.7, background: '#eff6ff', borderRadius: 8, padding: '10px 12px', maxHeight: 260, overflowY: 'auto' }}>
           <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, fontWeight: 600 }}>As student sees it on web (KaTeX)</div>
+          {source === 'telegram' && (
+            <div style={{ fontSize: 11, color: '#b45309', marginBottom: 6 }}>📱 This question was asked on Telegram — its answer is stored in Telegram format (no LaTeX), so nothing typesets here. The student saw the Telegram view.</div>
+          )}
           <WebMathRenderer text={aiResponse} />
         </div>
       )}
