@@ -66,6 +66,17 @@ the card 404s). Conventions, all load-bearing:
     load-bearing: a ×n tag gets its **own left gutter** (`tagPad`) or it lands on the
     preceding operator, and a line carrying an `under` note gets **extra vertical room**
     or the note collides with the numerator below it.
+  - **Narration** (added to `quadratic-graphs.html` first, 2026-08-13 — port it to the
+    rest of the family). Browser `speechSynthesis` only: no audio assets, no TTS
+    endpoint, so the zero-request rule holds. Three things are load-bearing:
+    a hand-written `NARR[scene][step]` script — captions are full of markup and
+    symbols and speak badly, so they are **not** reused; nothing is spoken until the
+    student has clicked once (`gestured`), because browsers refuse speech before a
+    gesture and the toggle would otherwise look broken on load; and while playing the
+    **voice sets the pace**, not the timer — `schedule()` treats `dwell` as a minimum
+    and keeps re-checking `synth.speaking` so a step is never cut off mid-sentence.
+    `NARR` length must track each scene's `steps` (27 lines for 27 steps here).
+    The `🔊` toggle persists in localStorage (`qg_narr`).
   - `quadratic-graphs.html` draws ONE parabola (y = x² − 6x + 5) in every scene so
     "three forms, one curve" is seen rather than asserted; `Q(a,b,c)` derives all three
     forms, so the sandbox can never print a factorised form that disagrees with the curve.

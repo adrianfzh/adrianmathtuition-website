@@ -121,7 +121,7 @@
 <a href="/tools" class="tools-backlink" style="position:fixed;top:12px;left:12px;z-index:99999;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;background:rgba(20,22,26,.82);color:#fff;font:600 13px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.28);-webkit-tap-highlight-color:transparent;">‹ All tools</a>
 <header>
   <h1>Quadratic graphs — the three forms, one curve</h1>
-  <div class="sub">A nine-scene guided mini-lesson: y = x² − 6x + 5, y = (x − 1)(x − 5) and y = (x − 3)² − 4 are the SAME parabola — each form hands you a different part of the sketch for free. Prev / Next drives the story (← → keys work too) — or press ▶&nbsp;Play&nbsp;all.</div>
+  <div class="sub">A nine-scene guided mini-lesson: y = x² − 6x + 5, y = (x − 1)(x − 5) and y = (x − 3)² − 4 are the SAME parabola — each form hands you a different part of the sketch for free, and each is then shown again with a&nbsp;=&nbsp;−2 so you can see what a negative, non-unit <i>a</i> does. Prev / Next drives the story (← → keys work too) — or press ▶&nbsp;Play&nbsp;all and let it read itself aloud.</div>
 </header>
 
 <div class="stage" id="stage">
@@ -155,6 +155,7 @@
       <span class="score" id="drillScore"></span>
     </span>
     <span class="spacer"></span>
+    <button id="narrBtn" aria-pressed="true" title="Read each step aloud">🔊 Narration on</button>
     <button id="playBtn">▶ Play all</button>
     <button id="nextBtn" class="primary">Next ›</button>
   </div>
@@ -197,8 +198,66 @@
   const drillNew = document.getElementById('drillNew');
   const drillScore = document.getElementById('drillScore');
 
+  const narrBtn = document.getElementById('narrBtn');
+
   const REDUCED = !!(window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  /* =====================================================================
+     NARRATION — the browser's own speech synthesis, so the page stays
+     self-contained and zero-request (no audio assets, no TTS endpoint).
+     Each scene/step has a hand-written line in NARR: the captions are
+     written to be READ, and full of markup and symbols that speak badly.
+
+     Two constraints shape this:
+      · Browsers refuse speech until the user has interacted, so nothing is
+        spoken until the first click (`gestured`). Otherwise the very first
+        chrome() on page load would be silently swallowed and the toggle
+        would look broken.
+      · While playing, the voice — not the timer — sets the pace: `schedule`
+        waits for `synth.speaking` to clear before advancing, so a long
+        explanation is never cut off mid-sentence.
+     ===================================================================== */
+  const synth = (typeof window !== 'undefined' && window.speechSynthesis) || null;
+  let narrOn = true, gestured = false, narrVoice = null, curUtter = null;
+  try { narrOn = localStorage.getItem('qg_narr') !== 'off'; } catch (e) {}
+
+  function pickVoice(){
+    if (!synth) return;
+    const vs = synth.getVoices() || [];
+    narrVoice = vs.find(v => /en[-_]GB/i.test(v.lang)) ||
+                vs.find(v => /en[-_](SG|AU|IE)/i.test(v.lang)) ||
+                vs.find(v => /^en/i.test(v.lang)) || null;
+  }
+  if (synth){
+    pickVoice();
+    if ('onvoiceschanged' in synth) synth.onvoiceschanged = pickVoice;
+  }
+  function stopSpeak(){
+    curUtter = null;
+    if (synth){ try { synth.cancel(); } catch (e) {} }
+  }
+  function speak(text){
+    stopSpeak();
+    if (!synth || !narrOn || !gestured || !text) return;
+    const u = new SpeechSynthesisUtterance(text);
+    if (narrVoice) u.voice = narrVoice;
+    u.rate = 0.92;            // a touch under default — this is teaching, not a bulletin
+    u.pitch = 1;
+    curUtter = u;
+    try { synth.speak(u); } catch (e) { curUtter = null; }
+  }
+  function syncNarrBtn(){
+    narrBtn.textContent = narrOn ? '🔊 Narration on' : '🔇 Narration off';
+    narrBtn.setAttribute('aria-pressed', narrOn ? 'true' : 'false');
+  }
+  narrBtn.addEventListener('click', () => {
+    gestured = true;
+    narrOn = !narrOn;
+    try { localStorage.setItem('qg_narr', narrOn ? 'on' : 'off'); } catch (e) {}
+    syncNarrBtn();
+    if (narrOn) sayCurrent(); else stopSpeak();
+  });
 
   const C = { ink:'#142033', muted:'#5A6B80', rose:'#B04A62', teal:'#1F6F84',
               orange:'#C85A2E', plum:'#6B4E9C', grid:'#D8E1EC', line:'#AEBDCE',
@@ -419,7 +478,11 @@
   // y = ax² + bx + c, with the three forms derived from a, b, c
   function Q(a, b, c){
     const h = -b/(2*a), k = c - b*b/(4*a), D = b*b - 4*a*c;
-    const roots = D < 0 ? null : [(-b - Math.sqrt(D))/(2*a), (-b + Math.sqrt(D))/(2*a)];
+    // Sorted ascending: with a < 0 the −√D branch is the LARGER root, which
+    // printed the factorised form back-to-front — "−2(x − 5)(x − 1)" in the
+    // heading against "−2(x − 1)(x − 5)" in the caption and the working.
+    const roots = D < 0 ? null
+      : [(-b - Math.sqrt(D))/(2*a), (-b + Math.sqrt(D))/(2*a)].sort((p, q) => p - q);
     return {
       a, b, c, h, k, D, roots,
       f: x => a*x*x + b*x + c,
@@ -437,6 +500,12 @@
     };
   }
   const LESSON = Q(1, -6, 5);            // (x−1)(x−5) = (x−3)² − 4
+  /* The frown partner, used by all three form scenes. Chosen so it shares the
+     lesson curve's ROOTS and line of symmetry — −2(x−1)(x−5) = −2(x−3)² + 8 =
+     −2x² + 12x − 10 — so "a flips it and stretches it, but never moves the
+     roots" is something the student sees on one pair of curves. a = −2 also
+     puts a ≠ ±1 in front of every form, which ±1 examples quietly hide. */
+  const FROWN = Q(-2, 12, -10);          // −2(x−1)(x−5) = −2(x−3)² + 8, max (3, 8)
   const WIN = {x0:-2.2, x1:8.2, y0:-6.4, y1:9.6};
 
   // draws the lesson parabola with whichever features are switched on
@@ -453,8 +522,11 @@
       '(0, ' + fmtN(q.c) + ')', o.yint, -14);
     if (o.axis){
       seg(v, q.h, v.win.y0, q.h, v.win.y1, C.plum, 1.5, o.axis*0.7, [7,5]);
-      txt('x = ' + fmtN(q.h), v.X(q.h)+7, v.Y(v.win.y1)+13,
-        {color:C.plum, bold:true, size:15.5, a:o.axis});
+      // the label lives at the top of the line, so it collides with a turning
+      // point that is itself near the top (any frown with a high maximum)
+      if (o.axisLabel !== false)
+        txt('x = ' + fmtN(q.h), v.X(q.h)+7, v.Y(v.win.y1)+13,
+          {color:C.plum, bold:true, size:15.5, a:o.axis});
     }
     if (o.tp) mark(v, q.h, q.k, C.plum, o.tpLabel === false ? null :
       '(' + fmtN(q.h) + ', ' + fmtN(q.k) + ')', o.tp, q.a > 0 ? 20 : -14);
@@ -495,20 +567,59 @@
     {t:'y = (0 '+M+' 1)(0 '+M+' 5) = ('+M+'1)('+M+'5) = 5', step:3},
     {t:'( 0, 5 )', step:3, indent:true, colour:C.teal, bold:true}
   ];
-  const WORK_CS = [                                      // scene 4
-    {head:'y = a(x '+M+' h)^2 + k   ⇒   turning point (h, k)', step:0},
-    {head:'turning point — read it off', step:1},
-    {t:'(x '+M+' 3)^2 ≥ 0, and it is 0 when x = 3', step:1},
-    {t:'then y = 0 '+M+' 4 = '+M+'4', step:1, indent:true},
-    {t:'TP ( 3, '+M+'4 ),  minimum value '+M+'4', step:1, indent:true,
+  /* scene 4 — the DERIVATION first (steps 0–2), then reading the form (3–4),
+     then the same form with a = −2 (step 5). Students are routinely handed
+     (x − 3)² − 4 with no account of where the −4 came from; halving b and
+     subtracting the square back off is the step that explains it. */
+  const WORK_CS = [
+    {head:'where does this form come from?', step:0},
+    {t:'y = x^2 '+M+' 6x + 5', step:0},
+    {head:'1 · halve the number in front of x', step:1},
+    {t:'b = '+M+'6,  half of it is '+M+'3', step:1, note:'this goes in the bracket'},
+    {t:'so we want  (x '+M+' 3)^2', step:1, indent:true, colour:C.plum, bold:true},
+    {head:'2 · put back what the square added', step:2},
+    {t:'(x '+M+' 3)^2 = x^2 '+M+' 6x + 9', step:2, note:'a 9 we never had'},
+    {t:'y = (x '+M+' 3)^2 '+M+' 9 + 5', step:2, indent:true, note:'subtract it off'},
+    {t:'y = (x '+M+' 3)^2 '+M+' 4', step:2, indent:true, colour:C.orange, bold:true},
+    {head:'turning point — read it off', step:3},
+    {t:'(x '+M+' 3)^2 ≥ 0, and it is 0 when x = 3', step:3},
+    {t:'then y = 0 '+M+' 4 = '+M+'4', step:3, indent:true},
+    {t:'TP ( 3, '+M+'4 ),  minimum value '+M+'4', step:3, indent:true,
      colour:C.plum, bold:true},
-    {head:'y-intercept — sub x = 0', step:2},
-    {t:'y = (0 '+M+' 3)^2 '+M+' 4 = 9 '+M+' 4 = 5', step:2, colour:C.teal, bold:true},
-    {head:'x-intercepts — sub y = 0', step:2},
-    {t:'(x '+M+' 3)^2 '+M+' 4 = 0', step:2},
-    {t:'(x '+M+' 3)^2 = 4', step:2, indent:true},
-    {t:'x '+M+' 3 = ±2', step:2, indent:true, note:'both roots'},
-    {t:'x = 5    or    x = 1', step:2, indent:true, colour:C.rose, bold:true}
+    {head:'y-intercept — sub x = 0', step:4},
+    {t:'y = (0 '+M+' 3)^2 '+M+' 4 = 9 '+M+' 4 = 5', step:4, colour:C.teal, bold:true},
+    {head:'x-intercepts — sub y = 0', step:4},
+    {t:'(x '+M+' 3)^2 '+M+' 4 = 0', step:4},
+    {t:'(x '+M+' 3)^2 = 4', step:4, indent:true},
+    {t:'x '+M+' 3 = ±2', step:4, indent:true, note:'both roots'},
+    {t:'x = 5    or    x = 1', step:4, indent:true, colour:C.rose, bold:true},
+    {head:'now with a = '+M+'2', step:5},
+    {t:'y = '+M+'2(x '+M+' 3)^2 + 8', step:5, colour:C.rose, bold:true},
+    {t:'h and k still read off: TP ( 3, 8 )', step:5, indent:true},
+    {t:'a < 0  ⇒  ∩,  so 8 is a MAXIMUM', step:5, indent:true,
+     colour:C.plum, bold:true}
+  ];
+  const WORK_FACT_NEG = [                                // scene 3, frown step
+    {head:'same brackets, new a', step:4},
+    {t:'y = '+M+'2(x '+M+' 1)(x '+M+' 5)', step:4, colour:C.rose, bold:true},
+    {t:'y = 0 still needs a bracket = 0', step:4, indent:true},
+    {t:'x = 1   or   x = 5', step:4, indent:true, colour:C.rose, bold:true,
+     note:'a never moves the roots'},
+    {head:'turning point — sub x = 3', step:4},
+    {t:'y = '+M+'2(3 '+M+' 1)(3 '+M+' 5)', step:4},
+    {t:'= '+M+'2(2)('+M+'2) = 8', step:4, indent:true},
+    {t:'max ( 3, 8 )', step:4, indent:true, colour:C.plum, bold:true}
+  ];
+  const WORK_GEN_NEG = [                                 // scene 5, frown step
+    {head:'same method, watch every sign', step:4},
+    {t:'y = '+M+'2x^2 + 12x '+M+' 10', step:4, colour:C.rose, bold:true},
+    {t:'y-intercept: c = '+M+'10', step:4, indent:true, colour:C.teal, bold:true},
+    {head:'line of symmetry', step:4},
+    {t:'x = '+M+'b/2a = '+M+'12 ÷ 2('+M+'2)', step:4},
+    {t:'= '+M+'12 ÷ '+M+'4 = 3', step:4, indent:true, note:'two minuses'},
+    {head:'turning point — sub x = 3', step:4},
+    {t:'y = '+M+'2(9) + 36 '+M+' 10 = 8', step:4},
+    {t:'max ( 3, 8 )', step:4, indent:true, colour:C.plum, bold:true}
   ];
   const WORK_GEN = [                                     // scene 5
     {head:'y-intercept — sub x = 0', step:0},
@@ -554,12 +665,66 @@
   ];
 
   // =====================================================================
+  //  NARRATION SCRIPT — one entry per scene, one string per step.
+  //  Written to be HEARD: no symbols, no markup, and the maths spoken the
+  //  way you would say it at a whiteboard ("x squared", "minus b over 2a").
+  //  Index and length must track scenes[] and each scene's `steps`.
+  // =====================================================================
+  const NARR = [
+    [ // 1 · smile or frown
+      'Every quadratic — anything with an x squared in it — draws the same kind of curve, called a parabola. The simplest one is y equals x squared. Notice that it is symmetric: fold it along the dashed line down the middle and the two halves land exactly on top of each other. That symmetry is what makes the rest of this topic easy.',
+      'The sign of the number in front of x squared decides which way up the curve sits. If a is positive you get a smile, with a minimum at the bottom. If a is negative you get a frown, with a maximum at the top. Decide this first, every single time — because if you sketch it the wrong way up, every feature you mark afterwards is wrong too.'
+    ],
+    [ // 2 · what the marks are for
+      'A full-mark sketch shows four things. First, the shape. Here a equals one, which is positive, so it is a smile.',
+      'Second, the x-intercepts — where the curve crosses the x-axis. Put y equal to zero and solve. x squared minus six x plus five factorises into x minus one, times x minus five. So x equals one, or x equals five.',
+      'Third, the y-intercept — where it crosses the y-axis. Put x equal to zero. Every term with an x in it disappears, and you are left with y equals five.',
+      'Fourth, the turning point. The line of symmetry is at x equals minus b over two a, which is three. Substitute x equals three back in: nine minus eighteen plus five gives minus four. So the turning point is three, minus four.'
+    ],
+    [ // 3 · factorised form
+      'This form is built for the roots. y equals x minus one, times x minus five. To find where the curve crosses the x-axis, put y equal to zero. A product is zero only if one of the brackets is zero.',
+      'So x equals one, or x equals five — read straight off the brackets, with the sign flipped. x minus one gives plus one, not minus one. That flip is the most common slip in this whole topic.',
+      'The line of symmetry sits exactly halfway between the roots. One plus five, divided by two, is three. If the curve factorises you do not need a formula for it.',
+      'The turning point sits on that line, so substitute x equals three back into the equation. Three minus one is two; three minus five is minus two; and two times minus two is minus four. So the turning point is three, minus four. And for the y-intercept, put x equal to zero: minus one times minus five is five.',
+      'Now the same form, but with a negative a. y equals minus two, times x minus one, times x minus five. The brackets are identical, so the roots are still one and five — a never moves the roots. But the minus two flips the curve into a frown and stretches it, so the turning point is now three, eight, and it is a maximum instead of a minimum.'
+    ],
+    [ // 4 · completed square form
+      'This form is built for the turning point. But first — where does it actually come from? Let us complete the square on x squared minus six x plus five.',
+      'Take the number in front of x, which is minus six, and halve it. That gives minus three, and that is the number that goes inside the bracket. So we write x minus three, all squared.',
+      'But careful: x minus three, all squared, expands to x squared minus six x plus nine. We have added a nine that was never there, so we subtract it straight back off. That leaves x minus three squared, minus nine, plus five — and minus nine plus five is minus four. So y equals x minus three squared, minus four. Same curve, written differently.',
+      'Now read the turning point off. A square is never negative, so x minus three squared is smallest when it is zero, and that happens at x equals three. Then y is minus four. Turning point three, minus four, and the minimum value is minus four. Both numbers are sitting right there in the equation: the three with its sign flipped, and the minus four exactly as it is.',
+      'Everything else comes the usual way. For the y-intercept put x equal to zero: minus three squared is nine, take away four, gives five. For the roots put y equal to zero: x minus three squared equals four, so x minus three is plus or minus two, giving x equals one or five. Do not forget the plus or minus — one square root, two answers.',
+      'And with a negative a: y equals minus two, times x minus three squared, plus eight. The three and the eight still hand you the turning point directly — three, eight. But because a is minus two, the curve is a frown, so that point is a maximum, and eight is the largest value y ever reaches.'
+    ],
+    [ // 5 · general form
+      'This is the form questions usually arrive in: y equals x squared minus six x plus five. It hands you one thing immediately — the y-intercept is c, which is five, because putting x equal to zero kills the other two terms.',
+      'For the roots, factorise. You want two numbers that multiply to give plus five and add to give minus six: that is minus one and minus five. So it factorises to x minus one, times x minus five, giving x equals one or five. If it will not factorise, use the quadratic formula — the graph is the same either way.',
+      'The line of symmetry is x equals minus b over two a. Minus, minus six, over two, is three. This one always works, whether the expression factorises or not. It is the same answer as halfway between the roots, because it is the same line.',
+      'Then substitute x equals three back in for the turning point: nine minus eighteen plus five is minus four, so the turning point is three, minus four. Or complete the square and read it off. Same curve, same four facts — you just work a little harder from this form.',
+      'With a negative a the same method still works, but watch every sign. y equals minus two x squared, plus twelve x, minus ten. The y-intercept is minus ten. Minus b over two a is minus twelve over minus four, which is still three. Substitute back and you get eight. So the turning point is three, eight — and because a is negative, that is a maximum.'
+    ],
+    [ // 6 · three forms, one curve
+      'All three equations you have just seen are the same curve — the same expression written three different ways. So the question is never which form is right, it is which form is convenient. Factorised hands you the roots. Completed square hands you the turning point. General hands you the y-intercept. If a question gives you the wrong one for what it is asking, change forms first: factorise, or complete the square.'
+    ],
+    [ // 7 · frowns, and no roots at all
+      'Here is a frown in full. y equals minus x squared, plus four x, minus three. Because a is negative, the turning point is a maximum. To factorise it, multiply through by minus one first and then factorise as usual — the roots come out as one and three.',
+      'And some parabolas never cross the x-axis at all. To test, work out b squared minus four a c. For y equals x squared plus two x plus five that is four minus twenty, which is minus sixteen. It is negative, so there are no real roots and the curve floats entirely above the axis. Complete the square to find the turning point: minus one, four.'
+    ],
+    [ // 8 · build your own
+      'Now it is yours. Move a, b and c, and watch all three forms update together. Try making a negative to flip the curve. Try making a bigger than one to stretch it thinner. And try moving c on its own — notice the whole curve slides straight up or down without changing its shape at all.'
+    ],
+    [ // 9 · read it off
+      'Last one — a quick drill. You are given an equation in one of the three forms, and you read the fact it asks for straight off. Factorised gives you the roots. Completed square gives you the turning point. General gives you the y-intercept.'
+    ]
+  ];
+
+  // =====================================================================
   //  SCENES
   // =====================================================================
 
   // -- 1 · the shape -----------------------------------------------------
   const s1 = {
-    title:'Smile or frown', steps:2, dwell:8000, t0:0, stepT0:0,
+    title:'Smile or frown', steps:2, dwell:9500, t0:0, stepT0:0,
     caption(step){
       return step === 0
         ? 'Every quadratic — anything with an x² in it — draws the same kind of curve: a '+
@@ -618,7 +783,7 @@
 
   // -- 2 · what a full-mark sketch shows ---------------------------------
   const s2 = {
-    title:'What the marks are for', steps:4, dwell:5200, t0:0, stepT0:0,
+    title:'What the marks are for', steps:4, dwell:7600, t0:0, stepT0:0,
     caption(step){
       return [
         'Here is the curve this whole lesson is about. A sketch is not a drawing — it is a '+
@@ -662,7 +827,7 @@
 
   // -- 3 · factorised form -----------------------------------------------
   const s3 = {
-    title:'Factorised form', steps:4, dwell:5600, t0:0, stepT0:0,
+    title:'Factorised form', steps:5, dwell:8600, t0:0, stepT0:0,
     caption(step){
       return [
         '<b>y = (x − 1)(x − 5).</b> This form is built for the <span class="c-root">roots</span>. '+
@@ -674,7 +839,12 @@
           '<span class="c-tp">3</span>. You do not need a formula for it if the curve factorises.',
         'The turning point is on that line, so <b>sub x = 3 back into the equation</b>: '+
           'y = (3 − 1)(3 − 5) = (2)(−2) = −4. Turning point <span class="c-tp">(3, −4)</span>. '+
-          'And the y-intercept, sub x = 0: (−1)(−5) = <span class="c-yint">5</span>.'
+          'And the y-intercept, sub x = 0: (−1)(−5) = <span class="c-yint">5</span>.',
+        'Same brackets, new <i>a</i>: <b>y = −2(x − 1)(x − 5)</b>. The roots are '+
+          '<span class="c-root">still 1 and 5</span> — <b>a never moves them</b>, because it cannot '+
+          'make a bracket zero. What it does do is flip the curve into a '+
+          '<span class="c-root">frown</span> and stretch it, so the turning point becomes '+
+          '<span class="c-tp">(3, 8)</span> and it is now a <b>maximum</b>.'
       ][step];
     },
     enter(now){ this.t0 = now; this.stepT0 = now; },
@@ -685,6 +855,16 @@
       const v = makeView(WIN, bandRect(R.fig, 30));
       axes(v);
       const a = REDUCED ? 1 : smooth(st/0.8);
+      if (step === 4){
+        // both curves at once: the roots line up, everything else does not
+        drawMath(FROWN.factorised(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
+          {size:21, color:C.rose, bold:true, align:'center'});
+        parabola(v, LESSON, {color:C.orange, w:2.4, a:0.28,
+          rootLabels:false, yintLabel:false});
+        parabola(v, FROWN, {color:C.rose, roots:a, tp:a, axis:a, axisLabel:false});
+        workingPanel(R.work, WORK_FACT_NEG, step, now, this.stepT0);
+        return;
+      }
       drawMath(LESSON.factorised(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:21, color:C.orange, bold:true, align:'center'});
       parabola(v, LESSON, {
@@ -700,24 +880,38 @@
       }
       workingPanel(R.work, WORK_FACT, step, now, this.stepT0);
     },
-    ui(){ return {readout:'', hint:'(x − 1) ⇒ root x = +1'}; }
+    ui(step){ return {readout:'', hint: step === 4
+      ? 'a flips and stretches — it never moves the roots'
+      : '(x − 1) ⇒ root x = +1'}; }
   };
 
   // -- 4 · completed square form -----------------------------------------
   const s4 = {
-    title:'Completed square form', steps:3, dwell:5600, t0:0, stepT0:0,
+    title:'Completed square form', steps:6, dwell:8600, t0:0, stepT0:0,
     caption(step){
       return [
-        '<b>y = (x − 3)² − 4.</b> Same curve — check it: expand it and you are back to '+
-          'x² − 6x + 5. This form is built for the <span class="c-tp">turning point</span>, and '+
-          'you can read it off <b>without any working at all</b>.',
-        'A square is never negative, so (x − 3)² is smallest when it is <b>zero</b> — that is at '+
-          'x = 3 — and then y = −4. Turning point <span class="c-tp">(3, −4)</span>, minimum value '+
-          '−4. <b>Both numbers are in the equation</b>: the 3 (sign flipped) and the −4 (as it is).',
+        '<b>y = (x − 3)² − 4</b> is the same curve as x² − 6x + 5. Before we use it, though — '+
+          '<b>where does it come from?</b> You are expected to produce this form yourself, so let us '+
+          'complete the square on x² − 6x + 5 rather than just be handed the answer.',
+        '<b>Halve the number in front of x.</b> Here b = −6, and half of that is '+
+          '<span class="c-tp">−3</span> — so the bracket is <b>(x − 3)</b>. That is the whole of '+
+          'step one; the rest is just tidying up after it.',
+        'But <b>(x − 3)² = x² − 6x + 9</b> — squaring the bracket has added a <b>9</b> that was '+
+          'never in the original. So <b>subtract it straight back off</b>: '+
+          'y = (x − 3)² − 9 + 5, and −9 + 5 = −4. That is where the '+
+          '<span class="c-tp">−4</span> comes from: <b>y = (x − 3)² − 4</b>.',
+        'Now read the turning point off. A square is never negative, so (x − 3)² is smallest when '+
+          'it is <b>zero</b> — at x = 3 — and then y = −4. Turning point <span class="c-tp">(3, −4)</span>, '+
+          'minimum value −4. <b>Both numbers are in the equation</b>: the 3 (sign flipped) and the −4 '+
+          '(as it is).',
         'Everything else still comes the usual way: y-intercept, sub x = 0 → (−3)² − 4 = '+
           '<span class="c-yint">5</span>. Roots, sub y = 0 → (x − 3)² = 4 → x − 3 = <b>±2</b> → '+
           '<span class="c-root">x = 1 or 5</span>. <b>Do not forget the ±</b> — one square root, '+
-          'two answers.'
+          'two answers.',
+        'And with <i>a</i> ≠ 1: <b>y = −2(x − 3)² + 8</b>. The <b>h and k still read straight off</b> — '+
+          'turning point <span class="c-tp">(3, 8)</span> — that never changes. What changes is the '+
+          'shape: a = −2 makes it a <span class="c-root">frown</span>, so 8 is a <b>maximum</b>, the '+
+          'largest value y ever takes.'
       ][step];
     },
     enter(now){ this.t0 = now; this.stepT0 = now; },
@@ -728,15 +922,38 @@
       const v = makeView(WIN, bandRect(R.fig, 30));
       axes(v);
       const a = REDUCED ? 1 : smooth(st/0.8);
-      drawMath(LESSON.completed(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
+      if (step === 5){
+        drawMath(FROWN.completed(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
+          {size:21, color:C.rose, bold:true, align:'center'});
+        parabola(v, LESSON, {color:C.orange, w:2.4, a:0.28,
+          rootLabels:false, yintLabel:false});
+        parabola(v, FROWN, {color:C.rose, tp:a, axis:a, axisLabel:false});
+        workingPanel(R.work, WORK_CS, step, now, this.stepT0);
+        return;
+      }
+      // steps 0–2 are the derivation: the general form is what we start FROM,
+      // so it heads the figure until the completed form has been produced
+      const head = step <= 1 ? LESSON.general() : LESSON.completed();
+      drawMath(head, R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:21, color:C.orange, bold:true, align:'center'});
       parabola(v, LESSON, {
-        tp: step >= 1 ? a : 0,
-        axis: step >= 1 ? a : 0,
-        yint: step >= 2 ? a : 0,
-        roots: step >= 2 ? a : 0
+        tp: step >= 3 ? a : 0,
+        axis: step >= 3 ? a : 0,
+        yint: step >= 4 ? a : 0,
+        roots: step >= 4 ? a : 0
       });
       if (step === 1){
+        // where the bracket comes from: b, halved
+        txt(MINUS+'6  ÷ 2  =  '+MINUS+'3', v.X(3), v.Y(7.4),
+          {color:C.plum, bold:true, size:19, align:'center', a});
+        txt('half of b goes inside the bracket', v.X(3), v.Y(6.0),
+          {color:C.muted, italic:true, size:15, align:'center', a});
+      }
+      if (step === 2){
+        txt('(x '+MINUS+' 3)² adds a 9 — take it back off', v.X(3), v.Y(7.4),
+          {color:C.plum, bold:true, size:16.5, align:'center', a});
+      }
+      if (step === 3){
         // the (x−3)² ≥ 0 argument, drawn on the curve
         const t = REDUCED ? 1 : smooth((st-0.7)/1.4);
         const xr = 3 + 2.6*Math.cos(Math.PI*2*Math.min(1,t)*0.5 + Math.PI);
@@ -747,12 +964,14 @@
       }
       workingPanel(R.work, WORK_CS, step, now, this.stepT0);
     },
-    ui(){ return {readout:'', hint:'h flips sign, k does not'}; }
+    ui(step){ return {readout:'', hint: step <= 2
+      ? 'halve b, then subtract the square back off'
+      : 'h flips sign, k does not'}; }
   };
 
   // -- 5 · general form ---------------------------------------------------
   const s5 = {
-    title:'General form', steps:4, dwell:5600, t0:0, stepT0:0,
+    title:'General form', steps:5, dwell:8600, t0:0, stepT0:0,
     caption(step){
       return [
         '<b>y = x² − 6x + 5</b> — the form questions usually arrive in. It hands you one thing '+
@@ -766,7 +985,12 @@
           'is the same line.',
         'Then sub x = 3 back in for the turning point: y = 9 − 18 + 5 = −4, so '+
           '<span class="c-tp">(3, −4)</span>. <b>Or</b> complete the square and read it off. '+
-          'Same curve, same four facts — you just work a little harder from this form.'
+          'Same curve, same four facts — you just work a little harder from this form.',
+        'With <i>a</i> = −2: <b>y = −2x² + 12x − 10</b>. Nothing about the method changes — but '+
+          '<b>every sign has to be watched</b>. y-intercept is c = <span class="c-yint">−10</span>. '+
+          'x = −b/2a = −12 ÷ 2(−2) = −12 ÷ −4 = <span class="c-tp">3</span> — two minuses, so still '+
+          'positive 3. Sub back: −2(9) + 36 − 10 = 8, giving <span class="c-tp">(3, 8)</span>, a '+
+          '<b>maximum</b> because a &lt; 0.'
       ][step];
     },
     enter(now){ this.t0 = now; this.stepT0 = now; },
@@ -777,6 +1001,17 @@
       const v = makeView(WIN, bandRect(R.fig, 30));
       axes(v);
       const a = REDUCED ? 1 : smooth(st/0.8);
+      if (step === 4){
+        drawMath(FROWN.general(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
+          {size:21, color:C.rose, bold:true, align:'center'});
+        parabola(v, LESSON, {color:C.orange, w:2.4, a:0.28,
+          rootLabels:false, yintLabel:false});
+        // no yint marker: c = −10 sits below the window, so marking it would
+        // put a label off-canvas while the working points at it
+        parabola(v, FROWN, {color:C.rose, tp:a, axis:a, axisLabel:false});
+        workingPanel(R.work, WORK_GEN_NEG, step, now, this.stepT0);
+        return;
+      }
       drawMath(LESSON.general(), R.fig.x0 + R.fig.w/2, R.fig.y0 + 14,
         {size:21, color:C.orange, bold:true, align:'center'});
       parabola(v, LESSON, {
@@ -789,12 +1024,14 @@
         txt('x = '+MINUS+'b / 2a', v.X(3)+10, v.Y(8.4), {color:C.plum, bold:true, size:17, a});
       workingPanel(R.work, WORK_GEN, step, now, this.stepT0);
     },
-    ui(){ return {readout:'', hint:'x = −b/2a always works'}; }
+    ui(step){ return {readout:'', hint: step === 4
+      ? 'a < 0: the method is identical, the signs are not'
+      : 'x = −b/2a always works'}; }
   };
 
   // -- 6 · three forms, one curve ----------------------------------------
   const s6 = {
-    title:'Three forms, one curve', steps:1, dwell:11000, t0:0,
+    title:'Three forms, one curve', steps:1, dwell:13000, t0:0,
     caption(){ return 'All three equations you have just seen are the <b>same curve</b> — they are '+
       'the same expression written three ways. So the question is never “which form is right”, it '+
       'is <b>“which form is convenient”</b>: factorised hands you the '+
@@ -835,7 +1072,7 @@
   const NEG = Q(-1, 4, -3);              // −(x−1)(x−3) = −(x−2)² + 1
   const NOROOT = Q(1, 2, 5);             // (x+1)² + 4
   const s7 = {
-    title:'Frowns, and no roots at all', steps:2, dwell:8000, t0:0, stepT0:0,
+    title:'Frowns, and no roots at all', steps:2, dwell:10500, t0:0, stepT0:0,
     caption(step){
       return step === 0
         ? '<b>y = −x² + 4x − 3 = −(x − 1)(x − 3) = −(x − 2)² + 1.</b> a is negative, so this one is '+
@@ -1074,7 +1311,7 @@
     const b = document.createElement('button');
     b.className = 'dot'; b.type = 'button';
     b.setAttribute('aria-label', 'Scene '+(i+1)+': '+s.title);
-    b.addEventListener('click', () => { pauseAuto(); if (i !== cur) go(i, 0); });
+    b.addEventListener('click', () => { gestured = true; pauseAuto(); if (i !== cur) go(i, 0); });
     dotsEl.appendChild(b);
   });
   const dotBtns = dotsEl.querySelectorAll('.dot');
@@ -1101,6 +1338,14 @@
     ctlABC.hidden = (cur !== I_ABC);
     ctlDrill.hidden = (cur !== I_DRILL);
     lastRo = null; lastHint = null;
+    sayCurrent();
+  }
+  // Speaks the line for wherever we now are. Safe to call on every chrome():
+  // speak() cancels anything still in progress, and no-ops until the student
+  // has interacted at least once.
+  function sayCurrent(){
+    const lines = NARR[cur];
+    speak(lines ? lines[step] : '');
   }
   function go(i, toStep){
     trans = REDUCED ? null : {from: cur, t0: performance.now()};
@@ -1128,9 +1373,9 @@
     }
     else if (cur > 0) go(cur-1, scenes[cur-1].steps-1);
   }
-  nextBtn.addEventListener('click', () => { pauseAuto(); advance(); });
-  backBtn.addEventListener('click', () => { pauseAuto(); retreat(); });
-  replayBtn.addEventListener('click', () => { pauseAuto(); go(cur, step); });
+  nextBtn.addEventListener('click', () => { gestured = true; pauseAuto(); advance(); });
+  backBtn.addEventListener('click', () => { gestured = true; pauseAuto(); retreat(); });
+  replayBtn.addEventListener('click', () => { gestured = true; pauseAuto(); go(cur, step); });
   document.addEventListener('keydown', e => {
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON')) return;
     if (e.key === 'ArrowRight'){ e.preventDefault(); pauseAuto(); advance(); }
@@ -1140,23 +1385,30 @@
 
   let playing = false, autoT = null;
   function atEnd(){ return cur === scenes.length-1 && step === scenes[cur].steps-1; }
+  /* The dwell is a MINIMUM, not the pace. When narration is on, the voice sets
+     the pace: once the dwell has elapsed we keep re-checking until the browser
+     stops speaking, so a step is never cut off mid-sentence. With narration off
+     (or unsupported) it falls straight through to the old timer behaviour. */
   function schedule(){
     clearTimeout(autoT);
-    autoT = setTimeout(() => {
+    autoT = setTimeout(function tick(){
       if (!playing) return;
+      if (narrOn && synth && synth.speaking){ autoT = setTimeout(tick, 400); return; }
       if (atEnd()){ pauseAuto(); return; }
       advance();
       schedule();
-    }, scenes[cur].dwell || 6000);
+    }, scenes[cur].dwell || 9000);
   }
   function pauseAuto(){
     if (!playing) return;
     playing = false; clearTimeout(autoT);
+    stopSpeak();
     playBtn.textContent = '▶ Play all';
   }
   playBtn.addEventListener('click', () => {
     if (playing){ pauseAuto(); return; }
-    if (atEnd()) go(0, 0);
+    gestured = true;                     // browsers need this before any speech
+    if (atEnd()) go(0, 0); else sayCurrent();
     playing = true; playBtn.textContent = '⏸ Pause';
     schedule();
   });
@@ -1202,6 +1454,7 @@
   }
 
   resize();
+  syncNarrBtn();
   s8.sync(); s9.next();
   scenes[0].enter(performance.now());
   chrome();
