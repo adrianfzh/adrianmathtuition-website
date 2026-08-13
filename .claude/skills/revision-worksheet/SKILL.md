@@ -236,6 +236,56 @@ If nothing matches, it says so and lists what the folder actually has — same f
 format as above. **`Revision/AM G2` is currently empty**, so any `--folder "AM G2"` request
 will fail that way until Adrian puts sheets in it.
 
+### Building a NEW worked-examples sheet from the bank (first built 2026-08-13)
+
+The kinematics proof-of-concept: `30 Kinematics Revision (With Worked Examples) (Past
+Papers) (S4).docx` in `Revision/AM` — a bank-sourced twin of Adrian's authored sheet
+(subtitle carries the differentiator: *Kinematics (Past-Paper Edition)*). Reference build:
+[`bank_worked_sheet.py`](bank_worked_sheet.py) — copy-adapt per topic; everything
+layout-mechanical is already solved in it, only the content changes.
+
+Pipeline:
+
+1. **Mirror the authored sheet** when one exists: dump it paragraph-for-paragraph (OMML
+   linearized, bold/italic/size flags, tables interleaved) and reuse its Notes text
+   verbatim + its conventions (page breaks before Examples/Practice, padded literal part
+   labels in Examples, auto-numbered Q/SQ in Practice, `[Ans:]` per question).
+2. **Fetch the topic pool** (content source 3 below). Hand-pick ~6 worked examples for a
+   teaching arc (each gets a bold `concept()` line naming what it teaches); pick practice
+   via `select_questions` (seeded, tiered, diversity-greedy).
+3. **Exclude the authored sheet's questions from practice** — Adrian's authored Practice
+   sections are themselves bank-sourced (kinematics: 11/14 found verbatim by
+   fragment-regex against the pool). Exclude them AND the worked-example picks so the two
+   sheets share zero questions and can be used together.
+4. **Solve everything yourself.** Bank `solution` fields are untrusted reference only, and
+   part-level `answer`s contain real errors (kinematics e5252acf (b): part-ans 8⅓ is just
+   s(2); the asked-for total distance is 12⅙). Every printed answer = own verified
+   computation; check part marks sum to `total_marks`.
+5. **Build with create-worksheet's `worksheet_lib`** (`Worksheet()`: title/subtitle/
+   concept/example/para/Q/SQ/ans/figure/solution_box/page_break), then render-verify via
+   Word→PDF page by page.
+
+Gotchas that already bit (all handled in the reference build):
+
+- Bank text carries bare-superscript fragments — `ms$^{-1}$`, `2$^{\text{nd}}$` — whose
+  `$…$` content is invalid LaTeX alone; rewrite `$^` → `${}^` before `split_math` or
+  pandoc silently drops the unit exponent.
+- Storage-bucket JPEGs can lack JFIF/Exif headers → python-docx `UnrecognizedImageError`
+  even though the file is a valid JPEG; re-encode via PIL to PNG first.
+- `parts` can arrive scrambled — Methodist d5605b0a came (iii),(ii),(i); sort by label
+  (roman map when all labels are roman, else alpha) before rendering.
+- A part with `subparts`: render the part stem as `SQ(parts)` with **no** marks, then each
+  subpart as a literal padded `"(i)  "` paragraph with its own marks and
+  `left_indent Cm(1.4)`.
+- Practice questions have no `solution_box` to keep-together them — after `ans()`, set
+  `keep_with_next` on `ws._block_paras[:-1]` and clear the list, or questions straddle
+  pages.
+- Examples use literal padded labels (`"(i)   "` ljust 6 roman / `"(a) "` ljust 4 alpha) +
+  `marks=` for the right-tab `[n]`; `SQ` auto-numbering is for the Practice section only.
+
+Provenance (school/year/paper/question) stays OFF the sheet — house default — and goes in
+the delivery message instead.
+
 ## Content source 3 — practice questions (math Supabase `questions`)
 
 Credentials come from the repo's `.env.local`, parsed with a **real dotenv parser**
