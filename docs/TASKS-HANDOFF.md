@@ -236,6 +236,41 @@ next review topic. Next in line when he says go: EM Coordinate Geometry
 (26 units), then Circular Measure / Statistics / Circle Properties /
 Real-World Context (24 each); Tier A wave 5 (4 slices, OFFSET-0 rule).
 
+**2026-08-11 (later). ✅ TIER A COMPLETE — backlog 12,914 → 2.** Adrian:
+"let's finish qb-enrich Tier A then you move on to Tier B." Between
+sessions the main-Mac pipeline (new `qb-extractor`/`qb-verifier` agents +
+parts[].answer rollup) had taken 6,785 → 740; this session's finishing
+wave wrote the last **728** (slices 1235: 201, 679a: 247, bdef: 280/280).
+The only 2 unanswered rows are permanent by design: 15703230 (graph-
+reading, no values in source) and 549b6daf (corrupted solution) — prime
+candidates for the one-time no-answer flag. **Blind verification gate
+PASSED**: qb-verifier re-extracted 36 sampled rows (12 per wave-slice
+group incl. 6 known parts-conflict rows + 12 rollup-era rows from hexes
+0/4/8/c) without seeing stored answers → 36/36 equivalent, zero value
+mismatches (809fe734 hand-verified after the verifier's table dropped
+one row); rollup-era trap row 0dc9b13a stored correctly (2:3 from
+working, not parts' wrong 2/5). **Systemic find: `parts[].answer`
+metadata has a real error rate (~3–4% in the tail)** — 25 conflicts
+catalogued across the finish wave where it contradicts the solution's
+own working (signs, stale/copy-paste numbers incl. 5b97c904 whose BOTH
+sub-answers belong to a different question, intermediate-vs-final,
+missing roots); extraction always followed the shown working. Other new
+flags: scratch-work/self-correction narrative baked into `solution` on
+241e464a + 25b2eb62 (cleanup candidates); 8793f145-class rows (answer
+exists ONLY as parts metadata, `solution` NULL — unverifiable, worth a
+Tier-B-style backfill); doubled-apostrophe sweep allowlist (legit
+multi-prime notation): ff7ad34d 06fb8f98 bf02f8fd 5fdc7130 5d1b404d
+23ead986 a17903ad 619deb65 61afddb3 6385fb8c 63870216 78b6bf41. Write
+practice going forward: dollar-quoted literals ($qb$…$qb$) beat
+quote-doubling. **TIER B LAUNCHED (per the same mandate)**: pool is now
+1,631 rows with neither solution nor answer (no-image) — **590 have an
+EMPTY question stem** (unsolvable; stem-recovery backlog for a separate
+pass), leaving 1,041 solvable: JC2 433, S3_EM_NA 178, AM 131, JC1 109,
+S2 64, S1 51, EM 30, EM_NA 27, S3_AM 13, S3_EM 5. Wave 1 = calibration,
+3 agents × 40 (AM / EM-family / S3_EM_NA), strong model, MANDATORY
+sympy verification of every final value before writing, empty-guarded
+`SET solution=…, answer=…`, `verified`/`ai_generated` untouched.
+
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
 
 > ✅ **DONE (2026-08-10/11, second-Mac session)** — API + UI + paper_drafts
