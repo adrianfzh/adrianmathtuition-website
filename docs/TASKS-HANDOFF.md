@@ -314,6 +314,33 @@ verify before re-issuing. **Wave 3 launched (5 agents):** JC2 0–7
 lower-sec register), Sec mop-up (AM front 9 + EM-family 33 + S3_EM_NA
 67 incl. the 5 big graph-paper items + the 2 deferred linear-law
 rows).
+**Tier B WAVE 3 DONE — 402 solutions** (S1+S2 89, Sec mop-up 106 —
+**ALL Sec-level pools now cleared** (AM/EM/EM_NA/S3_* at 0 solvable
+minus 5 permanent skips), JC1 75, JC2 0–7 72, JC2 8–f 60); cumulative
+**795/1,041 solvable (76%)**, ~1,460 machine checks, zero unverified
+writes. Survived a 1:30pm session-limit kill mid-wave: 3 agents
+resumed cleanly via message (all writes were already banked —
+empty-guards + incremental writes made the kill lossless); one
+twice-stalled agent delivered its full report on a report-only resume.
+New metadata-error species this wave: missing-boundary inequalities
+(1a66b9b3 λ≤1, 11d80c4a a≤−2), strict-not-weak at a self-intersection
+node (35cd50ec), k=0-variant answer on a k=1 question (23709a9f),
+radian-mode artifact on an EM angle (b6159f34 → 101.5°), key constant
+failing its own simultaneous equations (bc6782cb c=33 not 23),
+internally inconsistent linear-law key trio (e3bd30a0), class mean
+72.3 not 72.5 (a77bef18). QUESTION defect: be82852a — constraints
+algebraically dependent, (m,n) underdetermined; family derived, scheme
+member stated. New exact dupes: 370299bd ≡ 24b7dd83, c19aed2d ≡
+c253498d (latter pair still unwritten). Pattern to police: the solver
+occasionally leaks self-correction narration into stored text — six
+cases this wave, ALL self-caught + patched (becfa355, 56cfb836,
+6881a205, 23709a9f, 459fcebd, a9ae2e7b); wave-4 prompts add a
+pre-write clean-prose scan, and an end-of-tier artifact sweep over
+every Tier-B solution is queued. **Wave 4 (the closer) launched:**
+JC2 0–7 finish (71), JC2 8–f (~70; its batch-5 15 rows are already
+machine-verified — script at scratchpad tierb-jc2b3/verify_b5.py),
+JC1 finish (34) + S1+S2 finish (26, skip construction 30d3669b,
+verify-then-skip f99feee1).
 
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
 
