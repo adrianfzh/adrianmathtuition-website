@@ -276,7 +276,10 @@ Gotchas that already bit (all handled in the reference build):
   (roman map when all labels are roman, else alpha) before rendering.
 - A part with `subparts`: render the part stem as `SQ(parts)` with **no** marks, then each
   subpart as a literal padded `"(i)  "` paragraph with its own marks and
-  `left_indent Cm(1.4)`.
+  `left_indent Cm(1.4)`. Pad with `f"({sp['label']}) ".ljust(5)` — trailing space INSIDE
+  the f-string — or the 5-char `(iii)` gets zero padding and glues to its text (bit on the
+  trig-ratios sheet, 2026-08-14; the space guarantees ≥1 gap while `(i)`/`(ii)` spacing is
+  unchanged).
 - Practice questions have no `solution_box` to keep-together them — after `ans()`, set
   `keep_with_next` on `ws._block_paras[:-1]` and clear the list, or questions straddle
   pages.

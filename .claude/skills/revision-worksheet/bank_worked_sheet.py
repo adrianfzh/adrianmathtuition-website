@@ -277,7 +277,7 @@ for r in practice:
         if subparts:
             ws.SQ(sm(p["text"]))
             for sp in subparts:
-                pp = ws.para([("text", f"({sp['label']})".ljust(5))] + sm(sp["text"]),
+                pp = ws.para([("text", f"({sp['label']}) ".ljust(5))] + sm(sp["text"]),
                              marks=sp.get("marks"))
                 pp.paragraph_format.left_indent = Cm(1.4)
         else:
