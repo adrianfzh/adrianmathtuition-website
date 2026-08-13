@@ -22,11 +22,11 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const VALID_TYPES: RenderType[] = ['question', 'question_with_answer', 'solution'];
-const TYPE_TO_FIELD: Record<RenderType, string> = {
+const TYPE_TO_FIELD = {
   question:              'question_image_url',
   question_with_answer:  'question_with_answer_image_url',
   solution:              'solution_image_url',
-};
+} as const satisfies Record<RenderType, string>;
 
 function checkAuth(req: NextRequest): boolean {
   // CRON_SECRET Bearer (bot/cron callers) or standard admin auth
@@ -70,9 +70,11 @@ export async function POST(req: NextRequest) {
 
   // ONE STORE: practice questions now live in `questions` (same ids as the old
   // pool). Sub-group name comes via the question_subgroups join table.
+  // Explicit columns — select('*') dragged the 1536-dim embedding along
+  // (~9.5KB of JSON, ~80% of the row payload) on every render fetch.
   const { data: row, error: fetchErr } = await supabase
     .from('questions')
-    .select('*')
+    .select('question_image_url, question_with_answer_image_url, solution_image_url, topics, question_text, total_marks, answer, solution')
     .eq('id', practice_question_id)
     .single();
 
@@ -94,10 +96,10 @@ export async function POST(req: NextRequest) {
 
   // Build render input
   const input: ReviseRenderInput = {
-    topic:          (Array.isArray(row.topics) ? row.topics[0] : row.topic) ?? '',
+    topic:          (Array.isArray(row.topics) ? row.topics[0] : null) ?? '',
     subgroup_name:  (() => { const sg = sgLink?.[0]?.subgroups as unknown; return (Array.isArray(sg) ? (sg[0] as { name?: string })?.name : (sg as { name?: string } | null)?.name) ?? ''; })(),
     question_text:  row.question_text ?? '',
-    marks:          row.total_marks ?? row.marks ?? null,
+    marks:          row.total_marks ?? null,
     answer:         row.answer ?? '',
     solution:       row.solution ?? '',
   };

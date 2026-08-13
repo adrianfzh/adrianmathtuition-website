@@ -34,12 +34,14 @@ export async function GET(req: NextRequest) {
 
   // questions.topics is text[] — match any question whose topics array overlaps with the lesson's topics.
   // Queries are single-use, so build a fresh one per page.
-  const buildQuery = (from: number, to: number) => {
+  // count:'exact' adds a full count subquery per request, so only the first
+  // chunk of the page loop asks for it — the total doesn't change mid-loop.
+  const buildQuery = (from: number, to: number, withCount: boolean) => {
     let q = supa
       .from('questions')
       .select(
         'id, school, year, paper, question_number, question_text, parts, answer, solution, solution_images, topics, total_marks, has_image, image_url, images, difficulty, source_file, exam_type, level',
-        { count: 'exact' },
+        withCount ? { count: 'exact' } : undefined,
       )
       .overlaps('topics', topics);
     q = isJC ? q.in('level', JC_FAMILY) : q.eq('level', level);
@@ -68,7 +70,7 @@ export async function GET(req: NextRequest) {
   let count: number | null = null;
   for (let from = offset; from < offset + limit; from += PAGE) {
     const to = Math.min(from + PAGE, offset + limit) - 1;
-    const { data, error, count: c } = await buildQuery(from, to);
+    const { data, error, count: c } = await buildQuery(from, to, from === offset);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (c != null) count = c;
     qList = qList.concat((data ?? []) as Row[]);
