@@ -36,7 +36,11 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   Dropbox via `/api/admin/mark-paper-dropbox`, and the Telegram alert carries
   the images PDF as a **document attachment** (`notifyQueue` fetches ≤45MB and
   `sendDocument`s; any failure degrades to the plain link). Every step is
-  best-effort — a delivery hiccup never re-marks the paper.
+  best-effort — a delivery hiccup never re-marks the paper. Since 2026-08-13
+  the completion message is hand-in-aware: a portal submission arrives as
+  `📬 <student> handed in "<name>" — marked a/m` with a Release nudge (it
+  replaced the submit-time doorbell — see the /app/submit section below), and
+  the ⚠ failed-twice alert names the student too.
 - **📁 To Dropbox (2026-08-06):** `/api/admin/mark-paper-dropbox` (admin auth,
   60s) fetches a run PDF **from our Blob store only** (`isOurBlobUrl` gate — an
   open URL would make an authenticated write-proxy into Adrian's Dropbox) and
@@ -241,8 +245,17 @@ Adrian's own intake) → straight-to-Blob via client token → one POST files it
   /admin/mark-paper history with ▶ Mark, counted by the hub's ⏳ card, marked
   by the existing remark machinery. Nothing new to mark FROM — only a new door
   in. **The release gate is untouched**: it reaches `/app/marking` only when
-  Adrian releases it in triage. A Telegram doorbell (`📬 <name> submitted…`)
-  fires on every hand-in.
+  Adrian releases it in triage.
+- **Hand-ins auto-mark (2026-08-13, Adrian: "auto-mark hand-ins").** Right after
+  the stamp, the submit route calls the bot's `phase:'enqueue'` (defaults
+  opus/teacher — the same 🌙 queue Adrian's own button feeds), so a portal
+  submission marks itself. **No doorbell on the happy path**: the queue worker's
+  finished-marking Telegram IS the doorbell now — `📬 <student> handed in
+  "<name>" — marked a/m`, 🖼 images PDF attached, plus a Release-in-
+  `/admin/mark/triage` nudge. The old `📬 <name> submitted… tap ▶ Mark` text
+  survives only as the fallback when the enqueue call itself fails (a saved
+  hand-in must never sit silent). Enqueue runs AFTER the `portal_submission`
+  stamp so the worker can't claim the run mid-read-merge-write.
 - **Ownership is the pathname.** `/api/portal/submit-token` (portal session
   only — Adrian tests as his own student account) pins uploads under
   `mark-paper/portal/<studentId>/…`; the submit route accepts only our-Blob
@@ -253,6 +266,13 @@ Adrian's own intake) → straight-to-Blob via client token → one POST files it
   creation — it is what lets `/app/marking`'s "With Mr Fong" strip list the
   student's own pending hand-ins (name + date + pages, never a mark) without
   ever surfacing papers Adrian uploaded himself and chose not to release.
+  **The bot preserves it through the pending-row fill** (2026-08-13):
+  `logMarkingRun` rebuilds `result_json` from scratch when the queue worker's
+  remark fills the ⏳ row, which used to WIPE the flag the moment marking landed
+  — emptying the student's "With Mr Fong" strip pre-release and un-counting the
+  run from the 3/10min rate brake. `remarkRun` now passes
+  `extra.portalSubmission` through (latent since /app/submit shipped; surfaced
+  by auto-queue, where every hand-in gets marked within minutes).
 - Health check: `timed('portal-submit', …)` asserts the token route answers
   401 unauthenticated (route alive + auth gate up).
 - ⚠ Same localhost caveat as /app/marking: the full flow needs a preview/prod

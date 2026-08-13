@@ -4,8 +4,17 @@
 // the same "⏳ uploaded — not marked yet" row Adrian's own uploads make, so it
 // appears in /admin/mark-paper history with the ▶ Mark button, counts on the
 // admin hub's ⏳ papers-to-mark card, and rides the existing remark machinery.
-// Nothing new to mark FROM — only a new door IN. The release gate is untouched:
-// the run reaches /app/marking only when Adrian releases it in triage.
+// Nothing new to mark FROM — only a new door IN.
+//
+// Hand-ins AUTO-QUEUE (Adrian, 13 Aug 2026 — "auto-mark hand-ins"): the run goes
+// straight into the bot's 🌙 marking queue via phase:'enqueue', so instead of a
+// "come tap ▶ Mark" doorbell, Adrian's Telegram gets the FINISHED marking with the
+// 🖼 PDF attached (the queue worker's message, which names the student and nudges
+// Release). The doorbell text below survives only as the fallback when the enqueue
+// itself fails — a hand-in must never sit silent. The release gate is untouched:
+// the run reaches /app/marking only when Adrian releases it in triage, because the
+// queue's flags only catch what the model *doubts* — one human glance before a
+// student sees red ink stays worth it.
 //
 // Ownership is stamped server-side from the session — the client sends photo
 // URLs and an optional name, never a student id. A URL is accepted only from
@@ -112,12 +121,28 @@ export async function POST(req: Request) {
     console.warn('[portal-submit] portal_submission stamp failed:', (e as Error).message);
   }
 
-  // Doorbell to Adrian — the submission changes what his marking queue holds.
+  // Auto-queue the hand-in for marking (after the stamp above, so the queue
+  // worker can never claim the run while the stamp's read-merge-write is in
+  // flight). phase:'enqueue' defaults to opus/teacher — the same marking Adrian's
+  // own 🌙 button queues. On success we send NOTHING: the queue worker's finished-
+  // marking Telegram (student name + 🖼 PDF + Release nudge) is the doorbell now.
   const who = account.display_name || 'A student';
-  sendTelegram(
-    `📬 <b>${who}</b> submitted a paper for marking — ${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}` +
-    ` — “${paperName}”.\nIt's waiting as ⏳ in /admin/mark-paper history.`
-  ).catch(() => {});
+  let queued = false;
+  try {
+    const q = await bot({ phase: 'enqueue', id: runId });
+    queued = !!q?.ok;
+    if (!queued) console.warn('[portal-submit] enqueue failed:', q?.error);
+  } catch (e) {
+    console.warn('[portal-submit] enqueue failed:', (e as Error).message);
+  }
+  if (!queued) {
+    // The run is saved either way — but with no queue entry nobody would ever
+    // hear about it, so fall back to the old "come tap ▶ Mark" doorbell.
+    sendTelegram(
+      `📬 <b>${who}</b> submitted a paper for marking — ${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}` +
+      ` — “${paperName}”.\nAuto-queue failed, so it's waiting as ⏳ in /admin/mark-paper history — tap ▶ Mark yourself.`
+    ).catch(() => {});
+  }
 
   return NextResponse.json({ ok: true, runId });
 }
