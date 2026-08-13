@@ -9,7 +9,11 @@ description: >
   produces properly formatted Word documents with proper OMML equation rendering,
   auto-numbered questions and sub-questions that restart per question, right-aligned
   marks, inline answers in orange in the format [Ans: ...], correct page margins, and
-  consistent typography matching Adrian's house style.
+  consistent typography matching Adrian's house style. This skill also owns Adrian's
+  Revision "(With Worked Examples)" sheet format — notes summary, concept-titled boxed
+  Examples, practice set — so use it for those too; the separate revision-worksheet
+  skill is only for building worksheets out of real past-paper questions from the
+  question bank.
 ---
 
 # Create Worksheet Skill
@@ -85,6 +89,8 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 |---|---|
 | `ws.title(text)` | 12pt bold navy centred title |
 | `ws.subtitle(text)` | 10pt italic centred subtitle |
+| `ws.concept(text)` | Bold concept subtitle above the worked Example(s) it covers — see **Worked-example labelling** below. |
+| `ws.example(letter=None)` | Bold auto-numbered `Example N` label. `example('a')` starts a lettered group (`Example 3a`); `example('b')` reuses the number. |
 | `ws.Q(parts, marks=None)` | Main question. Auto-numbered `1.`, `2.`, `3.`, ... Each call also opens a fresh sub-question pool, so any `SQ()` calls that follow restart at `(a)`. |
 | `ws.SQ(parts, marks=None)` | Sub-question under the most recent `Q()`. Auto-numbered `(a)`, `(b)`, `(c)`, ... Restarts when a new `Q()` is called. |
 | `ws.para(parts, marks=None)` | Plain paragraph with no numbering. |
@@ -165,6 +171,9 @@ ws.solution_box([('', [ [('text', 'By symmetry the area is ')], r'A = 12' ])])
   annotation format (50 % grey, 8 pt) — e.g.
   `r'... + C \quad\text{← every integration needs a constant}'`. Only `←` triggers
   this; `⇒`/`→` remain normal math.
+- **One blank line between parts** is inserted automatically inside the box —
+  after the bottom of each part, never after the last one. Don't add empty
+  steps for spacing.
 - The box writes a spacer line, then its own bold `Solution:` header, then the
   table, then a blank paragraph — don't add any of those yourself.
 - **Keep-together** (default on): the whole block — question paragraphs since
@@ -172,6 +181,29 @@ ws.solution_box([('', [ [('text', 'By symmetry the area is ')], r'A = 12' ])])
   page break; Word pushes it to a fresh page instead. Blocks taller than a full
   page still split gracefully. Pass `keep_together=False` to let a box flow.
 - Don't mix labelled and unlabelled rows in one call; one call per solution block.
+
+### Worked-example labelling (2026-08-13)
+
+Every worked example is labelled **Example N** (bold, auto-numbered), and the
+concept it teaches is written **first**, as its own bold subtitle line above the
+label — never folded into the Example line:
+
+```python
+ws.concept('Total Distance When the Particle Turns Round Twice')
+ws.example()                     # -> Example 3
+ws.para([('text', 'A particle moves so that ...')])
+ws.solution_box([...])
+```
+
+Related examples that share one concept get **one number with letter suffixes**:
+write the concept once, then `ws.example('a')` (starts the group — `Example 4a`)
+and `ws.example('b')` / `ws.example('c')` for the siblings. A later plain
+`ws.example()` continues the numbering (`Example 5`).
+
+Order on the page: concept subtitle → `Example N` → question paragraphs →
+`solution_box`. The concept and label lines automatically join the
+keep-together block of the box that follows, so the whole example stays on one
+page.
 
 ## Figures (2026-08-12)
 

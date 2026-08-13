@@ -194,6 +194,7 @@ class Worksheet:
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
         self._block_paras = []   # paragraphs of the current question block (for keep-together)
+        self._example_n = 0      # auto-counter for example() labels
         self._setup_page()
         self._setup_styles()
 
@@ -330,6 +331,28 @@ class Worksheet:
         p.style = self.doc.styles['WSSubtitle']
         p.add_run(text)
 
+    def concept(self, text):
+        """Bold concept subtitle written above the Example(s) it covers.
+
+        Adrian's convention: the concept a worked example teaches is a bold
+        line of its own, in front — then the "Example N" label, then the
+        question. When several related examples share one concept, write the
+        concept once and give the examples one number with letters
+        (example('a'), example('b'))."""
+        return self._add([('text', text, {'bold': True})])
+
+    def example(self, letter=None):
+        """Bold auto-numbered "Example N" label line.
+
+        example()    -> Example 1, Example 2, ... (counter increments)
+        example('a') -> starts a lettered group: Example 3a (counter increments)
+        example('b') -> Example 3b (same number as the last 'a')
+        """
+        if letter in (None, '', 'a'):
+            self._example_n += 1
+        return self._add([('text', f'Example {self._example_n}{letter or ""}',
+                           {'bold': True})])
+
     def Q(self, parts, marks=None):
         """Main question. Auto-numbered 1. 2. 3. ..."""
         # Bump the sub-question id pool for this question; reset on each Q call
@@ -393,7 +416,8 @@ class Worksheet:
         TableGrid table showing ONLY the outer border (no inner gridlines),
         under a bold "Solution:" line with one blank line of breathing space
         after the question. Two columns: the part label alone in a narrow
-        first column, the working beside it, one table row per part.
+        first column, the working beside it, one table row per part. A blank
+        line is inserted automatically between parts (never after the last).
 
         rows: list of (label, steps). label is '(a)' / '(i)' ('' for an
         unlabelled single-cell solution). Each step is one of:
@@ -421,7 +445,7 @@ class Worksheet:
         table.style = self.doc.styles['Table Grid']
         table.autofit = False
         _outer_border_only(table)
-        for (label, steps), row in zip(rows, table.rows):
+        for idx, ((label, steps), row) in enumerate(zip(rows, table.rows)):
             if labelled:
                 lab_cell, work_cell = row.cells
                 lab_cell.width = Cm(1.0)
@@ -448,6 +472,9 @@ class Worksheet:
                         p._element.append(elem)
                 else:
                     self._fill(p, step)
+            if idx < len(rows) - 1:  # one blank line between parts, none after the last
+                gap = work_cell.add_paragraph()
+                gap.paragraph_format.line_spacing = 1.15
         if keep_together:
             for para in self._block_paras:
                 para.paragraph_format.keep_with_next = True
