@@ -50,3 +50,9 @@ scripts/split-april-snapshot-*.json
 scripts/split-april-created-*.json
 /reference/
 __pycache__/
+
+# Finder / cloud-sync conflict copies: "area-ratios 2.html", "Info 3.plist".
+# 20 of these were tracked and served publicly as stale tool pages (removed
+# 2026-08-12); 120+ more sit untracked in the working tree. Never commit them.
+* [0-9].*
+* [0-9][0-9].*
