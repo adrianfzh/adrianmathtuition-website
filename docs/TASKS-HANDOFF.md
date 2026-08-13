@@ -374,6 +374,48 @@ dedupe decision: 58d9a67e≡1ef0d732, 911a68e6≡949ec092, 370299bd≡
 no-solution rows remain a separate stem-recovery backlog (nothing to
 solve from).
 
+**2026-08-11 (night). QB FLAG-LIST DECISIONS EXECUTED (Adrian's calls):**
+**#1 parts-metadata errors FIXED** — 46 rows surgically corrected in the
+`parts` JSON (every value independently re-verified before writing;
+md5-guarded; parts column only), plus 3 adjudications: dad242d7 circle
+centre is (0,13/2) — sympy circumcircle proof — answer+solution+parts
+all aligned; e550e3f7 is 5.76 cm²/s (5.77 came from a pre-rounded
+radius); 9c3654f9 re-adjudicated — the fix agent correctly REFUSED the
+catalogued 31995 (the stored working's own expression evaluates to
+31996.7, and exact m=ln20/12 gives exactly 80·20²=32000) → solution
+rewritten exact, answer (c)=32000. Follow-ups found by the agents and
+fixed: e10af72e (c) roots are −2, 7/2, 5 (answer+parts had 1/2; own
+solution factors (x−5)(x+2)(2x−7) and (b) computes f(½)=67.5≠0);
+f0fc860f (a) stem typo "A=3s²"→"A=3x³". One report-only leftover:
+e00ad215's wrong TP exists only inside a deliberate erratum note (fine);
+85cec175 (iv)'s printed a/b are QUESTION data (left; the false printed
+step's over-rounded ū was fixed).
+**#2 duplicates SOFT-DELETED** — 1ef0d732, a7841394, 949ec092, 24b7dd83,
+c253498d (kept the recent/richer copy; for the Boon-Lay-reused-Montfort
+pairs the Boon Lay 2025 copies were kept so school-exclusion still
+protects current Boon Lay students).
+**#3 defective stems REPAIRED FROM SOURCE PDFs** (archive:
+Dropbox/1 ONLINE LESSONS/3 Exam Papers/): 4 repaired + solved —
+70f282b7 (defect confirmed IN the KCP 2023 print; solved as intended,
+area 361π²/108, note in solution), 569ca688 (doneness table restored —
+⚠ archive file is misspelled "AM PRELIM 2023 Monfort.pdf"; 63°C
+confirmed; stored per-part numeric slips also patched), b0a2bfb1 (SRJC
+print itself never defines Q,T — coordinates recovered from the
+school's printed mark scheme, labeled as reconstruction; solved i–vi),
+cee564b0 (AJC OX/OY relations recovered from the kiasu scan; 143.1°
+reproduces). 2 confirmed defects in the original prints, left as-is
+with documented flaws: be82852a (YJC — (m,n) genuinely
+underdetermined), cc5b9658 (NYJC — re^iθ, r>0 vs root 0).
+**Tier B census upgraded: 1,036/1,041 — the only unsolved rows are the
+5 ruler-and-compass constructions.**
+**#4 off-syllabus rows**: ignored per Adrian (16298e26 Poisson,
+6fb5fbff Newton-Raphson stay as solved+flagged).
+**#5 stem recovery (590 empty stems)**: rows carry `question_number` +
+`source_file` → deterministic lookup. Recommended + agreed design:
+Sonnet agents transcribe per-paper (cheap), then the standard
+Fable-tier Tier-B solve wave doubles as stem validation. NOT yet
+launched — awaiting Adrian's go.
+
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
 
 > ✅ **DONE (2026-08-10/11, second-Mac session)** — API + UI + paper_drafts
