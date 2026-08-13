@@ -91,6 +91,7 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 | `ws.math_block(latex)` | Centred display equation (no surrounding text). |
 | `ws.ans(parts)` | `[Ans: ...]` line — right-aligned, orange. The wrapper `[Ans: ` and `]` are added automatically; pass only the inner content. |
 | `ws.figure(path, width_cm=10.5)` | Embed a rendered figure PNG, centred under the current question. Cap 16 cm; never upscales a small image. Render the PNG with `figure_lib.render` first — see **Figures** below. |
+| `ws.solution_box(rows)` | Boxed worked solution in Adrian's house format — see **Worked-solution boxes** below. |
 | `ws.page_break()` | Manual page break. |
 | `ws.save(path)` | Write the final docx to disk. |
 
@@ -122,6 +123,37 @@ ws.Q([('text', 'Find '),
 - Use **raw strings** for math-only fragments: `r'\dfrac{a}{b}'` so backslashes pass through.
 - Inside `\begin{pmatrix}...\end{pmatrix}`, the row separator `\\` becomes `\\\\` in a regular string. Or use `r'...'` to keep it as `\\`.
 - Always put math in `('math', ...)` tuples — never embed `$...$` directly in text strings.
+
+## Worked-solution boxes (2026-08-13)
+
+Adrian's Revision "(With Worked Examples)" sheets put every worked solution in a
+bordered table directly under a bold **Solution:** line. `ws.solution_box(rows)`
+reproduces that format exactly: a TableGrid-bordered table, **two columns** —
+the part label alone in a narrow (1 cm) first column, the working beside it —
+**one table row per part**. An unlabelled solution becomes a single full-width
+cell instead.
+
+```python
+ws.solution_box([
+    ('(a)', [
+        [('text', 'Differentiate: ')],          # a parts list = left-aligned line
+        r'\dfrac{dy}{dx} = 3x^2 - 4',           # a bare latex string = centred display eqn
+    ]),
+    ('(b)', [
+        r'x = 2 \text{ or } x = -\tfrac{2}{3}',
+    ]),
+])
+
+# Unlabelled (whole solution, no parts):
+ws.solution_box([('', [ [('text', 'By symmetry the area is ')], r'A = 12' ])])
+```
+
+- `rows` is a list of `(label, steps)`; label `'(a)'`/`'(i)'`, or `''` for the
+  single-cell variant. Each step is either a `parts` list (rendered left-aligned,
+  same shapes `Q()`/`para()` take) or a bare LaTeX string (centred display equation).
+- The box writes its own `Solution:` header line and a blank paragraph after the
+  table — don't add either yourself.
+- Don't mix labelled and unlabelled rows in one call; one call per solution block.
 
 ## Figures (2026-08-12)
 

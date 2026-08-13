@@ -188,6 +188,17 @@ class Worksheet:
             numPr.append(nId)
             pPr.append(numPr)
 
+        self._fill(p, parts)
+
+        if marks is not None:
+            p.paragraph_format.tab_stops.add_tab_stop(Cm(15.5), WD_TAB_ALIGNMENT.RIGHT)
+            run = p.add_run(f'\t[{marks}]')
+            run.font.name = 'Times New Roman'
+            run.font.size = Pt(9.5)
+        return p
+
+    def _fill(self, p, parts):
+        """Append runs/math to an existing paragraph from a parts list."""
         for part in parts:
             kind = part[0]
             if kind == 'text':
@@ -210,13 +221,6 @@ class Worksheet:
                 elem = _latex_to_omml(part[1], display=True)
                 if elem is not None:
                     p._element.append(elem)
-
-        if marks is not None:
-            p.paragraph_format.tab_stops.add_tab_stop(Cm(15.5), WD_TAB_ALIGNMENT.RIGHT)
-            run = p.add_run(f'\t[{marks}]')
-            run.font.name = 'Times New Roman'
-            run.font.size = Pt(9.5)
-        return p
 
     # ---------- public API ----------
     def title(self, text):
@@ -279,6 +283,49 @@ class Worksheet:
         run = p.add_run()
         run.add_picture(path, width=Cm(min(width_cm, 16, natural_cm)))
         return p
+
+    def solution_box(self, rows):
+        """Boxed worked solution in Adrian's house format.
+
+        His Revision "(With Worked Examples)" sheets put every solution in a
+        bordered TableGrid table right under a bold "Solution:" line — two
+        columns, the part label alone in a narrow first column, the working
+        beside it, one table row per part.
+
+        rows: list of (label, steps). label is '(a)' / '(i)' ('' for an
+        unlabelled single-cell solution). Each step is either a parts list
+        (same shapes Q()/para() take, rendered left-aligned) or a bare latex
+        string, rendered as a centred display equation.
+        """
+        self._add([('text', 'Solution:', {'bold': True})])
+        labelled = any(label for label, _ in rows)
+        table = self.doc.add_table(rows=len(rows), cols=2 if labelled else 1)
+        table.style = self.doc.styles['Table Grid']
+        table.autofit = False
+        for (label, steps), row in zip(rows, table.rows):
+            if labelled:
+                lab_cell, work_cell = row.cells
+                lab_cell.width = Cm(1.0)
+                work_cell.width = Cm(15.0)
+                if label:
+                    self._fill(lab_cell.paragraphs[0], [('text', label)])
+            else:
+                work_cell = row.cells[0]
+                work_cell.width = Cm(16.0)
+            first = True
+            for step in steps:
+                p = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
+                first = False
+                p.paragraph_format.line_spacing = 1.15  # boxes are tighter than the 1.5 body
+                if isinstance(step, str):
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    elem = _latex_to_omml(step, display=True)
+                    if elem is not None:
+                        p._element.append(elem)
+                else:
+                    self._fill(p, step)
+        self.doc.add_paragraph()  # breathing space between the box and what follows
+        return table
 
     def page_break(self):
         self.doc.add_page_break()
