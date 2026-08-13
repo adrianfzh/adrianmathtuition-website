@@ -270,6 +270,26 @@ S2 64, S1 51, EM 30, EM_NA 27, S3_AM 13, S3_EM 5. Wave 1 = calibration,
 3 agents × 40 (AM / EM-family / S3_EM_NA), strong model, MANDATORY
 sympy verification of every final value before writing, empty-guarded
 `SET solution=…, answer=…`, `verified`/`ai_generated` untouched.
+**Tier B WAVE 1 DONE — 122 solutions, 511/511 independent sympy checks
+passed FIRST attempt, 0 abandoned.** AM 131→91 (40 written), EM-family
+75→33 (42), S3_EM_NA 178→138 (40). Skips: 3 pure ruler-and-compass
+constructions (0444367f, 1d486492, 90dc38a8 — answers are measurements
+off a drawing; join the no-answer-flag class), 1 truncated stem
+(569ca688 — the steak-doneness table was cut out of question_text),
+2 deferred linear-law graph-reads (6d35584c, 751accf8 — constants read
+off a best-fit line; next wave, deliberately). Metadata answer-field
+errors caught + corrected in written rows: 2a248e9c (answer field says
+a=−7,b=1 which fails its own f(2)=−1 condition; verified a=−1,b=−5 —
+metadata's own solution text agrees), 56302dba (13 h, not "14 h nearest
+hour" for t=13.409), 860171f1 (5 h 25 min, not 26). QB flags: exact
+duplicate pair 58d9a67e ≡ 1ef0d732; linear-law answers now carry
+explicit accept-ranges (least-squares-verified). Pattern: many Tier-B
+rows carry FULL parts[].solution/answer metadata that was never rolled
+up to row level — Tier B is independent-derive-then-cross-check, which
+is exactly why the pass rate is clean. **Wave 2 launched (4 agents):**
+JC2 split by id-hex 0–7 / 8–f (~433 pool, H2 register), AM remainder
+(91), S3_EM_NA remainder (138), ~60 rows each; easy fronts handed over
+(58d9a67e dup-copy-after-verify, 58ee8dc4, 41923752, 430a1674).
 
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
 
