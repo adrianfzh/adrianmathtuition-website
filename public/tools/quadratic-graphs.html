@@ -92,6 +92,14 @@
   button.primary{background:var(--ink); color:var(--bg); border-color:var(--ink);
                  font-weight:600; min-width:96px}
   button.primary:hover{background:#000}
+  /* device voices vary wildly in quality, so the student gets to pick one */
+  #voiceSel{
+    font:inherit; font-size:13px; color:var(--muted); background:var(--panel);
+    border:1px solid var(--panelb); border-radius:8px; padding:7px 8px;
+    max-width:190px; cursor:pointer;
+  }
+  #voiceSel:hover{border-color:var(--muted); color:var(--ink)}
+  #voiceSel[hidden]{display:none}
   .scenectl{display:flex; align-items:center; gap:9px; flex-wrap:wrap}
   .scenectl[hidden]{display:none}
   .scenectl label{font-size:15px; color:var(--muted); font-style:italic}
@@ -156,6 +164,7 @@
     </span>
     <span class="spacer"></span>
     <button id="narrBtn" aria-pressed="true" title="Read each step aloud">🔊 Narration on</button>
+    <select id="voiceSel" aria-label="Narration voice" title="Pick a voice — some are far better than others"></select>
     <button id="playBtn">▶ Play all</button>
     <button id="nextBtn" class="primary">Next ›</button>
   </div>
@@ -218,38 +227,132 @@
         waits for `synth.speaking` to clear before advancing, so a long
         explanation is never cut off mid-sentence.
      ===================================================================== */
+  /* SOURCES, in priority order:
+       1. a pre-recorded clip listed in NARR_AUDIO — drop in Adrian's own voice,
+          or a neural render from ElevenLabs / OpenAI, and it takes over with no
+          other change. Nothing is fetched unless a clip is listed, so the
+          default build stays zero-request; a missing file falls back to speech.
+       2. the browser's speechSynthesis, chunked and paced (below).
+
+     Why chunking: speechSynthesis has no SSML and no in-sentence emphasis —
+     rate and pitch are per-UTTERANCE only. So rhythm has to come from splitting
+     the line into sentences, speaking them one at a time with a real gap, and
+     moving rate/pitch a little on each. Successive utterances at an identical
+     pitch is precisely what the ear hears as monotone, hence the alternating
+     jitter and the slow-down on the last sentence to land the point. */
+  const NARR_AUDIO = {};      // e.g. '4-3': '/tools/narration/quad/cs-derive.mp3'
   const synth = (typeof window !== 'undefined' && window.speechSynthesis) || null;
-  let narrOn = true, gestured = false, narrVoice = null, curUtter = null;
+  const voiceSel = document.getElementById('voiceSel');
+  let narrOn = true, gestured = false, narrVoice = null, audioEl = null, qToken = 0;
   try { narrOn = localStorage.getItem('qg_narr') !== 'off'; } catch (e) {}
 
+  // macOS ships a pile of novelty voices that would be actively worse than the
+  // dull default; Daniel (the usual en-GB pick) is the dull default.
+  const NOVELTY = /(grandma|grandpa|rocko|flo|eddy|reed|sandy|shelley|bells|bad news|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|bubbles|boing|bahh|albert|cellos|junior|ralph|fred|kathy|princess|deranged|hysterical|bruce|agnes|vicki|victoria)/i;
+  function scoreVoice(v){
+    if (!/^en/i.test(v.lang)) return -1;
+    let s = 10;
+    if (/premium|enhanced|natural|neural/i.test(v.name)) s += 9;  // Apple downloads
+    if (/google/i.test(v.name)) s += 8;                           // Chrome network voices
+    if (/siri/i.test(v.name)) s += 6;
+    if (/en[-_]GB/i.test(v.lang)) s += 3;
+    if (/daniel/i.test(v.name)) s -= 4;
+    if (NOVELTY.test(v.name)) s -= 12;
+    return s;
+  }
+  function voiceList(){
+    return ((synth && synth.getVoices()) || []).filter(v => /^en/i.test(v.lang));
+  }
   function pickVoice(){
     if (!synth) return;
-    const vs = synth.getVoices() || [];
-    narrVoice = vs.find(v => /en[-_]GB/i.test(v.lang)) ||
-                vs.find(v => /en[-_](SG|AU|IE)/i.test(v.lang)) ||
-                vs.find(v => /^en/i.test(v.lang)) || null;
+    const vs = voiceList();
+    if (!vs.length) return;
+    let saved = null;
+    try { saved = localStorage.getItem('qg_voice'); } catch (e) {}
+    narrVoice = (saved && vs.find(v => v.name === saved)) ||
+                vs.slice().sort((p, q) => scoreVoice(q) - scoreVoice(p))[0] || null;
+    if (voiceSel && voiceSel.options.length !== vs.length){
+      voiceSel.innerHTML = '';
+      vs.slice().sort((p, q) => scoreVoice(q) - scoreVoice(p)).forEach(v => {
+        const o = document.createElement('option');
+        o.value = v.name; o.textContent = v.name;
+        voiceSel.appendChild(o);
+      });
+    }
+    if (voiceSel && narrVoice) voiceSel.value = narrVoice.name;
   }
   if (synth){
     pickVoice();
     if ('onvoiceschanged' in synth) synth.onvoiceschanged = pickVoice;
   }
+  if (voiceSel) voiceSel.addEventListener('change', () => {
+    gestured = true;
+    const v = voiceList().find(x => x.name === voiceSel.value);
+    if (v){
+      narrVoice = v;
+      try { localStorage.setItem('qg_voice', v.name); } catch (e) {}
+      sayCurrent();                      // so you hear the one you just chose
+    }
+  });
+
   function stopSpeak(){
-    curUtter = null;
+    qToken++;                            // invalidates any queued chunk
     if (synth){ try { synth.cancel(); } catch (e) {} }
+    if (audioEl){ try { audioEl.pause(); } catch (e) {} }
   }
-  function speak(text){
-    stopSpeak();
-    if (!synth || !narrOn || !gestured || !text) return;
-    const u = new SpeechSynthesisUtterance(text);
-    if (narrVoice) u.voice = narrVoice;
-    u.rate = 0.92;            // a touch under default — this is teaching, not a bulletin
-    u.pitch = 1;
-    curUtter = u;
-    try { synth.speak(u); } catch (e) { curUtter = null; }
+  function isNarrating(){
+    if (audioEl && audioEl.src && !audioEl.paused && !audioEl.ended) return true;
+    return !!(synth && (synth.speaking || synth.pending));
+  }
+  function sentences(t){
+    return (String(t).match(/[^.!?…]+[.!?…]+|\S[^.!?…]*$/g) || [String(t)])
+      .map(s => s.trim()).filter(Boolean);
+  }
+  function prosody(i, n, s){
+    const first = i === 0, last = i === n-1, ask = /\?\s*$/.test(s);
+    let rate = 0.93, pitch = 1;
+    if (first){ rate = 0.95; pitch = 1.03; }
+    if (ask){ rate = 0.96; pitch = 1.07; }        // questions rise
+    if (last && !ask){ rate = 0.87; pitch = 0.97; } // conclusions slow and settle
+    pitch += (i % 2 ? -0.02 : 0.02);              // never two chunks at one pitch
+    return {rate, pitch};
+  }
+  function gapAfter(s, i, n){
+    if (i >= n-1) return 0;
+    let g = 260;                                   // a breath between sentences
+    if (s.length > 90) g += 150;                   // longer thought, longer rest
+    if (i === n-2) g += 200;                       // beat before the punchline
+    return g;
+  }
+  function speakText(text){
+    if (!synth || !text) return;
+    const chunks = sentences(text);
+    const token = ++qToken;
+    let i = 0;
+    (function step(){
+      if (token !== qToken || i >= chunks.length) return;
+      const s = chunks[i], p = prosody(i, chunks.length, s);
+      const u = new SpeechSynthesisUtterance(s);
+      if (narrVoice) u.voice = narrVoice;
+      u.rate = p.rate; u.pitch = p.pitch;
+      const g = gapAfter(s, i, chunks.length);
+      const nextChunk = () => { if (token === qToken){ i++; setTimeout(step, g); } };
+      u.onend = nextChunk; u.onerror = nextChunk;
+      try { synth.speak(u); } catch (e) { nextChunk(); }
+    })();
+  }
+  // `text` is the fallback when a listed clip will not load
+  function playClip(src, text){
+    if (!audioEl){ audioEl = new Audio(); audioEl.preload = 'none'; }
+    audioEl.onerror = () => speakText(text);
+    audioEl.src = src;
+    const p = audioEl.play();
+    if (p && p.catch) p.catch(() => speakText(text));
   }
   function syncNarrBtn(){
     narrBtn.textContent = narrOn ? '🔊 Narration on' : '🔇 Narration off';
     narrBtn.setAttribute('aria-pressed', narrOn ? 'true' : 'false');
+    if (voiceSel) voiceSel.hidden = !narrOn || !synth;
   }
   narrBtn.addEventListener('click', () => {
     gestured = true;
@@ -672,49 +775,49 @@
   // =====================================================================
   const NARR = [
     [ // 1 · smile or frown
-      'Every quadratic — anything with an x squared in it — draws the same kind of curve, called a parabola. The simplest one is y equals x squared. Notice that it is symmetric: fold it along the dashed line down the middle and the two halves land exactly on top of each other. That symmetry is what makes the rest of this topic easy.',
-      'The sign of the number in front of x squared decides which way up the curve sits. If a is positive you get a smile, with a minimum at the bottom. If a is negative you get a frown, with a maximum at the top. Decide this first, every single time — because if you sketch it the wrong way up, every feature you mark afterwards is wrong too.'
+      'Every quadratic draws the same shape. It is called a parabola. The simplest one is y equals x squared. Look at how symmetric it is. Fold it along the dashed line, and the two halves land exactly on top of each other. That symmetry is what makes this whole topic easy.',
+      'Which way up does it sit? That is decided by the sign in front of x squared. If a is positive, you get a smile. The turning point is a minimum, right at the bottom. If a is negative, you get a frown, with a maximum at the top. Decide this first. Every single time. Sketch it upside down, and everything you mark afterwards is wrong too.'
     ],
     [ // 2 · what the marks are for
-      'A full-mark sketch shows four things. First, the shape. Here a equals one, which is positive, so it is a smile.',
-      'Second, the x-intercepts — where the curve crosses the x-axis. Put y equal to zero and solve. x squared minus six x plus five factorises into x minus one, times x minus five. So x equals one, or x equals five.',
-      'Third, the y-intercept — where it crosses the y-axis. Put x equal to zero. Every term with an x in it disappears, and you are left with y equals five.',
-      'Fourth, the turning point. The line of symmetry is at x equals minus b over two a, which is three. Substitute x equals three back in: nine minus eighteen plus five gives minus four. So the turning point is three, minus four.'
+      'A full-mark sketch shows four things. Start with the shape. Here a is one. That is positive. So it is a smile.',
+      'Second, the x-intercepts. That is where the curve crosses the x-axis. Put y equal to zero. x squared minus six x plus five factorises. It becomes x minus one, times x minus five. So x is one, or x is five.',
+      'Third, the y-intercept. Put x equal to zero. Every term with an x in it disappears. You are left with y equals five.',
+      'Fourth, the turning point. The line of symmetry sits at minus b over two a. That gives three. Now substitute x equals three back in. Nine, minus eighteen, plus five. That is minus four. So the turning point is three, minus four.'
     ],
     [ // 3 · factorised form
-      'This form is built for the roots. y equals x minus one, times x minus five. To find where the curve crosses the x-axis, put y equal to zero. A product is zero only if one of the brackets is zero.',
-      'So x equals one, or x equals five — read straight off the brackets, with the sign flipped. x minus one gives plus one, not minus one. That flip is the most common slip in this whole topic.',
-      'The line of symmetry sits exactly halfway between the roots. One plus five, divided by two, is three. If the curve factorises you do not need a formula for it.',
-      'The turning point sits on that line, so substitute x equals three back into the equation. Three minus one is two; three minus five is minus two; and two times minus two is minus four. So the turning point is three, minus four. And for the y-intercept, put x equal to zero: minus one times minus five is five.',
-      'Now the same form, but with a negative a. y equals minus two, times x minus one, times x minus five. The brackets are identical, so the roots are still one and five — a never moves the roots. But the minus two flips the curve into a frown and stretches it, so the turning point is now three, eight, and it is a maximum instead of a minimum.'
+      'This form is built for the roots. y equals x minus one, times x minus five. Where does it cross the x-axis? Put y equal to zero. A product is only zero if one of the brackets is zero.',
+      'So x is one, or x is five. Read them straight off the brackets. But flip the sign. x minus one gives plus one, not minus one. That flip is the most common slip in this whole topic.',
+      'The line of symmetry sits halfway between the roots. One plus five, divided by two. That is three. If it factorises, you need no formula at all.',
+      'The turning point sits on that line. So substitute x equals three. Three minus one is two. Three minus five is minus two. And two times minus two is minus four. Turning point: three, minus four. What about the y-intercept? Put x equal to zero. Minus one times minus five is five.',
+      'Now watch what a does. Same brackets. But a is minus two. The roots are still one and five. a can never move them. It cannot make a bracket equal zero. What it does do is flip the curve into a frown, and stretch it. So the turning point becomes three, eight. And it is now a maximum.'
     ],
     [ // 4 · completed square form
-      'This form is built for the turning point. But first — where does it actually come from? Let us complete the square on x squared minus six x plus five.',
-      'Take the number in front of x, which is minus six, and halve it. That gives minus three, and that is the number that goes inside the bracket. So we write x minus three, all squared.',
-      'But careful: x minus three, all squared, expands to x squared minus six x plus nine. We have added a nine that was never there, so we subtract it straight back off. That leaves x minus three squared, minus nine, plus five — and minus nine plus five is minus four. So y equals x minus three squared, minus four. Same curve, written differently.',
-      'Now read the turning point off. A square is never negative, so x minus three squared is smallest when it is zero, and that happens at x equals three. Then y is minus four. Turning point three, minus four, and the minimum value is minus four. Both numbers are sitting right there in the equation: the three with its sign flipped, and the minus four exactly as it is.',
-      'Everything else comes the usual way. For the y-intercept put x equal to zero: minus three squared is nine, take away four, gives five. For the roots put y equal to zero: x minus three squared equals four, so x minus three is plus or minus two, giving x equals one or five. Do not forget the plus or minus — one square root, two answers.',
-      'And with a negative a: y equals minus two, times x minus three squared, plus eight. The three and the eight still hand you the turning point directly — three, eight. But because a is minus two, the curve is a frown, so that point is a maximum, and eight is the largest value y ever reaches.'
+      'This form is built for the turning point. But where does it actually come from? You are expected to produce it yourself. So let us complete the square on x squared minus six x plus five.',
+      'Step one. Take the number in front of x. That is minus six. Halve it. You get minus three. That is what goes inside the bracket. So we want x minus three, all squared.',
+      'But be careful. x minus three, all squared, expands to x squared minus six x plus nine. We have added a nine that was never there. So take it straight back off. That leaves x minus three squared, minus nine, plus five. And minus nine plus five is minus four. So y equals x minus three squared, minus four.',
+      'Now read the turning point off. A square is never negative. So x minus three squared is smallest when it is zero. That happens at x equals three. Then y is minus four. Turning point: three, minus four. Both numbers are already sitting in the equation. The three, with its sign flipped. And the minus four, exactly as it is.',
+      'The rest comes the usual way. y-intercept: put x equal to zero. Minus three squared is nine. Take away four. That gives five. Roots: put y equal to zero. x minus three squared equals four. So x minus three is plus or minus two. x is one, or five. Never drop the plus or minus. One square root, two answers.',
+      'Now with a equals minus two. y equals minus two, times x minus three squared, plus eight. The h and the k still read straight off. Turning point: three, eight. That never changes. What changes is the shape. a is negative, so it is a frown. Which makes eight a maximum.'
     ],
     [ // 5 · general form
-      'This is the form questions usually arrive in: y equals x squared minus six x plus five. It hands you one thing immediately — the y-intercept is c, which is five, because putting x equal to zero kills the other two terms.',
-      'For the roots, factorise. You want two numbers that multiply to give plus five and add to give minus six: that is minus one and minus five. So it factorises to x minus one, times x minus five, giving x equals one or five. If it will not factorise, use the quadratic formula — the graph is the same either way.',
-      'The line of symmetry is x equals minus b over two a. Minus, minus six, over two, is three. This one always works, whether the expression factorises or not. It is the same answer as halfway between the roots, because it is the same line.',
-      'Then substitute x equals three back in for the turning point: nine minus eighteen plus five is minus four, so the turning point is three, minus four. Or complete the square and read it off. Same curve, same four facts — you just work a little harder from this form.',
-      'With a negative a the same method still works, but watch every sign. y equals minus two x squared, plus twelve x, minus ten. The y-intercept is minus ten. Minus b over two a is minus twelve over minus four, which is still three. Substitute back and you get eight. So the turning point is three, eight — and because a is negative, that is a maximum.'
+      'This is the form questions usually arrive in. y equals x squared minus six x plus five. It hands you one thing straight away. The y-intercept is c. That is five. Put x equal to zero, and the other two terms vanish.',
+      'For the roots, factorise. You need two numbers that multiply to five, and add to minus six. That is minus one and minus five. So it becomes x minus one, times x minus five. x is one, or five. If it will not factorise, use the formula. The graph is the same either way.',
+      'The line of symmetry is minus b over two a. Minus, minus six, over two. That is three. This one always works. Factorising or not. It is the same answer as halfway between the roots. Because it is the same line.',
+      'Now substitute x equals three. Nine, minus eighteen, plus five. That is minus four. Turning point: three, minus four. Or complete the square, and read it off. Same curve. Same four facts. You just work a little harder from this form.',
+      'Now let a be minus two. y equals minus two x squared, plus twelve x, minus ten. The method does not change at all. But every sign has to be watched. The y-intercept is minus ten. Minus b over two a is minus twelve, over minus four. Two minuses. So it is still positive three. Substitute back, and you get eight. Turning point: three, eight. A maximum, because a is negative.'
     ],
     [ // 6 · three forms, one curve
-      'All three equations you have just seen are the same curve — the same expression written three different ways. So the question is never which form is right, it is which form is convenient. Factorised hands you the roots. Completed square hands you the turning point. General hands you the y-intercept. If a question gives you the wrong one for what it is asking, change forms first: factorise, or complete the square.'
+      'All three equations are the same curve. The same expression, written three ways. So never ask which form is right. Ask which form is convenient. Factorised hands you the roots. Completed square hands you the turning point. General hands you the y-intercept. Given the wrong one for the question? Change forms first. Factorise, or complete the square.'
     ],
     [ // 7 · frowns, and no roots at all
-      'Here is a frown in full. y equals minus x squared, plus four x, minus three. Because a is negative, the turning point is a maximum. To factorise it, multiply through by minus one first and then factorise as usual — the roots come out as one and three.',
-      'And some parabolas never cross the x-axis at all. To test, work out b squared minus four a c. For y equals x squared plus two x plus five that is four minus twenty, which is minus sixteen. It is negative, so there are no real roots and the curve floats entirely above the axis. Complete the square to find the turning point: minus one, four.'
+      'Here is a frown in full. y equals minus x squared, plus four x, minus three. a is negative. So the turning point is a maximum. To factorise, multiply through by minus one first. Then factorise as normal. The roots come out as one and three.',
+      'Some parabolas never cross the x-axis at all. To test, work out b squared minus four a c. For y equals x squared plus two x plus five, that is four minus twenty. That is minus sixteen. It is negative. So there are no real roots. The curve floats entirely above the axis. Complete the square for the turning point. Minus one, four.'
     ],
     [ // 8 · build your own
-      'Now it is yours. Move a, b and c, and watch all three forms update together. Try making a negative to flip the curve. Try making a bigger than one to stretch it thinner. And try moving c on its own — notice the whole curve slides straight up or down without changing its shape at all.'
+      'Now it is your turn. Move a, b and c. Watch all three forms update together. Make a negative, and it flips. Make a bigger than one, and it stretches. Then move c on its own. Notice the whole curve slides up or down. But the shape never changes.'
     ],
     [ // 9 · read it off
-      'Last one — a quick drill. You are given an equation in one of the three forms, and you read the fact it asks for straight off. Factorised gives you the roots. Completed square gives you the turning point. General gives you the y-intercept.'
+      'Last one. A quick drill. You get an equation in one of the three forms. Read the fact it asks for, straight off. Factorised gives roots. Completed square gives the turning point. General gives the y-intercept.'
     ]
   ];
 
@@ -1344,8 +1447,11 @@
   // speak() cancels anything still in progress, and no-ops until the student
   // has interacted at least once.
   function sayCurrent(){
-    const lines = NARR[cur];
-    speak(lines ? lines[step] : '');
+    stopSpeak();
+    if (!narrOn || !gestured) return;
+    const text = (NARR[cur] || [])[step] || '';
+    const clip = NARR_AUDIO[(cur+1) + '-' + (step+1)];
+    if (clip) playClip(clip, text); else speakText(text);
   }
   function go(i, toStep){
     trans = REDUCED ? null : {from: cur, t0: performance.now()};
@@ -1393,7 +1499,7 @@
     clearTimeout(autoT);
     autoT = setTimeout(function tick(){
       if (!playing) return;
-      if (narrOn && synth && synth.speaking){ autoT = setTimeout(tick, 400); return; }
+      if (narrOn && isNarrating()){ autoT = setTimeout(tick, 400); return; }
       if (atEnd()){ pauseAuto(); return; }
       advance();
       schedule();
