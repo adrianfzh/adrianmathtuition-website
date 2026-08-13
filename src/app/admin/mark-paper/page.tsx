@@ -7,6 +7,7 @@ import 'katex/dist/katex.min.css';
 import { ensureAdminSession } from '@/lib/admin-client';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
 import { mathHtml } from '@/lib/math-inline';
+import { INLINE_BODY_LIMIT, markInlineBytes, canMarkFromStored } from '@/lib/mark-payload';
 import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
 import { splitFileIfSpread } from '@/lib/spread-split';
 import StudentPicker from '@/components/StudentPicker';
@@ -582,14 +583,29 @@ export default function MarkPaperPage() {
         const spd = await sp.json();
         if (sp.ok && spd.run_id) pendingId = spd.run_id;
       } catch { /* marking still works without the safety net */ }
+      // A big paper's inline images would bust Vercel's 4.5MB body cap and 413
+      // at the edge (the 25-page phone prelim, 13 Aug 2026) — but by this point
+      // every input is already in Blob under the pending row, so mark THAT by id
+      // instead: the same marking the history-row ▶ Mark runs, with no photo
+      // payload at all. Inline stays the path for small papers and the safety
+      // net whenever the saved row is incomplete.
+      const useStored = markInlineBytes(pdfBase64, imgs) > INLINE_BODY_LIMIT && canMarkFromStored({
+        pendingId,
+        originalUrls,
+        decoded: imgs.map((im) => !!im.origWidth),
+        hasPaperPdf: !!pdf,
+        paperPdfUrl,
+      });
       const resp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({
-          phase: 'direct', pdfBase64, paperPdfUrl: paperPdfUrl || undefined,
-          runId: pendingId || undefined,
-          images: imgs.map((im, i) => ({ base64: im.base64, mediaType: im.mediaType, originalUrl: originalUrls[i] || undefined })),
-          paperName: paperLabel, model: markModel, style: markStyle,
-        }),
+        body: JSON.stringify(useStored
+          ? { phase: 'remark', id: pendingId, model: markModel, style: markStyle }
+          : {
+            phase: 'direct', pdfBase64, paperPdfUrl: paperPdfUrl || undefined,
+            runId: pendingId || undefined,
+            images: imgs.map((im, i) => ({ base64: im.base64, mediaType: im.mediaType, originalUrl: originalUrls[i] || undefined })),
+            paperName: paperLabel, model: markModel, style: markStyle,
+          }),
       });
       await applyMarkResponse(resp);
     } catch (e) {
@@ -775,6 +791,47 @@ export default function MarkPaperPage() {
       setDbxNote(`📁 Saved to Dropbox: ${d.name}`);
     } catch (e) { setError((e as Error).message); }
     finally { setDbxBusy(false); }
+  }
+
+  // Per-row 📁/🗑 for the history list (13 Aug 2026): the send row's To Dropbox
+  // only covers the paper currently loaded — Adrian wanted it on past rows too,
+  // plus a way to delete junk (abandoned ⏳ uploads, duplicate runs). State is
+  // keyed by run id so a slow save on one row never freezes another's buttons.
+  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | undefined>>({});
+  const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
+  async function rowToDropbox(run: Run) {
+    // Same preference order as the send row: the annotated copy is THE hand-back
+    // copy once it exists, then the images PDF, then the full one.
+    const url = run.annotated_pdf_url || run.photos_pdf_url || run.pdf_url;
+    if (!url || rowBusy[run.id]) return;
+    setRowBusy((p) => ({ ...p, [run.id]: 'dbx' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const name = [run.student_name, run.paper_name].filter(Boolean).join(' — ') || 'marked paper';
+      const r = await fetch('/api/admin/mark-paper-dropbox', {
+        method: 'POST', headers: authHeaders, body: JSON.stringify({ url, name }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: `📁 Saved to Dropbox: ${d.name}` } }));
+    } catch (e) { setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } })); }
+    finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
+  }
+  async function deleteRun(run: Run) {
+    if (rowBusy[run.id]) return;
+    const portal = run.student_name ? ` If it was released, it also disappears from ${run.student_name}'s portal.` : '';
+    if (!window.confirm(`Delete “${run.paper_name || 'this paper'}” and all its stored files? This can't be undone.${portal}`)) return;
+    setRowBusy((p) => ({ ...p, [run.id]: 'del' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch(`/api/admin/papers?id=${encodeURIComponent(run.id)}`, { method: 'DELETE', headers: authHeaders });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || `delete failed (${r.status})`);
+      // The row unmounts here — no busy flag to clear on the success path.
+      setRecentRuns((prev) => prev.filter((x) => x.id !== run.id));
+      setRunsTotal((t) => Math.max(0, t - 1));
+    } catch (e) {
+      setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } }));
+      setRowBusy((p) => ({ ...p, [run.id]: undefined }));
+    }
   }
   async function sendMarkedEmail() {
     if (!sendPdf) return;
@@ -1061,6 +1118,21 @@ export default function MarkPaperPage() {
                       {loadingRun === run.id ? 'Loading…' : 'Load'}
                     </button>
                   </>
+                )}
+                {(run.annotated_pdf_url || run.photos_pdf_url || run.pdf_url) && (
+                  <button type="button" disabled={!!rowBusy[run.id]} title="Save this marked copy into Dropbox → Marked papers"
+                    onClick={() => rowToDropbox(run)}
+                    style={{ ...btn, background: '#374151', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                    {rowBusy[run.id] === 'dbx' ? 'Saving…' : '📁 Dropbox'}
+                  </button>
+                )}
+                <button type="button" disabled={!!rowBusy[run.id]} title="Delete this paper and all its stored files"
+                  onClick={() => deleteRun(run)}
+                  style={{ background: 'none', border: '1px solid #fca5a5', color: '#b91c1c', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                  {rowBusy[run.id] === 'del' ? '…' : '🗑'}
+                </button>
+                {rowNote[run.id] && (
+                  <span style={{ flexBasis: '100%', fontSize: 12, color: rowNote[run.id]!.ok ? '#047857' : '#b91c1c' }}>{rowNote[run.id]!.text}</span>
                 )}
               </div>
             ))}

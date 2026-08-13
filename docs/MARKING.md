@@ -82,6 +82,25 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   never a re-upload. Born from deploy-killed markings: the bot restarts on every
   fly deploy and in-flight 2-min markings die as 502s, including from OTHER
   concurrent Claude sessions deploying the bot.
+- **Big-paper auto-fallback (2026-08-13):** `phase:'direct'` inlines every page's
+  base64 into one JSON body, and Vercel 413s bodies over 4.5MB at the edge — a
+  25-page phone-photographed prelim (camera pages ≈ 2× scan bytes at 1280px) hit
+  it; 24-page desktop papers had been squeaking under. `markPaper()` now sizes
+  the body first (`lib/mark-payload.ts`, unit-tested): over 3.5MB (1MB headroom)
+  AND the just-saved pending row is COMPLETE (`canMarkFromStored`: pendingId +
+  every original in Blob + every page browser-decoded + paper PDF uploaded if
+  attached) → it sends `phase:'remark'` on that row instead — the exact marking
+  ▶ Mark runs, no photo payload at all. Any hole in the saved row keeps the
+  inline path as the safety net so a lossy marking can never silently replace
+  the full one.
+- **History-row 📁 Dropbox + 🗑 Delete (2026-08-13):** every Recent-marked-papers
+  row gets the send row's To Dropbox (best copy: annotated → images → full; name
+  `Student — Paper`, the route prepends the SGT date) plus a delete with
+  confirm. Delete = `DELETE /api/admin/papers?id=` — removes the Supabase row
+  first, then best-effort `del()`s every Blob URL found by sweeping the
+  serialised row (`isOurBlobUrl`-filtered), so originals/annotated pages/PDFs go
+  too. No FK references `paper_marking_runs` (checked 2026-08-13). Released runs
+  are deletable — the confirm warns they vanish from the student's portal.
 - **🔁 Re-mark (2026-08-03):** every marking now stores its INPUTS on the run —
   photo originals (the ≤1400px upload-skip is gone: every photo's original goes to
   Blob) + the question-paper PDF (new `type=paper` token flavour; the marking call

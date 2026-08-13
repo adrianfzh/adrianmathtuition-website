@@ -1,9 +1,11 @@
 // /api/admin/papers — the marked-script library behind /admin/papers.
 //
-// GET  → every marking run, newest first, reduced to what's useful when you're
-//        sitting next to the student: score, the topics that bled marks, and
-//        links to the copies you can put on the screen.
-// POST → { runId, studentId } tags a run with a student (or untags with null).
+// GET    → every marking run, newest first, reduced to what's useful when you're
+//          sitting next to the student: score, the topics that bled marks, and
+//          links to the copies you can put on the screen.
+// POST   → { runId, studentId } tags a run with a student (or untags with null).
+// DELETE → ?id= removes the run AND its stored files (originals, annotated
+//          pages, assembled PDFs) from Blob.
 //
 // Reads Supabase DIRECTLY rather than through /api/admin/mark-paper's proxy to
 // the bot. The proxy only exposes `by-student`, which is useless for the exact
@@ -12,7 +14,9 @@
 // marked-paper evidence in the parent reports (`report-facts.ts`) — an untagged
 // run belongs to nobody and can never appear in one.
 import { NextRequest, NextResponse } from 'next/server';
+import { del } from '@vercel/blob';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { isOurBlobUrl } from '@/lib/blob-url';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { airtableRequest } from '@/lib/airtable';
 import { recomputeTotals, pendingCount } from '@/lib/mark-triage';
@@ -140,4 +144,44 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, runId, studentId: studentId || null, studentName });
+}
+
+// ── DELETE: remove a run and everything it stored ────────────────────────────
+// Adrian's ask (13 Aug 2026): junk rows pile up in mark-paper's history —
+// abandoned ⏳ uploads, duplicate attempts — with no way to clear them. Released
+// runs are deletable too (the confirm on the client is the guard); deleting one
+// simply removes it from the student's portal along with everything else.
+
+export async function DELETE(req: NextRequest) {
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+
+  const id = req.nextUrl.searchParams.get('id') || '';
+  if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
+
+  const supa = getSupabaseAdmin();
+  const { data: row, error: fetchErr } = await supa
+    .from('paper_marking_runs').select('*').eq('id', id).maybeSingle();
+  if (fetchErr) return NextResponse.json({ error: fetchErr.message }, { status: 500 });
+  if (!row) return NextResponse.json({ error: 'run not found' }, { status: 404 });
+
+  // Harvest every Blob URL the row references by scanning its serialised form:
+  // the files live in different corners (source photo originals and the question
+  // paper inside result_json, annotated pages + their solutions twins, the three
+  // assembled-PDF columns), and shapes have drifted across marker versions. A
+  // sweep of the whole row catches them all; isOurBlobUrl keeps it to our store.
+  const urls = [...new Set(JSON.stringify(row).match(/https:\/\/[^"\\\s]+/g) || [])].filter(isOurBlobUrl);
+
+  // Row first: the row is what surfaces the run everywhere (history, portal,
+  // reports). If the blob cleanup then fails we're left with invisible orphaned
+  // files — cheap; the other order would leave a run full of dead links.
+  const { error: delErr } = await supa.from('paper_marking_runs').delete().eq('id', id);
+  if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
+
+  let blobsDeleted = 0;
+  if (urls.length) {
+    try { await del(urls); blobsDeleted = urls.length; }
+    catch (e) { console.error('[papers] blob cleanup failed for', id, (e as Error).message); }
+  }
+
+  return NextResponse.json({ ok: true, id, blobsDeleted });
 }

@@ -234,7 +234,7 @@ This takes 2 seconds and returns **no student data** — only field names, types
 - **Privacy — lazy-load contact info**: `/api/admin-schedule` does NOT return `parentEmail`/`parentName` eagerly. Use `/api/admin-schedule/student-contact?id=recXXX` to fetch on demand.
 - **UTC vs local time**: `getMondayOfWeek`/`addDays`/`isoDate` in `admin-schedule/route.ts` use UTC. `localToday()`/`daysAgo()` in `lib/schedule-helpers.ts` use local time. Do NOT merge — they serve different domains.
 - Vercel serverless functions: 10s timeout (free) / 60s (Pro) — PDF generation is the bottleneck
-- **Vercel hard-caps request bodies at 4.5MB at the PLATFORM level** — `vercel.json` memory bumps do NOT lift it. Big uploads must chunk (`mark-batch`), go client-token → Blob, or go to the bot (`/api/mark-inbox`).
+- **Vercel hard-caps request bodies at 4.5MB at the PLATFORM level** — `vercel.json` memory bumps do NOT lift it. Big uploads must chunk (`mark-batch`), go client-token → Blob, go to the bot (`/api/mark-inbox`), or reference already-uploaded files by id — mark-paper auto-falls back to `phase:'remark'` on the saved run when the inline body would bust the cap (`lib/mark-payload.ts`, 2026-08-13).
 - Signup link expiry is checked against `Date.now()` — links become invalid after the `expires` timestamp
 - ⚠ `src/lib/latex-repair.ts` reads as binary to `grep` (non-printing mask sentinel) — use `grep -a`
 
