@@ -342,6 +342,38 @@ machine-verified — script at scratchpad tierb-jc2b3/verify_b5.py),
 JC1 finish (34) + S1+S2 finish (26, skip construction 30d3669b,
 verify-then-skip f99feee1).
 
+**2026-08-11 (evening). ✅ TIER B COMPLETE — 1,032 of 1,041 solvable
+rows written; the 9 that remain are ALL documented permanent skips.**
+Wave 4 + final batch: JC1+S1+S2 57 (S2 zeroed; f99feee1 confirmed a
+construction), JC2 0–7 71 (slice to ZERO, zero skips), JC2 8–f 74 + 35
+(slice to its one truncated row). Tier totals: **~4,000 machine checks
+(sympy/scipy/numpy/brute-force enumeration incl. full 9!-and-larger
+permutation sweeps), zero unverified writes, zero redo-then-abandon
+math failures.** Permanent-skip residue (the no-answer-flag list):
+truncated/defective stems 569ca688, 70f282b7 (point not on own curve),
+b0a2bfb1 (undefined Q,T), cee564b0 (lost OX/OY relations); pure
+constructions 30d3669b, f99feee1, 0444367f, 1d486492, 90dc38a8.
+Late-wave metadata catches: 6e9b1e0a (0.00592 not 0.00185 —
+copy-pasted from another part), 7f04dd4b (dimensionally-wrong plane
+equation), cd4cb46d (missing negative branch of |k|>√2/2), e00ad215
+(sketch TP (4.43,1.66)), ee42d20a (k∈ℤ vs its own solution's ℤ⁺ —
+verified all ℤ). Question defects documented: cc5b9658 (asks re^iθ,
+r>0 but a root is 0), be82852a (underdetermined (m,n)), 51c6d0ff
+(odd "continues along the normal" convention — followed, parts only
+cohere that way). **End-of-tier artifact sweep** (narration words /
+CJK / $qb$ residue over ALL solutions): 11 hits, NONE written this
+session (verified against every wave's write list) — they are
+older-ingestion LLM solutions with visible self-correction narration,
+some reconciling against keys mid-prose: 68125588, 72e4616b, c5af1553,
+78ab7e27, 4255073d, 8b264ea6, 93a24612, 6b5118e8, ba91fbe7, 241e464a,
+25b2eb62 → queued as a later solution-hygiene pass (each reaches a
+defensible conclusion; needs care, not bulk edits). Off-syllabus rows
+flagged: 16298e26 (Poisson), 6fb5fbff (Newton-Raphson). Dupes for
+dedupe decision: 58d9a67e≡1ef0d732, 911a68e6≡949ec092, 370299bd≡
+24b7dd83, c19aed2d≡c253498d, f62f467f≈a7841394. The 590 EMPTY-STEM
+no-solution rows remain a separate stem-recovery backlog (nothing to
+solve from).
+
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
 
 > ✅ **DONE (2026-08-10/11, second-Mac session)** — API + UI + paper_drafts
