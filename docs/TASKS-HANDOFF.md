@@ -311,6 +311,35 @@ wave 1 = Sec-level 5 agents (S3_EM_NA ×2, AM+S3_AM, S1+S2, EM-family);
 wave 2 = JC (JC2 ×2, JC1) + AM remainder. Standard Tier-B protocol:
 independent solve from parts text, sympy gate, empty-guarded row-level
 solution+answer, constructions skip+report.
+**✅ PHASE 2 COMPLETE (2026-08-14) — 584 verified solutions across 9
+Fable agents in 2 waves; ~1,960 machine checks, zero unverified
+writes, zero math failures.** Wave 1 Sec 321 (S3_EM_NA 149/149 zeroed,
+EM-family 46, S1+S2 53, AM 0–7 73); wave 2 JC+AM 263 (JC2 136, JC1
+63/63 zeroed — incl. the 3 print-unverified NYJC rows, solved-with-
+flag after internal-consistency checks; AM 8–f 64/64). Late catches:
+300d571c metadata DROPPED A ZERO (verified 0.0385 vs stored 0.385);
+e7724d41 factorisation didn't expand to its own cubic (2y(2y+1)(2y−1));
+ed099058 24 not 44 (metadata answered a different reading); question
+flaws documented in-solution: b039cc16 + 14a1ef71 (printed Sₙ formulas
+break at n=1 — school-standard n≥2 derivations written). Dedupe-trio
+nuance: 2b72e61a + 3837fab2 were committed before the mid-run skip
+landed — 2b72e61a solved per its printed (suspect-sign) text with the
+2022-reading alternative documented; both superseded if Adrian dedupes.
+NEW flags: near-dupe pair c6dcd1e4 ≈ c996eac5; marks mismatch b0ca1846
+(total_marks 5 vs parts sum 8).
+**🏁 FINAL QB CENSUS: the whole `questions` table now has exactly 9
+rows without row-level solution+answer** — 8 hand constructions
+(0444367f, 1d486492, 90dc38a8, 30d3669b, f99feee1, 3b0dcc84, 4bded135,
+c1c61045 — candidates for the one-time no-answer flag) **+ ff0a7516**
+(RVHS-2021 dedupe-pending). Everything else is verified inventory,
+visible to practice generation, worksheet matching, and the prelim
+builder. **Open decisions for Adrian:** RVHS-2021 trio dedupe
+(2b72e61a/ff0a7516/3837fab2 vs 2022 keepers 929dbc16/c4c1d84f/
+deaf5d30), pairs c6dcd1e4≈c996eac5 and c19aed2d≡c253498d-keeper
+status, the 9 marks-vs-print fixes (ac3118f8, 5a77d0cb, d7f9d9f5,
+8af65470, 516fda09, 1f15e649, 8d784b99, 9f78baf1, b0ca1846),
+TJC→TMJC relabel (92162eef, 566103a4), no-answer flag for the 8
+constructions.
 **Tier B WAVE 1 DONE — 122 solutions, 511/511 independent sympy checks
 passed FIRST attempt, 0 abandoned.** AM 131→91 (40 written), EM-family
 75→33 (42), S3_EM_NA 178→138 (40). Skips: 3 pure ruler-and-compass
