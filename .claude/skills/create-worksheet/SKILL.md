@@ -91,7 +91,7 @@ The `Worksheet` class exposes these methods. All take a `parts` list (described 
 | `ws.math_block(latex)` | Centred display equation (no surrounding text). |
 | `ws.ans(parts)` | `[Ans: ...]` line — right-aligned, orange. The wrapper `[Ans: ` and `]` are added automatically; pass only the inner content. |
 | `ws.figure(path, width_cm=10.5)` | Embed a rendered figure PNG, centred under the current question. Cap 16 cm; never upscales a small image. Render the PNG with `figure_lib.render` first — see **Figures** below. |
-| `ws.solution_box(rows)` | Boxed worked solution in Adrian's house format — see **Worked-solution boxes** below. |
+| `ws.solution_box(rows, keep_together=True)` | Boxed worked solution in Adrian's house format — see **Worked-solution boxes** below. |
 | `ws.page_break()` | Manual page break. |
 | `ws.save(path)` | Write the final docx to disk. |
 
@@ -128,18 +128,21 @@ ws.Q([('text', 'Find '),
 
 Adrian's Revision "(With Worked Examples)" sheets put every worked solution in a
 bordered table directly under a bold **Solution:** line. `ws.solution_box(rows)`
-reproduces that format exactly: a TableGrid-bordered table, **two columns** —
-the part label alone in a narrow (1 cm) first column, the working beside it —
-**one table row per part**. An unlabelled solution becomes a single full-width
-cell instead.
+reproduces that format exactly: a table showing **only the outer border** (the
+inside grid lines are suppressed — Adrian's boxes are a single rectangle),
+**two columns** — the part label alone in a narrow (1 cm) first column, the
+working beside it — **one table row per part**. An unlabelled solution becomes
+a single full-width cell instead.
 
 ```python
 ws.solution_box([
     ('(a)', [
-        [('text', 'Differentiate: ')],          # a parts list = left-aligned line
-        r'\dfrac{dy}{dx} = 3x^2 - 4',           # a bare latex string = centred display eqn
+        [('text', 'Differentiate: ')],          # a parts list = left-aligned prose line
+        r'\dfrac{dy}{dx} = 3x^2 - 4',           # a bare latex string = display equation,
+                                                #   left-aligned at a 0.5 cm indent
     ]),
     ('(b)', [
+        ('figure', 'q3_fig.png', 7.0),          # a figure step: centred PNG inside the box
         r'x = 2 \text{ or } x = -\tfrac{2}{3}',
     ]),
 ])
@@ -149,10 +152,25 @@ ws.solution_box([('', [ [('text', 'By symmetry the area is ')], r'A = 12' ])])
 ```
 
 - `rows` is a list of `(label, steps)`; label `'(a)'`/`'(i)'`, or `''` for the
-  single-cell variant. Each step is either a `parts` list (rendered left-aligned,
-  same shapes `Q()`/`para()` take) or a bare LaTeX string (centred display equation).
-- The box writes its own `Solution:` header line and a blank paragraph after the
-  table — don't add either yourself.
+  single-cell variant. Each step is one of: a `parts` list (prose, same shapes
+  `Q()`/`para()` take), a bare LaTeX string (display equation, left-aligned at
+  0.5 cm), or `('figure', path, width_cm=8.0)` for an explanatory diagram
+  rendered with `figure_lib` (see **Figures**).
+- **Never chain three or more `=` on one line.** Split into an aligned block —
+  one `=` per line, vertically aligned:
+  `r'\begin{aligned} s &= \int v\, dt \\ &= t^3 - \tfrac{15}{2}t^2 \end{aligned}'`.
+  Short side-by-side statements stay on one line with `\qquad` between them.
+- **Arrow annotations**: end a working line with `\quad\text{← short reason}`
+  and the arrow plus everything after it is styled automatically in Adrian's
+  annotation format (50 % grey, 8 pt) — e.g.
+  `r'... + C \quad\text{← every integration needs a constant}'`. Only `←` triggers
+  this; `⇒`/`→` remain normal math.
+- The box writes a spacer line, then its own bold `Solution:` header, then the
+  table, then a blank paragraph — don't add any of those yourself.
+- **Keep-together** (default on): the whole block — question paragraphs since
+  the last `Q()`, the `Solution:` header, and the box — refuses to straddle a
+  page break; Word pushes it to a fresh page instead. Blocks taller than a full
+  page still split gracefully. Pass `keep_together=False` to let a box flow.
 - Don't mix labelled and unlabelled rows in one call; one call per solution block.
 
 ## Figures (2026-08-12)
@@ -183,7 +201,7 @@ Supported genres (`figure_lib.GENRES`) and their key spec fields:
 
 | kind | fields |
 |---|---|
-| `graph` | `curves: [{expr, domain, label, label_at?}]`, `points`, `vlines`/`hlines`, `shade: {expr, from, to, to_expr?}`, `xticks`/`yticks`, `xlim`/`ylim`, `clip_y` (asymptotes) |
+| `graph` | `curves: [{expr, domain, label, label_at?}]`, `points`, `vlines`/`hlines` (an hline may be `{y, label}` — label sits above its right end, for asymptotes), `shade: {expr, from, to, to_expr?}`, `xticks`/`yticks` + optional `xtick_labels`/`ytick_labels` (display strings, e.g. `r'$\frac{5}{3}$'` at tick 5/3), `xlim`/`ylim`, `clip_y` (asymptotes), `axis_names` (default `("x","y")` — pass `("t","v")` for kinematics) |
 | `normal` | `mu`, `sigma`, `shade: [lo, hi]` (`None` = tail), `xticks`, `xlabel` |
 | `histogram` | `bins: [[lo, hi, freq], …]`, `density: true` for unequal widths, `xlabel` |
 | `boxplot` | `min, q1, median, q3, max`, `xticks`, `xlabel` |

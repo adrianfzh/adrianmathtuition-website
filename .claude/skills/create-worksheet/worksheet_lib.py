@@ -93,6 +93,99 @@ def _latex_to_omml(latex_expr, display=False):
             os.unlink(docx_path)
 
 
+def _outer_border_only(table):
+    """Adrian's solution boxes show ONLY the outer TableGrid border.
+
+    Instance-level override copied from his real Revision sheets: insideH and
+    insideV set to none, outer edges inherited from the TableGrid style.
+    """
+    tblPr = table._tbl.tblPr
+    borders = OxmlElement('w:tblBorders')
+    for edge in ('insideH', 'insideV'):
+        el = OxmlElement(f'w:{edge}')
+        el.set(qn('w:val'), 'none')
+        el.set(qn('w:sz'), '0')
+        el.set(qn('w:space'), '0')
+        el.set(qn('w:color'), 'auto')
+        borders.append(el)
+    anchor = None  # CT_TblPr schema order: tblBorders sits before these three
+    for tag in ('w:tblLayout', 'w:tblCellMar', 'w:tblLook'):
+        anchor = tblPr.find(qn(tag))
+        if anchor is not None:
+            break
+    if anchor is not None:
+        anchor.addprevious(borders)
+    else:
+        tblPr.append(borders)
+
+
+def _cant_split(row):
+    """Forbid Word from splitting this table row across a page."""
+    trPr = row._tr.get_or_add_trPr()
+    if trPr.find(qn('w:cantSplit')) is None:
+        trPr.append(OxmlElement('w:cantSplit'))
+
+
+def _left_align_math(elem):
+    """Point an oMathPara's own justification left (pandoc emits center)."""
+    if elem is None or elem.tag != f'{{{M_NS}}}oMathPara':
+        return
+    pr = elem.find(f'{{{M_NS}}}oMathParaPr')
+    if pr is None:
+        pr = etree.SubElement(elem, f'{{{M_NS}}}oMathParaPr')
+        elem.insert(0, pr)  # oMathParaPr must be the first child
+    jc = pr.find(f'{{{M_NS}}}jc')
+    if jc is None:
+        jc = etree.SubElement(pr, f'{{{M_NS}}}jc')
+    jc.set(f'{{{M_NS}}}val', 'left')
+
+
+def _style_annotations(elem):
+    """Grey out Adrian's '←' step annotations inside converted OMML.
+
+    His sheets end a working line with a small grey note ("← apply chain
+    rule"). Authors write it as \\quad\\text{← ...} in the latex; here every
+    math run from the arrow onwards gets his exact styling: 50%-grey
+    (7F7F7F), 8 pt.
+    """
+    if elem is None:
+        return
+    for mt in elem.iter(f'{{{M_NS}}}t'):
+        if '←' not in (mt.text or ''):
+            continue
+        arrow_run = mt.getparent()
+        parent = arrow_run.getparent()
+        seen = False
+        for sib in list(parent):
+            if sib is arrow_run:
+                seen = True
+            if not seen or sib.tag != f'{{{M_NS}}}r':
+                continue
+            wrpr = sib.find(qn('w:rPr'))
+            if wrpr is None:
+                wrpr = OxmlElement('w:rPr')
+                mrpr = sib.find(f'{{{M_NS}}}rPr')
+                if mrpr is not None:
+                    mrpr.addnext(wrpr)
+                else:
+                    sib.insert(0, wrpr)
+            for tag in ('w:rFonts', 'w:color', 'w:sz', 'w:szCs'):
+                old = wrpr.find(qn(tag))
+                if old is not None:
+                    wrpr.remove(old)
+            rf = OxmlElement('w:rFonts')
+            rf.set(qn('w:ascii'), 'Cambria Math')
+            rf.set(qn('w:hAnsi'), 'Cambria Math')
+            col = OxmlElement('w:color')
+            col.set(qn('w:val'), '7F7F7F')
+            sz = OxmlElement('w:sz')
+            sz.set(qn('w:val'), '16')
+            szc = OxmlElement('w:szCs')
+            szc.set(qn('w:val'), '16')
+            for e in (rf, col, sz, szc):
+                wrpr.append(e)
+
+
 class Worksheet:
     """Builder for a single worksheet docx with Adrian's house style."""
 
@@ -100,6 +193,7 @@ class Worksheet:
         self.doc = Document()
         self._auto_subq_id = 9   # increments to 10, 11, ... per Q with sub-parts
         self._current_subq_id = None
+        self._block_paras = []   # paragraphs of the current question block (for keep-together)
         self._setup_page()
         self._setup_styles()
 
@@ -195,6 +289,7 @@ class Worksheet:
             run = p.add_run(f'\t[{marks}]')
             run.font.name = 'Times New Roman'
             run.font.size = Pt(9.5)
+        self._block_paras.append(p)
         return p
 
     def _fill(self, p, parts):
@@ -216,10 +311,12 @@ class Worksheet:
             elif kind == 'math':
                 elem = _latex_to_omml(part[1], display=False)
                 if elem is not None:
+                    _style_annotations(elem)
                     p._element.append(elem)
             elif kind == 'math_display':
                 elem = _latex_to_omml(part[1], display=True)
                 if elem is not None:
+                    _style_annotations(elem)
                     p._element.append(elem)
 
     # ---------- public API ----------
@@ -238,6 +335,7 @@ class Worksheet:
         # Bump the sub-question id pool for this question; reset on each Q call
         self._auto_subq_id += 1
         self._current_subq_id = self._auto_subq_id
+        self._block_paras = []  # a new question starts a new keep-together block
         # Apply inline numId=1 directly so MS Word picks it up reliably
         return self._add(parts, style='Question', num_id=1, marks=marks)
 
@@ -258,7 +356,9 @@ class Worksheet:
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         elem = _latex_to_omml(latex_expr, display=True)
         if elem is not None:
+            _style_annotations(elem)
             p._element.append(elem)
+        self._block_paras.append(p)
         return p
 
     def ans(self, parts):
@@ -266,17 +366,13 @@ class Worksheet:
         full = [('text', '[Ans: ')] + list(parts) + [('text', ']')]
         return self._add(full, style='Answer', alignment=WD_ALIGN_PARAGRAPH.RIGHT)
 
-    def figure(self, path, width_cm=10.5):
-        """Embed a rendered figure (see figure_lib.py) under the current question.
-
-        Centred, capped at width_cm (16 cm is the text column) and never
-        upscaled past the image's natural 96-dpi size — a small render should
-        stay small, not blur.
-        """
+    def _picture(self, p, path, width_cm):
+        """Centre a PNG in paragraph p, capped at width_cm and never upscaled
+        past the image's natural 96-dpi size — a small render should stay
+        small, not blur."""
         from PIL import Image  # python-docx already depends on Pillow
         with Image.open(path) as im:
             natural_cm = im.width / 96 * 2.54
-        p = self.doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.space_before = Pt(4)
         p.paragraph_format.space_after = Pt(4)
@@ -284,24 +380,47 @@ class Worksheet:
         run.add_picture(path, width=Cm(min(width_cm, 16, natural_cm)))
         return p
 
-    def solution_box(self, rows):
+    def figure(self, path, width_cm=10.5):
+        """Embed a rendered figure (see figure_lib.py) under the current question."""
+        p = self._picture(self.doc.add_paragraph(), path, width_cm)
+        self._block_paras.append(p)
+        return p
+
+    def solution_box(self, rows, keep_together=True):
         """Boxed worked solution in Adrian's house format.
 
         His Revision "(With Worked Examples)" sheets put every solution in a
-        bordered TableGrid table right under a bold "Solution:" line — two
-        columns, the part label alone in a narrow first column, the working
-        beside it, one table row per part.
+        TableGrid table showing ONLY the outer border (no inner gridlines),
+        under a bold "Solution:" line with one blank line of breathing space
+        after the question. Two columns: the part label alone in a narrow
+        first column, the working beside it, one table row per part.
 
         rows: list of (label, steps). label is '(a)' / '(i)' ('' for an
-        unlabelled single-cell solution). Each step is either a parts list
-        (same shapes Q()/para() take, rendered left-aligned) or a bare latex
-        string, rendered as a centred display equation.
+        unlabelled single-cell solution). Each step is one of:
+
+        - a bare latex string — a display equation, left-aligned at a small
+          indent. Never chain several = signs on one line: write multi-step
+          working as a \\begin{aligned} block (&= per line) so the lines
+          stack with the = signs vertically aligned. End a line with
+          \\quad\\text{← short note} for Adrian's grey 8pt arrow annotation.
+        - a parts list (same shapes Q()/para() take), rendered left-aligned
+          — for prose steps and inline-math sentences.
+        - ('figure', path[, width_cm]) — a centred figure_lib PNG inside the
+          box, for a sketch that explains the working (default 8 cm).
+
+        keep_together (default True) keeps the question paragraphs (since
+        the last Q()), the "Solution:" line and the whole box on one page —
+        Word pushes the block to a fresh page rather than straddling. A block
+        taller than a full page still splits gracefully.
         """
+        spacer = self.doc.add_paragraph()  # breathing space above "Solution:"
+        self._block_paras.append(spacer)
         self._add([('text', 'Solution:', {'bold': True})])
         labelled = any(label for label, _ in rows)
         table = self.doc.add_table(rows=len(rows), cols=2 if labelled else 1)
         table.style = self.doc.styles['Table Grid']
         table.autofit = False
+        _outer_border_only(table)
         for (label, steps), row in zip(rows, table.rows):
             if labelled:
                 lab_cell, work_cell = row.cells
@@ -317,18 +436,34 @@ class Worksheet:
                 p = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
                 first = False
                 p.paragraph_format.line_spacing = 1.15  # boxes are tighter than the 1.5 body
-                if isinstance(step, str):
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                if isinstance(step, tuple) and step and step[0] == 'figure':
+                    self._picture(p, step[1], step[2] if len(step) > 2 else 8.0)
+                elif isinstance(step, str):
+                    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                    p.paragraph_format.left_indent = Cm(0.5)
                     elem = _latex_to_omml(step, display=True)
                     if elem is not None:
+                        _left_align_math(elem)
+                        _style_annotations(elem)
                         p._element.append(elem)
                 else:
                     self._fill(p, step)
+        if keep_together:
+            for para in self._block_paras:
+                para.paragraph_format.keep_with_next = True
+            for row in table.rows:
+                _cant_split(row)
+            for row in list(table.rows)[:-1]:  # last row must NOT keep with what follows
+                for cell in row.cells:
+                    for cp in cell.paragraphs:
+                        cp.paragraph_format.keep_with_next = True
+        self._block_paras = []
         self.doc.add_paragraph()  # breathing space between the box and what follows
         return table
 
     def page_break(self):
         self.doc.add_page_break()
+        self._block_paras = []  # a manual break ends any keep-together block
 
     def save(self, path):
         """Save the worksheet, injecting clean numbering.xml."""

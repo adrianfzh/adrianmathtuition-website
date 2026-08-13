@@ -48,7 +48,7 @@ def _f(expr: str):
     return lambda x: eval(code, {"__builtins__": {}}, {**_SAFE, "x": x})
 
 
-def _axes_through_origin(ax, xlim, ylim):
+def _axes_through_origin(ax, xlim, ylim, names=("x", "y")):
     """School-style axes: spines through 0 with arrowheads, ticks kept light."""
     ax.set_xlim(*xlim)
     ax.set_ylim(*ylim)
@@ -60,9 +60,9 @@ def _axes_through_origin(ax, xlim, ylim):
         ax.spines["bottom"].set_position("zero")
     ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False, markersize=5)
     ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False, markersize=5)
-    ax.annotate("x", xy=(1, 0), xycoords=ax.get_yaxis_transform(),
+    ax.annotate(names[0], xy=(1, 0), xycoords=ax.get_yaxis_transform(),
                 xytext=(8, -4), textcoords="offset points", style="italic")
-    ax.annotate("y", xy=(0, 1), xycoords=ax.get_xaxis_transform(),
+    ax.annotate(names[1], xy=(0, 1), xycoords=ax.get_xaxis_transform(),
                 xytext=(6, 4), textcoords="offset points", style="italic")
 
 
@@ -112,7 +112,11 @@ def _render_graph(spec, out_path):
     for v in spec.get("vlines", []):
         ax.axvline(v["x"] if isinstance(v, dict) else v, color="k", lw=0.9, linestyle="--")
     for h in spec.get("hlines", []):
-        ax.axhline(h["y"] if isinstance(h, dict) else h, color="k", lw=0.9, linestyle="--")
+        yv = h["y"] if isinstance(h, dict) else h
+        ax.axhline(yv, color="k", lw=0.9, linestyle="--")
+        if isinstance(h, dict) and h.get("label"):  # e.g. an asymptote's "v = 30"
+            ax.annotate(h["label"], xy=(1, yv), xycoords=ax.get_yaxis_transform(),
+                        xytext=(-4, 5), textcoords="offset points", ha="right", fontsize=10)
 
     if spec.get("xlim"):
         xlim = spec["xlim"]
@@ -128,10 +132,16 @@ def _render_graph(spec, out_path):
         ymax = max(float(np.nanmax(y)) for y in ys_all if np.isfinite(y).any()) if ys_all else 4
         pad = 0.10 * (ymax - ymin or 1)
         ylim = (min(ymin - pad, 0), max(ymax + pad, 0))
-    _axes_through_origin(ax, xlim, ylim)
+    _axes_through_origin(ax, xlim, ylim, tuple(spec.get("axis_names", ("x", "y"))))
     if not spec.get("ticks", False):
         ax.set_xticks(spec.get("xticks", []))
         ax.set_yticks(spec.get("yticks", []))
+        # optional display labels, paired with xticks/yticks — lets a tick sit
+        # at 5/3 but read "5/3" instead of 1.667 (mathtext like $\frac{5}{3}$ ok)
+        if spec.get("xtick_labels"):
+            ax.set_xticklabels(spec["xtick_labels"])
+        if spec.get("ytick_labels"):
+            ax.set_yticklabels(spec["ytick_labels"])
     return _finish(fig, out_path)
 
 
