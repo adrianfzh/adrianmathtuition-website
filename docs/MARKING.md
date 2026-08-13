@@ -322,7 +322,7 @@ never receive.
 | | **Annotated photo** (bot, `ai/annotate.js`) | **Transcript sheet** (site, `marking-template.html`) |
 |---|---|---|
 | What it is | the marked script — his own paper, red pen on it | a legible re-write of his working |
-| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" · **in 🖼 mode only: the "Where you went wrong" paragraphs + the worked solution** | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
+| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" · **in 🖼 mode only: the worked solution** | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
 | Says | what each part scored, and WHY a mark was lost | what the answer WAS |
 | Granularity | per PART | per LINE |
 | In 🖼 images-only mode | ✅ | ❌ absent |
@@ -346,13 +346,14 @@ never receive.
     `bufferWithSolutions` with it — and `annotateAndUpload` puts both to Blob (`-sol`
     suffix; the timestamp alone can collide on parallel puts). Gemini runs once; the twin
     costs one sharp pass. **Don't "simplify" it into two `annotateToBuffer` calls** — that
-    doubles the vision spend on every photo of every paper. Since 2026-07-30 the twin
-    carries TWO things the plain copy never does: the **"Where you went wrong" paragraphs**
-    (one per question below max — `feedbackEntry` in `ai/solution-entry.js`, gate is
-    `awarded < max`, NOT `matches_correct`: a right answer with a lost method mark still
-    deserves it) above the **worked solutions**. The twin is null when neither list has
-    entries (nothing dropped marks → the two images would be identical), and on the
-    last-resort margin rung, which has no footer strip.
+    doubles the vision spend on every photo of every paper. What the twin carries beyond the
+    plain copy is the **worked solutions** in the footer. (From 2026-07-30 to 2026-08-13 it
+    also carried per-question "Where you went wrong" paragraphs — `feedbackEntry`, removed at
+    Adrian's call once the side notes were raised to print size: on a one-error question the
+    pinned per-part note and the paragraph said nearly the same thing. The transcript sheet
+    still renders the paragraph — the 📄 full PDF is unchanged.) The twin is null when the
+    solutions list is empty (no wrong final answers → the two images would be identical), and
+    on the last-resort margin rung, which has no footer strip.
   - `annotated_photos[]` therefore carries `{ photo_index, url, url_with_solutions, method }`.
     **Which one goes in is `pickAnnotatedPhotoUrl()` (`lib/annotated-photo-source.ts`,
     unit-tested), not an inline ternary in the route** — it is silent in both directions: the
@@ -518,6 +519,14 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   spread-split makes them rare anyway); notes that overflow the strip's height still
   footer. Hi-res composites extend by the same fraction through the existing viewBox
   mapping. Footer lines may now run the widened canvas.
+- **A part's in-page band reaches its whole territory (2026-08-13, Adrian: "extend the
+  band").** The search band for a note used to stop a fixed ~6–8 lines below the part's
+  working, so a page with a big empty gap under the working still wrote its note in the
+  strip. Now the band extends down to where the NEXT part starts in the same column
+  (minus 2 lines, so a note never reads as the next question's) — or the page bottom for
+  the last part. `findSpot` still prefers the spot nearest the working, so the far reach
+  only gets used when everything beside the working is ink; the strip triggers only on
+  genuinely edge-to-edge-full pages.
 
 - **Placement is arithmetic, not vibes** — `ai/whitespace.js` (pure, no sharp, 20 tests)
   thresholds the page to an ink/no-ink grid, dilates by a cell, and searches a summed-area
