@@ -55,7 +55,6 @@ from lxml import etree
 # --------------------------------------------------------------------------
 
 DROPBOX = Path.home() / "Library/CloudStorage/Dropbox/Apps/AdrianMathNotes"
-NOTES_BANK = DROPBOX / "notes_bank"
 REVISION_ROOT = DROPBOX / "Revision"
 # The two kinds print to two different kiosk buttons, so they go to two folders:
 # worked → Revision/<folder> (kiosk "Revise"), notes → Practice/<folder> (kiosk
@@ -71,6 +70,33 @@ WORKED_FOLDERS = ["AM", "EM", "S1", "S2", "JC", "AM G2", "EM G2"]
 # Finished worksheets land in Revision/<folder>: a notes bank has no folder of
 # its own, so S3/S4 of a subject share one.
 BANK_OUT_FOLDER = {"S4_AM": "AM", "S3_AM": "AM", "S4_EM": "EM", "S3_EM": "EM"}
+
+
+def bank_dir(bank: str) -> Path:
+    """Where a notes bank's fragments live.
+
+    Moved 2026-08-12 from a single top-level `notes_bank/` to one bank folder
+    per practice folder, so the fragments sit beside the sheets they feed:
+
+        Practice/AM/notes_bank/{S3_AM,S4_AM}
+        Practice/EM/notes_bank/{S3_EM,S4_EM}
+
+    Adrian: "put the notes_bank into the corresponding practice folders and
+    their corresponding levels themselves, so it's easy to manage."
+
+    The bank keeps its `S3_`/`S4_` folder name rather than collapsing to
+    `S3`/`S4`: it stays self-describing if a folder is ever copied elsewhere in
+    Dropbox, and it still matches the `--bank` value typed on the command line.
+
+    Safe to nest under Practice/ because every base scan uses a NON-recursive
+    `glob("*.docx")` — a recursive scan would pick the fragments up as bases and
+    clone a formula sheet as if it were a worksheet.
+    """
+    folder = BANK_OUT_FOLDER.get(bank)
+    if folder is None:
+        raise ResolutionError(
+            "Unknown bank %r (banks: %s)" % (bank, ", ".join(BANKS)))
+    return PRACTICE_ROOT / folder / "notes_bank" / bank
 
 # …which means this skill's own output sits in the folder it later scans for
 # BASES. Without this filter, a second run clones the first run's worksheet and
@@ -93,6 +119,97 @@ BANK_LEVELS = {
 # Bank -> the level line Adrian puts at the top of his own worked sheets.
 # A notes fragment has no title of its own (it opens straight on the topic name),
 # so kind=notes builds this block to match them — Adrian, 2026-08-06.
+# ── Syllabus order: which topics a Sec 3 student has been taught ─────────────
+# Adrian, 2026-08-12: "For Sec 3 practice/revision worksheets, should not put
+# other topics that they may not have learnt before. Okay for Sec 4 worksheets."
+#
+# A past-paper question carries EVERY topic it touches, so a question tagged
+# ['Nature of Roots', 'Polynomials'] is a legitimate Nature-of-Roots question
+# that a Sec 3 class cannot yet attempt. Matching on the requested topic alone
+# lets it through; this map is what lets the picker see the second tag.
+#
+# Numbers are Adrian's own teaching order, taken from the filenames in
+# Dropbox/Apps/AdrianMathNotes/Notes/AM (01 Quadratic Functions .. 31 Plane
+# Geometry). Sec 3 runs to 20 (Applications of Trigonometry); Sec 4 picks up at
+# 21 (Differentiation) and has the whole syllabus available.
+AM_TOPIC_ORDER = {
+    "Quadratic Functions": 1,
+    "Simultaneous Equations": 2,
+    "Quadratic Inequalities": 3,
+    "Nature of Roots": 4,
+    "Polynomials": 5,
+    "Partial Fractions": 6,
+    "Surds": 7,
+    "Indices": 8,
+    "Logarithms": 9,
+    "Logarithmic and Exponential Functions": 9,
+    "Power Graphs": 10,
+    "Graphs of Functions": 10,
+    "Coordinate Geometry": 11,
+    "Circles": 12,
+    "Binomial Theorem": 13,
+    "Linear Law": 14,
+    "Trigonometry (Ratios)": 15,
+    "Trigonometry (Graphs)": 16,
+    "Trigonometry (Identities)": 17,
+    "Trigonometry (Equations)": 18,
+    "Trigonometry (R-Formula)": 19,
+    "Trigonometry (Applications)": 20,
+    # ── Sec 4 from here ──
+    "Differentiation (Techniques)": 21,
+    "Differentiation (Tangents and Normals)": 22,
+    "Differentiation (Increasing and Decreasing Functions)": 23,
+    "Differentiation (Rates of Change)": 24,
+    "Differentiation (Maximum and Minimum)": 25,
+    "Differentiation (Product/Quotient/Chain Rule)": 26,
+    "Differentiation (Trigonometric)": 26,
+    "Differentiation (Logarithmic and Exponential)": 26,
+    "Integration (Techniques)": 28,
+    "Integration (Indefinite)": 28,
+    "Integration (Area)": 29,
+    "Integration (Definite Integrals)": 29,
+    "Integration (Definite)": 29,
+    "Integration (Applications)": 29,
+    "Kinematics": 30,
+    "Plane Geometry": 31,
+}
+# Deliberately NOT mapped, and both would do harm if they were:
+#
+#   "Proof"  — a KIND marker, not a syllabus position. Of 109 AM proof questions,
+#              91 also carry "Plane Geometry" (so they are already caught by that
+#              tag) and 15 carry a Trigonometry topic. Mapping Proof to 31 would
+#              have blocked those 15 trig proofs from Sec 3 sheets while adding
+#              nothing — the plane-geometry ones were covered either way.
+#   "Modulus Functions", "Mensuration" — absent from Notes/AM, so there is no
+#              teaching position to read off. The map mirrors that folder; a tag
+#              it does not define is left to fail open.
+
+
+# Last topic number taught, per notes bank. A bank absent from this map is never
+# narrowed — EM's order is not yet established, and every Sec 4 bank has the
+# whole syllabus by definition.
+BANK_TOPIC_CAP = {
+    "S3_AM": 20,
+}
+
+
+def out_of_scope(row, cap: int | None) -> str | None:
+    """The topic that puts this question beyond what the class has been taught,
+    or None when it is safe to use.
+
+    Fails OPEN: a topic missing from AM_TOPIC_ORDER is allowed through. A new or
+    renamed tag should not silently empty a worksheet, and the map is a hand-kept
+    mirror of Adrian's notes folder rather than anything the DB guarantees.
+    """
+    if cap is None:
+        return None
+    for t in (row.get("topics") or []):
+        n = AM_TOPIC_ORDER.get((t or "").strip())
+        if n is not None and n > cap:
+            return t
+    return None
+
+
 BANK_TITLES = {
     "S3_AM": "Sec 3 Additional Math",
     "S4_AM": "Sec 4 Additional Math",
@@ -385,7 +502,7 @@ QUALIFIER_HINTS = {
 
 
 def list_fragments(bank: str) -> list:
-    d = NOTES_BANK / bank
+    d = bank_dir(bank)
     if not d.is_dir():
         raise ResolutionError(
             "Notes bank %r not found at %s (banks: %s)" % (bank, d, ", ".join(BANKS)))
@@ -395,7 +512,7 @@ def list_fragments(bank: str) -> list:
 
 def resolve_fragment(bank: str, topic: str) -> Resolved:
     """exact filename -> fuzzy -> grouped '(All)' -> error with 5 closest names."""
-    d = NOTES_BANK / bank
+    d = bank_dir(bank)
     names = list_fragments(bank)
     by_norm = {norm(n): n for n in names}
 
@@ -666,22 +783,42 @@ def _nonempty(s) -> bool:
     return bool(s and str(s).strip())
 
 
+_IMG_PUBLIC_PREFIX = re.compile(r"^https?://[^/]+/storage/v1/object/public/", re.I)
+
+
+def _norm_img_path(v):
+    """One image entry → bucket-relative path, or None if unrecognisable."""
+    if isinstance(v, dict):
+        v = v.get("url") or v.get("path")
+    if not isinstance(v, str):
+        return None
+    return _IMG_PUBLIC_PREFIX.sub("", v.strip()) or None
+
+
 def _images(row) -> list:
     """Storage paths of the row's question figures.
 
-    `image_url` is a JSON array of bucket-relative paths
-    ("question_images/<uuid>.png") — text in PostgREST output, list if already
-    decoded. Anything else counts as no images.
+    `image_url` grew several shapes across extractor generations: a JSON array
+    of bucket-relative paths ("question_images/<uuid>.png"), a bare relative
+    path, a bare full public-bucket URL, and a JSON array of {url, mm} objects.
+    Normalise ALL of them to bucket-relative paths — accepting only the first
+    shape silently rejected 287 stored figures as "no stored image file"
+    (caught 2026-08-13). Anything unrecognisable counts as no images.
     """
     v = row.get("image_url")
     if isinstance(v, str):
-        try:
-            v = json.loads(v)
-        except Exception:
+        s = v.strip()
+        if not s:
             return []
+        try:
+            v = json.loads(s)
+        except Exception:
+            v = [s]  # bare path or bare URL, not JSON
+    if isinstance(v, (str, dict)):
+        v = [v]
     if not isinstance(v, list):
         return []
-    return [p for p in v if isinstance(p, str) and p.strip()]
+    return [p for p in (_norm_img_path(item) for item in v) if p]
 
 
 def usable(row, figures: bool = True) -> tuple[bool, str]:
@@ -2488,10 +2625,24 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
     if not levels:
         raise ValueError("could not infer a questions.level; pass --level")
 
+    # Sec 3 banks drop any question that also carries a topic taught later —
+    # see AM_TOPIC_ORDER. Sec 4 banks have the whole syllabus, so cap is None.
+    cap = BANK_TOPIC_CAP.get((bank or "").upper())
+    scope_skips: dict[str, int] = {}
+
     pool, level_used = [], {}
     seen = set()
     for lv in levels:
         rows = fetch_pool(env, lv, ptopic, figures=figures)
+        if cap is not None:
+            kept = []
+            for r in rows:
+                bad = out_of_scope(r, cap)
+                if bad:
+                    scope_skips[bad] = scope_skips.get(bad, 0) + 1
+                else:
+                    kept.append(r)
+            rows = kept
         fresh = [r for r in rows if r["id"] not in seen]
         seen.update(r["id"] for r in fresh)
         pool += fresh
@@ -2509,6 +2660,11 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
                     % (levels[0], ", ".join(repr(t) for t in closest(ptopic, topics, 5))))
         except Exception:
             pass
+        if scope_skips:
+            hint += ("\nSec 3 scope dropped %d question(s) that also need: %s"
+                     % (sum(scope_skips.values()),
+                        ", ".join("%s (%d)" % (t, n) for t, n in
+                                  sorted(scope_skips.items(), key=lambda kv: -kv[1]))))
         raise RuntimeError("No usable practice questions for topic %r at level(s) %s.%s"
                            % (ptopic, "/".join(levels), hint))
 
@@ -2586,6 +2742,13 @@ def make_worksheet(kind: str, topic: str, bank: str | None = None, folder: str |
                                % optional)
         else:
             optional_from = len(chosen) - optional + 1
+
+    if scope_skips:
+        scope_notes.append(
+            "Sec 3 scope: dropped %d question(s) needing a later topic — %s"
+            % (sum(scope_skips.values()),
+               ", ".join("%s (%d)" % (t, n) for t, n in
+                         sorted(scope_skips.items(), key=lambda kv: -kv[1])[:6])))
 
     report = RunReport(base=resolved, kind=kind, level_used=level_used,
                        questions=chosen, stats=stats, size=size_budget(chosen),
