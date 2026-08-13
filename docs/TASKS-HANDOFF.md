@@ -290,6 +290,30 @@ is exactly why the pass rate is clean. **Wave 2 launched (4 agents):**
 JC2 split by id-hex 0–7 / 8–f (~433 pool, H2 register), AM remainder
 (91), S3_EM_NA remainder (138), ~60 rows each; easy fronts handed over
 (58d9a67e dup-copy-after-verify, 58ee8dc4, 41923752, 430a1674).
+**Tier B WAVE 2 DONE — 271 solutions** (JC2 0–7: 60, JC2 8–f: 60,
+AM: 80, S3_EM_NA: 71); **cumulative 393/1,041 solvable (38%)**, ~1,160
+machine checks this wave, zero unverified writes, zero redo failures.
+New PERMANENT skip: 70f282b7 (stem inconsistent — its point P(π/3,π)
+is provably not on its own curve; the two plausible repairs give
+different exact areas, so any write would be a guess). Metadata
+answer-field catalogue grew (answer field wrong, own solution text
+right): 234e08e0 (asymptote range omits a≠0, a≠½ degenerate exclusions
+INSIDE the claimed range), 978b6bdd (n=3 not 2), 85cec175 (r=0.9678),
+7677438c (k=0.16), aedfdc30 (185/6 not 305/12; distance 26 not 13 —
+"tangent" claim false), ca2be398 (2/3 not 4/3), 860171f1 (5h25min);
+plus a GC-display-precision slop class (intermediates off, finals
+unchanged: 8fabf0ee, 9a8c0459, 9c649f06, 03f71c56, 08bc7574, 0cd338f7,
+1fd4f0d1). DUPES for a dedupe decision: 58d9a67e ≡ 1ef0d732 (both now
+written, identical results), 911a68e6 ≡ 949ec092, f62f467f ≈ a7841394.
+Off-syllabus flag: 16298e26 uses Poisson (pre-9758 syllabus). Ops
+lessons: a watchdog-stalled agent resumes cleanly via message (45 rows
+were already banked; empty-guards make re-runs safe); a write whose
+HTTP response dies (ERR_NAME_NOT_RESOLVED) may still have COMMITTED —
+verify before re-issuing. **Wave 3 launched (5 agents):** JC2 0–7
+(143), JC2 8–f (170), JC1 (109, first-year register), S1+S2 (115,
+lower-sec register), Sec mop-up (AM front 9 + EM-family 33 + S3_EM_NA
+67 incl. the 5 big graph-paper items + the 2 deferred linear-law
+rows).
 
 ## 4. Build /admin/prelim-builder (layer 2 of the prelim plan)
 
