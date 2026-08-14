@@ -14,6 +14,11 @@ describe('looksLikeMath', () => {
     expect(looksLikeMath('x')).toBe(true);
     expect(looksLikeMath('96')).toBe(true);
   });
+  it('numeric coordinates are math (the stationary-point answer case)', () => {
+    expect(looksLikeMath('(1, 6)')).toBe(true);
+    expect(looksLikeMath('(-1.5, 2)')).toBe(true);
+    expect(looksLikeMath('5, ')).toBe(false); // numeric span between prices: "$5, $6"
+  });
   it('prose caught between two currency signs is NOT math', () => {
     expect(looksLikeMath('x. In addition, they ordered some dishes from the menu at ')).toBe(false);
     expect(looksLikeMath('96. All dishes from the a la carte menu would be entitled to ')).toBe(false);

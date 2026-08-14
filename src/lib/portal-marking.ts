@@ -80,7 +80,11 @@ export interface StudentPaper {
   pdfUrl: string | null;
   /** Follow-up practice, one item per dropped-marks question. Often empty. */
   practice: StudentPracticeItem[];
-  /** House-style Word file of the practice list, if the bot built one. */
+  /**
+   * House-style Word file of the practice list, if the bot built one. The UI
+   * no longer links it (students download /api/portal/practice-pdf instead,
+   * 2026-08-14); kept because the bot still writes it and Adrian's own tools use it.
+   */
   practiceDocxUrl: string | null;
 }
 

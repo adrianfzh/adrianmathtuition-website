@@ -254,14 +254,12 @@ function Paper({ paper }: { paper: StudentPaper }) {
           <p className="text-[11px] text-gray-400 mt-1.5">
             One follow-up question for each question that dropped marks. Try it on paper before peeking at the answer.
           </p>
-          {paper.practiceDocxUrl && (
-            <a
-              href={paper.practiceDocxUrl}
-              className="inline-block mt-2 text-xs font-semibold text-navy border border-navy/20 rounded-lg px-3 py-1.5 hover:bg-navy/5"
-            >
-              ⬇ Download as a worksheet (Word)
-            </a>
-          )}
+          <a
+            href={`/api/portal/practice-pdf?run=${paper.id}`}
+            className="inline-block mt-2 text-xs font-semibold text-navy border border-navy/20 rounded-lg px-3 py-1.5 hover:bg-navy/5"
+          >
+            ⬇ Download as a worksheet (PDF)
+          </a>
           <ul className="mt-2 space-y-2.5">
             {paper.practice.map((it, i) => (
               <li key={i} className="rounded-xl border border-amber-100 bg-amber-50/40 p-3">

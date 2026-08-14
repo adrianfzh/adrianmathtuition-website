@@ -18,6 +18,9 @@ export function looksLikeMath(c: string): boolean {
   if (/[\\^_{}]/.test(c)) return true;                                  // TeX commands/structure
   if (c.length <= 40 && /[=+*/<>≤≥]/.test(c) && !/[.;] /.test(c)) return true;  // short equation
   if (c.length <= 12 && !/\s/.test(c)) return true;                     // bare symbol/number run
+  // Numeric coordinates/tuples — "(1, 6)", "(-1.5, 2)". Anchored to the parens
+  // so a numeric span between two prices ("$5, $6") never matches.
+  if (/^\(\s*-?\d+(\.\d+)?(\s*,\s*-?\d+(\.\d+)?)+\s*\)$/.test(c)) return true;
   return false;
 }
 
