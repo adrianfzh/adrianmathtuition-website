@@ -1,4 +1,8 @@
--- Phase G leak audit remediation (2026-08-14). NOT YET APPLIED — Adrian to approve.
+-- Phase G leak audit remediation (2026-08-14). APPLIED 2026-08-14 (Adrian approved;
+-- ran via Supabase MCP apply_migration as `drop_unused_anon_policies`). Post-apply
+-- verification: live anon probe returns 0 rows on all three tables, and pg_policies
+-- shows zero anon policies remaining (only service_role_full_access on
+-- prompt_lint_reports, which is redundant-but-harmless).
 --
 -- Audit result: RLS is enabled on every public table, and every student/parent/
 -- marking table returns ZERO rows to the anon key (live PostgREST probes,
