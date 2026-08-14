@@ -29,6 +29,7 @@ sys.path.insert(0, "/Users/adrianfong/dev/adrianmathtuition-website/.claude/skil
 from worksheet_lib import Worksheet
 import revision_lib as rl
 from docx.shared import Cm
+from docx.enum.text import WD_TAB_ALIGNMENT
 
 OUT = "30 Kinematics Revision (With Worked Examples) (Past Papers) (S4).docx"
 B = {"bold": True}
@@ -55,6 +56,33 @@ def pad_label(lab):
     lab = str(lab).strip()
     width = 6 if lab.lower() in ROMANS else 4
     return f"({lab})".ljust(width)
+
+
+def lit_part(ws, lab, parts, marks=None):
+    """Top-level Practice part with a LITERAL label — for every part after a
+    hoisted first part (SQ's auto-numbering would restart at (a)). Label at
+    1.0 cm, text at 2.0 cm — the same geometry SQ produces natively."""
+    p = ws.para([("text", f"({lab})\t")] + parts, marks=marks)
+    pf = p.paragraph_format
+    pf.left_indent = Cm(2.0)
+    pf.first_line_indent = Cm(-1.0)
+    pf.tab_stops.add_tab_stop(Cm(2.0), WD_TAB_ALIGNMENT.LEFT)
+    return p
+
+
+def hoist_Q(ws, lab, parts, marks=None):
+    """Parts-only Practice question (empty stem): the first part rides the
+    question's number line — "1.  (a)  text" — instead of leaving the
+    auto-number alone on an empty paragraph (the misalignment Adrian flagged
+    on the trig sheets, 14 Aug 2026). Tab stops put the label at 1.0 cm and
+    the text at 2.0 cm, matching lit_part/SQ; wraps return to 2.0 cm."""
+    p = ws.Q([("text", f"({lab})\t")] + parts, marks=marks)
+    pf = p.paragraph_format
+    pf.left_indent = Cm(2.0)
+    pf.first_line_indent = Cm(-2.0)
+    pf.tab_stops.add_tab_stop(Cm(1.0), WD_TAB_ALIGNMENT.LEFT)
+    pf.tab_stops.add_tab_stop(Cm(2.0), WD_TAB_ALIGNMENT.LEFT)
+    return p
 
 
 # ---------------------------------------------------------------- data

@@ -280,6 +280,15 @@ Gotchas that already bit (all handled in the reference build):
   the f-string — or the 5-char `(iii)` gets zero padding and glues to its text (bit on the
   trig-ratios sheet, 2026-08-14; the space guarantees ≥1 gap while `(i)`/`(ii)` spacing is
   unchanged).
+- **Parts-only questions (empty stem): hoist the first part onto the Q line.** A bare
+  `ws.Q([])` prints the auto-number alone on an empty line with the parts below it — the
+  misalignment Adrian flagged on the trig sheets, 2026-08-14. Use the reference build's
+  `hoist_Q` (first part rides the number line as `1.  (a)  text`, tab stops at 1.0/2.0 cm)
+  and render **every part after a hoist** with `lit_part`, never `SQ` — SQ's per-question
+  `startOverride` would restart its labels at (a). Same for all-roman labels: `SQ`
+  relabels (i)(ii)(iii) as (a)(b)(c); either accept the relabeling consistently in the
+  `[Ans:]` lines too (the kinematics reference does), or print the paper's own labels
+  with `lit_part`.
 - Practice questions have no `solution_box` to keep-together them — after `ans()`, set
   `keep_with_next` on `ws._block_paras[:-1]` and clear the list, or questions straddle
   pages.

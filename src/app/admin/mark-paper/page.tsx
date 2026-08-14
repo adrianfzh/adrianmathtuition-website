@@ -970,9 +970,17 @@ export default function MarkPaperPage() {
             🗂️ Recent marked papers ({recentRuns.length}{runsTotal > recentRuns.length ? ` of ${runsTotal}` : ''})
           </summary>
           <div style={{ marginTop: 8 }}>
-            {recentRuns.map((run) => (
+            {recentRuns.map((run) => {
+              // Grouped row layout (14 Aug 2026, from Adrian's screenshot): info on
+              // the left, then ONE right-aligned actions cluster whose links and
+              // buttons wrap as whole groups — free-wrapping children used to strand
+              // a lone 🗑 on its own line.
+              const hasPdfs = !!(run.annotated_pdf_url || run.photos_pdf_url || run.pdf_url);
+              const canMark = run.total_max == null &&
+                (run.queue_failed || (!run.queued_at && Date.now() - new Date(run.created_at).getTime() >= 4 * 60 * 1000));
+              return (
               <div key={run.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
-                <span style={{ color: '#6b7280', minWidth: 120 }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                <span style={{ color: '#6b7280', minWidth: 120, whiteSpace: 'nowrap' }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                 <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {editTagId === run.id ? (
                     <StudentPicker
@@ -1030,66 +1038,70 @@ export default function MarkPaperPage() {
                 </span>
                 {run.total_max == null ? (
                   // Saved uploads, never (successfully) marked — the row a 502 leaves
-                  // behind. One tap marks it from the stored files; no re-uploading.
-                  // A row under 4 minutes old may have its ORIGINAL marking still
-                  // running server-side (markings finish even after a refresh) — ▶
-                  // then would start a second, parallel, double-cost marking, so it
-                  // waits out the window.
-                  run.queue_failed ? (
-                    <>
-                      <span style={{ color: '#b91c1c', fontSize: 12, fontWeight: 600 }}>⚠ queue failed twice</span>
+                  // behind. ▶ Mark (in the actions cluster) marks it from the stored
+                  // files; no re-uploading. A row under 4 minutes old may have its
+                  // ORIGINAL marking still running server-side (markings finish even
+                  // after a refresh) — ▶ then would start a second, parallel,
+                  // double-cost marking, so canMark waits out the window.
+                  <span style={{ color: run.queue_failed ? '#b91c1c' : run.queued_at ? '#4c1d95' : '#b45309', fontSize: 12, fontWeight: 600 }}>
+                    {run.queue_failed ? '⚠ queue failed twice'
+                      : run.queued_at ? '🌙 queued — the bot will mark it and Telegram you'
+                      : canMark ? '⏳ uploaded — not marked yet'
+                      : '⏳ marking may still be running — check back in a minute'}
+                  </span>
+                ) : (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+                    <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
+                    <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
+                  </span>
+                )}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', marginLeft: 'auto' }}>
+                  {run.total_max != null && hasPdfs && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap' }}>
+                      {run.annotated_pdf_url && <a href={downloadHref(run.annotated_pdf_url, runFilename(run, 'annotated'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
+                      {run.pdf_url && <a href={downloadHref(run.pdf_url, runFilename(run, 'full'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
+                      {run.photos_pdf_url && <a href={downloadHref(run.photos_pdf_url, runFilename(run, ''), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
+                    </span>
+                  )}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+                    {canMark && (
                       <button type="button" disabled={busy} onClick={() => markFromStored(run.id)}
                         style={{ ...btn, background: '#b45309', padding: '4px 12px', fontSize: 12, opacity: busy ? 0.6 : 1 }}>
                         ▶ Mark
                       </button>
-                    </>
-                  ) : run.queued_at ? (
-                    <span style={{ color: '#4c1d95', fontSize: 12, fontWeight: 600 }}>🌙 queued — the bot will mark it and Telegram you</span>
-                  ) : Date.now() - new Date(run.created_at).getTime() < 4 * 60 * 1000 ? (
-                    <span style={{ color: '#b45309', fontSize: 12, fontWeight: 600 }}>⏳ marking may still be running — check back in a minute</span>
-                  ) : (
-                  <>
-                    <span style={{ color: '#b45309', fontSize: 12, fontWeight: 600 }}>⏳ uploaded — not marked yet</span>
-                    <button type="button" disabled={busy} onClick={() => markFromStored(run.id)}
-                      style={{ ...btn, background: '#b45309', padding: '4px 12px', fontSize: 12, opacity: busy ? 0.6 : 1 }}>
-                      ▶ Mark
+                    )}
+                    {run.total_max != null && (
+                      <>
+                        <button type="button" disabled={!!loadingRun} title="Load and write on it with the Pencil" onClick={() => annotateRun(run.id)}
+                          style={{ ...btn, background: '#0d9488', padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
+                          {loadingRun === run.id ? '…' : '✏️ Annotate'}
+                        </button>
+                        <button type="button" disabled={!!loadingRun} onClick={() => loadRun(run.id)}
+                          style={{ ...btn, padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
+                          {loadingRun === run.id ? 'Loading…' : 'Load'}
+                        </button>
+                      </>
+                    )}
+                    {hasPdfs && (
+                      <button type="button" disabled={!!rowBusy[run.id]} title="Save this marked copy into Dropbox → Marked Papers"
+                        onClick={() => rowToDropbox(run)}
+                        style={{ ...btn, background: '#374151', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                        {rowBusy[run.id] === 'dbx' ? 'Saving…' : '📁 Dropbox'}
+                      </button>
+                    )}
+                    <button type="button" disabled={!!rowBusy[run.id]} title="Delete this paper and all its stored files"
+                      onClick={() => deleteRun(run)}
+                      style={{ background: 'none', border: '1px solid #fca5a5', color: '#b91c1c', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                      {rowBusy[run.id] === 'del' ? '…' : '🗑'}
                     </button>
-                  </>
-                  )
-                ) : (
-                  <>
-                    <span style={{ color: '#374151' }}>{run.total_awarded ?? 0}/{run.total_max ?? 0}</span>
-                    <span style={{ color: '#9ca3af' }}>${(run.cost_usd ?? 0).toFixed(3)}</span>
-                    {run.annotated_pdf_url && <a href={downloadHref(run.annotated_pdf_url, runFilename(run, 'annotated'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', fontWeight: 600 }}>✍️ Annotated ↗</a>}
-                    {run.pdf_url && <a href={downloadHref(run.pdf_url, runFilename(run, 'full'), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>PDF ↗</a>}
-                    {run.photos_pdf_url && <a href={downloadHref(run.photos_pdf_url, runFilename(run, ''), true)} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>Images ↗</a>}
-                    <button type="button" disabled={!!loadingRun} title="Load and write on it with the Pencil" onClick={() => annotateRun(run.id)}
-                      style={{ ...btn, background: '#0d9488', padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
-                      {loadingRun === run.id ? '…' : '✏️ Annotate'}
-                    </button>
-                    <button type="button" disabled={!!loadingRun} onClick={() => loadRun(run.id)}
-                      style={{ ...btn, padding: '4px 10px', fontSize: 12, opacity: loadingRun ? 0.6 : 1 }}>
-                      {loadingRun === run.id ? 'Loading…' : 'Load'}
-                    </button>
-                  </>
-                )}
-                {(run.annotated_pdf_url || run.photos_pdf_url || run.pdf_url) && (
-                  <button type="button" disabled={!!rowBusy[run.id]} title="Save this marked copy into Dropbox → Marked papers"
-                    onClick={() => rowToDropbox(run)}
-                    style={{ ...btn, background: '#374151', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
-                    {rowBusy[run.id] === 'dbx' ? 'Saving…' : '📁 Dropbox'}
-                  </button>
-                )}
-                <button type="button" disabled={!!rowBusy[run.id]} title="Delete this paper and all its stored files"
-                  onClick={() => deleteRun(run)}
-                  style={{ background: 'none', border: '1px solid #fca5a5', color: '#b91c1c', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>
-                  {rowBusy[run.id] === 'del' ? '…' : '🗑'}
-                </button>
+                  </span>
+                </span>
                 {rowNote[run.id] && (
                   <span style={{ flexBasis: '100%', fontSize: 12, color: rowNote[run.id]!.ok ? '#047857' : '#b91c1c' }}>{rowNote[run.id]!.text}</span>
                 )}
               </div>
-            ))}
+              );
+            })}
           
             {runsMore && (
               <div style={{ paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
@@ -1358,7 +1370,7 @@ export default function MarkPaperPage() {
               <button
                 style={{ ...btn, background: '#0061ff', fontSize: 14, padding: '8px 14px', opacity: dbxBusy ? 0.6 : 1 }}
                 disabled={dbxBusy}
-                title="Save this PDF into Dropbox → Marked papers (opens in the Files app on the iPad)"
+                title="Save this PDF into Dropbox → Marked Papers (opens in the Files app on the iPad)"
                 onClick={fileToDropbox}
               >
                 {dbxBusy ? 'Saving…' : '📁 To Dropbox'}

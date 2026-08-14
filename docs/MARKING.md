@@ -49,8 +49,10 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
 - **📁 To Dropbox (2026-08-06):** `/api/admin/mark-paper-dropbox` (admin auth,
   60s) fetches a run PDF **from our Blob store only** (`isOurBlobUrl` gate — an
   open URL would make an authenticated write-proxy into Adrian's Dropbox) and
-  uploads to `Apps/AdrianMathNotes/Marked papers/YYYY-MM/YYYY-MM-DD <name>.pdf`
-  (SGT date, `autorename` on collisions). First WRITE path in `lib/dropbox.ts`
+  uploads to `Apps/AdrianMathNotes/Marked Papers/YYYY-MM-DD <name>.pdf` — flat,
+  no month subfolders since 2026-08-14 (Adrian's ask; was `Marked
+  papers/YYYY-MM/…` — old month folders were left in place). SGT date,
+  `autorename` on collisions. First WRITE path in `lib/dropbox.ts`
   (`uploadFile`; `Dropbox-API-Arg` is ASCII-escaped — the header rejects raw
   Unicode). The mark page's 📁 button next to ⬇ Download uses it too. ⚠ The
   Dropbox refresh token must carry `files.content.write` — the token on Vercel

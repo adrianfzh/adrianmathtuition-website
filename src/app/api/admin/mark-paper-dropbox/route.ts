@@ -9,10 +9,11 @@ import { dropboxConfigured, uploadFile } from '@/lib/dropbox';
 // queue worker calls this the moment the PDF is built; the site's 📁 button calls
 // the same route for papers marked interactively.
 //
-// Landing spot: /Marked papers/<YYYY-MM>/<YYYY-MM-DD> <paper name>.pdf inside the
-// app folder (Dropbox/Apps/AdrianMathNotes/). Month folders because this fills up
-// at ~1 paper a day and a flat folder stops being navigable by December. Dropbox
-// creates missing parents on upload, so there is no mkdir step.
+// Landing spot: /Marked Papers/<YYYY-MM-DD> <paper name>.pdf inside the app folder
+// (Dropbox/Apps/AdrianMathNotes/) — flat, no month subfolders (Adrian, 14 Aug 2026:
+// "saved to dropbox folder /Apps/AdrianMathNotes/Marked Papers"; the date prefix
+// keeps a flat folder sorted). Dropbox creates missing parents on upload, so there
+// is no mkdir step.
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -33,11 +34,11 @@ export async function POST(req: NextRequest) {
     .replace(/[\\/:*?"<>|]/g, '-')     // Dropbox rejects these outright; iOS hides them
     .replace(/\s+/g, ' ').trim().slice(0, 80) || 'marked paper';
 
-  // Local (SGT) date, not UTC: a paper marked at 1am Singapore belongs to that day's
-  // folder, and toISOString() would file it under the previous one.
+  // Local (SGT) date, not UTC: a paper marked at 1am Singapore should carry that
+  // day's date, and toISOString() would stamp the previous one.
   const d = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
-  const folder = (body.folder || 'Marked papers').replace(/[^\w \-]/g, '').trim() || 'Marked papers';
-  const path = `/${folder}/${d.slice(0, 7)}/${d} ${stem}.pdf`;
+  const folder = (body.folder || 'Marked Papers').replace(/[^\w \-]/g, '').trim() || 'Marked Papers';
+  const path = `/${folder}/${d} ${stem}.pdf`;
 
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(45_000) });
