@@ -18,7 +18,7 @@ type ResultIn = { question_number: string; marking_output: MarkingOutput | null;
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const mode = body.mode === 'photos' ? 'photos' : 'full';   // 'photos' = annotated originals only (no typeset)

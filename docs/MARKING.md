@@ -127,6 +127,29 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   run reload show the stored list instead of paying for another call.
 - **Exact-form deduction (2026-08-10):** `MARK_SEVERITY_RULES` (bot `ai/paper-marker.js`, shared by the direct AND standalone prompts) docks 1 mark when a final answer whose exact value is a **TERMINATING decimal** is written further-rounded — the cover page instructs exact-or-3-s.f. (The trigger was 10.375 km rounded to "10.4" scoring 1/1 with just a *"leave exact if possible"* comment.) **Terminating decimals ONLY** (Adrian, same day: *"should not include surd or π-multiple"*): surd/π/non-terminating answers are fine at 3 s.f. — the marker must never demand surd or π form — and nothing is penalised where the question fixes the accuracy (2 d.p., money to the cent, angles to 1 d.p.).
 - **✂️ Two-page spreads split at intake (2026-08-12):** `onPickImages` runs every picked photo (and every PDF-raster page, and every inbox attach — they all funnel through it) through `splitFileIfSpread` (`lib/spread-split.ts`, pure geometry unit-tested): landscape past `w > h·1.15` is cut into left/right halves at FULL resolution (3%-of-width gutter overlap each side) BEFORE the 1280px marking copy and 2600px hi-res original are made. Fixes BOTH spread problems at once: printed size (one wide PDF page fit one A4 sheet → each exam page ~A5; split halves each print full-page) and annotation grounding (a spread shrunk to 1280 gave each page ~640px → measured 10/10 margin-fallback correlation with low-res intake). A green `✂️ Split N…` receipt line shows under the drop zone. The same splitter runs on `/app/submit`, so student hand-ins get the same hygiene.
+- **📏 Paper totals are GROUNDED, not counted (2026-08-14):** the red `PAPER TOTAL x / y`
+  denominator used to be the sum of the model's per-question `total_max` guesses, which was
+  wrong most of the time on Adrian's compiled sets — a skipped-blank question never enters
+  the sum (Eva's Set 3 P1: Q6 skipped → /89 instead of /90), and pages missing their printed
+  `[n]` bracket get a different guess every run (Isabelle's Set 2 P2 marked 5× → 87, 92, 92,
+  95, 96). Grounding lives in the bot's **`ai/paper-totals.js`** (pure, unit-tested) and runs
+  inside `markPaperDirect` BEFORE return — it must, because the badge is baked into the PDF
+  at assembly and triage can't redraw it. Precedence: **(1) the "out of ___" box** next to
+  Paper name (sent as `totalMax` on `save-paper` + `direct`; persisted as
+  `result_json.total_max_override` so ▶ Mark/🔁 Re-mark/🌙 queue re-ground the same way —
+  admin page only, deliberately NOT on `/app/submit`: students rarely know official totals
+  and a wrong override always wins); **(2) the known-paper registry** matched on paper name
+  (EM/AM prelim/practice set+paper names → 90, JC/H2 → 100) — applied only when the counted
+  sum lands within **0.75×–1.10×** of the official total, so a 3-question partial hand-in
+  named "Set 3 P1" stays counted; **(3) the counted sum**, exactly as before. `totals`
+  becomes `{awarded, max, counted_max, max_source: 'override'|'registry'|'counted'}` —
+  awarded is NEVER grounded (93/90 on the badge is honest over-award surfacing). On grounded
+  runs, integer gaps in the detected question numbers are reported as
+  `result_json.unattempted_questions` ("Not attempted: Q6" — in the queue Telegram message,
+  the results panel, and run reload); ungrounded runs keep the list empty because gaps there
+  just mean unsubmitted pages. The queue Telegram also carries a mismatch receipt
+  (`⚠️ Question marks summed to 89 — used the official total (90)`), and the results header
+  shows the same note.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
@@ -144,11 +167,19 @@ path or un-gate student-facing marking on Telegram).
   questions across 30 unreleased scripts → 174 flagged, 433 auto-skipped.** The 71%
   is the whole point of the screen.
 - **Logic lives in [`../src/lib/mark-triage.ts`](../src/lib/mark-triage.ts)** (pure,
-  non-mutating, 20 unit tests) — `extractFlagged`, `applyAgree`, `applyOverride`,
+  non-mutating, 26 unit tests) — `extractFlagged`, `applyAgree`, `applyOverride`,
   `recomputeTotals`, `isReleasable`, `pendingCount`. Marks arithmetic must never be
   re-implemented in the route or the component (repo testing policy). Non-mutating is
   deliberate: callers read-modify-write `result_json`, and an in-place edit would leave
   a half-written object behind on a failed write.
+- **Grounded totals survive triage (2026-08-14).** When the bot grounded the paper's
+  denominator (`totals.max_source` of `'registry'`/`'override'` — see the 📏 bullet in the
+  mark-paper section), `recomputeTotals` re-sums **awarded only** and keeps the grounded
+  max, and `replaceResult` spreads the prior totals first so `counted_max`/`max_source`
+  survive the rewrite. Without this, the first Agree/Override on Eva's run would have put
+  the guess-sum /89 right back on a badge the bot had already corrected to /90. Runs with
+  `max_source: 'counted'` (or no `max_source` at all — every pre-grounding run) behave
+  byte-identically to before.
 - **Agree / Override.** Both stamp `triage_reviewed: true` so the row drops off and
   can't re-appear on the next load. Override also writes `triage_override
   {awarded, previous, note, at}`, clamped to `[0, total_max]`, and **keeps the first

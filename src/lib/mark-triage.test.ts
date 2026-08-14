@@ -88,6 +88,59 @@ describe('recomputeTotals', () => {
   });
 });
 
+describe('grounded totals survive triage', () => {
+  // Eva's Set 3 P1 shape: the bot grounded /89 to the official /90
+  // (totals.max_source 'registry', bot ai/paper-totals.js). An Agree/Override
+  // here must NOT re-sum the denominator back to the guess-sum.
+  const groundedRun = (...results: unknown[]) => ({
+    source: 'paper',
+    results,
+    totals: { awarded: 66, max: 90, counted_max: 89, max_source: 'registry' },
+  });
+
+  it('recomputeTotals keeps a registry-grounded max, re-sums awarded only', () => {
+    expect(recomputeTotals(groundedRun(question(), question()))).toEqual({ awarded: 8, max: 90 });
+  });
+
+  it('applyOverride keeps the grounded max and its breadcrumbs', () => {
+    const rj = groundedRun(question({ review_recommended: true }), question());
+    const next = applyOverride(rj, 0, 6, 'full credit', '2026-08-14T10:00:00Z');
+    expect(next.totals).toEqual({ awarded: 10, max: 90, counted_max: 89, max_source: 'registry' });
+  });
+
+  it('applyAgree keeps the grounded max and its breadcrumbs', () => {
+    const rj = groundedRun(question({ review_recommended: true }));
+    const next = applyAgree(rj, 0, '2026-08-14T10:00:00Z');
+    expect(next.totals).toEqual({ awarded: 4, max: 90, counted_max: 89, max_source: 'registry' });
+  });
+
+  it('an "out of ___" override max is preserved the same way', () => {
+    const rj = {
+      source: 'paper',
+      results: [question({ review_recommended: true })],
+      totals: { awarded: 31, max: 40, counted_max: 38, max_source: 'override' },
+    };
+    const next = applyOverride(rj, 0, 6, '', 'now');
+    expect(next.totals).toEqual({ awarded: 6, max: 40, counted_max: 38, max_source: 'override' });
+  });
+
+  it('extractFlagged header shows the grounded max, not the counted sum', () => {
+    const s = extractFlagged(groundedRun(question(), question()));
+    expect(s.max).toBe(90);
+    expect(s.awarded).toBe(8);
+  });
+
+  it('a counted run is untouched — sums exactly as before grounding existed', () => {
+    const rj = {
+      source: 'paper',
+      results: [question({ review_recommended: true }), question()],
+      totals: { awarded: 8, max: 12, counted_max: 12, max_source: 'counted' },
+    };
+    const next = applyOverride(rj, 0, 6, '', 'now');
+    expect(next.totals).toEqual({ awarded: 10, max: 12, counted_max: 12, max_source: 'counted' });
+  });
+});
+
 describe('applyOverride', () => {
   it('changes the mark and recomputes the paper total', () => {
     const rj = run(question({ review_recommended: true }), question());

@@ -229,7 +229,10 @@ export default function MarkPaperPage() {
   const [splitNote, setSplitNote] = useState('');
 
   const [results, setResults] = useState<Result[] | null>(null);
-  const [totals, setTotals] = useState<{ awarded: number; max: number } | null>(null);
+  // counted_max/max_source arrive when the bot grounded the denominator (official
+  // registry or the "out of ___" box) — the header uses them to say why the badge
+  // shows /90 when the questions summed to 89 (bot ai/paper-totals.js).
+  const [totals, setTotals] = useState<{ awarded: number; max: number; counted_max?: number; max_source?: string } | null>(null);
   const [unattempted, setUnattempted] = useState<string[]>([]);
   const [usage, setUsage] = useState<Usage | null>(null);
   // Generated outputs, labelled — a LIST because "Generate both" shows the images PDF
@@ -249,6 +252,10 @@ export default function MarkPaperPage() {
   // Editable descriptor used in the filename and the email — "worksheet (10 photos)"
   // was useless in an inbox. Prefilled from the run's stored name when it's a real one.
   const [paperName, setPaperName] = useState('');
+  // Optional "out of ___" — the official paper total for the red badge. Blank =
+  // auto (known sets ground via the bot's registry; anything else stays counted).
+  // Only read at mark/queue time; a typed value always beats the registry.
+  const [outOf, setOutOf] = useState('');
   // iPad share-sheet inbox: files the "✍️ Mark paper" Shortcut posted from WhatsApp
   // (iPadOS keeps websites out of the share sheet; the Shortcut is the workaround).
   const [inbox, setInbox] = useState<{ pathname: string; url: string; name: string; size: number; kind?: 'working' | 'paper' | null }[]>([]);
@@ -291,6 +298,10 @@ export default function MarkPaperPage() {
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const authHeaders = { 'Content-Type': 'application/json' };
+
+  // Sanitized "out of" for request bodies — undefined when blank or nonsense, so
+  // JSON.stringify omits the key (bounds mirror the bot's sanitizeOverride).
+  const outOfValue = () => { const n = parseInt(outOf, 10); return Number.isFinite(n) && n >= 1 && n <= 200 ? n : undefined; };
 
   // Lifetime cost metrics + recent runs (for the history list). Re-callable after mark/generate.
   async function loadStats(offset = 0) {
@@ -347,7 +358,10 @@ export default function MarkPaperPage() {
       setTotals(rj.totals || null);
       setAnnotatedPhotos(photos);
       setPracticeItems(rj.practice?.items?.length ? rj.practice.items : null);
-      setUnattempted([]);
+      setUnattempted(rj.unattempted_questions || []);
+      // Surface a stored "out of" the same way the name prefills — a re-mark of
+      // this run must ground against the same official total.
+      setOutOf(rj.total_max_override ? String(rj.total_max_override) : '');
       setRunId(d.run.id);
       setLoadedName(d.run.paper_name || 'Paper');
       // The stored run doesn't carry its cost/time back, and leaving the last run's
@@ -477,7 +491,7 @@ export default function MarkPaperPage() {
   // Parse + apply a marking response (fresh mark AND re-mark share the shape).
   async function applyMarkResponse(resp: Response) {
     const raw = await resp.text();
-    let d: { results?: Result[]; totals?: { awarded: number; max: number }; unattempted_questions?: string[]; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
+    let d: { results?: Result[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; unattempted_questions?: string[]; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
     try { d = raw ? JSON.parse(raw) : {}; }
     catch {
       const hint = resp.status === 413
@@ -527,7 +541,7 @@ export default function MarkPaperPage() {
         const sp = await fetch('/api/admin/mark-paper', {
           method: 'POST', headers: authHeaders,
           body: JSON.stringify({
-            phase: 'save-paper', paperName: paperLabel,
+            phase: 'save-paper', paperName: paperLabel, totalMax: outOfValue(),
             source: {
               paper_pdf_url: paperPdfUrl || null,
               photos: originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean),
@@ -558,7 +572,7 @@ export default function MarkPaperPage() {
             phase: 'direct', pdfBase64, paperPdfUrl: paperPdfUrl || undefined,
             runId: pendingId || undefined,
             images: imgs.map((im, i) => ({ base64: im.base64, mediaType: im.mediaType, originalUrl: originalUrls[i] || undefined })),
-            paperName: paperLabel, model: markModel, style: markStyle,
+            paperName: paperLabel, totalMax: outOfValue(), model: markModel, style: markStyle,
           }),
       });
       await applyMarkResponse(resp);
@@ -885,7 +899,7 @@ export default function MarkPaperPage() {
       const paperLabel = paperName.trim() || autoPaperLabel();
       const sp = await fetch('/api/admin/mark-paper', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, source: { paper_pdf_url: paperPdfUrl || null, photos } }),
+        body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, totalMax: outOfValue(), source: { paper_pdf_url: paperPdfUrl || null, photos } }),
       });
       const spd = await sp.json();
       if (!sp.ok || !spd.run_id) throw new Error(spd.error || 'could not save the paper');
@@ -897,7 +911,7 @@ export default function MarkPaperPage() {
       if (!en.ok || end.error) throw new Error(end.error || 'could not queue');
       // Clear the slots — the whole point is attaching the NEXT paper immediately.
       imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
-      setImages([]); setImgPreviews([]); setPdf(null); setSplitNote(''); workingNameRef.current = ''; setPaperName('');
+      setImages([]); setImgPreviews([]); setPdf(null); setSplitNote(''); workingNameRef.current = ''; setPaperName(''); setOutOf('');
       setQueueNote(`🌙 Queued as “${paperLabel}” (#${end.position || 1}) — you'll get the marked PDF on Telegram and in Dropbox. Attach the next paper.`);
       loadStats();
     } catch (e) { setError((e as Error).message); }
@@ -1206,6 +1220,19 @@ export default function MarkPaperPage() {
             placeholder={autoPaperLabel()}
             style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, flex: 1, minWidth: 240 }}
           />
+          <label htmlFor="paper-outof" style={{ fontSize: 13, color: '#374151', fontWeight: 600 }}>out of</label>
+          <input
+            id="paper-outof"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={200}
+            value={outOf}
+            onChange={(e) => setOutOf(e.target.value)}
+            placeholder="auto"
+            title="Official paper total for the red badge. Blank = auto: named prelim sets ground to the syllabus total (EM/AM 90, JC 100); anything else uses the counted sum."
+            style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, width: 76 }}
+          />
         </div>
         <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={markPaper}>
@@ -1272,6 +1299,12 @@ export default function MarkPaperPage() {
         <div ref={resultsRef} style={card}>
           <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
             <span>Result: {totals?.awarded ?? 0}/{totals?.max ?? 0}</span>
+            {(totals?.max_source === 'registry' || totals?.max_source === 'override') && totals.counted_max != null && totals.counted_max !== totals.max && (
+              <span style={{ fontSize: 12, fontWeight: 500, color: '#6b7280' }}
+                title="The per-question marks below still sum to the counted figure — a gap usually means a skipped question or a missing printed [n] bracket.">
+                questions summed to {totals.counted_max} — used the {totals.max_source === 'override' ? '“out of” you set' : 'official total'}
+              </span>
+            )}
             {loadedName && <span style={{ fontSize: 13, fontWeight: 500, color: '#6b7280' }}>🗂️ loaded: {loadedName}</span>}
           </h2>
           {results.map((r, i) => (

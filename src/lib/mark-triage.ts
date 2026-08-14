@@ -146,15 +146,27 @@ export function extractFlagged(resultJson: unknown): TriageSummary {
  * Paper total = sum over results[].marking. Single source of truth: the numbers
  * on the row (`total_awarded`/`total_max`) and `result_json.totals` are both
  * derived from here, never computed independently in a route or a component.
+ *
+ * GROUNDED runs are the exception on the max side: when the bot grounded the
+ * denominator against the official-paper registry or Adrian's "out of ___"
+ * (`totals.max_source` of 'registry'/'override', set in bot ai/paper-totals.js),
+ * the max did NOT come from summing detected questions — so an Agree/Override
+ * here re-sums awarded but must keep that denominator. Re-summing it would put
+ * the guess-sum (Eva's /89) right back on a run the bot already corrected to /90.
  */
 export function recomputeTotals(resultJson: unknown): { awarded: number; max: number } {
-  return resultsOf(resultJson).reduce<{ awarded: number; max: number }>(
+  const counted = resultsOf(resultJson).reduce<{ awarded: number; max: number }>(
     (acc, r) => {
       const marking = asRecord(r.marking) ?? {};
       return { awarded: acc.awarded + num(marking.total_awarded), max: acc.max + num(marking.total_max) };
     },
     { awarded: 0, max: 0 }
   );
+  const prior = asRecord(asRecord(resultJson)?.totals);
+  if (prior && (prior.max_source === 'registry' || prior.max_source === 'override')) {
+    return { awarded: counted.awarded, max: num(prior.max) };
+  }
+  return counted;
 }
 
 function replaceResult(resultJson: unknown, index: number, next: Json): Json {
@@ -162,7 +174,10 @@ function replaceResult(resultJson: unknown, index: number, next: Json): Json {
   const results = resultsOf(resultJson);
   const updated = results.map((r, i) => (i === index ? next : r));
   const withResults: Json = { ...root, results: updated };
-  const totals = recomputeTotals(withResults);
+  // Spread the prior totals first so a grounded run's breadcrumbs (counted_max,
+  // max_source) survive the rewrite — recomputeTotals needs them NEXT time too.
+  const prior = asRecord(root.totals);
+  const totals: Json = { ...(prior ?? {}), ...recomputeTotals(withResults) };
   return { ...withResults, totals };
 }
 
