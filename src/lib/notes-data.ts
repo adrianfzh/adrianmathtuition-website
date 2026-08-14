@@ -182,8 +182,9 @@ const loadSectionsMeta = cache((level: string): Promise<SectionMetaRow[]> =>
  * so the privileged client is correct while /notes is admin-gated and rendered
  * server-side.
  *
- * ⚠ Phase 3 (student login): this bypass must become a `status='published'`
- * filter, or the RLS policy must be widened — otherwise drafts leak to students.
+ * Students CAN view /notes since 2026-08-14 — the page gates rendering on
+ * `status === 'published'` for non-admin viewers (TopicIndex), so drafts stay
+ * reviewer-only even though this loader fetches every status.
  */
 const loadTopicCards = cache((level: string): Promise<TopicCardRow[]> =>
   notesCache(['topic-cards', level], async () => {

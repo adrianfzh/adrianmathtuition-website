@@ -362,6 +362,8 @@ function MapInner() {
     fetch('/api/portal/learn/overview')
       .then(async r => {
         if (r.status === 401) { setStatus('locked'); return null; }
+        // Learn not released to students — /app/learn shows the notes CTA.
+        if (r.status === 403) { window.location.replace('/app/learn'); return null; }
         if (!r.ok) throw new Error(String(r.status));
         return r.json();
       })

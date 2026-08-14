@@ -199,6 +199,24 @@ export default function PracticePage() {
     if (q) questionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [q]);
 
+  // One-shot ?topic= deep-link — /app/marking's focus chips land here. Read
+  // from window (not useSearchParams) so no Suspense boundary is needed. An
+  // exact topic match starts practising immediately; anything else (marking's
+  // topic_detected doesn't always match a bank topic name verbatim) lands in
+  // the search box so the closest cards are on screen.
+  const deepLinked = useRef(false);
+  useEffect(() => {
+    if (deepLinked.current) return;
+    if ((mode !== 'student' && mode !== 'admin') || loadingOverview || topics.length === 0) return;
+    deepLinked.current = true;
+    const want = new URLSearchParams(window.location.search).get('topic')?.trim();
+    if (!want) return;
+    const exact = topics.find(t => t.topic.toLowerCase() === want.toLowerCase());
+    if (exact) startTopic(exact.topic);
+    else setSearch(want);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, loadingOverview, topics]);
+
   function resetAttempt() {
     setWorking(''); setGrade(null); setGradedLines([]); setPrevScore(null); setSolution(null);
   }

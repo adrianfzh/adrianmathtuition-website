@@ -5,6 +5,7 @@
 // route (and the dashboard that mirrors it) never 500s.
 import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
+import { learnClosedResponse } from '@/lib/learn-gate';
 import { getTodayCards } from '@/lib/portal-today';
 
 export const runtime = 'nodejs';
@@ -12,6 +13,8 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const closed = await learnClosedResponse(caller);
+  if (closed) return closed; // Learn not released to students yet
 
   // Admin (testing) has no student context to personalise against.
   if (caller.kind !== 'student') return NextResponse.json({ cards: [] });

@@ -13,6 +13,10 @@ import Link from 'next/link';
 import { currentStudent } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
+import { mathHtml } from '@/lib/math-inline';
+// Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
+// spans, and this stylesheet is what makes the output render as maths.
+import 'katex/dist/katex.min.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -123,13 +127,18 @@ export default async function MarkingPage() {
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Work on next</p>
               <div className="flex flex-wrap gap-2">
                 {focus.map(t => (
-                  <span key={t.topic} className="text-sm bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1">
+                  <Link
+                    key={t.topic}
+                    href={`/app/practice?topic=${encodeURIComponent(t.topic)}`}
+                    className="text-sm bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1 hover:bg-[hsl(45,80%,88%)] transition-colors"
+                  >
                     {t.topic} <span className="text-gray-500">{t.pct}%</span>
-                  </span>
+                    <span className="ml-1 text-gray-400">›</span>
+                  </Link>
                 ))}
               </div>
               <p className="text-[11px] text-gray-400 mt-2">
-                Where you lost the most marks across your marked papers.
+                Where you lost the most marks across your marked papers — tap one to practise it.
               </p>
             </div>
           )}
@@ -235,6 +244,54 @@ function Paper({ paper }: { paper: StudentPaper }) {
           <p className="text-sm text-emerald-800 mt-3">✅ Full marks on every question marked.</p>
         )
       )}
+
+      {paper.practice.length > 0 && (
+        <details className="mt-3 group/pr">
+          <summary className="cursor-pointer text-sm font-semibold text-navy list-none flex items-center gap-1.5">
+            <span className="text-gray-400 group-open/pr:rotate-90 transition-transform inline-block">›</span>
+            📝 Practice these next ({paper.practice.length})
+          </summary>
+          <p className="text-[11px] text-gray-400 mt-1.5">
+            One follow-up question for each question that dropped marks. Try it on paper before peeking at the answer.
+          </p>
+          {paper.practiceDocxUrl && (
+            <a
+              href={paper.practiceDocxUrl}
+              className="inline-block mt-2 text-xs font-semibold text-navy border border-navy/20 rounded-lg px-3 py-1.5 hover:bg-navy/5"
+            >
+              ⬇ Download as a worksheet (Word)
+            </a>
+          )}
+          <ul className="mt-2 space-y-2.5">
+            {paper.practice.map((it, i) => (
+              <li key={i} className="rounded-xl border border-amber-100 bg-amber-50/40 p-3">
+                <p className="text-[11px] font-bold text-amber-800 mb-1">
+                  For Q{it.for}
+                  {it.topic && <span className="font-medium"> · {it.topic}</span>}
+                  {it.origin && <span className="font-medium text-amber-700/70"> · {it.origin}</span>}
+                </p>
+                <MathText text={it.question} className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed" />
+                {it.note && <MathText text={it.note} className="text-[12px] text-gray-500 italic mt-1.5" />}
+                {it.answer && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-xs font-semibold text-emerald-700 list-none">
+                      Show answer
+                    </summary>
+                    <MathText text={it.answer} className="text-[13px] text-emerald-800 mt-1 whitespace-pre-wrap" />
+                  </details>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
+}
+
+// Server-side KaTeX over inline $…$ spans (same treatment the admin marking
+// page gives these strings — lib/math-inline decides what is maths and what
+// is a dollar sign).
+function MathText({ text, className }: { text: string; className?: string }) {
+  return <div className={className} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
 }

@@ -1,8 +1,9 @@
 'use client';
 
 // Portal-invite branch of /signup (?token=xxx&portal=1).
-// Parent opens the emailed link → sees what data is stored → ticks consent →
-// helps the student set email + password → account created → signed in.
+// The STUDENT opens the emailed link (invites go straight to Student Email,
+// 2026-08-14) → sees what data is stored → agrees → sets email + password →
+// account created → signed in. Parents are pointed at the same privacy info.
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -37,7 +38,7 @@ export default function PortalActivate({ token }: { token: string }) {
     setError(null);
     if (password.length < 8) return setError('Password must be at least 8 characters.');
     if (password !== confirm) return setError('Passwords do not match.');
-    if (!consent) return setError('Please tick the consent box to continue.');
+    if (!consent) return setError('Please tick the agreement box to continue.');
     setBusy(true);
     const res = await fetch('/api/portal/activate', {
       method: 'POST',
@@ -84,26 +85,28 @@ export default function PortalActivate({ token }: { token: string }) {
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-[hsl(45,100%,97%)]">
       <div className={card}>
-        <h1 className="text-xl font-bold text-navy mb-2">Set up {tok.studentName}&apos;s portal account</h1>
+        <h1 className="text-xl font-bold text-navy mb-2">Welcome, {tok.studentName} — set up your account</h1>
         <p className="text-sm text-gray-600 mb-5">
-          The AdrianMath portal gives {tok.studentName} practice questions from real school papers,
-          instant marking feedback, and revision notes — in a private account only they can see.
+          Your portal has your marked papers with Adrian&apos;s feedback, practice questions from real
+          school papers with instant marking, and your revision notes — in a private account only
+          you can see.
         </p>
 
         <div className="rounded-xl bg-[hsl(45,80%,96%)] border border-amber-200/60 p-4 mb-5 text-[13px] text-gray-700 leading-relaxed">
-          <p className="font-semibold text-navy mb-1">For parents — what we store and why</p>
+          <p className="font-semibold text-navy mb-1">What&apos;s stored and why</p>
           <p>
-            {tok.studentName}&apos;s name, level, login email, practice attempts and feedback are stored
-            to power the practice loop and progress tracking. Work is graded by an AI service without
-            {' '}{tok.studentName}&apos;s name attached. You can request an export or full deletion at any
-            time from Settings. Full details: <Link href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</Link>.
+            Your name, level, login email, practice attempts and marking feedback are stored to power
+            the practice loop and progress tracking. Work is graded by an AI service without your
+            name attached. You (or your parents) can ask for an export or full deletion at any time
+            from Settings. Full details: <Link href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</Link> —
+            worth showing your parents too.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
             type="email" required autoComplete="email"
-            placeholder={`${tok.studentName}'s login email`}
+            placeholder="Your login email"
             value={email} onChange={e => setEmail(e.target.value)}
             className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30"
           />
@@ -125,8 +128,8 @@ export default function PortalActivate({ token }: { token: string }) {
               className="mt-0.5 h-4 w-4 accent-[#1F2A5C]"
             />
             <span>
-              I am {tok.studentName}&apos;s parent/guardian and I consent to AdrianMath storing and
-              processing {tok.studentName}&apos;s data as described in the{' '}
+              I&apos;ve read what&apos;s stored above and agree to AdrianMath storing and processing
+              my data as described in the{' '}
               <Link href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</Link>.
             </span>
           </label>

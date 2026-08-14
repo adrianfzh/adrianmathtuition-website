@@ -1,11 +1,10 @@
-// /app/notes — superseded by the interactive Learn units view (2026-07-09).
-// The raw-KB study view overwhelmed students ("too much, unorganized"); notes
-// are now consumed a topic at a time via learning_units in /app/learn. This
-// redirect keeps old links, the dashboard button, and muscle memory working.
-// (The old KB reader lives in git history; /app/notes-preview remains the
-// unlinked lesson_cards demo.)
+// /app/notes — sends students to the Fumadocs notes reader at /notes.
+// History: originally the raw-KB study view (retired 2026-07-09, "too much,
+// unorganized"), then a redirect into /app/learn. Since 2026-08-14 the /notes
+// reader is the released student surface and Learn units stay admin-only, so
+// the dashboard button and old links land there instead.
 import { redirect } from 'next/navigation';
 
 export default function NotesRedirect() {
-  redirect('/app/learn');
+  redirect('/notes');
 }

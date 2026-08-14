@@ -6,12 +6,17 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { requireAuth } from '@/lib/portal-auth';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
+import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import SignOutButton from './signout-button';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const isAdmin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
   if (!isAdmin) await requireAuth();
+
+  // Learn units aren't released to students yet — their nav tab points at the
+  // /notes reader instead. Adrian (admin cookie) keeps the Learn tab.
+  const learnVisible = isAdmin || LEARN_OPEN_TO_STUDENTS;
 
   return (
     <div className="min-h-screen bg-[hsl(45,100%,98%)]">
@@ -22,7 +27,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="hidden sm:flex items-center gap-5">
               <Link href="/app" className="text-sm text-gray-600 hover:text-navy">Dashboard</Link>
               <Link href="/app/practice" className="text-sm text-gray-600 hover:text-navy">Practice</Link>
-              <Link href="/app/learn" className="text-sm text-gray-600 hover:text-navy">Learn</Link>
+              {learnVisible ? (
+                <Link href="/app/learn" className="text-sm text-gray-600 hover:text-navy">Learn</Link>
+              ) : (
+                <Link href="/notes" className="text-sm text-gray-600 hover:text-navy">Notes</Link>
+              )}
               <Link href="/app/marking" className="text-sm text-gray-600 hover:text-navy">Marked</Link>
             </div>
           </div>
@@ -44,9 +53,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <Link href="/app/practice" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
             <span className="text-lg leading-none">✏️</span>Practice
           </Link>
-          <Link href="/app/learn" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
-            <span className="text-lg leading-none">📚</span>Learn
-          </Link>
+          {learnVisible ? (
+            <Link href="/app/learn" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
+              <span className="text-lg leading-none">📚</span>Learn
+            </Link>
+          ) : (
+            <Link href="/notes" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
+              <span className="text-lg leading-none">📖</span>Notes
+            </Link>
+          )}
           <Link href="/app/marking" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
             <span className="text-lg leading-none">📄</span>Marked
           </Link>

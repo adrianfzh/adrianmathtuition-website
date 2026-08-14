@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { practiceAuth } from '@/lib/practice';
+import { learnClosedResponse } from '@/lib/learn-gate';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { learnSubjectsForLevel } from '@/lib/learn';
 import { getFixtureUnit, isFixtureId } from '@/lib/learn-fixture';
@@ -41,6 +42,8 @@ function payloadText(kind: string, payload: UnitPayload): string {
 export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const closed = await learnClosedResponse(caller);
+  if (closed) return closed; // Learn not released to students yet
 
   const body = await req.json().catch(() => ({}));
   const unitId = String(body?.unitId || '');

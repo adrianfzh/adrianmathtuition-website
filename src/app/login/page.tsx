@@ -16,12 +16,17 @@ function LoginForm() {
   );
   const [busy, setBusy] = useState(false);
 
-  // Already signed in? Straight to the app.
+  // Post-login destination from ?next= — same rule as /auth/callback: only
+  // same-origin relative paths (open-redirect protection), else /app.
+  const rawNext = params.get('next') || '';
+  const nextPath = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/app';
+
+  // Already signed in? Straight through.
   useEffect(() => {
     getSupabaseBrowser().auth.getUser().then(({ data: { user } }) => {
-      if (user) router.replace('/app');
+      if (user) router.replace(nextPath);
     });
-  }, [router]);
+  }, [router, nextPath]);
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +39,7 @@ function LoginForm() {
       setBusy(false);
       return;
     }
-    router.replace('/app');
+    router.replace(nextPath);
   }
 
   async function handleGoogle() {
@@ -42,7 +47,7 @@ function LoginForm() {
     setError(null);
     const { error } = await getSupabaseBrowser().auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/app` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}` },
     });
     if (error) {
       setError('Google sign-in is unavailable right now. Try email and password.');

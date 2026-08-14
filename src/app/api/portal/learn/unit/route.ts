@@ -3,6 +3,7 @@
 // Same auth + status rule as the overview route. Fixture ids resolve in-code.
 import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
+import { learnClosedResponse } from '@/lib/learn-gate';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { studentTitle, learnSubjectsForLevel } from '@/lib/learn';
 import { getFixtureUnit, isFixtureId } from '@/lib/learn-fixture';
@@ -13,6 +14,8 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const closed = await learnClosedResponse(caller);
+  if (closed) return closed; // Learn not released to students yet
 
   const id = new URL(req.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });

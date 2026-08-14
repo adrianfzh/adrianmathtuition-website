@@ -66,9 +66,12 @@ function SidebarFilter({
 
 export default function NotesShell({
   tree,
+  portalHome = false,
   children,
 }: {
   tree: TreeRoot;
+  /** Viewer arrived from the student portal — show a way back to /app. */
+  portalHome?: boolean;
   children: React.ReactNode;
 }) {
   const [query, setQuery] = useState('');
@@ -102,7 +105,17 @@ export default function NotesShell({
           defaultOpenLevel: 0,
           components: { Separator: FamilyHeading },
           banner: (
-            <SidebarFilter value={query} onChange={setQuery} total={total} shown={shown} />
+            <>
+              {portalHome && (
+                <a
+                  href="/app"
+                  className="px-1 text-xs font-medium text-fd-muted-foreground hover:text-fd-foreground"
+                >
+                  ← Back to portal
+                </a>
+              )}
+              <SidebarFilter value={query} onChange={setQuery} total={total} shown={shown} />
+            </>
           ),
         }}
       >

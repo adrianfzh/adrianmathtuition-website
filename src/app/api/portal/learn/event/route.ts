@@ -8,6 +8,7 @@
 // client never has to handle a failure; a bad body just no-ops.
 import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
+import { learnClosedResponse } from '@/lib/learn-gate';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
@@ -20,6 +21,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const closed = await learnClosedResponse(caller);
+  if (closed) return closed; // Learn not released to students yet
 
   // Admin has no student context — accept and ignore.
   if (caller.kind !== 'student') return NextResponse.json({ ok: true });

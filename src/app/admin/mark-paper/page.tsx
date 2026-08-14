@@ -9,6 +9,7 @@ import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
 import { mathHtml } from '@/lib/math-inline';
 import { INLINE_BODY_LIMIT, markInlineBytes, canMarkFromStored } from '@/lib/mark-payload';
 import { setNativePencilMirror } from '@/lib/native-pencil-bridge';
+import { pdfToPageImages } from '@/lib/pdf-pages';
 import { splitFileIfSpread } from '@/lib/spread-split';
 import StudentPicker from '@/components/StudentPicker';
 
@@ -29,57 +30,10 @@ async function pdfToBase64(file: File): Promise<string> {
   return (await readDataUrl(file)).split(',')[1] || '';
 }
 
-// A scanned PDF of the student's working is rasterised to one JPEG per page IN THE
-// BROWSER, then fed into the normal photo path — so marking, the Gemini bounding
-// boxes and the red-pen overlay all see a plain image and need no changes. Doing it
-// here (not server-side) also keeps a fat scan off the 4.5MB request-body ceiling.
-// The worker is served from /public rather than bundled: its version must match the
-// installed pdfjs-dist exactly or pdf.js throws, and pdf-worker-asset.test.ts pins that.
-async function loadPdfjs() {
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const pdfjs = (await import('pdfjs-dist/build/pdf.mjs' as string)) as any;
-  pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-  return pdfjs;
-}
-
-async function pdfToPageImages(file: File, onPage: (done: number, total: number) => void): Promise<File[]> {
-  const pdfjs = await loadPdfjs();
-  // disableFontFace draws glyphs as paths instead of installing @font-face rules —
-  // the page is only ever rasterised, never shown, so the document-level font
-  // machinery is pure risk here.
-  const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), disableFontFace: true }).promise;
-  const base = file.name.replace(/\.pdf$/i, '');
-  const pages: File[] = [];
-  try {
-    for (let n = 1; n <= doc.numPages; n++) {
-      const page = await doc.getPage(n);
-      // Render at the ORIGINAL-upload size (~2600px): these page images are also what
-      // gets uploaded to Blob as the full-res base the bot draws the red pen onto, so
-      // rendering small here would put the resolution ceiling right back (the marking
-      // copy is still downscaled to 1280 by fileToUpload — model cost unchanged).
-      const unit = page.getViewport({ scale: 1 });
-      const viewport = page.getViewport({ scale: Math.min(3, HIRES_MAX_EDGE / Math.max(unit.width, unit.height)) });
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(viewport.width);
-      canvas.height = Math.round(viewport.height);
-      const ctx = canvas.getContext('2d')!;
-      // PDF pages have no background of their own — without this, JPEG turns the
-      // transparent paper black and the marker sees nothing.
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      // intent 'print' is what makes this reliable off-screen. The default 'display'
-      // intent paces the paint loop with requestAnimationFrame, which a hidden or
-      // backgrounded tab never fires — the render promise then never settles and the
-      // conversion hangs with no error. 'print' paces with timers instead.
-      await page.render({ canvasContext: ctx, viewport, intent: 'print' }).promise;
-      const blob: Blob | null = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.85));
-      if (blob) pages.push(new File([blob], `${base}-p${n}.jpg`, { type: 'image/jpeg' }));
-      page.cleanup?.();
-      onPage(n, doc.numPages);
-    }
-  } finally { await doc.destroy?.(); }
-  return pages;
-}
+// PDF → page images now lives in lib/pdf-pages.ts, shared with the student
+// hand-in (/app/submit). Both intakes must rasterise identically — same 2600px
+// hi-res base, same worker pin — or a student scan would mark worse than an
+// admin one.
 // Build the upload payload for one image. Downscale via canvas when the browser can
 // decode it (keeps the payload small); otherwise — HEIC on Chrome — send the raw bytes
 // and let the server (sharp) convert. Never reject a photo here.
@@ -482,7 +436,7 @@ export default function MarkPaperPage() {
       setError('');
       try {
         setRasterizing(`Converting ${f.name}…`);
-        const pages = await pdfToPageImages(f, (done, total) => setRasterizing(`Converting ${f.name} — page ${done} of ${total}…`));
+        const pages = await pdfToPageImages(f, (done, total) => setRasterizing(`Converting ${f.name} — page ${done} of ${total}…`), HIRES_MAX_EDGE);
         if (!pages.length) throw new Error('no pages could be rendered');
         await onPickImages(pages);
       } catch (e) {

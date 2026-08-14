@@ -2,8 +2,12 @@
 // Body: { airtableStudentId: 'recXXX' }
 // Auth: ADMIN_PASSWORD Bearer (admin-called; every other /api/portal/* route is session-based).
 //
-// PDPA note: the invite email goes to the PARENT (Parent Email), because the
-// parent must be the one consenting — students are minors. See PRIVACY.md §4.
+// Invites go DIRECTLY to the student (Student Email) — Adrian's call, 2026-08-14:
+// "I want to only invite students (don't want to go through parents)." The
+// activation page still shows what's stored and links the privacy policy, and
+// parents can request export/deletion at any time. If a student has no
+// Student Email in Airtable, this 400s rather than silently falling back to
+// the parent — add the email first.
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -22,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'airtableStudentId required' }, { status: 400 });
   }
 
-  // 1. Student record → parent email + names
+  // 1. Student record → the student's own email + name
   let student;
   try {
     student = await airtableRequest('Students', `/${airtableStudentId}`);
@@ -30,12 +34,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Student not found in Airtable' }, { status: 404 });
   }
   const f = student.fields || {};
-  const studentName = (f['Student Name'] as string) || 'your child';
-  const parentEmail = (f['Parent Email'] as string || '').trim();
-  const parentName = (f['Parent Name'] as string || '').trim();
-  const level = (f['Level'] as string) || null;
-  if (!parentEmail) {
-    return NextResponse.json({ error: 'Student has no Parent Email in Airtable' }, { status: 400 });
+  const studentName = (f['Student Name'] as string) || 'there';
+  const studentEmail = (f['Student Email'] as string || '').trim();
+  if (!studentEmail) {
+    return NextResponse.json(
+      { error: `${studentName} has no Student Email in Airtable — add it to the Students record first` },
+      { status: 400 }
+    );
   }
 
   const supabase = createServiceClient();
@@ -56,7 +61,7 @@ export async function POST(req: NextRequest) {
   const { error: insErr } = await supabase.from('portal_invite_tokens').insert({
     token,
     airtable_student_id: airtableStudentId,
-    email: parentEmail,
+    email: studentEmail,
     expires_at: expiresAt,
     created_by_admin: 'admin',
   });
@@ -64,25 +69,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Could not create invite: ${insErr.message}` }, { status: 500 });
   }
 
-  // 4. Email the parent via Resend
+  // 4. Email the student via Resend
   const inviteUrl = `${SITE_URL}/signup?token=${token}&portal=1`;
-  const firstName = parentName.split(' ')[0] || 'there';
+  const firstName = studentName.split(' ')[0] || 'there';
   const html = `
     <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:0 auto;color:#1a1a2e">
       <h2 style="color:#1F2A5C">AdrianMath Student Portal</h2>
       <p>Hi ${firstName},</p>
-      <p>I've set up a personal practice space for <strong>${studentName}</strong> — a private portal with
-      practice questions from real school papers, instant marking feedback, and revision notes.</p>
-      <p>Because ${studentName} is under 18, I need your consent before the account is created.
-      The link below explains what data is stored and how it's used, and lets you approve the
-      account and help ${studentName} set a password:</p>
+      <p>I've set up your own space on the AdrianMath portal — your marked papers with my feedback,
+      practice questions from real school papers with instant marking, and your revision notes,
+      all in one private account.</p>
       <p style="margin:28px 0">
         <a href="${inviteUrl}" style="background:#1F2A5C;color:#FFF8E7;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600">
-          Review &amp; set up ${studentName}'s account
+          Set up your account
         </a>
       </p>
-      <p style="font-size:13px;color:#666">This link is for your family only and expires in ${INVITE_TTL_DAYS} days.
-      If you have any questions, just reply to this email.</p>
+      <p style="font-size:13px;color:#666">This link is just for you and expires in ${INVITE_TTL_DAYS} days.
+      The setup page explains what's stored; your parents are welcome to read it with you.
+      Any questions, just reply to this email or message me.</p>
       <p>— Adrian</p>
     </div>`;
 
@@ -94,9 +98,9 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       from: "Adrian's Math Tuition <portal@adrianmathtuition.com>",
-      to: parentEmail,
+      to: studentEmail,
       reply_to: 'ablnon@hotmail.com',
-      subject: `AdrianMath Portal — set up ${studentName}'s account`,
+      subject: `Your AdrianMath portal account is ready, ${firstName}`,
       html,
     }),
   });
@@ -106,5 +110,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Invite created but email failed: ${detail}` }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true, sentTo: parentEmail, expiresAt });
+  return NextResponse.json({ ok: true, sentTo: studentEmail, expiresAt });
 }

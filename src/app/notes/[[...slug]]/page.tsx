@@ -6,7 +6,7 @@ import BackToReflexes from '../BackToReflexes';
 import NotesMarkdown from '../NotesMarkdown';
 import NotesUnits from '../NotesUnits';
 import { ReviewBar } from '../ReviewControls';
-import { isNotesAuthed } from '@/lib/notes-auth';
+import { isNotesAuthed, isNotesViewer } from '@/lib/notes-auth';
 import {
   approvedSections,
   hasApprovedUnits,
@@ -334,8 +334,9 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
         {data.recall.length > 0 && <BackToReflexes anchor={ANCHOR.reflexes} />}
 
         {/* Quick-revision card, when the topic has one. Its own title is dropped:
-            it always restates the topic, which is already the page heading. */}
-        {data.card?.content_md && (
+            it always restates the topic, which is already the page heading.
+            Students only see published cards — drafts are the reviewer's. */}
+        {data.card?.content_md && (admin || data.card.status === 'published') && (
           <section className="nx-revision">
             <header className="nx-revision-head">
               <span className="nx-eyebrow" id={ANCHOR.revision}>
@@ -495,8 +496,9 @@ export default async function Page({
   params: Promise<{ slug?: string[] }>;
 }) {
   // Checked here as well as in the layout so an unauthenticated request never
-  // reaches Supabase.
-  if (!(await isNotesAuthed())) return null;
+  // reaches Supabase. Viewer = admin cookie OR portal student; the per-section
+  // admin flag (review UI, pending content) stays isNotesAuthed().
+  if (!(await isNotesViewer())) return null;
 
   const { slug = [] } = await params;
 

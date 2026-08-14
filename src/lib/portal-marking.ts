@@ -45,6 +45,24 @@ export interface StudentQuestion {
   full: boolean;
 }
 
+/**
+ * One follow-up question from `result_json.practice.items` — the bot builds
+ * one per dropped-marks question at release time (or when Adrian presses 📝).
+ * `source`/`id` stay internal: whether it came from the bank or was written
+ * fresh is plumbing, not maths.
+ */
+export interface StudentPracticeItem {
+  /** Question number on their paper this was picked for. */
+  for: string;
+  question: string;
+  /** Final answer for self-checking; may be empty on generated items. */
+  answer: string;
+  topic: string | null;
+  /** "School 2023" for bank picks; null when written for this error. */
+  origin: string | null;
+  note: string | null;
+}
+
 export interface StudentPaper {
   id: string;
   /** YYYY-MM-DD, from created_at. */
@@ -60,6 +78,10 @@ export interface StudentPaper {
   dropped: StudentQuestion[];
   /** The annotated script if it was rendered, else the plain marked PDF. */
   pdfUrl: string | null;
+  /** Follow-up practice, one item per dropped-marks question. Often empty. */
+  practice: StudentPracticeItem[];
+  /** House-style Word file of the practice list, if the bot built one. */
+  practiceDocxUrl: string | null;
 }
 
 export interface StudentMarking {
@@ -129,8 +151,24 @@ function toQuestion(raw: unknown): StudentQuestion | null {
   };
 }
 
+function toPracticeItem(raw: unknown): StudentPracticeItem | null {
+  const r = asRecord(raw);
+  if (!r) return null;
+  const question = str(r.question);
+  if (!question) return null;
+  return {
+    for: str(r.for) || '?',
+    question,
+    answer: str(r.answer),
+    topic: str(r.topic) || null,
+    origin: str(r.origin) || null,
+    note: str(r.note) || null,
+  };
+}
+
 function toPaper(row: MarkingRunRow): StudentPaper | null {
-  const results = asRecord(row.result_json)?.results;
+  const rj = asRecord(row.result_json);
+  const results = rj?.results;
   // No `results` means the run failed or is still queued. It has nothing to
   // show, and listing it as "0/0" reads as a paper they scored nothing on.
   if (!Array.isArray(results)) return null;
@@ -143,6 +181,11 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
     row.total_max == null || row.total_awarded == null
       ? recomputeTotals(row.result_json)
       : { awarded: num(row.total_awarded), max: num(row.total_max) };
+
+  const practiceRec = asRecord(rj?.practice);
+  const practice = Array.isArray(practiceRec?.items)
+    ? practiceRec.items.map(toPracticeItem).filter((x): x is StudentPracticeItem => x !== null)
+    : [];
 
   return {
     id: row.id,
@@ -158,6 +201,8 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
     // The annotated script is the one with red pen on their own handwriting;
     // the plain PDF is the fallback when annotation never rendered.
     pdfUrl: row.annotated_pdf_url || row.pdf_url || null,
+    practice,
+    practiceDocxUrl: str(practiceRec?.docx_url) || null,
   };
 }
 

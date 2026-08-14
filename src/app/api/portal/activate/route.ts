@@ -2,10 +2,11 @@
 //
 // GET  ?token=xxx        → { valid, studentName?, reason? } — for rendering the page
 // POST { token, email, password, consent } → creates the Auth user + portal_accounts
-//        row with the parental consent_record, consumes the token.
+//        row with the consent_record, consumes the token.
 //
-// PDPA: consent must be explicitly true; the consent_record stores the parent
-// email the invite was sent to, the policy version, and the timestamp. No
+// PDPA: consent must be explicitly true; the consent_record stores the email the
+// invite was sent to (the student's own since 2026-08-14 — invites go straight
+// to Student Email), who agreed, the policy version, and the timestamp. No
 // account (and no stored student data) can exist without it. See PRIVACY.md.
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest } from '@/lib/airtable';
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
   const t = await loadToken(token);
   if ('error' in t) return NextResponse.json({ valid: false, reason: t.error });
 
-  let studentName = 'your child';
+  let studentName = 'there';
   let level: string | null = null;
   try {
     const student = await airtableRequest('Students', `/${t.row.airtable_student_id}`);
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'token, email and password are required' }, { status: 400 });
   }
   if (consent !== true) {
-    return NextResponse.json({ error: 'Parental consent is required to create the account' }, { status: 400 });
+    return NextResponse.json({ error: 'Please agree to the privacy policy to create the account' }, { status: 400 });
   }
   if (typeof password !== 'string' || password.length < 8) {
     return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
@@ -75,10 +76,10 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServiceClient();
 
-  // Create the Auth user. email_confirm: the invite link went to the parent's
+  // Create the Auth user. email_confirm: the invite link went to the student's
   // inbox and is single-use — that's our verification anchor (deviation from
   // "verify student email first" noted in PLAN-PORTAL-SOLO.md; keeps the flow
-  // one-step for families).
+  // one-step).
   const { data: created, error: userErr } = await supabase.auth.admin.createUser({
     email,
     password,
@@ -101,7 +102,8 @@ export async function POST(req: NextRequest) {
     level,
     subjects,
     consent_record: {
-      parent_email: t.row.email,
+      invite_email: t.row.email,
+      consented_by: 'student',
       policy_version: POLICY_VERSION,
       consented_at: new Date().toISOString(),
     },

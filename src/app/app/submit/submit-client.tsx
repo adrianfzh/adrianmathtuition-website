@@ -8,6 +8,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { put } from '@vercel/blob/client';
+import { pdfToPageImages } from '@/lib/pdf-pages';
 import { splitFileIfSpread, resizeToJpeg } from '@/lib/spread-split';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
@@ -21,17 +22,40 @@ export default function SubmitClient() {
   const [paperName, setPaperName] = useState('');
   const [splitNote, setSplitNote] = useState('');
   const [stage, setStage] = useState('');            // progress line while submitting
+  const [converting, setConverting] = useState('');  // progress line while a PDF rasterises
   const [error, setError] = useState('');
   const [doneRunId, setDoneRunId] = useState<string | null>(null);
-  const busy = stage !== '';
+  const busy = stage !== '' || converting !== '';
 
   async function onPick(list: FileList | null) {
     if (!list?.length) return;
     setError('');
+    const isPdf = (f: File) => f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+    // A PDF (a scan rather than phone photos) expands to one image per page first,
+    // then everything goes down the same photo path — same spread heuristic, same
+    // 2600px cap as the admin intake.
+    const files: File[] = [];
+    for (const f of Array.from(list)) {
+      if (isPdf(f)) {
+        try {
+          setConverting(`Reading ${f.name}…`);
+          const pgs = await pdfToPageImages(f, (done, total) => setConverting(`Reading ${f.name} — page ${done} of ${total}…`));
+          if (!pgs.length) throw new Error('no pages could be rendered');
+          files.push(...pgs);
+          // A named scan is usually the paper's name — offer it, never overwrite.
+          const nice = f.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
+          if (nice && !/^(scan|img|image|document|shared)[\s\d]*$/i.test(nice)) setPaperName(prev => prev || nice);
+        } catch (e) {
+          setError(`Couldn't read ${f.name} (${(e as Error).message}). Photograph the pages instead.`);
+        } finally { setConverting(''); }
+        continue;
+      }
+      if (!f.type.startsWith('image/') && !/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)) continue;
+      files.push(f);
+    }
     const added: Page[] = [];
     let splits = 0;
-    for (const f of Array.from(list)) {
-      if (!f.type.startsWith('image/') && !/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)) continue;
+    for (const f of files) {
       const r = await splitFileIfSpread(f);
       if (r.split) splits += 1;
       for (const half of r.files) {
@@ -122,7 +146,7 @@ export default function SubmitClient() {
       <div className={`${CARD} p-4 space-y-3`}>
         <p className="text-sm text-gray-600">
           Photograph your worked paper — <b>one page per photo</b>, straight on, in good light —
-          and send it in. It comes back marked in <b>Marked papers</b>.
+          or upload a <b>PDF scan</b>. It comes back marked in <b>Marked papers</b>.
         </p>
 
         <button
@@ -132,11 +156,13 @@ export default function SubmitClient() {
         >
           <span className="block text-3xl mb-1">📷</span>
           <span className="text-sm font-semibold text-navy">
-            {pages.length ? `${pages.length} page${pages.length > 1 ? 's' : ''} added — tap to add more` : 'Take or choose photos'}
+            {converting
+              ? converting
+              : pages.length ? `${pages.length} page${pages.length > 1 ? 's' : ''} added — tap to add more` : 'Take photos or choose a PDF'}
           </span>
         </button>
         <input
-          ref={inputRef} type="file" accept="image/*" multiple className="hidden"
+          ref={inputRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
           onChange={(e) => onPick(e.target.files)}
         />
 
@@ -184,7 +210,7 @@ export default function SubmitClient() {
           {busy ? stage : `📤 Send ${pages.length || ''} page${pages.length === 1 ? '' : 's'} for marking`}
         </button>
         <p className="text-[11px] text-gray-400">
-          Wide photos of an open booklet are split into single pages automatically.
+          Wide photos of an open booklet are split into single pages automatically. PDFs are converted to pages on your phone before uploading.
         </p>
       </div>
     </div>

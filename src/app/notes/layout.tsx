@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { isNotesAuthed } from '@/lib/notes-auth';
+import { isNotesViewer, hasPortalSession } from '@/lib/notes-auth';
 import { getNotesTree } from '@/lib/notes-data';
 import NotesLogin from './NotesLogin';
 import NotesShell from './NotesShell';
@@ -10,7 +10,7 @@ import './notes.css';
 export const metadata: Metadata = {
   title: 'Notes',
   description: 'Revision notes portal.',
-  // Admin-only in Phase 1, and not for public indexing even after that.
+  // Admin + portal students only, and not for public indexing even after that.
   robots: { index: false, follow: false },
 };
 
@@ -22,9 +22,10 @@ export default async function NotesLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Server-side gate: without a valid session no note content is ever rendered,
-  // so the markup can't leak to an unauthenticated fetch.
-  if (!(await isNotesAuthed())) {
+  // Server-side gate: without a valid session (admin cookie OR portal student)
+  // no note content is ever rendered, so the markup can't leak to an
+  // unauthenticated fetch.
+  if (!(await isNotesViewer())) {
     return (
       <div className="notes-shell">
         <NotesLogin />
@@ -32,11 +33,14 @@ export default async function NotesLayout({
     );
   }
 
-  const tree = await getNotesTree(PHASE_1_LEVEL);
+  const [tree, portalHome] = await Promise.all([
+    getNotesTree(PHASE_1_LEVEL),
+    hasPortalSession(),
+  ]);
 
   return (
     <div className="notes-shell">
-      <NotesShell tree={tree}>{children}</NotesShell>
+      <NotesShell tree={tree} portalHome={portalHome}>{children}</NotesShell>
     </div>
   );
 }

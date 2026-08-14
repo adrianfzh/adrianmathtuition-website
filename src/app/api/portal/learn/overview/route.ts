@@ -6,6 +6,7 @@
 // player is demonstrable on an empty table.
 import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
+import { learnClosedResponse } from '@/lib/learn-gate';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { studentTitle, ALL_LEARN_SUBJECTS, LEARN_SUBJECT_LABEL, learnSubjectsForLevel } from '@/lib/learn';
 import { buildReviewList } from '@/lib/learn-review';
@@ -22,6 +23,8 @@ type UnitRow = {
 export async function GET(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const closed = await learnClosedResponse(caller);
+  if (closed) return closed; // Learn not released to students yet
 
   const isStudent = caller.kind === 'student';
   const subjects = isStudent

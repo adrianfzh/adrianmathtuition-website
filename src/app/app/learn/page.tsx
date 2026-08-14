@@ -35,7 +35,7 @@ function LearnPageInner() {
   const [activeSubject, setActiveSubject] = useState<string | null>(null);
   const [openTopic, setOpenTopic] = useState<string | null>(null);
   const [done, setDone] = useState<Record<string, boolean>>({});
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'locked'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'locked' | 'closed'>('loading');
   const [sessionCleared, setSessionCleared] = useState(0);
 
   // Deep-link (from the dashboard Today stack): preselect subject + open topic once.
@@ -48,6 +48,8 @@ function LearnPageInner() {
     fetch('/api/portal/learn/overview')
       .then(async r => {
         if (r.status === 401) { setStatus('locked'); return null; }
+        // Learn isn't released to students yet — point them at /notes.
+        if (r.status === 403) { setStatus('closed'); return null; }
         if (!r.ok) throw new Error(String(r.status));
         return r.json();
       })
@@ -96,6 +98,23 @@ function LearnPageInner() {
 
   if (status === 'locked') {
     return <div className={`${card} p-5`}><p className="text-sm text-gray-500">Please sign in to view lessons.</p></div>;
+  }
+
+  if (status === 'closed') {
+    return (
+      <div className={`${card} p-6 text-center`}>
+        <div className="text-3xl mb-2">📖</div>
+        <p className="text-sm text-gray-600 mb-4">
+          Interactive lessons aren&apos;t open yet — your revision notes are.
+        </p>
+        <Link
+          href="/notes"
+          className="inline-block bg-navy text-[hsl(45,100%,96%)] rounded-xl px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity"
+        >
+          Read your notes
+        </Link>
+      </div>
+    );
   }
 
   return (

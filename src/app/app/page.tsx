@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { currentStudent } from '@/lib/portal-auth';
 import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
+import { isNotesAuthed } from '@/lib/notes-auth';
+import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,9 +23,12 @@ function friendlyDate(dateStr: string): string {
 
 export default async function DashboardPage() {
   const { account } = await currentStudent();
+  // Learn units aren't released to students — the "start here" stack (which
+  // deep-links into /app/learn) only renders for Adrian's admin cookie.
+  const learnVisible = LEARN_OPEN_TO_STUDENTS || (await isNotesAuthed());
   const [d, todayCards] = await Promise.all([
     getDashboardData(account),
-    getTodayCards(account).catch(() => []),
+    learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
   ]);
 
   const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
@@ -55,10 +60,10 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <Link
-            href="/app/learn"
+            href={learnVisible ? '/app/learn' : '/notes'}
             className="flex items-center justify-between gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 font-semibold shadow-sm hover:opacity-90 transition-opacity"
           >
-            <span>▶ Start learning</span>
+            <span>{learnVisible ? '▶ Start learning' : '📖 Read your revision notes'}</span>
             <span className="shrink-0 text-[hsl(43,90%,60%)] text-lg">›</span>
           </Link>
         )}

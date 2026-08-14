@@ -217,3 +217,52 @@ describe('buildStudentMarking — focus areas', () => {
     expect(out.focus).toEqual([]);
   });
 });
+
+describe('buildStudentMarking — practice items', () => {
+  it('surfaces result_json.practice for the student, minus internals', () => {
+    const out = buildStudentMarking([
+      run({
+        id: 'a',
+        result_json: {
+          results: [q({ n: '3', awarded: 2, max: 5 })],
+          practice: {
+            created_at: '2026-08-14T02:00:00Z',
+            model: 'opus',        // internal — must not surface
+            costUsd: 0.42,        // internal — must not surface
+            docx_url: 'https://blob/practice.docx',
+            items: [
+              {
+                for: '3', source: 'db', id: 'q-123',
+                question: 'Find $x$ such that $2^x = 8$.', answer: '$x = 3$',
+                origin: 'Methodist 2023', topic: 'Indices', note: 'Same law of indices.',
+              },
+              // Generated item: no origin/topic, empty answer allowed.
+              { for: '5', source: 'generated', id: null, question: 'Differentiate $x^2$.', answer: '', origin: null, topic: null, note: '' },
+              // Malformed rows (no question text) are dropped, not rendered blank.
+              { for: '7', source: 'db' },
+              'not even an object',
+            ],
+          },
+        },
+      }),
+    ]);
+    expect(out.papers[0].practice).toEqual([
+      {
+        for: '3', question: 'Find $x$ such that $2^x = 8$.', answer: '$x = 3$',
+        topic: 'Indices', origin: 'Methodist 2023', note: 'Same law of indices.',
+      },
+      { for: '5', question: 'Differentiate $x^2$.', answer: '', topic: null, origin: null, note: null },
+    ]);
+    expect(out.papers[0].practiceDocxUrl).toBe('https://blob/practice.docx');
+    // The student view never carries the bot's cost/model bookkeeping.
+    expect(JSON.stringify(out.papers[0].practice)).not.toMatch(/opus|costUsd|source|q-123/);
+  });
+
+  it('leaves practice empty (not undefined) on runs without a practice block', () => {
+    const out = buildStudentMarking([
+      run({ id: 'a', result_json: { results: [q({ n: '1', awarded: 5, max: 5 })] } }),
+    ]);
+    expect(out.papers[0].practice).toEqual([]);
+    expect(out.papers[0].practiceDocxUrl).toBeNull();
+  });
+});

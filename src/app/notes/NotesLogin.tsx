@@ -1,7 +1,8 @@
 'use client';
-// Admin gate for the notes portal (Phase 1). Student auth is Phase 3 — this is
-// deliberately the same `ensureAdminSession` / `loginAdminSession` pattern the
-// other admin pages use, so one login covers /admin and /notes alike.
+// Login door for the notes portal. Admin enters the shared admin password
+// (same `ensureAdminSession` / `loginAdminSession` pattern as /admin, so one
+// login covers both); portal students sign in at /login and come back — the
+// layout accepts either session (isNotesViewer).
 //
 // The layout also refuses to render any content server-side without a valid
 // session, so this form is the door, not merely a curtain.
@@ -46,7 +47,8 @@ export default function NotesLogin() {
       >
         <h1 className="text-lg font-semibold text-fd-foreground">Notes</h1>
         <p className="mt-1 text-sm text-fd-muted-foreground">
-          Admin only for now. Student access is coming later.
+          Students: <a href="/login?next=/notes" className="underline underline-offset-2 text-fd-primary">log in to your portal</a> to
+          read the notes. The password box below is for Adrian.
         </p>
         <input
           type="password"

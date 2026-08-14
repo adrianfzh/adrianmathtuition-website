@@ -9,6 +9,7 @@
 // Adrian's review is the trust gate on AI marking (HANDOFF-MARKING-LOOP.md,
 // locked decision 2).
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { airtableRequest } from '@/lib/airtable';
@@ -24,6 +25,9 @@ import {
 } from '@/lib/mark-triage';
 
 export const runtime = 'nodejs';
+// Release itself is fast; the ceiling is for the after() practice generation,
+// which makes one model call per released paper with dropped marks.
+export const maxDuration = 300;
 
 const DEFAULT_DAYS = 14;
 const MAX_DAYS = 90;
@@ -164,6 +168,43 @@ function escapeHtml(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// ── Post-release practice generation ─────────────────────────────────────────
+// One follow-up question per dropped-marks question, built by the bot and
+// stored on the run (`result_json.practice`) — /app/marking renders it under
+// the paper. Fire-and-forget via after(): release NEVER waits on it or fails
+// because of it. Safe to re-run — the bot returns a stored list without a
+// model call (so Adrian's earlier 📝 press, or a retry, never double-pays) —
+// and skipped entirely for full-mark papers before this is even queued.
+function queuePracticeGeneration(runIds: string[]) {
+  const botBase = process.env.BOT_BASE_URL;
+  const botSecret = process.env.BOT_INTERNAL_SECRET;
+  if (!botBase || !botSecret || !runIds.length) return;
+  const headers = { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' };
+
+  after(async () => {
+    for (const id of runIds) {
+      try {
+        const r = await fetch(`${botBase}/api/mark-paper`, {
+          method: 'POST', headers, body: JSON.stringify({ phase: 'practice', id }),
+        });
+        const d = await r.json().catch(() => ({} as { error?: string; items?: unknown[] }));
+        if (!r.ok || d.error) {
+          console.warn(`[mark-triage] practice generation failed for ${id}:`, d.error || r.status);
+          continue;
+        }
+        if (!Array.isArray(d.items) || d.items.length === 0) continue;
+        // House-style Word file of the list — also stored on the run, and also
+        // idempotent (practice.docx_url wins on the bot side).
+        await fetch(`${botBase}/api/mark-paper`, {
+          method: 'POST', headers, body: JSON.stringify({ phase: 'practice-docx', id }),
+        }).catch(() => { /* the on-page list still renders without the file */ });
+      } catch (err) {
+        console.warn(`[mark-triage] practice generation failed for ${id}:`, (err as Error).message);
+      }
+    }
+  });
+}
+
 // ── POST ─────────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -248,6 +289,7 @@ export async function POST(req: NextRequest) {
       via: string;
       note?: string;
     }[] = [];
+    const practiceQueue: string[] = [];
 
     for (const run of runs ?? []) {
       if (run.released_at) {
@@ -286,7 +328,13 @@ export async function POST(req: NextRequest) {
         via: outcome.via,
         note: outcome.note,
       });
+
+      // Full marks → nothing to practise; don't even queue the call.
+      const totals = recomputeTotals(run.result_json);
+      if (totals.max > 0 && totals.awarded < totals.max) practiceQueue.push(run.id);
     }
+
+    queuePracticeGeneration(practiceQueue);
 
     return NextResponse.json({
       ok: true,
