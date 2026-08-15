@@ -154,7 +154,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `edit-cards-ai/route.ts` — SSE stream for AI card edits
 
 ### Invoices (cron + admin) → `docs/INVOICES.md`
-- `admin-invoices/` (GET/PATCH; paid-window ~5 months, `?all=1` full history), `generate-invoices` (cron 14th 7am), `generate-pdf-batch`, `regenerate-invoice`, `preview-invoice`, `send-invoices` (cron 15th 9am), `send-receipt`, `payment-reminder` (cron 14th 8pm), `admin-emails` (Email Log + resend), `resend-webhook`
+- `admin-invoices/` (GET/PATCH; paid-window ~5 months, `?all=1` full history), `generate-invoices` (cron 14th 7am), `generate-pdf-batch`, `regenerate-invoice`, `preview-invoice`, `send-invoices` (cron 15th 10am SGT — `0 2 15 * *` UTC; Vercel fires it up to ~20 min late, last months ~10:18), `send-receipt`, `payment-reminder` (cron 14th 8pm), `admin-emails` (Email Log + resend), `resend-webhook`
 
 ### Signup
 - `signup/route.ts` — registration form → Student + Enrollment + Token in Airtable

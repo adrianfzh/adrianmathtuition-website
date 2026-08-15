@@ -11,7 +11,7 @@
 2. `payment-reminder` (14th 8pm) → Telegram reminder
 3. Admin reviews on `/admin/invoices` → adjusts amounts, approves
 4. "Generate Missing PDFs" → `generate-pdf-batch` → Puppeteer → Vercel Blob → PDF URL in Airtable
-5. `send-invoices` (15th 9am) → Resend email with PDF attachment → marks Sent
+5. `send-invoices` (15th **10am SGT** — `0 2 15 * *` UTC in vercel.json; Vercel fires crons up to ~20 min late, e.g. 10:18–10:20 on 15 Jul 2026) → Resend email with PDF attachment → marks Sent
 
 **Two regeneration routes, one intent each — don't merge them:** `generate-pdf-batch` renders the invoice **as stored** (the ✏️ Amend form's manual line-item/credit edits, verbatim); `regenerate-invoice` (the ♻️ Regenerate button) **recalculates** line items from the current schedule (preserving manual `Line Items Extra`). **Issue Date is one shared rule for both** — `resolveInvoiceIssueDate(status, currentIssueDate, todayISO)` in `lib/invoice-month.ts` (unit-tested): a **Sent** invoice being regenerated is *reissued* → **today** (SGT, via `sgtTodayISO()`); a fresh Draft → the **15th**; an unsent Draft with a date → **preserved**. Never re-implement this in a route or the `admin-invoices` PATCH — an amended Sent invoice must carry today's issue date, and the split where one path stamped today and another preserved the old date is exactly the bug that put a stale 15 Jul date on Kiara's amended Aug invoice.
 
