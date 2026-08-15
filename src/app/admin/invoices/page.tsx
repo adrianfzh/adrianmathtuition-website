@@ -2217,20 +2217,20 @@ export default function AdminPage() {
           html += `</div>`;
         }
         if (applied.length) {
-          html += `<div style="margin-top:10px;border-top:1px solid #fcd34d;padding-top:8px;">`;
-          html += `<div style="font-weight:600;color:#15803d;margin-bottom:4px;">✅ Invoice credit applied:</div>`;
+          html += `<details style="margin-top:10px;border-top:1px solid #fcd34d;padding-top:8px;">`;
+          html += `<summary style="font-weight:600;color:#15803d;cursor:pointer;user-select:none;">✅ Invoice credit applied (${applied.length})</summary><div style="padding:4px 0 0 16px;">`;
           for (const a of applied) {
             html += `<div style="margin:3px 0;color:#64748b;text-decoration:line-through;">${escHtml(a.referrerNameGiven || '(unknown)')} referred ${escHtml(a.studentName)}</div>`;
           }
-          html += `</div>`;
+          html += `</div></details>`;
         }
         if (appliedCash.length) {
-          html += `<div style="margin-top:${applied.length ? 6 : 10}px;${!applied.length ? 'border-top:1px solid #fcd34d;padding-top:8px;' : ''}">`;
-          html += `<div style="font-weight:600;color:#15803d;margin-bottom:4px;">✅ Cash paid ($150):</div>`;
+          html += `<details style="margin-top:${applied.length ? 6 : 10}px;${!applied.length ? 'border-top:1px solid #fcd34d;padding-top:8px;' : ''}">`;
+          html += `<summary style="font-weight:600;color:#15803d;cursor:pointer;user-select:none;">✅ Cash paid — $150 each (${appliedCash.length})</summary><div style="padding:4px 0 0 16px;">`;
           for (const a of appliedCash) {
             html += `<div style="margin:3px 0;color:#64748b;text-decoration:line-through;">${escHtml(a.referrerNameGiven || '(unknown)')} (${escHtml(a.referralType)}) — referred ${escHtml(a.studentName)}</div>`;
           }
-          html += `</div>`;
+          html += `</div></details>`;
         }
         html += `</div>`;
         el.innerHTML = html;
