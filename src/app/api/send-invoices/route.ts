@@ -20,19 +20,11 @@ function checkAuth(req: NextRequest): boolean {
 }
 
 // ── Self-service footer (shared by regular / first-invoice / amended emails) ──
-// WhatsApp leads: it needs no registration — the bot matches the parent's number
-// against Airtable and opens a tap-through menu (reschedule, makeup, switch,
-// additional lessons). Telegram stays the math-help channel (needs a reg code).
-// "Hi" as the prefill is deliberate: it matches the bot's greeting detector,
-// which opens the interactive menu.
-// NOTE: this must be the Twilio bot number (KIOSK_WA_NUMBER), NOT Adrian's
-// personal 9139 7985 — the assistant only answers on the Twilio line.
+// The WhatsApp reschedules/makeups paragraph was REMOVED 2026-08-15 on Adrian's
+// instruction: he wants to announce that channel himself first. Restore it from
+// git history (commit removing it) once he has made his announcement.
 function buildSelfServiceFooterHtml(): string {
-  const waDigits = (process.env.KIOSK_WA_NUMBER || '6580164142').replace(/\D/g, '');
-  const waDisplay = waDigits.replace(/^65/, '').replace(/(\d{4})(\d{4})/, '1ドル 2ドル');
-  return `<p style="font-size: 14px; color: #6b7280;"><strong>📅 Reschedules &amp; makeups — one WhatsApp away</strong></p>
-    <p style="font-size: 14px; color: #6b7280;">Need to change a lesson? <a href="https://wa.me/${waDigits}?text=Hi"><strong>WhatsApp our assistant at ${waDisplay}</strong></a> — just send "Hi" and it will recognise your number and open a menu to reschedule, book a makeup for a missed class, switch timeslot, or add extra lessons. Instant confirmation, any time of day, no registration needed.</p>
-    <p style="font-size: 14px; color: #6b7280;"><strong>🤖 Math help on Telegram</strong></p>
+  return `<p style="font-size: 14px; color: #6b7280;"><strong>🤖 Math help on Telegram</strong></p>
     <p style="font-size: 14px; color: #6b7280;">Your child can message our Telegram bot anytime for help with math questions — just snap a photo or type the question and get step-by-step solutions instantly. Search <strong>@AdrianMathBot</strong> on Telegram (if not yet registered, ask Adrian for your registration code).</p>`;
 }
 
