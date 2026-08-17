@@ -15,7 +15,10 @@ export async function GET() {
 
   try {
     const params = new URLSearchParams();
-    params.set('filterByFormula', '{Is Active}=TRUE()');
+    // Adhoc slots are internal extra sessions (e.g. an ad-hoc Wed/Thu week opened
+    // for makeups) — active so they appear on /admin/schedule and in the booking
+    // pickers, but never advertised as a bookable class on the public homepage.
+    params.set('filterByFormula', "AND({Is Active}=TRUE(), {Level}!='Adhoc')");
     ['Day', 'Time', 'Level', 'Normal Capacity', 'Enrolled Count'].forEach(f => {
       params.append('fields[]', f);
     });
