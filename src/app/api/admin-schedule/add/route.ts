@@ -52,7 +52,8 @@ export async function POST(req: NextRequest) {
 
   try {
     // 0. Away-date gate — no new lessons during Adrian's blocked periods
-    // unless the admin explicitly overrides.
+    // unless the admin explicitly overrides. `force` covers both this and the
+    // capacity check below (never the double-booking guard).
     if (!force) {
       const { ranges } = await fetchBlockedRecord();
       const block = findBlock(ranges, date);
@@ -86,8 +87,12 @@ export async function POST(req: NextRequest) {
       const secCap = await fetchSecCapOverride();
       const makeupCapacity = effectiveCapacity(storedMakeupCapacity, slotFields['Level'], secCap)!;
 
+      // `force` overrides a full slot — same semantics as the reschedule route,
+      // which has always allowed it. Adrian routinely squeezes an extra makeup
+      // into a full slot; the cap is a guardrail, not a hard rule. (The
+      // double-booking guard below is the genuine hard stop.)
       const currentCount = await countLessonsInSlot(slotId, date);
-      if (currentCount >= makeupCapacity) {
+      if (!force && currentCount >= makeupCapacity) {
         return NextResponse.json(
           {
             error: makeupCapacity < storedMakeupCapacity ? `Slot full (Sec cap ${secCap} active)` : 'Slot full',

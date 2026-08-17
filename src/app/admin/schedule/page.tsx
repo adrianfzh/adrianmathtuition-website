@@ -2255,19 +2255,25 @@ export default function SchedulePage() {
         return;
       }
       if (res.status === 409) {
-        if (json.blocked) {
-          // Away date — confirm, then retry with force (slot-full stays a hard stop here).
-          if (!window.confirm(`You're away on that date${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}.\nBook anyway (admin override)?`)) {
-            setModalError(`Blocked — you're away${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}`); return;
-          }
-          res = await fetch('/api/admin-schedule/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...body, force: true }),
-          });
-          json = await res.json();
+        // Admin can override a full slot / an away date — confirm, then retry
+        // with force. Same affordance the reschedule flow has always had.
+        const prompt = json.blocked
+          ? `You're away on that date${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}.\nBook anyway (admin override)?`
+          : `Slot full — ${json.currentCount}/${json.capacity} booked.\nBook anyway (admin override)?`;
+        if (!window.confirm(prompt)) {
+          setModalError(json.blocked ? `Blocked — you're away${json.reason && json.reason !== 'away' ? ` (${json.reason})` : ''}` : `Slot full — max ${json.capacity} (${json.currentCount} booked)`); return;
         }
-        if (res.status === 409) { setModalError(`Slot full — max ${json.capacity} (${json.currentCount} booked)`); return; }
+        res = await fetch('/api/admin-schedule/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...body, force: true }),
+        });
+        json = await res.json();
+        // Capacity is checked before double-booking server-side, so a forced
+        // retry can still surface the hard stop underneath it.
+        if (res.status === 409 && json.doubleBooked) {
+          setModalError('This student already has a lesson in that slot on that date'); return;
+        }
       }
       if (!res.ok) throw new Error(json.error || 'Failed');
       setAddModal(null);

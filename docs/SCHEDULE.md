@@ -101,9 +101,18 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 - State = Settings row `sec_capacity_override`, Value `{"secCap":5}` / `{"secCap":null}`;
   API `/api/admin/capacity-override` GET/POST; pure logic in `lib/capacity-override.ts`
   (unit-tested; min() semantics — the override only lowers, a null stored cap stays null).
-- Enforced in `admin-schedule/add` + `reschedule` (force semantics unchanged; 409 message
-  names the cap). `/api/admin-schedule` returns top-level `secCap` + EFFECTIVE `makeupCapacity`
+- Enforced in `admin-schedule/add` + `reschedule` (409 message names the cap).
+  `/api/admin-schedule` returns top-level `secCap` + EFFECTIVE `makeupCapacity`
   per slot (`capacity` stays raw), so the reschedule pickers follow automatically.
+- **`force: true` overrides a full slot in BOTH routes** (2026-08-17). It always did in
+  `reschedule`; `add` used to treat capacity as a hard stop, so the Add Lesson modal
+  dead-ended at `Slot full — max 5 (5 booked)` with no way through — Adrian squeezes an
+  extra makeup into a full slot often enough that the cap is a guardrail, not a rule. Both
+  UI flows now confirm (`Book anyway (admin override)?`) and retry with force. `force`
+  covers capacity + away-dates in both routes; the **double-booking guard is the one hard
+  stop force cannot bypass** (same student twice in one date+slot is physically impossible)
+  — and since capacity is checked BEFORE double-booking server-side, a forced retry can
+  surface `doubleBooked`, which both clients must handle after the retry.
 - **The bot respects it too** (repo `adrianmath-telegram-bot`, `lib/capacity-override.js`:
   same Settings row, 60s cache, fail-open): `getRescheduleOptions` (Telegram /rs + WhatsApp +
   trials), the admin-agent booking check, and the availability calendar/summary — parents are
