@@ -160,11 +160,18 @@ Value        = {"recXXX": {"from": "2026-08-19", "until": "2026-08-20"}, …}
   `extraSlotIds` and merged back, so a booking in a closed-window slot still renders at its
   proper time. Probe-tested: a lesson placed in a windowed-out Adhoc slot on 26 Aug rendered
   correctly while the other 7 empty Adhoc slots stayed hidden.
-- Scope is the admin calendar. The public homepage never sees Adhoc slots anyway
-  (`/api/schedule` filters `{Level}!='Adhoc'`), and the **bot has no window support** — its
-  admin-only surfaces (`/tt`, `/available`, attendance pickers) still list every active slot.
-  Parent-facing bot flows are unaffected because `lib/reschedule.js` already excludes Adhoc
-  and every other student-facing picker filters `{Level}='Secondary'|'JC'`.
+- The public homepage never sees Adhoc slots anyway (`/api/schedule` filters
+  `{Level}!='Adhoc'`).
+- **The bot reads this same row** (added 2026-08-18, per Adrian — "possible to just allow
+  for this wed and thu for student facing?"). `lib/slot-windows.js` there is the twin of
+  the file above, and the rule it enforces is: **an ad-hoc slot reaches students only when
+  DATED, and then only on its own dates** — an undated one stays admin-only, because Slots
+  carry no dates and it would be offered every week forever. Honoured by
+  `getRescheduleOptions` (WhatsApp + Telegram makeup), `showStudentRescheduleSlots` and
+  `showRescheduleDatePicker` (Telegram reschedule). WhatsApp **trials** deliberately exclude
+  dated slots — a trial is the front door to a *weekly* slot. Bot-side admin surfaces
+  (`/tt`, `/available`, attendance pickers) still list every active slot, unwindowed. Full
+  notes in the bot repo's `CLAUDE.md` → "Slots, capacity & dated ad-hoc sessions".
 - To retire an ad-hoc week for good, clear its entries from the row (or untick `Is Active`).
 
 ### Recurring lesson generation (Regular lessons)
