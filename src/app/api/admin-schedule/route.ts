@@ -6,6 +6,7 @@ import { subjectsFromRevisionLineItems, assignRevisionSessions } from '@/lib/rev
 import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
 import { cachedScheduleStatic } from '@/lib/schedule-static-cache';
 import { SEC_CAP_SETTING, parseSecCapOverride, effectiveCapacity } from '@/lib/capacity-override';
+import { SLOT_WINDOWS_SETTING, parseSlotWindows, slotVisibleInWeek } from '@/lib/slot-windows';
 
 export const runtime = 'nodejs';
 
@@ -84,7 +85,7 @@ export async function GET(req: NextRequest) {
       try { return await fetchAll('Lessons', baseQuery + `&fields[]=Booked Via`); }
       catch { return fetchAll('Lessons', baseQuery); }
     })(),
-    airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`OR({Setting Name}='exam_season_override',{Setting Name}='${SEC_CAP_SETTING}')`)}&maxRecords=2`).catch(() => ({ records: [] })),
+    airtableRequest('Settings', `?filterByFormula=${encodeURIComponent(`OR({Setting Name}='exam_season_override',{Setting Name}='${SEC_CAP_SETTING}',{Setting Name}='${SLOT_WINDOWS_SETTING}')`)}&maxRecords=3`).catch(() => ({ records: [] })),
     // Current topics ({Current}=1) AND planned next-lesson topics (no Started
     // date) — the chip shows both. Key is -v2: the old cached shape lacked the
     // Current/Started fields this split needs.
@@ -115,7 +116,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   // Resolve exam season immediately (needed to include the exams fetch in stage 2).
-  // The Settings fetch now carries BOTH rows — pick each by name.
+  // The Settings fetch carries every flag row in one call — pick each by name.
   const settingsByName: Record<string, string> = {};
   for (const r of settingsData.records ?? []) {
     const name = r.fields?.['Setting Name'];
@@ -130,6 +131,17 @@ export async function GET(req: NextRequest) {
   // Sec-capacity toggle: slots below carry EFFECTIVE capacities so every client
   // surface (roster counts, full badges, slot pickers) follows automatically.
   const secCap = parseSecCapOverride(settingsByName[SEC_CAP_SETTING] ?? null);
+
+  // Date-windowed slots: a one-off ad-hoc week is a normal weekly Slot row (the
+  // table has no dates), so without this it would recur on the calendar
+  // forever. Slots whose window misses the viewed week drop out of the grid and
+  // the pickers; unwindowed slots — the entire regular timetable — pass through
+  // untouched. Lessons already booked into a closed-window slot still render:
+  // extraSlotIds below re-fetches any slot this week's lessons reference.
+  const slotWindows = parseSlotWindows(settingsByName[SLOT_WINDOWS_SETTING] ?? null);
+  const visibleSlots = Object.keys(slotWindows).length
+    ? slotsData.filter((r: any) => slotVisibleInWeek(slotWindows[r.id], weekStart, weekEnd))
+    : slotsData;
 
   // Split out cancelled lessons — they don't belong in the main lessons array
   // (which the grid renders), but the UI needs them to replace ghost chips.
@@ -158,7 +170,7 @@ export async function GET(req: NextRequest) {
   ] as string[];
 
   // Extra (inactive/adhoc) slots referenced by this week's lessons
-  const stage1SlotIds = new Set(slotsData.map((r: any) => r.id));
+  const stage1SlotIds = new Set(visibleSlots.map((r: any) => r.id));
   const extraSlotIds = [
     ...new Set(
       // Include reschedule-source slots so an origin label ("↩ from …") can
@@ -241,7 +253,7 @@ export async function GET(req: NextRequest) {
   };
 
   // Parse slots
-  const slots = slotsData.map((r: any) => {
+  const slots = visibleSlots.map((r: any) => {
     const dayRaw: string = r.fields['Day'] || '';
     const match = dayRaw.match(/^(\d+)\s+(.+)/);
     const dayNum = match ? parseInt(match[1]) : 9;
@@ -335,7 +347,7 @@ export async function GET(req: NextRequest) {
     if (type !== 'Rescheduled' && type !== 'Makeup') return null;
     const src = sourceByDestId[lessonId];
     if (src?.date) {
-      const slot = slotsData.find((s: any) => s.id === src.slotId) || extraSlotsData.find((s: any) => s.id === src.slotId);
+      const slot = visibleSlots.find((s: any) => s.id === src.slotId) || extraSlotsData.find((s: any) => s.id === src.slotId);
       const time = slot?.fields?.['Time'] || '';
       return `${fmtDayDate(src.date)}${time ? ` ${time}` : ''}`;
     }

@@ -1172,9 +1172,18 @@ export default function SchedulePage() {
   // (28 Jul showed 0/6 with 2 reschedules already booked), so counts come from
   // /api/admin-schedule/slot-counts — same semantics as the server's 409 gate.
   const [targetDayCounts, setTargetDayCounts] = useState<Record<string, Record<string, number>>>({});
+  const [addModal, setAddModal] = useState<AddModalState | null>(null);
+  // Add Lesson's equivalent of the reschedule modal's "Include full slots"
+  // checkbox: ticking it un-disables full slots AND sends force:true, so the
+  // server's capacity gate is overridden by the same deliberate action that
+  // made the slot selectable. Reset whenever the modal opens (see openAdd).
+  const [showFullAddSlots, setShowFullAddSlots] = useState(false);
+  // Shared by the reschedule modal and the Add Lesson modal — both need real
+  // counts for a date that may sit outside the loaded week.
+  const countsForDate = rescheduleModal?.switchMode ? undefined : (rescheduleModal?.toDate || addModal?.date);
   useEffect(() => {
-    const d = rescheduleModal?.toDate;
-    if (!d || rescheduleModal?.switchMode) return;
+    const d = countsForDate;
+    if (!d) return;
     let stale = false;
     fetch(`/api/admin-schedule/slot-counts?date=${d}`)
       .then(r => (r.ok ? r.json() : null))
@@ -1182,13 +1191,12 @@ export default function SchedulePage() {
       .catch(() => {});
     return () => { stale = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rescheduleModal?.toDate, rescheduleModal?.switchMode]);
+  }, [countsForDate]);
   const [actionSheet, setActionSheet] = useState<ActionSheetState | null>(null);
   // Topics of the original missed revision session, shown when a 🏖 Revision makeup
   // chip's action sheet is open. Fetched on demand from the attendance route (which
   // derives topics incl. the published-schedule default). null = none/loading.
   const [revMakeupInfo, setRevMakeupInfo] = useState<{ subjectLabel: string; date: string; topics: string[] } | null | 'loading'>(null);
-  const [addModal, setAddModal] = useState<AddModalState | null>(null);
   // Ad-hoc lesson support: all students (for reselecting unenrolled ones) + inline create.
   const [allStudents, setAllStudents] = useState<{ id: string; name: string; level: string }[]>([]);
   const [creatingStudent, setCreatingStudent] = useState(false);
@@ -2191,7 +2199,9 @@ export default function SchedulePage() {
         let res = await fetch('/api/admin-schedule/reschedule', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || defaultNote }),
+          // "Include full slots" already IS the deliberate override — sending
+          // force up front means no second confirm for a slot picked knowingly.
+          body: JSON.stringify({ lessonId: addModal.linkedLessonId, newDate: addModal.date, newSlotId: addModal.slotId, notes: addModal.notes || defaultNote, ...(showFullAddSlots ? { force: true } : {}) }),
         });
         let json = await res.json();
         if (res.status === 409 && json.doubleBooked) {
@@ -2243,6 +2253,10 @@ export default function SchedulePage() {
       if (addModal.type === 'Trial') { body.trialStudentName = addModal.trialStudentName; }
       else { body.studentId = addModal.studentId; }
       if (addModal.type === 'Ad-hoc') body.chargeOverride = Number(addModal.charge);
+      // "Include full slots" already IS the deliberate override — sending force
+      // up front means no second confirm for a slot picked knowingly. The 409
+      // handler below still covers races (slot filled since the modal loaded).
+      if (showFullAddSlots) body.force = true;
       let res = await fetch('/api/admin-schedule/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2330,12 +2344,14 @@ export default function SchedulePage() {
 
   function openAddModal(date: Date, slot: Slot) {
     setModalError('');
+    setShowFullAddSlots(false);
     setAddModal({ type: 'Makeup', date: isoDate(date), slotId: slot.id, studentId: '', studentSearch: '', trialStudentName: '', notes: '', linkedLessonId: '' });
   }
 
   function openAddModalFab() {
     setModalError('');
     const todaySlots = slotsByDay[dayNameOf(activeDate)] ?? [];
+    setShowFullAddSlots(false);
     setAddModal({ type: 'Makeup', date: isoDate(activeDate), slotId: todaySlots[0]?.id ?? (data?.slots[0]?.id ?? ''), studentId: '', studentSearch: '', trialStudentName: '', notes: '', linkedLessonId: '' });
   }
 
@@ -4316,12 +4332,50 @@ export default function SchedulePage() {
                     ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(addModal.date + 'T00:00:00').getDay()]
                     : null;
                   const daySlots = (data?.slots ?? []).filter(s => !dayName || s.dayName === dayName);
+                  // Revision Makeup and Ad-hoc skip the server's capacity check
+                  // entirely, so they must never be shown as FULL or disabled.
+                  const capped = addModal.type !== 'Revision Makeup' && addModal.type !== 'Ad-hoc';
+                  const dayCounts = addModal.date ? targetDayCounts[addModal.date] : undefined;
+                  const occupancy = (s: typeof daySlots[number]) => {
+                    const cap = s.makeupCapacity ?? s.capacity ?? 0;
+                    // Fall back to the loaded week's lessons until slot-counts lands.
+                    const booked = dayCounts
+                      ? (dayCounts[s.id] ?? 0)
+                      : (enrichedLessonMap[`${addModal.date}__${s.id}`] ?? []).filter(l =>
+                          l.status !== 'Cancelled' && l.status !== 'Absent' && l.status !== 'Rescheduled'
+                        ).length;
+                    return { cap, booked, isFull: capped && cap > 0 && booked >= cap };
+                  };
+                  const anyFull = daySlots.some(s => occupancy(s).isFull);
                   return (
-                    <select className="modal-select" value={addModal.slotId}
-                      onChange={e => setAddModal(m => m ? { ...m, slotId: e.target.value } : null)}>
-                      <option value="">{!addModal.date ? 'Pick a date first…' : daySlots.length ? 'Select slot…' : `No slots on ${dayName}`}</option>
-                      {daySlots.map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
-                    </select>
+                    <>
+                      <select className="modal-select" value={addModal.slotId}
+                        onChange={e => setAddModal(m => m ? { ...m, slotId: e.target.value } : null)}>
+                        <option value="">{!addModal.date ? 'Pick a date first…' : daySlots.length ? 'Select slot…' : `No slots on ${dayName}`}</option>
+                        {daySlots.map(s => {
+                          const { cap, booked, isFull } = occupancy(s);
+                          const availStr = capped && cap > 0 ? (isFull ? ' — FULL' : ` — ${booked}/${cap}`) : '';
+                          return (
+                            <option key={s.id} value={s.id} disabled={isFull && !showFullAddSlots}>
+                              {s.dayName} {s.time} ({s.level}){availStr}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      {anyFull && (
+                        <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input type="checkbox" id="add-show-full-slots" checked={showFullAddSlots}
+                            onChange={e => {
+                              setShowFullAddSlots(e.target.checked);
+                              // Clear a now-disabled choice when unticking.
+                              if (!e.target.checked) setAddModal(m => m ? { ...m, slotId: '' } : null);
+                            }} />
+                          <label htmlFor="add-show-full-slots" style={{ fontSize: 12, color: '#64748b', cursor: 'pointer' }}>
+                            Include full slots (admin override)
+                          </label>
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
               </div>

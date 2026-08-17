@@ -113,6 +113,18 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
   stop force cannot bypass** (same student twice in one date+slot is physically impossible)
   — and since capacity is checked BEFORE double-booking server-side, a forced retry can
   surface `doubleBooked`, which both clients must handle after the retry.
+- **Add Lesson's slot picker mirrors the reschedule picker** (2026-08-17, Adrian: "see how
+  rescheduling of make up classes does it, there is a checkbox that allows to select the slot
+  override"). It used to list bare slot names with no occupancy at all, so a full slot looked
+  identical to an empty one and you only found out on submit. Now each option carries
+  `— booked/cap` (or `— FULL`), full ones are `disabled`, and an **`Include full slots (admin
+  override)` checkbox** — rendered only when the day actually has a full slot — unlocks them
+  AND sends `force: true` up front, so a knowingly-picked full slot books without a second
+  confirm. Counts come from `/api/admin-schedule/slot-counts` for the chosen date (the loaded
+  week can't see other weeks), falling back to `enrichedLessonMap` while that request is in
+  flight. **`Revision Makeup` and `Ad-hoc` skip the server's capacity check entirely, so they
+  must never render as FULL or disabled** — the `capped` flag in the picker enforces that.
+  The 409 confirm stays as the race handler (slot filled after the modal loaded).
 - **The bot respects it too** (repo `adrianmath-telegram-bot`, `lib/capacity-override.js`:
   same Settings row, 60s cache, fail-open): `getRescheduleOptions` (Telegram /rs + WhatsApp +
   trials), the admin-agent booking check, and the availability calendar/summary — parents are
@@ -120,6 +132,40 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
   either repo must apply the same helper.**
 - Airtable's `Is Full` / `Spots Remaining` FORMULA fields can't see the override — never read
   them on a surface that must respect it.
+
+### Date-windowed slots — one-off ad-hoc weeks (2026-08-17)
+
+**Airtable `Slots` rows are permanent WEEKLY definitions** (`Day` + `Time`, no date fields),
+so ticking `Is Active` makes a slot recur *forever*. That bit on 17 Aug 2026: eight Adhoc
+slots (Wed + Thu, 11am-1pm / 1-3pm / 3-5pm / 5-7pm) were opened for a single week of makeups,
+and Adrian asked "will these wed and thu classes be there after this week? they shouldn't be."
+
+The API token has **no `schema.bases:write` scope**, so new Slots fields can't be added
+programmatically — the window instead lives in a Settings row, the same pattern as the
+exam-season and Sec-cap toggles:
+
+```
+Setting Name = 'slot_date_windows'
+Value        = {"recXXX": {"from": "2026-08-19", "until": "2026-08-20"}, …}
+```
+
+- `lib/slot-windows.ts` (`parseSlotWindows`, `slotVisibleInWeek`, unit-tested) — both bounds
+  **inclusive** and optional; a slot with no entry is unbounded, so the regular timetable is
+  untouched. **Parsing fails OPEN**: malformed JSON or bad bounds degrade to "unbounded"
+  rather than hiding slots — a corrupt settings row must never blank the calendar.
+- Applied in `/api/admin-schedule` only, filtering the cached slots list against the VIEWED
+  WEEK before `stage1SlotIds` is computed. Verified live: week of 17 Aug → 26 slots (8 Adhoc);
+  weeks of 10 / 24 / 31 Aug → 18 slots, 0 Adhoc.
+- **It never hides a LESSON.** Slots referenced by the week's lessons are re-fetched by
+  `extraSlotIds` and merged back, so a booking in a closed-window slot still renders at its
+  proper time. Probe-tested: a lesson placed in a windowed-out Adhoc slot on 26 Aug rendered
+  correctly while the other 7 empty Adhoc slots stayed hidden.
+- Scope is the admin calendar. The public homepage never sees Adhoc slots anyway
+  (`/api/schedule` filters `{Level}!='Adhoc'`), and the **bot has no window support** — its
+  admin-only surfaces (`/tt`, `/available`, attendance pickers) still list every active slot.
+  Parent-facing bot flows are unaffected because `lib/reschedule.js` already excludes Adhoc
+  and every other student-facing picker filters `{Level}='Secondary'|'JC'`.
+- To retire an ad-hoc week for good, clear its entries from the row (or untick `Is Active`).
 
 ### Recurring lesson generation (Regular lessons)
 
