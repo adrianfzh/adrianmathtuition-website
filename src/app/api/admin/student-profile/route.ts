@@ -11,6 +11,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { computePerMonthPayments } from '@/lib/invoice-payments';
 import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
+import { SLOT_WINDOWS_SETTING, parseSlotWindows } from '@/lib/slot-windows';
 
 export const runtime = 'nodejs';
 
@@ -30,11 +31,17 @@ export async function GET(req: NextRequest) {
   const f = stu.fields;
 
   // Active slots (for labels) — and the student's active enrollments
-  const [slotsData, enrollData] = await Promise.all([
+  const [slotsData, enrollData, windowsData] = await Promise.all([
     airtableRequestAll('Slots', `?fields[]=Day&fields[]=Time&fields[]=Level&fields[]=Is Active`),
     airtableRequestAll('Enrollments',
       `?filterByFormula=${encodeURIComponent(`{Status}='Active'`)}&fields[]=Student&fields[]=Slot&fields[]=Rate Per Lesson&fields[]=Rate Type`),
+    airtableRequest('Settings',
+      `?filterByFormula=${encodeURIComponent(`{Setting Name}='${SLOT_WINDOWS_SETTING}'`)}&maxRecords=1`).catch(() => null),
   ]);
+  // Dated (ad-hoc) slots run on specific dates only. They belong in the one-off
+  // reschedule picker — on their own dates — and never in the weekly-enrollment
+  // pickers, which is what `dated` lets the page decide per surface.
+  const slotWindows = parseSlotWindows(windowsData?.records?.[0]?.fields?.['Value'] ?? null);
   const slotById: Record<string, any> = Object.fromEntries(slotsData.records.map((r: any) => [r.id, r.fields]));
 
   const enrollments = enrollData.records
@@ -275,7 +282,13 @@ export async function GET(req: NextRequest) {
   // Active slot list for the switch/add pickers
   const slots = slotsData.records
     .filter((r: any) => r.fields['Is Active'])
-    .map((r: any) => ({ id: r.id, label: slotLabel(r.fields), level: r.fields['Level'] || '' }))
+    .map((r: any) => ({
+      id: r.id,
+      label: slotLabel(r.fields),
+      level: r.fields['Level'] || '',
+      dated: Boolean(slotWindows[r.id]),
+      window: slotWindows[r.id] ?? null,
+    }))
     .sort((a: any, b: any) => a.label.localeCompare(b.label));
 
   return NextResponse.json({

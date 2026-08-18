@@ -271,6 +271,12 @@ export async function GET(req: NextRequest) {
       // reschedule/add pickers and their "full" maths follow automatically.
       makeupCapacity: effectiveCapacity(r.fields['Makeup Capacity'] ?? null, r.fields['Level'], secCap),
       enrolledCount: r.fields['Enrolled Count'] || 0,
+      // A dated slot is a ONE-OFF session, never part of the weekly timetable.
+      // Its Level can be Secondary/JC (ad-hoc Sec and JC sessions exist), so
+      // "is it Adhoc?" no longer answers this — every join-a-weekly-class
+      // surface must test `dated`, not the level.
+      dated: Boolean(slotWindows[r.id]),
+      window: slotWindows[r.id] ?? null,
     };
   });
 
@@ -292,6 +298,8 @@ export async function GET(req: NextRequest) {
         capacity: r.fields['Normal Capacity'] || 0,
         makeupCapacity: effectiveCapacity(r.fields['Makeup Capacity'] ?? null, r.fields['Level'], secCap),
         enrolledCount: r.fields['Enrolled Count'] || 0,
+        dated: Boolean(slotWindows[r.id]),
+        window: slotWindows[r.id] ?? null,
       });
     }
   }

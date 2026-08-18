@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { SLOT_WINDOWS_SETTING, parseSlotWindows } from '@/lib/slot-windows';
 
 const DAY_MAP: Record<string, string> = {
   Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed', Thursday: 'Thu',
@@ -23,18 +24,33 @@ export async function GET() {
       params.append('fields[]', f);
     });
 
-    const url = `https://api.airtable.com/v0/${baseId}/Slots?${params.toString()}`;
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-      next: { revalidate: 60 },
+    const auth = { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 60 } };
+    const windowParams = new URLSearchParams({
+      filterByFormula: `{Setting Name}='${SLOT_WINDOWS_SETTING}'`,
+      maxRecords: '1',
     });
 
-    if (!res.ok) {
+    // Both fetches or neither. A dated ad-hoc session can carry Level
+    // 'Secondary' or 'JC' (Adrian creates those from /admin/schedule), so the
+    // Level filter above no longer catches every one of them — the windows row
+    // is what says "this runs on two dates, it is not a weekly class". Serving
+    // the slots without it would advertise a one-off session as a weekly class
+    // parents can join, so a Settings hiccup fails the request instead.
+    const [res, windowRes] = await Promise.all([
+      fetch(`https://api.airtable.com/v0/${baseId}/Slots?${params.toString()}`, auth),
+      fetch(`https://api.airtable.com/v0/${baseId}/Settings?${windowParams.toString()}`, auth),
+    ]);
+
+    if (!res.ok || !windowRes.ok) {
       return NextResponse.json({ error: 'Airtable API error' }, { status: 502 });
     }
 
+    const windowData = await windowRes.json();
+    const slotWindows = parseSlotWindows(windowData.records?.[0]?.fields?.['Value'] ?? null);
+
     const data = await res.json();
-    const slots = data.records.map((record: { fields: Record<string, unknown> }) => {
+    const slots = data.records.filter((record: { id: string }) => !slotWindows[record.id])
+      .map((record: { fields: Record<string, unknown> }) => {
       const f = record.fields;
       const dayRaw = (f['Day'] as string) || '';
       const dayWord = dayRaw.replace(/^\d+\s+/, '');

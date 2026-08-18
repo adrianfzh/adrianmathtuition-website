@@ -160,8 +160,13 @@ Value        = {"recXXX": {"from": "2026-08-19", "until": "2026-08-20"}, …}
   `extraSlotIds` and merged back, so a booking in a closed-window slot still renders at its
   proper time. Probe-tested: a lesson placed in a windowed-out Adhoc slot on 26 Aug rendered
   correctly while the other 7 empty Adhoc slots stayed hidden.
-- The public homepage never sees Adhoc slots anyway (`/api/schedule` filters
-  `{Level}!='Adhoc'`).
+- **The public homepage excludes every DATED slot, not just `Level='Adhoc'`.**
+  `/api/schedule` used to lean on the `{Level}!='Adhoc'` filter alone; since ad-hoc sessions
+  can be created at Sec or JC level (below), that filter no longer catches them all, so the
+  route fetches the windows row alongside the slots and drops any slot with an entry. This is
+  the ONE place the fail-open rule is deliberately reversed: if the Settings fetch fails the
+  route returns **502** rather than serve the slots unfiltered, because the failure mode is
+  advertising a one-off session to parents as a weekly class they can join.
 - **The bot reads this same row** (added 2026-08-18, per Adrian — "possible to just allow
   for this wed and thu for student facing?"). `lib/slot-windows.js` there is the twin of
   the file above, and the rule it enforces is: **an ad-hoc slot reaches students only when
@@ -173,6 +178,62 @@ Value        = {"recXXX": {"from": "2026-08-19", "until": "2026-08-20"}, …}
   (`/tt`, `/available`, attendance pickers) still list every active slot, unwindowed. Full
   notes in the bot repo's `CLAUDE.md` → "Slots, capacity & dated ad-hoc sessions".
 - To retire an ad-hoc week for good, clear its entries from the row (or untick `Is Active`).
+
+#### Creating them from the UI — ⚡ Ad-hoc sessions (2026-08-18)
+
+The 19–20 Aug week was hand-built in Airtable. The **⚡ button in the `/admin/schedule`
+header** replaces that: pick the dates, pick the times, pick a level, set the max.
+
+- **One Slot per (weekday, time)**, windowed across that weekday's own picked dates — Slots
+  are weekday rows, so picking Wed 26 Aug + Thu 27 Aug × two times creates **4** slots, not 8.
+  Non-contiguous picks silently pull in the weekdays between them (19 Aug + 2 Sep also runs
+  26 Aug), so the modal previews the real date list and warns when extra dates appear.
+- **Level is the existing `Slots.Level` singleSelect — no schema change**:
+  `Sec → 'Secondary'`, `JC → 'JC'`, `Mixed → 'Adhoc'`. Choosing 'Secondary' is *exactly* what
+  makes the **Sec class-size toggle apply**, because `effectiveCapacity()` keys off that value
+  — no capacity logic was duplicated. JC and Mixed pass through untouched.
+- **Max students writes `Makeup Capacity`** (the field every booking check reads, and the one
+  the Sec toggle lowers); `Normal Capacity` gets `min(level standard, max)`. Level defaults
+  live in `LEVEL_DEFAULT_CAPACITY` — Sec 6, JC 4, **Mixed 4** (Adrian's call: a Sec+JC room is
+  harder to teach than either). Hard ceiling 12.
+- **Clashes**: creating over an existing class at the same weekday+time returns **409 with the
+  clashing slots and creates nothing**. The modal shows them with a `Create it anyway`
+  checkbox (the same tick-to-confirm pattern as the full-slot override — never a
+  `window.confirm`). Two DATED slots at the same weekday+time only clash if their windows
+  actually overlap.
+- **Removing** a session deactivates the Slot and drops its window entry in one call; the
+  route **refuses any slot that has no window entry**, so a normal weekly class can never be
+  deactivated through this door. Existing lessons in it are untouched (and the modal warns
+  with the booked count before removing).
+- Route: `/api/admin-schedule/adhoc-slots` GET (list + `secCap` + resolved dates) /
+  POST `{dates[], times[], level, maxStudents, force?}` / DELETE `{slotId}`. UI state lives in
+  `adhocModal` in `admin/schedule/page.tsx`; `MultiDateCalendar` is the tap-to-toggle picker.
+
+#### The invariant: a dated slot is a one-off session, NEVER a weekly class
+
+Before this, "not a weekly class" and "`Level='Adhoc'`" were the same thing. They aren't any
+more — an ad-hoc session can carry `Level='Secondary'` or `'JC'` so the Sec cap and the bot's
+level matching work. **Every "join a weekly class" surface must therefore test `dated`, not the
+level.** The five that do:
+
+| Surface | Guard |
+|---|---|
+| Public homepage `/api/schedule` | drops slots with a window entry (502 if the row can't be read) |
+| Switch-slot picker (`/admin/schedule`) | `if (s.dated) return false` |
+| Trial-enrolment dropdown | `sortedSlots.filter(s => !s.dated)` |
+| Student profile — Switch / ＋ Add weekly slot | `SlotSelect` drops dated slots unless an `onDate` is given and the slot is open on it |
+| Bot trials (separate repo) | dated slots excluded outright |
+
+Surfaces that book a **specific date** (Add Lesson, both reschedule pickers, the bot's makeup
+options) keep dated slots but filter them with `slotOpenOnDate(win, date)` — the per-week check
+is too coarse, since a Wed-only window spanning a week would otherwise pass for that week's
+Thursday. `/api/admin-schedule` and `/api/admin/student-profile` both return `dated` + `window`
+per slot so clients don't have to re-derive it.
+
+Verified live 2026-08-18 on a throwaway Sec session (since removed): stored max 6 → reported
+**effective 5** with the Sec cap on; present in the calendar the week of 7 Sep, absent the week
+of 14 Sep; absent from the public homepage; offered by the bot to a Sec 4 student on its own
+date only, and never to JC1/JC2.
 
 ### Recurring lesson generation (Regular lessons)
 
@@ -192,6 +253,7 @@ Regular weekly lessons exist as individual `Lessons` records. Three things creat
 | `/api/admin-schedule` | GET | Weekly data: slots + lessons + students + exam info |
 | `/api/admin-schedule/reschedule` | POST | New Rescheduled lesson + mark original |
 | `/api/admin-schedule/add` | POST | Create Additional/Makeup/Trial/Revision Makeup (Revision Makeup: no capacity check, `Is Revision Makeup`, not billed) |
+| `/api/admin-schedule/adhoc-slots` | GET/POST/DELETE | List / create / retire dated ad-hoc sessions (⚡ modal). POST 409s on a clash unless `force` |
 | `/api/admin-schedule/add-weekly-slot` | POST | Create an Active Enrollment + generate 9 weeks of Regular lessons (Roster tab [+] button) |
 | `/api/admin-schedule/switch` | POST | Permanent slot switch: delete future old-slot lessons + generate 9 weeks on new slot + update enrollment |
 | `/api/admin-schedule/delete` | POST | Hard-delete or mark Absent |

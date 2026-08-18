@@ -7,6 +7,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { resolveActiveExamType } from '@/lib/exam-season';
 import { getExamTopicsForSubject } from '@/lib/canonical-topics';
 import { EXAM_TYPES, examPercent, gradeFromScore, resultTone, RESULT_TONE_COLORS, examTypeLabel } from '@/lib/exam-grade';
+import { slotOpenOnDate } from '@/lib/slot-windows';
 
 // Same JC/Sec category (Mixed/Adhoc/unknown count as available to all).
 function sameLevelSlot(studentLevel: string, slotLevel: string): boolean {
@@ -40,7 +41,9 @@ interface Exam {
 }
 interface Invoice { id: string; month: string; finalAmount: number | null; amountPaid: number | null; isPaid: boolean; status: string; invoiceType: string; pdfUrl: string; }
 interface SentInvoice { id: string; subject: string; sentAt: string; toEmail: string; status: string; pdfUrl: string; }
-interface SlotOpt { id: string; label: string; level: string; }
+// `dated` = an ad-hoc session that runs only inside `window`. It is not part of
+// the weekly timetable, so it must never appear in an enrollment picker.
+interface SlotOpt { id: string; label: string; level: string; dated?: boolean; window?: { from?: string; until?: string } | null; }
 interface Contact { name: string; parentName: string; parentEmail: string; parentContact?: string; studentContact?: string; }
 interface MonthPayment { month: string; charge: number; paid: number; open: number; status: 'paid' | 'partial' | 'open' | 'nil'; invoices: { id: string; type: string; pdfUrl: string }[]; }
 interface PaymentSummary { months: MonthPayment[]; totalCharged: number; totalPaid: number; outstanding: number; credit: number; }
@@ -1178,7 +1181,11 @@ export default function StudentProfilePage() {
       {/* Reschedule modal (one-off move) */}
       {reschedModal && (() => {
         const dayName = weekdayOf(reschedModal.date);
-        const daySlots = (data?.slots ?? []).filter(sl => dayName && weekdayName(sl.label) === dayName);
+        // Dated ad-hoc sessions belong here — but only on the dates they run,
+        // so the "no slots" message below stays truthful.
+        const daySlots = (data?.slots ?? [])
+          .filter(sl => dayName && weekdayName(sl.label) === dayName)
+          .filter(sl => !sl.dated || slotOpenOnDate(sl.window ?? undefined, reschedModal.date));
         return (
           <ModalShell title="Reschedule lesson" onClose={() => !reschedModal.saving && setReschedModal(null)}>
             <div style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>From <strong>{fmtDate(reschedModal.lesson.date)} · {reschedModal.lesson.slotLabel}</strong></div>
@@ -1190,7 +1197,7 @@ export default function StudentProfilePage() {
             ) : daySlots.length === 0 ? (
               <div style={{ fontSize: 12.5, color: '#94a3b8', padding: '6px 2px' }}>No active slots on {dayName}.</div>
             ) : (
-              <SlotSelect slots={daySlots} studentLevel={s?.level || ''} excludeId={null}
+              <SlotSelect slots={daySlots} studentLevel={s?.level || ''} excludeId={null} onDate={reschedModal.date}
                 value={reschedModal.slotId} onChange={v => setReschedModal({ ...reschedModal, slotId: v })} />
             )}
             <div style={modalActions}>
@@ -1465,8 +1472,12 @@ function ExamsEditor({ exams, studentLevel, subjects, cellState, topicsOpen, set
 }
 const examInput: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 7, padding: '6px 9px', fontSize: 13, outline: 'none', boxSizing: 'border-box', background: '#fff' };
 const examChip: React.CSSProperties = { fontSize: 12, fontWeight: 600, color: '#1e3a5f', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', flexShrink: 0 };
-function SlotSelect({ slots, studentLevel, excludeId, value, onChange }: { slots: SlotOpt[]; studentLevel: string; excludeId: string | null; value: string; onChange: (v: string) => void }) {
-  const avail = slots.filter(s => s.id !== excludeId);
+// `onDate` switches this from an ENROLLMENT picker to a ONE-OFF picker: without
+// it, dated ad-hoc sessions are hidden entirely (you cannot enrol weekly into a
+// session that runs twice); with it, they appear only on dates they run.
+function SlotSelect({ slots, studentLevel, excludeId, value, onChange, onDate }: { slots: SlotOpt[]; studentLevel: string; excludeId: string | null; value: string; onChange: (v: string) => void; onDate?: string }) {
+  const avail = slots.filter(s => s.id !== excludeId)
+    .filter(s => !s.dated || (onDate ? slotOpenOnDate(s.window ?? undefined, onDate) : false));
   const same = avail.filter(s => sameLevelSlot(studentLevel, s.level));
   const other = avail.filter(s => !sameLevelSlot(studentLevel, s.level));
   return (

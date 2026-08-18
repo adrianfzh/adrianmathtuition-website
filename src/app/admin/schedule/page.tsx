@@ -4,6 +4,7 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMe
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { findDoubleBookedIds } from '@/lib/double-booking';
 import { getExamTopicsForSubject } from '@/lib/canonical-topics';
+import { SLOT_TIMES, SLOT_LEVELS, LEVEL_DEFAULT_CAPACITY, slotLevelLabel, slotOpenOnDate, dayFieldForDate, windowOccurrences, type SlotLevel } from '@/lib/slot-windows';
 import AdminAIChat from '@/components/AdminAIChat';
 import { QuickLogSheet, VoiceLog } from '@/components/QuickLog';
 import {
@@ -27,6 +28,11 @@ interface Slot {
   capacity: number;
   makeupCapacity: number | null;
   enrolledCount: number;
+  // One-off ad-hoc session: runs only on its own dates, and is therefore never
+  // a slot a student can be ENROLLED into weekly. Booking a single lesson into
+  // it is fine — the calendar only shows it in weeks it actually runs.
+  dated?: boolean;
+  window?: { from?: string; until?: string } | null;
 }
 
 interface Lesson {
@@ -666,6 +672,64 @@ function RangeCalendar({ start, end, onChange }: { start: string; end: string; o
   );
 }
 
+// Tap-to-toggle calendar for picking the individual dates an ad-hoc session
+// runs on. Deliberately NOT a range: the dates are usually a scattered couple
+// (Adrian's first ad-hoc week was a Wednesday and a Thursday), and a range
+// would quietly include everything between them.
+function MultiDateCalendar({ dates, onToggle }: { dates: string[]; onToggle: (iso: string) => void }) {
+  const [viewMonth, setViewMonth] = useState(() => {
+    const base = dates.length ? new Date(dates[0] + 'T00:00:00') : new Date();
+    return new Date(base.getFullYear(), base.getMonth(), 1);
+  });
+  const todayIso = isoDate(new Date());
+  const year = viewMonth.getFullYear(), month = viewMonth.getMonth();
+  const picked = new Set(dates);
+  const cells: (string | null)[] = [];
+  for (let i = 0; i < new Date(year, month, 1).getDay(); i++) cells.push(null);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  for (let d = 1; d <= daysInMonth; d++) cells.push(isoDate(new Date(year, month, d)));
+  return (
+    <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <button type="button" onClick={() => setViewMonth(new Date(year, month - 1, 1))}
+          style={{ border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', fontSize: 14 }}>‹</button>
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1e293b' }}>
+          {viewMonth.toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })}
+        </span>
+        <button type="button" onClick={() => setViewMonth(new Date(year, month + 1, 1))}
+          style={{ border: '1px solid #e2e8f0', background: '#f8fafc', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', fontSize: 14 }}>›</button>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+          <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: '#94a3b8', padding: '2px 0' }}>{d}</div>
+        ))}
+        {cells.map((iso, i) => {
+          if (!iso) return <div key={`e${i}`} />;
+          const isPast = iso < todayIso;
+          const on = picked.has(iso);
+          return (
+            <button key={iso} type="button" disabled={isPast} onClick={() => onToggle(iso)}
+              style={{
+                height: 34, border: 'none', cursor: isPast ? 'default' : 'pointer', borderRadius: 8,
+                background: on ? '#7c3aed' : 'transparent',
+                color: isPast ? '#cbd5e1' : on ? '#fff' : '#334155',
+                fontSize: 13, fontWeight: on || iso === todayIso ? 700 : 500,
+                textDecoration: iso === todayIso && !on ? 'underline' : 'none', textUnderlineOffset: 3,
+              }}>
+              {Number(iso.slice(8))}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ marginTop: 8, fontSize: 12.5, color: dates.length ? '#334155' : '#94a3b8', fontWeight: 600, textAlign: 'center' }}>
+        {dates.length
+          ? [...dates].sort().map(d => formatExamDate(d)).join(' · ')
+          : 'Tap every date this session runs'}
+      </div>
+    </div>
+  );
+}
+
 function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onMarkAbsent, onUndo, onQuickLog, activeExamType, slotLevel }: { lesson: EnrichedLesson; onTap: () => void; onStudentClick?: () => void; onMarkPresent?: () => void; onMarkAbsent?: () => void; onUndo?: () => void; onQuickLog?: () => void; activeExamType?: string | null; slotLevel?: string }) {
   // Rescheduled-away chips (status=Rescheduled) are display-only — disable dragging
   const isRescheduledAway = lesson.status === 'Rescheduled';
@@ -1160,6 +1224,15 @@ export default function SchedulePage() {
   // gate reschedules (server-enforced; managed in the 🏖 modal).
   const [blockedRanges, setBlockedRanges] = useState<{ start: string; end: string; reason: string }[]>([]);
   const [blockedModal, setBlockedModal] = useState<{ start: string; end: string; reason: string; saving: boolean } | null>(null);
+  // ⚡ Ad-hoc sessions — one-off classes that exist only on the dates picked.
+  // `maxTouched` keeps the level's default capacity following the level until
+  // Adrian types his own number, at which point his number sticks.
+  const [adhocModal, setAdhocModal] = useState<{
+    dates: string[]; times: string[]; level: SlotLevel; maxStudents: number; maxTouched: boolean;
+    force: boolean; collisions: { id: string; day: string; time: string; level: string; dated: boolean }[];
+    saving: boolean; loading: boolean;
+    sessions: { id: string; dayLabel: string; time: string; level: string; maxStudents: number | null; effectiveMax: number | null; dates: string[]; lessonCount: number }[];
+  } | null>(null);
   useEffect(() => {
     fetch('/api/admin-schedule/blocked-dates')
       .then(r => (r.ok ? r.json() : null))
@@ -1537,6 +1610,27 @@ export default function SchedulePage() {
       return d !== 0 ? d : parseTimeMinutes(a.time) - parseTimeMinutes(b.time);
     });
   }, [data]);
+
+  // What the ⚡ modal is about to create, grouped the way the route groups it:
+  // one Slot per (weekday, time), windowed across that weekday's own dates.
+  // `extra` is the trap this preview exists to expose — picking 19 Aug and
+  // 2 Sep spans 26 Aug too, because a Slot recurs weekly inside its window.
+  const adhocPlan = useMemo(() => {
+    if (!adhocModal) return null;
+    const byDay = new Map<string, string[]>();
+    for (const d of [...adhocModal.dates].sort()) {
+      const day = dayFieldForDate(d);
+      if (day) byDay.set(day, [...(byDay.get(day) || []), d]);
+    }
+    const groups = [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([day, picked]) => {
+      const runs = windowOccurrences({ from: picked[0], until: picked[picked.length - 1] }, day);
+      return {
+        day, dayLabel: day.replace(/^\d+\s+/, ''), picked, runs,
+        extra: runs.filter(r => !picked.includes(r)),
+      };
+    });
+    return { groups, count: groups.length * adhocModal.times.length };
+  }, [adhocModal]);
 
   // ── Render login ────────────────────────────────────────────────────────────
   if (!authed) {
@@ -2047,6 +2141,75 @@ export default function SchedulePage() {
       }
     } catch (err: any) { setModalError(err.message || 'Failed'); }
     finally { setSubmitting(false); }
+  }
+
+  // ── Ad-hoc sessions ───────────────────────────────────────────────────────
+  function openAdhocModal() {
+    setAdhocModal({
+      dates: [], times: [], level: 'Adhoc', maxStudents: LEVEL_DEFAULT_CAPACITY.Adhoc.makeup,
+      maxTouched: false, force: false, collisions: [], saving: false, loading: true, sessions: [],
+    });
+    loadAdhocSessions();
+  }
+
+  async function loadAdhocSessions() {
+    try {
+      const res = await fetch('/api/admin-schedule/adhoc-slots');
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setAdhocModal(m => m ? { ...m, sessions: json.sessions, loading: false } : m);
+    } catch {
+      // The list is a convenience; creating still works without it.
+      setAdhocModal(m => m ? { ...m, loading: false } : m);
+    }
+  }
+
+  async function createAdhocSessions() {
+    if (!adhocModal) return;
+    const { dates, times, level, maxStudents, force } = adhocModal;
+    if (!dates.length) { showToast('error', 'Pick at least one date'); return; }
+    if (!times.length) { showToast('error', 'Pick at least one time'); return; }
+    setAdhocModal(m => m ? { ...m, saving: true } : m);
+    try {
+      const res = await fetch('/api/admin-schedule/adhoc-slots', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dates, times, level, maxStudents, force }),
+      });
+      const json = await res.json();
+      if (res.status === 409) {
+        // Same day+time as an existing class. Surfaced as a tick-to-confirm
+        // rather than a blocking error — Adrian may genuinely want the room
+        // twice over, he just shouldn't do it by accident.
+        setAdhocModal(m => m ? { ...m, saving: false, collisions: json.collisions || [] } : m);
+        return;
+      }
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setAdhocModal(m => m ? { ...m, dates: [], times: [], force: false, collisions: [], saving: false } : m);
+      await loadAdhocSessions();
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+      showToast('success', `✓ ${json.created} ad-hoc session${json.created === 1 ? '' : 's'} created`);
+    } catch (err: any) {
+      setAdhocModal(m => m ? { ...m, saving: false } : m);
+      showToast('error', err.message || 'Failed');
+    }
+  }
+
+  async function removeAdhocSession(session: { id: string; dayLabel: string; time: string; lessonCount: number }) {
+    const warn = session.lessonCount > 0
+      ? `\n\n${session.lessonCount} lesson${session.lessonCount === 1 ? '' : 's'} already booked into it will stay on the calendar.`
+      : '';
+    if (!window.confirm(`Cancel the ${session.dayLabel} ${session.time} ad-hoc session?${warn}`)) return;
+    try {
+      const res = await fetch('/api/admin-schedule/adhoc-slots', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotId: session.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      await loadAdhocSessions();
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+      showToast('success', '✓ Session removed');
+    } catch (err: any) { showToast('error', err.message || 'Failed'); }
   }
 
   async function addBlockedRange() {
@@ -3159,6 +3322,7 @@ export default function SchedulePage() {
           <button className="nav-btn" onClick={nextWeek}>›</button>
           <button className={`nav-btn refresh-btn${revalidating ? ' revalidating' : ''}`} onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))} disabled={loading} title={revalidating ? 'Updating…' : 'Refresh'}>↻</button>
           <button className="nav-btn" onClick={() => setBlockedModal({ start: '', end: '', reason: '', saving: false })} title="Away / blocked dates">🏖</button>
+          <button className="nav-btn" onClick={openAdhocModal} title="Ad-hoc sessions — extra classes on set dates only">⚡</button>
         </div>
       </div>
 
@@ -3817,6 +3981,161 @@ export default function SchedulePage() {
         </div>
       )}
 
+      {/* ⚡ Ad-hoc sessions — extra classes that run only on the dates picked */}
+      {adhocModal && (() => {
+        const secCapBites = adhocModal.level === 'Secondary'
+          && data?.secCap != null && data.secCap < adhocModal.maxStudents;
+        const setLevel = (level: SlotLevel) => setAdhocModal(m => m ? {
+          ...m, level, collisions: [], force: false,
+          // Untouched capacity follows the level; a typed-in number stays put.
+          maxStudents: m.maxTouched ? m.maxStudents : LEVEL_DEFAULT_CAPACITY[level].makeup,
+        } : m);
+        return (
+          <div className="modal-overlay" onClick={() => !adhocModal.saving && setAdhocModal(null)}>
+            <div className="modal-card" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <div>
+                  <div className="modal-name">⚡ Ad-hoc sessions</div>
+                  <div className="modal-type">Extra classes that run on set dates only — never weekly</div>
+                </div>
+                <button className="modal-close" onClick={() => setAdhocModal(null)} disabled={adhocModal.saving}>✕</button>
+              </div>
+              <div className="modal-body">
+                {/* Existing sessions */}
+                {adhocModal.loading ? (
+                  <div style={{ color: '#94a3b8', fontSize: 13, marginBottom: 10 }}>Loading…</div>
+                ) : adhocModal.sessions.length === 0 ? (
+                  <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: 13, marginBottom: 10 }}>No ad-hoc sessions right now.</div>
+                ) : adhocModal.sessions.map(sess => (
+                  <div key={sess.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 10px', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: 13.5, color: '#581c87', lineHeight: 1.5 }}>
+                      ⚡ <strong>{sess.dayLabel} {sess.time}</strong> · {sess.level === 'Secondary' ? 'Sec' : sess.level === 'JC' ? 'JC' : 'Mixed'} · max {sess.effectiveMax ?? sess.maxStudents ?? '—'}
+                      {sess.effectiveMax != null && sess.maxStudents != null && sess.effectiveMax < sess.maxStudents && (
+                        <span style={{ color: '#7c3aed' }}> (Sec cap, set to {sess.maxStudents})</span>
+                      )}
+                      <br />
+                      <span style={{ color: '#7e22ce', fontSize: 12.5 }}>
+                        {sess.dates.length ? sess.dates.map(d => formatExamDate(d)).join(' · ') : 'no dates'}
+                        {sess.lessonCount > 0 && ` · ${sess.lessonCount} lesson${sess.lessonCount === 1 ? '' : 's'} booked`}
+                      </span>
+                    </span>
+                    <button onClick={() => removeAdhocSession(sess)}
+                      style={{ fontSize: 11.5, fontWeight: 600, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', flexShrink: 0 }}>
+                      Remove
+                    </button>
+                  </div>
+                ))}
+
+                {/* New session */}
+                <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 10 }}>
+                  <div className="form-group">
+                    <span className="form-label">Dates</span>
+                    <MultiDateCalendar dates={adhocModal.dates}
+                      onToggle={iso => setAdhocModal(m => m ? {
+                        ...m, collisions: [], force: false,
+                        dates: m.dates.includes(iso) ? m.dates.filter(d => d !== iso) : [...m.dates, iso].sort(),
+                      } : m)} />
+                  </div>
+
+                  <div className="form-group" style={{ marginTop: 10 }}>
+                    <span className="form-label">Times</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {SLOT_TIMES.map(t => {
+                        const on = adhocModal.times.includes(t);
+                        return (
+                          <button key={t} type="button"
+                            onClick={() => setAdhocModal(m => m ? {
+                              ...m, collisions: [], force: false,
+                              times: m.times.includes(t) ? m.times.filter(x => x !== t) : [...m.times, t],
+                            } : m)}
+                            style={{ fontSize: 12.5, fontWeight: 600, padding: '6px 11px', borderRadius: 8, cursor: 'pointer',
+                              border: `1px solid ${on ? '#7c3aed' : '#e2e8f0'}`, background: on ? '#7c3aed' : '#fff', color: on ? '#fff' : '#475569' }}>
+                            {t}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginTop: 10 }}>
+                    <span className="form-label">Level</span>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {SLOT_LEVELS.map(lv => {
+                        const on = adhocModal.level === lv;
+                        return (
+                          <button key={lv} type="button" onClick={() => setLevel(lv)}
+                            style={{ flex: 1, fontSize: 13, fontWeight: 700, padding: '8px 0', borderRadius: 8, cursor: 'pointer',
+                              border: `1px solid ${on ? '#1e3a5f' : '#e2e8f0'}`, background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569' }}>
+                            {slotLevelLabel(lv)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginTop: 10 }}>
+                    <span className="form-label">
+                      Max students <span style={{ color: '#cbd5e1', fontWeight: 400 }}>· usual for {slotLevelLabel(adhocModal.level)} is {LEVEL_DEFAULT_CAPACITY[adhocModal.level].makeup}</span>
+                    </span>
+                    <input type="number" inputMode="numeric" min={1} max={12} className="modal-input" style={{ width: 90 }}
+                      value={adhocModal.maxStudents}
+                      onChange={e => setAdhocModal(m => m ? { ...m, maxStudents: Number(e.target.value), maxTouched: true, collisions: [], force: false } : m)} />
+                    {secCapBites && (
+                      <div style={{ marginTop: 6, fontSize: 12.5, color: '#7c3aed', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, padding: '7px 10px', lineHeight: 1.5 }}>
+                        Sec cap {data!.secCap} is on, so this Sec session takes <strong>{data!.secCap} per date</strong>, not {adhocModal.maxStudents} — same as every other Sec class.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* What will actually be created */}
+                  {adhocPlan && adhocPlan.count > 0 && (
+                    <div style={{ marginTop: 10, fontSize: 12.5, color: '#334155', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 10px', lineHeight: 1.6 }}>
+                      Creates <strong>{adhocPlan.count} session{adhocPlan.count === 1 ? '' : 's'}</strong>:
+                      {adhocPlan.groups.map(g => (
+                        <div key={g.day}>
+                          · {g.dayLabel} {adhocModal.times.join(', ')} — {g.runs.map(d => formatExamDate(d)).join(', ')}
+                        </div>
+                      ))}
+                      {adhocPlan.groups.some(g => g.extra.length > 0) && (
+                        <div style={{ marginTop: 6, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6, padding: '6px 8px' }}>
+                          ⚠ A session repeats weekly between its first and last date, so it also runs on{' '}
+                          <strong>{adhocPlan.groups.flatMap(g => g.extra).map(d => formatExamDate(d)).join(', ')}</strong>.
+                          Create them as separate sessions if you don&apos;t want that.
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Same day+time as an existing class — tick to go ahead anyway */}
+                  {adhocModal.collisions.length > 0 && (
+                    <div style={{ marginTop: 10, fontSize: 12.5, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', lineHeight: 1.6 }}>
+                      There is already a class at that time:
+                      {adhocModal.collisions.map(c => (
+                        <div key={`${c.id}_${c.time}`}>· {c.day} {c.time} ({c.level}){c.dated ? ' — also ad-hoc' : ''}</div>
+                      ))}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={adhocModal.force}
+                          onChange={e => setAdhocModal(m => m ? { ...m, force: e.target.checked } : m)} />
+                        <span style={{ fontWeight: 600 }}>Create it anyway</span>
+                      </label>
+                    </div>
+                  )}
+
+                  <button className="btn-primary" style={{ width: '100%', marginTop: 10 }}
+                    disabled={adhocModal.saving || !adhocPlan?.count || (adhocModal.collisions.length > 0 && !adhocModal.force)}
+                    onClick={createAdhocSessions}>
+                    {adhocModal.saving ? 'Creating…' : `＋ Create ${adhocPlan?.count || ''} session${adhocPlan?.count === 1 ? '' : 's'}`}
+                  </button>
+                  <div style={{ marginTop: 8, fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
+                    Students can reschedule into an ad-hoc session from Telegram — but only on its own dates, and it never appears on the public timetable or in weekly-slot pickers.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Reschedule modal */}
       {rescheduleModal && (
         <div className="modal-overlay" onClick={() => !submitting && setRescheduleModal(null)}>
@@ -3886,6 +4205,11 @@ export default function SchedulePage() {
                                 const slotIsJC = slotLvl === 'jc' || slotLvl.startsWith('jc');
                                 const slotIsAdhoc = slotLvl === 'adhoc';
                                 if (slotIsAdhoc) return false; // never show adhoc slots for switch
+                                // A DATED session runs on a couple of dates and then stops —
+                                // switching a student's permanent weekly slot into one would
+                                // silently end their weekly lesson. Its Level can be Secondary
+                                // or JC now, so the adhoc test above no longer catches it.
+                                if (s.dated) return false;
                                 if (!showAllRescheduleSlots && studentIsJC !== slotIsJC) return false;
                                 // Capacity filter: only show slots with room (enrolledCount < normalCapacity)
                                 const regCap = s.capacity ?? 0;
@@ -4254,7 +4578,9 @@ export default function SchedulePage() {
                     <span className="form-label">Enrolment slot</span>
                     <select className="modal-select" value={trialEnrol.slotId} onChange={e => setTrialEnrol({ ...trialEnrol, slotId: e.target.value })}>
                       <option value="">Select a slot…</option>
-                      {sortedSlots.map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
+                      {/* Enrolment is weekly and permanent, so a dated one-off
+                          session is never a valid answer here. */}
+                      {sortedSlots.filter(s => !s.dated).map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
                     </select>
                   </div>
                   <div className="form-group" style={{ marginTop: 12 }}>
@@ -4331,7 +4657,12 @@ export default function SchedulePage() {
                   const dayName = addModal.date
                     ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(addModal.date + 'T00:00:00').getDay()]
                     : null;
-                  const daySlots = (data?.slots ?? []).filter(s => !dayName || s.dayName === dayName);
+                  // A dated ad-hoc session is bookable — but only on a date it
+                  // actually runs. Without this a Wednesday ad-hoc slot would
+                  // still be offered for the Wednesday a fortnight later.
+                  const daySlots = (data?.slots ?? [])
+                    .filter(s => !dayName || s.dayName === dayName)
+                    .filter(s => !s.dated || !addModal.date || slotOpenOnDate(s.window ?? undefined, addModal.date));
                   // Revision Makeup and Ad-hoc skip the server's capacity check
                   // entirely, so they must never be shown as FULL or disabled.
                   const capped = addModal.type !== 'Revision Makeup' && addModal.type !== 'Ad-hoc';
