@@ -53,6 +53,28 @@ export async function GET(req: NextRequest) {
   }));
 
   const parallelChecks = await Promise.all([
+    // Every live slot must state how many bodies it takes. The bot falls back to
+    // DEFAULT_MAKEUP_CAPACITY (4) when the field is blank, and Adrian's answer to
+    // "why would Makeup Capacity be blank?" was "it should not be" — so the
+    // fallback should never actually fire. This is what makes that true: nothing
+    // the website creates leaves it blank, and if a slot is ever hand-made in
+    // Airtable without one, this alerts instead of quietly booking 4 into it.
+    // Same check catches a Time that no picker can parse (it would sort last).
+    timed('slot-fields', async () => {
+      const d = await airtableRequest('Slots', `?filterByFormula=${encodeURIComponent('{Is Active}=1')}&fields[]=Day&fields[]=Time&fields[]=Makeup Capacity`);
+      type SlotRow = { fields: Record<string, unknown> };
+      const rows: SlotRow[] = d.records || [];
+      const blankCap = rows.filter((r) => !r.fields['Makeup Capacity']);
+      const badTime = rows.filter((r) =>
+        !/\d{1,2}(:\d{2})?\s*(am|pm)?\s*-\s*\d{1,2}(:\d{2})?\s*(am|pm)/i.test(String(r.fields['Time'] || '')));
+      const label = (r: SlotRow) => `${r.fields['Day'] || '?'} ${r.fields['Time'] || '?'}`;
+      const problems = [
+        ...blankCap.map((r) => `blank Makeup Capacity: ${label(r)}`),
+        ...badTime.map((r) => `unreadable Time: ${label(r)}`),
+      ];
+      if (problems.length) throw new Error(problems.slice(0, 4).join('; '));
+      return `${rows.length} slots OK`;
+    }),
     // Public schedule the homepage renders
     timed('public-schedule', async () => {
       const r = await fetch(`${base}/api/schedule`, { signal: T(10000) });
