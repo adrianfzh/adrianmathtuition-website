@@ -2202,9 +2202,13 @@ export default function SchedulePage() {
   }
 
   // ── Ad-hoc sessions ───────────────────────────────────────────────────────
-  function openAdhocModal() {
+  // `preDate` comes from the ＋ on a day in the calendar: Adrian's usual move is
+  // "I want an extra class on THAT day", so the date is picked before the modal
+  // opens and MultiDateCalendar lands on the right month (Adrian, 18 Aug 2026).
+  // He can still add or remove dates inside the modal.
+  function openAdhocModal(preDate?: string) {
     setAdhocModal({
-      dates: [], times: [], level: 'Adhoc', maxStudents: LEVEL_DEFAULT_CAPACITY.Adhoc.makeup,
+      dates: preDate ? [preDate] : [], times: [], level: 'Adhoc', maxStudents: LEVEL_DEFAULT_CAPACITY.Adhoc.makeup,
       maxTouched: false, force: false, collisions: [], saving: false, loading: true, sessions: [],
     });
     loadAdhocSessions();
@@ -3305,6 +3309,11 @@ export default function SchedulePage() {
             {renderRevisionCard(activeDate)}
             {(slotsByDay[dayNameOf(activeDate)] ?? []).map(slot => renderLessonsSlotCard(slot, activeDate))}
             {(slotsByDay[dayNameOf(activeDate)] ?? []).length === 0 && !renderRevisionCard(activeDate) && <div className="no-slots">No lessons</div>}
+            {/* Phone equivalent of the ＋ in the desktop day header — the day on
+                screen IS the date, so this needs no picker of its own. */}
+            <button className="day-adhoc-add" onClick={() => openAdhocModal(isoDate(activeDate))}>
+              ＋ Ad-hoc session on {activeDate.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' })}
+            </button>
           </div>
         </div>
         {/* Desktop: full grid — only mounted on desktop to avoid ghost droppables on mobile */}
@@ -3322,6 +3331,17 @@ export default function SchedulePage() {
                   <span className={`grid-day-date${isToday ? ' today-date' : ''}`}>
                     {isToday ? date.getDate() : date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
                   </span>
+                  {/* Ad-hoc session on THIS day — the ⚡ toolbar button opens the
+                      same modal with no date picked, and still owns the list +
+                      cancel side of it. Kept visible (not hover-only) because the
+                      desktop grid also renders on a touch iPad, where there is
+                      no hover to reveal it. */}
+                  <button
+                    className="day-adhoc-btn"
+                    onClick={() => openAdhocModal(isoDate(date))}
+                    title={`Ad-hoc session on ${date.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' })}`}
+                    aria-label={`Create an ad-hoc session on ${isoDate(date)}`}
+                  >＋</button>
                 </div>
                 {colBlock && <div className="away-banner">🏖 Away{colBlock.reason ? ` — ${colBlock.reason}` : ''}</div>}
                 {renderRevisionCard(date)}
@@ -3380,7 +3400,7 @@ export default function SchedulePage() {
           <button className="nav-btn" onClick={nextWeek}>›</button>
           <button className={`nav-btn refresh-btn${revalidating ? ' revalidating' : ''}`} onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))} disabled={loading} title={revalidating ? 'Updating…' : 'Refresh'}>↻</button>
           <button className="nav-btn" onClick={() => setBlockedModal({ start: '', end: '', reason: '', saving: false })} title="Away / blocked dates">🏖</button>
-          <button className="nav-btn" onClick={openAdhocModal} title="Ad-hoc sessions — extra classes on set dates only">⚡</button>
+          <button className="nav-btn" onClick={() => openAdhocModal()} title="Ad-hoc sessions — extra classes on set dates only, and cancel existing ones">⚡</button>
         </div>
       </div>
 
@@ -5391,6 +5411,12 @@ body {
 .capacity.full { background: #fef2f2; color: #dc2626; }
 .capacity.dim { color: #94a3b8; }
 .no-slots { text-align: center; color: #94a3b8; font-size: 14px; padding: 24px 0; }
+.day-adhoc-add {
+  width: 100%; padding: 11px 12px; margin-top: 2px;
+  border: 1px dashed #cbd5e1; border-radius: 10px; background: #fff;
+  color: #64748b; font-size: 13.5px; font-weight: 600; cursor: pointer;
+}
+.day-adhoc-add:active { background: #f8fafc; }
 
 /* ── Lesson chips ── */
 .lesson-list { display: flex; flex-direction: column; gap: 5px; }
@@ -5497,8 +5523,18 @@ body {
   .grid-col-today .slot-card { border-color: #bfdbfe; }
   .grid-day-header {
     display: flex; flex-direction: column; align-items: center;
-    padding: 10px 4px; margin-bottom: 2px;
+    padding: 10px 4px; margin-bottom: 2px; position: relative;
   }
+  .day-adhoc-btn {
+    position: absolute; top: 6px; right: 2px;
+    width: 22px; height: 22px; padding: 0; line-height: 1;
+    border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;
+    color: #94a3b8; font-size: 13px; cursor: pointer; opacity: 0.45;
+    transition: opacity 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .grid-col:hover .day-adhoc-btn { opacity: 1; }
+  .day-adhoc-btn:hover { color: #1a365d; border-color: #cbd5e1; background: #f8fafc; }
+  .day-adhoc-add { display: none; }
   .grid-day-name {
     font-size: 11px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.08em; color: #94a3b8;

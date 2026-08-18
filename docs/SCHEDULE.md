@@ -208,6 +208,13 @@ header** replaces that: pick the dates, pick the times, pick a level, set the ma
 - Route: `/api/admin-schedule/adhoc-slots` GET (list + `secCap` + resolved dates) /
   POST `{dates[], times[], level, maxStudents, force?}` / DELETE `{slotId}`. UI state lives in
   `adhocModal` in `admin/schedule/page.tsx`; `MultiDateCalendar` is the tap-to-toggle picker.
+- **Two doors into the same modal.** The ⚡ header button opens it with no date picked (and
+  owns the list + Remove side). A **＋ on each day** opens it with that date already picked:
+  in the desktop grid it sits top-right of the day header, on the phone it's a dashed
+  `＋ Ad-hoc session on <date>` under the day's lessons. `openAdhocModal(preDate?)` is the
+  single entry point, and `MultiDateCalendar` seeds its month from `dates[0]`, so a ＋ in
+  December opens on December. ⚠ The ⚡ button must call it as `onClick={() => openAdhocModal()}`
+  — wiring it bare passes React's MouseEvent in as the date.
 
 #### The invariant: a dated slot is a one-off session, NEVER a weekly class
 
