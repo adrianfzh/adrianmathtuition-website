@@ -84,6 +84,10 @@ interface ScheduleData {
   // EFFECTIVE per-date cap — the server applies the toggle before responding.
   secCap?: number | null;
   slots: Slot[];
+  // Every active DATED session, whatever week it falls in — `slots` above is
+  // week-filtered, so it can't answer "what can I book on 20 Aug?" from a
+  // calendar showing another week. Date pickers only; never the grid.
+  datedSlots?: Slot[];
   enrollmentsBySlot: Record<string, string[]>;
   // Same entries with tenure dates — ghosts are gated per DAY with this (a mid-week
   // discontinue must not ghost on the days after the enrollment ended).
@@ -1368,6 +1372,38 @@ export default function SchedulePage() {
   const [ghostActionSheet, setGhostActionSheet] = useState<{ studentId: string; studentName: string; slotId: string; date: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
+
+  // Escape closes the topmost popup. The guards mirror each overlay's own
+  // click-outside handler, so a sheet mid-save stays put rather than vanishing
+  // with a write in flight. The ref is refreshed every render so the listener
+  // (registered once) never reads stale state.
+  const escapeCloseRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    escapeCloseRef.current = () => {
+      // Order = what's visually on top: detail popups first, the action sheets
+      // that launch them last.
+      if (examDetailModal) return setExamDetailModal(null);
+      if (rescheduleModal) return void (!submitting && setRescheduleModal(null));
+      if (absentModal) return void (!submitting && setAbsentModal(null));
+      if (deleteModal) return void (!submitting && setDeleteModal(null));
+      if (editNotesModal) return void (!submitting && setEditNotesModal(null));
+      if (addModal) return void (!submitting && setAddModal(null));
+      if (addSlotModal) return void (!addSlotSubmitting && setAddSlotModal(null));
+      if (revReschedule) return void (!revReschedule.saving && setRevReschedule(null));
+      if (trialEnrol) return void (!trialEnrol.generating && setTrialEnrol(null));
+      if (adhocModal) return void (!adhocModal.saving && setAdhocModal(null));
+      if (blockedModal) return setBlockedModal(null);
+      if (examEdit) return void (!examEdit.saving && setExamEdit(null));
+      if (modal) return setModal(null);
+      if (ghostActionSheet) return setGhostActionSheet(null);
+      if (actionSheet) return setActionSheet(null);
+    };
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') escapeCloseRef.current(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   // Makeup flow — absent lessons for the selected student
   const [absentLessons, setAbsentLessons] = useState<{ id: string; date: string; slotId: string | null }[]>([]);
   const [absentLessonsLoading, setAbsentLessonsLoading] = useState(false);
@@ -1603,12 +1639,34 @@ export default function SchedulePage() {
 
   // Slots sorted Mon→Sun then by time, used in dropdowns
   const DAY_ORDER: Record<string, number> = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4, Saturday: 5, Sunday: 6 };
+  // getDay() order — indexable straight off a Date.
+  const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const sortedSlots = useMemo(() => {
     if (!data?.slots) return [];
     return [...data.slots].sort((a, b) => {
       const d = (DAY_ORDER[a.dayName] ?? 7) - (DAY_ORDER[b.dayName] ?? 7);
       return d !== 0 ? d : parseTimeMinutes(a.time) - parseTimeMinutes(b.time);
     });
+  }, [data]);
+
+  /**
+   * Slots a lesson can be booked into on ONE specific date — what Add Lesson
+   * and Reschedule need. Two things the week's slot list can't do alone:
+   *  - a dated ad-hoc session only ships with the week it runs in, so booking
+   *    forward into one from another week found nothing (the 20 Aug Thursday
+   *    session was invisible from the 16 Aug lesson — Adrian, 18 Aug 2026);
+   *  - a dated slot must be offered ONLY on its own dates, so a Wednesday
+   *    session doesn't reappear for the Wednesday a fortnight later.
+   */
+  const slotsBookableOn = useCallback((dateStr: string) => {
+    const dayName = WEEKDAY_NAMES[new Date(dateStr + 'T00:00:00').getDay()];
+    const byId = new Map<string, Slot>();
+    for (const s of [...(data?.slots ?? []), ...(data?.datedSlots ?? [])]) {
+      if (byId.has(s.id) || s.dayName !== dayName) continue;
+      if (s.dated && !slotOpenOnDate(s.window ?? undefined, dateStr)) continue;
+      byId.set(s.id, s);
+    }
+    return [...byId.values()].sort((a, b) => parseTimeMinutes(a.time) - parseTimeMinutes(b.time));
   }, [data]);
 
   // What the ⚡ modal is about to create, grouped the way the route groups it:
@@ -4171,8 +4229,8 @@ export default function SchedulePage() {
                       const selectedDayName = rescheduleModal.switchMode ? null : rescheduleModal.toDate
                         ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(rescheduleModal.toDate + 'T00:00:00').getDay()]
                         : null;
-                      const daySlots = selectedDayName
-                        ? sortedSlots.filter(s => s.dayName === selectedDayName)
+                      const daySlots = selectedDayName && rescheduleModal.toDate
+                        ? slotsBookableOn(rescheduleModal.toDate)
                         : sortedSlots;
                       // Reschedule mode always lists only the selected date's slots;
                       // the checkbox unlocks FULL ones (admin override) instead of
@@ -4654,15 +4712,10 @@ export default function SchedulePage() {
               <div className="form-group">
                 <span className="form-label">Slot</span>
                 {(() => {
-                  const dayName = addModal.date
-                    ? ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(addModal.date + 'T00:00:00').getDay()]
-                    : null;
-                  // A dated ad-hoc session is bookable — but only on a date it
-                  // actually runs. Without this a Wednesday ad-hoc slot would
-                  // still be offered for the Wednesday a fortnight later.
-                  const daySlots = (data?.slots ?? [])
-                    .filter(s => !dayName || s.dayName === dayName)
-                    .filter(s => !s.dated || !addModal.date || slotOpenOnDate(s.window ?? undefined, addModal.date));
+                  const dayName = addModal.date ? WEEKDAY_NAMES[new Date(addModal.date + 'T00:00:00').getDay()] : null;
+                  const daySlots = addModal.date
+                    ? slotsBookableOn(addModal.date)
+                    : (data?.slots ?? []);
                   // Revision Makeup and Ad-hoc skip the server's capacity check
                   // entirely, so they must never be shown as FULL or disabled.
                   const capped = addModal.type !== 'Revision Makeup' && addModal.type !== 'Ad-hoc';

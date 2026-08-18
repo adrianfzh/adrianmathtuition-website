@@ -230,6 +230,16 @@ is too coarse, since a Wed-only window spanning a week would otherwise pass for 
 Thursday. `/api/admin-schedule` and `/api/admin/student-profile` both return `dated` + `window`
 per slot so clients don't have to re-derive it.
 
+**`slots` is week-filtered; `datedSlots` is not.** `/api/admin-schedule?week=` returns the
+grid's slots for that week only — correct for the calendar, wrong for the date pickers, which
+let Adrian pick *any* date. Rescheduling a Sun 16 Aug lesson to Thu 20 Aug found no Thursday
+slot at all and the dropdown came up empty (Adrian, 18 Aug 2026), because the 20 Aug session
+lives in the *next* week's payload. The route therefore also returns **`datedSlots`** — every
+active dated session regardless of week — and the page merges the two in `slotsBookableOn(date)`
+(dedup by id, same weekday, `slotOpenOnDate` on dated ones). Add Lesson and Reschedule both call
+it. **`datedSlots` must never feed the weekly grid**, or a 20 Aug session would draw itself on
+every Thursday.
+
 Verified live 2026-08-18 on a throwaway Sec session (since removed): stored max 6 → reported
 **effective 5** with the Sec cap on; present in the calendar the week of 7 Sep, absent the week
 of 14 Sep; absent from the public homepage; offered by the bot to a Sec 4 student on its own
@@ -334,6 +344,12 @@ Shared component `src/components/LessonModal.tsx`. On the schedule page, name ta
 - Toasts: 3s auto-dismiss, fixed bottom-centre, success (green) / error (red)
 - Drop targets: dashed navy border on hover
 - All destructive actions require modal confirmation
+- **Escape closes the topmost popup** (2026-08-18). One `keydown` listener on `window`
+  calls through a ref that is refreshed every render, so it never reads stale state; the
+  ref's body checks the overlays in visual stacking order (detail modals first, the action
+  sheets that launch them last) and returns on the first open one. Each check repeats that
+  overlay's own click-outside guard — a sheet mid-save (`submitting`, `saving`, `generating`)
+  stays put rather than vanishing with a write in flight.
 
 ## /admin/progress — Student Timeline
 

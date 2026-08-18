@@ -253,7 +253,7 @@ export async function GET(req: NextRequest) {
   };
 
   // Parse slots
-  const slots = visibleSlots.map((r: any) => {
+  const mapSlot = (r: any) => {
     const dayRaw: string = r.fields['Day'] || '';
     const match = dayRaw.match(/^(\d+)\s+(.+)/);
     const dayNum = match ? parseInt(match[1]) : 9;
@@ -278,31 +278,22 @@ export async function GET(req: NextRequest) {
       dated: Boolean(slotWindows[r.id]),
       window: slotWindows[r.id] ?? null,
     };
-  });
+  };
+
+  const slots = visibleSlots.map(mapSlot);
 
   // Merge in the extra (inactive/adhoc) slots pre-fetched in stage 2.
-  {
-    for (const r of extraSlotsData) {
-      const dayRaw: string = r.fields['Day'] || '';
-      const match = dayRaw.match(/^(\d+)\s+(.+)/);
-      const dayNum = match ? parseInt(match[1]) : 9;
-      const rawName = (match ? match[2].trim() : dayRaw.trim()).toLowerCase();
-      const dayName = DAY_NORMALIZE[rawName] || (match ? match[2].trim() : dayRaw.trim());
-      slots.push({
-        id: r.id,
-        dayRaw,
-        dayNum,
-        dayName,
-        time: r.fields['Time'] || '',
-        level: r.fields['Level'] || '',
-        capacity: r.fields['Normal Capacity'] || 0,
-        makeupCapacity: effectiveCapacity(r.fields['Makeup Capacity'] ?? null, r.fields['Level'], secCap),
-        enrolledCount: r.fields['Enrolled Count'] || 0,
-        dated: Boolean(slotWindows[r.id]),
-        window: slotWindows[r.id] ?? null,
-      });
-    }
-  }
+  for (const r of extraSlotsData) slots.push(mapSlot(r));
+
+  // EVERY active dated session, whatever week it falls in. `slots` above is
+  // week-filtered, which is right for the grid and wrong for the date pickers:
+  // Add Lesson and Reschedule let Adrian pick any date, so booking a 16 Aug
+  // lesson into the 20 Aug ad-hoc session found no Thursday slot at all and the
+  // dropdown came up empty (Adrian, 18 Aug 2026). Clients filter this list with
+  // slotOpenOnDate(window, chosenDate) — it must never feed the weekly grid.
+  const datedSlots = Object.keys(slotWindows).length
+    ? slotsData.filter((r: any) => slotWindows[r.id]).map(mapSlot)
+    : [];
 
   // enrollmentsBySlot: slotId → studentId[], as the roster stood DURING the
   // viewed week. An enrollment counts if its tenure overlaps [weekStart,weekEnd]:
@@ -540,6 +531,7 @@ export async function GET(req: NextRequest) {
     weekEnd,
     secCap,
     slots,
+    datedSlots,
     enrollmentsBySlot,
     enrollmentTenureBySlot,
     lessons,
