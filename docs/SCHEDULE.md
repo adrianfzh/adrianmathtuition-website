@@ -205,9 +205,20 @@ header** replaces that: pick the dates, pick the times, pick a level, set the ma
   route **refuses any slot that has no window entry**, so a normal weekly class can never be
   deactivated through this door. Existing lessons in it are untouched (and the modal warns
   with the booked count before removing).
+- **Editing one after the fact** — `Edit` on any row in the ⚡ list opens an inline level +
+  max-students editor (PATCH `{slotId, level?, maxStudents?}`). Only those two are editable,
+  deliberately: the **dates and time ARE the Slot row** (Day + Time) and what its window spans,
+  so changing them would drag every lesson already booked to a day nobody agreed to — remove
+  and recreate an unbooked session instead. PATCH carries the same "must have a window entry"
+  guard as DELETE, so a bad id can never resize a real weekly class. Narrowing Mixed → Sec/JC
+  with bookings on it warns that existing lessons stay and only *future* bookings are
+  restricted. (Adrian, 18 Aug 2026 — the 19–20 Aug week predated the level control and was
+  stuck on Mixed with no way back short of hand-patching Airtable.)
 - Route: `/api/admin-schedule/adhoc-slots` GET (list + `secCap` + resolved dates) /
-  POST `{dates[], times[], level, maxStudents, force?}` / DELETE `{slotId}`. UI state lives in
-  `adhocModal` in `admin/schedule/page.tsx`; `MultiDateCalendar` is the tap-to-toggle picker.
+  POST `{dates[], times[], level, maxStudents, force?}` / PATCH `{slotId, level?, maxStudents?}` /
+  DELETE `{slotId}`. UI state lives in `adhocModal` in `admin/schedule/page.tsx` (`editing` holds
+  the open row); `MultiDateCalendar` is the tap-to-toggle picker. Escape closes the inline editor
+  first, the modal second.
 - **Two doors into the same modal.** The ⚡ header button opens it with no date picked (and
   owns the list + Remove side). A **＋ on each day** opens it with that date already picked:
   in the desktop grid it sits top-right of the day header, on the phone it's a dashed
@@ -270,7 +281,7 @@ Regular weekly lessons exist as individual `Lessons` records. Three things creat
 | `/api/admin-schedule` | GET | Weekly data: slots + lessons + students + exam info |
 | `/api/admin-schedule/reschedule` | POST | New Rescheduled lesson + mark original |
 | `/api/admin-schedule/add` | POST | Create Additional/Makeup/Trial/Revision Makeup (Revision Makeup: no capacity check, `Is Revision Makeup`, not billed) |
-| `/api/admin-schedule/adhoc-slots` | GET/POST/DELETE | List / create / retire dated ad-hoc sessions (⚡ modal). POST 409s on a clash unless `force` |
+| `/api/admin-schedule/adhoc-slots` | GET/POST/PATCH/DELETE | List / create / edit / retire dated ad-hoc sessions (⚡ modal). POST 409s on a clash unless `force`; PATCH changes level + max only (never dates/time) |
 | `/api/admin-schedule/add-weekly-slot` | POST | Create an Active Enrollment + generate 9 weeks of Regular lessons (Roster tab [+] button) |
 | `/api/admin-schedule/switch` | POST | Permanent slot switch: delete future old-slot lessons + generate 9 weeks on new slot + update enrollment |
 | `/api/admin-schedule/delete` | POST | Hard-delete or mark Absent |

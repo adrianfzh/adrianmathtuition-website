@@ -4,7 +4,7 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMe
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { findDoubleBookedIds } from '@/lib/double-booking';
 import { getExamTopicsForSubject } from '@/lib/canonical-topics';
-import { SLOT_TIMES, SLOT_LEVELS, LEVEL_DEFAULT_CAPACITY, slotLevelLabel, slotOpenOnDate, dayFieldForDate, windowOccurrences, type SlotLevel } from '@/lib/slot-windows';
+import { SLOT_TIMES, SLOT_LEVELS, LEVEL_DEFAULT_CAPACITY, slotLevelLabel, isSlotLevel, slotOpenOnDate, dayFieldForDate, windowOccurrences, type SlotLevel } from '@/lib/slot-windows';
 import AdminAIChat from '@/components/AdminAIChat';
 import { QuickLogSheet, VoiceLog } from '@/components/QuickLog';
 import {
@@ -1236,6 +1236,9 @@ export default function SchedulePage() {
     force: boolean; collisions: { id: string; day: string; time: string; level: string; dated: boolean }[];
     saving: boolean; loading: boolean;
     sessions: { id: string; dayLabel: string; time: string; level: string; maxStudents: number | null; effectiveMax: number | null; dates: string[]; lessonCount: number }[];
+    // One row of the list opened for editing. Level and size only — the dates
+    // and time ARE the slot row, so changing those would move bookings.
+    editing: { id: string; level: SlotLevel; maxStudents: number; saving: boolean } | null;
   } | null>(null);
   useEffect(() => {
     fetch('/api/admin-schedule/blocked-dates')
@@ -1391,6 +1394,7 @@ export default function SchedulePage() {
       if (addSlotModal) return void (!addSlotSubmitting && setAddSlotModal(null));
       if (revReschedule) return void (!revReschedule.saving && setRevReschedule(null));
       if (trialEnrol) return void (!trialEnrol.generating && setTrialEnrol(null));
+      if (adhocModal?.editing) return void (!adhocModal.editing.saving && setAdhocModal(m => m ? { ...m, editing: null } : m));
       if (adhocModal) return void (!adhocModal.saving && setAdhocModal(null));
       if (blockedModal) return setBlockedModal(null);
       if (examEdit) return void (!examEdit.saving && setExamEdit(null));
@@ -2209,7 +2213,7 @@ export default function SchedulePage() {
   function openAdhocModal(preDate?: string) {
     setAdhocModal({
       dates: preDate ? [preDate] : [], times: [], level: 'Adhoc', maxStudents: LEVEL_DEFAULT_CAPACITY.Adhoc.makeup,
-      maxTouched: false, force: false, collisions: [], saving: false, loading: true, sessions: [],
+      maxTouched: false, force: false, collisions: [], saving: false, loading: true, sessions: [], editing: null,
     });
     loadAdhocSessions();
   }
@@ -2252,6 +2256,34 @@ export default function SchedulePage() {
       showToast('success', `✓ ${json.created} ad-hoc session${json.created === 1 ? '' : 's'} created`);
     } catch (err: any) {
       setAdhocModal(m => m ? { ...m, saving: false } : m);
+      showToast('error', err.message || 'Failed');
+    }
+  }
+
+  // Edit an existing session's level / size. Deliberately narrow: the dates and
+  // the time are the Slot row itself, and moving them would drag every booked
+  // lesson to a day nobody agreed to (Adrian, 18 Aug 2026 — the 19–20 Aug week
+  // was created before the level control existed and was stuck on Mixed).
+  async function saveAdhocEdit() {
+    const ed = adhocModal?.editing;
+    if (!ed) return;
+    if (!Number.isInteger(ed.maxStudents) || ed.maxStudents < 1 || ed.maxStudents > 12) {
+      showToast('error', 'Max students must be between 1 and 12'); return;
+    }
+    setAdhocModal(m => m?.editing ? { ...m, editing: { ...m.editing, saving: true } } : m);
+    try {
+      const res = await fetch('/api/admin-schedule/adhoc-slots', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotId: ed.id, level: ed.level, maxStudents: ed.maxStudents }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setAdhocModal(m => m ? { ...m, editing: null } : m);
+      await loadAdhocSessions();
+      await fetchSchedule(new Date(mondayISO + 'T00:00:00'));
+      showToast('success', '✓ Session updated');
+    } catch (err: any) {
+      setAdhocModal(m => m?.editing ? { ...m, editing: { ...m.editing, saving: false } } : m);
       showToast('error', err.message || 'Failed');
     }
   }
@@ -4084,8 +4116,14 @@ export default function SchedulePage() {
                   <div style={{ color: '#94a3b8', fontSize: 13, marginBottom: 10 }}>Loading…</div>
                 ) : adhocModal.sessions.length === 0 ? (
                   <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: 13, marginBottom: 10 }}>No ad-hoc sessions right now.</div>
-                ) : adhocModal.sessions.map(sess => (
-                  <div key={sess.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 10px', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: 8, marginBottom: 6 }}>
+                ) : adhocModal.sessions.map(sess => {
+                  const ed = adhocModal.editing?.id === sess.id ? adhocModal.editing : null;
+                  const edCapBites = ed?.level === 'Secondary' && data?.secCap != null && data.secCap < ed.maxStudents;
+                  const setEd = (patch: Partial<{ level: SlotLevel; maxStudents: number }>) =>
+                    setAdhocModal(m => m?.editing ? { ...m, editing: { ...m.editing, ...patch } } : m);
+                  return (
+                  <div key={sess.id} style={{ padding: '8px 10px', background: '#faf5ff', border: `1px solid ${ed ? '#c084fc' : '#e9d5ff'}`, borderRadius: 8, marginBottom: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                     <span style={{ fontSize: 13.5, color: '#581c87', lineHeight: 1.5 }}>
                       ⚡ <strong>{sess.dayLabel} {sess.time}</strong> · {sess.level === 'Secondary' ? 'Sec' : sess.level === 'JC' ? 'JC' : 'Mixed'} · max {sess.effectiveMax ?? sess.maxStudents ?? '—'}
                       {sess.effectiveMax != null && sess.maxStudents != null && sess.effectiveMax < sess.maxStudents && (
@@ -4097,12 +4135,71 @@ export default function SchedulePage() {
                         {sess.lessonCount > 0 && ` · ${sess.lessonCount} lesson${sess.lessonCount === 1 ? '' : 's'} booked`}
                       </span>
                     </span>
-                    <button onClick={() => removeAdhocSession(sess)}
-                      style={{ fontSize: 11.5, fontWeight: 600, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', flexShrink: 0 }}>
-                      Remove
-                    </button>
+                    <span style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                      {/* Level and size are editable after the fact; dates and
+                          time are not — see the PATCH route's note. */}
+                      <button onClick={() => setAdhocModal(m => m ? {
+                        ...m,
+                        editing: ed ? null : {
+                          id: sess.id,
+                          level: isSlotLevel(sess.level) ? sess.level : 'Adhoc',
+                          maxStudents: sess.maxStudents ?? LEVEL_DEFAULT_CAPACITY[isSlotLevel(sess.level) ? sess.level : 'Adhoc'].makeup,
+                          saving: false,
+                        },
+                      } : m)}
+                        disabled={ed?.saving}
+                        style={{ fontSize: 11.5, fontWeight: 600, color: '#6b21a8', background: '#fff', border: '1px solid #e9d5ff', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
+                        {ed ? 'Cancel' : 'Edit'}
+                      </button>
+                      {!ed && (
+                        <button onClick={() => removeAdhocSession(sess)}
+                          style={{ fontSize: 11.5, fontWeight: 600, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
+                          Remove
+                        </button>
+                      )}
+                    </span>
+                    </div>
+
+                    {ed && (
+                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed #e9d5ff' }}>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {SLOT_LEVELS.map(lv => {
+                            const on = ed.level === lv;
+                            return (
+                              <button key={lv} type="button" onClick={() => setEd({ level: lv })}
+                                style={{ flex: 1, fontSize: 12.5, fontWeight: 700, padding: '7px 0', borderRadius: 8, cursor: 'pointer',
+                                  border: `1px solid ${on ? '#1e3a5f' : '#e2e8f0'}`, background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569' }}>
+                                {slotLevelLabel(lv)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                          <span style={{ fontSize: 12.5, color: '#64748b', fontWeight: 600 }}>Max students</span>
+                          <input type="number" inputMode="numeric" min={1} max={12} className="modal-input" style={{ width: 78 }}
+                            value={ed.maxStudents}
+                            onChange={e => setEd({ maxStudents: Number(e.target.value) })} />
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>usual for {slotLevelLabel(ed.level)} is {LEVEL_DEFAULT_CAPACITY[ed.level].makeup}</span>
+                        </div>
+                        {edCapBites && (
+                          <div style={{ marginTop: 8, fontSize: 12.5, color: '#7c3aed', background: '#fff', border: '1px solid #e9d5ff', borderRadius: 8, padding: '7px 10px', lineHeight: 1.5 }}>
+                            Sec cap {data!.secCap} is on, so this Sec session takes <strong>{data!.secCap} per date</strong>, not {ed.maxStudents}.
+                          </div>
+                        )}
+                        {ed.level !== 'Adhoc' && sess.level === 'Adhoc' && sess.lessonCount > 0 && (
+                          <div style={{ marginTop: 8, fontSize: 12.5, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '7px 10px', lineHeight: 1.5 }}>
+                            The {sess.lessonCount} lesson{sess.lessonCount === 1 ? '' : 's'} already booked stay put. This only changes who can book it from now on — {slotLevelLabel(ed.level)} students only.
+                          </div>
+                        )}
+                        <button className="btn-primary" style={{ width: '100%', marginTop: 8, padding: '8px 0', fontSize: 13 }}
+                          disabled={ed.saving} onClick={saveAdhocEdit}>
+                          {ed.saving ? 'Saving…' : 'Save changes'}
+                        </button>
+                      </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* New session */}
                 <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 10 }}>

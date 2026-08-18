@@ -253,6 +253,72 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// ── PATCH: change an existing session's level or size ───────────────────────
+// Adrian, 18 Aug 2026: "put the edit path for subsequent ad hoc lessons". The
+// 19–20 Aug week was created before the level control existed, so all eight
+// sessions read Mixed with no way back short of hand-patching Airtable; delete
+// + recreate is not that way, because it strands every lesson already booked.
+//
+// Deliberately NOT editable here: the dates and the time. Those are what the
+// Slot row IS (Day + Time) and what its window spans — moving them would drag
+// existing bookings to a day they were never agreed for. Remove and recreate
+// an unbooked session instead.
+export async function PATCH(req: NextRequest) {
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  let body: { slotId?: string; level?: string; maxStudents?: number };
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+
+  const slotId = body.slotId;
+  if (!slotId) return NextResponse.json({ error: 'slotId is required' }, { status: 400 });
+  if (body.level !== undefined && !isSlotLevel(body.level)) {
+    return NextResponse.json({ error: 'Level must be Secondary, JC or Adhoc' }, { status: 400 });
+  }
+  if (body.maxStudents !== undefined
+    && (!Number.isInteger(body.maxStudents) || body.maxStudents < 1 || body.maxStudents > MAX_STUDENTS_LIMIT)) {
+    return NextResponse.json({ error: `Max students must be a whole number between 1 and ${MAX_STUDENTS_LIMIT}` }, { status: 400 });
+  }
+  if (body.level === undefined && body.maxStudents === undefined) {
+    return NextResponse.json({ error: 'Nothing to change' }, { status: 400 });
+  }
+
+  try {
+    const [windowsRow, secCapRow] = await Promise.all([
+      fetchSetting(SLOT_WINDOWS_SETTING),
+      fetchSetting(SEC_CAP_SETTING),
+    ]);
+    const windows = parseSlotWindows(windowsRow?.value ?? null);
+    // Same guard as DELETE: a bad id must never rewrite a weekly class's level
+    // or size and quietly resize the real timetable.
+    if (!windows[slotId]) {
+      return NextResponse.json({ error: 'Not an ad-hoc session — refusing to edit' }, { status: 400 });
+    }
+
+    const current = await airtableRequest('Slots', `/${slotId}`);
+    const level = (body.level ?? current.fields['Level']) as SlotLevel;
+    if (!isSlotLevel(level)) return NextResponse.json({ error: 'Slot has an unrecognised level' }, { status: 400 });
+    const cap = body.maxStudents ?? current.fields['Makeup Capacity'] ?? LEVEL_DEFAULT_CAPACITY[level].makeup;
+
+    const updated = await airtableRequest('Slots', `/${slotId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ fields: {
+        Level: level,
+        // Kept in step with the create path: advisory enrollment capacity never
+        // exceeds the number bookings actually enforce.
+        'Normal Capacity': Math.min(LEVEL_DEFAULT_CAPACITY[level].normal, cap),
+        'Makeup Capacity': cap,
+      } }),
+    });
+    invalidateScheduleStatics();
+
+    const secCap = parseSecCapOverride(secCapRow?.value ?? null);
+    return NextResponse.json({ session: describeSlot(updated, windows[slotId], secCap) });
+  } catch (err: any) {
+    console.error('[adhoc-slots PATCH]', err?.message);
+    return NextResponse.json({ error: 'Failed to update the session' }, { status: 500 });
+  }
+}
+
 // ── DELETE: cancel one session ──────────────────────────────────────────────
 // Deactivates the slot and drops its window entry. Lessons already booked into
 // it keep rendering on the calendar — /api/admin-schedule re-fetches any slot a
