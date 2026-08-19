@@ -34,6 +34,24 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   the loser's remark overwrote the winner's finished row back to pending
   mid-build, which is why some queued runs "lost" their 🖼 images PDF and
   Telegram messages arrived from the staging bot.
+- **🌙 No vision, no claim (2026-08-19):** before claiming (and paying for) a paper,
+  the queue worker runs `visionPreflight()` (bot `ai/photo-overlay.js`) — a cheap
+  Gemini text ping through the overlay's own model ladder. If it fails, the paper
+  STAYS queued with attempts unburned (⏸-paused Telegram at most hourly, ▶️-resumed
+  note on recovery). Adrian's rule: **a marked PDF whose ticks fell to the margin
+  panel is not a deliverable.** The night the Gemini spend cap tripped, three papers
+  shipped all-margin and every one was re-marked at full price. Belt-and-braces:
+  `tickQuality()` checks the finished run's `annotated_photos[].method`, and 30%+
+  margin pages puts a ⚠️ re-mark nudge in the result Telegram (a page or two of
+  margin on dense photos is normal and stays silent).
+- **⚠ Never upload the school's solutions with a script (2026-08-19):** everything
+  in the upload is marked as the student's work — the marker (Claude) works answers
+  out itself and reads no scheme. Alexis's SJC P2 upload included 16 pages of typed
+  P1+P2 solutions and scored 227/258: the printed answer key was "marked" near-
+  perfect on top of her 90-mark paper. Repair pattern (proven that night): back up
+  the row, trim `result_json.source.photos` to the student pages (stash the rest in
+  `source.removed_answer_key_photos`), set `results: []` + a fresh `queue` key, null
+  `total_awarded`/`total_max`/`num_questions` — the worker re-marks it in place.
 - **🌙 A queued paper arrives FINISHED (2026-08-06):** after the queue worker
   marks a run, `deliverQueuedRun` (bot `handlers/webchat.js`) builds BOTH PDFs
   via the site's `/api/admin/mark-paper-pdf` (photos first, then full — neither
