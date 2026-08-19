@@ -153,8 +153,14 @@ export async function GET(req: NextRequest) {
     // Resend (welcome emails, invoices, receipts)
     timed('resend', async () => {
       if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY missing');
-      const r = await fetch('https://api.resend.com/domains', { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` }, signal: T(10000) });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      // Resend's API occasionally dawdles past the 10s cap on quiet nights (false
+      // alarm 2026-08-20 02:00 SGT; fine again seconds later) — one retry separates
+      // a slow night from a real outage.
+      const ping = async () => {
+        const r = await fetch('https://api.resend.com/domains', { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` }, signal: T(10000) });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      };
+      try { await ping(); } catch { await ping(); }
     }),
     // Kiosk status endpoint
     timed('kiosk', async () => {
