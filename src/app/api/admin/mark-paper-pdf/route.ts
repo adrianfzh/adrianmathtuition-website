@@ -4,6 +4,8 @@ import { PDFDocument } from 'pdf-lib';
 import { renderMarkingPNG, type MarkingOutput } from '@/lib/render-marking';
 import { orderMarkedPages } from '@/lib/marked-pdf-order';
 import { pickAnnotatedPhotoUrl } from '@/lib/annotated-photo-source';
+import { markedPdfColumn } from '@/lib/marked-pdf-column';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 // Page width + paper-total strip are SHARED with the ✏️ Annotate assemble route —
 // see lib/marked-pdf-layout.ts. Change layout there, never inline here.
@@ -13,30 +15,63 @@ export const runtime = 'nodejs';
 export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
+// Each question is its own headless-Chrome page, and nearly all of the ~3.5s it took
+// was WAITING — fonts and the KaTeX CDN over networkidle0, then the render poll. Run
+// several at once against the one shared browser and a 30-question paper stops taking
+// two minutes, which is the window in which the browser gave up on the request at all
+// ("Failed to fetch", Adrian, 19 Aug 2026). Memory for the extra tabs is in vercel.json.
+const RENDER_CONCURRENCY = 4;
+
 type ResultIn = { question_number: string; marking_output: MarkingOutput | null; photo_index?: number | null };
+
+/** Put the finished URL on the run HERE, server-side, before answering the browser.
+ *  It used to be a fire-and-forget call from the page after the response arrived, so a
+ *  dropped connection threw away a PDF that was already built and uploaded — two
+ *  minutes of work with nothing to show. Written first, the page can simply re-read
+ *  the run and find it. Best-effort: a failed link never fails the build. */
+async function linkToRun(runId: string | undefined, url: string, mode: string) {
+  if (!runId) return;
+  try {
+    await getSupabaseAdmin()
+      .from('paper_marking_runs')
+      .update({ [markedPdfColumn(mode)]: url })
+      .eq('id', runId);
+  } catch (e) {
+    console.error('[mark-paper-pdf] link to run failed', (e as Error).message);
+  }
+}
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string };
+  let body: { results?: ResultIn[]; annotated_photos?: { photo_index: number; url: string; url_with_solutions?: string | null }[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; student?: { name?: string; level?: string }; multi?: boolean; mode?: string; runId?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const mode = body.mode === 'photos' ? 'photos' : 'full';   // 'photos' = annotated originals only (no typeset)
   const results = (body.results || []).filter(r => r.marking_output && Array.isArray(r.marking_output.lines));
+  const runId = typeof body.runId === 'string' && body.runId ? body.runId : undefined;
 
   const student = { name: body.student?.name || '', level: body.student?.level || '' };
   const ts = new Date().toISOString();
 
-  // Render each question to a typeset PNG (skipped in photos-only mode).
-  const pngs: { label: string; buf: Buffer; awarded: number; max: number; photo_index?: number | null }[] = [];
-  if (mode !== 'photos') for (const r of results) {
-    const mo = r.marking_output!;
-    try {
-      const buf = await renderMarkingPNG({ marking: mo, student, timestamp: ts });
-      pngs.push({ label: String(r.question_number), buf, awarded: mo.marks?.awarded ?? 0, max: mo.marks?.max ?? 0, photo_index: r.photo_index });
-    } catch (e) {
-      console.error('[mark-paper-pdf] render failed for', r.question_number, (e as Error).message);
-    }
+  // Render each question to a typeset PNG (skipped in photos-only mode). Pooled, but
+  // the output stays in question order — orderMarkedPages relies on it.
+  type Png = { label: string; buf: Buffer; awarded: number; max: number; photo_index?: number | null };
+  let pngs: Png[] = [];
+  if (mode !== 'photos') {
+    const { default: pLimit } = await import('p-limit');
+    const limit = pLimit(RENDER_CONCURRENCY);
+    const rendered = await Promise.all(results.map((r) => limit(async (): Promise<Png | null> => {
+      const mo = r.marking_output!;
+      try {
+        const buf = await renderMarkingPNG({ marking: mo, student, timestamp: ts });
+        return { label: String(r.question_number), buf, awarded: mo.marks?.awarded ?? 0, max: mo.marks?.max ?? 0, photo_index: r.photo_index };
+      } catch (e) {
+        console.error('[mark-paper-pdf] render failed for', r.question_number, (e as Error).message);
+        return null;
+      }
+    })));
+    pngs = rendered.filter((p): p is Png => p !== null);
   }
   // Fetch the annotated ORIGINAL photos (PNGs from Blob) — these go in the PDF first.
   // The marker sends two copies of each page; which one belongs in THIS document is
@@ -62,6 +97,7 @@ export async function POST(req: NextRequest) {
 
   if (single) {
     const blob = await put(`mark-paper/${id}.png`, pngs[0].buf, { access: 'public', contentType: 'image/png', allowOverwrite: true });
+    await linkToRun(runId, blob.url, mode);
     return NextResponse.json({ url: blob.url, kind: 'image', totalAwarded: pngs[0].awarded, totalMax: pngs[0].max });
   }
 
@@ -101,5 +137,6 @@ export async function POST(req: NextRequest) {
   }
   const pdfBytes = await pdfDoc.save();
   const blob = await put(`mark-paper/${id}.pdf`, Buffer.from(pdfBytes), { access: 'public', contentType: 'application/pdf', allowOverwrite: true });
+  await linkToRun(runId, blob.url, mode);
   return NextResponse.json({ url: blob.url, kind: 'pdf', totalAwarded, totalMax });
 }

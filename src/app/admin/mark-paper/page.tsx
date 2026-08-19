@@ -147,6 +147,21 @@ type AnnotatedPhoto = { photo_index: number; url: string; url_with_solutions?: s
 // origin) or freshly generated. Built ON REQUEST only (📝 button) and stored on the
 // run, so a reload shows the same list without another model call.
 type PracticeItem = { for: string; source: 'db' | 'generated'; question: string; answer: string; origin?: string | null; topic?: string | null; note?: string };
+// Everything a PDF build needs. Normally read off state, but the automatic build that
+// fires the instant a paper finishes marking runs in the same tick as the setState
+// calls that would fill it — so the marking gets handed over directly instead.
+type PdfSource = {
+  results: Result[] | null;
+  annotatedPhotos: AnnotatedPhoto[];
+  totals: { awarded: number; max: number; counted_max?: number; max_source?: string } | null;
+  runId: string | null;
+};
+
+// A PDF that fails in the browser has usually still been built and stored — say so,
+// or this reads as "those two minutes are gone".
+function pdfErrorText(errs: string[]) {
+  return `PDF generation — ${errs.join(' · ')}. If it was the connection, the copy is still saved on the run: reopen this paper under 🗂️ Recent marked papers and its PDFs will be there.`;
+}
 
 const card: CSSProperties = { background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, marginBottom: 16 };
 const btn: CSSProperties = { padding: '10px 18px', borderRadius: 8, border: 'none', background: '#111827', color: '#fff', fontWeight: 600, cursor: 'pointer' };
@@ -240,6 +255,9 @@ export default function MarkPaperPage() {
   const [marked, setMarked] = useState<{ url: string; kind: string; label: string }[]>([]);
   // Which half "Generate both" is currently building (null when idle/single-mode).
   const [bothStage, setBothStage] = useState<'images' | 'full' | null>(null);
+  // Set when a build's connection died and we're waiting for the server's copy to
+  // appear on the run instead. Purely so the page doesn't look frozen for a minute.
+  const [recovering, setRecovering] = useState<'full' | 'photos' | null>(null);
   // Send / save block (the no-amendments fast path). Email only — WhatsApp goes out
   // from Adrian's PERSONAL number on the Mac by dragging the downloaded file in, so the
   // WhatsApp feature here is the nicely-named Download, not a send button.
@@ -508,6 +526,16 @@ export default function MarkPaperPage() {
     setUsage(d.usage || null);
     setPhase('done');
     loadStats();
+    // Straight into both PDFs — marking a paper and then wanting the marked copy is
+    // the same action, and the ⚡ tap in between was pure ceremony (Adrian, 19 Aug
+    // 2026). Not awaited: it drives its own busy state, and a paper that marked fine
+    // must never report a PDF problem as a marking failure.
+    generateBoth({
+      results: d.results || [],
+      annotatedPhotos: d.annotated_photos || [],
+      totals: d.totals || null,
+      runId: d.run_id || null,
+    });
   }
 
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
@@ -611,29 +639,71 @@ export default function MarkPaperPage() {
     } catch (e) { setError((e as Error).message); setPhase('idle'); }
   }
 
-  // One build = one call to the PDF route. Throws on failure; links the result to the
-  // run so history offers it as a one-click download.
-  async function buildPdf(mode: 'full' | 'photos'): Promise<{ url: string; kind: string; label: string }> {
+  // The URL a run currently holds for one half, or null. Read before a build so a
+  // recovered URL can never be mistaken for the PREVIOUS build's copy.
+  async function runPdfUrl(id: string, mode: 'full' | 'photos'): Promise<string | null> {
+    try {
+      const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'run', id }) });
+      const d = await r.json();
+      const run = d.run || {};
+      return (mode === 'photos' ? run.photos_pdf_url : run.pdf_url) || null;
+    } catch { return null; }
+  }
+
+  // Wait for the server's copy of a build whose connection died on us. The PDF route
+  // runs to completion regardless of the browser and writes the finished URL onto the
+  // run itself, so this is a wait, not a retry — nothing is being redone or re-paid for.
+  async function waitForRunPdf(id: string, mode: 'full' | 'photos', before: string | null): Promise<string | null> {
+    setRecovering(mode);
+    try {
+      for (let i = 0; i < 48; i++) {          // 48 × 5s = 4 min, inside the route's own 5-min ceiling
+        await new Promise((r) => setTimeout(r, 5000));
+        const url = await runPdfUrl(id, mode);
+        if (url && url !== before) return url;
+      }
+      return null;
+    } finally { setRecovering(null); }
+  }
+
+  // One build = one call to the PDF route, which links the result to the run itself.
+  // Throws on failure. `over` supplies the marking directly for the automatic build
+  // fired the moment a paper finishes marking, when state hasn't landed yet.
+  async function buildPdf(mode: 'full' | 'photos', over?: PdfSource): Promise<{ url: string; kind: string; label: string }> {
+    const src = over || { results, annotatedPhotos, totals, runId };
+    const label = (kind: string) => (mode === 'photos' ? '🖼 Images PDF' : kind === 'image' ? '📄 Marked image' : '📄 Full PDF');
     const payload = {
       // photo_index is what lets the PDF put each transcript sheet behind its own photo.
-      results: (results || []).map((r) => ({ question_number: r.question_number, marking_output: r.marking_output, photo_index: r.photo_index })),
-      annotated_photos: annotatedPhotos,
-      totals,
+      results: (src.results || []).map((r) => ({ question_number: r.question_number, marking_output: r.marking_output, photo_index: r.photo_index })),
+      annotated_photos: src.annotatedPhotos,
+      totals: src.totals,
       student: { name: '', level: '' },
       multi: images.length > 1,
       mode,
+      runId: src.runId || undefined,
     };
-    const resp = await fetch('/api/admin/mark-paper-pdf', { method: 'POST', headers: authHeaders, body: JSON.stringify(payload) });
-    const d = await resp.json();
-    if (!resp.ok) throw new Error(d.error || 'Generate failed');
-    if (runId && d.url) {
-      fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'link-pdf', id: runId, url: d.url, kind: mode }) })
-        .then(() => loadStats()).catch(() => {});
+    const before = src.runId ? await runPdfUrl(src.runId, mode) : null;
+    try {
+      const resp = await fetch('/api/admin/mark-paper-pdf', { method: 'POST', headers: authHeaders, body: JSON.stringify(payload) });
+      const d = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        // The server answered and said no — waiting for it would be waiting forever.
+        const err = new Error(d.error || `Generate failed (status ${resp.status})`) as Error & { answered?: boolean };
+        err.answered = true;
+        throw err;
+      }
+      loadStats();
+      return { url: d.url, kind: d.kind, label: label(d.kind) };
+    } catch (e) {
+      if ((e as { answered?: boolean }).answered) throw e;
+      // "Failed to fetch": the browser gave up on a connection held open for the whole
+      // build — a backgrounded tab or the iPad's other Split View pane is enough to do
+      // it. The build itself is fine and finishing; pick the result up off the run
+      // rather than making Adrian spend the two minutes again (19 Aug 2026).
+      const url = src.runId ? await waitForRunPdf(src.runId, mode, before) : null;
+      if (!url) throw e;
+      loadStats();
+      return { url, kind: 'pdf', label: label('pdf') };
     }
-    return {
-      url: d.url, kind: d.kind,
-      label: mode === 'photos' ? '🖼 Images PDF' : (d.kind === 'image' ? '📄 Marked image' : '📄 Full PDF'),
-    };
   }
 
   // Render the marked typeset output: PDF (>1 image) or a single image (1 image).
@@ -648,7 +718,7 @@ export default function MarkPaperPage() {
     }
     setGenerating(true); setMarked([]); setError('');
     try { setMarked([await buildPdf(mode)]); }
-    catch (e) { setError((e as Error).message); }
+    catch (e) { setError(pdfErrorText([`${mode === 'photos' ? 'images' : 'full'}: ${(e as Error).message}`])); }
     finally { setGenerating(false); }
   }
 
@@ -850,28 +920,37 @@ export default function MarkPaperPage() {
     finally { setAnnotatedBusy(false); if (annotatedInputRef.current) annotatedInputRef.current.value = ''; }
   }
 
-  // Both PDFs from one click, IMAGES FIRST — it builds in seconds (no typesetting), so
-  // Adrian's hand-back copy is openable while the full PDF is still rendering its
-  // transcript sheets behind it. Each half fails on its own: an images link already
-  // shown is never taken away by the full build failing.
-  async function generateBoth() {
-    if (!annotatedPhotos.length && !results?.length) {
+  // Both PDFs from one click, both IN FLIGHT AT ONCE — they are two independent
+  // serverless builds, so starting them together turns ~130s of held-open connection
+  // into ~110s, and the browser holding one for less time is the whole point (the
+  // sequential version is what kept dying as "Failed to fetch"). Images still lands
+  // first, in seconds — no typesetting — so the hand-back copy is openable while the
+  // full PDF is still rendering behind it. Each half fails on its own: an images link
+  // already shown is never taken away by the full build failing.
+  async function generateBoth(over?: PdfSource) {
+    const src = over || { results, annotatedPhotos, totals, runId };
+    if (!src.annotatedPhotos.length && !src.results?.length) {
       setError('Nothing to build a PDF from — mark a paper, or load a run from the history below.');
       return;
     }
     setGenerating(true); setMarked([]); setError('');
+    const pPhotos = src.annotatedPhotos.length ? buildPdf('photos', src) : null;
+    const pFull = src.results?.length ? buildPdf('full', src) : null;
+    // Both are running from here. Attach the handlers NOW: awaiting one half first
+    // would otherwise let the other's failure surface as an unhandled rejection.
+    pPhotos?.catch(() => {}); pFull?.catch(() => {});
     const errs: string[] = [];
-    if (annotatedPhotos.length) {
+    if (pPhotos) {
       setBothStage('images');
-      try { const r = await buildPdf('photos'); setMarked([r]); }
+      try { setMarked([await pPhotos]); }
       catch (e) { errs.push(`images: ${(e as Error).message}`); }
     }
-    if (results?.length) {
+    if (pFull) {
       setBothStage('full');
-      try { const r = await buildPdf('full'); setMarked((prev) => [...prev, r]); }
+      try { const r = await pFull; setMarked((prev) => [...prev, r]); }
       catch (e) { errs.push(`full: ${(e as Error).message}`); }
     }
-    if (errs.length) setError(`PDF generation — ${errs.join(' · ')}`);
+    if (errs.length) setError(pdfErrorText(errs));
     setBothStage(null); setGenerating(false);
   }
 
@@ -1339,7 +1418,9 @@ export default function MarkPaperPage() {
           )}
           <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             {annotatedPhotos.length > 0 && (
-              <button style={{ ...btn, opacity: generating ? 0.6 : 1 }} disabled={generating} onClick={generateBoth}>
+              <button style={{ ...btn, opacity: generating ? 0.6 : 1 }} disabled={generating}
+                title="Both PDFs build automatically after marking — this rebuilds them (e.g. after ✏️ Annotate)"
+                onClick={() => generateBoth()}>
                 {bothStage === 'images' ? '🖼 Building images…' : bothStage === 'full' ? '📄 Building full…' : generating ? 'Generating…' : '⚡ Generate both'}
               </button>
             )}
@@ -1371,10 +1452,17 @@ export default function MarkPaperPage() {
               </a>
             ))}
             {/* The images link is already up while this shows — the point of "both". */}
-            {bothStage === 'full' && marked.length > 0 && (
+            {bothStage === 'full' && marked.length > 0 && !recovering && (
               <span style={{ color: '#6b7280', fontSize: 13 }}>📄 full PDF still building…</span>
             )}
-            <span style={{ color: '#6b7280', fontSize: 13 }}>Both = images PDF ready in seconds, full follows (it typesets a sheet per question). Fresh build every click.</span>
+            {/* Not an error: the build is fine, only the browser's connection to it
+                went. Naming the half stops it reading as "everything is stuck". */}
+            {recovering && (
+              <span style={{ color: '#b45309', fontSize: 13 }}>
+                ⏳ Connection to the {recovering === 'photos' ? 'images' : 'full'} build dropped — it&rsquo;s still running on the server. Waiting for it; the link appears here when it lands.
+              </span>
+            )}
+            <span style={{ color: '#6b7280', fontSize: 13 }}>Both build together — images lands in seconds, the full PDF typesets a sheet per question. Fresh build every click.</span>
           </div>
           {/* Send / save — the no-amendments fast path. Download feeds the drag-into-
               WhatsApp move on the Mac (personal number); email goes straight out. The
