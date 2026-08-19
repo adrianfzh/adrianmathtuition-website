@@ -114,6 +114,12 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   same-day papers stay safe: different runs record different autorenamed paths.
   Passers of runId: send-row 📁, `autoFileToDropbox`, history-row 📁, and the
   bot's `deliverQueuedRun`. A save without runId behaves exactly as before.
+  **Manual taps confirm before replacing (2026-08-20):** when a recorded file
+  exists and the body lacks `confirmOverwrite`, the route answers 409
+  `{needsConfirm, existing}` and the page shows a Replace? dialog before
+  retrying — a stray 📁 tap can't silently replace a hand-annotated copy.
+  Automatic refiles (`autoFileToDropbox`, the bot worker) send
+  `confirmOverwrite:true` and stay silent. First-ever saves never prompt.
 - **✓ Checked (2026-08-19):** `paper_marking_runs.checked_at` separates "I've
   been through this marked copy" from "the AI finished". Set automatically by
   (a) an annotated PDF linking onto the run — bot `linkPdf` kind `annotated`,

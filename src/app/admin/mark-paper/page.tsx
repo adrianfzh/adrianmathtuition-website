@@ -835,18 +835,31 @@ export default function MarkPaperPage() {
     dbxNameRef.current = [sendStudentName, paperName].filter(Boolean).join(' — ') || 'marked paper';
   }, [sendStudentName, paperName]);
 
-  async function saveToDropbox(url: string, name: string, forRunId?: string | null): Promise<boolean> {
+  async function saveToDropbox(url: string, name: string, forRunId?: string | null, silentOverwrite = false): Promise<boolean> {
     setDbxNote(null);
     try {
-      const r = await fetch('/api/admin/mark-paper-dropbox', {
+      // runId lets the server keep ONE Dropbox file per run: the first save lands
+      // it, every later save (e.g. after ✏️ Annotate) overwrites that same file.
+      const post = (confirmOverwrite: boolean) => fetch('/api/admin/mark-paper-dropbox', {
         method: 'POST', headers: authHeaders,
-        // runId lets the server keep ONE Dropbox file per run: the first save lands
-        // it, every later save (e.g. after ✏️ Annotate) overwrites that same file.
-        body: JSON.stringify({ url, name, runId: forRunId || undefined }),
+        body: JSON.stringify({ url, name, runId: forRunId || undefined, confirmOverwrite: confirmOverwrite || undefined }),
       });
-      const d = await r.json().catch(() => ({}));
+      let r = await post(silentOverwrite);
+      let d = await r.json().catch(() => ({}));
+      if (d.needsConfirm) {
+        // A copy of this run is already in Dropbox — an accidental tap must not
+        // silently replace it (Adrian, 20 Aug 2026). Only MANUAL saves get here:
+        // the automatic refiles pass silentOverwrite (nobody is at the keyboard,
+        // and newer-replacing-stale is their whole point).
+        if (!window.confirm(`This paper already has a copy in Dropbox (${d.existing}). Replace it with this version?`)) {
+          setDbxNote({ ok: false, text: '📁 Not saved — the existing Dropbox copy was kept.' });
+          return false;
+        }
+        r = await post(true);
+        d = await r.json().catch(() => ({}));
+      }
       if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
-      setDbxNote({ ok: true, text: `📁 Saved to Dropbox: ${d.name}` });
+      setDbxNote({ ok: true, text: `📁 Saved to Dropbox: ${d.name}${d.replaced ? ' — replaced the earlier copy' : ''}` });
       return true;
     } catch (e) {
       // Never the red error banner: a Dropbox hiccup is not a marking failure, and
@@ -876,7 +889,7 @@ export default function MarkPaperPage() {
     const key = forRunId || url;
     if (autoFiledRef.current.has(key)) return;
     autoFiledRef.current.add(key);
-    const ok = await saveToDropbox(url, dbxNameRef.current, forRunId);
+    const ok = await saveToDropbox(url, dbxNameRef.current, forRunId, true);
     if (!ok) autoFiledRef.current.delete(key);
   }
 
@@ -894,12 +907,24 @@ export default function MarkPaperPage() {
     setRowBusy((p) => ({ ...p, [run.id]: 'dbx' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
     try {
       const name = [run.student_name, run.paper_name].filter(Boolean).join(' — ') || 'marked paper';
-      const r = await fetch('/api/admin/mark-paper-dropbox', {
-        method: 'POST', headers: authHeaders, body: JSON.stringify({ url, name, runId: run.id }),
+      const post = (confirmOverwrite: boolean) => fetch('/api/admin/mark-paper-dropbox', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ url, name, runId: run.id, confirmOverwrite: confirmOverwrite || undefined }),
       });
-      const d = await r.json().catch(() => ({}));
+      let r = await post(false);
+      let d = await r.json().catch(() => ({}));
+      if (d.needsConfirm) {
+        // Same guard as the send row's 📁: replacing this run's Dropbox file is
+        // deliberate, never a stray tap.
+        if (!window.confirm(`This paper already has a copy in Dropbox (${d.existing}). Replace it with this version?`)) {
+          setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: 'Not saved — the existing Dropbox copy was kept.' } }));
+          return;
+        }
+        r = await post(true);
+        d = await r.json().catch(() => ({}));
+      }
       if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
-      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: `📁 Saved to Dropbox: ${d.name}` } }));
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: `📁 Saved to Dropbox: ${d.name}${d.replaced ? ' — replaced the earlier copy' : ''}` } }));
     } catch (e) { setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } })); }
     finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
   }

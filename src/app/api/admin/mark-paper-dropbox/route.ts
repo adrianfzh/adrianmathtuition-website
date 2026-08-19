@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   if (!dropboxConfigured()) return NextResponse.json({ error: 'Dropbox not configured' }, { status: 503 });
 
-  let body: { url?: string; name?: string; folder?: string; runId?: string };
+  let body: { url?: string; name?: string; folder?: string; runId?: string; confirmOverwrite?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const url = body.url || '';
@@ -47,7 +47,19 @@ export async function POST(req: NextRequest) {
   if (runId) {
     const { data } = await getSupabaseAdmin()
       .from('paper_marking_runs').select('dropbox_path').eq('id', runId).maybeSingle();
-    if (data?.dropbox_path) { path = data.dropbox_path; mode = 'overwrite'; }
+    if (data?.dropbox_path) {
+      // Replacing an existing file needs the caller's say-so: manual 📁 taps ask
+      // Adrian first (409 → confirm dialog → retry with confirmOverwrite), while
+      // automatic refiles pass confirmOverwrite up front — an accidental tap must
+      // never silently replace a hand-annotated copy (Adrian, 20 Aug 2026).
+      if (!body.confirmOverwrite) {
+        return NextResponse.json(
+          { needsConfirm: true, existing: data.dropbox_path.split('/').pop() || 'saved earlier' },
+          { status: 409 },
+        );
+      }
+      path = data.dropbox_path; mode = 'overwrite';
+    }
   }
 
   try {
