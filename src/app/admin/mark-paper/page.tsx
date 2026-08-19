@@ -1045,9 +1045,19 @@ export default function MarkPaperPage() {
   async function queueFilesAsPaper(pageFiles: File[], paperLabel: string, opts?: { paperPdfUrl?: string | null; totalMax?: number }): Promise<number> {
     const imgs = await Promise.all(pageFiles.map((f) => fileToUpload(f)));
     setRasterizing('Uploading full-resolution pages…');
-    const originalUrls = await Promise.all(pageFiles.map((f, i) => uploadOriginal(f, imgs[i]))).finally(() => setRasterizing(''));
+    // One retry per page: rainie's 2023 prelim lost every page to a transient
+    // upload failure on 2026-08-20 while its two sibling papers sailed through.
+    const originalUrls = await Promise.all(pageFiles.map(async (f, i) => {
+      const once = await uploadOriginal(f, imgs[i]);
+      return once || uploadOriginal(f, imgs[i]);
+    })).finally(() => setRasterizing(''));
     const photos = originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean);
     if (!photos.length) throw new Error('The photo uploads failed — try again.');
+    // ALL pages or nothing: a paper queued with missing pages marks with silent
+    // holes, which is worse than failing loudly (nothing is saved before this).
+    if (photos.length < pageFiles.length) {
+      throw new Error(`${pageFiles.length - photos.length} of ${pageFiles.length} pages failed to upload — try again (nothing was queued).`);
+    }
     const sp = await fetch('/api/admin/mark-paper', {
       method: 'POST', headers: authHeaders,
       body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, totalMax: opts?.totalMax, source: { paper_pdf_url: opts?.paperPdfUrl || null, photos } }),
