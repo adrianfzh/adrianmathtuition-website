@@ -680,9 +680,14 @@ function RangeCalendar({ start, end, onChange }: { start: string; end: string; o
 // runs on. Deliberately NOT a range: the dates are usually a scattered couple
 // (Adrian's first ad-hoc week was a Wednesday and a Thursday), and a range
 // would quietly include everything between them.
-function MultiDateCalendar({ dates, onToggle }: { dates: string[]; onToggle: (iso: string) => void }) {
+function MultiDateCalendar({ dates, seedMonth, onToggle }: { dates: string[]; seedMonth?: string; onToggle: (iso: string) => void }) {
   const [viewMonth, setViewMonth] = useState(() => {
-    const base = dates.length ? new Date(dates[0] + 'T00:00:00') : new Date();
+    // Opens on the month Adrian is already looking at. Without `seedMonth` this
+    // fell back to TODAY, so browsing to December and hitting ⚡ landed him in
+    // August with three months of ‹ to click — which is the whole reason each
+    // day carried its own ＋ (Adrian, 19 Aug 2026: "don't put a button on every
+    // slot"). Seeding it here is what let those seven buttons go.
+    const base = new Date((dates[0] ?? seedMonth ?? isoDate(new Date())) + 'T00:00:00');
     return new Date(base.getFullYear(), base.getMonth(), 1);
   });
   const todayIso = isoDate(new Date());
@@ -1235,6 +1240,8 @@ export default function SchedulePage() {
     dates: string[]; times: string[]; level: SlotLevel; maxStudents: number; maxTouched: boolean;
     force: boolean; collisions: { id: string; day: string; time: string; level: string; dated: boolean }[];
     saving: boolean; loading: boolean;
+    /** The week on screen when the modal opened — the calendar's starting month. */
+    seedMonth: string;
     sessions: { id: string; dayLabel: string; time: string; level: string; maxStudents: number | null; effectiveMax: number | null; dates: string[]; lessonCount: number }[];
     // One row of the list opened for editing. Level and size only — the dates
     // and time ARE the slot row, so changing those would move bookings.
@@ -2206,14 +2213,17 @@ export default function SchedulePage() {
   }
 
   // ── Ad-hoc sessions ───────────────────────────────────────────────────────
-  // `preDate` comes from the ＋ on a day in the calendar: Adrian's usual move is
-  // "I want an extra class on THAT day", so the date is picked before the modal
-  // opens and MultiDateCalendar lands on the right month (Adrian, 18 Aug 2026).
-  // He can still add or remove dates inside the modal.
+  // `preDate` comes from the phone's ＋ under a day's lessons, where the day on
+  // screen IS the date: Adrian's usual move is "I want an extra class on THAT
+  // day", so it arrives pre-picked. The desktop grid used to carry the same ＋ in
+  // all seven day headers; they're gone (Adrian, 19 Aug 2026) — `seedMonth` now
+  // opens the calendar on the week he's looking at, which was the only thing
+  // they really bought. He can still add or remove dates inside the modal.
   function openAdhocModal(preDate?: string) {
     setAdhocModal({
       dates: preDate ? [preDate] : [], times: [], level: 'Adhoc', maxStudents: LEVEL_DEFAULT_CAPACITY.Adhoc.makeup,
       maxTouched: false, force: false, collisions: [], saving: false, loading: true, sessions: [], editing: null,
+      seedMonth: preDate ?? mondayISO,
     });
     loadAdhocSessions();
   }
@@ -3363,17 +3373,13 @@ export default function SchedulePage() {
                   <span className={`grid-day-date${isToday ? ' today-date' : ''}`}>
                     {isToday ? date.getDate() : date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
                   </span>
-                  {/* Ad-hoc session on THIS day — the ⚡ toolbar button opens the
-                      same modal with no date picked, and still owns the list +
-                      cancel side of it. Kept visible (not hover-only) because the
-                      desktop grid also renders on a touch iPad, where there is
-                      no hover to reveal it. */}
-                  <button
-                    className="day-adhoc-btn"
-                    onClick={() => openAdhocModal(isoDate(date))}
-                    title={`Ad-hoc session on ${date.toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short' })}`}
-                    aria-label={`Create an ad-hoc session on ${isoDate(date)}`}
-                  >＋</button>
+                  {/* No ＋ here. Seven of them sat in these headers — one per day,
+                      on every week, forever — to save the one tap that picking the
+                      date inside the ⚡ modal costs. Ad-hoc sessions are rare and
+                      usually span several dates anyway, so the pre-fill rarely won,
+                      and a 22px target beside a droppable column is a mis-drop
+                      waiting to happen on the iPad. ⚡ in the toolbar is the one
+                      door on desktop; it opens on the week you're viewing. */}
                 </div>
                 {colBlock && <div className="away-banner">🏖 Away{colBlock.reason ? ` — ${colBlock.reason}` : ''}</div>}
                 {renderRevisionCard(date)}
@@ -4205,7 +4211,7 @@ export default function SchedulePage() {
                 <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 10 }}>
                   <div className="form-group">
                     <span className="form-label">Dates</span>
-                    <MultiDateCalendar dates={adhocModal.dates}
+                    <MultiDateCalendar dates={adhocModal.dates} seedMonth={adhocModal.seedMonth}
                       onToggle={iso => setAdhocModal(m => m ? {
                         ...m, collisions: [], force: false,
                         dates: m.dates.includes(iso) ? m.dates.filter(d => d !== iso) : [...m.dates, iso].sort(),
@@ -5622,15 +5628,6 @@ body {
     display: flex; flex-direction: column; align-items: center;
     padding: 10px 4px; margin-bottom: 2px; position: relative;
   }
-  .day-adhoc-btn {
-    position: absolute; top: 6px; right: 2px;
-    width: 22px; height: 22px; padding: 0; line-height: 1;
-    border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;
-    color: #94a3b8; font-size: 13px; cursor: pointer; opacity: 0.45;
-    transition: opacity 0.12s, color 0.12s, border-color 0.12s;
-  }
-  .grid-col:hover .day-adhoc-btn { opacity: 1; }
-  .day-adhoc-btn:hover { color: #1a365d; border-color: #cbd5e1; background: #f8fafc; }
   .day-adhoc-add { display: none; }
   .grid-day-name {
     font-size: 11px; font-weight: 700; text-transform: uppercase;

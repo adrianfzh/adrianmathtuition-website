@@ -219,13 +219,19 @@ header** replaces that: pick the dates, pick the times, pick a level, set the ma
   DELETE `{slotId}`. UI state lives in `adhocModal` in `admin/schedule/page.tsx` (`editing` holds
   the open row); `MultiDateCalendar` is the tap-to-toggle picker. Escape closes the inline editor
   first, the modal second.
-- **Two doors into the same modal.** The ⚡ header button opens it with no date picked (and
-  owns the list + Remove side). A **＋ on each day** opens it with that date already picked:
-  in the desktop grid it sits top-right of the day header, on the phone it's a dashed
-  `＋ Ad-hoc session on <date>` under the day's lessons. `openAdhocModal(preDate?)` is the
-  single entry point, and `MultiDateCalendar` seeds its month from `dates[0]`, so a ＋ in
-  December opens on December. ⚠ The ⚡ button must call it as `onClick={() => openAdhocModal()}`
-  — wiring it bare passes React's MouseEvent in as the date.
+- **One door on desktop, two on the phone (revised 19 Aug 2026).** The ⚡ header button opens
+  the modal with no date picked and owns the list + Remove side. On the phone a dashed
+  `＋ Ad-hoc session on <date>` still sits under the day's lessons — there the day on screen
+  IS the date, and it's one button, not seven. **The desktop grid's per-day ＋ (one in every
+  day header) was removed**: Adrian, 19 Aug 2026 — *"don't put a button on every slot"*. It
+  bought a single tap on a rare, usually multi-date action, in exchange for seven permanent
+  22px targets sitting beside droppable columns on a touch iPad.
+  What it *was* really buying is now free: `openAdhocModal(preDate?)` stores `seedMonth`
+  (`preDate ?? mondayISO`) and `MultiDateCalendar` starts on `dates[0] ?? seedMonth`, so ⚡
+  opens on **the week you're looking at**. Before this it fell back to *today*, so browsing to
+  December and hitting ⚡ landed you in August — the gap the ＋ was papering over.
+  ⚠ The ⚡ button must call it as `onClick={() => openAdhocModal()}` — wiring it bare passes
+  React's MouseEvent in as the date.
 
 #### The invariant: a dated slot is a one-off session, NEVER a weekly class
 
