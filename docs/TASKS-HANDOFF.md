@@ -340,6 +340,36 @@ status, the 9 marks-vs-print fixes (ac3118f8, 5a77d0cb, d7f9d9f5,
 8af65470, 516fda09, 1f15e649, 8d784b99, 9f78baf1, b0ca1846),
 TJC→TMJC relabel (92162eef, 566103a4), no-answer flag for the 8
 constructions.
+
+**2026-08-20. S1 + S3_AM ROLLUP (Adrian: "extract solutions for S1 and
+S3 AM, no need NT").** New intake (18–19 Aug, ~1,000 rows) had arrived
+raw. Inspection showed these did NOT need solving: **every** gap row
+already carried per-part `answer` (and 93% per-part `solution`) in its
+parts JSON — so this was a deterministic **parts→row rollup**, no model
+calls. Pure-SQL walk (`jsonb_array_elements … WITH ORDINALITY`, LEFT
+JOIN LATERAL over `subparts`), labels rebuilt as `(a)` / `(a)(i)`,
+answers joined `'; '`, solutions joined by blank lines — matching the
+house style already used bank-wide. Pre-flight checks first: 0 parts
+missing a label, 0 parents carrying BOTH subparts and their own
+answer/solution ⇒ the walk is unambiguous. Empty-guarded, so it can
+only fill blanks; ran twice (second pass swept 7 stragglers the peer
+pipeline created mid-run, incl. 9dd42e36 which had an empty answer
+despite populated parts).
+**Result: S1 1,832 rows and S3_AM 1,255 rows now have 100% row-level
+answer coverage; ZERO rows with neither.** Remaining without a *worked
+solution*: S1 221, S3_AM 104 (their parts carry answers but no per-part
+working — extraction cannot produce these; they need a Tier-B solve
+wave if wanted). NT (S3_EM_NT, 269 rows, all first seen 18 Aug — a
+brand-new level in the bank) deliberately NOT touched per Adrian.
+⚠ Observation: the peer/main-Mac pipeline writes its own row-level
+answers WITHOUT part labels (e.g. `$x = 0.148$; $x = 2$`) while this
+rollup and the bank's older convention use `(a) …; (b) …`. Harmless
+today, but answer-key rendering will look inconsistent — worth picking
+one convention.
+**Reminder — the ~920 diagram rows** (has_image, mostly with per-part
+answers) are still invisible to practice generation because it filters
+on row-level `answer`; the same rollup would light them up cheaply
+whenever Adrian wants it.
 **Tier B WAVE 1 DONE — 122 solutions, 511/511 independent sympy checks
 passed FIRST attempt, 0 abandoned.** AM 131→91 (40 written), EM-family
 75→33 (42), S3_EM_NA 178→138 (40). Skips: 3 pure ruler-and-compass
