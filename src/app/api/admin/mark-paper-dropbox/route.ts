@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isOurBlobUrl } from '@/lib/blob-url';
 import { dropboxConfigured, uploadFile } from '@/lib/dropbox';
+import { dropboxPaperPath } from '@/lib/dropbox-paper-path';
 
 // File a marked PDF into Dropbox (6 Aug 2026). Adrian's ask: after a queued paper
 // finishes, he wants the images PDF already sitting in a folder on the iPad — the
@@ -9,11 +10,13 @@ import { dropboxConfigured, uploadFile } from '@/lib/dropbox';
 // queue worker calls this the moment the PDF is built; the site's 📁 button calls
 // the same route for papers marked interactively.
 //
-// Landing spot: /Marked Papers/<YYYY-MM-DD> <paper name>.pdf inside the app folder
-// (Dropbox/Apps/AdrianMathNotes/) — flat, no month subfolders (Adrian, 14 Aug 2026:
-// "saved to dropbox folder /Apps/AdrianMathNotes/Marked Papers"; the date prefix
-// keeps a flat folder sorted). Dropbox creates missing parents on upload, so there
-// is no mkdir step.
+// Landing spot + filename: lib/dropbox-paper-path.ts (shared with the auto-save so
+// both compute the same path). Dropbox creates missing parents on upload — no mkdir.
+//
+// Uploads stay mode:add + autorename, and NOTHING here dedupes by path: Adrian really
+// does mark three papers under one name on one day (12 Aug 2026), so "already a file
+// with this name" is not the same question as "already filed this paper". The page
+// answers the real question, keyed on the run — see autoFileToDropbox.
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -29,16 +32,7 @@ export async function POST(req: NextRequest) {
   // authenticated open proxy that writes whatever it fetches into Adrian's Dropbox.
   if (!isOurBlobUrl(url)) return NextResponse.json({ error: 'Bad URL' }, { status: 400 });
 
-  const stem = String(body.name || 'marked paper')
-    .replace(/\.(pdf|jpe?g|png|heic)$/i, '')
-    .replace(/[\\/:*?"<>|]/g, '-')     // Dropbox rejects these outright; iOS hides them
-    .replace(/\s+/g, ' ').trim().slice(0, 80) || 'marked paper';
-
-  // Local (SGT) date, not UTC: a paper marked at 1am Singapore should carry that
-  // day's date, and toISOString() would stamp the previous one.
-  const d = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
-  const folder = (body.folder || 'Marked Papers').replace(/[^\w \-]/g, '').trim() || 'Marked Papers';
-  const path = `/${folder}/${d} ${stem}.pdf`;
+  const path = dropboxPaperPath(body.name, body.folder, Date.now());
 
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(45_000) });

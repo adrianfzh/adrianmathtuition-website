@@ -59,11 +59,33 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   papers/YYYY-MM/…` — old month folders were left in place). SGT date,
   `autorename` on collisions. First WRITE path in `lib/dropbox.ts`
   (`uploadFile`; `Dropbox-API-Arg` is ASCII-escaped — the header rejects raw
-  Unicode). The mark page's 📁 button next to ⬇ Download uses it too. ⚠ The
+  Unicode). Path + filename come from `lib/dropbox-paper-path.ts` (tested), NOT
+  inline in the route — the auto-save below has to compute the same string. The
+  mark page's 📁 button next to ⬇ Download uses it too. ⚠ The
   Dropbox refresh token must carry `files.content.write` — the token on Vercel
   predated that scope and failed `missing_scope` until swapped 2026-08-06 (probe
   with a REAL write: Dropbox validates the path header BEFORE the scope gate, so
   an invalid-path 400 proves nothing about scopes).
+- **The images PDF files ITSELF into Dropbox (2026-08-19):** Adrian's ask — "can
+  the save action be done automatically? once the image pdf is generated?" The
+  moment `generateBoth`'s photos half resolves, `autoFileToDropbox` posts it to
+  the same route; not awaited, so the full PDF never queues behind an upload and
+  a Dropbox failure reports itself next to the 📁 button, never in the red error
+  banner (the marked copy is safe in the run either way). Filename comes from a
+  `useEffect`-fed ref, not the render closure — the save fires minutes after ▶
+  Mark, and the closure's `paperName` is the pre-marking one.
+  ⚠ **Dedupe is keyed on the RUN, never the filename.** The obvious guard —
+  "skip if a file with this name already exists today" — is WRONG here: Adrian
+  really does mark several papers under one name on one day (three "isabelle …
+  Set 2 P2" on 2026-08-12), and it would file the first and silently drop the
+  rest. Uploads stay `mode:add` + `autorename`, so nothing is ever overwritten.
+  A failed save drops back out of the set (⚡ rebuild = retry) and `markFromStored`
+  deletes its own key so a 🔁 Re-mark files the newer copy.
+  Filenames are almost always paper-name-only: 51 of 53 runs carry no tagged
+  student, because Adrian already types the name into the paper name ("isabelle
+  EM SJC PRELIM P1 2024") — so the automatic name matches what the button would
+  have produced anyway. The ✍️ annotated copy is still filed by hand: it is his
+  own edit and he may make more.
 - **Paper name is editable everywhere (2026-08-06):** a name input sits above
   Mark/Queue (placeholder = working-file name), the send row keeps its input,
   and history rows' names click into an inline rename (Enter saves, Esc

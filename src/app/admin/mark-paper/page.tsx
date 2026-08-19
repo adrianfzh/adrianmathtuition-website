@@ -544,7 +544,7 @@ export default function MarkPaperPage() {
     // Keep a name Adrian typed before hitting Mark — the box is now above this
     // button, so blanking it back to the filename would throw away the thing he
     // just wrote. Only an untouched box falls back to the working PDF's name.
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setPracticeItems(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setPracticeItems(null); setDbxNote(null);
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -628,7 +628,9 @@ export default function MarkPaperPage() {
   // on a saved-but-unmarked paper, and the tail of remarkPaper above. The bot fills
   // a never-marked row in place, so the ⏳ entry becomes the marked run.
   async function markFromStored(id: string) {
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setPracticeItems(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setPracticeItems(null); setDbxNote(null);
+    // A re-mark is a NEW marked copy of the same run, so it earns a fresh filing.
+    autoFiledRef.current.delete(id);
     if (historyRef.current) historyRef.current.open = false;
     try {
       const resp = await fetch('/api/admin/mark-paper', {
@@ -814,21 +816,56 @@ export default function MarkPaperPage() {
   // app. Queued papers get this automatically from the bot worker; this button is the
   // same route for papers marked here at the keyboard.
   const [dbxBusy, setDbxBusy] = useState(false);
-  const [dbxNote, setDbxNote] = useState('');
-  async function fileToDropbox() {
-    if (!sendPdf || dbxBusy) return;
-    setDbxBusy(true); setDbxNote(''); setError('');
+  const [dbxNote, setDbxNote] = useState<{ ok: boolean; text: string } | null>(null);
+  // The filename the automatic save will use. It runs minutes after ▶ Mark was
+  // pressed, so it cannot read `paperName` out of that render's closure — this ref
+  // is what "the name as it stands right now" means.
+  const dbxNameRef = useRef('marked paper');
+  useEffect(() => {
+    dbxNameRef.current = [sendStudentName, paperName].filter(Boolean).join(' — ') || 'marked paper';
+  }, [sendStudentName, paperName]);
+
+  async function saveToDropbox(url: string, name: string): Promise<boolean> {
+    setDbxNote(null);
     try {
-      const name = [sendStudentName, paperName].filter(Boolean).join(' — ') || 'marked paper';
       const r = await fetch('/api/admin/mark-paper-dropbox', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ url: sendPdf.url, name }),
+        body: JSON.stringify({ url, name }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
-      setDbxNote(`📁 Saved to Dropbox: ${d.name}`);
-    } catch (e) { setError((e as Error).message); }
-    finally { setDbxBusy(false); }
+      setDbxNote({ ok: true, text: `📁 Saved to Dropbox: ${d.name}` });
+      return true;
+    } catch (e) {
+      // Never the red error banner: a Dropbox hiccup is not a marking failure, and
+      // the marked copy is safe in the history either way.
+      setDbxNote({ ok: false, text: `📁 Dropbox save failed — ${(e as Error).message} Tap 📁 To Dropbox to retry.` });
+      return false;
+    }
+  }
+  async function fileToDropbox() {
+    if (!sendPdf || dbxBusy) return;
+    setDbxBusy(true); setError('');
+    await saveToDropbox(sendPdf.url, [sendStudentName, paperName].filter(Boolean).join(' — ') || 'marked paper');
+    setDbxBusy(false);
+  }
+  // Automatic filing, once per paper (Adrian, 19 Aug 2026: "can the save action be
+  // done automatically? once the image pdf is generated?"). Queued papers already got
+  // this from the bot's worker; this closes the same gap for papers marked here.
+  //
+  // Deduped by RUN, deliberately — not by filename. Adrian marks several papers under
+  // one name on one day (three "isabelle … Set 2 P2" on 12 Aug 2026), so a name-based
+  // guard would file the first and silently drop the rest. Keyed on the run: a ⚡
+  // rebuild of the same paper re-files nothing, a genuinely different paper always
+  // files. A FAILED save drops back out of the set, so the rebuild is also the retry,
+  // and 🔁 Re-mark clears its own key so a fresh marking files its newer copy.
+  const autoFiledRef = useRef<Set<string>>(new Set());
+  async function autoFileToDropbox(url: string, forRunId: string | null) {
+    const key = forRunId || url;
+    if (autoFiledRef.current.has(key)) return;
+    autoFiledRef.current.add(key);
+    const ok = await saveToDropbox(url, dbxNameRef.current);
+    if (!ok) autoFiledRef.current.delete(key);
   }
 
   // Per-row 📁/🗑 for the history list (13 Aug 2026): the send row's To Dropbox
@@ -942,7 +979,13 @@ export default function MarkPaperPage() {
     const errs: string[] = [];
     if (pPhotos) {
       setBothStage('images');
-      try { setMarked([await pPhotos]); }
+      try {
+        const r = await pPhotos;
+        setMarked([r]);
+        // Straight into Dropbox. Not awaited — the full PDF must not queue behind an
+        // upload, and a Dropbox failure reports itself next to the 📁 button.
+        autoFileToDropbox(r.url, src.runId);
+      }
       catch (e) { errs.push(`images: ${(e as Error).message}`); }
     }
     if (pFull) {
@@ -1491,12 +1534,12 @@ export default function MarkPaperPage() {
               <button
                 style={{ ...btn, background: '#0061ff', fontSize: 14, padding: '8px 14px', opacity: dbxBusy ? 0.6 : 1 }}
                 disabled={dbxBusy}
-                title="Save this PDF into Dropbox → Marked Papers (opens in the Files app on the iPad)"
+                title="The images PDF files itself into Dropbox → Marked Papers as soon as it is built. Use this to file the ✍️ annotated copy, or to retry a failed save."
                 onClick={fileToDropbox}
               >
                 {dbxBusy ? 'Saving…' : '📁 To Dropbox'}
               </button>
-              {dbxNote && <span style={{ fontSize: 12, color: '#15803d', fontWeight: 600 }}>{dbxNote}</span>}
+              {dbxNote && <span style={{ fontSize: 12, color: dbxNote.ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{dbxNote.text}</span>}
               <StudentPicker
                 value={sendStudentId}
                 authHeaders={authHeaders}
