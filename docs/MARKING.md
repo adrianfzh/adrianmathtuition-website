@@ -96,7 +96,8 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   "skip if a file with this name already exists today" — is WRONG here: Adrian
   really does mark several papers under one name on one day (three "isabelle …
   Set 2 P2" on 2026-08-12), and it would file the first and silently drop the
-  rest. Uploads stay `mode:add` + `autorename`, so nothing is ever overwritten.
+  rest. A run's FIRST save is `mode:add` + `autorename`, so a new paper never
+  clobbers another's file (one-file-per-run overwrites are the next bullet).
   A failed save drops back out of the set (⚡ rebuild = retry) and `markFromStored`
   deletes its own key so a 🔁 Re-mark files the newer copy.
   Filenames are almost always paper-name-only: 51 of 53 runs carry no tagged
@@ -104,6 +105,35 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   EM SJC PRELIM P1 2024") — so the automatic name matches what the button would
   have produced anyway. The ✍️ annotated copy is still filed by hand: it is his
   own edit and he may make more.
+- **One Dropbox file per RUN (2026-08-19):** every Dropbox save now carries the
+  `runId`. First save for a run = `add`+`autorename` as before, but the landed
+  path (`path_lower`) is recorded in `paper_marking_runs.dropbox_path`; every
+  LATER save for that run uploads `mode:'overwrite'` to that exact path. So 📁
+  after ✏️ Annotate (or after any rebuild/rename) REPLACES the auto-filed copy
+  instead of stacking `… (1).pdf` siblings — Adrian's expectation. Same-name
+  same-day papers stay safe: different runs record different autorenamed paths.
+  Passers of runId: send-row 📁, `autoFileToDropbox`, history-row 📁, and the
+  bot's `deliverQueuedRun`. A save without runId behaves exactly as before.
+- **✓ Checked (2026-08-19):** `paper_marking_runs.checked_at` separates "I've
+  been through this marked copy" from "the AI finished". Set automatically by
+  (a) an annotated PDF linking onto the run — bot `linkPdf` kind `annotated`,
+  which covers BOTH the Notability upload and the in-browser ✏️ Annotate save;
+  (b) a delivered ✉️ email (`mark-paper-send`); (c) the send-row ⬇ Download —
+  its href alone carries `&run=` (history/library view links stay silent; the
+  download route AWAITS the update because a fire-and-forget write can be
+  killed once the response starts streaming). Manual override lives in
+  `/admin/papers`: POST `{runId, checked:boolean}`, a "Not checked yet" filter
+  chip, an `unchecked` stat, a green ✓ Checked button per row (tap the badge to
+  undo). Semantics agreed with Adrian 2026-08-19: sending strongly implies
+  vetting, so send counts as checked.
+- **Multi-PDF drop chooser (2026-08-19):** dropping 2+ PDFs into Student
+  working used to silently merge them into one giant script. Now they park in
+  `pendingPdfs` and a card asks: **Queue N papers separately** (each PDF
+  rasterizes → spread-splits → uploads → `save-paper` named from its filename →
+  `enqueue`, sequentially, via `queueFilesAsPaper` — the extracted core 🌙
+  Queue also uses) · **Combine into one paper** (the old append behaviour, for
+  one script scanned as several files) · Cancel. Loose photos in the same drop
+  still attach immediately either way.
 - **Paper name is editable everywhere (2026-08-06):** a name input sits above
   Mark/Queue (placeholder = working-file name), the send row keeps its input,
   and history rows' names click into an inline rename (Enter saves, Esc

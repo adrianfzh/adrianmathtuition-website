@@ -33,7 +33,7 @@ const MAX_TOPICS_PER_RUN = 8;
 
 const COLUMNS =
   'id, created_at, paper_name, student_id, student_name, num_questions, ' +
-  'total_awarded, total_max, pdf_url, photos_pdf_url, annotated_pdf_url, released_at, source';
+  'total_awarded, total_max, pdf_url, photos_pdf_url, annotated_pdf_url, released_at, checked_at, source';
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -89,6 +89,8 @@ export async function GET(req: NextRequest) {
         // walked through as if its marks were final.
         pending: pendingCount(r.result_json),
         released: !!r.released_at,
+        // Adrian has been through this one — annotated it, sent it, or ticked it off.
+        checked: !!r.checked_at,
         annotatedPdfUrl: r.annotated_pdf_url,
         photosPdfUrl: r.photos_pdf_url,
         pdfUrl: r.pdf_url,
@@ -102,17 +104,18 @@ export async function GET(req: NextRequest) {
     stats: {
       total: runs.length,
       untagged: runs.filter(r => !r.studentId).length,
+      unchecked: runs.filter(r => !r.checked).length,
       students: new Set(runs.map(r => r.studentId).filter(Boolean)).size,
     },
   });
 }
 
-// ── POST: tag a run with a student ───────────────────────────────────────────
+// ── POST: tag a run with a student, or toggle its ✓ checked state ────────────
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  let body: { runId?: string; studentId?: string | null };
+  let body: { runId?: string; studentId?: string | null; checked?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -121,6 +124,18 @@ export async function POST(req: NextRequest) {
 
   const { runId, studentId } = body;
   if (!runId) return NextResponse.json({ error: 'runId is required' }, { status: 400 });
+
+  // Manual ✓ from the library — the "looked through it, nothing to change" case that
+  // no annotated copy or send would ever record (Adrian, 19 Aug 2026). A body with
+  // `checked` is ONLY that toggle; tagging keeps its own shape below.
+  if (typeof body.checked === 'boolean') {
+    const { error } = await getSupabaseAdmin()
+      .from('paper_marking_runs')
+      .update({ checked_at: body.checked ? new Date().toISOString() : null })
+      .eq('id', runId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, runId, checked: body.checked });
+  }
 
   // Resolve the NAME from Airtable rather than trusting one sent by the client:
   // student_name is denormalised into this row and shows up in triage, so a

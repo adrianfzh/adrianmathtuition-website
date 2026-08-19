@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { airtableRequest } from '@/lib/airtable';
 import { isOurBlobUrl } from '@/lib/blob-url';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 // Email a marked PDF to a student — the "no amendments needed" fast path on
 // /admin/mark-paper. WhatsApp sending is deliberately NOT here: Adrian sends those
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (!RESEND_API_KEY) return NextResponse.json({ error: 'Resend not configured' }, { status: 503 });
 
-  let body: { pdfUrl?: string; filename?: string; to?: string; studentId?: string; saveEmail?: boolean; paperLabel?: string; score?: string; studentName?: string };
+  let body: { pdfUrl?: string; filename?: string; to?: string; studentId?: string; saveEmail?: boolean; paperLabel?: string; score?: string; studentName?: string; runId?: string };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const to = (body.to || '').trim();
@@ -116,6 +117,13 @@ export async function POST(req: NextRequest) {
         if ((e as Error).message?.includes('NOT DELIVERED')) throw e;
         // status-check network error → don't block; the Resend webhook still alerts on async bounces
       }
+    }
+
+    // Emailing the paper is Adrian handing it over — he has vetted it (his answer,
+    // 19 Aug 2026), so the run is checked. Never fails the send that already happened.
+    if (body.runId && /^[0-9a-f-]{36}$/i.test(body.runId)) {
+      try { await getSupabaseAdmin().from('paper_marking_runs').update({ checked_at: new Date().toISOString() }).eq('id', body.runId); }
+      catch (e) { console.warn('[mark-paper-send] checked_at failed', (e as Error).message); }
     }
 
     // Remember the address for next time. Metadata must never fail the send that already

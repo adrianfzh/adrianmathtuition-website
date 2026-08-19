@@ -181,8 +181,11 @@ const MathText = memo(function MathText({ text }: { text: string }) {
 // Content-Disposition): Safari's share sheet titles an inline-viewed PDF from the URL
 // path and ignores the header, so without this every Notability import was called
 // "mark-paper-download" (Adrian, 2 Aug 2026).
-function downloadHref(url: string, filename: string, inline: boolean): string {
-  return `/api/admin/mark-paper-download/${encodeURIComponent(filename)}?url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}${inline ? '&disposition=inline' : ''}`;
+function downloadHref(url: string, filename: string, inline: boolean, run?: string | null): string {
+  // `run` marks that paper ✓ Checked on download — pass it ONLY from the send row's
+  // ⬇ (grabbing the copy to hand out = Adrian has vetted it). History/library view
+  // links stay silent: peeking at an old PDF is not checking it.
+  return `/api/admin/mark-paper-download/${encodeURIComponent(filename)}?url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}${inline ? '&disposition=inline' : ''}${run ? `&run=${encodeURIComponent(run)}` : ''}`;
 }
 
 // A history row's download filename — same shape as the send panel's, from run fields.
@@ -455,6 +458,15 @@ export default function MarkPaperPage() {
   async function onPickWorking(arr: File[]) {
     const isPdf = (f: File) => f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
     const pdfs = arr.filter(isPdf);
+    const photos = arr.filter((f) => !isPdf(f) && (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(f.name)));
+    if (photos.length) await onPickImages(photos);
+    if (pdfs.length >= 2) {
+      // Two or more PDFs in one drop are USUALLY different students' papers (Adrian,
+      // 19 Aug 2026 — dropping several used to silently merge them into one giant
+      // script). Don't guess: park them and ask.
+      setPendingPdfs(pdfs);
+      return;
+    }
     if (pdfs.length && pdfs[0].name && !/^shared\.pdf$/i.test(pdfs[0].name)) {
       const nice = pdfs[0].name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
       // A newly dropped working PDF is a NEW paper, so it takes the name back from a
@@ -462,8 +474,6 @@ export default function MarkPaperPage() {
       // previous paper's name and filed itself under it.
       if (nice) { workingNameRef.current = nice; setPaperName((prev) => (runId ? nice : (prev || nice))); }
     }
-    const photos = arr.filter((f) => !isPdf(f) && (f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|gif)$/i.test(f.name)));
-    if (photos.length) await onPickImages(photos);
     for (const f of pdfs) {
       setError('');
       try {
@@ -825,12 +835,14 @@ export default function MarkPaperPage() {
     dbxNameRef.current = [sendStudentName, paperName].filter(Boolean).join(' — ') || 'marked paper';
   }, [sendStudentName, paperName]);
 
-  async function saveToDropbox(url: string, name: string): Promise<boolean> {
+  async function saveToDropbox(url: string, name: string, forRunId?: string | null): Promise<boolean> {
     setDbxNote(null);
     try {
       const r = await fetch('/api/admin/mark-paper-dropbox', {
         method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ url, name }),
+        // runId lets the server keep ONE Dropbox file per run: the first save lands
+        // it, every later save (e.g. after ✏️ Annotate) overwrites that same file.
+        body: JSON.stringify({ url, name, runId: forRunId || undefined }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
@@ -846,7 +858,7 @@ export default function MarkPaperPage() {
   async function fileToDropbox() {
     if (!sendPdf || dbxBusy) return;
     setDbxBusy(true); setError('');
-    await saveToDropbox(sendPdf.url, [sendStudentName, paperName].filter(Boolean).join(' — ') || 'marked paper');
+    await saveToDropbox(sendPdf.url, [sendStudentName, paperName].filter(Boolean).join(' — ') || 'marked paper', runId);
     setDbxBusy(false);
   }
   // Automatic filing, once per paper (Adrian, 19 Aug 2026: "can the save action be
@@ -864,7 +876,7 @@ export default function MarkPaperPage() {
     const key = forRunId || url;
     if (autoFiledRef.current.has(key)) return;
     autoFiledRef.current.add(key);
-    const ok = await saveToDropbox(url, dbxNameRef.current);
+    const ok = await saveToDropbox(url, dbxNameRef.current, forRunId);
     if (!ok) autoFiledRef.current.delete(key);
   }
 
@@ -883,7 +895,7 @@ export default function MarkPaperPage() {
     try {
       const name = [run.student_name, run.paper_name].filter(Boolean).join(' — ') || 'marked paper';
       const r = await fetch('/api/admin/mark-paper-dropbox', {
-        method: 'POST', headers: authHeaders, body: JSON.stringify({ url, name }),
+        method: 'POST', headers: authHeaders, body: JSON.stringify({ url, name, runId: run.id }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) throw new Error(d.error || `Dropbox failed (${r.status})`);
@@ -919,7 +931,7 @@ export default function MarkPaperPage() {
           pdfUrl: sendPdf.url, filename: sendFilename, to: sendEmail.trim(),
           studentId: sendStudentId || undefined, saveEmail: sendRemember && !!sendStudentId,
           paperLabel: paperName || 'your paper', score: totals ? `${totals.awarded}/${totals.max}` : '',
-          studentName: sendStudentName,
+          studentName: sendStudentName, runId: runId || undefined,
         }),
       });
       const d = await r.json();
@@ -1003,41 +1015,102 @@ export default function MarkPaperPage() {
   // paper can go straight in ("drop five papers and walk away").
   const [queueBusy, setQueueBusy] = useState(false);
   const [queueNote, setQueueNote] = useState('');
+  // The upload→save→enqueue core, shared by 🌙 Queue and the multi-PDF drop. Touches
+  // no page state, so several papers can go through it back to back.
+  async function queueFilesAsPaper(pageFiles: File[], paperLabel: string, opts?: { paperPdfUrl?: string | null; totalMax?: number }): Promise<number> {
+    const imgs = await Promise.all(pageFiles.map((f) => fileToUpload(f)));
+    setRasterizing('Uploading full-resolution pages…');
+    const originalUrls = await Promise.all(pageFiles.map((f, i) => uploadOriginal(f, imgs[i]))).finally(() => setRasterizing(''));
+    const photos = originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean);
+    if (!photos.length) throw new Error('The photo uploads failed — try again.');
+    const sp = await fetch('/api/admin/mark-paper', {
+      method: 'POST', headers: authHeaders,
+      body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, totalMax: opts?.totalMax, source: { paper_pdf_url: opts?.paperPdfUrl || null, photos } }),
+    });
+    const spd = await sp.json();
+    if (!sp.ok || !spd.run_id) throw new Error(spd.error || 'could not save the paper');
+    const en = await fetch('/api/admin/mark-paper', {
+      method: 'POST', headers: authHeaders,
+      body: JSON.stringify({ phase: 'enqueue', id: spd.run_id, model: markModel, style: markStyle }),
+    });
+    const end = await en.json();
+    if (!en.ok || end.error) throw new Error(end.error || 'could not queue');
+    return end.position || 1;
+  }
   async function queuePaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
     setQueueBusy(true); setError(''); setQueueNote('');
     try {
-      const imgs = await Promise.all(images.map((f) => fileToUpload(f)));
-      setRasterizing('Uploading full-resolution pages…');
-      const [originalUrls, paperPdfUrl] = await Promise.all([
-        Promise.all(images.map((f, i) => uploadOriginal(f, imgs[i]))),
-        pdf ? uploadPaperPdf(pdf) : Promise.resolve(null),
-      ]).finally(() => setRasterizing(''));
-      const photos = originalUrls.map((u, i) => u ? { photo_index: i, original_url: u } : null).filter(Boolean);
-      if (!photos.length) throw new Error('The photo uploads failed — try again.');
+      const paperPdfUrl = pdf ? await uploadPaperPdf(pdf) : null;
       // A queued paper is named ONCE, here — nobody is at the keyboard when it
       // finishes, and this name is what the Telegram document and the Dropbox file
       // are called.
       const paperLabel = paperName.trim() || autoPaperLabel();
-      const sp = await fetch('/api/admin/mark-paper', {
-        method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'save-paper', paperName: paperLabel, totalMax: outOfValue(), source: { paper_pdf_url: paperPdfUrl || null, photos } }),
-      });
-      const spd = await sp.json();
-      if (!sp.ok || !spd.run_id) throw new Error(spd.error || 'could not save the paper');
-      const en = await fetch('/api/admin/mark-paper', {
-        method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'enqueue', id: spd.run_id, model: markModel, style: markStyle }),
-      });
-      const end = await en.json();
-      if (!en.ok || end.error) throw new Error(end.error || 'could not queue');
+      const position = await queueFilesAsPaper(images, paperLabel, { paperPdfUrl, totalMax: outOfValue() });
       // Clear the slots — the whole point is attaching the NEXT paper immediately.
       imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
       setImages([]); setImgPreviews([]); setPdf(null); setSplitNote(''); workingNameRef.current = ''; setPaperName(''); setOutOf('');
-      setQueueNote(`🌙 Queued as “${paperLabel}” (#${end.position || 1}) — you'll get the marked PDF on Telegram and in Dropbox. Attach the next paper.`);
+      setQueueNote(`🌙 Queued as “${paperLabel}” (#${position}) — you'll get the marked PDF on Telegram and in Dropbox. Attach the next paper.`);
       loadStats();
     } catch (e) { setError((e as Error).message); }
     finally { setQueueBusy(false); }
+  }
+
+  // Several PDFs dropped in one go (19 Aug 2026): parked here until Adrian says
+  // whether they are separate papers (the usual case) or halves of one script.
+  const [pendingPdfs, setPendingPdfs] = useState<File[] | null>(null);
+  const [multiBusy, setMultiBusy] = useState('');
+  const pdfNiceName = (f: File, i: number) =>
+    f.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim() || `paper ${i + 1}`;
+  // One PDF → its portrait page images (rasterize, then spread-split), no page state.
+  async function expandPdfToPages(f: File): Promise<File[]> {
+    const pages = await pdfToPageImages(f, (done, total) => setMultiBusy(`Converting ${f.name} — page ${done} of ${total}…`), HIRES_MAX_EDGE);
+    const out: File[] = [];
+    for (const pg of pages) out.push(...(await splitFileIfSpread(pg)).files);
+    return out;
+  }
+  async function queuePendingSeparately() {
+    const files = pendingPdfs || [];
+    if (!files.length || queueBusy) return;
+    setPendingPdfs(null); setQueueBusy(true); setError(''); setQueueNote('');
+    const done: string[] = []; const failed: string[] = [];
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const label = pdfNiceName(files[i], i);
+        setMultiBusy(`Queueing ${i + 1} of ${files.length} — ${label}…`);
+        try {
+          const pages = await expandPdfToPages(files[i]);
+          if (!pages.length) throw new Error('no pages could be rendered');
+          await queueFilesAsPaper(pages, label);
+          done.push(label);
+        } catch (e) { failed.push(`${label} (${(e as Error).message})`); }
+      }
+    } finally { setMultiBusy(''); setRasterizing(''); setQueueBusy(false); }
+    if (done.length) setQueueNote(`🌙 Queued ${done.length} paper${done.length === 1 ? '' : 's'} separately: ${done.join(' · ')} — each marks on its own and lands on Telegram + Dropbox.`);
+    if (failed.length) setError(`Couldn't queue: ${failed.join('; ')}`);
+    loadStats();
+  }
+  async function combinePending() {
+    const files = pendingPdfs || [];
+    setPendingPdfs(null);
+    if (!files.length) return;
+    // Same as dropping them one at a time: every page appends to the shared photo
+    // list, named after the first file.
+    if (files[0].name && !/^shared\.pdf$/i.test(files[0].name)) {
+      const nice = pdfNiceName(files[0], 0);
+      workingNameRef.current = nice; setPaperName((prev) => (runId ? nice : (prev || nice)));
+    }
+    for (const f of files) {
+      setError('');
+      try {
+        setRasterizing(`Converting ${f.name}…`);
+        const pages = await pdfToPageImages(f, (done, total) => setRasterizing(`Converting ${f.name} — page ${done} of ${total}…`), HIRES_MAX_EDGE);
+        if (!pages.length) throw new Error('no pages could be rendered');
+        await onPickImages(pages);
+      } catch (e) {
+        setError(`Couldn't read ${f.name} as pages (${(e as Error).message}). Photograph the pages instead.`);
+      } finally { setRasterizing(''); }
+    }
   }
 
   // ⬇ House-style DOCX of the practice list, built server-side (pandoc on the bot).
@@ -1308,6 +1381,33 @@ export default function MarkPaperPage() {
           onFiles={(fs) => { if (fs.length) onPickWorking(fs); }}
           hint="JPG / PNG / HEIC, or a PDF scan — its pages become photos · drop several · click to add more"
         />
+        {pendingPdfs && (
+          <div style={{ marginTop: 10, padding: 12, borderRadius: 10, border: '1px solid #c7d2fe', background: '#eef2ff' }}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>📚 {pendingPdfs.length} PDFs dropped — one paper each?</div>
+            <div style={{ fontSize: 13, color: '#374151', marginBottom: 10 }}>
+              Usually these are different papers: each one queues on its own, named after its file
+              ({pendingPdfs.map((f, i) => pdfNiceName(f, i)).join(' · ')}).
+              Combine only if they are parts of the <b>same</b> script scanned as separate files.
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <button onClick={queuePendingSeparately} disabled={queueBusy}
+                style={{ ...btn, background: '#4f46e5', fontSize: 13, padding: '7px 12px', opacity: queueBusy ? 0.6 : 1 }}>
+                🌙 Queue {pendingPdfs.length} papers separately
+              </button>
+              <button onClick={combinePending} disabled={queueBusy}
+                style={{ padding: '7px 12px', fontSize: 13, borderRadius: 8, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>
+                Combine into one paper
+              </button>
+              <button onClick={() => setPendingPdfs(null)} aria-label="Cancel"
+                style={{ padding: '7px 10px', fontSize: 13, borderRadius: 8, border: 'none', background: 'none', color: '#6b7280', cursor: 'pointer' }}>
+                ✕ Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        {multiBusy && (
+          <div style={{ marginTop: 8, fontSize: 13, color: '#4f46e5' }}>🌙 {multiBusy}</div>
+        )}
         {rasterizing && (
           <div style={{ marginTop: 8, fontSize: 13, color: '#2563eb' }}>📄 {rasterizing}</div>
         )}
@@ -1526,7 +1626,7 @@ export default function MarkPaperPage() {
                 style={{ padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 8, fontSize: 14, minWidth: 230 }}
               />
               <a
-                href={downloadHref(sendPdf.url, sendFilename, false)}
+                href={downloadHref(sendPdf.url, sendFilename, false, runId)}
                 style={{ ...btn, background: '#374151', textDecoration: 'none', fontSize: 14, padding: '8px 14px' }}
               >
                 ⬇ Download for WhatsApp

@@ -114,9 +114,11 @@ function asciiHeader(json: string): string {
  * first copy (" (1)"), not silently replace a version Adrian may already have
  * annotated and handed back.
  */
-export async function uploadFile(path: string, body: Buffer | Uint8Array, contentType = 'application/octet-stream'): Promise<{ path: string; name: string }> {
+export async function uploadFile(path: string, body: Buffer | Uint8Array, contentType = 'application/octet-stream', mode: 'add' | 'overwrite' = 'add'): Promise<{ path: string; name: string }> {
   const token = await getAccessToken();
-  const arg = { path, mode: 'add', autorename: true, mute: false, strict_conflict: false };
+  // overwrite = replace THAT file (no autorename): the caller is re-filing the same
+  // run's copy — e.g. the ✍️ annotated version superseding the auto-filed one.
+  const arg = { path, mode, autorename: mode === 'add', mute: false, strict_conflict: false };
   const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
     method: 'POST',
     headers: {

@@ -31,6 +31,7 @@ type Run = {
   questions: number;
   pending: number;
   released: boolean;
+  checked: boolean;
   annotatedPdfUrl: string | null;
   photosPdfUrl: string | null;
   pdfUrl: string | null;
@@ -68,12 +69,13 @@ export default function PapersPage() {
   const [authLoading, setAuthLoading] = useState(false);
 
   const [runs, setRuns] = useState<Run[]>([]);
-  const [stats, setStats] = useState<{ total: number; untagged: number; students: number } | null>(null);
+  const [stats, setStats] = useState<{ total: number; untagged: number; unchecked: number; students: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [filterStudent, setFilterStudent] = useState('');
   const [untaggedOnly, setUntaggedOnly] = useState(false);
+  const [uncheckedOnly, setUncheckedOnly] = useState(false);
   const [tagging, setTagging] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -134,6 +136,29 @@ export default function PapersPage() {
     }
   }
 
+  // ✓ Checked — "I've been through this one." Set automatically when a paper is
+  // annotated or sent; this toggle covers the papers Adrian reviewed and had
+  // nothing to change on, which no other action would ever record.
+  async function setCheckedState(runId: string, checked: boolean) {
+    const before = runs.find(r => r.id === runId);
+    setRuns(prev => prev.map(r => (r.id === runId ? { ...r, checked } : r)));
+    setStats(st => (st ? { ...st, unchecked: Math.max(0, st.unchecked + (checked ? -1 : 1)) } : st));
+    try {
+      const r = await fetch('/api/admin/papers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runId, checked }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) throw new Error(d.error || 'Could not update');
+      setToast(checked ? '✓ Marked as checked' : 'Moved back to not checked');
+    } catch (e) {
+      setRuns(prev => prev.map(x => (x.id === runId && before ? before : x)));
+      setStats(st => (st ? { ...st, unchecked: Math.max(0, st.unchecked + (checked ? 1 : -1)) } : st));
+      setToast((e as Error).message || 'Connection error');
+    }
+  }
+
   // ── Auth gate ───────────────────────────────────────────────────────────────
   if (!authed) {
     return (
@@ -159,6 +184,7 @@ export default function PapersPage() {
 
   const visible = runs.filter(r => {
     if (untaggedOnly && r.studentId) return false;
+    if (uncheckedOnly && r.checked) return false;
     if (filterStudent && r.studentId !== filterStudent) return false;
     return true;
   });
@@ -179,6 +205,9 @@ export default function PapersPage() {
               {stats.untagged > 0 && (
                 <> · <b style={{ color: '#a16207' }}>{stats.untagged} untagged</b> — a script with no name never reaches the
                 student&rsquo;s profile or their parent report</>
+              )}
+              {stats.unchecked > 0 && (
+                <> · <b style={{ color: C.pen }}>{stats.unchecked} not checked yet</b></>
               )}
             </>
           : ''}
@@ -202,9 +231,19 @@ export default function PapersPage() {
         >
           Needs tagging
         </button>
-        {(filterStudent || untaggedOnly) && (
+        <button
+          onClick={() => setUncheckedOnly(v => !v)}
+          style={{
+            padding: '9px 13px', fontSize: 14, fontWeight: 600, borderRadius: 999, cursor: 'pointer',
+            border: `1px solid ${uncheckedOnly ? C.pen : C.border}`,
+            background: uncheckedOnly ? C.pen : '#fff', color: uncheckedOnly ? '#fff' : '#374151',
+          }}
+        >
+          Not checked yet
+        </button>
+        {(filterStudent || untaggedOnly || uncheckedOnly) && (
           <button
-            onClick={() => { setFilterStudent(''); setUntaggedOnly(false); }}
+            onClick={() => { setFilterStudent(''); setUntaggedOnly(false); setUncheckedOnly(false); }}
             style={{ padding: '9px 4px', fontSize: 13, border: 'none', background: 'none', color: C.muted, cursor: 'pointer' }}
           >
             Clear
@@ -229,6 +268,15 @@ export default function PapersPage() {
                   {fmtDate(run.date)} · {run.questions} question{run.questions === 1 ? '' : 's'}
                   {run.pending > 0 && <span style={{ color: '#a16207', fontWeight: 700 }}> · ⏳ {run.pending} to check</span>}
                   {run.released && <span style={{ color: '#15803d' }}> · sent</span>}
+                  {run.checked && (
+                    <button
+                      onClick={() => setCheckedState(run.id, false)}
+                      title="Tap to move back to not-checked"
+                      style={{ border: 'none', background: 'none', padding: 0, marginLeft: 4, fontSize: 12, fontWeight: 700, color: '#15803d', cursor: 'pointer' }}
+                    >
+                      · ✓ checked
+                    </button>
+                  )}
                 </div>
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -313,6 +361,15 @@ export default function PapersPage() {
                 <a href={run.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: C.link, textDecoration: 'none' }}>
                   📄 Full PDF ↗
                 </a>
+              )}
+              {!run.checked && (
+                <button
+                  onClick={() => setCheckedState(run.id, true)}
+                  title="I've been through this paper — nothing to change"
+                  style={{ padding: '4px 10px', fontSize: 13, fontWeight: 700, borderRadius: 999, border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#15803d', cursor: 'pointer' }}
+                >
+                  ✓ Checked
+                </button>
               )}
               {run.topics.length > TOPICS_SHOWN_INLINE && (
                 <button
