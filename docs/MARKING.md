@@ -1047,13 +1047,13 @@ figure" (a `console.warn` with the reason, nothing on the page).
   wiring in `ai/paper-marker.js` (spec + per-attempt collection),
   `ai/photo-overlay.js` (pass-through), `ai/annotate.js` (build + place +
   footer fallback).
-- **Deploy status:** first five families LIVE on Fly since 2026-08-20 (bot
-  commit `5f2dad5`); Adrian sample-approved tree/sector and the three follow-on
-  families; deployed with the marking queue empty; Patrick Hand verified
-  present post-deploy (`fly ssh console -C fc-list | grep -i patrick`). The
-  `circles` family + the 20 Aug fixes (rotation verify gate, ⟹-chain footer
-  alignment, leader dedup) are committed (bot `074f415`) but **NOT yet
-  deployed** — awaiting Adrian's sample approval.
+- **Deploy status:** all six families LIVE on Fly as of 2026-08-20. First five
+  shipped in bot commit `5f2dad5`; the `circles` family + the 20 Aug fixes
+  (rotation verify gate, ⟹-chain footer alignment, leader dedup, board-style
+  solution rules) shipped in bot commit `074f415` after Adrian sample-approved
+  all three renders. Both deploys went out with the marking queue empty;
+  Patrick Hand verified present post-deploy each time
+  (`fly ssh console -C fc-list | grep -i patrick`).
 
 ## AI Marking PNG Renderer
 
