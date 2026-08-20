@@ -252,6 +252,11 @@ export default function MarkPaperPage() {
   // shows /90 when the questions summed to 89 (bot ai/paper-totals.js).
   const [totals, setTotals] = useState<{ awarded: number; max: number; counted_max?: number; max_source?: string } | null>(null);
   const [unattempted, setUnattempted] = useState<string[]>([]);
+  // Paper-level coverage warning (bot ai/paper-totals.js): the denominator was
+  // grounded UP to a known total but several marks' worth of questions were never
+  // located/marked, so the badge score is only a FLOOR — surfaced loudly so a
+  // grounded-up run isn't released as a confident score. Absent on clean runs.
+  const [review, setReview] = useState<{ recommended: boolean; reason: string; unmapped_max?: number } | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
   // Generated outputs, labelled — a LIST because "Generate both" shows the images PDF
   // the moment it exists while the full PDF is still typesetting behind it.
@@ -377,6 +382,7 @@ export default function MarkPaperPage() {
       if (!results.length && !photos.length) throw new Error('That run has no stored marking to load — mark the paper again.');
       setResults(results);
       setTotals(rj.totals || null);
+      setReview(rj.review?.recommended ? rj.review : null);
       setAnnotatedPhotos(photos);
       setPracticeItems(rj.practice?.items?.length ? rj.practice.items : null);
       setUnattempted(rj.unattempted_questions || []);
@@ -519,7 +525,7 @@ export default function MarkPaperPage() {
   // Parse + apply a marking response (fresh mark AND re-mark share the shape).
   async function applyMarkResponse(resp: Response) {
     const raw = await resp.text();
-    let d: { results?: Result[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; unattempted_questions?: string[]; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
+    let d: { results?: Result[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; unattempted_questions?: string[]; review?: { recommended: boolean; reason: string; unmapped_max?: number }; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
     try { d = raw ? JSON.parse(raw) : {}; }
     catch {
       const hint = resp.status === 413
@@ -531,6 +537,7 @@ export default function MarkPaperPage() {
     setResults(d.results || []);
     setTotals(d.totals || null);
     setUnattempted(d.unattempted_questions || []);
+    setReview(d.review?.recommended ? d.review : null);
     setAnnotatedPhotos(d.annotated_photos || []);
     setRunId(d.run_id || null);
     setUsage(d.usage || null);
@@ -554,7 +561,7 @@ export default function MarkPaperPage() {
     // Keep a name Adrian typed before hitting Mark — the box is now above this
     // button, so blanking it back to the filename would throw away the thing he
     // just wrote. Only an untouched box falls back to the working PDF's name.
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setPracticeItems(null); setDbxNote(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setPracticeItems(null); setDbxNote(null);
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -638,7 +645,7 @@ export default function MarkPaperPage() {
   // on a saved-but-unmarked paper, and the tail of remarkPaper above. The bot fills
   // a never-marked row in place, so the ⏳ entry becomes the marked run.
   async function markFromStored(id: string) {
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setMarked([]); setPracticeItems(null); setDbxNote(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setPracticeItems(null); setDbxNote(null);
     // A re-mark is a NEW marked copy of the same run, so it earns a fresh filing.
     autoFiledRef.current.delete(id);
     if (historyRef.current) historyRef.current.open = false;
@@ -1600,6 +1607,14 @@ export default function MarkPaperPage() {
             )}
             {loadedName && <span style={{ fontSize: 13, fontWeight: 500, color: '#6b7280' }}>🗂️ loaded: {loadedName}</span>}
           </h2>
+          {/* Coverage floor warning — several marks' worth of questions never got a
+              row, so the badge is a floor, not the real score. Loud on purpose:
+              this is exactly the run that must NOT be released as-is. */}
+          {review?.recommended && (
+            <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 12px', marginBottom: 12, fontSize: 13, color: '#991b1b', lineHeight: 1.45 }}>
+              ⚠ <strong>Coverage — score is a floor.</strong> {review.reason}
+            </div>
+          )}
           {results.map((r, i) => (
             <div key={i} style={{ padding: '10px 0', borderTop: i ? '1px solid #f3f4f6' : 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
