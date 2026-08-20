@@ -480,7 +480,7 @@ never receive.
 | | **Annotated photo** (bot, `ai/annotate.js`) | **Transcript sheet** (site, `marking-template.html`) |
 |---|---|---|
 | What it is | the marked script — his own paper, red pen on it | a legible re-write of his working |
-| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · circled page total · footer "Marker's notes" · **in 🖼 mode only: the worked solution** | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
+| Carries | boxed `awarded/max` per part · one-line `error_summary` per part below max · ticks/crosses · footer "Marker's notes" · **in 🖼 mode only: the worked solution** (the circled page total was REMOVED 2026-08-20 — per-part boxes are the marks; bot `2f40f20`) | every line of his working re-typeset with ✓/✗ · the corrected line inline · struck wrong answer + the right one · "Where you went wrong" paragraph · **the worked solution** |
 | Says | what each part scored, and WHY a mark was lost | what the answer WAS |
 | Granularity | per PART | per LINE |
 | In 🖼 images-only mode | ✅ | ❌ absent |
@@ -574,10 +574,10 @@ field** — a new surface strips the one that exists.
 - **No cover page — the paper total rides on the first marked page** (2026-07-29, Adrian:
   "don't have to put the first page"). `mark-paper-pdf` grows page 1 by a `stripHeight()`
   header band (`addPage([w, h + strip])`, image still drawn at `y: 0`) and stamps a boxed
-  red `PAPER TOTAL  x / y` at the **left** of it, student/date muted at the right. Left,
-  not right, because the annotated photo already carries the bot's hand-circled **page**
-  total in its top-right corner — two unlabelled red scores in one corner read as a
-  contradiction. The strip flag is set *before* drawing so a throw can't slide it onto
+  red `PAPER TOTAL  x / y` at the **left** of it, student/date muted at the right. (Left
+  was originally chosen to keep clear of the bot's hand-circled top-right **page** total;
+  that circled total was removed 2026-08-20 — bot `2f40f20` — but the left placement
+  stays.) The strip flag is set *before* drawing so a throw can't slide it onto
   page 2, and the single-photo `kind:'image'` path is untouched (one page, one total).
 - **Every page is laid out at `PAGE_W = 595` pt, height proportional** — pages used to be
   sized to their own pixel dimensions, so a typeset transcript came out visibly bigger
@@ -904,9 +904,20 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
     drawing, then to plain pen prose — a lost fraction beats a lost sentence. The model
     writes the worked answer into `correct.full_solution_latex` (one `$…$` step per line);
     the old `full_solution_plain` is still read as a fallback.
-- **The circled page total reserves its true size** — reservation and drawing share
-  `_teacherScoreGeom()`. They used to be computed separately and the reservation was the
-  smaller, so `12/12` printed straight over a part's `2/2`.
+- **The circled page total is GONE (2026-08-20, bot `2f40f20`)** — Adrian: "don't put the
+  overall mark for each page… only provide the marks for each question". The per-part
+  boxes grew 1.2× to carry the weight; margin comments were compensated so only the boxes
+  changed size. Do not resurrect the ellipse as a "missing total" fix — the paper total
+  rides the Telegram caption, the PDF header strip and the transcript. The same commit:
+  blank-space solution blocks at 0.85× of their old size, leader arrows launch from the
+  note edge FACING the target (the tail used to cross the note's own words), a
+  `saysTheSame` token-overlap gate drops `* study notes` that restate the diagnosis
+  (one mistake = one note, blank space preferred over the strip), level-conditional
+  rejection reasons (Sec bare "(rej)" is full credit; JC needs the cause), geometry
+  alternative-route leniency (true cited facts + a valid named test = full marks even if
+  the marker solved it another way), FULL-MARKS/CROSS consistency (no ✗ inside a part
+  awarded its max), and `solutionEntry` now owes the worked solution whenever a part
+  LOST marks, not only on final-answer mismatch (proof parts scoring 0 got nothing).
 - **Part regions are matched by KEY, never by array position** — Gemini silently omits parts
   it can't find, so an index match attaches the comment to the wrong working. `paper-marker`
   carries `question_number` onto each part so the key is `Q8(i)`, not `(i)` (a page with two
@@ -952,8 +963,11 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   copy and you must change all three; both repos have named regression tests.
 - ⚠ **`src/lib/latex-repair.ts` reads as binary to `grep`** — its mask sentinel uses
   non-printing characters, so a plain `grep` silently finds nothing in it. Use `grep -a`.
-- **Vision model list** — `GEMINI_VISION_MODELS` (default
-  `gemini-3.1-pro-preview,gemini-2.5-pro`) is tried in order, falling through on a
+- **Vision model list** — `GEMINI_VISION_MODELS` (code default
+  `gemini-3.1-pro-preview,gemini-2.5-pro`; the Fly secret was set to
+  `gemini-3.1-pro-preview,gemini-2.5-pro,gemini-2.5-flash` on 2026-08-20 after two
+  papers hit the shared 1000-req/day gemini-2.5-pro Tier-1 cap and came back tick-less)
+  is tried in order, falling through on a
   404/unsupported — and, since 2026-08-10, on a PERSISTED 429. A 429 first retries the
   SAME model honouring Google's own suggested delay (+jitter, 2 tries, ≤30s each) before
   falling through: each model id has its own requests-per-minute bucket, so the second
@@ -1075,7 +1089,12 @@ figure" (a `console.warn` with the reason, nothing on the page).
   (`fly ssh console -C fc-list | grep -i patrick`). The graph polygon
   extension + `circle_theorem` are **committed (bot `541f1c6`) but NOT yet
   deployed** — awaiting Adrian's approval of the four 20 Aug samples
-  (trapezium sketch, angle-at-centre, two tangents, semicircle).
+  (trapezium sketch, angle-at-centre, two tangents, semicircle). Stacked on
+  top and equally undeployed: bot `2f40f20` (20 Aug, chloe's St Theresa
+  feedback — page-total removal, 1.2× part boxes, arrow launch fix, note
+  dedup, Sec "(rej)" convention, geometry leniency, full-marks/cross
+  consistency, solutions owed on any lost marks). Both ship together on the
+  next `npm run deploy` once the samples are approved and the queue is empty.
 
 ## AI Marking PNG Renderer
 
