@@ -1011,12 +1011,11 @@ figure" (a `console.warn` with the reason, nothing on the page).
   wiring in `ai/paper-marker.js` (spec + per-attempt collection),
   `ai/photo-overlay.js` (pass-through), `ai/annotate.js` (build + place +
   footer fallback).
-- **Deploy status (2026-08-20):** NOT yet on Fly. Tree/sector (bot commit
-  `6aa38a0`) is sample-approved by Adrian; the three new families (bot commit
-  `5f2dad5`, which also adds their DIAGRAM RULES to the marking prompt) await
-  his approval of the rendered samples. Deploy is additionally gated on the
-  bot's marking queue being empty (`paper_marking_runs` where `total_max is
-  null and result_json->'queue' is not null`).
+- **Deploy status:** LIVE on Fly since 2026-08-20 (bot commit `5f2dad5`, all
+  five families + their DIAGRAM RULES in the marking prompt). Adrian
+  sample-approved tree/sector and the three follow-on families; deployed with
+  the marking queue empty; Patrick Hand verified present post-deploy
+  (`fly ssh console -C fc-list | grep -i patrick`).
 
 ## AI Marking PNG Renderer
 
