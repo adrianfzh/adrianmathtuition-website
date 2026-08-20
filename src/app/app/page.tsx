@@ -37,7 +37,13 @@ export default async function DashboardPage() {
     <div className="space-y-4 pb-20 sm:pb-4">
       <h1 className="text-xl font-bold text-navy pt-1">Hi {d.firstName} 👋</h1>
 
-      {/* Today stack — personalised "start here" learn cards */}
+      {/* Today stack — personalised "start here" learn cards.
+          BETA GATE: hidden for students during the marking-only beta. The
+          non-learn fallback used to link to the revision-notes reader
+          (/notes) — that reader IS built and live, it's just not surfaced in
+          the portal yet. When notes graduates out of beta, restore the notes
+          entry-point here (and the Browse-notes tile below). */}
+      {learnVisible && (
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Start here</p>
         {todayCards.length > 0 ? (
@@ -60,14 +66,15 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <Link
-            href={learnVisible ? '/app/learn' : '/notes'}
+            href="/app/learn"
             className="flex items-center justify-between gap-3 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 font-semibold shadow-sm hover:opacity-90 transition-opacity"
           >
-            <span>{learnVisible ? '▶ Start learning' : '📖 Read your revision notes'}</span>
+            <span>▶ Start learning</span>
             <span className="shrink-0 text-[hsl(43,90%,60%)] text-lg">›</span>
           </Link>
         )}
       </div>
+      )}
 
       {/* Next lesson */}
       <div className={card}>
@@ -125,9 +132,19 @@ export default async function DashboardPage() {
         <Link href="/app/practice" className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity">
           ✏️ Practise a question
         </Link>
-        <Link href="/app/notes" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
-          📚 Browse notes
-        </Link>
+        {/* BETA GATE: the revision-notes reader is live but hidden during the
+            marking-only beta — students get the paper-submission shortcut
+            instead. Restore the Browse-notes tile (→ /app/notes → /notes) when
+            notes graduates out of beta. */}
+        {learnVisible ? (
+          <Link href="/app/notes" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+            📚 Browse notes
+          </Link>
+        ) : (
+          <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+            📄 Submit a paper
+          </Link>
+        )}
       </div>
 
       {/* Recent activity */}
