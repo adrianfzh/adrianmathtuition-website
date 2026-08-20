@@ -171,6 +171,19 @@ tables + Auth user gone); two-account leak test on notes/settings APIs.
    from marked papers Adrian has, with known mark allocations). Point `scripts/eval/` at them;
    iterate the rubric prompt until scores are within **±1 mark on ≥80%** of exemplars.
    Record the result in this doc before beta.
+   **✅ GATE MET — 2026-08-21.** Exemplars = the 39-item golden set (`scripts/marking-golden-set.json`,
+   transcribed from Adrian's red-pen marking; same ground truth as the mark-paper eval). Harness:
+   `scripts/practice-grade-eval.mjs` — sends the portal grader's exact prompt (extracted to
+   `src/lib/practice-grade-prompt.ts` so runtime and eval share one source) on the runtime model
+   `claude-opus-4-8`, majority-of-3 samples, **scheme-less** (golden items carry no bank scheme,
+   so production — which always has the scheme — should only do better). Results:
+   baseline 37/39 (95%) within ±1, exact agreement 20/39 (51%); after folding Adrian's marking
+   conventions into the rubric (ECF single-penalty, asked-for-quantity, all-or-nothing explain
+   marks, no presentation/calculator deductions, 1-s.f. estimation, off-track guidance):
+   **37/39 (95%) within ±1, exact 23/39 (59%)** — gate threshold is ≥80%. A third, tighter
+   iteration regressed (90%/54%) and was reverted; stopping here to avoid overfitting the 39 items.
+   Remaining hard misses (pearle-q12b full-forfeit-on-abandoned-answer, junhe2-q2ii lost solution
+   family) are candidates for future golden-set-driven prompt work, not launch blockers.
 
 **Verify:** full loop on 3 different questions; malformed-JSON path exercised; weakness_tags
 accumulate and appear in the next grading prompt; two-account leak test on attempts/history;
