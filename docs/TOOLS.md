@@ -216,6 +216,21 @@ the card 404s). Conventions, all load-bearing:
     (`.col-main` / `.col-side`) go `display: contents` under 900 px, which promotes their
     panels to flex items of `.layout` so each can be given its own `order` — panels nested
     inside a wrapper cannot otherwise be reordered past it. Desktop keeps the two columns.
+  - **The phone header is one row.** sin/cos/tan sits centred and degrees/radians is a
+    two-button `° / π` control absolutely positioned at the right end of the same row —
+    it used to be a second full-width row of word buttons. The entry card is centred,
+    its boxes are 36 px rather than 44 px, and **graph B is one `<select>`** (none / sin /
+    cos / tan) that carries both decisions — whether there is a second graph and which
+    function it is. It replaced a checkbox plus three buttons, ~90 px above the graph for
+    the same two choices.
+  - **The canvas takes a share of the screen on a phone, not of its own width.** Under
+    900 px `H = clamp(innerHeight * 0.46, 262, 430)`; the old `W * 0.62` gave 258 px on a
+    290 px-wide canvas, so space freed above the graph never reached the graph.
+  - **Badges reserve their space before any chip is placed.** They are drawn last, so
+    without an explicit `reserve()` a guide chip placed earlier lands on top of one —
+    which is what `y = 2sin3x − 1` looked like on a phone. The centre-line chip also has
+    a third, wordless form under a 300 px canvas, where "centre line y = 0" is as wide as
+    the whole plot and collides with everything.
   - **No instruction prose above the graph** and no preset row: the "decimals, negatives
     and fractions work" hint, the graph-B colour note and the whole "Try these" panel were
     cut (Adrian, 2026-08-20) — on a phone they pushed the picture off the screen. The
