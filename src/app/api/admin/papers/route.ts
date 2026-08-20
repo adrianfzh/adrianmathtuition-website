@@ -3,7 +3,8 @@
 // GET    → every marking run, newest first, reduced to what's useful when you're
 //          sitting next to the student: score, the topics that bled marks, and
 //          links to the copies you can put on the screen.
-// POST   → { runId, studentId } tags a run with a student (or untags with null).
+// POST   → { runId, studentId } tags a run with a student (or untags with null);
+//          { runId, checked } toggles one ✓; { runIds, checked } sweeps many.
 // DELETE → ?id= removes the run AND its stored files (originals, annotated
 //          pages, assembled PDFs) from Blob.
 //
@@ -115,11 +116,24 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  let body: { runId?: string; studentId?: string | null; checked?: boolean };
+  let body: { runId?: string; runIds?: unknown; studentId?: string | null; checked?: boolean };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'invalid JSON' }, { status: 400 });
+  }
+
+  // Bulk ✓ — the "mark all as checked" sweep from the library header. Same
+  // stamp as the single toggle below, applied to every id in one update.
+  if (Array.isArray(body.runIds) && typeof body.checked === 'boolean') {
+    const ids = body.runIds.filter((x): x is string => typeof x === 'string' && !!x).slice(0, 500);
+    if (!ids.length) return NextResponse.json({ error: 'runIds is empty' }, { status: 400 });
+    const { error } = await getSupabaseAdmin()
+      .from('paper_marking_runs')
+      .update({ checked_at: body.checked ? new Date().toISOString() : null })
+      .in('id', ids);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, count: ids.length, checked: body.checked });
   }
 
   const { runId, studentId } = body;

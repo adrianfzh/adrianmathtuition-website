@@ -78,6 +78,10 @@ export default function PapersPage() {
   const [uncheckedOnly, setUncheckedOnly] = useState(false);
   const [tagging, setTagging] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // Two-tap guards: the run armed for deletion, and whether the bulk ✓ is
+  // armed. The client confirm IS the delete guard — the API asks no questions.
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
+  const [bulkArmed, setBulkArmed] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -99,6 +103,12 @@ export default function PapersPage() {
     const t = setTimeout(() => setToast(''), 2600);
     return () => clearTimeout(t);
   }, [toast]);
+  // A stray first tap must not leave a live "delete for good?" button around.
+  useEffect(() => {
+    if (!confirmingDelete && !bulkArmed) return;
+    const t = setTimeout(() => { setConfirmingDelete(null); setBulkArmed(false); }, 4000);
+    return () => clearTimeout(t);
+  }, [confirmingDelete, bulkArmed]);
 
   async function verify(pw: string) {
     setAuthLoading(true);
@@ -159,6 +169,66 @@ export default function PapersPage() {
     }
   }
 
+  const visible = runs.filter(r => {
+    if (untaggedOnly && r.studentId) return false;
+    if (uncheckedOnly && r.checked) return false;
+    if (filterStudent && r.studentId !== filterStudent) return false;
+    return true;
+  });
+  const visibleUnchecked = visible.filter(r => !r.checked);
+
+  // Bulk ✓ — clears the whole backlog in one go. Scoped to what the current
+  // filters show, so "all" means exactly the papers on screen.
+  async function checkAllVisible() {
+    const ids = visibleUnchecked.map(r => r.id);
+    setBulkArmed(false);
+    if (!ids.length) return;
+    const idSet = new Set(ids);
+    const beforeRuns = runs, beforeStats = stats;
+    setRuns(prev => prev.map(r => (idSet.has(r.id) ? { ...r, checked: true } : r)));
+    setStats(st => (st ? { ...st, unchecked: Math.max(0, st.unchecked - ids.length) } : st));
+    try {
+      const r = await fetch('/api/admin/papers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runIds: ids, checked: true }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) throw new Error(d.error || 'Could not update');
+      setToast(`✓ ${ids.length} paper${ids.length === 1 ? '' : 's'} marked as checked`);
+    } catch (e) {
+      setRuns(beforeRuns);
+      setStats(beforeStats);
+      setToast((e as Error).message || 'Connection error');
+    }
+  }
+
+  async function deleteRun(runId: string) {
+    setConfirmingDelete(null);
+    const run = runs.find(r => r.id === runId);
+    const beforeRuns = runs, beforeStats = stats;
+    setRuns(prev => prev.filter(r => r.id !== runId));
+    setStats(st => (st && run
+      ? {
+          ...st,
+          total: Math.max(0, st.total - 1),
+          untagged: Math.max(0, st.untagged - (run.studentId ? 0 : 1)),
+          unchecked: Math.max(0, st.unchecked - (run.checked ? 0 : 1)),
+        }
+      : st));
+    try {
+      const r = await fetch(`/api/admin/papers?id=${encodeURIComponent(runId)}`, { method: 'DELETE' });
+      const d = await r.json();
+      if (!r.ok || d.error) throw new Error(d.error || 'Could not delete');
+      setToast('Run deleted');
+    } catch (e) {
+      // Put the row back — a deletion that silently failed must not look done.
+      setRuns(beforeRuns);
+      setStats(beforeStats);
+      setToast((e as Error).message || 'Connection error');
+    }
+  }
+
   // ── Auth gate ───────────────────────────────────────────────────────────────
   if (!authed) {
     return (
@@ -181,13 +251,6 @@ export default function PapersPage() {
       </div>
     );
   }
-
-  const visible = runs.filter(r => {
-    if (untaggedOnly && r.studentId) return false;
-    if (uncheckedOnly && r.checked) return false;
-    if (filterStudent && r.studentId !== filterStudent) return false;
-    return true;
-  });
 
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', maxWidth: 860, margin: '0 auto', padding: '16px 14px 80px', color: C.ink }}>
@@ -241,6 +304,21 @@ export default function PapersPage() {
         >
           Not checked yet
         </button>
+        {visibleUnchecked.length > 0 && (
+          <button
+            onClick={() => (bulkArmed ? checkAllVisible() : setBulkArmed(true))}
+            title="Mark every paper currently shown as checked"
+            style={{
+              padding: '9px 13px', fontSize: 14, fontWeight: 600, borderRadius: 999, cursor: 'pointer',
+              border: '1px solid #bbf7d0',
+              background: bulkArmed ? '#15803d' : '#f0fdf4', color: bulkArmed ? '#fff' : '#15803d',
+            }}
+          >
+            {bulkArmed
+              ? `Tap again — mark ${visibleUnchecked.length} checked`
+              : `✓ Mark all ${visibleUnchecked.length} as checked`}
+          </button>
+        )}
         {(filterStudent || untaggedOnly || uncheckedOnly) && (
           <button
             onClick={() => { setFilterStudent(''); setUntaggedOnly(false); setUncheckedOnly(false); }}
@@ -377,6 +455,24 @@ export default function PapersPage() {
                   style={{ padding: 0, border: 'none', background: 'none', color: C.muted, fontSize: 13, cursor: 'pointer' }}
                 >
                   {open ? '− fewer topics' : '+ all topics'}
+                </button>
+              )}
+              {/* Far right, away from the everyday taps. Removes the run AND
+                  its stored files — the armed state is the only guard. */}
+              {confirmingDelete === run.id ? (
+                <button
+                  onClick={() => deleteRun(run.id)}
+                  style={{ marginLeft: 'auto', padding: '4px 10px', fontSize: 13, fontWeight: 700, borderRadius: 999, border: '1px solid #fecaca', background: '#fef2f2', color: C.danger, cursor: 'pointer' }}
+                >
+                  Delete for good?
+                </button>
+              ) : (
+                <button
+                  onClick={() => setConfirmingDelete(run.id)}
+                  title="Delete this run and every file it stored"
+                  style={{ marginLeft: 'auto', padding: '4px 6px', fontSize: 14, border: 'none', background: 'none', color: C.faint, cursor: 'pointer' }}
+                >
+                  🗑
                 </button>
               )}
             </div>

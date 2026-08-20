@@ -323,8 +323,17 @@ it), and **tag the backlog**.
   open it. ⚠ Both go through the bot proxy, so this leg **cannot be exercised on
   `localhost`** — `BOT_BASE_URL`/`BOT_INTERNAL_SECRET` are Preview/Production-scoped
   and a local load 503s with "bot not configured". Verify it on the preview URL.
-- Filters: student, "Needs tagging", Clear. Default view is everything — filtering
-  by student first would have shown an empty list and read as broken.
+- Filters: student, "Needs tagging", "Not checked yet", Clear. Default view is
+  everything — filtering by student first would have shown an empty list and read
+  as broken.
+- **Bulk ✓ + delete (2026-08-21, Adrian's ask):** "✓ Mark all N as checked" in the
+  filter row sweeps every *visible* unchecked run (POST `{runIds, checked}` — one
+  Supabase `.in()` update, so it composes with the filters: filter to a student
+  first and "all" means theirs). Each row also has a 🗑 at the far right → same
+  `DELETE /api/admin/papers?id=` as mark-paper's history rows (row + every Blob
+  file). Both are two-tap: the armed state ("Tap again…" / "Delete for good?")
+  auto-disarms after 4s, and that client confirm is the only delete guard — the
+  API asks no questions.
 
 ## /app/marking — where the student reads their own marks (2026-08-12)
 
