@@ -43,11 +43,10 @@ export function buildGradingPrompt(opts: {
     ? `STUDENT'S WORKING: in the attached photo (handwritten or on a tablet).
 First transcribe it FAITHFULLY into discrete numbered steps — one mathematical step per line, with the mathematics as LaTeX in $...$ (e.g. "$x^2 - 3x = 5$", "$\\sqrt{50} = 5\\sqrt{2}$"). Transcribe what is written, including mistakes — do not correct while transcribing. If part of the photo is unreadable, transcribe it as "(illegible)". Then mark those transcribed lines; lineComments reference the transcribed line numbers.`
     : `STUDENT'S WORKING (numbered lines — reference these numbers ONLY):
-${lines!.map((l, i) => `${i + 1}. ${l || '(blank line)'}`).join('\n')}`;
+${lines!.map((l, i) => `${i + 1}. ${l || '(blank line)'}`).join('\n')}
+In "transcribedLines", return these same lines in the same order — exactly one entry per input line (keep blank lines as "") — with the mathematics rewritten as LaTeX in $...$ (e.g. "9C5 * 2^4" becomes "$\\binom{9}{5} \\cdot 2^4$"). Stay faithful to what the student wrote, including mistakes — never correct while transcribing.`;
 
-  const transcriptionField = isPhoto
-    ? `\n  "transcribedLines": ["<each transcribed step, in order>"],`
-    : '';
+  const transcriptionField = `\n  "transcribedLines": ["<each ${isPhoto ? 'transcribed step' : 'input line as LaTeX'}, in order>"],`;
 
   return `You are an experienced Singapore ${question.level} mathematics examiner marking one student's working against the official mark scheme.
 

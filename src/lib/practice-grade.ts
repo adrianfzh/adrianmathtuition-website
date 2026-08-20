@@ -110,13 +110,17 @@ export async function gradeAttempt(opts: {
     try {
       const jsonStr = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);
       const raw = JSON.parse(jsonStr) as Record<string, unknown>;
-      const transcribed = isPhoto && Array.isArray(raw.transcribedLines)
+      const transcribed = Array.isArray(raw.transcribedLines)
         ? (raw.transcribedLines as unknown[]).map(String).slice(0, 60)
         : undefined;
       const lineCount = isPhoto ? (transcribed?.length || 0) : lines!.length;
       if (isPhoto && !lineCount) { lastErr = 'no transcribedLines'; continue; }
+      // Typed path: the LaTeX echo is display-only — pass it through only when
+      // its count matches the input lines, so lineComments' numbering holds.
+      const echo = isPhoto ? transcribed
+        : (transcribed && transcribed.length === lineCount ? transcribed : undefined);
       const parsed = validate(raw, lineCount);
-      if (parsed) return { ...parsed, ...(transcribed ? { transcribedLines: transcribed } : {}), parseRetried: attempt > 0 };
+      if (parsed) return { ...parsed, ...(echo ? { transcribedLines: echo } : {}), parseRetried: attempt > 0 };
       lastErr = 'schema mismatch';
     } catch (e) {
       lastErr = e instanceof Error ? e.message.slice(0, 100) : 'parse error';

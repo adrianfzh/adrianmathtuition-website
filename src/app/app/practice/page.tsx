@@ -155,6 +155,7 @@ export default function PracticePage() {
   // Grading state (students only)
   const [working, setWorking] = useState('');
   const [photo, setPhoto] = useState<string | null>(null); // JPEG data URL, downscaled
+  const [gradedViaPhoto, setGradedViaPhoto] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [grading, setGrading] = useState(false);
@@ -232,7 +233,7 @@ export default function PracticePage() {
   }, [mode, loadingOverview, topics]);
 
   function resetAttempt() {
-    setWorking(''); setGrade(null); setGradedLines([]); setPrevScore(null); setSolution(null);
+    setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null);
   }
 
   const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string) => {
@@ -298,7 +299,11 @@ export default function PracticePage() {
       if (!r.ok) { setError(d.error || 'Marking failed'); return; }
       if (grade) setPrevScore(grade.score);
       setGrade(d.result);
-      setGradedLines(d.result?.transcribedLines || lines);
+      // Typed path: the grader echoes the lines back as LaTeX. Use them only
+      // when the count matches, so lineComments' numbering stays valid.
+      const tl: string[] | undefined = d.result?.transcribedLines;
+      setGradedLines(photo ? (tl || lines) : (tl && tl.length === lines.length ? tl : lines));
+      setGradedViaPhoto(!!photo);
       setWeakTags(d.weaknessTags || []);
     } catch { setError('Connection error while marking'); }
     finally { setGrading(false); }
@@ -593,7 +598,7 @@ export default function PracticePage() {
                 </div>
               </div>
 
-              {grade.transcribedLines && (
+              {gradedViaPhoto && (
                 <p className="text-[11px] text-slate-400 mb-2">
                   📷 Transcribed from your photo — if a step was misread, retake a clearer shot.
                 </p>
