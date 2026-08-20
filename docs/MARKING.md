@@ -1087,14 +1087,13 @@ figure" (a `console.warn` with the reason, nothing on the page).
   sample-approved all three renders. Both deploys went out with the marking
   queue empty; Patrick Hand verified present post-deploy each time
   (`fly ssh console -C fc-list | grep -i patrick`). The graph polygon
-  extension + `circle_theorem` are **committed (bot `541f1c6`) but NOT yet
-  deployed** — awaiting Adrian's approval of the four 20 Aug samples
-  (trapezium sketch, angle-at-centre, two tangents, semicircle). Stacked on
-  top and equally undeployed: bot `2f40f20` (20 Aug, chloe's St Theresa
-  feedback — page-total removal, 1.2× part boxes, arrow launch fix, note
-  dedup, Sec "(rej)" convention, geometry leniency, full-marks/cross
-  consistency, solutions owed on any lost marks). Both ship together on the
-  next `npm run deploy` once the samples are approved and the queue is empty.
+  extension + `circle_theorem` (bot `541f1c6`) and the chloe St Theresa
+  feedback batch (bot `2f40f20` — page-total removal, 1.2× part boxes, arrow
+  launch fix, note dedup, Sec "(rej)" convention, geometry leniency,
+  full-marks/cross consistency, solutions owed on any lost marks) **shipped
+  together 2026-08-20** on Adrian's "deploy both" — queue empty at deploy,
+  Patrick Hand verified, bot serving 200 post-deploy. Everything in this doc
+  is now LIVE on Fly.
 
 ## AI Marking PNG Renderer
 
