@@ -1092,8 +1092,23 @@ figure" (a `console.warn` with the reason, nothing on the page).
   launch fix, note dedup, Sec "(rej)" convention, geometry leniency,
   full-marks/cross consistency, solutions owed on any lost marks) **shipped
   together 2026-08-20** on Adrian's "deploy both" — queue empty at deploy,
-  Patrick Hand verified, bot serving 200 post-deploy. Everything in this doc
-  is now LIVE on Fly.
+  Patrick Hand verified, bot serving 200 post-deploy.
+- **2026-08-21 batch (bot `6158483`…`f3dd819`, 11 commits)** shipped on
+  Adrian's "go ahead" via the GitHub Actions deploy (local flyctl auth
+  expired; push = deploy). Last marking run 2¼ h old at push. Contents:
+  explanation-mark strictness (#5) + phantom-skip fix / coverage floor (#9);
+  tick/leader/correction placement (#4, #7 — ink-hugging ticks, leader aim,
+  correction anchored at the error); missed-page keep-instead-of-drop;
+  spread fixes (uneven-columns false-split guard + overlapped-sheets vision
+  escalation — no-gutter pages ask Gemini "one sheet or two?", trust only
+  the binary verdict, cut at the CV weak valley); **8th diagram family
+  `sign_table`** (ruled first-derivative table, ONE point per table, header
+  $5^-$|$5$|$5^+$ per Adrian's board convention — nature verified against
+  the sign pattern, tangent row derived); **per-feature sketch marking**
+  ("Sketch: "-prefixed lines[] entries per assessable graph feature;
+  overlay boxes the feature patch, sketch-aware placement guards in
+  `filterLineBoxes`). Suite 417 green at deploy. Everything in this doc is
+  now LIVE on Fly.
 
 ## AI Marking PNG Renderer
 
