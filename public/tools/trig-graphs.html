@@ -90,7 +90,21 @@
   .layout {
     display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start;
   }
-  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  /* Phone and tablet: the a, b, c boxes come FIRST and the graph sits directly
+     under them, so a student types a number and watches the curve move without
+     scrolling for it. The two column wrappers go display:contents so their
+     panels become flex items of .layout and can be ordered one by one. */
+  @media (max-width: 900px) {
+    .layout { display: flex; flex-direction: column; gap: 16px; }
+    .col-main, .col-side { display: contents; }
+    .panel + .panel, .showpanel { margin-top: 0; }
+    .panel-entry { order: 1; }
+    .canvas-wrap { order: 2; }
+    .panel-show  { order: 3; }
+    .panel-range { order: 4; }
+    .panel-why   { order: 5; }
+  }
+  @media (max-width: 700px) { .subtitle { display: none; } }
 
   .canvas-wrap {
     background: var(--bg-elev); border: 1px solid var(--border);
@@ -113,11 +127,6 @@
     border: 1.4px solid currentColor; border-radius: 5px; padding: 2px 6px;
     margin-right: 9px; vertical-align: 0.2em; font-weight: 700;
   }
-  @keyframes eqflash {
-    0% { background: var(--accent-dim); }
-    100% { background: transparent; }
-  }
-  .equation.flash { animation: eqflash 0.7s ease-out; }
   canvas { width: 100%; display: block; background: transparent; }
   .legend {
     display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 24px; margin-top: 16px;
@@ -233,19 +242,13 @@
     color: var(--text-dim); margin: 14px 0 8px;
   }
   .preset-label:first-child { margin-top: 0; }
-  .preset-row { display: flex; flex-wrap: wrap; gap: 6px; }
-  .preset {
-    background: var(--bg-elev-2); border: 1px solid var(--border);
-    color: var(--text-dim); padding: 6px 10px; border-radius: 5px;
-    font-size: 11.5px; cursor: pointer; transition: all 0.15s;
-    font-family: ui-monospace, monospace; -webkit-tap-highlight-color: transparent;
-    min-height: 34px;
-  }
-  .preset:hover { color: var(--accent); border-color: var(--accent); }
 
   @media (max-width: 560px) {
     body { padding: 16px; }
-    header { margin-top: 34px; }
+    /* the 34 px is headroom for the fixed "‹ All tools" chip — ?solo=1 removes
+       that chip, so claim the space back for the graph */
+    body:has(.tools-backlink) header { margin-top: 34px; }
+    .equation { padding: 8px 6px 12px; min-height: 44px; }
     h1 { font-size: 23px; }
     .equation { font-size: 21px; }
     .canvas-wrap { padding: 14px; }
@@ -275,7 +278,7 @@
   </div>
 
   <div class="layout">
-    <div>
+    <div class="col-main">
     <div class="canvas-wrap">
       <div class="equation" id="equation"></div>
       <canvas id="canvas"></canvas>
@@ -288,7 +291,7 @@
       </div>
     </div>
 
-    <div class="panel showpanel">
+    <div class="panel showpanel panel-show">
       <h3>Show on the graph</h3>
       <div class="showbar">
         <label class="chk"><input type="checkbox" id="ck-cycles" checked>
@@ -303,8 +306,8 @@
     </div>
     </div>
 
-    <div>
-      <div class="panel">
+    <div class="col-side">
+      <div class="panel panel-entry">
         <h3>Enter <i>a</i>, <i>b</i> and <i>c</i></h3>
         <div class="entry">
           <span class="rowtag a" id="tag-a" hidden>A</span>
@@ -316,11 +319,6 @@
           <span>+</span>
           <input type="text" id="in-c" inputmode="text" autocomplete="off" aria-label="c, the number added at the end" value="0">
         </div>
-        <div class="hintline">
-          Decimals, negatives and fractions all work — try <code>-2</code>, <code>0.5</code> or <code>1/2</code>.
-          A negative <i>c</i> just makes the <b>+</b> read as a minus.
-        </div>
-
         <div class="bsplit"></div>
         <label class="chk"><input type="checkbox" id="ck-b">
           <span>Draw a <b>second graph B</b> on the same axes</span></label>
@@ -340,14 +338,11 @@
             <span>+</span>
             <input type="text" id="in-c2" inputmode="text" autocomplete="off" aria-label="second graph c" value="0">
           </div>
-          <div class="hintline">
-            Graph <b>B</b> is drawn in <span style="color:var(--graphb);font-weight:700">violet</span>
-            over the same axes and x-range. The centre line, max/min and the
-            <i>a</i>/period markers always describe <b>graph A</b>.
-          </div>
         </div>
+      </div>
 
-        <h3 style="margin-top:20px">x-axis range <span class="tip" id="range-unit">(degrees)</span></h3>
+      <div class="panel panel-range">
+        <h3>x-axis range <span class="tip" id="range-unit">(degrees)</span></h3>
         <div class="rangerow">
           <span class="lab">from</span>
           <input type="text" id="in-x0" inputmode="text" autocomplete="off" aria-label="range start" value="0">
@@ -364,39 +359,11 @@
         <div class="facts" id="facts"></div>
       </div>
 
-      <div class="panel">
+      <div class="panel panel-why">
         <h3>What <i>a</i>, <i>b</i> and <i>c</i> are doing <span class="tip" id="why-fn"></span></h3>
         <div class="why" id="why"></div>
       </div>
 
-      <div class="panel">
-        <h3>Try these</h3>
-        <div class="preset-label">Count the repeats — each one a different colour</div>
-        <div class="preset-row">
-          <button class="preset" data-count="1" data-preset="tan,2,3,0,-30,150">y = 2tan3x &nbsp;→ 3</button>
-          <button class="preset" data-count="1" data-preset="tan,1,2,0,-45,135">y = tan2x &nbsp;→ 2</button>
-          <button class="preset" data-count="1" data-preset="sin,2,3,0,0,360">y = 2sin3x &nbsp;→ 3</button>
-          <button class="preset" data-count="1" data-preset="cos,3,2,0,0,360">y = 3cos2x &nbsp;→ 2</button>
-          <button class="preset" data-count="1" data-preset="sin,4,1,0,0,720">y = 4sin x &nbsp;→ 2</button>
-          <button class="preset" data-count="1" data-preset="cos,2,0.5,0,0,720">y = 2cos½x &nbsp;→ 1</button>
-        </div>
-        <div class="preset-label">a, b and c together</div>
-        <div class="preset-row">
-          <button class="preset" data-preset="sin,3,2,1">y = 3sin2x + 1</button>
-          <button class="preset" data-preset="cos,-1,1,0">y = −cos x</button>
-          <button class="preset" data-preset="cos,2,3,-1">y = 2cos3x − 1</button>
-          <button class="preset" data-preset="sin,0.5,1,0">y = ½sin x</button>
-          <button class="preset" data-preset="tan,1,1,0">y = tan x</button>
-          <button class="preset" data-preset="tan,2,0.5,1">y = 2tan½x + 1</button>
-        </div>
-        <div class="preset-label">Two graphs side by side</div>
-        <div class="preset-row">
-          <button class="preset" data-pair="sin,1,1,0|cos,1,1,0">sin x vs cos x</button>
-          <button class="preset" data-pair="sin,1,1,0|sin,2,1,0">sin x vs 2sin x</button>
-          <button class="preset" data-pair="sin,1,1,0|sin,1,2,0">sin x vs sin 2x</button>
-          <button class="preset" data-pair="cos,1,1,0|cos,1,1,2">cos x vs cos x + 2</button>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -1101,12 +1068,6 @@ function equationBlock() {
   return out;
 }
 
-function flashEquation() {
-  const el = $('equation');
-  el.classList.remove('flash');
-  void el.offsetWidth;
-  el.classList.add('flash');
-}
 
 // ---------------------------------------------------------------------------
 // The side explanation — rewritten for whichever function is showing
@@ -1427,36 +1388,6 @@ document.querySelectorAll('.unit-btn[data-fn2]').forEach(function (btn) {
  ['ck-b', v => { useB = v; $('b-body').hidden = !v; }]
 ].forEach(function (pair) {
   $(pair[0]).addEventListener('change', function () { pair[1](this.checked); render(); });
-});
-
-// presets: "fn,a,b,c" or "fn,a,b,c,x0,x1" (degrees), or data-pair "A|B"
-function applyPreset(p) {
-  setFn(p[0]);
-  a = parseFloat(p[1]); b = parseFloat(p[2]); c = parseFloat(p[3]);
-  if (p.length >= 6) { x0 = parseFloat(p[4]); x1 = parseFloat(p[5]); }
-}
-document.querySelectorAll('.preset').forEach(function (btn) {
-  btn.addEventListener('click', function () {
-    if (btn.dataset.pair) {
-      const two = btn.dataset.pair.split('|');
-      applyPreset(two[0].split(','));
-      const q = two[1].split(',');
-      setFn2(q[0]); a2 = parseFloat(q[1]); b2 = parseFloat(q[2]); c2 = parseFloat(q[3]);
-      useB = true; $('ck-b').checked = true; $('b-body').hidden = false;
-      // two curves plus a reference curve is one curve too many to read
-      showBase = false; $('ck-base').checked = false;
-      colourCycles = false; $('ck-cycles').checked = false;
-    } else {
-      applyPreset(btn.dataset.preset.split(','));
-      if (btn.dataset.count === '1') {
-        colourCycles = true; $('ck-cycles').checked = true;
-        showMarks = true; $('ck-marks').checked = true;
-        showBase = false; $('ck-base').checked = false;
-        useB = false; $('ck-b').checked = false; $('b-body').hidden = true;
-      }
-    }
-    syncInputs(); render(); flashEquation();
-  });
 });
 
 $('btn-range-default').addEventListener('click', function () {

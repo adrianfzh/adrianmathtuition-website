@@ -210,6 +210,18 @@ the card 404s). Conventions, all load-bearing:
   - The **period bracket carries arrowheads at both ends**, so it reads as a width being
     measured rather than a rule that happens to sit above the plot. Heads are dropped
     below 14 px of span, where two of them would merge into a blob.
+  - **Phone layout is entry-first.** On a phone the a/b/c boxes sit ABOVE the canvas so a
+    student types a number and watches the curve move without scrolling for it; the
+    checkboxes, x-range, facts and explanation all come after. The two column wrappers
+    (`.col-main` / `.col-side`) go `display: contents` under 900 px, which promotes their
+    panels to flex items of `.layout` so each can be given its own `order` — panels nested
+    inside a wrapper cannot otherwise be reordered past it. Desktop keeps the two columns.
+  - **No instruction prose above the graph** and no preset row: the "decimals, negatives
+    and fractions work" hint, the graph-B colour note and the whole "Try these" panel were
+    cut (Adrian, 2026-08-20) — on a phone they pushed the picture off the screen. The
+    subtitle is hidden under 700 px for the same reason, and `?solo=1` also drops the
+    34 px of header headroom that exists only to clear the "‹ All tools" chip
+    (`body:has(.tools-backlink)`).
   - The word is **"centre line"** everywhere — never "midline" (Adrian, 2026-08-20).
   - ⚠ Graph B's sin/cos/tan buttons **borrow the `.unit-btn` class** for their styling.
     The degrees/radians listener must therefore bind to `.unit-btn[data-unit]`, not to
