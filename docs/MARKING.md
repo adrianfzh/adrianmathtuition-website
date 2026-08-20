@@ -981,23 +981,27 @@ The marking model can attach an optional `diagram` spec to any attempt's
 `marking_output` (see DIAGRAM RULES appended to `MARK_JSON_SPEC` in
 `ai/paper-marker.js`). The spec carries **givens only** — labels, exact
 probabilities, angles, bearings, curve parameters, interval endpoints — never
-pixel coordinates. `ai/margin-diagram.js` (engine + gates, 42 unit tests in
+pixel coordinates. `ai/margin-diagram.js` (engine + gates, 52 unit tests in
 `test/margin-diagram.test.js`) validates it, constructs the figure
 deterministically, and **refuses to draw anything it cannot prove
 consistent** — "models author, deterministic gates verify"; a wrong diagram
 on a marked script is worse than none, so every gate fails closed to "no
 figure" (a `console.warn` with the reason, nothing on the page).
 
-- **Families (six):** `kind:"tree"` (probability tree: ≤3 stages, 2–4
+- **Families (seven):** `kind:"tree"` (probability tree: ≤3 stages, 2–4
   branches per node, ≤12 leaves, optional stage headings + highlighted
   root→leaf paths), `kind:"sector"` (circle sector/segment: shading, chord,
   radii ticks, angle/radius/arc/vertex/end labels), `kind:"bearing"` (chain of
   ≤3 legs, each `bearing_deg` 5–350 clockwise from north; dashed north arrows,
   nested clockwise arcs and 3-digit bearing text all renderer-drawn; optional
   dashed `connect` lines; "(not to scale)" note auto-added when distances are
-  unknown or badly out of proportion), `kind:"graph"` (sketch of 1–2 curves —
-  line / vertical line / parabola by roots or vertex form — with 0–4 marked
-  points; all numbers exact strings like `"3/2"`, den ≤ 1000, |val| ≤ 500) and
+  unknown or badly out of proportion), `kind:"graph"` (sketch of 0–2 curves —
+  line / vertical line / parabola by roots or vertex form — with 0–6 marked
+  points; all numbers exact strings like `"3/2"`, den ≤ 1000, |val| ≤ 500;
+  since 2026-08-20 curves are optional, so plot-the-vertices coordinate
+  sketches work — 3–6 points with `polygon:true` join in listed order and
+  `shade:true` fills at 0.13 opacity; crossing vertex orders, duplicate
+  vertices, and shade-without-polygon all refuse) and
   `kind:"number_line"` (1–3 intervals/rays with open/closed endpoint circles,
   auto-stacked on lanes when they overlap, ≤4 extra marks) and `kind:"circles"`
   (2026-08-20, Adrian's hand-drawn Q4(c): **exactly two circles** by exact
@@ -1008,7 +1012,18 @@ figure" (a `console.warn` with the reason, nothing on the page).
   (e.g. "shortest distance between the circles = √157 − 5 − 7 ≈ 0.530", 3 s.f.
   via `approx3`); refusals for concentric, identical, or so disparate the
   smaller circle would draw < 0.9 fs; centre labels carry a TeX `\ ` so a
-  subscript-free `A(0, 0)` never trips pen-math's currency-dollar prose guard).
+  subscript-free `A(0, 0)` never trips pen-math's currency-dollar prose guard)
+  and `kind:"circle_theorem"` (2026-08-20, the Tier-2 "small geometry kernel":
+  the model places 2–7 single-capital points ON a unit circle by exact position
+  angle (degrees anticlockwise from east, ≥10° apart) and lists segments
+  between them and/or `O`; tangents either carry labelled `ends` or an
+  external `meet` point the renderer computes as the pole of the chord of
+  contact (refused if parallel or > 3.2 radii out); the engine then **measures
+  every numeric angle claim back from the actual construction** — a claimed
+  angle off by more than 0.25° kills the whole diagram, values > 180° check as
+  reflex and draw the long-way arc, `right_angles` must measure 90° and render
+  as squares; both rays of any angle must be drawn geometry; letter labels
+  like `x` skip the numeric check but still require drawn rays).
 - **Renderer-owned labels** kill the contradiction surface: bearing text is
   formatted from `bearing_deg`, graph equations/intercepts/vertex are DERIVED
   from the exact params (a model-supplied point label that disagrees with the
@@ -1051,13 +1066,16 @@ figure" (a `console.warn` with the reason, nothing on the page).
   wiring in `ai/paper-marker.js` (spec + per-attempt collection),
   `ai/photo-overlay.js` (pass-through), `ai/annotate.js` (build + place +
   footer fallback).
-- **Deploy status:** all six families LIVE on Fly as of 2026-08-20. First five
-  shipped in bot commit `5f2dad5`; the `circles` family + the 20 Aug fixes
-  (rotation verify gate, ⟹-chain footer alignment, leader dedup, board-style
-  solution rules) shipped in bot commit `074f415` after Adrian sample-approved
-  all three renders. Both deploys went out with the marking queue empty;
-  Patrick Hand verified present post-deploy each time
-  (`fly ssh console -C fc-list | grep -i patrick`).
+- **Deploy status:** first six families LIVE on Fly as of 2026-08-20. First
+  five shipped in bot commit `5f2dad5`; the `circles` family + the 20 Aug
+  fixes (rotation verify gate, ⟹-chain footer alignment, leader dedup,
+  board-style solution rules) shipped in bot commit `074f415` after Adrian
+  sample-approved all three renders. Both deploys went out with the marking
+  queue empty; Patrick Hand verified present post-deploy each time
+  (`fly ssh console -C fc-list | grep -i patrick`). The graph polygon
+  extension + `circle_theorem` are **committed (bot `541f1c6`) but NOT yet
+  deployed** — awaiting Adrian's approval of the four 20 Aug samples
+  (trapezium sketch, angle-at-centre, two tangents, semicircle).
 
 ## AI Marking PNG Renderer
 
