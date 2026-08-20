@@ -371,6 +371,49 @@ a student taps a dead link.
   rendered page needs a preview/prod session on a student account with a released,
   tagged run.
 
+## Revise-concepts bridge — dropped questions → swipe cards (2026-08-21)
+
+At release time, one model call maps each dropped-marks question to the ONE
+worked-example sub-group the student should revise; `/app/marking` renders it as
+a "📚 Revise: {concept} ›" chip under the question, deep-linking into the
+`/revise/{level}/{topic}/worked-examples?subgroup={id}` swipe player. **Fail-soft
+is the design rule: a missing chip is fine, a wrong or dead link is not** — a
+mapping failure must never block or delay a release.
+
+- **Logic lives in [`../src/lib/revise-map.ts`](../src/lib/revise-map.ts)** (pure parts
+  unit-tested; `buildReviseBlock` is the I/O orchestrator, one `claude-opus-4-8`
+  call per paper). Stored as `result_json.revise = {level, items:[{for, subgroup_id,
+  name, topic}], mapped_at}`. Chip parsing/URL building is `reviseLinks()` in
+  `portal-marking.ts` — it re-validates everything (level shape, integer id,
+  non-empty name/topic) so a malformed stored block degrades to no chip.
+- **Fires from triage release** — `queuePostReleaseEnrichment()` in
+  `/api/admin/mark-triage/route.ts`, inside `after()`. Sequencing matters: the
+  revise loop finishes ALL its result_json writes before any bot practice call
+  fires, because both sides read-merge-write the same JSON column. Idempotent:
+  skips when `rj.revise` already exists. Only dropped-marks runs enter the queue.
+- **Two grounding rules keep links honest.** (1) Candidates are only sub-groups
+  with published web-visible worked-example cards (`content_snippets` level +
+  `content_kind='worked_example'` + `is_published` + feature both/web) — a chip
+  can't land on a "coming soon" page. (2) The model picks from that list by id;
+  `parseMapperResponse` drops hallucinated ids, unknown question numbers, dupes.
+  ⚠ It also strips a leading `Q` from the model's `for` — the prompt renders
+  questions as "Q10", and opus echoes that prefix back despite instructions;
+  before the strip, every item was silently rejected and the whole run mapped null.
+- **`level_detected` is free text and NOISY** — real AM papers carry per-question
+  labels like "A-Level H2 / JC1 (or Additional Maths)". `classifyLevelString`
+  classifies each question independently (subject markers A-Math/E-Math outrank
+  level markers H2/JC; both-subjects labels cast no vote), then
+  `detectBankLevel` majority-votes the paper; ties → null → no mapping.
+- **Partial coverage is correct behaviour, not a bug.** AM has cards for all 31
+  topics; EM covers only 6 Algebra topics; JC is sparse. Dry-run 2026-08-21: AM
+  paper mapped 4/4 (including two judged-by-the-error wins — a "circles" question
+  whose real slip was shoelace area mapped to the shoelace card); EM paper mapped
+  3/11 and correctly declined bearings/vectors/kinematics rather than stretching.
+- Chips show only on questions that lost marks, only for the student's own
+  released papers (the block rides inside result_json, so all /app/marking
+  access rules apply unchanged). A stale mapping naming a full-marks question is
+  ignored at render time.
+
 ## /app/submit — student paper hand-ins (2026-08-12)
 
 The door IN from the student side: photograph the worked paper on a phone →

@@ -23,10 +23,12 @@ import {
   pendingCount,
   TriageIndexError,
 } from '@/lib/mark-triage';
+import { buildReviseBlock } from '@/lib/revise-map';
 
 export const runtime = 'nodejs';
-// Release itself is fast; the ceiling is for the after() practice generation,
-// which makes one model call per released paper with dropped marks.
+// Release itself is fast; the ceiling is for the after() enrichment, which
+// makes two model calls per released paper with dropped marks (revise mapping
+// here, practice generation on the bot).
 export const maxDuration = 300;
 
 const DEFAULT_DAYS = 14;
@@ -168,24 +170,61 @@ function escapeHtml(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// ── Post-release practice generation ─────────────────────────────────────────
-// One follow-up question per dropped-marks question, built by the bot and
-// stored on the run (`result_json.practice`) — /app/marking renders it under
-// the paper. Fire-and-forget via after(): release NEVER waits on it or fails
-// because of it. Safe to re-run — the bot returns a stored list without a
-// model call (so Adrian's earlier 📝 press, or a retry, never double-pays) —
-// and skipped entirely for full-mark papers before this is even queued.
-function queuePracticeGeneration(runIds: string[]) {
+// ── Post-release enrichment ──────────────────────────────────────────────────
+// Two fire-and-forget jobs per released dropped-marks run, via after():
+// release NEVER waits on either or fails because of them.
+//
+//   1. Revise mapping (website-side, lib/revise-map) — one model call maps
+//      each dropped question to a swipe-card sub-group, stored as
+//      `result_json.revise` and rendered as "📚 Revise" links on /app/marking.
+//   2. Practice generation (bot-side) — one follow-up question per dropped
+//      question, stored as `result_json.practice`.
+//
+// Both write result_json with a read-merge-write, so per run they MUST stay
+// sequential — mapping completes its write before the bot is asked to do its
+// own. Both are idempotent: mapping skips when `revise` already exists, and
+// the bot returns a stored practice list without a model call (so Adrian's
+// earlier 📝 press, or a retry, never double-pays). Full-mark papers are
+// skipped before any of this is even queued.
+function queuePostReleaseEnrichment(runIds: string[]) {
+  if (!runIds.length) return;
   const botBase = process.env.BOT_BASE_URL;
   const botSecret = process.env.BOT_INTERNAL_SECRET;
-  if (!botBase || !botSecret || !runIds.length) return;
-  const headers = { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' };
+  const botHeaders = { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' };
 
   after(async () => {
+    const supa = getSupabaseAdmin();
+    for (const id of runIds) {
+      try {
+        // Fresh read — the row may have moved since the release loop held it.
+        const { data: row } = await supa
+          .from('paper_marking_runs')
+          .select('result_json')
+          .eq('id', id)
+          .single();
+        const rj = (row?.result_json && typeof row.result_json === 'object')
+          ? row.result_json as Record<string, unknown>
+          : null;
+        if (rj && !rj.revise) {
+          const revise = await buildReviseBlock(rj);
+          if (revise) {
+            const { error } = await supa
+              .from('paper_marking_runs')
+              .update({ result_json: { ...rj, revise } })
+              .eq('id', id);
+            if (error) console.warn(`[mark-triage] revise mapping write failed for ${id}:`, error.message);
+          }
+        }
+      } catch (err) {
+        console.warn(`[mark-triage] revise mapping failed for ${id}:`, (err as Error).message);
+      }
+    }
+
+    if (!botBase || !botSecret) return;
     for (const id of runIds) {
       try {
         const r = await fetch(`${botBase}/api/mark-paper`, {
-          method: 'POST', headers, body: JSON.stringify({ phase: 'practice', id }),
+          method: 'POST', headers: botHeaders, body: JSON.stringify({ phase: 'practice', id }),
         });
         const d = await r.json().catch(() => ({} as { error?: string; items?: unknown[] }));
         if (!r.ok || d.error) {
@@ -196,7 +235,7 @@ function queuePracticeGeneration(runIds: string[]) {
         // House-style Word file of the list — also stored on the run, and also
         // idempotent (practice.docx_url wins on the bot side).
         await fetch(`${botBase}/api/mark-paper`, {
-          method: 'POST', headers, body: JSON.stringify({ phase: 'practice-docx', id }),
+          method: 'POST', headers: botHeaders, body: JSON.stringify({ phase: 'practice-docx', id }),
         }).catch(() => { /* the on-page list still renders without the file */ });
       } catch (err) {
         console.warn(`[mark-triage] practice generation failed for ${id}:`, (err as Error).message);
@@ -334,7 +373,7 @@ export async function POST(req: NextRequest) {
       if (totals.max > 0 && totals.awarded < totals.max) practiceQueue.push(run.id);
     }
 
-    queuePracticeGeneration(practiceQueue);
+    queuePostReleaseEnrichment(practiceQueue);
 
     return NextResponse.json({
       ok: true,

@@ -7,14 +7,12 @@
 // matching breaks on math notation (PLAN R7).
 import Anthropic from '@anthropic-ai/sdk';
 import { createServiceClient } from './supabase-server';
+import { ERROR_TAGS, buildGradingPrompt } from './practice-grade-prompt';
 
 export const GRADING_MODEL = 'claude-opus-4-8';
 export const DAILY_GRADE_CAP = 20;
 
-export const ERROR_TAGS = [
-  'arithmetic-slip', 'method-error', 'conceptual-gap', 'sign-error',
-  'rounding', 'notation', 'missing-step', 'incomplete', 'misread-question',
-] as const;
+export { ERROR_TAGS };
 
 export interface LineComment {
   line: number;
@@ -43,17 +41,6 @@ export interface GradeResult {
 export interface AttemptImage {
   data: string;       // raw base64, no data: prefix
   mediaType: 'image/jpeg' | 'image/png' | 'image/webp';
-}
-
-function collectScheme(parts: unknown, out: string[], prefix = ''): void {
-  if (!Array.isArray(parts)) return;
-  for (const p of parts as Record<string, unknown>[]) {
-    const label = `${prefix}${p.label ?? ''}`;
-    out.push(`(${label}) [${p.marks ?? '?'}m] ${p.text ?? ''}`);
-    if (p.answer) out.push(`    ANSWER (${label}): ${p.answer}`);
-    if (p.solution) out.push(`    SOLUTION (${label}): ${p.solution}`);
-    if (Array.isArray(p.subparts)) collectScheme(p.subparts, out, `${label}.`);
-  }
 }
 
 function validate(raw: unknown, lineCount: number): GradeResult | null {
@@ -98,47 +85,7 @@ export async function gradeAttempt(opts: {
   const isPhoto = !!image;
   if (!isPhoto && !lines?.length) throw new Error('lines or image required');
 
-  const scheme: string[] = [];
-  collectScheme(question.parts, scheme);
-  if (question.answer) scheme.push(`OVERALL ANSWER: ${question.answer}`);
-  if (question.solution) scheme.push(`FULL SOLUTION: ${question.solution}`);
-
-  const watch = weaknessTags.length
-    ? `\nThis student's recurring error types (watch for them, mention only if they occur): ${weaknessTags.join(', ')}.`
-    : '';
-
-  const workingSection = isPhoto
-    ? `STUDENT'S WORKING: in the attached photo (handwritten or on a tablet).
-First transcribe it FAITHFULLY into discrete numbered steps — one mathematical step per line, plain text (e.g. "x^2 - 3x = 5", "sqrt(50) = 5 sqrt(2)"). Transcribe what is written, including mistakes — do not correct while transcribing. If part of the photo is unreadable, transcribe it as "(illegible)". Then mark those transcribed lines; lineComments reference the transcribed line numbers.`
-    : `STUDENT'S WORKING (numbered lines — reference these numbers ONLY):
-${lines!.map((l, i) => `${i + 1}. ${l || '(blank line)'}`).join('\n')}`;
-
-  const transcriptionField = isPhoto
-    ? `\n  "transcribedLines": ["<each transcribed step, in order>"],`
-    : '';
-
-  const prompt = `You are an experienced Singapore ${question.level} mathematics examiner marking one student's working against the official mark scheme.
-
-QUESTION (LaTeX in $...$):
-${question.question_text || ''}
-${scheme.length ? '\nMARK SCHEME:\n' + scheme.join('\n') : ''}
-Total marks: ${question.total_marks ?? 'per parts above'}
-
-${workingSection}
-${watch}
-
-Mark strictly but fairly per the scheme: method marks where the approach is valid, accuracy marks only for correct values. Follow-through where the scheme allows. If the working is too sparse to earn a mark, it doesn't earn it.
-
-Reply with ONLY a JSON object (no markdown fences):
-{${transcriptionField}
-  "verdict": "correct"|"partial"|"wrong",
-  "score": <number>, "outOf": <number>,
-  "partBreakdown": [{"label":"a","awarded":2,"outOf":3,"comment":"<why, one sentence>"}],
-  "lineComments": [{"line":<1-based line number>,"ok":true|false,"comment":"<what's right/wrong>","fix":"<the corrected step, only when ok=false>","tag":"<one of: ${ERROR_TAGS.join(', ')}>","severity":"major"|"minor"}],
-  "strengths": ["<max 3, genuine>"],
-  "nextSteps": ["<2-3 concrete actions>"]
-}
-Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.`;
+  const prompt = buildGradingPrompt({ question, lines, isPhoto, weaknessTags });
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 

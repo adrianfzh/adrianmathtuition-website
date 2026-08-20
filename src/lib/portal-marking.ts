@@ -18,6 +18,7 @@
 
 import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/report-facts';
 import { recomputeTotals } from '@/lib/mark-triage';
+import { topicSlug } from '@/lib/topic-slug';
 
 /** A `paper_marking_runs` row, reduced to the columns this view reads. */
 export interface MarkingRunRow {
@@ -43,6 +44,14 @@ export interface StudentQuestion {
   slips: string[];
   /** Full marks — the page greys these down so the losses stand out. */
   full: boolean;
+  /**
+   * "📚 Revise this concept" link into the worked-examples swipe player, when
+   * the release-time mapper (`result_json.revise`, lib/revise-map) matched this
+   * question to a sub-group with published cards. Null for full-mark questions
+   * and whenever no mapping was confident enough — a missing chip is fine, a
+   * wrong or dead link is not.
+   */
+  revise: { name: string; href: string } | null;
 }
 
 /**
@@ -152,7 +161,37 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     comment: str(marking.overall_comment),
     slips,
     full: max > 0 && awarded >= max,
+    revise: null, // attached per-paper from result_json.revise in toPaper
   };
+}
+
+/**
+ * result_json.revise → question-number → swipe-player link. Every field is
+ * re-validated here even though lib/revise-map validated on write — this is
+ * student-facing, and a malformed block must degrade to "no chip", never to a
+ * broken href.
+ */
+function reviseLinks(raw: unknown): Map<string, { name: string; href: string }> {
+  const links = new Map<string, { name: string; href: string }>();
+  const block = asRecord(raw);
+  const level = str(block?.level).toLowerCase();
+  const items = block?.items;
+  if (!/^(am|em|jc|s1|s2)$/.test(level) || !Array.isArray(items)) return links;
+
+  for (const rawItem of items) {
+    const item = asRecord(rawItem);
+    if (!item) continue;
+    const forQ = str(item.for);
+    const name = str(item.name);
+    const topic = str(item.topic);
+    const id = Number(item.subgroup_id);
+    if (!forQ || !name || !topic || !Number.isInteger(id) || links.has(forQ)) continue;
+    links.set(forQ, {
+      name,
+      href: `/revise/${level}/${topicSlug(topic)}/worked-examples?subgroup=${id}`,
+    });
+  }
+  return links;
 }
 
 function toPracticeItem(raw: unknown): StudentPracticeItem | null {
@@ -178,6 +217,15 @@ function toPaper(row: MarkingRunRow): StudentPaper | null {
   if (!Array.isArray(results)) return null;
 
   const questions = results.map(toQuestion).filter((q): q is StudentQuestion => q !== null);
+
+  // Attach revise links to their questions. Full-mark questions never get one
+  // (there is nothing to fix), even if a stale mapping names them.
+  const links = reviseLinks(rj?.revise);
+  if (links.size) {
+    for (const q of questions) {
+      if (!q.full) q.revise = links.get(q.questionNumber) ?? null;
+    }
+  }
 
   // Prefer the stored totals — triage overrides write both — and recompute only
   // when they're absent, which older rows sometimes are.

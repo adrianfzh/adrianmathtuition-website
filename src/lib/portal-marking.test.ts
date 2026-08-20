@@ -266,3 +266,76 @@ describe('buildStudentMarking — practice items', () => {
     expect(out.papers[0].practiceDocxUrl).toBeNull();
   });
 });
+
+describe('buildStudentMarking — revise links', () => {
+  const reviseBlock = {
+    level: 'AM',
+    mapped_at: '2026-08-21T02:00:00Z',
+    items: [
+      { for: '3', subgroup_id: 101, name: 'Rationalising Denominators', topic: 'Surds' },
+      { for: '5', subgroup_id: 202, name: 'Choosing Axes', topic: 'Linear Law' },
+    ],
+  };
+
+  it('attaches swipe-player links to the mapped dropped questions', () => {
+    const out = buildStudentMarking([
+      run({
+        id: 'a',
+        result_json: {
+          results: [
+            q({ n: '3', awarded: 2, max: 4, topic: 'Surds' }),
+            q({ n: '5', awarded: 5, max: 5 }), // full marks despite a stale mapping
+            q({ n: '8', awarded: 1, max: 3 }), // dropped but unmapped
+          ],
+          revise: reviseBlock,
+        },
+      }),
+    ]);
+    const [q3, q5, q8] = out.papers[0].questions;
+    expect(q3.revise).toEqual({
+      name: 'Rationalising Denominators',
+      href: '/revise/am/surds/worked-examples?subgroup=101',
+    });
+    // Full marks — nothing to fix, so no link even though the block names Q5.
+    expect(q5.revise).toBeNull();
+    expect(q8.revise).toBeNull();
+    // The dropped list shares the same objects, so the chip renders there too.
+    expect(out.papers[0].dropped.find(d => d.questionNumber === '3')?.revise).not.toBeNull();
+  });
+
+  it('slugs multi-word and bracketed topics into the /revise URL format', () => {
+    const out = buildStudentMarking([
+      run({
+        id: 'a',
+        result_json: {
+          results: [q({ n: '2', awarded: 0, max: 5 })],
+          revise: {
+            level: 'AM',
+            items: [{ for: '2', subgroup_id: 7, name: 'R-Formula Basics', topic: 'Trigonometry (R-Formula)' }],
+          },
+        },
+      }),
+    ]);
+    expect(out.papers[0].questions[0].revise?.href).toBe(
+      '/revise/am/trigonometry-r-formula/worked-examples?subgroup=7'
+    );
+  });
+
+  it('degrades a malformed block to no chips, never a broken href', () => {
+    const cases: unknown[] = [
+      undefined,
+      'revise',
+      { level: 'XX', items: [{ for: '3', subgroup_id: 1, name: 'A', topic: 'B' }] }, // bad level
+      { level: 'AM', items: 'none' },
+      { level: 'AM', items: [{ for: '3', subgroup_id: 'abc', name: 'A', topic: 'B' }] }, // NaN id
+      { level: 'AM', items: [{ for: '3', subgroup_id: 1, name: '', topic: 'B' }] },      // no label
+      { level: 'AM', items: [{ for: '3', subgroup_id: 1, name: 'A', topic: '' }] },      // no topic
+    ];
+    for (const revise of cases) {
+      const out = buildStudentMarking([
+        run({ id: 'a', result_json: { results: [q({ n: '3', awarded: 1, max: 4 })], revise } }),
+      ]);
+      expect(out.papers[0].questions[0].revise).toBeNull();
+    }
+  });
+});
