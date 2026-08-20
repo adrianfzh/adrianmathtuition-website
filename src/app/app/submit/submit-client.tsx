@@ -21,6 +21,7 @@ export default function SubmitClient() {
   const [pages, setPages] = useState<Page[]>([]);
   const [paperName, setPaperName] = useState('');
   const [splitNote, setSplitNote] = useState('');
+  const [capNote, setCapNote] = useState('');       // pages dropped at MAX_PAGES — must be visible, never silent
   const [stage, setStage] = useState('');            // progress line while submitting
   const [converting, setConverting] = useState('');  // progress line while a PDF rasterises
   const [error, setError] = useState('');
@@ -65,7 +66,19 @@ export default function SubmitClient() {
       }
     }
     if (splits) setSplitNote(`✂️ Split ${splits} two-page photo${splits > 1 ? 's' : ''} into single pages for you`);
-    setPages(prev => [...prev, ...added].slice(0, MAX_PAGES));
+    setPages(prev => {
+      const merged = [...prev, ...added];
+      const dropped = merged.length - MAX_PAGES;
+      if (dropped > 0) {
+        // Idempotent side effects (safe under StrictMode double-invoke): revoking
+        // an already-revoked URL is a no-op, and the note text is deterministic.
+        merged.slice(MAX_PAGES).forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
+        setCapNote(`⚠️ A submission holds at most ${MAX_PAGES} pages — the last ${dropped === 1 ? 'page' : `${dropped} pages`} didn't fit. Submit ${dropped === 1 ? 'it' : 'them'} as a second paper.`);
+      } else {
+        setCapNote('');
+      }
+      return merged.slice(0, MAX_PAGES);
+    });
     if (inputRef.current) inputRef.current.value = '';
   }
 
@@ -128,7 +141,7 @@ export default function SubmitClient() {
               Go to Marked papers
             </Link>
             <button
-              onClick={() => { setDoneRunId(null); setPages([]); setPaperName(''); setSplitNote(''); }}
+              onClick={() => { setDoneRunId(null); setPages([]); setPaperName(''); setSplitNote(''); setCapNote(''); }}
               className="text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10"
             >
               Submit another paper
@@ -166,6 +179,7 @@ export default function SubmitClient() {
           onChange={(e) => onPick(e.target.files)}
         />
 
+        {capNote && <p className="text-[13px] font-semibold text-amber-700">{capNote}</p>}
         {splitNote && pages.length > 0 && <p className="text-[13px] text-emerald-700">{splitNote}</p>}
 
         {pages.length > 0 && (

@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     : [];
   if (!photoUrls.length) return NextResponse.json({ error: 'No photos to submit' }, { status: 400 });
   if (photoUrls.length > MAX_PAGES) {
-    return NextResponse.json({ error: `That's too many pages for one paper (max ${MAX_PAGES}) — photograph two pages per photo, or check with Mr Fong.` }, { status: 400 });
+    return NextResponse.json({ error: `That's too many pages for one paper (max ${MAX_PAGES}) — submit the rest as a second paper.` }, { status: 400 });
   }
   for (const u of photoUrls) {
     let ok = false;
