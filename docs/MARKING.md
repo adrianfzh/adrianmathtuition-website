@@ -544,6 +544,13 @@ never receive.
   in `ai/photo-overlay.js`, unit-tested); only exactly 90/180/270 rotates, anything else
   means leave-the-page-alone — a wrong guess rotates a GOOD page. Failures fall back to the
   unrotated photo.
+  - **Every rotation is verified before it ships** (2026-08-20). The detector hallucinated
+    270° on an UPRIGHT page (Sophie p8) and the good page was marked sideways — so after
+    rotating, `ensureUpright` re-runs `detectRotation` on the rotated copy: a successful
+    check that still reports non-zero means the original guess was wrong, and the rotation
+    is **refused entirely** (page marked as-is). A failed confirm call keeps the rotation
+    (the pre-gate behaviour). Telemetry: `rot_refused: <deg>` / `rot_check: 'unconfirmed'`
+    per page in `annotation_debug`.
 - **A successful line pass can still leave parts unboxed — on spreads, a region-only
   recovery re-looks per half** (2026-07-30). A null part region sends that part's score and
   diagnosis straight to Marker's notes without placement ever being attempted (the Q5(a)(i)
@@ -677,6 +684,13 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   spread-split makes them rare anyway); notes that overflow the strip's height still
   footer. Hi-res composites extend by the same fraction through the existing viewBox
   mapping. Footer lines may now run the widened canvas.
+- **One leader arrow per landing spot (2026-08-20, Adrian: "double arrows pointing at
+  the same place… it is messy").** Leader endpoints claim a spot in a shared registry
+  (`claimLeaderSpot`, 28px radius, first drawn wins) — in-page notes draw before the
+  strip, so the nearest note keeps its arrow and a strip note aiming at the same error
+  goes quietly arrowless. Targeting also improved: `crossedStep` matching loosened from
+  strict containment to ±8px overlap, topmost cross first, so the endpoint lands ON the
+  crossed step rather than merely near it.
 - **A part's in-page band reaches its whole territory (2026-08-13, Adrian: "extend the
   band").** The search band for a note used to stop a fixed ~6–8 lines below the part's
   working, so a page with a big empty gap under the working still wrote its note in the
@@ -846,6 +860,19 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
     gradient is…" would stack the word "At" over a fraction. **An aligned block cannot
     word-wrap**, so a group too wide even at the font floor falls back to its own rows
     (`part.rows`, not a re-split of the source — re-splitting duplicated every earlier group).
+  - **Chained lines are split into a column before aligning** (2026-08-20, Adrian: the
+    footer solutions "kept writing continuously especially using the long double arrow
+    sign (⟹), which makes it hard to read"). `splitStepChain` breaks a single-math-run
+    line at depth-0 `\Rightarrow`/`\implies`/`⇒`/`⟹` (dropping the arrow — the stacked
+    column already means "hence") and at `\therefore`/`∴` (kept as the next line's
+    opening); braces protect `\text{…}` and command names (`\Rightarrowx` never matches).
+    `alignedRowsForStep` then breaks a long `a = b = c = d` line (> 34 TeX chars) into
+    `&=` continuation rows so the whole chain reads down one equals column, each row with
+    a self-standing raw fallback. The marking prompt now also tells the model to author
+    one manipulation per line, transforming the WHOLE equation board-style (take lg of
+    both sides, …) — the split is the safety net, not the plan.
+    ⚠ The website's `lib/latex-repair.ts` `SOLUTION_STEP_RE` mirrors the OLD
+    `splitTexLines` — the student portal marking view does not chain-split yet.
   - **The footer is set at `0.72 ×` the mark size, not `1.05 ×`.** It is read, not glanced
     at; at the old size it was the loudest thing on the sheet and pushed a long solution
     onto a second screen (Adrian, Jul 2026).
@@ -950,14 +977,14 @@ The marking model can attach an optional `diagram` spec to any attempt's
 `marking_output` (see DIAGRAM RULES appended to `MARK_JSON_SPEC` in
 `ai/paper-marker.js`). The spec carries **givens only** — labels, exact
 probabilities, angles, bearings, curve parameters, interval endpoints — never
-pixel coordinates. `ai/margin-diagram.js` (engine + gates, 35 unit tests in
+pixel coordinates. `ai/margin-diagram.js` (engine + gates, 42 unit tests in
 `test/margin-diagram.test.js`) validates it, constructs the figure
 deterministically, and **refuses to draw anything it cannot prove
 consistent** — "models author, deterministic gates verify"; a wrong diagram
 on a marked script is worse than none, so every gate fails closed to "no
 figure" (a `console.warn` with the reason, nothing on the page).
 
-- **Families (five):** `kind:"tree"` (probability tree: ≤3 stages, 2–4
+- **Families (six):** `kind:"tree"` (probability tree: ≤3 stages, 2–4
   branches per node, ≤12 leaves, optional stage headings + highlighted
   root→leaf paths), `kind:"sector"` (circle sector/segment: shading, chord,
   radii ticks, angle/radius/arc/vertex/end labels), `kind:"bearing"` (chain of
@@ -968,7 +995,16 @@ figure" (a `console.warn` with the reason, nothing on the page).
   line / vertical line / parabola by roots or vertex form — with 0–4 marked
   points; all numbers exact strings like `"3/2"`, den ≤ 1000, |val| ≤ 500) and
   `kind:"number_line"` (1–3 intervals/rays with open/closed endpoint circles,
-  auto-stacked on lanes when they overlap, ≤4 extra marks).
+  auto-stacked on lanes when they overlap, ≤4 extra marks) and `kind:"circles"`
+  (2026-08-20, Adrian's hand-drawn Q4(c): **exactly two circles** by exact
+  centre + radius; the renderer derives EVERYTHING else — line of centres,
+  radius labels, gap ticks, the relation decided in exact arithmetic on d² vs
+  (r₁±r₂)² (external / tangent / intersect / internal), and two working lines
+  under the figure: `$C_1C_2 = \sqrt{d²} ≈ …$` plus the relation's consequence
+  (e.g. "shortest distance between the circles = √157 − 5 − 7 ≈ 0.530", 3 s.f.
+  via `approx3`); refusals for concentric, identical, or so disparate the
+  smaller circle would draw < 0.9 fs; centre labels carry a TeX `\ ` so a
+  subscript-free `A(0, 0)` never trips pen-math's currency-dollar prose guard).
 - **Renderer-owned labels** kill the contradiction surface: bearing text is
   formatted from `bearing_deg`, graph equations/intercepts/vertex are DERIVED
   from the exact params (a model-supplied point label that disagrees with the
@@ -1011,11 +1047,13 @@ figure" (a `console.warn` with the reason, nothing on the page).
   wiring in `ai/paper-marker.js` (spec + per-attempt collection),
   `ai/photo-overlay.js` (pass-through), `ai/annotate.js` (build + place +
   footer fallback).
-- **Deploy status:** LIVE on Fly since 2026-08-20 (bot commit `5f2dad5`, all
-  five families + their DIAGRAM RULES in the marking prompt). Adrian
-  sample-approved tree/sector and the three follow-on families; deployed with
-  the marking queue empty; Patrick Hand verified present post-deploy
-  (`fly ssh console -C fc-list | grep -i patrick`).
+- **Deploy status:** first five families LIVE on Fly since 2026-08-20 (bot
+  commit `5f2dad5`); Adrian sample-approved tree/sector and the three follow-on
+  families; deployed with the marking queue empty; Patrick Hand verified
+  present post-deploy (`fly ssh console -C fc-list | grep -i patrick`). The
+  `circles` family + the 20 Aug fixes (rotation verify gate, ⟹-chain footer
+  alignment, leader dedup) are committed (bot `074f415`) but **NOT yet
+  deployed** — awaiting Adrian's sample approval.
 
 ## AI Marking PNG Renderer
 
