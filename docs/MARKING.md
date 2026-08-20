@@ -871,8 +871,12 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
     a self-standing raw fallback. The marking prompt now also tells the model to author
     one manipulation per line, transforming the WHOLE equation board-style (take lg of
     both sides, …) — the split is the safety net, not the plan.
-    ⚠ The website's `lib/latex-repair.ts` `SOLUTION_STEP_RE` mirrors the OLD
-    `splitTexLines` — the student portal marking view does not chain-split yet.
+    The website mirrors the chain-split since 2026-08-20: `lib/latex-repair.ts`
+    `splitStepChain` (unit-tested) runs inside `repairSolution`, AFTER `repairLatex` —
+    repair restores a dropped backslash on `Rightarrow` and `$`-wraps bare-maths lines,
+    both of which the scanner needs. `marking-template.html` needs no copy of its own:
+    it re-splits on the real newlines `repairSolution` already emitted. (Its plain-text
+    step pairing goes `null` when the counts diverge — the safe direction.)
   - **The footer is set at `0.72 ×` the mark size, not `1.05 ×`.** It is read, not glanced
     at; at the old size it was the loudest thing on the sheet and pushed a long solution
     onto a second screen (Adrian, Jul 2026).

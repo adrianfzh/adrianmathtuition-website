@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { repairLatex, repairMarkingLatex, repairSolution } from './latex-repair';
+import { repairLatex, repairMarkingLatex, repairSolution, splitStepChain } from './latex-repair';
 
 // Every case below is a real line off the 28 Jul 2026 marked paper that printed
 // wrong. If one of these regresses, the transcript sheet goes back to showing
@@ -142,5 +142,56 @@ describe('repairSolution — a solution is several steps in one string', () => {
   it('survives an empty or missing solution', () => {
     expect(repairSolution('')).toBe('');
     expect(repairSolution(undefined as never)).toBe('');
+  });
+});
+
+// The model chains "$A \Rightarrow B$" on one line despite the one-step-per-line
+// spec, and the chained line rendered as the "continuous statement… long double
+// arrow sign" Adrian flagged (20 Aug 2026). Mirrors the bot's splitStepChain
+// (ai/pen-math.js, test/pen-math.test.js) — keep the two splitting alike.
+describe('repairSolution — ⇒-chained lines become separate steps', () => {
+  it('splits a \\Rightarrow chain into separate steps, dropping the arrows', () => {
+    expect(repairSolution('$\\tan^3 A = -1 \\Rightarrow \\tan A = -1$').split('\n'))
+      .toEqual(['$\\tan^3 A = -1$', '$\\tan A = -1$']);
+    expect(repairSolution('$3x = 6 ⇒ x = 2 ⟹ x^2 = 4$').split('\n'))
+      .toEqual(['$3x = 6$', '$x = 2$', '$x^2 = 4$']);
+  });
+
+  it('splits at \\Longrightarrow and \\implies too', () => {
+    expect(repairSolution('$a = 1 \\Longrightarrow b = 2 \\implies c = 3$').split('\n'))
+      .toEqual(['$a = 1$', '$b = 2$', '$c = 3$']);
+  });
+
+  it('keeps a leading \\therefore as the opening of its own line', () => {
+    expect(repairSolution('$x^2 = 4 \\Rightarrow x = \\pm 2 \\therefore x = 2$').split('\n'))
+      .toEqual(['$x^2 = 4$', '$x = \\pm 2$', '$\\therefore x = 2$']);
+    // A line that only OPENS with ∴ is a single step — untouched, dollars and all.
+    expect(splitStepChain('$\\therefore x = 3$')).toEqual(['$\\therefore x = 3$']);
+  });
+
+  it('never splits arrows inside braces or prose', () => {
+    // Depth-zero only: an arrow inside \text{…} is part of a sentence.
+    expect(splitStepChain('$\\text{so } A \\text{ (\\Rightarrow B)}$'))
+      .toEqual(['$\\text{so } A \\text{ (\\Rightarrow B)}$']);
+    // Prose around the dollars means a sentence, and a sentence keeps its arrows.
+    expect(splitStepChain('hence $a = 1 \\Rightarrow b = 2$ holds'))
+      .toEqual(['hence $a = 1 \\Rightarrow b = 2$ holds']);
+    expect(splitStepChain('$a=1$ and $b=2$')).toEqual(['$a=1$ and $b=2$']);
+  });
+
+  it('leaves commands that merely START like a connective untouched', () => {
+    expect(splitStepChain('$a \\Rightarrowx b$')).toEqual(['$a \\Rightarrowx b$']);
+  });
+
+  it('splits AFTER repair — a dropped-backslash Rightarrow still chains', () => {
+    // repairLatex restores `Rightarrow` → `\Rightarrow` first; splitting before
+    // repair would leave the bare word both unsplit and unrendered.
+    expect(repairSolution('$3x = 6 Rightarrow x = 2$').split('\n'))
+      .toEqual(['$3x = 6$', '$x = 2$']);
+  });
+
+  it('chain-splits each newline-separated step independently', () => {
+    expect(repairSolution('$a = 1 \\Rightarrow b = 2$\\n$c = 3$').split('\n'))
+      .toEqual(['$a = 1$', '$b = 2$', '$c = 3$']);
   });
 });
