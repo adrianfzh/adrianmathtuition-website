@@ -23,6 +23,15 @@ the card 404s). Conventions, all load-bearing:
     on `#F8FAFC` and need their border to carry them (the bar model in `add-fractions`,
     the matrix boxes). Anything still warm — cream card fills, tan greys — is a leftover
     the swap missed; the amber highlight tones are intentional and stay.
+- **`?solo=1` hands one tool to a student on its own** (added 2026-08-20, Adrian: "how
+  can I send the tool to students without them being able to access the other tools?").
+  Every page carries a two-line inline script after the backlink chip that removes the
+  `‹ All tools` anchor when the query string contains `solo=1`, so
+  `…/tools/trig-graphs.html?solo=1` has no visible way out to the rest of `/tools`.
+  It is **presentation, not access control** — `/tools` stays public and linkable, and
+  anyone can delete the query string. Real gating means putting the tool behind the
+  student portal (`/app`), which already has login. Any new tool needs the snippet
+  copied along with the backlink chip.
 - DPR-aware canvas, pointer events with `touch-action:none`, generous drag targets.
 - `curve-sketcher.html` holds the **safe expression parser** (whitelist tokenizer +
   recursive descent, no `eval`); `graph-transformations.html` carries a ported copy —
@@ -152,6 +161,44 @@ the card 404s). Conventions, all load-bearing:
     y-axis), `clearOfReadout` insets the plot on wide screens so the readout panel
     never covers the curve, `mark()` flips an intercept label that would fall off an
     edge, and a vertical asymptote's label goes to the end the curve does NOT run off.
+
+- `trig-graphs.html` (the **Trigonometric Graphs Explorer**) is a sandbox, not a lesson —
+  you type a, b, c into y = a·fn(bx) + c and the picture plus the side explanation follow.
+  Rebuilt 2026-08-20 around one idea: *a student should SEE the period and the amplitude
+  on the graph, not read about them.* What that costs, and why each piece is the way it is:
+  - **The plot never fills the canvas.** `computeInsets()` reserves a band at the top
+    (period bracket + the ①②③ badges) and 30 px at the foot (x-axis numbers), and `Y()`
+    maps into what is left. Curves are `clip()`ped to that rect in `drawCurve`, or a tan
+    branch running to ±∞ scribbles through the axis numbers.
+  - **One colour and one number per complete repeat** (`cycleSpans` → `CYCLE` → badges),
+    which is how "b = 3 means 3 waves in 360°" stops being a claim. A span is `full` only
+    when it is a whole wave, or a tan branch with an asymptote at each end; the part-repeats
+    the range slices off are drawn faded and never numbered, so the count is always honest.
+    If NOTHING is full the colouring is dropped entirely — a curve drawn wholly in
+    "faded, cut off" teal is unreadable, which is what `y = 2tan½x + 1` over 0–360° gave.
+    b = 0 or a = 0 collapse the curve to a horizontal line: no repeats, no bracket, no arrow.
+  - The **preset row "count the repeats"** carries its own x-range (`fn,a,b,c,x0,x1`)
+    precisely so the counts come out whole — `y = 2tan3x` is offered over −30°…150°, which
+    is 3 complete branches, not 2 branches and two halves.
+  - **Chips place themselves.** Every label (centre line, max, min, |a|) is a white box
+    offered a list of candidate positions and takes the first that does not collide with
+    what is already down — the axis-number strips are reserved before anything is drawn,
+    the |a| arrow claims its space before the guide chips, and if nothing is free the
+    chip takes the position covering the least. Without this, "centre line y = 0" lands
+    on "a = 2" on a phone, and on the x-axis numbers when c = 0.
+  - The **|a| arrow** stands on the centre line and reaches the peak — but only a peak
+    with 45 px of room either side. `y = cos x` over 0–360° peaks at both canvas edges,
+    so with no comfortable peak the arrow is drawn at 24% across, measuring the centre
+    line to the max line instead.
+  - **Up to two curves, plus a reference.** Graph B (plum) is independent of A except for
+    the x-range; the plain `y = fn x` reference is grey and dashed and can be switched off.
+    Every guide and marker describes **graph A** — the chips say so (`A: max = 1`) as soon
+    as B is on. Asymptotes are fine dots, never dashes, so they cannot be mistaken for the
+    dashed reference curve.
+  - Axis numbers are **full-strength ink at 15 px with a white halo** (`haloText`), not
+    the 11 px grey hint they were: they are the thing a student copies into an answer.
+    `tickStep`'s label budget dropped from W/58 to W/78 to match.
+  - The word is **"centre line"** everywhere — never "midline" (Adrian, 2026-08-20).
 
 ## Photo extraction (`/api/tools/vision` → bot `/api/tools-vision`)
 

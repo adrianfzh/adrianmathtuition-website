@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 // Each tool is a self-contained static HTML page served from public/tools/<slug>.html.
 const TOOLS: { slug: string; icon: string; title: string; desc: string }[] = [
   { slug: 'trig-graphs', icon: '〰️', title: 'Trigonometric Graphs Explorer',
-    desc: 'Type your own a, b and c into y = a sin bx + c — cos and tan too — and read exactly what each one did to the curve. Set your own x-range, in degrees or radians.' },
+    desc: 'Type your own a, b and c into y = a sin bx + c — cos and tan too. Every repeat is drawn in its own colour and numbered, the period and the a are marked on the curve, and you can put two graphs on the same axes.' },
   { slug: 'graph-transformations', icon: '↔️', title: 'Graph Transformations',
     desc: 'Translations, stretches and reflections in real time — plus the JC set: |f(x)|, f(|x|), 1/f(x) and f′(x). Type your own y = f(x), or snap a photo of a printed graph and transform that.' },
   { slug: 'curve-sketcher', icon: '✏️', title: 'Curve Sketching Pad',
