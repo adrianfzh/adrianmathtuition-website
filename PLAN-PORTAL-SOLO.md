@@ -190,6 +190,20 @@ calibration gate met and recorded.
    every table); grep prod logs for PII; rate-limit the grade endpoint (e.g. 20/day/student —
    it's Opus money); Telegram-alert Adrian on every graded attempt during beta so he can spot-check
    grades (the trust backstop).
+   > **RLS/leak audit DONE 2026-08-20** (pre-invite, marking-only beta). Code sweep: every
+   > `/api/portal/*` route derives identity server-side (`requireAuth` → `getUser()`, never
+   > `getSession()`; zero client-supplied student IDs anywhere); `/app/marking` scopes by
+   > `account.airtable_student_id` + released-only, and `buildStudentMarking` re-enforces both
+   > and strips triage internals; submit-token pins Blob uploads to the caller's own prefix and
+   > `/api/portal/submit` re-verifies host + prefix per URL. DB sweep: `pg_policies` +
+   > `rowsecurity` on all public tables — self-scoped `auth.uid()` policies verified; two backup
+   > tables (`_backup_ri_s1_2021_eoy_dedup`, `backup_rjc_to_ri_20260820`) had RLS **disabled** →
+   > fixed via migration `enable_rls_on_unprotected_backup_tables`. Live leak probe: claim-simulated
+   > `authenticated` JWT (foreign sub + email) read **0 rows** across all 20 sensitive tables
+   > (portal_accounts, student_attempts, paper_marking_runs, invite tokens, digests, chat, kiosk,
+   > backups, …). Grade cap (20/day, `practice-grade.ts`) and submit cap (3/10min) already live.
+   > Still open: PII log grep; re-run the REST probe with a real second account's JWT once two
+   > student accounts exist (the claim-simulated probe covers the same policy surface).
 3. Retention cron (purge attempts after N months inactivity, §7 Q4) — build if time allows,
    otherwise ticket it as a pre-public-launch blocker, not a beta blocker.
 4. Late-September: review beta usage + grade-accuracy spot-checks → flip

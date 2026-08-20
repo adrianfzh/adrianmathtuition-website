@@ -14,8 +14,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isAdmin = verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
   if (!isAdmin) await requireAuth();
 
-  // Learn units aren't released to students yet — their nav tab points at the
-  // /notes reader instead. Adrian (admin cookie) keeps the Learn tab.
+  // Learn units aren't released to students yet, and neither is the notes
+  // reader (Adrian 2026-08-20: marking-only beta — "not the notes yet").
+  // Students see Dashboard / Practice / Marked; Adrian (admin cookie) keeps
+  // the Learn tab.
   const learnVisible = isAdmin || LEARN_OPEN_TO_STUDENTS;
 
   return (
@@ -27,10 +29,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="hidden sm:flex items-center gap-5">
               <Link href="/app" className="text-sm text-gray-600 hover:text-navy">Dashboard</Link>
               <Link href="/app/practice" className="text-sm text-gray-600 hover:text-navy">Practice</Link>
-              {learnVisible ? (
+              {learnVisible && (
                 <Link href="/app/learn" className="text-sm text-gray-600 hover:text-navy">Learn</Link>
-              ) : (
-                <Link href="/notes" className="text-sm text-gray-600 hover:text-navy">Notes</Link>
               )}
               <Link href="/app/marking" className="text-sm text-gray-600 hover:text-navy">Marked</Link>
             </div>
@@ -46,20 +46,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       {/* Mobile bottom tabs */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/5">
-        <div className="grid grid-cols-4 h-14 text-center text-[11px] text-gray-600">
+        <div className={`grid ${learnVisible ? 'grid-cols-4' : 'grid-cols-3'} h-14 text-center text-[11px] text-gray-600`}>
           <Link href="/app" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
             <span className="text-lg leading-none">🏠</span>Home
           </Link>
           <Link href="/app/practice" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
             <span className="text-lg leading-none">✏️</span>Practice
           </Link>
-          {learnVisible ? (
+          {learnVisible && (
             <Link href="/app/learn" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
               <span className="text-lg leading-none">📚</span>Learn
-            </Link>
-          ) : (
-            <Link href="/notes" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
-              <span className="text-lg leading-none">📖</span>Notes
             </Link>
           )}
           <Link href="/app/marking" className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
