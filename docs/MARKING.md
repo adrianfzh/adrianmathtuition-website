@@ -944,6 +944,46 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   sans. Verify after a deploy with `fly ssh console -C fc-list | grep -i patrick`.
   (The typeset transcript sheets are unrelated — they're Puppeteer/webfont and still Caveat.)
 
+### Margin diagrams — verified tree & sector figures (bot, 2026-08-20)
+
+The marking model can attach an optional `diagram` spec to any attempt's
+`marking_output` (see DIAGRAM RULES appended to `MARK_JSON_SPEC` in
+`ai/paper-marker.js`). The spec carries **givens only** — labels, exact
+probabilities, angles — never pixel coordinates. `ai/margin-diagram.js`
+(engine + gates, 17 unit tests in `test/margin-diagram.test.js`) validates it,
+constructs the figure deterministically, and **refuses to draw anything it
+cannot prove consistent** — "models author, deterministic gates verify"; a
+wrong diagram on a marked script is worse than none, so every gate fails
+closed to "no figure" (a `console.warn` with the reason, nothing on the page).
+
+- **Families (v1):** `kind:"tree"` (probability tree: ≤3 stages, 2–4 branches
+  per node, ≤12 leaves, optional stage headings + highlighted root→leaf paths +
+  caption) and `kind:"sector"` (circle sector/segment: shading, chord, radii
+  ticks, angle/radius/arc/vertex/end labels). Bearings, coordinate sketches and
+  number lines are deferred to a later session.
+- **Gates:** sibling probabilities parsed as exact fractions (decimal strings
+  digit-exact, never floats) and must sum to **exactly 1** per node; highlight
+  paths must trace existing labels root→leaf; sector `angle_deg` range-checked
+  (5–340°) and cross-checked against `angle_label` in degrees, plain radians or
+  aπ/b radians (symbolic labels skip the check); the constructed geometry is
+  measured back before shipping (tree x-monotone along every branch, arc
+  endpoints on the circle, angle re-measured to 0.01°); scale-to-fit refuses
+  below 0.55× ("too large to fit legibly").
+- **Rendering/placement:** the engine returns an SVG `<g>` fragment drawn with
+  the same pen-math/Patrick-Hand/TEACHER_RED stack as every other annotation, so
+  the hires viewBox re-render scales it for free. `annotate.js` places it into
+  the question's own blank space through the existing occupancy grid (same
+  column-territory rule as blank-space solutions); no room → a bold
+  `Figure — Qn:` row in the footer strip. Both annotated variants (plain 📄 and
+  🖼 `-sol`) carry it — a figure is a correction, not a duplicate solution.
+- **Cost:** the spec rides the existing marking call (no extra model call); the
+  DIAGRAM RULES live inside `MARK_JSON_SPEC`, which both `DIRECT_MARK_SYSTEM`
+  and `STANDALONE_MARK_SYSTEM` share, so the cache-warm invariant holds.
+- **Files (bot repo):** `ai/margin-diagram.js`, `test/margin-diagram.test.js`;
+  wiring in `ai/paper-marker.js` (spec + per-attempt collection),
+  `ai/photo-overlay.js` (pass-through), `ai/annotate.js` (build + place +
+  footer fallback).
+
 ## AI Marking PNG Renderer
 
 **Route:** `POST /api/render-marking`
