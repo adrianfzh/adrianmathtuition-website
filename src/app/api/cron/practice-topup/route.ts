@@ -3,9 +3,14 @@
 // enqueues generation_requests (requested_by 'admin-topup' — within the Fly
 // worker's allowed prefixes; each request runs the full 4-gate verification).
 // Bounded per run so cost/wall-clock stay predictable.
-// NO LONGER ON CRON (removed from vercel.json 2026-08-21 — Adrian: pool
-// stocking is done in-house in plan-billed Claude Code sessions instead of
-// nightly API spend). The route stays for manual/on-demand runs.
+// ⚠ This enqueue is FREE — it makes no AI calls, it only writes
+// generation_requests rows (the shopping list). The AI work is done by the
+// PLAN-BILLED nightly Claude session on Adrian's Mac (launchd
+// com.adrianmath.topup-bank, 3:30am SGT → bot repo scripts/topup-plan-worker.js
+// + the topup-bank skill); the Fly API consumer has been parked since
+// 2026-07-16 via GEN_WORKER_DISABLE in fly.toml. Briefly removed from
+// vercel.json on 2026-08-21 on a wrong "this is nightly API spend" premise —
+// restored the same day: removing it just starves the plan worker's queue.
 // Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -25,8 +30,8 @@ const TOPUP_LEVELS: Record<string, { seedLevels: string[]; poolLevels: string[] 
 const TARGET_PER_TIER = 7;  // desired verified questions per (level, topic, tier)
 const PER_TOPIC_CAP = 3;    // max requests enqueued per (topic, tier) per run
 const MAX_ENQUEUE = 4;      // max requests enqueued per run — throttled 12→4 Jul 2026:
-                            // bulk backfill now happens in plan-billed Claude Code
-                            // sessions; the nightly API run is maintenance trickle only
+                            // bulk backfill happens in ad-hoc plan-billed sessions;
+                            // the nightly plan run is maintenance trickle only
 const QUEUE_BACKOFF = 15;
 // Give up on a (topic, tier) shelf after this many CONSECUTIVE failed requests
 // within HISTORY_DAYS — stops burning budget nightly on topics the generator

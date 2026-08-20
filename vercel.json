@@ -68,6 +68,10 @@
       "schedule": "0 19 1 * *"
     },
     {
+      "path": "/api/cron/practice-topup",
+      "schedule": "0 18 * * *"
+    },
+    {
       "path": "/api/followups-digest",
       "schedule": "0 0 * * *"
     },
