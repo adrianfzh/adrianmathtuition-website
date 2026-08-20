@@ -130,7 +130,7 @@ async function uploadPaperPdf(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -1187,6 +1187,21 @@ export default function MarkPaperPage() {
   }
   const wrongCount = (results || []).filter((r) => (r.marking?.total_max ?? 0) > 0 && (r.marking?.total_awarded ?? 0) < (r.marking?.total_max ?? 0)).length;
 
+  // Seen/unseen split for the history list (Adrian, 20 Aug 2026). checked_at is
+  // stamped by sending, the send row's ⬇ download, saving an annotated copy, or
+  // the manual ✓ below — NOT by peeking at a PDF from a history row.
+  const unseenRuns = recentRuns.filter((r) => !r.checked_at);
+  const seenRuns = recentRuns.filter((r) => r.checked_at);
+  // Same endpoint as the library's ✓, so /admin/papers and this list always agree.
+  function toggleChecked(run: Run) {
+    const next = !run.checked_at;
+    setRecentRuns((prev) => prev.map((r) => r.id === run.id ? { ...r, checked_at: next ? new Date().toISOString() : null } : r));
+    fetch('/api/admin/papers', {
+      method: 'POST', headers: authHeaders,
+      body: JSON.stringify({ runId: run.id, checked: next }),
+    }).catch(() => {});
+  }
+
   const busy = phase === 'proposing' || phase === 'marking' || !!rasterizing;
   // Photos the overlay marked per QUESTION rather than per line — i.e. the ones that
   // came back without ticks. `method` is 'line' | 'question' | 'margin' | null.
@@ -1212,9 +1227,20 @@ export default function MarkPaperPage() {
         <details ref={historyRef} style={card}>
           <summary style={{ fontWeight: 700, cursor: 'pointer' }}>
             🗂️ Recent marked papers ({recentRuns.length}{runsTotal > recentRuns.length ? ` of ${runsTotal}` : ''})
+            {unseenRuns.length > 0 && <span style={{ color: '#b45309', fontWeight: 600 }}> · 🆕 {unseenRuns.length} not checked</span>}
           </summary>
           <div style={{ marginTop: 8 }}>
-            {recentRuns.map((run) => {
+            {[
+              { key: 'unseen', title: '🆕 Not checked yet', color: '#b45309', rows: unseenRuns,
+                hint: 'Papers you haven’t been through yet. Sending, downloading from the send row, saving an annotated copy, or ticking ✓ moves one to Checked.' },
+              { key: 'seen', title: '✓ Checked', color: '#047857', rows: seenRuns,
+                hint: 'Papers you’ve been through — sent, downloaded to hand out, annotated, or ticked ✓.' },
+            ].filter((s) => s.rows.length > 0).map((section) => (
+            <div key={section.key}>
+              <div title={section.hint} style={{ fontWeight: 700, fontSize: 11, color: section.color, textTransform: 'uppercase', letterSpacing: 0.6, padding: '10px 0 2px' }}>
+                {section.title} ({section.rows.length})
+              </div>
+              {section.rows.map((run) => {
               // Grouped row layout (14 Aug 2026, from Adrian's screenshot): info on
               // the left, then ONE right-aligned actions cluster whose links and
               // buttons wrap as whole groups — free-wrapping children used to strand
@@ -1333,6 +1359,14 @@ export default function MarkPaperPage() {
                         {rowBusy[run.id] === 'dbx' ? 'Saving…' : '📁 Dropbox'}
                       </button>
                     )}
+                    {run.total_max != null && (
+                      <button type="button" disabled={!!rowBusy[run.id]}
+                        title={run.checked_at ? 'Move back to 🆕 Not checked yet' : 'Mark as checked — moves it to ✓ Checked'}
+                        onClick={() => toggleChecked(run)}
+                        style={{ background: run.checked_at ? '#ecfdf5' : 'none', border: `1px solid ${run.checked_at ? '#6ee7b7' : '#d1d5db'}`, color: run.checked_at ? '#047857' : '#9ca3af', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                        ✓
+                      </button>
+                    )}
                     <button type="button" disabled={!!rowBusy[run.id]} title="Delete this paper and all its stored files"
                       onClick={() => deleteRun(run)}
                       style={{ background: 'none', border: '1px solid #fca5a5', color: '#b91c1c', borderRadius: 8, padding: '3px 8px', fontSize: 12, cursor: 'pointer', opacity: rowBusy[run.id] ? 0.6 : 1 }}>
@@ -1346,7 +1380,9 @@ export default function MarkPaperPage() {
               </div>
               );
             })}
-          
+            </div>
+            ))}
+
             {runsMore && (
               <div style={{ paddingTop: 10, borderTop: '1px solid #f3f4f6' }}>
                 <button
