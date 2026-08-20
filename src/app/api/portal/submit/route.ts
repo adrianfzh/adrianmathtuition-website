@@ -24,6 +24,7 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
+import { DAILY_SUBMIT_CAP, sgtStartOfDayIso } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     : [];
   if (!photoUrls.length) return NextResponse.json({ error: 'No photos to submit' }, { status: 400 });
   if (photoUrls.length > MAX_PAGES) {
-    return NextResponse.json({ error: `That's too many pages for one paper (max ${MAX_PAGES}) — split it into two submissions.` }, { status: 400 });
+    return NextResponse.json({ error: `That's too many pages for one paper (max ${MAX_PAGES}) — photograph two pages per photo, or check with Mr Fong.` }, { status: 400 });
   }
   for (const u of photoUrls) {
     let ok = false;
@@ -70,18 +71,18 @@ export async function POST(req: Request) {
     (typeof body.paperName === 'string' && body.paperName.trim().slice(0, 80)) ||
     `Submitted ${sgtToday()}`;
 
-  // Soft brake on accidental repeat-taps (and worse): 3 portal submissions per
-  // student per 10 minutes is more than any real hand-in needs.
+  // Phase G hardening (Adrian, 21 Aug 2026): one hand-in per student per SGT
+  // calendar day — replaces the earlier 3-per-10-min soft brake. Counts runs
+  // actually saved, so a failed submission does not burn the day's slot.
   const admin = getSupabaseAdmin();
-  const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
   const { count } = await admin
     .from('paper_marking_runs')
     .select('id', { count: 'exact', head: true })
     .eq('student_id', studentId)
     .eq('result_json->>portal_submission', 'true')
-    .gte('created_at', tenMinAgo);
-  if ((count ?? 0) >= 3) {
-    return NextResponse.json({ error: 'You have just submitted several papers — give Mr Fong a few minutes before sending another.' }, { status: 429 });
+    .gte('created_at', sgtStartOfDayIso());
+  if ((count ?? 0) >= DAILY_SUBMIT_CAP) {
+    return NextResponse.json({ error: 'You have already sent in a paper today — Mr Fong takes one paper per student per day. Send the next one tomorrow!' }, { status: 429 });
   }
 
   const botBase = process.env.BOT_BASE_URL;

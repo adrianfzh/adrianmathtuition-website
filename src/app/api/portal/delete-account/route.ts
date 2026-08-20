@@ -1,6 +1,6 @@
 // POST /api/portal/delete-account — PDPA right to erasure. Permanently removes
-// the caller's practice attempts, invite tokens, portal account (incl. consent
-// record), and the Auth user. Airtable (lessons/billing) is untouched — that's
+// the caller's practice attempts, weakness tags, invite tokens, portal account
+// (incl. consent record), and the Auth user. Airtable (lessons/billing) is untouched — that's
 // Adrian's tutoring bookkeeping, outside the portal's scope.
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
@@ -28,6 +28,11 @@ export async function POST(req: NextRequest) {
   // partial failure can be retried by the user.
   const { error: e1 } = await admin.from('student_attempts').delete().eq('user_id', user.id);
   if (e1) return NextResponse.json({ error: `Could not delete attempts: ${e1.message}` }, { status: 500 });
+
+  // Weakness tags are derived from the attempts — erasure covers them too
+  // (gap found in the 2026-08-21 Phase G pass: they were left behind).
+  const { error: eTags } = await admin.from('weakness_tags').delete().eq('user_id', user.id);
+  if (eTags) return NextResponse.json({ error: `Could not delete weakness tags: ${eTags.message}` }, { status: 500 });
 
   if (account?.airtable_student_id) {
     await admin.from('portal_invite_tokens').delete().eq('airtable_student_id', account.airtable_student_id);

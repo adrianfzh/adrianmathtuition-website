@@ -201,11 +201,19 @@ calibration gate met and recorded.
    > fixed via migration `enable_rls_on_unprotected_backup_tables`. Live leak probe: claim-simulated
    > `authenticated` JWT (foreign sub + email) read **0 rows** across all 20 sensitive tables
    > (portal_accounts, student_attempts, paper_marking_runs, invite tokens, digests, chat, kiosk,
-   > backups, …). Grade cap (20/day, `practice-grade.ts`) and submit cap (3/10min) already live.
-   > Still open: PII log grep; re-run the REST probe with a real second account's JWT once two
+   > backups, …). Grade cap (20/day, `practice-grade.ts`) and submit cap (1 paper/SGT day,
+   > `lib/portal-submit-limit.ts` — Adrian tightened it from 3/10min on 2026-08-21) live.
+   > **PII log grep DONE 2026-08-21**: portal routes log only error strings — no names/emails;
+   > four admin billing/digest failure logs (`send-invoices`, `progress-digest`) include a
+   > student first name — accepted as a debugging aid (Adrian-only Vercel logs, short retention).
+   > Same pass fixed a PDPA-erasure gap: `delete-account` now also deletes `weakness_tags`.
+   > Still open: re-run the REST probe with a real second account's JWT once two
    > student accounts exist (the claim-simulated probe covers the same policy surface).
-3. Retention cron (purge attempts after N months inactivity, §7 Q4) — build if time allows,
-   otherwise ticket it as a pre-public-launch blocker, not a beta blocker.
+3. Retention cron — **DONE 2026-08-21**: `/api/cron/retention` (monthly, 2nd 03:00 SGT) purges a
+   student's attempts + weakness tags + attempt blobs after 12 months of inactivity (latest
+   attempt OR portal login — §7 Q4 answered with the 12-month default). Blobs delete before
+   rows so a blob failure keeps the rows for next month's retry; `?dry=1` previews; Telegram
+   summary only when something was purged. Pure date logic + tests in `lib/retention.ts`.
 4. Late-September: review beta usage + grade-accuracy spot-checks → flip
    `NEXT_PUBLIC_PORTAL_ENABLED=true` or iterate.
 
