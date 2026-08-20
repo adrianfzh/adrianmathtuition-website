@@ -41,7 +41,7 @@ export function buildGradingPrompt(opts: {
 
   const workingSection = isPhoto
     ? `STUDENT'S WORKING: in the attached photo (handwritten or on a tablet).
-First transcribe it FAITHFULLY into discrete numbered steps — one mathematical step per line, plain text (e.g. "x^2 - 3x = 5", "sqrt(50) = 5 sqrt(2)"). Transcribe what is written, including mistakes — do not correct while transcribing. If part of the photo is unreadable, transcribe it as "(illegible)". Then mark those transcribed lines; lineComments reference the transcribed line numbers.`
+First transcribe it FAITHFULLY into discrete numbered steps — one mathematical step per line, with the mathematics as LaTeX in $...$ (e.g. "$x^2 - 3x = 5$", "$\\sqrt{50} = 5\\sqrt{2}$"). Transcribe what is written, including mistakes — do not correct while transcribing. If part of the photo is unreadable, transcribe it as "(illegible)". Then mark those transcribed lines; lineComments reference the transcribed line numbers.`
     : `STUDENT'S WORKING (numbered lines — reference these numbers ONLY):
 ${lines!.map((l, i) => `${i + 1}. ${l || '(blank line)'}`).join('\n')}`;
 
@@ -76,5 +76,6 @@ Reply with ONLY a JSON object (no markdown fences):
   "strengths": ["<max 3, genuine>"],
   "nextSteps": ["<2-3 concrete actions>"]
 }
-Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.`;
+Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.
+Write all mathematics in comments, fixes, partBreakdown comments and nextSteps as LaTeX in $...$ (it is rendered with KaTeX). The reply must be valid JSON — escape LaTeX backslashes (write \\\\sqrt in the JSON string).`;
 }

@@ -20,6 +20,20 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 const REMARK = [remarkMath, remarkGfm];
 const REHYPE = [rehypeRaw, rehypeKatex];
 
+// Inline KaTeX for grader output (transcribed lines, comments, fixes). Typed
+// student lines and plain-text comments pass through untouched — markdown
+// rendering only kicks in when the string actually carries $...$ math, so a
+// hand-typed "3*4*5" can never get italicised by markdown rules.
+function MathText({ text }: { text: string }) {
+  if (!text.includes('$')) return <>{text}</>;
+  return (
+    <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}
+      components={{ p: ({ children }) => <>{children}</> }}>
+      {text}
+    </ReactMarkdown>
+  );
+}
+
 type LevelOpt = { key: string; label: string };
 
 // Fallback level list shown before the overview call resolves. Kept in sync
@@ -594,13 +608,13 @@ export default function PracticePage() {
                     <div key={i} className={`px-3 py-2 text-sm ${c && !c.ok ? 'bg-rose-50/50' : ''}`}>
                       <div className="flex gap-2">
                         <span className="text-slate-300 font-mono text-xs pt-0.5 w-5 shrink-0">{i + 1}</span>
-                        <span className="font-mono text-slate-800 flex-1 whitespace-pre-wrap">{l}</span>
+                        <span className={`text-slate-800 flex-1 whitespace-pre-wrap ${l.includes('$') ? '' : 'font-mono'}`}><MathText text={l} /></span>
                         {c && <span>{c.ok ? '✓' : '✗'}</span>}
                       </div>
                       {c && (
                         <div className="ml-7 mt-1 text-[13px] text-slate-600">
-                          {c.comment}
-                          {c.fix && <div className="text-emerald-700 mt-0.5">→ {c.fix}</div>}
+                          <MathText text={c.comment} />
+                          {c.fix && <div className="text-emerald-700 mt-0.5">→ <MathText text={c.fix} /></div>}
                         </div>
                       )}
                     </div>
@@ -611,7 +625,7 @@ export default function PracticePage() {
               {grade.partBreakdown.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {grade.partBreakdown.map(p => (
-                    <span key={p.label} title={p.comment}
+                    <span key={p.label} title={p.comment.replace(/\$/g, '')}
                       className="text-xs bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 text-slate-600">
                       ({p.label}) {p.awarded}/{p.outOf}
                     </span>
@@ -620,11 +634,11 @@ export default function PracticePage() {
               )}
 
               {grade.strengths.length > 0 && (
-                <p className="text-sm text-emerald-700 mb-1.5">💪 {grade.strengths.join(' · ')}</p>
+                <p className="text-sm text-emerald-700 mb-1.5">💪 <MathText text={grade.strengths.join(' · ')} /></p>
               )}
               {grade.nextSteps.length > 0 && (
                 <ul className="text-sm text-slate-700 list-disc pl-5 space-y-0.5">
-                  {grade.nextSteps.map((s, i) => <li key={i}>{s}</li>)}
+                  {grade.nextSteps.map((s, i) => <li key={i}><MathText text={s} /></li>)}
                 </ul>
               )}
               {weakTags.length > 0 && (
