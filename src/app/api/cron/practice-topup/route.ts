@@ -2,7 +2,10 @@
 // For each (level, topic) with fewer than TARGET verified practice questions,
 // enqueues generation_requests (requested_by 'admin-topup' — within the Fly
 // worker's allowed prefixes; each request runs the full 4-gate verification).
-// Bounded per run so cost/wall-clock stay predictable; runs nightly via cron.
+// Bounded per run so cost/wall-clock stay predictable.
+// NO LONGER ON CRON (removed from vercel.json 2026-08-21 — Adrian: pool
+// stocking is done in-house in plan-billed Claude Code sessions instead of
+// nightly API spend). The route stays for manual/on-demand runs.
 // Auth: CRON_SECRET bearer, x-vercel-cron, or ADMIN_PASSWORD bearer.
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';

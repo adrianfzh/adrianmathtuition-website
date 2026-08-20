@@ -1,4 +1,4 @@
-# SPEC — Assigned Work ("From Mr Fong")
+# SPEC — Assigned Work ("From Adrian")
 
 > **Status: PROPOSAL (2026-08-21) — awaiting Adrian's go-ahead on the D# decisions below.**
 > Origin: Adrian, 2026-08-21 — "use the portal to send students questions I think will be
@@ -44,7 +44,7 @@ Telegram to Adrian) is identical for both kinds.
    server-side.
 2. **Admin send** — a "Send a question" card on `/admin/students/[id]`: QB search (level/topic,
    server-side service-role read) or paste/photo; `POST /api/admin/assignments`. List + revoke.
-3. **Student side** — "From Mr Fong" card on `/app` dashboard (count badge) + list page:
+3. **Student side** — "From Adrian" card on `/app` dashboard (count badge) + list page:
    question rendered via `lib/bank-question-markdown.ts` (KaTeX), Adrian's note, then the
    existing photo-capture → Blob → submit flow, tagged `assignment_id`. The submit stamps the
    run `assignment_submission: true` + the assignment id (same pattern as `portal_submission`).

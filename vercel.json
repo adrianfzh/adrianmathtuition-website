@@ -64,10 +64,6 @@
       "schedule": "30 13 * * *"
     },
     {
-      "path": "/api/cron/practice-topup",
-      "schedule": "0 18 * * *"
-    },
-    {
       "path": "/api/cron/retention",
       "schedule": "0 19 1 * *"
     },
