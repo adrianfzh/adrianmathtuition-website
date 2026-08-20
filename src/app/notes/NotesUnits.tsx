@@ -312,11 +312,15 @@ function Unit({ unit, admin }: { unit: NotesUnit; admin: boolean }) {
 }
 
 /**
- * A topic's units. The section's `core` unit is the heading and the opening
- * statement — its own body renders under the h2 rather than inside a card, so
- * the idea reads as the section's subject and the blocks under it read as work
- * on that idea. With `admin`, every block grows a flag control and flagged
- * blocks render with their warning strip; the student render has neither.
+ * A topic's units, one <details> dropdown per section. The dropdown's label is
+ * the section title — the question-form name from the style pass ("How do I
+ * read off the turning point?"), which is the thing the student actually wants
+ * — and opening it starts the explanation: the section's `core` unit first,
+ * then the blocks that work the idea. Adrian, 2026-08-21: no "Key Concepts"
+ * heading, no counts — a topic is a list of these, click one and read.
+ *
+ * With `admin`, every block grows a flag control; a section holding a flagged
+ * block is forced open so the flag can't hide behind a collapsed dropdown.
  */
 export default function NotesUnits({
   sections,
@@ -326,55 +330,60 @@ export default function NotesUnits({
   admin?: boolean;
 }) {
   return (
-    <>
-      {sections.map((section, i) => {
+    <div className="not-prose nx-acc-list">
+      {sections.map(section => {
         const { teaching, practice } = partitionPractice(section.units);
+        const flaggedInside =
+          admin && (section.lead?.flagged || section.units.some(u => u.flagged));
         return (
-          <section key={section.id} className="nx-u-section">
-            <p className="nx-kicker">
-              Part {i + 1} of {sections.length}
-            </p>
-            <h2 id={section.id} className="nx-u-h">
-              {section.title}
+          <details
+            key={section.id}
+            id={section.id}
+            className="nx-acc"
+            open={flaggedInside ? true : undefined}
+          >
+            <summary>
+              <h2 className="nx-acc-title">{section.title}</h2>
               <span className="nx-timechip">⏱ {readingMinutes(section)} min</span>
-            </h2>
-            <div className="nx-swoosh" aria-hidden />
-            {section.lead && (
-              <div className="nx-u-intro">
-                {admin && (
-                  <BlockReview
-                    inline
-                    id={section.lead.id}
-                    flagged={section.lead.flagged}
-                    note={section.lead.reviewNote}
-                    fixedNote={section.lead.fixedNote}
-                  />
-                )}
-                <Core unit={section.lead} />
-              </div>
-            )}
-            {teaching.map(unit => (
-              <Unit key={unit.id} unit={unit} admin={admin} />
-            ))}
-            {practice.length > 0 && (
-              // Closed by default: the page is a recap, the questions are
-              // opt-in. Forced open for Adrian when one of them is flagged —
-              // a flag hidden inside a collapsed expander would be lost.
-              <details
-                className="nx-practice"
-                open={admin && practice.some(u => u.flagged) ? true : undefined}
-              >
-                <summary>
-                  💪 Practice — {practice.length} question{practice.length === 1 ? '' : 's'}
-                </summary>
-                {practice.map(unit => (
-                  <Unit key={unit.id} unit={unit} admin={admin} />
-                ))}
-              </details>
-            )}
-          </section>
+            </summary>
+            <div className="nx-acc-body">
+              {section.lead && (
+                <div className="nx-u-intro">
+                  {admin && (
+                    <BlockReview
+                      inline
+                      id={section.lead.id}
+                      flagged={section.lead.flagged}
+                      note={section.lead.reviewNote}
+                      fixedNote={section.lead.fixedNote}
+                    />
+                  )}
+                  <Core unit={section.lead} />
+                </div>
+              )}
+              {teaching.map(unit => (
+                <Unit key={unit.id} unit={unit} admin={admin} />
+              ))}
+              {practice.length > 0 && (
+                // Nested expander stays: even inside an open concept, doing
+                // questions is opt-in. Forced open for Adrian when one of them
+                // is flagged — a flag hidden in a collapsed expander is lost.
+                <details
+                  className="nx-practice"
+                  open={admin && practice.some(u => u.flagged) ? true : undefined}
+                >
+                  <summary>
+                    💪 Practice — {practice.length} question{practice.length === 1 ? '' : 's'}
+                  </summary>
+                  {practice.map(unit => (
+                    <Unit key={unit.id} unit={unit} admin={admin} />
+                  ))}
+                </details>
+              )}
+            </div>
+          </details>
         );
       })}
-    </>
+    </div>
   );
 }

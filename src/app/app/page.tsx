@@ -138,7 +138,7 @@ export default async function DashboardPage() {
             notes graduates out of beta. */}
         {learnVisible ? (
           <Link href="/app/notes" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
-            📚 Browse notes
+            📚 Revision Notes
           </Link>
         ) : (
           <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">

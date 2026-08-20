@@ -2,17 +2,11 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DocsPage, DocsBody, DocsTitle } from 'fumadocs-ui/layouts/docs/page';
-import BackToReflexes from '../BackToReflexes';
 import NotesMarkdown from '../NotesMarkdown';
 import NotesUnits from '../NotesUnits';
 import { ReviewBar } from '../ReviewControls';
 import { isNotesAuthed, isNotesViewer } from '@/lib/notes-auth';
-import {
-  approvedSections,
-  hasApprovedUnits,
-  reflexAnchor,
-  type UnitSection,
-} from '@/lib/notes-units';
+import { approvedSections, hasApprovedUnits } from '@/lib/notes-units';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
 import {
@@ -22,7 +16,6 @@ import {
   subgroupUrl,
   topicUrl,
   type NotesSection,
-  type RecallCardRow,
 } from '@/lib/notes-tree';
 import { topicSlug } from '@/lib/topic-slug';
 
@@ -35,9 +28,7 @@ const plural = (n: number, word: string, many = `${word}s`) => `${n} ${n === 1 ?
 
 /** Anchor ids for the in-page sections the table of contents links to. */
 const ANCHOR = {
-  reflexes: 'formula-reflexes',
   revision: 'quick-revision',
-  lesson: 'the-lesson',
   pages: 'pages',
 } as const;
 
@@ -125,57 +116,6 @@ function CardLink({
   );
 }
 
-function SectionHead({ id, label, note }: { id: string; label: string; note?: string }) {
-  return (
-    <header className="nx-subhead">
-      <p className="nx-eyebrow" id={id}>
-        {label}
-      </p>
-      {note && <span className="nx-subhead-note">{note}</span>}
-    </header>
-  );
-}
-
-// ── Formula reflexes (recall cards) ──────────────────────────────────────────
-
-function ReflexCard({ card, anchor }: { card: RecallCardRow; anchor: string | null }) {
-  const title = cleanTitle(card.card_title);
-  return (
-    <article className="nx-rc">
-      {title && <h3 className="nx-rc-title">{title}</h3>}
-      <NotesMarkdown content={card.content} className="nx-rc-body" />
-      {anchor && (
-        <a className="nx-rc-link" href={`#${anchor}`}>
-          See why →
-        </a>
-      )}
-    </article>
-  );
-}
-
-function Reflexes({ cards, sections }: { cards: RecallCardRow[]; sections: UnitSection[] }) {
-  return (
-    <section className="nx-reflexes">
-      {/* "Key concepts", not "Formula reflexes" — Adrian, 2026-08-07: plain
-          names over fancy ones, here as much as on the cards themselves. */}
-      <SectionHead
-        id={ANCHOR.reflexes}
-        label="Key concepts"
-        note={`${cards.length} to know cold`}
-      />
-      <div className="not-prose nx-reflex-grid">
-        {cards.map(card => (
-          <ReflexCard
-            key={card.id}
-            card={card}
-            anchor={reflexAnchor(card.card_title ?? '', card.content ?? '', sections)}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
 // ── Level index ──────────────────────────────────────────────────────────────
 
 async function LevelIndex() {
@@ -190,8 +130,6 @@ async function LevelIndex() {
     );
   }
 
-  const examples = topics.reduce((sum, t) => sum + t.examples, 0);
-  const reflexes = topics.reduce((sum, t) => sum + t.recall, 0);
   // Same grouping the sidebar uses, so the page and the tree read as one thing.
   const families = groupByFamily(PHASE_1_LEVEL, topics, t => t.topic);
 
@@ -203,19 +141,10 @@ async function LevelIndex() {
 
   return (
     <DocsPage toc={toc} breadcrumb={{ enabled: false }}>
+      {/* No lede, no counts — Adrian, 2026-08-21: the landing page is just the
+          topic list; a student picks a topic and reads. */}
       <p className="nx-eyebrow">Notes</p>
       <DocsTitle className="nx-title">{levelLabel(PHASE_1_LEVEL)}</DocsTitle>
-      <p className="nx-lede">
-        Every worked example from the lesson notes, by topic — the same content as the
-        revision cards, laid out to read and to print.
-      </p>
-      <div className="nx-meta">
-        <span className="nx-pill">{plural(topics.length, 'topic')}</span>
-        <span className="nx-pill">{plural(examples, 'worked example')}</span>
-        {reflexes > 0 && (
-          <span className="nx-pill nx-pill-green">{plural(reflexes, 'key concept')}</span>
-        )}
-      </div>
       <hr className="nx-rule" />
       <DocsBody>
         {families.map(({ family, items }) => (
@@ -225,18 +154,7 @@ async function LevelIndex() {
             </h2>
             <div className="not-prose nx-grid">
               {items.map(t => (
-                <CardLink
-                  key={t.url}
-                  href={t.url}
-                  title={t.topic}
-                  description={[
-                    plural(t.pages, 'page'),
-                    plural(t.examples, 'example'),
-                    t.recall > 0 ? `${t.recall} key concepts` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                />
+                <CardLink key={t.url} href={t.url} title={t.topic} />
               ))}
             </div>
           </section>
@@ -256,7 +174,6 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
   if (!data) notFound();
 
   const url = topicUrl(PHASE_1_LEVEL, data.topic);
-  const examples = data.subgroups.reduce((sum, s) => sum + s.count, 0);
 
   // Learning units. The reviewer reads everything; a student reads what has
   // been approved. Approving a topic also retires its old sub-group list —
@@ -264,7 +181,6 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
   const sections = admin ? data.unitSections : approvedSections(data.unitSections);
   const converted = hasApprovedUnits(data.unitSections);
   const showPages = !converted;
-  const units = sections.reduce((n, s) => n + s.units.length + (s.lead ? 1 : 0), 0);
   const pending = data.unitSections.reduce(
     (n, s) =>
       n +
@@ -282,12 +198,10 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
   );
 
   const toc = [
-    data.recall.length > 0 && { title: 'Key concepts', url: `#${ANCHOR.reflexes}`, depth: 2 },
     data.card?.content_md && { title: 'Quick revision', url: `#${ANCHOR.revision}`, depth: 2 },
-    sections.length > 0 && { title: 'The lesson', url: `#${ANCHOR.lesson}`, depth: 2 },
-    // Nested one level: a 52-unit topic needs its own sections in the contents,
-    // but not competing with the four things above them.
-    ...sections.map(s => ({ title: s.title, url: `#${s.id}`, depth: 3 })),
+    // One entry per concept dropdown; the anchor sits on the <details> row, so
+    // the link works whether or not the student has opened it.
+    ...sections.map(s => ({ title: s.title, url: `#${s.id}`, depth: 2 })),
     showPages && { title: 'Pages', url: `#${ANCHOR.pages}`, depth: 2 },
   ].filter(Boolean) as { title: string; url: string; depth: number }[];
 
@@ -306,16 +220,6 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
           <span className="nx-byline-sub">{levelLabel(PHASE_1_LEVEL)} specialist</span>
         </span>
       </div>
-      <div className="nx-meta">
-        {showPages && <span className="nx-pill">{plural(data.subgroups.length, 'page')}</span>}
-        {showPages && <span className="nx-pill">{plural(examples, 'worked example')}</span>}
-        {data.recall.length > 0 && (
-          <span className="nx-pill nx-pill-green">
-            {plural(data.recall.length, 'key concept')}
-          </span>
-        )}
-        {units > 0 && <span className="nx-pill nx-pill-gold">{plural(units, 'lesson block')}</span>}
-      </div>
       <hr className="nx-rule" />
       <DocsBody>
         {admin && data.unitSections.length > 0 && (
@@ -328,10 +232,11 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
           />
         )}
 
-        {/* Reflexes lead the page: the sub-group list below duplicates the
-            sidebar, but these 179 cards appear nowhere else in the portal. */}
-        {data.recall.length > 0 && <Reflexes cards={data.recall} sections={sections} />}
-        {data.recall.length > 0 && <BackToReflexes anchor={ANCHOR.reflexes} />}
+        {/* The recall-card ("Key concepts") grid and the counts pills are gone
+            — Adrian, 2026-08-21: a topic page is the list of concept dropdowns
+            below, each named for what the student wants to do; open one and the
+            explanation begins. The formula + remember content the cards carried
+            lives on inside each dropdown's Big Idea. */}
 
         {/* Quick-revision card, when the topic has one. Its own title is dropped:
             it always restates the topic, which is already the page heading.
@@ -353,23 +258,11 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
             interactive lesson-unit surface. The dedicated tool pages still
             exist for unconverted topics via the sidebar. */}
 
-        {/* The lesson itself, block by block. On an unapproved topic it renders
-            above the old sub-group list so both formats can be compared; the
-            moment the topic has approved blocks, the old list retires. */}
-        {sections.length > 0 && (
-          <section>
-            <SectionHead
-              id={ANCHOR.lesson}
-              label="The lesson"
-              note={
-                admin && pending + flagged > 0
-                  ? `${plural(units, 'block')} · ${pending} pending${flagged > 0 ? ` · ${flagged} flagged` : ''}`
-                  : plural(units, 'block')
-              }
-            />
-            <NotesUnits sections={sections} admin={admin} />
-          </section>
-        )}
+        {/* The lesson itself — one dropdown per concept. On an unapproved topic
+            it renders above the old sub-group list so both formats can be
+            compared; the moment the topic has approved blocks, the old list
+            retires. */}
+        {sections.length > 0 && <NotesUnits sections={sections} admin={admin} />}
 
         {showPages && (
           <section>

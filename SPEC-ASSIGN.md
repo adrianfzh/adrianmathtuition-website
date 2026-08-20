@@ -1,17 +1,29 @@
-# SPEC — Assigned Questions ("From Mr Fong")
+# SPEC — Assigned Work ("From Mr Fong")
 
 > **Status: PROPOSAL (2026-08-21) — awaiting Adrian's go-ahead on the D# decisions below.**
 > Origin: Adrian, 2026-08-21 — "use the portal to send students questions I think will be
 > helpful to them; they do it (take a photo and submit), bot marks — immediate learning."
+> Same day, extended: "also send students practice worksheets in PDFs, students do them
+> and submit for marking."
 
 ## What it is
 
 The portal today is submit-a-paper + view-released-marked-papers. This adds the reverse
-direction: **Adrian pushes a question to a student**, the student sees it on their `/app`
-dashboard, does it on paper, photographs and submits it through the existing hand-in
-pipeline, the bot marks it, and the marked result appears to the student **as soon as
-marking finishes** — no manual Release step. That immediacy is the point: the student is
-still warm on the question when the feedback lands.
+direction: **Adrian pushes work to a student** — a single question or a worksheet PDF —
+the student sees it on their `/app` dashboard, does it on paper, photographs and submits
+it through the existing hand-in pipeline, the bot marks it, and the marked result appears
+to the student **as soon as marking finishes** — no manual Release step. That immediacy
+is the point: the student is still warm on the question when the feedback lands.
+
+Two kinds of assignment, one flow:
+
+| Kind | What Adrian sends | What the student sees |
+|---|---|---|
+| **Question** | A question-bank pick, or pasted text / a photo | The question rendered on the page (KaTeX), with Adrian's note |
+| **Worksheet** | A PDF — uploaded from his device, or picked from the Dropbox practice/prelim library the kiosk already lists | The PDF, viewable in the browser and downloadable to print |
+
+Everything downstream (photograph working → submit → 🌙 queue marks → instant release +
+Telegram to Adrian) is identical for both kinds.
 
 ## Decisions (defaults chosen; Adrian can veto any)
 
