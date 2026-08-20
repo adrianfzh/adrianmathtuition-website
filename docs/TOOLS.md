@@ -190,15 +190,33 @@ the card 404s). Conventions, all load-bearing:
     with 45 px of room either side. `y = cos x` over 0–360° peaks at both canvas edges,
     so with no comfortable peak the arrow is drawn at 24% across, measuring the centre
     line to the max line instead.
-  - **Up to two curves, plus a reference.** Graph B (plum) is independent of A except for
+  - **Up to two curves, plus a reference.** Graph B is independent of A except for
     the x-range; the plain `y = fn x` reference is grey and dashed and can be switched off.
     Every guide and marker describes **graph A** — the chips say so (`A: max = 1`) as soon
     as B is on. Asymptotes are fine dots, never dashes, so they cannot be mistaken for the
-    dashed reference curve.
+    dashed reference curve. Both graphs are keyed into the **same panel** (B appears under
+    a checkbox right below A, each row chipped `A` / `B`); a separate "two graphs" panel
+    put the second equation nowhere near the first.
+  - **A and B never share a colour family.** With B on, A's repeats switch from `CYCLE` to
+    `CYCLE_B_ON` — teals and greens only — and B is the sole violet curve (`COL_B`); the
+    period bracket steps from plum to slate ink (`C.markInk`) so it cannot be read as B.
+    The default cycle's blue and magenta sat right next to B's old plum, and on
+    `tan 3x` vs `tan 2x` you genuinely could not say which curve was which.
   - Axis numbers are **full-strength ink at 15 px with a white halo** (`haloText`), not
     the 11 px grey hint they were: they are the thing a student copies into an answer.
-    `tickStep`'s label budget dropped from W/58 to W/78 to match.
+    `tickStep`'s label budget dropped from W/58 to W/78 to match. They are drawn in their
+    own pass (`drawAxisNumbers`) **after every curve** — the halo cannot save a label that
+    a wave is painted straight over, which is what happened to `0.5` on `y = sin 2x`.
+  - The **period bracket carries arrowheads at both ends**, so it reads as a width being
+    measured rather than a rule that happens to sit above the plot. Heads are dropped
+    below 14 px of span, where two of them would merge into a blob.
   - The word is **"centre line"** everywhere — never "midline" (Adrian, 2026-08-20).
+  - ⚠ Graph B's sin/cos/tan buttons **borrow the `.unit-btn` class** for their styling.
+    The degrees/radians listener must therefore bind to `.unit-btn[data-unit]`, not to
+    `.unit-btn` — unscoped, every click on a graph-B function set `unit = undefined`,
+    which silently threw the whole tool into radians and rewrote the range boxes
+    (a −3°…360° range came back as "−0.052 to 2pi"). Fixed 2026-08-20; the same trap
+    is waiting for any new button that reuses a toggle class.
 
 ## Photo extraction (`/api/tools/vision` → bot `/api/tools-vision`)
 

@@ -35,6 +35,10 @@
     --teal: #2E7C8F;
     --orange: #D8693C;
     --plum: #7B5EA7;
+    /* Graph B's own colour. Deliberately violet and far from every colour A can
+       take (see CYCLE_B_ON below): with two curves on one plot, telling A from B
+       matters more than telling A's repeats apart. */
+    --graphb: #6D28D9;
     --accent: var(--teal);
     --accent-dim: rgba(46, 124, 143, 0.18);
     --baseline: rgba(107, 122, 140, 0.6);
@@ -103,7 +107,7 @@
   .equation .fn { font-style: normal; }
   .equation .p { color: var(--accent); font-weight: 700; }
   .eqline { display: block; }
-  .eqline + .eqline { margin-top: 7px; font-size: 0.84em; color: var(--plum); }
+  .eqline + .eqline { margin-top: 7px; color: var(--graphb); }
   .eqtag {
     font-family: ui-monospace, monospace; font-style: normal; font-size: 0.56em;
     border: 1.4px solid currentColor; border-radius: 5px; padding: 2px 6px;
@@ -116,11 +120,11 @@
   .equation.flash { animation: eqflash 0.7s ease-out; }
   canvas { width: 100%; display: block; background: transparent; }
   .legend {
-    display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; margin-top: 14px;
-    font-size: 12px; color: var(--text-dim);
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 24px; margin-top: 16px;
+    font-size: 15px; color: var(--text);
   }
-  .legend-item { display: flex; align-items: center; gap: 8px; }
-  .swatch { width: 22px; height: 3px; border-radius: 2px; }
+  .legend-item { display: flex; align-items: center; gap: 9px; }
+  .swatch { width: 30px; height: 4px; border-radius: 2px; }
 
   .panel {
     background: var(--bg-elev); border: 1px solid var(--border);
@@ -212,7 +216,17 @@
   .showbar .chk { flex: 0 1 auto; }
   .mini-fn { display: flex; gap: 6px; margin-top: 12px; }
   .mini-fn .unit-btn { flex: 1; font-style: italic; font-size: 14px; padding: 8px 4px; }
-  .mini-fn .unit-btn.active { background: var(--plum); border-color: var(--plum); }
+  .mini-fn .unit-btn.active { background: var(--graphb); border-color: var(--graphb); }
+  /* the A / B chips on the two entry rows — only shown once B is switched on */
+  .rowtag {
+    font-family: ui-monospace, monospace; font-size: 13px; font-weight: 700;
+    border: 1.5px solid currentColor; border-radius: 5px; padding: 1px 6px;
+    margin-right: 3px; font-style: normal;
+  }
+  .rowtag.a { color: var(--accent); }
+  .rowtag.b { color: var(--graphb); }
+  .rowtag[hidden] { display: none; }
+  .bsplit { border-top: 1px solid var(--border); margin: 18px 0 2px; }
   #b-body[hidden] { display: none; }
   .preset-label {
     font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em;
@@ -267,7 +281,7 @@
       <canvas id="canvas"></canvas>
       <div class="legend">
         <div class="legend-item"><div class="swatch" id="legend-a-swatch" style="background: var(--accent);"></div> <span id="alabel">Your curve</span></div>
-        <div class="legend-item" id="legend-b" style="display:none;"><div class="swatch" style="background: var(--plum);"></div> <span id="blabel">Graph B</span></div>
+        <div class="legend-item" id="legend-b" style="display:none;"><div class="swatch" style="background: var(--graphb);"></div> <span id="blabel">Graph B</span></div>
         <div class="legend-item" id="legend-base"><div class="swatch" style="background: repeating-linear-gradient(90deg, var(--baseline) 0 7px, transparent 7px 12px);"></div> <span id="baselabel">y = sin x</span></div>
         <div class="legend-item"><div class="swatch" style="background: var(--centre);"></div> Centre line</div>
         <div class="legend-item" id="legend-asym" style="display:none;"><div class="swatch" style="background: repeating-linear-gradient(90deg, var(--asym) 0 2px, transparent 2px 6px);"></div> Asymptote</div>
@@ -293,6 +307,7 @@
       <div class="panel">
         <h3>Enter <i>a</i>, <i>b</i> and <i>c</i></h3>
         <div class="entry">
+          <span class="rowtag a" id="tag-a" hidden>A</span>
           <i>y</i> =
           <input type="text" id="in-a" inputmode="text" autocomplete="off" aria-label="a, the coefficient in front" value="1">
           <span class="fnname" id="entry-fn">sin</span>
@@ -304,6 +319,32 @@
         <div class="hintline">
           Decimals, negatives and fractions all work — try <code>-2</code>, <code>0.5</code> or <code>1/2</code>.
           A negative <i>c</i> just makes the <b>+</b> read as a minus.
+        </div>
+
+        <div class="bsplit"></div>
+        <label class="chk"><input type="checkbox" id="ck-b">
+          <span>Draw a <b>second graph B</b> on the same axes</span></label>
+        <div id="b-body" hidden>
+          <div class="mini-fn">
+            <button class="unit-btn" data-fn2="sin">sin</button>
+            <button class="unit-btn active" data-fn2="cos">cos</button>
+            <button class="unit-btn" data-fn2="tan">tan</button>
+          </div>
+          <div class="entry" style="margin-top:12px">
+            <span class="rowtag b">B</span>
+            <i>y</i> =
+            <input type="text" id="in-a2" inputmode="text" autocomplete="off" aria-label="second graph a" value="1">
+            <span class="fnname" id="entry-fn2">cos</span>
+            <input type="text" id="in-b2" inputmode="text" autocomplete="off" aria-label="second graph b" value="1">
+            <i>x</i>
+            <span>+</span>
+            <input type="text" id="in-c2" inputmode="text" autocomplete="off" aria-label="second graph c" value="0">
+          </div>
+          <div class="hintline">
+            Graph <b>B</b> is drawn in <span style="color:var(--graphb);font-weight:700">violet</span>
+            over the same axes and x-range. The centre line, max/min and the
+            <i>a</i>/period markers always describe <b>graph A</b>.
+          </div>
         </div>
 
         <h3 style="margin-top:20px">x-axis range <span class="tip" id="range-unit">(degrees)</span></h3>
@@ -321,33 +362,6 @@
         </div>
 
         <div class="facts" id="facts"></div>
-      </div>
-
-      <div class="panel">
-        <h3>Two graphs at once</h3>
-        <label class="chk"><input type="checkbox" id="ck-b">
-          <span>Draw a second graph <b>B</b> on the same axes</span></label>
-        <div id="b-body" hidden>
-          <div class="mini-fn">
-            <button class="unit-btn" data-fn2="sin">sin</button>
-            <button class="unit-btn active" data-fn2="cos">cos</button>
-            <button class="unit-btn" data-fn2="tan">tan</button>
-          </div>
-          <div class="entry" style="margin-top:12px">
-            <i>y</i> =
-            <input type="text" id="in-a2" inputmode="text" autocomplete="off" aria-label="second graph a" value="1">
-            <span class="fnname" id="entry-fn2">cos</span>
-            <input type="text" id="in-b2" inputmode="text" autocomplete="off" aria-label="second graph b" value="1">
-            <i>x</i>
-            <span>+</span>
-            <input type="text" id="in-c2" inputmode="text" autocomplete="off" aria-label="second graph c" value="0">
-          </div>
-          <div class="hintline">
-            Graph <b>B</b> is drawn in <span style="color:var(--plum);font-weight:700">purple</span>
-            over the same axes and x-range. The centre line, max/min and the
-            <i>a</i>/period markers always describe <b>graph A</b>.
-          </div>
-        </div>
       </div>
 
       <div class="panel">
@@ -628,12 +642,20 @@ const C = {
   teal:  '#2E7C8F',
   orange:'#D8693C',
   plum:  '#7B5EA7',
+  markInk: '#41506A',                   // period bracket when violet is taken by graph B
   base:  'rgba(107,122,140,0.6)',       // the plain comparison curve: grey and dashed
   asym:  'rgba(31,41,51,0.34)'
 };
 // One colour per complete repeat. First entry is the tool's teal so the legend
 // swatch still matches when the colouring is switched off.
 const CYCLE = ['#2E7C8F', '#3D6DB5', '#5B8C2A', '#A03E86', '#B0562A', '#1E7A6B'];
+// With graph B on the plot the priority flips: telling A from B beats telling
+// A's own repeats apart. So A's repeats drop to the cool teal/green family and
+// B is the only violet curve on the axes — the blue and magenta of the normal
+// cycle sat far too close to B's colour to be read apart (Adrian, 2026-08-20).
+const CYCLE_B_ON = ['#12707F', '#2E7D32', '#0B5468', '#5B8C2A', '#1E7A6B', '#3E7C9E'];
+const COL_B = '#6D28D9';
+function cyc() { return useB ? CYCLE_B_ON : CYCLE; }
 const AXIS_FONT = () => 'bold ' + (W < 520 ? 12 : 15) + 'px ui-monospace, Menlo, monospace';
 
 // Text with a white outline behind it, so axis numbers and labels stay
@@ -746,9 +768,14 @@ function drawAxes() {
     ctx.beginPath(); ctx.moveTo(cx0, PT); ctx.lineTo(cx0, PB); ctx.stroke();
   }
   ctx.restore();
+}
 
-  // The numbers on the axes are the thing a student copies into their answer,
-  // so they are set full-strength and large, with a white halo behind them.
+// The numbers on the axes are the thing a student copies into their answer, so
+// they are set full-strength and large, with a white halo behind them — and
+// drawn AFTER every curve, or a wave crossing y = 0.5 slices its own label in
+// half and the halo cannot save it (Adrian, 2026-08-20).
+function drawAxisNumbers() {
+  const cy0 = Y(0), cx0 = X(0);
   const font = AXIS_FONT();
   const step = tickStep();
   const labelY = Math.min((cy0 >= PT && cy0 <= PB - 24 ? cy0 : PB) + 21, H - 7);
@@ -871,7 +898,7 @@ function drawCurve(aVal, bVal, cVal, fn, color, width, opts) {
     // one colour per complete repeat; the part-repeats at the ends stay in the
     // curve's own colour but faded, so they read as "cut off", not as a repeat
     o.spans.forEach(function (sp) {
-      ctx.strokeStyle = sp.full ? CYCLE[sp.ci % CYCLE.length] : color;
+      ctx.strokeStyle = sp.full ? cyc()[sp.ci % cyc().length] : color;
       ctx.globalAlpha = sp.full ? 1 : 0.5;
       tracePiece(sp.s + eps, sp.e - eps);
     });
@@ -915,7 +942,7 @@ function badgePositions(spans) {
     if (lo > hi) return;                       // no room clear of the numbers
     const bx = Math.min(Math.max((px + qx) / 2, lo), hi);
     out.push({ cx: bx, cy: cy, r: r, n: sp.ci + 1,
-               col: CYCLE[sp.ci % CYCLE.length] });
+               col: cyc()[sp.ci % cyc().length] });
   });
   return out;
 }
@@ -947,15 +974,29 @@ function drawPeriodBracket(spans) {
   const yLine = Math.round(PT - 13) + 0.5;
   ctx.save();
   ctx.setLineDash([]);
-  ctx.strokeStyle = C.plum; ctx.lineWidth = 2;
+  const brk = useB ? C.markInk : C.plum;      // never the same colour as graph B
+  ctx.strokeStyle = brk; ctx.fillStyle = brk; ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(px, yLine - 6); ctx.lineTo(px, yLine + 6);
   ctx.moveTo(qx, yLine - 6); ctx.lineTo(qx, yLine + 6);
   ctx.moveTo(px, yLine); ctx.lineTo(qx, yLine);
   ctx.stroke();
+  // Arrowheads pointing out to the two edges, so the bar reads as a WIDTH
+  // being measured rather than a line that happens to sit up there. Skipped
+  // when the period is too narrow to hold two heads without them merging.
+  const head = (qx - px) < 14 ? 0 : Math.min(9, Math.max(5, (qx - px) / 8));
+  if (head) {
+    [[px, -1], [qx, 1]].forEach(function (h) {
+      ctx.beginPath();
+      ctx.moveTo(h[0], yLine);
+      ctx.lineTo(h[0] - h[1] * head, yLine - 4.5);
+      ctx.lineTo(h[0] - h[1] * head, yLine + 4.5);
+      ctx.closePath(); ctx.fill();
+    });
+  }
   // the two edges of that one period, carried down through the plot
   ctx.setLineDash([3, 6]); ctx.lineWidth = 1.3;
-  ctx.strokeStyle = 'rgba(123,94,167,0.5)';
+  ctx.strokeStyle = useB ? 'rgba(65,80,106,0.45)' : 'rgba(123,94,167,0.5)';
   ctx.beginPath();
   ctx.moveTo(px, yLine + 7); ctx.lineTo(px, PB);
   ctx.moveTo(qx, yLine + 7); ctx.lineTo(qx, PB);
@@ -969,7 +1010,7 @@ function drawPeriodBracket(spans) {
     ? who + 'period = ' + fmtX(per)
     : who + 'period = ' + one + ' ÷ ' + fmtNum(Math.abs(b)) + ' = ' + fmtX(per);
   const cx = Math.min(Math.max((px + qx) / 2, 4), W - 4);
-  haloText(lbl, cx, yLine - 11, 'bold ' + (W < 520 ? 12 : 14) + 'px ui-monospace, Menlo, monospace', C.plum,
+  haloText(lbl, cx, yLine - 11, 'bold ' + (W < 520 ? 12 : 14) + 'px ui-monospace, Menlo, monospace', brk,
            cx < 60 ? 'left' : (cx > W - 60 ? 'right' : 'center'));
 }
 
@@ -1187,7 +1228,7 @@ function buildFacts() {
   let html = (useB ? '<div class="preset-label" style="margin-top:0">Graph A</div>' : '') +
              renderRows(factRows(a, b, c, fnType));
   if (useB) {
-    html += '<div class="preset-label" style="color:var(--plum)">Graph B</div>' +
+    html += '<div class="preset-label" style="color:var(--graphb)">Graph B</div>' +
             renderRows(factRows(a2, b2, c2, fn2));
   }
   $('facts').innerHTML = html;
@@ -1209,7 +1250,7 @@ function render() {
   badgeRects = cycling ? badgePositions(spans) : [];
 
   drawGrid();
-  drawAxes();
+  drawAxes();          // the two rules only — the numbers go on top of the curves
 
   const g = showGuides ? drawGuideLines() : null;
   drawAsymptotes(b, fnType);
@@ -1218,8 +1259,9 @@ function render() {
   // draw order: reference first, then graph B, then graph A on top — A is the
   // one every label and marker refers to
   if (showBase) drawCurve(1, 1, 0, fnType, C.base, 2.2, { dash: [8, 6] });
-  if (useB) drawCurve(a2, b2, c2, fn2, C.plum, 3);
+  if (useB) drawCurve(a2, b2, c2, fn2, COL_B, 3.2);
   drawCurve(a, b, c, fnType, C.teal, 3.4, cycling ? { spans: spans } : null);
+  drawAxisNumbers();
 
   // markers first: the |a| arrow is pinned to one point, the guide chips can
   // move, so the arrow claims its space first
@@ -1230,6 +1272,7 @@ function render() {
   $('legend-asym').style.display = (fnType === 'tan' || (useB && fn2 === 'tan')) ? 'flex' : 'none';
   $('legend-base').style.display = showBase ? 'flex' : 'none';
   $('legend-b').style.display = useB ? 'flex' : 'none';
+  $('tag-a').hidden = !useB;
   $('baselabel').textContent = 'y = ' + fnType + ' x';
   $('basechk').textContent = 'y = ' + fnType + ' x';
   const multi = cycling && badgeRects.length > 1;
@@ -1237,7 +1280,7 @@ function render() {
     ? (useB ? 'Graph A — a colour per repeat' : 'Your curve — a colour per repeat')
     : (useB ? 'Graph A' : 'Your curve');
   $('legend-a-swatch').style.background = multi
-    ? 'linear-gradient(90deg,' + CYCLE[0] + ' 0 34%,' + CYCLE[1] + ' 34% 67%,' + CYCLE[2] + ' 67% 100%)'
+    ? 'linear-gradient(90deg,' + cyc()[0] + ' 0 34%,' + cyc()[1] + ' 34% 67%,' + cyc()[2] + ' 67% 100%)'
     : 'var(--accent)';
   $('blabel').textContent = equationHTML(a2, b2, c2, fn2, false).replace(/<[^>]+>/g, '');
   $('equation').innerHTML = equationBlock();
@@ -1350,10 +1393,14 @@ function setFn(fn) {
 document.querySelectorAll('.toggle-btn[data-fn]').forEach(function (btn) {
   btn.addEventListener('click', function () { setFn(btn.dataset.fn); render(); });
 });
-document.querySelectorAll('.unit-btn').forEach(function (btn) {
+// [data-unit], NOT '.unit-btn': graph B's sin/cos/tan buttons borrow the same
+// class for their styling, so an unscoped listener made every click on them set
+// unit = undefined — silently flipping the whole tool into radians and rewriting
+// the range boxes (Adrian hit this: his degree range came back as "−0.052 to 2pi").
+document.querySelectorAll('.unit-btn[data-unit]').forEach(function (btn) {
   btn.addEventListener('click', function () {
     unit = btn.dataset.unit;
-    document.querySelectorAll('.unit-btn').forEach(x => x.classList.toggle('active', x === btn));
+    document.querySelectorAll('.unit-btn[data-unit]').forEach(x => x.classList.toggle('active', x === btn));
     $('range-unit').textContent = unit === 'deg' ? '(degrees)' : '(radians — type “2pi” or “pi/2”)';
     $('btn-range-default').textContent = unit === 'deg' ? '0 to 360°' : '0 to 2π';
     $('btn-range-wide').textContent = unit === 'deg' ? '−360° to 360°' : '−2π to 2π';
