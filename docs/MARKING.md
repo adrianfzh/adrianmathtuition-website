@@ -944,31 +944,59 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   sans. Verify after a deploy with `fly ssh console -C fc-list | grep -i patrick`.
   (The typeset transcript sheets are unrelated — they're Puppeteer/webfont and still Caveat.)
 
-### Margin diagrams — verified tree & sector figures (bot, 2026-08-20)
+### Margin diagrams — verified figures on marked pages (bot, 2026-08-20)
 
 The marking model can attach an optional `diagram` spec to any attempt's
 `marking_output` (see DIAGRAM RULES appended to `MARK_JSON_SPEC` in
 `ai/paper-marker.js`). The spec carries **givens only** — labels, exact
-probabilities, angles — never pixel coordinates. `ai/margin-diagram.js`
-(engine + gates, 17 unit tests in `test/margin-diagram.test.js`) validates it,
-constructs the figure deterministically, and **refuses to draw anything it
-cannot prove consistent** — "models author, deterministic gates verify"; a
-wrong diagram on a marked script is worse than none, so every gate fails
-closed to "no figure" (a `console.warn` with the reason, nothing on the page).
+probabilities, angles, bearings, curve parameters, interval endpoints — never
+pixel coordinates. `ai/margin-diagram.js` (engine + gates, 35 unit tests in
+`test/margin-diagram.test.js`) validates it, constructs the figure
+deterministically, and **refuses to draw anything it cannot prove
+consistent** — "models author, deterministic gates verify"; a wrong diagram
+on a marked script is worse than none, so every gate fails closed to "no
+figure" (a `console.warn` with the reason, nothing on the page).
 
-- **Families (v1):** `kind:"tree"` (probability tree: ≤3 stages, 2–4 branches
-  per node, ≤12 leaves, optional stage headings + highlighted root→leaf paths +
-  caption) and `kind:"sector"` (circle sector/segment: shading, chord, radii
-  ticks, angle/radius/arc/vertex/end labels). Bearings, coordinate sketches and
-  number lines are deferred to a later session.
+- **Families (five):** `kind:"tree"` (probability tree: ≤3 stages, 2–4
+  branches per node, ≤12 leaves, optional stage headings + highlighted
+  root→leaf paths), `kind:"sector"` (circle sector/segment: shading, chord,
+  radii ticks, angle/radius/arc/vertex/end labels), `kind:"bearing"` (chain of
+  ≤3 legs, each `bearing_deg` 5–350 clockwise from north; dashed north arrows,
+  nested clockwise arcs and 3-digit bearing text all renderer-drawn; optional
+  dashed `connect` lines; "(not to scale)" note auto-added when distances are
+  unknown or badly out of proportion), `kind:"graph"` (sketch of 1–2 curves —
+  line / vertical line / parabola by roots or vertex form — with 0–4 marked
+  points; all numbers exact strings like `"3/2"`, den ≤ 1000, |val| ≤ 500) and
+  `kind:"number_line"` (1–3 intervals/rays with open/closed endpoint circles,
+  auto-stacked on lanes when they overlap, ≤4 extra marks).
+- **Renderer-owned labels** kill the contradiction surface: bearing text is
+  formatted from `bearing_deg`, graph equations/intercepts/vertex are DERIVED
+  from the exact params (a model-supplied point label that disagrees with the
+  point is a refusal), number-line tick labels come from the parsed rationals.
+  Coordinate pairs are emitted as `$\left(…\right)$` so pen-math's currency
+  heuristic always typesets them as maths.
 - **Gates:** sibling probabilities parsed as exact fractions (decimal strings
   digit-exact, never floats) and must sum to **exactly 1** per node; highlight
   paths must trace existing labels root→leaf; sector `angle_deg` range-checked
   (5–340°) and cross-checked against `angle_label` in degrees, plain radians or
-  aπ/b radians (symbolic labels skip the check); the constructed geometry is
-  measured back before shipping (tree x-monotone along every branch, arc
-  endpoints on the circle, angle re-measured to 0.01°); scale-to-fit refuses
+  aπ/b radians (symbolic labels skip the check); bearing legs must chain from
+  already-placed points, distance labels must agree with `distance`, and the
+  placed chain is measured back to 0.01°; graph consistency is all exact
+  rational arithmetic (roots ↔ vertex derivation, integer-sqrt root recovery
+  from vertex form, on-curve verification of every marked point, refusals for
+  y=0 / x=0 / a=0 degenerate "curves"); number-line endpoints must satisfy
+  from < to exactly, and tick labels that would collide refuse the figure
+  rather than overlap; every family's constructed geometry is measured back
+  before shipping (tree x-monotone along every branch, arc endpoints on the
+  circle, graph transform inverted onto every feature); scale-to-fit refuses
   below 0.55× ("too large to fit legibly").
+- **Collision-aware placement:** graph tick labels, `O`, point labels and
+  equation labels are placed by scored candidates (rectangle-distance to every
+  drawn curve sample, penalties for overlapping other labels or straddling an
+  axis) — a root tick sits where the curve crosses the axis and a y-intercept
+  tick sits ON its line, so the conventional spot dodges when occupied.
+  Bearing point names dodge the whole swept bearing wedge (arcs, arrowheads
+  and bearing text live inside it).
 - **Rendering/placement:** the engine returns an SVG `<g>` fragment drawn with
   the same pen-math/Patrick-Hand/TEACHER_RED stack as every other annotation, so
   the hires viewBox re-render scales it for free. `annotate.js` places it into
@@ -983,6 +1011,12 @@ closed to "no figure" (a `console.warn` with the reason, nothing on the page).
   wiring in `ai/paper-marker.js` (spec + per-attempt collection),
   `ai/photo-overlay.js` (pass-through), `ai/annotate.js` (build + place +
   footer fallback).
+- **Deploy status (2026-08-20):** NOT yet on Fly. Tree/sector (bot commit
+  `6aa38a0`) is sample-approved by Adrian; the three new families (bot commit
+  `5f2dad5`, which also adds their DIAGRAM RULES to the marking prompt) await
+  his approval of the rendered samples. Deploy is additionally gated on the
+  bot's marking queue being empty (`paper_marking_runs` where `total_max is
+  null and result_json->'queue' is not null`).
 
 ## AI Marking PNG Renderer
 
