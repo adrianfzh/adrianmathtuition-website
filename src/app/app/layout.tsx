@@ -17,8 +17,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!isAdmin) await requireAuth();
 
   // Marking-only beta (lib/portal-beta.ts, Adrian 2026-08-21): students see
-  // Home / Submit / Marked (+ Settings) and nothing else. Adrian's admin cookie
-  // keeps the full nav — Practice, and Learn while LEARN_OPEN_TO_STUDENTS is off
+  // Home / Practise / Submit / Marked (+ Settings) and nothing else. Adrian's
+  // admin cookie keeps the full nav — Learn while LEARN_OPEN_TO_STUDENTS is off
   // — unless he has flipped "View as student", which demotes him everywhere.
   const viewingAsStudent = isAdmin && cookieStore.get(VIEW_AS_STUDENT_COOKIE)?.value === '1';
   const adminPowers = isAdmin && !viewingAsStudent;
@@ -34,6 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ]
     : [
         { href: '/app', label: 'Dashboard' },
+        { href: '/app/practice', label: 'Practise' },
         { href: '/app/submit', label: 'Submit a paper' },
         { href: '/app/marking', label: 'Marked papers' },
       ];
@@ -46,6 +47,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ]
     : [
         { href: '/app', icon: '🏠', label: 'Home' },
+        { href: '/app/practice', icon: '✏️', label: 'Practise' },
         { href: '/app/submit', icon: '📷', label: 'Submit' },
         { href: '/app/marking', icon: '📄', label: 'Marked' },
       ];

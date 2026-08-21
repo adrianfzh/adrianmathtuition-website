@@ -7,7 +7,6 @@ import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
-import PracticeFlow from './practice/practice-flow';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,12 +24,12 @@ function friendlyDate(dateStr: string): string {
 
 export default async function DashboardPage() {
   const { account } = await currentStudent();
-  // Marking-only beta (lib/portal-beta.ts): students get a hand-in dashboard —
-  // next lesson, last lesson's topics/homework, two actions (Submit a paper /
-  // Marked papers) and, since 2026-08-21, the practice flow itself (topic →
-  // Standard/Advanced → question) embedded right here. The practice tile and
-  // the recent-practice card only render for the full portal (Adrian's admin
-  // cookie, unless he is "viewing as student").
+  // Marking-only beta (lib/portal-beta.ts): students get a calm dashboard —
+  // next lesson, last lesson's topics/homework, and three doors: Practise
+  // (its own page since 2026-08-21 — embedding the whole topic→tier→question
+  // flow here made Home feel cluttered), Submit a paper, Marked papers. The
+  // week-stats and recent-practice cards only render for the full portal
+  // (Adrian's admin cookie, unless he is "viewing as student").
   const fullPortal = await fullPortalVisible();
   // Learn units aren't released to students — the "start here" stack (which
   // deep-links into /app/learn) only renders for Adrian's admin cookie.
@@ -147,23 +146,26 @@ export default async function DashboardPage() {
           )}
         </div>
       ) : (
-        /* Marking-only beta: the two things a student can do here. */
-        <div className="grid grid-cols-2 gap-3">
-          <Link href="/app/submit" className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity">
-            📷 Submit a paper
+        /* Marking-only beta: the three things a student can do here. */
+        <div className="space-y-3">
+          <Link href="/app/practice"
+            className="block bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-5 shadow-sm hover:opacity-90 transition-opacity">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="font-semibold text-base">✏️ Practise a topic</div>
+                <div className="text-xs opacity-80 mt-1">Pick a topic · Standard or Advanced · get your working marked line by line</div>
+              </div>
+              <span className="text-xl opacity-80" aria-hidden>→</span>
+            </div>
           </Link>
-          <Link href="/app/marking" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
-            📄 My marked papers
-          </Link>
-        </div>
-      )}
-
-      {/* Practise — embedded for students during the marking-only beta.
-          Scoped server-side to the student's level (Sec 4: E Math / A Math,
-          no NA) by /api/portal/practice/overview. */}
-      {!fullPortal && (
-        <div className={card}>
-          <PracticeFlow embedded />
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+              📷 Submit a paper
+            </Link>
+            <Link href="/app/marking" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+              📄 My marked papers
+            </Link>
+          </div>
         </div>
       )}
 

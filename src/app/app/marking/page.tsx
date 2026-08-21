@@ -14,7 +14,6 @@ import { currentStudent } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import { mathHtml } from '@/lib/math-inline';
-import { fullPortalVisible } from '@/lib/portal-beta';
 // Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
 // spans, and this stylesheet is what makes the output render as maths.
 import 'katex/dist/katex.min.css';
@@ -50,9 +49,9 @@ export default async function MarkingPage() {
   // Marking-only beta: /app/practice is closed to students, but the same flow
   // is embedded on Home — so their "Work on next" chips deep-link to /app?topic=
   // (the flow reads ?topic= on mount); the full portal links to /app/practice.
-  const practiceLinks = await fullPortalVisible();
-  const practiceHref = (topic: string) =>
-    `${practiceLinks ? '/app/practice' : '/app'}?topic=${encodeURIComponent(topic)}`;
+  // Practise has its own page for everyone since 2026-08-21 (it briefly
+  // lived on Home during the marking-only beta).
+  const practiceHref = (topic: string) => `/app/practice?topic=${encodeURIComponent(topic)}`;
 
   const sb = getSupabaseAdmin();
   const { data } = await sb

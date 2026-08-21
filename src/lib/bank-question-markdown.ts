@@ -138,16 +138,74 @@ function structuredPart(p: BankPart, withSubparts: boolean): StructuredPart {
   return { label: String(p.label ?? '').trim(), text: partText(p), marks, subparts };
 }
 
+// ~20% of bank rows (mostly AI-authored, incl. most Advanced ones) carry no
+// `parts` array at all — the parts live inside question_text as lines like
+//   (a) State the value of $n$. [1]
+//   (b)(i) Find … [2]
+//   (ii) Hence … [3]
+// Those rendered as plain paragraphs with the "[1]" stuck on the end of the
+// sentence (Adrian 2026-08-21: "some of the questions have marks that are
+// still not right-aligned"). Split them into the same structure the grid
+// expects: lines before the first part line are the stem; a roman label opens
+// a sub-part of the current lettered part; an unlabelled line continues the
+// current (sub)part. Only used when `parts` is empty — authored parts win.
+const PART_LINE = /^\(([a-z]|[ivx]{1,4})\)\s*(?:\(([ivx]{1,4})\)\s*)?([\s\S]*?)\s*(?:\[\s*(\d+)\s*(?:marks?|m)?\s*\])?\s*$/i;
+const TRAILING_MARKS = /\s*\[\s*(\d+)\s*(?:marks?|m)?\s*\]\s*$/i;
+const ROMAN = /^(i|ii|iii|iv|v|vi|vii|viii|ix|x)$/i;
+
+export function splitInlineParts(text: string | null | undefined): { stem: string; parts: BankPart[] } {
+  const lines = (text || '').split('\n').map(l => l.trim());
+  const stemLines: string[] = [];
+  const parts: BankPart[] = [];
+  let current: BankPart | null = null;        // the (sub)part continuation lines attach to
+  let parent: BankPart | null = null;         // the open lettered part for roman sub-parts
+  for (const line of lines) {
+    if (!line) continue;
+    const m = line.match(PART_LINE);
+    if (m) {
+      const [, l1, l2, body, marks] = m;
+      const mk = marks ? Number(marks) : undefined;
+      if (l2) {                                 // "(b)(i) …" — lettered part + first sub-part on one line
+        parent = { label: l1.toLowerCase(), text: '', subparts: [] };
+        parts.push(parent);
+        current = { label: l2.toLowerCase(), text: body, marks: mk };
+        parent.subparts!.push(current);
+      } else if (ROMAN.test(l1) && parent) {    // "(ii) …" under the open lettered part
+        current = { label: l1.toLowerCase(), text: body, marks: mk };
+        parent.subparts = parent.subparts || [];
+        parent.subparts.push(current);
+      } else {                                  // "(a) …" top-level part
+        current = { label: l1.toLowerCase(), text: body, marks: mk };
+        parent = ROMAN.test(l1) ? null : current;
+        parts.push(current);
+      }
+      continue;
+    }
+    if (!current) { stemLines.push(line); continue; }
+    // Continuation of the current (sub)part; a marks tag on its last line
+    // belongs to the part, not the sentence.
+    let body = line;
+    const tm = body.match(TRAILING_MARKS);
+    if (tm && current.marks == null) { current.marks = Number(tm[1]); body = body.replace(TRAILING_MARKS, '').trim(); }
+    if (body) current.text = current.text ? `${current.text}\n\n${body}` : body;
+  }
+  if (!parts.length) return { stem: (text || '').trim(), parts: [] };
+  return { stem: stemLines.join('\n\n'), parts };
+}
+
 /** Stem markdown + structured parts (no answer/solution). */
 export function questionStructured(q: BankQuestion): { stem: string; parts: StructuredPart[] } {
+  const authored = (Array.isArray(q.parts) ? q.parts : []).filter(p => p && (p.label || p.text));
+  const inline = authored.length ? null : splitInlineParts(q.question_text);
+  const stemText = inline ? inline.stem : q.question_text;
+  const rawParts = inline ? inline.parts : authored;
+
   const out: string[] = [];
   const stem = getStemImageRecords(q);
   for (const r of stem.filter((r) => r.pos === 'before')) out.push(imgTag(r.url, 'diagram'));
-  if (q.question_text) out.push(renderInlineImagesInText(q.question_text));
+  if (stemText) out.push(renderInlineImagesInText(stemText));
   for (const r of stem.filter((r) => r.pos === 'after')) out.push(imgTag(r.url, 'diagram'));
-  const parts = (Array.isArray(q.parts) ? q.parts : [])
-    .filter(p => p && (p.label || p.text))
-    .map(p => structuredPart(p, true));
+  const parts = rawParts.map(p => structuredPart(p, true));
   return { stem: out.join('\n\n'), parts };
 }
 

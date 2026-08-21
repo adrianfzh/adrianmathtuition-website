@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { questionStructured, questionMarkdown } from './bank-question-markdown';
+import { questionStructured, questionMarkdown, splitInlineParts } from './bank-question-markdown';
 
 // The portal renders questions from questionStructured() in an exam-style grid
 // (label / sub-part label / text / marks). These pin the shape the grid relies
@@ -81,5 +81,53 @@ describe('questionStructured', () => {
     const s = questionStructured(q);
     expect(s.parts[0].text).toBe('Part a.');
     expect(s.parts[0].subparts[0].text).toBe('Sub i.');
+  });
+});
+
+// Rows with no `parts` array keep their parts inside question_text — the
+// parser must lift them out so the grid (label / marks columns) still applies.
+describe('splitInlineParts', () => {
+  it('lifts "(a) … [1]" lines out of the text, stem first', () => {
+    const r = splitInlineParts(
+      'In the expansion of \\(\\left(2 - \\frac{1}{3}x\\right)^n\\), there are exactly 7 terms.\n\n' +
+      '(a) State the value of \\(n\\). [1]\n\n(b) Find the value of \\(a\\). [5]\n\n' +
+      '(c) Using this value of \\(a\\), find the coefficient of \\(x^4\\). [3]',
+    );
+    expect(r.stem).toBe('In the expansion of \\(\\left(2 - \\frac{1}{3}x\\right)^n\\), there are exactly 7 terms.');
+    expect(r.parts.map(p => [p.label, p.text, p.marks])).toEqual([
+      ['a', 'State the value of \\(n\\).', 1],
+      ['b', 'Find the value of \\(a\\).', 5],
+      ['c', 'Using this value of \\(a\\), find the coefficient of \\(x^4\\).', 3],
+    ]);
+  });
+
+  it('nests roman labels under the open lettered part, incl. "(b)(i)" on one line', () => {
+    const r = splitInlineParts('Given $f(x) = 3\\sin x$.\n(a) Express $f(x)$ in R-form. [3]\n(b)(i) Solve $f(x) = 2$. [3]\n(ii) State the maximum. [2 marks]\n(c) Sketch. [2]');
+    expect(r.parts.map(p => [p.label, p.marks, (p.subparts || []).map(s => [s.label, s.marks])])).toEqual([
+      ['a', 3, []],
+      ['b', undefined, [['i', 3], ['ii', 2]]],
+      ['c', 2, []],
+    ]);
+    expect(r.parts[1].text).toBe('');
+  });
+
+  it('attaches unlabelled lines to the current part and takes a trailing marks tag from them', () => {
+    const r = splitInlineParts('(a) Show that\n$x^2 = 4$.\n[2]\n(b) Hence solve. [1]');
+    expect(r.parts[0]).toMatchObject({ label: 'a', text: 'Show that\n\n$x^2 = 4$.', marks: 2 });
+    expect(r.parts[1]).toMatchObject({ label: 'b', marks: 1 });
+  });
+
+  it('leaves text with no part lines alone', () => {
+    expect(splitInlineParts('Solve $(x-1)(x+2) = 0$.')).toEqual({ stem: 'Solve $(x-1)(x+2) = 0$.', parts: [] });
+    expect(splitInlineParts(null)).toEqual({ stem: '', parts: [] });
+  });
+
+  it('feeds questionStructured only when no authored parts exist', () => {
+    const inline = questionStructured({ question_text: 'Stem.\n(a) First. [2]\n(b) Second. [3]', parts: null });
+    expect(inline.stem).toBe('Stem.');
+    expect(inline.parts.map(p => [p.label, p.marks])).toEqual([['a', 2], ['b', 3]]);
+    const authored = questionStructured({ question_text: '(a) looks like a part [9]', parts: [{ label: 'a', text: 'Real part', marks: 1 }] });
+    expect(authored.stem).toBe('(a) looks like a part [9]');
+    expect(authored.parts.map(p => [p.label, p.marks])).toEqual([['a', 1]]);
   });
 });

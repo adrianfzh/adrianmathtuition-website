@@ -18,10 +18,10 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 // the portal session; the admin-password mode remains for Adrian's testing
 // (all levels, no mastery).
 //
-// Rendered two ways: as the /app/practice page, and `embedded` inside the
-// student Home (app/page.tsx) during the marking-only beta — Adrian 2026-08-21:
-// "in the home section, put the revision functionality in, where students can
-// choose a topic, then standard or advanced, then a question will get shown."
+// Open to students during the marking-only beta (Adrian 2026-08-21: "students
+// can choose a topic, then standard or advanced, then a question will get
+// shown"). It was briefly embedded on the student Home; it now has its own
+// tab — Home just links here.
 
 const REMARK = [remarkMath, remarkGfm];
 const REHYPE = [rehypeRaw, rehypeKatex];
@@ -192,7 +192,7 @@ async function fileToJpegDataUrl(file: File, maxDim = 1600): Promise<string> {
   }
 }
 
-export default function PracticeFlow({ embedded = false }: { embedded?: boolean }) {
+export default function PracticeFlow() {
   // mode: checking → student (portal session) | admin (password) | locked
   const [mode, setMode] = useState<'checking' | 'student' | 'admin' | 'locked'>('checking');
   const [password, setPassword] = useState('');
@@ -453,17 +453,15 @@ export default function PracticeFlow({ embedded = false }: { embedded?: boolean 
   const pickerOpen = !isStudent || !topic;
 
   return (
-    <div className={embedded ? '' : 'pb-20 sm:pb-6 max-w-4xl mx-auto'}>
-      {embedded ? (
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">✏️ Practise</p>
-      ) : (
-        <h1 className="text-xl font-bold text-navy mb-1 pt-1">Practice</h1>
+    <div className="pb-20 sm:pb-6 max-w-4xl mx-auto">
+      <h1 className="text-xl font-bold text-navy mb-1 pt-1">Practise</h1>
+      {(!isStudent || pickerOpen) && (
+        <p className="text-sm text-slate-500 mb-4">
+          {isStudent
+            ? 'Pick a topic, choose Standard or Advanced, and a question appears — snap or type your working and get it marked line by line.'
+            : 'Admin testing mode — all levels, retrieval + generation harness (no student mastery).'}
+        </p>
       )}
-      <p className="text-sm text-slate-500 mb-4">
-        {isStudent
-          ? 'Pick a topic, choose Standard or Advanced, and a question appears — snap or type your working and get it marked line by line.'
-          : 'Admin testing mode — all levels, retrieval + generation harness (no student mastery).'}
-      </p>
 
       {/* ── Stage 1: progress-aware picker ── */}
       {!pickerOpen && selected && (
