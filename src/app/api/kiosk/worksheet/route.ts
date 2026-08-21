@@ -8,10 +8,10 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isKioskOpen } from '@/lib/kiosk-config';
 import { verifyKioskAuth, KIOSK_LEVELS } from '@/lib/kiosk-session';
-import { normalizeTier, TIER_DIFFICULTY_VALUES } from '@/lib/practice-tiers';
+import { normalizeTier } from '@/lib/practice-tiers';
 import { studentFromRequest } from '@/lib/kiosk-student';
-import { flattenParts, cropUrls, type Part } from '@/lib/kiosk-worksheet-images';
 import { dailyDraw, drawSeedKey } from '@/lib/kiosk-draw';
+import { fetchWorksheetPool, SEED_LEVELS } from '@/lib/kiosk-pool';
 
 export const runtime = 'nodejs';
 
@@ -21,17 +21,10 @@ const MAX_COUNT = 20;
 // slice last (lib/kiosk-draw, unit-tested there). Same SGT day + level + topic
 // + tier → same sheet; counts extend one shared order; rotates at SGT midnight.
 
-// questions.level values servable per kiosk level token.
-const SEED_LEVELS: Record<string, string[]> = {
-  EM: ['EM', 'S3_EM'],
-  AM: ['AM', 'S3_AM'],
-  JC2: ['JC', 'JC1', 'JC2'],
-  S1: ['S1'],
-  S2: ['S2'],
-};
-
-// parts flattening + figure-path resolution live in lib/kiosk-worksheet-images
-// (pure helpers, unit-tested there).
+// The pool query, its eligibility gate and the SEED_LEVELS map live in
+// lib/kiosk-pool — shared verbatim with the bot's /api/bot/worksheet so the two
+// worksheet surfaces can never disagree on what is servable. Parts flattening +
+// figure-path resolution live in lib/kiosk-worksheet-images (unit-tested).
 
 export async function GET(req: NextRequest) {
   if (!verifyKioskAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -69,42 +62,21 @@ export async function GET(req: NextRequest) {
   //  - `practice_questions` (the /revise pool): already flat, but has NO
   //    difficulty — so it's only servable when the tier filter is off (Mixed).
   const seedLevels = SEED_LEVELS[level] ?? cfg.questionLevels;
-  // Pool comes from the kiosk_pool RPC — the single source of truth for
-  // servability. It UNIONs tag-match with sub-group-match (so method-first
-  // cross-topic labels serve under the topic the picker counts them in),
-  // gates on answer-presence (top-level OR parts), and accepts figures that
+  // Pool comes from the kiosk_pool RPC via lib/kiosk-pool — the single source of
+  // truth for servability. It UNIONs tag-match with sub-group-match (so
+  // method-first cross-topic labels serve under the topic the picker counts them
+  // in), gates on answer-presence (top-level OR parts), and accepts figures that
   // are either engine-drawn (figure_url) or watermark-scanned clean crops.
   // Ordered by id, so the deterministic daily draw is reproducible.
-  const bankRes = await supa.rpc('kiosk_pool', {
-    p_tag_levels: seedLevels,
-    p_sg_level: cfg.topicsKey,
-    p_topic: topic,
-    p_difficulties: tier ? TIER_DIFFICULTY_VALUES[tier] : null,
-  });
-  if (bankRes.error) {
-    return NextResponse.json({ error: bankRes.error.message }, { status: 500 });
-  }
-
-  type Item = { id: string; markdown: string; marks: number | null; figureUrl: string | null; imageUrls: string[]; answer: string | null };
-  const items: Item[] = [];
-  for (const r of bankRes.data || []) {
-    const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
-    const answer = flat.answer || ((r.answer as string | null) ?? '');
-    if (!answer.trim()) continue; // answers always print — answer-less questions don't serve
-    items.push({
-      id: r.id as string,
-      markdown: flat.text,
-      marks: (r.total_marks as number | null) ?? null,
-      figureUrl: (r.figure_url as string | null) ?? null,
-      imageUrls: r.figure_url ? [] : cropUrls((r.image_url as string | null) ?? null),
-      answer,
-    });
+  const pool = await fetchWorksheetPool(supa, { seedLevels, topicsKey: cfg.topicsKey, topic, tier });
+  if (pool.error) {
+    return NextResponse.json({ error: pool.error }, { status: 500 });
   }
   // NO pool cap here: the whole answer-gated pool (≤400 rows from the RPC's
   // fetch cap) feeds the seeded shuffle. Capping before the shuffle starved
   // every row past the cap in id order — they could never print, on any day.
 
-  const picked = dailyDraw(items, drawSeedKey(level, topic, tier), count);
+  const picked = dailyDraw(pool.items, drawSeedKey(level, topic, tier), count);
   const questions = picked.map((r) => ({
     id: r.id,
     markdown: r.markdown,

@@ -232,6 +232,26 @@ export async function GET(req: NextRequest) {
       );
       if (!r.ok) throw new Error(`field missing? HTTP ${r.status}: ${(await r.text()).slice(0, 120)}`);
     }),
+    // Worksheet-on-demand (/api/bot/worksheet) — the bot asks this route for a
+    // practice PDF and forwards the link to a parent, so a break here is
+    // parent-facing and silent (the bot just says it can't build a sheet).
+    // Dry mode does everything except Puppeteer + Blob: it proves the
+    // x-render-secret handshake, the level alias map, the topic RPC and the
+    // question pool all still answer. A pool that has emptied out is a failure —
+    // a sheet with no questions is exactly the thing this must never send.
+    timed('bot-worksheet', async () => {
+      if (!process.env.RENDER_MARKING_SECRET) throw new Error('RENDER_MARKING_SECRET missing');
+      const r = await fetch(`${base}/api/bot/worksheet`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-render-secret': process.env.RENDER_MARKING_SECRET },
+        body: JSON.stringify({ dry: true, level: 'S3_AM', topic: 'Binomial Theorem' }),
+        signal: T(15000),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${(await r.text()).slice(0, 120)}`);
+      const j = await r.json() as { ok?: boolean; poolSize?: number };
+      if (!j.ok || !j.poolSize) throw new Error(`empty pool for A Math · Binomial Theorem (poolSize ${j.poolSize ?? '?'})`);
+      return `pool ${j.poolSize}`;
+    }),
     // Telegram bot machine on Fly (deploys have left it stopped before)
     timed('telegram-bot', async () => {
       const r = await fetch('https://adrianmath-telegram-math-bot.fly.dev/', { signal: T(15000) });

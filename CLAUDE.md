@@ -172,6 +172,7 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 
 ### Bot integrations
 - `explanations/route.ts` — bot writes annotated-explain content here (auth: `x-render-secret`), gets back a UUID used for the `/explain/{id}` public page
+- `bot/worksheet/route.ts` — **worksheet-on-demand** (auth: `x-render-secret`). POST `{level, topic, tier?, count?≤12, answers?}` → house-style A4 PDF on Vercel Blob, `{url, title, count, questionIds, filename}`. Same deterministic daily draw + eligibility gate as the kiosk (`lib/kiosk-pool` + `lib/kiosk-draw`), so it can never leak worked solutions or originating-school metadata. `{dry:true, level, topic}` → `{ok, poolSize}`, the health-check probe. Renderer: `lib/render-bot-worksheet.ts`; request logic + tests: `lib/bot-worksheet.ts` → `docs/KIOSK.md`
 
 ## Database
 
