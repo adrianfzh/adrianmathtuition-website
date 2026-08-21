@@ -7,6 +7,7 @@ export const runtime = 'nodejs';
 type TopicRow = {
   topic: string;
   questionCount: number;
+  advancedCount: number;   // Advanced + Challenging rows — drives the Advanced tier picker
   attempts: number;
   mastery: number | null;
   status: 'strong' | 'practising' | 'weak' | 'new';
@@ -47,9 +48,10 @@ export async function GET(req: NextRequest) {
   if (!isStudent) {
     const { data, error } = await supabase.rpc('practice_topics', { p_level: activeLevel });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const topics: TopicRow[] = (data || []).map((t: { topic: string; n: number }) => ({
+    const topics: TopicRow[] = (data || []).map((t: { topic: string; n: number; advanced_count: number }) => ({
       topic: t.topic,
       questionCount: Number(t.n) || 0,
+      advancedCount: Number(t.advanced_count) || 0,
       attempts: 0,
       mastery: null,
       status: 'new' as const,
@@ -70,6 +72,7 @@ export async function GET(req: NextRequest) {
   const topics: TopicRow[] = (data || []).map((r: {
     topic: string;
     question_count: number;
+    advanced_count: number;
     attempts: number;
     avg_mastery: number | null;
     last_practiced_at: string | null;
@@ -79,6 +82,7 @@ export async function GET(req: NextRequest) {
     return {
       topic: r.topic,
       questionCount: Number(r.question_count) || 0,
+      advancedCount: Number(r.advanced_count) || 0,
       attempts,
       mastery,
       status: statusFor(attempts, mastery),

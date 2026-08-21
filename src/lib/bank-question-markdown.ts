@@ -4,6 +4,8 @@
 // admin/edit-cards/BankPanel.tsx (question_bank_viewer.html schema) — that panel has
 // parallel logic; unify into this module if it's touched again.
 
+import { formatSolution, normalizeMathDelimiters } from './solution-format';
+
 const STORAGE_BUCKET =
   'https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/';
 
@@ -34,9 +36,11 @@ function isPlausibleFilename(s: unknown): s is string {
 function imgTag(url: string, alt = ''): string {
   return `<img src="${toStorageUrl(url)}" alt="${alt}" style="max-width:100%;display:block;margin:8px 0" />`;
 }
+// Also normalises \( \) / \[ \] to $-delimiters — remark-math only parses the
+// dollar forms, and ~90 (mostly AI-authored) rows carry the backslash forms.
 function renderInlineImagesInText(text: string | null | undefined): string {
   if (!text) return '';
-  return text.replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
+  return normalizeMathDelimiters(text).replace(/\{\{IMG:([^}]+)\}\}/g, (_m, url: string) => {
     const cleaned = url.trim();
     return isPlausibleFilename(cleaned) ? imgTag(cleaned) : '';
   });
@@ -98,17 +102,24 @@ export function questionMarkdown(q: BankQuestion): string {
   return out.join('\n\n');
 }
 
+// Worked-solution text → one block per step, runs of equations aligned on `=`
+// (lib/solution-format.ts). Images are substituted AFTER formatting so the
+// {{IMG:…}} lines pass through the formatter untouched.
+function workedSolution(text: string): string {
+  return renderInlineImagesInText(formatSolution(text));
+}
+
 /** Markdown for the answer + worked solution (revealed on demand). */
 export function solutionMarkdown(q: BankQuestion): string {
   const out: string[] = [];
-  if (q.answer && q.answer.trim()) out.push(`**Answer:** ${q.answer.trim()}`);
-  if (q.solution && q.solution.trim()) out.push(renderInlineImagesInText(q.solution));
+  if (q.answer && q.answer.trim()) out.push(`**Answer:** ${normalizeMathDelimiters(q.answer.trim())}`);
+  if (q.solution && q.solution.trim()) out.push(workedSolution(q.solution));
   for (const u of getSolutionImageUrls(q.solution_images)) out.push(imgTag(u, 'solution diagram'));
   for (const p of (Array.isArray(q.parts) ? q.parts : [])) {
-    if (p?.solution) out.push(`**(${p.label ?? ''})** ${renderInlineImagesInText(p.solution)}`);
+    if (p?.solution) out.push(`**(${p.label ?? ''})**\n\n${workedSolution(p.solution)}`);
     if (p?.solution_image) { const t = partImageHtml(p.solution_image); if (t) out.push(t); }
     for (const sp of (Array.isArray(p?.subparts) ? p.subparts : [])) {
-      if (sp?.solution) out.push(`**(${p.label ?? ''})(${sp.label ?? ''})** ${renderInlineImagesInText(sp.solution)}`);
+      if (sp?.solution) out.push(`**(${p.label ?? ''})(${sp.label ?? ''})**\n\n${workedSolution(sp.solution)}`);
       if (sp?.solution_image) { const t = partImageHtml(sp.solution_image); if (t) out.push(t); }
     }
   }

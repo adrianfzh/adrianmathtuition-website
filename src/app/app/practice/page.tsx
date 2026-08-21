@@ -48,9 +48,11 @@ const DEFAULT_LEVELS: LevelOpt[] = [
 ];
 
 type TopicStatus = 'strong' | 'practising' | 'weak' | 'new';
+type Tier = 'Standard' | 'Advanced';
 type TopicCard = {
   topic: string;
   questionCount: number;
+  advancedCount: number;
   attempts: number;
   mastery: number | null;
   status: TopicStatus;
@@ -135,6 +137,7 @@ export default function PracticePage() {
   // Stage 1 picker state
   const [levels, setLevels] = useState<LevelOpt[]>(DEFAULT_LEVELS);
   const [level, setLevel] = useState('AM');
+  const [tier, setTier] = useState<Tier>('Standard');
   const [topics, setTopics] = useState<TopicCard[]>([]);
   const [recommended, setRecommended] = useState<Recommended[]>([]);
   const [topic, setTopic] = useState('');
@@ -157,7 +160,8 @@ export default function PracticePage() {
   const [photo, setPhoto] = useState<string | null>(null); // JPEG data URL, downscaled
   const [gradedViaPhoto, setGradedViaPhoto] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);      // camera (capture="environment")
+  const libraryInputRef = useRef<HTMLInputElement>(null);   // photo album (no capture)
   const [grading, setGrading] = useState(false);
   const [grade, setGrade] = useState<GradeResult | null>(null);
   const [gradedLines, setGradedLines] = useState<string[]>([]);
@@ -236,14 +240,14 @@ export default function PracticePage() {
     setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null);
   }
 
-  const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string) => {
+  const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string, tierArg?: Tier) => {
     const useTopic = topicArg ?? topic;
     if (!useTopic) return;
     setLoading(true); setError(''); setExhausted(false); resetAttempt();
     try {
       const r = await fetch('/api/portal/practice/next', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level, topic: useTopic, exclude: excludeIds }),
+        body: JSON.stringify({ level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier }),
       });
       const d = await r.json();
       if (!r.ok) { setError(d.error || 'Something went wrong'); return; }
@@ -251,11 +255,18 @@ export default function PracticePage() {
       setQ(d.question);
     } catch { setError('Connection error'); }
     finally { setLoading(false); }
-  }, [level, topic]);
+  }, [level, topic, tier]);
 
   // Clicking a topic card / recommendation starts that topic immediately.
   function startTopic(t: string) {
     setTopic(t); setSeen([]); fetchNext([], t);
+  }
+  // Switching Standard ↔ Advanced restarts the current topic on the new tier
+  // (fresh unseen-list — the two pools don't overlap).
+  function switchTier(t: Tier) {
+    if (t === tier) return;
+    setTier(t); setSeen([]); setExhausted(false);
+    if (topic) fetchNext([], topic, t);
   }
   function tryAnother() {
     const nextSeen = q ? [...seen, q.id] : seen;
@@ -357,9 +368,11 @@ export default function PracticePage() {
   // Strand chips derived from the loaded topic list.
   const strandChips = ['All', ...Array.from(new Set(topics.map(t => strandOf(t.topic)))).sort()];
   const filteredTopics = topics.filter(t =>
+    (tier === 'Standard' || t.advancedCount > 0) &&
     (strand === 'All' || strandOf(t.topic) === strand) &&
     (!search.trim() || t.topic.toLowerCase().includes(search.trim().toLowerCase()))
   );
+  const noAdvancedAtAll = tier === 'Advanced' && topics.length > 0 && !topics.some(t => t.advancedCount > 0);
 
   return (
     <div className="pb-20 sm:pb-6 max-w-4xl mx-auto">
@@ -371,15 +384,29 @@ export default function PracticePage() {
       </p>
 
       {/* ── Stage 1: progress-aware picker ── */}
-      {/* Segmented level control */}
-      <div className="inline-flex flex-wrap gap-1 bg-slate-100 rounded-xl p-1 mb-4">
-        {levels.map((l) => (
-          <button key={l.key} onClick={() => setLevel(l.key)}
-            className={`text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors ${
-              level === l.key ? 'bg-navy text-[hsl(45,100%,96%)]' : 'text-slate-500 hover:text-navy'}`}>
-            {l.label}
-          </button>
-        ))}
+      {/* Segmented level control — hidden when the student has exactly one level */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4">
+        {levels.length > 1 && (
+          <div className="inline-flex flex-wrap gap-1 bg-slate-100 rounded-xl p-1">
+            {levels.map((l) => (
+              <button key={l.key} onClick={() => setLevel(l.key)}
+                className={`text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors ${
+                  level === l.key ? 'bg-navy text-[hsl(45,100%,96%)]' : 'text-slate-500 hover:text-navy'}`}>
+                {l.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {/* Standard / Advanced tier */}
+        <div className="inline-flex gap-1 bg-slate-100 rounded-xl p-1" role="radiogroup" aria-label="Question difficulty">
+          {(['Standard', 'Advanced'] as Tier[]).map((t) => (
+            <button key={t} onClick={() => switchTier(t)} role="radio" aria-checked={tier === t}
+              className={`text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors ${
+                tier === t ? 'bg-amber-500 text-white' : 'text-slate-500 hover:text-navy'}`}>
+              {t === 'Advanced' ? '🔥 Advanced' : 'Standard'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Search + strand filter */}
@@ -437,7 +464,10 @@ export default function PracticePage() {
         <p className="text-sm text-slate-400 mb-5">Loading topics…</p>
       ) : filteredTopics.length === 0 ? (
         <p className="text-sm text-slate-400 mb-5">
-          {topics.length === 0 ? 'No topics available for this level yet.' : 'No topics match your search.'}
+          {topics.length === 0 ? 'No topics available for this level yet.'
+            : noAdvancedAtAll ? 'No advanced questions for this level yet — switch back to Standard.'
+            : tier === 'Advanced' ? 'No advanced questions match your search — try Standard for the full list.'
+            : 'No topics match your search.'}
         </p>
       ) : (
         <div className="grid gap-3 grid-cols-1 sm:[grid-template-columns:repeat(auto-fill,minmax(230px,1fr))] mb-6">
@@ -452,7 +482,7 @@ export default function PracticePage() {
                   <div className="font-semibold text-navy text-sm truncate">{t.topic}</div>
                   <div className="mt-1 flex items-center gap-2 flex-wrap">
                     <span className={`text-[11px] font-medium border rounded-full px-2 py-0.5 ${meta.cls}`}>{meta.label}</span>
-                    <span className="text-[11px] text-slate-400">{t.questionCount}+ questions</span>
+                    {tier === 'Advanced' && <span className="text-[11px] text-amber-600 font-medium">🔥 advanced</span>}
                   </div>
                 </div>
                 <span className="text-navy text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline shrink-0">Start →</span>
@@ -488,7 +518,11 @@ export default function PracticePage() {
 
       {exhausted && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
-          You&apos;ve seen every question we have for this topic. Try another topic, or tap the topic card again to go through them again.
+          {tier === 'Advanced' ? (
+            <>You&apos;ve seen every advanced question for this topic. <button onClick={() => switchTier('Standard')} className="underline font-semibold">Switch to Standard</button>, try another topic, or tap the topic card again to go through them again.</>
+          ) : (
+            <>You&apos;ve seen every question we have for this topic. Try another topic, or tap the topic card again to go through them again.</>
+          )}
         </div>
       )}
 
@@ -508,7 +542,7 @@ export default function PracticePage() {
               <img src={q.figureUrl} alt="Figure for this question"
                 className="w-full max-w-full rounded-xl border border-slate-200 mb-3 bg-white" />
             )}
-            <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
+            <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden [&_.katex-display]:py-1">
               <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{q.markdown}</ReactMarkdown>
             </div>
           </div>
@@ -520,8 +554,16 @@ export default function PracticePage() {
                 Your working
               </p>
 
+              {/* Two inputs on purpose: `capture` forces iOS straight into the
+                  camera (no library option), so the album picker needs its own
+                  input without it. */}
               <input
                 ref={fileInputRef} type="file" accept="image/*" capture="environment"
+                className="hidden"
+                onChange={(e) => { handlePhotoPick(e.target.files?.[0]); e.target.value = ''; }}
+              />
+              <input
+                ref={libraryInputRef} type="file" accept="image/*"
                 className="hidden"
                 onChange={(e) => { handlePhotoPick(e.target.files?.[0]); e.target.value = ''; }}
               />
@@ -530,19 +572,28 @@ export default function PracticePage() {
                 <div className="mb-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={photo} alt="Your working" className="max-h-64 rounded-xl border border-slate-200" />
-                  <div className="flex gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-2">
                     <button onClick={() => fileInputRef.current?.click()} disabled={photoBusy || grading}
                       className="text-xs text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5">📷 Retake</button>
+                    <button onClick={() => libraryInputRef.current?.click()} disabled={photoBusy || grading}
+                      className="text-xs text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5">🖼 Choose another</button>
                     <button onClick={() => setPhoto(null)} disabled={grading}
                       className="text-xs text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5">✕ Remove — type instead</button>
                   </div>
                 </div>
               ) : (
                 <>
-                  <button onClick={() => fileInputRef.current?.click()} disabled={photoBusy || grading}
-                    className="w-full border-2 border-dashed border-slate-300 rounded-xl py-6 text-sm font-semibold text-slate-500 hover:border-navy/40 hover:text-navy transition-colors mb-3">
-                    {photoBusy ? 'Reading photo…' : '📷 Snap a photo of your working on paper'}
-                  </button>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button onClick={() => fileInputRef.current?.click()} disabled={photoBusy || grading}
+                      className="border-2 border-dashed border-slate-300 rounded-xl py-5 px-2 text-sm font-semibold text-slate-500 hover:border-navy/40 hover:text-navy transition-colors">
+                      {photoBusy ? 'Reading photo…' : '📷 Take a photo'}
+                    </button>
+                    <button onClick={() => libraryInputRef.current?.click()} disabled={photoBusy || grading}
+                      className="border-2 border-dashed border-slate-300 rounded-xl py-5 px-2 text-sm font-semibold text-slate-500 hover:border-navy/40 hover:text-navy transition-colors">
+                      🖼 Choose from photos
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 -mt-2 mb-1 text-center">of your working on paper</p>
                   <p className="text-[11px] text-slate-400 -mt-1 mb-2 text-center">or type it, one step per line:</p>
                   <textarea
                     value={working}
@@ -671,7 +722,9 @@ export default function PracticePage() {
           {solution !== null && (
             <div className="bg-white border border-emerald-100 rounded-2xl p-5">
               <div className="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">Worked solution</div>
-              <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed">
+              {/* Aligned working from lib/solution-format.ts: left-align the display
+                  blocks (KaTeX centres by default) and let wide lines scroll. */}
+              <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden [&_.katex-display]:text-left [&_.katex-display>.katex]:text-left [&_.katex-display]:my-2 [&_.katex-display]:py-1">
                 <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{solution}</ReactMarkdown>
               </div>
             </div>

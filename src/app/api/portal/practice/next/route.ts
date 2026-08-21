@@ -5,15 +5,17 @@ import { practiceAuth, levelAllowed } from '@/lib/practice';
 
 export const runtime = 'nodejs';
 
-// POST /api/portal/practice/next  { level, topic, exclude?: string[] }
+// POST /api/portal/practice/next  { level, topic, exclude?: string[], tier?: 'Standard'|'Advanced' }
 // Serves one random unseen real question (stem + parts, NO solution) from the
 // topic's subgroups. `question: null` means the bank is exhausted for that filter.
+// `tier` maps onto questions.difficulty: Advanced = Advanced + Challenging rows,
+// Standard = everything else (incl. untagged). Omitted/unknown → no tier filter.
 // Auth: portal student session (level-gated) OR admin Bearer (testing).
 export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
-  const { level, topic, exclude } = body as { level?: string; topic?: string; exclude?: string[] };
+  const { level, topic, exclude, tier } = body as { level?: string; topic?: string; exclude?: string[]; tier?: string };
   if (!level || !topic) return NextResponse.json({ error: 'level and topic required' }, { status: 400 });
   if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
 
@@ -21,6 +23,7 @@ export async function POST(req: NextRequest) {
     p_level: level,
     p_topic: topic,
     p_exclude: Array.isArray(exclude) ? exclude : [],
+    p_tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

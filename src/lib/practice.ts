@@ -1,9 +1,16 @@
 // Shared helpers for the portal practice routes.
 //
 // Auth model: every practice route accepts EITHER a portal student session
-// (Supabase cookie — the real product) OR the admin password Bearer header
-// (Adrian's testing flow, predates portal auth). Students are additionally
-// gated to the QB levels appropriate for their Airtable level.
+// (Supabase cookie — the real product) OR the admin password Bearer header /
+// signed admin cookie (Adrian's testing flow, predates portal auth). Students
+// are additionally gated to the QB levels appropriate for their Airtable level.
+//
+// ORDER MATTERS: the student session is checked FIRST. Adrian tests the portal
+// through his demo-student login in the same Safari that holds his admin
+// cookie; when admin won (pre-2026-08-21) every API call from that browser
+// was treated as admin — the overview returned all nine QB levels and
+// /grade 401'd "Student session required" — while the page itself (which
+// detects the Supabase session client-side) believed it was a student.
 import { NextRequest } from 'next/server';
 import { verifyAdminAuth } from './schedule-helpers';
 import { createSupabaseServer } from './supabase-server';
@@ -15,13 +22,14 @@ export type PracticeCaller =
   | null;
 
 export async function practiceAuth(req: NextRequest): Promise<PracticeCaller> {
-  if (verifyAdminAuth(req)) return { kind: 'admin' };
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data: account } = await supabase
-    .from('portal_accounts').select('*').eq('id', user.id).single<PortalAccount>();
-  return account ? { kind: 'student', account } : null;
+  if (user) {
+    const { data: account } = await supabase
+      .from('portal_accounts').select('*').eq('id', user.id).single<PortalAccount>();
+    if (account) return { kind: 'student', account };
+  }
+  return verifyAdminAuth(req) ? { kind: 'admin' } : null;
 }
 
 // The full QB level list — what admin (Adrian's testing) sees. Mirrors
