@@ -19,6 +19,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | `/tools` static pages, house style, photo-extraction service (`/api/tools/vision`) | [`docs/TOOLS.md`](docs/TOOLS.md) |
 | Student Portal | [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) |
 | In-browser Pencil annotation spec | [`SPEC-ANNOTATE.md`](SPEC-ANNOTATE.md) |
+| Subject expansion — Science / English / Chinese for the portal (research + phasing; nothing built yet) | [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md) |
 
 ## Commands
 
