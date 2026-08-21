@@ -26,6 +26,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
 import { DAILY_SUBMIT_CAP, sgtStartOfDayIso } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
+import { canTransition, type AssignmentRow } from '@/lib/assignments';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -44,8 +45,29 @@ export async function POST(req: Request) {
   if (!account?.airtable_student_id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const studentId = account.airtable_student_id;
 
-  let body: { photoUrls?: unknown; paperName?: unknown };
+  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const admin = getSupabaseAdmin();
+
+  // "From Adrian" worksheet (SPEC-ASSIGN.md): the id is client-supplied, so
+  // ownership/kind/status are re-checked here. Tagged runs auto-release on
+  // marking and flip the assignment to marked; exempt from the daily cap (D3)
+  // because Adrian initiated it — one hand-in per assignment is the brake.
+  let assignment: AssignmentRow | null = null;
+  if (typeof body.assignmentId === 'string' && body.assignmentId) {
+    const { data: a } = await admin
+      .from('portal_assignments').select('*')
+      .eq('id', body.assignmentId).eq('airtable_student_id', studentId)
+      .maybeSingle();
+    const row = a as AssignmentRow | null;
+    if (!row || row.kind !== 'worksheet' || row.status === 'revoked') {
+      return NextResponse.json({ error: 'That worksheet isn’t available any more.' }, { status: 404 });
+    }
+    if (!canTransition(row.status, 'submitted')) {
+      return NextResponse.json({ error: 'You have already sent this worksheet in — it’s with Mr Fong.' }, { status: 409 });
+    }
+    assignment = row;
+  }
 
   const photoUrls = Array.isArray(body.photoUrls)
     ? [...new Set(body.photoUrls.filter((u): u is string => typeof u === 'string'))]
@@ -64,7 +86,8 @@ export async function POST(req: Request) {
 
   // Required since 2026-08-21 (Adrian: "let's just have the student fill it up
   // properly") — the client disables Send until it's typed; this is the backstop.
-  const paperName = typeof body.paperName === 'string' ? body.paperName.trim().slice(0, 80) : '';
+  const paperName = (typeof body.paperName === 'string' ? body.paperName.trim().slice(0, 80) : '')
+    || (assignment ? assignment.title.slice(0, 80) : '');
   if (!paperName) {
     return NextResponse.json({ error: 'Tell us which paper this is (e.g. "Xinmin 2021 Prelim P2") before sending.' }, { status: 400 });
   }
@@ -72,8 +95,7 @@ export async function POST(req: Request) {
   // Phase G hardening (Adrian, 21 Aug 2026): one hand-in per student per SGT
   // calendar day — replaces the earlier 3-per-10-min soft brake. Counts runs
   // actually saved, so a failed submission does not burn the day's slot.
-  const admin = getSupabaseAdmin();
-  const { count } = await admin
+  const { count } = assignment ? { count: 0 } : await admin
     .from('paper_marking_runs')
     .select('id', { count: 'exact', head: true })
     .eq('student_id', studentId)
@@ -115,9 +137,17 @@ export async function POST(req: Request) {
   try {
     const { data: row } = await admin.from('paper_marking_runs').select('result_json').eq('id', runId).single();
     const rj = (row?.result_json && typeof row.result_json === 'object') ? row.result_json as Record<string, unknown> : {};
-    await admin.from('paper_marking_runs').update({ result_json: { ...rj, portal_submission: true } }).eq('id', runId);
+    await admin.from('paper_marking_runs').update({
+      result_json: { ...rj, portal_submission: true, ...(assignment ? { assignment_id: assignment.id } : {}) },
+    }).eq('id', runId);
   } catch (e) {
     console.warn('[portal-submit] portal_submission stamp failed:', (e as Error).message);
+  }
+  if (assignment) {
+    const { error: flipErr } = await admin.from('portal_assignments')
+      .update({ status: 'submitted', run_id: runId, submitted_at: new Date().toISOString() })
+      .eq('id', assignment.id).eq('status', 'assigned');
+    if (flipErr) console.error('[portal-submit] assignment flip failed:', flipErr.message);
   }
 
   // Auto-queue the hand-in for marking (after the stamp above, so the queue

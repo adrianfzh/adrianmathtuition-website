@@ -33,6 +33,7 @@ import {
   TriageIndexError,
 } from '@/lib/mark-triage';
 import { buildReviseBlock } from '@/lib/revise-map';
+import { canTransition, type AssignmentStatus } from '@/lib/assignments';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
@@ -395,6 +396,24 @@ export async function POST(req: NextRequest) {
       // Full marks → nothing to practise; don't even queue the call.
       const totals = recomputeTotals(run.result_json);
       if (totals.max > 0 && totals.awarded < totals.max) practiceQueue.push(run.id);
+
+      // "From Adrian" worksheet (SPEC-ASSIGN.md): the hand-in stamped its
+      // assignment id on the run; releasing the marking is what flips the
+      // assignment to marked (a re-mark + re-release overwrites the score).
+      const rj = (run.result_json && typeof run.result_json === 'object') ? run.result_json as Record<string, unknown> : {};
+      const assignmentId = typeof rj.assignment_id === 'string' ? rj.assignment_id : null;
+      if (assignmentId) {
+        try {
+          const { data: a } = await supa.from('portal_assignments').select('id, status').eq('id', assignmentId).maybeSingle();
+          if (a && canTransition(a.status as AssignmentStatus, 'marked')) {
+            await supa.from('portal_assignments')
+              .update({ status: 'marked', marked_at: now, run_id: run.id, score: totals.awarded, out_of: totals.max })
+              .eq('id', assignmentId);
+          }
+        } catch (e) {
+          console.warn('[mark-triage] assignment flip failed:', (e as Error).message);
+        }
+      }
     }
 
     queuePostReleaseEnrichment(practiceQueue);

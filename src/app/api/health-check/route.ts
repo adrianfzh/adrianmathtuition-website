@@ -212,6 +212,21 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // "From Adrian" assigned work (SPEC-ASSIGN.md). The student list route must
+    // hold its auth gate (401 anonymously — a 404 means the Home card and
+    // /app/assignments silently vanish), and the table + the columns the Home
+    // card reads must still resolve.
+    timed('assignments', async () => {
+      const r = await fetch(`${base}/api/portal/assignments`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/portal_assignments?select=id,status,kind,title,due_on,airtable_student_id&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+      return 'auth gate up';
+    }),
     // The parent-report store the monthly cron writes into. It runs unattended
     // on the 1st, so a broken table or renamed column would mean parents simply
     // stop hearing anything, with nothing on screen to say why.

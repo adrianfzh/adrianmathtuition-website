@@ -7,6 +7,8 @@ import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { listStudentAssignments } from '@/lib/portal-assignments';
+import { assignmentHref, dueLabel, homeCardSummary, isPending } from '@/lib/assignments';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,16 +36,57 @@ export default async function DashboardPage() {
   // Learn units aren't released to students — the "start here" stack (which
   // deep-links into /app/learn) only renders for Adrian's admin cookie.
   const learnVisible = LEARN_OPEN_TO_STUDENTS || ((await isNotesAuthed()) && !(await viewingAsStudent()));
-  const [d, todayCards] = await Promise.all([
+  const [d, todayCards, assignments] = await Promise.all([
     getDashboardData(account),
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
+    // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero.
+    listStudentAssignments(account.airtable_student_id).catch(() => []),
   ]);
+  const pendingWork = assignments.filter(a => isPending(a.status));
+  const workSummary = homeCardSummary(assignments);
 
   const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
 
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
       <h1 className="text-xl font-bold text-navy pt-1">Hi {d.firstName} 👋</h1>
+
+      {/* From Adrian — assigned work, at the top because it's the one thing
+          Adrian specifically asked this student to do. Hidden when nothing is
+          pending (done items live on /app/assignments + practice history /
+          Marked papers). Up to 3 rows inline, then "see all". */}
+      {workSummary && (
+        <div className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl shadow-sm overflow-hidden">
+          <Link href="/app/assignments" className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2 hover:opacity-90">
+            <span className="font-semibold">📬 From Mr Fong</span>
+            <span className="text-[11px] font-semibold bg-[hsl(43,90%,60%)] text-navy rounded-full px-2 py-0.5">{workSummary}</span>
+          </Link>
+          <ul className="divide-y divide-white/10">
+            {pendingWork.slice(0, 3).map(a => {
+              const due = dueLabel(a.due_on);
+              return (
+                <li key={a.id}>
+                  <Link href={assignmentHref(a)} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5">
+                    <span aria-hidden>{a.kind === 'question' ? '✏️' : '📄'}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-medium truncate">{a.title}</span>
+                      <span className="block text-[11px] opacity-75 truncate">
+                        {a.status === 'submitted' ? 'Being marked' : [a.topic, due].filter(Boolean).join(' · ') || 'Tap to start'}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-[hsl(43,90%,60%)]">›</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          {pendingWork.length > 3 && (
+            <Link href="/app/assignments" className="block text-center text-xs py-2 opacity-80 hover:opacity-100 border-t border-white/10">
+              See all {pendingWork.length} →
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Today stack — personalised "start here" learn cards.
           BETA GATE: hidden for students during the marking-only beta. The

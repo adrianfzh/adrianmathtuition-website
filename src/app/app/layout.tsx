@@ -9,6 +9,7 @@ import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { MARKING_ONLY_BETA, VIEW_AS_STUDENT_COOKIE } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
+import { pendingAssignmentCountForSession } from '@/lib/portal-assignments';
 import ViewAsToggle from './view-as-toggle';
 import PortalTour from '@/components/PortalTour';
 import { portalSurfaces } from '@/lib/portal-surfaces';
@@ -59,6 +60,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/marking', icon: '📄', label: 'Marked' },
       ];
   const gridCols = mobileTabs.length === 4 ? 'grid-cols-4' : 'grid-cols-3';
+  // "From Adrian" pending work → a small dot on Home (no 5th tab, per spec).
+  const pendingWork = await pendingAssignmentCountForSession();
 
   // First-login tour (components/PortalTour.tsx). The `data-tour` attributes
   // below are what its highlight ring measures — keep them on both the desktop
@@ -73,7 +76,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <Link href="/app" className="font-display font-bold text-navy tracking-tight">AdrianMath</Link>
             <div className="hidden sm:flex items-center gap-5">
               {desktopLinks.map(l => (
-                <Link key={l.href} href={l.href} data-tour={tourKey(l.href)} className="text-sm text-gray-600 hover:text-navy">{l.label}</Link>
+                <Link key={l.href} href={l.href} data-tour={tourKey(l.href)} className="relative text-sm text-gray-600 hover:text-navy">
+                  {l.label}
+                  {l.href === '/app' && pendingWork > 0 && (
+                    <span aria-label={`${pendingWork} to do from Mr Fong`} className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-[hsl(43,90%,55%)]" />
+                  )}
+                </Link>
               ))}
             </div>
           </div>
@@ -95,7 +103,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className={`grid ${gridCols} h-14 text-center text-[11px] text-gray-600`}>
           {mobileTabs.map(t => (
             <Link key={t.href} href={t.href} data-tour={tourKey(t.href)} className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
-              <span className="text-lg leading-none">{t.icon}</span>{t.label}
+              <span className="relative text-lg leading-none">
+                {t.icon}
+                {t.href === '/app' && pendingWork > 0 && (
+                  <span aria-label={`${pendingWork} to do from Mr Fong`} className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[hsl(43,90%,55%)] ring-2 ring-white" />
+                )}
+              </span>
+              {t.label}
             </Link>
           ))}
         </div>

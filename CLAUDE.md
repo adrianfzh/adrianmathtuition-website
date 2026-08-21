@@ -20,6 +20,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 | Student Portal | [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) |
 | In-browser Pencil annotation spec | [`SPEC-ANNOTATE.md`](SPEC-ANNOTATE.md) |
 | Subject expansion — Science / English / Chinese for the portal (research + phasing; nothing built yet) | [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md) |
+| "From Adrian" assigned work — `/app/assignments`, `/api/admin/assignments`, `/api/portal/assignments`, the Send-work card on `/admin/students/[id]`, `portal_assignments` table | [`SPEC-ASSIGN.md`](SPEC-ASSIGN.md) |
 
 ## Commands
 
@@ -114,6 +115,7 @@ Deep details for schedule/marking/kiosk pages live in `docs/` (see the table at 
 - `admin/edit-cards/page.tsx` + `admin/edit-cards/[id]/page.tsx` — Cards editor (list: level/topic/subgroup, drag-to-reorder; single: markdown+KaTeX textarea, live preview, AI assist with diff/accept/reject)
 - `kiosk/page.tsx` — iPad print station → `docs/KIOSK.md`
 - `app/*` — **Student Portal** (`/app` dashboard, `practice`, `learn`, `notes`, `reference`, `settings`). **Marking-only beta since 2026-08-21** (`lib/portal-beta.ts` `MARKING_ONLY_BETA`): students see only Home / Submit / Marked (+ Settings); practice/learn/notes/reference routes bounce students to `/app`, Adrian's admin cookie sees everything. `app/marking/page.tsx` = the student's own released marked scripts; `app/submit/page.tsx` = phone-first paper hand-in (spread-split + Blob client tokens → a ⏳ pending run **auto-queued into the bot's 🌙 marking queue** → marked → **auto-released** to the student (bot calls `mark-triage {action:'release', auto:true}`; margin-tick degradation is the only hold) — Adrian's Telegram says "✅ Released"; papers Adrian uploads himself still need his manual Release in triage) → `docs/MARKING.md`
+- `app/assignments/*` — **"From Adrian" assigned work** (v1 2026-08-22): Home card "📬 From Mr Fong · N to do" (hidden at zero) → list + worksheet page. Bank question → practice grader (instant, exempt from `DAILY_GRADE_CAP`); worksheet PDF → `/app/submit?assignment=` → 🌙 queue → auto-release flips it to marked. Assign from the Send-work card on `/admin/students/[id]` (`?send=<topic>` prefills it — the 📬 links in triage + papers). `attempt_id` is a **bigint** FK to `student_attempts` → [`SPEC-ASSIGN.md`](SPEC-ASSIGN.md)
 - `signup/page.tsx` — student registration form (HMAC-signed URL); `thankyou/`, `terms/`
 - `revise/page.tsx`, `revise/[topic]/…` — revision notes landing/topic/lesson player; `revise/[topic]/[subtopic]/worked-examples/page.tsx` — TikTok-style swipe cards over `content_snippets` (accepts `?subgroup={id}`)
 - `explain/[id]/page.tsx` — public annotated-explanation page (`explanations` table, KaTeX, full `\underbrace`); deep-links into Teach Me
@@ -143,6 +145,10 @@ Each admin page (`/admin`, `/admin/schedule`, `/admin/progress`, `/admin/invoice
 - `admin/student-profile/route.ts` — student profile hub data
 - `admin/log-queue/route.ts` — read half of `/admin/log`: every unlogged in-window lesson + `prev` + `topicsByLevel`. **Owns no writes** → `docs/SCHEDULE.md`
 - `admin/papers/route.ts` — marked-script library (Supabase `paper_marking_runs` direct, NOT the bot proxy); GET `?days=&limit=&student=&untagged=1`, POST `{runId, studentId|null}` to tag → `docs/MARKING.md`
+
+### Assigned work → `SPEC-ASSIGN.md`
+- `admin/assignments/route.ts` — GET `?studentId=` list, POST create (bank `questionId` | worksheet `pdfUrl` — `pdfSource:'dropbox:<path>'` is copied to Blob `assignments/<uuid>.pdf` at assign time), PATCH `{id, action:'revoke'}`; `candidates/` (bank picks by level/topic/tier), `upload-token/` (Blob client token)
+- `portal/assignments/route.ts` — student's own rows (session-scoped; 401 anon — health-check probes it)
 
 ### Parent reports
 - `progress-digest/route.ts` — weekly/monthly/term parent drafts into Supabase `parent_digests`; **monthly cron `0 0 1 * *` = 08:00 SGT on the 1st** (targets the previous month when `now.getDate() <= 10`). Arithmetic comes from `lib/report-facts.ts` and is rendered as a fact block ABOVE the prose, separated by `---`, so model drift can't corrupt the numbers. UI: `/admin/digests`.

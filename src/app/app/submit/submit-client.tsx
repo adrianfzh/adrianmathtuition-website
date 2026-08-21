@@ -16,10 +16,13 @@ const MAX_PAGES = 20;
 
 type Page = { file: File; preview: string | null };
 
-export default function SubmitClient() {
+// `assignment` = a "From Adrian" worksheet (SPEC-ASSIGN.md): the paper name is
+// the worksheet title (locked) and the POST carries the assignment id so the
+// run auto-releases and the assignment flips to submitted → marked.
+export default function SubmitClient({ assignment = null }: { assignment?: { id: string; title: string } | null }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [pages, setPages] = useState<Page[]>([]);
-  const [paperName, setPaperName] = useState('');
+  const [paperName, setPaperName] = useState(assignment?.title ?? '');
   const [splitNote, setSplitNote] = useState('');
   const [capNote, setCapNote] = useState('');       // pages dropped at MAX_PAGES — must be visible, never silent
   const [stage, setStage] = useState('');            // progress line while submitting
@@ -113,7 +116,7 @@ export default function SubmitClient() {
       const r = await fetch('/api/portal/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoUrls: urls, paperName: paperName.trim() }),
+        body: JSON.stringify({ photoUrls: urls, paperName: paperName.trim(), ...(assignment ? { assignmentId: assignment.id } : {}) }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || 'The submission failed — try again.');
@@ -129,24 +132,26 @@ export default function SubmitClient() {
   if (doneRunId) {
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
-        <h1 className="text-xl font-bold text-navy pt-1">Submit a paper</h1>
+        <h1 className="text-xl font-bold text-navy pt-1">{assignment ? 'Worksheet sent' : 'Submit a paper'}</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">✅</p>
-          <p className="font-bold text-navy mt-2">Sent to Mr Fong for marking</p>
+          <p className="font-bold text-navy mt-2">{assignment ? `“${assignment.title}” sent for marking` : 'Sent to Mr Fong for marking'}</p>
           <p className="text-sm text-gray-600 mt-1.5">
             When it&apos;s marked and released, it appears in <b>Marked papers</b> — with your script,
             the red pen, and what each lost mark was for.
           </p>
           <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
-            <Link href="/app/marking" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              Go to Marked papers
+            <Link href={assignment ? '/app/assignments' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
+              {assignment ? 'Back to From Mr Fong' : 'Go to Marked papers'}
             </Link>
+            {!assignment && (
             <button
               onClick={() => { setDoneRunId(null); setPages([]); setPaperName(''); setSplitNote(''); setCapNote(''); }}
               className="text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10"
             >
               Submit another paper
             </button>
+            )}
           </div>
         </div>
       </div>
@@ -155,11 +160,18 @@ export default function SubmitClient() {
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <h1 className="text-xl font-bold text-navy pt-1">Submit a paper</h1>
+      {assignment ? (
+        <div className="pt-1">
+          <Link href={`/app/assignments/${assignment.id}`} className="text-sm text-gray-500 hover:text-navy">← Back to the worksheet</Link>
+          <h1 className="text-xl font-bold text-navy mt-1">📬 Submit: {assignment.title}</h1>
+        </div>
+      ) : (
+        <h1 className="text-xl font-bold text-navy pt-1">Submit a paper</h1>
+      )}
 
       <div className={`${CARD} p-4 space-y-3`}>
         <p className="text-sm text-gray-600">
-          Photograph your worked paper — <b>one page per photo</b>, straight on, in good light —
+          Photograph your worked {assignment ? 'worksheet' : 'paper'} — <b>one page per photo</b>, straight on, in good light —
           or upload a <b>PDF scan</b>. It comes back marked in <b>Marked papers</b>.
         </p>
 
@@ -203,6 +215,9 @@ export default function SubmitClient() {
           </div>
         )}
 
+        {assignment ? (
+          <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{assignment.title}</b> — Mr Fong&apos;s worksheet.</p>
+        ) : (
         <div>
           <label htmlFor="paper-name" className="block text-[13px] font-semibold text-gray-700 mb-1">
             What paper is this?
@@ -215,6 +230,7 @@ export default function SubmitClient() {
           />
           <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Mr Fong knows what he&apos;s marking.</p>
         </div>
+        )}
 
         {error && <p className="text-sm text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">{error}</p>}
 

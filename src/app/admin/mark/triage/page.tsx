@@ -259,6 +259,17 @@ export default function TriagePage() {
                     <strong style={{ fontSize: 15 }}>Q{q.questionNumber}</strong>
                     <span style={{ fontWeight: 700 }}>{q.awarded}/{q.max}</span>
                     {q.topic && <span style={{ fontSize: 12, color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.topic}</span>}
+                    {/* 📬 From Adrian (SPEC-ASSIGN.md): a flagged weak topic → an
+                        assigned question, pre-filled on the student profile. */}
+                    {q.topic && run.studentId && (
+                      <a
+                        href={`/admin/students/${run.studentId}?send=${encodeURIComponent(q.topic)}`}
+                        style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: '#1d4ed8', textDecoration: 'none', whiteSpace: 'nowrap' }}
+                        title="Send a follow-up question on this topic"
+                      >
+                        📬 Send follow-up
+                      </a>
+                    )}
                   </div>
 
                   {q.reviewReasons.map((reason, i) => (

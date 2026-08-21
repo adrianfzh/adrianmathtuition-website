@@ -1,12 +1,17 @@
 // POST /api/portal/practice/grade — the Phase E grading loop.
-// Body: { questionId, lines: string[], previousAttemptId? }
+// Body: { questionId, lines: string[], previousAttemptId?, assignmentId? }
 // Students only (grades persist to their attempt history). Daily cap applies —
 // Opus grading costs real money and the cap also bounds abuse.
+// `assignmentId` = a "From Adrian" question (SPEC-ASSIGN.md): must belong to
+// this student and point at this question; exempt from the daily cap (Adrian
+// chose to send it); on success the assignment flips to marked (latest re-mark
+// wins) and Adrian gets a Telegram for the spot-check.
 import { NextRequest, NextResponse } from 'next/server';
 import { practiceAuth } from '@/lib/practice';
 import { createServiceClient } from '@/lib/supabase-server';
 import { gradeAttempt, upsertWeaknessTags, topWeaknessTags, DAILY_GRADE_CAP, GRADING_MODEL } from '@/lib/practice-grade';
 import { sendTelegram } from '@/lib/telegram';
+import { canTransition, type AssignmentRow } from '@/lib/assignments';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -19,10 +24,11 @@ export async function POST(req: NextRequest) {
   const account = caller.account;
 
   const body = await req.json().catch(() => ({}));
-  const { questionId, lines, image } = body as {
+  const { questionId, lines, image, assignmentId } = body as {
     questionId?: string;
     lines?: string[];
     image?: { data?: string; mediaType?: string };
+    assignmentId?: string;
   };
   if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 });
 
@@ -49,7 +55,22 @@ export async function POST(req: NextRequest) {
 
   const admin = createServiceClient();
 
-  // Daily cap
+  // Assignment ownership — the id is client-supplied, so every claim is
+  // re-checked server-side against the student's Airtable id.
+  let assignment: AssignmentRow | null = null;
+  if (assignmentId) {
+    const { data: a } = await admin
+      .from('portal_assignments').select('*')
+      .eq('id', String(assignmentId)).eq('airtable_student_id', account.airtable_student_id)
+      .maybeSingle();
+    const row = a as AssignmentRow | null;
+    if (!row || row.kind !== 'question' || row.question_id !== questionId || row.status === 'revoked') {
+      return NextResponse.json({ error: 'That assignment isn’t available' }, { status: 404 });
+    }
+    assignment = row;
+  }
+
+  // Daily cap (assignments exempt — D3)
   const dayStart = new Date(); dayStart.setUTCHours(dayStart.getUTCHours() - 24);
   const { count } = await admin
     .from('student_attempts')
@@ -57,7 +78,7 @@ export async function POST(req: NextRequest) {
     .eq('user_id', account.id)
     .eq('attempted_via', 'portal')
     .gte('attempted_at', dayStart.toISOString());
-  if ((count || 0) >= DAILY_GRADE_CAP) {
+  if (!assignment && (count || 0) >= DAILY_GRADE_CAP) {
     return NextResponse.json({ error: `Daily limit reached (${DAILY_GRADE_CAP} graded attempts). Back tomorrow!` }, { status: 429 });
   }
 
@@ -105,6 +126,29 @@ export async function POST(req: NextRequest) {
 
   const newTags = result.lineComments.filter(c => !c.ok && c.tag).map(c => c.tag!) ;
   await upsertWeaknessTags(account.id, account.airtable_student_id, newTags);
+
+  // "From Adrian": mark the assignment done (a re-mark overwrites the score)
+  // and tell Adrian — D1's spot-check hook.
+  if (assignment && canTransition(assignment.status, 'marked')) {
+    const { error: flipErr } = await admin
+      .from('portal_assignments')
+      .update({
+        status: 'marked',
+        attempt_id: inserted?.id ?? null, // student_attempts.id is a bigint
+        score: result.score,
+        out_of: result.outOf,
+        marked_at: new Date().toISOString(),
+      })
+      .eq('id', assignment.id);
+    if (flipErr) console.error('[practice-grade] assignment flip failed:', flipErr.message);
+    const who = account.display_name || account.email;
+    const what = assignment.topic ? `${assignment.topic}${assignment.tier ? ` · ${assignment.tier}` : ''}` : assignment.title;
+    sendTelegram(
+      `📬 ${who} did your assigned question (${what}) — ${result.score}/${result.outOf}`
+      + (assignment.status === 'marked' ? ' (re-marked)' : '')
+      + `\nhttps://www.adrianmathtuition.com/admin/students/${account.airtable_student_id}`
+    ).catch(() => {});
+  }
 
   // Alerts: only true anomalies page Adrian in real time (a 9:30pm daily digest
   // covers normal grades — see /api/portal/practice-digest). Anomaly = the model

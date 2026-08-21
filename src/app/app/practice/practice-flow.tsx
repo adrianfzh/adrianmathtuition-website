@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -207,9 +208,24 @@ async function fileToJpegDataUrl(file: File, maxDim = 1600): Promise<string> {
 // `initialLevels` comes from the server page for a signed-in student (their
 // scoped QB levels) so the level control is right on first paint; null means
 // "not a student — detect admin/locked client-side".
-export default function PracticeFlow({ initialLevels = null }: { initialLevels?: LevelOpt[] | null }) {
+// "From Adrian" assignment mode (SPEC-ASSIGN.md): the server page resolves the
+// assigned bank question and hands it in as `initialAssignment`. The flow then
+// skips the picker, shows a banner with Adrian's note, and grades through the
+// same /grade route with `assignmentId` attached (cap-exempt, marks the
+// assignment, Telegrams Adrian). Tier toggle / "Try another" are hidden —
+// this is THE question, not a stream.
+export type InitialAssignment = {
+  id: string; title: string; note: string | null; dueLabel: string | null;
+  topic: string | null; tier: Tier | null; status: 'assigned' | 'submitted' | 'marked';
+  score: number | null; outOf: number | null; question: Question;
+};
+
+export default function PracticeFlow({ initialLevels = null, initialAssignment = null }: {
+  initialLevels?: LevelOpt[] | null; initialAssignment?: InitialAssignment | null;
+}) {
+  const assignment = initialAssignment;
   // mode: checking → student (portal session) | admin (password) | locked
-  const [mode, setMode] = useState<'checking' | 'student' | 'admin' | 'locked'>(initialLevels ? 'student' : 'checking');
+  const [mode, setMode] = useState<'checking' | 'student' | 'admin' | 'locked'>(initialLevels || assignment ? 'student' : 'checking');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -218,16 +234,16 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
   const [levels, setLevels] = useState<LevelOpt[]>(initialLevels ?? []);
   const [level, setLevel] = useState(() =>
     initialLevels?.some(l => l.key === 'AM') ? 'AM' : (initialLevels?.[0]?.key ?? 'AM'));
-  const [tier, setTier] = useState<Tier>('Standard');
-  const [tierPicked, setTierPicked] = useState(false);   // topic chosen → pick Standard/Advanced → question
+  const [tier, setTier] = useState<Tier>(assignment?.tier ?? 'Standard');
+  const [tierPicked, setTierPicked] = useState(!!assignment);   // topic chosen → pick Standard/Advanced → question
   const [topics, setTopics] = useState<TopicCard[]>([]);
   const [recommended, setRecommended] = useState<Recommended[]>([]);
-  const [topic, setTopic] = useState('');
-  const [loadingOverview, setLoadingOverview] = useState(!!initialLevels); // student: skeleton on first paint, not "No topics"
+  const [topic, setTopic] = useState(assignment?.topic ?? '');
+  const [loadingOverview, setLoadingOverview] = useState(!!initialLevels && !assignment); // student: skeleton on first paint, not "No topics"
   const [search, setSearch] = useState('');
   const [strand, setStrand] = useState('All');
 
-  const [q, setQ] = useState<Question | null>(null);
+  const [q, setQ] = useState<Question | null>(assignment?.question ?? null);
   const [loading, setLoading] = useState(false);
   const [exhausted, setExhausted] = useState(false);
   const [error, setError] = useState('');
@@ -249,6 +265,11 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
   const [gradedLines, setGradedLines] = useState<string[]>([]);
   const [prevScore, setPrevScore] = useState<number | null>(null);
   const [weakTags, setWeakTags] = useState<string[]>([]);
+  // Assignment mode: what the server knew at load (marked → score shown in
+  // the banner until a fresh grade replaces it).
+  const [assignDone, setAssignDone] = useState<{ score: number; outOf: number } | null>(
+    assignment?.status === 'marked' && assignment.score != null && assignment.outOf != null
+      ? { score: assignment.score, outOf: assignment.outOf } : null);
 
   // Admin generation harness state
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -279,6 +300,7 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
   // Load the progress-aware overview when the level changes (once authed).
   useEffect(() => {
     if (mode !== 'student' && mode !== 'admin') return;
+    if (assignment) return;   // the question is fixed; no picker, no overview
     setLoadingOverview(true); setTopic(''); setTopics([]); setRecommended([]);
     setQ(null); setExhausted(false); setError(''); resetAttempt(); setTierPicked(false);
     fetch(`/api/portal/practice/overview?level=${encodeURIComponent(level)}`)
@@ -294,11 +316,14 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
       })
       .catch(() => setError('Could not load your practice topics'))
       .finally(() => setLoadingOverview(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, mode]);
 
   // Scroll the tier chooser / question into view after a card click.
   useEffect(() => {
+    if (assignment) return;   // already at the top of the page
     if (topic || q) questionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topic, q]);
 
   // One-shot ?topic= deep-link — /app/marking's focus chips land here. Read
@@ -390,9 +415,12 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
     const lines = working.split('\n');
     setGrading(true); setError('');
     try {
-      const body = photo
-        ? { questionId: q.id, image: { data: photo.split(',')[1], mediaType: 'image/jpeg' } }
-        : { questionId: q.id, lines };
+      const body = {
+        ...(photo
+          ? { questionId: q.id, image: { data: photo.split(',')[1], mediaType: 'image/jpeg' } }
+          : { questionId: q.id, lines }),
+        ...(assignment ? { assignmentId: assignment.id } : {}),
+      };
       const r = await fetch('/api/portal/practice/grade', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -407,6 +435,7 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
       setGradedLines(photo ? (tl || lines) : (tl && tl.length === lines.length ? tl : lines));
       setGradedViaPhoto(!!photo);
       setWeakTags(d.weaknessTags || []);
+      if (assignment && d.result) setAssignDone({ score: d.result.score, outOf: d.result.outOf });
     } catch { setError('Connection error while marking'); }
     finally { setGrading(false); }
   }
@@ -467,12 +496,34 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
   // topic" bar so the tier chooser / question sits at the top of the card
   // instead of below a phone-length list of topic rows. Admin keeps the grid
   // (the test-generate harness works off the selected card).
-  const pickerOpen = !isStudent || !topic;
+  const pickerOpen = !assignment && (!isStudent || !topic);
 
   return (
     <div className="pb-20 sm:pb-6 max-w-4xl mx-auto">
+      {/* Assignment banner — replaces the title row + picker entirely. */}
+      {assignment && (
+        <div className="mb-4 pt-1">
+          <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Mr Fong</Link>
+          <div className="mt-2 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-75">📬 From Mr Fong</p>
+                <h1 className="font-bold text-base truncate">{assignment.title}</h1>
+                <p className="text-[11px] opacity-75 mt-0.5">
+                  {[assignment.topic, assignment.tier === 'Advanced' ? '🔥 Advanced' : assignment.tier, !assignDone ? assignment.dueLabel : null].filter(Boolean).join(' · ')}
+                </p>
+              </div>
+              {assignDone && (
+                <span className="shrink-0 text-xs font-bold bg-[hsl(43,90%,60%)] text-navy rounded-full px-2.5 py-1">✅ {assignDone.score}/{assignDone.outOf}</span>
+              )}
+            </div>
+            {assignment.note && <p className="text-sm mt-2 italic opacity-90">“{assignment.note}”</p>}
+          </div>
+        </div>
+      )}
       {/* Title row — the level toggle sits beside the title (students
           usually have two: E Math / A Math). Hidden once a topic is picked. */}
+      {!assignment && (
       <div className="flex items-center justify-between gap-3 flex-wrap mb-4 pt-1">
         <h1 className="text-xl font-bold text-navy">Practise</h1>
         {pickerOpen && levels.length > 1 && (
@@ -487,12 +538,13 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
           </div>
         )}
       </div>
+      )}
       {!isStudent && (
         <p className="text-sm text-slate-500 mb-4">Admin testing mode — all levels, retrieval + generation harness (no student mastery).</p>
       )}
 
       {/* ── Stage 1: progress-aware picker ── */}
-      {!pickerOpen && selected && (
+      {!pickerOpen && !assignment && selected && (
         <div className="flex items-center gap-3 mb-4">
           <button onClick={changeTopic}
             className="shrink-0 text-xs font-semibold text-navy bg-white border border-slate-200 rounded-lg px-3 py-1.5 hover:border-navy/40">
@@ -674,6 +726,9 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
           {/* Question card */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5">
             <div className="flex justify-between items-center mb-3 gap-3">
+              {assignment ? (
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Question</span>
+              ) : (
               <div className="inline-flex gap-1 bg-slate-100 rounded-lg p-0.5" role="radiogroup" aria-label="Question difficulty">
                 {(['Standard', 'Advanced'] as Tier[]).map((t) => (
                   <button key={t} onClick={() => switchTier(t)} role="radio" aria-checked={tier === t}
@@ -684,6 +739,7 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
                   </button>
                 ))}
               </div>
+              )}
               {q.marks ? (
                 <span className="text-xs text-slate-400 font-semibold whitespace-nowrap">{q.marks} mark{q.marks === 1 ? '' : 's'}</span>
               ) : null}
@@ -762,16 +818,21 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
                   {grading ? 'Marking… (≈30s)' : grade ? '✏️ Re-mark my working' : '✅ Get it marked'}
                 </button>
-                {solution === null && (
+                {solution === null && (!assignment || grade) && (
                   <button onClick={showSolution} disabled={solLoading}
                     className="bg-white border border-emerald-300 text-emerald-700 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
                     {solLoading ? 'Loading…' : '🔎 Show solution'}
                   </button>
                 )}
+                {!assignment && (
                 <button onClick={tryAnother} disabled={loading}
                   className="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold">
                   🔄 Try another
                 </button>
+                )}
+                {assignment && grade && (
+                  <Link href="/app/assignments" className="text-sm font-semibold text-navy underline ml-auto">Done — back to From Mr Fong →</Link>
+                )}
                 {solution !== null && (
                   <span className="text-xs text-slate-400">Marking is off once you&apos;ve seen the solution.</span>
                 )}

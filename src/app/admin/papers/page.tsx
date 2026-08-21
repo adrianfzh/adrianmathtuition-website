@@ -403,20 +403,27 @@ export default function PapersPage() {
                 first (the API sorts them), so the top three ARE the lesson. */}
             {run.topics.length > 0 && (
               <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {(open ? run.topics : run.topics.slice(0, TOPICS_SHOWN_INLINE)).map(t => (
-                  <span
-                    key={t.topic}
-                    title={`${t.awarded}/${t.max} across ${t.questions} question${t.questions === 1 ? '' : 's'}`}
-                    style={{
-                      padding: '4px 10px', fontSize: 12, fontWeight: 600, borderRadius: 999,
-                      background: t.pct >= 80 ? '#f0fdf4' : t.pct >= 60 ? '#fefce8' : '#fef2f2',
-                      color: scoreColour(t.pct),
-                      border: `1px solid ${t.pct >= 80 ? '#bbf7d0' : t.pct >= 60 ? '#fde68a' : '#fecaca'}`,
-                    }}
-                  >
-                    {t.topic} {t.awarded}/{t.max}
-                  </span>
-                ))}
+                {(open ? run.topics : run.topics.slice(0, TOPICS_SHOWN_INLINE)).map(t => {
+                  const chipStyle: React.CSSProperties = {
+                    padding: '4px 10px', fontSize: 12, fontWeight: 600, borderRadius: 999,
+                    background: t.pct >= 80 ? '#f0fdf4' : t.pct >= 60 ? '#fefce8' : '#fef2f2',
+                    color: scoreColour(t.pct),
+                    border: `1px solid ${t.pct >= 80 ? '#bbf7d0' : t.pct >= 60 ? '#fde68a' : '#fecaca'}`,
+                    textDecoration: 'none',
+                  };
+                  const title = `${t.awarded}/${t.max} across ${t.questions} question${t.questions === 1 ? '' : 's'}`;
+                  // Tagged run → the chip is a 📬 Send follow-up door (SPEC-ASSIGN.md):
+                  // lands on the student profile with this topic pre-filled.
+                  return run.studentId ? (
+                    <a key={t.topic} href={`/admin/students/${run.studentId}?send=${encodeURIComponent(t.topic)}`} title={`${title} — 📬 send a follow-up question`} style={chipStyle}>
+                      {t.topic} {t.awarded}/{t.max} <span aria-hidden>📬</span>
+                    </a>
+                  ) : (
+                    <span key={t.topic} title={title} style={chipStyle}>
+                      {t.topic} {t.awarded}/{t.max}
+                    </span>
+                  );
+                })}
               </div>
             )}
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import SendWorkCard from './send-work';
 import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { resolveActiveExamType } from '@/lib/exam-season';
@@ -104,6 +105,12 @@ function dayNum(iso: string): number { return +(iso.split('-')[2] || 0); }
 export default function StudentProfilePage() {
   const params = useParams();
   const studentId = (Array.isArray(params.id) ? params.id[0] : params.id) || '';
+  // ?send=<topic> — the 📬 Send follow-up links (marking triage, papers library)
+  // land here with the weak topic pre-filled in the Send-work card.
+  // Read from window (not useSearchParams) so the client page needs no Suspense
+  // boundary for the static shell.
+  const [sendTopic, setSendTopic] = useState<string | null>(null);
+  useEffect(() => { setSendTopic(new URLSearchParams(window.location.search).get('send')); }, []);
 
   const [password, setPassword] = useState('');
   const [authed, setAuthed] = useState(false);
@@ -643,6 +650,18 @@ export default function StudentProfilePage() {
 
             {/* ── Overview: at a glance ── */}
             <AtAGlanceSection glance={glance} show={tab === 'overview'} />
+
+            {/* From Adrian — assigned work (SPEC-ASSIGN.md): bank question → in-browser
+                grader, worksheet PDF → /app/submit pipeline. */}
+            <Section title="📬 From Adrian" show={tab === 'overview'}>
+              <SendWorkCard
+                studentId={studentId}
+                studentName={data.student.name}
+                studentLevel={data.student.level}
+                subjects={data.student.subjects || []}
+                prefillTopic={sendTopic}
+              />
+            </Section>
 
             {/* Marked papers — runs tagged with this student on /admin/mark-paper.
                 ✍️ = Adrian's annotated copy (the hand-back), 🖼/📄 the AI outputs. */}
