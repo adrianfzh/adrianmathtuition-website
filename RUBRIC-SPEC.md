@@ -73,3 +73,15 @@ rubrics (
 
 This is the highest-leverage non-negotiable: it's both **"cater to the SG
 syllabus"** and **"make grading accurate and tunable without code."**
+
+## Mark-anatomy validation (2026-08-22)
+
+The additive `markAnatomy` prompt field (M/A/B chips, commit 7e8bc85) was validated
+score-neutral against the 39-item golden set (`scripts/golden-anatomy-check.mjs
+--n 39 --samples 3`, claude-opus-5): 38/39 items median-identical between the
+baseline and with-anatomy prompts; the one flagged item (#8
+kylie-9biii-unjustified-2n3-wrong-final) re-ran at 8 samples/variant and proved a
+borderline coin-flip under BOTH prompts (baseline 4/8 vs with-anatomy 6/8 award a
+1 — not significant), with every sample within ±1. Anatomy payloads reconciled
+via lib/mark-anatomy.ts on 100% of outputs. Conclusion: the E6 calibration
+(95% within ±1 of Adrian) carries over; no re-calibration needed.
