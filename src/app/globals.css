@@ -1292,3 +1292,23 @@ body {
 .math-working .katex-display { margin: 0.5rem 0; padding: 0.25rem 0; overflow-x: auto; overflow-y: hidden; text-align: left; }
 .math-working .katex-display > .katex { text-align: left; }
 .math-working .katex-display > .katex > .katex-html { text-align: left; }
+
+/* ── Model solutions (/solutions) — markdown typography ───────────────────────
+   The repo has no Tailwind typography plugin, so markdown rendered through
+   MathMarkdown gets its type here. Plain (unlayered) rules for the same reason
+   .math-working above is unlayered: KaTeX's stylesheet outranks @layer
+   utilities. */
+.msol-md { color: var(--color-foreground); font-size: 16px; line-height: 1.7; }
+.msol-md p { margin: 0 0 0.75rem; }
+.msol-md p:last-child { margin-bottom: 0; }
+.msol-md strong { font-weight: 600; color: var(--color-navy); }
+.msol-md em { color: var(--color-muted-foreground); }
+.msol-md ul, .msol-md ol { margin: 0 0 0.75rem 1.25rem; }
+.msol-md li { margin-bottom: 0.25rem; }
+.msol-md .katex-display { margin: 0.6rem 0; padding: 0.15rem 0; overflow-x: auto; overflow-y: hidden; }
+.msol-md--note { font-size: 14.5px; line-height: 1.65; color: var(--color-muted-foreground); }
+.msol-md--note strong { color: var(--color-amber-dark); }
+.msol-md--note em { font-style: italic; }
+/* Final-answer panel sits on navy — override the dark text the base rules set.
+   Unlayered again so it beats .msol-md/.msol-md strong by source order. */
+.msol-md--on-dark, .msol-md--on-dark strong, .msol-md--on-dark em { color: inherit; }
