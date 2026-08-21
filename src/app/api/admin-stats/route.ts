@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
-import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { verifyAdminAuth, localToday, daysAgo, EDIT_WINDOW_DAYS } from '@/lib/schedule-helpers';
 import { unmarkedLessonsFilterFormula } from '@/lib/unmarked-lessons';
 import { resolveActiveExamType, checkExamInfoStatus, seasonSatisfyingTypes, ExamType, ExamRecord } from '@/lib/exam-season';
 import { getSupabaseAdmin, getSecretKey } from '@/lib/supabase';
@@ -122,6 +122,28 @@ async function fetchUnmarkedLessons(todayISO: string): Promise<number | null> {
 }
 
 /**
+ * Lessons still waiting for their end-of-day write-up — the /admin/log queue
+ * (Adrian asked for it on the hub, 2026-08-22). Mirrors log-queue's filter
+ * exactly: in the edit window, Scheduled/Completed, Progress Logged unticked.
+ * Same clock as that route (localToday/daysAgo) so the count matches the page.
+ */
+async function fetchLessonsToLog(): Promise<number | null> {
+  try {
+    const today = localToday();
+    const cutoff = daysAgo(EDIT_WINDOW_DAYS);
+    const tomorrow = addDays(today, 1); // exclusive upper bound (Airtable date gotcha)
+    const formula = encodeURIComponent(
+      `AND({Date}>='${cutoff}',{Date}<'${tomorrow}',` +
+      `OR({Status}='Scheduled',{Status}='Completed'),NOT({Progress Logged}))`
+    );
+    const data = await airtableRequestAll('Lessons', `?filterByFormula=${formula}&fields[]=Student`);
+    return data.records.filter(r => (r.fields['Student'] ?? []).length > 0).length;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Active students missing exam info for the ACTIVE exam season, or null when
  * no season is active. Override read exactly as /api/admin/exam-season reads
  * it; "missing" is checkExamInfoStatus (the schedule/progress ⚠ criteria —
@@ -192,7 +214,7 @@ export async function GET(req: NextRequest) {
   );
   const absentFilter = encodeURIComponent(`{Status}='Absent'`);
 
-  const [todayLessons, weekLessons, invoices, absentLessons, pendingPapers, unmarkedLessons, examGaps, triage] = await Promise.all([
+  const [todayLessons, weekLessons, invoices, absentLessons, pendingPapers, unmarkedLessons, examGaps, triage, lessonsToLog] = await Promise.all([
     airtableRequestAll('Lessons', `?filterByFormula=${todayFilter}&fields[]=Topics+Covered`),
     airtableRequestAll('Lessons', `?filterByFormula=${weekFilter}&fields[]=Date`),
     airtableRequestAll('Invoices', `?filterByFormula=${invoiceFilter}&fields[]=Final+Amount`),
@@ -202,6 +224,7 @@ export async function GET(req: NextRequest) {
     fetchUnmarkedLessons(today),
     fetchExamGaps(),
     fetchTriage(),
+    fetchLessonsToLog(),
   ]);
 
   const todayTotal = todayLessons.records.length;
@@ -232,6 +255,7 @@ export async function GET(req: NextRequest) {
       unmarkedLessons,
       examGaps,
       triage,
+      lessonsToLog,
     },
     {
       headers: {

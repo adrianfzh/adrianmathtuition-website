@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     if (acct?.telegram_chat_id) {
       const due = dueLabel(a.due_on);
       const what = a.kind === 'question' ? 'a question' : 'a worksheet';
-      const text = `📬 Mr Fong sent you ${what}: <b>${escapeHtml(a.title)}</b>${due ? ` (${due})` : ''}`
+      const text = `📬 Adrian sent you ${what}: <b>${escapeHtml(a.title)}</b>${due ? ` (${due})` : ''}`
         + (a.note ? `\n\n“${escapeHtml(a.note)}”` : '')
         + `\n\nOpen it: ${SITE}/app`;
       notified = await sendTelegramTo(acct.telegram_chat_id, text);

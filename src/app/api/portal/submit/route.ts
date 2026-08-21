@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'That worksheet isn’t available any more.' }, { status: 404 });
     }
     if (!canTransition(row.status, 'submitted')) {
-      return NextResponse.json({ error: 'You have already sent this worksheet in — it’s with Mr Fong.' }, { status: 409 });
+      return NextResponse.json({ error: 'You have already sent this worksheet in — it’s with Adrian.' }, { status: 409 });
     }
     assignment = row;
   }

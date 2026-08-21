@@ -1,4 +1,4 @@
-// /app/assignments/[id] — one worksheet from Mr Fong: the PDF (view / open /
+// /app/assignments/[id] — one worksheet from Adrian: the PDF (view / open /
 // print) and the door into the existing hand-in flow, pre-tagged with this
 // assignment so the run auto-releases into Marked papers and flips the
 // assignment to marked. A question-kind id redirects to the practice grader.
@@ -34,12 +34,12 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="flex items-baseline justify-between pt-1">
-        <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Mr Fong</Link>
+        <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Adrian</Link>
       </div>
 
       <div className={`${CARD} p-5 space-y-3`}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">📬 Worksheet from Mr Fong</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">📬 Worksheet from Adrian</p>
           <h1 className="text-lg font-bold text-navy">{a.title}</h1>
           <p className="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-2">
             {a.topic && <span>{a.topic}</span>}
@@ -66,7 +66,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
             ✅ Marked{a.score != null && a.out_of != null ? ` — ${a.score}/${a.out_of}` : ''}.{' '}
             {released
               ? <Link href="/app/marking" className="underline font-semibold">See it in Marked papers →</Link>
-              : 'Mr Fong is checking it before release.'}
+              : 'Adrian is checking it before release.'}
           </p>
         )}
 
@@ -96,7 +96,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
       )}
 
       <p className="text-[11px] text-gray-400">
-        Do it on paper, then photograph every page and submit. It&apos;s marked by Mr Fong&apos;s marking pipeline and released to you automatically.
+        Do it on paper, then photograph every page and submit. It&apos;s marked by Adrian&apos;s marking pipeline and released to you automatically.
       </p>
     </div>
   );

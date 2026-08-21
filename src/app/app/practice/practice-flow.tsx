@@ -503,11 +503,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       {/* Assignment banner — replaces the title row + picker entirely. */}
       {assignment && (
         <div className="mb-4 pt-1">
-          <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Mr Fong</Link>
+          <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Adrian</Link>
           <div className="mt-2 bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-75">📬 From Mr Fong</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-75">📬 From Adrian</p>
                 <h1 className="font-bold text-base truncate">{assignment.title}</h1>
                 <p className="text-[11px] opacity-75 mt-0.5">
                   {[assignment.topic, assignment.tier === 'Advanced' ? '🔥 Advanced' : assignment.tier, !assignDone ? assignment.dueLabel : null].filter(Boolean).join(' · ')}
@@ -831,7 +831,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 </button>
                 )}
                 {assignment && grade && (
-                  <Link href="/app/assignments" className="text-sm font-semibold text-navy underline ml-auto">Done — back to From Mr Fong →</Link>
+                  <Link href="/app/assignments" className="text-sm font-semibold text-navy underline ml-auto">Done — back to From Adrian →</Link>
                 )}
                 {solution !== null && (
                   <span className="text-xs text-slate-400">Marking is off once you&apos;ve seen the solution.</span>

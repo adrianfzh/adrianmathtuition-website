@@ -142,7 +142,7 @@ export default function SubmitClient({ assignment = null }: { assignment?: { id:
           </p>
           <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
             <Link href={assignment ? '/app/assignments' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              {assignment ? 'Back to From Mr Fong' : 'Go to Marked papers'}
+              {assignment ? 'Back to From Adrian' : 'Go to Marked papers'}
             </Link>
             {!assignment && (
             <button
@@ -216,7 +216,7 @@ export default function SubmitClient({ assignment = null }: { assignment?: { id:
         )}
 
         {assignment ? (
-          <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{assignment.title}</b> — Mr Fong&apos;s worksheet.</p>
+          <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{assignment.title}</b> — Adrian&apos;s worksheet.</p>
         ) : (
         <div>
           <label htmlFor="paper-name" className="block text-[13px] font-semibold text-gray-700 mb-1">

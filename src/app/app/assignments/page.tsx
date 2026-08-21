@@ -1,4 +1,4 @@
-// /app/assignments — everything Mr Fong has sent this student ("From Adrian").
+// /app/assignments — everything Adrian has sent this student ("From Adrian").
 // Pending first, then done. A question opens in the practice grader
 // (/app/practice?assignment=); a worksheet opens its own page with the PDF and
 // the Submit button. Server component, service-role read scoped by the
@@ -51,13 +51,13 @@ export default async function AssignmentsPage() {
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="flex items-baseline justify-between pt-1">
-        <h1 className="text-xl font-bold text-navy">📬 From Mr Fong</h1>
+        <h1 className="text-xl font-bold text-navy">📬 From Adrian</h1>
         <Link href="/app" className="text-sm text-gray-500 hover:text-navy">← Home</Link>
       </div>
 
       {rows.length === 0 && (
         <div className={`${CARD} p-5 text-sm text-gray-600`}>
-          Nothing here yet. When Mr Fong sends you a question or a worksheet, it shows up here and on your Home page.
+          Nothing here yet. When Adrian sends you a question or a worksheet, it shows up here and on your Home page.
         </div>
       )}
 

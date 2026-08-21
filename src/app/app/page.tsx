@@ -58,7 +58,7 @@ export default async function DashboardPage() {
       {workSummary && (
         <div className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl shadow-sm overflow-hidden">
           <Link href="/app/assignments" className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2 hover:opacity-90">
-            <span className="font-semibold">📬 From Mr Fong</span>
+            <span className="font-semibold">📬 From Adrian</span>
             <span className="text-[11px] font-semibold bg-[hsl(43,90%,60%)] text-navy rounded-full px-2 py-0.5">{workSummary}</span>
           </Link>
           <ul className="divide-y divide-white/10">

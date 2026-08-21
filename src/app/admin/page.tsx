@@ -69,6 +69,7 @@ interface Stats {
   // examGaps is also null outside an exam season) — cards hide on 0/null.
   pendingPapers?: { count: number; possiblyMarking: number } | null;
   unmarkedLessons?: number | null;
+  lessonsToLog?: number | null;
   examGaps?: { examType: string; count: number } | null;
   triage?: { flagged: number; readyToRelease: number } | null;
 }
@@ -200,9 +201,10 @@ export default function AdminHub() {
   // status strip (2×2 grid, whole card is the tap target).
   const papersCard = stats?.pendingPapers && stats.pendingPapers.count > 0 ? stats.pendingPapers : null;
   const unmarkedCard = typeof stats?.unmarkedLessons === 'number' && stats.unmarkedLessons > 0 ? stats.unmarkedLessons : null;
+  const logCard = typeof stats?.lessonsToLog === 'number' && stats.lessonsToLog > 0 ? stats.lessonsToLog : null;
   const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
   const triageCard = stats?.triage && (stats.triage.flagged > 0 || stats.triage.readyToRelease > 0) ? stats.triage : null;
-  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard);
+  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard);
 
   return (
     <>
@@ -248,6 +250,15 @@ export default function AdminHub() {
                   {triageCard.flagged > 0 && triageCard.readyToRelease > 0 && (
                     <div className="stat-label">+{triageCard.readyToRelease} ready to release</div>
                   )}
+                </a>
+              )}
+              {logCard !== null && (
+                <a href="/admin/log" className="stat-card" style={{ borderLeftColor: '#0f766e' }}>
+                  <div className="stat-top">
+                    <span className="stat-num">{logCard}</span>
+                    <span className="stat-arrow">›</span>
+                  </div>
+                  <div className="stat-label">✏️ Lessons to log</div>
                 </a>
               )}
               {unmarkedCard !== null && (

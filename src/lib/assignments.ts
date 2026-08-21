@@ -95,7 +95,7 @@ export function validateAssignment(input: CreateAssignmentInput):
   if (input.kind === 'question') {
     const qid = typeof input.questionId === 'string' ? input.questionId.trim() : '';
     if (!UUID_RE.test(qid)) return { ok: false, error: 'questionId (uuid) is required for a question' };
-    const title = clean(input.title, MAX_TITLE) || (topic ? `${topic} question` : 'A question from Mr Fong');
+    const title = clean(input.title, MAX_TITLE) || (topic ? `${topic} question` : 'A question from Adrian');
     return {
       ok: true,
       row: { airtable_student_id: studentId, kind: 'question', question_id: qid, title, topic, level, tier, note, pdf_url: null, pdf_source: null, due_on },

@@ -79,7 +79,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                 <Link key={l.href} href={l.href} data-tour={tourKey(l.href)} className="relative text-sm text-gray-600 hover:text-navy">
                   {l.label}
                   {l.href === '/app' && pendingWork > 0 && (
-                    <span aria-label={`${pendingWork} to do from Mr Fong`} className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-[hsl(43,90%,55%)]" />
+                    <span aria-label={`${pendingWork} to do from Adrian`} className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-[hsl(43,90%,55%)]" />
                   )}
                 </Link>
               ))}
@@ -106,7 +106,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <span className="relative text-lg leading-none">
                 {t.icon}
                 {t.href === '/app' && pendingWork > 0 && (
-                  <span aria-label={`${pendingWork} to do from Mr Fong`} className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[hsl(43,90%,55%)] ring-2 ring-white" />
+                  <span aria-label={`${pendingWork} to do from Adrian`} className="absolute -top-0.5 -right-1.5 w-2 h-2 rounded-full bg-[hsl(43,90%,55%)] ring-2 ring-white" />
                 )}
               </span>
               {t.label}
