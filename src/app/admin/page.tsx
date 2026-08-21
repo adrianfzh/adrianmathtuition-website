@@ -329,6 +329,7 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '🔍', title: 'Triage marking',  sub: 'Check flagged questions · release to students', href: '/admin/mark/triage' },
+  { emoji: '🔎', title: 'Practice checks', sub: 'Spot-check portal practice grades',     href: '/admin/practice-checks' },
   { emoji: '🧩', title: 'Worksheet Builder', sub: 'Pick QB questions · roles · PDF',   href: '/admin/worksheet-builder' },
   { emoji: '📄', title: 'Prelim Builder', sub: 'Assemble full papers from the blueprint', href: '/admin/prelim-builder' },
   { emoji: '🎓', title: 'Learn Review', sub: 'Approve · edit interactive units', href: '/admin/learn-review' },
