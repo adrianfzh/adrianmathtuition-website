@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
+import { PORTAL_TOUR_KEY } from '@/lib/portal-tour';
 
 const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
 const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30';
@@ -36,6 +37,13 @@ export default function SettingsClient({
       body: JSON.stringify({ telegram_chat_id: tg.value.trim() || null }),
     });
     setTg(s => ({ ...s, busy: false, msg: res.ok ? '✓ Saved.' : 'Could not save — check the ID.' }));
+  }
+
+  // Replay the first-login tour: clear the once-per-device flag and go back to
+  // the dashboard, where PortalTour picks it up on mount.
+  function replayTour() {
+    try { window.localStorage.removeItem(PORTAL_TOUR_KEY); } catch { /* private mode */ }
+    router.push('/app');
   }
 
   async function deleteAccount(e: React.FormEvent) {
@@ -96,6 +104,21 @@ export default function SettingsClient({
           <button className={btn} disabled={tg.busy}>{tg.busy ? '…' : 'Save'}</button>
         </form>
         {tg.msg && <p className={`text-sm mt-1.5 ${tg.msg.startsWith('✓') ? 'text-green-700' : 'text-red-600'}`}>{tg.msg}</p>}
+      </div>
+
+      <div className={card}>
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Show me around</p>
+        <p className="text-sm text-gray-600 mb-3">
+          The quick tour of the portal — practice, handing a paper in, and where the marks land.
+          Takes about half a minute.
+        </p>
+        <button
+          type="button"
+          onClick={replayTour}
+          className="inline-block text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors"
+        >
+          ↺ Replay the tour
+        </button>
       </div>
 
       <div className={card}>

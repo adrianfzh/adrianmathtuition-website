@@ -9,13 +9,18 @@
 // (Adrian spotted it on his phone). Admin (no student session) still resolves
 // client-side: the page passes null and the flow falls back to its own check.
 import PracticeFlow from './practice-flow';
+import PortalFlowStrip from '@/components/PortalFlowStrip';
 import { createSupabaseServer } from '@/lib/supabase-server';
+import { portalSurfaces } from '@/lib/portal-surfaces';
 import { qbLevelsFor } from '@/lib/practice';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PracticePage() {
   let initialLevels: { key: string; label: string }[] | null = null;
+  // The "you are here" strip only makes sense for a logged-in student — the
+  // admin-password testing mode renders a login card, not the journey.
+  let isStudent = false;
   try {
     const supabase = await createSupabaseServer();
     const { data: { user } } = await supabase.auth.getUser();
@@ -25,8 +30,17 @@ export default async function PracticePage() {
         .select('level, subjects')
         .eq('id', user.id)
         .maybeSingle<{ level: string | null; subjects: string[] | null }>();
-      if (account) initialLevels = qbLevelsFor(account.level, account.subjects);
+      if (account) {
+        initialLevels = qbLevelsFor(account.level, account.subjects);
+        isStudent = true;
+      }
     }
   } catch { /* fall back to client-side detection */ }
-  return <PracticeFlow initialLevels={initialLevels} />;
+  const surfaces = await portalSurfaces();
+  return (
+    <>
+      {isStudent && <PortalFlowStrip current="practice" surfaces={surfaces} />}
+      <PracticeFlow initialLevels={initialLevels} />
+    </>
+  );
 }

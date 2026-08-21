@@ -10,6 +10,13 @@ import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { MARKING_ONLY_BETA, VIEW_AS_STUDENT_COOKIE } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
 import ViewAsToggle from './view-as-toggle';
+import PortalTour from '@/components/PortalTour';
+import { portalSurfaces } from '@/lib/portal-surfaces';
+
+/** `data-tour` handle for a nav href — '/app/marking' → 'marking'. */
+function tourKey(href: string): string {
+  return href === '/app' ? 'home' : href.slice('/app/'.length);
+}
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -53,6 +60,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ];
   const gridCols = mobileTabs.length === 4 ? 'grid-cols-4' : 'grid-cols-3';
 
+  // First-login tour (components/PortalTour.tsx). The `data-tour` attributes
+  // below are what its highlight ring measures — keep them on both the desktop
+  // links and the mobile tabs, since only one set is on screen at a time.
+  const surfaces = await portalSurfaces();
+
   return (
     <div className="min-h-screen bg-[hsl(45,100%,98%)]">
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/5">
@@ -61,12 +73,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <Link href="/app" className="font-display font-bold text-navy tracking-tight">AdrianMath</Link>
             <div className="hidden sm:flex items-center gap-5">
               {desktopLinks.map(l => (
-                <Link key={l.href} href={l.href} className="text-sm text-gray-600 hover:text-navy">{l.label}</Link>
+                <Link key={l.href} href={l.href} data-tour={tourKey(l.href)} className="text-sm text-gray-600 hover:text-navy">{l.label}</Link>
               ))}
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/app/settings" className="text-sm text-gray-600 hover:text-navy">Settings</Link>
+            <Link href="/app/settings" data-tour="settings" className="text-sm text-gray-600 hover:text-navy">Settings</Link>
             <SignOutButton />
           </div>
         </div>
@@ -82,12 +94,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/5">
         <div className={`grid ${gridCols} h-14 text-center text-[11px] text-gray-600`}>
           {mobileTabs.map(t => (
-            <Link key={t.href} href={t.href} className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
+            <Link key={t.href} href={t.href} data-tour={tourKey(t.href)} className="flex flex-col items-center justify-center gap-0.5 hover:text-navy">
               <span className="text-lg leading-none">{t.icon}</span>{t.label}
             </Link>
           ))}
         </div>
       </nav>
+
+      {/* First-login tour — shows itself once per device, on the dashboard only. */}
+      <PortalTour surfaces={surfaces} />
     </div>
   );
 }

@@ -13,6 +13,8 @@ import Link from 'next/link';
 import { currentStudent } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
+import PortalFlowStrip from '@/components/PortalFlowStrip';
+import { portalSurfaces } from '@/lib/portal-surfaces';
 import { mathHtml } from '@/lib/math-inline';
 // Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
 // spans, and this stylesheet is what makes the output render as maths.
@@ -77,9 +79,13 @@ export default async function MarkingPage() {
   const pending = pendingRows ?? [];
 
   const { papers, averagePct, trendPts, focus } = buildStudentMarking((data ?? []) as MarkingRunRow[]);
+  const surfaces = await portalSurfaces();
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
+      <div className="-mb-1 pt-1">
+        <PortalFlowStrip current="marking" surfaces={surfaces} />
+      </div>
       <div className="flex items-center justify-between pt-1">
         <h1 className="text-xl font-bold text-navy">Marked papers</h1>
         <Link
