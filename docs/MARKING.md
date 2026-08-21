@@ -235,10 +235,20 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
 
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
 
-The screen that makes AI marking safe to hand back at scale. **Nothing reaches a
-student until Adrian taps Release** — that tap is the trust gate (locked decision 2
-in [`../HANDOFF-MARKING-LOOP.md`](../HANDOFF-MARKING-LOOP.md); do NOT add an auto-release
-path or un-gate student-facing marking on Telegram).
+The screen that makes AI marking safe to hand back at scale. **Nothing Adrian uploads
+himself reaches a student until he taps Release** — that tap is the trust gate (locked
+decision 2 in [`../HANDOFF-MARKING-LOOP.md`](../HANDOFF-MARKING-LOOP.md); do NOT un-gate
+student-facing marking on Telegram). **Portal hand-ins are the one exception since
+2026-08-21** (Adrian: "auto-release after bot finishes marking"): the bot's queue worker
+calls `{action:'release', runId, auto:true}` right after `deliverQueuedRun` links the
+PDFs. `auto` (a) refuses any run without `result_json.portal_submission`, (b) skips the
+`isReleasable` flag gate — flags stay in result_json for the record, (c) stamps
+`released_via:'auto:portal|telegram|none'` so history shows it was automatic, and (d)
+runs the same student nudge + post-release enrichment as a manual release. Bot-side,
+`tickQuality().degraded` (margin ticks) is the hard stop — such a paper keeps the old
+"release from triage" nudge so Adrian re-marks it first. A student's own hand-in
+therefore no longer appears in triage at all unless its ticks were degraded or the
+release call failed.
 
 - **It shows flagged questions only.** The bot's marker already writes
   `review_recommended` + `review_reasons[]` per question in `result_json.results[]`
@@ -446,6 +456,20 @@ Adrian's own intake) → straight-to-Blob via client token → one POST files it
   survives only as the fallback when the enqueue call itself fails (a saved
   hand-in must never sit silent). Enqueue runs AFTER the `portal_submission`
   stamp so the worker can't claim the run mid-read-merge-write.
+- **Hand-ins auto-RELEASE too (2026-08-21).** Once the worker has marked and
+  linked the PDFs, it calls the triage route with `auto:true` (see the triage
+  section) — the student's Telegram nudge goes out and `/app/marking` shows the
+  paper within minutes of hand-in, no Adrian tap. The completion Telegram now
+  ends `✅ Released to <student> — Telegram sent` (or `…no Telegram linked, so
+  tell them it's up`), and only falls back to the "release from triage" line
+  when ticks were degraded or the release call failed.
+- **Marking-only beta for students (2026-08-21, `lib/portal-beta.ts`
+  `MARKING_ONLY_BETA=true`):** a student session sees ONLY Home / Submit / Marked
+  (+ Settings). Practice, Learn, Notes, Reference are hidden from nav + dashboard
+  and their routes redirect to `/app` (client pages gated via a sibling server
+  `layout.tsx`); `/app/marking`'s "Work on next" chips render as plain pills.
+  Adrian's admin cookie in the same browser sees the full portal. Portal APIs
+  (`/api/portal/practice*`) are NOT 403'd — unreachable from the UI only.
 - **Ownership is the pathname.** `/api/portal/submit-token` (portal session
   only — Adrian tests as his own student account) pins uploads under
   `mark-paper/portal/<studentId>/…`; the submit route accepts only our-Blob

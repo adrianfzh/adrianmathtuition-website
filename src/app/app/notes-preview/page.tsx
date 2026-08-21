@@ -7,6 +7,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { requireAuth } from '@/lib/portal-auth';
+import { requireFullPortal } from '@/lib/portal-beta';
 import { createServiceClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +24,7 @@ export default async function NotesPreviewPage({
   searchParams: Promise<{ lesson?: string }>;
 }) {
   await requireAuth();
+  await requireFullPortal(); // marking-only beta: students bounce to /app
   const { lesson: lessonId } = await searchParams;
   const supabase = createServiceClient();
 

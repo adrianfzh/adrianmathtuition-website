@@ -67,6 +67,14 @@ requires zero student behavior change.
 2. **Release is always an explicit Adrian action** (triage "Release" / per-run
    button). Nothing auto-releases to students without his tap. His review stays the
    trust gate.
+   > **Amended 2026-08-21 (Adrian: "yes auto-release after bot finishes marking"):**
+   > PORTAL HAND-INS (`result_json.portal_submission`) now auto-release the moment
+   > the 🌙 queue worker finishes and links their PDFs — bot `autoReleaseHandIn()`
+   > → site `POST /api/admin/mark-triage {action:'release', auto:true}`, which
+   > bypasses the flagged-question gate and stamps `released_via:'auto:<channel>'`.
+   > The only hard stop is margin-tick degradation (`tickQuality`), which keeps
+   > the manual nudge. Papers Adrian uploads himself still need his tap — the
+   > route refuses `auto` on anything that isn't a portal hand-in.
 3. **Unflagged questions need no review** — triage shows flagged-only. That's the
    point of the feature.
 4. **Do NOT un-gate Telegram student-facing marking** (bot `messages.js:2195`

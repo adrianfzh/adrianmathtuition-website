@@ -6,6 +6,7 @@ import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
+import { fullPortalVisible } from '@/lib/portal-beta';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,11 @@ function friendlyDate(dateStr: string): string {
 
 export default async function DashboardPage() {
   const { account } = await currentStudent();
+  // Marking-only beta (lib/portal-beta.ts): students get a hand-in dashboard —
+  // next lesson, lesson counts, last lesson's topics/homework, and two actions
+  // (Submit a paper / Marked papers). Practice stats, the practice tile and the
+  // recent-practice card only render for the full portal (Adrian's admin cookie).
+  const fullPortal = await fullPortalVisible();
   // Learn units aren't released to students — the "start here" stack (which
   // deep-links into /app/learn) only renders for Adrian's admin cookie.
   const learnVisible = LEARN_OPEN_TO_STUDENTS || (await isNotesAuthed());
@@ -95,11 +101,13 @@ export default async function DashboardPage() {
       </div>
 
       {/* Week stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className={`${card} text-center`}>
-          <p className="text-2xl font-bold text-navy">{d.attemptsThisWeek}</p>
-          <p className="text-xs text-gray-500 mt-0.5">questions practised this week</p>
-        </div>
+      <div className={`grid ${fullPortal ? 'grid-cols-3' : 'grid-cols-2'} gap-3`}>
+        {fullPortal && (
+          <div className={`${card} text-center`}>
+            <p className="text-2xl font-bold text-navy">{d.attemptsThisWeek}</p>
+            <p className="text-xs text-gray-500 mt-0.5">questions practised this week</p>
+          </div>
+        )}
         <div className={`${card} text-center`}>
           <p className="text-2xl font-bold text-navy">{d.weekLessons.completed}</p>
           <p className="text-xs text-gray-500 mt-0.5">lessons done this week</p>
@@ -128,26 +136,35 @@ export default async function DashboardPage() {
       )}
 
       {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link href="/app/practice" className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity">
-          ✏️ Practise a question
-        </Link>
-        {/* BETA GATE: the revision-notes reader is live but hidden during the
-            marking-only beta — students get the paper-submission shortcut
-            instead. Restore the Browse-notes tile (→ /app/notes → /notes) when
-            notes graduates out of beta. */}
-        {learnVisible ? (
-          <Link href="/app/notes" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
-            📚 Revision Notes
+      {fullPortal ? (
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/app/practice" className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity">
+            ✏️ Practise a question
           </Link>
-        ) : (
-          <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
-            📄 Submit a paper
+          {learnVisible ? (
+            <Link href="/app/notes" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+              📚 Revision Notes
+            </Link>
+          ) : (
+            <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+              📄 Submit a paper
+            </Link>
+          )}
+        </div>
+      ) : (
+        /* Marking-only beta: the two things a student can do here. */
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/app/submit" className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity">
+            📷 Submit a paper
           </Link>
-        )}
-      </div>
+          <Link href="/app/marking" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
+            📄 My marked papers
+          </Link>
+        </div>
+      )}
 
-      {/* Recent activity */}
+      {/* Recent activity — full portal only */}
+      {fullPortal && (
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Recent practice</p>
         {d.recentAttempts.length === 0 ? (
@@ -170,6 +187,7 @@ export default async function DashboardPage() {
           </ul>
         )}
       </div>
+      )}
     </div>
   );
 }

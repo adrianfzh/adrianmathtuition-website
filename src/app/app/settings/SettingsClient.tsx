@@ -85,7 +85,8 @@ export default function SettingsClient({
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Telegram</p>
         <p className="text-sm text-gray-600 mb-2.5">
-          Link your Telegram so practice you do with the AdrianMath bot shows up here too.
+          Link your Telegram to get a message the moment a marked paper is ready for you
+          (and so practice you do with the AdrianMath bot shows up here too).
           Send <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">/start</code> to the bot and it
           replies with your chat ID.
         </p>

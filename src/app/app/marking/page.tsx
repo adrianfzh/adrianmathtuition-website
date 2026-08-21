@@ -14,6 +14,7 @@ import { currentStudent } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import { mathHtml } from '@/lib/math-inline';
+import { fullPortalVisible } from '@/lib/portal-beta';
 // Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
 // spans, and this stylesheet is what makes the output render as maths.
 import 'katex/dist/katex.min.css';
@@ -46,6 +47,9 @@ function niceDate(d: string): string {
 
 export default async function MarkingPage() {
   const { account } = await currentStudent();
+  // Marking-only beta: /app/practice is closed to students, so the "Work on
+  // next" topics render as plain pills instead of practice deep-links.
+  const practiceLinks = await fullPortalVisible();
 
   const sb = getSupabaseAdmin();
   const { data } = await sb
@@ -126,7 +130,7 @@ export default async function MarkingPage() {
             <div className={`${CARD} p-4`}>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Work on next</p>
               <div className="flex flex-wrap gap-2">
-                {focus.map(t => (
+                {focus.map(t => practiceLinks ? (
                   <Link
                     key={t.topic}
                     href={`/app/practice?topic=${encodeURIComponent(t.topic)}`}
@@ -135,10 +139,19 @@ export default async function MarkingPage() {
                     {t.topic} <span className="text-gray-500">{t.pct}%</span>
                     <span className="ml-1 text-gray-400">›</span>
                   </Link>
+                ) : (
+                  <span
+                    key={t.topic}
+                    className="text-sm bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1"
+                  >
+                    {t.topic} <span className="text-gray-500">{t.pct}%</span>
+                  </span>
                 ))}
               </div>
               <p className="text-[11px] text-gray-400 mt-2">
-                Where you lost the most marks across your marked papers — tap one to practise it.
+                {practiceLinks
+                  ? 'Where you lost the most marks across your marked papers — tap one to practise it.'
+                  : 'Where you lost the most marks across your marked papers.'}
               </p>
             </div>
           )}

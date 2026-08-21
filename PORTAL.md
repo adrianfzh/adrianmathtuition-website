@@ -50,6 +50,13 @@ The portal queries BOTH Airtable and Supabase, joining at the application layer 
 
 Gate the homepage "Log in" button visibility behind `NEXT_PUBLIC_PORTAL_ENABLED=true`. Default `false`. Flip to `true` on launch day, no redeploy needed.
 
+> **Beta scope (2026-08-21, Adrian):** the beta is **marking-only** — a student
+> sees exactly two functions: hand a paper in (`/app/submit`) and view their
+> marked papers (`/app/marking`), which auto-release when the bot's queue finishes
+> marking. Practice / Learn / Notes / Reference stay built but hidden and
+> route-gated behind `MARKING_ONLY_BETA` in `src/lib/portal-beta.ts` (admin cookie
+> sees all). Flip that one flag to reopen the full portal. Details: `docs/MARKING.md`.
+
 ## v1 build order
 
 1. ✅ **Schema** — `portal_accounts`, `student_attempts`, `portal_invite_tokens`, RLS policies (DONE 2026-05-05)

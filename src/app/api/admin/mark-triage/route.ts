@@ -5,9 +5,18 @@
 // POST → { action: 'agree' | 'override' | 'release' }.
 //
 // Release is the one thing here with an outward effect: it stamps `released_at`
-// and nudges the student. Nothing reaches a student without that explicit tap —
-// Adrian's review is the trust gate on AI marking (HANDOFF-MARKING-LOOP.md,
-// locked decision 2).
+// and nudges the student. For papers Adrian marks himself nothing reaches a
+// student without that explicit tap — his review is the trust gate on AI
+// marking (HANDOFF-MARKING-LOOP.md, locked decision 2).
+//
+// `{ action: 'release', runId, auto: true }` is the bot's door (2026-08-21,
+// Adrian: "auto-release after bot finishes marking"): a PORTAL HAND-IN that the
+// 🌙 queue worker just finished is released the moment its PDFs are linked,
+// without waiting for triage. It skips the flagged-question gate (flags stay
+// in result_json for the record), refuses anything that is not a portal
+// submission, and stamps `released_via: 'auto:<channel>'` so the history shows
+// which releases were automatic. Same student nudge + post-release enrichment
+// as a manual release.
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -166,6 +175,11 @@ async function deliver(run: {
   return { delivered: ok, via: 'telegram' };
 }
 
+/** The site-side stamp /api/portal/submit writes — the only runs auto-release may touch. */
+function isPortalSubmission(resultJson: unknown): boolean {
+  return !!resultJson && typeof resultJson === 'object' && (resultJson as { portal_submission?: unknown }).portal_submission === true;
+}
+
 function escapeHtml(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -255,6 +269,7 @@ export async function POST(req: NextRequest) {
     questionIdx?: number;
     awarded?: number;
     note?: string;
+    auto?: boolean;
   };
   try {
     body = await req.json();
@@ -315,6 +330,8 @@ export async function POST(req: NextRequest) {
     const runIds = body.runIds?.length ? body.runIds : body.runId ? [body.runId] : [];
     if (!runIds.length) return NextResponse.json({ error: 'runIds is required' }, { status: 400 });
 
+    const auto = body.auto === true;
+
     const { data: runs, error: readErr } = await supa
       .from('paper_marking_runs')
       .select('id, paper_name, student_id, student_name, annotated_pdf_url, result_json, released_at')
@@ -335,7 +352,13 @@ export async function POST(req: NextRequest) {
         results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'already released' });
         continue;
       }
-      if (!isReleasable(run.result_json)) {
+      if (auto && !isPortalSubmission(run.result_json)) {
+        // Auto-release is for papers students handed in themselves. Anything
+        // Adrian uploaded keeps the manual gate, even when tagged to a student.
+        results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'not a portal hand-in — release from triage' });
+        continue;
+      }
+      if (!auto && !isReleasable(run.result_json)) {
         results.push({
           runId: run.id,
           studentName: run.student_name,
@@ -347,6 +370,7 @@ export async function POST(req: NextRequest) {
       }
 
       const outcome = await deliver(run);
+      const via = auto ? `auto:${outcome.via}` : outcome.via;
 
       // Stamp regardless of whether a nudge landed: the release IS Adrian's
       // decision, and a student with no Telegram must not keep re-appearing in
@@ -354,7 +378,7 @@ export async function POST(req: NextRequest) {
       // hand-back.
       const { error: writeErr } = await supa
         .from('paper_marking_runs')
-        .update({ released_at: now, released_via: outcome.via })
+        .update({ released_at: now, released_via: via })
         .eq('id', run.id);
       if (writeErr) {
         results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: writeErr.message });
@@ -364,7 +388,7 @@ export async function POST(req: NextRequest) {
         runId: run.id,
         studentName: run.student_name,
         released: true,
-        via: outcome.via,
+        via,
         note: outcome.note,
       });
 
@@ -378,7 +402,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       released: results.filter(r => r.released).length,
-      notified: results.filter(r => r.released && r.via !== 'none').length,
+      notified: results.filter(r => r.released && !r.via.endsWith('none')).length,
       results,
     });
   }
