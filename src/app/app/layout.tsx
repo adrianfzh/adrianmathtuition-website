@@ -7,8 +7,9 @@ import { cookies } from 'next/headers';
 import { requireAuth } from '@/lib/portal-auth';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { MARKING_ONLY_BETA } from '@/lib/portal-beta';
+import { MARKING_ONLY_BETA, VIEW_AS_STUDENT_COOKIE } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
+import ViewAsToggle from './view-as-toggle';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -17,9 +18,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   // Marking-only beta (lib/portal-beta.ts, Adrian 2026-08-21): students see
   // Home / Submit / Marked (+ Settings) and nothing else. Adrian's admin cookie
-  // keeps the full nav — Practice, and Learn while LEARN_OPEN_TO_STUDENTS is off.
-  const fullPortal = isAdmin || !MARKING_ONLY_BETA;
-  const learnVisible = isAdmin || LEARN_OPEN_TO_STUDENTS;
+  // keeps the full nav — Practice, and Learn while LEARN_OPEN_TO_STUDENTS is off
+  // — unless he has flipped "View as student", which demotes him everywhere.
+  const viewingAsStudent = isAdmin && cookieStore.get(VIEW_AS_STUDENT_COOKIE)?.value === '1';
+  const adminPowers = isAdmin && !viewingAsStudent;
+  const fullPortal = adminPowers || !MARKING_ONLY_BETA;
+  const learnVisible = adminPowers || LEARN_OPEN_TO_STUDENTS;
   const desktopLinks = fullPortal
     ? [
         { href: '/app', label: 'Dashboard' },
@@ -65,6 +69,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </nav>
+
+      {isAdmin && MARKING_ONLY_BETA && (
+        <ViewAsToggle cookieName={VIEW_AS_STUDENT_COOKIE} viewingAsStudent={viewingAsStudent} />
+      )}
 
       <main className="max-w-4xl mx-auto px-4 py-5">{children}</main>
 

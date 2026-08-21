@@ -102,6 +102,55 @@ export function questionMarkdown(q: BankQuestion): string {
   return out.join('\n\n');
 }
 
+// ── Structured question (stem + parts) for the portal's grid layout ──────────
+// The markdown form above is fine for prompts and plain renderers, but a neat
+// exam-style layout (label column, sub-part column, marks flush right on the
+// last line of each part) can't be expressed in markdown without block-level
+// HTML — and block HTML switches off math parsing inside it. So the portal
+// renders this structure with React and runs only the text cells through
+// ReactMarkdown. Images stay inline as <img> blocks inside the text cells.
+export type StructuredPart = {
+  label: string;
+  text: string;           // markdown (may be '' for a bare "(b)" that only has sub-parts)
+  marks: number | null;
+  subparts: StructuredPart[];
+};
+
+function partText(p: BankPart): string {
+  const chunks: string[] = [];
+  if (p.image_url) { const t = partImageHtml(p.image_url); if (t) chunks.push(t); }
+  const body = renderInlineImagesInText(p.text).trim();
+  if (body) chunks.push(body);
+  if (p.image_url_after) { const t = partImageHtml(p.image_url_after); if (t) chunks.push(t); }
+  return chunks.join('\n\n');
+}
+
+function structuredPart(p: BankPart, withSubparts: boolean): StructuredPart {
+  const subparts = withSubparts && Array.isArray(p.subparts)
+    ? p.subparts.filter(sp => sp && (sp.label || sp.text)).map(sp => structuredPart(sp, false))
+    : [];
+  const m = Number(p.marks);   // some rows store marks as "3"
+  let marks = Number.isFinite(m) && m > 0 ? m : null;
+  // Many rows stamp the parent with the SUM of its sub-parts' marks ("(a) [2]"
+  // over "(i) [1]", "(ii) [1]"). An exam paper prints marks only where they are
+  // earned, so the parent's total is dropped whenever a sub-part carries its own.
+  if (marks !== null && subparts.some(sp => sp.marks !== null)) marks = null;
+  return { label: String(p.label ?? '').trim(), text: partText(p), marks, subparts };
+}
+
+/** Stem markdown + structured parts (no answer/solution). */
+export function questionStructured(q: BankQuestion): { stem: string; parts: StructuredPart[] } {
+  const out: string[] = [];
+  const stem = getStemImageRecords(q);
+  for (const r of stem.filter((r) => r.pos === 'before')) out.push(imgTag(r.url, 'diagram'));
+  if (q.question_text) out.push(renderInlineImagesInText(q.question_text));
+  for (const r of stem.filter((r) => r.pos === 'after')) out.push(imgTag(r.url, 'diagram'));
+  const parts = (Array.isArray(q.parts) ? q.parts : [])
+    .filter(p => p && (p.label || p.text))
+    .map(p => structuredPart(p, true));
+  return { stem: out.join('\n\n'), parts };
+}
+
 // Worked-solution text → one block per step, runs of equations aligned on `=`
 // (lib/solution-format.ts). Images are substituted AFTER formatting so the
 // {{IMG:…}} lines pass through the formatter untouched.

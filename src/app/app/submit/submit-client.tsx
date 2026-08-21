@@ -92,6 +92,7 @@ export default function SubmitClient() {
 
   async function submit() {
     if (!pages.length || busy) return;
+    if (!paperName.trim()) { setError('Tell us which paper this is before sending.'); return; }
     setError('');
     try {
       const urls: string[] = [];
@@ -112,7 +113,7 @@ export default function SubmitClient() {
       const r = await fetch('/api/portal/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoUrls: urls, paperName: paperName.trim() || undefined }),
+        body: JSON.stringify({ photoUrls: urls, paperName: paperName.trim() }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || 'The submission failed — try again.');
@@ -133,7 +134,7 @@ export default function SubmitClient() {
           <p className="text-4xl">✅</p>
           <p className="font-bold text-navy mt-2">Sent to Mr Fong for marking</p>
           <p className="text-sm text-gray-600 mt-1.5">
-            When it's marked and released, it appears in <b>Marked papers</b> — with your script,
+            When it&apos;s marked and released, it appears in <b>Marked papers</b> — with your script,
             the red pen, and what each lost mark was for.
           </p>
           <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
@@ -204,24 +205,25 @@ export default function SubmitClient() {
 
         <div>
           <label htmlFor="paper-name" className="block text-[13px] font-semibold text-gray-700 mb-1">
-            What paper is this? <span className="font-normal text-gray-400">(optional)</span>
+            What paper is this?
           </label>
           <input
-            id="paper-name" type="text" value={paperName} maxLength={80}
+            id="paper-name" type="text" value={paperName} maxLength={80} required
             onChange={(e) => setPaperName(e.target.value)}
             placeholder="e.g. Xinmin 2021 Prelim P2"
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20"
           />
+          <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Mr Fong knows what he&apos;s marking.</p>
         </div>
 
         {error && <p className="text-sm text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">{error}</p>}
 
         <button
           onClick={submit}
-          disabled={!pages.length || busy}
+          disabled={!pages.length || !paperName.trim() || busy}
           className="w-full text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3 disabled:opacity-40"
         >
-          {busy ? stage : `📤 Send ${pages.length || ''} page${pages.length === 1 ? '' : 's'} for marking`}
+          {busy ? stage : pages.length ? `📤 Send ${pages.length} page${pages.length === 1 ? '' : 's'} for marking` : '📤 Send for marking'}
         </button>
         <p className="text-[11px] text-gray-400">
           Wide photos of an open booklet are split into single pages automatically. PDFs are converted to pages on your phone before uploading.

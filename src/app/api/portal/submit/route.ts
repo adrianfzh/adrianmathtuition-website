@@ -32,11 +32,6 @@ export const maxDuration = 60;
 
 const MAX_PAGES = 20;
 
-function sgtToday(): string {
-  return new Intl.DateTimeFormat('en-SG', { day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' })
-    .format(new Date());
-}
-
 export async function POST(req: Request) {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
@@ -67,9 +62,12 @@ export async function POST(req: Request) {
     if (!ok) return NextResponse.json({ error: 'A photo upload went wrong — please re-add your photos and try again.' }, { status: 400 });
   }
 
-  const paperName =
-    (typeof body.paperName === 'string' && body.paperName.trim().slice(0, 80)) ||
-    `Submitted ${sgtToday()}`;
+  // Required since 2026-08-21 (Adrian: "let's just have the student fill it up
+  // properly") — the client disables Send until it's typed; this is the backstop.
+  const paperName = typeof body.paperName === 'string' ? body.paperName.trim().slice(0, 80) : '';
+  if (!paperName) {
+    return NextResponse.json({ error: 'Tell us which paper this is (e.g. "Xinmin 2021 Prelim P2") before sending.' }, { status: 400 });
+  }
 
   // Phase G hardening (Adrian, 21 Aug 2026): one hand-in per student per SGT
   // calendar day — replaces the earlier 3-per-10-min soft brake. Counts runs

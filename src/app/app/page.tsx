@@ -6,7 +6,8 @@ import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { fullPortalVisible } from '@/lib/portal-beta';
+import { fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
+import PracticeFlow from './practice/practice-flow';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,13 +26,15 @@ function friendlyDate(dateStr: string): string {
 export default async function DashboardPage() {
   const { account } = await currentStudent();
   // Marking-only beta (lib/portal-beta.ts): students get a hand-in dashboard —
-  // next lesson, lesson counts, last lesson's topics/homework, and two actions
-  // (Submit a paper / Marked papers). Practice stats, the practice tile and the
-  // recent-practice card only render for the full portal (Adrian's admin cookie).
+  // next lesson, last lesson's topics/homework, two actions (Submit a paper /
+  // Marked papers) and, since 2026-08-21, the practice flow itself (topic →
+  // Standard/Advanced → question) embedded right here. The practice tile and
+  // the recent-practice card only render for the full portal (Adrian's admin
+  // cookie, unless he is "viewing as student").
   const fullPortal = await fullPortalVisible();
   // Learn units aren't released to students — the "start here" stack (which
   // deep-links into /app/learn) only renders for Adrian's admin cookie.
-  const learnVisible = LEARN_OPEN_TO_STUDENTS || (await isNotesAuthed());
+  const learnVisible = LEARN_OPEN_TO_STUDENTS || ((await isNotesAuthed()) && !(await viewingAsStudent()));
   const [d, todayCards] = await Promise.all([
     getDashboardData(account),
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
@@ -100,23 +103,15 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Week stats */}
-      <div className={`grid ${fullPortal ? 'grid-cols-3' : 'grid-cols-2'} gap-3`}>
-        {fullPortal && (
-          <div className={`${card} text-center`}>
-            <p className="text-2xl font-bold text-navy">{d.attemptsThisWeek}</p>
-            <p className="text-xs text-gray-500 mt-0.5">questions practised this week</p>
-          </div>
-        )}
-        <div className={`${card} text-center`}>
-          <p className="text-2xl font-bold text-navy">{d.weekLessons.completed}</p>
-          <p className="text-xs text-gray-500 mt-0.5">lessons done this week</p>
+      {/* Week stats — the "lessons done / coming up" pills were dropped on
+          Adrian's request (2026-08-21); only the practice count remains, and
+          only on the full portal. */}
+      {fullPortal && (
+        <div className={`${card} flex items-baseline gap-2`}>
+          <p className="text-2xl font-bold text-navy">{d.attemptsThisWeek}</p>
+          <p className="text-xs text-gray-500">questions practised this week</p>
         </div>
-        <div className={`${card} text-center`}>
-          <p className="text-2xl font-bold text-navy">{d.weekLessons.upcoming}</p>
-          <p className="text-xs text-gray-500 mt-0.5">lessons coming up</p>
-        </div>
-      </div>
+      )}
 
       {/* Last lesson topics + homework */}
       {(d.lastTopics.length > 0 || d.homeworkAssigned) && (
@@ -160,6 +155,15 @@ export default async function DashboardPage() {
           <Link href="/app/marking" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
             📄 My marked papers
           </Link>
+        </div>
+      )}
+
+      {/* Practise — embedded for students during the marking-only beta.
+          Scoped server-side to the student's level (Sec 4: E Math / A Math,
+          no NA) by /api/portal/practice/overview. */}
+      {!fullPortal && (
+        <div className={card}>
+          <PracticeFlow embedded />
         </div>
       )}
 

@@ -47,9 +47,12 @@ function niceDate(d: string): string {
 
 export default async function MarkingPage() {
   const { account } = await currentStudent();
-  // Marking-only beta: /app/practice is closed to students, so the "Work on
-  // next" topics render as plain pills instead of practice deep-links.
+  // Marking-only beta: /app/practice is closed to students, but the same flow
+  // is embedded on Home — so their "Work on next" chips deep-link to /app?topic=
+  // (the flow reads ?topic= on mount); the full portal links to /app/practice.
   const practiceLinks = await fullPortalVisible();
+  const practiceHref = (topic: string) =>
+    `${practiceLinks ? '/app/practice' : '/app'}?topic=${encodeURIComponent(topic)}`;
 
   const sb = getSupabaseAdmin();
   const { data } = await sb
@@ -130,28 +133,19 @@ export default async function MarkingPage() {
             <div className={`${CARD} p-4`}>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Work on next</p>
               <div className="flex flex-wrap gap-2">
-                {focus.map(t => practiceLinks ? (
+                {focus.map(t => (
                   <Link
                     key={t.topic}
-                    href={`/app/practice?topic=${encodeURIComponent(t.topic)}`}
+                    href={practiceHref(t.topic)}
                     className="text-sm bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1 hover:bg-[hsl(45,80%,88%)] transition-colors"
                   >
                     {t.topic} <span className="text-gray-500">{t.pct}%</span>
                     <span className="ml-1 text-gray-400">›</span>
                   </Link>
-                ) : (
-                  <span
-                    key={t.topic}
-                    className="text-sm bg-[hsl(45,80%,94%)] text-navy rounded-full px-3 py-1"
-                  >
-                    {t.topic} <span className="text-gray-500">{t.pct}%</span>
-                  </span>
                 ))}
               </div>
               <p className="text-[11px] text-gray-400 mt-2">
-                {practiceLinks
-                  ? 'Where you lost the most marks across your marked papers — tap one to practise it.'
-                  : 'Where you lost the most marks across your marked papers.'}
+                Where you lost the most marks across your marked papers — tap one to practise it.
               </p>
             </div>
           )}

@@ -46,7 +46,7 @@ export const ALL_QB_LEVELS: { key: string; label: string }[] = [
 // Airtable Subjects (multipleSelects) → the QB level keys that subject unlocks.
 // A key survives subject-filtering if ANY of the student's subjects maps to it.
 const SUBJECT_KEYS: Record<string, string[]> = {
-  'E Math': ['EM', 'S3_EM', 'EM_NA'],
+  'E Math': ['EM', 'S3_EM'],
   'A Math': ['AM', 'S3_AM'],
   'H2 Math': ['JC1', 'JC2'],
   'H1 Math': ['JC1', 'JC2'],
@@ -70,8 +70,11 @@ export function qbLevelsFor(
     { key: 'S3_EM', label: 'E Math (Sec 3)' }, { key: 'S3_AM', label: 'A Math (Sec 3)' },
     { key: 'EM', label: 'E Math (Sec 4)' }, { key: 'AM', label: 'A Math (Sec 4)' },
   ];
+  // Sec 4/5 (O-Level year): E Math + A Math only. Math (NA) is deliberately
+  // not offered to students (Adrian 2026-08-21 — portal students are Express
+  // Sec 4s); the EM_NA bank stays reachable through the admin view.
   else if (/^Sec/i.test(l)) base = [
-    { key: 'EM', label: 'E Math' }, { key: 'EM_NA', label: 'Math (NA)' }, { key: 'AM', label: 'A Math' },
+    { key: 'EM', label: 'E Math' }, { key: 'AM', label: 'A Math' },
   ];
   else if (/^JC1/i.test(l)) base = [{ key: 'JC1', label: 'H2 Math (JC1)' }, { key: 'JC2', label: 'H2 Math (JC2)' }];
   else if (/^JC/i.test(l)) base = [{ key: 'JC2', label: 'H2 Math' }];

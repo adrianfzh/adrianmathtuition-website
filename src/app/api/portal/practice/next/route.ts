@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { questionMarkdown } from '@/lib/bank-question-markdown';
+import { questionMarkdown, questionStructured } from '@/lib/bank-question-markdown';
 import { practiceAuth, levelAllowed } from '@/lib/practice';
 
 export const runtime = 'nodejs';
@@ -32,10 +32,15 @@ export async function POST(req: NextRequest) {
 
   // Deliberately NOT exposing the originating school/paper to students —
   // the portal shows the question and marks only.
+  // `stem` + `parts` drive the portal's exam-style grid (label / text / marks
+  // columns); `markdown` is the flat form for anything that just wants text.
+  const { stem, parts } = questionStructured(q);
   return NextResponse.json({
     question: {
       id: q.id,
       markdown: questionMarkdown(q),
+      stem,
+      parts,
       marks: q.total_marks ?? null,
       figureUrl: q.figure_url ?? null,
       source: null,
