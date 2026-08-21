@@ -41,7 +41,7 @@ type LineComment = { line: number; ok: boolean; comment: string; fix?: string; t
 type Marking = {
   lines?: string[];
   lineComments?: LineComment[];
-  partBreakdown?: { label: string; awarded: number; outOf: number; comment: string }[];
+  partBreakdown?: { label: string; awarded: number; outOf: number; comment: string; markAnatomy?: { code: string; for: string; earned: boolean }[] }[];
   strengths?: string[];
   nextSteps?: string[];
 };
@@ -334,12 +334,25 @@ export default function PracticeChecksPage() {
                 </div>
 
                 {(a.marking.partBreakdown?.length ?? 0) > 0 && (
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                  <div style={{ marginBottom: 8 }}>
                     {a.marking.partBreakdown!.map(p => (
-                      <span key={p.label} title={p.comment.replace(/\$/g, '')}
-                        style={{ fontSize: 12, background: '#f8fafc', border: `1px solid ${C.border}`, borderRadius: 999, padding: '3px 10px', color: '#475569' }}>
-                        ({p.label}) {p.awarded}/{p.outOf}
-                      </span>
+                      <div key={p.label} style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 4 }}>
+                        <span title={p.comment.replace(/\$/g, '')}
+                          style={{ fontSize: 12, background: '#f8fafc', border: `1px solid ${C.border}`, borderRadius: 999, padding: '3px 10px', color: '#475569' }}>
+                          ({p.label}) {p.awarded}/{p.outOf}
+                        </span>
+                        {p.markAnatomy?.map((m, i) => m.earned ? (
+                          <span key={i} title={m.for.replace(/\$/g, '')}
+                            style={{ fontSize: 11, fontWeight: 600, background: '#059669', color: '#fff', borderRadius: 999, padding: '2px 8px' }}>
+                            {m.code} ✓
+                          </span>
+                        ) : (
+                          <span key={i}
+                            style={{ fontSize: 11, border: '1px solid #fecdd3', color: '#be123c', background: '#fff', borderRadius: 999, padding: '2px 8px' }}>
+                            <b>{m.code}</b> — <MathText text={m.for} />
+                          </span>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 )}

@@ -172,10 +172,11 @@ function QuestionView({ q }: { q: Question }) {
   );
 }
 type LineComment = { line: number; ok: boolean; comment: string; fix?: string; tag?: string; severity?: string };
+type MarkAnatomyItem = { code: string; for: string; earned: boolean };
 type GradeResult = {
   verdict: 'correct' | 'partial' | 'wrong';
   score: number; outOf: number;
-  partBreakdown: { label: string; awarded: number; outOf: number; comment: string }[];
+  partBreakdown: { label: string; awarded: number; outOf: number; comment: string; markAnatomy?: MarkAnatomyItem[] }[];
   lineComments: LineComment[];
   strengths: string[]; nextSteps: string[];
   transcribedLines?: string[];
@@ -828,12 +829,29 @@ export default function PracticeFlow({ initialLevels = null }: { initialLevels?:
               </div>
 
               {grade.partBreakdown.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="space-y-1.5 mb-3">
                   {grade.partBreakdown.map(p => (
-                    <span key={p.label} title={p.comment.replace(/\$/g, '')}
-                      className="text-xs bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 text-slate-600">
-                      ({p.label}) {p.awarded}/{p.outOf}
-                    </span>
+                    <div key={p.label} className="flex flex-wrap items-center gap-1.5">
+                      <span title={p.comment.replace(/\$/g, '')}
+                        className="text-xs bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 text-slate-600">
+                        ({p.label}) {p.awarded}/{p.outOf}
+                      </span>
+                      {/* Mark anatomy: how the marks were awarded. Earned = solid chip
+                          (code only, phrase on tap-hold/hover); missed = outlined chip
+                          with the phrase visible — the missed ones are the teaching. */}
+                      {p.markAnatomy?.map((m, i) => m.earned ? (
+                        <span key={i} title={m.for.replace(/\$/g, '')}
+                          className="text-[11px] font-semibold bg-emerald-600/90 text-white rounded-full px-2 py-0.5">
+                          {m.code} ✓
+                        </span>
+                      ) : (
+                        <span key={i}
+                          className="text-[11px] border border-rose-200 text-rose-700 bg-white rounded-full px-2 py-0.5">
+                          <span className="font-semibold">{m.code}</span>
+                          <span className="text-rose-600/80"> — <MathText text={m.for} /></span>
+                        </span>
+                      ))}
+                    </div>
                   ))}
                 </div>
               )}
