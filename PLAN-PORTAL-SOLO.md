@@ -184,6 +184,10 @@ tables + Auth user gone); two-account leak test on notes/settings APIs.
    iteration regressed (90%/54%) and was reverted; stopping here to avoid overfitting the 39 items.
    Remaining hard misses (pearle-q12b full-forfeit-on-abandoned-answer, junhe2-q2ii lost solution
    family) are candidates for future golden-set-driven prompt work, not launch blockers.
+   **Model swap 2026-08-21:** A/B on the same harness moved `GRADING_MODEL` to `claude-opus-5` —
+   ±1 gate identical (37/39, 95%; same two hard misses), exact agreement **31/39 (79%)** vs
+   4.8's 23/39 (59%). Single-item latency 22s vs 17s — inside the route's 60s ceiling.
+   Post-swap regression cover = the ⚠ parseRetried rate on /admin/practice-checks.
 
 **Verify:** full loop on 3 different questions; malformed-JSON path exercised; weakness_tags
 accumulate and appear in the next grading prompt; two-account leak test on attempts/history;
@@ -238,7 +242,7 @@ calibration gate met and recorded.
 | D2 | Auth email sender | **Supabase Auth SMTP → Resend**, from adrianmathtuition.com | Deliverability + one brand; Resend already in stack |
 | D3 | Anonymous practice mode | **No — login-only** | Consent-before-storage falls out for free; portal accounts are the point |
 | D4 | Practice question source | **Question bank pull**; AI-gen is v2 | Deterministic mark schemes make grading calibratable |
-| D5 | Grading model | **claude-opus-4-8 with thinking** to start; measure cost/latency in beta before considering Sonnet | Grade trust is the make-or-break (R2); optimize cost only after trust |
+| D5 | Grading model | **claude-opus-5** (swapped from opus-4-8 2026-08-21 after golden-set A/B: same ±1 gate, exact 59%→79%); measure cost/latency in beta before considering Sonnet | Grade trust is the make-or-break (R2); optimize cost only after trust |
 | D6 | Consent actor | **Parent** (invite email goes to Parent Email; parent ticks consent; student uses account) | PDPA minors requirement; PRIVACY §4 |
 | D7 | Session pattern | **`@supabase/ssr`** canonical App Router pattern | Hand-rolled Supabase cookies in App Router is a known foot-gun |
 

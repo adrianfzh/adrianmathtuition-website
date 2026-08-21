@@ -5,7 +5,7 @@
 //
 // Differences from marking-eval.mjs (the /mark-paper prompt eval):
 //   - builds the portal grader's prompt (user message, no system prompt) and the
-//     runtime model claude-opus-4-8, exactly as gradeAttempt() sends it;
+//     runtime model claude-opus-5, exactly as gradeAttempt() sends it;
 //   - golden items carry no bank mark scheme, so the MARK SCHEME block is absent —
 //     a HARDER condition than production, where every bank question ships its scheme;
 //   - scoring maps margin_note "-n" on max_marks m → expected awarded score m−n and
@@ -16,7 +16,7 @@
 //
 // Run:  node scripts/practice-grade-eval.mjs            # all items
 //       node scripts/practice-grade-eval.mjs --item 3   # one item
-// Env:  PRACTICE_EVAL_MODEL (default claude-opus-4-8), EVAL_SAMPLES (default 3)
+// Env:  PRACTICE_EVAL_MODEL (default claude-opus-5), EVAL_SAMPLES (default 3)
 import fs from 'node:fs';
 import Anthropic from '@anthropic-ai/sdk';
 import { buildGradingPrompt } from '../src/lib/practice-grade-prompt.ts';
@@ -25,7 +25,7 @@ const env = Object.fromEntries(fs.readFileSync(new URL('../.env.local', import.m
   .split('\n').filter(l => l.includes('=') && !l.startsWith('#'))
   .map(l => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1).replace(/^["']|["']$/g, '')]));
 const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-const MODEL = process.env.PRACTICE_EVAL_MODEL || 'claude-opus-4-8'; // = GRADING_MODEL in practice-grade.ts — keep in sync
+const MODEL = process.env.PRACTICE_EVAL_MODEL || 'claude-opus-5'; // = GRADING_MODEL in practice-grade.ts — keep in sync
 const K = Math.max(1, Number(process.env.EVAL_SAMPLES || 3));
 
 const golden = JSON.parse(fs.readFileSync(new URL('./marking-golden-set.json', import.meta.url), 'utf8'));

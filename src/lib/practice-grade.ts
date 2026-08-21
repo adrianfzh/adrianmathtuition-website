@@ -9,7 +9,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { createServiceClient } from './supabase-server';
 import { ERROR_TAGS, buildGradingPrompt } from './practice-grade-prompt';
 
-export const GRADING_MODEL = 'claude-opus-4-8';
+export const GRADING_MODEL = 'claude-opus-5';
 export const DAILY_GRADE_CAP = 20;
 
 export { ERROR_TAGS };
