@@ -22,12 +22,17 @@ const RELATIONS = new Set([
   'lt', 'gt', 'Leftrightarrow', 'iff', 'therefore', 'because',
 ]);
 
-export function normalizeMathDelimiters(text: string): string {
+export function normalizeMathDelimiters(text: string, opts: { display?: 'block' | 'inline' } = {}): string {
   if (!text) return '';
+  // Display first, so the inner content of \[ … \] isn't re-touched below.
+  // 'block' (default) puts $$ on its own lines — remark-math block math.
+  // 'inline' keeps $$…$$ on the same line, for text that is split per line
+  // afterwards (formatSolution).
+  const display = opts.display === 'inline'
+    ? (inner: string) => `$$${inner.trim()}$$`
+    : (inner: string) => `\n\n$$\n${inner.trim()}\n$$\n\n`;
   return text
-    // Display first, so the inner content of \[ … \] isn't re-touched below.
-    // Own paragraph — remark-math treats $$ on its own line as block math.
-    .replace(/(?<!\\)\\\[([\s\S]*?)(?<!\\)\\\]/g, (_m, inner: string) => `\n\n$$\n${inner.trim()}\n$$\n\n`)
+    .replace(/(?<!\\)\\\[([\s\S]*?)(?<!\\)\\\]/g, (_m, inner: string) => display(inner))
     .replace(/(?<!\\)\\\(([\s\S]*?)(?<!\\)\\\)/g, (_m, inner: string) => `$${inner.trim()}$`);
 }
 
@@ -151,16 +156,25 @@ function alignedBlock(exprs: string[]): string {
   return `$$\n\\begin{aligned}\n${rows.join(' \\\\\n')}\n\\end{aligned}\n$$`;
 }
 
+// A math line with no top-level `=` (e.g. "\therefore P(0,-7)", a bare
+// expression) has nothing to align on — it gets its own display line, flush
+// left, instead of dangling to the right of the `=` column.
+function alignable(expr: string): boolean {
+  return hasTop(tokenize(expr), isEq);
+}
+
 /** Stored solution text → legible markdown (one block per step, aligned math). */
 export function formatSolution(text: string | null | undefined): string {
   if (!text || !text.trim()) return '';
-  const lines = normalizeMathDelimiters(text).split('\n').map(classify).filter(l => l.kind === 'math' || l.text);
+  const lines = normalizeMathDelimiters(text, { display: 'inline' })
+    .split('\n').map(classify).filter(l => l.kind === 'math' || l.text);
   const blocks: string[] = [];
   let group: string[] = [];
   const flush = () => { if (group.length) { blocks.push(alignedBlock(group)); group = []; } };
   for (const l of lines) {
     if (l.kind === 'text') { flush(); blocks.push(l.text); continue; }
     if (l.label) { flush(); blocks.push(`${l.label}:`); }
+    if (!alignable(l.expr)) { flush(); blocks.push(`$$\n${l.expr}\n$$`); continue; }
     group.push(l.expr);
   }
   flush();

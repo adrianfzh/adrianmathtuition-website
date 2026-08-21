@@ -81,6 +81,18 @@ describe('formatSolution', () => {
     expect(formatSolution(null)).toBe('');
     expect(formatSolution('\n\n$x = 1$\n\n')).toBe('$$\n\\begin{aligned}\nx &= 1\n\\end{aligned}\n$$');
   });
+  it('gives a math line with no = its own flush-left display line', () => {
+    const out = formatSolution('$y = 5(0) - 7$\n$\\therefore P(0, -7)$\n$x = 1$');
+    expect(out.split('\n\n')).toEqual([
+      '$$\n\\begin{aligned}\ny &= 5(0) - 7\n\\end{aligned}\n$$',
+      '$$\n\\therefore P(0, -7)\n$$',
+      '$$\n\\begin{aligned}\nx &= 1\n\\end{aligned}\n$$',
+    ]);
+  });
+  it('keeps \\[ … \\] on one line inside a solution so per-line splitting survives', () => {
+    const out = formatSolution('Hence\n\\[ x = 2 \\]\n$y = 3$');
+    expect(out).toBe('Hence\n\n$$\n\\begin{aligned}\nx &= 2 \\\\\ny &= 3\n\\end{aligned}\n$$');
+  });
   it('treats a line with two separate math runs as text, not aligned math', () => {
     const out = formatSolution('$x = 2$ or $x = -3$');
     expect(out).toBe('$x = 2$ or $x = -3$');

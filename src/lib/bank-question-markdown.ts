@@ -112,10 +112,15 @@ function workedSolution(text: string): string {
 /** Markdown for the answer + worked solution (revealed on demand). */
 export function solutionMarkdown(q: BankQuestion): string {
   const out: string[] = [];
+  const parts = Array.isArray(q.parts) ? q.parts : [];
+  // Multi-part rows carry the combined working in `solution` AND the same
+  // working split per part — render the structured per-part version only
+  // (pre-2026-08-21 both were emitted, so every solution appeared twice).
+  const hasPartSolutions = parts.some(p => p?.solution || p?.subparts?.some(sp => sp?.solution));
   if (q.answer && q.answer.trim()) out.push(`**Answer:** ${normalizeMathDelimiters(q.answer.trim())}`);
-  if (q.solution && q.solution.trim()) out.push(workedSolution(q.solution));
+  if (!hasPartSolutions && q.solution && q.solution.trim()) out.push(workedSolution(q.solution));
   for (const u of getSolutionImageUrls(q.solution_images)) out.push(imgTag(u, 'solution diagram'));
-  for (const p of (Array.isArray(q.parts) ? q.parts : [])) {
+  for (const p of parts) {
     if (p?.solution) out.push(`**(${p.label ?? ''})**\n\n${workedSolution(p.solution)}`);
     if (p?.solution_image) { const t = partImageHtml(p.solution_image); if (t) out.push(t); }
     for (const sp of (Array.isArray(p?.subparts) ? p.subparts : [])) {
