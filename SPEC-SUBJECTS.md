@@ -141,10 +141,14 @@ advantage; don't build for organic app-store pull.
 | **L4** | Oral studio: reading-aloud + picture/video-stimulus conversation; record → STT → rubric bands; attempts on admin dashboard + digests | **the one genuinely new build**: MediaRecorder + STT + audio storage |
 | **L5** | Daily writing challenge (streaks, term certificates) + parent facilitator PDF packs | `unit_events`, Puppeteer, Resend |
 
-WhatsApp intake (Articulate/GenieOne pattern) is possible later via the official
-WhatsApp Business Platform (user-initiated message opens a 24h free-form service
-window; business-initiated needs approved templates) — but Telegram already works
-and is free; not a priority.
+WhatsApp intake (Articulate/GenieOne pattern): **the plumbing already exists** —
+the bot has a live Twilio WhatsApp integration (`handlers/whatsapp.js`: parent
+scheduling assistant; webhook + signature check in `handlers/webchat.js`; outbound
+via `lib/twilio.js`). Twilio wraps the official WhatsApp Business Platform, so the
+user-initiated 24h service window is what the scheduling assistant already rides.
+Extending it to photo paper-hand-in (fetch Twilio media → existing mark-inbox →
+marked-PDF link back in-window) is an incremental branch in the existing handler,
+not a new integration. Student flows stay on Telegram (free, adopted).
 
 ---
 
@@ -153,3 +157,39 @@ and is free; not a priority.
 - 2026-08-21 — Research phase closed; spec written; **no build decisions taken
   yet**. Adrian to revisit. First candidate build when he does: L1 essay grading
   (highest reuse of battle-tested marking pipeline; parent-visible from week one).
+
+---
+
+## Part 3 — Reverse takeaways for MATH (from the same teardown, 2026-08-21)
+
+Ideas from ELLA/competitors that apply to the existing math product, mapped to infra:
+
+1. **Mark-scheme transparency to students.** ELLA shows the official rubric
+   structure everywhere; our students see marks but not the M/A/B mark-type logic
+   behind them. Add "how this was marked" (method vs accuracy mark language) to
+   marked-script feedback and portal practice grading. Teaches students to read
+   mark schemes — high O-Level value, prompt-level cost.
+2. **"Why it works / why this step" one-liners on all generated content** —
+   generated practice questions ("what this tests"), /similar variants ("what
+   changed vs the original"), worked-example steps ("why this step earns the
+   mark"). One sentence in each generation prompt.
+3. **Surface named method frameworks to students.** `method_templates` (23 rows)
+   is internal today; give methods student-facing names + step checklists (the
+   APRICOT effect: memorable ladders under exam pressure).
+4. **Public annotated model-solutions library** — math analogue of ELLA's model
+   essays: curated QB solutions annotated step-by-step via the `/explain` infra,
+   kept PUBLIC for SEO + trust (ELLA walled theirs; that's the mistake to avoid).
+5. **Parent facilitator PDFs for math** — "run a 15-min timed practice at home"
+   with a what-you-see → what-to-do-next table; digest attachments + lead
+   magnets. docx/PDF skills already exist.
+6. **Holiday streak challenge** — 30-day × 10-min daily challenge with a
+   certificate (`unit_events` + Puppeteer); digital twin of the June Revision
+   Sprint, runnable every school holiday.
+7. **Portal onboarding tour + "you are here" flow strips** (learn → practice →
+   review → marked work). The portal currently has neither; ELLA's contextual
+   wayfinding is the cheapest UX idea worth copying before beta.
+8. **One free public micro-tool as lead magnet** on `/tools` (rate-limited) —
+   the role ELLA's anonymous hook spinner plays in their funnel.
+
+Anti-patterns in Part 2 (never lose student work, don't auth-wall sitemapped
+content, don't claim level-tuning without evals) apply to math surfaces equally.
