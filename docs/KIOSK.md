@@ -88,6 +88,40 @@ to their own level.** No anonymous browsing.
    space, right-aligned, orange `#843C0C`, KaTeX coloured too (STYLE.md house rule). No answers-at-
    back section, no toggle. Name line prefills the student's name.
 
+7. **The pool query is SHARED with the bot** (2026-08-22) — `lib/kiosk-pool.ts` owns the
+   `kiosk_pool` RPC call, the answer gate and the `SEED_LEVELS` map (kiosk token →
+   `questions.level` values). `/api/kiosk/worksheet` and the bot's `/api/bot/worksheet` both go
+   through it, so the two worksheet surfaces can never drift on what is servable — in
+   particular on the never-worked-solutions / never-originating-school invariants. Behaviour
+   for the kiosk is unchanged by the extraction. **Don't re-inline the query in a route.**
+
+## Worksheet-on-demand for the bot — `POST /api/bot/worksheet`
+
+A student or parent asks the Telegram/WhatsApp bot for practice on a topic; the bot POSTs here
+and forwards the returned Blob URL. Auth is the bot↔website `x-render-secret` handshake (same as
+`/api/explanations`), so this is NOT a student-facing route and carries no kiosk cookie/level lock.
+
+- Body `{level, topic, tier?, count?, answers?}`. `level` is a **`questions.level`** value
+  (`S3_AM`, `JC1`, `EM`, …) — `lib/bot-worksheet.ts` maps it onto the kiosk level token, and that
+  alias map is unit-tested as the exact inverse of `SEED_LEVELS`. `topic` is matched
+  case/punctuation-insensitively against the level's `practice_topics`; an unknown one 400s with
+  the full `validTopics` list so the bot can offer a menu. `count` defaults to 8, hard cap **12**
+  (a WhatsApp sheet is a sitting, not a paper — 12 × 17mm/mark is already ~12 pages).
+- Same seeded daily draw as the kiosk (`drawSeedKey(levelKey, topic, tier)`), so a repeat request
+  the same SGT day returns the same questions.
+- `{dry:true, level, topic}` → `{ok, poolSize}` with no Puppeteer and no Blob write. That's the
+  `bot-worksheet` health-check probe (S3_AM · Binomial Theorem), which fails on an EMPTY pool —
+  a sheet with no questions is the one thing this must never send a parent.
+- PDF: `lib/render-bot-worksheet.ts`, a straight port of the kiosk PRINT_CSS (Times New Roman
+  9.5pt, navy caps brand over the orange rule, explicit question numbers, marks right-aligned,
+  blank marks-proportional working space). **Two deliberate differences from the kiosk sheet:**
+  answers are never inline — `answers=true` appends a final Answers page — and the stem-level
+  marks read `[3 marks]`, injected inside the last `<p>` so the float lands on the question's
+  last line instead of dropping to one of its own.
+- Blob path carries a fingerprint of the drawn question ids. Vercel Blob serves an overwritten
+  path from CDN cache for up to a month, so without it a mid-day pool change would hand the bot
+  fresh `questionIds` alongside a cached PDF of the older draw.
+
 Supabase (math project): `kiosk_pairings` (code pk, claim/consume timestamps, student fields),
 `kiosk_prints` (print log). Both RLS-on, service-role only.
 
