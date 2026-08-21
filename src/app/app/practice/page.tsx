@@ -542,7 +542,7 @@ export default function PracticePage() {
               <img src={q.figureUrl} alt="Figure for this question"
                 className="w-full max-w-full rounded-xl border border-slate-200 mb-3 bg-white" />
             )}
-            <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden [&_.katex-display]:py-1">
+            <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed math-working">
               <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{q.markdown}</ReactMarkdown>
             </div>
           </div>
@@ -724,7 +724,7 @@ export default function PracticePage() {
               <div className="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">Worked solution</div>
               {/* Aligned working from lib/solution-format.ts: left-align the display
                   blocks (KaTeX centres by default) and let wide lines scroll. */}
-              <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden [&_.katex-display]:text-left [&_.katex-display>.katex]:text-left [&_.katex-display]:my-2 [&_.katex-display]:py-1">
+              <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed math-working">
                 <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{solution}</ReactMarkdown>
               </div>
             </div>

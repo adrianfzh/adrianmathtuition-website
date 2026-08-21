@@ -64,9 +64,45 @@ describe('formatSolution', () => {
       '$$\n\\begin{aligned}\nb &= 2\n\\end{aligned}\n$$',
     ]);
   });
-  it('hoists a short "label:" prefix out of a math line', () => {
+  it('keeps a short "label:" lead-in inside the aligned block as \\text{}', () => {
     const out = formatSolution('General term: $T_{r+1} = 2^r$\n$r = 3$');
-    expect(out).toBe('General term:\n\n$$\n\\begin{aligned}\nT_{r+1} &= 2^r \\\\\nr &= 3\n\\end{aligned}\n$$');
+    expect(out).toBe('$$\n\\begin{aligned}\n\\text{General term: } T_{r+1} &= 2^r \\\\\nr &= 3\n\\end{aligned}\n$$');
+  });
+  it('keeps a short no-colon lead-in ("Then", "Coefficient of") on its equation', () => {
+    const out = formatSolution('Then $a = \\frac{5}{10} = \\frac12$.\nCoefficient of $x^2 = 2 \\cdot 3 = 6$.');
+    expect(out).toBe(
+      '$$\n\\begin{aligned}\n\\text{Then } a &= \\frac{5}{10} \\\\\n&= \\frac12 \\\\\n\\text{Coefficient of } x^2 &= 2 \\cdot 3 \\\\\n&= 6\n\\end{aligned}\n$$',
+    );
+  });
+  it('embeds a short label carrying inline math; hoists a long one into its own paragraph', () => {
+    expect(formatSolution('Coefficient of $x$: $\\binom{n}{1}a = na = 5$.')).toBe(
+      '$$\n\\begin{aligned}\n\\text{Coefficient of $x$: } \\binom{n}{1}a &= na \\\\\n&= 5\n\\end{aligned}\n$$',
+    );
+    expect(formatSolution('Perpendicular distance from Q to the line OP: $d = 3$').split('\n\n')).toEqual([
+      'Perpendicular distance from Q to the line OP:',
+      '$$\n\\begin{aligned}\nd &= 3\n\\end{aligned}\n$$',
+    ]);
+  });
+  it('moves a trailing = in the lead-in into the equation', () => {
+    expect(formatSolution('Constant term = $3 \\times 1 = 3$.\nCoefficient of $x^2$ = $3(4) + 4(-4) = -4$.')).toBe(
+      '$$\n\\begin{aligned}\n\\text{Constant term } &= 3 \\times 1 \\\\\n&= 3 \\\\\n\\text{Coefficient of $x^2$ } &= 3(4) + 4(-4) \\\\\n&= -4\n\\end{aligned}\n$$',
+    );
+  });
+  it('treats a line starting with a bare = as a continuation row', () => {
+    expect(formatSolution('$(1+x)^2$\n= $1 + 2x + x^2 = x^2 + 2x + 1$')).toBe(
+      '$$\n(1+x)^2\n$$\n\n$$\n\\begin{aligned}\n&= 1 + 2x + x^2 \\\\\n&= x^2 + 2x + 1\n\\end{aligned}\n$$',
+    );
+  });
+  it('drops a full stop closed inside the math but keeps \\ldots', () => {
+    expect(formatSolution('$r = 3.$\n$S = 1 + x + \\ldots$')).toBe(
+      '$$\n\\begin{aligned}\nr &= 3 \\\\\nS &= 1 + x + \\ldots\n\\end{aligned}\n$$',
+    );
+  });
+  it('leaves a lead-in + math with no = as a plain sentence', () => {
+    expect(formatSolution('Hence $x > 3$.')).toBe('Hence $x > 3$.');
+  });
+  it('does not treat inline math before a no-colon lead-in as a label', () => {
+    expect(formatSolution('Since $u = 2^x > 0$, $u = 4$.')).toBe('Since $u = 2^x > 0$, $u = 4$.');
   });
   it('accepts \\( … \\) source lines and trailing punctuation', () => {
     const out = formatSolution('\\(x = 2\\).\n\\(y = 3\\),');

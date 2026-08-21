@@ -115,45 +115,76 @@ const isOtherRelation = (t: Token) =>
  *   p = q ⇒ r = s        →  p &= q  /  \Rightarrow r &= s
  *   x < y = z  (mixed)   →  x < y &= z      (align on the first = only)
  *   no `=` at all        →  &expr
+ * `textPrefix` ("Then ", "Coefficient of ") is set in \text{} before the lhs
+ * of the first row, so short lead-ins stay on the line they belong to.
  */
-export function alignedRows(expr: string): string[] {
+const row = (s: string) => s.replace(/ {2,}/g, ' ').trim();
+
+export function alignedRows(expr: string, textPrefix?: string): string[] {
   const tokens = tokenize(expr.trim());
   const segments = splitTop(tokens, isArrow);
   const rows: string[] = [];
+  const lead = textPrefix ? `\\text{${textPrefix}} ` : '';
   segments.forEach((seg, si) => {
-    const prefix = si === 0 ? '' : '\\Rightarrow ';
+    const prefix = si === 0 ? lead : '\\Rightarrow ';
     if (!hasTop(seg, isEq)) { rows.push(`&${prefix}${join(seg)}`); return; }
     const pieces = splitTop(seg, isEq);
     const chain = pieces.length > 2 && !hasTop(seg, isOtherRelation);
     if (chain) {
-      rows.push(`${prefix}${join(pieces[0])} &= ${join(pieces[1])}`);
+      rows.push(row(`${prefix}${join(pieces[0])} &= ${join(pieces[1])}`));
       for (let k = 2; k < pieces.length; k++) rows.push(`&= ${join(pieces[k])}`);
     } else {
       const lhs = join(pieces[0]);
       const rhs = pieces.slice(1).map(join).join(' = ');
-      rows.push(`${prefix}${lhs} &= ${rhs}`);
+      rows.push(row(`${prefix}${lhs} &= ${rhs}`));
     }
   });
   return rows;
 }
 
 type Line =
-  | { kind: 'math'; expr: string; label?: string }
+  | { kind: 'math'; expr: string; label?: string; raw: string }
   | { kind: 'text'; text: string };
 
-// A line is "pure math" when, after an optional short text label ending in a
-// colon, it is exactly one $…$ / $$…$$ expression (trailing . , ; allowed).
+// A line is "pure math" when, after an optional short text lead-in, it is
+// exactly one $…$ / $$…$$ expression (trailing . , ; allowed). The lead-in may
+// be a colon label ("General term:", "Coefficient of $x$:") — balanced inline
+// math allowed — a label ending in "=" ("Constant term = $3 \\times 1 = 3$",
+// where the = then belongs to the equation), a bare "=" (a continuation of the
+// previous line), or a plain word or two ("Then", "Hence", "Coefficient of"),
+// which must be free of $ so that "$x = 2$ or $x = -3$" stays a sentence
+// rather than becoming label "$x = 2$ or".
 function classify(raw: string): Line {
   const line = raw.trim();
   if (!line || line.includes('<img') || line.includes('{{IMG:')) return { kind: 'text', text: line };
-  const m = /^(?:([^$]{1,60}?):\s*)?\$\$?([^$]+?)\$\$?\s*[.,;]?$/.exec(line);
-  if (m && m[2].trim()) return { kind: 'math', expr: m[2].trim(), label: m[1]?.trim() || undefined };
-  return { kind: 'text', text: line };
+  const m = /^(.{0,80}?)\s*\$\$?([^$]+?)\$\$?\s*[.,;]?$/.exec(line);
+  if (!m || !m[2].trim()) return { kind: 'text', text: line };
+  let label = m[1].trim();
+  let expr = m[2].trim();
+  // "$r = 3.$" — AI-authored rows often close the sentence inside the math.
+  expr = expr.replace(/(?<!\.)[.,;]$/, '').trim();
+  const endsInEq = label.endsWith('=');
+  if (endsInEq) { label = label.slice(0, -1).trim(); expr = `= ${expr}`; }
+  const dollars = (label.match(/\$/g) || []).length;
+  if (dollars % 2 === 1 || (dollars > 0 && !endsInEq && !label.endsWith(':')) || label.endsWith('\\')) {
+    return { kind: 'text', text: line };
+  }
+  return { kind: 'math', expr, label: label || undefined, raw: line };
 }
 
-function alignedBlock(exprs: string[]): string {
-  const rows = exprs.flatMap(alignedRows);
-  return `$$\n\\begin{aligned}\n${rows.join(' \\\\\n')}\n\\end{aligned}\n$$`;
+// Short lead-ins ride inside the aligned block as \text{…} (KaTeX allows
+// $…$ inside \text, so "Coefficient of $x^2$" is fine); anything longer, or
+// carrying markdown, goes in its own paragraph above the block so it can't
+// push the `=` column off a phone screen.
+const EMBED_LABEL = /^[A-Za-z0-9 ().,'’:$^_{}\\-]+$/;
+function embeddable(label: string): boolean {
+  return EMBED_LABEL.test(label) && label.replace(/[$\\{}^_]/g, '').length <= 28;
+}
+
+type Row = { expr: string; prefix?: string };
+function alignedBlock(rows: Row[]): string {
+  const lines = rows.flatMap(r => alignedRows(r.expr, r.prefix));
+  return `$$\n\\begin{aligned}\n${lines.join(' \\\\\n')}\n\\end{aligned}\n$$`;
 }
 
 // A math line with no top-level `=` (e.g. "\therefore P(0,-7)", a bare
@@ -169,13 +200,22 @@ export function formatSolution(text: string | null | undefined): string {
   const lines = normalizeMathDelimiters(text, { display: 'inline' })
     .split('\n').map(classify).filter(l => l.kind === 'math' || l.text);
   const blocks: string[] = [];
-  let group: string[] = [];
+  let group: Row[] = [];
   const flush = () => { if (group.length) { blocks.push(alignedBlock(group)); group = []; } };
   for (const l of lines) {
     if (l.kind === 'text') { flush(); blocks.push(l.text); continue; }
-    if (l.label) { flush(); blocks.push(`${l.label}:`); }
-    if (!alignable(l.expr)) { flush(); blocks.push(`$$\n${l.expr}\n$$`); continue; }
-    group.push(l.expr);
+    if (!alignable(l.expr)) {
+      flush();
+      // "Hence $x > 3$." reads fine as a sentence; only a bare expression
+      // with no lead-in earns its own display line.
+      blocks.push(l.label ? l.raw : `$$\n${l.expr}\n$$`);
+      continue;
+    }
+    if (!l.label) { group.push({ expr: l.expr }); continue; }
+    if (embeddable(l.label)) { group.push({ expr: l.expr, prefix: l.label + ' ' }); continue; }
+    flush();
+    blocks.push(l.label);
+    group.push({ expr: l.expr });
   }
   flush();
   return blocks.join('\n\n');

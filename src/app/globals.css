@@ -1285,3 +1285,10 @@ body {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* Portal practice — question + worked solution. Plain (unlayered) rules on
+   purpose: Tailwind v4 utilities live in @layer utilities and lose to KaTeX's
+   unlayered stylesheet, so [&_.katex-display]:text-left never applied. */
+.math-working .katex-display { margin: 0.5rem 0; padding: 0.25rem 0; overflow-x: auto; overflow-y: hidden; text-align: left; }
+.math-working .katex-display > .katex { text-align: left; }
+.math-working .katex-display > .katex > .katex-html { text-align: left; }
