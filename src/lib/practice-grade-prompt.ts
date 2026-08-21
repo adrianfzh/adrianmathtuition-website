@@ -27,8 +27,11 @@ export function buildGradingPrompt(opts: {
   lines?: string[];
   isPhoto: boolean;
   weaknessTags: string[];
+  // Mark-anatomy field (default ON — production behaviour). false exists ONLY so
+  // scripts/golden-anatomy-check.mjs can build the pre-anatomy baseline prompt.
+  anatomy?: boolean;
 }): string {
-  const { question, lines, isPhoto, weaknessTags } = opts;
+  const { question, lines, isPhoto, weaknessTags, anatomy = true } = opts;
 
   const scheme: string[] = [];
   collectScheme(question.parts, scheme);
@@ -47,6 +50,16 @@ ${lines!.map((l, i) => `${i + 1}. ${l || '(blank line)'}`).join('\n')}
 In "transcribedLines", return these same lines in the same order — exactly one entry per input line (keep blank lines as "") — with the mathematics rewritten as LaTeX in $...$ (e.g. "9C5 * 2^4" becomes "$\\binom{9}{5} \\cdot 2^4$"). Stay faithful to what the student wrote, including mistakes — never correct while transcribing.`;
 
   const transcriptionField = `\n  "transcribedLines": ["<each ${isPhoto ? 'transcribed step' : 'input line as LaTeX'}, in order>"],`;
+
+  // Explanatory mark anatomy (M/A/B codes). Deliberately placed AFTER the marking
+  // rules and phrased as a labelling of the already-decided marks, so it cannot
+  // shift how marks are awarded — the E6-calibrated rubric above is untouched.
+  const anatomyField = anatomy
+    ? `,"markAnatomy":[{"code":"M1","for":"<short phrase: what this mark is for>","earned":true}]`
+    : '';
+  const anatomyRule = anatomy
+    ? `\nmarkAnatomy labels each part's marks with O-Level mark codes — M for a method mark, A for an accuracy mark, B for an independent mark (M1, A1, B1, …). It is EXPLANATORY ONLY: first decide awarded/outOf exactly as instructed above, then describe that decision — markAnatomy must never change or contradict the marks. Give exactly one entry per mark of the part's outOf, each with a short student-readable "for" phrase; set "earned" per whether that specific mark was gained, so the earned entries count to exactly "awarded".`
+    : '';
 
   return `You are an experienced Singapore ${question.level} mathematics examiner marking one student's working against the official mark scheme.
 
@@ -70,11 +83,11 @@ Reply with ONLY a JSON object (no markdown fences):
 {${transcriptionField}
   "verdict": "correct"|"partial"|"wrong",
   "score": <number>, "outOf": <number>,
-  "partBreakdown": [{"label":"a","awarded":2,"outOf":3,"comment":"<why, one sentence>"}],
+  "partBreakdown": [{"label":"a","awarded":2,"outOf":3,"comment":"<why, one sentence>"${anatomyField}}],
   "lineComments": [{"line":<1-based line number>,"ok":true|false,"comment":"<what's right/wrong>","fix":"<the corrected step, only when ok=false>","tag":"<one of: ${ERROR_TAGS.join(', ')}>","severity":"major"|"minor"}],
   "strengths": ["<max 3, genuine>"],
   "nextSteps": ["<2-3 concrete actions>"]
 }
-Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.
+Comment on every line that earns or loses a mark; skip trivial restatements. "tag" only on ok=false lines.${anatomyRule}
 Write all mathematics in comments, fixes, partBreakdown comments and nextSteps as LaTeX in $...$ (it is rendered with KaTeX). The reply must be valid JSON — escape LaTeX backslashes (write \\\\sqrt in the JSON string).`;
 }

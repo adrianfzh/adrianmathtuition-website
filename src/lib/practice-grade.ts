@@ -8,6 +8,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createServiceClient } from './supabase-server';
 import { ERROR_TAGS, buildGradingPrompt } from './practice-grade-prompt';
+import { parseMarkAnatomy, type MarkAnatomyItem } from './mark-anatomy';
 
 export const GRADING_MODEL = 'claude-opus-5';
 export const DAILY_GRADE_CAP = 20;
@@ -26,7 +27,10 @@ export interface GradeResult {
   verdict: 'correct' | 'partial' | 'wrong';
   score: number;
   outOf: number;
-  partBreakdown: { label: string; awarded: number; outOf: number; comment: string }[];
+  // markAnatomy: optional explanatory M/A/B mark-code breakdown (absent on all
+  // pre-anatomy stored results, and whenever the model's anatomy fails the
+  // consistency gate in lib/mark-anatomy.ts — the UI simply hides it).
+  partBreakdown: { label: string; awarded: number; outOf: number; comment: string; markAnatomy?: MarkAnatomyItem[] }[];
   lineComments: LineComment[];
   strengths: string[];
   nextSteps: string[];
@@ -65,7 +69,14 @@ function validate(raw: unknown, lineCount: number): GradeResult | null {
   const partBreakdown = Array.isArray(r.partBreakdown)
     ? (r.partBreakdown as Record<string, unknown>[])
         .filter(p => typeof p.label === 'string' && typeof p.awarded === 'number' && typeof p.outOf === 'number')
-        .map(p => ({ label: String(p.label), awarded: p.awarded as number, outOf: p.outOf as number, comment: String(p.comment || '').slice(0, 300) }))
+        .map(p => {
+          const markAnatomy = parseMarkAnatomy(p.markAnatomy, p.awarded, p.outOf);
+          return {
+            label: String(p.label), awarded: p.awarded as number, outOf: p.outOf as number,
+            comment: String(p.comment || '').slice(0, 300),
+            ...(markAnatomy ? { markAnatomy } : {}),
+          };
+        })
     : [];
   return {
     verdict: r.verdict as GradeResult['verdict'],
