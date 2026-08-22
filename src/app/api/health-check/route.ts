@@ -227,6 +227,33 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`table? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return 'auth gate up';
     }),
+    // Practice topic picker (/app/practice → lib/practice-strands + topic-picker).
+    // The question-type route must hold its auth gate, and the two RPCs the
+    // picker is built on must still answer with rows for a JC bank AND a Sec 3
+    // scope — the picker went silently EMPTY for JC and Sec 3 students for
+    // weeks (2026-08-22) because the portal passed 'JC2' / 'S3_AM' straight to
+    // subgroup-keyed RPCs; an overload drift on `practice_subgroups` would do
+    // the same. Zero rows here = students see "no topics", nothing red anywhere.
+    timed('practice-picker', async () => {
+      const r = await fetch(`${base}/api/portal/practice/subgroups?level=AM`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const rpc = async (fn: string, body: Record<string, unknown>) => {
+        const q = await fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+          method: 'POST',
+          headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body), signal: T(10000),
+        });
+        if (!q.ok) throw new Error(`${fn}: HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
+        const rows = await q.json();
+        if (!Array.isArray(rows) || rows.length === 0) throw new Error(`${fn} ${JSON.stringify(body)} returned no rows`);
+        return rows.length;
+      };
+      const jc = await rpc('practice_topics', { p_level: 'JC', p_qlevel: null });
+      const s3 = await rpc('practice_topics', { p_level: 'AM', p_qlevel: 'S3_AM' });
+      const types = await rpc('practice_subgroups', { p_level: 'AM', p_topic: null, p_qlevel: null });
+      return `JC ${jc} topics · S3 AM ${s3} · AM ${types} question types`;
+    }),
     // The parent-report store the monthly cron writes into. It runs unattended
     // on the 1st, so a broken table or renamed column would mean parents simply
     // stop hearing anything, with nothing on screen to say why.

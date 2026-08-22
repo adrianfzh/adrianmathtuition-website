@@ -60,3 +60,23 @@ export function qbLevelsFor(
   }
   return base;
 }
+
+// Portal level key → how the practice RPCs should scope the bank. The
+// question-type taxonomy (`subgroups`) is keyed AM / EM / JC / S1 / S2 only,
+// so JC1/JC2 share the JC tree and the Sec 3 keys share the Sec 4 trees while
+// narrowing to questions tagged with the Sec 3 level. Before this (2026-08-22)
+// the portal passed 'JC2' / 'S3_AM' straight through and those students saw
+// an empty topic list.
+export function bankScope(levelKey: string): { level: string; qlevel: string | null } {
+  switch (levelKey) {
+    case 'JC1':
+    case 'JC2':
+      return { level: 'JC', qlevel: null };
+    case 'S3_AM':
+      return { level: 'AM', qlevel: 'S3_AM' };
+    case 'S3_EM':
+      return { level: 'EM', qlevel: 'S3_EM' };
+    default:
+      return { level: levelKey, qlevel: null };
+  }
+}

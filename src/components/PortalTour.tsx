@@ -18,6 +18,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { buildTourSteps, PORTAL_TOUR_KEY, type PortalSurfaces } from '@/lib/portal-tour';
+import { SURFACES, type SurfaceKey } from '@/lib/portal-theme';
+import PortalIcon from '@/components/PortalIcon';
 
 type Ring = { top: number; left: number; width: number; height: number };
 
@@ -96,6 +98,10 @@ export default function PortalTour({ surfaces }: { surfaces: PortalSurfaces }) {
 
   if (!open || !step) return null;
 
+  // Steps about a destination wear that destination's colour + icon, so the
+  // tour teaches the same visual language the tab bar and Home tiles use.
+  const identity = step.key in SURFACES ? SURFACES[step.key as SurfaceKey] : null;
+
   return (
     <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Portal tour">
       {/* Backdrop — tapping outside the card leaves the tour, same as Skip. */}
@@ -118,8 +124,15 @@ export default function PortalTour({ surfaces }: { surfaces: PortalSurfaces }) {
       <div className="absolute inset-x-0 bottom-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-6">
         <div className="mx-auto w-full max-w-sm bg-white rounded-2xl shadow-xl border border-black/5 p-5 mb-16 sm:mb-0 motion-safe:animate-[fadeIn_180ms_ease-out]">
           <div className="flex items-start justify-between gap-3">
-            <p className="font-bold text-navy text-base leading-snug">
-              <span className="mr-1.5" aria-hidden>{step.emoji}</span>{step.title}
+            <p className="font-bold text-navy text-base leading-snug flex items-center gap-2">
+              {identity ? (
+                <span className={`inline-flex w-7 h-7 rounded-lg items-center justify-center shrink-0 ${identity.tile}`} aria-hidden>
+                  <PortalIcon name={identity.icon} className="w-4 h-4" />
+                </span>
+              ) : (
+                <span aria-hidden>{step.emoji}</span>
+              )}
+              <span>{step.title}</span>
             </p>
             <button
               type="button"

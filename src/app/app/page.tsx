@@ -9,6 +9,9 @@ import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, homeCardSummary, isPending } from '@/lib/assignments';
+import { homeCounts } from '@/lib/portal-home-counts';
+import { SURFACES } from '@/lib/portal-theme';
+import PortalIcon from '@/components/PortalIcon';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,30 +39,41 @@ export default async function DashboardPage() {
   // Learn units aren't released to students — the "start here" stack (which
   // deep-links into /app/learn) only renders for Adrian's admin cookie.
   const learnVisible = LEARN_OPEN_TO_STUDENTS || ((await isNotesAuthed()) && !(await viewingAsStudent()));
-  const [d, todayCards, assignments] = await Promise.all([
+  const [d, todayCards, assignments, counts] = await Promise.all([
     getDashboardData(account),
     learnVisible ? getTodayCards(account).catch(() => []) : Promise.resolve([]),
     // "From Adrian" assigned work (SPEC-ASSIGN.md) — fail-soft, hidden at zero.
     listStudentAssignments(account.airtable_student_id).catch(() => []),
+    // Live numbers on the Hand in / Marked tiles — fail-soft zeros.
+    homeCounts(account.airtable_student_id),
   ]);
   const pendingWork = assignments.filter(a => isPending(a.status));
   const workSummary = homeCardSummary(assignments);
 
-  const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
+  // Home visual language (2026-08-22, lib/portal-theme.ts): soft elevated
+  // cards, no hairline borders, and every destination wearing its own colour
+  // — the same colour it has in the tab bar — so a student learns "amber =
+  // practise, teal = hand in, violet = marked" without reading.
+  const card = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5';
+  const caption = 'text-[11px] font-bold uppercase tracking-wider text-slate-400';
+  const P = SURFACES.practice, S = SURFACES.submit, M = SURFACES.marking, A = SURFACES.assignments, L = SURFACES.lesson;
 
   return (
     <div className="space-y-4 pb-20 sm:pb-4">
-      <h1 className="text-xl font-bold text-navy pt-1">Hi {d.firstName} 👋</h1>
+      <h1 className="text-2xl font-bold text-navy pt-1 tracking-tight">Hi {d.firstName} 👋</h1>
 
       {/* From Adrian — assigned work, at the top because it's the one thing
           Adrian specifically asked this student to do. Hidden when nothing is
           pending (done items live on /app/assignments + practice history /
           Marked papers). Up to 3 rows inline, then "see all". */}
       {workSummary && (
-        <div className="bg-navy text-[hsl(45,100%,96%)] rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-navy text-[hsl(45,100%,96%)] rounded-3xl shadow-[0_8px_24px_-8px_rgba(15,23,42,0.5)] overflow-hidden">
           <Link href="/app/assignments" className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2 hover:opacity-90">
-            <span className="font-semibold">📬 From Adrian</span>
-            <span className="text-[11px] font-semibold bg-[hsl(43,90%,60%)] text-navy rounded-full px-2 py-0.5">{workSummary}</span>
+            <span className="flex items-center gap-2.5 font-semibold">
+              <span className={`flex items-center justify-center w-8 h-8 rounded-xl bg-white/10 ${A.tile.split(' ')[1]}`}><PortalIcon name={A.icon} className="w-4.5 h-4.5" /></span>
+              From Adrian
+            </span>
+            <span className="text-[11px] font-bold bg-[hsl(43,90%,60%)] text-navy rounded-full px-2.5 py-1">{workSummary}</span>
           </Link>
           <ul className="divide-y divide-white/10">
             {pendingWork.slice(0, 3).map(a => {
@@ -67,7 +81,7 @@ export default async function DashboardPage() {
               return (
                 <li key={a.id}>
                   <Link href={assignmentHref(a)} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5">
-                    <span aria-hidden>{a.kind === 'question' ? '✏️' : '📄'}</span>
+                    <PortalIcon name={a.kind === 'question' ? 'pencil' : 'file-check'} className="w-4 h-4 opacity-80 shrink-0" />
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-medium truncate">{a.title}</span>
                       <span className="block text-[11px] opacity-75 truncate">
@@ -127,21 +141,23 @@ export default async function DashboardPage() {
       </div>
       )}
 
-      {/* Next lesson */}
-      <div className={card}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Next lesson</p>
-        {d.nextLesson ? (
-          <div className="flex items-baseline justify-between">
-            <p className="text-lg font-bold text-navy">
+      {/* Next lesson — information, not an action, so a slim row rather than
+          a card that competes with the tiles below. */}
+      <div className={`${card} !py-3.5 flex items-center gap-3`}>
+        <span className={`flex items-center justify-center w-10 h-10 rounded-2xl shrink-0 ${L.tile}`}><PortalIcon name={L.icon} className="w-5 h-5" /></span>
+        <div className="min-w-0 flex-1">
+          <p className={caption}>Next lesson</p>
+          {d.nextLesson ? (
+            <p className="text-base font-bold text-navy truncate">
               {friendlyDate(d.nextLesson.date)}
-              <span className="ml-2 font-semibold text-gray-600 text-base">{d.nextLesson.slotLabel}</span>
+              <span className="ml-2 font-medium text-slate-500 text-sm">{d.nextLesson.slotLabel}</span>
             </p>
-            {d.nextLesson.type !== 'Regular' && (
-              <span className="text-xs bg-blue-50 text-blue-700 rounded-full px-2.5 py-0.5 font-medium">{d.nextLesson.type}</span>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500">No upcoming lesson scheduled.</p>
+          ) : (
+            <p className="text-sm text-slate-500">Nothing scheduled yet</p>
+          )}
+        </div>
+        {d.nextLesson && d.nextLesson.type !== 'Regular' && (
+          <span className="text-[11px] bg-blue-50 text-blue-700 rounded-full px-2.5 py-1 font-semibold shrink-0">{d.nextLesson.type}</span>
         )}
       </div>
 
@@ -152,23 +168,6 @@ export default async function DashboardPage() {
         <div className={`${card} flex items-baseline gap-2`}>
           <p className="text-2xl font-bold text-navy">{d.attemptsThisWeek}</p>
           <p className="text-xs text-gray-500">questions practised this week</p>
-        </div>
-      )}
-
-      {/* Last lesson topics + homework */}
-      {(d.lastTopics.length > 0 || d.homeworkAssigned) && (
-        <div className={card}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Last lesson</p>
-          {d.lastTopics.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {d.lastTopics.map(t => (
-                <span key={t} className="text-xs bg-[hsl(45,80%,94%)] text-navy rounded-full px-2.5 py-1">{t}</span>
-              ))}
-            </div>
-          )}
-          {d.homeworkAssigned && (
-            <p className="text-sm text-gray-700"><span className="font-semibold text-navy">Homework:</span> {d.homeworkAssigned}</p>
-          )}
         </div>
       )}
 
@@ -189,26 +188,57 @@ export default async function DashboardPage() {
           )}
         </div>
       ) : (
-        /* Marking-only beta: the three things a student can do here. */
-        <div className="space-y-3">
+        /* Marking-only beta — the three doors, as a bento: Practise is the
+           hero (solid amber, tall), Hand in and Marked stack beside it as
+           white tiles with their own coloured icon squares and a live number
+           each. Distinct shape + colour per door = the heuristic. */
+        <div className="grid grid-cols-2 gap-3 auto-rows-fr">
           <Link href="/app/practice"
-            className="block bg-navy text-[hsl(45,100%,96%)] rounded-2xl p-5 shadow-sm hover:opacity-90 transition-opacity">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="font-semibold text-base">✏️ Practise a topic</div>
-                <div className="text-xs opacity-80 mt-1">Pick a topic · Standard or Advanced · get your working marked line by line</div>
-              </div>
-              <span className="text-xl opacity-80" aria-hidden>→</span>
-            </div>
+            className={`row-span-2 ${P.tile} rounded-3xl p-4 flex flex-col justify-between shadow-[0_8px_24px_-10px_rgba(245,158,11,0.8)] hover:brightness-105 active:scale-[0.99] transition`}>
+            <span className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white/35"><PortalIcon name={P.icon} className="w-6 h-6" /></span>
+            <span className="mt-6">
+              <span className="block font-bold text-lg leading-tight">Practise</span>
+              <span className="block text-[12px] leading-snug opacity-80 mt-1">One question at a time, marked on the spot</span>
+              <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold">Start <PortalIcon name="chevron-right" className="w-3.5 h-3.5" /></span>
+            </span>
           </Link>
-          <div className="grid grid-cols-2 gap-3">
-            <Link href="/app/submit" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
-              📷 Submit a paper
-            </Link>
-            <Link href="/app/marking" className="bg-white text-navy border border-navy/20 rounded-2xl p-4 text-center font-semibold text-sm shadow-sm hover:bg-navy/5 transition-colors">
-              📄 My marked papers
-            </Link>
-          </div>
+          <Link href="/app/submit"
+            className={`${card} !p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition`}>
+            <span className={`flex items-center justify-center w-11 h-11 rounded-2xl shrink-0 ${S.tile}`}><PortalIcon name={S.icon} className="w-5.5 h-5.5" /></span>
+            <span className="min-w-0">
+              <span className="block font-bold text-navy text-sm leading-tight">Hand in a paper</span>
+              <span className={`block text-[11px] mt-0.5 ${counts.beingMarked > 0 ? `${S.text} font-semibold` : 'text-slate-500'}`}>
+                {counts.beingMarked > 0 ? `${counts.beingMarked} being marked` : 'Photograph the pages'}
+              </span>
+            </span>
+          </Link>
+          <Link href="/app/marking"
+            className={`${card} !p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.99] transition`}>
+            <span className={`flex items-center justify-center w-11 h-11 rounded-2xl shrink-0 ${M.tile}`}><PortalIcon name={M.icon} className="w-5.5 h-5.5" /></span>
+            <span className="min-w-0">
+              <span className="block font-bold text-navy text-sm leading-tight">Marked papers</span>
+              <span className="block text-[11px] text-slate-500 mt-0.5">
+                {counts.marked > 0 ? `${counts.marked} paper${counts.marked === 1 ? '' : 's'} marked` : 'Nothing back yet'}
+              </span>
+            </span>
+          </Link>
+        </div>
+      )}
+
+      {/* Last lesson topics + homework */}
+      {(d.lastTopics.length > 0 || d.homeworkAssigned) && (
+        <div className={card}>
+          <p className={`${caption} mb-2`}>Last lesson</p>
+          {d.lastTopics.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {d.lastTopics.map(t => (
+                <span key={t} className="text-xs bg-[hsl(45,80%,94%)] text-navy rounded-full px-2.5 py-1">{t}</span>
+              ))}
+            </div>
+          )}
+          {d.homeworkAssigned && (
+            <p className="text-sm text-gray-700"><span className="font-semibold text-navy">Homework:</span> {d.homeworkAssigned}</p>
+          )}
         </div>
       )}
 

@@ -11,7 +11,7 @@
 import { getSupabaseAdmin } from './supabase';
 import { learnSubjectsForLevel } from './learn';
 import { unresolvedFails } from './learn-review';
-import { qbLevelsFor } from './practice';
+import { qbLevelsFor, bankScope } from './practice';
 import { airtableRequestAll } from './airtable';
 import type { PortalAccount } from './portal-auth';
 
@@ -121,9 +121,11 @@ export async function getTodayCards(account: PortalAccount): Promise<TodayCard[]
       const levels = qbLevelsFor(account.level, account.subjects);
       const weak: { topic: string; mastery: number }[] = [];
       for (const lvl of levels) {
+        const scope = bankScope(lvl.key);
         const { data, error } = await supabase.rpc('practice_overview', {
           p_user: account.id,
-          p_level: lvl.key,
+          p_level: scope.level,
+          p_qlevel: scope.qlevel,
         });
         if (error) continue;
         for (const r of (data || []) as { topic: string; attempts: number; avg_mastery: number | null }[]) {

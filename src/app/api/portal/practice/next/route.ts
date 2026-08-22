@@ -1,29 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionMarkdown, questionStructured } from '@/lib/bank-question-markdown';
-import { practiceAuth, levelAllowed } from '@/lib/practice';
+import { practiceAuth, levelAllowed, bankScope } from '@/lib/practice';
 
 export const runtime = 'nodejs';
 
-// POST /api/portal/practice/next  { level, topic, exclude?: string[], tier?: 'Standard'|'Advanced' }
+// POST /api/portal/practice/next  { level, topic, exclude?: string[], tier?: 'Standard'|'Advanced', subgroupId?: number }
 // Serves one random unseen real question (stem + parts, NO solution) from the
 // topic's subgroups. `question: null` means the bank is exhausted for that filter.
 // `tier` maps onto questions.difficulty: Advanced = Advanced + Challenging rows,
 // Standard = everything else (incl. untagged). Omitted/unknown → no tier filter.
+// `subgroupId` narrows to one question type within the topic (the picker's
+// "pick a question type" rows); omitted → the whole topic.
 // Auth: portal student session (level-gated) OR admin Bearer (testing).
 export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
-  const { level, topic, exclude, tier } = body as { level?: string; topic?: string; exclude?: string[]; tier?: string };
+  const { level, topic, exclude, tier, subgroupId } = body as {
+    level?: string; topic?: string; exclude?: string[]; tier?: string; subgroupId?: number | string | null;
+  };
   if (!level || !topic) return NextResponse.json({ error: 'level and topic required' }, { status: 400 });
   if (!levelAllowed(caller, level)) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
 
+  const scope = bankScope(level);
+  const sg = subgroupId == null || subgroupId === '' ? NaN : Number(subgroupId);
   const { data, error } = await getSupabaseAdmin().rpc('practice_next', {
-    p_level: level,
+    p_level: scope.level,
+    p_qlevel: scope.qlevel,
     p_topic: topic,
     p_exclude: Array.isArray(exclude) ? exclude : [],
     p_tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
+    p_subgroup: Number.isFinite(sg) && sg > 0 ? sg : null,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { practiceAuth, levelAllowed, qbLevelsFor, ALL_QB_LEVELS } from '@/lib/practice';
+import { practiceAuth, levelAllowed, qbLevelsFor, ALL_QB_LEVELS, bankScope } from '@/lib/practice';
 
 export const runtime = 'nodejs';
 
@@ -43,10 +43,11 @@ export async function GET(req: NextRequest) {
   }
 
   const supabase = getSupabaseAdmin();
+  const scope = bankScope(activeLevel);
 
   // Admin (testing): authoritative topic list + counts, no per-student mastery.
   if (!isStudent) {
-    const { data, error } = await supabase.rpc('practice_topics', { p_level: activeLevel });
+    const { data, error } = await supabase.rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const topics: TopicRow[] = (data || []).map((t: { topic: string; n: number; advanced_count: number }) => ({
       topic: t.topic,
@@ -65,7 +66,8 @@ export async function GET(req: NextRequest) {
   // back to level-only via qbLevelsFor above — the overview still resolves.
   const { data, error } = await supabase.rpc('practice_overview', {
     p_user: caller.account.id,
-    p_level: activeLevel,
+    p_level: scope.level,
+    p_qlevel: scope.qlevel,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

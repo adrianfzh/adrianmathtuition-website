@@ -1312,3 +1312,9 @@ body {
 /* Final-answer panel sits on navy — override the dark text the base rules set.
    Unlayered again so it beats .msol-md/.msol-md strong by source order. */
 .msol-md--on-dark, .msol-md--on-dark strong, .msol-md--on-dark em { color: inherit; }
+
+/* Portal bottom sheets (practice topic sheet) */
+@keyframes sheetUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

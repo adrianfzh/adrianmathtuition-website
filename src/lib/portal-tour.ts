@@ -56,7 +56,7 @@ export function buildTourSteps(s: PortalSurfaces): TourStep[] {
       key: 'practice',
       emoji: '✏️',
       title: 'Practise a topic',
-      body: 'Pick a topic, choose Standard or Advanced, then type your working. It comes back marked line by line, straight away.',
+      body: 'Pick a topic, choose Standard or Advanced, then snap a photo of your working or type it in. It comes back marked line by line, straight away.',
       target: 'practice',
     });
   }
@@ -65,7 +65,7 @@ export function buildTourSteps(s: PortalSurfaces): TourStep[] {
     key: 'submit',
     emoji: '📷',
     title: 'Hand in a paper',
-    body: 'Finished a paper at home? Photograph the pages here and hand it in — no need to message Mr Fong separately.',
+    body: 'Finished a paper at home? Photograph the pages here and hand it in — no need to message Adrian separately.',
     target: 'submit',
   });
 
@@ -73,7 +73,7 @@ export function buildTourSteps(s: PortalSurfaces): TourStep[] {
     key: 'marking',
     emoji: '📄',
     title: 'Your marked work',
-    body: 'Marked scripts land here: the marks, the red pen on your own working, and the questions that cost you the most.',
+    body: 'Every paper you hand in comes back here once it is marked — your marks, question by question.',
     target: 'marking',
   });
 

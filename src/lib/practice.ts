@@ -35,7 +35,7 @@ export async function practiceAuth(req: NextRequest): Promise<PracticeCaller> {
 
 // QB level list + per-student level gating live in lib/qb-levels.ts (pure,
 // client-safe); re-exported here so existing server imports keep working.
-export { ALL_QB_LEVELS, qbLevelsFor } from './qb-levels';
+export { ALL_QB_LEVELS, qbLevelsFor, bankScope } from './qb-levels';
 
 export function levelAllowed(caller: PracticeCaller, level: string): boolean {
   if (!caller) return false;

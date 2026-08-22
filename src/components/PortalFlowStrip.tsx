@@ -13,6 +13,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { buildFlowStages, flowStripKey, type FlowStageKey, type PortalSurfaces } from '@/lib/portal-tour';
+import { SURFACES } from '@/lib/portal-theme';
+import PortalIcon from '@/components/PortalIcon';
 
 export default function PortalFlowStrip({ current, surfaces }: {
   current: FlowStageKey;
@@ -42,26 +44,33 @@ export default function PortalFlowStrip({ current, surfaces }: {
     <div className="mb-4 rounded-2xl border border-black/5 bg-white/70 px-3.5 py-2.5">
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0 flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {stages.map((s, i) => (
-            <span key={s.key} className="flex items-center gap-1 shrink-0">
-              {i > 0 && <span className="text-gray-300 text-xs" aria-hidden>→</span>}
-              {s.current ? (
-                <span
-                  aria-current="step"
-                  className="text-xs font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-full px-2.5 py-1"
-                >
-                  <span className="mr-1" aria-hidden>{s.emoji}</span>{s.label}
-                </span>
-              ) : (
-                <Link
-                  href={s.href}
-                  className="text-xs text-gray-500 rounded-full px-2.5 py-1 hover:text-navy hover:bg-navy/5 motion-safe:transition-colors"
-                >
-                  <span className="mr-1" aria-hidden>{s.emoji}</span>{s.label}
-                </Link>
-              )}
-            </span>
-          ))}
+          {stages.map((s, i) => {
+            const id = SURFACES[s.key];
+            return (
+              <span key={s.key} className="flex items-center gap-1 shrink-0">
+                {i > 0 && <span className="text-gray-300 text-xs" aria-hidden>→</span>}
+                {s.current ? (
+                  <span
+                    aria-current="step"
+                    className={`inline-flex items-center gap-1 text-xs font-semibold ${id.tint} ${id.text} rounded-full pl-1.5 pr-2.5 py-1`}
+                  >
+                    <span className={`inline-flex w-4 h-4 rounded-md items-center justify-center ${id.tile}`} aria-hidden>
+                      <PortalIcon name={id.icon} className="w-2.5 h-2.5" />
+                    </span>
+                    {s.label}
+                  </span>
+                ) : (
+                  <Link
+                    href={s.href}
+                    className="inline-flex items-center gap-1 text-xs text-gray-500 rounded-full px-2.5 py-1 hover:text-navy hover:bg-navy/5 motion-safe:transition-colors"
+                  >
+                    <PortalIcon name={id.icon} className="w-3.5 h-3.5 opacity-60" />
+                    {s.label}
+                  </Link>
+                )}
+              </span>
+            );
+          })}
         </div>
         <button
           type="button"

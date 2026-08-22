@@ -43,73 +43,19 @@ function MathText({ text }: { text: string }) {
 
 type LevelOpt = { key: string; label: string };
 
-type TopicStatus = 'strong' | 'practising' | 'weak' | 'new';
-type Tier = 'Standard' | 'Advanced';
-type TopicCard = {
-  topic: string;
-  questionCount: number;
-  advancedCount: number;
-  attempts: number;
-  mastery: number | null;
-  status: TopicStatus;
-  lastPracticedAt: string | null;
-};
-type Recommended = { topic: string; level: string; reason: string };
+// Picker types + the topic sheet live in ./topic-picker.tsx (student picker);
+// strand/family grouping is lib/practice-strands.ts (pure, tested).
+import {
+  MasteryRing, STATUS_META, TIER_KEY, TopicPicker, TopicSheet,
+  type Recommended, type Subgroup, type Tier, type TopicCard,
+} from './topic-picker';
+import { bankScope } from '@/lib/qb-levels';
+import { familyOf, variantOf } from '@/lib/practice-strands';
 
-const STATUS_META: Record<TopicStatus, { label: string; cls: string; text: string }> = {
-  strong: { label: 'Strong', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200', text: 'text-emerald-600' },
-  practising: { label: 'Practising', cls: 'bg-amber-50 text-amber-700 border-amber-200', text: 'text-amber-600' },
-  weak: { label: 'Needs work', cls: 'bg-rose-50 text-rose-700 border-rose-200', text: 'text-rose-600' },
-  new: { label: 'Not started', cls: 'bg-slate-50 text-slate-500 border-slate-200', text: 'text-slate-400' },
-};
-
-// Strand = the leading word before "(" in a topic name (Differentiation,
-// Integration, Trigonometry, Algebra, Number, Geometry, …). Everything else
-// collapses to that word, so the chip row is derived, not hard-coded.
+// Admin picker only: leading word before "(" → derived chip row.
 function strandOf(topic: string): string {
   const head = (topic.split('(')[0] || topic).trim();
   return head.split(/\s+/)[0] || 'Other';
-}
-
-// Decorative mastery ring (conic-gradient). The % is exposed as text; the ring
-// itself is aria-hidden.
-function MasteryRing({ pct, size = 'md' }: { pct: number | null; size?: 'sm' | 'md' }) {
-  const gold = 'hsl(42, 95%, 50%)';
-  const track = 'hsl(220, 16%, 88%)';
-  const deg = pct != null ? Math.round(Math.max(0, Math.min(100, pct)) * 3.6) : 0;
-  return (
-    <div
-      aria-hidden
-      className={`relative shrink-0 rounded-full ${size === 'sm' ? 'w-10 h-10' : 'w-12 h-12'}`}
-      style={{ background: pct != null ? `conic-gradient(${gold} ${deg}deg, ${track} ${deg}deg)` : track }}
-    >
-      <div className={`absolute inset-[3px] rounded-full bg-white flex items-center justify-center font-bold text-navy ${size === 'sm' ? 'text-[10px]' : 'text-[11px]'}`}>
-        {pct != null ? `${pct}%` : '—'}
-      </div>
-    </div>
-  );
-}
-
-// One topic, one row: ring · name · status (or the recommendation reason) · ›.
-// The student picker is a list of these — no cards-within-cards, no badges.
-function TopicRow({ t, reason, accent, onClick }: {
-  t: TopicCard; reason?: string; accent?: boolean; onClick: () => void;
-}) {
-  const meta = STATUS_META[t.status];
-  return (
-    <button onClick={onClick}
-      className={`w-full text-left flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-navy/30 ${
-        accent
-          ? 'bg-[hsl(45,100%,97%)] border-[hsl(42,90%,72%)] hover:border-[hsl(42,90%,50%)]'
-          : 'bg-white border-slate-200 hover:border-navy/40'}`}>
-      <MasteryRing pct={t.mastery} size="sm" />
-      <div className="min-w-0 flex-1">
-        <div className="font-semibold text-navy text-sm leading-snug line-clamp-2">{t.topic}</div>
-        <div className={`text-[11px] mt-0.5 truncate ${accent ? 'text-[hsl(35,55%,38%)]' : meta.text}`}>{reason ?? meta.label}</div>
-      </div>
-      <span className="text-slate-300 text-xl leading-none shrink-0" aria-hidden>›</span>
-    </button>
-  );
 }
 
 // Mirrors StructuredPart in lib/bank-question-markdown.ts (server module).
@@ -235,10 +181,13 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   const [level, setLevel] = useState(() =>
     initialLevels?.some(l => l.key === 'AM') ? 'AM' : (initialLevels?.[0]?.key ?? 'AM'));
   const [tier, setTier] = useState<Tier>(assignment?.tier ?? 'Standard');
-  const [tierPicked, setTierPicked] = useState(!!assignment);   // topic chosen → pick Standard/Advanced → question
+  const [tierPicked, setTierPicked] = useState(!!assignment);   // admin: topic chosen → pick Standard/Advanced → question
   const [topics, setTopics] = useState<TopicCard[]>([]);
   const [recommended, setRecommended] = useState<Recommended[]>([]);
+  const [subgroups, setSubgroups] = useState<Subgroup[]>([]);   // question types for the level (topic sheet)
   const [topic, setTopic] = useState(assignment?.topic ?? '');
+  const [sheetTopic, setSheetTopic] = useState<string | null>(null);   // student: topic sheet open for…
+  const [subgroup, setSubgroup] = useState<Subgroup | null>(null);     // chosen question type (null = whole topic)
   const [loadingOverview, setLoadingOverview] = useState(!!initialLevels && !assignment); // student: skeleton on first paint, not "No topics"
   const [search, setSearch] = useState('');
   const [strand, setStrand] = useState('All');
@@ -276,6 +225,21 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   const [gen, setGen] = useState<any>(null);
   const [genLoading, setGenLoading] = useState(false);
 
+  // Remembered Standard/Advanced (topic sheet) — read after mount so SSR and
+  // the first client paint agree.
+  useEffect(() => {
+    if (assignment) return;
+    try {
+      const t = window.localStorage.getItem(TIER_KEY);
+      if (t === 'Standard' || t === 'Advanced') setTier(t);
+    } catch { /* private mode */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  function rememberTier(t: Tier) {
+    setTier(t);
+    try { window.localStorage.setItem(TIER_KEY, t); } catch { /* private mode */ }
+  }
+
   // Detect portal session first; fall back to admin session mode. Skipped when
   // the server already told us this is a student.
   useEffect(() => {
@@ -301,8 +265,15 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   useEffect(() => {
     if (mode !== 'student' && mode !== 'admin') return;
     if (assignment) return;   // the question is fixed; no picker, no overview
-    setLoadingOverview(true); setTopic(''); setTopics([]); setRecommended([]);
+    setLoadingOverview(true); setTopic(''); setTopics([]); setRecommended([]); setSubgroups([]);
+    setSheetTopic(null); setSubgroup(null);
     setQ(null); setExhausted(false); setError(''); resetAttempt(); setTierPicked(false);
+    // Question types load alongside; the sheet reads them from state, so
+    // opening a topic costs no round trip.
+    fetch(`/api/portal/practice/subgroups?level=${encodeURIComponent(level)}`)
+      .then(r => r.json())
+      .then(d => { if (!d.error) setSubgroups(d.subgroups || []); })
+      .catch(() => { /* sheet just shows "Start" with no type list */ });
     fetch(`/api/portal/practice/overview?level=${encodeURIComponent(level)}`)
       .then(r => r.json())
       .then(d => {
@@ -328,9 +299,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   // One-shot ?topic= deep-link — /app/marking's focus chips land here. Read
   // from window (not useSearchParams) so no Suspense boundary is needed. An
-  // exact topic match starts practising immediately; anything else (marking's
-  // topic_detected doesn't always match a bank topic name verbatim) lands in
-  // the search box so the closest cards are on screen.
+  // exact topic match opens that topic's sheet (one tap from a question);
+  // anything else (marking's topic_detected doesn't always match a bank topic
+  // name verbatim) lands in the search box so the closest rows are on screen.
   const deepLinked = useRef(false);
   useEffect(() => {
     if (deepLinked.current) return;
@@ -339,7 +310,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     const want = new URLSearchParams(window.location.search).get('topic')?.trim();
     if (!want) return;
     const exact = topics.find(t => t.topic.toLowerCase() === want.toLowerCase());
-    if (exact) startTopic(exact.topic);
+    if (exact) { if (mode === 'student') setSheetTopic(exact.topic); else startTopic(exact.topic); }
     else setSearch(want);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, loadingOverview, topics]);
@@ -348,14 +319,15 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null);
   }
 
-  const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string, tierArg?: Tier) => {
+  const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string, tierArg?: Tier, sgArg?: Subgroup | null) => {
     const useTopic = topicArg ?? topic;
     if (!useTopic) return;
+    const sg = sgArg === undefined ? subgroup : sgArg;
     setLoading(true); setError(''); setExhausted(false); resetAttempt();
     try {
       const r = await fetch('/api/portal/practice/next', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier }),
+        body: JSON.stringify({ level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null }),
       });
       const d = await r.json();
       if (!r.ok) { setError(d.error || 'Something went wrong'); return; }
@@ -363,26 +335,42 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       setQ(d.question);
     } catch { setError('Connection error'); }
     finally { setLoading(false); }
-  }, [level, topic, tier]);
+  }, [level, topic, tier, subgroup]);
 
   // Clicking a topic card / recommendation selects it and asks for the tier;
   // the question only loads once Standard / Advanced is chosen.
   function changeTopic() {
-    setTopic(''); setQ(null); setSeen([]); setExhausted(false); setError(''); resetAttempt(); setTierPicked(false);
+    setTopic(''); setSubgroup(null); setQ(null); setSeen([]); setExhausted(false); setError(''); resetAttempt(); setTierPicked(false);
   }
   function startTopic(t: string) {
-    setTopic(t); setSeen([]); setQ(null); setExhausted(false); setError(''); resetAttempt();
+    setTopic(t); setSubgroup(null); setSeen([]); setQ(null); setExhausted(false); setError(''); resetAttempt();
     setTierPicked(false);
   }
   function pickTier(t: Tier) {
     setTier(t); setTierPicked(true); setSeen([]); setExhausted(false);
     if (topic) fetchNext([], topic, t);
   }
+  // Student: the topic sheet decided everything — topic, tier, and optionally
+  // one question type — so the question loads straight away.
+  function startFromSheet(t: string, tr: Tier, sg: Subgroup | null) {
+    setSheetTopic(null);
+    rememberTier(tr);
+    setTopic(t); setSubgroup(sg); setSeen([]); setQ(null); setExhausted(false); setError(''); resetAttempt();
+    setTierPicked(true);
+    fetchNext([], t, tr, sg);
+  }
   // Switching Standard ↔ Advanced on a loaded question restarts the topic on
   // the new tier (fresh unseen-list — the two pools don't overlap).
   function switchTier(t: Tier) {
     if (t === tier) return;
-    pickTier(t);
+    rememberTier(t);
+    setTierPicked(true); setSeen([]); setExhausted(false);
+    if (topic) fetchNext([], topic, t);
+  }
+  // Exhausted a question type → widen to the whole topic on the same tier.
+  function widenToTopic() {
+    setSubgroup(null); setSeen([]); setExhausted(false);
+    if (topic) fetchNext([], topic, tier, null);
   }
   function tryAnother() {
     const nextSeen = q ? [...seen, q.id] : seen;
@@ -492,6 +480,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     (!search.trim() || t.topic.toLowerCase().includes(search.trim().toLowerCase()))
   );
   const selected = topics.find(t => t.topic === topic) || null;
+  const sheetCard = sheetTopic ? (topics.find(t => t.topic === sheetTopic) || null) : null;
+  const sheetTypes = sheetTopic ? subgroups.filter(s => s.topic === sheetTopic) : [];
   // Students: once a topic is chosen the picker folds away into a "← Change
   // topic" bar so the tier chooser / question sits at the top of the card
   // instead of below a phone-length list of topic rows. Admin keeps the grid
@@ -545,67 +535,49 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
       {/* ── Stage 1: progress-aware picker ── */}
       {!pickerOpen && !assignment && selected && (
-        <div className="flex items-center gap-3 mb-4">
-          <button onClick={changeTopic}
-            className="shrink-0 text-xs font-semibold text-navy bg-white border border-slate-200 rounded-lg px-3 py-1.5 hover:border-navy/40">
-            ← Change topic
+        <div className="flex items-center gap-2 mb-4">
+          <button onClick={changeTopic} aria-label="Back to topics"
+            className="shrink-0 w-9 h-9 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center hover:bg-slate-50">
+            <span className="text-lg leading-none" aria-hidden>‹</span>
           </button>
-          <div className="min-w-0 flex items-center gap-2">
-            <MasteryRing pct={selected.mastery} />
+          {/* Tapping the name reopens the sheet — change the question type or
+              difficulty without going back to the list. */}
+          <button onClick={() => setSheetTopic(selected.topic)} aria-label="Change question type or difficulty"
+            className="min-w-0 flex-1 flex items-center gap-2.5 text-left rounded-xl px-1 py-0.5 hover:bg-white/60">
+            <MasteryRing pct={selected.mastery} size="sm" />
             <div className="min-w-0">
-              <div className="font-semibold text-navy text-sm truncate">{selected.topic}</div>
-              <div className="text-[11px] text-slate-400">{STATUS_META[selected.status].label}</div>
+              {/* Variant as the title ("Increasing and Decreasing Functions"),
+                  family + type underneath — the full "Family (Variant)" string
+                  truncates on a phone before the part that matters. */}
+              <div className="font-semibold text-navy text-sm truncate">{variantOf(selected.topic)}</div>
+              <div className="text-[11px] text-slate-400 truncate">
+                {variantOf(selected.topic) !== selected.topic && <>{familyOf(selected.topic)} · </>}
+                {subgroup ? subgroup.name : 'A mix of every kind of question'}
+              </div>
             </div>
-          </div>
+            <span className="text-slate-300 text-xs shrink-0 ml-auto" aria-hidden>▾</span>
+          </button>
         </div>
       )}
 
-      {/* Student picker: "Up next" rows, then every topic as a row, with a
-          slim search. Redesigned 2026-08-21 after Adrian called the
-          chips + cards version cluttered. */}
-      {pickerOpen && isStudent && (<>
-        {recommended.length > 0 && !search.trim() && (
-          <section className="mb-5">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 px-1">⭐ Up next</h2>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              {recommended.map((r) => {
-                const t = topics.find(x => x.topic === r.topic) ?? {
-                  topic: r.topic, questionCount: 0, advancedCount: 0, attempts: 0,
-                  mastery: null, status: 'new' as const, lastPracticedAt: null,
-                };
-                return <TopicRow key={r.topic} t={t} reason={r.reason} accent onClick={() => startTopic(r.topic)} />;
-              })}
-            </div>
-          </section>
-        )}
-
-        <section>
-          <div className="flex items-center justify-between gap-3 mb-2 px-1">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">All topics</h2>
-            {topics.length > 0 && <span className="text-[11px] text-slate-400">{topics.length} topics</span>}
-          </div>
-          <div className="relative mb-2">
-            <svg aria-hidden viewBox="0 0 20 20" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="9" r="6" /><path d="m14 14 3.5 3.5" strokeLinecap="round" />
-            </svg>
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Find a topic…" type="search"
-              className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30 placeholder:text-slate-400" />
-          </div>
-          {loadingOverview ? (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" aria-busy>
-              {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-[62px] rounded-xl bg-slate-100 animate-pulse" />)}
-            </div>
-          ) : filteredTopics.length === 0 ? (
-            <p className="text-sm text-slate-400 py-6 text-center">
-              {topics.length === 0 ? 'No topics available for this level yet.' : 'No topics match your search.'}
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 mb-6">
-              {filteredTopics.map((t) => <TopicRow key={t.topic} t={t} onClick={() => startTopic(t.topic)} />)}
-            </div>
-          )}
-        </section>
-      </>)}
+      {/* Student picker (./topic-picker.tsx): strand chips → family rows →
+          topic sheet. Redesigned 2026-08-22 — see the file header there. */}
+      {pickerOpen && isStudent && (
+        <div className="mb-6">
+          <TopicPicker
+            key={level}
+            level={bankScope(level).level}
+            topics={topics}
+            recommended={recommended}
+            subgroups={subgroups}
+            loading={loadingOverview}
+            search={search}
+            onSearch={setSearch}
+            onPick={(t) => setSheetTopic(t)}
+            onStartType={(t, sg) => startFromSheet(t, tier, sg)}
+          />
+        </div>
+      )}
 
       {/* Admin picker (testing harness): search + strand chips + card grid,
           plus the test-generate control. Unchanged by the student redesign. */}
@@ -688,7 +660,12 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
       {loading && <p className="text-sm text-slate-400">Finding a question…</p>}
 
-      {exhausted && (
+      {exhausted && subgroup && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
+          You&apos;ve seen every {tier === 'Advanced' ? 'advanced ' : ''}“{subgroup.name}” question. <button onClick={widenToTopic} className="underline font-semibold">Try the whole topic</button>, <button onClick={() => setSheetTopic(topic)} className="underline font-semibold">pick another kind</button>, or <button onClick={() => pickTier(tier)} className="underline font-semibold">go through them again</button>.
+        </div>
+      )}
+      {exhausted && !subgroup && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
           {tier === 'Advanced' ? (
             <>You&apos;ve seen every advanced question for this topic. <button onClick={() => switchTier('Standard')} className="underline font-semibold">Switch to Standard</button>, <button onClick={changeTopic} className="underline font-semibold">try another topic</button>, or <button onClick={() => pickTier(tier)} className="underline font-semibold">go through them again</button>.</>
@@ -960,6 +937,18 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         </div>
       )}
       </div>
+
+      {/* Topic sheet (students) — Standard/Advanced, Start (mix) or one question type. */}
+      {isStudent && sheetCard && (
+        <TopicSheet
+          topic={sheetCard}
+          types={sheetTypes}
+          tier={sheetCard.advancedCount === 0 ? 'Standard' : tier}
+          onTier={rememberTier}
+          onStart={(sg) => startFromSheet(sheetCard.topic, sheetCard.advancedCount === 0 ? 'Standard' : tier, sg)}
+          onClose={() => setSheetTopic(null)}
+        />
+      )}
     </div>
   );
 }
