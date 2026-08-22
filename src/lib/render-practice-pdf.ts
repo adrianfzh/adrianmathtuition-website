@@ -31,6 +31,8 @@ export interface PracticeItem {
   question: string;
   /** Markdown with $…$ math; rendered as the orange [Ans: …] block. */
   answer: string;
+  /** Question figures (QB crops or a Gate-5 generated figure), printed above the text. */
+  imageUrls?: string[];
 }
 
 export interface PracticePdfInput {
@@ -53,9 +55,13 @@ const WORKING_MM = 55; // generous fixed block — marks aren't known per practi
 
 function itemHtml(it: PracticeItem): string {
   const ans = `[Ans: ${String(it.answer || '—').replace(/\n+/g, '  ')} ]`;
+  const figures = (it.imageUrls || [])
+    .map((u) => `<img class="pa-figure" src="${esc(u)}" alt="question figure">`)
+    .join('');
   return `
     <section class="pa-q">
       <div class="pa-qhead">${esc(it.heading)}</div>
+      ${figures}
       <div class="pa-body">${mdToHtml(it.question)}</div>
       <div class="pa-space" style="height:${WORKING_MM}mm"></div>
       <div class="pa-ans">${mdToHtml(ans)}</div>
@@ -102,6 +108,7 @@ export function buildPracticePdfHTML(input: PracticePdfInput): string {
 
   .pa-q{margin-bottom:8pt;break-inside:avoid}
   .pa-qhead{font-weight:700;margin-bottom:3pt}
+  .pa-figure{display:block;max-width:100%;max-height:300pt;margin:5pt 0}
   .pa-space{display:block;clear:both}
   .pa-ans{color:${ANSWER_ORANGE};text-align:right;margin-top:2pt}
   .pa-ans .katex{color:${ANSWER_ORANGE}}
