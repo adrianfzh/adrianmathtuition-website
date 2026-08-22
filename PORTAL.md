@@ -144,11 +144,18 @@ definition of "which bank questions belong to this `/revise` tree topic":
 
 - **filed** — the question sits in a sub-group of that (level, topic) via
   `question_subgroups → subgroups`. Unchanged behaviour.
-- **tagged** — the question is NOT filed anywhere in that tree, but its
-  `questions.topics[]` tag names the tree topic and its bank level belongs to
-  the tree (`practice_qlevels`: JC = JC1+JC2, AM = AM+S3_AM, EM = EM+S3_EM, S1,
-  S2). A filing always wins over a tag, so a question can never show under two
-  topics because of the fallback.
+- **tagged** — the question's `questions.topics[]` tag names the tree topic,
+  its bank level belongs to the tree (`practice_qlevels`: JC = JC1+JC2,
+  AM = AM+S3_AM, EM = EM+S3_EM, S1, S2), and it is NOT already filed under
+  *that* topic. The exclusion is **per topic**, not per tree (second migration
+  `practice_pool_tag_per_topic`): a question filed under Indices and tagged
+  Indices+Numbers serves Numbers through its tag. ~25% of JC questions carry two
+  tags, so the first cut ("not filed anywhere in the tree") silently dropped
+  every such question from its second topic the moment the backfill filed it
+  under the first — ~750 already-filed questions gained their second topic back.
+
+Rule of thumb: **filed under the topic → the filing decides; tagged but not
+filed under that topic → the tag serves.** A two-tag question belongs to both.
 
 Why: until 2026-08-22 the draw was filing-only, and ~7,300 eligible questions
 (all of JC1, most of JC2, half of S3_AM, a third of S1/S2) had never been filed
@@ -159,8 +166,12 @@ the odd one out.
 **Per-question-type draws stay filing-only** (`practice_next` with `p_subgroup`,
 `practice_subgroups`): a tag knows the topic, not the type. So on the topic
 sheet the type counts can sum to less than the "Start (mix)" total — that gap
-is exactly the unfiled backlog, which the plan-billed filing backfill
-(`cc_backfill` rows in `question_subgroups`, bot repo) works down over time.
+is exactly the unfiled backlog, which the plan-billed filing backfill works
+down nightly (`cc_backfill` rows in `question_subgroups`; bot repo
+`scripts/file-subgroups.js` + `.claude/skills/file-subgroups/SKILL.md`, driven
+by the `file-subgroups-nightly` Claude Code scheduled task at 4:15am, after the
+3:30 topup — it only ever ADDS links, holds confidence < 0.6, and a wrong link
+is removed by hand). First batch 2026-08-22: JC Vectors, 28 filed / 2 held.
 
 Guard: `/api/health-check` `practice-picker` fails if the JC pool drops below
 4,000 topic-rows (a redefined RPC that forgot the pool would do that).
