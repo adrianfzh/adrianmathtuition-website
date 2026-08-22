@@ -47,3 +47,17 @@ export function searchTerms(q: string | null | undefined, max = 5): string[] {
   }
   return out;
 }
+
+/**
+ * Mirror of the DB's generated `search_text` normalisation (migration
+ * qb_search_text_column): LaTeX commands and specials become spaces, lowered.
+ * Terms must pass through this before matching against search_text.
+ */
+export function normalizeForSearch(term: string): string {
+  return term
+    .toLowerCase()
+    .replace(/\\[a-zA-Z]+/g, ' ')
+    .replace(/[\\${}^_~&%|]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { compareQnum, excerptText, searchTerms } from './qb-browser';
+import { compareQnum, excerptText, searchTerms, normalizeForSearch } from './qb-browser';
 
 describe('compareQnum', () => {
   it('sorts numerically, not lexicographically', () => {
@@ -42,5 +42,14 @@ describe('searchTerms', () => {
   it('empty and junk input give an empty list', () => {
     expect(searchTerms('  a  ')).toEqual([]);
     expect(searchTerms(null)).toEqual([]);
+  });
+});
+
+describe('normalizeForSearch', () => {
+  it('strips LaTeX commands and specials, mirroring the DB column', () => {
+    expect(normalizeForSearch('Solve \\frac{2}{x} = $x^2$')).toBe('solve 2 x = x 2');
+  });
+  it('plain words pass through lowered', () => {
+    expect(normalizeForSearch('Circle Properties')).toBe('circle properties');
   });
 });

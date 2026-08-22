@@ -5,7 +5,7 @@
 // Deep links: ?id=<uuid> opens a question, ?school=&year=(&level=&paper=) opens
 // a paper — so triage notes, the bleed table and chats can link straight in.
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
@@ -16,7 +16,7 @@ const C = {
   warn: '#b45309', flagBg: '#fffbeb',
 };
 
-function Math({ text }: { text: string }) {
+function MathText({ text }: { text: string }) {
   return <span dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
 }
 function MathBlock({ text }: { text: string }) {
@@ -63,6 +63,29 @@ export default function QuestionBankPage() {
   const [paperView, setPaperView] = useState<{ meta: PaperMeta; questions: Card[] } | null>(null);
   const [toast, setToast] = useState('');
 
+  const [mode, setMode] = useState<'text' | 'smart'>('text');
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const cameraRef = useRef<HTMLInputElement | null>(null);
+
+  const [basket, setBasket] = useState<string[]>([]);
+  const [basketOpen, setBasketOpen] = useState(false);
+  const [wsAnswers, setWsAnswers] = useState(true);
+  const [wsBusy, setWsBusy] = useState(false);
+  const [cardCache, setCardCache] = useState<Record<string, Card>>({});
+
+  const [students, setStudents] = useState<{ id: string; name: string; level: string }[]>([]);
+  const [assignFor, setAssignFor] = useState<Card | null>(null);
+  const [assignFilter, setAssignFilter] = useState('');
+  const [assignBusy, setAssignBusy] = useState('');
+
+  const cacheCards = useCallback((cards: Card[]) => {
+    setCardCache(prev => {
+      const next = { ...prev };
+      for (const c of cards) next[c.id] = c;
+      return next;
+    });
+  }, []);
+
   const flash = (t: string) => { setToast(t); setTimeout(() => setToast(''), 1800); };
 
   const search = useCallback(async (offset = 0) => {
@@ -74,14 +97,26 @@ export default function QuestionBankPage() {
       if (year) p.set('year', year);
       if (school) p.set('school', school);
       if (offset) p.set('offset', String(offset));
-      const r = await fetch(`/api/admin/questions?${p}`);
-      const d = await r.json();
+      let d: { error?: string; results?: Card[] };
+      if (mode === 'smart') {
+        const r = await fetch('/api/admin/questions', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'semantic', q: query.trim(), level: level || undefined }),
+        });
+        d = await r.json();
+        setMoreOffset(null); // semantic returns one ranked page
+      } else {
+        const r = await fetch(`/api/admin/questions?${p}`);
+        d = await r.json();
+        setMoreOffset(((d.results as Card[]) || []).length === 30 ? offset + 30 : null);
+      }
       if (d.error) { setApiError(d.error); return; }
-      setResults(prev => (offset ? [...prev, ...(d.results || [])] : (d.results || [])));
-      setMoreOffset((d.results || []).length === 30 ? offset + 30 : null);
+      const got = d.results || [];
+      cacheCards(got);
+      setResults(prev => (offset && mode !== 'smart' ? [...prev, ...got] : got));
     } catch (e) { setApiError((e as Error).message); }
     finally { setLoading(false); }
-  }, [query, level, year, school]);
+  }, [query, level, year, school, mode, cacheCards]);
 
   const loadPapers = useCallback(async () => {
     setLoading(true); setApiError('');
@@ -104,6 +139,7 @@ export default function QuestionBankPage() {
       const r = await fetch(`/api/admin/questions?id=${id}`);
       const d = await r.json();
       if (d.error) { flash(d.error); return; }
+      cacheCards([d.question]);
       setOpenDetail(d.question);
     } catch (e) { flash((e as Error).message); }
   }, []);
@@ -118,6 +154,7 @@ export default function QuestionBankPage() {
       const r = await fetch(`/api/admin/questions?${p}`);
       const d = await r.json();
       if (d.error) { setApiError(d.error); return; }
+      cacheCards(d.questions || []);
       setPaperView({ meta, questions: d.questions || [] });
       setOpenDetail(null);
       window.scrollTo({ top: 0 });
@@ -159,6 +196,126 @@ export default function QuestionBankPage() {
   const badge = (c: Card) => [c.school, c.year, c.level, c.paper ? `P${String(c.paper).replace(/^P/i, '')}` : null, c.examType]
     .filter(Boolean).join(' · ');
 
+  // ── basket (persisted) ─────────────────────────────────────────────────────
+  useEffect(() => {
+    try { setBasket(JSON.parse(localStorage.getItem('qb_basket_v1') || '[]')); } catch { /* fresh */ }
+  }, []);
+  const saveBasket = (ids: string[]) => {
+    setBasket(ids);
+    try { localStorage.setItem('qb_basket_v1', JSON.stringify(ids)); } catch { /* private mode */ }
+  };
+  const inBasket = useCallback((qid: string) => basket.includes(qid), [basket]);
+  const toggleBasket = (c: Card) => {
+    cacheCards([c]);
+    if (basket.includes(c.id)) { saveBasket(basket.filter(x => x !== c.id)); flash('Removed from basket'); }
+    else if (basket.length >= 20) flash('Basket is full (20 max)');
+    else { saveBasket([...basket, c.id]); flash(`In basket (${basket.length + 1})`); }
+  };
+  const moveInBasket = (qid: string, dir: -1 | 1) => {
+    const i = basket.indexOf(qid);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= basket.length) return;
+    const next = [...basket];
+    [next[i], next[j]] = [next[j], next[i]];
+    saveBasket(next);
+  };
+  // Basket entries can outlive the card cache (reload); backfill lazily.
+  useEffect(() => {
+    if (!basketOpen) return;
+    const missing = basket.filter(qid => !cardCache[qid]);
+    if (!missing.length) return;
+    (async () => {
+      for (const qid of missing.slice(0, 20)) {
+        try {
+          const r = await fetch(`/api/admin/questions?id=${qid}`);
+          const d = await r.json();
+          if (d.question) cacheCards([d.question]);
+        } catch { /* card stays as id-only row */ }
+      }
+    })();
+  }, [basketOpen, basket, cardCache, cacheCards]);
+
+  const generateWorksheet = async () => {
+    if (!basket.length || wsBusy) return;
+    setWsBusy(true);
+    try {
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'worksheet', ids: basket, answers: wsAnswers }),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      (d.warnings || []).forEach((w: string) => flash(w));
+      window.open(d.url, '_blank');
+      navigator.clipboard?.writeText(d.url).catch(() => {});
+      flash(`Worksheet ready — ${d.count} questions (link copied)`);
+    } catch (e) { flash((e as Error).message); }
+    finally { setWsBusy(false); }
+  };
+
+  // ── camera → OCR → smart search ────────────────────────────────────────────
+  const onPhotoPicked = async (file: File | null) => {
+    if (!file) return;
+    setOcrBusy(true); setApiError('');
+    try {
+      const bmp = await createImageBitmap(file);
+      const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(bmp.width * scale);
+      canvas.height = Math.round(bmp.height * scale);
+      canvas.getContext('2d')!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'semantic', imageBase64: dataUrl.split(',')[1], mediaType: 'image/jpeg', level: level || undefined }),
+      });
+      const d = await r.json();
+      if (d.error) { setApiError(d.error); return; }
+      setMode('smart');
+      if (d.extractedText) setQuery(String(d.extractedText).slice(0, 200));
+      cacheCards(d.results || []);
+      setResults(d.results || []);
+      setPaperView(null); setOpenDetail(null); setTab('search');
+      setMoreOffset(null);
+      if (!(d.results || []).length) flash('No close match in the bank');
+    } catch (e) { setApiError((e as Error).message); }
+    finally { setOcrBusy(false); if (cameraRef.current) cameraRef.current.value = ''; }
+  };
+
+  // ── assign to student ──────────────────────────────────────────────────────
+  const openAssign = async (c: Card) => {
+    setAssignFor(c); setAssignFilter('');
+    if (!students.length) {
+      try {
+        const r = await fetch('/api/admin/progress/students');
+        const d = await r.json();
+        setStudents(d.students || []);
+      } catch { flash('Could not load students'); }
+    }
+  };
+  const doAssign = async (studentId: string, studentName: string) => {
+    if (!assignFor || assignBusy) return;
+    setAssignBusy(studentId);
+    try {
+      const r = await fetch('/api/admin/assignments', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId, kind: 'question', questionId: assignFor.id,
+          level: assignFor.level, topic: assignFor.topics[0] || null, tier: null, note: null, dueOn: null,
+        }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      flash(`Sent to ${studentName.split(' ')[0]}${j.notified ? ' — Telegram nudge delivered' : ''}`);
+      setAssignFor(null);
+    } catch (e) { flash((e as Error).message); }
+    finally { setAssignBusy(''); }
+  };
+  const visibleStudents = useMemo(
+    () => students.filter(st => st.name.toLowerCase().includes(assignFilter.toLowerCase())),
+    [students, assignFilter],
+  );
+
   if (!authed) {
     return (
       <main style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
@@ -183,7 +340,7 @@ export default function QuestionBankPage() {
     <div key={`${pt.label}-${depth}-${(pt.text || '').slice(0, 12)}`} style={{ marginLeft: depth * 14, marginTop: 8 }}>
       <div style={{ fontSize: 14.5 }}>
         {pt.label && <strong>{pt.label} </strong>}
-        {pt.text && <Math text={pt.text} />}
+        {pt.text && <MathText text={pt.text} />}
         {pt.marks != null && <span style={{ float: 'right', color: C.muted }}>[{pt.marks}]</span>}
       </div>
       {pt.image_url && <img src={pt.image_url} alt="" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />}
@@ -193,7 +350,7 @@ export default function QuestionBankPage() {
         </div>
       )}
       {showSolution && pt.answer && (
-        <div style={{ color: '#843C0C', fontSize: 13.5, margin: '2px 0' }}>Ans: <Math text={pt.answer} /></div>
+        <div style={{ color: '#843C0C', fontSize: 13.5, margin: '2px 0' }}>Ans: <MathText text={pt.answer} /></div>
       )}
       {(pt.subparts || []).map(sp => partBlock(sp, depth + 1))}
     </div>
@@ -213,7 +370,9 @@ export default function QuestionBankPage() {
         {openDetail.watermarkStatus && openDetail.watermarkStatus !== 'clean' && openDetail.watermarkStatus !== 'no_image' && (
           <span style={{ fontSize: 11.5, color: C.warn, background: C.flagBg, borderRadius: 6, padding: '1px 6px' }}>image: {openDetail.watermarkStatus ?? 'unscanned'}</span>
         )}
-        <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button onClick={() => toggleBasket(openDetail)} style={{ fontSize: 12.5, border: `1px solid ${inBasket(openDetail.id) ? C.accent : C.border}`, background: inBasket(openDetail.id) ? C.chipBg : '#fff', color: inBasket(openDetail.id) ? C.accent : '#111', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>{inBasket(openDetail.id) ? '🧺 In basket' : '🧺 Basket'}</button>
+          <button onClick={() => openAssign(openDetail)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>📬 Assign</button>
           <button onClick={() => copyLink(`id=${openDetail.id}`, 'Question')} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>🔗 Copy link</button>
           <button onClick={() => setOpenDetail(null)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>✕ Close</button>
         </span>
@@ -236,7 +395,7 @@ export default function QuestionBankPage() {
             </div>
           )}
           {openDetail.solutionImages.map(u => <img key={u} src={u} alt="solution" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />)}
-          {openDetail.answer && <div style={{ color: '#843C0C', marginTop: 8, fontSize: 14.5 }}>Ans: <Math text={openDetail.answer} /></div>}
+          {openDetail.answer && <div style={{ color: '#843C0C', marginTop: 8, fontSize: 14.5 }}>Ans: <MathText text={openDetail.answer} /></div>}
           {!openDetail.solution && !openDetail.parts.some(pt => pt.solution) && !openDetail.answer && (
             <div style={{ color: C.muted, fontSize: 13.5, marginTop: 6 }}>No stored solution on this question.</div>
           )}
@@ -261,9 +420,27 @@ export default function QuestionBankPage() {
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
         {tab === 'search' && (
-          <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && search(0)}
-            placeholder="Search question text or school…" inputMode="search"
-            style={{ flex: '1 1 100%', padding: '10px 12px', fontSize: 16, border: `1px solid ${C.border}`, borderRadius: 10 }} />
+          <div style={{ flex: '1 1 100%', display: 'flex', gap: 6 }}>
+            <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && search(0)}
+              placeholder={mode === 'smart' ? 'Describe the question — "ladder against wall trig"…' : 'Search question text or school…'} inputMode="search"
+              style={{ flex: 1, padding: '10px 12px', fontSize: 16, border: `1px solid ${C.border}`, borderRadius: 10 }} />
+            <button onClick={() => cameraRef.current?.click()} disabled={ocrBusy} title="Snap a question to find it"
+              style={{ padding: '0 12px', fontSize: 18, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 10, cursor: 'pointer' }}>
+              {ocrBusy ? '…' : '📷'}
+            </button>
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden
+              onChange={e => onPhotoPicked(e.target.files?.[0] ?? null)} />
+          </div>
+        )}
+        {tab === 'search' && (
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(['text', 'smart'] as const).map(m => (
+              <button key={m} onClick={() => setMode(m)}
+                style={{ fontSize: 12.5, fontWeight: 600, padding: '5px 11px', borderRadius: 999, border: `1px solid ${mode === m ? C.accent : C.border}`, background: mode === m ? C.chipBg : '#fff', color: mode === m ? C.accent : '#374151', cursor: 'pointer' }}>
+                {m === 'text' ? 'Text' : '✨ Smart'}
+              </button>
+            ))}
+          </div>
         )}
         <select value={level} onChange={e => setLevel(e.target.value)} style={{ padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8 }}>
           <option value="">All levels</option>
@@ -307,7 +484,7 @@ export default function QuestionBankPage() {
                 {c.marks != null && <span style={{ color: C.muted, fontSize: 12.5 }}>[{c.marks}]</span>}
                 {c.hasFigure && <span style={{ fontSize: 12 }}>🖼</span>}
               </div>
-              <div style={{ fontSize: 14, color: '#1f2937', marginTop: 3 }}><Math text={c.excerpt} /></div>
+              <div style={{ fontSize: 14, color: '#1f2937', marginTop: 3 }}><MathText text={c.excerpt} /></div>
             </button>
           ))}
         </section>
@@ -318,7 +495,7 @@ export default function QuestionBankPage() {
           {results.map(c => (
             <div key={c.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '10px 12px', marginBottom: 8 }}>
               <button onClick={() => openQuestion(c.id)} style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-                <div style={{ fontSize: 14.5, color: '#111' }}><Math text={c.excerpt} /></div>
+                <div style={{ fontSize: 14.5, color: '#111' }}><MathText text={c.excerpt} /></div>
               </button>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
                 <button onClick={() => c.school && c.year && openPaper({ school: c.school, year: c.year, level: c.level, paper: c.paper, examType: c.examType })}
@@ -328,6 +505,10 @@ export default function QuestionBankPage() {
                 {c.qnum && <span style={{ fontSize: 12, color: C.muted }}>Q{c.qnum}</span>}
                 {c.marks != null && <span style={{ fontSize: 12, color: C.muted }}>[{c.marks}]</span>}
                 {c.hasFigure && <span style={{ fontSize: 12 }}>🖼</span>}
+                <button onClick={() => toggleBasket(c)}
+                  style={{ marginLeft: 'auto', fontSize: 12, border: 'none', background: 'none', color: inBasket(c.id) ? C.accent : C.muted, cursor: 'pointer' }}>
+                  {inBasket(c.id) ? '🧺 ✓' : '🧺 +'}
+                </button>
               </div>
             </div>
           ))}
@@ -354,6 +535,72 @@ export default function QuestionBankPage() {
             </button>
           ))}
         </section>
+      )}
+      {basket.length > 0 && !basketOpen && (
+        <button onClick={() => setBasketOpen(true)}
+          style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 40, display: 'flex', gap: 8, alignItems: 'center', background: C.navy, color: '#fff', border: 'none', borderRadius: 999, padding: '10px 18px', fontSize: 14.5, fontWeight: 600, boxShadow: '0 4px 14px rgba(0,0,0,.25)', cursor: 'pointer' }}>
+          🧺 {basket.length} · View basket
+        </button>
+      )}
+
+      {basketOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 45, background: 'rgba(15,23,42,.45)' }} onClick={() => setBasketOpen(false)}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, maxHeight: '80vh', overflowY: 'auto', background: C.bg, borderRadius: '16px 16px 0 0', padding: '14px 14px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <strong style={{ fontSize: 16 }}>🧺 Worksheet basket · {basket.length}</strong>
+              <button onClick={() => saveBasket([])} style={{ fontSize: 12.5, color: '#b91c1c', border: 'none', background: 'none', cursor: 'pointer' }}>Clear</button>
+              <button onClick={() => setBasketOpen(false)} style={{ marginLeft: 'auto', fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>✕</button>
+            </div>
+            {basket.map((qid, i) => {
+              const c = cardCache[qid];
+              return (
+                <div key={qid} style={{ display: 'flex', gap: 8, alignItems: 'center', background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '8px 10px', marginBottom: 6 }}>
+                  <span style={{ color: C.muted, fontSize: 13, width: 18 }}>{i + 1}.</span>
+                  <button onClick={() => { setBasketOpen(false); openQuestion(qid); }}
+                    style={{ flex: 1, textAlign: 'left', border: 'none', background: 'none', fontSize: 13.5, cursor: 'pointer', padding: 0 }}>
+                    {c ? <MathText text={c.excerpt.slice(0, 90)} /> : `${qid.slice(0, 8)}…`}
+                  </button>
+                  {c && <button onClick={() => openAssign(c)} style={{ fontSize: 13, border: 'none', background: 'none', cursor: 'pointer' }}>📬</button>}
+                  <button onClick={() => moveInBasket(qid, -1)} disabled={i === 0} style={{ fontSize: 12, border: 'none', background: 'none', cursor: 'pointer', opacity: i === 0 ? 0.3 : 1 }}>▲</button>
+                  <button onClick={() => moveInBasket(qid, 1)} disabled={i === basket.length - 1} style={{ fontSize: 12, border: 'none', background: 'none', cursor: 'pointer', opacity: i === basket.length - 1 ? 0.3 : 1 }}>▼</button>
+                  <button onClick={() => saveBasket(basket.filter(x => x !== qid))} style={{ fontSize: 12, color: '#b91c1c', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
+                </div>
+              );
+            })}
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, margin: '10px 0' }}>
+              <input type="checkbox" checked={wsAnswers} onChange={e => setWsAnswers(e.target.checked)} />
+              Include the answers page
+            </label>
+            <button onClick={generateWorksheet} disabled={wsBusy || !basket.length}
+              style={{ width: '100%', padding: 12, fontSize: 15, fontWeight: 700, color: '#fff', background: C.good, border: 'none', borderRadius: 10, cursor: 'pointer' }}>
+              {wsBusy ? 'Building PDF…' : '📄 Generate worksheet PDF'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {assignFor && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 48, background: 'rgba(15,23,42,.45)' }} onClick={() => setAssignFor(null)}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, maxHeight: '70vh', overflowY: 'auto', background: C.bg, borderRadius: '16px 16px 0 0', padding: '14px 14px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+              <strong style={{ fontSize: 15.5 }}>📬 Assign to…</strong>
+              <button onClick={() => setAssignFor(null)} style={{ marginLeft: 'auto', fontSize: 13, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '4px 10px', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 8 }}><MathText text={assignFor.excerpt.slice(0, 100)} /></div>
+            <input value={assignFilter} onChange={e => setAssignFilter(e.target.value)} placeholder="Filter students…"
+              style={{ width: '100%', padding: '9px 11px', fontSize: 15, border: `1px solid ${C.border}`, borderRadius: 9, marginBottom: 8 }} />
+            {visibleStudents.map(st => (
+              <button key={st.id} onClick={() => doAssign(st.id, st.name)} disabled={!!assignBusy}
+                style={{ display: 'flex', gap: 10, width: '100%', textAlign: 'left', alignItems: 'baseline', background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}>
+                <strong style={{ fontSize: 14.5 }}>{assignBusy === st.id ? '…' : st.name}</strong>
+                <span style={{ color: C.muted, fontSize: 12.5 }}>{st.level}</span>
+              </button>
+            ))}
+            {!students.length && <div style={{ color: C.muted, fontSize: 13.5, padding: 12 }}>Loading students…</div>}
+          </div>
+        </div>
       )}
     </main>
   );

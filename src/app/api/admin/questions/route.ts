@@ -12,9 +12,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath, cropUrls } from '@/lib/kiosk-worksheet-images';
-import { compareQnum, excerptText, searchTerms } from '@/lib/qb-browser';
+import { compareQnum, excerptText, searchTerms, normalizeForSearch } from '@/lib/qb-browser';
+import { flattenParts, type Part } from '@/lib/kiosk-worksheet-images';
+import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-bot-worksheet';
+import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
 
 type Row = Record<string, unknown>;
 
@@ -169,7 +173,11 @@ export async function GET(req: NextRequest) {
   if (topic) q = q.contains('topics', [topic]);
   if (p.get('hasFigure') === '1') q = q.eq('has_image', true);
   for (const term of searchTerms(p.get('q'))) {
-    q = q.or(`question_text.ilike.%${term}%,school.ilike.%${term}%`);
+    const norm = normalizeForSearch(term);
+    if (!norm) continue;
+    // search_text is the LaTeX-stripped generated column (trigram-indexed);
+    // school still matches raw so "Dunman" works either way.
+    q = q.or(`search_text.ilike.%${norm}%,school.ilike.%${term}%`);
   }
   const offset = Math.max(0, Number(p.get('offset')) || 0);
   const { data, error } = await q
@@ -178,4 +186,101 @@ export async function GET(req: NextRequest) {
     .range(offset, offset + 29);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ results: (data ?? []).map(card), offset, pageSize: 30 });
+}
+
+
+// ── POST: semantic/photo search + worksheet-from-basket ──────────────────────
+export async function POST(req: NextRequest) {
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  let body: Record<string, unknown>;
+  try { body = (await req.json()) as Record<string, unknown>; }
+  catch { return NextResponse.json({ error: 'invalid JSON' }, { status: 400 }); }
+  const supa = getSupabaseAdmin();
+
+  // Smart search: the bot owns the embeddings + OCR (OpenAI key lives there);
+  // we send text or a photo, get ranked ids back, and render the cards.
+  if (body.action === 'semantic') {
+    const botBase = process.env.BOT_BASE_URL;
+    const botSecret = process.env.BOT_INTERNAL_SECRET;
+    if (!botBase || !botSecret) return NextResponse.json({ error: 'semantic search not configured' }, { status: 503 });
+    try {
+      const r = await fetch(`${botBase}/api/mark-paper`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phase: 'qb-search',
+          q: typeof body.q === 'string' ? body.q.slice(0, 2000) : undefined,
+          imageBase64: typeof body.imageBase64 === 'string' ? body.imageBase64 : undefined,
+          mediaType: typeof body.mediaType === 'string' ? body.mediaType : undefined,
+          level: typeof body.level === 'string' && body.level ? body.level : undefined,
+          count: 15,
+        }),
+        signal: AbortSignal.timeout(45_000),
+      });
+      const d = await r.json();
+      if (d.error) return NextResponse.json({ error: d.error }, { status: 502 });
+      const ids: string[] = Array.isArray(d.ids) ? d.ids : [];
+      if (!ids.length) return NextResponse.json({ results: [], extractedText: d.extractedText ?? null });
+      const { data, error } = await supa.from('questions').select(LIST_COLUMNS).in('id', ids);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      const byId = new Map((data ?? []).map((row) => [row.id as string, row]));
+      const results = ids.map((qid) => byId.get(qid)).filter(Boolean).map((row) => card(row as Row));
+      return NextResponse.json({ results, extractedText: d.extractedText ?? null });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 502 });
+    }
+  }
+
+  // Worksheet basket → house-style PDF of exactly the picked questions, in order.
+  if (body.action === 'worksheet') {
+    const ids = (Array.isArray(body.ids) ? body.ids : [])
+      .filter((x): x is string => typeof x === 'string' && /^[0-9a-f-]{36}$/.test(x))
+      .slice(0, 20);
+    if (!ids.length) return NextResponse.json({ error: 'ids[] required' }, { status: 400 });
+    const { data, error } = await supa
+      .from('questions')
+      .select(`${LIST_COLUMNS}, parts, answer, images, image_watermark_status`)
+      .in('id', ids);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const byId = new Map((data ?? []).map((row) => [row.id as string, row]));
+    const warnings: string[] = [];
+    const questions: BotWorksheetQuestion[] = [];
+    for (const qid of ids) {
+      const row = byId.get(qid) as Row | undefined;
+      if (!row) { warnings.push(`question ${qid.slice(0, 8)} not found — skipped`); continue; }
+      const flat = flattenParts((row.question_text as string) ?? '', (row.parts as Part[] | null) ?? null);
+      // Printed sheets follow the pool's watermark rule: scan images ride only
+      // when swept clean; engine figures (figure_url) are ours and always fine.
+      const clean = row.image_watermark_status === 'clean';
+      const figureUrl = typeof row.figure_url === 'string' && row.figure_url ? (row.figure_url as string) : null;
+      const imageUrls = figureUrl ? [] : (clean ? resolveImages(row, 4) : []);
+      if (row.has_image && !figureUrl && !clean) {
+        warnings.push(`Q${row.question_number ?? '?'} (${row.school ?? 'bank'}): image not watermark-clean — printed without its figure`);
+      }
+      questions.push({
+        id: qid,
+        markdown: flat.text,
+        marks: (row.total_marks as number | null) ?? null,
+        figureUrl,
+        imageUrls,
+        answer: flat.answer || ((row.answer as string | null) ?? '') || '—',
+      });
+    }
+    if (!questions.length) return NextResponse.json({ error: 'no usable questions' }, { status: 400 });
+    const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 60) : 'Selected Questions';
+    const dateLabel = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
+    try {
+      const pdf = await renderBotWorksheetPDF({
+        title, levelLabel: 'Custom', topic: title, tier: null, dateLabel, questions, answers: body.answers === true,
+      });
+      const blob = await put(`mark-paper/custom-worksheets/${Date.now()}.pdf`, pdf, {
+        access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      return NextResponse.json({ url: blob.url, count: questions.length, warnings });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json({ error: 'unknown action' }, { status: 400 });
 }
