@@ -66,8 +66,24 @@ export async function fetchWorksheetPool(
   });
   if (bankRes.error) return { items: [], error: bankRes.error.message };
 
+  // Watermark gate (22 Aug 2026): scanned figures may only serve when the
+  // watermark sweep marked them clean — flagged AND unscanned stay off printed
+  // sheets. Engine-drawn figures (figure_url) are ours and exempt. The RPC does
+  // not return the status, so one batched lookup covers the scan-image rows;
+  // a lookup failure fails CLOSED (those rows are skipped, never served dirty).
+  const scanIds = (bankRes.data || [])
+    .filter((r: { has_image?: boolean; figure_url?: string | null; id: string }) => r.has_image && !r.figure_url)
+    .map((r: { id: string }) => r.id);
+  let notClean = new Set<string>();
+  if (scanIds.length) {
+    const wm = await supa.from('questions').select('id, image_watermark_status').in('id', scanIds);
+    if (wm.error) notClean = new Set(scanIds);
+    else notClean = new Set((wm.data || []).filter(r => r.image_watermark_status !== 'clean').map(r => r.id as string));
+  }
+
   const items: PoolItem[] = [];
   for (const r of bankRes.data || []) {
+    if (notClean.has(r.id as string)) continue;
     const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
     const answer = flat.answer || ((r.answer as string | null) ?? '');
     if (!answer.trim()) continue; // answers always print — answer-less questions don't serve
