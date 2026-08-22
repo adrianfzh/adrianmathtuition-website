@@ -19,6 +19,7 @@ import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import {
   buildEntriesFromPapers, checkTypedAnswer, applyVerdict, entryKey, sgtToday,
 } from '@/lib/notebook';
+import { computeMastery } from '@/lib/mastery';
 
 export const dynamic = 'force-dynamic';
 
@@ -156,11 +157,20 @@ export async function GET() {
     .sort((a, b) => String(b.archived_at ?? '').localeCompare(String(a.archived_at ?? '')))
     .map(toClient);
 
+  // The re-mark loop closes here: every recorded re-attempt (live OR archived
+  // entry) feeds the same per-topic estimate the marked papers feed, so a win
+  // in the notebook moves the topic's score the moment the page reloads.
+  const mastery = computeMastery(
+    papers,
+    rows.map(e => ({ topic: e.topic, attempts: e.attempts })),
+  );
+
   return NextResponse.json({
     today,
     dueCount: live.filter(e => e.nextDue !== null && e.nextDue <= today).length,
     live,
     archived,
+    mastery,
   });
 }
 

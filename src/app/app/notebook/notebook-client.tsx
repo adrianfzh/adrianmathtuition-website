@@ -36,11 +36,20 @@ interface Entry {
   archivedAt: string | null;
 }
 
+interface TopicMastery {
+  topic: string;
+  score: number;
+  evidence: number;
+  delta: 'up' | 'down' | null;
+  state: 'weak' | 'shaky' | 'solid';
+}
+
 interface NotebookData {
   today: string;
   dueCount: number;
   live: Entry[];
   archived: Entry[];
+  mastery: TopicMastery[];
 }
 
 interface AttemptResult {
@@ -130,6 +139,32 @@ export default function NotebookClient() {
           <p className="text-xs text-gray-500 mt-0.5">conquered 🏆</p>
         </div>
       </div>
+
+      {data.mastery.length > 0 && (
+        <div className={`${CARD} p-4`}>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Where you stand</p>
+          <div className="flex flex-wrap gap-2">
+            {data.mastery.map(t => (
+              <Link
+                key={t.topic}
+                href={`/app/practice?topic=${encodeURIComponent(t.topic)}`}
+                className={`text-sm rounded-full px-3 py-1 transition-colors ${
+                  t.state === 'weak' ? 'bg-rose-50 text-rose-800 hover:bg-rose-100'
+                  : t.state === 'shaky' ? 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                  : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'}`}
+              >
+                {t.topic} <span className="font-semibold">{t.score}%</span>
+                {t.delta === 'up' && <span className="ml-1 text-emerald-600 font-bold">↑</span>}
+                {t.delta === 'down' && <span className="ml-1 text-rose-600 font-bold">↓</span>}
+              </Link>
+            ))}
+          </div>
+          <p className="text-[11px] text-gray-400 mt-2">
+            Live scores from your marked papers <em>and</em> your notebook wins — beat entries below
+            and watch a topic climb. Tap one to practise it.
+          </p>
+        </div>
+      )}
 
       {data.live.length === 0 && data.archived.length === 0 ? (
         <div className={`${CARD} p-5`}>
