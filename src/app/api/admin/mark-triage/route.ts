@@ -245,8 +245,15 @@ function escapeHtml(s: string) {
 // the bot returns a stored practice list without a model call (so Adrian's
 // earlier 📝 press, or a retry, never double-pays). Full-mark papers are
 // skipped before any of this is even queued.
-function queuePostReleaseEnrichment(runIds: string[]) {
+function queuePostReleaseEnrichment(runIds: string[], practiceIds?: string[]) {
   if (!runIds.length) return;
+  // Practice generation (a model call per dropped question) runs only for the
+  // ids in practiceIds — Telegram hand-ins are excluded since 22 Aug 2026: the
+  // student's 📝 button generates on demand, so an untapped paper costs nothing
+  // (Adrian: "if they don't tap the button, there is no need to generate").
+  // Revise mapping still runs for every released run (cheap, powers the portal
+  // chips).
+  const wantPractice = new Set(practiceIds ?? runIds);
   const botBase = process.env.BOT_BASE_URL;
   const botSecret = process.env.BOT_INTERNAL_SECRET;
   const botHeaders = { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' };
@@ -281,6 +288,7 @@ function queuePostReleaseEnrichment(runIds: string[]) {
 
     if (!botBase || !botSecret) return;
     for (const id of runIds) {
+      if (!wantPractice.has(id)) continue;
       try {
         const r = await fetch(`${botBase}/api/mark-paper`, {
           method: 'POST', headers: botHeaders, body: JSON.stringify({ phase: 'practice', id }),
@@ -391,6 +399,7 @@ export async function POST(req: NextRequest) {
       note?: string;
     }[] = [];
     const practiceQueue: string[] = [];
+    const enrichQueue: string[] = [];
 
     for (const run of runs ?? []) {
       if (run.released_at) {
@@ -440,7 +449,11 @@ export async function POST(req: NextRequest) {
 
       // Full marks → nothing to practise; don't even queue the call.
       const totals = recomputeTotals(run.result_json);
-      if (totals.max > 0 && totals.awarded < totals.max) practiceQueue.push(run.id);
+      if (totals.max > 0 && totals.awarded < totals.max) {
+        enrichQueue.push(run.id);
+        // Telegram hand-ins generate practice on the student's 📝 tap instead.
+        if (!telegramHandinOf(run.result_json)) practiceQueue.push(run.id);
+      }
 
       // "From Adrian" worksheet (SPEC-ASSIGN.md): the hand-in stamped its
       // assignment id on the run; releasing the marking is what flips the
@@ -461,7 +474,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    queuePostReleaseEnrichment(practiceQueue);
+    queuePostReleaseEnrichment(enrichQueue, practiceQueue);
 
     return NextResponse.json({
       ok: true,
