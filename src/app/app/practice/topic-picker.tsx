@@ -348,12 +348,15 @@ export function TopicSheet({ topic, types, tier, onTier, onStart, onClose }: {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-bold text-[15px]">Start practising</span>
-                <span className="block text-[12px] opacity-80">A mix of every kind of question · {total}</span>
+                <span className="block text-[12px] opacity-80">A mix of every kind of question</span>
               </span>
               <PortalIcon name="chevron-right" className="w-5 h-5 opacity-70 shrink-0" />
             </button>
 
-            {/* Or: one question type */}
+            {/* Or: one question type. No per-type counts (Adrian 2026-08-23):
+                a question serves several types, so the column summed to more
+                than the topic total and read as a contradiction. The count
+                still gates the row (0 → disabled). */}
             {types.length > 0 && (
               <div className="mt-4">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 px-1">Or just one kind of question</p>
@@ -364,7 +367,6 @@ export function TopicSheet({ topic, types, tier, onTier, onStart, onClose }: {
                       <button key={s.id} type="button" onClick={() => onStart(s)} disabled={n === 0}
                         className={`${ROW} py-2.5 disabled:opacity-40 disabled:cursor-not-allowed`}>
                         <span className="min-w-0 flex-1 text-[14px] font-medium text-navy leading-snug">{s.name}</span>
-                        <span className="text-[11px] text-slate-400 tabular-nums shrink-0">{n}</span>
                         <Chevron />
                       </button>
                     );

@@ -1292,6 +1292,13 @@ body {
 .math-working .katex-display { margin: 0.5rem 0; padding: 0.25rem 0; overflow-x: auto; overflow-y: hidden; text-align: left; }
 .math-working .katex-display > .katex { text-align: left; }
 .math-working .katex-display > .katex > .katex-html { text-align: left; }
+/* Phone fit (2026-08-23): KaTeX's default 1.21em made bank `\begin{array}`
+   tax/fare tables ~17px on a 14px page and wider than the screen; match the
+   1.05em the other surfaces use. Markdown tables scroll inside their own box
+   instead of pushing the page sideways. */
+.math-working .katex { font-size: 1.05em; }
+.math-working table { display: block; width: max-content; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.math-working img { max-width: 100%; height: auto; }
 
 /* ── Model solutions (/solutions) — markdown typography ───────────────────────
    The repo has no Tailwind typography plugin, so markdown rendered through

@@ -14,10 +14,8 @@
 // student's Airtable id) and handed to the flow as `initialAssignment`.
 import { notFound, redirect } from 'next/navigation';
 import PracticeFlow, { type InitialAssignment } from './practice-flow';
-import PortalFlowStrip from '@/components/PortalFlowStrip';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { portalSurfaces } from '@/lib/portal-surfaces';
 import { qbLevelsFor } from '@/lib/practice';
 import { getStudentAssignment } from '@/lib/portal-assignments';
 import { dueLabel } from '@/lib/assignments';
@@ -28,9 +26,10 @@ export const dynamic = 'force-dynamic';
 export default async function PracticePage({ searchParams }: { searchParams: Promise<{ assignment?: string }> }) {
   const { assignment: assignmentId } = await searchParams;
   let initialLevels: { key: string; label: string }[] | null = null;
-  // `account` is non-null only for a logged-in student — the admin-password
-  // testing mode renders a login card, not the journey, so the "you are here"
-  // strip keys off it too.
+  // `account` is non-null only for a logged-in student (the admin-password
+  // testing mode renders a login card instead). No "you are here" flow strip
+  // on this tab — Adrian 2026-08-23: the Practise → Hand in → Marked strip
+  // was just taking space above the topic list; it stays on /app/marking.
   let account: { airtable_student_id: string; level: string | null; subjects: string[] | null } | null = null;
   try {
     const supabase = await createSupabaseServer();
@@ -79,11 +78,5 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       },
     };
   }
-  const surfaces = await portalSurfaces();
-  return (
-    <>
-      {account && <PortalFlowStrip current="practice" surfaces={surfaces} />}
-      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} />
-    </>
-  );
+  return <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} />;
 }

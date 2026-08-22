@@ -2,12 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
-import remarkMath from 'remark-math';
-import remarkGfm from 'remark-gfm';
-import rehypeKatex from 'rehype-katex';
-import rehypeRaw from 'rehype-raw';
-import 'katex/dist/katex.min.css';
+import { MathMarkdown } from '@/lib/math-markdown';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 
@@ -24,21 +19,20 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 // shown"). It was briefly embedded on the student Home; it now has its own
 // tab — Home just links here.
 
-const REMARK = [remarkMath, remarkGfm];
-const REHYPE = [rehypeRaw, rehypeKatex];
+// Every markdown/KaTeX string on this page goes through the ONE shared
+// pipeline in lib/math-markdown.tsx (fixMathFences + prepareMath + KaTeX
+// options). Until 2026-08-23 this file carried its own plugin set, which is
+// why bank questions with `$\$18\,000$` rendered as "\18,000 .MrLimmade…" and
+// `$$\begin{array}` tables sat inline and ran off the phone screen.
 
 // Inline KaTeX for grader output (transcribed lines, comments, fixes). Typed
 // student lines and plain-text comments pass through untouched — markdown
 // rendering only kicks in when the string actually carries $...$ math, so a
 // hand-typed "3*4*5" can never get italicised by markdown rules.
+const INLINE_P = { p: ({ children }: { children?: React.ReactNode }) => <>{children}</> };
 function MathText({ text }: { text: string }) {
   if (!text.includes('$')) return <>{text}</>;
-  return (
-    <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}
-      components={{ p: ({ children }) => <>{children}</> }}>
-      {text}
-    </ReactMarkdown>
-  );
+  return <MathMarkdown content={text} components={INLINE_P} />;
 }
 
 type LevelOpt = { key: string; label: string };
@@ -66,7 +60,7 @@ type Question = {
 };
 
 function Md({ text }: { text: string }) {
-  return <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{text}</ReactMarkdown>;
+  return <MathMarkdown content={text} />;
 }
 
 // Exam-style layout: a 4-column grid — part label · sub-part label · text ·
@@ -645,10 +639,10 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           </div>
           {gen.ok ? (
             <>
-              <div className="prose prose-sm max-w-none text-slate-800"><ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{gen.question?.question || ''}</ReactMarkdown></div>
+              <div className="prose prose-sm max-w-none text-slate-800"><MathMarkdown content={gen.question?.question || ''} /></div>
               <div className="mt-3 text-sm text-slate-700"><b>Answer:</b> {gen.question?.answer}</div>
               <div className="mt-1 text-xs text-emerald-700">code-computed: {gen.verify?.computedAnswer} · wellPosed:{String(gen.verify?.wellPosed)} matches:{String(gen.verify?.matches)}</div>
-              {gen.question?.solution && <details className="mt-2 text-sm text-slate-600"><summary className="cursor-pointer text-slate-500">solution</summary><div className="prose prose-sm max-w-none mt-1"><ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{gen.question.solution}</ReactMarkdown></div></details>}
+              {gen.question?.solution && <details className="mt-2 text-sm text-slate-600"><summary className="cursor-pointer text-slate-500">solution</summary><div className="prose prose-sm max-w-none mt-1"><MathMarkdown content={gen.question.solution} /></div></details>}
             </>
           ) : (
             <div className="text-sm text-rose-700">{gen.reason || gen.error || 'failed'}{gen.lastVerify ? ` — computed ${gen.lastVerify.computedAnswer} vs claimed (mismatch); ${gen.lastVerify.reason || ''}` : ''}</div>
@@ -930,7 +924,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               {/* Aligned working from lib/solution-format.ts: left-align the display
                   blocks (KaTeX centres by default) and let wide lines scroll. */}
               <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed math-working">
-                <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE}>{solution}</ReactMarkdown>
+                <MathMarkdown content={solution} />
               </div>
             </div>
           )}

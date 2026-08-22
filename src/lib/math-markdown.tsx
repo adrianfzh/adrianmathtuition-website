@@ -15,6 +15,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
+import { prepareMath, DOLLAR_MACRO } from './math-prep';
 
 /**
  * remark-math v6 uses a fence model: `$$` must sit on its own line. The content
@@ -38,7 +39,9 @@ export const katexOptions = {
   trust: true,
   throwOnError: false,
   output: 'htmlAndMathml' as const,
-  macros: { '\\tfrac': '\\frac' },
+  // `\usd` is what lib/math-prep.ts substitutes for `\$` inside math spans
+  // (remark-math would otherwise read that `$` as the closing delimiter).
+  macros: { '\\tfrac': '\\frac', [DOLLAR_MACRO]: '\\$' },
 };
 
 /**
@@ -67,7 +70,7 @@ export function MathMarkdown({
       rehypePlugins={[rehypeRaw, [rehypeKatex, katexOptions]]}
       components={components}
     >
-      {fixMathFences(content)}
+      {fixMathFences(prepareMath(content))}
     </ReactMarkdown>
   );
 }
