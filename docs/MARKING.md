@@ -230,7 +230,16 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   the results panel, and run reload); ungrounded runs keep the list empty because gaps there
   just mean unsubmitted pages. The queue Telegram also carries a mismatch receipt
   (`⚠️ Question marks summed to 89 — used the official total (90)`), and the results header
-  shows the same note.
+  shows the same note. **Notes / worksheets / homework never ground (2026-08-22):** a
+  name containing `notes`, `worksheet`, `homework`/`hw`, `tutorial`, `topical`, `revision`
+  or `lecture` returns no official total even when it also says `jc1`/`practice` —
+  "adele jc1 apgp notes practice" was a 21-page notes doc whose Practice 1–4 sets she dipped
+  into; `jc1`+`practice` grounded its 75 counted marks to /100 and the review banner said
+  "25 marks went ungraded" on a paper with nothing missing. Separate from that false
+  alarm, a question on such a hand-in can legitimately show `question_found:false` — the
+  student's copy of the notes was a different version from the PDF uploaded (her Practice
+  3 Q3 was a GP/AP question; the uploaded PDF's Practice 3 Q3 is the integer-sets one), so
+  the marker marks it from the working alone and says so. Not a marker miss.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
 ## /admin/mark/triage — flagged-only review + the release gate (2026-08-11)
