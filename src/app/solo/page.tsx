@@ -168,7 +168,7 @@ export default function SoloPage() {
 
               {fb.strengths?.length > 0 && (
                 <div style={{ background: '#eefaf0', border: '1px solid #cdeed4', borderRadius: 16, padding: 16 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#3a7a4a', marginBottom: 6 }}>✓ What's working</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#3a7a4a', marginBottom: 6 }}>✓ What&apos;s working</div>
                   <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, color: '#2c4a35', lineHeight: 1.6 }}>{fb.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul>
                 </div>
               )}

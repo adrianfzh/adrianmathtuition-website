@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
 
       // Revision invoice data
       const revInvoice = revisionInvoiceMap.get(studentId);
-      let revisionSubjects: string[] = [];
+      const revisionSubjects: string[] = [];
       let revisionTotal = 0;
       let revisionInvoiceId: string | null = null;
       let revisionInvoiceStatus: string | null = null;

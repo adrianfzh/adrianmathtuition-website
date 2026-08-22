@@ -1216,7 +1216,7 @@ export default function SchedulePage() {
   // Date strip: fixed ±26-week range (364 dates) — computed once on mount.
   // No lazy-load: the fixed range is wide enough for tuition scheduling use,
   // and lazy-load was causing catastrophic scroll-jump bugs when combined with month labels.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   const stripDates = useMemo(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const dates: Date[] = [];
@@ -1300,7 +1300,7 @@ export default function SchedulePage() {
       .then(j => { if (!stale && j?.counts) setTargetDayCounts(prev => ({ ...prev, [d]: j.counts })); })
       .catch(() => {});
     return () => { stale = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [countsForDate]);
   const [actionSheet, setActionSheet] = useState<ActionSheetState | null>(null);
   // Topics of the original missed revision session, shown when a 🏖 Revision makeup
@@ -4515,7 +4515,7 @@ export default function SchedulePage() {
                     const today = new Date();
                     today.setHours(0,0,0,0);
                     const dates: string[] = [];
-                    let d = new Date(today);
+                    const d = new Date(today);
                     d.setDate(d.getDate() + 1); // start from tomorrow
                     while (dates.length < 2) {
                       if (d.getDay() === targetDay) {

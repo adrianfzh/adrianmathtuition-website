@@ -130,7 +130,7 @@ function ReceiptPreviewContent() {
           <div className="login-card">
             <div className="login-icon">📧</div>
             <h1>Receipt Preview</h1>
-            <p>Adrian's Math Tuition</p>
+            <p>Adrian&apos;s Math Tuition</p>
             <form onSubmit={handleLogin}>
               <input
                 type="password"

@@ -54,7 +54,7 @@ export default function AttendancePage() {
       } catch { setSearchResults([]); }
       finally { setSearchLoading(false); }
     }, 300);
-  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [search]);
 
   const loadAttendance = useCallback(async (studentId: string, p: number) => {
     setLoading(true); setError('');
@@ -64,7 +64,7 @@ export default function AttendancePage() {
       setData(await res.json());
     } catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   function selectStudent(s: Student) {
     setSelectedStudent(s);

@@ -5,7 +5,7 @@ name: CI
 # local pre-push hook (.husky/pre-push). Build/typecheck happens on Vercel.
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
 
 jobs:

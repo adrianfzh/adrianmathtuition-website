@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Nav from '@/components/Nav';
 
@@ -128,12 +129,12 @@ function ThankYouContent() {
                 Register on Telegram
               </a>
             )}
-            <a
+            <Link
               href="/"
               className="inline-flex items-center justify-center gap-2 bg-transparent text-muted-foreground px-6 py-2.5 rounded-full border-[1.5px] border-border font-medium text-sm hover:border-navy hover:text-navy transition-colors"
             >
               Back to website
-            </a>
+            </Link>
           </div>
         </div>
       </main>

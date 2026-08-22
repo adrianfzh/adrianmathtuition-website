@@ -811,7 +811,7 @@ Output only the JSON object. No markdown, no preamble.`;
 
 export async function createAnnotatedImage(
   base64Image: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   _mediaType: string,
   annotations: AnnotationResult,
   narrative?: string

@@ -13,6 +13,7 @@
 // there) — we read Student Name and nothing else.
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { airtableRequest } from '@/lib/airtable';
 import { REC_ID_RE } from '@/lib/referral-link';
 import SaveRef from './save-ref';
@@ -68,12 +69,12 @@ export default async function ReferralLanding({ params }: { params: Promise<{ co
         >
           💬 WhatsApp Adrian about a trial
         </a>
-        <a
+        <Link
           href="/"
           className="mt-3 inline-block w-full rounded-xl border-[1.5px] border-slate-300 px-5 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-50 transition"
         >
           See how lessons work
-        </a>
+        </Link>
         {firstName && (
           <p className="mt-5 text-[13px] text-slate-400">
             Signing up through this page links your registration to {firstName}&apos;s

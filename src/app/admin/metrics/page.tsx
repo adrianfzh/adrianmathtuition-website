@@ -40,7 +40,7 @@ export default function MetricsPage() {
       .then(r => r.ok ? r.json() : r.json().then(j => Promise.reject(j.error || 'Failed')))
       .then(d => { setData(d); setLoading(false); })
       .catch(e => { setError(String(e)); setLoading(false); });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Draw Chart.js line chart once data + canvas are ready
   useEffect(() => {

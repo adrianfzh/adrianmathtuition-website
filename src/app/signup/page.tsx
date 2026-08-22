@@ -1,13 +1,14 @@
 'use client';
 
 import Script from 'next/script';
+import Link from 'next/link';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import PortalActivate from './PortalActivate';
 
 declare global {
   interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     flatpickr?: (el: HTMLElement, config: Record<string, unknown>) => { destroy: () => void };
   }
 }
@@ -278,16 +279,16 @@ function SignupContent() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-border">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 no-underline">
+          <Link href="/" className="flex items-center gap-2 no-underline">
             <span className="font-display font-bold text-[18px] tracking-tight text-navy">ADRIAN&apos;S</span>
             <span className="text-muted-foreground text-sm">math tuition</span>
-          </a>
-          <a href="/" className="inline-flex items-center gap-1.5 text-muted-foreground text-sm font-medium hover:text-navy transition-colors no-underline">
+          </Link>
+          <Link href="/" className="inline-flex items-center gap-1.5 text-muted-foreground text-sm font-medium hover:text-navy transition-colors no-underline">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
             Back to website
-          </a>
+          </Link>
         </div>
       </nav>
 

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 
@@ -14,7 +15,7 @@ const policies = [
       <p>
         Your lessons will be held weekly on the fixed slot you&apos;ve chosen at registration. You can always check the
         current schedule at{' '}
-        <a href="/" className="text-navy font-medium">adrianmathtuition.com</a>.
+        <Link href="/" className="text-navy font-medium">adrianmathtuition.com</Link>.
       </p>
     ),
   },

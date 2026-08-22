@@ -320,7 +320,7 @@ export default function LessonModal({
         setCtxLoading(false);
       });
     // lesson.id is the only meaningful dep — slots is a stable ref.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [lesson.id]);
 
   // Clear pending timers when the modal closes to prevent post-unmount state updates.

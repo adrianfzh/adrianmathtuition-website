@@ -178,7 +178,7 @@ export default function EmailsPage() {
           <div className="login-card">
             <div className="login-icon">✉️</div>
             <h1>Email Log</h1>
-            <p>Adrian's Math Tuition</p>
+            <p>Adrian&apos;s Math Tuition</p>
             <form onSubmit={handleLogin}>
               <input
                 type="password"

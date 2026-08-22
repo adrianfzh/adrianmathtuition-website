@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'June Holidays Revision 2026 — Sec 4 EM & AM | Adrian\'s Math Tuition',
@@ -61,7 +62,7 @@ export default function JuneRevisionSec4Page() {
     <main style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', minHeight: '100vh', background: '#f8fafc', color: '#0f172a' }}>
       {/* Header */}
       <div style={{ background: HEADER_BG, color: '#fff', padding: '28px 24px 24px', textAlign: 'center' }}>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Adrian's Math Tuition</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Adrian&apos;s Math Tuition</div>
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, lineHeight: 1.2 }}>June Holidays Revision 2026</h1>
         <div style={{ marginTop: 8, fontSize: 15, color: 'rgba(255,255,255,0.75)' }}>Secondary 4 · E Math &amp; A Math</div>
         <div style={{ marginTop: 6, fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>2 June — 26 June 2026</div>
@@ -110,7 +111,7 @@ export default function JuneRevisionSec4Page() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: '#94a3b8' }}>
-          <a href="/" style={{ color: '#94a3b8', textDecoration: 'none' }}>adrianmathtuition.com</a>
+          <Link href="/" style={{ color: '#94a3b8', textDecoration: 'none' }}>adrianmathtuition.com</Link>
         </div>
       </div>
     </main>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import SendWorkCard from './send-work';
 import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
@@ -142,7 +143,7 @@ export default function StudentProfilePage() {
     } catch { showToast('err', 'Failed to bill'); }
     finally { setAdhocBilling(false); }
   }
-  useEffect(() => { if (authed && studentId) loadAdhoc(); /* eslint-disable-next-line */ }, [authed, studentId]);
+  useEffect(() => { if (authed && studentId) loadAdhoc();   }, [authed, studentId]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
@@ -543,7 +544,7 @@ export default function StudentProfilePage() {
     <div style={{ minHeight: '100vh', background: '#f3f4f6' }}>
       <div style={{ position: 'sticky', top: 0, zIndex: 10, background: '#fff', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ maxWidth: 760, margin: '0 auto', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href="/admin/students" style={{ color: '#9ca3af', textDecoration: 'none', fontSize: 22, lineHeight: 1, padding: 4 }}>‹</a>
+          <Link href="/admin/students" style={{ color: '#9ca3af', textDecoration: 'none', fontSize: 22, lineHeight: 1, padding: 4 }}>‹</Link>
           <span style={{ fontSize: 18, fontWeight: 700, color: '#111' }}>{s?.name || 'Student'}</span>
           {s?.status && s.status !== 'Active' && <span style={{ fontSize: 11, fontWeight: 700, color: '#b45309', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '2px 8px' }}>{s.status}</span>}
         </div>

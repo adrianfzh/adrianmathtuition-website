@@ -343,7 +343,7 @@ function QuickAddCardToSectionModal({ sectionName, kind, subgroups, level, topic
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
         <h2 className="text-base font-semibold text-slate-800 mb-1">
-          {kind === 'refresher' ? '🧠' : '💡'} New card in <span className="text-blue-600">"{sectionName}"</span>
+          {kind === 'refresher' ? '🧠' : '💡'} New card in <span className="text-blue-600">&quot;{sectionName}&quot;</span>
         </h2>
         <div className="space-y-4 mt-4">
           <div>
@@ -1699,7 +1699,7 @@ export default function EditCardsClient() {
     if (!level) { setTopics([]); setTopic(''); return; }
     fetch(`/api/admin/cards/topics?level=${encodeURIComponent(level)}`)
       .then((r) => r.json()).then((j) => setTopics(j.topics ?? [])).catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [level]);
 
   // Bank-question drop on left card list — create new card at insertion point
@@ -1737,7 +1737,7 @@ export default function EditCardsClient() {
       console.error('bank drop create failed', err);
       alert('Failed to create card from bank question: ' + (err instanceof Error ? err.message : String(err)));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [level, topic]);
   // Keep a ref to fetchCards so handleBankDropOnList (defined first) can call it without circular dep
   const fetchCardsRef = useRef<((silent?: boolean) => Promise<void>) | null>(null);

@@ -54,7 +54,7 @@ function countOccurrencesInMonth(
   if (targetDay === undefined) return [];
 
   const dates: { date: string; day: string; type: string }[] = [];
-  let current = new Date(invoiceMonth.firstDay);
+  const current = new Date(invoiceMonth.firstDay);
   while (current.getDay() !== targetDay) current.setDate(current.getDate() + 1);
   while (current <= invoiceMonth.lastDay && (!endDate || current <= endDate)) {
     const iso = current.toISOString().split('T')[0];
@@ -260,7 +260,7 @@ export async function POST(req: NextRequest) {
         const ratePerLesson = studentEnrollments.find((e: any) => e.fields['Rate Per Lesson'] > 0)?.fields['Rate Per Lesson'] || 0;
 
         const isProrated = isProratedMonth(invoiceMonth.month);
-        let allLineItems: { date: string; day: string; type: string }[] = [];
+        const allLineItems: { date: string; day: string; type: string }[] = [];
         let proratedLessonRecords: any[] = [];
         let hasLessons = false;
 

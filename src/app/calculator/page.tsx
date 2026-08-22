@@ -295,7 +295,7 @@ export default function CalculatorPage() {
 
   const applyZoom = (kind: string) => {
     const W = canvasRef.current?.clientWidth || 300, H = canvasRef.current?.clientHeight || 200;
-    let xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10), ymin = winNum('Ymin', -10), ymax = winNum('Ymax', 10);
+    const xmin = winNum('Xmin', -10), xmax = winNum('Xmax', 10), ymin = winNum('Ymin', -10), ymax = winNum('Ymax', 10);
     const set = (a: number, b: number, c: number, d: number, xs = '1', ys = '1') =>
       setWin({ Xmin: trim(a), Xmax: trim(b), Xscl: xs, Ymin: trim(c), Ymax: trim(d), Yscl: ys });
     if (kind === 'std') set(-10, 10, -10, 10);

@@ -694,7 +694,7 @@ export default function ChatPage() {
     setTimeout(() => {
       (fixedInputRef.current ?? welcomeInputRef.current)?.focus();
     }, 50);
-  }, [showError]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showError]);
 
   const removeImage = useCallback(() => {
     setSelectedFile(null);
@@ -945,7 +945,7 @@ export default function ChatPage() {
         waitKatex(0);
       })
       .catch(() => { /* restore is best-effort */ });
-  }, [addMessageToDOM, attachFeedbackRow, maybeShowRegistrationNudge]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [addMessageToDOM, attachFeedbackRow, maybeShowRegistrationNudge]);
 
   /* ── Transfer welcome text to fixed input on transition ── */
   useEffect(() => {

@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
     // Flagged questions (any flag) with student reasons if present.
     const flaggedPqs = practice.filter(q => (q.flagged_count || 0) > 0)
       .sort((a, b) => (b.flagged_count || 0) - (a.flagged_count || 0));
-    let flagReasons: Record<string, string[]> = {};
+    const flagReasons: Record<string, string[]> = {};
     if (flaggedPqs.length) {
       const ids = flaggedPqs.map(q => q.id);
       const { data: states } = await supa

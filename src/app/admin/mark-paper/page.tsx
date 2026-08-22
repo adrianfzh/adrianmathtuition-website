@@ -826,7 +826,7 @@ export default function MarkPaperPage() {
     }).catch(() => {});
   }
   // Attach an inbox file where the picker would have put it, then consume it.
-  async function useInboxFile(f: { pathname: string; url: string; name: string }, as: 'working' | 'paper') {
+  async function attachInboxFile(f: { pathname: string; url: string; name: string }, as: 'working' | 'paper') {
     setInboxBusy(f.pathname);
     try {
       const r = await fetch(f.url);
@@ -1481,10 +1481,10 @@ export default function MarkPaperPage() {
               // can never be the question paper (that slot is a PDF).
               const isPdf = /\.pdf$/i.test(f.name);
               const workingBtn = (dark: boolean) => (
-                <button key="w" style={{ ...btn, background: dark ? '#111827' : '#9ca3af', fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => useInboxFile(f, 'working')}>→ Working</button>
+                <button key="w" style={{ ...btn, background: dark ? '#111827' : '#9ca3af', fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => attachInboxFile(f, 'working')}>→ Working</button>
               );
               const paperBtn = (dark: boolean) => isPdf ? (
-                <button key="p" style={{ ...btn, background: dark ? '#374151' : '#9ca3af', fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => useInboxFile(f, 'paper')}>→ Question paper</button>
+                <button key="p" style={{ ...btn, background: dark ? '#374151' : '#9ca3af', fontSize: 13, padding: '6px 12px' }} disabled={!!inboxBusy} onClick={() => attachInboxFile(f, 'paper')}>→ Question paper</button>
               ) : null;
               return (
                 <div key={f.pathname} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '6px 0', fontSize: 14, opacity: inboxBusy === f.pathname ? 0.5 : 1 }}>

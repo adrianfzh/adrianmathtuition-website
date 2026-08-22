@@ -55,7 +55,7 @@ export default function MyTodosPage() {
     finally { setLoading(false); }
   }
 
-  useEffect(() => { if (authed) load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [authed]);
+  useEffect(() => { if (authed) load();   }, [authed]);
   useEffect(() => {
     ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
   }, []);

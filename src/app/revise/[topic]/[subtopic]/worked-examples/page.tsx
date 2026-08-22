@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import SwipeApp from './SwipeApp';
 import { topicSlug } from '@/lib/topic-slug';
 import { getSupabase } from '@/lib/supabase';
@@ -25,9 +26,9 @@ function NotFoundView({ level, slug }: { level: string; slug: string }) {
         Level: <code className="bg-gray-100 px-1 rounded">{level}</code>{' '}
         Topic: <code className="bg-gray-100 px-1 rounded">{slug}</code>
       </p>
-      <a href="/revise" className="mt-2 text-blue-600 underline text-sm">
+      <Link href="/revise" className="mt-2 text-blue-600 underline text-sm">
         Try the index →
-      </a>
+      </Link>
     </main>
   );
 }

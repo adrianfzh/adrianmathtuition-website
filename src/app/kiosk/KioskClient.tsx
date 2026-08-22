@@ -565,7 +565,7 @@ export default function KioskClient() {
           <div className="picker">
             {openState.adminBypass && (
               <div style={{ background: '#fff3cd', border: '1px solid #ffe08a', color: '#7a5b00', borderRadius: 10, padding: '8px 12px', margin: '0 0 12px', fontSize: 13, textAlign: 'center' }}>
-                ⚠ Kiosk is closed to students — you're viewing it as admin.
+                ⚠ Kiosk is closed to students — you&apos;re viewing it as admin.
               </div>
             )}
 

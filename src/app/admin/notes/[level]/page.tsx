@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { put } from '@vercel/blob/client';
 import { ensureAdminSession } from '@/lib/admin-client';
 
@@ -249,7 +250,7 @@ export default function NotesLevelPage({ params }: { params: Promise<{ level: st
 
         {/* Header */}
         <div className="nl-header">
-          <a href="/admin/notes" className="nl-back">← Notes</a>
+          <Link href="/admin/notes" className="nl-back">← Notes</Link>
           <span className="nl-title">{levelLabel} {kindLabel}</span>
           {/* Revision + prelim are Dropbox-managed — rename/delete/replace happen there. */}
           {!isDropboxOnly && (

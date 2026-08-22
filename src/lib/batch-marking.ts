@@ -198,7 +198,7 @@ export async function imageFileToPageImage(
 
 // ── Gemini region detection (sequential for cross-page context) ───────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 async function runGeminiDetect(
   model: any,
   imageBuffer: Buffer,
@@ -268,7 +268,7 @@ async function detectQuestionsOnPage(
   prevContext: PageContext | null
 ): Promise<DetectedQuestion[]> {
   const genai = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const model = genai.getGenerativeModel({
     model: 'gemini-2.5-pro',
     generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } as any,

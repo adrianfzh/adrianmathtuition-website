@@ -673,7 +673,7 @@ export default function EditNotesPage() {
     lineNumsRef.current.style.transform = `translateY(-${textareaRef.current.scrollTop}px)`;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   function renderMath(el: HTMLElement) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rme = (window as any).renderMathInElement;
@@ -1430,7 +1430,7 @@ export default function EditNotesPage() {
 
         {/* Top nav */}
         <nav className="en-nav">
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          { }
           <a href="javascript:history.back()" className="en-back" aria-label="Back">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />

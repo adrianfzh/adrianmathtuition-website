@@ -597,7 +597,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // canvas at every commit (renderBase fully repaints right after).
   const baseResetPendingRef = useRef(false);
   const resetSurface = useCallback((canvas: HTMLCanvasElement | null) => {
-    if (canvas && canvas.width > 0) canvas.width = canvas.width; // eslint-disable-line no-self-assign
+    if (canvas && canvas.width > 0) canvas.width = canvas.width;
   }, []);
 
   const scheduleBase = useCallback(() => {

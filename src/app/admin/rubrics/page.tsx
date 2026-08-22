@@ -28,7 +28,7 @@ export default function RubricsPage() {
     setCanEdit(!!d.canEdit);
     setNotes(Object.fromEntries((d.rubrics || []).map((x: Rubric) => [x.id, x.grading_notes || ''])));
   }
-  useEffect(() => { if (authed) load(); /* eslint-disable-next-line */ }, [authed]);
+  useEffect(() => { if (authed) load();   }, [authed]);
   useEffect(() => { ensureAdminSession().then((ok) => { if (ok) setAuthed(true); }); }, []);
 
   async function verify(pw: string) {

@@ -12,7 +12,29 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Not our code / retired code:
+    "public/pdf.worker.min.mjs", // vendored pdfjs build artifact
+    "_old/**", // pre-App-Router legacy, kept for reference only
+    "_backups/**",
   ]),
+  {
+    rules: {
+      // ~730 pre-existing `any`s — keep them visible as warnings instead of a
+      // permanent red wall; new code should still prefer real types.
+      "@typescript-eslint/no-explicit-any": "warn",
+      // React-Compiler-prep rules (new in react-hooks v6) flag long-standing
+      // working patterns; fix opportunistically rather than gate CI on them.
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/refs": "warn",
+      "react-hooks/purity": "warn",
+      "react-hooks/error-boundaries": "warn",
+    },
+  },
+  {
+    // Node CommonJS utility scripts — require() is correct there.
+    files: ["scripts/**/*.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;
