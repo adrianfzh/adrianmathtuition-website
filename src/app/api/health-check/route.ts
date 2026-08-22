@@ -247,12 +247,18 @@ export async function GET(req: NextRequest) {
         if (!q.ok) throw new Error(`${fn}: HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
         const rows = await q.json();
         if (!Array.isArray(rows) || rows.length === 0) throw new Error(`${fn} ${JSON.stringify(body)} returned no rows`);
-        return rows.length;
+        return rows as { n?: number }[];
       };
       const jc = await rpc('practice_topics', { p_level: 'JC', p_qlevel: null });
       const s3 = await rpc('practice_topics', { p_level: 'AM', p_qlevel: 'S3_AM' });
       const types = await rpc('practice_subgroups', { p_level: 'AM', p_topic: null, p_qlevel: null });
-      return `JC ${jc} topics · S3 AM ${s3} · AM ${types} question types`;
+      // Pool-size floor (2026-08-22): the topic-tag fallback (practice_pool)
+      // lifted JC from ~2.1k to ~8k topic-rows. A regression to filing-only
+      // (someone redefining an RPC without the pool) would silently show JC
+      // students a quarter of the bank — the floor makes that red.
+      const jcTotal = jc.reduce((a, r) => a + (Number(r.n) || 0), 0);
+      if (jcTotal < 4000) throw new Error(`JC practice pool shrank to ${jcTotal} (expected ≥ 4000 — topic-tag fallback lost?)`);
+      return `JC ${jc.length} topics / ${jcTotal} q · S3 AM ${s3.length} · AM ${types.length} question types`;
     }),
     // The parent-report store the monthly cron writes into. It runs unattended
     // on the 1st, so a broken table or renamed column would mean parents simply

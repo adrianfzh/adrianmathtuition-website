@@ -134,3 +134,33 @@ See migration `student_portal_v1_schema` for full DDL. Tables created:
 - `student_attempts` — student answer attempts on /similar variants
 
 RLS policies: students can only `SELECT` their own rows from each table. Service-role bypass for the admin invite flow + cron jobs.
+
+## Practice pool — which questions a topic serves (2026-08-22)
+
+The portal practice draw (`/api/portal/practice/{next,overview,topics}`, plus
+`practice_candidates` for "From Adrian" picks and `practice_exemplars` for Learn)
+reads the Supabase RPC **`practice_pool(p_level, p_topic)`** — the single
+definition of "which bank questions belong to this `/revise` tree topic":
+
+- **filed** — the question sits in a sub-group of that (level, topic) via
+  `question_subgroups → subgroups`. Unchanged behaviour.
+- **tagged** — the question is NOT filed anywhere in that tree, but its
+  `questions.topics[]` tag names the tree topic and its bank level belongs to
+  the tree (`practice_qlevels`: JC = JC1+JC2, AM = AM+S3_AM, EM = EM+S3_EM, S1,
+  S2). A filing always wins over a tag, so a question can never show under two
+  topics because of the fallback.
+
+Why: until 2026-08-22 the draw was filing-only, and ~7,300 eligible questions
+(all of JC1, most of JC2, half of S3_AM, a third of S1/S2) had never been filed
+— students saw JC Vectors as 165 questions when the bank holds ~720. The kiosk
+worksheet pool (`kiosk_pool`) had always done tag ∪ sub-group; the portal was
+the odd one out.
+
+**Per-question-type draws stay filing-only** (`practice_next` with `p_subgroup`,
+`practice_subgroups`): a tag knows the topic, not the type. So on the topic
+sheet the type counts can sum to less than the "Start (mix)" total — that gap
+is exactly the unfiled backlog, which the plan-billed filing backfill
+(`cc_backfill` rows in `question_subgroups`, bot repo) works down over time.
+
+Guard: `/api/health-check` `practice-picker` fails if the JC pool drops below
+4,000 topic-rows (a redefined RPC that forgot the pool would do that).

@@ -9,7 +9,12 @@ export const runtime = 'nodejs';
 // Circles → "Tangent at a Point on the Circle"), with answerable-question
 // counts. One call per level — the picker caches it and filters client-side,
 // so opening a topic sheet costs no round trip. Same eligibility filter as
-// practice_topics, so the per-type counts sum to the topic total.
+// practice_topics, but FILING-ONLY: the topic total (practice_topics /
+// practice_overview, via the `practice_pool` RPC) also counts questions that
+// are not filed in any sub-group yet but carry the topic as a `topics[]` tag,
+// so the per-type counts can sum to LESS than the topic total. The "Start
+// (mix)" draw serves the whole pool; a type pick serves only its filing.
+// (2026-08-22 — see PORTAL.md "Practice pool".)
 // Auth: portal student session (level-gated) OR admin Bearer (testing).
 export async function GET(req: NextRequest) {
   const caller = await practiceAuth(req);
