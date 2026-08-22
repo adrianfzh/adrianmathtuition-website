@@ -212,6 +212,21 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // The error notebook (/app/notebook). 401 anonymously proves the API is
+    // deployed with its gate up; the REST probe proves notebook_entries still
+    // answers — a dropped table would otherwise surface only as students'
+    // notebooks silently emptying.
+    timed('portal-notebook', async () => {
+      const r = await fetch(`${base}/api/portal/notebook`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const q = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/notebook_entries?select=id&limit=1`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
+      );
+      if (!q.ok) throw new Error(`notebook_entries? HTTP ${q.status}`);
+      return 'auth gate up';
+    }),
     // "From Adrian" assigned work (SPEC-ASSIGN.md). The student list route must
     // hold its auth gate (401 anonymously — a 404 means the Home card and
     // /app/assignments silently vanish), and the table + the columns the Home

@@ -28,18 +28,23 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const adminPowers = isAdmin && !viewingAsStudent;
   const fullPortal = adminPowers || !MARKING_ONLY_BETA;
   const learnVisible = adminPowers || LEARN_OPEN_TO_STUDENTS;
+  // The notebook is part of the marking loop (born from released marked
+  // papers), so it ships inside the marking-only beta too (Adrian, 2026-08-23:
+  // "build a v1 error notebook … in their student portal").
   const desktopLinks = fullPortal
     ? [
         { href: '/app', label: 'Dashboard' },
         { href: '/app/practice', label: 'Practice' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
         { href: '/app/submit', label: 'Submit' },
+        { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
       ]
     : [
         { href: '/app', label: 'Dashboard' },
         { href: '/app/practice', label: 'Practise' },
         { href: '/app/submit', label: 'Hand in a paper' },
+        { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked papers' },
       ];
   const mobileTabs = fullPortal
@@ -47,12 +52,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practice' },
         ...(learnVisible ? [{ href: '/app/learn', label: 'Learn' }] : []),
+        { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
       ]
     : [
         { href: '/app', label: 'Home' },
         { href: '/app/practice', label: 'Practise' },
         { href: '/app/submit', label: 'Hand in' },
+        { href: '/app/notebook', label: 'Notebook' },
         { href: '/app/marking', label: 'Marked' },
       ];
   // "From Adrian" pending work → numeric badge on Home (no 5th tab, per spec).

@@ -44,6 +44,8 @@ export interface StudentQuestion {
   slips: string[];
   /** Full marks — the page greys these down so the losses stand out. */
   full: boolean;
+  /** The printed question as the marker read it, when it extracted one. */
+  prompt: string | null;
   /**
    * "📚 Revise this concept" link into the worked-examples swipe player, when
    * the release-time mapper (`result_json.revise`, lib/revise-map) matched this
@@ -137,7 +139,8 @@ function toQuestion(raw: unknown): StudentQuestion | null {
 
   const max = num(marking.total_max);
   const awarded = num(marking.total_awarded);
-  const meta = asRecord(asRecord(r.marking_output)?.meta) ?? {};
+  const output = asRecord(r.marking_output);
+  const meta = asRecord(output?.meta) ?? {};
   const parts = Array.isArray(marking.parts) ? marking.parts : [];
 
   const slips: string[] = [];
@@ -161,6 +164,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     comment: str(marking.overall_comment),
     slips,
     full: max > 0 && awarded >= max,
+    prompt: str(asRecord(output?.question)?.prompt) || null,
     revise: null, // attached per-paper from result_json.revise in toPaper
   };
 }

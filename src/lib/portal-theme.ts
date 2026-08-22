@@ -10,7 +10,7 @@
 // Pure data (no React) so the server layout, client components and tests can
 // all import it. Icon names resolve in components/PortalIcon.tsx.
 
-export type SurfaceKey = 'home' | 'assignments' | 'practice' | 'submit' | 'marking' | 'learn' | 'notes' | 'settings' | 'lesson';
+export type SurfaceKey = 'home' | 'assignments' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson';
 
 export type SurfaceIdentity = {
   key: SurfaceKey;
@@ -46,6 +46,10 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
   marking: {
     key: 'marking', label: 'Marked', icon: 'file-check',
     tile: 'bg-violet-500 text-white', text: 'text-violet-700', tint: 'bg-violet-50', ring: 'ring-violet-400/60',
+  },
+  notebook: {
+    key: 'notebook', label: 'Notebook', icon: 'notebook',
+    tile: 'bg-rose-500 text-white', text: 'text-rose-700', tint: 'bg-rose-50', ring: 'ring-rose-400/60',
   },
   learn: {
     key: 'learn', label: 'Learn', icon: 'book',
