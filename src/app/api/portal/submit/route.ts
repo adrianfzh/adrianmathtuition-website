@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     .eq('result_json->>portal_submission', 'true')
     .gte('created_at', sgtStartOfDayIso());
   if ((count ?? 0) >= DAILY_SUBMIT_CAP) {
-    return NextResponse.json({ error: 'You have already sent in a paper today — Mr Fong takes one paper per student per day. Send the next one tomorrow!' }, { status: 429 });
+    return NextResponse.json({ error: 'You have already sent in a paper today — Adrian marks one paper per student per day. Send the next one tomorrow!' }, { status: 429 });
   }
 
   const botBase = process.env.BOT_BASE_URL;
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
   // Tag the run to its student (same phase the admin send row uses).
   await bot({ phase: 'set-student', id: runId, studentId, studentName: account.display_name || '' });
 
-  // Stamp HOW it arrived, so student-facing surfaces can show "with Mr Fong" for
+  // Stamp HOW it arrived, so student-facing surfaces can show "with Adrian" for
   // portal hand-ins without ever picking up papers Adrian uploaded himself.
   // Read-merge-write on a row created milliseconds ago — nothing else has it yet.
   try {

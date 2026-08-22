@@ -150,6 +150,14 @@ type PracticeItem = { for: string; source: 'db' | 'generated'; question: string;
 // Everything a PDF build needs. Normally read off state, but the automatic build that
 // fires the instant a paper finishes marking runs in the same tick as the setState
 // calls that would fill it — so the marking gets handed over directly instead.
+// The browser↔Vercel hop died while the bot was still marking (fetch TypeError,
+// or a gateway page where JSON should be). Distinct from a marker error, which
+// always comes back as JSON `{error}` — only a drop is worth waiting out.
+class DroppedError extends Error { dropped = true; }
+function isDropped(e: unknown): boolean {
+  return e instanceof DroppedError || (e instanceof TypeError && /fetch|load failed|network/i.test(e.message));
+}
+
 type PdfSource = {
   results: Result[] | null;
   annotatedPhotos: AnnotatedPhoto[];
@@ -266,6 +274,11 @@ export default function MarkPaperPage() {
   // Set when a build's connection died and we're waiting for the server's copy to
   // appear on the run instead. Purely so the page doesn't look frozen for a minute.
   const [recovering, setRecovering] = useState<'full' | 'photos' | null>(null);
+  // A marking whose browser↔Vercel connection died mid-flight (the bot keeps
+  // marking and fills the pending row regardless). While set, the page polls
+  // that row and loads it the moment the marks land — no re-mark, no re-pay
+  // (Adrian, 22 Aug 2026, after a finished marking showed as a dead ⏳ row).
+  const [markRecovering, setMarkRecovering] = useState<{ id: string; since: number; checks: number } | null>(null);
   // Send / save block (the no-amendments fast path). Email only — WhatsApp goes out
   // from Adrian's PERSONAL number on the Mac by dragging the downloaded file in, so the
   // WhatsApp feature here is the nicely-named Download, not a send button.
@@ -528,10 +541,10 @@ export default function MarkPaperPage() {
     let d: { results?: Result[]; totals?: { awarded: number; max: number; counted_max?: number; max_source?: string }; unattempted_questions?: string[]; review?: { recommended: boolean; reason: string; unmapped_max?: number }; annotated_photos?: AnnotatedPhoto[]; run_id?: string | null; usage?: Usage; error?: string };
     try { d = raw ? JSON.parse(raw) : {}; }
     catch {
-      const hint = resp.status === 413
-        ? 'the upload is too large for the server — try fewer photos, or a smaller PDF'
-        : 'it likely timed out — try fewer photos at once';
-      throw new Error(`The marker didn't return a result (status ${resp.status}) — ${hint}.`);
+      if (resp.status === 413) throw new Error('The marker didn\'t return a result (status 413) — the upload is too large for the server — try fewer photos, or a smaller PDF.');
+      // A gateway page instead of JSON (502/504/0) is the connection dropping,
+      // not the marker failing — markPaper turns this into a wait on the row.
+      throw new DroppedError(`The marker didn't return a result (status ${resp.status}) — it likely timed out — try fewer photos at once.`);
     }
     if (!resp.ok) throw new Error(d.error || `Marking failed (status ${resp.status})`);
     setResults(d.results || []);
@@ -562,6 +575,7 @@ export default function MarkPaperPage() {
     // button, so blanking it back to the filename would throw away the thing he
     // just wrote. Only an untouched box falls back to the working PDF's name.
     setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setPracticeItems(null); setDbxNote(null);
+    let pendingId: string | null = null;
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
       // worksheets where the printed questions are on the pages themselves).
@@ -581,7 +595,6 @@ export default function MarkPaperPage() {
       // Blob, so retrying is one ▶ Mark tap, never a re-upload (Adrian, 3 Aug
       // 2026, after two deploy-killed markings). Best-effort: if this fails,
       // marking proceeds exactly as before.
-      let pendingId: string | null = null;
       try {
         const sp = await fetch('/api/admin/mark-paper', {
           method: 'POST', headers: authHeaders,
@@ -622,12 +635,45 @@ export default function MarkPaperPage() {
       });
       await applyMarkResponse(resp);
     } catch (e) {
+      // Connection dropped but the row exists → the marking is still running
+      // server-side. Wait for it instead of declaring a failure.
+      if (isDropped(e) && pendingId) { recoverMarking(pendingId); return; }
       // The uploads survive a failed marking (the saved-paper row keeps them) —
       // say so, or this reads as "start over".
       setError(`${(e as Error).message} Your uploads are saved — this paper is in Recent marked papers with a ▶ Mark button; no need to re-attach anything.`);
       setPhase('idle');
       loadStats();
     }
+  }
+
+  // Poll a run whose marking connection died until its marks land, then load it
+  // exactly as a history-row tap would and build the PDFs — the same tail as a
+  // marking that returned normally. Gives up after the bot's own ceiling.
+  async function recoverMarking(id: string) {
+    const since = Date.now();
+    setMarkRecovering({ id, since, checks: 0 });
+    try {
+      for (let i = 0; i < 72; i++) {          // 72 × 10s = 12 min
+        await new Promise((r) => setTimeout(r, 10000));
+        setMarkRecovering({ id, since, checks: i + 1 });
+        let run: { total_max?: number | null; result_json?: { results?: Result[]; annotated_photos?: AnnotatedPhoto[]; totals?: PdfSource['totals'] } } | null = null;
+        try {
+          const r = await fetch('/api/admin/mark-paper', { method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'run', id }) });
+          const d = await r.json();
+          run = d.run || null;
+        } catch { /* still offline — keep waiting */ }
+        const rj = run?.result_json;
+        if (run && (rj?.results?.length || rj?.annotated_photos?.length)) {
+          await loadRun(id);
+          loadStats();
+          generateBoth({ results: rj.results || [], annotatedPhotos: rj.annotated_photos || [], totals: rj.totals || null, runId: id });
+          return;
+        }
+      }
+      setError('The marking connection dropped and the server hasn\'t finished after 12 minutes. The paper is in Recent marked papers — ▶ Mark there if it is still ⏳.');
+      setPhase('idle');
+      loadStats();
+    } finally { setMarkRecovering(null); }
   }
 
   // 🔁 Re-mark: the loaded run's stored inputs (photo originals + paper PDF in Blob)
@@ -655,7 +701,10 @@ export default function MarkPaperPage() {
         body: JSON.stringify({ phase: 'remark', id, model: markModel, style: markStyle }),
       });
       await applyMarkResponse(resp);
-    } catch (e) { setError((e as Error).message); setPhase('idle'); }
+    } catch (e) {
+      if (isDropped(e)) { recoverMarking(id); return; }
+      setError((e as Error).message); setPhase('idle');
+    }
   }
 
   // The URL a run currently holds for one half, or null. Read before a build so a
@@ -1194,6 +1243,20 @@ export default function MarkPaperPage() {
   }
   const wrongCount = (results || []).filter((r) => (r.marking?.total_max ?? 0) > 0 && (r.marking?.total_awarded ?? 0) < (r.marking?.total_max ?? 0)).length;
 
+  // Auto-refresh the history while a row is still being marked server-side
+  // (⏳, not 🌙-queued, under 15 min old): a marking whose browser connection
+  // dropped finishes anyway and fills the row — this is what turns the ⏳ into
+  // marks without a manual reload. Queued rows are the bot's overnight queue
+  // and Telegram announces those; no point polling them all day.
+  const liveRows = recentRuns.some((r) => r.total_max == null && !r.queued_at && !r.queue_failed
+    && Date.now() - new Date(r.created_at).getTime() < 15 * 60 * 1000);
+  useEffect(() => {
+    if (!liveRows) return;
+    const t = setInterval(() => { if (!document.hidden) loadStats(); }, 15000);
+    return () => clearInterval(t);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [liveRows]);
+
   // Seen/unseen split for the history list (Adrian, 20 Aug 2026). checked_at is
   // stamped by sending, the send row's ⬇ download, saving an annotated copy, or
   // the manual ✓ below — NOT by peeking at a PDF from a history row.
@@ -1324,7 +1387,7 @@ export default function MarkPaperPage() {
                     {run.queue_failed ? '⚠ queue failed twice'
                       : run.queued_at ? '🌙 queued — the bot will mark it and Telegram you'
                       : canMark ? '⏳ uploaded — not marked yet'
-                      : '⏳ marking may still be running — check back in a minute'}
+                      : '⏳ still marking on the server — this row updates itself when it lands'}
                   </span>
                 ) : (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
@@ -1536,8 +1599,14 @@ export default function MarkPaperPage() {
         </div>
         <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={markPaper}>
-            {phase === 'marking' ? 'Marking…' : 'Mark paper'}
+            {phase === 'marking' ? (markRecovering ? 'Waiting for the server…' : 'Marking…') : 'Mark paper'}
           </button>
+          {markRecovering && (
+            <span style={{ fontSize: 12, color: '#b45309', fontWeight: 600 }}>
+              ⏳ Connection dropped — the marking is still running on the server. Waiting for it
+              ({Math.round((Date.now() - markRecovering.since) / 60000)} min, checked {markRecovering.checks}×); it loads here by itself when it lands.
+            </span>
+          )}
           <button style={{ ...btn, background: '#4c1d95', opacity: busy || queueBusy ? 0.6 : 1 }} disabled={busy || queueBusy} onClick={queuePaper}
             title="Upload now, mark in the background — Telegram pings you per paper">
             {queueBusy ? 'Queueing…' : '🌙 Queue for marking'}

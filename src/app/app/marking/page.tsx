@@ -98,7 +98,7 @@ export default async function MarkingPage() {
 
       {pending.length > 0 && (
         <div className={`${CARD} p-4`}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">With Mr Fong</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">With Adrian</p>
           <ul className="space-y-1.5">
             {pending.map(p => (
               <li key={p.id} className="text-sm text-gray-700 flex items-baseline justify-between gap-3">

@@ -133,8 +133,9 @@ export default function SettingsClient({
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Your data</p>
         <p className="text-sm text-gray-600 mb-3">
-          Download a copy of all stored data (account details, practice attempts, and feedback), or
-          permanently delete the account. Details in the{' '}
+          Download a copy of everything the portal stores about you — account details, every practice
+          attempt and its marking, your marked papers, work from Adrian, and your Learn activity — as one
+          JSON file. Or permanently delete the account. Details in the{' '}
           <a href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</a>.
         </p>
         <a href="/api/portal/export" className="inline-block text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors">

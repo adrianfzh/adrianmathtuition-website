@@ -112,7 +112,7 @@ export default function SubmitClient({ assignment = null }: { assignment?: { id:
         });
         urls.push(blob.url);
       }
-      setStage('Sending to Mr Fong…');
+      setStage('Sending to Adrian…');
       const r = await fetch('/api/portal/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,7 +135,7 @@ export default function SubmitClient({ assignment = null }: { assignment?: { id:
         <h1 className="text-xl font-bold text-navy pt-1">{assignment ? 'Worksheet sent' : 'Submit a paper'}</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">✅</p>
-          <p className="font-bold text-navy mt-2">{assignment ? `“${assignment.title}” sent for marking` : 'Sent to Mr Fong for marking'}</p>
+          <p className="font-bold text-navy mt-2">{assignment ? `“${assignment.title}” sent for marking` : 'Sent to Adrian for marking'}</p>
           <p className="text-sm text-gray-600 mt-1.5">
             When it&apos;s marked and released, it appears in <b>Marked papers</b> — with your script,
             the red pen, and what each lost mark was for.
@@ -228,7 +228,7 @@ export default function SubmitClient({ assignment = null }: { assignment?: { id:
             placeholder="e.g. Xinmin 2021 Prelim P2"
             className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20"
           />
-          <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Mr Fong knows what he&apos;s marking.</p>
+          <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Adrian knows what he&apos;s marking.</p>
         </div>
         )}
 
