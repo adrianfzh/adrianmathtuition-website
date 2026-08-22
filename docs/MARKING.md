@@ -1186,6 +1186,32 @@ figure" (a `console.warn` with the reason, nothing on the page).
   `filterLineBoxes`). Suite 417 green at deploy. Everything in this doc is
   now LIVE on Fly.
 
+### "This page could not be auto-marked" — what it means now (bot, 2026-08-22)
+
+The amber banner page (annotated photo `method:'unread'`, the rescue worked
+solutions printed in the footer) appears only when BOTH reads of a photo return
+zero attempts. Adele's JC1 series page (22 Aug 2026) showed that this is not
+necessarily an unreadable photo: the model had marked it fully (Q1 7/9, Q2 5/6,
+`end_turn`) but dropped the one `}` closing `"correct"` after the long
+`full_solution_latex`, so strict `JSON.parse` discarded the whole response on both
+reads. The bot now parses every marking response through a deterministic repair
+gate (`ai/json-repair.js` — escape repair → structure repair keyed on which object
+each marking key lives in; `restoreControlEscapes` undoes `\right`→CR+`ight`
+casualties), so that slip yields the real marks. Fly logs say
+`[paper] JSON repaired (<stage>)` when it fired and
+`[paper] page N read empty: stop=… out=…tok parsed=…` when a page still came back
+empty — grep for the latter before assuming a photo is genuinely illegible.
+
+The rescue solutions themselves used to be rendered raw: literal `**bold**`, `\to`
+printed as "/to", `\[ … \]` display maths drawn in the pen font, and labels
+"QQ1" (the model wrote "Q1", the footer prefixes "Q"). The rescue prompt now
+demands the same one-`$…$`-step-per-line contract as `full_solution_latex`, labels
+are bare numbers (a leading Q is stripped regardless), and the footer typesets
+solution text through `repairSolutionText` (strips markdown, normalises display
+delimiters, wraps bare LaTeX runs, TeX → `repairLatex` / prose → `repairPenText`
+per line). Papers marked before this deploy keep their stored annotated photos —
+re-mark (✍️ from /admin/papers) to regenerate a banner page.
+
 ## AI Marking PNG Renderer
 
 **Route:** `POST /api/render-marking`
