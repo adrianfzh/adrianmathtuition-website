@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { flattenExamTopics, parseExtractionResponse } from '@/lib/exam-topic-extract';
+import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -14,7 +15,13 @@ export const maxDuration = 60;
 // the exam date and a one-line caveat note ("Integration up to 10.1.6 only").
 //
 // Body: { image: dataURL | bare base64 (jpeg/png/webp, client-downscaled), level, subject }
-// →     { topics: string[], examDate: string|null, note: string|null }
+// →     { topics: string[], examDate: string|null, note: string|null, photoUrl: string|null }
+//
+// photoUrl (2026-08-22): the same downscaled image is also kept on Vercel Blob
+// (`exam-photos/<uuid>.<ext>`, random suffix) so Adrian can open the original
+// later to verify the extraction — the dialog saves it with the exam entry
+// (Exam Notes marker, lib/exam-notes-markers). Upload failure is non-fatal:
+// the topics still come back, photoUrl is just null.
 //
 // School topic names rarely match canonical names, so the model maps by
 // meaning; parseExtractionResponse then gates every returned topic against
@@ -85,7 +92,19 @@ Reply with ONLY this JSON object, no markdown fences:
       .join('')
       .trim();
     const extracted = parseExtractionResponse(text, canonical);
-    return NextResponse.json(extracted);
+    let photoUrl: string | null = null;
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const ext = mediaType === 'image/png' ? 'png' : mediaType === 'image/webp' ? 'webp' : 'jpg';
+        const blob = await put(`exam-photos/${crypto.randomUUID()}.${ext}`, Buffer.from(imageBase64, 'base64'), {
+          access: 'public', contentType: mediaType, addRandomSuffix: true,
+        });
+        photoUrl = blob.url;
+      } catch (e) {
+        console.error('[extract-exam-topics] photo upload failed:', e instanceof Error ? e.message : e);
+      }
+    }
+    return NextResponse.json({ ...extracted, photoUrl });
   } catch (e) {
     console.error('[extract-exam-topics]', e instanceof Error ? e.message : e);
     return NextResponse.json(

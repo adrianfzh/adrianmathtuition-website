@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday, daysAgo, EDIT_WINDOW_DAYS } from '@/lib/schedule-helpers';
-import { resolveActiveExamType } from '@/lib/exam-season';
+import { resolveActiveExamType, scheduleExamTypes, pickDisplaySeason, defaultEditExamType, levelSpecificExamType } from '@/lib/exam-season';
+import { decodeExamNotes } from '@/lib/exam-notes-markers';
 
 export const runtime = 'nodejs';
 
@@ -110,25 +111,35 @@ export async function GET(req: NextRequest) {
       const v = JSON.parse(settingsData.records?.[0]?.fields?.['Value'] || '{}');
       if (['WA1', 'WA2', 'WA3', 'EOY'].includes(v.forceOn)) forceOn = v.forceOn;
     } catch {}
-    examType = resolveActiveExamType(forceOn);
+    const activeType = resolveActiveExamType(forceOn);
+    // Same season handover as the schedule chips (lib/exam-season): load the
+    // active season AND the next one, show whichever this student still has
+    // ahead, and default the editor to the next season once it's over.
+    const types = scheduleExamTypes(activeType);
 
-    if (examType && studentId) {
+    if (types.length && studentId) {
       // Filter by Exam Type only; match student in JS (ARRAYJOIN returns names, not IDs)
       const examsData = await airtableRequestAll(
         'Exams',
         `?filterByFormula=${encodeURIComponent(
-          `{Exam Type}='${examType}'`
-        )}&fields[]=Student&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject&fields[]=Exam Notes&fields[]=Result Score&fields[]=Result Total`
+          `OR(${types.map(t => `{Exam Type}='${t}'`).join(',')})`
+        )}&fields[]=Student&fields[]=Exam Type&fields[]=Exam Date&fields[]=Tested Topics&fields[]=No Exam&fields[]=Subject&fields[]=Exam Notes&fields[]=Result Score&fields[]=Result Total`
       );
-      // Group by subject — filter to this student in JS, then key by subject
-      for (const r of examsData.records) {
-        if (r.fields['Student']?.[0] !== studentId) continue;
+      const mine = (examsData.records as any[]).filter(r => r.fields['Student']?.[0] === studentId);
+      const pick = pickDisplaySeason(
+        mine.map(r => ({ examType: r.fields['Exam Type'] ?? '', examDate: r.fields['Exam Date'] ?? null, noExam: r.fields['No Exam'] === true })),
+        activeType, localToday(),
+      );
+      examType = levelSpecificExamType(defaultEditExamType(pick, activeType), studentLevel);
+      // Group by subject — only the records of the season the editor is on.
+      for (const r of mine) {
+        if ((r.fields['Exam Type'] ?? '') !== examType) continue;
         const subject: string = r.fields['Subject'] ?? '';
         examsBySubject[subject] = {
           examDate: r.fields['Exam Date'] ?? null,
           examTopics: r.fields['Tested Topics'] ?? null,
           noExam: r.fields['No Exam'] === true,
-          notes: r.fields['Exam Notes'] ?? null,
+          notes: decodeExamNotes(r.fields['Exam Notes'] ?? '').notes || null,
           score: r.fields['Result Score'] ?? null,
           total: r.fields['Result Total'] ?? null,
         };

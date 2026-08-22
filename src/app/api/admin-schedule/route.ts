@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
-import { resolveActiveExamType, ExamType } from '@/lib/exam-season';
+import { resolveActiveExamType, nextExamType, scheduleExamTypes, pickDisplaySeason, ExamType } from '@/lib/exam-season';
+import { decodeExamNotes } from '@/lib/exam-notes-markers';
 import { subjectsFromRevisionLineItems, assignRevisionSessions } from '@/lib/revision-sessions';
 import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
 import { cachedScheduleStatic } from '@/lib/schedule-static-cache';
@@ -128,6 +129,7 @@ export async function GET(req: NextRequest) {
     if (['WA1', 'WA2', 'WA3', 'EOY'].includes(v.forceOn)) stage1ForceOn = v.forceOn as ExamType;
   } catch {}
   const resolvedExamType = resolveActiveExamType(stage1ForceOn);
+  const scheduleExamTypesToFetch = scheduleExamTypes(resolvedExamType);
   // Sec-capacity toggle: slots below carry EFFECTIVE capacities so every client
   // surface (roster counts, full badges, slot pickers) follows automatically.
   const secCap = parseSecCapOverride(settingsByName[SEC_CAP_SETTING] ?? null);
@@ -198,8 +200,11 @@ export async function GET(req: NextRequest) {
     hasRevisionLessons
       ? fetchAll('Invoices', `?filterByFormula=${encodeURIComponent(`AND({Invoice Type}='Revision Sprint',{Status}!='Voided')`)}&fields[]=Student&fields[]=Line Items`)
       : Promise.resolve([] as any[]),
-    resolvedExamType
-      ? fetchAll('Exams', `?filterByFormula=${encodeURIComponent(`OR({Exam Type}='${resolvedExamType}',{Exam Type}='Prelim',{Exam Type}='Promo')`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam&fields[]=Exam Type`).catch(() => [] as any[])
+    // Active season + the NEXT one (+ Prelim/Promo): late in a window Adrian
+    // enters next season's info (EOY during WA3) and the chip must show it.
+    // In the gap between windows this is "just finished + next" — not nothing.
+    scheduleExamTypesToFetch.length
+      ? fetchAll('Exams', `?filterByFormula=${encodeURIComponent(`OR(${scheduleExamTypesToFetch.map(t => `{Exam Type}='${t}'`).join(',')})`)}&fields[]=Student&fields[]=Subject&fields[]=Exam Date&fields[]=Tested Topics&fields[]=Exam Notes&fields[]=No Exam&fields[]=Exam Type`).catch(() => [] as any[])
       : Promise.resolve([] as any[]),
   ]);
 
@@ -442,24 +447,73 @@ export async function GET(req: NextRequest) {
   // sid → 'Project Work' | 'Alternative Assessment'. (No WA exam, but the chip
   // says what to expect rather than "no upcoming exam".)
   const examAssessmentByStudent: Record<string, string> = {};
-  // Full per-subject/per-paper entries for the exam quick-add dialog + chip dropdown.
-  const examEntriesByStudent: Record<string, { subject: string; paper: string; examType: string; date: string | null; topics: string; notes: string; approx: boolean }[]> = {};
+  // Full per-subject/per-paper entries for the exam quick-add dialog + chip dropdown
+  // — the student's DISPLAY season only (see examSeasonByStudent).
+  type ExamEntryOut = { subject: string; paper: string; examType: string; date: string | null; topics: string; notes: string; approx: boolean; photoUrl: string | null; noExam?: boolean };
+  const examEntriesByStudent: Record<string, ExamEntryOut[]> = {};
+  // Every loaded season's entries (active + next + Prelim/Promo) — the dialog
+  // rebuilds its rows from these when Adrian switches the exam-type select.
+  const examAllEntriesByStudent: Record<string, ExamEntryOut[]> = {};
+  // Which season each student's chip shows + whether it still has an exam
+  // ahead. Two seasons can be loaded at once (WA3 wrapping up, EOY being
+  // entered); pickDisplaySeason chooses the upcoming one (lib/exam-season).
+  const examSeasonByStudent: Record<string, { examType: string; upcoming: boolean }> = {};
+  const upcomingExamType = nextExamType(resolvedExamType);
 
   try {
     // Exam type + exams were resolved/fetched in stages 1–2.
     activeExamType = resolvedExamType;
-    if (activeExamType) {
+    {
       // Paper is encoded into Subject ("E Math (P1)") — no Paper field needed.
       const parseSubject = (raw: string): { subject: string; paper: string } => {
         const m = (raw || '').match(/^(.*)\s*\((P1|P2)\)\s*$/);
         if (m) return { subject: m[1].trim(), paper: m[2] === 'P1' ? 'Paper 1' : 'Paper 2' };
         return { subject: (raw || '').trim(), paper: '' };
       };
-      // Approximate ("week only") dates carry a "~|" marker in Exam Notes.
-      const parseNotes = (raw: string): { approx: boolean; notes: string } =>
-        (raw || '').startsWith('~|') ? { approx: true, notes: raw.slice(2) } : { approx: false, notes: raw || '' };
-      // Build studentId → earliest exam date (chip badge) + full entries (dialog/dropdown)
+      // Approximate ("week only") dates carry a "~|" marker in Exam Notes; the
+      // photo used for 📷 topic extraction rides along as a trailing
+      // "\n📷|<url>" marker (lib/exam-notes-markers).
+      const parseNotes = (raw: string): { approx: boolean; notes: string; photoUrl: string | null } => decodeExamNotes(raw || '');
+      // Group by student, pick the season to display, then build the chip maps
+      // from THAT season's records only (other seasons still ride along in
+      // examAllEntriesByStudent for the dialog).
+      const recsByStudent: Record<string, any[]> = {};
       for (const r of examsData) {
+        const sid: string | undefined = r.fields['Student']?.[0];
+        if (sid) (recsByStudent[sid] ||= []).push(r);
+      }
+      const sgtToday = localToday();
+      const displayRecs: any[] = [];
+      for (const [sid, recs] of Object.entries(recsByStudent)) {
+        const pick = pickDisplaySeason(
+          recs.map(r => ({ examType: (r.fields['Exam Type'] as string) || '', examDate: (r.fields['Exam Date'] as string) || null, noExam: r.fields['No Exam'] === true })),
+          activeExamType, sgtToday,
+        );
+        if (pick.examType) examSeasonByStudent[sid] = { examType: pick.examType, upcoming: pick.upcoming };
+        for (const r of recs) {
+          if (r.fields['No Exam'] === true) {
+            // No-Exam marker (raw notes keep the PWAA: label for the dialog).
+            (examAllEntriesByStudent[sid] ||= []).push({
+              subject: '', paper: '', examType: (r.fields['Exam Type'] as string) || '', date: null, topics: '',
+              notes: (r.fields['Exam Notes'] as string) || '', approx: false, photoUrl: null, noExam: true,
+            });
+            continue;
+          }
+          const parsed = parseSubject((r.fields['Subject'] as string) || '');
+          const pn = parseNotes((r.fields['Exam Notes'] as string) || '');
+          (examAllEntriesByStudent[sid] ||= []).push({
+            subject: parsed.subject, paper: parsed.paper,
+            examType: (r.fields['Exam Type'] as string) || '',
+            date: (r.fields['Exam Date'] as string) || null,
+            topics: (r.fields['Tested Topics'] as string) || '',
+            notes: pn.notes, approx: pn.approx, photoUrl: pn.photoUrl,
+          });
+          if (r.fields['Exam Type'] === pick.examType) displayRecs.push(r);
+        }
+        for (const r of recs) if (r.fields['No Exam'] === true && r.fields['Exam Type'] === pick.examType) displayRecs.push(r);
+      }
+      // Build studentId → earliest exam date (chip badge) + full entries (dialog/dropdown)
+      for (const r of displayRecs) {
         const sid: string | undefined = r.fields['Student']?.[0];
         if (!sid) continue;
         const noExam: boolean = r.fields['No Exam'] === true;
@@ -482,6 +536,7 @@ export async function GET(req: NextRequest) {
           topics: (r.fields['Tested Topics'] as string) || '',
           notes: pn.notes,
           approx: pn.approx,
+          photoUrl: pn.photoUrl,
         });
         if (examsByStudent[sid] === 'NO_EXAM') continue; // already flagged
         if (!examDate) continue;
@@ -538,11 +593,14 @@ export async function GET(req: NextRequest) {
     cancelledLessons,
     students: studentsById,
     activeExamType,
+    nextExamType: upcomingExamType,
     examsByStudent,
     examTopicsByStudent,
     examApproxByStudent,
     examAssessmentByStudent,
     examEntriesByStudent,
+    examAllEntriesByStudent,
+    examSeasonByStudent,
     currentTopicByStudent,
     nextTopicByStudent,
     upcomingLessonsByStudent,

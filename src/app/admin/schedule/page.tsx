@@ -4,6 +4,7 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMe
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { findDoubleBookedIds } from '@/lib/double-booking';
 import { getExamTopicsForSubject } from '@/lib/canonical-topics';
+import { defaultEditExamType, levelSpecificExamType, type ExamType } from '@/lib/exam-season';
 import { SLOT_TIMES, SLOT_LEVELS, LEVEL_DEFAULT_CAPACITY, slotLevelLabel, isSlotLevel, slotOpenOnDate, dayFieldForDate, windowOccurrences, type SlotLevel } from '@/lib/slot-windows';
 import AdminAIChat from '@/components/AdminAIChat';
 import { QuickLogSheet, VoiceLog } from '@/components/QuickLog';
@@ -67,7 +68,7 @@ interface Student {
   subjects?: string[];
 }
 
-interface ExamEntry { subject: string; paper: string; examType?: string; date: string | null; topics: string; notes: string; approx?: boolean }
+interface ExamEntry { subject: string; paper: string; examType?: string; date: string | null; topics: string; notes: string; approx?: boolean; photoUrl?: string | null; noExam?: boolean }
 
 interface StudentContact {
   name: string;
@@ -96,11 +97,18 @@ interface ScheduleData {
   cancelledLessons?: { studentId: string | null; date: string; slotId: string | null; notes: string }[];
   students: Record<string, Student>;
   activeExamType?: string | null;
+  /** The season after the active one (EOY during WA3) — what Adrian enters late in a window. */
+  nextExamType?: string | null;
   examsByStudent?: Record<string, string | null>;
   examTopicsByStudent?: Record<string, string | null>;
   examApproxByStudent?: Record<string, boolean>;
   examAssessmentByStudent?: Record<string, string>;
+  /** Entries of the season each student's chip SHOWS (their upcoming one). */
   examEntriesByStudent?: Record<string, ExamEntry[]>;
+  /** Every loaded season's entries (active + next + Prelim/Promo, incl. No-Exam markers) — the dialog switches between them. */
+  examAllEntriesByStudent?: Record<string, ExamEntry[]>;
+  /** Which season the chip shows + whether an exam is still ahead (lib/exam-season pickDisplaySeason). */
+  examSeasonByStudent?: Record<string, { examType: string; upcoming: boolean }>;
   currentTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
   nextTopicByStudent?: Record<string, { subject: string; topic: string }[]>;
   upcomingLessonsByStudent?: Record<string, { date: string; slotId: string | null }[]>;
@@ -590,6 +598,21 @@ function examSummaryLines(lesson: EnrichedLesson): string[] {
     lines.push(line);
   }
   return lines;
+}
+
+// The original photo a row's topics were extracted from (kept on Blob so
+// Adrian can verify the extraction later). Opens in a new tab; ✕ forgets it.
+function ExamPhotoLink({ url, onRemove }: { url: string; onRemove: () => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 8px', fontSize: 12 }}>
+      <a href={url} target="_blank" rel="noopener noreferrer"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#0369a1', fontWeight: 600, textDecoration: 'none', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '3px 9px' }}>
+        🖼 View original photo
+      </a>
+      <button type="button" onClick={onRemove} title="Forget this photo" aria-label="Forget this photo"
+        style={{ border: 'none', background: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 13, padding: '0 2px' }}>✕</button>
+    </div>
+  );
 }
 
 // Downscale a photo to a ≤1400px JPEG data-URL for the topics-from-photo
@@ -1333,7 +1356,7 @@ export default function SchedulePage() {
   // Per-chip exam quick-add/edit for the active exam season. Each subject the
   // student takes gets a row; S4 EM/AM and JC2 prelims default to a Paper 1/2
   // split, others to a single paper (with an option to split).
-  type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean };
+  type ExamSubjectRow = { subject: string; mode: 'single' | 'split'; date: string; p1Date: string; p2Date: string; topics: string; notes: string; approx: boolean; approxP1: boolean; approxP2: boolean; photoUrl: string | null };
   const [examEdit, setExamEdit] = useState<{ studentId: string; studentName: string; studentLevel: string; studentSubjects: string[]; lessonId: string; examType: string; noExam: boolean; pwaa: string; rows: ExamSubjectRow[]; saving: boolean; tab: 'exam' | 'work'; applyTo: string[] } | null>(null);
   // "📷 From photo" — which exam row is currently extracting topics from an
   // uploaded photo (null = none). One hidden file input serves all rows;
@@ -2865,14 +2888,24 @@ export default function SchedulePage() {
     if (lv === 'jc2' && s.includes('h2')) return true;
     return false;
   }
-  // Sec 4 / JC2 in the WA3 window sit their Prelims, not "WA3"; JC1's EOY is
-  // their Promo exam.
-  function levelExamType(level: string): string {
-    const active = data?.activeExamType || 'WA3';
-    const lv = (level || '').toLowerCase();
-    if (active === 'WA3' && (lv.includes('sec 4') || lv === 'jc2')) return 'Prelim';
-    if (active === 'EOY' && lv === 'jc1') return 'Promo';
-    return active;
+  // Which exam type the sheet opens on for a student: the season they still
+  // have ahead; once it's over, the NEXT one (EOY after WA3 — Adrian enters
+  // next season's info while the current one wraps up, 2026-08-22); level
+  // adjusted (Sec 4 / JC2 → Prelim in WA3, JC1 → Promo in EOY). lib/exam-season.
+  function editExamTypeFor(sid: string, level: string): string {
+    const pick = data?.examSeasonByStudent?.[sid] ?? { examType: null, upcoming: false };
+    const active = (data?.activeExamType as ExamType | null | undefined) ?? null;
+    return levelSpecificExamType(defaultEditExamType(pick, active), level) || data?.nextExamType || 'WA3';
+  }
+  // The saved state of ONE exam type for a student (rows + no-exam / PW-AA
+  // flags) — used when the sheet opens and whenever the type select changes,
+  // so switching WA3 → EOY shows EOY's rows, not WA3's under an EOY label.
+  function examStateForType(sid: string, examType: string, subjects: string[], level: string): { rows: ExamSubjectRow[]; noExam: boolean; pwaa: string } {
+    const all = (data?.examAllEntriesByStudent?.[sid] || []).filter(e => (e.examType || '') === examType);
+    const marker = all.find(e => e.noExam);
+    const pwaa = marker && (marker.notes || '').startsWith('PWAA:') ? marker.notes.slice(5).trim() : '';
+    const rows = rowsFromEntries(all.filter(e => !e.noExam), subjects.length ? subjects : [''], level);
+    return { rows, noExam: !!marker && !pwaa, pwaa };
   }
   // Build the per-subject editor rows from saved exam entries. Shared by
   // openExamEdit and "Copy from <classmate>" (which rebuilds the CURRENT
@@ -2896,6 +2929,7 @@ export default function SchedulePage() {
         approx: !!single?.approx,
         approxP1: !!p1?.approx,
         approxP2: !!p2?.approx,
+        photoUrl: (subjEntries.find(e => e.photoUrl)?.photoUrl) || null,
       };
     });
   }
@@ -2904,22 +2938,22 @@ export default function SchedulePage() {
     if (!lesson.studentId) return;
     const sid = lesson.studentId;
     const level = lesson.studentLevel || '';
-    const examType = levelExamType(level);
-    const entries = data?.examEntriesByStudent?.[sid] || [];
+    const examType = editExamTypeFor(sid, level);
+    const entries = (data?.examAllEntriesByStudent?.[sid] || []).filter(e => !e.noExam);
     // Subjects the student takes (fall back to whatever exam records already exist).
     let subjects = (data?.students?.[sid]?.subjects || []).filter(Boolean);
     if (!subjects.length) subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))];
     if (!subjects.length) subjects = ['']; // generic single row
 
-    const rows = rowsFromEntries(entries, subjects, level);
-    const pwaa = data?.examAssessmentByStudent?.[sid] || '';
+    const { rows, noExam, pwaa } = examStateForType(sid, examType, subjects, level);
     setPrelimTopicsOpen(new Set());
     // During exam season the sheet opens on the Exam tab (that's what needs
     // filling in); off-season — or once ALL this student's exam dates have
-    // passed — it opens on Regular work (post-exam, planning is the action).
-    const sheetToday = isoDate(new Date());
-    const studentExamsOver = entries.length > 0 && entries.every(e => !!e.date && e.date < sheetToday);
-    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam: lesson.examDate === 'NO_EXAM' && !pwaa, pwaa, rows, saving: false, tab: data?.activeExamType && !studentExamsOver ? 'exam' : 'work', applyTo: [] });
+    // passed — it opens on Regular work (post-exam, planning is the action,
+    // Adrian 2026-07-25). The Exam tab then defaults to the NEXT season.
+    const season = data?.examSeasonByStudent?.[sid];
+    const examTab = season ? season.upcoming : !!data?.activeExamType;
+    setExamEdit({ studentId: sid, studentName: lesson.studentName, studentLevel: level, studentSubjects: subjects.filter(Boolean), lessonId: lesson.id, examType, noExam, pwaa, rows, saving: false, tab: examTab ? 'exam' : 'work', applyTo: [] });
     // Opening the sheet on a TODAY lesson auto-applies any planned next-lesson
     // topics — what was planned becomes today's work (Adrian 2026-07-26).
     if (lesson.date === isoDate(new Date())) {
@@ -2954,15 +2988,15 @@ export default function SchedulePage() {
       .map(([id, s]) => ({
         id,
         name: s.name,
-        hasExam: (data.examEntriesByStudent?.[id] || []).some(e => e.date || e.topics),
+        hasExam: (data.examAllEntriesByStudent?.[id] || []).some(e => (e.examType || '') === examEdit.examType && (e.date || e.topics)),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
   // Prefill the CURRENT student's rows from a classmate's saved exam entries.
   function copyExamFrom(sourceSid: string) {
-    const entries = data?.examEntriesByStudent?.[sourceSid] || [];
     setExamEdit(prev => {
       if (!prev) return prev;
+      const entries = (data?.examAllEntriesByStudent?.[sourceSid] || []).filter(e => (e.examType || '') === prev.examType && !e.noExam);
       const subjects = prev.studentSubjects.length ? prev.studentSubjects : [''];
       return { ...prev, rows: rowsFromEntries(entries, subjects, prev.studentLevel) };
     });
@@ -3073,6 +3107,9 @@ export default function SchedulePage() {
       const row0 = examEdit.rows[i];
       const dateSet = !!(d.examDate && row0?.mode === 'single' && !row0.date);
       const noteSet = !!(d.note && !(row0?.notes || '').trim());
+      // The route keeps a copy of the photo on Blob so the original can be
+      // re-checked later — it's saved with the row (Exam Notes marker).
+      const photoUrl: string | null = typeof d.photoUrl === 'string' && /^https?:\/\//.test(d.photoUrl) ? d.photoUrl : null;
       setExamEdit(prev => {
         if (!prev) return prev;
         const rows = prev.rows.map((r, idx) => {
@@ -3082,6 +3119,7 @@ export default function SchedulePage() {
           const patch: Partial<ExamSubjectRow> = { topics: [...sel].join(', ') };
           if (dateSet) patch.date = d.examDate;
           if (noteSet) patch.notes = d.note;
+          if (photoUrl) patch.photoUrl = photoUrl;
           return { ...r, ...patch };
         });
         return { ...prev, rows };
@@ -3089,6 +3127,7 @@ export default function SchedulePage() {
       const bits = topics.length ? [`${topics.length} topic${topics.length === 1 ? '' : 's'} ticked`] : [];
       if (dateSet) bits.push('date filled');
       if (noteSet) bits.push('note added');
+      if (photoUrl) bits.push('photo kept');
       showToast('success', `📷 ${bits.join(' · ') || 'Done'} — check, then Save`);
     } catch (e: unknown) {
       showToast('error', e instanceof Error ? e.message.slice(0, 80) : 'Extraction failed');
@@ -3105,10 +3144,10 @@ export default function SchedulePage() {
       const entries = noRows ? [] : examEdit.rows.flatMap(r =>
         r.mode === 'split'
           ? [
-              { subject: r.subject, paper: 'Paper 1', examDate: r.p1Date, testedTopics: r.topics, notes: r.notes, approx: r.approxP1 },
-              { subject: r.subject, paper: 'Paper 2', examDate: r.p2Date, testedTopics: '', notes: '', approx: r.approxP2 },
+              { subject: r.subject, paper: 'Paper 1', examDate: r.p1Date, testedTopics: r.topics, notes: r.notes, approx: r.approxP1, photoUrl: r.photoUrl },
+              { subject: r.subject, paper: 'Paper 2', examDate: r.p2Date, testedTopics: '', notes: '', approx: r.approxP2, photoUrl: null },
             ]
-          : [{ subject: r.subject, paper: '', examDate: r.date, testedTopics: r.topics, notes: r.notes, approx: r.approx }]
+          : [{ subject: r.subject, paper: '', examDate: r.date, testedTopics: r.topics, notes: r.notes, approx: r.approx, photoUrl: r.photoUrl }]
       );
       // Primary student first, then any ticked classmates (same school → same
       // paper). Classmates only receive entries for subjects THEY take.
@@ -3675,9 +3714,23 @@ export default function SchedulePage() {
               })()}
               <div className="form-group" style={{ marginBottom: 12 }}>
                 <span className="form-label">Exam</span>
-                <select className="modal-select" value={examEdit.examType} onChange={e => setExamEdit({ ...examEdit, examType: e.target.value })}>
+                <select className="modal-select" value={examEdit.examType}
+                  onChange={e => {
+                    // Each type has its own saved records — switching shows THAT
+                    // type's rows (EOY's, not WA3's relabelled), so Save can't
+                    // overwrite one season with another's dates.
+                    const t = e.target.value;
+                    const st = examStateForType(examEdit.studentId, t, examEdit.studentSubjects, examEdit.studentLevel);
+                    setPrelimTopicsOpen(new Set());
+                    setExamEdit({ ...examEdit, examType: t, ...st });
+                  }}>
                   {['Prelim', 'WA3', 'WA1', 'WA2', 'EOY', 'Promo'].map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
+                {data?.nextExamType && examEdit.examType !== data.nextExamType && (data?.examSeasonByStudent?.[examEdit.studentId]?.upcoming === false) && (
+                  <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 4 }}>
+                    {examEdit.examType} is over for {examEdit.studentName.split(' ')[0]} — switch to <b>{levelSpecificExamType(data.nextExamType, examEdit.studentLevel)}</b> to enter the next exam.
+                  </div>
+                )}
               </div>
               {/* One hidden file input serves every row's 📷 From photo button
                   (photoRowRef carries the row index). Value is cleared so the
@@ -3770,6 +3823,7 @@ export default function SchedulePage() {
                             style={{ fontSize: 12, fontWeight: 600, color: '#0369a1', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', marginTop: 4 }}>
                             ＋ Add specific topics (optional)
                           </button>
+                          {row.photoUrl && <ExamPhotoLink url={row.photoUrl} onRemove={() => setExamRow(i, { photoUrl: null })} />}
                         </div>
                       );
                     }
@@ -3784,6 +3838,7 @@ export default function SchedulePage() {
                         {photoExtracting === i ? '⏳ Reading photo…' : '📷 From photo'}
                       </button>
                     </span>
+                    {row.photoUrl && <ExamPhotoLink url={row.photoUrl} onRemove={() => setExamRow(i, { photoUrl: null })} />}
                     {(() => {
                       const sel = new Set((row.topics || '').split(',').map(s => s.trim()).filter(Boolean));
                       const toggle = (t: string) => { const s = new Set(sel); if (s.has(t)) s.delete(t); else s.add(t); setExamRow(i, { topics: [...s].join(', ') }); };
