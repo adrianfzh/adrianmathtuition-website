@@ -26,6 +26,7 @@ type Run = {
   totalQuestions: number;
   unflaggedCount: number;
   annotatedPdfUrl: string | null;
+  annotatedPhotos?: { photoIndex: number; url: string }[];
   pdfUrl: string | null;
   flagged: TriageQuestion[];
   releasable: boolean;
@@ -271,6 +272,30 @@ export default function TriagePage() {
                       </a>
                     )}
                   </div>
+
+                  {(() => {
+                    // The marked page image, so the AI's call can be checked
+                    // against the student's actual working without leaving triage.
+                    const pagePhoto = q.photoIndex != null
+                      ? (run.annotatedPhotos || []).find(p => p.photoIndex === q.photoIndex)
+                      : undefined;
+                    if (!pagePhoto) return null;
+                    return (
+                      <details style={{ marginBottom: 6 }}>
+                        <summary style={{ fontSize: 12, fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' }}>
+                          📷 Show page {q.photoIndex! + 1}
+                        </summary>
+                        <a href={pagePhoto.url} target="_blank" rel="noreferrer">
+                          <img
+                            src={pagePhoto.url}
+                            alt={`Marked page ${q.photoIndex! + 1}`}
+                            loading="lazy"
+                            style={{ width: '100%', marginTop: 6, borderRadius: 8, border: `1px solid ${C.border}` }}
+                          />
+                        </a>
+                      </details>
+                    );
+                  })()}
 
                   {q.reviewReasons.map((reason, i) => (
                     <div key={i} style={{ background: C.flagBg, border: `1px solid ${C.flagBorder}`, color: C.flag, borderRadius: 6, padding: '6px 8px', fontSize: 13, marginBottom: 6 }}>

@@ -84,6 +84,7 @@ export async function GET(req: NextRequest) {
         unflaggedCount: summary.unflaggedCount,
         annotatedPdfUrl: r.annotated_pdf_url,
         pdfUrl: r.pdf_url,
+        annotatedPhotos: extractAnnotatedPhotos(r.result_json),
         flagged: summary.flagged,
         releasable: summary.flagged.length === 0,
       };
@@ -137,8 +138,32 @@ async function deliver(run: {
   student_id: string | null;
   student_name: string | null;
   annotated_pdf_url: string | null;
+  photos_pdf_url?: string | null;
   result_json: unknown;
-}): Promise<{ delivered: boolean; via: 'portal' | 'telegram' | 'none'; note?: string }> {
+}, auto = false): Promise<{ delivered: boolean; via: 'portal' | 'telegram' | 'none'; note?: string }> {
+  // Telegram /handin runs: the marked copy goes back to the ORIGIN chat (which
+  // may be a parent's, not the student's own), as the IMAGES PDF only (Adrian
+  // 2026-08-22: never the full PDF, no "pass it back in class" line). On
+  // auto-release the BOT is already sending the document in the same tick, so
+  // this just reports success instead of double-sending.
+  {
+    const tg = telegramHandinOf(run.result_json);
+    if (tg?.chat_id) {
+      const tgName = run.paper_name || 'your paper';
+      const { awarded: tgAwarded, max: tgMax } = recomputeTotals(run.result_json);
+      const plainScore = tgMax > 0 ? ` — ${tgAwarded}/${tgMax}` : '';
+      if (auto) return { delivered: true, via: 'telegram', note: 'marked copy sent by the bot' };
+      const docUrl = run.photos_pdf_url || run.annotated_pdf_url;
+      if (docUrl) {
+        const ok = await sendTelegramDocumentTo(tg.chat_id, docUrl,
+          `🎉 Your paper "${tgName}" has been marked${plainScore}! Here's Mr Fong's marked copy — the red ink is where the learning is. 💪`);
+        if (ok) return { delivered: true, via: 'telegram' };
+      }
+      const ok = await sendTelegramTo(tg.chat_id,
+        `📄 Your marked <b>${escapeHtml(tgName)}</b> is ready${tgMax > 0 ? ` — <b>${tgAwarded}/${tgMax}</b>` : ''}. Mr Fong will send the copy here shortly.`);
+      return { delivered: ok, via: 'telegram' };
+    }
+  }
   const recipient = await resolveRecipient(run.student_id);
   if (!recipient) {
     return {
@@ -174,6 +199,25 @@ async function deliver(run: {
     `📄 Your marked <b>${escapeHtml(name)}</b> is ready${score}. Adrian will pass it to you in class.`
   );
   return { delivered: ok, via: 'telegram' };
+}
+
+/** Telegram /handin runs — the bot stamps result_json.telegram_handin at queue time. */
+function telegramHandinOf(resultJson: unknown): { chat_id?: string | number } | null {
+  if (!resultJson || typeof resultJson !== 'object') return null;
+  const tg = (resultJson as { telegram_handin?: unknown }).telegram_handin;
+  return tg && typeof tg === 'object' ? (tg as { chat_id?: string | number }) : null;
+}
+
+/** Annotated page images for the triage cards — Adrian compares the AI's call against the actual working. */
+function extractAnnotatedPhotos(resultJson: unknown): { photoIndex: number; url: string }[] {
+  if (!resultJson || typeof resultJson !== 'object') return [];
+  const arr = (resultJson as { annotated_photos?: unknown }).annotated_photos;
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map(p => (p && typeof p === 'object'
+      ? { photoIndex: (p as { photo_index?: number }).photo_index ?? -1, url: (p as { url?: string }).url || '' }
+      : { photoIndex: -1, url: '' }))
+    .filter(p => p.photoIndex >= 0 && !!p.url);
 }
 
 /** The site-side stamp /api/portal/submit writes — the only runs auto-release may touch. */
@@ -335,7 +379,7 @@ export async function POST(req: NextRequest) {
 
     const { data: runs, error: readErr } = await supa
       .from('paper_marking_runs')
-      .select('id, paper_name, student_id, student_name, annotated_pdf_url, result_json, released_at')
+      .select('id, paper_name, student_id, student_name, annotated_pdf_url, photos_pdf_url, result_json, released_at')
       .in('id', runIds);
     if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
 
@@ -353,10 +397,11 @@ export async function POST(req: NextRequest) {
         results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'already released' });
         continue;
       }
-      if (auto && !isPortalSubmission(run.result_json)) {
-        // Auto-release is for papers students handed in themselves. Anything
-        // Adrian uploaded keeps the manual gate, even when tagged to a student.
-        results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'not a portal hand-in — release from triage' });
+      if (auto && !isPortalSubmission(run.result_json) && !telegramHandinOf(run.result_json)) {
+        // Auto-release is for papers students handed in themselves (portal or
+        // Telegram /handin — Adrian 2026-08-22: "release to student once marking
+        // is done"). Anything Adrian uploaded keeps the manual gate.
+        results.push({ runId: run.id, studentName: run.student_name, released: false, via: 'none', note: 'not a student hand-in — release from triage' });
         continue;
       }
       if (!auto && !isReleasable(run.result_json)) {
@@ -370,7 +415,7 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      const outcome = await deliver(run);
+      const outcome = await deliver(run, auto);
       const via = auto ? `auto:${outcome.via}` : outcome.via;
 
       // Stamp regardless of whether a nudge landed: the release IS Adrian's
