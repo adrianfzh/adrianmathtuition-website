@@ -156,7 +156,7 @@ async function deliver(run: {
       const docUrl = run.photos_pdf_url || run.annotated_pdf_url;
       if (docUrl) {
         const ok = await sendTelegramDocumentTo(tg.chat_id, docUrl,
-          `🎉 Your paper "${tgName}" has been marked${plainScore}! Here's Adrian's marked copy — the red ink is where the learning is. 💪`);
+          `🎉 Your paper "${tgName}" has been marked${plainScore}! Here's your marked copy — the red ink is where the learning is. 💪`);
         if (ok) return { delivered: true, via: 'telegram' };
       }
       const ok = await sendTelegramTo(tg.chat_id,
