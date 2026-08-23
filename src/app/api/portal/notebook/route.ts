@@ -20,6 +20,7 @@ import {
   buildEntriesFromPapers, checkTypedAnswer, applyVerdict, entryKey, sgtToday,
 } from '@/lib/notebook';
 import { computeMastery } from '@/lib/mastery';
+import { fullPortalVisible } from '@/lib/portal-beta';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,6 +107,11 @@ function toClient(e: EntryRow) {
 export async function GET() {
   const sid = await sessionStudentId();
   if (!sid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Beta gate mirrors the page: while the notebook is hidden, its data is too.
+  // AFTER the auth check — the health-check probe reads anonymous 401 as healthy.
+  if (!(await fullPortalVisible())) {
+    return NextResponse.json({ error: 'Not available yet' }, { status: 403 });
+  }
 
   const svc = createServiceClient();
   const today = sgtToday();
@@ -177,6 +183,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const sid = await sessionStudentId();
   if (!sid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await fullPortalVisible())) {
+    return NextResponse.json({ error: 'Not available yet' }, { status: 403 });
+  }
 
   let body: Record<string, unknown>;
   try {
