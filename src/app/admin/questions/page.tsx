@@ -71,6 +71,7 @@ export default function QuestionBankPage() {
   const [basketOpen, setBasketOpen] = useState(false);
   const [wsAnswers, setWsAnswers] = useState(true);
   const [wsBusy, setWsBusy] = useState(false);
+  const [solBusy, setSolBusy] = useState(false);
   const [cardCache, setCardCache] = useState<Record<string, Card>>({});
 
   const [students, setStudents] = useState<{ id: string; name: string; level: string }[]>([]);
@@ -251,6 +252,25 @@ export default function QuestionBankPage() {
       flash(`Worksheet ready — ${d.count} questions (link copied)`);
     } catch (e) { flash((e as Error).message); }
     finally { setWsBusy(false); }
+  };
+
+  // Worked-solutions PDF — whole paper (reading order) or the basket selection.
+  const generateSolutions = async (ids: string[], title: string) => {
+    if (!ids.length || solBusy) return;
+    setSolBusy(true);
+    try {
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'solutions-pdf', ids, title }),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      if (d.missingSolutions > 0) flash(`${d.missingSolutions} without a worked solution — [Ans:] printed instead`);
+      window.open(d.url, '_blank');
+      navigator.clipboard?.writeText(d.url).catch(() => {});
+      flash(`Solutions ready — ${d.count} question${d.count === 1 ? '' : 's'} (link copied)`);
+    } catch (e) { flash((e as Error).message); }
+    finally { setSolBusy(false); }
   };
 
   // ── camera → OCR → smart search ────────────────────────────────────────────
@@ -473,6 +493,15 @@ export default function QuestionBankPage() {
             <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
               <button onClick={() => copyLink(`school=${encodeURIComponent(paperView.meta.school)}&year=${paperView.meta.year}${paperView.meta.level ? `&level=${paperView.meta.level}` : ''}${paperView.meta.paper ? `&paper=${paperView.meta.paper}` : ''}`, 'Paper')}
                 style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>🔗 Copy link</button>
+              <button
+                onClick={() => generateSolutions(
+                  paperView.questions.map(q => q.id),
+                  `${paperView.meta.school} ${paperView.meta.year}${paperView.meta.paper ? ` P${String(paperView.meta.paper).replace(/^P/i, '')}` : ''}`,
+                )}
+                disabled={solBusy}
+                style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer', opacity: solBusy ? 0.6 : 1 }}>
+                {solBusy ? 'Building…' : '📄 Solutions PDF'}
+              </button>
               <button onClick={() => setPaperView(null)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>✕ Close paper</button>
             </span>
           </div>
@@ -575,6 +604,10 @@ export default function QuestionBankPage() {
             <button onClick={generateWorksheet} disabled={wsBusy || !basket.length}
               style={{ width: '100%', padding: 12, fontSize: 15, fontWeight: 700, color: '#fff', background: C.good, border: 'none', borderRadius: 10, cursor: 'pointer' }}>
               {wsBusy ? 'Building PDF…' : '📄 Generate worksheet PDF'}
+            </button>
+            <button onClick={() => generateSolutions(basket, 'Selected questions')} disabled={solBusy || !basket.length}
+              style={{ width: '100%', marginTop: 8, padding: 10, fontSize: 14, fontWeight: 600, color: '#111', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 10, cursor: 'pointer', opacity: solBusy ? 0.6 : 1 }}>
+              {solBusy ? 'Building…' : '📄 Solutions PDF (worked solutions)'}
             </button>
           </div>
         </div>

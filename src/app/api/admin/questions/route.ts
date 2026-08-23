@@ -15,6 +15,7 @@ import { imgSrc, isPlausibleImagePath, cropUrls } from '@/lib/kiosk-worksheet-im
 import { compareQnum, excerptText, searchTerms, normalizeForSearch } from '@/lib/qb-browser';
 import { flattenParts, type Part } from '@/lib/kiosk-worksheet-images';
 import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-bot-worksheet';
+import { renderSolutionsPDF, type SolutionsItem, type SolutionsPart } from '@/lib/render-solutions-pdf';
 import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
@@ -277,6 +278,54 @@ export async function POST(req: NextRequest) {
         access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
       });
       return NextResponse.json({ url: blob.url, count: questions.length, warnings });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
+    }
+  }
+
+  // Worked-solutions PDF — a whole paper (in reading order) or the basket.
+  // Teacher document: stems in grey, solutions in ink, [Ans:] fallback where
+  // no worked solution is on file. Admin-authed above; solutions never leave
+  // admin auth except inside this generated PDF.
+  if (body.action === 'solutions-pdf') {
+    const ids = (Array.isArray(body.ids) ? body.ids : [])
+      .filter((x): x is string => typeof x === 'string' && /^[0-9a-f-]{36}$/.test(x))
+      .slice(0, 60);
+    if (!ids.length) return NextResponse.json({ error: 'ids[] required' }, { status: 400 });
+    const { data, error } = await supa
+      .from('questions')
+      .select('id, question_number, question_text, parts, solution, answer, solution_images')
+      .in('id', ids);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const byId = new Map((data ?? []).map((row) => [row.id as string, row]));
+    let missing = 0;
+    const items: SolutionsItem[] = [];
+    for (const qid of ids) {
+      const row = byId.get(qid) as Row | undefined;
+      if (!row) continue;
+      const solution = ((row.solution as string | null) ?? '').trim();
+      const solutionImages = Array.isArray(row.solution_images)
+        ? (row.solution_images as string[]).filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
+        : [];
+      if (!solution && !solutionImages.length) missing++;
+      items.push({
+        qnum: (row.question_number as string | null) ?? null,
+        questionText: ((row.question_text as string | null) ?? '').trim(),
+        solution,
+        answer: ((row.answer as string | null) ?? '').trim(),
+        parts: (row.parts as SolutionsPart[] | null) ?? null,
+        solutionImages,
+      });
+    }
+    if (!items.length) return NextResponse.json({ error: 'no questions found' }, { status: 400 });
+    const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 80) : 'Selected questions';
+    const dateLabel = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
+    try {
+      const pdf = await renderSolutionsPDF({ title, dateLabel, items });
+      const blob = await put(`mark-paper/solutions-pdfs/${Date.now()}.pdf`, pdf, {
+        access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      return NextResponse.json({ url: blob.url, count: items.length, missingSolutions: missing });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
     }
