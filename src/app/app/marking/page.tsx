@@ -78,7 +78,7 @@ export default async function MarkingPage() {
     .limit(5);
   const pending = pendingRows ?? [];
 
-  const { papers, averagePct, trendPts, focus } = buildStudentMarking((data ?? []) as MarkingRunRow[]);
+  const { papers, averagePct, trendPts, focus, streakNote } = buildStudentMarking((data ?? []) as MarkingRunRow[]);
   const surfaces = await portalSurfaces();
 
   return (
@@ -133,6 +133,12 @@ export default async function MarkingPage() {
       ) : (
         <>
           <Summary papers={papers} averagePct={averagePct} trendPts={trendPts} />
+
+          {streakNote && (
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+              {streakNote}
+            </div>
+          )}
 
           {focus.length > 0 && (
             <div className={`${CARD} p-4`}>
@@ -237,6 +243,17 @@ function Paper({ paper }: { paper: StudentPaper }) {
                   </p>
                   <span className="shrink-0 text-xs font-semibold text-gray-600">{q.awarded}/{q.max}</span>
                 </div>
+                {q.schemes.length > 0 && (
+                  // SEAB teacher-margin shorthand, per part — the same codes a
+                  // school marker writes ("M1 A0" = method earned, accuracy lost).
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {q.schemes.map((s, j) => (
+                      <span key={j} className="text-[11px] font-mono bg-gray-100 text-gray-700 rounded px-1.5 py-0.5">
+                        {s.label ? `${s.label} ` : ''}{s.scheme}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 {q.comment && <p className="text-[13px] text-gray-700 mt-1 leading-snug">{q.comment}</p>}
                 {q.slips.length > 0 && (
                   <ul className="mt-1.5 space-y-1">

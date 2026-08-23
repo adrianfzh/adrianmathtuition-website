@@ -424,10 +424,44 @@ function ConfidencePills({ confident, onPick }: {
   );
 }
 
+// A one-shot burst when an entry is conquered. Deterministic (index-derived
+// trajectories) and invisible under prefers-reduced-motion — the base state is
+// opacity 0, so without the animation nothing renders at all.
+function ConfettiBurst() {
+  const COLORS = ['#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#8B5CF6'];
+  return (
+    <div className="nb-confetti" aria-hidden>
+      {Array.from({ length: 16 }).map((_, i) => (
+        <span
+          key={i}
+          style={{
+            ['--dx' as string]: `${Math.round(Math.cos((i / 16) * Math.PI * 2) * (44 + (i % 4) * 14))}px`,
+            ['--dy' as string]: `${Math.round(Math.sin((i / 16) * Math.PI * 2) * (34 + ((i + 2) % 4) * 12) - 26)}px`,
+            ['--dl' as string]: `${(i % 5) * 40}ms`,
+            background: COLORS[i % 5],
+          } as React.CSSProperties}
+        />
+      ))}
+      <style>{`
+        .nb-confetti{position:relative;height:0}
+        .nb-confetti span{position:absolute;left:50%;top:0;width:7px;height:10px;border-radius:2px;opacity:0}
+        @media (prefers-reduced-motion: no-preference){
+          .nb-confetti span{animation:nbpop .9s ease-out var(--dl) forwards}
+          @keyframes nbpop{
+            0%{opacity:1;transform:translate(-50%,0) rotate(0)}
+            100%{opacity:0;transform:translate(calc(-50% + var(--dx)), var(--dy)) rotate(240deg)}
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function ResultPanel({ result, confident }: { result: AttemptResult; confident: boolean | null }) {
   if (result.verdict === 'correct') {
     return (
       <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
+        {result.conquered && <ConfettiBurst />}
         <p className="text-sm font-semibold text-emerald-800">
           {result.conquered
             ? '🏆 Conquered! Two clean hits — this mistake is officially beaten.'

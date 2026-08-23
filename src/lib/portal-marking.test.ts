@@ -53,7 +53,7 @@ describe('buildStudentMarking — the release gate', () => {
 
   it('returns an empty view when nothing has been released', () => {
     const out = buildStudentMarking([run({ id: 'a', released_at: null })]);
-    expect(out).toEqual({ papers: [], averagePct: null, trendPts: null, focus: [] });
+    expect(out).toEqual({ papers: [], averagePct: null, trendPts: null, focus: [], streakNote: null });
   });
 
   it('drops runs that never produced results (failed or still queued)', () => {
@@ -337,5 +337,62 @@ describe('buildStudentMarking — revise links', () => {
       ]);
       expect(out.papers[0].questions[0].revise).toBeNull();
     }
+  });
+});
+
+describe('buildStudentMarking — SEAB scheme chips', () => {
+  it('collects per-part scheme codes; questions without them get an empty list', () => {
+    const rows = [run({
+      id: 'r1',
+      result_json: { results: [
+        q({ n: '1', awarded: 2, max: 3, parts: [
+          { label: '(a)', awarded: 2, max: 3, error_summary: 'slip', scheme: 'M1 A1 A0' } as never,
+        ] }),
+        q({ n: '2', awarded: 0, max: 2, parts: [{ label: '(a)', awarded: 0, max: 2, error_summary: 'x' }] }),
+      ] },
+    })];
+    const { papers } = buildStudentMarking(rows);
+    expect(papers[0].questions[0].schemes).toEqual([{ label: '(a)', scheme: 'M1 A1 A0' }]);
+    expect(papers[0].questions[1].schemes).toEqual([]);
+  });
+});
+
+describe('buildStudentMarking — streak notice', () => {
+  const scoredRun = (id: string, date: string, awarded: number) => run({
+    id,
+    created_at: `${date}T02:00:00.000Z`,
+    released_at: `${date}T09:00:00.000Z`,
+    result_json: { results: [q({ n: '1', awarded, max: 10 })] },
+  });
+
+  it('names a streak of consecutive papers at 70%+', () => {
+    const { streakNote } = buildStudentMarking([
+      scoredRun('a', '2026-08-01', 5),
+      scoredRun('b', '2026-08-10', 8),
+      scoredRun('c', '2026-08-20', 7),
+    ]);
+    expect(streakNote).toContain('2 papers in a row');
+  });
+
+  it('a weak latest paper means no streak — and no hollow cheer', () => {
+    const { streakNote } = buildStudentMarking([
+      scoredRun('a', '2026-08-01', 8),
+      scoredRun('b', '2026-08-10', 5),
+    ]);
+    expect(streakNote).toBeNull();
+  });
+
+  it('a personal best is noticed when it beats every earlier paper', () => {
+    const { streakNote } = buildStudentMarking([
+      scoredRun('a', '2026-08-01', 4),
+      scoredRun('b', '2026-08-10', 5),
+      scoredRun('c', '2026-08-20', 6),
+    ]);
+    expect(streakNote).toBe('🔝 Your best paper yet.');
+  });
+
+  it('one paper alone earns nothing', () => {
+    const { streakNote } = buildStudentMarking([scoredRun('a', '2026-08-01', 9)]);
+    expect(streakNote).toBeNull();
   });
 });

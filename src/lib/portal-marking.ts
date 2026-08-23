@@ -47,6 +47,11 @@ export interface StudentQuestion {
   /** The printed question as the marker read it, when it extracted one. */
   prompt: string | null;
   /**
+   * Per-part SEAB scheme codes ("M1 A0", "B1") — teacher-margin shorthand the
+   * marker emits since 2026-08-24. Empty for runs marked before that.
+   */
+  schemes: { label: string | null; scheme: string }[];
+  /**
    * "📚 Revise this concept" link into the worked-examples swipe player, when
    * the release-time mapper (`result_json.revise`, lib/revise-map) matched this
    * question to a sub-group with published cards. Null for full-mark questions
@@ -108,6 +113,34 @@ export interface StudentMarking {
   trendPts: number | null;
   /** Topics to work on next, worst first. */
   focus: TopicBleed[];
+  /**
+   * One true, specific "the system noticed" line — a streak of strong papers
+   * or a personal best — or null. Truth over cheer: no note beats a hollow one.
+   */
+  streakNote: string | null;
+}
+
+/** ≥ this on consecutive papers counts as a streak worth naming. */
+const STREAK_PCT = 70;
+
+function noticeStreak(papers: StudentPaper[]): string | null {
+  // Newest first. Count the run of scored papers at/above the bar.
+  const scored = papers.filter(p => p.pct !== null);
+  if (scored.length < 2) return null;
+  let run = 0;
+  for (const p of scored) {
+    if (p.pct! >= STREAK_PCT) run++;
+    else break;
+  }
+  if (run >= 2) {
+    return `📈 ${run} papers in a row at ${STREAK_PCT}% or better — that's a streak.`;
+  }
+  // Personal best: strictly above every earlier scored paper.
+  const [latest, ...rest] = scored;
+  if (rest.length && rest.every(p => latest.pct! > p.pct!)) {
+    return '🔝 Your best paper yet.';
+  }
+  return null;
 }
 
 // A topic needs this many marks behind it before its percentage means anything —
@@ -144,9 +177,12 @@ function toQuestion(raw: unknown): StudentQuestion | null {
   const parts = Array.isArray(marking.parts) ? marking.parts : [];
 
   const slips: string[] = [];
+  const schemes: { label: string | null; scheme: string }[] = [];
   for (const p of parts) {
     const part = asRecord(p);
     if (!part) continue;
+    const scheme = str(part.scheme);
+    if (scheme) schemes.push({ label: str(part.label) || null, scheme });
     // A part that scored full marks has nothing to say; `error_summary` on a
     // correct part (some markers write "no errors") would read as a criticism.
     if (num(part.awarded) >= num(part.max)) continue;
@@ -165,6 +201,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     slips,
     full: max > 0 && awarded >= max,
     prompt: str(asRecord(output?.question)?.prompt) || null,
+    schemes,
     revise: null, // attached per-paper from result_json.revise in toPaper
   };
 }
@@ -301,5 +338,5 @@ export function buildStudentMarking(rows: MarkingRunRow[]): StudentMarking {
     .filter(t => t.max >= MIN_TOPIC_MARKS && t.pct < WEAK_PCT_CEILING)
     .slice(0, MAX_FOCUS);
 
-  return { papers, averagePct, trendPts, focus };
+  return { papers, averagePct, trendPts, focus, streakNote: noticeStreak(papers) };
 }
