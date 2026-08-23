@@ -776,6 +776,26 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   goes quietly arrowless. Targeting also improved: `crossedStep` matching loosened from
   strict containment to ±8px overlap, topmost cross first, so the endpoint lands ON the
   crossed step rather than merely near it.
+- **Ruled foolscap: ticks hug the WRITING, arrows land on the MISTAKE (2026-08-23,
+  Adrian, Nicole's JC2 practice set: "the marking ticks are on the right again" / "can
+  it point at the mistake itself?").** The occupancy grid now carries a second layer,
+  `writing` — dark pixels with printed rules masked out (`ruleMask` in
+  `ai/whitespace.js`: runs that are long *and thin*, horizontal + vertical, plus a
+  fragment pass on the rule's own rows; `writingRaw` is the undilated copy). On ruled
+  paper every row's rule runs to the page edge, so the placement layer (which keeps
+  rules, so notes never land on one) put every tick in the far margin. `_rightmostInkX`
+  scans `writingRaw`, counts only grid rows overlapping the band by ≥ half a cell (a
+  bbox overshooting the next line by 2px used to pull that line's first stroke in), and
+  given the step's own `{x1,x2}` stops at the first ~5%-of-page gap past `x2` — so a
+  part written on the LEFT of a line whose right half holds another part (Nicole's (d)
+  beside (c); too few lines for the column detector) is marked after its own writing.
+  Leaders: `aimLeader(ink, cross, from)` (pure, tested) resolves the arrowhead from
+  the note's position — from the left → start of the expression; level on the right →
+  the shaft ARCS over/under the ✗ (`leader(..., via)` control point) and lands a
+  quarter-line INSIDE the last symbol; above/below → comes down/up onto the line, a
+  quarter-line in (a head stopping at the bbox edge reads as the neighbouring line on
+  tight ruling). Strip notes now sit level with the CROSSED line, not the part's top,
+  so the hop is short and never slants across the lines (and ticks) in between.
 - **A part's in-page band reaches its whole territory (2026-08-13, Adrian: "extend the
   band").** The search band for a note used to stop a fixed ~6–8 lines below the part's
   working, so a page with a big empty gap under the working still wrote its note in the
