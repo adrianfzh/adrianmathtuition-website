@@ -331,7 +331,10 @@ export async function POST(req: NextRequest) {
     const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 80) : 'Selected questions';
     const dateLabel = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
     try {
-      const pdf = await renderSolutionsPDF({ title, dateLabel, items });
+      const pdf = await renderSolutionsPDF({
+        title, dateLabel, items,
+        includeStems: body.includeQuestions !== false,
+      });
       const blob = await put(`mark-paper/solutions-pdfs/${Date.now()}.pdf`, pdf, {
         access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
       });

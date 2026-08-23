@@ -42,6 +42,8 @@ export interface SolutionsInput {
   title: string;
   dateLabel: string;
   items: SolutionsItem[];
+  /** false = solutions only (no grey question stems). Default true. */
+  includeStems?: boolean;
 }
 
 function esc(s: string): string {
@@ -63,7 +65,7 @@ function partsAnswerLines(parts: SolutionsPart[] | null, prefix = ''): string[] 
   return out;
 }
 
-function itemHtml(it: SolutionsItem, index: number): string {
+function itemHtml(it: SolutionsItem, index: number, includeStems: boolean): string {
   const num = it.qnum || String(index + 1);
   const images = it.solutionImages
     .map((u) => `<img class="sol-img" src="${esc(u)}" alt="solution">`)
@@ -82,11 +84,13 @@ function itemHtml(it: SolutionsItem, index: number): string {
         : '<div class="sol-none">No worked solution on file.</div>';
   }
 
+  const stem = includeStems && it.questionText
+    ? `<div class="sol-stem">${esc(it.questionText)}</div>`
+    : '';
   return `
     <li class="sol-q">
       <span class="sol-qnum">${esc(num)}.</span>
-      <div class="sol-stem">${esc(it.questionText)}</div>
-      ${body}${images}
+      ${stem}${body}${images}
     </li>`;
 }
 
@@ -148,7 +152,7 @@ export function buildSolutionsHTML(input: SolutionsInput): string {
   </div>
 
   <ol class="sol-list">
-${input.items.map(itemHtml).join('\n')}
+${input.items.map((it, i) => itemHtml(it, i, input.includeStems !== false)).join('\n')}
   </ol>
 
   <div class="sol-footer">

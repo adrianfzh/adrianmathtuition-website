@@ -72,6 +72,7 @@ export default function QuestionBankPage() {
   const [wsAnswers, setWsAnswers] = useState(true);
   const [wsBusy, setWsBusy] = useState(false);
   const [solBusy, setSolBusy] = useState(false);
+  const [solWithQuestions, setSolWithQuestions] = useState(true);
   const [cardCache, setCardCache] = useState<Record<string, Card>>({});
 
   const [students, setStudents] = useState<{ id: string; name: string; level: string }[]>([]);
@@ -261,7 +262,7 @@ export default function QuestionBankPage() {
     try {
       const r = await fetch('/api/admin/questions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'solutions-pdf', ids, title }),
+        body: JSON.stringify({ action: 'solutions-pdf', ids, title, includeQuestions: solWithQuestions }),
       });
       const d = await r.json();
       if (d.error) { flash(d.error); return; }
@@ -493,6 +494,10 @@ export default function QuestionBankPage() {
             <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
               <button onClick={() => copyLink(`school=${encodeURIComponent(paperView.meta.school)}&year=${paperView.meta.year}${paperView.meta.level ? `&level=${paperView.meta.level}` : ''}${paperView.meta.paper ? `&paper=${paperView.meta.paper}` : ''}`, 'Paper')}
                 style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>🔗 Copy link</button>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: C.muted, cursor: 'pointer' }}>
+                <input type="checkbox" checked={solWithQuestions} onChange={e => setSolWithQuestions(e.target.checked)} />
+                with questions
+              </label>
               <button
                 onClick={() => generateSolutions(
                   paperView.questions.map(q => q.id),
@@ -605,6 +610,10 @@ export default function QuestionBankPage() {
               style={{ width: '100%', padding: 12, fontSize: 15, fontWeight: 700, color: '#fff', background: C.good, border: 'none', borderRadius: 10, cursor: 'pointer' }}>
               {wsBusy ? 'Building PDF…' : '📄 Generate worksheet PDF'}
             </button>
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, margin: '10px 0 0' }}>
+              <input type="checkbox" checked={solWithQuestions} onChange={e => setSolWithQuestions(e.target.checked)} />
+              Solutions PDF: include the question text
+            </label>
             <button onClick={() => generateSolutions(basket, 'Selected questions')} disabled={solBusy || !basket.length}
               style={{ width: '100%', marginTop: 8, padding: 10, fontSize: 14, fontWeight: 600, color: '#111', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 10, cursor: 'pointer', opacity: solBusy ? 0.6 : 1 }}>
               {solBusy ? 'Building…' : '📄 Solutions PDF (worked solutions)'}
