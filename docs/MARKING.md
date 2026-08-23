@@ -796,6 +796,22 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   quarter-line in (a head stopping at the bbox edge reads as the neighbouring line on
   tight ruling). Strip notes now sit level with the CROSSED line, not the part's top,
   so the hop is short and never slants across the lines (and ticks) in between.
+- **The leader is part of the placement: a spot pays per line of writing its arrow
+  would cross (2026-08-23, Nicole p.4).** `findSpot` scored on distance alone, so when
+  the only free block was the page TOP and the mistake sat at the BOTTOM (blank
+  first-derivative table), the note parked above the question and its leader plunged
+  through nine lines of her answer. `leaderCrossings` (`ai/whitespace.js`, pure,
+  tested) walks the straight spot→anchor line over `writingRaw` (undilated, rules
+  excluded — printed rules never count) and counts *runs* of ink, stopping 2 cells
+  short of the anchor so the step's own ink is free. `findSpot` takes `crossWeight`
+  (added per run, comments use 6) and `maxCross` (hard cutoff): single-column pages
+  use `MAX_LEADER_CROSSINGS = 2` in `ai/annotate.js`, so a note whose leader would
+  cross three+ lines is no in-page spot at all and goes to the side strip level with
+  the step. Two-up scans keep the penalty but not the cutoff — their fallback is the
+  footer, further from the mistake than any leader. Score boxes have no leader and are
+  untouched. Checked on Nicole's actual hires original (page top → strip beside the
+  table); the bot's `tmp/render-nicole-p4.js` fixture is the template for re-checking
+  a real page when the stored run has no bboxes (`result_json.results` never does).
 - **A part's in-page band reaches its whole territory (2026-08-13, Adrian: "extend the
   band").** The search band for a note used to stop a fixed ~6–8 lines below the part's
   working, so a page with a big empty gap under the working still wrote its note in the
