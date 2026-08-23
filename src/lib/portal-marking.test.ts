@@ -248,14 +248,16 @@ describe('buildStudentMarking — practice items', () => {
     ]);
     expect(out.papers[0].practice).toEqual([
       {
-        for: '3', question: 'Find $x$ such that $2^x = 8$.', answer: '$x = 3$',
+        // `id` is kept as internal plumbing (the notebook fetches the twin's
+        // worked solution with it at reveal time) — it is never displayed.
+        for: '3', id: 'q-123', question: 'Find $x$ such that $2^x = 8$.', answer: '$x = 3$',
         topic: 'Indices', origin: 'Methodist 2023', note: 'Same law of indices.',
       },
-      { for: '5', question: 'Differentiate $x^2$.', answer: '', topic: null, origin: null, note: null },
+      { for: '5', id: null, question: 'Differentiate $x^2$.', answer: '', topic: null, origin: null, note: null },
     ]);
     expect(out.papers[0].practiceDocxUrl).toBe('https://blob/practice.docx');
     // The student view never carries the bot's cost/model bookkeeping.
-    expect(JSON.stringify(out.papers[0].practice)).not.toMatch(/opus|costUsd|source|q-123/);
+    expect(JSON.stringify(out.papers[0].practice)).not.toMatch(/opus|costUsd|source/);
   });
 
   it('leaves practice empty (not undefined) on runs without a practice block', () => {
@@ -352,7 +354,7 @@ describe('buildStudentMarking — SEAB scheme chips', () => {
       ] },
     })];
     const { papers } = buildStudentMarking(rows);
-    expect(papers[0].questions[0].schemes).toEqual([{ label: '(a)', scheme: 'M1 A1 A0' }]);
+    expect(papers[0].questions[0].schemes).toEqual([{ label: '(a)', scheme: 'M1 A1 A0', why: 'slip', teach: null }]);
     expect(papers[0].questions[1].schemes).toEqual([]);
   });
 });

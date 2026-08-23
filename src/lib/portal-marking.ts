@@ -48,9 +48,12 @@ export interface StudentQuestion {
   prompt: string | null;
   /**
    * Per-part SEAB scheme codes ("M1 A0", "B1") — teacher-margin shorthand the
-   * marker emits since 2026-08-24. Empty for runs marked before that.
+   * marker emits since 2026-08-24, plus that part's red-ink reason and ✱
+   * teaching note for the annotated-solution view. Empty for older runs.
    */
-  schemes: { label: string | null; scheme: string }[];
+  schemes: { label: string | null; scheme: string; why: string | null; teach: string | null }[];
+  /** The complete correct solution, one step per line ($…$ TeX). */
+  solution: string | null;
   /**
    * "📚 Revise this concept" link into the worked-examples swipe player, when
    * the release-time mapper (`result_json.revise`, lib/revise-map) matched this
@@ -70,6 +73,12 @@ export interface StudentQuestion {
 export interface StudentPracticeItem {
   /** Question number on their paper this was picked for. */
   for: string;
+  /**
+   * Question-bank id when the item is a bank pick, null when written fresh.
+   * Internal plumbing (the notebook uses it to fetch the worked solution at
+   * reveal time) — never shown to the student.
+   */
+  id: string | null;
   question: string;
   /** Final answer for self-checking; may be empty on generated items. */
   answer: string;
@@ -177,12 +186,19 @@ function toQuestion(raw: unknown): StudentQuestion | null {
   const parts = Array.isArray(marking.parts) ? marking.parts : [];
 
   const slips: string[] = [];
-  const schemes: { label: string | null; scheme: string }[] = [];
+  const schemes: { label: string | null; scheme: string; why: string | null; teach: string | null }[] = [];
   for (const p of parts) {
     const part = asRecord(p);
     if (!part) continue;
     const scheme = str(part.scheme);
-    if (scheme) schemes.push({ label: str(part.label) || null, scheme });
+    if (scheme) {
+      schemes.push({
+        label: str(part.label) || null,
+        scheme,
+        why: str(part.error_summary) || null,
+        teach: str(part.study_note) || null,
+      });
+    }
     // A part that scored full marks has nothing to say; `error_summary` on a
     // correct part (some markers write "no errors") would read as a criticism.
     if (num(part.awarded) >= num(part.max)) continue;
@@ -202,6 +218,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     full: max > 0 && awarded >= max,
     prompt: str(asRecord(output?.question)?.prompt) || null,
     schemes,
+    solution: str(asRecord(output?.correct)?.full_solution_latex) || null,
     revise: null, // attached per-paper from result_json.revise in toPaper
   };
 }
@@ -242,6 +259,7 @@ function toPracticeItem(raw: unknown): StudentPracticeItem | null {
   if (!question) return null;
   return {
     for: str(r.for) || '?',
+    id: str(r.id) || null,
     question,
     answer: str(r.answer),
     topic: str(r.topic) || null,

@@ -7,7 +7,7 @@ const NOW = new Date('2026-08-23T12:00:00Z');
 function q(over: Partial<StudentQuestion>): StudentQuestion {
   return {
     questionNumber: '1', awarded: 0, max: 4, topic: 'Vectors', comment: '',
-    slips: [], full: false, prompt: null, revise: null, ...over,
+    slips: [], full: false, prompt: null, schemes: [], solution: null, revise: null, ...over,
   };
 }
 function paper(daysAgo: number, questions: StudentQuestion[]): StudentPaper {

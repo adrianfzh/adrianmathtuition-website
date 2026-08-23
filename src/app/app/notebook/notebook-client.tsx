@@ -55,8 +55,29 @@ interface NotebookData {
 interface AttemptResult {
   verdict: 'correct' | 'wrong';
   official: string | null;
+  officialSolution: string | null;
   note: string | null;
   conquered: boolean;
+}
+
+// The /solutions look, mini: the worked solution as numbered typeset lines,
+// so a wrong re-attempt teaches the method instead of just naming the answer.
+function SolutionLines({ solution }: { solution: string }) {
+  const lines = solution.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return null;
+  return (
+    <div className="mt-2 rounded-lg border border-gray-200 bg-white p-2.5">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1.5">The worked solution</p>
+      <ol className="list-none m-0 p-0 space-y-1">
+        {lines.map((l, i) => (
+          <li key={i} className="flex items-baseline gap-2">
+            <span className="shrink-0 text-[10px] font-bold text-gray-300 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+            <MathText text={l} className="text-[12.5px] text-gray-800 min-w-0" />
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
 }
 
 function MathText({ text, className }: { text: string; className?: string }) {
@@ -218,7 +239,7 @@ function EntryCard({ entry, today, onUpdated }: {
   const [answer, setAnswer] = useState('');
   const [confident, setConfident] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
-  const [reveal, setReveal] = useState<{ official: string; note: string | null } | null>(null);
+  const [reveal, setReveal] = useState<{ official: string; solution: string | null; note: string | null } | null>(null);
   const [result, setResult] = useState<AttemptResult | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -237,9 +258,13 @@ function EntryCard({ entry, today, onUpdated }: {
       const j = await r.json();
       if (!r.ok) throw new Error(j?.error || String(r.status));
       if (j.verdict === 'unclear') {
-        setReveal({ official: j.official || '', note: j.note ?? null });
+        setReveal({ official: j.official || '', solution: j.officialSolution ?? null, note: j.note ?? null });
       } else {
-        setResult({ verdict: j.verdict, official: j.official ?? null, note: j.note ?? null, conquered: !!j.conquered });
+        setResult({
+          verdict: j.verdict, official: j.official ?? null,
+          officialSolution: j.officialSolution ?? null,
+          note: j.note ?? null, conquered: !!j.conquered,
+        });
         setReveal(null);
         onUpdated(j.entry as Entry);
       }
@@ -312,6 +337,7 @@ function EntryCard({ entry, today, onUpdated }: {
                 <div className="mt-3 rounded-lg border border-gray-200 bg-white p-3">
                   <p className="text-xs font-semibold text-gray-500 mb-1">Here’s the answer — how did you do?</p>
                   <MathText text={reveal.official} className="text-[13px] text-gray-800 whitespace-pre-wrap" />
+                  {reveal.solution && <SolutionLines solution={reveal.solution} />}
                   {reveal.note && <MathText text={reveal.note} className="text-[12px] text-gray-500 italic mt-1" />}
                   <div className="flex gap-2 mt-2.5">
                     <button
@@ -471,6 +497,7 @@ function ResultPanel({ result, confident }: { result: AttemptResult; confident: 
           <details className="mt-1.5">
             <summary className="cursor-pointer text-xs font-semibold text-emerald-700 list-none">Show the full answer</summary>
             <MathText text={result.official} className="text-[13px] text-emerald-900 mt-1 whitespace-pre-wrap" />
+            {result.officialSolution && <SolutionLines solution={result.officialSolution} />}
           </details>
         )}
       </div>
@@ -485,6 +512,7 @@ function ResultPanel({ result, confident }: { result: AttemptResult; confident: 
           <MathText text={result.official} className="text-[13px] text-gray-800 whitespace-pre-wrap" />
         </>
       )}
+      {result.officialSolution && <SolutionLines solution={result.officialSolution} />}
       {result.note && <MathText text={result.note} className="text-[12px] text-gray-500 italic mt-1" />}
       {confident === true && (
         <p className="text-[12px] text-rose-900 mt-2">

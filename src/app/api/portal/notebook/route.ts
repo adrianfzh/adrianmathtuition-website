@@ -34,6 +34,7 @@ const MAX_ANSWER_LEN = 300;
 interface EntryRow {
   id: string;
   airtable_student_id: string;
+  variant_qb_id: string | null;
   run_id: string;
   question_number: string;
   paper_name: string | null;
@@ -78,6 +79,27 @@ async function sessionStudentId(): Promise<string | null> {
 
 // The variant answer is deliberately NOT in the GET payload — the reveal
 // happens in the POST response, after the attempt is committed.
+// The reveal teaches, not just tells: when the twin came from the bank, fetch
+// its full worked solution to show alongside the answer. Best-effort — a
+// missing/failed lookup degrades to the answer-only reveal, never blocks it.
+async function workedSolution(
+  svc: ReturnType<typeof createServiceClient>,
+  entry: EntryRow,
+): Promise<string | null> {
+  if (!entry.variant_qb_id) return null;
+  try {
+    const { data } = await svc
+      .from('questions')
+      .select('solution')
+      .eq('id', entry.variant_qb_id)
+      .single();
+    const sol = typeof data?.solution === 'string' ? data.solution.trim() : '';
+    return sol || null;
+  } catch {
+    return null;
+  }
+}
+
 function toClient(e: EntryRow) {
   const attempts = (Array.isArray(e.attempts) ? e.attempts : []) as Attempt[];
   const last = attempts.length ? attempts[attempts.length - 1] : null;
@@ -237,6 +259,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         verdict: 'unclear',
         official: entry.variant_answer,
+        officialSolution: await workedSolution(svc, entry),
         note: entry.variant_note,
       });
     }
@@ -279,6 +302,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     verdict,
     official: entry.variant_answer,
+    officialSolution: await workedSolution(svc, entry),
     note: entry.variant_note,
     conquered: updated.status === 'archived',
     entry: toClient(updated),

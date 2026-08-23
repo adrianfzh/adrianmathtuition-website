@@ -181,6 +181,9 @@ export interface NotebookInsert {
   variant_answer: string | null;
   variant_note: string | null;
   variant_origin: string | null;
+  /** Question-bank id of the twin (null for generated twins) — lets the
+   * reveal fetch the full worked solution instead of a bare answer. */
+  variant_qb_id: string | null;
   next_due: string;
 }
 
@@ -220,6 +223,7 @@ export function buildEntriesFromPapers(
         variant_answer: variant?.answer || null,
         variant_note: variant?.note || null,
         variant_origin: variant?.origin || null,
+        variant_qb_id: variant?.id || null,
         next_due: today,
       });
     }

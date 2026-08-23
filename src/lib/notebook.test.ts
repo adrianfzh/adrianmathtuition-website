@@ -91,7 +91,7 @@ describe('sgtToday', () => {
 function q(over: Partial<StudentQuestion>): StudentQuestion {
   return {
     questionNumber: '1', awarded: 1, max: 3, topic: 'Algebra', comment: 'c',
-    slips: ['(a): slipped'], full: false, prompt: 'Factorise…', revise: null, ...over,
+    slips: ['(a): slipped'], full: false, prompt: 'Factorise…', schemes: [], solution: null, revise: null, ...over,
   };
 }
 function paper(over: Partial<StudentPaper>): StudentPaper {
@@ -101,7 +101,7 @@ function paper(over: Partial<StudentPaper>): StudentPaper {
   };
 }
 const variant: StudentPracticeItem = {
-  for: '1', question: 'Variant Q', answer: '42', topic: 'Algebra', origin: null, note: null,
+  for: '1', id: 'qb-uuid-1', question: 'Variant Q', answer: '42', topic: 'Algebra', origin: null, note: null,
 };
 
 describe('buildEntriesFromPapers', () => {
@@ -111,7 +111,8 @@ describe('buildEntriesFromPapers', () => {
     expect(rows).toHaveLength(2);
     expect(rows[0]).toMatchObject({
       run_id: 'run-1', question_number: '1', variant_question: 'Variant Q',
-      variant_answer: '42', next_due: '2026-08-23', max_marks: 3, awarded: 1,
+      variant_answer: '42', variant_qb_id: 'qb-uuid-1',
+      next_due: '2026-08-23', max_marks: 3, awarded: 1,
     });
     // Q3 has no practice item — entry still exists, variant fields null.
     expect(rows[1]).toMatchObject({ question_number: '3', variant_question: null });

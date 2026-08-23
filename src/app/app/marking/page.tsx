@@ -14,6 +14,7 @@ import { currentStudent } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/lib/portal-marking';
 import PortalFlowStrip from '@/components/PortalFlowStrip';
+import AnnotatedSolution from './AnnotatedSolution';
 import { portalSurfaces } from '@/lib/portal-surfaces';
 import { mathHtml } from '@/lib/math-inline';
 // Practice questions carry inline $…$ TeX — mathHtml KaTeXes only the math
@@ -255,6 +256,15 @@ function Paper({ paper }: { paper: StudentPaper }) {
                   </div>
                 )}
                 {q.comment && <p className="text-[13px] text-gray-700 mt-1 leading-snug">{q.comment}</p>}
+                {q.solution && (
+                  <details className="mt-2 group/sol">
+                    <summary className="cursor-pointer text-[13px] font-semibold text-navy list-none flex items-center gap-1.5">
+                      <span className="text-gray-400 group-open/sol:rotate-90 transition-transform inline-block">›</span>
+                      📖 The worked solution, annotated
+                    </summary>
+                    <AnnotatedSolution solution={q.solution} schemes={q.schemes} />
+                  </details>
+                )}
                 {q.slips.length > 0 && (
                   <ul className="mt-1.5 space-y-1">
                     {q.slips.map((s, j) => (
