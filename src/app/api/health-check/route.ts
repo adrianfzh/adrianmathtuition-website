@@ -5,6 +5,7 @@ import { sendTelegram } from '@/lib/telegram';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { dropboxConfigured, listFolder } from '@/lib/dropbox';
 import { listPrintablesForLevel, dropboxFolderFor } from '@/lib/notes-list';
+import { publishedSolutions } from '@/data/model-solutions';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -148,6 +149,19 @@ export async function GET(req: NextRequest) {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const html = await r.text();
       if (!html.includes('Adrian')) throw new Error('landing rendered without expected content');
+      return 'ok';
+    }),
+    // The public model-solutions library (Adrian approved the content
+    // 2026-08-24; linked from the footer + sitemap since). Index and the first
+    // published solution page must both render.
+    timed('solutions', async () => {
+      const r = await fetch(`${base}/solutions`, { signal: T(10000) });
+      if (!r.ok) throw new Error(`index HTTP ${r.status}`);
+      const first = publishedSolutions()[0];
+      if (first) {
+        const s = await fetch(`${base}/solutions/${first.slug}`, { signal: T(10000) });
+        if (!s.ok) throw new Error(`${first.slug}: HTTP ${s.status}`);
+      }
       return 'ok';
     }),
     // Resend (welcome emails, invoices, receipts)

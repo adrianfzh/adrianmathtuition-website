@@ -25,6 +25,7 @@ export default function Footer() {
           <a href="/secondary-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">Secondary Math Tuition</a>
           <a href="/o-level-a-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">O-Level A Math Tuition</a>
           <a href="/jc-h2-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">JC H2 Math Tuition</a>
+          <a href="/solutions" className="text-[#d1d5db] hover:text-white no-underline">Model Solutions</a>
           <a href="/terms" className="text-[#d1d5db] hover:text-white no-underline">Terms</a>
         </nav>
         <p className="mb-1">&copy; {new Date().getFullYear()} Adrian&apos;s Math Tuition &middot; Singapore</p>
