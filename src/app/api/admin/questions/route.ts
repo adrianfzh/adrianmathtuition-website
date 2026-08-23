@@ -133,15 +133,25 @@ export async function GET(req: NextRequest) {
   // ── the papers index ──────────────────────────────────────────────────────
   if (p.get('papers') === '1') {
     if (!_papersCache || Date.now() - _papersCache.at > PAPERS_TTL) {
-      const { data, error } = await supa
-        .from('questions')
-        .select('school, year, level, paper, exam_type')
-        .is('deleted_at', null)
-        .not('school', 'is', null)
-        .not('year', 'is', null)
-        .limit(40000);
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      _papersCache = { at: Date.now(), rows: data ?? [] };
+      // PostgREST caps every response at its max-rows (1000 on Supabase), so a
+      // single big .limit() SILENTLY truncates to the first 1000 questions and
+      // the index loses most of the bank — JC2 2025 had 32 papers and showed
+      // "0 papers reconstructed" (bit on 2026-08-25). Page through instead.
+      const rows: Row[] = [];
+      for (let page = 0; page < 40; page++) {
+        const { data, error } = await supa
+          .from('questions')
+          .select('school, year, level, paper, exam_type')
+          .is('deleted_at', null)
+          .not('school', 'is', null)
+          .not('year', 'is', null)
+          .order('id')
+          .range(page * 1000, page * 1000 + 999);
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+        rows.push(...((data ?? []) as Row[]));
+        if (!data || data.length < 1000) break;
+      }
+      _papersCache = { at: Date.now(), rows };
     }
     const level = p.get('level');
     const year = p.get('year');
