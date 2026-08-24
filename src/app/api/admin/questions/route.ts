@@ -329,10 +329,9 @@ export async function POST(req: NextRequest) {
     }
     if (!items.length) return NextResponse.json({ error: 'no questions found' }, { status: 400 });
     const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 80) : 'Selected questions';
-    const dateLabel = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
     try {
       const pdf = await renderSolutionsPDF({
-        title, dateLabel, items,
+        title, items,
         includeStems: body.includeQuestions !== false,
       });
       const blob = await put(`mark-paper/solutions-pdfs/${Date.now()}.pdf`, pdf, {

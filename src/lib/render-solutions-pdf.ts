@@ -40,7 +40,6 @@ export interface SolutionsItem {
 export interface SolutionsInput {
   /** e.g. "Cedar Girls 2023 · P2" or "Custom selection". */
   title: string;
-  dateLabel: string;
   items: SolutionsItem[];
   /** false = solutions only (no grey question stems). Default true. */
   includeStems?: boolean;
@@ -122,9 +121,7 @@ export function buildSolutionsHTML(input: SolutionsInput): string {
   .katex{font-size:1em}
 
   .sol-header{margin-bottom:9pt}
-  .sol-brand{text-align:center;color:${NAVY};font-weight:700;font-size:11.5pt;letter-spacing:.3em;border-bottom:1.1pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt}
-  .sol-line2{text-align:center;margin-top:3pt}
-  .sol-type{color:${NAVY};font-weight:700;font-size:9.5pt;letter-spacing:.26em}
+  .sol-type{display:block;text-align:center;color:${NAVY};font-weight:700;font-size:9.5pt;letter-spacing:.26em;border-bottom:1.1pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt}
   .sol-title{text-align:center;font-size:13pt;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:6pt 0 2pt}
   .sol-meta{text-align:center;color:#6E6E6E;font-size:8.5pt}
 
@@ -138,27 +135,19 @@ export function buildSolutionsHTML(input: SolutionsInput): string {
   .sol-none{color:#999;font-style:italic}
   .sol-img{display:block;max-width:100%;max-height:340pt;margin:4pt 0}
 
-  .sol-footer{margin-top:10pt;padding-top:4pt;border-top:0.75pt solid #999;display:flex;justify-content:space-between;font-size:8pt}
-  .sol-foot-brand{color:${NAVY};font-weight:700;letter-spacing:.12em}
-  .sol-foot-url{color:#6E6E6E}
 </style>
 </head>
 <body>
   <div class="sol-header">
-    <div class="sol-brand">ADRIAN&rsquo;S MATH TUITION</div>
-    <div class="sol-line2"><span class="sol-type">WORKED SOLUTIONS</span></div>
+    <span class="sol-type">WORKED SOLUTIONS</span>
     <div class="sol-title">${esc(input.title)}</div>
-    <div class="sol-meta">${esc(input.dateLabel)} · ${input.items.length} question${input.items.length === 1 ? '' : 's'}</div>
+    <div class="sol-meta">${input.items.length} question${input.items.length === 1 ? '' : 's'}</div>
   </div>
 
   <ol class="sol-list">
 ${input.items.map((it, i) => itemHtml(it, i, input.includeStems !== false)).join('\n')}
   </ol>
 
-  <div class="sol-footer">
-    <span class="sol-foot-brand">Adrian&rsquo;s Math Tuition</span>
-    <span class="sol-foot-url">adrianmathtuition.com</span>
-  </div>
 </body>
 </html>`;
 }
