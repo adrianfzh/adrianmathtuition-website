@@ -5,7 +5,7 @@ Every scenario a hire-purchase question can ask for, one worked example each:
 the instalment, the hire-purchase price, the interest rate, the principal /
 cash price, the length of the agreement, the deposit percentage, and a
 two-plan comparison.  House style: Times New Roman question text, and the
-navy/Consolas solution box from Adrian's own revision sheets.
+navy solution box from Adrian's own revision sheets.
 """
 from worksheet_lib import Worksheet
 from docx.shared import Cm, Pt, RGBColor
@@ -60,11 +60,31 @@ def _fix_grid(t):
             c.set(qn('w:w'), w)
 
 
-def mono_box(ws, title, lines, size=8.5):
-    """Navy-edged box with a pale blue title bar and a Consolas body."""
+import re
+from reportlab.pdfbase import pdfmetrics
+
+_LABEL_RE = re.compile(r'^\((?:[a-z]|i{1,3}|iv|v)\)(\((?:i{1,3}|iv|v)\))?\s*$')
+
+
+def _tnr(text, size=9.5):
+    """Width of `text` in Times New Roman at `size`, in points."""
+    return pdfmetrics.stringWidth(text, 'Times-Roman', size)
+
+
+def prose_box(ws, title, lines, size=9.5, tab_cm=None):
+    """Navy-edged box with a pale blue title bar, body in Times New Roman.
+
+    The source lines align their '=' signs with leading spaces, which only
+    lines up in a monospace font.  In a proportional face those spaces are far
+    too narrow, so instead each indented line is given a real left indent equal
+    to the measured Times width of the text it is meant to sit under — the
+    column it aligned to in the monospace draft.  The alignment survives the
+    font change rather than collapsing into ragged spacing.
+    """
     t = ws.doc.add_table(rows=2, cols=1)
     t.autofit = False
     _box(t, EDGE)
+
     head = t.rows[0].cells[0]
     head.width = Cm(16)
     _shade(head, BAR)
@@ -81,18 +101,37 @@ def mono_box(ws, title, lines, size=8.5):
     body = t.rows[1].cells[0]
     body.width = Cm(16)
     first = True
+    anchor = ''          # most recent flush-left line: the column reference
     for line in lines:
         bp = body.paragraphs[0] if first else body.add_paragraph()
         first = False
         bp.paragraph_format.line_spacing = 1.0
         bp.paragraph_format.space_before = Pt(0)
         bp.paragraph_format.space_after = Pt(0)
-        r = bp.add_run(line if line else ' ')
-        r.font.name = 'Consolas'
-        r.font.size = Pt(size)
-        if line.startswith('(') or line.endswith(':') and not line.startswith(' '):
-            r.bold = True
-        for wt in r._r.findall(qn('w:t')):
+
+        stripped = line.lstrip(' ')
+        pad = len(line) - len(stripped)
+        if pad and anchor:
+            ref = anchor[:pad].ljust(pad)
+            bp.paragraph_format.left_indent = Pt(_tnr(ref, size))
+        elif pad:
+            bp.paragraph_format.left_indent = Pt(_tnr(' ' * pad, size) * 3)
+        else:
+            anchor = line
+
+        if tab_cm and '\t' in stripped:
+            bp.paragraph_format.tab_stops.add_tab_stop(Cm(tab_cm))
+
+        run = bp.add_run(stripped if stripped else ' ')
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(size)
+        # bold only real part labels — "(a)", "(b)(ii)" — and flush-left
+        # headings. An indented continuation that merely opens with "(" is
+        # ordinary prose and must not come out bold.
+        is_label = bool(_LABEL_RE.match(stripped))
+        if not pad and (is_label or stripped.endswith(':')):
+            run.bold = True
+        for wt in run._r.findall(qn('w:t')):
             wt.set(qn('xml:space'), 'preserve')
     _fix_grid(t)
     ws._block_paras = []
@@ -133,7 +172,7 @@ ws.title('Hire Purchase')
 ws.subtitle('Worked Examples — Every Type of Calculation')
 
 # ------------------------------------------------------------------ notes
-mono_box(ws, 'What the words mean, and the five relationships', [
+prose_box(ws, 'What the words mean, and the five relationships', [
  "Cash price      what you pay if you settle the whole amount at once",
  "Deposit         paid up front, often a percentage of the cash price",
  "Balance, P      = cash price − deposit",
@@ -164,7 +203,7 @@ head(ws, 'Example 1  —  Finding the monthly instalment')
 qtext(ws, 'A washing machine has a cash price of $4500. Mr Tan pays a deposit of 20% of the cash '
           'price and repays the balance over 3 years, at 6% per annum simple interest, in equal '
           'monthly instalments. Calculate his monthly instalment.')
-mono_box(ws, 'Solution  —  Example 1', [
+prose_box(ws, 'Solution  —  Example 1', [
  "Deposit  = 20% × 4500 = $900",
  "Balance  P = 4500 − 900 = $3600      ← interest is on 3600, not 4500",
  "",
@@ -181,7 +220,7 @@ mono_box(ws, 'Solution  —  Example 1', [
 head(ws, 'Example 2  —  Finding the hire purchase price and the extra paid')
 qtext(ws, 'For the washing machine in Example 1, find the total hire purchase price, and how much '
           'more Mr Tan pays than the cash price.')
-mono_box(ws, 'Solution  —  Example 2', [
+prose_box(ws, 'Solution  —  Example 2', [
  "Hire purchase price = deposit + (instalment × months)",
  "                    = 900 + 36(118)",
  "                    = 900 + 4248",
@@ -198,7 +237,7 @@ mono_box(ws, 'Solution  —  Example 2', [
 head(ws, 'Example 3  —  Finding the interest rate')
 qtext(ws, 'A laptop has a cash price of $2400. Ryan pays a deposit of $600 and repays the balance '
           'in 24 equal monthly instalments of $87. Calculate the rate of simple interest per annum.')
-mono_box(ws, 'Solution  —  Example 3', [
+prose_box(ws, 'Solution  —  Example 3', [
  "Balance  P = 2400 − 600 = $1800",
  "Total repaid on instalments = 24 × 87 = $2088",
  "",
@@ -217,7 +256,7 @@ head(ws, 'Example 4  —  Finding the balance and the cash price')
 qtext(ws, 'A motorcycle is bought on hire purchase. A deposit of $3000 is paid, and the balance is '
           'repaid over 4 years at 5% per annum simple interest in monthly instalments of $290. '
           'Calculate the cash price of the motorcycle.')
-mono_box(ws, 'Solution  —  Example 4', [
+prose_box(ws, 'Solution  —  Example 4', [
  "Total repaid on instalments = 48 × 290 = $13 920",
  "",
  "Let the balance be $P.",
@@ -240,7 +279,7 @@ head(ws, 'Example 5  —  Finding the length of the agreement')
 qtext(ws, 'A sofa has a cash price of $3200. Mrs Lee pays a deposit of 25% and repays the balance '
           'at 7% per annum simple interest in monthly instalments of $114. Find the number of '
           'years of the agreement.')
-mono_box(ws, 'Solution  —  Example 5', [
+prose_box(ws, 'Solution  —  Example 5', [
  "Deposit = 25% × 3200 = $800",
  "Balance P = 3200 − 800 = $2400",
  "",
@@ -260,7 +299,7 @@ head(ws, 'Example 6  —  Finding the deposit as a percentage')
 qtext(ws, 'A television has a cash price of $2500. A customer pays a deposit, then repays the '
           'balance at 8% per annum simple interest in 36 monthly instalments of $62. Express the '
           'deposit as a percentage of the cash price.')
-mono_box(ws, 'Solution  —  Example 6', [
+prose_box(ws, 'Solution  —  Example 6', [
  "Total repaid on instalments = 36 × 62 = $2232",
  "T = 36 months = 3 years",
  "",
@@ -283,7 +322,7 @@ qtext(ws, 'Plan A:  a deposit of 10%, and the balance over 2 years at 9% per ann
 qtext(ws, 'Plan B:  a deposit of 25%, and the balance over 3 years at 6% per annum.', indent=1.6)
 qtext(ws, 'Determine which plan costs less in total, and state one reason a buyer might still '
           'choose the other plan.')
-mono_box(ws, 'Solution  —  Example 7', [
+prose_box(ws, 'Solution  —  Example 7', [
  "Plan A",
  "  Deposit = 10% × 1800 = $180",
  "  Balance = 1800 − 180 = $1620",
@@ -338,7 +377,7 @@ ws.Q(T('A tablet has a cash price of $600. Plan A is a deposit of 20% with the b
        'per annum. Determine which plan costs less in total.'), marks=5)
 
 ws.doc.add_paragraph()
-mono_box(ws, 'Answers', [
+prose_box(ws, 'Answers', [
  "1.  (a) $180                (b) $51",
  "2.  Hire purchase price $1072,  $112 more than the cash price",
  "3.  Balance $6000,  cash price $8000",
