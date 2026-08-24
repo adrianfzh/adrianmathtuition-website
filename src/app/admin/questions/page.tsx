@@ -135,21 +135,63 @@ export default function QuestionBankPage() {
     finally { setLoading(false); }
   }, [level, year, school]);
 
-  const openQuestion = useCallback(async (id: string) => {
-    setShowSolution(false);
+  // Full details already in hand, keyed by id. Opening a question reads from
+  // here first, so a tap paints immediately instead of waiting on a round trip
+  // (a paper's questions all land here when the paper opens).
+  const detailCache = useRef<Map<string, Detail>>(new Map());
+  const rememberDetails = useCallback((ds: Detail[]) => {
+    for (const d of ds) if (d && d.id) detailCache.current.set(d.id, d);
+  }, []);
+
+  // Warm one question on intent (pointer over the card, or the touch that
+  // precedes the tap) — by the time the tap lands the detail is usually home.
+  // The in-flight set is what stops a hover and the tap it precedes from
+  // firing the same request twice.
+  const inFlight = useRef<Set<string>>(new Set());
+  const fetchDetail = useCallback(async (id: string): Promise<Detail | null> => {
+    const known = detailCache.current.get(id);
+    if (known) return known;
+    if (inFlight.current.has(id)) return null;
+    inFlight.current.add(id);
     try {
       const r = await fetch(`/api/admin/questions?id=${id}`);
       const d = await r.json();
-      if (d.error) { flash(d.error); return; }
-      cacheCards([d.question]);
-      setOpenDetail(d.question);
-    } catch (e) { flash((e as Error).message); }
-  }, []);
+      if (d?.question) {
+        detailCache.current.set(id, d.question);
+        cacheCards([d.question]);
+        return d.question as Detail;
+      }
+      if (d?.error) flash(d.error);
+      return null;
+    } catch (e) { flash((e as Error).message); return null; }
+    finally { inFlight.current.delete(id); }
+  }, [cacheCards]);
+
+  const prefetchQuestion = useCallback((id: string) => {
+    if (id) void fetchDetail(id);
+  }, [fetchDetail]);
+
+  const openQuestion = useCallback(async (id: string) => {
+    setShowSolution(false);
+    const known = detailCache.current.get(id);
+    if (known) { setOpenDetail(known); return; }   // instant
+    // A prefetch may already be in flight; poll the cache briefly rather than
+    // duplicating the request, then fall back to fetching it ourselves.
+    for (let i = 0; i < 20 && inFlight.current.has(id); i++) {
+      await new Promise(res => setTimeout(res, 25));
+      const arrived = detailCache.current.get(id);
+      if (arrived) { setOpenDetail(arrived); return; }
+    }
+    const d = await fetchDetail(id);
+    if (d) setOpenDetail(d);
+  }, [fetchDetail]);
 
   const openPaper = useCallback(async (meta: PaperMeta) => {
     setLoading(true);
     try {
-      const p = new URLSearchParams({ paperView: '1', school: meta.school, year: String(meta.year) });
+      // details=1: the whole paper arrives complete, so every question in it
+      // opens with no further network at all.
+      const p = new URLSearchParams({ paperView: '1', details: '1', school: meta.school, year: String(meta.year) });
       if (meta.level) p.set('level', meta.level);
       if (meta.paper) p.set('paper', meta.paper);
       if (meta.examType) p.set('exam_type', meta.examType);
@@ -157,12 +199,13 @@ export default function QuestionBankPage() {
       const d = await r.json();
       if (d.error) { setApiError(d.error); return; }
       cacheCards(d.questions || []);
+      rememberDetails(d.questions || []);
       setPaperView({ meta, questions: d.questions || [] });
       setOpenDetail(null);
       window.scrollTo({ top: 0 });
     } catch (e) { setApiError((e as Error).message); }
     finally { setLoading(false); }
-  }, []);
+  }, [cacheCards, rememberDetails]);
 
   // Auth + deep links (?id= / ?school=&year=).
   useEffect(() => {
@@ -528,7 +571,10 @@ export default function QuestionBankPage() {
         <section>
           {results.map(c => (
             <div key={c.id} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '10px 12px', marginBottom: 8 }}>
-              <button onClick={() => openQuestion(c.id)} style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+              <button onClick={() => openQuestion(c.id)}
+                onPointerEnter={() => prefetchQuestion(c.id)}
+                onTouchStart={() => prefetchQuestion(c.id)}
+                style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
                 <div style={{ fontSize: 14.5, color: '#111' }}><MathText text={c.excerpt} /></div>
               </button>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>

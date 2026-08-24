@@ -71,10 +71,23 @@ function card(row: Row) {
   };
 }
 
-// The papers index scans one light row per paper-tagged question; cache it —
-// the bank changes a few times a day, the button gets tapped far more often.
-let _papersCache: { at: number; rows: Row[] } | null = null;
-const PAPERS_TTL = 10 * 60 * 1000;
+/** One question, everything the detail panel shows. */
+function detail(row: Row) {
+  return {
+    ...card(row),
+    questionMd: row.question_text ?? '',
+    parts: resolveParts(row.parts),
+    solution: row.solution ?? null,
+    answer: row.answer ?? null,
+    difficulty: row.difficulty ?? null,
+    sourceFile: row.source_file ?? null,
+    watermarkStatus: row.image_watermark_status ?? null,
+    images: resolveImages(row),
+    solutionImages: Array.isArray(row.solution_images)
+      ? row.solution_images.filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
+      : [],
+  };
+}
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -90,31 +103,23 @@ export async function GET(req: NextRequest) {
       .eq('id', id)
       .single();
     if (error || !row) return NextResponse.json({ error: error?.message || 'not found' }, { status: 404 });
-    return NextResponse.json({
-      question: {
-        ...card(row),
-        questionMd: row.question_text ?? '',
-        parts: resolveParts(row.parts),
-        solution: row.solution ?? null,
-        answer: row.answer ?? null,
-        difficulty: row.difficulty ?? null,
-        sourceFile: row.source_file ?? null,
-        watermarkStatus: row.image_watermark_status ?? null,
-        images: resolveImages(row),
-        solutionImages: Array.isArray(row.solution_images)
-          ? row.solution_images.filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
-          : [],
-      },
-    });
+    return NextResponse.json({ question: detail(row) });
   }
 
   // ── a whole paper, in reading order ───────────────────────────────────────
   const school = p.get('school');
   const year = p.get('year');
   if (school && year && !p.get('papers') && !p.get('q') && p.get('paperView') === '1') {
+    // `details=1` returns every question in full so the client can hold the
+    // whole paper in memory — opening a question is then instant instead of a
+    // round trip per tap. A paper is a few dozen questions, so this stays small.
+    // The select stays ONE literal: supabase-js parses it at the type level and
+    // a ternary widens it to `string`, losing the row type (same trap as
+    // lib/portal-marking.ts). Fetch whole rows, choose the SHAPE below.
+    const withDetails = p.get('details') === '1';
     let q = supa
       .from('questions')
-      .select(LIST_COLUMNS)
+      .select('*')
       .is('deleted_at', null)
       .eq('school', school)
       .eq('year', Number(year));
@@ -127,49 +132,36 @@ export async function GET(req: NextRequest) {
     const { data, error } = await q.limit(120);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const rows = (data ?? []).sort((a, b) => compareQnum(a.question_number as string, b.question_number as string));
-    return NextResponse.json({ paper: { school, year: Number(year), level, paper, examType }, questions: rows.map(card) });
+    return NextResponse.json({
+      paper: { school, year: Number(year), level, paper, examType },
+      questions: rows.map(withDetails ? detail : card),
+    });
   }
 
   // ── the papers index ──────────────────────────────────────────────────────
+  // Served by the `paper_index` VIEW: the grouping is one database aggregate
+  // (milliseconds) instead of pulling 26k question rows a thousand at a time
+  // and grouping in JS — that cost 14 SECONDS on every cold cache. Filters push
+  // down to the query, and there is no cache to go stale: a freshly ingested
+  // paper shows up on the next tap.
   if (p.get('papers') === '1') {
-    if (!_papersCache || Date.now() - _papersCache.at > PAPERS_TTL) {
-      // PostgREST caps every response at its max-rows (1000 on Supabase), so a
-      // single big .limit() SILENTLY truncates to the first 1000 questions and
-      // the index loses most of the bank — JC2 2025 had 32 papers and showed
-      // "0 papers reconstructed" (bit on 2026-08-25). Page through instead.
-      const rows: Row[] = [];
-      for (let page = 0; page < 40; page++) {
-        const { data, error } = await supa
-          .from('questions')
-          .select('school, year, level, paper, exam_type')
-          .is('deleted_at', null)
-          .not('school', 'is', null)
-          .not('year', 'is', null)
-          .order('id')
-          .range(page * 1000, page * 1000 + 999);
-        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-        rows.push(...((data ?? []) as Row[]));
-        if (!data || data.length < 1000) break;
-      }
-      _papersCache = { at: Date.now(), rows };
-    }
     const level = p.get('level');
     const year = p.get('year');
-    const filter = (p.get('q') || '').toLowerCase();
-    const groups = new Map<string, { school: string; year: number; level: string; paper: string | null; examType: string | null; count: number }>();
-    for (const r of _papersCache.rows) {
-      if (level && r.level !== level) continue;
-      if (year && String(r.year) !== year) continue;
-      if (filter && !String(r.school).toLowerCase().includes(filter)) continue;
-      const key = `${r.school}|${r.year}|${r.level}|${r.paper ?? ''}|${r.exam_type ?? ''}`;
-      const g = groups.get(key);
-      if (g) g.count += 1;
-      else groups.set(key, {
-        school: r.school as string, year: r.year as number, level: r.level as string,
-        paper: (r.paper as string | null) ?? null, examType: (r.exam_type as string | null) ?? null, count: 1,
-      });
-    }
-    const papers = [...groups.values()].sort((a, b) =>
+    const filter = (p.get('q') || '').trim();
+    let pq = supa.from('paper_index').select('school, year, level, paper, exam_type, count');
+    if (level) pq = pq.eq('level', level);
+    if (year) pq = pq.eq('year', Number(year));
+    if (filter) pq = pq.ilike('school', `%${filter.replace(/[%_]/g, '')}%`);
+    const { data, error } = await pq.order('year', { ascending: false }).order('school').limit(1000);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const papers = (data ?? []).map(r => ({
+      school: r.school as string,
+      year: r.year as number,
+      level: r.level as string,
+      paper: (r.paper as string | null) ?? null,
+      examType: (r.exam_type as string | null) ?? null,
+      count: Number(r.count) || 0,
+    })).sort((a, b) =>
       b.year - a.year || a.school.localeCompare(b.school) || String(a.paper).localeCompare(String(b.paper)));
     return NextResponse.json({ papers: papers.slice(0, 400), total: papers.length });
   }
