@@ -165,14 +165,20 @@ Pline('c', [t('the amount of each monthly instalment.')], marks=2)
 ws.ans([t('(a) $568   (b) $340.80   (c) $72.58')])
 
 # ------------------------------------------------- 5  reverse: find the price
-# Everything is a multiple of x, so the whole payment collapses to 0.88x.
-Qsingle(5, [t('The price of a sofa bed is $'), m('x'),
-            t('. Toby buys it on hire purchase. He pays a down payment of 25% '
-              'and arranges to pay the remaining amount in monthly instalments '
-              'over 26 months, at a simple interest rate of 8% per annum. '
-              'Given that his monthly instalment is $88, find '), m('x'),
+# Adapted from a real question — the bank holds only one of this shape, so the
+# scenario and figures are rewritten rather than repeated.  Everything is a
+# multiple of x, so the whole payment collapses to 0.92x.  The term is kept at
+# a non-whole number of years (30 months = 2.5) because converting it is the
+# whole point; the figures then land on a clean x = 3000, while the common
+# error of treating the term as one year gives an ugly 3254.72, which tells a
+# student on its own that something has gone wrong.
+Qsingle(5, [t('The price of a treadmill is $'), m('x'),
+            t('. Rachel buys it on hire purchase. She pays a down payment of '
+              '20% and arranges to pay the remaining amount in monthly '
+              'instalments over 30 months, at a simple interest rate of 6% per '
+              'annum. Given that her monthly instalment is $92, find '), m('x'),
             t('.')], marks=4)
-ws.ans([('text', 'x', {'italic': True}), t(' = 2600')])
+ws.ans([('text', 'x', {'italic': True}), t(' = 3000')])
 
 # ------------------------------------------------- 6  compare two plans
 Qstem(6, [t('Jered wants to buy a handphone priced at $1299. He may pay for it '
