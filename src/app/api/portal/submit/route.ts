@@ -24,7 +24,8 @@ import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
-import { DAILY_SUBMIT_CAP, sgtStartOfDayIso } from '@/lib/portal-submit-limit';
+import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
+import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import { sendTelegram } from '@/lib/telegram';
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
 
@@ -95,12 +96,14 @@ export async function POST(req: Request) {
   // Phase G hardening (Adrian, 21 Aug 2026): one hand-in per student per SGT
   // calendar day — replaces the earlier 3-per-10-min soft brake. Counts runs
   // actually saved, so a failed submission does not burn the day's slot.
-  const { count } = assignment ? { count: 0 } : await admin
-    .from('paper_marking_runs')
-    .select('id', { count: 'exact', head: true })
-    .eq('student_id', studentId)
-    .eq('result_json->>portal_submission', 'true')
-    .gte('created_at', sgtStartOfDayIso());
+  // Since 24 Aug 2026 the count spans BOTH surfaces (this and the bot's
+  // /handin) — see countHandinsToday. The bot enforces the same ceiling from
+  // its side, so whichever a student reaches first spends the day's slot.
+  // The cast is TS ergonomics, not a loosening: the generated Supabase client
+  // types are deep enough that inferring them through the helper trips TS2589
+  // ("type instantiation is excessively deep"). HandinCountingClient names the
+  // four methods actually used.
+  const count = assignment ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId);
   if ((count ?? 0) >= DAILY_SUBMIT_CAP) {
     return NextResponse.json({ error: 'You have already sent in a paper today — Adrian marks one paper per student per day. Send the next one tomorrow!' }, { status: 429 });
   }
