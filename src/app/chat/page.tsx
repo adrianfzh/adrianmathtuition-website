@@ -1064,7 +1064,16 @@ export default function ChatPage() {
       // prefix (all completed paragraphs, re-rendered only when a paragraph
       // completes) and a short live tail (re-rendered every frame, cheap) — so
       // the per-frame cost stays constant however long the answer gets.
-      const TYPE_CPS = 38;
+      // Reveal pacing (2026-08-26, per Adrian — stream like Claude's own UI):
+      // a CONTINUOUS proportional rate replaces the old fixed 38 cps base with
+      // stepped catch-up (240/480 cps at hard backlog thresholds), which read
+      // slowly on short answers and visibly LURCHED when a threshold tripped.
+      // Each frame aims to drain the current backlog in ~DRAIN_S seconds, so the
+      // reveal speed rises and falls smoothly with the model's arrival speed,
+      // never trails it by more than ~a quarter second, and keeps a gentle floor
+      // so trickling text still types rather than stalling.
+      const MIN_CPS = 60;   // floor: pleasant typing feel when the model trickles
+      const DRAIN_S = 0.25; // target lag behind arrivals
       let displayedLen = 0;
       let lastShownLen = -1;
       let typerRAF: number | null = null;
@@ -1084,10 +1093,8 @@ export default function ChatPage() {
       };
       const typerFrame = (ts: number) => {
         if (!typerLastTs) typerLastTs = ts;
-        // Adaptive catch-up: when the buffer runs far ahead (fast model / slow reveal),
-        // speed up instead of trailing the stream by tens of seconds.
         const backlog = fullText.length - displayedLen;
-        const cps = backlog > 1200 ? 480 : backlog > 400 ? 240 : TYPE_CPS;
+        const cps = Math.max(MIN_CPS, backlog / DRAIN_S);
         displayedLen = Math.min(fullText.length, displayedLen + ((ts - typerLastTs) / 1000) * cps);
         typerLastTs = ts;
         const caughtUp = displayedLen >= fullText.length;
