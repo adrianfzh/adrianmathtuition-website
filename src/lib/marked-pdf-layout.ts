@@ -51,7 +51,7 @@ export async function drawPaperTotal(
 
   const who = [p.studentName, p.studentLevel].filter(Boolean).join('  ·  ');
   const dateStr = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' });
-  const meta = [who, dateStr, 'AdrianMath'].filter(Boolean).join('   ·   ');
+  const meta = [who, dateStr, 'Marked by AdrianMath'].filter(Boolean).join('   ·   ');
   const metaSize = Math.round(strip * 0.22);
   page.drawText(meta, {
     x: p.width - pad - reg.widthOfTextAtSize(meta, metaSize), y: yMid - metaSize * 0.35,
