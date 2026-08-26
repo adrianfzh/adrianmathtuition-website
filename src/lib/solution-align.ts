@@ -31,51 +31,69 @@ function oneMathRun(line: string): string | null {
   return m ? m[1].trim() : null;
 }
 
-/** First top-level `=` that is a relation (not `<=`/`>=`/`!=`/`:=`/`==`), split there. */
-export function splitAtRelation(src: string): { lhs: string; rhs: string } | null {
+/** First top-level relation (`=`, `\approx`, `≈`; not `<=`/`>=`/`!=`/`:=`/`==`), split there. */
+export function splitAtRelation(src: string): { lhs: string; rhs: string; rel: '=' | '\\approx' } | null {
   let depth = 0;
   for (let i = 0; i < src.length; i++) {
     const c = src[i];
-    if (c === '\\') { i += 1; continue; }
+    if (c === '\\') {
+      // `\approx` is a relation too — mirrored from the bot's ai/pen-math.js
+      // (Adrian, 26 Aug 2026: "approximate equal sign not aligned"); change both
+      // or neither.
+      const m = /^\\approx(?![a-zA-Z])/.exec(src.slice(i));
+      if (m && depth === 0) {
+        return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + m[0].length).trim(), rel: '\\approx' };
+      }
+      i += 1; continue;
+    }
     if (c === '{') { depth++; continue; }
     if (c === '}') { depth--; continue; }
+    if (c === '≈' && depth === 0) {
+      return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: '\\approx' };
+    }
     if (c === '=' && depth === 0) {
       if (i > 0 && '<>!:='.includes(src[i - 1])) return null;
-      return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim() };
+      return { lhs: src.slice(0, i).trim(), rhs: src.slice(i + 1).trim(), rel: '=' };
     }
   }
   return null;
 }
 
-/** Parse one step into subject + every top-level equality (`$a=b=c$` → lhs a, rhss [b,c]). */
-function equationParts(line: string): { lhs: string; rhss: string[] } | null {
+type RhsSeg = { tex: string; rel: '=' | '\\approx' };
+
+/** Parse one step into subject + every top-level relation segment, each carrying
+ *  the relation that precedes it (`$a=b≈c$` → lhs a, rhss [{b,=},{c,≈}]). */
+function equationParts(line: string): { lhs: string; rhss: RhsSeg[] } | null {
   const tex = oneMathRun(line);
   if (tex == null) return null;
   const split = splitAtRelation(tex);
   if (!split) return null;
   if (/\\text\s*\{/.test(split.lhs)) return null;
   if (split.lhs.length > ALIGN_LHS_MAX) return null;
-  const rhss: string[] = [];
+  const rhss: RhsSeg[] = [];
+  let rel = split.rel;
   let rest = split.rhs;
   for (let more = splitAtRelation(rest); more; more = splitAtRelation(rest)) {
-    rhss.push(more.lhs);
+    rhss.push({ tex: more.lhs, rel });
+    rel = more.rel;
     rest = more.rhs;
   }
-  rhss.push(rest);
+  rhss.push({ tex: rest, rel });
   return { lhs: split.lhs, rhss };
 }
 
-/** One step → its aligned rows (a long equality chain becomes one row per `=`). */
+/** One step → its aligned rows (a long relation chain becomes one row per relation). */
 function alignedRowsForStep(line: string): { tex: string; raw: string }[] | null {
   const eq = equationParts(line);
   if (!eq) return null;
-  const texLen = eq.lhs.length + eq.rhss.reduce((n, r) => n + r.length + 3, 0);
+  const texLen = eq.lhs.length + eq.rhss.reduce((n, r) => n + r.tex.length + 3, 0);
   if (eq.rhss.length === 1 || texLen <= CHAIN_SPLIT_MIN) {
-    return [{ tex: `${eq.lhs} &= ${eq.rhss.join(' = ')}`, raw: line }];
+    const tail = eq.rhss.map((r, i) => (i === 0 ? r.tex : `${r.rel} ${r.tex}`)).join(' ');
+    return [{ tex: `${eq.lhs} &${eq.rhss[0].rel} ${tail}`, raw: line }];
   }
   return eq.rhss.map((r, i) => ({
-    tex: `${i === 0 ? eq.lhs : ''} &= ${r}`,
-    raw: i === 0 ? `$${eq.lhs} = ${r}$` : `$= ${r}$`,
+    tex: `${i === 0 ? eq.lhs : ''} &${r.rel} ${r.tex}`,
+    raw: i === 0 ? `$${eq.lhs} ${r.rel} ${r.tex}$` : `$${r.rel} ${r.tex}$`,
   }));
 }
 

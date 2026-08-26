@@ -1022,6 +1022,23 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
      as `1/2 · M1 A0`). Half-and-half — some codes on ticks, the rest on the box —
      is the one output it refuses: it reads as two markers.
   Classic style has no margin layer — untouched throughout.
+- **The 26 Aug calibration batch (bot `b4b4222`)** — fourteen rules from Adrian's
+  page-by-page review of linjie's marked P1: generous-'correct'/stingy-'neutral'
+  verdicts (tickless sound working was 'neutral' by drift); a PRINTED-MATHS PARSE
+  GUARD (radical/bracket extent read from the paper's typesetting; a student answer
+  exactly matching an alternate parse flags low-confidence instead of teaching the
+  marker's parse as fact); geometry reasons recalibrated (only NAMED properties need
+  the bracketed quote — basic angle arithmetic never costs a mark); pedagogic notes
+  (corrections DERIVE with computed values); per-feature sketch crosses + shape
+  quality assessable + Venn diagrams marked per placed number; bearing-figure nudge;
+  **green-pen correction detection, FLAG-FIRST** (`correction_pass` on the attempt →
+  triage flag "marked as submitted X/m; original ink would score Y/m" — marks
+  unchanged until the detection proves reliable); ≈ joins the equals-alignment
+  column (bot `pen-math` + site `lib/solution-align.ts` — mirrored, change both or
+  neither); inline blank-space solutions try three shrinking fits before the footer;
+  **tick coverage** measured per page (`annotation_debug[].coverage {wanted,placed}`)
+  with a review note naming thin pages as a grounding symptom (re-shoot/re-mark),
+  never skipped marking.
 - **A WORKING-ONLY page is marked against a reconstruction, and must say so** (2026-07-29).
   With no question paper attached, the bot uses `STANDALONE_MARK_SYSTEM` — "the printed
   question and the working are BOTH on this page". A continuation sheet or graph paper has

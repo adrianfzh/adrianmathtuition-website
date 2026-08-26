@@ -3,8 +3,8 @@ import { groupAlignedSteps, alignMarkingSolutions, splitAtRelation } from './sol
 
 describe('splitAtRelation', () => {
   it('splits at the first top-level equals', () => {
-    expect(splitAtRelation('x = 3')).toEqual({ lhs: 'x', rhs: '3' });
-    expect(splitAtRelation('\\frac{a}{b} = c = d')).toEqual({ lhs: '\\frac{a}{b}', rhs: 'c = d' });
+    expect(splitAtRelation('x = 3')).toEqual({ lhs: 'x', rhs: '3', rel: '=' });
+    expect(splitAtRelation('\\frac{a}{b} = c = d')).toEqual({ lhs: '\\frac{a}{b}', rhs: 'c = d', rel: '=' });
   });
   it('ignores equals inside braces and compound relations', () => {
     expect(splitAtRelation('\\sqrt{x=1}')).toBeNull();
@@ -12,11 +12,17 @@ describe('splitAtRelation', () => {
     expect(splitAtRelation('x != 3')).toBeNull();
   });
   it('an equals in position 0 is a continuation, not a compound', () => {
-    expect(splitAtRelation('= 3')).toEqual({ lhs: '', rhs: '3' });
+    expect(splitAtRelation('= 3')).toEqual({ lhs: '', rhs: '3', rel: '=' });
   });
 });
 
 describe('groupAlignedSteps', () => {
+  it('≈ joins the alignment column (the 5 s.f. final line)', () => {
+    const out = groupAlignedSteps('$x = \\frac{9.26}{6.5967}$\n$\\approx 1.4037$');
+    expect(out).toContain('&\\approx 1.4037');
+    expect(out).toContain('\\begin{aligned}');
+  });
+
   it('merges a run of equation steps into one aligned block', () => {
     const out = groupAlignedSteps('$x + 2 = 5$\n$x = 3$');
     expect(out).toBe('$\\begin{aligned}x + 2 &= 5 \\\\ x &= 3\\end{aligned}$');
