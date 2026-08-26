@@ -366,7 +366,9 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '🧮', title: 'TI-84',           sub: 'TI-84 CE · graphing calculator',      href: '/calculator?real=1', icon: CalcIcon },
   { emoji: '🧮', title: 'Casio fx-97SG X',  sub: 'ClassWiz · scientific calculator',     href: '/calculator/casio', icon: CasioIcon },
   { emoji: '🎓', title: 'Teaching decks',  sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
-  { emoji: '📚', title: 'Flashcard decks', sub: 'Browse swipe decks · level → topic', href: '/admin/cards-preview' },
+  // Flashcard decks (/admin/cards-preview) tile removed 2026-08-26 — Revision
+  // Decks (/revise/am) is the kept door to the same swipe decks; the page
+  // itself remains URL-reachable.
   { emoji: '📣', title: 'Marketing Calendar', sub: 'Post ideas vs SG exam calendar', href: '/admin/calendar-marketing-post' },
   { emoji: '🩺', title: 'Bank Health', sub: 'QB coverage · gaps · flagged questions', href: '/admin/bank-health' },
   { emoji: '🧭', title: 'Curriculum', sub: 'Strategy layer · dependency graph', href: '/admin/curriculum' },
