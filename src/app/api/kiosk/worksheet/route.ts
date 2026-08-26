@@ -90,9 +90,13 @@ export async function GET(req: NextRequest) {
   // Draft cards serve too — Adrian pilots the format before formally approving.
   let card: { title: string; contentMd: string; status: string } | null = null;
   if (withCard) {
+    // Approved cards only — with the 2026-08-26 conversion pass the table now
+    // holds 60 machine-drafted cards awaiting review; an unfiltered read would
+    // print unreviewed drafts as page 1 of a student's worksheet.
     const cardRes = await supa.from('topic_cards')
       .select('title, content_md, status')
       .eq('level', level).eq('topic', topic)
+      .eq('status', 'approved')
       .maybeSingle();
     if (cardRes.data) {
       card = { title: cardRes.data.title, contentMd: cardRes.data.content_md, status: cardRes.data.status };
