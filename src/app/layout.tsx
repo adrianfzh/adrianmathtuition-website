@@ -66,6 +66,27 @@ export default function RootLayout({
         />
       </head>
       <body>
+        {/* Site-wide org schema — the machine-readable "who/where" search and
+            AI crawlers key on. Facts must stay in sync with what the pages
+            themselves claim; nothing here that isn't stated on the site. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'EducationalOrganization',
+              '@id': `${SITE_URL}/#org`,
+              name: SITE_NAME,
+              url: SITE_URL,
+              description: DEFAULT_DESC,
+              email: 'adrian@adrianmathtuition.com',
+              telephone: '+65 9139 7985',
+              address: { '@type': 'PostalAddress', addressLocality: 'Singapore', addressCountry: 'SG' },
+              areaServed: ['Kovan', 'Hougang', 'Singapore'],
+              knowsAbout: ['O-Level E Math', 'O-Level A Math', 'JC H2 Math'],
+            }),
+          }}
+        />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-26NZSXLE6S"
           strategy="afterInteractive"
