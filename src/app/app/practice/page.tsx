@@ -25,8 +25,15 @@ import { questionMarkdown, questionStructured } from '@/lib/bank-question-markdo
 
 export const dynamic = 'force-dynamic';
 
-export default async function PracticePage({ searchParams }: { searchParams: Promise<{ assignment?: string }> }) {
-  const { assignment: assignmentId } = await searchParams;
+export default async function PracticePage({ searchParams }: { searchParams: Promise<{ assignment?: string; level?: string; topic?: string }> }) {
+  const { assignment: assignmentId, level: targetLevel, topic: targetTopic } = await searchParams;
+  // "Practise this topic" deep link from /notes: preselect the level and open
+  // that topic's sheet once the overview loads. Ignored when an assignment is
+  // being opened (the assignment fixes the question).
+  const initialTarget =
+    !assignmentId && targetTopic
+      ? { level: (targetLevel || '').toUpperCase() || null, topic: targetTopic }
+      : null;
   let initialLevels: { key: string; label: string }[] | null = null;
   // `account` is non-null only for a logged-in student (the admin-password
   // testing mode renders a login card instead). No "you are here" flow strip
@@ -98,7 +105,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           </span>
         </Link>
       )}
-      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} />
+      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} />
     </>
   );
 }

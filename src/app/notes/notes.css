@@ -2276,3 +2276,22 @@ a.nx-eyebrow:hover {
   color: var(--color-fd-muted-foreground);
   line-height: 1.2;
 }
+
+/* ── "Practise this topic" deep link (topic page byline) ─────────────────────*/
+.nx-practise {
+  margin-left: auto;
+  align-self: center;
+  border: 1px solid var(--nx-line);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+  background: var(--color-fd-card);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.15s;
+}
+.nx-practise:hover {
+  border-color: var(--nx-green-mid);
+}

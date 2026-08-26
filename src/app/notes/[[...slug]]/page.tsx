@@ -238,6 +238,15 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
           <span className="nx-byline-name">Taught by Adrian</span>
           <span className="nx-byline-sub">{levelLabel(level)} specialist</span>
         </span>
+        {/* Deep link into the portal's instant-graded practice for THIS topic —
+            read the examples, then do a few. The practice page opens the
+            topic's sheet directly (?level&topic). */}
+        <Link
+          href={`/app/practice?level=${level.toUpperCase()}&topic=${encodeURIComponent(data.topic)}`}
+          className="nx-practise"
+        >
+          ✏️ Practise this topic
+        </Link>
       </div>
       <hr className="nx-rule" />
       <DocsBody>

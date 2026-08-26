@@ -10,6 +10,18 @@ import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
 import { assessCoverage } from '@/lib/paper-reconstruction';
+import {
+  A_MATH_EXAM_TOPICS, EM_OWN_TOPICS, JC_TOPICS, S1_EXAM_TOPICS, S2_EXAM_TOPICS,
+} from '@/lib/canonical-topics';
+
+/** Topic options per AI-pick level — flat canonical names (kiosk pool keys). */
+const AI_TOPIC_LISTS: Record<string, string[]> = {
+  AM: A_MATH_EXAM_TOPICS.flatMap(c => c.topics),
+  EM: EM_OWN_TOPICS.flatMap(c => c.topics),
+  JC2: JC_TOPICS.flatMap(c => c.topics),
+  S1: S1_EXAM_TOPICS.flatMap(c => c.topics),
+  S2: S2_EXAM_TOPICS.flatMap(c => c.topics),
+};
 
 const C = {
   bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0', muted: '#64748b',
@@ -77,6 +89,14 @@ export default function QuestionBankPage() {
   const [basketOpen, setBasketOpen] = useState(false);
   const [wsAnswers, setWsAnswers] = useState(true);
   const [wsSpace, setWsSpace] = useState(true);
+
+  // 🤖 AI-pick: model-curated basket fill (level+topic → picks with reasons).
+  const [aiLevel, setAiLevel] = useState('AM');
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiCount, setAiCount] = useState(10);
+  const [aiInstruction, setAiInstruction] = useState('');
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiPicks, setAiPicks] = useState<{ id: string; reason: string }[]>([]);
   const [wsBusy, setWsBusy] = useState(false);
   const [solBusy, setSolBusy] = useState(false);
   const [solWithQuestions, setSolWithQuestions] = useState(true);
@@ -290,6 +310,26 @@ export default function QuestionBankPage() {
       }
     })();
   }, [basketOpen, basket, cardCache, cacheCards]);
+
+  // 🤖 AI-pick: server curates from the eligible pool; picks land in the basket
+  // (replacing it — the reasons list below maps 1:1 to the new contents).
+  const aiPick = async () => {
+    if (!aiTopic || aiBusy) return;
+    setAiBusy(true); setAiPicks([]);
+    try {
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ai-pick', level: aiLevel, topic: aiTopic, count: aiCount, instruction: aiInstruction }),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      const picks: { id: string; reason: string }[] = d.picks || [];
+      saveBasket(picks.map(p => p.id));
+      setAiPicks(picks);
+      flash(`AI picked ${picks.length} from a pool of ${d.pool}`);
+    } catch (e) { flash((e as Error).message); }
+    finally { setAiBusy(false); }
+  };
 
   const generateWorksheet = async () => {
     if (!basket.length || wsBusy) return;
@@ -724,6 +764,35 @@ export default function QuestionBankPage() {
                 </div>
               );
             })}
+            <div style={{ margin: '12px 0', padding: 10, border: `1px solid ${C.border}`, borderRadius: 10, background: '#fafaf8' }}>
+              <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 6 }}>🤖 AI-pick a worksheet</div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                <select value={aiLevel} onChange={e => { setAiLevel(e.target.value); setAiTopic(''); }}
+                  style={{ padding: 6, fontSize: 13, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                  {Object.keys(AI_TOPIC_LISTS).map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+                <select value={aiTopic} onChange={e => setAiTopic(e.target.value)}
+                  style={{ flex: 1, minWidth: 0, padding: 6, fontSize: 13, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+                  <option value="">Topic…</option>
+                  {(AI_TOPIC_LISTS[aiLevel] || []).map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <input type="number" min={1} max={15} value={aiCount}
+                  onChange={e => setAiCount(Math.min(15, Math.max(1, parseInt(e.target.value, 10) || 10)))}
+                  style={{ width: 52, padding: 6, fontSize: 13, border: `1px solid ${C.border}`, borderRadius: 8 }} />
+              </div>
+              <input value={aiInstruction} onChange={e => setAiInstruction(e.target.value)}
+                placeholder="Optional instruction — e.g. ramp easy to hard, no vectors mixed in"
+                style={{ width: '100%', boxSizing: 'border-box', padding: 6, fontSize: 13, border: `1px solid ${C.border}`, borderRadius: 8, marginBottom: 6 }} />
+              <button onClick={aiPick} disabled={aiBusy || !aiTopic}
+                style={{ width: '100%', padding: 9, fontSize: 13.5, fontWeight: 700, color: '#fff', background: aiBusy || !aiTopic ? '#94a3b8' : '#4338ca', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+                {aiBusy ? 'Curating…' : 'AI-pick into basket (replaces current)'}
+              </button>
+              {aiPicks.length > 0 && (
+                <ol style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12, color: '#475569' }}>
+                  {aiPicks.map((p, i) => <li key={p.id} style={{ marginBottom: 2 }}>{p.reason || `pick ${i + 1}`}</li>)}
+                </ol>
+              )}
+            </div>
             <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, margin: '10px 0 4px' }}>
               <input type="checkbox" checked={wsAnswers} onChange={e => setWsAnswers(e.target.checked)} />
               Include the answers page

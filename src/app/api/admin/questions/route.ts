@@ -18,7 +18,9 @@ import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-b
 import { renderSolutionsPDF, type SolutionsItem, type SolutionsPart } from '@/lib/render-solutions-pdf';
 import { renderPaperPDF, type PaperPdfQuestion } from '@/lib/render-paper-pdf';
 import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-reconstruction';
+import { KIOSK_LEVELS } from '@/lib/kiosk-session';
 import { put } from '@vercel/blob';
+import Anthropic from '@anthropic-ai/sdk';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
@@ -251,6 +253,92 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 502 });
     }
+  }
+
+  // AI-pick → model-curated selection from the eligibility-gated pool into the
+  // basket. Same kiosk_pool source of truth as the kiosk worksheet, so every
+  // pick is printable; Claude only chooses and orders, never invents ids —
+  // returned ids are validated against the candidate set.
+  if (body.action === 'ai-pick') {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'AI pick not configured' }, { status: 503 });
+    }
+    const level = String(body.level || '');
+    const topic = String(body.topic || '').trim();
+    const count = Math.min(15, Math.max(1, parseInt(String(body.count ?? 10), 10) || 10));
+    const instruction = String(body.instruction || '').slice(0, 300);
+    const cfg = KIOSK_LEVELS[level];
+    if (!cfg) return NextResponse.json({ error: 'unknown level' }, { status: 400 });
+    if (!topic) return NextResponse.json({ error: 'topic required' }, { status: 400 });
+
+    const SEED: Record<string, string[]> = {
+      EM: ['EM', 'S3_EM'], AM: ['AM', 'S3_AM'], JC2: ['JC', 'JC1', 'JC2'], S1: ['S1'], S2: ['S2'],
+    };
+    const poolRes = await supa.rpc('kiosk_pool', {
+      p_tag_levels: SEED[level] ?? cfg.questionLevels,
+      p_sg_level: cfg.topicsKey,
+      p_topic: topic,
+      p_difficulties: null,
+    });
+    if (poolRes.error) return NextResponse.json({ error: poolRes.error.message }, { status: 500 });
+
+    type Cand = { id: string; marks: number | null; text: string };
+    const candidates: Cand[] = [];
+    for (const r of poolRes.data || []) {
+      const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
+      const answer = flat.answer || ((r.answer as string | null) ?? '');
+      if (!answer.trim()) continue;                       // must be printable with answers
+      candidates.push({
+        id: r.id as string,
+        marks: (r.total_marks as number | null) ?? null,
+        text: flat.text.replace(/\s+/g, ' ').slice(0, 420),
+      });
+    }
+    if (candidates.length < count) {
+      return NextResponse.json({ error: `only ${candidates.length} eligible questions for ${topic}` }, { status: 400 });
+    }
+    // Even sample down to 60 so the prompt stays small but the whole pool is
+    // represented — a head-of-list slice would bias every pick to low ids.
+    const MAXC = 60;
+    const sampled = candidates.length <= MAXC
+      ? candidates
+      : Array.from({ length: MAXC }, (_, i) => candidates[Math.floor((i * candidates.length) / MAXC)]);
+
+    const anthropic = new Anthropic();
+    const msg = await anthropic.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 1500,
+      system:
+        'You curate practice worksheets for a Singapore O-Level/JC math tutor. From the candidate ' +
+        'questions, pick exactly the requested number for a coherent worksheet: ramp from easier to ' +
+        'harder (use the mark counts and question complexity), cover a spread of distinct skills within ' +
+        'the topic, avoid near-duplicate questions. Reply with ONLY a JSON object: ' +
+        '{"picks":[{"id":"<uuid>","reason":"<≤12 words>"}]} in worksheet order. Use only ids from the list.',
+      messages: [{
+        role: 'user',
+        content:
+          `Topic: ${topic} (${cfg.label}). Pick ${count}.` +
+          (instruction ? ` Tutor's instruction: ${instruction}` : '') +
+          `\n\nCandidates:\n` +
+          sampled.map(c => `id:${c.id} marks:${c.marks ?? '?'} :: ${c.text}`).join('\n'),
+      }],
+    });
+    const raw = msg.content.find(b => b.type === 'text')?.text ?? '';
+    let picks: { id: string; reason: string }[] = [];
+    try {
+      const parsed = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
+      if (Array.isArray(parsed.picks)) picks = parsed.picks;
+    } catch {
+      return NextResponse.json({ error: 'model returned unparseable picks' }, { status: 502 });
+    }
+    const valid = new Set(sampled.map(c => c.id));
+    const seen = new Set<string>();
+    const out = picks
+      .filter(p => p && typeof p.id === 'string' && valid.has(p.id) && !seen.has(p.id) && seen.add(p.id))
+      .slice(0, count)
+      .map(p => ({ id: p.id, reason: String(p.reason || '').slice(0, 120) }));
+    if (out.length === 0) return NextResponse.json({ error: 'model picked nothing usable' }, { status: 502 });
+    return NextResponse.json({ picks: out, pool: candidates.length });
   }
 
   // Worksheet basket → house-style PDF of exactly the picked questions, in order.

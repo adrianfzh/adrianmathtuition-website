@@ -160,10 +160,14 @@ export type InitialAssignment = {
   score: number | null; outOf: number | null; question: Question;
 };
 
-export default function PracticeFlow({ initialLevels = null, initialAssignment = null }: {
+export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null }: {
   initialLevels?: LevelOpt[] | null; initialAssignment?: InitialAssignment | null;
+  /** Deep link from /notes ("Practise this topic"): preselect the level and
+   *  open that topic's sheet once the overview loads. One-shot. */
+  initialTarget?: { level: string | null; topic: string } | null;
 }) {
   const assignment = initialAssignment;
+  const targetRef = useRef(initialTarget);
   // mode: checking → student (portal session) | admin (password) | locked
   const [mode, setMode] = useState<'checking' | 'student' | 'admin' | 'locked'>(initialLevels || assignment ? 'student' : 'checking');
   const [password, setPassword] = useState('');
@@ -172,8 +176,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   // Stage 1 picker state
   const [levels, setLevels] = useState<LevelOpt[]>(initialLevels ?? []);
-  const [level, setLevel] = useState(() =>
-    initialLevels?.some(l => l.key === 'AM') ? 'AM' : (initialLevels?.[0]?.key ?? 'AM'));
+  const [level, setLevel] = useState(() => {
+    const t = initialTarget?.level;
+    if (t && (!initialLevels || initialLevels.some(l => l.key === t))) return t;
+    return initialLevels?.some(l => l.key === 'AM') ? 'AM' : (initialLevels?.[0]?.key ?? 'AM');
+  });
   const [tier, setTier] = useState<Tier>(assignment?.tier ?? 'Standard');
   const [tierPicked, setTierPicked] = useState(!!assignment);   // admin: topic chosen → pick Standard/Advanced → question
   const [topics, setTopics] = useState<TopicCard[]>([]);
@@ -274,6 +281,12 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         if (d.error) { setError(d.error); return; }
         setTopics(d.topics || []);
         setRecommended(d.recommended || []);
+        // One-shot deep-link: open the linked topic's sheet if this level has it.
+        const target = targetRef.current;
+        if (target && (d.topics || []).some((t: TopicCard) => t.topic === target.topic)) {
+          setSheetTopic(target.topic);
+          targetRef.current = null;
+        }
         if (Array.isArray(d.levels) && d.levels.length) {
           setLevels(d.levels);
           if (!d.levels.some((l: LevelOpt) => l.key === level)) setLevel(d.levels[0].key);
