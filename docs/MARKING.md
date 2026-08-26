@@ -742,6 +742,36 @@ field** — a new surface strips the one that exists.
   itself?", Adrian 2026-07-29). Uniform WIDTH, not uniform A4: letterboxing a landscape
   two-page CamScanner spread into portrait would shrink the working to a band adrift in
   white space.
+- **Tall transcript sheets are PAGINATED to A4 at assembly (2026-08-26):** a typeset
+  sheet taller than ~1.1 A4 pages is sliced into A4-height chunks BEFORE embedding —
+  "fit to page" printing was shrinking a long solution to unreadable. The cut row is
+  the whitest raster row near each ideal cut (`lib/pdf-paginate.ts` — `chooseCutRows`
+  pure + unit-tested, `sliceTallPng` the sharp wrapper), never mid-text-line, never in
+  the top 55% of a chunk. Photo pages are NEVER sliced (cutting a student's page in
+  half is worse than any shrink), and any slice failure keeps the tall page.
+- **Solution steps share an equals column (2026-08-26):** `lib/solution-align.ts`
+  (unit-tested) merges runs of ≥2 equation steps into one `$\begin{aligned}…$` line,
+  applied in `render-marking.ts` AFTER `repairMarkingLatex` (alignment decides on
+  top-level `=` signs repair may have just un-mangled) — the transcript twin of the
+  bot pen footer's `groupAlignedTex`, same qualification rules (whole-line single
+  `$…$` run, no `\text{}` LHS, LHS ≤ 26 chars, chains > 34 chars split per equals).
+  **Change the numbers in BOTH places or neither.** The template's `STEP_RE` never
+  splits inside a block — aligned rows separate on `\\`, the splitter only on `\n`.
+- **Branched solutions render as side-by-side case columns (2026-08-26):**
+  `correct.solution_branches` (`{before_latex, cases:[{case, steps_latex}],
+  after_latex}` — the bot prompt fills it ONLY for genuine 2-3-way case splits: trig
+  factorisations, ± roots) renders on the transcript as case columns solving
+  downward, the way a student writes `tan x = 1 | tan x = −2`. Gate: ≥2 usable
+  cases, else the linear fallback — and `full_solution_latex` is spec'd to stay
+  COMPLETE on its own precisely so old renderers/deploy skew never lose steps. The
+  photo footer + Telegram text flatten branches into "Case …:" headers via
+  `flattenBranches` (bot `ai/solution-entry.js`, tested). `repairMarkingLatex`
+  repairs all four branch fields. Related prompt rules (same day): trig solutions
+  state the sign→quadrant step with ASTC lettering and keep `x = a or x = b` on one
+  line; a new **`astc` margin-diagram kind #9** (bot `ai/margin-diagram.js`,
+  `validateAstc` tested) draws the quadrant cross with ticks — quadrants are DERIVED
+  from the `{ratio, sign}` conditions, and a contradicting claim kills the figure,
+  same philosophy as the other eight kinds.
 - **Fonts: the transcript needs explicit symbol fallbacks** — `marking-template.html`
   loads Noto Sans Math + Noto Sans Symbols 2 and lists them *after* Caveat / Crimson Pro /
   JetBrains Mono in every `--font-*` stack. None of the three primaries has `∠ ≅ △ ∴`, and
