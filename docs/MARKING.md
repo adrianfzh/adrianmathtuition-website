@@ -34,6 +34,27 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   the loser's remark overwrote the winner's finished row back to pending
   mid-build, which is why some queued runs "lost" their 🖼 images PDF and
   Telegram messages arrived from the staging bot.
+- **🌙 Queue markings ride the Message Batches API (2026-08-26):** the queue worker's
+  per-photo marking reads go through Anthropic's Batches API for the flat **50% token
+  discount** (~$2.24 → ~$1.15 per average 15.6-photo run; ~$80-100/month at Aug pace).
+  Verified before building: `code_execution_20250825` runs inside batch requests (live
+  docs + an end-to-end probe, 2026-08-26), and the caching + batch discounts stack.
+  Executor is bot `ai/mark-batch.js`; `markPhotoDirect` takes an injectable `exec` and
+  ONLY `processMarkingQueue` passes the batch one (`remarkRun` grew an opts param) — the
+  interactive ▶ Mark path (`phase:'remark'`/`'direct'`) is untouched and synchronous.
+  Load-bearing details: **`warmPdfCache` stays a REGULAR request** (batches can't
+  pre-warm — `max_tokens` must be ≥1 — and the batch reads then hit the 1h entry it
+  wrote at 0.1×·0.5); batch params come from the same `buildMarkParams` as sync calls
+  (byte-identical prefix or the cache entry is missed); every batch failure
+  (create rejected / request errored / results unfetchable / not ended in 90 min) falls
+  back to the sync call per photo, EXCEPT deploy drain, where the batch cancels itself
+  and rejects with `err.fatalMarking` — `markPaperDirect` rethrows that so an aborted
+  run fails the queue attempt cleanly instead of DELIVERING an all-blank paper. Retry
+  reads/rescue/answer-key stay sync (they land post-batch). `finalizeUsage` prices the
+  batched buckets at 50%, so the Telegram cost line shows the real spend. A queued
+  paper now takes ~10-60 min instead of ~2 (papers process one at a time behind
+  `_queueBusy`, so a deep queue can stretch hours — fine overnight, by design).
+  **Kill switch: `MARK_QUEUE_BATCH=0`** on Fly reverts to the sync fan-out, no deploy.
 - **🌙 No vision, no claim (2026-08-19):** before claiming (and paying for) a paper,
   the queue worker runs `visionPreflight()` (bot `ai/photo-overlay.js`) — a cheap
   Gemini text ping through the overlay's own model ladder. If it fails, the paper
