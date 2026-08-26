@@ -561,8 +561,11 @@ function formatDayDate(iso: string): string {
 // "A Math · 24 Jul — Differentiation, Integration", or with a P1/P2 split
 // "A Math · P1 24 Jul, P2 26 Jul". The exam type lives on the date pill (not
 // here) and topics render in full, wrapped — no per-line truncation
-// (Adrian 2026-07-18).
-function examSummaryLines(lesson: EnrichedLesson): string[] {
+// (Adrian 2026-07-18). Exception: EOY/Promo test everything, so their topic
+// lists run 20+ entries and swamp the chip — those collapse to "N topics ▸"
+// and expand on tap (Adrian 2026-08-26); WAs/Prelim stay inline.
+interface ExamChipLine { head: string; detail: string; collapsed: boolean; topicCount: number }
+function examSummaryLines(lesson: EnrichedLesson): ExamChipLine[] {
   const entries = lesson.examEntries || [];
   if (!entries.length) return [];
   const fmt = (e: ExamEntry): string =>
@@ -573,7 +576,7 @@ function examSummaryLines(lesson: EnrichedLesson): string[] {
     if (!bySubject.has(key)) bySubject.set(key, []);
     bySubject.get(key)!.push(e);
   }
-  const lines: string[] = [];
+  const lines: ExamChipLine[] = [];
   for (const [subject, es] of bySubject) {
     const type = es[0].examType || lesson.activeExamType || '';
     const p1 = es.find(e => e.paper === 'Paper 1');
@@ -592,10 +595,11 @@ function examSummaryLines(lesson: EnrichedLesson): string[] {
     const detail = [topics, notes].filter(Boolean).join(' · ');
     // Lead with the exam type so the line reads "WA3 · E Math · 20 Aug — …"
     // (Adrian 2026-07-26: clearer than the bare subject).
-    let line = [type, subject].filter(Boolean).join(' · ');
-    if (dates) line += line ? ` · ${dates}` : dates;
-    if (detail) line += ` — ${detail}`;
-    lines.push(line);
+    let head = [type, subject].filter(Boolean).join(' · ');
+    if (dates) head += head ? ` · ${dates}` : dates;
+    const collapsed = (type === 'EOY' || type === 'Promo') && !!detail;
+    const topicCount = topics ? topics.split(',').filter(t => t.trim()).length : 0;
+    lines.push({ head, detail, collapsed, topicCount });
   }
   return lines;
 }
@@ -783,6 +787,9 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
   const hasAttendance = !!(onMarkPresent || onMarkAbsent || onUndo);
 
   const [showTopicDropdown, setShowTopicDropdown] = useState(false);
+  // EOY/Promo chip lines collapse their long topic lists — this toggles them
+  // open for the whole chip (one flag, not per line).
+  const [examDetailsOpen, setExamDetailsOpen] = useState(false);
   const dropdownRef = useRef<HTMLSpanElement>(null);
 
   // Exam/topic info shows only where it's actionable: lessons dated
@@ -1003,7 +1010,22 @@ function DraggableLessonChip({ lesson, onTap, onStudentClick, onMarkPresent, onM
         )}
         {examLines.map((ln, idx) => (
           <span key={idx} style={{ display: 'block', fontSize: 10, lineHeight: 1.35, marginTop: idx === 0 ? 6 : 4, color: '#475569', overflowWrap: 'break-word' }}>
-            📅 {ln}
+            📅 {ln.head}
+            {ln.detail && (!ln.collapsed || examDetailsOpen ? (
+              // Expanded EOY details collapse again on tap (no-op for WA/Prelim).
+              <span
+                onClick={ln.collapsed ? e => { e.stopPropagation(); setExamDetailsOpen(false); } : undefined}
+                style={ln.collapsed ? { cursor: 'pointer' } : undefined}
+                title={ln.collapsed ? 'Tap to hide topics' : undefined}
+              > — {ln.detail}</span>
+            ) : (
+              <span
+                role="button"
+                onClick={e => { e.stopPropagation(); setExamDetailsOpen(true); }}
+                title="Tap to show tested topics"
+                style={{ color: '#0369a1', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              > — {ln.topicCount > 0 ? `${ln.topicCount} topics` : 'details'} ▸</span>
+            ))}
           </span>
         ))}
         {/* Exams all past → compact green done line (dates decluttered). */}

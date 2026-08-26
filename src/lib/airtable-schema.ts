@@ -1,5 +1,5 @@
 // AUTO-GENERATED — run `npm run sync-schema` to update
-// Last synced: 2026-08-10T02:15:03.595Z
+// Last synced: 2026-08-26T09:50:43.342Z
 // Source: Airtable metadata API (no student data)
 //
 // USAGE: import { SCHEMA } from '@/lib/airtable-schema'
@@ -518,6 +518,9 @@ export const SCHEMA = {
       },
       "Billed": {
         "type": "checkbox"
+      },
+      "Next Lesson Plan": {
+        "type": "multilineText"
       }
     }
   },
@@ -1055,7 +1058,8 @@ export const SCHEMA = {
           "WA3",
           "EOY",
           "Custom",
-          "Prelim"
+          "Prelim",
+          "Promo"
         ]
       },
       "Custom Name": {
@@ -1073,7 +1077,9 @@ export const SCHEMA = {
           "A Math (P1)",
           "A Math (P2)",
           "H2 Math (P1)",
-          "H2 Math (P2)"
+          "H2 Math (P2)",
+          "Math (P1)",
+          "Math (P2)"
         ]
       },
       "Exam Date": {
