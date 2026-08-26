@@ -79,6 +79,53 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   `tickQuality()` checks the finished run's `annotated_photos[].method`, and 30%+
   margin pages puts a ⚠️ re-mark nudge in the result Telegram (a page or two of
   margin on dense photos is normal and stays silent).
+- **💻 Plan-billed Mac marker (2026-08-26):** Adrian's split, agreed 26 Aug 2026 —
+  **hand-ins (portal `/app/submit` + Telegram `/handin`) ALWAYS mark on the API
+  path, untouched; Adrian's OWN queued papers may instead be marked by a headless
+  Claude Code job on his Mac at $0 API (plan usage).** How it works:
+  - **Policy lives in bot `lib/queue-pick.js` (pure, tested) — never re-derive it
+    in a route.** A non-hand-in, non-⚡ queued paper waits out `EXTERNAL_GRACE_MS`
+    (12 min) reserved for the Mac before the Fly worker takes it; the Mac (launchd
+    `com.adrianmath.planmarking`, every 5 min) claims via `phase:'external-next'`,
+    which stamps `result_json.queue.external_claim {by, at, attempts}` with a
+    **conditional update** (queue generation unchanged since read — the
+    staging-vs-prod claim race, relearned). The lease is 10 min,
+    **heartbeat-refreshed** (`external-heartbeat`) while the Mac marks.
+  - **FALLBACK IS THE LAW: a stale or released claim puts the row straight back on
+    the Fly worker's API path** (Mac asleep, plan cap hit, job dead, >2 external
+    attempts). A queued paper can never stall on this feature; worst case is the
+    grace + lease (~20 min) of added latency. Kill switches:
+    `MARK_QUEUE_EXTERNAL_GRACE_MS=0` on Fly restores pre-Mac behaviour exactly;
+    `launchctl unload ~/Library/LaunchAgents/com.adrianmath.planmarking.plist`
+    stops the Mac side.
+  - **Marks logic is never re-implemented.** The Mac session fetches the marking
+    prompts from the DEPLOYED bot itself (`phase:'external-prompts'` returns
+    `DIRECT_MARK_SYSTEM`/`STANDALONE_MARK_SYSTEM` verbatim — zero drift), rebuilds
+    each stored photo at ≤1280px (same copy `remarkRun` feeds the API), performs
+    the read in-session, and posts raw per-photo JSON to
+    `phase:'external-marking-result'` (`BOT_INTERNAL_SECRET`-authed like every
+    phase; the Mac reaches it through the site's `/api/admin/mark-paper` proxy
+    with the admin bearer). The bot injects the reads via `markPhotoDirect`'s
+    `exec` seam (`ai/external-reads.js` — the same seam the Message Batches
+    executor uses) so parse → `normalizeAttempt` → annotation → totals grounding →
+    `logMarkingRun` → `announceQueuedResult`/`deliverQueuedRun` are **byte-identical**
+    to a queue marking. A missing/unreadable photo read falls through to a real
+    API call — page-level safety net. Spread expansion (`expandSpreads`) is
+    skipped on external reads (indices must match what the Mac saw; intake-time
+    spread-split covers the common case).
+  - **Receipts:** the queue Telegram says `(💻 plan-billed — marked on the Mac)`;
+    `cost_usd` then only carries bot-side extras (fall-through retries, rescue,
+    answer-key check). `usage.external` + `externalReads` ride the run row.
+  - **Superseded submits are dropped, never double-delivered**: the result phase
+    validates the claim is still the caller's and the run still unmarked; a
+    timed-out result POST retried after the bot finished answers
+    `{superseded:true}`, which the Mac treats as success.
+  - **Mac-side files:** `scripts/plan-marking/` (WORKER_PROMPT.md = the session
+    runbook; run.sh = launchd wrapper — peek-first so an empty queue costs one
+    curl, PID lock, 85-min watchdog, releases a dead session's claim;
+    install.sh copies everything into `~/.adrianmath_marker/` — the job runs the
+    COPIES because the shared checkout flips branches under peer sessions).
+    Debug entry: the `plan-marking` skill. Logs: `~/.adrianmath_marker/plan-marking.log`.
 - **⚠ Never upload the school's solutions with a script (2026-08-19):** everything
   in the upload is marked as the student's work — the marker (Claude) works answers
   out itself and reads no scheme. Alexis's SJC P2 upload included 16 pages of typed
