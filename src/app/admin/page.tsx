@@ -342,23 +342,17 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
   { emoji: '🔍', title: 'Triage marking',  sub: 'Check flagged questions · release to students', href: '/admin/mark/triage' },
   { emoji: '🔎', title: 'Practice checks', sub: 'Spot-check portal practice grades',     href: '/admin/practice-checks' },
-  { emoji: '🧩', title: 'Worksheet Builder', sub: 'Pick QB questions · roles · PDF',   href: '/admin/worksheet-builder' },
   { emoji: '📄', title: 'Prelim Builder', sub: 'Assemble full papers from the blueprint', href: '/admin/prelim-builder' },
   { emoji: '📝', title: 'Print a paper', sub: 'Student self-serve mock / topic / weak-spot papers', href: '/app/print' },
-  { emoji: '🎓', title: 'Learn Review', sub: 'Approve · edit interactive units', href: '/admin/learn-review' },
   { emoji: '⚡', title: 'Revision Decks', sub: 'Quick recall · worked examples by topic', href: '/revise/am' },
-  { emoji: '📖', title: 'Learn (student view)', sub: 'Preview the tap-through player', href: '/app/learn' },
   { emoji: '🖥️', title: 'Kiosk control', sub: 'Open / close the centre kiosk', href: '/admin/kiosk' },
   { emoji: '🧾', title: 'Kiosk (student view)', sub: 'QR sign-in · print worksheets & notes', href: '/kiosk' },
   { emoji: '🗒️', title: 'Topic Cards', sub: 'Worksheet notes · edit & approve', href: '/admin/topic-cards' },
   { emoji: '🖼️', title: 'Figure review', sub: 'Flag figures to regenerate', href: '/admin/figures' },
   { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
   { emoji: '📊', title: 'Exams', sub: 'Dates · topics · results', href: '/admin/exams' },
-  { emoji: '📋', title: 'Revision Sign-ups', sub: 'June 2026 sprint · track responses', href: '/admin/revision-signups' },
-  { emoji: '🏖️', title: 'June Revision', sub: 'Published schedules · JC2 · Sec 4', href: '/admin/june-revision' },
   { emoji: '📌', title: 'Follow-ups',      sub: 'Parent promises · daily 8am digest', href: '/admin/followups' },
   { emoji: '⏳', title: 'Waitlist',        sub: 'Prospects · auto-alert on slot opening', href: '/admin/waitlist' },
-  { emoji: '📊', title: 'At a glance',     sub: 'Status · todos · invoices · students', href: '/admin/status' },
   { emoji: '📝', title: 'My To-Dos',       sub: 'Personal — things I need to do',       href: '/admin/my-todos' },
   { emoji: '🔁', title: 'Loop Tasks',      sub: 'Build-test-fix /loop queue for Claude', href: '/admin/todo' },
   { emoji: '📏', title: 'Grading Rubrics', sub: 'The standard Solo marks against',       href: '/admin/rubrics' },
@@ -366,9 +360,12 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '🧮', title: 'TI-84',           sub: 'TI-84 CE · graphing calculator',      href: '/calculator?real=1', icon: CalcIcon },
   { emoji: '🧮', title: 'Casio fx-97SG X',  sub: 'ClassWiz · scientific calculator',     href: '/calculator/casio', icon: CasioIcon },
   { emoji: '🎓', title: 'Teaching decks',  sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
-  // Flashcard decks (/admin/cards-preview) tile removed 2026-08-26 — Revision
-  // Decks (/revise/am) is the kept door to the same swipe decks; the page
-  // itself remains URL-reachable.
+  // Tiles removed 2026-08-26 (Adrian's cull; pages stay URL-reachable, revive
+  // by re-adding the entry): Flashcard decks (/admin/cards-preview — Revision
+  // Decks is the kept door), Worksheet Builder (QB basket + skills cover it),
+  // Learn Review + Learn student view (hidden until the full-portal switch),
+  // Revision Sign-ups + June Revision (seasonal — restore next April), and
+  // At a glance /admin/status (the hub's own cards superseded it).
   { emoji: '📣', title: 'Marketing Calendar', sub: 'Post ideas vs SG exam calendar', href: '/admin/calendar-marketing-post' },
   { emoji: '🩺', title: 'Bank Health', sub: 'QB coverage · gaps · flagged questions', href: '/admin/bank-health' },
   { emoji: '🧭', title: 'Curriculum', sub: 'Strategy layer · dependency graph', href: '/admin/curriculum' },
