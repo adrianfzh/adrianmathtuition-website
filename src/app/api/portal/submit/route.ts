@@ -105,7 +105,7 @@ export async function POST(req: Request) {
   // four methods actually used.
   const count = assignment ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId);
   if ((count ?? 0) >= DAILY_SUBMIT_CAP) {
-    return NextResponse.json({ error: 'You have already sent in a paper today — Adrian marks one paper per student per day. Send the next one tomorrow!' }, { status: 429 });
+    return NextResponse.json({ error: 'Today’s hand-in slot is used — a fresh one opens at midnight. One paper a day gets every script marked properly.' }, { status: 429 });
   }
 
   const botBase = process.env.BOT_BASE_URL;

@@ -19,7 +19,10 @@ type Page = { file: File; preview: string | null };
 // `assignment` = a "From Adrian" worksheet (SPEC-ASSIGN.md): the paper name is
 // the worksheet title (locked) and the POST carries the assignment id so the
 // run auto-releases and the assignment flips to submitted → marked.
-export default function SubmitClient({ assignment = null }: { assignment?: { id: string; title: string } | null }) {
+// `slotUsed` = today's daily hand-in slot is already spent (server-counted in
+// page.tsx) — show the allowance state up front instead of a rejection after
+// the student has photographed everything. Assignments are cap-exempt.
+export default function SubmitClient({ assignment = null, slotUsed = false }: { assignment?: { id: string; title: string } | null; slotUsed?: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [pages, setPages] = useState<Page[]>([]);
   const [paperName, setPaperName] = useState(assignment?.title ?? '');
@@ -144,14 +147,35 @@ export default function SubmitClient({ assignment = null }: { assignment?: { id:
             <Link href={assignment ? '/app/assignments' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
               {assignment ? 'Back to From Adrian' : 'Go to Marked papers'}
             </Link>
-            {!assignment && (
-            <button
-              onClick={() => { setDoneRunId(null); setPages([]); setPaperName(''); setSplitNote(''); setCapNote(''); }}
-              className="text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10"
-            >
-              Submit another paper
-            </button>
-            )}
+          </div>
+          {!assignment && (
+            <p className="text-[13px] text-gray-500 mt-3">
+              🎟️ That was today&apos;s hand-in slot — a fresh one opens at midnight.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Slot already spent today (and this isn't a cap-exempt assignment): say so
+  // up front, before any photographing happens. The POST-time 429 stays as the
+  // backstop for a slot spent from the Telegram side mid-visit.
+  if (slotUsed && !assignment) {
+    return (
+      <div className="space-y-4 pb-24 sm:pb-4">
+        <h1 className="text-xl font-bold text-navy pt-1">Submit a paper</h1>
+        <div className={`${CARD} p-5 text-center`}>
+          <p className="text-4xl">🎟️</p>
+          <p className="font-bold text-navy mt-2">Today&apos;s hand-in slot is used</p>
+          <p className="text-sm text-gray-600 mt-1.5">
+            One paper a day gets every script marked properly. A fresh slot opens at midnight —
+            line the next paper up for tomorrow.
+          </p>
+          <div className="mt-4 flex justify-center">
+            <Link href="/app/marking" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
+              Go to Marked papers
+            </Link>
           </div>
         </div>
       </div>
@@ -166,7 +190,10 @@ export default function SubmitClient({ assignment = null }: { assignment?: { id:
           <h1 className="text-xl font-bold text-navy mt-1">📬 Submit: {assignment.title}</h1>
         </div>
       ) : (
-        <h1 className="text-xl font-bold text-navy pt-1">Submit a paper</h1>
+        <div className="pt-1">
+          <h1 className="text-xl font-bold text-navy">Submit a paper</h1>
+          <p className="text-[13px] text-gray-500 mt-0.5">🎟️ Today&apos;s hand-in slot is open — one marked paper per day.</p>
+        </div>
       )}
 
       <div className={`${CARD} p-4 space-y-3`}>

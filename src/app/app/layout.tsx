@@ -12,6 +12,8 @@ import SignOutButton from './signout-button';
 import { pendingAssignmentCountForSession } from '@/lib/portal-assignments';
 import ViewAsToggle from './view-as-toggle';
 import PortalTour from '@/components/PortalTour';
+import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
+import { CURRENT_ANNOUNCEMENT } from '@/lib/portal-announcement';
 import { portalSurfaces } from '@/lib/portal-surfaces';
 import { DesktopLinks, MobileTabs } from '@/components/PortalTabs';
 
@@ -87,7 +89,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <ViewAsToggle cookieName={VIEW_AS_STUDENT_COOKIE} viewingAsStudent={viewingAsStudent} />
       )}
 
-      <main className="max-w-4xl mx-auto px-4 py-5">{children}</main>
+      <main className="max-w-4xl mx-auto px-4 py-5">
+        {/* Release announcement (lib/portal-announcement.ts) — one card, shown
+            once per device. Full-portal-only announcements stay invisible to
+            marking-only beta students, whose portal doesn't have the feature. */}
+        {CURRENT_ANNOUNCEMENT && (fullPortal || !CURRENT_ANNOUNCEMENT.fullPortalOnly) && (
+          <PortalAnnouncementCard announcement={CURRENT_ANNOUNCEMENT} />
+        )}
+        {children}
+      </main>
 
       {/* Mobile bottom tabs (components/PortalTabs.tsx — per-surface colours) */}
       <MobileTabs items={mobileTabs} pendingWork={pendingWork} />
