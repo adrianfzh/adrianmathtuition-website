@@ -8,6 +8,7 @@ const paper: PracticePaper = {
   practice: [
     {
       for: '3',
+      id: '11111111-1111-4111-8111-111111111111',
       question: 'Solve $x^2 - 5x + 6 = 0$.',
       answer: '$x = 2$ or $x = 3$',
       topic: 'Quadratic Equations',
@@ -16,6 +17,7 @@ const paper: PracticePaper = {
     },
     {
       for: '7b',
+      id: null,
       question: 'Find the median from the graph.',
       answer: '',
       topic: null,
@@ -65,6 +67,7 @@ describe('buildPracticePdfHtml', () => {
         practice: [
           {
             for: '<b>1</b>',
+            id: null,
             question: 'Evil <img src=x onerror=alert(1)> question',
             answer: '<script>steal()</script>',
             topic: '<i>Topic</i>',
