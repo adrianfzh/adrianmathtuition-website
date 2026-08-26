@@ -992,16 +992,36 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   - Bands widen to fit the caption (`max(colW × frac, boxW × 1.2)`) but are still clamped to
     the part's own column — a fixed fraction of a narrow two-up column is less than the label,
     so a purely fractional reach would send every captioned box to the footer.
-- **SEAB codes ride the score box as a second line (2026-08-26):** the marking prompt
-  has always produced per-part scheme codes (`parts[].scheme`, "M1 A0" / "B1 B1ft") —
-  after the Kimi K3 side-by-side (the codes beside each part are much of what makes a
-  page read as a school marker's) they are now DRAWN: a smaller line under the score
-  inside the same box (`Q6(b) 1/2` / `M1 A0`). `schemeCodes()` in `ai/annotate.js`
-  (exported, unit-tested — `test/scheme-codes.test.js`) validates token-by-token so
-  model prose can never reach a box; reserve and draw still share `_marginScoreGeom`
-  (which grows the box for the codes line); when the box spills to the footer the
-  codes follow the score (`1/2 · M1 A0`). Display-only — never marks arithmetic.
-  Classic style has no margin layer, so no codes there (unchanged).
+- **The red-pen redesign (2026-08-26, all four options picked off the "Red Pen
+  Options" mock artifact; teacher style only, display-only — no marks arithmetic
+  anywhere):**
+  1. **Score rail** — every part's score box goes in ONE column down the right edge
+     of the part's own COLUMN (never the image's edge: a two-up scan's right margin
+     belongs to the facing page), level with the TOP of its part — the printed
+     question line where the page has one (Adrian: "can the mark sit level with the
+     question itself? easy to see"). Boxes STACK when parts crowd (`railBottoms`
+     per column); occupancy still rules — an inked rail spot nudges down, then
+     slides up to half a box left, then falls to the footer as before. This
+     REPLACED the five-band white-space hunt that scattered boxes over dense pages;
+     do not resurrect scattered placement as a "smarter" fallback.
+  2. **Two-colour ink** — verdicts/scores/ticks stay `TEACHER_RED`; the teaching
+     layer (in-page diagnosis notes, side-strip notes, ✱ study notes, their
+     leaders, the correction text beside a cross, inline worked solutions, margin
+     figures) writes `TEACH_BLUE`. The footer strip stays red on purpose — it is
+     the overflow area, and a two-colour footer read as a third voice.
+  3. **Quiet full marks** — a full-marks box recedes (0.87× size, 0.6× ink) so the
+     eye lands on the parts that lost marks. Reserve and draw share the geometry.
+  4. **SEAB codes** — the prompt produces per-part codes (`parts[].scheme`) AND
+     per-line tags (`lines[].scheme_code`, the line where each mark is decided).
+     `ai/line-codes.js` (pure, tested) picks the surface per attempt,
+     ALL-OR-NOTHING: tags that reconcile exactly with the parts' schemes ride the
+     ticks (`✓ M1`, small and raised, Kimi's placement — Adrian: "shouldn't the
+     B1 M1 part be beside the ticks?") and the box drops to score-only; anything
+     less keeps every code on the box as a second line (`schemeCodes()` in
+     `ai/annotate.js`, token-validated; a spilled score carries them to the footer
+     as `1/2 · M1 A0`). Half-and-half — some codes on ticks, the rest on the box —
+     is the one output it refuses: it reads as two markers.
+  Classic style has no margin layer — untouched throughout.
 - **A WORKING-ONLY page is marked against a reconstruction, and must say so** (2026-07-29).
   With no question paper attached, the bot uses `STANDALONE_MARK_SYSTEM` — "the printed
   question and the working are BOTH on this page". A continuation sheet or graph paper has

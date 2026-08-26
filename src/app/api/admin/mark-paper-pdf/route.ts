@@ -9,7 +9,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 // Page width + paper-total strip are SHARED with the ✏️ Annotate assemble route —
 // see lib/marked-pdf-layout.ts. Change layout there, never inline here.
-import { PAGE_W, drawPaperTotal, stripHeight } from '@/lib/marked-pdf-layout';
+import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -123,7 +123,10 @@ export async function POST(req: NextRequest) {
     annotated.map(a => ({ photo_index: a.photo_index, item: a })),
     pngs.map(p => ({ photo_index: p.photo_index, label: p.label, item: p })),
   );
-  let totalDrawn = false;
+  // Practices get no PAPER TOTAL strip — only papers with an OFFICIAL denominator
+  // (registry-matched or the "out of ___" box) are exam/test papers. Starting
+  // totalDrawn true skips the strip and the stamp entirely.
+  let totalDrawn = !shouldStampPaperTotal(body.totals?.max_source);
   for (const pg of pages) {
     try {
       const buf = pg.item.buf;

@@ -15,7 +15,7 @@ import { put } from '@vercel/blob';
 import { PDFDocument } from 'pdf-lib';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isOurBlobUrl } from '@/lib/blob-url';
-import { PAGE_W, drawPaperTotal, stripHeight } from '@/lib/marked-pdf-layout';
+import { PAGE_W, drawPaperTotal, stripHeight, shouldStampPaperTotal } from '@/lib/marked-pdf-layout';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -25,7 +25,7 @@ type PageIn = { photo_index: number; url: string };
 type Body = {
   runId?: string;
   pages?: PageIn[];
-  totals?: { awarded: number; max: number } | null;
+  totals?: { awarded: number; max: number; counted_max?: number; max_source?: string } | null;
   student?: { name?: string; level?: string };
 };
 
@@ -58,7 +58,8 @@ export async function POST(req: NextRequest) {
   const student = { name: body.student?.name || '', level: body.student?.level || '' };
 
   const pdfDoc = await PDFDocument.create();
-  let totalDrawn = false;
+  // Same practice-vs-exam gate as the 🖼/📄 builds — see shouldStampPaperTotal.
+  let totalDrawn = !shouldStampPaperTotal(body.totals?.max_source);
   for (const buf of bufs) {
     // Flattened pages are JPEG; pass-through originals off Blob are usually JPEG but
     // may be PNG — same fallback the images-PDF build uses.

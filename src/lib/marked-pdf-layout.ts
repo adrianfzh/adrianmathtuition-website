@@ -18,6 +18,19 @@ export const PAGE_W = 595;
 // Jul 2026: "don't have to put the first page") — a marked script starts with the work.
 export const stripHeight = (pageWidth: number) => Math.max(34, Math.round(pageWidth * 0.062));
 
+// Whether this document gets the PAPER TOTAL strip at all (Adrian, 26 Aug 2026:
+// "for normal practices, there is no need to give a total score. only give total
+// score for exam papers/test papers"). The signal is where the denominator CAME
+// FROM (the bot's paper-totals grounding, threaded through `totals.max_source`):
+// an OFFICIAL total — matched in the known-paper registry, or typed into the
+// "out of ___" box — means an exam/test paper and gets the strip; a counted
+// guess-sum means a topical practice and gets clean pages with no header. The
+// "out of" box doubles as the manual override: type the total to force the strip
+// on anything. Both PDF routes and the ✏️ Annotate flatten share this gate.
+export function shouldStampPaperTotal(maxSource: string | null | undefined): boolean {
+  return maxSource === 'registry' || maxSource === 'override';
+}
+
 // Paper total, drawn into that strip. It sits on the LEFT and is labelled, because the
 // annotated photo already carries a hand-circled PAGE total in its top-right corner and
 // two unlabelled red scores stacked in one corner read as a contradiction.
