@@ -1038,7 +1038,13 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
   neither); inline blank-space solutions try three shrinking fits before the footer;
   **tick coverage** measured per page (`annotation_debug[].coverage {wanted,placed}`)
   with a review note naming thin pages as a grounding symptom (re-shoot/re-mark),
-  never skipped marking.
+  never skipped marking. Same evening (bot `37db976`): **margin-diagram kind 10,
+  `construction`** — perpendicular/angle bisectors drawn dashed WITH compass arcs;
+  the marked equidistant point is COMPUTED (intersection of the first two perp
+  bisectors, parallel refused, third-bisector concurrency checked; test pins the
+  circumcentre of A(0,0) B(8,0) C(3,5) at exactly (4,1)) — and the Venn rule
+  refined: individual crosses on wrong placements only, ONE generic tick when the
+  whole diagram is correct.
 - **A WORKING-ONLY page is marked against a reconstruction, and must say so** (2026-07-29).
   With no question paper attached, the bot uses `STANDALONE_MARK_SYSTEM` — "the printed
   question and the working are BOTH on this page". A continuation sheet or graph paper has
