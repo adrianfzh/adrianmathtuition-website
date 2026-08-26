@@ -3497,7 +3497,7 @@ export default function SchedulePage() {
           <button className="nav-btn" onClick={prevWeek}>‹</button>
           <button className="week-label" onClick={thisWeek}>{formatWeekLabel(monday)}</button>
           <button className="nav-btn" onClick={nextWeek}>›</button>
-          <button className={`nav-btn refresh-btn${revalidating ? ' revalidating' : ''}`} onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))} disabled={loading} title={revalidating ? 'Updating…' : 'Refresh'}>↻</button>
+          <button className={`nav-btn refresh-btn${revalidating ? ' revalidating' : ''}`} onClick={() => fetchSchedule(new Date(mondayISO + 'T00:00:00'))} disabled={loading} title={revalidating ? 'Updating…' : 'Refresh'}><span className="refresh-glyph">↻</span></button>
           <button className="nav-btn" onClick={() => setBlockedModal({ start: '', end: '', reason: '', saving: false })} title="Away / blocked dates">🏖</button>
           <button className="nav-btn" onClick={() => openAdhocModal()} title="Ad-hoc sessions — extra classes on set dates only, and cancel existing ones">⚡</button>
         </div>
@@ -5309,7 +5309,9 @@ body {
 .nav-btn:hover { background: rgba(255,255,255,0.25); }
 .refresh-btn { font-size: 18px; }
 .refresh-btn:disabled { opacity: 0.5; cursor: default; }
-.refresh-btn.revalidating { animation: schedule-spin 0.8s linear infinite; }
+/* Spin only the glyph — animating the button rotated its circle + border too. */
+.refresh-glyph { display: inline-block; line-height: 1; }
+.refresh-btn.revalidating .refresh-glyph { animation: schedule-spin 0.8s linear infinite; }
 @keyframes schedule-spin { to { transform: rotate(360deg); } }
 .drag-handle {
   align-self: stretch;
