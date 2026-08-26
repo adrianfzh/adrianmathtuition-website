@@ -568,9 +568,40 @@ export default function MarkPaperPage() {
     });
   }
 
+  // ── Duplicate-marking guard (26 Aug 2026) ──────────────────────────────────
+  // August 2026 had ≥$25 of the same paper marked 2–5× out of a $164 marking
+  // bill (~$2.24 per Opus run). Before a FRESH ▶ Mark / 🌙 Queue / multi-PDF
+  // queue spends money, a same-named run (case-insensitive, trimmed) from the
+  // last 3 days in the loaded history gets a confirm. Client-side only, and
+  // deliberately only on fresh intake: the portal hand-in auto-queue is
+  // server-side and must stay silent, 🔁 Re-mark carries its own confirm, and
+  // the history-row ▶ Mark on a ⏳ row is finishing a saved paper, not
+  // duplicating it. A bare ⏳ row (saved, never marked, not queued) doesn't
+  // trigger it either — nothing was paid for yet, and marking again after a
+  // failure is the normal retry, not a duplicate.
+  const DUP_MARK_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
+  function confirmDuplicateMark(label: string): boolean {
+    const key = label.trim().toLowerCase();
+    if (!key) return true;
+    const matches = recentRuns.filter((r) =>
+      (r.paper_name || '').trim().toLowerCase() === key &&
+      Date.now() - new Date(r.created_at).getTime() < DUP_MARK_WINDOW_MS &&
+      (r.total_max != null || (!!r.queued_at && !r.queue_failed)));
+    if (!matches.length) return true;
+    const last = matches.reduce((a, b) => (new Date(a.created_at) >= new Date(b.created_at) ? a : b));
+    const when = new Date(last.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const what = last.total_max == null
+      ? `“${label}” is already queued for marking (${when})`
+      : matches.length > 1
+        ? `You've marked “${label}” ${matches.length} times in the last 3 days (last: ${when})`
+        : `You marked “${label}” on ${when}`;
+    return window.confirm(`${what} — mark it again? (~$2.30)`);
+  }
+
   // Single-pass: mark every photo directly against the PDF (no extract/match/confirm step).
-  async function markPaper() {
+  async function markPaper(opts?: { skipDupGuard?: boolean }) {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
+    if (!opts?.skipDupGuard && !confirmDuplicateMark(paperName.trim() || autoPaperLabel())) return;
     // Keep a name Adrian typed before hitting Mark — the box is now above this
     // button, so blanking it back to the filename would throw away the thing he
     // just wrote. Only an untouched box falls back to the working PDF's name.
@@ -681,7 +712,10 @@ export default function MarkPaperPage() {
   // hence the confirm. With photos still attached in the picker, plain markPaper()
   // is the same thing from fresher bytes, so prefer it.
   async function remarkPaper() {
-    if (images.length) { markPaper(); return; }
+    // skipDupGuard: 🔁 is explicit re-marking, so the duplicate guard would only
+    // second-guess a decision the button already states (and the stored path
+    // below has its own confirm) — don't stack two dialogs on one tap.
+    if (images.length) { markPaper({ skipDupGuard: true }); return; }
     if (!runId) return;
     if (!window.confirm('Re-mark this paper from its stored photos? Costs about the same as the original marking (~1–2 min).')) return;
     await markFromStored(runId);
@@ -1130,6 +1164,7 @@ export default function MarkPaperPage() {
   }
   async function queuePaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
+    if (!confirmDuplicateMark(paperName.trim() || autoPaperLabel())) return;
     setQueueBusy(true); setError(''); setQueueNote('');
     try {
       const paperPdfUrl = pdf ? await uploadPaperPdf(pdf) : null;
@@ -1161,23 +1196,39 @@ export default function MarkPaperPage() {
     return out;
   }
   async function queuePendingSeparately() {
-    const files = pendingPdfs || [];
-    if (!files.length || queueBusy) return;
-    setPendingPdfs(null); setQueueBusy(true); setError(''); setQueueNote('');
+    const all = pendingPdfs || [];
+    if (!all.length || queueBusy) return;
+    // Duplicate guard per file, UP FRONT — all the confirms happen at tap time,
+    // before any uploads start. A declined paper is skipped; the rest queue.
+    const files: { file: File; label: string }[] = [];
+    const skippedDup: string[] = [];
+    all.forEach((f, i) => {
+      const label = pdfNiceName(f, i);
+      if (confirmDuplicateMark(label)) files.push({ file: f, label });
+      else skippedDup.push(label);
+    });
+    setPendingPdfs(null);
+    const skipNote = skippedDup.length ? ` Skipped as recent duplicates: ${skippedDup.join(' · ')}.` : '';
+    if (!files.length) {
+      if (skipNote) setQueueNote(`Nothing queued —${skipNote}`);
+      return;
+    }
+    setQueueBusy(true); setError(''); setQueueNote('');
     const done: string[] = []; const failed: string[] = [];
     try {
       for (let i = 0; i < files.length; i++) {
-        const label = pdfNiceName(files[i], i);
+        const { file, label } = files[i];
         setMultiBusy(`Queueing ${i + 1} of ${files.length} — ${label}…`);
         try {
-          const pages = await expandPdfToPages(files[i]);
+          const pages = await expandPdfToPages(file);
           if (!pages.length) throw new Error('no pages could be rendered');
           await queueFilesAsPaper(pages, label);
           done.push(label);
         } catch (e) { failed.push(`${label} (${(e as Error).message})`); }
       }
     } finally { setMultiBusy(''); setRasterizing(''); setQueueBusy(false); }
-    if (done.length) setQueueNote(`🌙 Queued ${done.length} paper${done.length === 1 ? '' : 's'} separately: ${done.join(' · ')} — each marks on its own and lands on Telegram + Dropbox.`);
+    if (done.length) setQueueNote(`🌙 Queued ${done.length} paper${done.length === 1 ? '' : 's'} separately: ${done.join(' · ')} — each marks on its own and lands on Telegram + Dropbox.${skipNote}`);
+    else if (skipNote) setQueueNote(skipNote.trim());
     if (failed.length) setError(`Couldn't queue: ${failed.join('; ')}`);
     loadStats();
   }
@@ -1598,7 +1649,7 @@ export default function MarkPaperPage() {
           />
         </div>
         <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={markPaper}>
+          <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={() => markPaper()}>
             {phase === 'marking' ? (markRecovering ? 'Waiting for the server…' : 'Marking…') : 'Mark paper'}
           </button>
           {markRecovering && (
