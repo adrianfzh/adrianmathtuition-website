@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
 import { repairMarkingLatex } from '@/lib/latex-repair';
+import { alignMarkingSolutions } from '@/lib/solution-align';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -168,7 +169,10 @@ async function buildMarkingHTML(payload: RenderRequest): Promise<string> {
   const template = await fs.readFile(templatePath, 'utf8');
 
   // The model's LaTeX escaping is unreliable — repair before KaTeX ever sees it.
-  const repaired: RenderRequest = { ...payload, marking: repairMarkingLatex(payload.marking) };
+  // Then merge runs of equation steps into shared-equals aligned blocks
+  // (lib/solution-align.ts) — repair FIRST, alignment second, because alignment
+  // decides on top-level `=` signs that repair may have just un-mangled.
+  const repaired: RenderRequest = { ...payload, marking: alignMarkingSolutions(repairMarkingLatex(payload.marking)) };
 
   // Escape </script so payload JSON can't break out of the script tag
   const payloadJson = JSON.stringify(repaired).replace(/<\/script/gi, '<\\/script');

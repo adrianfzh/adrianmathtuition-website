@@ -471,6 +471,31 @@ body {
   overflow-wrap: break-word;
 }
 
+/* Case columns for a branched solution (trig case splits, ± roots — 2026-08-26):
+   the two cases run DOWNWARD side by side, the way a student writes
+   "tan x = 1 | or | tan x = -2" across the page. Body size like everything else
+   on the sheet — the case header is differentiated by weight and the green
+   accent, never by size. */
+.solution-branches {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+  margin-top: 4px;
+}
+.solution-branch {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-left: 14px;
+  border-left: 1.5px solid var(--paper-line);
+}
+.solution-case-head {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 2px;
+}
+
 /* ── Page label ─────────────────────────────────────────────────── */
 .page-label {
   font-family: var(--font-mono);
@@ -716,7 +741,16 @@ body {
   // and unjudged is not wrong; the loose test would print a model solution beside
   // perfectly correct working.
   var solSrc = correct.full_solution_latex || correct.full_solution_plain || '';
-  if (fa && fa.matches_correct === false && solSrc) {
+  // A branched solution (correct.solution_branches — trig case splits) renders as
+  // side-by-side case columns, the way a student writes the two cases across the
+  // page. The gate: at least TWO usable cases (one case is not a split) — anything
+  // less falls back to the linear steps, and full_solution_latex is spec'd to stay
+  // complete on its own precisely so this fallback always has something to show.
+  var solBranches = correct.solution_branches;
+  var solCases = (solBranches && typeof solBranches === 'object' && Array.isArray(solBranches.cases))
+    ? solBranches.cases.filter(function(c) { return c && typeof c.steps_latex === 'string' && c.steps_latex.trim(); }).slice(0, 3)
+    : [];
+  if (fa && fa.matches_correct === false && (solSrc || solCases.length >= 2)) {
     // Steps arrive in one string. Break on a literal `\n` only when what follows
     // cannot be a command name: `\ne`, `\neq`, `\nabla`, `\not`, `\nu` all open
     // with those two characters, and the naive split tore `6>0\neq 0` into `6>0`
@@ -737,14 +771,36 @@ body {
     var qNum = String(q.number == null ? '' : q.number).trim().replace(/^Q\s*/i, '');
     // Caps here, not in CSS — the question key keeps the case the paper printed.
     solPanel.appendChild(el('div', 'solution-title', esc('CORRECT SOLUTION' + (qNum ? ' — Q' + qNum : ''))));
-    steps.forEach(function(s, i) {
-      var row = el('div', 'solution-step');
-      // textContent, never innerHTML — same reason as every other typeset row:
-      // an ordinary `$\frac{dv}{dx}<0$` would open a tag at the `<`.
-      row.textContent = s;
-      if (pairs) row.setAttribute('data-plain', pairs[i]);
-      solPanel.appendChild(row);
-    });
+    // textContent, never innerHTML — same reason as every other typeset row:
+    // an ordinary `$\frac{dv}{dx}<0$` would open a tag at the `<`.
+    var addSteps = function(parent, src) {
+      String(src || '').split(STEP_RE).map(trimmed).filter(Boolean).forEach(function(s) {
+        var row = el('div', 'solution-step');
+        row.textContent = s;
+        parent.appendChild(row);
+      });
+    };
+    if (solCases.length >= 2) {
+      if (solBranches.before_latex) addSteps(solPanel, solBranches.before_latex);
+      var branchRow = el('div', 'solution-branches');
+      solCases.forEach(function(c) {
+        var col = el('div', 'solution-branch');
+        var head = el('div', 'solution-case-head');
+        head.textContent = (typeof c.case === 'string' && c.case.trim()) ? c.case.trim() : 'Case';
+        col.appendChild(head);
+        addSteps(col, c.steps_latex);
+        branchRow.appendChild(col);
+      });
+      solPanel.appendChild(branchRow);
+      if (solBranches.after_latex) addSteps(solPanel, solBranches.after_latex);
+    } else {
+      steps.forEach(function(s, i) {
+        var row = el('div', 'solution-step');
+        row.textContent = s;
+        if (pairs) row.setAttribute('data-plain', pairs[i]);
+        solPanel.appendChild(row);
+      });
+    }
     document.querySelector('.container').appendChild(solPanel);
   }
 

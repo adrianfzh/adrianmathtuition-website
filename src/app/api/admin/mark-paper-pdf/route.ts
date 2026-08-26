@@ -72,6 +72,17 @@ export async function POST(req: NextRequest) {
       }
     })));
     pngs = rendered.filter((p): p is Png => p !== null);
+    // A sheet taller than ~1.1 A4 pages is sliced into A4-height chunks at white
+    // rows before embedding, so "fit to page" printing never shrinks a long
+    // solution to unreadable (lib/pdf-paginate.ts). Best-effort per sheet — a
+    // failed slice keeps the tall page, never loses it.
+    const { sliceTallPng } = await import('@/lib/pdf-paginate');
+    const paginated: Png[] = [];
+    for (const p of pngs) {
+      const parts = await sliceTallPng(p.buf);
+      for (const buf of parts) paginated.push({ ...p, buf });
+    }
+    pngs = paginated;
   }
   // Fetch the annotated ORIGINAL photos (PNGs from Blob) — these go in the PDF first.
   // The marker sends two copies of each page; which one belongs in THIS document is
