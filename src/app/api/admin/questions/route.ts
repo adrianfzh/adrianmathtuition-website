@@ -17,10 +17,7 @@ import { flattenParts, type Part } from '@/lib/kiosk-worksheet-images';
 import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-bot-worksheet';
 import { renderSolutionsPDF, type SolutionsItem, type SolutionsPart } from '@/lib/render-solutions-pdf';
 import { renderPaperPDF, type PaperPdfQuestion } from '@/lib/render-paper-pdf';
-import {
-  paperKey, groupPapers, assessCoverage, answerKeyLines,
-  type PaperKeyRow, type AnswerPart,
-} from '@/lib/paper-reconstruction';
+import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-reconstruction';
 import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
@@ -96,48 +93,6 @@ function detail(row: Row) {
   };
 }
 
-/**
- * Coverage sweep for the papers index: every groupable question's
- * (paper key, total_marks, question_number) — the aggregate PostgREST won't do
- * for us (aggregates are disabled on this project, and the paper_index view
- * only carries count). A minimal 7-column projection over ~26k rows fetched as
- * PARALLEL 1000-row pages lands in ~1s; sequential paging is the 14-second
- * trap the view was built to avoid. Cached per warm lambda — papers only
- * change on ingest, and the index merge fails soft if this sweep errors.
- */
-const COVERAGE_TTL_MS = 120_000;
-let coverageCache: { at: number; rows: PaperKeyRow[] } | null = null;
-
-async function fetchCoverageRows(supa: ReturnType<typeof getSupabaseAdmin>): Promise<PaperKeyRow[]> {
-  if (coverageCache && Date.now() - coverageCache.at < COVERAGE_TTL_MS) return coverageCache.rows;
-  const base = () =>
-    supa
-      .from('questions')
-      .select('school, year, level, paper, exam_type, total_marks, question_number')
-      .is('deleted_at', null)
-      .not('school', 'is', null)
-      .not('year', 'is', null);
-  const head = await supa
-    .from('questions')
-    .select('id', { count: 'exact', head: true })
-    .is('deleted_at', null)
-    .not('school', 'is', null)
-    .not('year', 'is', null);
-  if (head.error) throw new Error(head.error.message);
-  const total = head.count ?? 0;
-  const PAGE = 1000;
-  const chunks = await Promise.all(
-    Array.from({ length: Math.max(1, Math.ceil(total / PAGE)) }, async (_, i) => {
-      const { data, error } = await base().order('id').range(i * PAGE, i * PAGE + PAGE - 1);
-      if (error) throw new Error(error.message);
-      return (data ?? []) as PaperKeyRow[];
-    }),
-  );
-  const rows = chunks.flat();
-  coverageCache = { at: Date.now(), rows };
-  return rows;
-}
-
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
@@ -197,28 +152,30 @@ export async function GET(req: NextRequest) {
     const level = p.get('level');
     const year = p.get('year');
     const filter = (p.get('q') || '').trim();
-    let pq = supa.from('paper_index').select('school, year, level, paper, exam_type, count');
+    // select('*') so the coverage columns (marks_total/numbered, added to the
+    // view 2026-08-26) ride along, and the index still renders counts-only if
+    // the view is ever recreated without them — no column-list error to hit.
+    let pq = supa.from('paper_index').select('*');
     if (level) pq = pq.eq('level', level);
     if (year) pq = pq.eq('year', Number(year));
     if (filter) pq = pq.ilike('school', `%${filter.replace(/[%_]/g, '')}%`);
     const { data, error } = await pq.order('year', { ascending: false }).order('school').limit(1000);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    // Coverage (marks sum, numbered count, honest-gap status) rides along from
-    // the cached sweep; the index still renders (counts only) if the sweep dies.
-    let coverage: ReturnType<typeof groupPapers> | null = null;
-    try { coverage = groupPapers(await fetchCoverageRows(supa)); } catch { coverage = null; }
-    const papers = (data ?? []).map(r => {
-      const g = coverage?.get(paperKey(r)) ?? null;
-      const assessed = g ? assessCoverage(g.marksTotal, g.count, r.level as string | null) : null;
+    const papers = ((data ?? []) as Row[]).map(r => {
+      const count = Number(r.count) || 0;
+      const marksTotal = typeof r.marks_total === 'number' ? r.marks_total : null;
+      const assessed = marksTotal != null
+        ? assessCoverage(marksTotal, count, r.level as string | null)
+        : null;
       return {
         school: r.school as string,
         year: r.year as number,
         level: r.level as string,
         paper: (r.paper as string | null) ?? null,
         examType: (r.exam_type as string | null) ?? null,
-        count: Number(r.count) || 0,
-        marksTotal: g?.marksTotal ?? null,
-        numbered: g?.numbered ?? null,
+        count,
+        marksTotal,
+        numbered: typeof r.numbered === 'number' ? r.numbered : null,
         coverage: assessed
           ? { status: assessed.status, missingMarks: assessed.missingMarks, label: assessed.label }
           : null,

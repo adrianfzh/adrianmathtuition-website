@@ -1,61 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
-  paperKey, groupPapers, assessCoverage,
-  workingSpaceLines, workingSpaceMm, answerKeyLines,
-  type PaperKeyRow,
+  assessCoverage, workingSpaceLines, workingSpaceMm, answerKeyLines,
 } from './paper-reconstruction';
 
-const row = (over: Partial<PaperKeyRow>): PaperKeyRow => ({
-  school: 'CJC', year: 2025, level: 'JC1', paper: '1', exam_type: 'Promo',
-  total_marks: 8, question_number: '1', ...over,
-});
-
-describe('groupPapers', () => {
-  it('groups by (school, year, level, paper, exam_type) and sums coverage', () => {
-    const rows = [
-      row({ question_number: '1', total_marks: 8 }),
-      row({ question_number: '2', total_marks: 12 }),
-      row({ question_number: null, total_marks: 5 }),
-      row({ paper: '2', question_number: '1', total_marks: 10 }), // different paper
-    ];
-    const groups = groupPapers(rows);
-    expect(groups.size).toBe(2);
-    const p1 = groups.get(paperKey({ school: 'CJC', year: 2025, level: 'JC1', paper: '1', exam_type: 'Promo' }))!;
-    expect(p1.count).toBe(3);
-    expect(p1.marksTotal).toBe(25);
-    expect(p1.numbered).toBe(2); // the null-qnum row is counted but not numbered
-    const p2 = groups.get(paperKey({ school: 'CJC', year: 2025, level: 'JC1', paper: '2', exam_type: 'Promo' }))!;
-    expect(p2.count).toBe(1);
-  });
-
-  it('skips rows without school or year — they belong to no paper', () => {
-    const groups = groupPapers([
-      row({ school: null }),
-      row({ year: null }),
-      row({}),
-    ]);
-    expect(groups.size).toBe(1);
-  });
-
-  it('null level/paper/exam_type still form their own bucket (paper_index parity)', () => {
-    const groups = groupPapers([
-      row({ level: null, paper: null, exam_type: null }),
-      row({ level: null, paper: null, exam_type: null }),
-    ]);
-    expect(groups.size).toBe(1);
-    expect([...groups.values()][0].count).toBe(2);
-  });
-
-  it('treats missing/zero/negative marks as 0, and blank question numbers as unnumbered', () => {
-    const groups = groupPapers([
-      row({ total_marks: null, question_number: '  ' }),
-      row({ total_marks: -3, question_number: '3' }),
-    ]);
-    const g = [...groups.values()][0];
-    expect(g.marksTotal).toBe(0);
-    expect(g.numbered).toBe(1);
-  });
-});
+// Grouping (count / marks_total / numbered per paper) lives in the Supabase
+// paper_index view — see the migration named in paper-reconstruction.ts.
 
 describe('assessCoverage', () => {
   it('CJC 2025 Promo P1: 12 questions / 100 marks → complete', () => {

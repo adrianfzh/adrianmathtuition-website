@@ -2,38 +2,18 @@
  * src/lib/paper-reconstruction.ts
  *
  * Pure logic for the /admin/questions "Papers" reconstruction feature:
- * grouping bank rows into papers, judging how complete a reconstructed paper
- * is (honest-gap assessment against standard full-paper totals), sizing the
- * working space a printed question gets, and collecting answer-key lines.
+ * judging how complete a reconstructed paper is (honest-gap assessment
+ * against standard full-paper totals), sizing the working space a printed
+ * question gets, and collecting answer-key lines.
+ *
+ * The GROUPING of bank rows into papers — with count, marks_total (positive
+ * total_marks only) and numbered (non-blank question_number) — lives in the
+ * Supabase `paper_index` view (migration paper_index_marks_total_numbered,
+ * 2026-08-26), not here: one database aggregate instead of sweeping 26k rows.
  *
  * Kept pure and side-effect free per the repo testing policy — the sibling
  * .test.ts is the regression net.
  */
-
-/** The minimal projection the coverage sweep fetches per question row. */
-export interface PaperKeyRow {
-  school: string | null;
-  year: number | null;
-  level: string | null;
-  paper: string | null;
-  exam_type: string | null;
-  total_marks: number | null;
-  question_number: string | null;
-}
-
-export interface PaperGroup {
-  school: string;
-  year: number;
-  level: string | null;
-  paper: string | null;
-  examType: string | null;
-  /** Questions in the bank for this paper. */
-  count: number;
-  /** Sum of total_marks over those questions (missing marks count as 0). */
-  marksTotal: number;
-  /** How many rows carry a question_number — the rest sort to the back. */
-  numbered: number;
-}
 
 export type CoverageStatus = 'complete' | 'partial' | 'overfull' | 'unknown';
 
@@ -45,41 +25,6 @@ export interface CoverageAssessment {
   missingMarks: number;
   /** Human warning for the card / PDF footer; '' when nothing to flag. */
   label: string;
-}
-
-/**
- * Grouping key for one paper: (school, year, level, paper, exam_type).
- * Null level/paper/exam_type still group — they become their own bucket,
- * matching how the paper_index view splits the bank.
- */
-export function paperKey(r: {
-  school: string | null; year: number | null; level?: string | null;
-  paper?: string | null; exam_type?: string | null;
-}): string {
-  return [r.school ?? '', r.year ?? '', r.level ?? '', r.paper ?? '', r.exam_type ?? ''].join('|');
-}
-
-/** Group question rows into papers with coverage counts. Rows without a
- *  school or year can't belong to a reconstructable paper and are skipped. */
-export function groupPapers(rows: PaperKeyRow[]): Map<string, PaperGroup> {
-  const out = new Map<string, PaperGroup>();
-  for (const r of rows) {
-    if (!r.school || r.year == null) continue;
-    const key = paperKey(r);
-    let g = out.get(key);
-    if (!g) {
-      g = {
-        school: r.school, year: r.year, level: r.level ?? null,
-        paper: r.paper ?? null, examType: r.exam_type ?? null,
-        count: 0, marksTotal: 0, numbered: 0,
-      };
-      out.set(key, g);
-    }
-    g.count += 1;
-    g.marksTotal += typeof r.total_marks === 'number' && r.total_marks > 0 ? r.total_marks : 0;
-    if (typeof r.question_number === 'string' && r.question_number.trim()) g.numbered += 1;
-  }
-  return out;
 }
 
 /**
