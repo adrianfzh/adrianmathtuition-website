@@ -55,6 +55,20 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   paper now takes ~10-60 min instead of ~2 (papers process one at a time behind
   `_queueBusy`, so a deep queue can stretch hours — fine overnight, by design).
   **Kill switch: `MARK_QUEUE_BATCH=0`** on Fly reverts to the sync fan-out, no deploy.
+- **🌙 Discount labeling + ⚡ Mark now (2026-08-26, same day — Adrian: "put it clearly as
+  queue markings at 50% discount … mention roughly when … allow for a queue marking that
+  does it immediately"):** `enqueue` returns `{position, etaMinutes:[lo,hi], batchDiscount}`
+  (`lib/queue-pick.js` `queueEta` — batch ≈ 10–60 min × position, sync 2–6 × position,
+  mark-now 2–8) and the mark-paper page says both in the queue confirmation; queued history
+  rows read "🌙 queued (~50% batch discount) — marks in ~10–60 min". The doorbell's cost
+  line carries the route receipt: `$1.15 (50% batch)` or `(⚡ marked now, full price)`.
+  **⚡ Mark now** is a per-run button on queued rows → bot `phase:'mark-now'` = re-enqueue
+  with `queue.mark_now: true` (attempts reset deliberately): the worker picks flagged
+  papers FIRST (`pickNextQueued`, tested) and marks them with `batchMarking: false` —
+  full-price sync fan-out, ~2–8 min once the worker is free (an in-flight batch paper
+  still finishes first; `_queueBusy` is serial), delivery unchanged. It is per-run — the
+  global `MARK_QUEUE_BATCH=0` kill switch is a different lever. Triage deliberately has
+  no queue UI: it lists only runs WITH results, and queued runs have none yet.
 - **🌙 No vision, no claim (2026-08-19):** before claiming (and paying for) a paper,
   the queue worker runs `visionPreflight()` (bot `ai/photo-overlay.js`) — a cheap
   Gemini text ping through the overlay's own model ladder. If it fails, the paper

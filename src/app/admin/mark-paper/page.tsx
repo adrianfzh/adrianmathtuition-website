@@ -987,7 +987,7 @@ export default function MarkPaperPage() {
   // only covers the paper currently loaded — Adrian wanted it on past rows too,
   // plus a way to delete junk (abandoned ⏳ uploads, duplicate runs). State is
   // keyed by run id so a slow save on one row never freezes another's buttons.
-  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | undefined>>({});
+  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | undefined>>({});
   const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
   async function rowToDropbox(run: Run) {
     // Same preference order as the send row: the annotated copy is THE hand-back
@@ -1132,7 +1132,7 @@ export default function MarkPaperPage() {
   const [queueNote, setQueueNote] = useState('');
   // The upload→save→enqueue core, shared by 🌙 Queue and the multi-PDF drop. Touches
   // no page state, so several papers can go through it back to back.
-  async function queueFilesAsPaper(pageFiles: File[], paperLabel: string, opts?: { paperPdfUrl?: string | null; totalMax?: number }): Promise<number> {
+  async function queueFilesAsPaper(pageFiles: File[], paperLabel: string, opts?: { paperPdfUrl?: string | null; totalMax?: number }): Promise<{ position: number; etaMinutes?: number[]; batchDiscount?: boolean }> {
     const imgs = await Promise.all(pageFiles.map((f) => fileToUpload(f)));
     setRasterizing('Uploading full-resolution pages…');
     // One retry per page: rainie's 2023 prelim lost every page to a transient
@@ -1160,7 +1160,7 @@ export default function MarkPaperPage() {
     });
     const end = await en.json();
     if (!en.ok || end.error) throw new Error(end.error || 'could not queue');
-    return end.position || 1;
+    return { position: end.position || 1, etaMinutes: end.etaMinutes, batchDiscount: end.batchDiscount };
   }
   async function queuePaper() {
     if (images.length === 0) { setError('Add the student’s working first — photos, or a scanned PDF.'); return; }
@@ -1172,14 +1172,37 @@ export default function MarkPaperPage() {
       // finishes, and this name is what the Telegram document and the Dropbox file
       // are called.
       const paperLabel = paperName.trim() || autoPaperLabel();
-      const position = await queueFilesAsPaper(images, paperLabel, { paperPdfUrl, totalMax: outOfValue() });
+      const { position, etaMinutes, batchDiscount } = await queueFilesAsPaper(images, paperLabel, { paperPdfUrl, totalMax: outOfValue() });
       // Clear the slots — the whole point is attaching the NEXT paper immediately.
       imgPreviews.forEach((u) => { if (u) URL.revokeObjectURL(u); });
       setImages([]); setImgPreviews([]); setPdf(null); setSplitNote(''); workingNameRef.current = ''; setPaperName(''); setOutOf('');
-      setQueueNote(`🌙 Queued as “${paperLabel}” (#${position}) — you'll get the marked PDF on Telegram and in Dropbox. Attach the next paper.`);
+      // Say the price route and the wait out loud (Adrian, 26 Aug 2026: "put it
+      // clearly as queue markings at 50% discount … and mention roughly when").
+      const eta = Array.isArray(etaMinutes) && etaMinutes.length === 2 ? ` — expect it marked in ~${etaMinutes[0]}–${etaMinutes[1]} min` : '';
+      setQueueNote(`🌙 Queued as “${paperLabel}” (#${position}${batchDiscount ? ', ~50% batch discount' : ''})${eta}; the marked PDF lands on Telegram + Dropbox. Attach the next paper — or hit ⚡ Mark now on its row below if you need it back in minutes at full price.`);
       loadStats();
     } catch (e) { setError((e as Error).message); }
     finally { setQueueBusy(false); }
+  }
+
+  // ⚡ Mark now (26 Aug 2026): per-run escape hatch from the 50% batch queue —
+  // re-flags the queued run so the bot's worker picks it FIRST on its next tick
+  // and marks it synchronously at full price (~2–8 min once the worker is free).
+  // Queue delivery is unchanged: Telegram doorbell, PDFs, Dropbox, auto-release.
+  async function markNowRun(run: Run) {
+    setRowBusy((p) => ({ ...p, [run.id]: 'now' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch('/api/admin/mark-paper', {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({ phase: 'mark-now', id: run.id, model: markModel, style: markStyle }),
+      });
+      const d = await r.json();
+      if (!r.ok || d.error) throw new Error(d.error || 'could not flag it');
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: '⚡ marks next, full price — Telegram in ~2–8 min once the worker is free' } }));
+      loadStats();
+    } catch (e) {
+      setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: `⚡ failed: ${(e as Error).message}` } }));
+    } finally { setRowBusy((p) => ({ ...p, [run.id]: undefined })); }
   }
 
   // Several PDFs dropped in one go (19 Aug 2026): parked here until Adrian says
@@ -1436,7 +1459,7 @@ export default function MarkPaperPage() {
                   // double-cost marking, so canMark waits out the window.
                   <span style={{ color: run.queue_failed ? '#b91c1c' : run.queued_at ? '#4c1d95' : '#b45309', fontSize: 12, fontWeight: 600 }}>
                     {run.queue_failed ? '⚠ queue failed twice'
-                      : run.queued_at ? '🌙 queued — the bot will mark it and Telegram you'
+                      : run.queued_at ? '🌙 queued (~50% batch discount) — marks in ~10–60 min, then Telegram + Dropbox'
                       : canMark ? '⏳ uploaded — not marked yet'
                       : '⏳ still marking on the server — this row updates itself when it lands'}
                   </span>
@@ -1459,6 +1482,14 @@ export default function MarkPaperPage() {
                       <button type="button" disabled={busy} onClick={() => markFromStored(run.id)}
                         style={{ ...btn, background: '#b45309', padding: '4px 12px', fontSize: 12, opacity: busy ? 0.6 : 1 }}>
                         ▶ Mark
+                      </button>
+                    )}
+                    {run.total_max == null && !!run.queued_at && !run.queue_failed && (
+                      <button type="button" disabled={!!rowBusy[run.id]}
+                        title="Skip the 50% batch queue — mark this paper immediately at full price"
+                        onClick={() => markNowRun(run)}
+                        style={{ ...btn, background: '#4c1d95', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                        {rowBusy[run.id] === 'now' ? '…' : '⚡ Mark now'}
                       </button>
                     )}
                     {run.total_max != null && (
