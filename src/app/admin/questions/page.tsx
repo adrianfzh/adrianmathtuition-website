@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
+import { assessCoverage } from '@/lib/paper-reconstruction';
 
 const C = {
   bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0', muted: '#64748b',
@@ -35,7 +36,12 @@ type Detail = Card & {
   images: string[]; solutionImages: string[];
 };
 type PaperMeta = { school: string; year: number; level?: string | null; paper?: string | null; examType?: string | null };
-type PaperRow = PaperMeta & { count: number };
+type PaperRow = PaperMeta & {
+  count: number;
+  marksTotal?: number | null;
+  numbered?: number | null;
+  coverage?: { status: string; missingMarks: number; label: string } | null;
+};
 
 const LEVELS = ['AM', 'EM', 'EM_NA', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'S3_EM_NT', 'S2', 'S1', 'JC2', 'JC1', 'JC2_H1'];
 
@@ -73,6 +79,10 @@ export default function QuestionBankPage() {
   const [wsBusy, setWsBusy] = useState(false);
   const [solBusy, setSolBusy] = useState(false);
   const [solWithQuestions, setSolWithQuestions] = useState(true);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfSpace, setPdfSpace] = useState(true);
+  const [pdfAnswerKey, setPdfAnswerKey] = useState(true);
+  const [pdfOrigNum, setPdfOrigNum] = useState(true);
   const [cardCache, setCardCache] = useState<Record<string, Card>>({});
 
   const [students, setStudents] = useState<{ id: string; name: string; level: string }[]>([]);
@@ -297,6 +307,39 @@ export default function QuestionBankPage() {
     } catch (e) { flash((e as Error).message); }
     finally { setWsBusy(false); }
   };
+
+  // Reconstructed-paper PDF — the open paper as a sit-able exam paper, with
+  // working space / answer key / original-numbering toggles.
+  const generatePaperPdf = async () => {
+    if (!paperView || pdfBusy) return;
+    setPdfBusy(true);
+    try {
+      const m = paperView.meta;
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'paper-pdf', school: m.school, year: m.year,
+          level: m.level || undefined, paper: m.paper || undefined, examType: m.examType || undefined,
+          workingSpace: pdfSpace, answerKey: pdfAnswerKey, originalNumbering: pdfOrigNum,
+        }),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      (d.warnings || []).forEach((w: string) => flash(w));
+      window.open(d.url, '_blank');
+      navigator.clipboard?.writeText(d.url).catch(() => {});
+      flash(`Paper PDF ready — ${d.count} questions · ${d.marksTotal} marks (link copied)`);
+    } catch (e) { flash((e as Error).message); }
+    finally { setPdfBusy(false); }
+  };
+
+  // Honest coverage of the open paper, from the same lib the API uses.
+  const paperCoverage = useMemo(() => {
+    if (!paperView) return null;
+    const marks = paperView.questions.reduce(
+      (s, c) => s + (typeof c.marks === 'number' && c.marks > 0 ? c.marks : 0), 0);
+    return { marks, assessed: assessCoverage(marks, paperView.questions.length, paperView.meta.level) };
+  }, [paperView]);
 
   // Worked-solutions PDF — whole paper (reading order) or the basket selection.
   const generateSolutions = async (ids: string[], title: string) => {
@@ -533,7 +576,14 @@ export default function QuestionBankPage() {
               {paperView.meta.level ? ` · ${paperView.meta.level}` : ''}{paperView.meta.paper ? ` · P${String(paperView.meta.paper).replace(/^P/i, '')}` : ''}
               {paperView.meta.examType ? ` · ${paperView.meta.examType}` : ''}
             </h2>
-            <span style={{ color: C.muted, fontSize: 13 }}>{paperView.questions.length} questions</span>
+            <span style={{ color: C.muted, fontSize: 13 }}>
+              {paperView.questions.length} questions{paperCoverage ? ` · ${paperCoverage.marks} marks` : ''}
+            </span>
+            {paperCoverage && paperCoverage.assessed.status !== 'complete' && paperCoverage.assessed.label && (
+              <span style={{ color: C.warn, background: C.flagBg, fontSize: 12, borderRadius: 6, padding: '1px 7px' }}>
+                ⚠ {paperCoverage.assessed.label}
+              </span>
+            )}
             <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
               <button onClick={() => copyLink(`school=${encodeURIComponent(paperView.meta.school)}&year=${paperView.meta.year}${paperView.meta.level ? `&level=${paperView.meta.level}` : ''}${paperView.meta.paper ? `&paper=${paperView.meta.paper}` : ''}`, 'Paper')}
                 style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>🔗 Copy link</button>
@@ -552,6 +602,22 @@ export default function QuestionBankPage() {
               </button>
               <button onClick={() => setPaperView(null)} style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer' }}>✕ Close paper</button>
             </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '7px 10px', marginBottom: 8 }}>
+            {([
+              ['working space', pdfSpace, setPdfSpace],
+              ['answer key', pdfAnswerKey, setPdfAnswerKey],
+              ['original numbering', pdfOrigNum, setPdfOrigNum],
+            ] as const).map(([label, val, set]) => (
+              <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12.5, color: '#374151', cursor: 'pointer' }}>
+                <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} />
+                {label}
+              </label>
+            ))}
+            <button onClick={generatePaperPdf} disabled={pdfBusy}
+              style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: C.navy, border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', opacity: pdfBusy ? 0.6 : 1 }}>
+              {pdfBusy ? 'Building…' : '⬇️ Download PDF'}
+            </button>
           </div>
           {paperView.questions.map(c => (
             <button key={c.id} onClick={() => openQuestion(c.id)}
@@ -611,7 +677,16 @@ export default function QuestionBankPage() {
               style={{ display: 'flex', gap: 10, alignItems: 'baseline', width: '100%', textAlign: 'left', background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '10px 12px', marginBottom: 8, cursor: 'pointer' }}>
               <strong style={{ fontSize: 14.5 }}>{pp.school}</strong>
               <span style={{ color: C.muted, fontSize: 13 }}>{pp.year} · {pp.level}{pp.paper ? ` · P${String(pp.paper).replace(/^P/i, '')}` : ''}{pp.examType ? ` · ${pp.examType}` : ''}</span>
-              <span style={{ marginLeft: 'auto', color: C.muted, fontSize: 12.5 }}>{pp.count} q</span>
+              <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                <span style={{ color: C.muted, fontSize: 12.5 }}>
+                  {pp.count} q{pp.marksTotal != null && pp.marksTotal > 0 ? ` · ${pp.marksTotal} marks` : ''}
+                </span>
+                {pp.coverage && (pp.coverage.status === 'partial' || pp.coverage.status === 'overfull') && (
+                  <span style={{ display: 'block', color: C.warn, fontSize: 11.5 }}>
+                    ⚠ {pp.coverage.status === 'partial' ? `partial — ${pp.coverage.missingMarks} marks missing` : `${pp.coverage.missingMarks} marks over-full`}
+                  </span>
+                )}
+              </span>
             </button>
           ))}
         </section>

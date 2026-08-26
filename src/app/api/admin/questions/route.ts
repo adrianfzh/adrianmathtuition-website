@@ -16,6 +16,11 @@ import { compareQnum, excerptText, searchTerms, normalizeForSearch } from '@/lib
 import { flattenParts, type Part } from '@/lib/kiosk-worksheet-images';
 import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-bot-worksheet';
 import { renderSolutionsPDF, type SolutionsItem, type SolutionsPart } from '@/lib/render-solutions-pdf';
+import { renderPaperPDF, type PaperPdfQuestion } from '@/lib/render-paper-pdf';
+import {
+  paperKey, groupPapers, assessCoverage, answerKeyLines,
+  type PaperKeyRow, type AnswerPart,
+} from '@/lib/paper-reconstruction';
 import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
@@ -43,8 +48,10 @@ function resolveParts(parts: unknown): unknown {
   return parts.map((pt) => {
     if (!pt || typeof pt !== 'object') return pt;
     const o = { ...(pt as Record<string, unknown>) };
-    if (typeof o.image_url === 'string' && o.image_url && !/^https?:/i.test(o.image_url) && isPlausibleImagePath(o.image_url)) {
-      o.image_url = imgSrc(o.image_url);
+    for (const k of ['image_url', 'image_url_after'] as const) {
+      if (typeof o[k] === 'string' && o[k] && !/^https?:/i.test(o[k] as string) && isPlausibleImagePath(o[k])) {
+        o[k] = imgSrc(o[k] as string);
+      }
     }
     if (o.subparts) o.subparts = resolveParts(o.subparts);
     // Solutions stay in — this is the ADMIN detail view; every other consumer
@@ -87,6 +94,48 @@ function detail(row: Row) {
       ? row.solution_images.filter(isPlausibleImagePath).map(imgSrc).slice(0, 6)
       : [],
   };
+}
+
+/**
+ * Coverage sweep for the papers index: every groupable question's
+ * (paper key, total_marks, question_number) — the aggregate PostgREST won't do
+ * for us (aggregates are disabled on this project, and the paper_index view
+ * only carries count). A minimal 7-column projection over ~26k rows fetched as
+ * PARALLEL 1000-row pages lands in ~1s; sequential paging is the 14-second
+ * trap the view was built to avoid. Cached per warm lambda — papers only
+ * change on ingest, and the index merge fails soft if this sweep errors.
+ */
+const COVERAGE_TTL_MS = 120_000;
+let coverageCache: { at: number; rows: PaperKeyRow[] } | null = null;
+
+async function fetchCoverageRows(supa: ReturnType<typeof getSupabaseAdmin>): Promise<PaperKeyRow[]> {
+  if (coverageCache && Date.now() - coverageCache.at < COVERAGE_TTL_MS) return coverageCache.rows;
+  const base = () =>
+    supa
+      .from('questions')
+      .select('school, year, level, paper, exam_type, total_marks, question_number')
+      .is('deleted_at', null)
+      .not('school', 'is', null)
+      .not('year', 'is', null);
+  const head = await supa
+    .from('questions')
+    .select('id', { count: 'exact', head: true })
+    .is('deleted_at', null)
+    .not('school', 'is', null)
+    .not('year', 'is', null);
+  if (head.error) throw new Error(head.error.message);
+  const total = head.count ?? 0;
+  const PAGE = 1000;
+  const chunks = await Promise.all(
+    Array.from({ length: Math.max(1, Math.ceil(total / PAGE)) }, async (_, i) => {
+      const { data, error } = await base().order('id').range(i * PAGE, i * PAGE + PAGE - 1);
+      if (error) throw new Error(error.message);
+      return (data ?? []) as PaperKeyRow[];
+    }),
+  );
+  const rows = chunks.flat();
+  coverageCache = { at: Date.now(), rows };
+  return rows;
 }
 
 export async function GET(req: NextRequest) {
@@ -154,14 +203,27 @@ export async function GET(req: NextRequest) {
     if (filter) pq = pq.ilike('school', `%${filter.replace(/[%_]/g, '')}%`);
     const { data, error } = await pq.order('year', { ascending: false }).order('school').limit(1000);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const papers = (data ?? []).map(r => ({
-      school: r.school as string,
-      year: r.year as number,
-      level: r.level as string,
-      paper: (r.paper as string | null) ?? null,
-      examType: (r.exam_type as string | null) ?? null,
-      count: Number(r.count) || 0,
-    })).sort((a, b) =>
+    // Coverage (marks sum, numbered count, honest-gap status) rides along from
+    // the cached sweep; the index still renders (counts only) if the sweep dies.
+    let coverage: ReturnType<typeof groupPapers> | null = null;
+    try { coverage = groupPapers(await fetchCoverageRows(supa)); } catch { coverage = null; }
+    const papers = (data ?? []).map(r => {
+      const g = coverage?.get(paperKey(r)) ?? null;
+      const assessed = g ? assessCoverage(g.marksTotal, g.count, r.level as string | null) : null;
+      return {
+        school: r.school as string,
+        year: r.year as number,
+        level: r.level as string,
+        paper: (r.paper as string | null) ?? null,
+        examType: (r.exam_type as string | null) ?? null,
+        count: Number(r.count) || 0,
+        marksTotal: g?.marksTotal ?? null,
+        numbered: g?.numbered ?? null,
+        coverage: assessed
+          ? { status: assessed.status, missingMarks: assessed.missingMarks, label: assessed.label }
+          : null,
+      };
+    }).sort((a, b) =>
       b.year - a.year || a.school.localeCompare(b.school) || String(a.paper).localeCompare(String(b.paper)));
     return NextResponse.json({ papers: papers.slice(0, 400), total: papers.length });
   }
@@ -330,6 +392,94 @@ export async function POST(req: NextRequest) {
         access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
       });
       return NextResponse.json({ url: blob.url, count: items.length, missingSolutions: missing });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
+    }
+  }
+
+  // Reconstructed paper PDF — the whole (school, year, level, paper, exam_type)
+  // group as a sit-able exam paper: questions in reading order with their
+  // figures, optional marks-proportional working space (the create-exam-paper
+  // skill's 2.5-lines-per-mark rule), optional answer key, optional original
+  // numbering. Admin-only school papers for Adrian's own teaching use.
+  if (body.action === 'paper-pdf') {
+    const school = typeof body.school === 'string' ? body.school.trim() : '';
+    const year = Number(body.year);
+    if (!school || !Number.isFinite(year)) {
+      return NextResponse.json({ error: 'school and year required' }, { status: 400 });
+    }
+    let q = supa
+      .from('questions')
+      .select('*')
+      .is('deleted_at', null)
+      .eq('school', school)
+      .eq('year', year);
+    const level = typeof body.level === 'string' && body.level ? body.level : null;
+    const paper = typeof body.paper === 'string' && body.paper ? body.paper : null;
+    const examType = typeof body.examType === 'string' && body.examType ? body.examType : null;
+    if (level) q = q.eq('level', level);
+    if (paper) q = q.eq('paper', paper);
+    if (examType) q = q.eq('exam_type', examType);
+    const { data, error } = await q.limit(120);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const rows = ((data ?? []) as Row[]).sort((a, b) =>
+      compareQnum(a.question_number as string | null, b.question_number as string | null));
+    if (!rows.length) return NextResponse.json({ error: 'no questions in this paper' }, { status: 404 });
+
+    const workingSpace = body.workingSpace !== false;
+    const answerKey = body.answerKey !== false;
+    const originalNumbering = body.originalNumbering !== false;
+
+    const partHasImage = (list: Part[] | null | undefined): boolean =>
+      (list ?? []).some((pt) =>
+        isPlausibleImagePath(pt.image_url) || isPlausibleImagePath(pt.image_url_after) || partHasImage(pt.subparts));
+    const warnings: string[] = [];
+    const questions: PaperPdfQuestion[] = rows.map((row, i) => {
+      const images = resolveImages(row);
+      const parts = resolveParts(row.parts) as Part[];
+      const missingFigure = row.has_image === true && !images.length && !partHasImage(parts);
+      const storedNum = typeof row.question_number === 'string' ? row.question_number.trim() : '';
+      if (missingFigure) warnings.push(`Q${storedNum || i + 1}: figure flagged but not in the bank — placeholder printed`);
+      return {
+        qnum: originalNumbering && storedNum ? storedNum : String(i + 1),
+        marks: (row.total_marks as number | null) ?? null,
+        stem: (row.question_text as string | null) ?? '',
+        images,
+        missingFigure,
+        parts,
+        answerLines: answerKeyLines(parts as AnswerPart[], (row.answer as string | null) ?? null),
+      };
+    });
+
+    const marksTotal = rows.reduce((s, r) => {
+      const m = r.total_marks as number | null;
+      return s + (typeof m === 'number' && m > 0 ? m : 0);
+    }, 0);
+    const cov = assessCoverage(marksTotal, rows.length, level);
+    const answerless = questions.filter((qq) => !qq.answerLines.length).length;
+    if (answerKey && answerless > 0) warnings.push(`${answerless} question${answerless === 1 ? '' : 's'} with no stored answer — "—" in the key`);
+
+    const titleBits = [
+      `${school} ${year}`, level,
+      paper ? `Paper ${String(paper).replace(/^P/i, '')}` : null, examType,
+    ].filter(Boolean).join(' · ');
+    try {
+      const pdf = await renderPaperPDF({
+        title: titleBits,
+        metaLine: `${rows.length} question${rows.length === 1 ? '' : 's'} · ${marksTotal} marks`,
+        questions,
+        workingSpace,
+        answerKey,
+        coverageWarning: cov.label || null,
+      });
+      const blob = await put(`mark-paper/paper-pdfs/${Date.now()}.pdf`, pdf, {
+        access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      return NextResponse.json({
+        url: blob.url, count: rows.length, marksTotal,
+        coverage: { status: cov.status, missingMarks: cov.missingMarks, label: cov.label },
+        warnings,
+      });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message || 'render failed' }, { status: 500 });
     }
