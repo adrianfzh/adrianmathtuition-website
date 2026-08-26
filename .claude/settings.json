@@ -6,10 +6,22 @@
       "Bash(fly machine list *)",
       "Bash(node --check *)",
       "Bash(pdftoppm *)",
+      "Bash(pdftotext *)",
+      "Bash(pdfinfo *)",
+      "Bash(soffice *)",
+      "Bash(pdflatex *)",
       "Bash(unzip -p *)",
       "mcp__Claude_Preview__preview_start",
       "mcp__Claude_Preview__preview_screenshot",
-      "mcp__Claude_Preview__preview_list"
+      "mcp__Claude_Preview__preview_list",
+      "mcp__Supabase__execute_sql",
+      "mcp__Supabase__list_tables",
+      "mcp__Dropbox__who_am_i",
+      "mcp__Dropbox__search",
+      "mcp__Dropbox__list_folder",
+      "mcp__Dropbox__get_file_metadata",
+      "mcp__Dropbox__file_preview",
+      "mcp__Dropbox__fetch"
     ]
   },
   "hooks": {
