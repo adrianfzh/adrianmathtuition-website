@@ -250,14 +250,23 @@ const loadConvertedTopics = cache(async (level: string): Promise<Set<string>> =>
   return new Set(topics);
 });
 
+/** Topics with a Quick Revision card that has content — any status. Drafts
+ *  count: the tree must show the reviewer their drafts, and a student landing
+ *  on a draft-only topic just sees the title (the card itself stays gated). */
+const loadCardTopics = cache(async (level: string): Promise<Set<string>> => {
+  const cards = await loadTopicCards(level);
+  return new Set(cards.filter(c => c.content_md).map(c => c.topic));
+});
+
 /** The sidebar tree for a level. */
 export const getNotesTree = cache(async (level: string): Promise<TreeRoot> => {
-  const [subgroups, counts, converted] = await Promise.all([
+  const [subgroups, counts, converted, cardTopics] = await Promise.all([
     loadSubgroups(level),
     loadSnippetCounts(level),
     loadConvertedTopics(level),
+    loadCardTopics(level),
   ]);
-  return buildPageTree(level, subgroups, counts, converted);
+  return buildPageTree(level, subgroups, counts, converted, cardTopics);
 });
 
 export interface LevelTopic {
@@ -278,10 +287,11 @@ export interface LevelTopic {
  * rendering the index costs no extra Supabase round-trips.
  */
 export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> => {
-  const [subgroups, counts, recall] = await Promise.all([
+  const [subgroups, counts, recall, cardTopics] = await Promise.all([
     loadSubgroups(level),
     loadSnippetCounts(level),
     loadRecallCards(level),
+    loadCardTopics(level),
   ]);
 
   const out: LevelTopic[] = [];
@@ -301,6 +311,19 @@ export const getLevelIndex = cache(async (level: string): Promise<LevelTopic[]> 
         pages: 1,
         examples,
         recall: recall.get(row.topic)?.length ?? 0,
+      });
+    }
+  }
+  // Card-only topics (Quick Revision, no example pages yet) still list — the
+  // card IS the topic page. Mirrors buildPageTree's cardTopics rule.
+  for (const topic of cardTopics) {
+    if (!out.some(t => t.topic === topic)) {
+      out.push({
+        topic,
+        url: topicUrl(level, topic),
+        pages: 0,
+        examples: 0,
+        recall: recall.get(topic)?.length ?? 0,
       });
     }
   }
@@ -332,7 +355,14 @@ export const getTopicPage = cache(
     const levelRows = subgroups.filter(
       s => s.level.toUpperCase() === level.toUpperCase(),
     );
-    const topics = [...new Set(levelRows.map(s => s.topic))];
+    // Card-only topics have no sub-group rows — resolve the slug against the
+    // union so their pages exist (the Quick Revision card is the content).
+    const topics = [
+      ...new Set([
+        ...levelRows.map(s => s.topic),
+        ...cards.filter(c => c.content_md).map(c => c.topic),
+      ]),
+    ];
     const topic = matchBySlug(topics, slug, t => t);
     if (!topic) return null;
 
@@ -346,11 +376,12 @@ export const getTopicPage = cache(
       }))
       .filter(s => s.count > 0);
 
-    if (list.length === 0) return null;
+    const card = cards.find(c => c.topic === topic && c.content_md) ?? null;
+    if (list.length === 0 && !card) return null;
 
     return {
       topic,
-      card: cards.find(c => c.topic === topic && c.content_md) ?? null,
+      card,
       recall: recall.get(topic) ?? [],
       unitSections: await loadTopicUnits(level, topic),
       subgroups: list,

@@ -198,7 +198,8 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
   // that's `converted` below, and it flips per topic as Adrian reviews.
   const sections = admin ? data.unitSections : approvedSections(data.unitSections);
   const converted = hasApprovedUnits(data.unitSections);
-  const showPages = !converted;
+  // Card-only topics have no example pages yet — no empty "Pages" heading.
+  const showPages = !converted && data.subgroups.length > 0;
   const pending = data.unitSections.reduce(
     (n, s) =>
       n +

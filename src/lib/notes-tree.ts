@@ -317,13 +317,18 @@ function withFamilySeparators(level: string, folders: TreeFolder[]): TreeNode[] 
  * index page is the topic page; each sub-group becomes a leaf page.
  *
  * Sub-groups with no renderable snippets are dropped — an empty page in the
- * sidebar is a dead end for a student. Topics left with no pages are dropped too.
+ * sidebar is a dead end for a student. Topics left with no pages are dropped
+ * too, UNLESS the topic has a Quick Revision card (`cardTopics`) — then the
+ * topic-index page itself is the content and it stays in the tree with no
+ * children. Without this every card-only EM topic would be unreachable: EM
+ * has 44 topic cards but (today) example pages under only 6 topics.
  */
 export function buildPageTree(
   level: string,
   subgroups: SubgroupRow[],
   snippetCountBySubgroup: Map<number, number>,
   convertedTopics: Set<string> = new Set(),
+  cardTopics: Set<string> = new Set(),
 ): TreeRoot {
   const levelRows = subgroups.filter(
     s => s.level.toUpperCase() === level.toUpperCase(),
@@ -335,16 +340,18 @@ export function buildPageTree(
     if (list) list.push(row);
     else byTopic.set(row.topic, [row]);
   }
+  // Card-only topics may have no sub-group rows at all — they still get a node.
+  const allTopics = new Set([...byTopic.keys(), ...cardTopics]);
 
   const folders: TreeFolder[] = [];
-  for (const topic of [...byTopic.keys()].sort(topicOrderComparator(level))) {
+  for (const topic of [...allTopics].sort(topicOrderComparator(level))) {
     // A converted topic (approved learning units) reads as one page whose
     // sections the right-hand contents already lists — its old sub-group pages
     // stay off the sidebar, where they no longer match what students read.
     const converted = convertedTopics.has(topic);
     const children = converted
       ? []
-      : sortSubgroups(byTopic.get(topic) as SubgroupRow[])
+      : sortSubgroups(byTopic.get(topic) ?? [])
           .filter(sg => (snippetCountBySubgroup.get(sg.id) ?? 0) > 0)
           .map<TreeItem>(sg => ({
             type: 'page',
@@ -353,7 +360,7 @@ export function buildPageTree(
             $id: `sg-${sg.id}`,
           }));
 
-    if (children.length === 0 && !converted) continue;
+    if (children.length === 0 && !converted && !cardTopics.has(topic)) continue;
 
     // No tool pages in the sidebar — /notes surfaces no tools at all (Adrian,
     // 2026-08-07, closing the 2026-08-06 decision: the recap surface is for
