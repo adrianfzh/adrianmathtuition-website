@@ -15,11 +15,10 @@ import {
   neighbours,
   subgroupUrl,
   topicUrl,
+  NOTES_LEVELS,
   type NotesSection,
 } from '@/lib/notes-tree';
 import { topicSlug } from '@/lib/topic-slug';
-
-const PHASE_1_LEVEL = 'AM';
 
 // Cookie-gated, so always rendered per request.
 export const dynamic = 'force-dynamic';
@@ -34,8 +33,8 @@ const ANCHOR = {
 
 /** Footer prev/next, computed from the unfiltered tree so it never depends on
  *  whatever the sidebar filter happens to be showing. */
-async function footerFor(url: string) {
-  const tree = await getNotesTree(PHASE_1_LEVEL);
+async function footerFor(level: string, url: string) {
+  const tree = await getNotesTree(level);
   const { previous, next } = neighbours(tree, url);
   return {
     items: {
@@ -116,22 +115,41 @@ function CardLink({
   );
 }
 
+// ── Level chooser (/notes root) ──────────────────────────────────────────────
+
+function LevelChooser() {
+  return (
+    <DocsPage toc={[]} breadcrumb={{ enabled: false }}>
+      <p className="nx-eyebrow">Notes</p>
+      <DocsTitle className="nx-title">Revision Notes</DocsTitle>
+      <hr className="nx-rule" />
+      <DocsBody>
+        <div className="not-prose nx-list">
+          {NOTES_LEVELS.map(l => (
+            <CardLink key={l.code} href={`/notes/${l.code.toLowerCase()}`} title={l.label} />
+          ))}
+        </div>
+      </DocsBody>
+    </DocsPage>
+  );
+}
+
 // ── Level index ──────────────────────────────────────────────────────────────
 
-async function LevelIndex() {
-  const topics = await getLevelIndex(PHASE_1_LEVEL);
+async function LevelIndex({ level }: { level: string }) {
+  const topics = await getLevelIndex(level);
 
   if (topics.length === 0) {
     return (
       <DocsPage toc={[]} breadcrumb={{ enabled: false }}>
-        <DocsTitle className="nx-title">{levelLabel(PHASE_1_LEVEL)}</DocsTitle>
+        <DocsTitle className="nx-title">{levelLabel(level)}</DocsTitle>
         <p className="nx-lede">No published notes yet.</p>
       </DocsPage>
     );
   }
 
   // Same grouping the sidebar uses, so the page and the tree read as one thing.
-  const families = groupByFamily(PHASE_1_LEVEL, topics, t => t.topic);
+  const families = groupByFamily(level, topics, t => t.topic);
 
   const toc = families.map(({ family }) => ({
     title: family.label,
@@ -144,7 +162,7 @@ async function LevelIndex() {
       {/* No lede, no counts — Adrian, 2026-08-21: the landing page is just the
           topic list; a student picks a topic and reads. */}
       <p className="nx-eyebrow">Notes</p>
-      <DocsTitle className="nx-title">{levelLabel(PHASE_1_LEVEL)}</DocsTitle>
+      <DocsTitle className="nx-title">{levelLabel(level)}</DocsTitle>
       <hr className="nx-rule" />
       <DocsBody>
         {families.map(({ family, items }) => (
@@ -166,14 +184,14 @@ async function LevelIndex() {
 
 // ── Topic index ──────────────────────────────────────────────────────────────
 
-async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
+async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugParam: string }) {
   const [data, admin] = await Promise.all([
-    getTopicPage(PHASE_1_LEVEL, topicSlugParam),
+    getTopicPage(level, topicSlugParam),
     isNotesAuthed(),
   ]);
   if (!data) notFound();
 
-  const url = topicUrl(PHASE_1_LEVEL, data.topic);
+  const url = topicUrl(level, data.topic);
 
   // Learning units. The reviewer reads everything; a student reads what has
   // been approved. Approving a topic also retires its old sub-group list —
@@ -206,9 +224,9 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
   ].filter(Boolean) as { title: string; url: string; depth: number }[];
 
   return (
-    <DocsPage toc={toc} footer={await footerFor(url)} breadcrumb={{ enabled: false }}>
-      <BackLink href={`/notes/${PHASE_1_LEVEL.toLowerCase()}`}>
-        {levelLabel(PHASE_1_LEVEL)}
+    <DocsPage toc={toc} footer={await footerFor(level, url)} breadcrumb={{ enabled: false }}>
+      <BackLink href={`/notes/${level.toLowerCase()}`}>
+        {levelLabel(level)}
       </BackLink>
       <DocsTitle className="nx-title">{data.topic}</DocsTitle>
       <div className="nx-byline">
@@ -217,14 +235,14 @@ async function TopicIndex({ topicSlugParam }: { topicSlugParam: string }) {
         </span>
         <span className="nx-byline-text">
           <span className="nx-byline-name">Taught by Adrian</span>
-          <span className="nx-byline-sub">{levelLabel(PHASE_1_LEVEL)} specialist</span>
+          <span className="nx-byline-sub">{levelLabel(level)} specialist</span>
         </span>
       </div>
       <hr className="nx-rule" />
       <DocsBody>
         {admin && data.unitSections.length > 0 && (
           <ReviewBar
-            level={PHASE_1_LEVEL}
+            level={level}
             topic={data.topic}
             pending={pending}
             flagged={flagged}
@@ -299,7 +317,9 @@ interface NumberedSnippet {
 function Example({ snippet }: { snippet: NumberedSnippet }) {
   const title = cleanTitle(snippet.card_title);
   return (
-    <article className="nx-ex">
+    // The id is the search deep-link target (#ex-<id>) and the per-example
+    // "On this page" anchor — keep it in sync with getSearchIndex's URLs.
+    <article className="nx-ex" id={`ex-${snippet.id}`}>
       <header className="nx-ex-head">
         <span className="nx-ex-no">{snippet.n}</span>
         <h3 className="nx-ex-title">{title || `Worked example ${snippet.n}`}</h3>
@@ -310,16 +330,18 @@ function Example({ snippet }: { snippet: NumberedSnippet }) {
 }
 
 async function SubgroupPage({
+  level,
   topicSlugParam,
   subgroupSlug,
 }: {
+  level: string;
   topicSlugParam: string;
   subgroupSlug: string;
 }) {
-  const data = await getSubgroupPage(PHASE_1_LEVEL, topicSlugParam, subgroupSlug);
+  const data = await getSubgroupPage(level, topicSlugParam, subgroupSlug);
   if (!data) notFound();
 
-  const url = subgroupUrl(PHASE_1_LEVEL, data.topic, data.subgroup.name);
+  const url = subgroupUrl(level, data.topic, data.subgroup.name);
   const { summary, example } = cleanDescription(data.subgroup.description);
 
   // Examples are numbered continuously down the page, not restarted per section
@@ -338,19 +360,25 @@ async function SubgroupPage({
   );
 
   // Most sub-groups hold a single section whose name is just the display_group
-  // NULL fallback — i.e. the sub-group's own name. Heading and TOC would both
-  // only echo the page title there, so both are dropped and the examples sit
-  // directly under it.
+  // NULL fallback — i.e. the sub-group's own name. Section headings only render
+  // when they say something the page title doesn't; the TOC always lists every
+  // EXAMPLE by its scenario name — that is the "On this page" index a student
+  // scans to jump straight to "circle touching both axes".
   const showSections =
     data.sections.length > 1 || data.sections[0]?.name !== data.subgroup.name;
 
-  const toc = showSections
-    ? data.sections.map(s => ({ title: s.name, url: `#${s.id}`, depth: 2 }))
-    : [];
+  const toc = sections.flatMap(({ section, items }) => [
+    ...(showSections ? [{ title: section.name, url: `#${section.id}`, depth: 2 }] : []),
+    ...items.map(s => ({
+      title: cleanTitle(s.card_title) || `Worked example ${s.n}`,
+      url: `#ex-${s.id}`,
+      depth: showSections ? 3 : 2,
+    })),
+  ]);
 
   return (
-    <DocsPage toc={toc} footer={await footerFor(url)} breadcrumb={{ enabled: false }}>
-      <BackLink href={topicUrl(PHASE_1_LEVEL, data.topic)}>{data.topic}</BackLink>
+    <DocsPage toc={toc} footer={await footerFor(level, url)} breadcrumb={{ enabled: false }}>
+      <BackLink href={topicUrl(level, data.topic)}>{data.topic}</BackLink>
       <DocsTitle className="nx-title">{cleanTitle(data.subgroup.name)}</DocsTitle>
       {summary && <p className="nx-lede">{summary}</p>}
       <div className="nx-meta">
@@ -395,15 +423,16 @@ export default async function Page({
 
   const { slug = [] } = await params;
 
-  // /notes and /notes/am both land on the level index. Phase 1 is AM-only, so
-  // any other level segment is a 404 rather than a silent redirect to AM.
-  if (slug.length === 0) return <LevelIndex />;
-  if (slug[0].toLowerCase() !== PHASE_1_LEVEL.toLowerCase()) notFound();
+  // /notes = level chooser; /notes/<level> = that level's index. A segment
+  // that names no exposed level is a 404 rather than a silent redirect.
+  if (slug.length === 0) return <LevelChooser />;
+  const level = NOTES_LEVELS.find(l => l.code.toLowerCase() === slug[0].toLowerCase())?.code;
+  if (!level) notFound();
 
-  if (slug.length === 1) return <LevelIndex />;
-  if (slug.length === 2) return <TopicIndex topicSlugParam={slug[1]} />;
+  if (slug.length === 1) return <LevelIndex level={level} />;
+  if (slug.length === 2) return <TopicIndex level={level} topicSlugParam={slug[1]} />;
   if (slug.length === 3) {
-    return <SubgroupPage topicSlugParam={slug[1]} subgroupSlug={slug[2]} />;
+    return <SubgroupPage level={level} topicSlugParam={slug[1]} subgroupSlug={slug[2]} />;
   }
   notFound();
 }

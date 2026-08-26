@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { isNotesViewer, hasPortalSession } from '@/lib/notes-auth';
-import { getNotesTree } from '@/lib/notes-data';
+import { getNotesTree, getSearchIndex } from '@/lib/notes-data';
+import { NOTES_LEVELS } from '@/lib/notes-tree';
 import NotesLogin from './NotesLogin';
-import NotesShell from './NotesShell';
+import NotesShell, { type ShellLevel } from './NotesShell';
 // Scoped fumadocs styles — see the header comment in notes.css for why these
 // must never move into globals.css.
 import './notes.css';
@@ -14,8 +15,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Phase 1 ships Additional Maths only; Phase 2 adds the remaining levels. */
-const PHASE_1_LEVEL = 'AM';
+/** Short chip per level for the shell brand + level switcher. */
+const CHIP: Record<string, string> = { AM: 'A-Math', EM: 'E-Math' };
 
 export default async function NotesLayout({
   children,
@@ -33,14 +34,25 @@ export default async function NotesLayout({
     );
   }
 
-  const [tree, portalHome] = await Promise.all([
-    getNotesTree(PHASE_1_LEVEL),
+  // One tree + search index per exposed level. Every loader is cache()d and
+  // notesCache()d, so this is a handful of Supabase reads per revalidation
+  // window, not per request.
+  const [portalHome, ...levelData] = await Promise.all([
     hasPortalSession(),
+    ...NOTES_LEVELS.map(async l => ({
+      code: l.code,
+      chip: CHIP[l.code] ?? l.code,
+      tree: await getNotesTree(l.code),
+      search: await getSearchIndex(l.code),
+    })),
   ]);
+  const levels = levelData as ShellLevel[];
 
   return (
     <div className="notes-shell">
-      <NotesShell tree={tree} portalHome={portalHome}>{children}</NotesShell>
+      <NotesShell levels={levels} portalHome={portalHome}>
+        {children}
+      </NotesShell>
     </div>
   );
 }

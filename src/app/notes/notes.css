@@ -2213,3 +2213,66 @@ a.nx-eyebrow:hover {
     content: '';
   }
 }
+
+/* ── Level switcher (sidebar banner) ─────────────────────────────────────────*/
+.nx-levels {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+.nx-level {
+  flex: 1;
+  text-align: center;
+  border: 1px solid var(--nx-line);
+  border-radius: 9px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-fd-muted-foreground);
+  background: var(--color-fd-card);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.nx-level:hover {
+  color: var(--color-fd-foreground);
+}
+.nx-level[aria-current='page'] {
+  color: var(--color-fd-foreground);
+  border-color: var(--nx-green-mid);
+}
+
+/* ── Search results (deep links into sections + worked examples) ─────────────*/
+.nx-hits {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 0.35rem;
+  border: 1px solid var(--nx-line);
+  border-radius: 9px;
+  background: var(--color-fd-card);
+  padding: 0.3rem;
+  max-height: 19rem;
+  overflow-y: auto;
+}
+.nx-hit {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0.35rem 0.5rem;
+  border-radius: 7px;
+  text-decoration: none;
+}
+.nx-hit:hover {
+  background: var(--color-fd-accent);
+}
+.nx-hit-label {
+  font-size: 0.82rem;
+  font-weight: 550;
+  color: var(--color-fd-foreground);
+  line-height: 1.25;
+}
+.nx-hit-context {
+  font-size: 0.72rem;
+  color: var(--color-fd-muted-foreground);
+  line-height: 1.2;
+}

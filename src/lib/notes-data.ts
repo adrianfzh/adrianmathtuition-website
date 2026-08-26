@@ -416,3 +416,74 @@ export const getSubgroupPage = cache(
     };
   },
 );
+
+// ── Search index ─────────────────────────────────────────────────────────────
+
+export interface SearchEntry {
+  /** What the student typed against: an example title or a section name. */
+  label: string;
+  /** Where it lives: "Topic · Sub-group" for examples, the topic for sections. */
+  context: string;
+  /** Deep link — sub-group page, with an #ex-<id> anchor for examples. */
+  url: string;
+  kind: 'example' | 'section' | 'topic';
+}
+
+/**
+ * Everything findable in a level, flattened for the sidebar search: topics,
+ * sub-group pages and every published worked example BY ITS TITLE (the titles
+ * are scenario names — "Circle touching both axes…" — which is exactly what a
+ * student searches for). Shares the cached loaders, so building it costs one
+ * extra Supabase query (the id/title list) per revalidation window.
+ */
+export const getSearchIndex = cache(async (level: string): Promise<SearchEntry[]> => {
+  const [subgroups, counts, titles] = await Promise.all([
+    loadSubgroups(level),
+    loadSnippetCounts(level),
+    notesCache(['search-titles', level], async () => {
+      const supa = getSupabase();
+      return fetchAllRows<{ id: string; subgroup_id: number | null; card_title: string | null }>(
+        (from, to) =>
+          supa
+            .from('content_snippets')
+            .select('id, subgroup_id, card_title')
+            .eq('level', level.toUpperCase())
+            .eq('content_kind', PUBLISHABLE.content_kind)
+            .in('feature', [...PUBLISHABLE.features])
+            .eq('is_published', true)
+            .range(from, to),
+      );
+    }),
+  ]);
+
+  const { cleanTitle } = await import('./notes-text');
+  const sgById = new Map(subgroups.map(s => [s.id, s]));
+  const out: SearchEntry[] = [];
+
+  const seenTopics = new Set<string>();
+  for (const s of subgroups) {
+    if ((counts.get(s.id) ?? 0) === 0) continue; // empty pages aren't findable
+    if (!seenTopics.has(s.topic)) {
+      seenTopics.add(s.topic);
+      out.push({ label: s.topic, context: '', url: topicUrl(level, s.topic), kind: 'topic' });
+    }
+    out.push({
+      label: cleanTitle(s.name),
+      context: s.topic,
+      url: subgroupUrl(level, s.topic, s.name),
+      kind: 'section',
+    });
+  }
+  for (const t of titles) {
+    if (t.subgroup_id == null || !t.card_title) continue;
+    const sg = sgById.get(t.subgroup_id);
+    if (!sg) continue;
+    out.push({
+      label: cleanTitle(t.card_title),
+      context: `${sg.topic} · ${cleanTitle(sg.name)}`,
+      url: `${subgroupUrl(level, sg.topic, sg.name)}#ex-${t.id}`,
+      kind: 'example',
+    });
+  }
+  return out;
+});

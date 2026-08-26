@@ -5,13 +5,16 @@
 //
 // Tree shape (SPEC-NOTES-PORTAL Phase 1): Level → Topic → one page per sub-group.
 
-import { A_MATH_EXAM_TOPICS } from './canonical-topics';
+import { A_MATH_EXAM_TOPICS, EM_OWN_TOPICS } from './canonical-topics';
 import { topicSlug } from './topic-slug';
 
 export const NOTES_BASE = '/notes';
 
-/** Levels the portal exposes, in sidebar order. AM only for Phase 1. */
-export const NOTES_LEVELS = [{ code: 'AM', label: 'Additional Maths' }] as const;
+/** Levels the portal exposes, in sidebar order. Phase 2 (2026-08-27) adds EM. */
+export const NOTES_LEVELS = [
+  { code: 'AM', label: 'Additional Maths' },
+  { code: 'EM', label: 'Elementary Maths' },
+] as const;
 
 export type NotesLevel = (typeof NOTES_LEVELS)[number]['code'];
 
@@ -75,10 +78,15 @@ export interface TopicFamily {
 /** Topics with no home in the canonical list still need somewhere to go. */
 const OTHER_FAMILY = 'Other topics';
 
-/** Families for a level, in syllabus order. Levels without a grouping get none. */
+/** Families for a level, in syllabus order. Levels without a grouping get none.
+ *  EM uses EM_OWN_TOPICS, not E_MATH_EXAM_TOPICS — the exam list appends the
+ *  cascading [S2]/[S1] categories, which repeat topic names and would claim
+ *  every shared topic for the wrong family. */
 export function topicFamilies(level: string): TopicFamily[] {
-  if (level.toUpperCase() !== 'AM') return [];
-  return A_MATH_EXAM_TOPICS.map(c => ({ label: c.label, topics: c.topics }));
+  const lv = level.toUpperCase();
+  if (lv === 'AM') return A_MATH_EXAM_TOPICS.map(c => ({ label: c.label, topics: c.topics }));
+  if (lv === 'EM') return EM_OWN_TOPICS.map(c => ({ label: c.label, topics: c.topics }));
+  return [];
 }
 
 /**
