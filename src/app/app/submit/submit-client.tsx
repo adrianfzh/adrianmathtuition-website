@@ -19,13 +19,20 @@ type Page = { file: File; preview: string | null };
 // `assignment` = a "From Adrian" worksheet (SPEC-ASSIGN.md): the paper name is
 // the worksheet title (locked) and the POST carries the assignment id so the
 // run auto-releases and the assignment flips to submitted → marked.
+// `paper` = a self-generated printed paper (SPEC-PRINT-PAPER.md): name locked
+// to its title, POST carries the paper id so marking gets the pre-registered
+// question list. Unlike assignments it spends the daily slot.
 // `slotUsed` = today's daily hand-in slot is already spent (server-counted in
 // page.tsx) — show the allowance state up front instead of a rejection after
 // the student has photographed everything. Assignments are cap-exempt.
-export default function SubmitClient({ assignment = null, slotUsed = false }: { assignment?: { id: string; title: string } | null; slotUsed?: boolean }) {
+export default function SubmitClient({ assignment = null, paper = null, slotUsed = false }: {
+  assignment?: { id: string; title: string } | null;
+  paper?: { id: string; title: string } | null;
+  slotUsed?: boolean;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [pages, setPages] = useState<Page[]>([]);
-  const [paperName, setPaperName] = useState(assignment?.title ?? '');
+  const [paperName, setPaperName] = useState(assignment?.title ?? paper?.title ?? '');
   const [splitNote, setSplitNote] = useState('');
   const [capNote, setCapNote] = useState('');       // pages dropped at MAX_PAGES — must be visible, never silent
   const [stage, setStage] = useState('');            // progress line while submitting
@@ -119,7 +126,12 @@ export default function SubmitClient({ assignment = null, slotUsed = false }: { 
       const r = await fetch('/api/portal/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoUrls: urls, paperName: paperName.trim(), ...(assignment ? { assignmentId: assignment.id } : {}) }),
+        body: JSON.stringify({
+          photoUrls: urls,
+          paperName: paperName.trim(),
+          ...(assignment ? { assignmentId: assignment.id } : {}),
+          ...(paper ? { paperId: paper.id } : {}),
+        }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || 'The submission failed — try again.');
@@ -189,6 +201,12 @@ export default function SubmitClient({ assignment = null, slotUsed = false }: { 
           <Link href={`/app/assignments/${assignment.id}`} className="text-sm text-gray-500 hover:text-navy">← Back to the worksheet</Link>
           <h1 className="text-xl font-bold text-navy mt-1">📬 Submit: {assignment.title}</h1>
         </div>
+      ) : paper ? (
+        <div className="pt-1">
+          <Link href="/app/print" className="text-sm text-gray-500 hover:text-navy">← Back to your papers</Link>
+          <h1 className="text-xl font-bold text-navy mt-1">📬 Hand in: {paper.title}</h1>
+          <p className="text-[13px] text-gray-500 mt-0.5">Marking already knows every question on this sheet.</p>
+        </div>
       ) : (
         <div className="pt-1">
           <h1 className="text-xl font-bold text-navy">Submit a paper</h1>
@@ -244,6 +262,8 @@ export default function SubmitClient({ assignment = null, slotUsed = false }: { 
 
         {assignment ? (
           <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{assignment.title}</b> — Adrian&apos;s worksheet.</p>
+        ) : paper ? (
+          <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{paper.title}</b> — your printed paper.</p>
         ) : (
         <div>
           <label htmlFor="paper-name" className="block text-[13px] font-semibold text-gray-700 mb-1">

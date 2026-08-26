@@ -5,77 +5,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { createServiceClient } from '@/lib/supabase-server';
 import { renderPrelimPDF, type PrelimQuestion } from '@/lib/render-prelim';
+import { answerMarkdown, questionMarkdown, storageUrl, type QbPrintRow } from '@/lib/print-paper';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-interface PartRow {
-  label?: string;
-  text?: string;
-  marks?: number;
-  answer?: string;
-  subparts?: PartRow[];
-}
-
-interface QbFull {
-  id: string;
-  question_text: string | null;
-  total_marks: number;
-  parts: PartRow[] | null;
-  answer: string | null;
-  has_image: boolean | null;
-  image_url: string | null;
-}
-
-function storageUrl(raw: string | null): string | null {
-  if (!raw) return null;
-  let path = raw;
-  if (path.startsWith('[')) {
-    try {
-      const arr = JSON.parse(path);
-      if (!Array.isArray(arr) || arr.length === 0) return null;
-      path = String(arr[0]);
-    } catch {
-      return null;
-    }
-  }
-  path = path.replace(/^question_images\//, '');
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  if (!base) return null;
-  return `${base}/storage/v1/object/public/question_images/${path}`;
-}
-
-// Flatten stem + parts (+subparts) into the markdown the renderer expects.
-function questionMarkdown(q: QbFull): string {
-  const chunks: string[] = [];
-  if (q.question_text?.trim()) chunks.push(q.question_text.trim());
-  for (const p of q.parts ?? []) {
-    const label = p.label ? `(${p.label}) ` : '';
-    if (p.subparts?.length) {
-      if (p.text?.trim() || label) chunks.push(`${label}${(p.text ?? '').trim()}`.trim());
-      for (const s of p.subparts) {
-        const sm = s.marks ? `  [${s.marks}]` : '';
-        chunks.push(`(${p.label ?? ''})(${s.label ?? ''}) ${(s.text ?? '').trim()}${sm}`);
-      }
-    } else {
-      const marks = p.marks ? `  [${p.marks}]` : '';
-      chunks.push(`${label}${(p.text ?? '').trim()}${marks}`.trim());
-    }
-  }
-  return chunks.filter(Boolean).join('\n\n');
-}
-
-function answerMarkdown(q: QbFull): string {
-  if (q.answer?.trim()) return q.answer.trim();
-  const bits: string[] = [];
-  for (const p of q.parts ?? []) {
-    if (p.answer?.trim()) bits.push(`(${p.label ?? '?'}) ${p.answer.trim()}`);
-    for (const s of p.subparts ?? []) {
-      if (s.answer?.trim()) bits.push(`(${p.label ?? '?'})(${s.label ?? '?'}) ${s.answer.trim()}`);
-    }
-  }
-  return bits.join('  ');
-}
+// storageUrl / questionMarkdown / answerMarkdown moved to lib/print-paper.ts
+// (2026-08-26) — shared with the student print-paper routes so admin exports
+// and student sheets flatten questions identically.
+type QbFull = QbPrintRow;
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

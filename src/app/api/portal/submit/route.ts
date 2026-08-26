@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   if (!account?.airtable_student_id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const studentId = account.airtable_student_id;
 
-  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown };
+  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const admin = getSupabaseAdmin();
 
@@ -68,6 +68,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'You have already sent this worksheet in — it’s with Adrian.' }, { status: 409 });
     }
     assignment = row;
+  }
+
+  // A self-generated printed paper (SPEC-PRINT-PAPER.md): re-check ownership
+  // and status here (the id is client-supplied). Its stored question ids get
+  // stamped onto the run below — the pre-registration the marker reads. NOT
+  // cap-exempt: self-initiated work spends the day's slot (spec D5).
+  let printedPaper: { id: string; question_ids: unknown } | null = null;
+  if (!assignment && typeof body.paperId === 'string' && body.paperId) {
+    const { data: p } = await admin
+      .from('portal_generated_papers')
+      .select('id, question_ids, status')
+      .eq('id', body.paperId)
+      .eq('airtable_student_id', studentId)
+      .maybeSingle();
+    if (!p) return NextResponse.json({ error: 'That printed paper isn’t available any more.' }, { status: 404 });
+    if (p.status !== 'open') {
+      return NextResponse.json({ error: 'You have already handed this paper in — it’s with Adrian.' }, { status: 409 });
+    }
+    printedPaper = { id: p.id, question_ids: p.question_ids };
   }
 
   const photoUrls = Array.isArray(body.photoUrls)
@@ -141,7 +160,15 @@ export async function POST(req: Request) {
     const { data: row } = await admin.from('paper_marking_runs').select('result_json').eq('id', runId).single();
     const rj = (row?.result_json && typeof row.result_json === 'object') ? row.result_json as Record<string, unknown> : {};
     await admin.from('paper_marking_runs').update({
-      result_json: { ...rj, portal_submission: true, ...(assignment ? { assignment_id: assignment.id } : {}) },
+      result_json: {
+        ...rj,
+        portal_submission: true,
+        ...(assignment ? { assignment_id: assignment.id } : {}),
+        // Pre-registration (SPEC-PRINT-PAPER.md): the exact QB questions on
+        // the printed sheet, in order — the marker can ground on their stored
+        // solutions instead of working out what each question even is.
+        ...(printedPaper ? { generated_paper_id: printedPaper.id, generated_question_ids: printedPaper.question_ids } : {}),
+      },
     }).eq('id', runId);
   } catch (e) {
     console.warn('[portal-submit] portal_submission stamp failed:', (e as Error).message);
@@ -151,6 +178,12 @@ export async function POST(req: Request) {
       .update({ status: 'submitted', run_id: runId, submitted_at: new Date().toISOString() })
       .eq('id', assignment.id).eq('status', 'assigned');
     if (flipErr) console.error('[portal-submit] assignment flip failed:', flipErr.message);
+  }
+  if (printedPaper) {
+    const { error: flipErr } = await admin.from('portal_generated_papers')
+      .update({ status: 'submitted', run_id: runId })
+      .eq('id', printedPaper.id).eq('status', 'open');
+    if (flipErr) console.error('[portal-submit] printed-paper flip failed:', flipErr.message);
   }
 
   // Auto-queue the hand-in for marking (after the stamp above, so the queue

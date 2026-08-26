@@ -164,6 +164,18 @@ export async function GET(req: NextRequest) {
       }
       return 'ok';
     }),
+    // Print-a-paper (SPEC-PRINT-PAPER.md): the pre-registration table must be
+    // reachable with the service key — generation and hand-in linkage both
+    // die without it. Head count only; the draw itself rides kiosk_pool,
+    // already covered by the kiosk probe.
+    timed('print-paper', async () => {
+      const { getSupabaseAdmin } = await import('@/lib/supabase');
+      const { error } = await getSupabaseAdmin()
+        .from('portal_generated_papers')
+        .select('id', { count: 'exact', head: true });
+      if (error) throw new Error(error.message);
+      return 'ok';
+    }),
     // Resend (welcome emails, invoices, receipts)
     timed('resend', async () => {
       if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY missing');

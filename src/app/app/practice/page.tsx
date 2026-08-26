@@ -13,7 +13,9 @@
 // question is resolved here (service role, ownership-checked against the
 // student's Airtable id) and handed to the flow as `initialAssignment`.
 import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 import PracticeFlow, { type InitialAssignment } from './practice-flow';
+import { fullPortalVisible } from '@/lib/portal-beta';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { qbLevelsFor } from '@/lib/practice';
@@ -78,5 +80,25 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       },
     };
   }
-  return <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} />;
+  // "Print a paper" entry card (SPEC-PRINT-PAPER.md) — full-portal only, so
+  // marking-only beta students never see a door the gate would bounce them off.
+  const printEntry = (await fullPortalVisible()) && !initialAssignment;
+
+  return (
+    <>
+      {printEntry && (
+        <Link
+          href="/app/print"
+          className="mb-4 flex items-center gap-3 bg-white rounded-2xl border border-black/5 shadow-sm p-4 hover:border-black/10"
+        >
+          <span className="text-2xl" aria-hidden>🖨️</span>
+          <span className="min-w-0">
+            <span className="block text-sm font-bold text-navy">Print a paper</span>
+            <span className="block text-[12px] text-gray-500">A mock exam or topic sheet on real paper — then hand it back in for marking.</span>
+          </span>
+        </Link>
+      )}
+      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} />
+    </>
+  );
 }

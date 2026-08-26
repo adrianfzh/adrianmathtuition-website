@@ -1,9 +1,16 @@
 # SPEC — "Print a paper": student self-serve printable papers
 
-> Status: **SPEC ONLY — not built.** Written 2026-08-26 after the grail.moe Practice
-> teardown. Build after Phase G hardening (PLAN-PORTAL-SOLO.md). Read this file +
-> SPEC-ASSIGN.md before starting; every load-bearing pipeline below already exists
-> and is unit-tested — the feature is mostly wiring, not invention.
+> Status: **BUILT (v1) 2026-08-26** — website side complete on Adrian's go-ahead
+> ("#4 → do it"): migration, `lib/print-paper.ts` (+tests), POST/GET
+> `/api/portal/print-paper`, on-demand `…/pdf`, `/app/print` page, the
+> practice-page entry card, `?paper=` submit linkage, health-check probe.
+> Deviations from the first draft: PDFs are rendered **on demand** from the
+> stored row (practice-pdf's nothing-stored reasoning), never kept in Blob;
+> the papers list + allowance ship from GET /api/portal/print-paper. Still
+> pending: the **bot-side grounding** (read `generated_question_ids` off the
+> run and feed the stored solutions to the marker — separate bot-repo session)
+> and a Home bento card (deliberately skipped; the bento identity system is
+> its own change). Written after the grail.moe Practice teardown.
 
 ## Why (one paragraph)
 

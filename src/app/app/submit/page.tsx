@@ -14,15 +14,32 @@ import SubmitClient from './submit-client';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SubmitPage({ searchParams }: { searchParams: Promise<{ assignment?: string }> }) {
+export default async function SubmitPage({ searchParams }: { searchParams: Promise<{ assignment?: string; paper?: string }> }) {
   const { account } = await currentStudent();
-  const { assignment: assignmentId } = await searchParams;
+  const { assignment: assignmentId, paper: paperId } = await searchParams;
   let assignment: { id: string; title: string } | null = null;
   if (assignmentId) {
     const a = await getStudentAssignment(assignmentId, account.airtable_student_id);
     if (!a || a.kind !== 'worksheet') redirect('/app/assignments');
     if (a.status !== 'assigned') redirect(`/app/assignments/${a.id}`);
     assignment = { id: a.id, title: a.title };
+  }
+
+  // ?paper=<id> — a self-generated printed paper (SPEC-PRINT-PAPER.md): lock
+  // the name to its title so marking links back to the pre-registered
+  // questions. Ownership-checked here; unlike assignments it SPENDS the daily
+  // slot (spec D5 — self-initiated work keeps the cost brake).
+  let paper: { id: string; title: string } | null = null;
+  if (!assignment && paperId) {
+    const { data } = await getSupabaseAdmin()
+      .from('portal_generated_papers')
+      .select('id, title, status')
+      .eq('id', paperId)
+      .eq('airtable_student_id', account.airtable_student_id)
+      .maybeSingle();
+    if (!data) redirect('/app/print');
+    if (data.status !== 'open') redirect('/app/print');
+    paper = { id: data.id, title: data.title };
   }
 
   // Allowance framing: the daily slot is shown BEFORE the student photographs
@@ -36,5 +53,5 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
       slotUsed = count >= DAILY_SUBMIT_CAP;
     } catch { /* degrade to the POST-time check */ }
   }
-  return <SubmitClient assignment={assignment} slotUsed={slotUsed} />;
+  return <SubmitClient assignment={assignment} paper={paper} slotUsed={slotUsed} />;
 }
