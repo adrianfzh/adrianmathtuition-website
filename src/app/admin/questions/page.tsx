@@ -76,6 +76,7 @@ export default function QuestionBankPage() {
   const [basket, setBasket] = useState<string[]>([]);
   const [basketOpen, setBasketOpen] = useState(false);
   const [wsAnswers, setWsAnswers] = useState(true);
+  const [wsSpace, setWsSpace] = useState(true);
   const [wsBusy, setWsBusy] = useState(false);
   const [solBusy, setSolBusy] = useState(false);
   const [solWithQuestions, setSolWithQuestions] = useState(true);
@@ -296,7 +297,7 @@ export default function QuestionBankPage() {
     try {
       const r = await fetch('/api/admin/questions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'worksheet', ids: basket, answers: wsAnswers }),
+        body: JSON.stringify({ action: 'worksheet', ids: basket, answers: wsAnswers, workspace: wsSpace }),
       });
       const d = await r.json();
       if (d.error) { flash(d.error); return; }
@@ -723,9 +724,13 @@ export default function QuestionBankPage() {
                 </div>
               );
             })}
-            <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, margin: '10px 0' }}>
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, margin: '10px 0 4px' }}>
               <input type="checkbox" checked={wsAnswers} onChange={e => setWsAnswers(e.target.checked)} />
               Include the answers page
+            </label>
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13.5, margin: '0 0 10px' }}>
+              <input type="checkbox" checked={wsSpace} onChange={e => setWsSpace(e.target.checked)} />
+              Working space under each question (untick = compact list)
             </label>
             <button onClick={generateWorksheet} disabled={wsBusy || !basket.length}
               style={{ width: '100%', padding: 12, fontSize: 15, fontWeight: 700, color: '#fff', background: C.good, border: 'none', borderRadius: 10, cursor: 'pointer' }}>

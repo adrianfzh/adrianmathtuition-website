@@ -337,6 +337,7 @@ export async function POST(req: NextRequest) {
     try {
       const pdf = await renderBotWorksheetPDF({
         title, levelLabel: 'Custom', topic: title, tier: null, dateLabel, questions, answers: body.answers === true,
+        workspace: body.workspace !== false,
       });
       const blob = await put(`mark-paper/custom-worksheets/${Date.now()}.pdf`, pdf, {
         access: 'public', contentType: 'application/pdf', token: process.env.BLOB_READ_WRITE_TOKEN,

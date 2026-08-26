@@ -21,6 +21,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page('/solutions', 0.8),
     ...publishedSolutions().map(s => page(`/solutions/${s.slug}`, 0.7)),
     page('/revise', 0.6),
+    ...FORMULA_SLUGS.map(s => page(`/formulas/${s}`, 0.5)),
+    page('/tools', 0.5),
     page('/terms', 0.2),
   ];
 }
+
+// Static formula reference pages — one dir each under src/app/formulas/.
+// Keep in sync when a formulas page is added (they are answer-shaped topic
+// pages, exactly what search + AI crawlers cite).
+const FORMULA_SLUGS = [
+  'coordinate-geometry', 'differentiation', 'em-circular-measure',
+  'em-congruency-similarity', 'em-coordinate-geometry', 'em-indices',
+  'em-interest', 'em-mensuration', 'em-polygons', 'em-sets',
+  'em-standard-form', 'em-statistics', 'em-trigonometry', 'em-vectors',
+  'exponential-log-graphs', 'factorization-cubics', 'indices',
+  'jc-complex', 'jc-differentiation', 'jc-functions', 'jc-graphing',
+  'jc-integration', 'jc-sequences', 'jc-vectors', 'logarithms',
+  'partial-fractions', 'trigo',
+];

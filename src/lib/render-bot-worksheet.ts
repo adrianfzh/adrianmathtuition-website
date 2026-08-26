@@ -49,6 +49,8 @@ export interface BotWorksheetInput {
   questions: BotWorksheetQuestion[];
   /** Append the Answers page. */
   answers: boolean;
+  /** Marks-proportional working space under each question (default). False = compact question list. */
+  workspace?: boolean;
 }
 
 function esc(s: string): string {
@@ -68,7 +70,7 @@ function spaceMm(marks: number | null): number {
 }
 
 /** One question's body: figures, then the markdown, then the marks tag. */
-function questionHtml(q: BotWorksheetQuestion, index: number): string {
+function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true): string {
   const figures = [
     ...(q.figureUrl ? [q.figureUrl] : []),
     ...(q.figureUrl ? [] : q.imageUrls),
@@ -86,7 +88,7 @@ function questionHtml(q: BotWorksheetQuestion, index: number): string {
   const marksTag = !hasOwnMarks && q.marks != null
     ? `<span class="ws-mk">[${q.marks} mark${q.marks === 1 ? '' : 's'}]</span>`
     : '';
-  const space = hasOwnSpace
+  const space = hasOwnSpace || !workspace
     ? ''
     : `<div class="ws-answer-space" style="height:${spaceMm(q.marks)}mm"></div>`;
 
@@ -120,7 +122,7 @@ function answersHtml(questions: BotWorksheetQuestion[]): string {
 }
 
 export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
-  const { levelLabel, topic, tier, dateLabel, questions, answers } = input;
+  const { levelLabel, topic, tier, dateLabel, questions, answers, workspace = true } = input;
   const tierBit = tier && tier !== 'mixed' ? `${tier} · ` : '';
   const totalMarks = questions.reduce((s, q) => s + (q.marks ?? 0), 0);
 
@@ -185,6 +187,9 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
   .ws-mk{float:right;font-weight:400}
   /* Working space: blank, no lines; heights set inline (∝ marks). */
   .ws-sp,.ws-answer-space{display:block;clear:both}
+  /* Compact list mode: part-level spacers flatten too; questions breathe a little. */
+  .ws-compact .ws-sp{display:none}
+  .ws-compact .ws-q{margin-bottom:9pt}
 
   /* Answers — always a page of their own, never inline next to the question. */
   .ws-answers{break-before:page;page-break-before:always;padding-top:2pt}
@@ -200,7 +205,7 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
   .ws-foot-url{color:#6E6E6E}
 </style>
 </head>
-<body>
+<body class="${workspace ? '' : 'ws-compact'}">
   <div class="ws-header">
     <div class="ws-brand">ADRIAN&rsquo;S MATH TUITION</div>
     <div class="ws-line2">
@@ -216,7 +221,7 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
   </div>
 
   <ol class="ws-questions">
-${questions.map(questionHtml).join('\n')}
+${questions.map((q, i) => questionHtml(q, i, workspace)).join('\n')}
   </ol>
 
   <div class="ws-footer">
